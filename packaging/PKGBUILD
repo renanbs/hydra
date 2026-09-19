@@ -1,0 +1,17 @@
+# Maintainer: Renan BS <renan.biegel@gmail.com>
+pkgname=hydra-bin
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Autonomous Development Environment for AI Agent Fleets (Tauri v2 + Rust Core)"
+arch=('x86_64')
+url="https://github.com/renanbs/hydra"
+license=('Apache-2.0')
+depends=('webkit2gtk-4.1' 'gtk3' 'cairo' 'gdk-pixbuf2' 'glib2')
+provides=('hydra')
+conflicts=('hydra')
+
+package() {
+  install -Dm755 "${srcdir}/../../src-tauri/target/release/hydra" "${pkgdir}/usr/bin/hydra"
+  install -Dm644 "${srcdir}/../../packaging/hydra.desktop" "${pkgdir}/usr/share/applications/hydra.desktop"
+  install -Dm644 "${srcdir}/../../src-tauri/icons/128x128.png" "${pkgdir}/usr/share/pixmaps/hydra.png"
+}

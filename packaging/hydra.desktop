@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Hydra ADE
+Comment=Autonomous Development Environment for AI Agent Fleets
+Exec=hydra %U
+Icon=hydra
+Type=Application
+Terminal=false
+StartupWMClass=hydra
+Categories=Development;IDE;
+MimeType=text/plain;
