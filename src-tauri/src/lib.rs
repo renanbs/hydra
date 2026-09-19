@@ -4,16 +4,19 @@ use tauri_plugin_window_state::StateFlags;
 
 pub mod agent_state;
 pub mod db;
+pub mod pairing;
 pub mod terminal;
 pub mod window_actions;
 
 use agent_state::{detect_agent_state, fold_terminal_output};
 use db::{ChatMessage, DatabaseManager, ToolApprovalRecord};
+use pairing::{PairingManager, PairingPayload};
 use terminal::{TerminalManager, TerminalSnapshot};
 
 pub struct AppState {
     pub terminal: Arc<TerminalManager>,
     pub db: Arc<DatabaseManager>,
+    pub pairing: Arc<PairingManager>,
 }
 
 #[tauri::command]
@@ -68,6 +71,11 @@ fn get_session_messages(
 }
 
 #[tauri::command]
+fn get_pairing_qr(state: State<'_, AppState>) -> Result<PairingPayload, String> {
+    state.pairing.generate_pairing_payload()
+}
+
+#[tauri::command]
 fn resolve_tool_approval(
     approval_id: String,
     session_id: String,
@@ -88,7 +96,6 @@ fn resolve_tool_approval(
     };
     state.db.save_tool_approval(&record)?;
 
-    // Emite evento para sincronizar UIs (Desktop e Mobile Companion)
     use tauri::Emitter;
     let _ = app.emit("tool_approval:resolved", record);
     Ok(())
@@ -98,10 +105,12 @@ fn resolve_tool_approval(
 pub fn run() {
     let terminal_manager = Arc::new(TerminalManager::new());
     let db_manager = Arc::new(DatabaseManager::new().expect("Failed to initialize SQLite database"));
+    let pairing_manager = Arc::new(PairingManager::new());
 
     let state = AppState {
         terminal: terminal_manager,
         db: db_manager,
+        pairing: pairing_manager,
     };
 
     tauri::Builder::default()
@@ -121,6 +130,7 @@ pub fn run() {
             get_folded_logs,
             save_chat_message,
             get_session_messages,
+            get_pairing_qr,
             resolve_tool_approval,
             window_actions::window_minimize,
             window_actions::window_toggle_maximize,

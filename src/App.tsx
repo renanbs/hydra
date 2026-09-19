@@ -6,11 +6,13 @@ import { WindowTitlebar } from "./components/WindowTitlebar";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
 import { WorktreeSidebar, type WorktreeSession } from "./components/sidebar/WorktreeSidebar";
 import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
+import { PairingModal } from "./components/PairingModal";
 import { 
   Bot, 
   Play, 
   CheckCircle2, 
-  Send
+  Send,
+  Smartphone
 } from "lucide-react";
 import "./App.css";
 
@@ -26,6 +28,7 @@ const MOCK_MODIFIED = `fn main() {
 export default function App() {
   const [status, setStatus] = useState("Initializing...");
   const [promptInput, setPromptInput] = useState("");
+  const [isPairingOpen, setIsPairingOpen] = useState(false);
 
   // Agent Fleet Sessions (Herdr + Orca style)
   const [sessions, setSessions] = useState<WorktreeSession[]>([
@@ -245,15 +248,24 @@ export default function App() {
               <Bot className="w-3.5 h-3.5 text-emerald-400" />
               Active Agent
             </span>
-            <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-medium ${
-              activeSession?.state === "working" 
-                ? "bg-amber-500/20 text-amber-400 animate-pulse" 
-                : activeSession?.state === "blocked" 
-                  ? "bg-red-500/20 text-red-400" 
-                  : "bg-emerald-500/20 text-emerald-400"
-            }`}>
-              {activeSession?.state.toUpperCase() ?? "IDLE"}
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsPairingOpen(true)}
+                title="Pair Mobile Companion"
+                className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition flex items-center gap-1"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-blue-400" />
+              </button>
+              <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-medium ${
+                activeSession?.state === "working" 
+                  ? "bg-amber-500/20 text-amber-400 animate-pulse" 
+                  : activeSession?.state === "blocked" 
+                    ? "bg-red-500/20 text-red-400" 
+                    : "bg-emerald-500/20 text-emerald-400"
+              }`}>
+                {activeSession?.state.toUpperCase() ?? "IDLE"}
+              </span>
+            </div>
           </div>
 
           <div className="flex-1 p-3 overflow-y-auto space-y-3">
@@ -346,6 +358,9 @@ export default function App() {
           </div>
         </aside>
       </div>
+
+      {/* Mobile Companion Pairing Modal */}
+      <PairingModal isOpen={isPairingOpen} onClose={() => setIsPairingOpen(false)} />
     </div>
   );
 }
