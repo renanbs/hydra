@@ -4,15 +4,12 @@ import { usePanelResize } from "./hooks/usePanelResize";
 import { TerminalDrawer } from "./components/TerminalDrawer";
 import { WindowTitlebar } from "./components/WindowTitlebar";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
+import { WorktreeSidebar, type WorktreeSession } from "./components/sidebar/WorktreeSidebar";
+import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
 import { 
   Bot, 
-  Terminal, 
-  FolderTree, 
   Play, 
-  CheckCircle2,
-  ChevronRight,
-  Code2,
-  FileCode,
+  CheckCircle2, 
   Send
 } from "lucide-react";
 import "./App.css";
@@ -22,26 +19,60 @@ const MOCK_ORIGINAL = `fn main() {
 }`;
 
 const MOCK_MODIFIED = `fn main() {
-    // Optimized with Herdr detection and vt100 shadow buffer
+    // High-performance Herdr shadow buffer with zero UI leakage
     println!("Hello from Hydra ADE (Autonomous Development Environment)");
 }`;
 
 export default function App() {
   const [status, setStatus] = useState("Iniciando...");
-  const [agentState, setAgentState] = useState<string>("idle");
-  const [activeCenterTab, setActiveCenterTab] = useState<"diff" | "overview">("diff");
   const [promptInput, setPromptInput] = useState("");
+
+  // Sessões de frotas / Worktrees (Herdr + Orca style)
+  const [sessions, setSessions] = useState<WorktreeSession[]>([
+    {
+      id: "sess_1",
+      title: "Refactor terminal pty engine",
+      branch: "feat/pty-vt100",
+      state: "working",
+      active: true,
+      agentName: "Hydra / Claude"
+    },
+    {
+      id: "sess_2",
+      title: "Add SQLite WAL migration",
+      branch: "main",
+      state: "idle",
+      active: false,
+      agentName: "Hydra / Codex"
+    },
+    {
+      id: "sess_3",
+      title: "Review tool approval bounds",
+      branch: "fix/approval-gate",
+      state: "blocked",
+      active: false,
+      agentName: "Hydra / Grok"
+    }
+  ]);
+
+  // Abas do Workbench Central (Orca style)
+  const [tabs, setTabs] = useState<TabItem[]>([
+    { id: "tab_term_1", title: "bash #1 (active)", type: "terminal" },
+    { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
+  ]);
+  const [activeTabId, setActiveTabId] = useState("tab_term_1");
+
   const [messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
     {
       id: 1,
       role: "agent",
-      content: "Hydra ADE ativo. Fases 2, 3 e 4 integradas: Herdr State Engine, SQLite WAL e Monaco Diff Viewer."
+      content: "Hydra ADE inicializado com Workbench Central de alto desempenho (xterm + vt100 em memória)."
     }
   ]);
 
   const leftSidebar = usePanelResize({
-    initialWidth: 240,
-    minWidth: 160,
+    initialWidth: 260,
+    minWidth: 180,
     maxWidth: 480,
     deltaSign: 1,
   });
@@ -58,11 +89,17 @@ export default function App() {
       .then(setStatus)
       .catch(console.error);
 
-    // Polling leve para ler o estado do agente a partir do buffer vt100 (Herdr style)
+    // Monitora periodicamente o buffer vt100 para atualizar o badge de estado da sessão ativa
     const interval = setInterval(() => {
       invoke<string>("check_agent_state")
-        .then((state) => {
-          if (state) setAgentState(state);
+        .then((detectedState) => {
+          if (detectedState) {
+            setSessions((prev) =>
+              prev.map((s) =>
+                s.active ? { ...s, state: detectedState as WorktreeSession["state"] } : s
+              )
+            );
+          }
         })
         .catch(console.error);
     }, 1500);
@@ -70,12 +107,53 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleSelectSession = (id: string) => {
+    setSessions((prev) =>
+      prev.map((s) => ({ ...s, active: s.id === id }))
+    );
+  };
+
+  const handleNewSession = () => {
+    const id = `sess_${Date.now()}`;
+    const newSession: WorktreeSession = {
+      id,
+      title: `Nova tarefa #${sessions.length + 1}`,
+      branch: "feat/new-agent",
+      state: "idle",
+      active: true,
+      agentName: "Hydra Agent"
+    };
+    setSessions((prev) => [
+      newSession,
+      ...prev.map((s) => ({ ...s, active: false }))
+    ]);
+  };
+
+  const handleDeleteSession = (id: string) => {
+    if (sessions.length <= 1) return;
+    setSessions((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleNewTab = () => {
+    const id = `tab_${Date.now()}`;
+    setTabs((prev) => [...prev, { id, title: `bash #${prev.length + 1}`, type: "terminal" }]);
+    setActiveTabId(id);
+  };
+
+  const handleCloseTab = (id: string) => {
+    if (tabs.length <= 1) return;
+    const remaining = tabs.filter((t) => t.id !== id);
+    setTabs(remaining);
+    if (activeTabId === id) {
+      setActiveTabId(remaining[remaining.length - 1].id);
+    }
+  };
+
   const handleSendMessage = () => {
     if (!promptInput.trim()) return;
     const text = promptInput;
     setPromptInput("");
 
-    // Salva no banco SQLite WAL local
     invoke<number>("save_chat_message", {
       sessionId: "default",
       role: "user",
@@ -85,9 +163,12 @@ export default function App() {
     setMessages((prev) => [
       ...prev,
       { id: Date.now(), role: "user", content: text },
-      { id: Date.now() + 1, role: "agent", content: `Comando registrado no SQLite: "${text}". Processando via headless buffer...` }
+      { id: Date.now() + 1, role: "agent", content: `Comando gravado no SQLite: "${text}". Monitorando via Herdr state engine...` }
     ]);
   };
+
+  const currentTab = tabs.find((t) => t.id === activeTabId);
+  const activeSession = sessions.find((s) => s.active);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#0c0d0e] text-[#ededed] font-sans antialiased select-none overflow-hidden">
@@ -96,33 +177,18 @@ export default function App() {
 
       {/* Main Resizable Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Panel: Workspaces & File Tree */}
+        {/* Left Panel: Worktree / Fleet Manager (Orca Style) */}
         <aside 
           ref={leftSidebar.containerRef}
           style={{ width: `${leftSidebar.width}px` }}
           className="flex flex-col border-r border-[#222] bg-[#0e0f11] shrink-0 overflow-hidden relative"
         >
-          <div className="h-8 border-b border-[#222] px-3 flex items-center justify-between text-[11px] uppercase tracking-wider text-neutral-500 font-medium shrink-0">
-            <span className="flex items-center gap-1.5">
-              <FolderTree className="w-3.5 h-3.5" />
-              Explorador
-            </span>
-          </div>
-          <div className="p-3 text-xs text-neutral-400 space-y-1 overflow-y-auto">
-            <div className="text-neutral-500 text-[11px] mb-2 font-mono">/home/renan/src/hydra</div>
-            <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-neutral-800/60 cursor-pointer text-neutral-200">
-              <ChevronRight className="w-3 h-3 text-neutral-500" />
-              <span>src-tauri (Rust Core + SQLite)</span>
-            </div>
-            <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-neutral-800/60 cursor-pointer text-neutral-200">
-              <ChevronRight className="w-3 h-3 text-neutral-500" />
-              <span>src (React + shadcn + Monaco)</span>
-            </div>
-            <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-neutral-800/60 cursor-pointer text-neutral-200">
-              <FileCode className="w-3 h-3 text-emerald-400" />
-              <span>main.rs (Diff ativo)</span>
-            </div>
-          </div>
+          <WorktreeSidebar 
+            sessions={sessions}
+            onSelectSession={handleSelectSession}
+            onNewSession={handleNewSession}
+            onDeleteSession={handleDeleteSession}
+          />
         </aside>
 
         {/* Left Resize Handle */}
@@ -135,46 +201,28 @@ export default function App() {
           <div className={`w-[2px] h-full transition-colors ${leftSidebar.isResizing ? "bg-emerald-400" : "group-hover:bg-emerald-400"}`} />
         </div>
 
-        {/* Central Workspace: Monaco Diff Viewer & Terminal */}
+        {/* Central Workspace: Workbench de Terminais com TabBar (100% da área útil) */}
         <main className="flex-1 flex flex-col bg-[#0c0d0e] min-w-0 overflow-hidden">
-          {/* Editor Header Tabs */}
-          <div className="h-8 border-b border-[#222] px-3 flex items-center justify-between bg-[#111214] text-xs shrink-0">
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setActiveCenterTab("diff")}
-                className={`px-2 py-1 flex items-center gap-1.5 text-[11px] font-medium border-b-2 transition ${
-                  activeCenterTab === "diff" ? "border-emerald-500 text-neutral-200" : "border-transparent text-neutral-400 hover:text-neutral-300"
-                }`}
-              >
-                <Code2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>main.rs (Diff Viewer)</span>
-              </button>
-            </div>
-          </div>
+          {/* Barra de Abas do Workbench */}
+          <WorkbenchTabBar 
+            tabs={tabs}
+            activeTabId={activeTabId}
+            onSelectTab={setActiveTabId}
+            onCloseTab={handleCloseTab}
+            onNewTab={handleNewTab}
+          />
 
-          {/* Central Area: Code Diff Viewer */}
+          {/* Área Central: Terminal ou Diff conforme a Aba Selecionada */}
           <div className="flex-1 overflow-hidden relative">
-            <CodeDiffViewer 
-              original={MOCK_ORIGINAL} 
-              modified={MOCK_MODIFIED} 
-              language="rust" 
-            />
-          </div>
-
-          {/* Bottom Collapsible Terminal Drawer */}
-          <div className="h-56 border-t border-[#222] bg-[#0c0d0e] flex flex-col shrink-0">
-            <div className="h-7 border-b border-[#222] px-3 flex items-center justify-between text-[11px] bg-[#111214] shrink-0">
-              <div className="flex items-center gap-3 text-neutral-400">
-                <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span>Terminal Interativo PTY (vt100 Shadow Buffer)</span>
-                </span>
-              </div>
-              <span className="text-[10px] text-emerald-500/80 font-mono">portable-pty active</span>
-            </div>
-            <div className="flex-1 overflow-hidden">
+            {currentTab?.type === "diff" ? (
+              <CodeDiffViewer 
+                original={MOCK_ORIGINAL} 
+                modified={MOCK_MODIFIED} 
+                language="rust" 
+              />
+            ) : (
               <TerminalDrawer />
-            </div>
+            )}
           </div>
         </main>
 
@@ -200,18 +248,17 @@ export default function App() {
               Agente Ativo
             </span>
             <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-medium ${
-              agentState === "working" 
+              activeSession?.state === "working" 
                 ? "bg-amber-500/20 text-amber-400 animate-pulse" 
-                : agentState === "blocked" 
+                : activeSession?.state === "blocked" 
                   ? "bg-red-500/20 text-red-400" 
                   : "bg-emerald-500/20 text-emerald-400"
             }`}>
-              {agentState.toUpperCase()}
+              {activeSession?.state.toUpperCase() ?? "IDLE"}
             </span>
           </div>
 
           <div className="flex-1 p-3 overflow-y-auto space-y-3">
-            {/* Messages Feed (SQLite WAL Sync) */}
             {messages.map((m) => (
               <div 
                 key={m.id} 
@@ -243,7 +290,7 @@ export default function App() {
                 <span className="text-[10px] text-neutral-500 font-mono">bash</span>
               </div>
               <div className="bg-[#111214] p-2 rounded font-mono text-[11px] text-neutral-200 border border-neutral-800 mb-3 overflow-x-auto">
-                cargo check --workspace
+                cargo test --workspace
               </div>
               <div className="flex items-center gap-2">
                 <button 
