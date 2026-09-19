@@ -6,13 +6,11 @@ export function WindowControls() {
 
   const handleMinimize = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("minimize clicked");
     invoke("window_minimize").catch(console.error);
   };
 
   const handleToggleMaximize = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("toggle maximize clicked");
     invoke("window_toggle_maximize")
       .then(() => setMaximized(!maximized))
       .catch(console.error);
@@ -20,7 +18,6 @@ export function WindowControls() {
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("close clicked");
     invoke("window_close").catch(console.error);
   };
 
@@ -31,7 +28,7 @@ export function WindowControls() {
     >
       <button
         className="window-controls-btn"
-        aria-label="Minimizar"
+        aria-label="Minimize"
         onClick={handleMinimize}
       >
         <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
@@ -41,7 +38,7 @@ export function WindowControls() {
 
       <button
         className="window-controls-btn"
-        aria-label={maximized ? "Restaurar" : "Maximizar"}
+        aria-label={maximized ? "Restore" : "Maximize"}
         onClick={handleToggleMaximize}
       >
         {maximized ? (
@@ -57,7 +54,7 @@ export function WindowControls() {
 
       <button
         className="window-controls-btn window-controls-close"
-        aria-label="Fechar"
+        aria-label="Close"
         onClick={handleClose}
       >
         <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
@@ -81,7 +78,7 @@ export function WindowTitlebar({ title }: { title: string }) {
       onMouseDown={handleStartDrag}
       className="h-9 border-b border-[#222] px-3 flex items-center justify-between text-xs bg-[#111214] select-none shrink-0 cursor-default"
     >
-      {/* Esquerda: Identidade do App */}
+      {/* Left: App Identity */}
       <div className="flex items-center gap-2 pointer-events-none">
         <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
         <span className="font-semibold text-neutral-200 tracking-wider">HYDRA</span>
@@ -89,7 +86,7 @@ export function WindowTitlebar({ title }: { title: string }) {
         <span className="text-neutral-400 font-mono text-[11px]">{title}</span>
       </div>
 
-      {/* Centro: Espaço arrastável */}
+      {/* Center: Draggable Workspace Strip */}
       <div 
         data-tauri-drag-region 
         className="flex-1 h-full flex items-center justify-center cursor-default pointer-events-auto"
@@ -99,7 +96,7 @@ export function WindowTitlebar({ title }: { title: string }) {
         </span>
       </div>
 
-      {/* Espaçador para os botões do Orca */}
+      {/* Right: Window Controls Overlay Spacer */}
       <div className="w-[138px] shrink-0 pointer-events-none" />
       <WindowControls />
     </header>

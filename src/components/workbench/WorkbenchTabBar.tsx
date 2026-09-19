@@ -23,7 +23,7 @@ export function WorkbenchTabBar({
 }: WorkbenchTabBarProps) {
   return (
     <div className="h-8 border-b border-[#222] bg-[#111214] flex items-center px-1 select-none overflow-x-auto shrink-0">
-      {/* Lista de Abas estilo Orca */}
+      {/* Tab strip in Orca style */}
       <div className="flex items-center gap-1 flex-1 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
@@ -57,10 +57,10 @@ export function WorkbenchTabBar({
         })}
       </div>
 
-      {/* Botão de Nova Aba (+) */}
+      {/* New Tab Button (+) */}
       <button
         onClick={onNewTab}
-        title="Novo Terminal (+)"
+        title="New Terminal (+)"
         className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition ml-1 shrink-0"
       >
         <Plus className="w-3.5 h-3.5" />

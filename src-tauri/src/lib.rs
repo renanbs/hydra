@@ -1,3 +1,7 @@
+use std::sync::Arc;
+use tauri::{AppHandle, State};
+use tauri_plugin_window_state::StateFlags;
+
 pub mod agent_state;
 pub mod db;
 pub mod terminal;
@@ -5,9 +9,6 @@ pub mod window_actions;
 
 use agent_state::{detect_agent_state, fold_terminal_output};
 use db::{ChatMessage, DatabaseManager, ToolApprovalRecord};
-use std::sync::Arc;
-use tauri::{AppHandle, Emitter, State};
-use tauri_plugin_window_state::StateFlags;
 use terminal::{TerminalManager, TerminalSnapshot};
 
 pub struct AppState {
@@ -88,6 +89,7 @@ fn resolve_tool_approval(
     state.db.save_tool_approval(&record)?;
 
     // Emite evento para sincronizar UIs (Desktop e Mobile Companion)
+    use tauri::Emitter;
     let _ = app.emit("tool_approval:resolved", record);
     Ok(())
 }
@@ -95,7 +97,7 @@ fn resolve_tool_approval(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let terminal_manager = Arc::new(TerminalManager::new());
-    let db_manager = Arc::new(DatabaseManager::new().expect("Falha ao inicializar banco SQLite"));
+    let db_manager = Arc::new(DatabaseManager::new().expect("Failed to initialize SQLite database"));
 
     let state = AppState {
         terminal: terminal_manager,

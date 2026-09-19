@@ -24,10 +24,10 @@ const MOCK_MODIFIED = `fn main() {
 }`;
 
 export default function App() {
-  const [status, setStatus] = useState("Iniciando...");
+  const [status, setStatus] = useState("Initializing...");
   const [promptInput, setPromptInput] = useState("");
 
-  // Sessões de frotas / Worktrees (Herdr + Orca style)
+  // Agent Fleet Sessions (Herdr + Orca style)
   const [sessions, setSessions] = useState<WorktreeSession[]>([
     {
       id: "sess_1",
@@ -55,7 +55,7 @@ export default function App() {
     }
   ]);
 
-  // Abas do Workbench Central (Orca style)
+  // Center Workbench Tabs (Orca style)
   const [tabs, setTabs] = useState<TabItem[]>([
     { id: "tab_term_1", title: "bash #1 (active)", type: "terminal" },
     { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
@@ -66,7 +66,7 @@ export default function App() {
     {
       id: 1,
       role: "agent",
-      content: "Hydra ADE inicializado com Workbench Central de alto desempenho (xterm + vt100 em memória)."
+      content: "Hydra ADE initialized. Workbench surfaces connected to memory-efficient vt100 virtual terminal."
     }
   ]);
 
@@ -89,7 +89,7 @@ export default function App() {
       .then(setStatus)
       .catch(console.error);
 
-    // Monitora periodicamente o buffer vt100 para atualizar o badge de estado da sessão ativa
+    // Live Herdr State Engine polling from the vt100 buffer
     const interval = setInterval(() => {
       invoke<string>("check_agent_state")
         .then((detectedState) => {
@@ -117,7 +117,7 @@ export default function App() {
     const id = `sess_${Date.now()}`;
     const newSession: WorktreeSession = {
       id,
-      title: `Nova tarefa #${sessions.length + 1}`,
+      title: `Task #${sessions.length + 1}`,
       branch: "feat/new-agent",
       state: "idle",
       active: true,
@@ -163,7 +163,7 @@ export default function App() {
     setMessages((prev) => [
       ...prev,
       { id: Date.now(), role: "user", content: text },
-      { id: Date.now() + 1, role: "agent", content: `Comando gravado no SQLite: "${text}". Monitorando via Herdr state engine...` }
+      { id: Date.now() + 1, role: "agent", content: `Command saved to SQLite: "${text}". Monitored by Herdr state engine.` }
     ]);
   };
 
@@ -201,9 +201,8 @@ export default function App() {
           <div className={`w-[2px] h-full transition-colors ${leftSidebar.isResizing ? "bg-emerald-400" : "group-hover:bg-emerald-400"}`} />
         </div>
 
-        {/* Central Workspace: Workbench de Terminais com TabBar (100% da área útil) */}
+        {/* Central Workspace: Full Multi-Tab Workbench */}
         <main className="flex-1 flex flex-col bg-[#0c0d0e] min-w-0 overflow-hidden">
-          {/* Barra de Abas do Workbench */}
           <WorkbenchTabBar 
             tabs={tabs}
             activeTabId={activeTabId}
@@ -212,7 +211,6 @@ export default function App() {
             onNewTab={handleNewTab}
           />
 
-          {/* Área Central: Terminal ou Diff conforme a Aba Selecionada */}
           <div className="flex-1 overflow-hidden relative">
             {currentTab?.type === "diff" ? (
               <CodeDiffViewer 
@@ -245,7 +243,7 @@ export default function App() {
           <div className="h-8 border-b border-[#222] px-3 flex items-center justify-between text-[11px] uppercase tracking-wider text-neutral-400 font-medium bg-[#111214] shrink-0">
             <span className="flex items-center gap-1.5 text-neutral-200">
               <Bot className="w-3.5 h-3.5 text-emerald-400" />
-              Agente Ativo
+              Active Agent
             </span>
             <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-medium ${
               activeSession?.state === "working" 
@@ -285,7 +283,7 @@ export default function App() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 flex items-center gap-1">
                   <Play className="w-3 h-3" />
-                  Pedido de Execução (Tool Call)
+                  Tool Execution Request
                 </span>
                 <span className="text-[10px] text-neutral-500 font-mono">bash</span>
               </div>
@@ -335,7 +333,7 @@ export default function App() {
                     handleSendMessage();
                   }
                 }}
-                placeholder="Instrua o agente Hydra... (Enter para enviar)"
+                placeholder="Instruct Hydra agent... (Enter to send)"
                 className="flex-1 bg-[#0c0d0e] border border-[#26272b] rounded-md px-3 py-2 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500/80 transition font-sans"
               />
               <button 
