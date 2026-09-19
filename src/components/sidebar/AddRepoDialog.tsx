@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import { 
   X, 
+  FolderOpen, 
   Globe, 
   Plus, 
   AlertCircle, 
@@ -32,14 +34,37 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
     onClose();
   };
 
+  // 1. AÇÃO PRINCIPAL DO ORCA: Browse Folder (Selecionar pasta existente no sistema)
+  const handleBrowseFolder = async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: "Select Existing Project or Git Repository",
+      });
+
+      if (selected && typeof selected === "string") {
+        setIsSubmitting(true);
+        setError(null);
+        await invoke("register_existing_project", { path: selected });
+        setIsSubmitting(false);
+        onProjectAdded();
+        handleClose();
+      }
+    } catch (err) {
+      setIsSubmitting(false);
+      setError(String(err));
+    }
+  };
+
   const handleClone = (e: React.FormEvent) => {
     e.preventDefault();
     if (!cloneUrl.trim()) return;
     setIsSubmitting(true);
     setError(null);
+
     const repoName = cloneUrl.split("/").pop()?.replace(".git", "") || "repo";
 
-    // Executa clone via rust backend ou shell
     invoke<string>("create_project", {
       name: repoName,
       parentDir: cloneDest,
@@ -87,7 +112,7 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
             {step !== "start" && (
               <button
                 onClick={() => setStep("start")}
-                className="p-1 -ml-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition"
+                className="p-1 -ml-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -100,7 +125,7 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
           </div>
           <button
             onClick={handleClose}
-            className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition"
+            className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -117,7 +142,25 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
         {/* 1. START STEP: 100% Orca AddRepoLocalStartStep actions */}
         {step === "start" && (
           <div className="p-4 space-y-2">
-            {/* Action 1: Clone from URL */}
+            {/* Primary Action 1 (Orca): Browse Folder */}
+            <button
+              onClick={handleBrowseFolder}
+              className="w-full flex items-center gap-3.5 p-3.5 rounded-xl border border-emerald-500/40 bg-neutral-900/60 hover:bg-neutral-800/80 transition text-left cursor-pointer group"
+            >
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition">
+                <FolderOpen className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-neutral-100 text-xs flex items-center gap-1.5">
+                  <span>Browse folder</span>
+                  <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 uppercase font-bold">Existing</span>
+                </div>
+                <div className="text-[11px] text-neutral-400">Open an existing Git repository or project folder from disk</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:text-emerald-400 transition" />
+            </button>
+
+            {/* Action 2: Clone from URL */}
             <button
               onClick={() => setStep("clone")}
               className="w-full flex items-center gap-3.5 p-3 rounded-xl border border-neutral-800/80 bg-[#0e0f11] hover:bg-neutral-800/60 transition text-left cursor-pointer group"
@@ -132,12 +175,12 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
               <ChevronRight className="w-4 h-4 text-neutral-600 group-hover:text-neutral-300 transition" />
             </button>
 
-            {/* Action 2: Create new project */}
+            {/* Action 3: Create new project */}
             <button
               onClick={() => setStep("create")}
               className="w-full flex items-center gap-3.5 p-3 rounded-xl border border-neutral-800/80 bg-[#0e0f11] hover:bg-neutral-800/60 transition text-left cursor-pointer group"
             >
-              <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/50 transition">
+              <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-300 group-hover:border-neutral-700 transition">
                 <Plus className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">

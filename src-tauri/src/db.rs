@@ -35,6 +35,25 @@ pub struct ToolApprovalRecord {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct UiLayoutState {
+    pub left_sidebar_open: bool,
+    pub right_sidebar_open: bool,
+    pub left_sidebar_width: u32,
+    pub right_sidebar_width: u32,
+}
+
+impl Default for UiLayoutState {
+    fn default() -> Self {
+        Self {
+            left_sidebar_open: true,
+            right_sidebar_open: true,
+            left_sidebar_width: 260,
+            right_sidebar_width: 360,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct HydraSettings {
     pub terminal_font_family: String,
     pub terminal_font_size: u32,
@@ -127,6 +146,32 @@ impl DatabaseManager {
         let dir = PathBuf::from(home).join(".config").join("hydra");
         std::fs::create_dir_all(&dir).map_err(|e| format!("Failed to create ~/.config/hydra: {e}"))?;
         Ok(dir.join("hydra_sessions.sqlite3"))
+    }
+
+    pub fn get_layout_state(&self) -> Result<UiLayoutState, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT value FROM settings WHERE key = 'ui_layout_state'")
+            .map_err(|e| format!("Error querying layout state: {e}"))?;
+
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json_str: String = row.get(0).map_err(|e| e.to_string())?;
+            serde_json::from_str(&json_str).map_err(|e| format!("JSON parse error: {e}"))
+        } else {
+            Ok(UiLayoutState::default())
+        }
+    }
+
+    pub fn save_layout_state(&self, layout: &UiLayoutState) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let json_str = serde_json::to_string(layout).map_err(|e| e.to_string())?;
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('ui_layout_state', ?1)",
+            params![json_str],
+        )
+        .map_err(|e| format!("Error saving layout state: {e}"))?;
+        Ok(())
     }
 
     pub fn list_sessions(&self, project_path: Option<&str>) -> Result<Vec<DbSessionRecord>, String> {

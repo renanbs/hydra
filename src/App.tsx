@@ -55,6 +55,13 @@ interface DbSessionRecord {
   updated_at: number;
 }
 
+interface UiLayoutState {
+  left_sidebar_open: boolean;
+  right_sidebar_open: boolean;
+  left_sidebar_width: number;
+  right_sidebar_width: number;
+}
+
 export default function App() {
   const [status, setStatus] = useState("Initializing...");
   const [promptInput, setPromptInput] = useState("");
@@ -110,6 +117,43 @@ export default function App() {
     deltaSign: -1,
   });
 
+  // 1. Carrega o estado persistido de visibilidade dos painéis (Orca / Herdr style)
+  useEffect(() => {
+    invoke<UiLayoutState>("get_layout_persistence")
+      .then((layout) => {
+        if (layout) {
+          setIsLeftSidebarOpen(layout.left_sidebar_open);
+          setIsRightSidebarOpen(layout.right_sidebar_open);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  // Salva no SQLite sempre que um painel for alternado
+  const updateLeftSidebar = (open: boolean) => {
+    setIsLeftSidebarOpen(open);
+    invoke("save_layout_persistence", {
+      layout: {
+        left_sidebar_open: open,
+        right_sidebar_open: isRightSidebarOpen,
+        left_sidebar_width: leftSidebar.width,
+        right_sidebar_width: rightSidebar.width,
+      }
+    }).catch(console.error);
+  };
+
+  const updateRightSidebar = (open: boolean) => {
+    setIsRightSidebarOpen(open);
+    invoke("save_layout_persistence", {
+      layout: {
+        left_sidebar_open: isLeftSidebarOpen,
+        right_sidebar_open: open,
+        left_sidebar_width: leftSidebar.width,
+        right_sidebar_width: rightSidebar.width,
+      }
+    }).catch(console.error);
+  };
+
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleGlobalContextMenu = (e: MouseEvent) => {
@@ -125,11 +169,19 @@ export default function App() {
       }
       if (isChord && e.key.toLowerCase() === "b") {
         e.preventDefault();
-        setIsLeftSidebarOpen((prev) => !prev);
+        setIsLeftSidebarOpen((prev) => {
+          const next = !prev;
+          updateLeftSidebar(next);
+          return next;
+        });
       }
       if (isChord && e.key.toLowerCase() === "j") {
         e.preventDefault();
-        setIsRightSidebarOpen((prev) => !prev);
+        setIsRightSidebarOpen((prev) => {
+          const next = !prev;
+          updateRightSidebar(next);
+          return next;
+        });
       }
       if (isChord && e.key === ",") {
         e.preventDefault();
@@ -142,7 +194,7 @@ export default function App() {
       window.removeEventListener("contextmenu", handleGlobalContextMenu);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [isLeftSidebarOpen, isRightSidebarOpen, leftSidebar.width, rightSidebar.width]);
 
   const refreshGitWorktrees = (repoPath: string) => {
     invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath })
@@ -606,8 +658,8 @@ export default function App() {
         title={status} 
         isLeftOpen={isLeftSidebarOpen}
         isRightOpen={isRightSidebarOpen}
-        onToggleLeft={() => setIsLeftSidebarOpen((prev) => !prev)}
-        onToggleRight={() => setIsRightSidebarOpen((prev) => !prev)}
+        onToggleLeft={() => updateLeftSidebar(!isLeftSidebarOpen)}
+        onToggleRight={() => updateRightSidebar(!isRightSidebarOpen)}
       />
 
       {/* Main Resizable Workspace */}
@@ -838,12 +890,15 @@ export default function App() {
         onSwitchTab={setActiveTabId}
       />
 
-      {/* Orca 100% Add Project Dialog (Clone / Create / Browse) */}
+      {/* Orca 100% Add Project Dialog (Clone / Create / Browse Folder) */}
       <AddRepoDialog
         isOpen={isAddRepoOpen}
         onClose={() => setIsAddRepoOpen(false)}
         onProjectAdded={() => {
-          invoke<HydraProject[]>("list_projects").then(setProjects).catch(console.error);
+          invoke<HydraProject[]>("list_projects").then((projs) => {
+            setProjects(projs);
+            if (projs.length > 0) handleSelectProject(projs[0]);
+          }).catch(console.error);
         }}
       />
 

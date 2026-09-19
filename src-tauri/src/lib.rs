@@ -14,10 +14,10 @@ pub mod worktree_ops;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
-use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord};
+use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState};
 use git_status::{get_git_status, GitRepoStatus};
 use pairing::{PairingManager, PairingPayload};
-use project_manager::{list_local_projects, HydraProject};
+use project_manager::{add_existing_project, list_local_projects, HydraProject};
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
     create_git_worktree, create_new_project, list_git_worktrees, remove_git_worktree,
@@ -46,6 +46,11 @@ fn list_projects() -> Vec<HydraProject> {
 }
 
 #[tauri::command]
+fn register_existing_project(path: String) -> Result<HydraProject, String> {
+    add_existing_project(&path)
+}
+
+#[tauri::command]
 fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
     list_git_worktrees(&repo_path)
 }
@@ -71,6 +76,16 @@ fn create_worktree(repo_path: String, branch_name: String, new_branch: bool) -> 
 #[tauri::command]
 fn delete_worktree(repo_path: String, worktree_path: String) -> Result<(), String> {
     remove_git_worktree(&repo_path, &worktree_path)
+}
+
+#[tauri::command]
+fn get_layout_persistence(state: State<'_, AppState>) -> Result<UiLayoutState, String> {
+    state.db.get_layout_state()
+}
+
+#[tauri::command]
+fn save_layout_persistence(layout: UiLayoutState, state: State<'_, AppState>) -> Result<(), String> {
+    state.db.save_layout_state(&layout)
 }
 
 #[tauri::command]
@@ -217,6 +232,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(state)
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_window_state::Builder::default()
                 .with_state_flags(StateFlags::all())
@@ -226,10 +242,13 @@ pub fn run() {
             get_system_status,
             get_repo_git_status,
             list_projects,
+            register_existing_project,
             list_worktrees,
             create_project,
             create_worktree,
             delete_worktree,
+            get_layout_persistence,
+            save_layout_persistence,
             list_available_agents,
             list_persisted_sessions,
             save_session_record,
