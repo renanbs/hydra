@@ -4,11 +4,12 @@ import {
   Plus, 
   Trash2, 
   FolderGit2, 
-  ChevronDown,
+  ChevronDown, 
   Settings, 
   GitCommit, 
   FolderPlus,
-  Check
+  Check,
+  Layers
 } from "lucide-react";
 
 export interface AvailableAgent {
@@ -24,6 +25,14 @@ export interface HydraProject {
   path: string;
   is_git: boolean;
   current_branch: string;
+}
+
+export interface GitWorktreeInfo {
+  path: string;
+  head_commit: string;
+  branch: string;
+  is_bare: boolean;
+  is_locked: boolean;
 }
 
 export interface WorktreeSession {
@@ -49,8 +58,11 @@ interface WorktreeSidebarProps {
   projects: HydraProject[];
   activeProject: HydraProject | null;
   gitStatus: GitRepoStatus | null;
+  gitWorktrees: GitWorktreeInfo[];
   onSelectProject: (proj: HydraProject) => void;
   onSelectSession: (id: string) => void;
+  onSelectGitWorktree: (wt: GitWorktreeInfo) => void;
+  onDeleteGitWorktree: (wt: GitWorktreeInfo) => void;
   onNewSessionWithAgent: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;
@@ -65,8 +77,11 @@ export function WorktreeSidebar({
   projects,
   activeProject,
   gitStatus,
+  gitWorktrees,
   onSelectProject,
   onSelectSession,
+  onSelectGitWorktree,
+  onDeleteGitWorktree,
   onNewSessionWithAgent,
   onDeleteSession,
   onOpenSettings,
@@ -94,8 +109,12 @@ export function WorktreeSidebar({
     return () => window.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filtered = sessions.filter(
+  const filteredSessions = sessions.filter(
     (s) => s.title.toLowerCase().includes(filter.toLowerCase()) || s.branch.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  const filteredGitWorktrees = gitWorktrees.filter(
+    (wt) => wt.branch.toLowerCase().includes(filter.toLowerCase()) || wt.path.toLowerCase().includes(filter.toLowerCase())
   );
 
   return (
@@ -114,7 +133,7 @@ export function WorktreeSidebar({
             <ChevronDown className="w-2.5 h-2.5 text-neutral-500 shrink-0" />
           </button>
 
-          {/* Project Switcher Dropdown (Orca SidebarProjectFilterPanel style) */}
+          {/* Project Switcher Dropdown */}
           {isProjectMenuOpen && (
             <div className="absolute left-0 top-9 w-64 rounded-xl bg-[#141518] border border-[#26272b] p-2 shadow-2xl z-50 text-xs space-y-1">
               <div className="px-2 py-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider flex items-center justify-between">
@@ -183,15 +202,14 @@ export function WorktreeSidebar({
         </span>
       </div>
 
-      {/* 2. ORCA SIDEBAR HEADER ACTIONS (100% Orca SidebarHeader.tsx + sidebar-header-actions.tsx) */}
+      {/* 2. ORCA SIDEBAR HEADER ACTIONS */}
       <div className="mt-1 flex h-8 min-w-0 items-center justify-between gap-1.5 px-3">
         <div className="flex min-w-0 items-center gap-1">
           <span className="min-w-0 truncate select-none text-[11px] font-semibold text-neutral-400 tracking-wider uppercase">
-            Workspaces
+            Workspaces & Fleets
           </span>
         </div>
 
-        {/* Action cluster: Options | Add Project | New Workspace (Plus) */}
         <div className="flex shrink-0 items-center gap-1">
           <button
             onClick={onOpenAddRepoDialog}
@@ -201,7 +219,6 @@ export function WorktreeSidebar({
             <FolderPlus className="w-3.5 h-3.5" />
           </button>
 
-          {/* New Workspace / Worktree Trigger with Agent Selection */}
           <div className="relative" ref={agentMenuRef}>
             <button
               onClick={() => setIsAgentMenuOpen(!isAgentMenuOpen)}
@@ -212,7 +229,6 @@ export function WorktreeSidebar({
               <ChevronDown className="w-2.5 h-2.5 text-neutral-500" />
             </button>
 
-            {/* Agent / Worktree Dropdown Menu */}
             {isAgentMenuOpen && (
               <div className="absolute right-0 top-7 w-52 rounded-lg bg-[#141518] border border-[#26272b] p-1.5 shadow-2xl z-50 text-xs space-y-1">
                 <div className="px-2 py-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
@@ -274,92 +290,145 @@ export function WorktreeSidebar({
         />
       </div>
 
-      {/* 4. Worktree / Workspace List (100% Orca WorktreeList style) */}
-      <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
-        {filtered.length === 0 ? (
-          <div className="p-6 text-center text-neutral-500 text-xs space-y-2">
-            <p>No active workspaces found.</p>
-            <div className="flex justify-center gap-2">
-              <button
-                onClick={onOpenNewWorkspaceModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
-              >
-                <GitBranch className="w-3 h-3 text-emerald-400" />
-                <span>New Worktree</span>
-              </button>
-              <button
-                onClick={onOpenAddRepoDialog}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
-              >
-                <FolderPlus className="w-3 h-3 text-blue-400" />
-                <span>Add Project</span>
-              </button>
+      {/* 4. Combined Worktree List (Orca WorktreeList 100%) */}
+      <div className="flex-1 overflow-y-auto p-1.5 space-y-2">
+        {/* Section A: Live Git Worktrees on Disk (Orca Native Attached Worktrees) */}
+        {filteredGitWorktrees.length > 0 && (
+          <div className="space-y-1">
+            <div className="px-2 pt-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3 h-3 text-emerald-400" />
+              <span>Git Worktrees ({filteredGitWorktrees.length})</span>
             </div>
+            {filteredGitWorktrees.map((wt) => {
+              const isMain = wt.path === activeProject?.path;
+              return (
+                <div
+                  key={wt.path}
+                  onClick={() => onSelectGitWorktree(wt)}
+                  className="group relative p-2 rounded text-xs cursor-pointer border border-[#222] bg-[#121316] hover:bg-neutral-800/80 transition-all text-neutral-300"
+                >
+                  <div className="flex items-center justify-between mb-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <span className="font-medium truncate text-neutral-100 text-[11px]">
+                        {wt.branch || "detached"}
+                      </span>
+                    </div>
+                    {!isMain && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteGitWorktree(wt);
+                        }}
+                        title="Delete worktree from disk"
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="text-[9px] text-neutral-500 font-mono truncate pl-4">
+                    {wt.path.split("/").pop()} • {wt.head_commit.slice(0, 7)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          filtered.map((session) => (
-            <div
-              key={session.id}
-              onClick={() => onSelectSession(session.id)}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onSessionContextMenu?.(e, session);
-              }}
-              className={`group relative p-2 rounded text-xs cursor-pointer border transition-all ${
-                session.active
-                  ? "bg-[#141518] border-neutral-700/80 text-neutral-100 shadow-sm"
-                  : "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-900 hover:text-neutral-300"
-              }`}
-            >
-              {session.active && (
-                <div className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-emerald-500 rounded-r" />
-              )}
+        )}
 
-              <div className="flex items-center justify-between mb-1 pl-1">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="font-medium truncate text-neutral-200 text-[11px]">
-                    {session.title}
+        {/* Section B: Agent Sessions */}
+        <div className="space-y-1">
+          {filteredGitWorktrees.length > 0 && (
+            <div className="px-2 pt-2 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
+              Agent Fleets
+            </div>
+          )}
+
+          {filteredSessions.length === 0 && filteredGitWorktrees.length === 0 ? (
+            <div className="p-6 text-center text-neutral-500 text-xs space-y-2">
+              <p>No active workspaces found.</p>
+              <div className="flex justify-center gap-2">
+                <button
+                  onClick={onOpenNewWorkspaceModal}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
+                >
+                  <GitBranch className="w-3 h-3 text-emerald-400" />
+                  <span>New Worktree</span>
+                </button>
+                <button
+                  onClick={onOpenAddRepoDialog}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
+                >
+                  <FolderPlus className="w-3 h-3 text-blue-400" />
+                  <span>Add Project</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            filteredSessions.map((session) => (
+              <div
+                key={session.id}
+                onClick={() => onSelectSession(session.id)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onSessionContextMenu?.(e, session);
+                }}
+                className={`group relative p-2 rounded text-xs cursor-pointer border transition-all ${
+                  session.active
+                    ? "bg-[#141518] border-neutral-700/80 text-neutral-100 shadow-sm"
+                    : "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-900 hover:text-neutral-300"
+                }`}
+              >
+                {session.active && (
+                  <div className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-emerald-500 rounded-r" />
+                )}
+
+                <div className="flex items-center justify-between mb-1 pl-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="font-medium truncate text-neutral-200 text-[11px]">
+                      {session.title}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        session.state === "working"
+                          ? "bg-amber-400 animate-pulse"
+                          : session.state === "blocked"
+                            ? "bg-red-400 ring-2 ring-red-500/30"
+                            : "bg-emerald-400"
+                      }`}
+                      title={`Herdr State: ${session.state}`}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteSession(session.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
+                  <span className="flex items-center gap-1 truncate">
+                    <GitBranch className="w-2.5 h-2.5" />
+                    {session.branch}
+                  </span>
+                  <span className="text-neutral-400 text-[9px] bg-neutral-800/80 px-1 py-0.2 rounded">
+                    {session.agentName}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      session.state === "working"
-                        ? "bg-amber-400 animate-pulse"
-                        : session.state === "blocked"
-                          ? "bg-red-400 ring-2 ring-red-500/30"
-                          : "bg-emerald-400"
-                    }`}
-                    title={`Herdr State: ${session.state}`}
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteSession(session.id);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
               </div>
-
-              <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
-                <span className="flex items-center gap-1 truncate">
-                  <GitBranch className="w-2.5 h-2.5" />
-                  {session.branch}
-                </span>
-                <span className="text-neutral-400 text-[9px] bg-neutral-800/80 px-1 py-0.2 rounded">
-                  {session.agentName}
-                </span>
-              </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
 
-      {/* Sidebar Footer with Git Commit + Settings */}
+      {/* Sidebar Footer */}
       <div className="h-8 border-t border-[#222] px-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono bg-[#111214] shrink-0">
         <button
           onClick={onOpenSettings}

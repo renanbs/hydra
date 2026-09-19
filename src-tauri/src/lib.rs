@@ -19,7 +19,10 @@ use git_status::{get_git_status, GitRepoStatus};
 use pairing::{PairingManager, PairingPayload};
 use project_manager::{list_local_projects, HydraProject};
 use terminal::{TerminalManager, TerminalSnapshot};
-use worktree_ops::{create_git_worktree, create_new_project, CreateProjectParams, CreateWorktreeParams};
+use worktree_ops::{
+    create_git_worktree, create_new_project, list_git_worktrees, remove_git_worktree,
+    CreateProjectParams, CreateWorktreeParams, GitWorktreeInfo,
+};
 
 pub struct AppState {
     pub terminal: Arc<TerminalManager>,
@@ -43,6 +46,11 @@ fn list_projects() -> Vec<HydraProject> {
 }
 
 #[tauri::command]
+fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
+    list_git_worktrees(&repo_path)
+}
+
+#[tauri::command]
 fn create_project(name: String, parent_dir: String, init_git: bool) -> Result<String, String> {
     create_new_project(CreateProjectParams {
         name,
@@ -58,6 +66,11 @@ fn create_worktree(repo_path: String, branch_name: String, new_branch: bool) -> 
         branch_name,
         new_branch,
     })
+}
+
+#[tauri::command]
+fn delete_worktree(repo_path: String, worktree_path: String) -> Result<(), String> {
+    remove_git_worktree(&repo_path, &worktree_path)
 }
 
 #[tauri::command]
@@ -213,8 +226,10 @@ pub fn run() {
             get_system_status,
             get_repo_git_status,
             list_projects,
+            list_worktrees,
             create_project,
             create_worktree,
+            delete_worktree,
             list_available_agents,
             list_persisted_sessions,
             save_session_record,

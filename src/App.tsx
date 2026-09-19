@@ -4,7 +4,14 @@ import { usePanelResize } from "./hooks/usePanelResize";
 import { TerminalDrawer } from "./components/TerminalDrawer";
 import { WindowTitlebar } from "./components/WindowTitlebar";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
-import { WorktreeSidebar, type WorktreeSession, type AvailableAgent, type GitRepoStatus, type HydraProject } from "./components/sidebar/WorktreeSidebar";
+import { 
+  WorktreeSidebar, 
+  type WorktreeSession, 
+  type AvailableAgent, 
+  type GitRepoStatus, 
+  type HydraProject,
+  type GitWorktreeInfo 
+} from "./components/sidebar/WorktreeSidebar";
 import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
 import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
 import { PairingModal } from "./components/PairingModal";
@@ -62,6 +69,7 @@ export default function App() {
   const [projects, setProjects] = useState<HydraProject[]>([]);
   const [activeProject, setActiveProject] = useState<HydraProject | null>(null);
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
+  const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -136,6 +144,12 @@ export default function App() {
     };
   }, []);
 
+  const refreshGitWorktrees = (repoPath: string) => {
+    invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath })
+      .then(setGitWorktrees)
+      .catch(console.error);
+  };
+
   // Hydrate Sessions and Projects on startup
   useEffect(() => {
     invoke<string>("get_system_status")
@@ -148,6 +162,7 @@ export default function App() {
         if (projs.length > 0) {
           setActiveProject(projs[0]);
           loadSessionsForProject(projs[0].path);
+          refreshGitWorktrees(projs[0].path);
         }
       })
       .catch(console.error);
@@ -240,18 +255,55 @@ export default function App() {
   const handleSelectProject = (proj: HydraProject) => {
     setActiveProject(proj);
     loadSessionsForProject(proj.path);
+    refreshGitWorktrees(proj.path);
     setMessages((prev) => [
       ...prev,
       {
         id: Date.now(),
         role: "agent",
-        content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}". Loaded persistent sessions from SQLite.`
+        content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
       }
     ]);
   };
 
+  const handleSelectGitWorktree = (wt: GitWorktreeInfo) => {
+    const id = `sess_wt_${wt.branch.replace('/', '_')}`;
+    if (!sessions.some((s) => s.id === id)) {
+      const newSess: WorktreeSession = {
+        id,
+        title: `Worktree: ${wt.branch}`,
+        branch: wt.branch,
+        state: "idle",
+        active: true,
+        agentName: "bash",
+        executable: "bash",
+      };
+      setSessions((prev) => [newSess, ...prev.map((s) => ({ ...s, active: false }))]);
+    } else {
+      setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === id })));
+    }
+    const tabId = `tab_${id}`;
+    if (!tabs.some((t) => t.id === tabId)) {
+      setTabs((prev) => [...prev, { id: tabId, title: `${wt.branch} (wt)`, type: "terminal" }]);
+    }
+    setActiveTabId(tabId);
+  };
+
+  const handleDeleteGitWorktree = (wt: GitWorktreeInfo) => {
+    if (!activeProject) return;
+    invoke("delete_worktree", {
+      repoPath: activeProject.path,
+      worktreePath: wt.path,
+    })
+      .then(() => {
+        refreshGitWorktrees(activeProject.path);
+      })
+      .catch(console.error);
+  };
+
   const handleCreatedItem = (type: "project" | "worktree", path: string) => {
     if (type === "worktree") {
+      if (activeProject) refreshGitWorktrees(activeProject.path);
       const branchName = path.split("-").pop() ?? "feature";
       const id = `sess_wt_${Date.now().toString().slice(-4)}`;
       const newSession: WorktreeSession = {
@@ -574,8 +626,11 @@ export default function App() {
                 projects={projects}
                 activeProject={activeProject}
                 gitStatus={gitStatus}
+                gitWorktrees={gitWorktrees}
                 onSelectProject={handleSelectProject}
                 onSelectSession={handleSelectSession}
+                onSelectGitWorktree={handleSelectGitWorktree}
+                onDeleteGitWorktree={handleDeleteGitWorktree}
                 onNewSessionWithAgent={handleNewSessionWithAgent}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
