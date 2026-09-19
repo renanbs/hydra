@@ -4,7 +4,8 @@ import {
   Plus, 
   Trash2, 
   FolderGit2,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from "lucide-react";
 
 export interface AvailableAgent {
@@ -30,6 +31,7 @@ interface WorktreeSidebarProps {
   onSelectSession: (id: string) => void;
   onNewSessionWithAgent: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
+  onOpenSettings: () => void;
 }
 
 export function WorktreeSidebar({
@@ -38,6 +40,7 @@ export function WorktreeSidebar({
   onSelectSession,
   onNewSessionWithAgent,
   onDeleteSession,
+  onOpenSettings,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -78,7 +81,7 @@ export function WorktreeSidebar({
             <ChevronDown className="w-2.5 h-2.5 text-neutral-500" />
           </button>
 
-          {/* Dropdown Menu de Agentes Detectados no Host */}
+          {/* Detected Agents Dropdown */}
           {isMenuOpen && (
             <div className="absolute right-0 top-7 w-48 rounded-lg bg-[#141518] border border-[#26272b] p-1.5 shadow-2xl z-50 text-xs space-y-0.5">
               <div className="px-2 py-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
@@ -186,10 +189,17 @@ export function WorktreeSidebar({
         )}
       </div>
 
-      {/* Sidebar Footer */}
-      <div className="h-7 border-t border-[#222] px-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono bg-[#111214] shrink-0">
-        <span>Active fleets: {sessions.filter((s) => s.state === "working").length}</span>
-        <span className="text-emerald-500/80">Herdr daemon ok</span>
+      {/* Sidebar Footer with Settings Trigger */}
+      <div className="h-8 border-t border-[#222] px-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono bg-[#111214] shrink-0">
+        <button
+          onClick={onOpenSettings}
+          title="Open Settings"
+          className="flex items-center gap-1 hover:text-neutral-300 transition"
+        >
+          <Settings className="w-3 h-3 text-neutral-400 hover:text-emerald-400 transition" />
+          <span>Settings</span>
+        </button>
+        <span className="text-emerald-500/80">Herdr ok</span>
       </div>
     </div>
   );

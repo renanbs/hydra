@@ -7,6 +7,7 @@ import { CodeDiffViewer } from "./components/CodeDiffViewer";
 import { WorktreeSidebar, type WorktreeSession, type AvailableAgent } from "./components/sidebar/WorktreeSidebar";
 import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
 import { PairingModal } from "./components/PairingModal";
+import { SettingsModal, type HydraSettings } from "./components/SettingsModal";
 import { 
   Bot, 
   Play, 
@@ -29,6 +30,7 @@ export default function App() {
   const [status, setStatus] = useState("Initializing...");
   const [promptInput, setPromptInput] = useState("");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
 
   // Agent Fleet Sessions (Herdr + Orca style)
@@ -108,7 +110,6 @@ export default function App() {
     setSessions((prev) =>
       prev.map((s) => ({ ...s, active: s.id === id }))
     );
-    // Assegura que há uma aba correspondente
     const tabId = `tab_${id}`;
     if (!tabs.some((t) => t.id === tabId)) {
       const targetSession = sessions.find((s) => s.id === id);
@@ -196,6 +197,17 @@ export default function App() {
     ]);
   };
 
+  const handleSettingsSaved = (newSettings: HydraSettings) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        role: "agent",
+        content: `Settings updated: font size ${newSettings.terminal_font_size}px, auto-approve reads: ${newSettings.auto_approve_reads ? "on" : "off"}.`
+      }
+    ]);
+  };
+
   const currentTab = tabs.find((t) => t.id === activeTabId);
   const activeSession = sessions.find((s) => s.active);
 
@@ -218,6 +230,7 @@ export default function App() {
             onSelectSession={handleSelectSession}
             onNewSessionWithAgent={handleNewSessionWithAgent}
             onDeleteSession={handleDeleteSession}
+            onOpenSettings={() => setIsSettingsOpen(true)}
           />
         </aside>
 
@@ -392,6 +405,13 @@ export default function App() {
 
       {/* Mobile Companion Pairing Modal */}
       <PairingModal isOpen={isPairingOpen} onClose={() => setIsPairingOpen(false)} />
+
+      {/* Settings Modal (Orca Layout) */}
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        onSaved={handleSettingsSaved}
+      />
     </div>
   );
 }

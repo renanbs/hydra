@@ -7,7 +7,7 @@ use std::path::PathBuf;
 pub struct ChatMessage {
     pub id: i64,
     pub session_id: String,
-    pub role: String, // "user", "agent", "system", "tool"
+    pub role: String,
     pub content: String,
     pub created_at: i64,
 }
@@ -18,8 +18,36 @@ pub struct ToolApprovalRecord {
     pub session_id: String,
     pub tool_name: String,
     pub command: String,
-    pub status: String, // "pending", "approved", "rejected"
+    pub status: String,
     pub created_at: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HydraSettings {
+    pub terminal_font_family: String,
+    pub terminal_font_size: u32,
+    pub terminal_cursor_style: String,
+    pub terminal_cursor_blink: bool,
+    pub auto_approve_reads: bool,
+    pub notification_on_blocked: bool,
+    pub default_branch_prefix: String,
+    pub workspace_dir: String,
+}
+
+impl Default for HydraSettings {
+    fn default() -> Self {
+        let home = std::env::var("HOME").unwrap_or_else(|_| "/home/renan".to_string());
+        Self {
+            terminal_font_family: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace".to_string(),
+            terminal_font_size: 12,
+            terminal_cursor_style: "block".to_string(),
+            terminal_cursor_blink: true,
+            auto_approve_reads: true,
+            notification_on_blocked: true,
+            default_branch_prefix: "feat/".to_string(),
+            workspace_dir: format!("{home}/src"),
+        }
+    }
 }
 
 pub struct DatabaseManager {
@@ -29,9 +57,8 @@ pub struct DatabaseManager {
 impl DatabaseManager {
     pub fn new() -> Result<Self, String> {
         let db_path = Self::get_db_path()?;
-        let conn = Connection::open(&db_path).map_err(|e| format!("Erro ao abrir SQLite: {e}"))?;
+        let conn = Connection::open(&db_path).map_err(|e| format!("Error opening SQLite: {e}"))?;
 
-        // Ativa modo WAL (Write-Ahead Logging) para crash-proof e altíssima performance
         conn.execute_batch(
             "PRAGMA journal_mode = WAL;
              PRAGMA synchronous = NORMAL;
@@ -60,9 +87,14 @@ impl DatabaseManager {
                  command TEXT NOT NULL,
                  status TEXT NOT NULL,
                  created_at INTEGER NOT NULL
+             );
+
+             CREATE TABLE IF NOT EXISTS settings (
+                 key TEXT PRIMARY KEY,
+                 value TEXT NOT NULL
              );",
         )
-        .map_err(|e| format!("Erro ao migrar tabelas SQLite: {e}"))?;
+        .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
 
         Ok(Self {
             conn: Mutex::new(conn),
@@ -70,9 +102,9 @@ impl DatabaseManager {
     }
 
     fn get_db_path() -> Result<PathBuf, String> {
-        let home = std::env::var("HOME").map_err(|_| "HOME não encontrado".to_string())?;
+        let home = std::env::var("HOME").map_err(|_| "HOME not found".to_string())?;
         let dir = PathBuf::from(home).join(".config").join("hydra");
-        std::fs::create_dir_all(&dir).map_err(|e| format!("Falha ao criar ~/.config/hydra: {e}"))?;
+        std::fs::create_dir_all(&dir).map_err(|e| format!("Failed to create ~/.config/hydra: {e}"))?;
         Ok(dir.join("hydra_sessions.sqlite3"))
     }
 
@@ -80,17 +112,16 @@ impl DatabaseManager {
         let conn = self.conn.lock();
         let now = chrono_now();
 
-        // Garante que a sessão existe
         let _ = conn.execute(
             "INSERT OR IGNORE INTO sessions (id, title, created_at, updated_at) VALUES (?1, ?2, ?3, ?3)",
-            params![session_id, "Nova Sessão Hydra", now],
+            params![session_id, "New Hydra Session", now],
         );
 
         conn.execute(
             "INSERT INTO messages (session_id, role, content, created_at) VALUES (?1, ?2, ?3, ?4)",
             params![session_id, role, content, now],
         )
-        .map_err(|e| format!("Erro ao inserir mensagem: {e}"))?;
+        .map_err(|e| format!("Error inserting message: {e}"))?;
 
         Ok(conn.last_insert_rowid())
     }
@@ -99,7 +130,7 @@ impl DatabaseManager {
         let conn = self.conn.lock();
         let mut stmt = conn
             .prepare("SELECT id, session_id, role, content, created_at FROM messages WHERE session_id = ?1 ORDER BY id ASC")
-            .map_err(|e| format!("Erro ao preparar select: {e}"))?;
+            .map_err(|e| format!("Error preparing select: {e}"))?;
 
         let rows = stmt
             .query_map(params![session_id], |row| {
@@ -111,7 +142,7 @@ impl DatabaseManager {
                     created_at: row.get(4)?,
                 })
             })
-            .map_err(|e| format!("Erro na query: {e}"))?;
+            .map_err(|e| format!("Query error: {e}"))?;
 
         let mut messages = Vec::new();
         for r in rows {
@@ -135,7 +166,33 @@ impl DatabaseManager {
                 approval.created_at
             ],
         )
-        .map_err(|e| format!("Erro ao salvar tool approval: {e}"))?;
+        .map_err(|e| format!("Error saving tool approval: {e}"))?;
+        Ok(())
+    }
+
+    pub fn get_settings(&self) -> Result<HydraSettings, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT value FROM settings WHERE key = 'global_settings'")
+            .map_err(|e| format!("Error querying settings: {e}"))?;
+
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json_str: String = row.get(0).map_err(|e| e.to_string())?;
+            serde_json::from_str(&json_str).map_err(|e| format!("JSON parse error: {e}"))
+        } else {
+            Ok(HydraSettings::default())
+        }
+    }
+
+    pub fn save_settings(&self, settings: &HydraSettings) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let json_str = serde_json::to_string(settings).map_err(|e| e.to_string())?;
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('global_settings', ?1)",
+            params![json_str],
+        )
+        .map_err(|e| format!("Error saving settings: {e}"))?;
         Ok(())
     }
 }

@@ -11,7 +11,7 @@ pub mod window_actions;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
-use db::{ChatMessage, DatabaseManager, ToolApprovalRecord};
+use db::{ChatMessage, DatabaseManager, HydraSettings, ToolApprovalRecord};
 use pairing::{PairingManager, PairingPayload};
 use terminal::{TerminalManager, TerminalSnapshot};
 
@@ -100,6 +100,16 @@ fn get_pairing_qr(state: State<'_, AppState>) -> Result<PairingPayload, String> 
 }
 
 #[tauri::command]
+fn get_settings(state: State<'_, AppState>) -> Result<HydraSettings, String> {
+    state.db.get_settings()
+}
+
+#[tauri::command]
+fn save_settings(settings: HydraSettings, state: State<'_, AppState>) -> Result<(), String> {
+    state.db.save_settings(&settings)
+}
+
+#[tauri::command]
 fn resolve_tool_approval(
     approval_id: String,
     session_id: String,
@@ -156,6 +166,8 @@ pub fn run() {
             save_chat_message,
             get_session_messages,
             get_pairing_qr,
+            get_settings,
+            save_settings,
             resolve_tool_approval,
             window_actions::window_minimize,
             window_actions::window_toggle_maximize,
