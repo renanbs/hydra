@@ -7,6 +7,7 @@ pub mod agent_state;
 pub mod db;
 pub mod git_status;
 pub mod pairing;
+pub mod project_manager;
 pub mod terminal;
 pub mod window_actions;
 
@@ -15,6 +16,7 @@ use agent_state::{detect_agent_state, fold_terminal_output};
 use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord};
 use git_status::{get_git_status, GitRepoStatus};
 use pairing::{PairingManager, PairingPayload};
+use project_manager::{list_local_projects, HydraProject};
 use terminal::{TerminalManager, TerminalSnapshot};
 
 pub struct AppState {
@@ -31,6 +33,11 @@ fn get_system_status() -> String {
 #[tauri::command]
 fn get_repo_git_status() -> Result<GitRepoStatus, String> {
     get_git_status()
+}
+
+#[tauri::command]
+fn list_projects() -> Vec<HydraProject> {
+    list_local_projects()
 }
 
 #[tauri::command]
@@ -182,6 +189,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_system_status,
             get_repo_git_status,
+            list_projects,
             list_available_agents,
             list_persisted_sessions,
             save_session_record,

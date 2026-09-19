@@ -4,7 +4,7 @@ import { usePanelResize } from "./hooks/usePanelResize";
 import { TerminalDrawer } from "./components/TerminalDrawer";
 import { WindowTitlebar } from "./components/WindowTitlebar";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
-import { WorktreeSidebar, type WorktreeSession, type AvailableAgent, type GitRepoStatus } from "./components/sidebar/WorktreeSidebar";
+import { WorktreeSidebar, type WorktreeSession, type AvailableAgent, type GitRepoStatus, type HydraProject } from "./components/sidebar/WorktreeSidebar";
 import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraSettings } from "./components/SettingsModal";
@@ -54,6 +54,8 @@ export default function App() {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
+  const [projects, setProjects] = useState<HydraProject[]>([]);
+  const [activeProject, setActiveProject] = useState<HydraProject | null>(null);
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
 
   // Context Menu State
@@ -63,7 +65,7 @@ export default function App() {
     items: ContextMenuItem[];
   } | null>(null);
 
-  // Agent Fleet Sessions (Hydrated directly from SQLite WAL)
+  // Agent Fleet Sessions
   const [sessions, setSessions] = useState<WorktreeSession[]>([]);
 
   // Center Workbench Tabs
@@ -77,7 +79,7 @@ export default function App() {
     {
       id: 1,
       role: "agent",
-      content: "Hydra ADE initialized. Press Ctrl+P for Command Palette, right-click anywhere for context menus."
+      content: "Hydra ADE initialized. Workspace switcher, Command Palette and live PTY active."
     }
   ]);
 
@@ -95,7 +97,7 @@ export default function App() {
     deltaSign: -1,
   });
 
-  // Global Keyboard Shortcuts (Orca Style: Ctrl+P, Ctrl+B, Ctrl+J, Ctrl+,)
+  // Global Keyboard Shortcuts
   useEffect(() => {
     const handleGlobalContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -129,10 +131,17 @@ export default function App() {
     };
   }, []);
 
-  // Hydrate Sessions from SQLite WAL on startup
+  // Hydrate Sessions and Projects on startup
   useEffect(() => {
     invoke<string>("get_system_status")
       .then(setStatus)
+      .catch(console.error);
+
+    invoke<HydraProject[]>("list_projects")
+      .then((projs) => {
+        setProjects(projs);
+        if (projs.length > 0) setActiveProject(projs[0]);
+      })
       .catch(console.error);
 
     invoke<AvailableAgent[]>("list_available_agents")
@@ -163,7 +172,6 @@ export default function App() {
           ]);
           setActiveTabId(firstTabId);
         } else {
-          // First launch fallback
           const defaultSession: WorktreeSession = {
             id: "sess_main",
             title: "Main Terminal Session",
@@ -211,6 +219,18 @@ export default function App() {
 
     return () => clearInterval(interval);
   }, [sessions]);
+
+  const handleSelectProject = (proj: HydraProject) => {
+    setActiveProject(proj);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        role: "agent",
+        content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
+      }
+    ]);
+  };
 
   const handleSelectSession = (id: string) => {
     setSessions((prev) =>
@@ -479,7 +499,7 @@ export default function App() {
 
       {/* Main Resizable Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Panel: Worktree / Fleet Manager */}
+        {/* Left Panel: Worktree / Fleet Manager with Project Switcher */}
         {isLeftSidebarOpen && (
           <>
             <aside 
@@ -490,7 +510,10 @@ export default function App() {
               <WorktreeSidebar 
                 sessions={sessions}
                 availableAgents={availableAgents}
+                projects={projects}
+                activeProject={activeProject}
                 gitStatus={gitStatus}
+                onSelectProject={handleSelectProject}
                 onSelectSession={handleSelectSession}
                 onNewSessionWithAgent={handleNewSessionWithAgent}
                 onDeleteSession={handleDeleteSession}
@@ -568,7 +591,7 @@ export default function App() {
                   <button
                     onClick={() => setIsPairingOpen(true)}
                     title="Pair Mobile Companion"
-                    className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition flex items-center gap-1"
+                    className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition flex items-center gap-1 cursor-pointer"
                   >
                     <Smartphone className="w-3.5 h-3.5 text-blue-400" />
                   </button>
@@ -627,7 +650,7 @@ export default function App() {
                           status: "approved"
                         }).catch(console.error);
                       }}
-                      className="flex-1 py-1 px-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] flex items-center justify-center gap-1 transition"
+                      className="flex-1 py-1 px-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] flex items-center justify-center gap-1 transition cursor-pointer"
                     >
                       <CheckCircle2 className="w-3 h-3" />
                       Approve (Ctrl+Enter)
@@ -640,7 +663,7 @@ export default function App() {
                           status: "rejected"
                         }).catch(console.error);
                       }}
-                      className="px-3 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] transition"
+                      className="px-3 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] transition cursor-pointer"
                     >
                       Reject (Esc)
                     </button>
@@ -666,7 +689,7 @@ export default function App() {
                   />
                   <button 
                     onClick={handleSendMessage}
-                    className="p-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white transition"
+                    className="p-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
                   </button>
