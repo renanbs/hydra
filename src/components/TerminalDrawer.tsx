@@ -5,12 +5,17 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import "@xterm/xterm/css/xterm.css";
 
-export function TerminalDrawer() {
+interface TerminalDrawerProps {
+  sessionId: string;
+  executable?: string;
+}
+
+export function TerminalDrawer({ sessionId, executable = "bash" }: TerminalDrawerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const xtermRef = useRef<Terminal | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current || xtermRef.current) return;
+    if (!containerRef.current) return;
 
     const term = new Terminal({
       cursorBlink: true,
@@ -37,16 +42,22 @@ export function TerminalDrawer() {
     fitAddon.fit();
     xtermRef.current = term;
 
-    // Conecta a entrada do teclado do usuário ao PTY do Rust
+    // Conecta a entrada do teclado do usuário ao PTY específico da sessão
     term.onData((data) => {
-      invoke("send_terminal_input", { input: data }).catch(console.error);
+      invoke("send_terminal_input", { sessionId, input: data }).catch(console.error);
     });
 
-    // Inicia a sessão headless no Rust (se já não estiver ativa)
-    invoke("start_terminal_session")
+    // Inicia a sessão com o executável solicitado (ex: claude, codex, cursor, bash)
+    invoke("start_agent_terminal", {
+      sessionId,
+      executable,
+      args: []
+    })
       .then(() => {
-        // Pega o snapshot inicial do buffer em memória (vt100)
-        return invoke<{ formatted: string; clean_text: string }>("get_terminal_snapshot");
+        return invoke<{ session_id: string; formatted: string; clean_text: string }>(
+          "get_terminal_snapshot",
+          { sessionId }
+        );
       })
       .then((snapshot) => {
         if (snapshot && snapshot.formatted) {
@@ -55,10 +66,15 @@ export function TerminalDrawer() {
       })
       .catch(console.error);
 
-    // Escuta novos chunks de output emitidos em tempo real pelo Rust
-    const unlistenPromise = listen<string>("terminal:output", (event) => {
-      term.write(event.payload);
-    });
+    // Escuta chunks de output emitidos para ESTA sessão
+    const unlistenPromise = listen<{ session_id: string; output: string }>(
+      "terminal:output",
+      (event) => {
+        if (event.payload.session_id === sessionId) {
+          term.write(event.payload.output);
+        }
+      }
+    );
 
     const onResize = () => fitAddon.fit();
     window.addEventListener("resize", onResize);
@@ -69,7 +85,7 @@ export function TerminalDrawer() {
       term.dispose();
       xtermRef.current = null;
     };
-  }, []);
+  }, [sessionId, executable]);
 
   return (
     <div 

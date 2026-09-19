@@ -4,7 +4,7 @@ import { usePanelResize } from "./hooks/usePanelResize";
 import { TerminalDrawer } from "./components/TerminalDrawer";
 import { WindowTitlebar } from "./components/WindowTitlebar";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
-import { WorktreeSidebar, type WorktreeSession } from "./components/sidebar/WorktreeSidebar";
+import { WorktreeSidebar, type WorktreeSession, type AvailableAgent } from "./components/sidebar/WorktreeSidebar";
 import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
 import { PairingModal } from "./components/PairingModal";
 import { 
@@ -29,47 +29,33 @@ export default function App() {
   const [status, setStatus] = useState("Initializing...");
   const [promptInput, setPromptInput] = useState("");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
+  const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
 
   // Agent Fleet Sessions (Herdr + Orca style)
   const [sessions, setSessions] = useState<WorktreeSession[]>([
     {
-      id: "sess_1",
-      title: "Refactor terminal pty engine",
-      branch: "feat/pty-vt100",
-      state: "working",
-      active: true,
-      agentName: "Hydra / Claude"
-    },
-    {
-      id: "sess_2",
-      title: "Add SQLite WAL migration",
+      id: "sess_main",
+      title: "Main Terminal Session",
       branch: "main",
       state: "idle",
-      active: false,
-      agentName: "Hydra / Codex"
-    },
-    {
-      id: "sess_3",
-      title: "Review tool approval bounds",
-      branch: "fix/approval-gate",
-      state: "blocked",
-      active: false,
-      agentName: "Hydra / Grok"
+      active: true,
+      agentName: "bash",
+      executable: "bash"
     }
   ]);
 
   // Center Workbench Tabs (Orca style)
   const [tabs, setTabs] = useState<TabItem[]>([
-    { id: "tab_term_1", title: "bash #1 (active)", type: "terminal" },
+    { id: "tab_sess_main", title: "bash (active)", type: "terminal" },
     { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
   ]);
-  const [activeTabId, setActiveTabId] = useState("tab_term_1");
+  const [activeTabId, setActiveTabId] = useState("tab_sess_main");
 
   const [messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
     {
       id: 1,
       role: "agent",
-      content: "Hydra ADE initialized. Workbench surfaces connected to memory-efficient vt100 virtual terminal."
+      content: "Hydra ADE initialized. Live agent discovery active. Click '+' on the left to spawn native agents."
     }
   ]);
 
@@ -92,9 +78,17 @@ export default function App() {
       .then(setStatus)
       .catch(console.error);
 
-    // Live Herdr State Engine polling from the vt100 buffer
+    // Sondagem de agentes instalados no host
+    invoke<AvailableAgent[]>("list_available_agents")
+      .then(setAvailableAgents)
+      .catch(console.error);
+
+    // Monitora periodicamente o buffer vt100 para atualizar o badge de estado da sessão ativa
     const interval = setInterval(() => {
-      invoke<string>("check_agent_state")
+      const currentActive = sessions.find((s) => s.active);
+      if (!currentActive) return;
+
+      invoke<string>("check_agent_state", { sessionId: currentActive.id })
         .then((detectedState) => {
           if (detectedState) {
             setSessions((prev) =>
@@ -104,37 +98,66 @@ export default function App() {
             );
           }
         })
-        .catch(console.error);
+        .catch(() => {});
     }, 1500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [sessions]);
 
   const handleSelectSession = (id: string) => {
     setSessions((prev) =>
       prev.map((s) => ({ ...s, active: s.id === id }))
     );
+    // Assegura que há uma aba correspondente
+    const tabId = `tab_${id}`;
+    if (!tabs.some((t) => t.id === tabId)) {
+      const targetSession = sessions.find((s) => s.id === id);
+      setTabs((prev) => [
+        ...prev,
+        { id: tabId, title: `${targetSession?.executable ?? "shell"}`, type: "terminal" }
+      ]);
+    }
+    setActiveTabId(tabId);
   };
 
-  const handleNewSession = () => {
-    const id = `sess_${Date.now()}`;
+  const handleNewSessionWithAgent = (agent: AvailableAgent) => {
+    const id = `sess_${agent.id}_${Date.now().toString().slice(-4)}`;
     const newSession: WorktreeSession = {
       id,
-      title: `Task #${sessions.length + 1}`,
-      branch: "feat/new-agent",
-      state: "idle",
+      title: `${agent.name} Task`,
+      branch: `feat/${agent.id}`,
+      state: "working",
       active: true,
-      agentName: "Hydra Agent"
+      agentName: agent.name,
+      executable: agent.executable
     };
+
     setSessions((prev) => [
       newSession,
       ...prev.map((s) => ({ ...s, active: false }))
+    ]);
+
+    const tabId = `tab_${id}`;
+    setTabs((prev) => [
+      ...prev,
+      { id: tabId, title: `${agent.id} (fleet)`, type: "terminal" }
+    ]);
+    setActiveTabId(tabId);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        role: "agent",
+        content: `Spawned ${agent.name} (${agent.executable}) inside persistent shadow buffer. Monitoring state...`
+      }
     ]);
   };
 
   const handleDeleteSession = (id: string) => {
     if (sessions.length <= 1) return;
     setSessions((prev) => prev.filter((s) => s.id !== id));
+    setTabs((prev) => prev.filter((t) => t.id !== `tab_${id}`));
   };
 
   const handleNewTab = () => {
@@ -157,8 +180,11 @@ export default function App() {
     const text = promptInput;
     setPromptInput("");
 
+    const currentActive = sessions.find((s) => s.active);
+    const sId = currentActive?.id ?? "sess_main";
+
     invoke<number>("save_chat_message", {
-      sessionId: "default",
+      sessionId: sId,
       role: "user",
       content: text
     }).catch(console.error);
@@ -180,7 +206,7 @@ export default function App() {
 
       {/* Main Resizable Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Panel: Worktree / Fleet Manager (Orca Style) */}
+        {/* Left Panel: Worktree / Fleet Manager with Agent Launcher */}
         <aside 
           ref={leftSidebar.containerRef}
           style={{ width: `${leftSidebar.width}px` }}
@@ -188,8 +214,9 @@ export default function App() {
         >
           <WorktreeSidebar 
             sessions={sessions}
+            availableAgents={availableAgents}
             onSelectSession={handleSelectSession}
-            onNewSession={handleNewSession}
+            onNewSessionWithAgent={handleNewSessionWithAgent}
             onDeleteSession={handleDeleteSession}
           />
         </aside>
@@ -204,7 +231,7 @@ export default function App() {
           <div className={`w-[2px] h-full transition-colors ${leftSidebar.isResizing ? "bg-emerald-400" : "group-hover:bg-emerald-400"}`} />
         </div>
 
-        {/* Central Workspace: Full Multi-Tab Workbench */}
+        {/* Central Workspace: Multi-Tab Workbench Surface */}
         <main className="flex-1 flex flex-col bg-[#0c0d0e] min-w-0 overflow-hidden">
           <WorkbenchTabBar 
             tabs={tabs}
@@ -222,7 +249,11 @@ export default function App() {
                 language="rust" 
               />
             ) : (
-              <TerminalDrawer />
+              <TerminalDrawer 
+                key={activeSession?.id ?? "sess_main"}
+                sessionId={activeSession?.id ?? "sess_main"} 
+                executable={activeSession?.executable ?? "bash"}
+              />
             )}
           </div>
         </main>
@@ -307,7 +338,7 @@ export default function App() {
                   onClick={() => {
                     invoke("resolve_tool_approval", {
                       approvalId: "appr_1",
-                      sessionId: "default",
+                      sessionId: activeSession?.id ?? "sess_main",
                       status: "approved"
                     }).catch(console.error);
                   }}
@@ -320,7 +351,7 @@ export default function App() {
                   onClick={() => {
                     invoke("resolve_tool_approval", {
                       approvalId: "appr_1",
-                      sessionId: "default",
+                      sessionId: activeSession?.id ?? "sess_main",
                       status: "rejected"
                     }).catch(console.error);
                   }}

@@ -1,50 +1,61 @@
 use parking_lot::Mutex;
 use portable_pty::{CommandBuilder, NativePtySystem, PtySize, PtySystem};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 
 pub struct TerminalSession {
-    parser: Arc<Mutex<vt100::Parser>>,
-    writer: Arc<Mutex<Box<dyn Write + Send>>>,
+    pub parser: Arc<Mutex<vt100::Parser>>,
+    pub writer: Arc<Mutex<Box<dyn Write + Send>>>,
+    pub agent_id: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TerminalSnapshot {
+    pub session_id: String,
     pub formatted: String,
     pub clean_text: String,
 }
 
 pub struct TerminalManager {
-    pub session: Mutex<Option<TerminalSession>>,
+    pub sessions: Mutex<HashMap<String, TerminalSession>>,
 }
 
 impl TerminalManager {
     pub fn new() -> Self {
         Self {
-            session: Mutex::new(None),
+            sessions: Mutex::new(HashMap::new()),
         }
     }
 
-    pub fn start_shell(&self, app: AppHandle) -> Result<(), String> {
-        let mut guard = self.session.lock();
-        if guard.is_some() {
+    pub fn start_session(
+        &self,
+        session_id: &str,
+        executable: &str,
+        args: Vec<String>,
+        app: AppHandle,
+    ) -> Result<(), String> {
+        let mut guard = self.sessions.lock();
+        if guard.contains_key(session_id) {
             return Ok(());
         }
 
         let pty_system = NativePtySystem::default();
         let pair = pty_system
             .openpty(PtySize {
-                rows: 24,
-                cols: 80,
+                rows: 28,
+                cols: 100,
                 pixel_width: 0,
                 pixel_height: 0,
             })
-            .map_err(|e| format!("Falha ao abrir PTY: {e}"))?;
+            .map_err(|e| format!("Failed to open PTY: {e}"))?;
 
-        let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/bash".to_string());
-        let mut cmd = CommandBuilder::new(shell);
+        let mut cmd = CommandBuilder::new(executable);
+        for arg in args {
+            cmd.arg(arg);
+        }
         if let Ok(dir) = std::env::current_dir() {
             cmd.cwd(dir);
         }
@@ -52,22 +63,22 @@ impl TerminalManager {
         let _child = pair
             .slave
             .spawn_command(cmd)
-            .map_err(|e| format!("Falha ao iniciar processo do shell: {e}"))?;
+            .map_err(|e| format!("Failed to spawn executable '{executable}': {e}"))?;
 
         let writer = pair
             .master
             .take_writer()
-            .map_err(|e| format!("Falha ao obter canal de escrita PTY: {e}"))?;
+            .map_err(|e| format!("Failed to get PTY writer: {e}"))?;
 
         let mut reader = pair
             .master
             .try_clone_reader()
-            .map_err(|e| format!("Falha ao obter canal de leitura PTY: {e}"))?;
+            .map_err(|e| format!("Failed to get PTY reader: {e}"))?;
 
-        let parser = Arc::new(Mutex::new(vt100::Parser::new(24, 80, 2000)));
+        let parser = Arc::new(Mutex::new(vt100::Parser::new(28, 100, 3000)));
         let parser_clone = Arc::clone(&parser);
+        let s_id = session_id.to_string();
 
-        // Thread dedicada de leitura assíncrona do PTY para alimentar o buffer vt100
         std::thread::spawn(move || {
             let mut buf = [0u8; 4096];
             while let Ok(n) = reader.read(&mut buf) {
@@ -75,56 +86,73 @@ impl TerminalManager {
                     break;
                 }
                 let chunk = &buf[..n];
-
-                // Alimenta o buffer virtual em memória (zero rendering overhead)
                 {
                     let mut p = parser_clone.lock();
                     p.process(chunk);
                 }
 
-                // Emite evento leve para o frontend saber que há novos bytes
-                let _ = app.emit("terminal:output", String::from_utf8_lossy(chunk).to_string());
+                #[derive(Serialize, Clone)]
+                struct OutputPayload {
+                    session_id: String,
+                    output: String,
+                }
+
+                let _ = app.emit(
+                    "terminal:output",
+                    OutputPayload {
+                        session_id: s_id.clone(),
+                        output: String::from_utf8_lossy(chunk).to_string(),
+                    },
+                );
             }
         });
 
-        *guard = Some(TerminalSession {
-            parser,
-            writer: Arc::new(Mutex::new(writer)),
-        });
+        guard.insert(
+            session_id.to_string(),
+            TerminalSession {
+                parser,
+                writer: Arc::new(Mutex::new(writer)),
+                agent_id: executable.to_string(),
+            },
+        );
 
         Ok(())
     }
 
-    pub fn write_input(&self, input: &str) -> Result<(), String> {
-        let guard = self.session.lock();
-        if let Some(sess) = guard.as_ref() {
+    pub fn write_input(&self, session_id: &str, input: &str) -> Result<(), String> {
+        let guard = self.sessions.lock();
+        if let Some(sess) = guard.get(session_id) {
             let mut w = sess.writer.lock();
             w.write_all(input.as_bytes())
-                .map_err(|e| format!("Falha ao escrever no terminal: {e}"))?;
-            w.flush().map_err(|e| format!("Falha no flush do terminal: {e}"))?;
+                .map_err(|e| format!("Failed to write to terminal: {e}"))?;
+            w.flush().map_err(|e| format!("Failed to flush terminal: {e}"))?;
             Ok(())
         } else {
-            Err("Nenhuma sessão de terminal ativa".to_string())
+            Err(format!("No active terminal session for ID '{session_id}'"))
         }
     }
 
-    pub fn get_snapshot(&self) -> Result<TerminalSnapshot, String> {
-        let guard = self.session.lock();
-        if let Some(sess) = guard.as_ref() {
+    pub fn get_snapshot(&self, session_id: &str) -> Result<TerminalSnapshot, String> {
+        let guard = self.sessions.lock();
+        if let Some(sess) = guard.get(session_id) {
             let p = sess.parser.lock();
             let screen = p.screen();
             
-            // Texto formatado com ANSI para o xterm.js da UI
             let formatted = String::from_utf8_lossy(&screen.contents_formatted()).to_string();
-            // Texto limpo sem sequências ANSI para contexto de IA/LLM (economia de tokens)
             let clean_text = screen.contents();
 
             Ok(TerminalSnapshot {
+                session_id: session_id.to_string(),
                 formatted,
                 clean_text,
             })
         } else {
-            Err("Nenhuma sessão de terminal ativa".to_string())
+            Err(format!("No active terminal session for ID '{session_id}'"))
         }
+    }
+
+    pub fn close_session(&self, session_id: &str) {
+        let mut guard = self.sessions.lock();
+        guard.remove(session_id);
     }
 }

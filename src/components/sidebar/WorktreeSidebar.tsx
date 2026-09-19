@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   GitBranch, 
   Plus, 
   Trash2, 
-  FolderGit2
+  FolderGit2,
+  ChevronDown
 } from "lucide-react";
+
+export interface AvailableAgent {
+  id: string;
+  name: string;
+  executable: string;
+  is_installed: boolean;
+}
 
 export interface WorktreeSession {
   id: string;
@@ -13,29 +21,44 @@ export interface WorktreeSession {
   state: "working" | "blocked" | "idle" | "unknown";
   active: boolean;
   agentName: string;
+  executable: string;
 }
 
 interface WorktreeSidebarProps {
   sessions: WorktreeSession[];
+  availableAgents: AvailableAgent[];
   onSelectSession: (id: string) => void;
-  onNewSession: () => void;
+  onNewSessionWithAgent: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
 }
 
 export function WorktreeSidebar({
   sessions,
+  availableAgents,
   onSelectSession,
-  onNewSession,
+  onNewSessionWithAgent,
   onDeleteSession,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener("mousedown", handleClickOutside);
+    return () => window.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const filtered = sessions.filter(
     (s) => s.title.toLowerCase().includes(filter.toLowerCase()) || s.branch.toLowerCase().includes(filter.toLowerCase())
   );
 
   return (
-    <div className="flex flex-col h-full bg-[#0e0f11] select-none">
+    <div className="flex flex-col h-full bg-[#0e0f11] select-none relative">
       {/* Repository / Project Header (Orca Style) */}
       <div className="h-9 border-b border-[#222] px-3 flex items-center justify-between bg-[#111214] shrink-0">
         <div className="flex items-center gap-2 min-w-0">
@@ -45,13 +68,47 @@ export function WorktreeSidebar({
             main
           </span>
         </div>
-        <button
-          onClick={onNewSession}
-          title="New Task / Fleet Session (+)"
-          className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition shrink-0"
-        >
-          <Plus className="w-4 h-4 text-emerald-400" />
-        </button>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            title="Launch Agent Fleet (+)"
+            className="flex items-center gap-0.5 p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition shrink-0"
+          >
+            <Plus className="w-4 h-4 text-emerald-400" />
+            <ChevronDown className="w-2.5 h-2.5 text-neutral-500" />
+          </button>
+
+          {/* Dropdown Menu de Agentes Detectados no Host */}
+          {isMenuOpen && (
+            <div className="absolute right-0 top-7 w-48 rounded-lg bg-[#141518] border border-[#26272b] p-1.5 shadow-2xl z-50 text-xs space-y-0.5">
+              <div className="px-2 py-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
+                Detected Agents
+              </div>
+              {availableAgents.map((agent) => (
+                <button
+                  key={agent.id}
+                  disabled={!agent.is_installed}
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onNewSessionWithAgent(agent);
+                  }}
+                  className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-left transition ${
+                    agent.is_installed
+                      ? "hover:bg-neutral-800 text-neutral-200 cursor-pointer"
+                      : "opacity-40 cursor-not-allowed text-neutral-500"
+                  }`}
+                >
+                  <span className="truncate">{agent.name}</span>
+                  {agent.is_installed ? (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  ) : (
+                    <span className="text-[9px] text-neutral-600 font-mono">missing</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Filter / Search Worktrees */}
@@ -82,7 +139,6 @@ export function WorktreeSidebar({
                   : "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-900 hover:text-neutral-300"
               }`}
             >
-              {/* Active selection accent */}
               {session.active && (
                 <div className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-emerald-500 rounded-r" />
               )}
@@ -94,7 +150,6 @@ export function WorktreeSidebar({
                   </span>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  {/* Herdr State Badge */}
                   <span
                     className={`w-2 h-2 rounded-full shrink-0 ${
                       session.state === "working"
@@ -117,7 +172,6 @@ export function WorktreeSidebar({
                 </div>
               </div>
 
-              {/* Sub-info: Branch + Agent Name */}
               <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
                 <span className="flex items-center gap-1 truncate">
                   <GitBranch className="w-2.5 h-2.5" />

@@ -2,12 +2,14 @@ use std::sync::Arc;
 use tauri::{AppHandle, State};
 use tauri_plugin_window_state::StateFlags;
 
+pub mod agent_discovery;
 pub mod agent_state;
 pub mod db;
 pub mod pairing;
 pub mod terminal;
 pub mod window_actions;
 
+use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
 use db::{ChatMessage, DatabaseManager, ToolApprovalRecord};
 use pairing::{PairingManager, PairingPayload};
@@ -25,30 +27,52 @@ fn get_system_status() -> String {
 }
 
 #[tauri::command]
-fn start_terminal_session(state: State<'_, AppState>, app: AppHandle) -> Result<(), String> {
-    state.terminal.start_shell(app)
+fn list_available_agents() -> Vec<AvailableAgent> {
+    probe_available_agents()
 }
 
 #[tauri::command]
-fn send_terminal_input(input: String, state: State<'_, AppState>) -> Result<(), String> {
-    state.terminal.write_input(&input)
+fn start_agent_terminal(
+    session_id: String,
+    executable: String,
+    args: Vec<String>,
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state.terminal.start_session(&session_id, &executable, args, app)
 }
 
 #[tauri::command]
-fn get_terminal_snapshot(state: State<'_, AppState>) -> Result<TerminalSnapshot, String> {
-    state.terminal.get_snapshot()
+fn send_terminal_input(
+    session_id: String,
+    input: String,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state.terminal.write_input(&session_id, &input)
 }
 
 #[tauri::command]
-fn check_agent_state(state: State<'_, AppState>) -> Result<String, String> {
-    let snapshot = state.terminal.get_snapshot()?;
+fn get_terminal_snapshot(
+    session_id: String,
+    state: State<'_, AppState>,
+) -> Result<TerminalSnapshot, String> {
+    state.terminal.get_snapshot(&session_id)
+}
+
+#[tauri::command]
+fn check_agent_state(session_id: String, state: State<'_, AppState>) -> Result<String, String> {
+    let snapshot = state.terminal.get_snapshot(&session_id)?;
     let detected = detect_agent_state(&snapshot.clean_text);
     Ok(detected.as_str().to_string())
 }
 
 #[tauri::command]
-fn get_folded_logs(state: State<'_, AppState>, max_lines: usize) -> Result<String, String> {
-    let snapshot = state.terminal.get_snapshot()?;
+fn get_folded_logs(
+    session_id: String,
+    max_lines: usize,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let snapshot = state.terminal.get_snapshot(&session_id)?;
     Ok(fold_terminal_output(&snapshot.clean_text, max_lines))
 }
 
@@ -123,7 +147,8 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![
             get_system_status,
-            start_terminal_session,
+            list_available_agents,
+            start_agent_terminal,
             send_terminal_input,
             get_terminal_snapshot,
             check_agent_state,
