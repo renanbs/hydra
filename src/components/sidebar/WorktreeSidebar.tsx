@@ -11,7 +11,6 @@ import {
   FolderPlus,
   MoreHorizontal,
   SlidersHorizontal,
-  Bell,
   Sliders,
   Copy,
   FolderTree
@@ -57,10 +56,9 @@ export interface GitRepoStatus {
   is_clean: boolean;
   head_commit: string;
 }
-
 interface WorktreeSidebarProps {
   sessions: WorktreeSession[];
-  availableAgents: AvailableAgent[];
+  availableAgents?: AvailableAgent[];
   projects: HydraProject[];
   activeProject: HydraProject | null;
   gitStatus: GitRepoStatus | null;
@@ -70,17 +68,16 @@ interface WorktreeSidebarProps {
   onSelectSession: (id: string) => void;
   onSelectGitWorktree: (wt: GitWorktreeInfo) => void;
   onDeleteGitWorktree: (wt: GitWorktreeInfo) => void;
-  onNewSessionWithAgent: (agent: AvailableAgent) => void;
+  onNewSessionWithAgent?: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;
   onOpenAddRepoDialog: () => void;
-  onOpenNewWorkspaceModal: () => void;
+  onOpenNewWorkspaceModal: (proj?: HydraProject) => void;
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
 }
 
 export function WorktreeSidebar({
   sessions,
-  availableAgents,
   projects,
   activeProject,
   gitStatus,
@@ -90,7 +87,6 @@ export function WorktreeSidebar({
   onSelectSession,
   onSelectGitWorktree,
   onDeleteGitWorktree,
-  onNewSessionWithAgent,
   onDeleteSession,
   onOpenSettings,
   onOpenAddRepoDialog,
@@ -100,13 +96,11 @@ export function WorktreeSidebar({
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
   const [activeProjectMenuId, setActiveProjectMenuId] = useState<string | null>(null);
-  const [agentMenuProjectId, setAgentMenuProjectId] = useState<string | null>(null);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = () => {
       setActiveProjectMenuId(null);
-      setAgentMenuProjectId(null);
       setOptionsMenuOpen(false);
     };
     window.addEventListener("click", handleClickOutside);
@@ -139,20 +133,13 @@ export function WorktreeSidebar({
         </div>
       </div>
 
-      {/* 2. PROJECTS HEADER (Orca SidebarHeader.tsx: 'Projects' + Bell + SlidersHorizontal + FolderPlus) */}
+      {/* 2. PROJECTS HEADER (Orca SidebarHeader.tsx: 'Projects' + SlidersHorizontal + FolderPlus) */}
       <div className="mt-2.5 flex h-7 min-w-0 items-center justify-between px-3 shrink-0">
         <span className="select-none text-[11px] font-semibold text-neutral-400/90 tracking-wider">
           Projects
         </span>
 
         <div className="flex shrink-0 items-center gap-0.5">
-          <button
-            title="Activity notifications"
-            className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-800/60 transition cursor-pointer"
-          >
-            <Bell className="w-3.5 h-3.5" />
-          </button>
-          
           {/* Orca SidebarWorkspaceOptionsMenu */}
           <div className="relative">
             <button
@@ -260,7 +247,7 @@ export function WorktreeSidebar({
 
                   {/* Right Cluster: Chevron Toggle | Options Ellipsis '...' | Plus '+' */}
                   <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    {/* SETA 1: Collapse/Expand Chevron */}
+                    {/* ARROW 1: Collapse/Expand Chevron */}
                     <button
                       onClick={() => toggleProjectCollapse(proj.id)}
                       title={isCollapsed ? "Expand workspaces" : "Collapse workspaces"}
@@ -273,7 +260,7 @@ export function WorktreeSidebar({
                       )}
                     </button>
 
-                    {/* SETA 2: Project Actions Menu ('...') -> 100% Orca RepoHeaderProjectActionsMenu */}
+                    {/* ARROW 2: Project Actions Menu ('...') */}
                     <div className="relative">
                       <button
                         onClick={(e) => {
@@ -288,7 +275,6 @@ export function WorktreeSidebar({
                         <MoreHorizontal className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Dropdown 100% identico ao Orca RepoHeaderProjectActionsMenu */}
                       {isMenuOpen && (
                         <div 
                           className="absolute right-0 top-7 w-56 rounded-xl bg-[#141518] border border-[#28292e] p-1.5 shadow-2xl z-50 text-xs space-y-0.5"
@@ -301,7 +287,7 @@ export function WorktreeSidebar({
                             }}
                             className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
                           >
-                            <SlidersHorizontal className="w-3.5 h-3.5 text-neutral-400" />
+                            <Sliders className="w-3.5 h-3.5 text-neutral-400" />
                             <span className="text-[11px]">Project Settings</span>
                           </button>
 
@@ -319,7 +305,7 @@ export function WorktreeSidebar({
                           <button
                             onClick={() => {
                               setActiveProjectMenuId(null);
-                              onOpenNewWorkspaceModal();
+                              onOpenNewWorkspaceModal(proj);
                             }}
                             className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
                           >
@@ -343,70 +329,21 @@ export function WorktreeSidebar({
                       )}
                     </div>
 
-                    {/* SETA 3: Create Workspace '+' -> 100% Orca RepoHeaderCreateWorkspaceButton */}
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectProject(proj);
-                          setAgentMenuProjectId(agentMenuProjectId === proj.id ? null : proj.id);
-                        }}
-                        title={`Create workspace for ${proj.name}`}
-                        className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5 text-emerald-400" />
-                      </button>
-
-                      {agentMenuProjectId === proj.id && (
-                        <div 
-                          className="absolute right-0 top-7 w-52 rounded-xl bg-[#141518] border border-[#28292e] p-1.5 shadow-2xl z-50 text-xs space-y-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            onClick={() => {
-                              setAgentMenuProjectId(null);
-                              onOpenNewWorkspaceModal();
-                            }}
-                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-800 text-emerald-400 text-left transition cursor-pointer font-medium"
-                          >
-                            <GitBranch className="w-3.5 h-3.5" />
-                            <span>New Worktree Branch...</span>
-                          </button>
-
-                          <div className="h-px bg-[#222327] my-1" />
-
-                          <div className="px-2 py-0.5 text-[9px] uppercase font-bold text-neutral-500 tracking-wider">
-                            Spawn with Agent
-                          </div>
-                          {availableAgents.map((agent) => (
-                            <button
-                              key={agent.id}
-                              disabled={!agent.is_installed}
-                              onClick={() => {
-                                setAgentMenuProjectId(null);
-                                onNewSessionWithAgent(agent);
-                              }}
-                              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-left transition ${
-                                agent.is_installed
-                                  ? "hover:bg-neutral-800 text-neutral-200 cursor-pointer"
-                                  : "opacity-40 cursor-not-allowed text-neutral-500"
-                              }`}
-                            >
-                              <span className="truncate">{agent.name}</span>
-                              {agent.is_installed ? (
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                              ) : (
-                                <span className="text-[9px] text-neutral-600 font-mono">missing</span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    {/* ARROW 3: Create Workspace '+' -> Abre DIRETAMENTE a janela do Orca NewWorkspaceComposer */}
+                    <button
+                      onClick={() => {
+                        onSelectProject(proj);
+                        onOpenNewWorkspaceModal(proj);
+                      }}
+                      title={`New workspace for ${proj.name}`}
+                      className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-emerald-400" />
+                    </button>
                   </div>
                 </div>
 
-                {/* WORKTREE ROWS ANINHADAS DENTRO DO PROJETO (100% Orca WorktreeCardSurface) */}
+                {/* WORKTREE ROWS ANINHADAS DENTRO DO PROJETO */}
                 {!isCollapsed && (
                   <div className="pl-3.5 ml-2 border-l border-[#202126] space-y-1 pt-0.5">
                     {/* Worktrees reais do Git no disco */}

@@ -52,7 +52,8 @@ export function WorkbenchTabBar({
 
   return (
     <div className="h-8 border-b border-[#222] bg-[#111214] flex items-center px-1 select-none overflow-x-auto shrink-0">
-      <div className="flex items-center gap-1 flex-1 overflow-x-auto no-scrollbar">
+      {/* Abas e botão '+' posicionado imediatamente após a última aba (Orca Style) */}
+      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
           const isEditing = tab.id === editingTabId;
@@ -102,7 +103,7 @@ export function WorkbenchTabBar({
                     onCloseTab(tab.id);
                   }}
                   title="Close tab"
-                  className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-neutral-700 text-neutral-400 hover:text-white transition"
+                  className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-neutral-700 text-neutral-400 hover:text-white transition cursor-pointer"
                 >
                   <X className="w-2.5 h-2.5" />
                 </button>
@@ -110,15 +111,19 @@ export function WorkbenchTabBar({
             </div>
           );
         })}
+
+        {/* Botão de Nova Aba (+) grudado ao lado direito da última aba */}
+        <button
+          onClick={onNewTab}
+          title="New Terminal Tab (+)"
+          className="flex items-center justify-center w-6 h-6 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition ml-0.5 cursor-pointer shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      <button
-        onClick={onNewTab}
-        title="New Terminal (+)"
-        className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition ml-1 shrink-0"
-      >
-        <Plus className="w-3.5 h-3.5" />
-      </button>
+      {/* Espaço restante vazio da barra de abas */}
+      <div className="flex-1 h-full" />
     </div>
   );
 }

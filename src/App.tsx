@@ -18,7 +18,7 @@ import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraSettings } from "./components/SettingsModal";
 import { CommandPalette } from "./components/CommandPalette";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
-import { AddProjectOrWorktreeModal } from "./components/AddProjectOrWorktreeModal";
+import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { 
   Bot, 
   Play, 
@@ -68,7 +68,7 @@ export default function App() {
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
@@ -373,47 +373,40 @@ export default function App() {
       .catch(console.error);
   };
 
-  const handleCreatedItem = (type: "project" | "worktree", path: string) => {
-    if (type === "worktree") {
-      if (activeProject) refreshGitWorktrees(activeProject.path);
-      const branchName = path.split("-").pop() ?? "feature";
-      const id = `sess_wt_${Date.now().toString().slice(-4)}`;
-      const newSession: WorktreeSession = {
-        id,
+  const handleCreatedWorkspace = (worktreePath: string, agentName: string, executable: string) => {
+    if (activeProject) refreshGitWorktrees(activeProject.path);
+    const branchName = worktreePath.split("-").pop() ?? "feature";
+    const id = `sess_wt_${Date.now().toString().slice(-4)}`;
+    const newSession: WorktreeSession = {
+      id,
+      project_path: activeProject?.path ?? "",
+      title: `${branchName}`,
+      branch: branchName,
+      state: "working",
+      active: true,
+      agentName,
+      executable,
+    };
+    setSessions((prev) => [
+      newSession,
+      ...prev.map((s) => ({ ...s, active: false }))
+    ]);
+    invoke("save_session_record", {
+      record: {
+        id: newSession.id,
         project_path: activeProject?.path ?? "",
-        title: `Worktree: ${branchName}`,
-        branch: branchName,
-        state: "idle",
-        active: true,
-        agentName: "bash",
-        executable: "bash",
-      };
-      setSessions((prev) => [
-        newSession,
-        ...prev.map((s) => ({ ...s, active: false }))
-      ]);
-      invoke("save_session_record", {
-        record: {
-          id: newSession.id,
-          project_path: activeProject?.path ?? "",
-          title: newSession.title,
-          branch: newSession.branch,
-          agent_name: newSession.agentName,
-          executable: newSession.executable,
-          created_at: Date.now(),
-          updated_at: Date.now(),
-        }
-      }).catch(console.error);
-      const tabId = `tab_${id}`;
-      setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (wt)`, type: "terminal" }]);
-      setActiveTabId(tabId);
-    } else {
-      invoke<HydraProject[]>("list_projects").then((projs) => {
-        setProjects(projs);
-        const created = projs.find((p) => p.path === path);
-        if (created) handleSelectProject(created);
-      }).catch(console.error);
-    }
+        title: newSession.title,
+        branch: newSession.branch,
+        agent_name: newSession.agentName,
+        executable: newSession.executable,
+        created_at: Date.now(),
+        updated_at: Date.now(),
+      }
+    }).catch(console.error);
+
+    const tabId = `tab_${id}`;
+    setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (fleet)`, type: "terminal" }]);
+    setActiveTabId(tabId);
   };
 
   const handleSelectSession = (id: string) => {
@@ -429,54 +422,6 @@ export default function App() {
       ]);
     }
     setActiveTabId(tabId);
-  };
-
-  const handleNewSessionWithAgent = (agent: AvailableAgent) => {
-    const id = `sess_${agent.id}_${Date.now().toString().slice(-4)}`;
-    const newSession: WorktreeSession = {
-      id,
-      project_path: activeProject?.path ?? "",
-      title: `${agent.name} Task`,
-      branch: `feat/${agent.id}`,
-      state: "working",
-      active: true,
-      agentName: agent.name,
-      executable: agent.executable
-    };
-
-    invoke("save_session_record", {
-      record: {
-        id: newSession.id,
-        project_path: activeProject?.path ?? "",
-        title: newSession.title,
-        branch: newSession.branch,
-        agent_name: newSession.agentName,
-        executable: newSession.executable,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      }
-    }).catch(console.error);
-
-    setSessions((prev) => [
-      newSession,
-      ...prev.map((s) => ({ ...s, active: false }))
-    ]);
-
-    const tabId = `tab_${id}`;
-    setTabs((prev) => [
-      ...prev,
-      { id: tabId, title: `${agent.id} (fleet)`, type: "terminal" }
-    ]);
-    setActiveTabId(tabId);
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        role: "agent",
-        content: `Spawned ${agent.name} (${agent.executable}) inside persistent shadow buffer. Monitoring state...`
-      }
-    ]);
   };
 
   const handleDeleteSession = (id: string) => {
@@ -706,11 +651,14 @@ export default function App() {
                 onSelectSession={handleSelectSession}
                 onSelectGitWorktree={handleSelectGitWorktree}
                 onDeleteGitWorktree={handleDeleteGitWorktree}
-                onNewSessionWithAgent={handleNewSessionWithAgent}
+                onNewSessionWithAgent={() => {}}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
-                onOpenNewWorkspaceModal={() => setIsCreateModalOpen(true)}
+                onOpenNewWorkspaceModal={(proj) => {
+                  if (proj) handleSelectProject(proj);
+                  setIsNewWorkspaceOpen(true);
+                }}
                 onSessionContextMenu={handleSessionContextMenu}
               />
             </aside>
@@ -925,12 +873,14 @@ export default function App() {
         }}
       />
 
-      {/* Add Worktree / Workspace Modal */}
-      <AddProjectOrWorktreeModal
-        isOpen={isCreateModalOpen}
+      {/* Orca 100% New Workspace Composer Modal */}
+      <NewWorkspaceComposer
+        isOpen={isNewWorkspaceOpen}
+        activeProjectName={activeProject?.name ?? "hydra"}
         activeRepoPath={activeProject?.path ?? "/home/renan/src/hydra"}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreated={handleCreatedItem}
+        availableAgents={availableAgents}
+        onClose={() => setIsNewWorkspaceOpen(false)}
+        onCreated={handleCreatedWorkspace}
       />
 
       {/* Mobile Companion Pairing Modal */}
