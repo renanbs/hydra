@@ -15,6 +15,7 @@ pub struct ChatMessage {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DbSessionRecord {
     pub id: String,
+    pub project_path: String,
     pub title: String,
     pub branch: String,
     pub agent_name: String,
@@ -77,6 +78,7 @@ impl DatabaseManager {
 
              CREATE TABLE IF NOT EXISTS sessions (
                  id TEXT PRIMARY KEY,
+                 project_path TEXT NOT NULL DEFAULT '',
                  title TEXT NOT NULL,
                  branch TEXT NOT NULL DEFAULT 'main',
                  agent_name TEXT NOT NULL DEFAULT 'bash',
@@ -110,6 +112,11 @@ impl DatabaseManager {
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
 
+        let _ = conn.execute("ALTER TABLE sessions ADD COLUMN project_path TEXT NOT NULL DEFAULT ''", params![]);
+        let _ = conn.execute("ALTER TABLE sessions ADD COLUMN branch TEXT NOT NULL DEFAULT 'main'", params![]);
+        let _ = conn.execute("ALTER TABLE sessions ADD COLUMN agent_name TEXT NOT NULL DEFAULT 'bash'", params![]);
+        let _ = conn.execute("ALTER TABLE sessions ADD COLUMN executable TEXT NOT NULL DEFAULT 'bash'", params![]);
+
         Ok(Self {
             conn: Mutex::new(conn),
         })
@@ -122,41 +129,67 @@ impl DatabaseManager {
         Ok(dir.join("hydra_sessions.sqlite3"))
     }
 
-    pub fn list_sessions(&self) -> Result<Vec<DbSessionRecord>, String> {
+    pub fn list_sessions(&self, project_path: Option<&str>) -> Result<Vec<DbSessionRecord>, String> {
         let conn = self.conn.lock();
-        let mut stmt = conn
-            .prepare("SELECT id, title, branch, agent_name, executable, created_at, updated_at FROM sessions ORDER BY updated_at DESC")
-            .map_err(|e| format!("Error preparing sessions select: {e}"))?;
 
+        let mut list = Vec::new();
+        if let Some(p) = project_path {
+            if !p.is_empty() {
+                let mut stmt = conn
+                    .prepare("SELECT id, project_path, title, branch, agent_name, executable, created_at, updated_at FROM sessions WHERE project_path = ?1 OR project_path = '' ORDER BY updated_at DESC")
+                    .map_err(|e| format!("Error preparing sessions select: {e}"))?;
+                let rows = stmt
+                    .query_map(params![p], |row| {
+                        Ok(DbSessionRecord {
+                            id: row.get(0)?,
+                            project_path: row.get(1)?,
+                            title: row.get(2)?,
+                            branch: row.get(3)?,
+                            agent_name: row.get(4)?,
+                            executable: row.get(5)?,
+                            created_at: row.get(6)?,
+                            updated_at: row.get(7)?,
+                        })
+                    })
+                    .map_err(|e| format!("Query error: {e}"))?;
+                for r in rows.flatten() {
+                    list.push(r);
+                }
+                return Ok(list);
+            }
+        }
+
+        let mut stmt = conn
+            .prepare("SELECT id, project_path, title, branch, agent_name, executable, created_at, updated_at FROM sessions ORDER BY updated_at DESC")
+            .map_err(|e| format!("Error preparing sessions select: {e}"))?;
         let rows = stmt
             .query_map(params![], |row| {
                 Ok(DbSessionRecord {
                     id: row.get(0)?,
-                    title: row.get(1)?,
-                    branch: row.get(2)?,
-                    agent_name: row.get(3)?,
-                    executable: row.get(4)?,
-                    created_at: row.get(5)?,
-                    updated_at: row.get(6)?,
+                    project_path: row.get(1)?,
+                    title: row.get(2)?,
+                    branch: row.get(3)?,
+                    agent_name: row.get(4)?,
+                    executable: row.get(5)?,
+                    created_at: row.get(6)?,
+                    updated_at: row.get(7)?,
                 })
             })
             .map_err(|e| format!("Query error: {e}"))?;
-
-        let mut list = Vec::new();
-        for r in rows {
-            if let Ok(sess) = r {
-                list.push(sess);
-            }
+        for r in rows.flatten() {
+            list.push(r);
         }
+
         Ok(list)
     }
 
     pub fn upsert_session(&self, record: &DbSessionRecord) -> Result<(), String> {
         let conn = self.conn.lock();
         conn.execute(
-            "INSERT INTO sessions (id, title, branch, agent_name, executable, created_at, updated_at) 
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+            "INSERT INTO sessions (id, project_path, title, branch, agent_name, executable, created_at, updated_at) 
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
              ON CONFLICT(id) DO UPDATE SET 
+             project_path = excluded.project_path,
              title = excluded.title,
              branch = excluded.branch,
              agent_name = excluded.agent_name,
@@ -164,6 +197,7 @@ impl DatabaseManager {
              updated_at = excluded.updated_at",
             params![
                 record.id,
+                record.project_path,
                 record.title,
                 record.branch,
                 record.agent_name,
@@ -188,8 +222,8 @@ impl DatabaseManager {
         let now = chrono_now();
 
         let _ = conn.execute(
-            "INSERT OR IGNORE INTO sessions (id, title, branch, agent_name, executable, created_at, updated_at) 
-             VALUES (?1, ?2, 'main', 'bash', 'bash', ?3, ?3)",
+            "INSERT OR IGNORE INTO sessions (id, project_path, title, branch, agent_name, executable, created_at, updated_at) 
+             VALUES (?1, '', ?2, 'main', 'bash', 'bash', ?3, ?3)",
             params![session_id, "Main Session", now],
         );
 

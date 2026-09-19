@@ -66,8 +66,11 @@ fn list_available_agents() -> Vec<AvailableAgent> {
 }
 
 #[tauri::command]
-fn list_persisted_sessions(state: State<'_, AppState>) -> Result<Vec<DbSessionRecord>, String> {
-    state.db.list_sessions()
+fn list_persisted_sessions(
+    project_path: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<Vec<DbSessionRecord>, String> {
+    state.db.list_sessions(project_path.as_deref())
 }
 
 #[tauri::command]

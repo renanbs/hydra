@@ -39,6 +39,7 @@ const MOCK_MODIFIED = `fn main() {
 
 interface DbSessionRecord {
   id: string;
+  project_path: string;
   title: string;
   branch: string;
   agent_name: string;
@@ -144,7 +145,10 @@ export default function App() {
     invoke<HydraProject[]>("list_projects")
       .then((projs) => {
         setProjects(projs);
-        if (projs.length > 0) setActiveProject(projs[0]);
+        if (projs.length > 0) {
+          setActiveProject(projs[0]);
+          loadSessionsForProject(projs[0].path);
+        }
       })
       .catch(console.error);
 
@@ -155,8 +159,10 @@ export default function App() {
     invoke<GitRepoStatus>("get_repo_git_status")
       .then(setGitStatus)
       .catch(console.error);
+  }, []);
 
-    invoke<DbSessionRecord[]>("list_persisted_sessions")
+  const loadSessionsForProject = (projectPath: string) => {
+    invoke<DbSessionRecord[]>("list_persisted_sessions", { projectPath })
       .then((persisted) => {
         if (persisted && persisted.length > 0) {
           const loaded: WorktreeSession[] = persisted.map((p, idx) => ({
@@ -177,7 +183,7 @@ export default function App() {
           setActiveTabId(firstTabId);
         } else {
           const defaultSession: WorktreeSession = {
-            id: "sess_main",
+            id: `sess_main_${Date.now().toString().slice(-4)}`,
             title: "Main Terminal Session",
             branch: "main",
             state: "idle",
@@ -189,6 +195,7 @@ export default function App() {
           invoke("save_session_record", {
             record: {
               id: defaultSession.id,
+              project_path: projectPath,
               title: defaultSession.title,
               branch: defaultSession.branch,
               agent_name: defaultSession.agentName,
@@ -197,10 +204,16 @@ export default function App() {
               updated_at: Date.now(),
             }
           }).catch(console.error);
+          const firstTabId = `tab_${defaultSession.id}`;
+          setTabs([
+            { id: firstTabId, title: "bash (active)", type: "terminal" },
+            { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
+          ]);
+          setActiveTabId(firstTabId);
         }
       })
       .catch(console.error);
-  }, []);
+  };
 
   // Live polling of Herdr state engine
   useEffect(() => {
@@ -226,12 +239,13 @@ export default function App() {
 
   const handleSelectProject = (proj: HydraProject) => {
     setActiveProject(proj);
+    loadSessionsForProject(proj.path);
     setMessages((prev) => [
       ...prev,
       {
         id: Date.now(),
         role: "agent",
-        content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
+        content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}". Loaded persistent sessions from SQLite.`
       }
     ]);
   };
@@ -256,6 +270,7 @@ export default function App() {
       invoke("save_session_record", {
         record: {
           id: newSession.id,
+          project_path: activeProject?.path ?? "",
           title: newSession.title,
           branch: newSession.branch,
           agent_name: newSession.agentName,
@@ -268,7 +283,11 @@ export default function App() {
       setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (wt)`, type: "terminal" }]);
       setActiveTabId(tabId);
     } else {
-      invoke<HydraProject[]>("list_projects").then(setProjects).catch(console.error);
+      invoke<HydraProject[]>("list_projects").then((projs) => {
+        setProjects(projs);
+        const created = projs.find((p) => p.path === path);
+        if (created) handleSelectProject(created);
+      }).catch(console.error);
     }
   };
 
@@ -302,6 +321,7 @@ export default function App() {
     invoke("save_session_record", {
       record: {
         id: newSession.id,
+        project_path: activeProject?.path ?? "",
         title: newSession.title,
         branch: newSession.branch,
         agent_name: newSession.agentName,
@@ -469,6 +489,7 @@ export default function App() {
               invoke("save_session_record", {
                 record: {
                   id: updated.id,
+                  project_path: activeProject?.path ?? "",
                   title: updated.title,
                   branch: updated.branch,
                   agent_name: updated.agentName,
