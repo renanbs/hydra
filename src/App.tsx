@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { usePanelResize } from "./hooks/usePanelResize";
 import { TerminalDrawer } from "./components/TerminalDrawer";
+import { WindowTitlebar } from "./components/WindowTitlebar";
 import { 
   Bot, 
   Terminal, 
@@ -10,13 +11,18 @@ import {
   CheckCircle2, 
   ShieldCheck, 
   ChevronRight,
-  Sparkles,
-  Smartphone
+  Sparkles
 } from "lucide-react";
 import "./App.css";
 
 export default function App() {
   const [status, setStatus] = useState("Iniciando...");
+
+  useEffect(() => {
+    invoke<string>("get_system_status")
+      .then(setStatus)
+      .catch(console.error);
+  }, []);
 
   const leftSidebar = usePanelResize({
     initialWidth: 240,
@@ -32,33 +38,10 @@ export default function App() {
     deltaSign: -1,
   });
 
-  useEffect(() => {
-    invoke<string>("get_system_status")
-      .then(setStatus)
-      .catch((err) => setStatus("Erro: " + String(err)));
-  }, []);
-
   return (
     <div className="flex flex-col h-screen w-screen bg-[#0c0d0e] text-[#ededed] font-sans antialiased select-none overflow-hidden">
-      {/* Top Navigation Bar */}
-      <header className="h-10 border-b border-[#222] px-3 flex items-center justify-between text-xs bg-[#111214] shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-semibold text-neutral-200 tracking-wider">HYDRA ADE</span>
-          <span className="text-neutral-500">|</span>
-          <span className="text-neutral-400">{status}</span>
-        </div>
-        <div className="flex items-center gap-4 text-neutral-400">
-          <span className="flex items-center gap-1 hover:text-white cursor-pointer transition">
-            <Smartphone className="w-3.5 h-3.5 text-blue-400" />
-            <span>Mobile Companion (Tailscale / E2EE)</span>
-          </span>
-          <span className="px-2 py-0.5 rounded bg-neutral-800 text-[10px] text-neutral-300 font-mono">
-            Wayland Native
-          </span>
-        </div>
-      </header>
-
+      {/* Custom Window Titlebar (Frameless / VS Code & Orca Style) */}
+      <WindowTitlebar title={status} />
       {/* Main Resizable Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Left Panel: Workspaces & File Tree */}

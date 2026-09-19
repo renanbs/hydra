@@ -1,4 +1,5 @@
 pub mod terminal;
+pub mod window_actions;
 
 use std::sync::Arc;
 use tauri::{AppHandle, State};
@@ -48,7 +49,11 @@ pub fn run() {
             get_system_status,
             start_terminal_session,
             send_terminal_input,
-            get_terminal_snapshot
+            get_terminal_snapshot,
+            window_actions::window_minimize,
+            window_actions::window_toggle_maximize,
+            window_actions::window_close,
+            window_actions::window_start_dragging
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");

@@ -31,3 +31,37 @@ body {
   touch-action: none;
   user-select: none;
 }
+
+/* Window controls idênticos ao Orca */
+.window-controls {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: row;
+  height: 36px;
+}
+
+.window-controls-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: #888888;
+  cursor: pointer;
+  transition: background 100ms, color 100ms;
+}
+
+.window-controls-btn:hover {
+  background: #222226;
+  color: #ededed;
+}
+
+.window-controls-close:hover {
+  background: #c42b1c !important;
+  color: #ffffff !important;
+}
