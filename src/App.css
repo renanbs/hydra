@@ -4,6 +4,14 @@
   :root {
     --background: 0 0% 5%;
     --foreground: 0 0% 98%;
+
+    /* Orca Exact Worktree Sidebar Palette */
+    --worktree-sidebar: #121316;
+    --worktree-sidebar-foreground: #fafafa;
+    --worktree-sidebar-accent: #1e1f24;
+    --worktree-sidebar-accent-foreground: #ffffff;
+    --worktree-sidebar-border: rgba(255, 255, 255, 0.07);
+    --worktree-sidebar-ring: #10b981;
   }
 }
 
@@ -17,19 +25,22 @@ body {
   user-select: none;
 }
 
-[data-panel-group] {
-  display: flex !important;
-  width: 100% !important;
-  height: 100% !important;
+/* Orca Card Surface and Hover Rules */
+.worktree-sidebar-card-hover {
+  background-color: transparent;
+  border: 1px solid transparent;
+  transition: all 120ms ease;
 }
 
-[data-panel] {
-  overflow: hidden !important;
+.worktree-sidebar-card-hover:hover {
+  background-color: #16171b;
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
-[data-panel-resize-handle], [data-separator] {
-  touch-action: none;
-  user-select: none;
+.worktree-sidebar-card-active {
+  background-color: #191a1f !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Window controls idênticos ao Orca */
