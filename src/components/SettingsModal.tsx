@@ -212,8 +212,8 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   })();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-[1140px] max-w-[92vw] h-[78vh] max-h-[840px] min-h-[620px] rounded-xl border bg-background shadow-2xl flex overflow-hidden">
+    <div className="fixed left-0 right-0 bottom-0 top-[36px] z-50 flex flex-col bg-background border-t border-border">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Orca-faithful sidebar: 280px worktree-sidebar */}
         <aside className="flex w-[280px] shrink-0 flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar">
           <div className="border-b border-worktree-sidebar-border px-3 py-3">
