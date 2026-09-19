@@ -41,6 +41,7 @@ interface WorktreeSidebarProps {
   onNewSessionWithAgent: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;
+  onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
 }
 
 export function WorktreeSidebar({
@@ -51,6 +52,7 @@ export function WorktreeSidebar({
   onNewSessionWithAgent,
   onDeleteSession,
   onOpenSettings,
+  onSessionContextMenu,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -152,6 +154,11 @@ export function WorktreeSidebar({
             <div
               key={session.id}
               onClick={() => onSelectSession(session.id)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSessionContextMenu?.(e, session);
+              }}
               className={`group relative p-2 rounded text-xs cursor-pointer border transition-all ${
                 session.active
                   ? "bg-[#141518] border-neutral-700/80 text-neutral-100 shadow-sm"

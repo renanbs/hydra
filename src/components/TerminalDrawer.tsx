@@ -8,9 +8,14 @@ import "@xterm/xterm/css/xterm.css";
 interface TerminalDrawerProps {
   sessionId: string;
   executable?: string;
+  onContextMenu?: (x: number, y: number) => void;
 }
 
-export function TerminalDrawer({ sessionId, executable = "bash" }: TerminalDrawerProps) {
+export function TerminalDrawer({ 
+  sessionId, 
+  executable = "bash",
+  onContextMenu 
+}: TerminalDrawerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const xtermRef = useRef<Terminal | null>(null);
 
@@ -42,12 +47,12 @@ export function TerminalDrawer({ sessionId, executable = "bash" }: TerminalDrawe
     fitAddon.fit();
     xtermRef.current = term;
 
-    // Conecta a entrada do teclado do usuário ao PTY específico da sessão
+    // Conecta teclado ao PTY
     term.onData((data) => {
       invoke("send_terminal_input", { sessionId, input: data }).catch(console.error);
     });
 
-    // Inicia a sessão com o executável solicitado (ex: claude, codex, cursor, bash)
+    // Inicia sessão PTY
     invoke("start_agent_terminal", {
       sessionId,
       executable,
@@ -66,7 +71,7 @@ export function TerminalDrawer({ sessionId, executable = "bash" }: TerminalDrawe
       })
       .catch(console.error);
 
-    // Escuta chunks de output emitidos para ESTA sessão
+    // Escuta output em tempo real
     const unlistenPromise = listen<{ session_id: string; output: string }>(
       "terminal:output",
       (event) => {
@@ -87,9 +92,16 @@ export function TerminalDrawer({ sessionId, executable = "bash" }: TerminalDrawe
     };
   }, [sessionId, executable]);
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onContextMenu?.(e.clientX, e.clientY);
+  };
+
   return (
     <div 
       ref={containerRef} 
+      onContextMenu={handleContextMenu}
       className="w-full h-full bg-[#0c0d0e] p-2 overflow-hidden" 
     />
   );

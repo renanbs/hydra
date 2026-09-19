@@ -12,6 +12,7 @@ interface WorkbenchTabBarProps {
   onSelectTab: (id: string) => void;
   onCloseTab: (id: string) => void;
   onNewTab: () => void;
+  onTabContextMenu?: (e: React.MouseEvent, tab: TabItem) => void;
 }
 
 export function WorkbenchTabBar({
@@ -20,6 +21,7 @@ export function WorkbenchTabBar({
   onSelectTab,
   onCloseTab,
   onNewTab,
+  onTabContextMenu,
 }: WorkbenchTabBarProps) {
   return (
     <div className="h-8 border-b border-[#222] bg-[#111214] flex items-center px-1 select-none overflow-x-auto shrink-0">
@@ -31,6 +33,11 @@ export function WorkbenchTabBar({
             <div
               key={tab.id}
               onClick={() => onSelectTab(tab.id)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onTabContextMenu?.(e, tab);
+              }}
               className={`group flex items-center gap-2 h-7 px-3 text-xs rounded-t border-t-2 cursor-pointer transition-all ${
                 isActive
                   ? "bg-[#0c0d0e] border-emerald-500 text-neutral-100 font-medium shadow-sm"

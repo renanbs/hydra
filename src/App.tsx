@@ -8,12 +8,21 @@ import { WorktreeSidebar, type WorktreeSession, type AvailableAgent, type GitRep
 import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraSettings } from "./components/SettingsModal";
+import { CommandPalette } from "./components/CommandPalette";
+import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { 
   Bot, 
   Play, 
   CheckCircle2, 
   Send,
-  Smartphone
+  Smartphone,
+  Copy,
+  ClipboardPaste,
+  Eraser,
+  SplitSquareVertical,
+  Trash2,
+  GitBranch,
+  Plus
 } from "lucide-react";
 import "./App.css";
 
@@ -31,10 +40,18 @@ export default function App() {
   const [promptInput, setPromptInput] = useState("");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
+
+  // Estado do Menu de Contexto Customizado (Orca Style)
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    items: ContextMenuItem[];
+  } | null>(null);
 
   // Agent Fleet Sessions
   const [sessions, setSessions] = useState<WorktreeSession[]>([
@@ -60,7 +77,7 @@ export default function App() {
     {
       id: 1,
       role: "agent",
-      content: "Hydra ADE initialized. Live agent discovery active. Click '+' on the left to spawn native agents."
+      content: "Hydra ADE initialized. Press Ctrl+P for Command Palette, right-click anywhere for context menus."
     }
   ]);
 
@@ -78,9 +95,21 @@ export default function App() {
     deltaSign: -1,
   });
 
-  // Global Keyboard Shortcuts (Orca Style: Ctrl+B, Ctrl+J, Ctrl+,)
+  // Global Keyboard Shortcuts (Orca Style: Ctrl+P, Ctrl+B, Ctrl+J, Ctrl+,)
   useEffect(() => {
+    // 1. Bloqueia 100% o menu de contexto padrão do WebKit/Navegador em todo o app
+    const handleGlobalContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("contextmenu", handleGlobalContextMenu);
+
+    // 2. Atalhos de Teclado
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+P / Cmd+P -> Command Palette
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
       // Ctrl+B / Cmd+B -> Toggle Left Sidebar
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
         e.preventDefault();
@@ -99,7 +128,10 @@ export default function App() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("contextmenu", handleGlobalContextMenu);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   useEffect(() => {
@@ -111,12 +143,10 @@ export default function App() {
       .then(setAvailableAgents)
       .catch(console.error);
 
-    // Consulta status real do repositório Git via Rust
     invoke<GitRepoStatus>("get_repo_git_status")
       .then(setGitStatus)
       .catch(console.error);
 
-    // Polling contínuo de status dos agentes
     const interval = setInterval(() => {
       const currentActive = sessions.find((s) => s.active);
       if (!currentActive) return;
@@ -207,6 +237,105 @@ export default function App() {
     }
   };
 
+  // --- Handlers de Menus de Contexto Customizados ---
+  const handleTerminalContextMenu = (x: number, y: number) => {
+    const currentActive = sessions.find((s) => s.active);
+    const sId = currentActive?.id ?? "sess_main";
+
+    setContextMenu({
+      x,
+      y,
+      items: [
+        {
+          label: "Copy Selection",
+          icon: <Copy className="w-3.5 h-3.5" />,
+          shortcut: "Ctrl+Shift+C",
+          onClick: () => {
+            const sel = window.getSelection()?.toString();
+            if (sel) navigator.clipboard.writeText(sel);
+          }
+        },
+        {
+          label: "Paste into Terminal",
+          icon: <ClipboardPaste className="w-3.5 h-3.5" />,
+          shortcut: "Ctrl+Shift+V",
+          onClick: () => {
+            navigator.clipboard.readText().then((txt) => {
+              if (txt) invoke("send_terminal_input", { sessionId: sId, input: txt });
+            });
+          }
+        },
+        {
+          label: "Clear Terminal Screen",
+          icon: <Eraser className="w-3.5 h-3.5" />,
+          shortcut: "Ctrl+L",
+          separator: true,
+          onClick: () => {
+            invoke("send_terminal_input", { sessionId: sId, input: "\x0c" });
+          }
+        },
+        {
+          label: "Split Terminal Tab",
+          icon: <SplitSquareVertical className="w-3.5 h-3.5" />,
+          onClick: () => handleNewTab()
+        }
+      ]
+    });
+  };
+
+  const handleTabContextMenu = (e: React.MouseEvent, tab: TabItem) => {
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      items: [
+        {
+          label: "Close Tab",
+          icon: <Trash2 className="w-3.5 h-3.5" />,
+          shortcut: "Ctrl+W",
+          onClick: () => handleCloseTab(tab.id)
+        },
+        {
+          label: "Close Other Tabs",
+          onClick: () => {
+            setTabs([tab]);
+            setActiveTabId(tab.id);
+          }
+        },
+        {
+          label: "Duplicate Tab",
+          icon: <Plus className="w-3.5 h-3.5" />,
+          separator: true,
+          onClick: () => {
+            const newId = `tab_${Date.now()}`;
+            setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)` }]);
+            setActiveTabId(newId);
+          }
+        }
+      ]
+    });
+  };
+
+  const handleSessionContextMenu = (e: React.MouseEvent, session: WorktreeSession) => {
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      items: [
+        {
+          label: `Copy Branch: ${session.branch}`,
+          icon: <GitBranch className="w-3.5 h-3.5" />,
+          onClick: () => navigator.clipboard.writeText(session.branch)
+        },
+        {
+          label: "Close / Delete Fleet Session",
+          icon: <Trash2 className="w-3.5 h-3.5" />,
+          danger: true,
+          separator: true,
+          onClick: () => handleDeleteSession(session.id)
+        }
+      ]
+    });
+  };
+
   const handleSendMessage = () => {
     if (!promptInput.trim()) return;
     const text = promptInput;
@@ -244,7 +373,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#0c0d0e] text-[#ededed] font-sans antialiased select-none overflow-hidden">
-      {/* Custom Window Titlebar with Sidebar Toggle Controls (Orca Style) */}
+      {/* Custom Window Titlebar (Frameless / Orca Style) */}
       <WindowTitlebar 
         title={status} 
         isLeftOpen={isLeftSidebarOpen}
@@ -271,6 +400,7 @@ export default function App() {
                 onNewSessionWithAgent={handleNewSessionWithAgent}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                onSessionContextMenu={handleSessionContextMenu}
               />
             </aside>
 
@@ -286,7 +416,7 @@ export default function App() {
           </>
         )}
 
-        {/* Central Workspace: Full Multi-Tab Workbench Surface */}
+        {/* Central Workspace: Multi-Tab Workbench Surface */}
         <main className="flex-1 flex flex-col bg-[#0c0d0e] min-w-0 overflow-hidden">
           <WorkbenchTabBar 
             tabs={tabs}
@@ -294,6 +424,7 @@ export default function App() {
             onSelectTab={setActiveTabId}
             onCloseTab={handleCloseTab}
             onNewTab={handleNewTab}
+            onTabContextMenu={handleTabContextMenu}
           />
 
           <div className="flex-1 overflow-hidden relative">
@@ -308,6 +439,7 @@ export default function App() {
                 key={activeSession?.id ?? "sess_main"}
                 sessionId={activeSession?.id ?? "sess_main"} 
                 executable={activeSession?.executable ?? "bash"}
+                onContextMenu={handleTerminalContextMenu}
               />
             )}
           </div>
@@ -448,6 +580,26 @@ export default function App() {
           </>
         )}
       </div>
+
+      {/* Custom Context Menu Overlay */}
+      {contextMenu && (
+        <CustomContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={contextMenu.items}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* Command Palette (Ctrl+P / Orca Style) */}
+      <CommandPalette 
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onNewTerminal={handleNewTab}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenPairing={() => setIsPairingOpen(true)}
+        onSwitchTab={setActiveTabId}
+      />
 
       {/* Mobile Companion Pairing Modal */}
       <PairingModal isOpen={isPairingOpen} onClose={() => setIsPairingOpen(false)} />
