@@ -5,6 +5,7 @@ use tauri_plugin_window_state::StateFlags;
 pub mod agent_discovery;
 pub mod agent_state;
 pub mod db;
+pub mod git_status;
 pub mod pairing;
 pub mod terminal;
 pub mod window_actions;
@@ -12,6 +13,7 @@ pub mod window_actions;
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
 use db::{ChatMessage, DatabaseManager, HydraSettings, ToolApprovalRecord};
+use git_status::{get_git_status, GitRepoStatus};
 use pairing::{PairingManager, PairingPayload};
 use terminal::{TerminalManager, TerminalSnapshot};
 
@@ -24,6 +26,11 @@ pub struct AppState {
 #[tauri::command]
 fn get_system_status() -> String {
     "Hydra Core Active (Rust 1.98 / Wayland)".to_string()
+}
+
+#[tauri::command]
+fn get_repo_git_status() -> Result<GitRepoStatus, String> {
+    get_git_status()
 }
 
 #[tauri::command]
@@ -157,6 +164,7 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![
             get_system_status,
+            get_repo_git_status,
             list_available_agents,
             start_agent_terminal,
             send_terminal_input,

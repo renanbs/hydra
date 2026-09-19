@@ -5,7 +5,8 @@ import {
   Trash2, 
   FolderGit2,
   ChevronDown,
-  Settings
+  Settings,
+  GitCommit
 } from "lucide-react";
 
 export interface AvailableAgent {
@@ -25,9 +26,17 @@ export interface WorktreeSession {
   executable: string;
 }
 
+export interface GitRepoStatus {
+  branch: string;
+  modified_files: number;
+  is_clean: boolean;
+  head_commit: string;
+}
+
 interface WorktreeSidebarProps {
   sessions: WorktreeSession[];
   availableAgents: AvailableAgent[];
+  gitStatus: GitRepoStatus | null;
   onSelectSession: (id: string) => void;
   onNewSessionWithAgent: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
@@ -37,6 +46,7 @@ interface WorktreeSidebarProps {
 export function WorktreeSidebar({
   sessions,
   availableAgents,
+  gitStatus,
   onSelectSession,
   onNewSessionWithAgent,
   onDeleteSession,
@@ -67,9 +77,15 @@ export function WorktreeSidebar({
         <div className="flex items-center gap-2 min-w-0">
           <FolderGit2 className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
           <span className="font-semibold text-neutral-200 text-xs truncate">hydra</span>
-          <span className="text-[10px] text-neutral-500 font-mono px-1.5 py-0.5 rounded bg-neutral-800 shrink-0">
-            main
+          <span className="text-[10px] text-neutral-400 font-mono px-1.5 py-0.5 rounded bg-neutral-800 flex items-center gap-1 shrink-0">
+            <GitBranch className="w-2.5 h-2.5 text-emerald-400" />
+            <span>{gitStatus?.branch ?? "main"}</span>
           </span>
+          {gitStatus && gitStatus.modified_files > 0 && (
+            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 font-mono shrink-0">
+              +{gitStatus.modified_files}
+            </span>
+          )}
         </div>
         <div className="relative" ref={menuRef}>
           <button
@@ -189,17 +205,22 @@ export function WorktreeSidebar({
         )}
       </div>
 
-      {/* Sidebar Footer with Settings Trigger */}
+      {/* Sidebar Footer with Git Commit + Settings */}
       <div className="h-8 border-t border-[#222] px-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono bg-[#111214] shrink-0">
         <button
           onClick={onOpenSettings}
-          title="Open Settings"
-          className="flex items-center gap-1 hover:text-neutral-300 transition"
+          title="Open Settings (Ctrl+,)"
+          className="flex items-center gap-1 hover:text-neutral-300 transition cursor-pointer"
         >
           <Settings className="w-3 h-3 text-neutral-400 hover:text-emerald-400 transition" />
           <span>Settings</span>
         </button>
-        <span className="text-emerald-500/80">Herdr ok</span>
+        {gitStatus?.head_commit && (
+          <span className="flex items-center gap-1 text-neutral-400">
+            <GitCommit className="w-2.5 h-2.5 text-neutral-500" />
+            <span>{gitStatus.head_commit}</span>
+          </span>
+        )}
       </div>
     </div>
   );
