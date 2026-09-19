@@ -18,7 +18,7 @@ import type { ITheme } from "@xterm/xterm";
 
 export type { HydraSettings };
 
-// Orca-faithful form controls (copied from Orca SettingsFormControls)
+// Hydra form controls (Orca SettingsFormControls faithful)
 function SettingsSwitchRow({ label, description, checked, onChange }: { label: string; description?: string; checked: boolean; onChange: () => void; ariaLabel?: string }) {
   return (
     <div className="flex items-center justify-between gap-4 py-3">
@@ -192,7 +192,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const matchDarkMode = !settings.terminal_use_separate_light_theme;
   const showCustomControls = !(isLightTarget && matchDarkMode);
 
-  // Orca groups: Interface / Workflows / Advanced — Hydra maps to similar
+  // Groups: Interface / Workflows
   const navGroups: { id: string; title: string; items: { id: HydraNavId; label: string; icon: any }[] }[] = [
     { id: "interface", title: "Interface", items: [
       { id: "appearance", label: "Appearance", icon: AppWindow },
@@ -215,7 +215,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   return (
     <div className="fixed left-0 right-0 bottom-0 top-[36px] z-50 flex flex-col bg-background border-t border-border">
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Orca-faithful sidebar: 280px worktree-sidebar */}
+        {/* Sidebar: 280px worktree-sidebar */}
         <aside className="flex w-[280px] shrink-0 flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar">
           <div className="border-b border-worktree-sidebar-border px-3 py-3">
             <button onClick={onClose} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[13px] text-muted-foreground hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-accent-foreground transition">
@@ -249,7 +249,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
             {filteredGroups.length===0 && <p className="px-3 text-xs text-muted-foreground">No settings found for “{searchQuery}”</p>}
           </div>
           <div className="border-t border-worktree-sidebar-border px-3 py-3 text-[11px] text-muted-foreground">
-            <div className="flex items-center gap-1.5"><Sliders className="size-3.5 text-emerald-500" /> Hydra Settings — Orca-faithful</div>
+            <div className="flex items-center gap-1.5"><Sliders className="size-3.5 text-emerald-500" /> Hydra Settings</div>
             <div className="font-mono text-[10px] mt-1">SQLite WAL · ~/.config/hydra/</div>
           </div>
         </aside>
@@ -275,7 +275,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                   <section className="space-y-4">
                     <div className="space-y-1">
                       <h3 className="text-[13px] font-semibold">Interface</h3>
-                      <p className="text-[12px] text-muted-foreground">Theme follows Orca: <code className="px-1 py-0.5 rounded bg-muted border text-[11px]">system | dark | light</code> — system respects <code>prefers-color-scheme</code>.</p>
+                      <p className="text-[12px] text-muted-foreground">Theme: <code className="px-1 py-0.5 rounded bg-muted border text-[11px]">system | dark | light</code> — system respects <code>prefers-color-scheme</code>.</p>
                     </div>
                     <div className="rounded-xl border bg-card p-4 flex items-center justify-between">
                       <div><div className="text-[13px] font-medium">Theme</div><div className="text-[12px] text-muted-foreground">App chrome theme. Terminal can differ per mode below.</div></div>
@@ -373,8 +373,8 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
               {activeId==="agents" && (
                 <div className="space-y-8">
                   <div className="space-y-1">
-                    <h3 className="text-[15px] font-semibold flex items-center gap-2"><Bot className="size-4 text-emerald-500" /> Agents — Orca-faithful</h3>
-                    <p className="text-[12px] text-muted-foreground">Catalog, default agent, runtime, hooks and detection — copied from Orca <code>AgentsPane.tsx:141</code>.</p>
+                    <h3 className="text-[15px] font-semibold flex items-center gap-2"><Bot className="size-4 text-emerald-500" /> Agents</h3>
+                    <p className="text-[12px] text-muted-foreground">Default agent, runtime, hooks and detection.</p>
                   </div>
 
                   {/* Default Agent */}
@@ -395,14 +395,14 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                   <section className="rounded-xl border bg-card">
                     <div className="p-4 space-y-3">
                       <h4 className="text-[13px] font-medium">Agent Runtime</h4>
-                      <p className="text-[12px] text-muted-foreground">Host execution target. Orca supports host/wsl/runtime environments; Hydra mirrors with workspace-local shell.</p>
+                      <p className="text-[12px] text-muted-foreground">Host execution target for agent shells.</p>
                       <SettingsSwitchRow label="Keep computer awake while agents run" description="Requests local awake assertions while hook-reported agents are working." checked={Boolean((settings as any).keep_computer_awake_while_agents_run)} onChange={()=>setSettingsLive({ ...settings, keep_computer_awake_while_agents_run: !(settings as any).keep_computer_awake_while_agents_run } as any)} />
                     </div>
                   </section>
 
                   {/* Status Hooks */}
                   <section className="rounded-xl border bg-card p-4">
-                    <SettingsSwitchRow label="Agent Status Hooks" description="Allows Orca to install shell hooks that report agent status for Herdr state detection (working/blocked/idle)." checked={(settings as any).agent_status_hooks_enabled !== false} onChange={()=>setSettingsLive({ ...settings, agent_status_hooks_enabled: (settings as any).agent_status_hooks_enabled === false } as any)} />
+                    <SettingsSwitchRow label="Agent Status Hooks" description="Allows Hydra to install shell hooks that report agent status for Herdr state detection (working/blocked/idle)." checked={(settings as any).agent_status_hooks_enabled !== false} onChange={()=>setSettingsLive({ ...settings, agent_status_hooks_enabled: (settings as any).agent_status_hooks_enabled === false } as any)} />
                   </section>
 
                   {/* Generated Tab Titles */}
@@ -420,7 +420,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                     </div>
                   </section>
 
-                  {/* Detection Catalog — Orca AgentCatalogRow with cmd/args/env (tui-agent-launch-defaults) */}
+                  {/* Detection Catalog */}
                   <section className="rounded-xl border bg-card p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[13px] font-medium">Detected Agents</h4>
@@ -461,7 +461,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                                     <label className="block text-[11px] font-medium mb-1">Default Env <span className="font-normal text-muted-foreground">(space-separated KEY=VALUE)</span></label>
                                     <input value={envString} onChange={(e)=>{ const str=e.target.value; const map: Record<string,string>={}; str.split(/\s+/).forEach(pair=>{ const [k,...rest]=pair.split("="); if(k && rest.length) map[k]=rest.join("="); }); const next = { ...((settings as any).agent_default_env ?? {}) }; if (Object.keys(map).length) next[agent.id]=map; else delete next[agent.id]; setSettingsLive({ ...settings, agent_default_env: next } as any); }} placeholder="FOO=bar BAZ=qux" className="w-full bg-background border border-input rounded-md px-2.5 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
                                   </div>
-                                  <div className="text-[10px] text-muted-foreground">Orca-faithful: per-agent launch defaults from <code>shared/tui-agent-launch-defaults.ts</code> — empty keeps catalog default.</div>
+                                  <div className="text-[10px] text-muted-foreground">Per-agent launch defaults — empty keeps catalog default.</div>
                                 </div>
                               )}
                             </div>
