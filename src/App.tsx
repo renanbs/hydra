@@ -234,6 +234,7 @@ export default function App() {
         if (persisted && persisted.length > 0) {
           const loaded: WorktreeSession[] = persisted.map((p, idx) => ({
             id: p.id,
+            project_path: p.project_path,
             title: p.title,
             branch: p.branch,
             agentName: p.agent_name,
@@ -251,6 +252,7 @@ export default function App() {
         } else {
           const defaultSession: WorktreeSession = {
             id: `sess_main_${Date.now().toString().slice(-4)}`,
+            project_path: projectPath,
             title: "Main Terminal Session",
             branch: "main",
             state: "idle",
@@ -323,6 +325,7 @@ export default function App() {
     if (!sessions.some((s) => s.id === id)) {
       const newSess: WorktreeSession = {
         id,
+        project_path: activeProject?.path ?? "",
         title: `Worktree: ${wt.branch}`,
         branch: wt.branch,
         state: "idle",
@@ -360,6 +363,7 @@ export default function App() {
       const id = `sess_wt_${Date.now().toString().slice(-4)}`;
       const newSession: WorktreeSession = {
         id,
+        project_path: activeProject?.path ?? "",
         title: `Worktree: ${branchName}`,
         branch: branchName,
         state: "idle",
@@ -414,6 +418,7 @@ export default function App() {
     const id = `sess_${agent.id}_${Date.now().toString().slice(-4)}`;
     const newSession: WorktreeSession = {
       id,
+      project_path: activeProject?.path ?? "",
       title: `${agent.name} Task`,
       branch: `feat/${agent.id}`,
       state: "working",
