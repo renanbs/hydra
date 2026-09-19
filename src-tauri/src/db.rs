@@ -53,30 +53,204 @@ impl Default for UiLayoutState {
     }
 }
 
+fn default_theme() -> String { "system".to_string() }
+fn default_terminal_font_family() -> String { "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace".to_string() }
+fn default_terminal_font_size() -> u32 { 14 }
+fn default_terminal_font_weight() -> u32 { 500 }
+fn default_terminal_font_weight_bold() -> u32 { 700 }
+fn default_terminal_line_height() -> f32 { 1.0 }
+fn default_terminal_cursor_style() -> String { "block".to_string() }
+fn default_true() -> bool { true }
+fn default_false() -> bool { false }
+fn default_terminal_gpu() -> String { "auto".to_string() }
+fn default_terminal_ligatures() -> String { "auto".to_string() }
+fn default_terminal_theme_dark() -> String { "Ghostty Default Style Dark".to_string() }
+fn default_terminal_theme_light() -> String { "Builtin Tango Light".to_string() }
+fn default_divider_dark() -> String { "#3f3f46".to_string() }
+fn default_divider_light() -> String { "#d4d4d8".to_string() }
+fn default_inactive_opacity() -> f32 { 0.6 }
+fn default_active_opacity() -> f32 { 1.0 }
+fn default_transition_ms() -> u32 { 140 }
+fn default_divider_thickness() -> u32 { 3 }
+fn default_scrollback() -> u32 { 10000 }
+fn default_branch_prefix() -> String { "feat/".to_string() }
+fn default_workspace_dir() -> String {
+    let home = std::env::var("HOME").unwrap_or_else(|_| "/home/renan".to_string());
+    format!("{home}/src")
+}
+fn deserialize_theme<'de, D>(deserializer: D) -> Result<String, D::Error>
+where D: serde::Deserializer<'de> {
+    let s = String::deserialize(deserializer)?;
+    Ok(match s.as_str() {
+        "dark" | "light" | "system" => s,
+        "oled" => "dark".to_string(),
+        _ => "system".to_string(),
+    })
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub struct TerminalColorOverrides {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub foreground: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub background: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cursor: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cursorAccent: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selectionBackground: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selectionForeground: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub black: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub red: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub green: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub yellow: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub blue: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub magenta: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cyan: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub white: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brightBlack: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brightRed: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brightGreen: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brightYellow: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brightBlue: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brightMagenta: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brightCyan: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brightWhite: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct TerminalCustomTheme {
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
+    pub name: String,
+    #[serde(default = "default_terminal_custom_source")]
+    pub source: String,
+    #[serde(default = "default_terminal_custom_mode")]
+    pub mode: String,
+    #[serde(default)]
+    pub terminal: TerminalColorOverrides,
+    #[serde(default)]
+    pub importedAt: String,
+}
+fn default_terminal_custom_source() -> String { "manual".to_string() }
+fn default_terminal_custom_mode() -> String { "unknown".to_string() }
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct HydraSettings {
+    #[serde(default = "default_theme", deserialize_with = "deserialize_theme")]
+    pub theme: String,
+    #[serde(default = "default_terminal_font_family")]
     pub terminal_font_family: String,
+    #[serde(default = "default_terminal_font_size")]
     pub terminal_font_size: u32,
+    #[serde(default = "default_terminal_font_weight")]
+    pub terminal_font_weight: u32,
+    #[serde(default = "default_terminal_font_weight_bold")]
+    pub terminal_font_weight_bold: u32,
+    #[serde(default = "default_terminal_line_height")]
+    pub terminal_line_height: f32,
+    #[serde(default = "default_terminal_cursor_style")]
     pub terminal_cursor_style: String,
+    #[serde(default = "default_true")]
     pub terminal_cursor_blink: bool,
+    #[serde(default = "default_terminal_gpu")]
+    pub terminal_gpu_acceleration: String,
+    #[serde(default = "default_terminal_ligatures")]
+    pub terminal_ligatures: String,
+    #[serde(default = "default_terminal_theme_dark")]
+    pub terminal_theme_dark: String,
+    #[serde(default = "default_terminal_theme_light")]
+    pub terminal_theme_light: String,
+    #[serde(default = "default_true")]
+    pub terminal_use_separate_light_theme: bool,
+    #[serde(default = "default_divider_dark")]
+    pub terminal_divider_color_dark: String,
+    #[serde(default = "default_divider_light")]
+    pub terminal_divider_color_light: String,
+    #[serde(default)]
+    pub terminal_custom_themes: Vec<TerminalCustomTheme>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub terminal_background_opacity: Option<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub terminal_minimum_contrast_ratio: Option<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub terminal_color_overrides: Option<TerminalColorOverrides>,
+    #[serde(default = "default_inactive_opacity")]
+    pub terminal_inactive_pane_opacity: f32,
+    #[serde(default = "default_active_opacity")]
+    pub terminal_active_pane_opacity: f32,
+    #[serde(default = "default_transition_ms")]
+    pub terminal_pane_opacity_transition_ms: u32,
+    #[serde(default = "default_divider_thickness")]
+    pub terminal_divider_thickness_px: u32,
+    #[serde(default = "default_false")]
+    pub terminal_focus_follows_mouse: bool,
+    #[serde(default = "default_scrollback")]
+    pub terminal_scrollback_rows: u32,
+    #[serde(default = "default_true")]
+    pub primary_selection_middle_click_paste: bool,
+    #[serde(default = "default_true")]
     pub auto_approve_reads: bool,
+    #[serde(default = "default_true")]
     pub notification_on_blocked: bool,
+    #[serde(default = "default_branch_prefix")]
     pub default_branch_prefix: String,
+    #[serde(default = "default_workspace_dir")]
     pub workspace_dir: String,
 }
 
 impl Default for HydraSettings {
     fn default() -> Self {
-        let home = std::env::var("HOME").unwrap_or_else(|_| "/home/renan".to_string());
         Self {
-            terminal_font_family: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace".to_string(),
-            terminal_font_size: 12,
-            terminal_cursor_style: "block".to_string(),
+            theme: default_theme(),
+            terminal_font_family: default_terminal_font_family(),
+            terminal_font_size: default_terminal_font_size(),
+            terminal_font_weight: default_terminal_font_weight(),
+            terminal_font_weight_bold: default_terminal_font_weight_bold(),
+            terminal_line_height: default_terminal_line_height(),
+            terminal_cursor_style: default_terminal_cursor_style(),
             terminal_cursor_blink: true,
+            terminal_gpu_acceleration: default_terminal_gpu(),
+            terminal_ligatures: default_terminal_ligatures(),
+            terminal_theme_dark: default_terminal_theme_dark(),
+            terminal_theme_light: default_terminal_theme_light(),
+            terminal_use_separate_light_theme: true,
+            terminal_divider_color_dark: default_divider_dark(),
+            terminal_divider_color_light: default_divider_light(),
+            terminal_custom_themes: vec![],
+            terminal_background_opacity: None,
+            terminal_minimum_contrast_ratio: None,
+            terminal_color_overrides: None,
+            terminal_inactive_pane_opacity: default_inactive_opacity(),
+            terminal_active_pane_opacity: default_active_opacity(),
+            terminal_pane_opacity_transition_ms: default_transition_ms(),
+            terminal_divider_thickness_px: default_divider_thickness(),
+            terminal_focus_follows_mouse: false,
+            terminal_scrollback_rows: default_scrollback(),
+            primary_selection_middle_click_paste: true,
             auto_approve_reads: true,
             notification_on_blocked: true,
-            default_branch_prefix: "feat/".to_string(),
-            workspace_dir: format!("{home}/src"),
+            default_branch_prefix: default_branch_prefix(),
+            workspace_dir: default_workspace_dir(),
         }
     }
 }
