@@ -81,58 +81,63 @@ export function WindowTitlebar({
   onToggleLeft,
   onToggleRight,
 }: WindowTitlebarProps) {
-  const handleStartDrag = (e: React.MouseEvent) => {
+  const handleDragMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
       invoke("window_start_dragging").catch(console.error);
     }
   };
 
   return (
-    <header 
-      data-tauri-drag-region
-      onMouseDown={handleStartDrag}
-      className="h-9 border-b border-[#222] px-3 flex items-center justify-between text-xs bg-[#111214] select-none shrink-0 cursor-default"
-    >
+    <header className="h-9 border-b border-[#222] px-3 flex items-center justify-between text-xs bg-[#111214] select-none shrink-0 cursor-default relative">
       {/* Left Cluster: App Brand + Sidebar Toggle (Orca Style) */}
-      <div className="flex items-center gap-2">
+      <div 
+        className="flex items-center gap-2 z-20"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <button
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             onToggleLeft();
           }}
           title="Toggle Left Sidebar (Ctrl+B)"
-          className={`p-1 rounded transition ${
-            isLeftOpen ? "text-emerald-400 bg-neutral-800/80" : "text-neutral-500 hover:text-neutral-300"
+          className={`p-1.5 rounded transition cursor-pointer ${
+            isLeftOpen ? "text-emerald-400 bg-neutral-800" : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60"
           }`}
         >
           <PanelLeft className="w-3.5 h-3.5" />
         </button>
-        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span className="font-semibold text-neutral-200 tracking-wider">HYDRA</span>
-        <span className="text-neutral-600">|</span>
-        <span className="text-neutral-400 font-mono text-[11px]">{title}</span>
+        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse pointer-events-none" />
+        <span className="font-semibold text-neutral-200 tracking-wider pointer-events-none">HYDRA</span>
+        <span className="text-neutral-600 pointer-events-none">|</span>
+        <span className="text-neutral-400 font-mono text-[11px] pointer-events-none">{title}</span>
       </div>
 
-      {/* Center Drag Region */}
+      {/* Center Drag Region: Cobre o centro e permite arrastar a janela */}
       <div 
-        data-tauri-drag-region 
-        className="flex-1 h-full flex items-center justify-center cursor-default pointer-events-auto"
+        data-tauri-drag-region
+        onMouseDown={handleDragMouseDown}
+        className="flex-1 h-full flex items-center justify-center cursor-default z-10"
       >
         <span className="text-neutral-500 text-[11px] tracking-wide font-medium pointer-events-none">
           Hydra Autonomous Development Environment
         </span>
       </div>
 
-      {/* Right Controls: Right Sidebar Toggle + Spacer for Window Controls */}
-      <div className="flex items-center gap-1">
+      {/* Right Controls: Toggle Agent Panel + Spacer for Window Controls */}
+      <div 
+        className="flex items-center gap-1 z-20"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <button
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             onToggleRight();
           }}
           title="Toggle Agent Panel (Ctrl+J)"
-          className={`p-1 rounded transition mr-2 ${
-            isRightOpen ? "text-emerald-400 bg-neutral-800/80" : "text-neutral-500 hover:text-neutral-300"
+          className={`p-1.5 rounded transition mr-2 cursor-pointer ${
+            isRightOpen ? "text-emerald-400 bg-neutral-800" : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60"
           }`}
         >
           <PanelRight className="w-3.5 h-3.5" />
