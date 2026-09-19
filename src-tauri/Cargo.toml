@@ -31,6 +31,7 @@ parking_lot = "0.12.5"
 x25519-dalek = { version = "3.0.0", features = ["static_secrets"] }
 qrcode = "0.14.1"
 tauri-plugin-dialog = "2.7.3"
+keepawake = "0.5"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

@@ -34,7 +34,8 @@ import {
   SplitSquareVertical,
   Trash2,
   GitBranch,
-  Pencil
+  Pencil,
+  Coffee
 } from "lucide-react";
 import "./App.css";
 
@@ -81,6 +82,10 @@ export default function App() {
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
+  const syncKeepAwake = (enabled: boolean, workingCount: number) => {
+    invoke("sync_keep_awake", { enabled, workingCount }).catch(()=>{});
+  };
+  const [keepAwakeActive, setKeepAwakeActive] = useState(false);
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -308,27 +313,54 @@ export default function App() {
       .catch(console.error);
   };
 
-  // Live polling of Herdr state engine
+  // Live polling of Herdr state engine + keep-awake sync (Orca AgentAwakeService auto)
+  useEffect(() => {
+    // Initial sync on hydraSettings change
+    const workingInitial = sessions.filter((s) => s.state === "working").length;
+    syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), workingInitial);
+  }, [hydraSettings, sessions.map(s=>s.state).join(",")]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const currentActive = sessions.find((s) => s.active);
-      if (!currentActive) return;
-
-      invoke<string>("check_agent_state", { sessionId: currentActive.id })
-        .then((detectedState) => {
-          if (detectedState) {
-            setSessions((prev) =>
-              prev.map((s) =>
-                s.active ? { ...s, state: detectedState as WorktreeSession["state"] } : s
-              )
-            );
-          }
-        })
-        .catch(() => {});
+      if (currentActive) {
+        invoke<string>("check_agent_state", { sessionId: currentActive.id })
+          .then((detectedState) => {
+            if (detectedState) {
+              setSessions((prev) => {
+                const next = prev.map((s) => s.active ? { ...s, state: detectedState as WorktreeSession["state"] } : s);
+                // Sync keep-awake with new working count
+                const wc = next.filter((s) => s.state === "working").length;
+                syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+                return next;
+              });
+            } else {
+              const wc = sessions.filter((s) => s.state === "working").length;
+              syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+            }
+          })
+          .catch(() => {});
+      } else {
+        const wc = sessions.filter((s) => s.state === "working").length;
+        syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+      }
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [sessions]);
+  }, [sessions, hydraSettings]);
+
+  // Poll keep-awake status for UI indicator (like Orca CaffeinateStatusSegment)
+  useEffect(() => {
+    const id = setInterval(() => {
+      invoke<{ enabled: boolean; working_count: number; active: boolean }>("get_keep_awake_status")
+        .then((s) => setKeepAwakeActive(s.active))
+        .catch(()=>{});
+    }, 3000);
+    invoke<{ enabled: boolean; working_count: number; active: boolean }>("get_keep_awake_status")
+      .then((s) => setKeepAwakeActive(s.active))
+      .catch(()=>{});
+    return () => clearInterval(id);
+  }, []);
 
   const handleSelectProject = (proj: HydraProject) => {
     setActiveProject(proj);
@@ -760,6 +792,12 @@ export default function App() {
                   Active Agent
                 </span>
                 <div className="flex items-center gap-2">
+                  {keepAwakeActive && (
+                    <span title="Keep awake active — preventing display/system sleep while agents work" className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      <Coffee className="w-3 h-3" />
+                      awake
+                    </span>
+                  )}
                   <button
                     onClick={() => setIsPairingOpen(true)}
                     title="Pair Mobile Companion"
