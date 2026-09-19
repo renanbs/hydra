@@ -17,7 +17,7 @@ use agent_state::{detect_agent_state, fold_terminal_output};
 use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState};
 use git_status::{get_git_status, GitRepoStatus};
 use pairing::{PairingManager, PairingPayload};
-use project_manager::{add_existing_project, list_local_projects, HydraProject};
+use project_manager::{add_existing_project, list_local_projects, remove_added_project, HydraProject};
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
     create_git_worktree, create_new_project, list_git_worktrees, remove_git_worktree,
@@ -48,6 +48,11 @@ fn list_projects() -> Vec<HydraProject> {
 #[tauri::command]
 fn register_existing_project(path: String) -> Result<HydraProject, String> {
     add_existing_project(&path)
+}
+
+#[tauri::command]
+fn remove_project(path: String) -> Result<(), String> {
+    remove_added_project(&path)
 }
 
 #[tauri::command]
@@ -243,6 +248,7 @@ pub fn run() {
             get_repo_git_status,
             list_projects,
             register_existing_project,
+            remove_project,
             list_worktrees,
             create_project,
             create_worktree,

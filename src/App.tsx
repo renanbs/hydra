@@ -117,7 +117,7 @@ export default function App() {
     deltaSign: -1,
   });
 
-  // 1. Carrega o estado persistido de visibilidade dos painéis (Orca / Herdr style)
+  // 1. Carrega o estado persistido de visibilidade dos painéis
   useEffect(() => {
     invoke<UiLayoutState>("get_layout_persistence")
       .then((layout) => {
@@ -129,7 +129,6 @@ export default function App() {
       .catch(console.error);
   }, []);
 
-  // Salva no SQLite sempre que um painel for alternado
   const updateLeftSidebar = (open: boolean) => {
     setIsLeftSidebarOpen(open);
     invoke("save_layout_persistence", {
@@ -318,6 +317,24 @@ export default function App() {
         content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
       }
     ]);
+  };
+
+  const handleRemoveProject = (proj: HydraProject) => {
+    invoke("remove_project", { path: proj.path })
+      .then(() => {
+        invoke<HydraProject[]>("list_projects").then((updated) => {
+          setProjects(updated);
+          if (activeProject?.path === proj.path) {
+            if (updated.length > 0) {
+              handleSelectProject(updated[0]);
+            } else {
+              setActiveProject(null);
+              setSessions([]);
+            }
+          }
+        });
+      })
+      .catch(console.error);
   };
 
   const handleSelectGitWorktree = (wt: GitWorktreeInfo) => {
@@ -685,6 +702,7 @@ export default function App() {
                 gitStatus={gitStatus}
                 gitWorktrees={gitWorktrees}
                 onSelectProject={handleSelectProject}
+                onRemoveProject={handleRemoveProject}
                 onSelectSession={handleSelectSession}
                 onSelectGitWorktree={handleSelectGitWorktree}
                 onDeleteGitWorktree={handleDeleteGitWorktree}

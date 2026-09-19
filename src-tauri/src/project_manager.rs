@@ -13,9 +13,9 @@ pub struct HydraProject {
 pub fn list_local_projects() -> Vec<HydraProject> {
     let mut projects = Vec::new();
 
-    // 1. Carrega projetos salvos explicitamente pelo usuário no SQLite
+    // Carrega SOMENTE projetos adicionados explicitamente pelo usuário no SQLite
     if let Ok(home) = std::env::var("HOME") {
-        let db_path = PathBuf::from(home.clone()).join(".config").join("hydra").join("hydra_sessions.sqlite3");
+        let db_path = PathBuf::from(home).join(".config").join("hydra").join("hydra_sessions.sqlite3");
         if let Ok(conn) = rusqlite::Connection::open(&db_path) {
             let _ = conn.execute(
                 "CREATE TABLE IF NOT EXISTS added_projects (
@@ -49,57 +49,6 @@ pub fn list_local_projects() -> Vec<HydraProject> {
         }
     }
 
-    // 2. O próprio diretório atual (se ainda não adicionado)
-    if let Ok(current) = std::env::current_dir() {
-        let current_path = current.to_string_lossy().to_string();
-        if !projects.iter().any(|p| p.path == current_path) {
-            let name = current
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or("hydra")
-                .to_string();
-            let is_git = current.join(".git").exists();
-            let branch = if is_git { get_branch_for_path(&current) } else { "none".to_string() };
-
-            projects.push(HydraProject {
-                id: "proj_current".to_string(),
-                name,
-                path: current_path,
-                is_git,
-                current_branch: branch,
-            });
-        }
-    }
-
-    // 3. Varredura rápida em ~/src
-    if let Ok(home) = std::env::var("HOME") {
-        let src_dir = PathBuf::from(home).join("src");
-        if let Ok(entries) = std::fs::read_dir(&src_dir) {
-            for entry in entries.flatten() {
-                if let Ok(file_type) = entry.file_type() {
-                    if file_type.is_dir() {
-                        let path = entry.path();
-                        let path_str = path.to_string_lossy().to_string();
-                        let name = entry.file_name().to_string_lossy().to_string();
-                        if name.starts_with('.') || projects.iter().any(|p| p.path == path_str) {
-                            continue;
-                        }
-                        let is_git = path.join(".git").exists();
-                        let branch = if is_git { get_branch_for_path(&path) } else { "none".to_string() };
-
-                        projects.push(HydraProject {
-                            id: format!("proj_{name}"),
-                            name,
-                            path: path_str,
-                            is_git,
-                            current_branch: branch,
-                        });
-                    }
-                }
-            }
-        }
-    }
-
     projects
 }
 
@@ -118,7 +67,7 @@ pub fn add_existing_project(path_str: &str) -> Result<HydraProject, String> {
     let is_git = p.join(".git").exists();
     let branch = if is_git { get_branch_for_path(&p) } else { "none".to_string() };
 
-    // Persiste no SQLite
+    // Persiste no SQLite como projeto adicionado pelo usuário
     if let Ok(home) = std::env::var("HOME") {
         let db_path = PathBuf::from(home).join(".config").join("hydra").join("hydra_sessions.sqlite3");
         if let Ok(conn) = rusqlite::Connection::open(&db_path) {
@@ -141,6 +90,17 @@ pub fn add_existing_project(path_str: &str) -> Result<HydraProject, String> {
         is_git,
         current_branch: branch,
     })
+}
+
+pub fn remove_added_project(path_str: &str) -> Result<(), String> {
+    if let Ok(home) = std::env::var("HOME") {
+        let db_path = PathBuf::from(home).join(".config").join("hydra").join("hydra_sessions.sqlite3");
+        if let Ok(conn) = rusqlite::Connection::open(&db_path) {
+            let _ = conn.execute("DELETE FROM added_projects WHERE path = ?1", rusqlite::params![path_str]);
+            let _ = conn.execute("DELETE FROM sessions WHERE project_path = ?1", rusqlite::params![path_str]);
+        }
+    }
+    Ok(())
 }
 
 fn get_branch_for_path(path: &Path) -> String {

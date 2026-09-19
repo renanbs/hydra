@@ -61,6 +61,7 @@ interface WorktreeSidebarProps {
   gitStatus: GitRepoStatus | null;
   gitWorktrees: GitWorktreeInfo[];
   onSelectProject: (proj: HydraProject) => void;
+  onRemoveProject: (proj: HydraProject) => void;
   onSelectSession: (id: string) => void;
   onSelectGitWorktree: (wt: GitWorktreeInfo) => void;
   onDeleteGitWorktree: (wt: GitWorktreeInfo) => void;
@@ -80,6 +81,7 @@ export function WorktreeSidebar({
   gitStatus,
   gitWorktrees,
   onSelectProject,
+  onRemoveProject,
   onSelectSession,
   onSelectGitWorktree,
   onDeleteGitWorktree,
@@ -120,13 +122,13 @@ export function WorktreeSidebar({
       <div className="h-10 border-b border-[#1f2024] px-3 flex items-center justify-between bg-[#101114] shrink-0">
         <span className="truncate select-none text-[11px] font-bold text-neutral-300 tracking-wider uppercase flex items-center gap-1.5">
           <FolderGit2 className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Projects & Workspaces</span>
+          <span>Projects</span>
         </span>
 
         <div className="flex shrink-0 items-center gap-1">
           <button
             onClick={onOpenAddRepoDialog}
-            title="Add Project (Folder / Git / Clone)"
+            title="Add Project (Existing Folder / Git Clone)"
             className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition cursor-pointer"
           >
             <FolderPlus className="w-3.5 h-3.5" />
@@ -207,13 +209,14 @@ export function WorktreeSidebar({
       {/* 3. ORCA REPO TREE WITH NESTED WORKTREES (build-rows.ts + SectionHeader.tsx 100%) */}
       <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3">
         {projects.length === 0 ? (
-          <div className="p-6 text-center text-neutral-500 text-xs space-y-2">
-            <p>No projects added.</p>
+          <div className="p-6 text-center text-neutral-500 text-xs space-y-3">
+            <p className="text-neutral-400 font-medium">No projects added yet.</p>
+            <p className="text-[11px] text-neutral-500">Add an existing project from disk or clone a Git repository to get started.</p>
             <button
               onClick={onOpenAddRepoDialog}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-medium transition cursor-pointer"
             >
-              <FolderPlus className="w-3 h-3 text-emerald-400" />
+              <FolderPlus className="w-3.5 h-3.5" />
               <span>Add Existing Project</span>
             </button>
           </div>
@@ -265,6 +268,16 @@ export function WorktreeSidebar({
                         +{gitStatus.modified_files}
                       </span>
                     )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveProject(proj);
+                      }}
+                      title="Remove project from Hydra"
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
                   </div>
                 </div>
 
