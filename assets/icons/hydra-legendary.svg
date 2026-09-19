@@ -1,0 +1,262 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background Radial Ambient Glow -->
+    <radialGradient id="w-bg" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#052c20" stop-opacity="0.85"/>
+      <stop offset="45%" stop-color="#02120d" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Emerald Shading Gradients -->
+    <linearGradient id="body-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e3a2e"/>
+      <stop offset="60%" stop-color="#07221b"/>
+      <stop offset="100%" stop-color="#020e0a"/>
+    </linearGradient>
+
+    <linearGradient id="body-mid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="60%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <linearGradient id="neon-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0"/>
+      <stop offset="30%" stop-color="#34d399"/>
+      <stop offset="70%" stop-color="#00f5d4"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="fang-glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#a7f3d0"/>
+      <stop offset="100%" stop-color="#00f5d4"/>
+    </linearGradient>
+
+    <!-- Glow Filters -->
+    <filter id="f-heavy" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="b1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b2"/>
+      <feMerge>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="f-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="f-eye" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- PURE PITCH BLACK BACKGROUND -->
+  <rect width="1024" height="1024" fill="#000000"/>
+  <rect width="1024" height="1024" fill="url(#w-bg)"/>
+
+  <!-- Ambient Hydra Aura -->
+  <circle cx="512" cy="450" r="340" fill="#00f5d4" opacity="0.08" filter="url(#f-heavy)"/>
+
+  <!-- ==================== BASE TORSO & COILS ==================== -->
+  <g id="hydra-base">
+    <!-- Coiled Serpent Base -->
+    <path d="M 280 880 C 220 940 350 970 512 970 C 674 970 804 940 744 880 C 684 830 594 860 512 860 C 430 860 340 830 280 880 Z"
+          fill="url(#body-dark)" stroke="#059669" stroke-width="2"/>
+
+    <!-- Common Lower Torso Trunk (Where all three necks branch) -->
+    <path d="M 380 900 C 370 780 430 700 460 620 L 564 620 C 594 700 654 780 644 900 C 574 930 450 930 380 900 Z"
+          fill="url(#body-dark)" stroke="#10b981" stroke-width="2"/>
+
+    <!-- Ventral Scale Plates on Base Body -->
+    <polygon points="512,640 560,700 512,735 464,700" fill="url(#body-mid)" stroke="#34d399" stroke-width="1.5"/>
+    <polygon points="512,735 566,800 512,835 458,800" fill="url(#body-mid)" stroke="#34d399" stroke-width="1.5"/>
+    <polygon points="512,835 570,890 512,925 454,890" fill="url(#body-mid)" stroke="#34d399" stroke-width="1.5"/>
+
+    <!-- Glowing Chest Core Diamond (Herdr / Hydra Runtime Engine) -->
+    <polygon points="512,655 540,695 512,725 484,695" fill="url(#neon-glow)" filter="url(#f-heavy)"/>
+    <circle cx="512" cy="695" r="5" fill="#ffffff"/>
+  </g>
+
+  <!-- ==================== 1. LEFT HYDRA HEAD & NECK ==================== -->
+  <g id="left-serpent-branch">
+    <!-- Left Neck: Branches out wide to the left and sweeps up to the left head -->
+    <!-- Solid Muscular Neck -->
+    <path d="M 460 640 C 360 620 180 570 160 440 C 145 340 200 290 260 270 L 290 340 C 240 355 210 390 220 450 C 235 530 350 565 440 580 Z"
+          fill="url(#body-dark)" stroke="#059669" stroke-width="2"/>
+
+    <!-- Neon Rim Highlight on top curve of left neck -->
+    <path d="M 460 640 C 360 620 180 570 160 440 C 145 340 200 290 260 270"
+          fill="none" stroke="url(#neon-glow)" stroke-width="4" stroke-linecap="round" filter="url(#f-soft)"/>
+
+    <!-- Dorsal Spines along Left Neck -->
+    <g fill="url(#neon-glow)" filter="url(#f-soft)">
+      <polygon points="175,530 95,540 160,490"/>
+      <polygon points="155,440 80,430 145,395"/>
+      <polygon points="160,350 90,320 155,310"/>
+      <polygon points="195,290 145,240 200,265"/>
+    </g>
+
+    <!-- LEFT DRAGON HEAD (Positioned on the LEFT, lunging forward-right) -->
+    <!-- Lower Jaw Dropped Open Snarling -->
+    <path d="M 270 330 L 320 415 L 390 415 L 375 365 L 310 320 Z"
+          fill="url(#body-dark)" stroke="#10b981" stroke-width="2"/>
+    <polygon points="360,400 375,355 385,402" fill="url(#fang-glow)" filter="url(#f-soft)"/>
+    <polygon points="325,385 338,350 345,388" fill="#ffffff"/>
+
+    <!-- Tongue / Venom line flickering from jaw -->
+    <path d="M 315 340 Q 380 370 440 350 L 465 335 M 440 350 L 465 365"
+          fill="none" stroke="#00f5d4" stroke-width="3" stroke-linecap="round" filter="url(#f-soft)"/>
+
+    <!-- Upper Skull & Brow -->
+    <path d="M 250 265 C 270 210 320 195 380 225 C 430 250 455 285 465 315 C 425 330 375 325 315 310 Z"
+          fill="url(#body-mid)" stroke="#34d399" stroke-width="2"/>
+    <path d="M 250 265 C 280 225 330 215 380 225 L 340 280 Z" fill="url(#neon-glow)"/>
+
+    <!-- Magnificent Horns flaring back from Left Head -->
+    <polygon points="260,245 130,170 230,225" fill="url(#neon-glow)" filter="url(#f-soft)"/>
+    <polygon points="290,230 170,135 260,195" fill="url(#neon-glow)" filter="url(#f-soft)"/>
+    <polygon points="335,225 240,110 305,185" fill="#ffffff"/>
+
+    <!-- Snout & Lethal Upper Fangs -->
+    <path d="M 400 285 C 440 300 465 310 460 320 C 425 335 385 330 335 315 Z"
+          fill="url(#body-dark)" stroke="#10b981" stroke-width="1.8"/>
+    <circle cx="442" cy="305" r="3.5" fill="#00f5d4"/> <!-- Nostril -->
+
+    <!-- Upper Lethal Curved Fangs -->
+    <polygon points="430,320 448,322 438,370" fill="url(#fang-glow)" filter="url(#f-heavy)"/>
+    <polygon points="395,322 410,324 402,360" fill="#ffffff"/>
+
+    <!-- Glowing Reptilian Slit Eye -->
+    <polygon points="330,250 370,265 355,280 318,270" fill="#00f5d4" filter="url(#f-eye)"/>
+    <polygon points="334,253 364,265 352,276 324,270" fill="#ffffff"/>
+    <line x1="345" y1="254" x2="340" y2="276" stroke="#000000" stroke-width="3"/>
+  </g>
+
+  <!-- ==================== 2. RIGHT HYDRA HEAD & NECK ==================== -->
+  <g id="right-serpent-branch">
+    <!-- Right Neck: Branches out wide to the right and sweeps up to the right head -->
+    <path d="M 564 640 C 664 620 844 570 864 440 C 879 340 824 290 764 270 L 734 340 C 784 355 814 390 804 450 C 789 530 674 565 584 580 Z"
+          fill="url(#body-dark)" stroke="#059669" stroke-width="2"/>
+
+    <!-- Neon Rim Highlight on top curve of right neck -->
+    <path d="M 564 640 C 664 620 844 570 864 440 C 879 340 824 290 764 270"
+          fill="none" stroke="url(#neon-glow)" stroke-width="4" stroke-linecap="round" filter="url(#f-soft)"/>
+
+    <!-- Dorsal Spines along Right Neck -->
+    <g fill="url(#neon-glow)" filter="url(#f-soft)">
+      <polygon points="849,530 929,540 864,490"/>
+      <polygon points="869,440 944,430 879,395"/>
+      <polygon points="864,350 934,320 869,310"/>
+      <polygon points="829,290 879,240 824,265"/>
+    </g>
+
+    <!-- RIGHT DRAGON HEAD (Positioned on the RIGHT, lunging forward-left) -->
+    <!-- Lower Jaw Dropped Open -->
+    <path d="M 754 330 L 704 415 L 634 415 L 649 365 L 714 320 Z"
+          fill="url(#body-dark)" stroke="#10b981" stroke-width="2"/>
+    <polygon points="664,400 649,355 639,402" fill="url(#fang-glow)" filter="url(#f-soft)"/>
+    <polygon points="699,385 686,350 679,388" fill="#ffffff"/>
+
+    <!-- Tongue / Venom line flickering from jaw -->
+    <path d="M 709 340 Q 644 370 584 350 L 559 335 M 584 350 L 559 365"
+          fill="none" stroke="#00f5d4" stroke-width="3" stroke-linecap="round" filter="url(#f-soft)"/>
+
+    <!-- Upper Skull & Brow -->
+    <path d="M 774 265 C 754 210 704 195 644 225 C 594 250 569 285 559 315 C 599 330 649 325 709 310 Z"
+          fill="url(#body-mid)" stroke="#34d399" stroke-width="2"/>
+    <path d="M 774 265 C 744 225 694 215 644 225 L 684 280 Z" fill="url(#neon-glow)"/>
+
+    <!-- Magnificent Horns flaring back from Right Head -->
+    <polygon points="764,245 894,170 794,225" fill="url(#neon-glow)" filter="url(#f-soft)"/>
+    <polygon points="734,230 854,135 764,195" fill="url(#neon-glow)" filter="url(#f-soft)"/>
+    <polygon points="689,225 784,110 719,185" fill="#ffffff"/>
+
+    <!-- Snout & Lethal Upper Fangs -->
+    <path d="M 624 285 C 584 300 559 310 564 320 C 599 335 639 330 689 315 Z"
+          fill="url(#body-dark)" stroke="#10b981" stroke-width="1.8"/>
+    <circle cx="582" cy="305" r="3.5" fill="#00f5d4"/>
+
+    <!-- Upper Fangs -->
+    <polygon points="594,320 576,322 586,370" fill="url(#fang-glow)" filter="url(#f-heavy)"/>
+    <polygon points="629,322 614,324 622,360" fill="#ffffff"/>
+
+    <!-- Glowing Eye -->
+    <polygon points="694,250 654,265 669,280 706,270" fill="#00f5d4" filter="url(#f-eye)"/>
+    <polygon points="690,253 660,265 672,276 700,270" fill="#ffffff"/>
+    <line x1="679" y1="254" x2="684" y2="276" stroke="#000000" stroke-width="3"/>
+  </g>
+
+  <!-- ==================== 3. CENTER HYDRA HEAD & TALL NECK ==================== -->
+  <g id="center-serpent-branch">
+    <!-- Center Neck: Tall, powerful column rising straight up between the two flank heads -->
+    <path d="M 470 630 C 465 500 480 380 485 270 L 539 270 C 544 380 559 500 554 630 Z"
+          fill="url(#body-dark)" stroke="#059669" stroke-width="2"/>
+
+    <!-- Ventral scales on Center Neck -->
+    <polygon points="512,310 540,350 512,375 484,350" fill="url(#body-mid)" stroke="#34d399" stroke-width="1.2"/>
+    <polygon points="512,390 544,435 512,460 480,435" fill="url(#body-mid)" stroke="#34d399" stroke-width="1.2"/>
+    <polygon points="512,475 548,525 512,550 476,525" fill="url(#body-mid)" stroke="#34d399" stroke-width="1.2"/>
+    <polygon points="512,560 552,610 512,635 472,610" fill="url(#body-mid)" stroke="#34d399" stroke-width="1.2"/>
+
+    <!-- CENTER DRAGON HEAD (Towering high at Y=160, Frontal/Roaring with Giant Crown Horns) -->
+    <!-- Crown Great Dragon Horns (Majestic, piercing the sky) -->
+    <polygon points="512,30 478,140 512,115 546,140" fill="#ffffff" filter="url(#f-heavy)"/>
+    <!-- Swept Horn Left -->
+    <polygon points="512,70 395,95 465,160" fill="url(#neon-glow)" filter="url(#f-soft)"/>
+    <polygon points="512,70 330,135 425,185" fill="url(#body-mid)"/>
+    <!-- Swept Horn Right -->
+    <polygon points="512,70 629,95 559,160" fill="url(#neon-glow)" filter="url(#f-soft)"/>
+    <polygon points="512,70 694,135 599,185" fill="url(#body-mid)"/>
+
+    <!-- Cranium & Brow Ridge -->
+    <polygon points="512,145 420,195 512,225 604,195" fill="url(#body-mid)" stroke="#34d399" stroke-width="2"/>
+    <polygon points="512,145 420,195 460,235 512,225" fill="url(#body-dark)"/>
+    <polygon points="512,145 604,195 564,235 512,225" fill="url(#neon-glow)"/>
+
+    <!-- Glowing Frontal Eyes -->
+    <polygon points="445,200 480,212 470,226 438,218" fill="#00f5d4" filter="url(#f-eye)"/>
+    <polygon points="448,202 476,212 468,224 442,218" fill="#ffffff"/>
+    <line x1="458" y1="203" x2="454" y2="224" stroke="#000000" stroke-width="3"/>
+
+    <polygon points="579,200 544,212 554,226 586,218" fill="#00f5d4" filter="url(#f-eye)"/>
+    <polygon points="576,202 548,212 556,224 582,218" fill="#ffffff"/>
+    <line x1="566" y1="203" x2="570" y2="224" stroke="#000000" stroke-width="3"/>
+
+    <!-- Snout & Frontal Roaring Maw -->
+    <polygon points="512,225 465,280 512,305 559,280" fill="url(#body-dark)" stroke="#10b981" stroke-width="2"/>
+    <circle cx="485" cy="285" r="3.5" fill="#00f5d4"/>
+    <circle cx="539" cy="285" r="3.5" fill="#00f5d4"/>
+
+    <!-- Roaring Mouth Opening -->
+    <path d="M 460 290 Q 512 325 564 290 Q 512 355 460 290 Z" fill="#010c08" stroke="#10b981" stroke-width="1.8"/>
+
+    <!-- Energy Plasma Breath -->
+    <circle cx="512" cy="320" r="15" fill="#00f5d4" opacity="0.8" filter="url(#f-heavy)"/>
+    <circle cx="512" cy="320" r="7" fill="#ffffff"/>
+
+    <!-- Frontal Lethal Fangs -->
+    <polygon points="472,292 488,296 478,335" fill="#ffffff" filter="url(#f-heavy)"/>
+    <polygon points="552,292 536,296 546,335" fill="#ffffff" filter="url(#f-heavy)"/>
+    <polygon points="496,298 506,300 501,320" fill="#ffffff"/>
+    <polygon points="528,298 518,300 523,320" fill="#ffffff"/>
+
+    <!-- Lower Jaw / Beard -->
+    <polygon points="478,335 512,370 546,335 512,345" fill="url(#body-mid)" stroke="#34d399" stroke-width="2"/>
+    <polygon points="512,370 495,395 512,415 529,395" fill="url(#neon-glow)" filter="url(#f-soft)"/>
+  </g>
+
+  <!-- Framing Tech Circle Ring Accent -->
+  <circle cx="512" cy="512" r="475" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.2"/>
+  <circle cx="512" cy="512" r="485" fill="none" stroke="#00f5d4" stroke-width="0.75" stroke-opacity="0.1" stroke-dasharray="14 10"/>
+</svg>

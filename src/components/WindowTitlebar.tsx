@@ -107,7 +107,7 @@ export function WindowTitlebar({
         >
           <PanelLeft className="w-3.5 h-3.5" />
         </button>
-        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse pointer-events-none" />
+        <img src="/hydra-icon.png" alt="Hydra" className="w-4 h-4 rounded-sm object-contain pointer-events-none shrink-0" />
         <span className="font-semibold text-neutral-200 tracking-wider pointer-events-none">HYDRA</span>
         <span className="text-neutral-600 pointer-events-none">|</span>
         <span className="text-neutral-400 font-mono text-[11px] pointer-events-none">{title}</span>

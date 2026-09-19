@@ -1,0 +1,303 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background Radial Ambient Glow -->
+    <radialGradient id="space-glow" cx="50%" cy="48%" r="65%">
+      <stop offset="0%" stop-color="#052c22" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#02140f" stop-opacity="0.92"/>
+      <stop offset="80%" stop-color="#010605" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- App Squircle Body Surface -->
+    <linearGradient id="badge-surface" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0c1214"/>
+      <stop offset="50%" stop-color="#06090a"/>
+      <stop offset="100%" stop-color="#020304"/>
+    </linearGradient>
+
+    <!-- App Squircle Glowing Rim -->
+    <linearGradient id="badge-border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5d4" stop-opacity="0.6"/>
+      <stop offset="25%" stop-color="#10b981" stop-opacity="0.3"/>
+      <stop offset="75%" stop-color="#047857" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.5"/>
+    </linearGradient>
+
+    <!-- Emerald-Cyan Shading Gradients -->
+    <linearGradient id="grad-lumina" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0"/>
+      <stop offset="25%" stop-color="#34d399"/>
+      <stop offset="70%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <linearGradient id="grad-cyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#67e8f9"/>
+      <stop offset="70%" stop-color="#00f5d4"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="facet-obsidian-left" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#15332c"/>
+      <stop offset="50%" stop-color="#0d211c"/>
+      <stop offset="100%" stop-color="#040d0b"/>
+    </linearGradient>
+
+    <linearGradient id="facet-obsidian-right" x1="100%" y1="0%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#1f463c"/>
+      <stop offset="50%" stop-color="#112d26"/>
+      <stop offset="100%" stop-color="#051410"/>
+    </linearGradient>
+
+    <linearGradient id="facet-emerald-mid" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="60%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+
+    <linearGradient id="rim-stroke" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6ee7b7"/>
+      <stop offset="50%" stop-color="#a7f3d0"/>
+      <stop offset="100%" stop-color="#00f5d4"/>
+    </linearGradient>
+
+    <!-- Glow Filters -->
+    <filter id="hyper-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="b1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b2"/>
+      <feMerge>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="eye-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Canvas Deep Black -->
+  <rect width="1024" height="1024" fill="#000000"/>
+  <rect width="1024" height="1024" fill="url(#space-glow)"/>
+
+  <!-- Squircle App Badge Container -->
+  <rect x="44" y="44" width="936" height="936" rx="220" fill="url(#badge-surface)"/>
+  <rect x="44" y="44" width="936" height="936" rx="220" fill="none" stroke="url(#badge-border)" stroke-width="2.5"/>
+  <rect x="48" y="48" width="928" height="928" rx="216" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.08"/>
+
+  <!-- Tech Grid Background Markings -->
+  <g opacity="0.06" stroke="#10b981" stroke-width="1">
+    <circle cx="512" cy="512" r="340" fill="none" stroke-dasharray="8 16"/>
+    <circle cx="512" cy="512" r="220" fill="none" stroke-dasharray="4 12"/>
+    <line x1="512" y1="44" x2="512" y2="980"/>
+    <line x1="44" y1="512" x2="980" y2="512"/>
+  </g>
+
+  <!-- Ambient Internal Glow Behind the Creature -->
+  <circle cx="512" cy="460" r="240" fill="#00f5d4" opacity="0.14" filter="url(#hyper-glow)"/>
+  <circle cx="512" cy="680" r="160" fill="#10b981" opacity="0.22" filter="url(#hyper-glow)"/>
+
+  <!-- ==================== LEFT HYDRA HEAD & NECK ==================== -->
+  <g id="left-dragon">
+    <!-- Solid Muscular Neck Plates (Connected seamlessly from chest to head) -->
+    <!-- Base Lower Neck -->
+    <path d="M 440 730 C 330 710 190 610 180 430 C 175 350 215 285 285 240 L 330 280 C 275 320 240 375 245 440 C 255 550 350 635 440 670 Z"
+          fill="url(#facet-obsidian-left)" stroke="#059669" stroke-width="1.5" stroke-opacity="0.4"/>
+
+    <!-- Segment 1: Lower Neck Armor Plating -->
+    <path d="M 205 520 C 215 570 260 645 370 690 L 350 725 C 220 675 170 585 160 525 Z"
+          fill="url(#facet-obsidian-right)" stroke="#10b981" stroke-width="1.4" stroke-opacity="0.7"/>
+
+    <!-- Segment 2: Mid Neck Armor Plating -->
+    <path d="M 180 430 C 190 480 225 545 285 595 L 270 625 C 205 570 165 500 155 435 Z"
+          fill="url(#facet-obsidian-left)" stroke="#34d399" stroke-width="1.4" stroke-opacity="0.8"/>
+
+    <!-- Segment 3: Upper Throat Plating -->
+    <path d="M 195 340 C 210 395 245 450 305 495 L 290 525 C 225 475 180 410 168 350 Z"
+          fill="url(#facet-emerald-mid)" stroke="#6ee7b7" stroke-width="1.5"/>
+
+    <!-- Dorsal Armor Horns along Left Neck -->
+    <polygon points="155,435 90,415 145,465" fill="url(#grad-lumina)" filter="url(#soft-glow)"/>
+    <polygon points="168,350 105,315 155,380" fill="url(#grad-lumina)" filter="url(#soft-glow)"/>
+    <polygon points="195,270 135,230 180,295" fill="url(#grad-cyan)" filter="url(#soft-glow)"/>
+
+    <!-- Left Dragon Skull & Jaw (Solidly anchored to the neck at 285,240 and 330,280) -->
+    <!-- Lower Jaw / Cyber Fang -->
+    <polygon points="270,335 345,385 390,325 330,305" fill="#041f18" stroke="#10b981" stroke-width="1.5"/>
+    <polygon points="345,385 375,370 350,315" fill="url(#grad-lumina)"/>
+
+    <!-- Main Cranium / Cheek Plates -->
+    <polygon points="285,240 395,285 370,330 270,285" fill="url(#facet-emerald-mid)" stroke="#34d399" stroke-width="2"/>
+    <polygon points="285,240 395,285 350,255 280,230" fill="url(#facet-obsidian-left)" stroke="#10b981" stroke-width="1.5"/>
+
+    <!-- Swept-Back Horns (Left Crown) -->
+    <polygon points="280,230 150,165 240,225" fill="url(#grad-cyan)" filter="url(#soft-glow)"/>
+    <polygon points="265,215 120,135 210,200" fill="url(#grad-lumina)"/>
+    <polygon points="295,235 215,180 265,240" fill="#ffffff" opacity="0.9"/>
+
+    <!-- Left Eye (Piercing Glowing Cyan Slit) -->
+    <polygon points="325,260 365,275 345,285 315,272" fill="#00f5d4" filter="url(#eye-glow)"/>
+    <polygon points="328,262 360,274 344,282 320,272" fill="#ffffff"/>
+
+    <!-- Rim Light Contour Line -->
+    <path d="M 120 135 L 265 215 L 285 240 L 395 285 L 345 385" fill="none" stroke="url(#rim-stroke)" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- ==================== RIGHT HYDRA HEAD & NECK ==================== -->
+  <g id="right-dragon">
+    <!-- Solid Muscular Neck Plates (Symmetrical counterpart) -->
+    <!-- Base Lower Neck -->
+    <path d="M 584 730 C 694 710 834 610 844 430 C 849 350 809 285 739 240 L 694 280 C 749 320 784 375 779 440 C 769 550 674 635 584 670 Z"
+          fill="url(#facet-obsidian-right)" stroke="#059669" stroke-width="1.5" stroke-opacity="0.4"/>
+
+    <!-- Segment 1: Lower Neck Armor Plating -->
+    <path d="M 819 520 C 809 570 764 645 654 690 L 674 725 C 804 675 854 585 864 525 Z"
+          fill="url(#facet-obsidian-left)" stroke="#10b981" stroke-width="1.4" stroke-opacity="0.7"/>
+
+    <!-- Segment 2: Mid Neck Armor Plating -->
+    <path d="M 844 430 C 834 480 799 545 739 595 L 754 625 C 819 570 859 500 869 435 Z"
+          fill="url(#facet-obsidian-right)" stroke="#34d399" stroke-width="1.4" stroke-opacity="0.8"/>
+
+    <!-- Segment 3: Upper Throat Plating -->
+    <path d="M 829 340 C 814 395 779 450 719 495 L 734 525 C 799 475 844 410 856 350 Z"
+          fill="url(#facet-emerald-mid)" stroke="#6ee7b7" stroke-width="1.5"/>
+
+    <!-- Dorsal Armor Horns along Right Neck -->
+    <polygon points="869,435 934,415 879,465" fill="url(#grad-lumina)" filter="url(#soft-glow)"/>
+    <polygon points="856,350 919,315 869,380" fill="url(#grad-lumina)" filter="url(#soft-glow)"/>
+    <polygon points="829,270 889,230 844,295" fill="url(#grad-cyan)" filter="url(#soft-glow)"/>
+
+    <!-- Right Dragon Skull & Jaw -->
+    <!-- Lower Jaw / Cyber Fang -->
+    <polygon points="754,335 679,385 634,325 694,305" fill="#041f18" stroke="#10b981" stroke-width="1.5"/>
+    <polygon points="679,385 649,370 674,315" fill="url(#grad-lumina)"/>
+
+    <!-- Main Cranium / Cheek Plates -->
+    <polygon points="739,240 629,285 654,330 754,285" fill="url(#facet-emerald-mid)" stroke="#34d399" stroke-width="2"/>
+    <polygon points="739,240 629,285 674,255 744,230" fill="url(#facet-obsidian-right)" stroke="#10b981" stroke-width="1.5"/>
+
+    <!-- Swept-Back Horns (Right Crown) -->
+    <polygon points="744,230 874,165 784,225" fill="url(#grad-cyan)" filter="url(#soft-glow)"/>
+    <polygon points="759,215 904,135 814,200" fill="url(#grad-lumina)"/>
+    <polygon points="729,235 809,180 759,240" fill="#ffffff" opacity="0.9"/>
+
+    <!-- Right Eye (Piercing Glowing Cyan Slit) -->
+    <polygon points="699,260 659,275 679,285 709,272" fill="#00f5d4" filter="url(#eye-glow)"/>
+    <polygon points="696,262 664,274 680,282 704,272" fill="#ffffff"/>
+
+    <!-- Rim Light Contour Line -->
+    <path d="M 904 135 L 759 215 L 739 240 L 629 285 L 679 385" fill="none" stroke="url(#rim-stroke)" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- ==================== CENTER HYDRA HEAD (APEX SOVEREIGN) ==================== -->
+  <g id="center-dragon">
+    <!-- Descending Spinal Chevrons (Interlocking Armor Plates) -->
+    <!-- Plate 4 -->
+    <polygon points="512,560 575,605 512,635 449,605" fill="url(#facet-obsidian-right)" stroke="#10b981" stroke-width="1.6"/>
+    <polygon points="512,560 512,635 449,605" fill="url(#facet-obsidian-left)"/>
+
+    <!-- Plate 3 -->
+    <polygon points="512,495 585,545 512,578 439,545" fill="url(#facet-obsidian-right)" stroke="#34d399" stroke-width="1.6"/>
+    <polygon points="512,495 512,578 439,545" fill="url(#facet-obsidian-left)"/>
+
+    <!-- Plate 2 -->
+    <polygon points="512,430 595,480 512,515 429,480" fill="url(#facet-emerald-mid)" stroke="#6ee7b7" stroke-width="1.8"/>
+    <polygon points="512,430 512,515 429,480" fill="url(#facet-obsidian-left)"/>
+
+    <!-- Plate 1 (Under Chin) -->
+    <polygon points="512,365 580,415 512,445 444,415" fill="url(#grad-lumina)" stroke="#a7f3d0" stroke-width="2"/>
+    <polygon points="512,365 512,445 444,415" fill="url(#facet-obsidian-left)"/>
+
+    <!-- Central Head Skull & Crown -->
+    <!-- Main Center Horn Blades (Tallest, Majestic) -->
+    <polygon points="512,105 455,190 495,235 512,205" fill="url(#grad-cyan)" filter="url(#soft-glow)"/>
+    <polygon points="512,105 410,170 465,220" fill="url(#grad-lumina)"/>
+    
+    <polygon points="512,105 569,190 529,235 512,205" fill="url(#grad-cyan)" filter="url(#soft-glow)"/>
+    <polygon points="512,105 614,170 559,220" fill="url(#grad-lumina)"/>
+
+    <!-- Secondary Flanking Horn Spikes -->
+    <polygon points="455,190 375,185 435,240" fill="url(#facet-emerald-mid)" stroke="#34d399" stroke-width="1.5"/>
+    <polygon points="569,190 649,185 589,240" fill="url(#facet-emerald-mid)" stroke="#34d399" stroke-width="1.5"/>
+
+    <!-- Forehead Facets -->
+    <polygon points="512,205 435,255 475,310 512,295" fill="url(#facet-obsidian-left)" stroke="#10b981" stroke-width="2"/>
+    <polygon points="512,205 589,255 549,310 512,295" fill="url(#facet-obsidian-right)" stroke="#34d399" stroke-width="2"/>
+
+    <!-- Brow Plates -->
+    <polygon points="512,295 445,310 472,345 512,332" fill="url(#facet-obsidian-left)" stroke="#059669" stroke-width="1.6"/>
+    <polygon points="512,295 579,310 552,345 512,332" fill="url(#facet-emerald-mid)" stroke="#10b981" stroke-width="1.6"/>
+
+    <!-- Snout Bridge (3D Chiseled Bevel) -->
+    <polygon points="512,332 478,385 512,415" fill="url(#facet-obsidian-left)" stroke="#10b981" stroke-width="1.6"/>
+    <polygon points="512,332 546,385 512,415" fill="url(#grad-lumina)" stroke="#a7f3d0" stroke-width="1.6"/>
+
+    <!-- Mandible / Predator Chin Tip -->
+    <polygon points="512,415 488,438 512,458 536,438" fill="#00f5d4" filter="url(#soft-glow)"/>
+
+    <!-- Center Forward Eyes (Piercing Laser Slits) -->
+    <!-- Left Eye -->
+    <polygon points="464,310 492,318 482,334 456,326" fill="#00f5d4" filter="url(#eye-glow)"/>
+    <polygon points="466,312 488,318 480,332 460,326" fill="#ffffff"/>
+
+    <!-- Right Eye -->
+    <polygon points="560,310 532,318 542,334 568,326" fill="#00f5d4" filter="url(#eye-glow)"/>
+    <polygon points="558,312 536,318 544,332 564,326" fill="#ffffff"/>
+
+    <!-- Sovereign Third Eye (Autonomous Intelligence Node) -->
+    <polygon points="512,230 530,258 512,282 494,258" fill="#00f5d4" filter="url(#hyper-glow)"/>
+    <polygon points="512,235 526,258 512,278 498,258" fill="#ffffff"/>
+  </g>
+
+  <!-- ==================== CENTRAL HYDRA NEXUS / RUNTIME KERNEL ==================== -->
+  <g id="hydra-kernel">
+    <!-- Pectoral Armor Chassis (Convergence of all three necks) -->
+    <polygon points="512,635 640,670 595,750 512,715" fill="url(#facet-obsidian-right)" stroke="#10b981" stroke-width="2.2"/>
+    <polygon points="512,635 384,670 429,750 512,715" fill="url(#facet-obsidian-left)" stroke="#059669" stroke-width="2.2"/>
+
+    <!-- Lower Torso Segment -->
+    <polygon points="512,715 595,750 550,825 512,800" fill="url(#facet-emerald-mid)" stroke="#34d399" stroke-width="2"/>
+    <polygon points="512,715 429,750 474,825 512,800" fill="url(#facet-obsidian-left)" stroke="#10b981" stroke-width="2"/>
+
+    <!-- Anchor Tail Spire (The Foundation Anchor) -->
+    <polygon points="512,800 550,825 512,895 474,825" fill="url(#grad-lumina)" stroke="#a7f3d0" stroke-width="2.5"/>
+    <polygon points="512,830 532,855 512,885 492,855" fill="#ffffff" filter="url(#soft-glow)"/>
+
+    <!-- ==================== THE RUNTIME CORE (The Herdr / Hydra Engine) ==================== -->
+    <!-- Pulsing Cyan/Emerald Diamond Reactor -->
+    <polygon points="512,650 570,705 512,760 454,705" fill="#021a14" stroke="#00f5d4" stroke-width="3" filter="url(#soft-glow)"/>
+    <polygon points="512,662 556,705 512,748 468,705" fill="url(#grad-cyan)" filter="url(#hyper-glow)"/>
+    <polygon points="512,674 542,705 512,736 482,705" fill="#ffffff"/>
+
+    <!-- Central Spinal Power Bus Line -->
+    <line x1="512" y1="282" x2="512" y2="650" stroke="#00f5d4" stroke-width="3.5" stroke-linecap="round" filter="url(#soft-glow)"/>
+    <line x1="512" y1="282" x2="512" y2="650" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+
+    <line x1="512" y1="760" x2="512" y2="890" stroke="#00f5d4" stroke-width="3.5" stroke-linecap="round" filter="url(#soft-glow)"/>
+    <line x1="512" y1="760" x2="512" y2="890" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Neural Bus Conduit Nodes along Spine -->
+    <circle cx="512" cy="445" r="5" fill="#ffffff" filter="url(#soft-glow)"/>
+    <circle cx="512" cy="515" r="6" fill="#00f5d4" filter="url(#soft-glow)"/>
+    <circle cx="512" cy="578" r="6" fill="#00f5d4" filter="url(#soft-glow)"/>
+    <circle cx="512" cy="635" r="7" fill="#ffffff" filter="url(#soft-glow)"/>
+
+    <!-- Energy Branches from Reactor out to Left and Right Necks -->
+    <path d="M 454 705 C 360 670 300 580 290 525" fill="none" stroke="#00f5d4" stroke-width="2.5" stroke-dasharray="8 8" filter="url(#soft-glow)"/>
+    <path d="M 570 705 C 664 670 724 580 734 525" fill="none" stroke="#00f5d4" stroke-width="2.5" stroke-dasharray="8 8" filter="url(#soft-glow)"/>
+  </g>
+</svg>

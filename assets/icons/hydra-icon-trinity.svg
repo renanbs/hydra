@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg2" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#051410" stop-opacity="0.8"/>
+      <stop offset="65%" stop-color="#010504" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="1"/>
+    </radialGradient>
+
+    <linearGradient id="grad-head-1" x1="0%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="40%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#00f5d4"/>
+    </linearGradient>
+
+    <linearGradient id="grad-head-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5d4"/>
+      <stop offset="50%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <linearGradient id="grad-head-3" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#064e3b"/>
+    </linearGradient>
+
+    <linearGradient id="glow-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7"/>
+      <stop offset="50%" stop-color="#00f5d4"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <filter id="glow2" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <filter id="core-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="28" result="blur"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" fill="#000000"/>
+  <rect width="512" height="512" fill="url(#bg2)"/>
+
+  <!-- Squircle container ring -->
+  <rect x="20" y="20" width="472" height="472" rx="104" fill="none" stroke="#10b981" stroke-width="1.2" stroke-opacity="0.2"/>
+
+  <!-- Core Ambient Glow -->
+  <circle cx="256" cy="256" r="100" fill="#10b981" opacity="0.18" filter="url(#core-glow)"/>
+  <circle cx="256" cy="256" r="50" fill="#00f5d4" opacity="0.22" filter="url(#core-glow)"/>
+
+  <!-- Inner Geometric Guide Ring -->
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#10b981" stroke-width="1" stroke-opacity="0.1" stroke-dasharray="6 12"/>
+
+  <!-- ==================== TRINITY HYDRA EMBLEM ==================== -->
+  <g filter="url(#glow2)">
+    <!-- Branch 1: Top Center Head (Apex Agent) -->
+    <path d="M 256 75 L 305 155 L 285 165 L 256 120 L 227 165 L 207 155 Z"
+          fill="url(#grad-head-1)" stroke="#a7f3d0" stroke-width="1.5"/>
+
+    <!-- Central Body Ribbons (Interlocking Ribbon Loop 1) -->
+    <path d="M 256 120 L 285 165 C 310 205 340 250 380 255 L 425 240 L 440 265 L 385 285 C 330 280 295 235 256 175 Z"
+          fill="url(#grad-head-2)" opacity="0.95"/>
+
+    <!-- Branch 2: Bottom Right Head (Right Agent Fleet) -->
+    <path d="M 425 240 L 440 265 L 375 375 L 350 365 L 395 285 Z"
+          fill="url(#grad-head-3)" stroke="#38bdf8" stroke-width="1"/>
+
+    <!-- Branch 2 Snout & Jaw -->
+    <polygon points="440,265 410,285 418,298 448,278" fill="#00f5d4"/>
+    <circle cx="425" cy="275" r="3.5" fill="#ffffff"/>
+
+    <!-- Ribbon Loop 2 (Bottom cross to Left) -->
+    <path d="M 375 375 L 350 365 C 315 395 265 415 210 415 L 140 435 L 130 405 L 195 390 C 245 390 285 370 320 340 Z"
+          fill="url(#grad-head-1)" opacity="0.95"/>
+
+    <!-- Branch 3: Bottom Left Head (Left Agent Fleet) -->
+    <path d="M 140 435 L 130 405 L 90 295 L 115 285 L 145 370 Z"
+          fill="url(#grad-head-3)" stroke="#34d399" stroke-width="1"/>
+
+    <!-- Branch 3 Snout & Jaw -->
+    <polygon points="90,295 120,315 112,328 82,308" fill="#00f5d4"/>
+    <circle cx="102" cy="310" r="3.5" fill="#ffffff"/>
+
+    <!-- Ribbon Loop 3 (Left rising back to Center) -->
+    <path d="M 90 295 L 115 285 C 125 235 155 195 207 155 L 227 165 C 185 200 155 235 145 280 Z"
+          fill="url(#grad-head-2)" opacity="0.95"/>
+
+    <!-- Central Triquetra Triangle Nexus (The Coordination Kernel) -->
+    <polygon points="256,205 310,300 202,300" fill="#031a14" stroke="url(#glow-stroke)" stroke-width="3"/>
+    
+    <!-- Floating Inverted Core Crystal -->
+    <polygon points="256,285 280,240 232,240" fill="url(#grad-head-1)" stroke="#a7f3d0" stroke-width="1.5"/>
+    <circle cx="256" cy="255" r="5" fill="#ffffff"/>
+  </g>
+
+  <!-- Top Head Glowing Eyes -->
+  <polygon points="256,92 264,106 256,115 248,106" fill="#ffffff" filter="url(#glow2)"/>
+
+  <!-- Brand Typography Sub-label (HYDRA ADE) -->
+  <text x="256" y="472" text-anchor="middle" fill="#10b981" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="16" letter-spacing="8" opacity="0.85">HYDRA ADE</text>
+</svg>

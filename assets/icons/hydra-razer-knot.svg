@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background Vignette -->
+    <radialGradient id="vignette-b" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#052c20" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#02120d" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Serpent Gradient 1: Top Head -->
+    <linearGradient id="serpent-grad-top" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00f5d4"/>
+      <stop offset="50%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <!-- Serpent Gradient 2: Bottom Right Head -->
+    <linearGradient id="serpent-grad-right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#00f5d4"/>
+      <stop offset="100%" stop-color="#065f46"/>
+    </linearGradient>
+
+    <!-- Serpent Gradient 3: Bottom Left Head -->
+    <linearGradient id="serpent-grad-left" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="50%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+
+    <linearGradient id="fang-b" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#6ee7b7"/>
+      <stop offset="100%" stop-color="#00f5d4"/>
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="knot-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="b1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b2"/>
+      <feMerge>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="eye-glow-b" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- PURE BLACK BACKGROUND -->
+  <rect width="1024" height="1024" fill="#000000"/>
+  <rect width="1024" height="1024" fill="url(#vignette-b)"/>
+
+  <!-- Tech Circular Framing -->
+  <circle cx="512" cy="512" r="450" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.2"/>
+  <circle cx="512" cy="512" r="462" fill="none" stroke="#00f5d4" stroke-width="0.75" stroke-opacity="0.1" stroke-dasharray="16 12"/>
+  <circle cx="512" cy="512" r="220" fill="#00f5d4" opacity="0.1" filter="url(#knot-glow)"/>
+
+  <!-- ==================== THREE INTERTWINED HYDRA SERPENTS ==================== -->
+  <g filter="url(#knot-glow)">
+    
+    <!-- SERPENT 1: TOP HEAD (Reaching up from bottom-left, coiling through center) -->
+    <!-- Coiling Body Ribbon -->
+    <path d="M 280 720 C 350 780 470 650 490 540 C 510 430 460 300 512 180 L 545 200 C 495 320 555 430 530 550 C 505 670 380 820 280 720 Z"
+          fill="url(#serpent-grad-top)"/>
+
+    <!-- Spines on Serpent 1 -->
+    <polygon points="505,250 460,230 495,280" fill="#00f5d4"/>
+    <polygon points="485,340 440,320 480,370" fill="#00f5d4"/>
+    <polygon points="515,440 470,430 510,470" fill="#00f5d4"/>
+
+    <!-- Serpent 1 Head (Top Apex, striking forward/down with open jaws) -->
+    <!-- Lower Jaw -->
+    <polygon points="512,180 470,225 500,240 525,200" fill="#031f18" stroke="#10b981" stroke-width="2"/>
+    <polygon points="470,225 482,205 490,228" fill="url(#fang-b)"/>
+
+    <!-- Cranium / Upper Snout -->
+    <polygon points="512,120 560,180 500,195 460,155" fill="url(#serpent-grad-top)" stroke="#a7f3d0" stroke-width="2"/>
+    <!-- Swept Horn -->
+    <polygon points="512,120 480,60 525,100" fill="#ffffff"/>
+    <polygon points="512,120 440,85 490,125" fill="#00f5d4"/>
+
+    <!-- Upper Fangs -->
+    <polygon points="555,180 540,215 530,185" fill="url(#fang-b)" filter="url(#knot-glow)"/>
+    <polygon points="525,190 515,215 510,192" fill="#ffffff"/>
+
+    <!-- Glowing Eye -->
+    <circle cx="505" cy="155" r="7" fill="#00f5d4" filter="url(#eye-glow-b)"/>
+    <circle cx="505" cy="155" r="3" fill="#ffffff"/>
+
+    <!-- SERPENT 2: BOTTOM-RIGHT HEAD (Reaching down-right from center) -->
+    <!-- Coiling Body Ribbon -->
+    <path d="M 520 280 C 620 250 670 420 700 540 C 730 660 680 750 780 840 L 760 870 C 640 780 680 660 650 540 C 620 420 580 320 520 280 Z"
+          fill="url(#serpent-grad-right)"/>
+
+    <!-- Spines on Serpent 2 -->
+    <polygon points="680,480 725,460 690,510" fill="#38bdf8"/>
+    <polygon points="710,580 755,570 715,610" fill="#38bdf8"/>
+    <polygon points="730,690 780,690 740,725" fill="#38bdf8"/>
+
+    <!-- Serpent 2 Head (Bottom-Right, striking outward with lethal fangs) -->
+    <!-- Lower Jaw -->
+    <polygon points="780,840 845,845 840,875 790,865" fill="#031f18" stroke="#10b981" stroke-width="2"/>
+    <polygon points="845,845 825,835 840,855" fill="url(#fang-b)"/>
+
+    <!-- Cranium / Upper Snout -->
+    <polygon points="780,840 855,785 865,825 805,855" fill="url(#serpent-grad-right)" stroke="#a7f3d0" stroke-width="2"/>
+    <!-- Swept Horn -->
+    <polygon points="855,785 915,745 870,775" fill="#ffffff"/>
+    <polygon points="855,785 905,715 850,755" fill="#38bdf8"/>
+
+    <!-- Upper Fangs -->
+    <polygon points="865,825 875,860 850,835" fill="url(#fang-b)" filter="url(#knot-glow)"/>
+    <polygon points="835,835 845,860 825,842" fill="#ffffff"/>
+
+    <!-- Glowing Eye -->
+    <circle cx="825" cy="815" r="7" fill="#00f5d4" filter="url(#eye-glow-b)"/>
+    <circle cx="825" cy="815" r="3" fill="#ffffff"/>
+
+    <!-- SERPENT 3: BOTTOM-LEFT HEAD (Reaching down-left from center) -->
+    <!-- Coiling Body Ribbon -->
+    <path d="M 680 620 C 580 720 420 680 340 580 C 260 480 320 380 220 280 L 195 305 C 290 400 230 510 310 610 C 390 710 550 750 680 620 Z"
+          fill="url(#serpent-grad-left)"/>
+
+    <!-- Spines on Serpent 3 -->
+    <polygon points="305,530 260,545 295,500" fill="#10b981"/>
+    <polygon points="265,430 220,440 260,395" fill="#10b981"/>
+    <polygon points="230,340 185,340 230,310" fill="#10b981"/>
+
+    <!-- Serpent 3 Head (Bottom-Left, striking outward with lethal fangs) -->
+    <!-- Lower Jaw -->
+    <polygon points="220,280 185,340 160,320 195,270" fill="#031f18" stroke="#10b981" stroke-width="2"/>
+    <polygon points="185,340 190,315 175,330" fill="url(#fang-b)"/>
+
+    <!-- Cranium / Upper Snout -->
+    <polygon points="220,280 170,230 215,215 245,255" fill="url(#serpent-grad-left)" stroke="#a7f3d0" stroke-width="2"/>
+    <!-- Swept Horn -->
+    <polygon points="170,230 100,210 150,225" fill="#ffffff"/>
+    <polygon points="170,230 115,175 160,205" fill="#10b981"/>
+
+    <!-- Upper Fangs -->
+    <polygon points="170,230 145,260 175,250" fill="url(#fang-b)" filter="url(#knot-glow)"/>
+    <polygon points="190,240 170,265 195,255" fill="#ffffff"/>
+
+    <!-- Glowing Eye -->
+    <circle cx="205" cy="245" r="7" fill="#00f5d4" filter="url(#eye-glow-b)"/>
+    <circle cx="205" cy="245" r="3" fill="#ffffff"/>
+
+    <!-- CENTRAL TRIQUETRA EMBLEM / HYDRA NUCLEUS -->
+    <polygon points="512,430 580,550 444,550" fill="#02140e" stroke="#00f5d4" stroke-width="3"/>
+    <circle cx="512" cy="510" r="14" fill="#00f5d4" filter="url(#knot-glow)"/>
+    <circle cx="512" cy="510" r="6" fill="#ffffff"/>
+  </g>
+</svg>

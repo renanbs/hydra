@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background Radial Ambient Glow -->
+    <radialGradient id="v-bg" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#052c20" stop-opacity="0.85"/>
+      <stop offset="45%" stop-color="#02120d" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Emerald Shading Palette -->
+    <linearGradient id="body-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e3a2e"/>
+      <stop offset="50%" stop-color="#07221b"/>
+      <stop offset="100%" stop-color="#020e0a"/>
+    </linearGradient>
+
+    <linearGradient id="body-mid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="60%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <linearGradient id="neon-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0"/>
+      <stop offset="30%" stop-color="#34d399"/>
+      <stop offset="70%" stop-color="#00f5d4"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="hyper-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="b1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b2"/>
+      <feMerge>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="eye-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- PURE BLACK BACKGROUND -->
+  <rect width="1024" height="1024" fill="#000000"/>
+  <rect width="1024" height="1024" fill="url(#v-bg)"/>
+
+  <!-- Subtle Ambient Glow -->
+  <circle cx="512" cy="480" r="320" fill="#00f5d4" opacity="0.08" filter="url(#hyper-glow)"/>
+
+  <!-- ==================== COILED SERPENT BASE ==================== -->
+  <g id="base-coils">
+    <!-- Massive serpentine tail coils wrapping around at the bottom -->
+    <path d="M 240 860 C 180 940 340 980 512 980 C 684 980 844 940 784 860 C 720 780 620 830 512 830 C 404 830 304 780 240 860 Z"
+          fill="url(#body-dark)" stroke="#059669" stroke-width="2.5"/>
+    <path d="M 320 890 C 410 930 614 930 704 890" fill="none" stroke="url(#neon-glow)" stroke-width="3" filter="url(#soft-glow)"/>
+    
+    <!-- Central Chest Diamond / Engine Core -->
+    <polygon points="512,800 545,840 512,875 479,840" fill="url(#neon-glow)" filter="url(#hyper-glow)"/>
+    <circle cx="512" cy="840" r="6" fill="#ffffff"/>
+  </g>
+
+  <!-- ==================== THE THREE SERPENTINE NECKS ==================== -->
+  <!-- Left Serpent Neck -->
+  <g id="left-neck">
+    <path d="M 493.1 806.9 L 477.4 802.5 L 462.0 797.5 L 447.0 792.0 L 432.4 786.0 L 418.1 779.6 L 404.2 772.7 L 390.7 765.4 L 377.6 757.7 L 364.9 749.5 L 352.6 740.9 L 340.8 731.9 L 329.4 722.6 L 318.5 712.9 L 308.0 702.8 L 298.0 692.4 L 288.6 681.6 L 279.6 670.5 L 271.1 659.1 L 263.2 647.4 L 255.8 635.5 L 248.9 623.2 L 242.6 610.7 L 236.9 597.9 L 231.8 584.8 L 227.2 571.5 L 223.3 558.0 L 220.0 544.3 L 217.3 530.3 L 215.2 516.1 L 213.8 501.8 L 213.1 487.2 L 213.1 472.4 L 213.8 457.5 L 215.2 442.4 L 217.4 427.2 L 220.3 411.8 L 224.0 396.3 L 228.5 380.7 L 233.9 364.9 L 240.0 349.1 L 200.0 330.9 L 192.0 348.1 L 184.9 365.3 L 178.6 382.6 L 173.2 399.9 L 168.7 417.2 L 164.9 434.6 L 162.1 451.9 L 160.0 469.2 L 158.8 486.4 L 158.4 503.6 L 158.7 520.6 L 159.9 537.6 L 161.9 554.4 L 164.6 571.1 L 168.1 587.6 L 172.4 604.0 L 177.4 620.1 L 183.1 636.0 L 189.6 651.6 L 196.7 667.0 L 204.5 682.1 L 213.1 696.9 L 222.2 711.4 L 232.1 725.6 L 242.5 739.4 L 253.6 752.8 L 265.3 765.9 L 277.6 778.5 L 290.5 790.7 L 304.0 802.5 L 318.0 813.9 L 332.5 824.7 L 347.6 835.1 L 363.2 845.0 L 379.3 854.4 L 395.9 863.3 L 413.0 871.6 L 430.5 879.3 L 448.5 886.5 L 466.9 893.1 Z" fill="url(#body-dark)" stroke="#10b981" stroke-width="2"/>
+    <!-- Neon spine highlight running down the outer back of the left snake -->
+    <path d="M 480 850 C 250 780 120 560 220 340" fill="none" stroke="url(#neon-glow)" stroke-width="4" stroke-linecap="round" filter="url(#soft-glow)"/>
+  </g>
+
+  <!-- Right Serpent Neck -->
+  <g id="right-neck">
+    <path d="M 557.1 893.1 L 575.5 886.5 L 593.5 879.3 L 611.0 871.6 L 628.1 863.3 L 644.7 854.4 L 660.8 845.0 L 676.4 835.1 L 691.5 824.7 L 706.0 813.9 L 720.0 802.5 L 733.5 790.7 L 746.4 778.5 L 758.7 765.9 L 770.4 752.8 L 781.5 739.4 L 791.9 725.6 L 801.8 711.4 L 810.9 696.9 L 819.5 682.1 L 827.3 667.0 L 834.4 651.6 L 840.9 636.0 L 846.6 620.1 L 851.6 604.0 L 855.9 587.6 L 859.4 571.1 L 862.1 554.4 L 864.1 537.6 L 865.3 520.6 L 865.6 503.6 L 865.2 486.4 L 864.0 469.2 L 861.9 451.9 L 859.1 434.6 L 855.3 417.2 L 850.8 399.9 L 845.4 382.6 L 839.1 365.3 L 832.0 348.1 L 824.0 330.9 L 784.0 349.1 L 790.1 364.9 L 795.5 380.7 L 800.0 396.3 L 803.7 411.8 L 806.6 427.2 L 808.8 442.4 L 810.2 457.5 L 810.9 472.4 L 810.9 487.2 L 810.2 501.8 L 808.8 516.1 L 806.7 530.3 L 804.0 544.3 L 800.7 558.0 L 796.8 571.5 L 792.2 584.8 L 787.1 597.9 L 781.4 610.7 L 775.1 623.2 L 768.2 635.5 L 760.8 647.4 L 752.9 659.1 L 744.4 670.5 L 735.4 681.6 L 726.0 692.4 L 716.0 702.8 L 705.5 712.9 L 694.6 722.6 L 683.2 731.9 L 671.4 740.9 L 659.1 749.5 L 646.4 757.7 L 633.3 765.4 L 619.8 772.7 L 605.9 779.6 L 591.6 786.0 L 577.0 792.0 L 562.0 797.5 L 546.6 802.5 L 530.9 806.9 Z" fill="url(#body-dark)" stroke="#10b981" stroke-width="2"/>
+    <!-- Neon spine highlight running down the outer back of the right snake -->
+    <path d="M 544 850 C 774 780 904 560 804 340" fill="none" stroke="url(#neon-glow)" stroke-width="4" stroke-linecap="round" filter="url(#soft-glow)"/>
+  </g>
+
+  <!-- Center Serpent Neck -->
+  <g id="center-neck">
+    <path d="M 566.3 858.9 L 567.7 844.5 L 568.8 830.0 L 569.5 815.4 L 569.9 800.8 L 570.0 786.0 L 569.9 771.2 L 569.5 756.3 L 568.9 741.3 L 568.1 726.2 L 567.0 711.0 L 565.9 695.8 L 564.6 680.4 L 563.1 665.0 L 561.6 649.5 L 559.9 633.9 L 558.2 618.2 L 556.4 602.4 L 554.6 586.6 L 552.7 570.7 L 550.9 554.7 L 549.1 538.6 L 547.3 522.5 L 545.5 506.3 L 543.8 490.0 L 542.1 473.6 L 540.6 457.2 L 539.2 440.8 L 537.9 424.3 L 536.7 407.8 L 535.7 391.2 L 534.8 374.5 L 534.2 357.9 L 533.8 341.2 L 533.5 324.4 L 533.5 307.7 L 533.8 290.9 L 534.4 274.1 L 535.2 257.3 L 536.3 240.4 L 537.8 223.6 L 486.2 216.4 L 483.2 234.1 L 480.6 251.7 L 478.2 269.4 L 476.1 287.0 L 474.4 304.6 L 472.9 322.2 L 471.6 339.7 L 470.6 357.2 L 469.8 374.6 L 469.2 392.0 L 468.8 409.3 L 468.5 426.5 L 468.4 443.6 L 468.4 460.6 L 468.5 477.5 L 468.7 494.3 L 469.0 511.0 L 469.3 527.6 L 469.7 544.0 L 470.1 560.3 L 470.5 576.5 L 470.9 592.4 L 471.3 608.2 L 471.6 623.9 L 471.8 639.3 L 472.0 654.5 L 472.1 669.6 L 472.0 684.4 L 471.9 699.0 L 471.6 713.3 L 471.1 727.4 L 470.5 741.3 L 469.7 754.8 L 468.6 768.1 L 467.4 781.1 L 466.0 793.8 L 464.3 806.1 L 462.3 818.1 L 460.2 829.8 L 457.7 841.1 Z" fill="url(#body-dark)" stroke="#10b981" stroke-width="2.5"/>
+    <path d="M 512 850 C 540 680 480 450 512 220" fill="none" stroke="url(#neon-glow)" stroke-width="4.5" stroke-linecap="round" filter="url(#soft-glow)"/>
+  </g>
+
+  <!-- ==================== THE THREE VIPER HEADS ==================== -->
+  
+    <g class="viper-head">
+      <!-- Horns -->
+      <path d="M 121.3,239.4 L 45.5,167.6 L 84.4,240.4 Z" fill="url(#neon-glow)" filter="url(#soft-glow)"/>
+      <path d="M 96.7,240.0 L 11.6,188.2 L 67.5,250.7 Z" fill="#a7f3d0"/>
+      <!-- Lower Jaw -->
+      <path d="M 90.4,279.6 L 89.4,333.7 L 152.2,381.2 L 141.6,352.0 L 101.0,308.8 Z" fill="url(#body-dark)" stroke="#10b981" stroke-width="1.8"/>
+      <path d="M 149.6,373.9 L 166.2,351.3 L 141.9,364.3 Z" fill="#ffffff"/>
+      <!-- Upper Cranium -->
+      <path d="M 220.0,340.0 L 166.5,272.6 L 113.6,229.7 L 62.1,236.0 L 90.4,279.6 L 167.8,321.7 Z" fill="url(#body-mid)" stroke="#34d399" stroke-width="2"/>
+      <!-- Upper Fang -->
+      <path d="M 197.7,335.7 Q 188.8,367.9 169.2,370.9 Q 183.5,353.3 182.8,328.7 Z" fill="#ffffff" filter="url(#hyper-glow)"/>
+      <!-- Eye -->
+      <polygon points="152.2,290.2 168.9,306.5 155.2,309.8 137.6,295.5" fill="#00f5d4" filter="url(#eye-glow)"/><polygon points="152.2,290.2 168.9,306.5 155.2,309.8 137.6,295.5" fill="#ffffff"/>
+    </g>
+    
+  
+    <g class="viper-head">
+      <!-- Horns -->
+      <path d="M 944.6,329.1 L 1048.2,317.1 L 967.5,300.2 Z" fill="url(#neon-glow)" filter="url(#soft-glow)"/>
+      <path d="M 959.8,309.8 L 1054.2,277.9 L 970.5,280.6 Z" fill="#a7f3d0"/>
+      <!-- Lower Jaw -->
+      <path d="M 933.6,279.6 L 892.7,244.0 L 816.0,261.6 L 845.2,272.2 L 904.4,268.9 Z" fill="url(#body-dark)" stroke="#10b981" stroke-width="1.8"/>
+      <path d="M 823.3,264.2 L 829.9,291.5 L 835.6,264.6 Z" fill="#ffffff"/>
+      <!-- Upper Cranium -->
+      <path d="M 804.0,340.0 L 890.1,342.4 L 956.8,329.4 L 985.1,285.9 L 933.6,279.6 L 851.5,311.8 Z" fill="url(#body-mid)" stroke="#34d399" stroke-width="2"/>
+      <!-- Upper Fang -->
+      <path d="M 821.6,325.7 Q 802.7,298.1 813.0,281.2 Q 817.3,303.5 836.6,318.7 Z" fill="#ffffff" filter="url(#hyper-glow)"/>
+      <!-- Eye -->
+      <polygon points="885.7,320.1 862.6,322.4 868.8,309.8 891.1,305.5" fill="#00f5d4" filter="url(#eye-glow)"/><polygon points="885.7,320.1 862.6,322.4 868.8,309.8 891.1,305.5" fill="#ffffff"/>
+    </g>
+    
+  
+    <g class="viper-head">
+      <!-- Horns -->
+      <path d="M 568.2,60.0 L 605.8,-52.5 L 549.5,22.5 Z" fill="url(#neon-glow)" filter="url(#soft-glow)"/>
+      <path d="M 555.8,35.0 L 568.2,-77.5 L 530.8,10.0 Z" fill="#a7f3d0"/>
+      <!-- Lower Jaw -->
+      <path d="M 512.0,47.5 L 455.8,72.5 L 437.0,160.0 L 462.0,135.0 L 487.0,72.5 Z" fill="url(#body-dark)" stroke="#10b981" stroke-width="1.8"/>
+      <path d="M 443.2,153.8 L 474.5,160.0 L 449.5,141.2 Z" fill="#ffffff"/>
+      <!-- Upper Cranium -->
+      <path d="M 512.0,210.0 L 555.8,122.5 L 574.5,47.5 L 543.2,-2.5 L 512.0,47.5 L 505.8,147.5 Z" fill="url(#body-mid)" stroke="#34d399" stroke-width="2"/>
+      <!-- Upper Fang -->
+      <path d="M 505.8,185.0 Q 468.2,191.2 455.8,172.5 Q 480.8,178.8 505.8,166.2 Z" fill="#ffffff" filter="url(#hyper-glow)"/>
+      <!-- Eye -->
+      <polygon points="530.8,116.2 522.0,141.2 512.0,128.8 518.2,103.8" fill="#00f5d4" filter="url(#eye-glow)"/><polygon points="530.8,116.2 522.0,141.2 512.0,128.8 518.2,103.8" fill="#ffffff"/>
+    </g>
+    
+
+  <!-- Tech Frame Circle Accent -->
+  <circle cx="512" cy="512" r="475" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.2"/>
+  <circle cx="512" cy="512" r="485" fill="none" stroke="#00f5d4" stroke-width="0.75" stroke-opacity="0.1" stroke-dasharray="14 10"/>
+</svg>

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <radialGradient id="min-bg-glow" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#052c22" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#01130e" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="1"/>
+    </radialGradient>
+
+    <linearGradient id="neon-stream" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5d4"/>
+      <stop offset="35%" stop-color="#10b981"/>
+      <stop offset="70%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <linearGradient id="neon-reverse" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="35%" stop-color="#0284c7"/>
+      <stop offset="70%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#00f5d4"/>
+    </linearGradient>
+
+    <linearGradient id="center-beam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#67e8f9"/>
+      <stop offset="60%" stop-color="#00f5d4"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <filter id="m-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="b1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b2"/>
+      <feMerge>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Black Background -->
+  <rect width="1024" height="1024" fill="#000000"/>
+  <rect width="1024" height="1024" fill="url(#min-bg-glow)"/>
+
+  <!-- Squircle container -->
+  <rect x="54" y="54" width="916" height="916" rx="216" fill="#080b0d" stroke="#10b981" stroke-width="2" stroke-opacity="0.3"/>
+  <rect x="58" y="58" width="908" height="908" rx="212" fill="none" stroke="#ffffff" stroke-width="0.75" stroke-opacity="0.08"/>
+
+  <!-- Glowing Aura -->
+  <circle cx="512" cy="512" r="220" fill="#00f5d4" opacity="0.1" filter="url(#m-glow)"/>
+
+  <!-- ==================== THE GEOMETRIC HYDRA GLYPH ==================== -->
+  <g filter="url(#m-glow)">
+    <!-- LEFT HEAD: Rising angular serpent with striking chevron jaw -->
+    <!-- Outer Neck Ribbon -->
+    <path d="M 440 760 L 260 620 C 210 580 180 500 180 410 C 180 290 270 200 370 200 L 410 245 C 335 245 265 310 265 410 C 265 470 290 520 330 550 L 470 660 Z"
+          fill="url(#neon-stream)"/>
+    
+    <!-- Left Head Jaw & Fang -->
+    <polygon points="370,200 450,225 410,245" fill="#ffffff"/>
+    <!-- Left Eye -->
+    <circle cx="340" cy="245" r="12" fill="#000000"/>
+    <circle cx="340" cy="245" r="6" fill="#00f5d4"/>
+
+    <!-- RIGHT HEAD: Mirrored rising angular serpent -->
+    <path d="M 584 760 L 764 620 C 814 580 844 500 844 410 C 844 290 754 200 654 200 L 614 245 C 689 245 759 310 759 410 C 759 470 734 520 694 550 L 554 660 Z"
+          fill="url(#neon-reverse)"/>
+
+    <!-- Right Head Jaw & Fang -->
+    <polygon points="654,200 574,225 614,245" fill="#ffffff"/>
+    <!-- Right Eye -->
+    <circle cx="684" cy="245" r="12" fill="#000000"/>
+    <circle cx="684" cy="245" r="6" fill="#00f5d4"/>
+
+    <!-- CENTER HEAD: Sovereign Vertical Cyber Serpent (The Apex) -->
+    <!-- Crown Horns / Apex Spear -->
+    <polygon points="512,110 440,240 512,210 584,240" fill="url(#center-beam)"/>
+    
+    <!-- Center Head Cranium & Brow -->
+    <polygon points="512,210 420,290 512,360 604,290" fill="#02140e" stroke="url(#center-beam)" stroke-width="5"/>
+    <!-- Center Glowing Diamond Core Eye -->
+    <polygon points="512,250 540,290 512,330 484,290" fill="#00f5d4"/>
+    <circle cx="512" cy="290" r="8" fill="#ffffff"/>
+
+    <!-- Center Spine Column (Connecting Center Head to Nexus) -->
+    <polygon points="512,360 480,430 512,470 544,430" fill="url(#neon-stream)"/>
+    <polygon points="512,470 470,550 512,590 554,550" fill="url(#neon-stream)"/>
+
+    <!-- CHEST NEXUS & ANCHOR (Where all three meet) -->
+    <polygon points="512,590 590,660 512,740 434,660" fill="#02140e" stroke="#00f5d4" stroke-width="5"/>
+    <polygon points="512,625 560,665 512,705 464,665" fill="url(#center-beam)"/>
+
+    <!-- Lower Anchor Blade -->
+    <polygon points="512,740 560,780 512,870 464,780" fill="url(#neon-stream)"/>
+    <circle cx="512" cy="815" r="10" fill="#ffffff"/>
+  </g>
+</svg>
