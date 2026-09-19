@@ -33,6 +33,13 @@ export type HydraSettings = {
   notification_on_blocked: boolean;
   default_branch_prefix: string;
   workspace_dir: string;
+  // Agents — Orca-faithful (AgentsPane.tsx:141)
+  default_tui_agent?: string | "blank" | null;
+  disabled_tui_agents?: string[];
+  agent_status_hooks_enabled?: boolean;
+  tab_auto_generate_title?: boolean;
+  keep_computer_awake_while_agents_run?: boolean;
+  agent_permission_mode?: "yolo" | "manual";
 };
 
 export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
@@ -63,6 +70,12 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   notification_on_blocked: true,
   default_branch_prefix: "feat/",
   workspace_dir: "/home/renan/src",
+  default_tui_agent: null,
+  disabled_tui_agents: [],
+  agent_status_hooks_enabled: true,
+  tab_auto_generate_title: false,
+  keep_computer_awake_while_agents_run: false,
+  agent_permission_mode: "yolo",
 };
 
 export function normalizeHydraSettings(input: unknown): HydraSettings {

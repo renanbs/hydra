@@ -74,6 +74,7 @@ fn default_transition_ms() -> u32 { 140 }
 fn default_divider_thickness() -> u32 { 3 }
 fn default_scrollback() -> u32 { 10000 }
 fn default_branch_prefix() -> String { "feat/".to_string() }
+fn default_agent_perm() -> String { "yolo".to_string() }
 fn default_workspace_dir() -> String {
     let home = std::env::var("HOME").unwrap_or_else(|_| "/home/renan".to_string());
     format!("{home}/src")
@@ -216,6 +217,18 @@ pub struct HydraSettings {
     pub default_branch_prefix: String,
     #[serde(default = "default_workspace_dir")]
     pub workspace_dir: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default_tui_agent: Option<String>,
+    #[serde(default)]
+    pub disabled_tui_agents: Vec<String>,
+    #[serde(default = "default_true")]
+    pub agent_status_hooks_enabled: bool,
+    #[serde(default = "default_false")]
+    pub tab_auto_generate_title: bool,
+    #[serde(default = "default_false")]
+    pub keep_computer_awake_while_agents_run: bool,
+    #[serde(default = "default_agent_perm")]
+    pub agent_permission_mode: String,
 }
 
 impl Default for HydraSettings {
@@ -251,6 +264,12 @@ impl Default for HydraSettings {
             notification_on_blocked: true,
             default_branch_prefix: default_branch_prefix(),
             workspace_dir: default_workspace_dir(),
+            default_tui_agent: None,
+            disabled_tui_agents: vec![],
+            agent_status_hooks_enabled: true,
+            tab_auto_generate_title: false,
+            keep_computer_awake_while_agents_run: false,
+            agent_permission_mode: default_agent_perm(),
         }
     }
 }
