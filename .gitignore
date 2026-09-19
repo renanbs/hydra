@@ -1,34 +1,24 @@
-# Rust
-target/
-**/*.rs.bk
-Cargo.lock
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Node / Web / Vite
-node_modules/
-dist/
-dist-ssr/
+node_modules
+dist
+dist-ssr
 *.local
 
-# Tauri build outputs
-src-tauri/target/
-src-tauri/gen/
-
-# Logs & Environment
-*.log
-.env
-.env.*
-!.env.example
-
-# OS / Editor metadata
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-Thumbs.db
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# SQLite local data
-*.sqlite3
-*.sqlite3-wal
-*.sqlite3-shm
-*.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
