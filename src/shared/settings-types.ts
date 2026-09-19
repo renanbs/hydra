@@ -37,6 +37,9 @@ export type HydraSettings = {
   default_tui_agent?: string | "blank" | null;
   disabled_tui_agents?: string[];
   agent_status_hooks_enabled?: boolean;
+  agent_cmd_overrides?: Record<string, string>;
+  agent_default_args?: Record<string, string>;
+  agent_default_env?: Record<string, Record<string, string>>;
   tab_auto_generate_title?: boolean;
   keep_computer_awake_while_agents_run?: boolean;
   agent_permission_mode?: "yolo" | "manual";
@@ -73,6 +76,9 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   default_tui_agent: null,
   disabled_tui_agents: [],
   agent_status_hooks_enabled: true,
+  agent_cmd_overrides: {},
+  agent_default_args: {},
+  agent_default_env: {},
   tab_auto_generate_title: false,
   keep_computer_awake_while_agents_run: false,
   agent_permission_mode: "yolo",

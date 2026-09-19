@@ -229,6 +229,12 @@ pub struct HydraSettings {
     pub keep_computer_awake_while_agents_run: bool,
     #[serde(default = "default_agent_perm")]
     pub agent_permission_mode: String,
+    #[serde(default)]
+    pub agent_cmd_overrides: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    pub agent_default_args: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    pub agent_default_env: std::collections::HashMap<String, std::collections::HashMap<String, String>>,
 }
 
 impl Default for HydraSettings {
@@ -270,6 +276,9 @@ impl Default for HydraSettings {
             tab_auto_generate_title: false,
             keep_computer_awake_while_agents_run: false,
             agent_permission_mode: default_agent_perm(),
+            agent_cmd_overrides: std::collections::HashMap::new(),
+            agent_default_args: std::collections::HashMap::new(),
+            agent_default_env: std::collections::HashMap::new(),
         }
     }
 }

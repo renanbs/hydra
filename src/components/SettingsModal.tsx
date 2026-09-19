@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
 import {
-  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Upload, Trash2, Info
+  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Upload, Trash2, Info, ChevronDown
 } from "lucide-react";
 import { applyDocumentTheme } from "../lib/document-theme";
 import { getSystemPrefersDark } from "../lib/terminal-theme";
@@ -143,6 +143,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const [searchQuery, setSearchQuery] = useState("");
   const [importError, setImportError] = useState<string | null>(null);
   const [availableAgents, setAvailableAgents] = useState<{ id: string; label: string }[]>([]);
+  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -350,10 +351,10 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                     <h3 className="text-[13px] font-semibold">Advanced Terminal</h3>
                     <div className="rounded-xl border bg-card divide-y">
                       <div className="p-4 grid grid-cols-3 gap-4">
-                        <div><label className="block text-[12px] font-medium mb-1.5">Cursor Style</label><select value={settings.terminal_cursor_style} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_style: e.target.value as any })} className="w-full bg-background text-foreground border border-input rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"><option value="block">Block</option><option value="underline">Underline</option><option value="bar">Bar</option></select></div>
+                        <div><label className="block text-[12px] font-medium mb-1.5">Cursor Style</label><div className="relative"><select value={settings.terminal_cursor_style} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_style: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="block">Block</option><option value="underline">Underline</option><option value="bar">Bar</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
                         <div className="space-y-2 pt-6"><label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={settings.terminal_cursor_blink} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_blink: e.target.checked })} /> Cursor Blink</label><label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={settings.terminal_focus_follows_mouse} onChange={(e)=>setSettingsLive({ ...settings, terminal_focus_follows_mouse: e.target.checked })} /> Focus Follows Mouse</label></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">GPU Acceleration</label><select value={settings.terminal_gpu_acceleration} onChange={(e)=>setSettingsLive({ ...settings, terminal_gpu_acceleration: e.target.value as any })} className="w-full bg-background text-foreground border border-input rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"><option value="auto">Auto</option><option value="on">On</option><option value="off">Off</option></select></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">Ligatures</label><select value={settings.terminal_ligatures} onChange={(e)=>setSettingsLive({ ...settings, terminal_ligatures: e.target.value as any })} className="w-full bg-background text-foreground border border-input rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"><option value="auto">Auto</option><option value="on">On</option><option value="off">Off</option></select></div>
+                        <div><label className="block text-[12px] font-medium mb-1.5">GPU Acceleration</label><div className="relative"><select value={settings.terminal_gpu_acceleration} onChange={(e)=>setSettingsLive({ ...settings, terminal_gpu_acceleration: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="auto">Auto</option><option value="on">On</option><option value="off">Off</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
+                        <div><label className="block text-[12px] font-medium mb-1.5">Ligatures</label><div className="relative"><select value={settings.terminal_ligatures} onChange={(e)=>setSettingsLive({ ...settings, terminal_ligatures: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="auto">Auto</option><option value="on">On</option><option value="off">Off</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
                         <div><label className="block text-[12px] font-medium mb-1.5">Scrollback Rows</label><input type="number" value={settings.terminal_scrollback_rows} onChange={(e)=>setSettingsLive({ ...settings, terminal_scrollback_rows: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
                         <div><label className="block text-[12px] font-medium mb-1.5">Divider Thickness (px)</label><input type="number" min={1} max={12} value={settings.terminal_divider_thickness_px} onChange={(e)=>setSettingsLive({ ...settings, terminal_divider_thickness_px: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
                       </div>
@@ -381,11 +382,11 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                     <h4 className="text-[13px] font-medium">Default Agent</h4>
                     <p className="text-[12px] text-muted-foreground">Pinned agent for new workspaces (“Auto” = first detected). “Blank” leaves terminal empty.</p>
                     <div className="flex gap-2">
-                      <select value={String((settings as any).default_tui_agent ?? "auto")} onChange={(e)=>{ const v=e.target.value; const agent = v==="auto" ? null : v==="blank" ? "blank" : v; setSettingsLive({ ...settings, default_tui_agent: agent as any }); }} className="flex-1 bg-background text-foreground border border-input rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring">
+                      <div className="relative flex-1"><select value={String((settings as any).default_tui_agent ?? "auto")} onChange={(e)=>{ const v=e.target.value; const agent = v==="auto" ? null : v==="blank" ? "blank" : v; setSettingsLive({ ...settings, default_tui_agent: agent as any }); }} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring">
                         <option value="auto">Auto (first detected)</option>
                         <option value="blank">Blank terminal</option>
                         {availableAgents.map(a=> <option key={a.id} value={a.id}>{a.label}</option>)}
-                      </select>
+                      </select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div>
                     </div>
                     <div className="text-[11px] text-muted-foreground">Detected: {availableAgents.map(a=>a.label).join(", ") || "none (launch Hydra to detect PATH)"}</div>
                   </section>
@@ -419,7 +420,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                     </div>
                   </section>
 
-                  {/* Detection Catalog */}
+                  {/* Detection Catalog — Orca AgentCatalogRow with cmd/args/env (tui-agent-launch-defaults) */}
                   <section className="rounded-xl border bg-card p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[13px] font-medium">Detected Agents</h4>
@@ -432,18 +433,42 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                         {availableAgents.map(agent=>{
                           const disabled = Array.isArray((settings as any).disabled_tui_agents) && (settings as any).disabled_tui_agents.includes(agent.id);
                           const isEnabled = !disabled;
+                          const isExpanded = expandedAgent === agent.id;
+                          const cmdOverride = (settings as any).agent_cmd_overrides?.[agent.id] ?? "";
+                          const argsOverride = (settings as any).agent_default_args?.[agent.id] ?? "";
+                          const envMap = (settings as any).agent_default_env?.[agent.id] ?? {};
+                          const envString = Object.entries(envMap).map(([k,v])=>`${k}=${v}`).join(" ");
                           return (
-                            <div key={agent.id} className="flex items-center gap-3 px-3 py-2.5">
-                              <div className="flex-1 min-w-0"><div className="text-[13px] font-medium truncate">{agent.label}</div><div className="text-[11px] font-mono text-muted-foreground truncate">{agent.id}</div></div>
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${isEnabled ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700" : "bg-muted text-muted-foreground"}`}>{isEnabled ? "enabled" : "disabled"}</span>
-                              <button onClick={()=>{ const cur = new Set((settings as any).disabled_tui_agents ?? []); if (isEnabled) cur.add(agent.id); else cur.delete(agent.id); setSettingsLive({ ...settings, disabled_tui_agents: Array.from(cur) } as any); }} className="text-[12px] px-2.5 py-1 rounded-md border bg-background hover:bg-muted">{isEnabled ? "Disable" : "Enable"}</button>
-                              <button onClick={()=>setSettingsLive({ ...settings, default_tui_agent: agent.id } as any)} className={`text-[12px] px-2.5 py-1 rounded-md ${ (settings as any).default_tui_agent===agent.id ? "bg-emerald-600 text-white" : "border bg-background hover:bg-muted"}`}>{(settings as any).default_tui_agent===agent.id ? "Default" : "Make default"}</button>
+                            <div key={agent.id} className="bg-card">
+                              <div className="flex items-center gap-2 px-3 py-2.5">
+                                <div className="flex-1 min-w-0"><div className="text-[13px] font-medium truncate">{agent.label}</div><div className="text-[11px] font-mono text-muted-foreground truncate">{agent.id}</div></div>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${isEnabled ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>{isEnabled ? "enabled" : "disabled"}</span>
+                                <button onClick={()=>{ const cur = new Set((settings as any).disabled_tui_agents ?? []); if (isEnabled) cur.add(agent.id); else cur.delete(agent.id); setSettingsLive({ ...settings, disabled_tui_agents: Array.from(cur) } as any); }} className="text-[11px] px-2 py-1 rounded-md border bg-background hover:bg-muted">{isEnabled ? "Disable" : "Enable"}</button>
+                                <button onClick={()=>setSettingsLive({ ...settings, default_tui_agent: agent.id } as any)} className={`text-[11px] px-2 py-1 rounded-md ${ (settings as any).default_tui_agent===agent.id ? "bg-emerald-600 text-white" : "border bg-background hover:bg-muted"}`}>{(settings as any).default_tui_agent===agent.id ? "Default" : "Make default"}</button>
+                                <button onClick={()=>setExpandedAgent(isExpanded ? null : agent.id)} className="size-7 grid place-items-center rounded-md border bg-background hover:bg-muted"><ChevronDown className={`size-3.5 transition ${isExpanded ? "rotate-180" : ""}`} /></button>
+                              </div>
+                              {isExpanded && (
+                                <div className="border-t bg-muted/20 p-3 space-y-3">
+                                  <div>
+                                    <label className="block text-[11px] font-medium mb-1">Command Override <span className="font-normal text-muted-foreground">(binary path — empty = catalog default)</span></label>
+                                    <input value={cmdOverride} onChange={(e)=>{ const next = { ...((settings as any).agent_cmd_overrides ?? {}) }; if (e.target.value) next[agent.id]=e.target.value; else delete next[agent.id]; setSettingsLive({ ...settings, agent_cmd_overrides: next } as any); }} placeholder={agent.id} className="w-full bg-background border border-input rounded-md px-2.5 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[11px] font-medium mb-1">Default Args <span className="font-normal text-muted-foreground">(appended after binary — e.g. --yolo)</span></label>
+                                    <input value={argsOverride} onChange={(e)=>{ const next = { ...((settings as any).agent_default_args ?? {}) }; next[agent.id]=e.target.value; if (!e.target.value) delete next[agent.id]; setSettingsLive({ ...settings, agent_default_args: next } as any); }} placeholder="--help" className="w-full bg-background border border-input rounded-md px-2.5 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[11px] font-medium mb-1">Default Env <span className="font-normal text-muted-foreground">(space-separated KEY=VALUE)</span></label>
+                                    <input value={envString} onChange={(e)=>{ const str=e.target.value; const map: Record<string,string>={}; str.split(/\s+/).forEach(pair=>{ const [k,...rest]=pair.split("="); if(k && rest.length) map[k]=rest.join("="); }); const next = { ...((settings as any).agent_default_env ?? {}) }; if (Object.keys(map).length) next[agent.id]=map; else delete next[agent.id]; setSettingsLive({ ...settings, agent_default_env: next } as any); }} placeholder="FOO=bar BAZ=qux" className="w-full bg-background border border-input rounded-md px-2.5 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground">Orca-faithful: per-agent launch defaults from <code>shared/tui-agent-launch-defaults.ts</code> — empty keeps catalog default.</div>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
                       </div>
                     )}
-                    <div className="text-[11px] text-muted-foreground">Orca-faithful: toggling enable/disable queues via <code>createAgentAvailabilityUpdateQueue</code> (`AgentsPane.tsx:66`). Hydra mirrors to `disabled_tui_agents`.</div>
                   </section>
                 </div>
               )}
