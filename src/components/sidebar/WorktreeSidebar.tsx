@@ -15,6 +15,7 @@ import {
   Copy,
   FolderTree
 } from "lucide-react";
+import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 
 export interface AvailableAgent {
   id: string;
@@ -56,6 +57,7 @@ export interface GitRepoStatus {
   is_clean: boolean;
   head_commit: string;
 }
+
 interface WorktreeSidebarProps {
   sessions: WorktreeSession[];
   availableAgents?: AvailableAgent[];
@@ -98,10 +100,19 @@ export function WorktreeSidebar({
   const [activeProjectMenuId, setActiveProjectMenuId] = useState<string | null>(null);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
 
+  const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>({
+    groupBy: "repo",
+    sortBy: "agent-activity",
+    hideSleeping: false,
+    hideDefaultBranch: false,
+    hideAutomationCreated: false,
+    hideCliCreated: false,
+    hideDetachedHead: false,
+  });
+
   useEffect(() => {
     const handleClickOutside = () => {
       setActiveProjectMenuId(null);
-      setOptionsMenuOpen(false);
     };
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
@@ -140,7 +151,7 @@ export function WorktreeSidebar({
         </span>
 
         <div className="flex shrink-0 items-center gap-0.5">
-          {/* Orca SidebarWorkspaceOptionsMenu */}
+          {/* Orca SidebarWorkspaceOptionsMenu Trigger */}
           <div className="relative">
             <button
               onClick={(e) => {
@@ -154,33 +165,6 @@ export function WorktreeSidebar({
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
             </button>
-
-            {optionsMenuOpen && (
-              <div 
-                className="absolute right-0 top-7 w-56 rounded-xl bg-[#141518] border border-[#28292e] p-1.5 shadow-2xl z-50 text-xs space-y-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="px-2 py-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
-                  Display Options
-                </div>
-                <button
-                  onClick={() => {
-                    setOptionsMenuOpen(false);
-                    onOpenSettings();
-                  }}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <Sliders className="w-3.5 h-3.5 text-neutral-400" />
-                    <span>Workspace Preferences</span>
-                  </div>
-                </button>
-                <div className="h-px bg-[#222327] my-1" />
-                <div className="px-2 py-1 text-[10px] text-neutral-500 font-mono">
-                  Order: Recent Worktrees
-                </div>
-              </div>
-            )}
           </div>
 
           <button
@@ -247,7 +231,7 @@ export function WorktreeSidebar({
 
                   {/* Right Cluster: Chevron Toggle | Options Ellipsis '...' | Plus '+' */}
                   <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    {/* ARROW 1: Collapse/Expand Chevron */}
+                    {/* SETA 1: Collapse/Expand Chevron */}
                     <button
                       onClick={() => toggleProjectCollapse(proj.id)}
                       title={isCollapsed ? "Expand workspaces" : "Collapse workspaces"}
@@ -260,7 +244,7 @@ export function WorktreeSidebar({
                       )}
                     </button>
 
-                    {/* ARROW 2: Project Actions Menu ('...') */}
+                    {/* SETA 2: Project Actions Menu ('...') */}
                     <div className="relative">
                       <button
                         onClick={(e) => {
@@ -329,7 +313,7 @@ export function WorktreeSidebar({
                       )}
                     </div>
 
-                    {/* ARROW 3: Create Workspace '+' -> Abre DIRETAMENTE a janela do Orca NewWorkspaceComposer */}
+                    {/* SETA 3: Create Workspace '+' -> Orca NewWorkspaceComposer */}
                     <button
                       onClick={() => {
                         onSelectProject(proj);
@@ -449,7 +433,16 @@ export function WorktreeSidebar({
         )}
       </div>
 
-      {/* 5. Orca Sidebar Footer */}
+      {/* 5. Orca Workspace Options Menu Overlay (100% Screenshot) */}
+      <WorkspaceOptionsMenu
+        isOpen={optionsMenuOpen}
+        options={displayOptions}
+        projects={projects}
+        onClose={() => setOptionsMenuOpen(false)}
+        onOptionsChange={setDisplayOptions}
+      />
+
+      {/* 6. Orca Sidebar Footer */}
       <div className="h-8 border-t border-[#1f2024] px-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono bg-[#101114] shrink-0">
         <button
           onClick={onOpenSettings}
