@@ -128,8 +128,10 @@
   --surface: var(--card);
   --surface-2: var(--popover);
   --border-strong: var(--border);
+  color-scheme: dark;
 }
 .light {
+  color-scheme: light;
   /* Light — matches Orca :root */
   --background: #fff;
   --foreground: #0a0a0a;
@@ -196,3 +198,9 @@
 .window-controls-btn { display: flex; align-items: center; justify-content: center; width: 46px; height: 36px; background: transparent; border: none; color: var(--muted-foreground); cursor: pointer; transition: background 100ms, color 100ms; }
 .window-controls-btn:hover { background: var(--accent); color: var(--foreground); }
 .window-controls-close:hover { background: #c42b1c !important; color: #fff !important; }
+
+/* Native select dark fix — Orca uses Radix Select, Hydra uses <select> */
+select { color-scheme: light dark; }
+.dark select { background-color: var(--background); color: var(--foreground); }
+.light select { background-color: var(--background); color: var(--foreground); }
+select option { background-color: var(--popover); color: var(--popover-foreground); }
