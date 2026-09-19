@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { usePanelResize } from "./hooks/usePanelResize";
+import { TerminalDrawer } from "./components/TerminalDrawer";
 import { 
   Bot, 
   Terminal, 
@@ -16,7 +17,6 @@ import "./App.css";
 
 export default function App() {
   const [status, setStatus] = useState("Iniciando...");
-  const [activeTab, setActiveTab] = useState<"chat" | "terminal">("chat");
 
   const leftSidebar = usePanelResize({
     initialWidth: 240,
@@ -128,31 +128,22 @@ export default function App() {
                 </div>
                 <span className="text-[10px] text-neutral-500 font-mono">PIDs: 0 ativos</span>
               </div>
-              <div className="p-2.5 rounded bg-neutral-950 border border-neutral-800/80 font-mono text-[11px] text-neutral-300 flex items-center justify-between">
-                <span>portable-pty + vt100 shadow buffer</span>
-                <span className="text-emerald-400 text-[10px]">Zero UI Leak</span>
-              </div>
             </div>
           </div>
 
           {/* Bottom Collapsible Terminal Drawer */}
-          <div className="h-44 border-t border-[#222] bg-[#0e0f11] flex flex-col shrink-0">
+          <div className="h-56 border-t border-[#222] bg-[#0c0d0e] flex flex-col shrink-0">
             <div className="h-7 border-b border-[#222] px-3 flex items-center justify-between text-[11px] bg-[#111214] shrink-0">
               <div className="flex items-center gap-3 text-neutral-400">
-                <button 
-                  onClick={() => setActiveTab("chat")} 
-                  className={`flex items-center gap-1.5 transition ${activeTab === "chat" ? "text-neutral-200 font-medium" : "hover:text-neutral-300"}`}
-                >
+                <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
                   <Terminal className="w-3.5 h-3.5" />
-                  <span>Terminal Ativo (PTY)</span>
-                </button>
+                  <span>Terminal Interativo PTY (vt100 Shadow Buffer)</span>
+                </span>
               </div>
-              <span className="text-[10px] text-neutral-500 font-mono">/dev/pts/ptmx</span>
+              <span className="text-[10px] text-emerald-500/80 font-mono">portable-pty active</span>
             </div>
-            <div className="flex-1 p-3 font-mono text-xs text-neutral-400 overflow-y-auto">
-              <div className="text-neutral-500">$ hydra-daemon --listen /run/user/1000/hydra.sock</div>
-              <div className="text-emerald-400/90">[INFO] Headless terminal buffer inicializado em memória (vt100).</div>
-              <div className="text-neutral-400">[INFO] Aguardando comandos ou requisições de agentes...</div>
+            <div className="flex-1 overflow-hidden">
+              <TerminalDrawer />
             </div>
           </div>
         </main>

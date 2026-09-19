@@ -27,6 +27,7 @@ portable-pty = "0.9.0"
 vt100 = "0.16.2"
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 tokio = { version = "1.53.1", features = ["full"] }
+parking_lot = "0.12.5"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
