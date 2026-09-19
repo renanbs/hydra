@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   GitBranch, 
   Plus, 
@@ -99,6 +99,9 @@ export function WorktreeSidebar({
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
   const [activeProjectMenuId, setActiveProjectMenuId] = useState<string | null>(null);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
+  
+  // Ref para ancoragem exata do botão SlidersHorizontal
+  const optionsButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>({
     groupBy: "repo",
@@ -151,21 +154,20 @@ export function WorktreeSidebar({
         </span>
 
         <div className="flex shrink-0 items-center gap-0.5">
-          {/* Orca SidebarWorkspaceOptionsMenu Trigger */}
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setOptionsMenuOpen(!optionsMenuOpen);
-              }}
-              title="Workspace display options"
-              className={`p-1 rounded transition cursor-pointer ${
-                optionsMenuOpen ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800/60"
-              }`}
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          {/* Orca SidebarWorkspaceOptionsMenu Trigger com ref */}
+          <button
+            ref={optionsButtonRef}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOptionsMenuOpen(!optionsMenuOpen);
+            }}
+            title="Workspace display options"
+            className={`p-1 rounded transition cursor-pointer ${
+              optionsMenuOpen ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800/60"
+            }`}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+          </button>
 
           <button
             onClick={onOpenAddRepoDialog}
@@ -231,7 +233,7 @@ export function WorktreeSidebar({
 
                   {/* Right Cluster: Chevron Toggle | Options Ellipsis '...' | Plus '+' */}
                   <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    {/* SETA 1: Collapse/Expand Chevron */}
+                    {/* ARROW 1: Collapse/Expand Chevron */}
                     <button
                       onClick={() => toggleProjectCollapse(proj.id)}
                       title={isCollapsed ? "Expand workspaces" : "Collapse workspaces"}
@@ -244,7 +246,7 @@ export function WorktreeSidebar({
                       )}
                     </button>
 
-                    {/* SETA 2: Project Actions Menu ('...') */}
+                    {/* ARROW 2: Project Actions Menu ('...') */}
                     <div className="relative">
                       <button
                         onClick={(e) => {
@@ -313,7 +315,7 @@ export function WorktreeSidebar({
                       )}
                     </div>
 
-                    {/* SETA 3: Create Workspace '+' -> Orca NewWorkspaceComposer */}
+                    {/* ARROW 3: Create Workspace '+' -> Orca NewWorkspaceComposer */}
                     <button
                       onClick={() => {
                         onSelectProject(proj);
@@ -433,9 +435,10 @@ export function WorktreeSidebar({
         )}
       </div>
 
-      {/* 5. Orca Workspace Options Menu Overlay (100% Screenshot) */}
+      {/* 5. Orca Workspace Options Menu Overlay com ancoragem precisa */}
       <WorkspaceOptionsMenu
         isOpen={optionsMenuOpen}
+        triggerRef={optionsButtonRef}
         options={displayOptions}
         projects={projects}
         onClose={() => setOptionsMenuOpen(false)}

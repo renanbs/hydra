@@ -23,6 +23,7 @@ export interface WorkspaceDisplayOptions {
 
 interface WorkspaceOptionsMenuProps {
   isOpen: boolean;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
   options: WorkspaceDisplayOptions;
   projects: HydraProject[];
   onClose: () => void;
@@ -31,17 +32,23 @@ interface WorkspaceOptionsMenuProps {
 
 export function WorkspaceOptionsMenu({
   isOpen,
+  triggerRef,
   options,
   projects,
   onClose,
   onOptionsChange,
 }: WorkspaceOptionsMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const [coords, setCoords] = useState<{ top: number; right: number }>({ top: 80, right: 12 });
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (
+        menuRef.current && 
+        !menuRef.current.contains(e.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(e.target as Node)
+      ) {
         onClose();
       }
     };
@@ -49,21 +56,32 @@ export function WorkspaceOptionsMenu({
       window.addEventListener("mousedown", handleOutside);
     }
     return () => window.removeEventListener("mousedown", handleOutside);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, triggerRef]);
 
-  // Medição e restrição para caber 100% na viewport
+  // Ancoragem 100% igual ao Orca: side="right", align="start", sideOffset=8
   useLayoutEffect(() => {
-    if (!isOpen || !menuRef.current) return;
-    const rect = menuRef.current.getBoundingClientRect();
+    if (!isOpen || !triggerRef.current || !menuRef.current) return;
+    const triggerRect = triggerRef.current.getBoundingClientRect();
+    const menuRect = menuRef.current.getBoundingClientRect();
+    const sideOffset = 8;
     const padding = 12;
 
-    let top = 80;
-    if (top + rect.height > window.innerHeight - padding) {
-      top = Math.max(padding, window.innerHeight - rect.height - padding);
+    // Posiciona imediatamente à direita do botão acionador
+    let left = triggerRect.right + sideOffset;
+    let top = triggerRect.top;
+
+    // Se vazar a borda direita da janela, inverte para a esquerda do botão
+    if (left + menuRect.width > window.innerWidth - padding) {
+      left = Math.max(padding, triggerRect.left - menuRect.width - sideOffset);
     }
 
-    setCoords({ top, right: 12 });
-  }, [isOpen]);
+    // Se vazar o rodapé da janela, empurra para cima
+    if (top + menuRect.height > window.innerHeight - padding) {
+      top = Math.max(padding, window.innerHeight - menuRect.height - padding);
+    }
+
+    setCoords({ top, left });
+  }, [isOpen, triggerRef]);
 
   if (!isOpen) return null;
 
@@ -77,7 +95,7 @@ export function WorkspaceOptionsMenu({
   return (
     <div
       ref={menuRef}
-      style={{ top: `${coords.top}px`, right: `${coords.right}px` }}
+      style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
       onClick={(e) => e.stopPropagation()}
       className="fixed w-72 rounded-xl bg-[#141518] border border-[#28292e] p-2 shadow-2xl z-[99999] text-xs text-neutral-200 select-none space-y-2.5 font-sans"
     >
@@ -104,7 +122,7 @@ export function WorkspaceOptionsMenu({
 
       <div className="h-px bg-[#222327]" />
 
-      {/* Group by Toggle Group */}
+      {/* Group by Toggle Group (Orca SidebarGroupByToggle 100%) */}
       <div className="space-y-1">
         <div className="px-2 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
           Group by
@@ -161,7 +179,7 @@ export function WorkspaceOptionsMenu({
 
       <div className="h-px bg-[#222327]" />
 
-      {/* Filters Section */}
+      {/* Filters Section (Orca SidebarWorkspaceFilterSection 100%) */}
       <div className="space-y-1">
         <div className="px-2 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
           Filters
