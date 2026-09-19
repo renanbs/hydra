@@ -13,6 +13,7 @@ import {
   DEFAULT_TERMINAL_THEME_LIGHT,
 } from "../lib/terminal-theme";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, type HydraSettings } from "../shared/settings-types";
+import { FontAutocomplete } from "./settings/FontAutocomplete";
 import { normalizeTerminalCustomThemes } from "../shared/terminal-custom-themes";
 import type { ITheme } from "@xterm/xterm";
 
@@ -142,8 +143,22 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const [terminalTarget, setTerminalTarget] = useState<"dark" | "light">("dark");
   const [searchQuery, setSearchQuery] = useState("");
   const [importError, setImportError] = useState<string | null>(null);
+  const [previewTerminalFont, setPreviewTerminalFont] = useState<string | null>(null);
+  const [previewAppFont, setPreviewAppFont] = useState<string | null>(null);
   const [availableAgents, setAvailableAgents] = useState<{ id: string; label: string }[]>([]);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+  const terminalFontSuggestions = ["JetBrains Mono","Fira Code","Cascadia Code","SF Mono","Menlo","Consolas","Liberation Mono","DejaVu Sans Mono","Source Code Pro","Ubuntu Mono","Hack","Iosevka","Geist Mono","Berkeley Mono","JetBrainsMono Nerd Font"];
+  // Live preview for interface font (hover in FontAutocomplete)
+  useEffect(() => {
+    if (previewAppFont) {
+      document.documentElement.style.setProperty("--app-font-family", previewAppFont);
+      document.body.style.fontFamily = previewAppFont;
+    } else {
+      document.documentElement.style.setProperty("--app-font-family", settings.app_font_family);
+      document.body.style.fontFamily = settings.app_font_family;
+    }
+  }, [previewAppFont, settings.app_font_family]);
+  const interfaceFontSuggestions = ["Geist","Inter","SF Pro Text","Segoe UI","Roboto","Helvetica","Arial","System UI","-apple-system","BlinkMacSystemFont","Ubuntu","Cantarell","Noto Sans"];
 
   useEffect(() => {
     if (isOpen) {
@@ -281,6 +296,18 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                       <div><div className="text-[13px] font-medium">Theme</div><div className="text-[12px] text-muted-foreground">App chrome theme. Terminal can differ per mode below.</div></div>
                       <SegmentedControl value={settings.theme} onChange={(v)=>handleThemeChange(v as HydraSettings["theme"])} options={[{value:"system",label:"System"},{value:"dark",label:"Dark"},{value:"light",label:"Light"}]} />
                     </div>
+                    <div className="rounded-xl border bg-card p-4 space-y-2">
+                      <div className="text-[13px] font-medium">IDE Font</div>
+                      <p className="text-[12px] text-muted-foreground">Interface typeface for sidebar, titlebar and panels. Preview updates live.</p>
+                      <FontAutocomplete
+                        value={previewAppFont ?? settings.app_font_family}
+                        suggestions={interfaceFontSuggestions}
+                        placeholder="Geist"
+                        onPreviewFontFamily={setPreviewAppFont}
+                        onChange={(v)=>{ const next = { ...settings, app_font_family: v.trim() || "Geist, sans-serif" }; setSettingsLive(next); document.documentElement.style.setProperty("--app-font-family", next.app_font_family); }}
+                      />
+                      <div className="text-[11px] text-muted-foreground" style={{ fontFamily: previewAppFont ?? settings.app_font_family }}>Preview: The quick brown fox jumps over the lazy dog — 1234567890</div>
+                    </div>
                   </section>
 
                   {/* Terminal Typography */}
@@ -289,7 +316,14 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                     <div className="grid grid-cols-2 gap-4">
                       <div className="col-span-2">
                         <label className="block text-[12px] font-medium mb-1.5">Font Family</label>
-                        <input value={settings.terminal_font_family} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_family: e.target.value })} className="w-full bg-background border rounded-md px-3 py-2 font-mono text-[13px] focus:outline-none focus:ring-2 focus:ring-ring" placeholder="'JetBrains Mono', monospace" />
+                        <FontAutocomplete
+                          value={previewTerminalFont ?? settings.terminal_font_family}
+                          suggestions={terminalFontSuggestions}
+                          placeholder="JetBrains Mono"
+                          onPreviewFontFamily={setPreviewTerminalFont}
+                          onChange={(v)=>setSettingsLive({ ...settings, terminal_font_family: v })}
+                        />
+                        <div className="text-[11px] text-muted-foreground mt-1 font-mono" style={{ fontFamily: previewTerminalFont ?? settings.terminal_font_family }}>Preview: hydra --help — 0123456789 — ligatures fi fl</div>
                       </div>
                       <div><label className="block text-[12px] font-medium mb-1.5">Font Size (px)</label><input type="number" min={8} max={32} value={settings.terminal_font_size} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_size: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
                       <div><label className="block text-[12px] font-medium mb-1.5">Line Height</label><input type="number" min={0.8} max={2} step={0.05} value={settings.terminal_line_height} onChange={(e)=>setSettingsLive({ ...settings, terminal_line_height: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
@@ -343,7 +377,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                         </div>
                       </div>
                     )}
-                    <MiniTerminalPreview settings={settings} target={terminalTarget} />
+                    <MiniTerminalPreview settings={previewTerminalFont ? { ...settings, terminal_font_family: previewTerminalFont } : settings} target={terminalTarget} />
                   </section>
 
                   {/* Advanced */}

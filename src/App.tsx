@@ -82,6 +82,14 @@ export default function App() {
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
+  // Apply interface font live (Orca appFontFamily → --app-font-family)
+  useEffect(() => {
+    const f = hydraSettings.app_font_family;
+    if (f) {
+      document.documentElement.style.setProperty("--app-font-family", f);
+      document.body.style.fontFamily = f;
+    }
+  }, [hydraSettings.app_font_family]);
   const syncKeepAwake = (enabled: boolean, workingCount: number) => {
     invoke("sync_keep_awake", { enabled, workingCount }).catch(()=>{});
   };

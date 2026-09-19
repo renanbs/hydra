@@ -54,6 +54,7 @@ impl Default for UiLayoutState {
 }
 
 fn default_theme() -> String { "system".to_string() }
+fn default_app_font_family() -> String { "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif".to_string() }
 fn default_terminal_font_family() -> String { "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace".to_string() }
 fn default_terminal_font_size() -> u32 { 14 }
 fn default_terminal_font_weight() -> u32 { 500 }
@@ -159,6 +160,8 @@ fn default_terminal_custom_mode() -> String { "unknown".to_string() }
 pub struct HydraSettings {
     #[serde(default = "default_theme", deserialize_with = "deserialize_theme")]
     pub theme: String,
+    #[serde(default = "default_app_font_family")]
+    pub app_font_family: String,
     #[serde(default = "default_terminal_font_family")]
     pub terminal_font_family: String,
     #[serde(default = "default_terminal_font_size")]
@@ -241,6 +244,7 @@ impl Default for HydraSettings {
     fn default() -> Self {
         Self {
             theme: default_theme(),
+            app_font_family: default_app_font_family(),
             terminal_font_family: default_terminal_font_family(),
             terminal_font_size: default_terminal_font_size(),
             terminal_font_weight: default_terminal_font_weight(),

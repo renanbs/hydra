@@ -4,6 +4,7 @@ import type { TerminalColorOverrides } from "./terminal-color-overrides";
 export type HydraSettings = {
   // Appearance — faithful to Orca GlobalSettings (snake_case for Rust compat)
   theme: "system" | "dark" | "light";
+  app_font_family: string;
   terminal_font_family: string;
   terminal_font_size: number;
   terminal_font_weight: number;
@@ -47,6 +48,7 @@ export type HydraSettings = {
 
 export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   theme: "system",
+  app_font_family: "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   terminal_font_family: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
   terminal_font_size: 14,
   terminal_font_weight: 500,
@@ -104,6 +106,7 @@ export function normalizeHydraSettings(input: unknown): HydraSettings {
       if (t === "oled") return "dark";
       return DEFAULT_HYDRA_SETTINGS.theme;
     })(),
+    app_font_family: get("app_font_family", "appFontFamily", DEFAULT_HYDRA_SETTINGS.app_font_family) as string,
     terminal_font_family: get("terminal_font_family", "terminalFontFamily", DEFAULT_HYDRA_SETTINGS.terminal_font_family) as string,
     terminal_font_size: get("terminal_font_size", "terminalFontSize", DEFAULT_HYDRA_SETTINGS.terminal_font_size) as number,
     terminal_font_weight: get("terminal_font_weight", "terminalFontWeight", DEFAULT_HYDRA_SETTINGS.terminal_font_weight) as number,
