@@ -110,3 +110,25 @@ body {
   background: #c42b1c !important;
   color: #ffffff !important;
 }
+
+/* Light theme overrides for hardcoded Tailwind arbitrary values — makes .light actually apply */
+.light [class*="bg-[#0c0d0e]"] { background-color: var(--app-bg) !important; }
+.light [class*="bg-[#0e0f11]"] { background-color: var(--surface) !important; }
+.light [class*="bg-[#0e0f12]"] { background-color: #f4f4f5 !important; }
+.light [class*="bg-[#111214]"] { background-color: var(--surface-2) !important; }
+.light [class*="bg-[#141518]"] { background-color: #ffffff !important; }
+.light [class*="bg-[#18191d]"] { background-color: #f1f5f9 !important; }
+.light [class*="border-[#222]"] { border-color: var(--border) !important; }
+.light [class*="border-[#222327]"] { border-color: #e4e4e7 !important; }
+.light [class*="border-[#26272b]"] { border-color: var(--border-strong) !important; }
+.light [class*="border-[#2c2d33]"] { border-color: #cbd5e1 !important; }
+.light [class*="border-[#2a2b30]"] { border-color: #d4d4d8 !important; }
+.light [class*="text-[#ededed]"] { color: var(--app-fg) !important; }
+.light [class*="text-neutral-100"] { color: #18181b !important; }
+.light [class*="text-neutral-200"] { color: #27272a !important; }
+.light [class*="text-neutral-300"] { color: #3f3f46 !important; }
+/* Workbench tab bar light */
+.light [class*="bg-[#0c0d0e]"][class*="border-emerald"] { background-color: #ffffff !important; }
+/* Inputs */
+.light input[class*="bg-[#0c0d0e]"] { background-color: #ffffff !important; color: #18181b !important; border-color: #d4d4d8 !important; }
+.light input::placeholder { color: #a1a1aa !important; }

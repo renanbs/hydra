@@ -23,6 +23,7 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaved?: (settings: HydraSettings) => void;
+  onLiveChange?: (settings: HydraSettings) => void;
 }
 
 function SegmentedControl({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
@@ -141,7 +142,7 @@ function MiniTerminalPreview({ settings, target }: { settings: HydraSettings; ta
   );
 }
 
-export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<"appearance" | "input" | "shortcuts" | "security" | "git">("appearance");
   const [settings, setSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   const [savedFeedback, setSavedFeedback] = useState(false);
@@ -169,11 +170,22 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
   }, [isOpen]);
 
   // Keep document theme live when settings.theme changes (Orca applyTheme behavior)
+  // Live-apply terminal + app theme without waiting for Save (fixes preview not applying)
+  const setSettingsLive = (next: HydraSettings) => {
+    setSettings(next);
+    onLiveChange?.(next);
+    if (next.theme !== settings.theme) {
+      applyDocumentTheme(next.theme);
+      try { localStorage.setItem("hydra:theme", next.theme); } catch {}
+    }
+  };
+
   const handleThemeChange = (t: HydraSettings["theme"]) => {
     const next = { ...settings, theme: t };
     setSettings(next);
     applyDocumentTheme(t);
     try { localStorage.setItem("hydra:theme", t); } catch {}
+    onLiveChange?.(next);
   };
 
   if (!isOpen) return null;
@@ -211,7 +223,7 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
         importedAt: now,
       };
       const nextThemes = [...normalizeTerminalCustomThemes(settings.terminal_custom_themes), entry].slice(-200);
-      setSettings({ ...settings, terminal_custom_themes: nextThemes });
+      setSettingsLive({ ...settings, terminal_custom_themes: nextThemes });
     } catch (e) {
       setImportError(String(e));
     }
@@ -289,23 +301,23 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="col-span-2">
                       <label className="block text-neutral-400 mb-1 font-medium">Font Family</label>
-                      <input value={settings.terminal_font_family} onChange={(e) => setSettings({ ...settings, terminal_font_family: e.target.value })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-[11px] text-neutral-200 focus:outline-none focus:border-emerald-500/60" placeholder="'JetBrains Mono', 'Fira Code', monospace" />
+                      <input value={settings.terminal_font_family} onChange={(e) => setSettingsLive({ ...settings, terminal_font_family: e.target.value })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-[11px] text-neutral-200 focus:outline-none focus:border-emerald-500/60" placeholder="'JetBrains Mono', 'Fira Code', monospace" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Font Size (px)</label>
-                      <input type="number" min={8} max={32} value={settings.terminal_font_size} onChange={(e) => setSettings({ ...settings, terminal_font_size: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={8} max={32} value={settings.terminal_font_size} onChange={(e) => setSettingsLive({ ...settings, terminal_font_size: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Line Height</label>
-                      <input type="number" min={0.8} max={2} step={0.05} value={settings.terminal_line_height} onChange={(e) => setSettings({ ...settings, terminal_line_height: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={0.8} max={2} step={0.05} value={settings.terminal_line_height} onChange={(e) => setSettingsLive({ ...settings, terminal_line_height: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Weight</label>
-                      <input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight} onChange={(e) => setSettings({ ...settings, terminal_font_weight: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight} onChange={(e) => setSettingsLive({ ...settings, terminal_font_weight: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Weight Bold</label>
-                      <input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight_bold} onChange={(e) => setSettings({ ...settings, terminal_font_weight_bold: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight_bold} onChange={(e) => setSettingsLive({ ...settings, terminal_font_weight_bold: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                   </div>
                 </section>
@@ -325,7 +337,7 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
                     <SegmentedControl value={terminalTarget} onChange={(v) => setTerminalTarget(v as "dark"|"light")} options={[{ value: "dark", label: "Dark" }, { value: "light", label: "Light" }]} />
                     {isLightTarget && (
                       <label className="ml-3 flex items-center gap-2 text-[11px] text-neutral-300">
-                        <input type="checkbox" checked={matchDarkMode} onChange={() => setSettings({ ...settings, terminal_use_separate_light_theme: !settings.terminal_use_separate_light_theme })} className="accent-emerald-500" />
+                        <input type="checkbox" checked={matchDarkMode} onChange={() => setSettingsLive({ ...settings, terminal_use_separate_light_theme: !settings.terminal_use_separate_light_theme })} className="accent-emerald-500" />
                         Match dark mode (share dark theme in light)
                       </label>
                     )}
@@ -338,14 +350,14 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
                         settings={settings}
                         query={themeSearch}
                         onQueryChange={setThemeSearch}
-                        onSelect={(v) => setSettings(isLightTarget ? { ...settings, terminal_theme_light: v } : { ...settings, terminal_theme_dark: v })}
+                        onSelect={(v) => setSettingsLive(isLightTarget ? { ...settings, terminal_theme_light: v } : { ...settings, terminal_theme_dark: v })}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-neutral-400 mb-1 font-medium">{isLightTarget ? "Light Divider Color" : "Dark Divider Color"}</label>
                           <div className="flex gap-2">
-                            <input type="color" value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e) => setSettings(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="w-8 h-8 rounded border border-[#26272b] bg-transparent p-0" />
-                            <input value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e) => setSettings(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="flex-1 bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-[11px] text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                            <input type="color" value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e) => setSettingsLive(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="w-8 h-8 rounded border border-[#26272b] bg-transparent p-0" />
+                            <input value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e) => setSettingsLive(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="flex-1 bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-[11px] text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                           </div>
                           <div className="text-[10px] text-neutral-500 mt-1">Split divider line between panes ({isLightTarget ? "light" : "dark"} mode).</div>
                         </div>
@@ -369,7 +381,7 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
                             <span className="w-3 h-3 rounded-sm border border-white/10" style={{ background: t.terminal.background }} />
                             <span className="flex-1 text-neutral-200 truncate">{t.name} <span className="text-neutral-500">({t.id})</span></span>
                             <span className="text-[10px] px-1 py-0.5 rounded bg-neutral-800 text-neutral-400">{t.source}</span>
-                            <button onClick={() => setSettings({ ...settings, terminal_custom_themes: settings.terminal_custom_themes.filter((x) => x.id !== t.id) })} className="p-1 hover:bg-red-500/20 rounded text-neutral-400 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
+                            <button onClick={() => setSettingsLive({ ...settings, terminal_custom_themes: settings.terminal_custom_themes.filter((x) => x.id !== t.id) })} className="p-1 hover:bg-red-500/20 rounded text-neutral-400 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
                           </div>
                         ))}
                       </div>
@@ -385,7 +397,7 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Cursor Style</label>
-                      <select value={settings.terminal_cursor_style} onChange={(e) => setSettings({ ...settings, terminal_cursor_style: e.target.value as HydraSettings["terminal_cursor_style"] })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 text-neutral-200 focus:outline-none focus:border-emerald-500/60">
+                      <select value={settings.terminal_cursor_style} onChange={(e) => setSettingsLive({ ...settings, terminal_cursor_style: e.target.value as HydraSettings["terminal_cursor_style"] })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 text-neutral-200 focus:outline-none focus:border-emerald-500/60">
                         <option value="block">Block</option>
                         <option value="underline">Underline</option>
                         <option value="bar">Bar</option>
@@ -393,17 +405,17 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
                     </div>
                     <div className="flex flex-col justify-end">
                       <label className="flex items-center gap-2 text-[11px] text-neutral-300 mb-1">
-                        <input type="checkbox" checked={settings.terminal_cursor_blink} onChange={(e) => setSettings({ ...settings, terminal_cursor_blink: e.target.checked })} className="accent-emerald-500" />
+                        <input type="checkbox" checked={settings.terminal_cursor_blink} onChange={(e) => setSettingsLive({ ...settings, terminal_cursor_blink: e.target.checked })} className="accent-emerald-500" />
                         Cursor Blink
                       </label>
                       <label className="flex items-center gap-2 text-[11px] text-neutral-300">
-                        <input type="checkbox" checked={settings.terminal_focus_follows_mouse} onChange={(e) => setSettings({ ...settings, terminal_focus_follows_mouse: e.target.checked })} className="accent-emerald-500" />
+                        <input type="checkbox" checked={settings.terminal_focus_follows_mouse} onChange={(e) => setSettingsLive({ ...settings, terminal_focus_follows_mouse: e.target.checked })} className="accent-emerald-500" />
                         Focus Follows Mouse
                       </label>
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">GPU Acceleration</label>
-                      <select value={settings.terminal_gpu_acceleration} onChange={(e) => setSettings({ ...settings, terminal_gpu_acceleration: e.target.value as HydraSettings["terminal_gpu_acceleration"] })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 text-neutral-200 focus:outline-none focus:border-emerald-500/60">
+                      <select value={settings.terminal_gpu_acceleration} onChange={(e) => setSettingsLive({ ...settings, terminal_gpu_acceleration: e.target.value as HydraSettings["terminal_gpu_acceleration"] })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 text-neutral-200 focus:outline-none focus:border-emerald-500/60">
                         <option value="auto">Auto (WebGL)</option>
                         <option value="on">Force On</option>
                         <option value="off">Off (Canvas)</option>
@@ -411,7 +423,7 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Ligatures</label>
-                      <select value={settings.terminal_ligatures} onChange={(e) => setSettings({ ...settings, terminal_ligatures: e.target.value as HydraSettings["terminal_ligatures"] })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 text-neutral-200 focus:outline-none focus:border-emerald-500/60">
+                      <select value={settings.terminal_ligatures} onChange={(e) => setSettingsLive({ ...settings, terminal_ligatures: e.target.value as HydraSettings["terminal_ligatures"] })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 text-neutral-200 focus:outline-none focus:border-emerald-500/60">
                         <option value="auto">Auto (ligature fonts)</option>
                         <option value="on">On</option>
                         <option value="off">Off</option>
@@ -419,31 +431,31 @@ export function SettingsModal({ isOpen, onClose, onSaved }: SettingsModalProps) 
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Scrollback Rows</label>
-                      <input type="number" min={1000} max={100000} step={1000} value={settings.terminal_scrollback_rows} onChange={(e) => setSettings({ ...settings, terminal_scrollback_rows: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={1000} max={100000} step={1000} value={settings.terminal_scrollback_rows} onChange={(e) => setSettingsLive({ ...settings, terminal_scrollback_rows: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Divider Thickness (px)</label>
-                      <input type="number" min={1} max={12} value={settings.terminal_divider_thickness_px} onChange={(e) => setSettings({ ...settings, terminal_divider_thickness_px: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={1} max={12} value={settings.terminal_divider_thickness_px} onChange={(e) => setSettingsLive({ ...settings, terminal_divider_thickness_px: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Inactive Opacity</label>
-                      <input type="number" min={0} max={1} step={0.05} value={settings.terminal_inactive_pane_opacity} onChange={(e) => setSettings({ ...settings, terminal_inactive_pane_opacity: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={0} max={1} step={0.05} value={settings.terminal_inactive_pane_opacity} onChange={(e) => setSettingsLive({ ...settings, terminal_inactive_pane_opacity: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Active Opacity</label>
-                      <input type="number" min={0} max={1} step={0.05} value={settings.terminal_active_pane_opacity} onChange={(e) => setSettings({ ...settings, terminal_active_pane_opacity: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={0} max={1} step={0.05} value={settings.terminal_active_pane_opacity} onChange={(e) => setSettingsLive({ ...settings, terminal_active_pane_opacity: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Opacity Transition (ms)</label>
-                      <input type="number" min={0} max={5000} value={settings.terminal_pane_opacity_transition_ms} onChange={(e) => setSettings({ ...settings, terminal_pane_opacity_transition_ms: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
+                      <input type="number" min={0} max={5000} value={settings.terminal_pane_opacity_transition_ms} onChange={(e) => setSettingsLive({ ...settings, terminal_pane_opacity_transition_ms: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Background Opacity</label>
-                      <input type="number" min={0} max={1} step={0.05} value={settings.terminal_background_opacity ?? 1} onChange={(e) => setSettings({ ...settings, terminal_background_opacity: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" placeholder="1 (opaque)" />
+                      <input type="number" min={0} max={1} step={0.05} value={settings.terminal_background_opacity ?? 1} onChange={(e) => setSettingsLive({ ...settings, terminal_background_opacity: Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" placeholder="1 (opaque)" />
                     </div>
                     <div>
                       <label className="block text-neutral-400 mb-1 font-medium">Min Contrast Ratio</label>
-                      <input type="number" min={1} max={21} step={0.5} value={settings.terminal_minimum_contrast_ratio ?? ""} onChange={(e) => setSettings({ ...settings, terminal_minimum_contrast_ratio: e.target.value === "" ? undefined : Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" placeholder="auto" />
+                      <input type="number" min={1} max={21} step={0.5} value={settings.terminal_minimum_contrast_ratio ?? ""} onChange={(e) => setSettingsLive({ ...settings, terminal_minimum_contrast_ratio: e.target.value === "" ? undefined : Number(e.target.value) })} className="w-full bg-[#0c0d0e] border border-[#26272b] rounded px-3 py-1.5 font-mono text-neutral-200 focus:outline-none focus:border-emerald-500/60" placeholder="auto" />
                     </div>
                   </div>
                 </section>
