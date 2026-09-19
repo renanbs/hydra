@@ -10,6 +10,7 @@ pub mod pairing;
 pub mod project_manager;
 pub mod terminal;
 pub mod window_actions;
+pub mod worktree_ops;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
@@ -18,6 +19,7 @@ use git_status::{get_git_status, GitRepoStatus};
 use pairing::{PairingManager, PairingPayload};
 use project_manager::{list_local_projects, HydraProject};
 use terminal::{TerminalManager, TerminalSnapshot};
+use worktree_ops::{create_git_worktree, create_new_project, CreateProjectParams, CreateWorktreeParams};
 
 pub struct AppState {
     pub terminal: Arc<TerminalManager>,
@@ -38,6 +40,24 @@ fn get_repo_git_status() -> Result<GitRepoStatus, String> {
 #[tauri::command]
 fn list_projects() -> Vec<HydraProject> {
     list_local_projects()
+}
+
+#[tauri::command]
+fn create_project(name: String, parent_dir: String, init_git: bool) -> Result<String, String> {
+    create_new_project(CreateProjectParams {
+        name,
+        parent_dir,
+        init_git,
+    })
+}
+
+#[tauri::command]
+fn create_worktree(repo_path: String, branch_name: String, new_branch: bool) -> Result<String, String> {
+    create_git_worktree(CreateWorktreeParams {
+        repo_path,
+        branch_name,
+        new_branch,
+    })
 }
 
 #[tauri::command]
@@ -190,6 +210,8 @@ pub fn run() {
             get_system_status,
             get_repo_git_status,
             list_projects,
+            create_project,
+            create_worktree,
             list_available_agents,
             list_persisted_sessions,
             save_session_record,

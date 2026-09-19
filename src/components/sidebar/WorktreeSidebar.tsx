@@ -3,10 +3,11 @@ import {
   GitBranch, 
   Plus, 
   Trash2, 
-  FolderGit2,
-  ChevronDown,
-  Settings,
-  GitCommit,
+  FolderGit2, 
+  ChevronDown, 
+  Settings, 
+  GitCommit, 
+  FolderPlus,
   Check
 } from "lucide-react";
 
@@ -53,6 +54,7 @@ interface WorktreeSidebarProps {
   onNewSessionWithAgent: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;
+  onOpenCreateModal: () => void;
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
 }
 
@@ -67,6 +69,7 @@ export function WorktreeSidebar({
   onNewSessionWithAgent,
   onDeleteSession,
   onOpenSettings,
+  onOpenCreateModal,
   onSessionContextMenu,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
@@ -109,13 +112,23 @@ export function WorktreeSidebar({
             <ChevronDown className="w-2.5 h-2.5 text-neutral-500 shrink-0" />
           </button>
 
-          {/* Project Switcher Dropdown (Orca SidebarProjectFilterPanel style) */}
+          {/* Project Switcher Dropdown with Add Project button */}
           {isProjectMenuOpen && (
             <div className="absolute left-0 top-9 w-64 rounded-xl bg-[#141518] border border-[#26272b] p-2 shadow-2xl z-50 text-xs space-y-1">
               <div className="px-2 py-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider flex items-center justify-between">
                 <span>Projects & Workspaces</span>
-                <span className="text-neutral-600 font-mono text-[9px]">{projects.length} found</span>
+                <button
+                  onClick={() => {
+                    setIsProjectMenuOpen(false);
+                    onOpenCreateModal();
+                  }}
+                  className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 transition cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>New</span>
+                </button>
               </div>
+
               <div className="max-h-56 overflow-y-auto space-y-0.5">
                 {projects.map((proj) => {
                   const isSelected = proj.name === (activeProject?.name ?? "hydra");
@@ -143,6 +156,19 @@ export function WorktreeSidebar({
                     </button>
                   );
                 })}
+              </div>
+
+              <div className="pt-1.5 border-t border-neutral-800">
+                <button
+                  onClick={() => {
+                    setIsProjectMenuOpen(false);
+                    onOpenCreateModal();
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-neutral-800 text-emerald-400 text-[11px] font-medium transition cursor-pointer"
+                >
+                  <FolderPlus className="w-3.5 h-3.5" />
+                  <span>Create Project or Worktree...</span>
+                </button>
               </div>
             </div>
           )}
@@ -213,8 +239,15 @@ export function WorktreeSidebar({
       {/* Agent Fleet / Worktrees List */}
       <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
         {filtered.length === 0 ? (
-          <div className="p-4 text-center text-neutral-500 text-xs">
-            No active sessions found.
+          <div className="p-6 text-center text-neutral-500 text-xs space-y-2">
+            <p>No active sessions found.</p>
+            <button
+              onClick={onOpenCreateModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
+            >
+              <GitBranch className="w-3 h-3 text-emerald-400" />
+              <span>Create Worktree</span>
+            </button>
           </div>
         ) : (
           filtered.map((session) => (

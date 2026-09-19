@@ -10,6 +10,7 @@ import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraSettings } from "./components/SettingsModal";
 import { CommandPalette } from "./components/CommandPalette";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
+import { AddProjectOrWorktreeModal } from "./components/AddProjectOrWorktreeModal";
 import { 
   Bot, 
   Play, 
@@ -50,6 +51,7 @@ export default function App() {
   const [promptInput, setPromptInput] = useState("");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
@@ -230,6 +232,42 @@ export default function App() {
         content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
       }
     ]);
+  };
+
+  const handleCreatedItem = (type: "project" | "worktree", path: string) => {
+    if (type === "worktree") {
+      const branchName = path.split("-").pop() ?? "feature";
+      const id = `sess_wt_${Date.now().toString().slice(-4)}`;
+      const newSession: WorktreeSession = {
+        id,
+        title: `Worktree: ${branchName}`,
+        branch: branchName,
+        state: "idle",
+        active: true,
+        agentName: "bash",
+        executable: "bash",
+      };
+      setSessions((prev) => [
+        newSession,
+        ...prev.map((s) => ({ ...s, active: false }))
+      ]);
+      invoke("save_session_record", {
+        record: {
+          id: newSession.id,
+          title: newSession.title,
+          branch: newSession.branch,
+          agent_name: newSession.agentName,
+          executable: newSession.executable,
+          created_at: Date.now(),
+          updated_at: Date.now(),
+        }
+      }).catch(console.error);
+      const tabId = `tab_${id}`;
+      setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (wt)`, type: "terminal" }]);
+      setActiveTabId(tabId);
+    } else {
+      invoke<HydraProject[]>("list_projects").then(setProjects).catch(console.error);
+    }
   };
 
   const handleSelectSession = (id: string) => {
@@ -518,6 +556,7 @@ export default function App() {
                 onNewSessionWithAgent={handleNewSessionWithAgent}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenCreateModal={() => setIsCreateModalOpen(true)}
                 onSessionContextMenu={handleSessionContextMenu}
               />
             </aside>
@@ -718,6 +757,14 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenPairing={() => setIsPairingOpen(true)}
         onSwitchTab={setActiveTabId}
+      />
+
+      {/* Add Project or Worktree Modal (Orca AddRepoDialog style) */}
+      <AddProjectOrWorktreeModal
+        isOpen={isCreateModalOpen}
+        activeRepoPath={activeProject?.path ?? "/home/renan/src/hydra"}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={handleCreatedItem}
       />
 
       {/* Mobile Companion Pairing Modal */}
