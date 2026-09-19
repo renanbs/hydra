@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useLayoutEffect, useState } from "react";
 import { 
   ChevronRight, 
   Moon, 
@@ -37,6 +37,7 @@ export function WorkspaceOptionsMenu({
   onOptionsChange,
 }: WorkspaceOptionsMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState<{ top: number; right: number }>({ top: 80, right: 12 });
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
@@ -50,6 +51,20 @@ export function WorkspaceOptionsMenu({
     return () => window.removeEventListener("mousedown", handleOutside);
   }, [isOpen, onClose]);
 
+  // Medição e restrição para caber 100% na viewport
+  useLayoutEffect(() => {
+    if (!isOpen || !menuRef.current) return;
+    const rect = menuRef.current.getBoundingClientRect();
+    const padding = 12;
+
+    let top = 80;
+    if (top + rect.height > window.innerHeight - padding) {
+      top = Math.max(padding, window.innerHeight - rect.height - padding);
+    }
+
+    setCoords({ top, right: 12 });
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleToggle = (key: keyof WorkspaceDisplayOptions) => {
@@ -62,8 +77,9 @@ export function WorkspaceOptionsMenu({
   return (
     <div
       ref={menuRef}
+      style={{ top: `${coords.top}px`, right: `${coords.right}px` }}
       onClick={(e) => e.stopPropagation()}
-      className="absolute right-3 top-20 w-72 rounded-xl bg-[#141518] border border-[#28292e] p-2 shadow-2xl z-[99999] text-xs text-neutral-200 select-none space-y-2.5 font-sans"
+      className="fixed w-72 rounded-xl bg-[#141518] border border-[#28292e] p-2 shadow-2xl z-[99999] text-xs text-neutral-200 select-none space-y-2.5 font-sans"
     >
       {/* Header */}
       <div className="px-2 pt-1 font-semibold text-neutral-100 text-xs">
@@ -88,7 +104,7 @@ export function WorkspaceOptionsMenu({
 
       <div className="h-px bg-[#222327]" />
 
-      {/* Group by Toggle Group (Orca SidebarGroupByToggle 100%) */}
+      {/* Group by Toggle Group */}
       <div className="space-y-1">
         <div className="px-2 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
           Group by
@@ -145,7 +161,7 @@ export function WorkspaceOptionsMenu({
 
       <div className="h-px bg-[#222327]" />
 
-      {/* Filters Section (Orca SidebarWorkspaceFilterSection 100%) */}
+      {/* Filters Section */}
       <div className="space-y-1">
         <div className="px-2 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
           Filters
