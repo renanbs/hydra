@@ -83,6 +83,7 @@ export function TerminalDrawer({
     const term = xtermRef.current;
     const fitAddon = fitAddonRef.current;
     if (!term || !settings) return;
+    console.log("[Hydra Terminal] applying typography:", { fontFamily: settings.terminal_font_family, fontSize: settings.terminal_font_size, fontWeight: settings.terminal_font_weight, lineHeight: settings.terminal_line_height });
     const theme = buildXtermTheme(settings);
     const weights = resolveTerminalFontWeights(settings.terminal_font_weight, settings.terminal_font_weight_bold);
     // Apply all metric options like Orca terminal-appearance.ts:191
@@ -172,5 +173,15 @@ export function TerminalDrawer({
   const bg = (() => {
     try { return buildXtermTheme(settings).background ?? "#0c0d0e"; } catch { return "#0c0d0e"; }
   })();
-  return <div ref={containerRef} onContextMenu={handleContextMenu} className="w-full h-full p-2 overflow-hidden" style={{ backgroundColor: bg }} />;
+  const debugInfo = settings ? `${settings.terminal_font_family.split(",")[0].trim().replace(/['"]/g,"")} ${settings.terminal_font_size}px` : "";
+  return (
+    <div className="relative w-full h-full overflow-hidden" style={{ backgroundColor: bg }}>
+      <div ref={containerRef} onContextMenu={handleContextMenu} className="w-full h-full p-2 overflow-hidden" style={{ backgroundColor: bg }} />
+      {debugInfo && (
+        <div className="absolute bottom-1 right-1 pointer-events-none text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/60 text-white/70 border border-white/10">
+          {debugInfo}
+        </div>
+      )}
+    </div>
+  );
 }
