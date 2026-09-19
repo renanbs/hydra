@@ -20,7 +20,9 @@ interface TerminalDrawerProps {
 
 const FALLBACK_FONTS = [
   "SF Mono", "Menlo", "Monaco", "Cascadia Mono", "Consolas",
-  "DejaVu Sans Mono", "Liberation Mono", "Hack", "monospace"
+  "DejaVu Sans Mono", "Liberation Mono",
+  "Orca Nerd Font Symbols", "Symbols Nerd Font Mono", "MesloLGS Nerd Font", "JetBrainsMono Nerd Font", "Hack Nerd Font",
+  "Hack", "monospace"
 ] as const;
 
 function buildFontFamily(fontFamily: string): string {
