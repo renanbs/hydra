@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { Terminal, Plus, X } from "lucide-react";
 
 export interface TabItem {
@@ -12,6 +13,7 @@ interface WorkbenchTabBarProps {
   onSelectTab: (id: string) => void;
   onCloseTab: (id: string) => void;
   onNewTab: () => void;
+  onRenameTab: (id: string, newTitle: string) => void;
   onTabContextMenu?: (e: React.MouseEvent, tab: TabItem) => void;
 }
 
@@ -21,18 +23,45 @@ export function WorkbenchTabBar({
   onSelectTab,
   onCloseTab,
   onNewTab,
+  onRenameTab,
   onTabContextMenu,
 }: WorkbenchTabBarProps) {
+  const [editingTabId, setEditingTabId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (editingTabId && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editingTabId]);
+
+  const handleStartRename = (tab: TabItem) => {
+    setEditingTabId(tab.id);
+    setEditingTitle(tab.title);
+  };
+
+  const handleCommitRename = (id: string) => {
+    const trimmed = editingTitle.trim();
+    if (trimmed) {
+      onRenameTab(id, trimmed);
+    }
+    setEditingTabId(null);
+  };
+
   return (
     <div className="h-8 border-b border-[#222] bg-[#111214] flex items-center px-1 select-none overflow-x-auto shrink-0">
-      {/* Tab strip in Orca style */}
       <div className="flex items-center gap-1 flex-1 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
+          const isEditing = tab.id === editingTabId;
+
           return (
             <div
               key={tab.id}
               onClick={() => onSelectTab(tab.id)}
+              onDoubleClick={() => handleStartRename(tab)}
               onContextMenu={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -45,15 +74,34 @@ export function WorkbenchTabBar({
               }`}
             >
               <Terminal className="w-3 h-3 text-emerald-400 shrink-0" />
-              <span className="truncate max-w-[140px] text-[11px] font-mono">
-                {tab.title}
-              </span>
-              {tabs.length > 1 && (
+
+              {isEditing ? (
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onBlur={() => handleCommitRename(tab.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCommitRename(tab.id);
+                    if (e.key === "Escape") setEditingTabId(null);
+                  }}
+                  className="bg-[#141518] text-white border border-emerald-500/80 rounded px-1 text-[11px] font-mono outline-none w-28"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span className="truncate max-w-[140px] text-[11px] font-mono">
+                  {tab.title}
+                </span>
+              )}
+
+              {tabs.length > 1 && !isEditing && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onCloseTab(tab.id);
                   }}
+                  title="Close tab"
                   className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-neutral-700 text-neutral-400 hover:text-white transition"
                 >
                   <X className="w-2.5 h-2.5" />
@@ -64,7 +112,6 @@ export function WorkbenchTabBar({
         })}
       </div>
 
-      {/* New Tab Button (+) */}
       <button
         onClick={onNewTab}
         title="New Terminal (+)"

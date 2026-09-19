@@ -41,18 +41,34 @@ export function TerminalDrawer({
       },
     });
 
+    // Orca's attachCustomKeyEventHandler bypass policy:
+    // When focus is inside xterm, xterm captures all key events and sends them as raw ANSI bytes to the PTY.
+    // By returning false for global app chords (Ctrl+P, Ctrl+B, Ctrl+J, Ctrl+,), xterm bails out and lets the
+    // event bubble up to window.addEventListener("keydown").
+    term.attachCustomKeyEventHandler((event: KeyboardEvent) => {
+      const isChord = event.ctrlKey || event.metaKey;
+      if (isChord) {
+        const key = event.key.toLowerCase();
+        // Allow app shortcuts to bubble
+        if (key === "p" || key === "b" || key === "j" || key === ",") {
+          return false;
+        }
+      }
+      return true;
+    });
+
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
     term.open(containerRef.current);
     fitAddon.fit();
     xtermRef.current = term;
 
-    // Conecta teclado ao PTY
+    // Connect user keyboard input to PTY
     term.onData((data) => {
       invoke("send_terminal_input", { sessionId, input: data }).catch(console.error);
     });
 
-    // Inicia sessão PTY
+    // Start PTY session
     invoke("start_agent_terminal", {
       sessionId,
       executable,
@@ -71,7 +87,7 @@ export function TerminalDrawer({
       })
       .catch(console.error);
 
-    // Escuta output em tempo real
+    // Stream real-time output
     const unlistenPromise = listen<{ session_id: string; output: string }>(
       "terminal:output",
       (event) => {

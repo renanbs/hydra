@@ -22,7 +22,7 @@ import {
   SplitSquareVertical,
   Trash2,
   GitBranch,
-  Plus
+  Pencil
 } from "lucide-react";
 import "./App.css";
 
@@ -35,6 +35,16 @@ const MOCK_MODIFIED = `fn main() {
     println!("Hello from Hydra ADE (Autonomous Development Environment)");
 }`;
 
+interface DbSessionRecord {
+  id: string;
+  title: string;
+  branch: string;
+  agent_name: string;
+  executable: string;
+  created_at: number;
+  updated_at: number;
+}
+
 export default function App() {
   const [status, setStatus] = useState("Initializing...");
   const [promptInput, setPromptInput] = useState("");
@@ -46,32 +56,22 @@ export default function App() {
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
 
-  // Estado do Menu de Contexto Customizado (Orca Style)
+  // Context Menu State
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     items: ContextMenuItem[];
   } | null>(null);
 
-  // Agent Fleet Sessions
-  const [sessions, setSessions] = useState<WorktreeSession[]>([
-    {
-      id: "sess_main",
-      title: "Main Terminal Session",
-      branch: "main",
-      state: "idle",
-      active: true,
-      agentName: "bash",
-      executable: "bash"
-    }
-  ]);
+  // Agent Fleet Sessions (Hydrated directly from SQLite WAL)
+  const [sessions, setSessions] = useState<WorktreeSession[]>([]);
 
   // Center Workbench Tabs
   const [tabs, setTabs] = useState<TabItem[]>([
-    { id: "tab_sess_main", title: "bash (active)", type: "terminal" },
+    { id: "tab_main", title: "bash (active)", type: "terminal" },
     { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
   ]);
-  const [activeTabId, setActiveTabId] = useState("tab_sess_main");
+  const [activeTabId, setActiveTabId] = useState("tab_main");
 
   const [messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
     {
@@ -97,31 +97,26 @@ export default function App() {
 
   // Global Keyboard Shortcuts (Orca Style: Ctrl+P, Ctrl+B, Ctrl+J, Ctrl+,)
   useEffect(() => {
-    // 1. Bloqueia 100% o menu de contexto padrão do WebKit/Navegador em todo o app
     const handleGlobalContextMenu = (e: MouseEvent) => {
       e.preventDefault();
     };
     window.addEventListener("contextmenu", handleGlobalContextMenu);
 
-    // 2. Atalhos de Teclado
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+P / Cmd+P -> Command Palette
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+      const isChord = e.ctrlKey || e.metaKey;
+      if (isChord && e.key.toLowerCase() === "p") {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
       }
-      // Ctrl+B / Cmd+B -> Toggle Left Sidebar
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+      if (isChord && e.key.toLowerCase() === "b") {
         e.preventDefault();
         setIsLeftSidebarOpen((prev) => !prev);
       }
-      // Ctrl+J / Cmd+J -> Toggle Right Agent Panel
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") {
+      if (isChord && e.key.toLowerCase() === "j") {
         e.preventDefault();
         setIsRightSidebarOpen((prev) => !prev);
       }
-      // Ctrl+, -> Open Settings
-      if ((e.ctrlKey || e.metaKey) && e.key === ",") {
+      if (isChord && e.key === ",") {
         e.preventDefault();
         setIsSettingsOpen(true);
       }
@@ -134,6 +129,7 @@ export default function App() {
     };
   }, []);
 
+  // Hydrate Sessions from SQLite WAL on startup
   useEffect(() => {
     invoke<string>("get_system_status")
       .then(setStatus)
@@ -147,6 +143,55 @@ export default function App() {
       .then(setGitStatus)
       .catch(console.error);
 
+    invoke<DbSessionRecord[]>("list_persisted_sessions")
+      .then((persisted) => {
+        if (persisted && persisted.length > 0) {
+          const loaded: WorktreeSession[] = persisted.map((p, idx) => ({
+            id: p.id,
+            title: p.title,
+            branch: p.branch,
+            agentName: p.agent_name,
+            executable: p.executable,
+            state: "idle",
+            active: idx === 0,
+          }));
+          setSessions(loaded);
+          const firstTabId = `tab_${loaded[0].id}`;
+          setTabs([
+            { id: firstTabId, title: `${loaded[0].executable} (active)`, type: "terminal" },
+            { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
+          ]);
+          setActiveTabId(firstTabId);
+        } else {
+          // First launch fallback
+          const defaultSession: WorktreeSession = {
+            id: "sess_main",
+            title: "Main Terminal Session",
+            branch: "main",
+            state: "idle",
+            active: true,
+            agentName: "bash",
+            executable: "bash",
+          };
+          setSessions([defaultSession]);
+          invoke("save_session_record", {
+            record: {
+              id: defaultSession.id,
+              title: defaultSession.title,
+              branch: defaultSession.branch,
+              agent_name: defaultSession.agentName,
+              executable: defaultSession.executable,
+              created_at: Date.now(),
+              updated_at: Date.now(),
+            }
+          }).catch(console.error);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  // Live polling of Herdr state engine
+  useEffect(() => {
     const interval = setInterval(() => {
       const currentActive = sessions.find((s) => s.active);
       if (!currentActive) return;
@@ -194,6 +239,18 @@ export default function App() {
       executable: agent.executable
     };
 
+    invoke("save_session_record", {
+      record: {
+        id: newSession.id,
+        title: newSession.title,
+        branch: newSession.branch,
+        agent_name: newSession.agentName,
+        executable: newSession.executable,
+        created_at: Date.now(),
+        updated_at: Date.now(),
+      }
+    }).catch(console.error);
+
     setSessions((prev) => [
       newSession,
       ...prev.map((s) => ({ ...s, active: false }))
@@ -218,6 +275,7 @@ export default function App() {
 
   const handleDeleteSession = (id: string) => {
     if (sessions.length <= 1) return;
+    invoke("delete_session_record", { sessionId: id }).catch(console.error);
     setSessions((prev) => prev.filter((s) => s.id !== id));
     setTabs((prev) => prev.filter((t) => t.id !== `tab_${id}`));
   };
@@ -237,7 +295,13 @@ export default function App() {
     }
   };
 
-  // --- Handlers de Menus de Contexto Customizados ---
+  const handleRenameTab = (tabId: string, newTitle: string) => {
+    setTabs((prev) =>
+      prev.map((t) => (t.id === tabId ? { ...t, title: newTitle } : t))
+    );
+  };
+
+  // Context Menu Handlers
   const handleTerminalContextMenu = (x: number, y: number) => {
     const currentActive = sessions.find((s) => s.active);
     const sId = currentActive?.id ?? "sess_main";
@@ -289,9 +353,20 @@ export default function App() {
       y: e.clientY,
       items: [
         {
+          label: "Rename Tab...",
+          icon: <Pencil className="w-3.5 h-3.5" />,
+          onClick: () => {
+            const newName = window.prompt("Enter new tab name:", tab.title);
+            if (newName && newName.trim()) {
+              handleRenameTab(tab.id, newName.trim());
+            }
+          }
+        },
+        {
           label: "Close Tab",
           icon: <Trash2 className="w-3.5 h-3.5" />,
           shortcut: "Ctrl+W",
+          separator: true,
           onClick: () => handleCloseTab(tab.id)
         },
         {
@@ -303,8 +378,6 @@ export default function App() {
         },
         {
           label: "Duplicate Tab",
-          icon: <Plus className="w-3.5 h-3.5" />,
-          separator: true,
           onClick: () => {
             const newId = `tab_${Date.now()}`;
             setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)` }]);
@@ -324,6 +397,28 @@ export default function App() {
           label: `Copy Branch: ${session.branch}`,
           icon: <GitBranch className="w-3.5 h-3.5" />,
           onClick: () => navigator.clipboard.writeText(session.branch)
+        },
+        {
+          label: "Rename Session...",
+          icon: <Pencil className="w-3.5 h-3.5" />,
+          onClick: () => {
+            const newTitle = window.prompt("Enter new session title:", session.title);
+            if (newTitle && newTitle.trim()) {
+              const updated = { ...session, title: newTitle.trim() };
+              setSessions((prev) => prev.map((s) => (s.id === session.id ? updated : s)));
+              invoke("save_session_record", {
+                record: {
+                  id: updated.id,
+                  title: updated.title,
+                  branch: updated.branch,
+                  agent_name: updated.agentName,
+                  executable: updated.executable,
+                  created_at: Date.now(),
+                  updated_at: Date.now(),
+                }
+              }).catch(console.error);
+            }
+          }
         },
         {
           label: "Close / Delete Fleet Session",
@@ -373,7 +468,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#0c0d0e] text-[#ededed] font-sans antialiased select-none overflow-hidden">
-      {/* Custom Window Titlebar (Frameless / Orca Style) */}
+      {/* Custom Window Titlebar */}
       <WindowTitlebar 
         title={status} 
         isLeftOpen={isLeftSidebarOpen}
@@ -424,6 +519,7 @@ export default function App() {
             onSelectTab={setActiveTabId}
             onCloseTab={handleCloseTab}
             onNewTab={handleNewTab}
+            onRenameTab={handleRenameTab}
             onTabContextMenu={handleTabContextMenu}
           />
 
@@ -591,7 +687,7 @@ export default function App() {
         />
       )}
 
-      {/* Command Palette (Ctrl+P / Orca Style) */}
+      {/* Command Palette */}
       <CommandPalette 
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}

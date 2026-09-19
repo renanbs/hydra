@@ -12,7 +12,7 @@ pub mod window_actions;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
-use db::{ChatMessage, DatabaseManager, HydraSettings, ToolApprovalRecord};
+use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord};
 use git_status::{get_git_status, GitRepoStatus};
 use pairing::{PairingManager, PairingPayload};
 use terminal::{TerminalManager, TerminalSnapshot};
@@ -36,6 +36,23 @@ fn get_repo_git_status() -> Result<GitRepoStatus, String> {
 #[tauri::command]
 fn list_available_agents() -> Vec<AvailableAgent> {
     probe_available_agents()
+}
+
+#[tauri::command]
+fn list_persisted_sessions(state: State<'_, AppState>) -> Result<Vec<DbSessionRecord>, String> {
+    state.db.list_sessions()
+}
+
+#[tauri::command]
+fn save_session_record(record: DbSessionRecord, state: State<'_, AppState>) -> Result<(), String> {
+    state.db.upsert_session(&record)
+}
+
+#[tauri::command]
+fn delete_session_record(session_id: String, state: State<'_, AppState>) -> Result<(), String> {
+    state.db.delete_session(&session_id)?;
+    state.terminal.close_session(&session_id);
+    Ok(())
 }
 
 #[tauri::command]
@@ -166,6 +183,9 @@ pub fn run() {
             get_system_status,
             get_repo_git_status,
             list_available_agents,
+            list_persisted_sessions,
+            save_session_record,
+            delete_session_record,
             start_agent_terminal,
             send_terminal_input,
             get_terminal_snapshot,

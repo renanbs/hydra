@@ -13,6 +13,17 @@ pub struct ChatMessage {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DbSessionRecord {
+    pub id: String,
+    pub title: String,
+    pub branch: String,
+    pub agent_name: String,
+    pub executable: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ToolApprovalRecord {
     pub id: String,
     pub session_id: String,
@@ -67,6 +78,9 @@ impl DatabaseManager {
              CREATE TABLE IF NOT EXISTS sessions (
                  id TEXT PRIMARY KEY,
                  title TEXT NOT NULL,
+                 branch TEXT NOT NULL DEFAULT 'main',
+                 agent_name TEXT NOT NULL DEFAULT 'bash',
+                 executable TEXT NOT NULL DEFAULT 'bash',
                  created_at INTEGER NOT NULL,
                  updated_at INTEGER NOT NULL
              );
@@ -108,13 +122,75 @@ impl DatabaseManager {
         Ok(dir.join("hydra_sessions.sqlite3"))
     }
 
+    pub fn list_sessions(&self) -> Result<Vec<DbSessionRecord>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT id, title, branch, agent_name, executable, created_at, updated_at FROM sessions ORDER BY updated_at DESC")
+            .map_err(|e| format!("Error preparing sessions select: {e}"))?;
+
+        let rows = stmt
+            .query_map(params![], |row| {
+                Ok(DbSessionRecord {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    branch: row.get(2)?,
+                    agent_name: row.get(3)?,
+                    executable: row.get(4)?,
+                    created_at: row.get(5)?,
+                    updated_at: row.get(6)?,
+                })
+            })
+            .map_err(|e| format!("Query error: {e}"))?;
+
+        let mut list = Vec::new();
+        for r in rows {
+            if let Ok(sess) = r {
+                list.push(sess);
+            }
+        }
+        Ok(list)
+    }
+
+    pub fn upsert_session(&self, record: &DbSessionRecord) -> Result<(), String> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "INSERT INTO sessions (id, title, branch, agent_name, executable, created_at, updated_at) 
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+             ON CONFLICT(id) DO UPDATE SET 
+             title = excluded.title,
+             branch = excluded.branch,
+             agent_name = excluded.agent_name,
+             executable = excluded.executable,
+             updated_at = excluded.updated_at",
+            params![
+                record.id,
+                record.title,
+                record.branch,
+                record.agent_name,
+                record.executable,
+                record.created_at,
+                record.updated_at
+            ],
+        )
+        .map_err(|e| format!("Error upserting session: {e}"))?;
+        Ok(())
+    }
+
+    pub fn delete_session(&self, session_id: &str) -> Result<(), String> {
+        let conn = self.conn.lock();
+        conn.execute("DELETE FROM sessions WHERE id = ?1", params![session_id])
+            .map_err(|e| format!("Error deleting session: {e}"))?;
+        Ok(())
+    }
+
     pub fn save_message(&self, session_id: &str, role: &str, content: &str) -> Result<i64, String> {
         let conn = self.conn.lock();
         let now = chrono_now();
 
         let _ = conn.execute(
-            "INSERT OR IGNORE INTO sessions (id, title, created_at, updated_at) VALUES (?1, ?2, ?3, ?3)",
-            params![session_id, "New Hydra Session", now],
+            "INSERT OR IGNORE INTO sessions (id, title, branch, agent_name, executable, created_at, updated_at) 
+             VALUES (?1, ?2, 'main', 'bash', 'bash', ?3, ?3)",
+            params![session_id, "Main Session", now],
         );
 
         conn.execute(
