@@ -287,6 +287,7 @@ export default function App() {
           ]);
           setActiveTabId(firstTabId);
         } else {
+          const effectiveShell = (hydraSettings as any).terminal_default_shell || "bash";
           const defaultSession: WorktreeSession = {
             id: `sess_main_${Date.now().toString().slice(-4)}`,
             project_path: projectPath,
@@ -294,8 +295,8 @@ export default function App() {
             branch: "main",
             state: "idle",
             active: true,
-            agentName: "bash",
-            executable: "bash",
+            agentName: effectiveShell,
+            executable: effectiveShell,
           };
           setSessions([defaultSession]);
           invoke("save_session_record", {
@@ -498,7 +499,8 @@ export default function App() {
 
   const handleNewTab = () => {
     const id = `tab_${Date.now()}`;
-    setTabs((prev) => [...prev, { id, title: `bash #${prev.length + 1}`, type: "terminal" }]);
+    const sh = (hydraSettings as any).terminal_default_shell || "bash";
+    setTabs((prev) => [...prev, { id, title: `${sh} #${prev.length + 1}`, type: "terminal" }]);
     setActiveTabId(id);
   };
 
@@ -766,9 +768,9 @@ export default function App() {
               />
             ) : (
               <TerminalDrawer 
-                key={activeSession?.id ?? "sess_main"}
+                key={`${activeSession?.id ?? "sess_main"}-${hydraSettings.terminal_default_shell}`}
                 sessionId={activeSession?.id ?? "sess_main"} 
-                executable={activeSession?.executable ?? "bash"}
+                executable={activeSession?.executable ?? (hydraSettings.terminal_default_shell || "bash")}
                 settings={hydraSettings}
                 onContextMenu={handleTerminalContextMenu}
               />

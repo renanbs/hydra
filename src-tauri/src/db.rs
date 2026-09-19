@@ -220,6 +220,8 @@ pub struct HydraSettings {
     pub default_branch_prefix: String,
     #[serde(default = "default_workspace_dir")]
     pub workspace_dir: String,
+    #[serde(default)]
+    pub terminal_default_shell: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub default_tui_agent: Option<String>,
     #[serde(default)]
@@ -274,6 +276,7 @@ impl Default for HydraSettings {
             notification_on_blocked: true,
             default_branch_prefix: default_branch_prefix(),
             workspace_dir: default_workspace_dir(),
+            terminal_default_shell: String::new(),
             default_tui_agent: None,
             disabled_tui_agents: vec![],
             agent_status_hooks_enabled: true,

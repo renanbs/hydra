@@ -34,6 +34,7 @@ export type HydraSettings = {
   notification_on_blocked: boolean;
   default_branch_prefix: string;
   workspace_dir: string;
+  terminal_default_shell: string;
   // Agents — Orca-faithful (AgentsPane.tsx:141)
   default_tui_agent?: string | "blank" | null;
   disabled_tui_agents?: string[];
@@ -75,6 +76,7 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   notification_on_blocked: true,
   default_branch_prefix: "feat/",
   workspace_dir: "/home/renan/src",
+  terminal_default_shell: "",
   default_tui_agent: null,
   disabled_tui_agents: [],
   agent_status_hooks_enabled: true,

@@ -9,6 +9,7 @@ pub mod git_status;
 pub mod keep_awake;
 pub mod pairing;
 pub mod project_manager;
+pub mod shell_detection;
 pub mod terminal;
 pub mod window_actions;
 pub mod worktree_ops;
@@ -19,6 +20,7 @@ use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolAppro
 use git_status::{get_git_status, GitRepoStatus};
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
+use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
 use project_manager::{add_existing_project, list_local_projects, remove_added_project, HydraProject};
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
@@ -99,6 +101,11 @@ fn save_layout_persistence(layout: UiLayoutState, state: State<'_, AppState>) ->
 #[tauri::command]
 fn list_available_agents() -> Vec<AvailableAgent> {
     probe_available_agents()
+}
+
+#[tauri::command]
+fn list_available_shells() -> Vec<AvailableShell> {
+    probe_available_shells()
 }
 
 #[tauri::command]
@@ -301,6 +308,7 @@ pub fn run() {
             get_keep_awake_status,
             sync_keep_awake,
             set_keep_awake_working_count,
+            list_available_shells,
             resolve_tool_approval,
             window_actions::window_minimize,
             window_actions::window_toggle_maximize,
