@@ -5,6 +5,7 @@ import { TerminalDrawer } from "./components/TerminalDrawer";
 import { WindowTitlebar } from "./components/WindowTitlebar";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
 import { WorktreeSidebar, type WorktreeSession, type AvailableAgent, type GitRepoStatus, type HydraProject } from "./components/sidebar/WorktreeSidebar";
+import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
 import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraSettings } from "./components/SettingsModal";
@@ -51,6 +52,7 @@ export default function App() {
   const [promptInput, setPromptInput] = useState("");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
@@ -556,7 +558,8 @@ export default function App() {
                 onNewSessionWithAgent={handleNewSessionWithAgent}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
-                onOpenCreateModal={() => setIsCreateModalOpen(true)}
+                onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
+                onOpenNewWorkspaceModal={() => setIsCreateModalOpen(true)}
                 onSessionContextMenu={handleSessionContextMenu}
               />
             </aside>
@@ -759,7 +762,16 @@ export default function App() {
         onSwitchTab={setActiveTabId}
       />
 
-      {/* Add Project or Worktree Modal (Orca AddRepoDialog style) */}
+      {/* Orca 100% Add Project Dialog (Clone / Create / Browse) */}
+      <AddRepoDialog
+        isOpen={isAddRepoOpen}
+        onClose={() => setIsAddRepoOpen(false)}
+        onProjectAdded={() => {
+          invoke<HydraProject[]>("list_projects").then(setProjects).catch(console.error);
+        }}
+      />
+
+      {/* Add Worktree / Workspace Modal */}
       <AddProjectOrWorktreeModal
         isOpen={isCreateModalOpen}
         activeRepoPath={activeProject?.path ?? "/home/renan/src/hydra"}

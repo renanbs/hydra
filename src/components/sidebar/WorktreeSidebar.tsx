@@ -4,7 +4,7 @@ import {
   Plus, 
   Trash2, 
   FolderGit2, 
-  ChevronDown, 
+  ChevronDown,
   Settings, 
   GitCommit, 
   FolderPlus,
@@ -54,7 +54,8 @@ interface WorktreeSidebarProps {
   onNewSessionWithAgent: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;
-  onOpenCreateModal: () => void;
+  onOpenAddRepoDialog: () => void;
+  onOpenNewWorkspaceModal: () => void;
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
 }
 
@@ -69,7 +70,8 @@ export function WorktreeSidebar({
   onNewSessionWithAgent,
   onDeleteSession,
   onOpenSettings,
-  onOpenCreateModal,
+  onOpenAddRepoDialog,
+  onOpenNewWorkspaceModal,
   onSessionContextMenu,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
@@ -98,7 +100,7 @@ export function WorktreeSidebar({
 
   return (
     <div className="flex flex-col h-full bg-[#0e0f11] select-none relative">
-      {/* 1. Repository / Project Switcher Header (Orca Style 100%) */}
+      {/* 1. PROJECT / REPO PICKER BAR (Orca Style 100%) */}
       <div className="h-10 border-b border-[#222] px-3 flex items-center justify-between bg-[#111214] shrink-0">
         <div className="relative min-w-0 flex-1" ref={projectMenuRef}>
           <button
@@ -112,20 +114,20 @@ export function WorktreeSidebar({
             <ChevronDown className="w-2.5 h-2.5 text-neutral-500 shrink-0" />
           </button>
 
-          {/* Project Switcher Dropdown with Add Project button */}
+          {/* Project Switcher Dropdown (Orca SidebarProjectFilterPanel style) */}
           {isProjectMenuOpen && (
             <div className="absolute left-0 top-9 w-64 rounded-xl bg-[#141518] border border-[#26272b] p-2 shadow-2xl z-50 text-xs space-y-1">
               <div className="px-2 py-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider flex items-center justify-between">
-                <span>Projects & Workspaces</span>
+                <span>Projects</span>
                 <button
                   onClick={() => {
                     setIsProjectMenuOpen(false);
-                    onOpenCreateModal();
+                    onOpenAddRepoDialog();
                   }}
-                  className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 transition cursor-pointer"
+                  className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 transition cursor-pointer font-medium"
                 >
                   <Plus className="w-3 h-3" />
-                  <span>New</span>
+                  <span>Add</span>
                 </button>
               </div>
 
@@ -162,40 +164,76 @@ export function WorktreeSidebar({
                 <button
                   onClick={() => {
                     setIsProjectMenuOpen(false);
-                    onOpenCreateModal();
+                    onOpenAddRepoDialog();
                   }}
                   className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-neutral-800 text-emerald-400 text-[11px] font-medium transition cursor-pointer"
                 >
                   <FolderPlus className="w-3.5 h-3.5" />
-                  <span>Create Project or Worktree...</span>
+                  <span>Add Project...</span>
                 </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Git Branch Pill + Launch Agent Dropdown */}
-        <div className="flex items-center gap-1 shrink-0">
-          <span className="text-[10px] text-neutral-400 font-mono px-1.5 py-0.5 rounded bg-neutral-800 flex items-center gap-1 shrink-0">
-            <GitBranch className="w-2.5 h-2.5 text-emerald-400" />
-            <span>{gitStatus?.branch ?? "main"}</span>
-          </span>
+        {/* Current Branch Pill */}
+        <span className="text-[10px] text-neutral-400 font-mono px-1.5 py-0.5 rounded bg-neutral-800 flex items-center gap-1 shrink-0">
+          <GitBranch className="w-2.5 h-2.5 text-emerald-400" />
+          <span>{gitStatus?.branch ?? "main"}</span>
+        </span>
+      </div>
 
+      {/* 2. ORCA SIDEBAR HEADER ACTIONS (100% Orca SidebarHeader.tsx + sidebar-header-actions.tsx) */}
+      <div className="mt-1 flex h-8 min-w-0 items-center justify-between gap-1.5 px-3">
+        <div className="flex min-w-0 items-center gap-1">
+          <span className="min-w-0 truncate select-none text-[11px] font-semibold text-neutral-400 tracking-wider uppercase">
+            Workspaces
+          </span>
+        </div>
+
+        {/* Action cluster: Options | Add Project | New Workspace (Plus) */}
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            onClick={onOpenAddRepoDialog}
+            title="Add Project (Folder / Git / Clone)"
+            className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-800 transition cursor-pointer"
+          >
+            <FolderPlus className="w-3.5 h-3.5" />
+          </button>
+
+          {/* New Workspace / Worktree Trigger with Agent Selection */}
           <div className="relative" ref={agentMenuRef}>
             <button
               onClick={() => setIsAgentMenuOpen(!isAgentMenuOpen)}
-              title="Launch Agent Fleet (+)"
-              className="flex items-center gap-0.5 p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition shrink-0"
+              title="New Workspace (+)"
+              className="flex items-center gap-0.5 p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-800 transition cursor-pointer"
             >
               <Plus className="w-4 h-4 text-emerald-400" />
               <ChevronDown className="w-2.5 h-2.5 text-neutral-500" />
             </button>
 
-            {/* Detected Agents Dropdown */}
+            {/* Agent / Worktree Dropdown Menu */}
             {isAgentMenuOpen && (
-              <div className="absolute right-0 top-7 w-48 rounded-lg bg-[#141518] border border-[#26272b] p-1.5 shadow-2xl z-50 text-xs space-y-0.5">
+              <div className="absolute right-0 top-7 w-52 rounded-lg bg-[#141518] border border-[#26272b] p-1.5 shadow-2xl z-50 text-xs space-y-1">
                 <div className="px-2 py-1 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
-                  Detected Agents
+                  New Workspace
+                </div>
+                
+                <button
+                  onClick={() => {
+                    setIsAgentMenuOpen(false);
+                    onOpenNewWorkspaceModal();
+                  }}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-neutral-800 text-emerald-400 text-left transition cursor-pointer font-medium"
+                >
+                  <GitBranch className="w-3.5 h-3.5" />
+                  <span>Custom Worktree Branch...</span>
+                </button>
+
+                <div className="h-px bg-[#222] my-1" />
+
+                <div className="px-2 py-0.5 text-[9px] uppercase font-bold text-neutral-500 tracking-wider">
+                  Spawn with Agent
                 </div>
                 {availableAgents.map((agent) => (
                   <button
@@ -205,7 +243,7 @@ export function WorktreeSidebar({
                       setIsAgentMenuOpen(false);
                       onNewSessionWithAgent(agent);
                     }}
-                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-left transition ${
+                    className={`w-full flex items-center justify-between px-2 py-1 rounded text-left transition ${
                       agent.is_installed
                         ? "hover:bg-neutral-800 text-neutral-200 cursor-pointer"
                         : "opacity-40 cursor-not-allowed text-neutral-500"
@@ -225,29 +263,38 @@ export function WorktreeSidebar({
         </div>
       </div>
 
-      {/* Filter / Search Worktrees */}
+      {/* 3. Filter input */}
       <div className="p-2 border-b border-[#222] bg-[#0e0f11] shrink-0">
         <input
           type="text"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter agents and branches..."
+          placeholder="Filter workspaces and agents..."
           className="w-full bg-[#141518] border border-[#222] rounded px-2 py-1 text-[11px] text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-emerald-500/50"
         />
       </div>
 
-      {/* Agent Fleet / Worktrees List */}
+      {/* 4. Worktree / Workspace List (100% Orca WorktreeList style) */}
       <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
         {filtered.length === 0 ? (
           <div className="p-6 text-center text-neutral-500 text-xs space-y-2">
-            <p>No active sessions found.</p>
-            <button
-              onClick={onOpenCreateModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
-            >
-              <GitBranch className="w-3 h-3 text-emerald-400" />
-              <span>Create Worktree</span>
-            </button>
+            <p>No active workspaces found.</p>
+            <div className="flex justify-center gap-2">
+              <button
+                onClick={onOpenNewWorkspaceModal}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
+              >
+                <GitBranch className="w-3 h-3 text-emerald-400" />
+                <span>New Worktree</span>
+              </button>
+              <button
+                onClick={onOpenAddRepoDialog}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-medium transition cursor-pointer"
+              >
+                <FolderPlus className="w-3 h-3 text-blue-400" />
+                <span>Add Project</span>
+              </button>
+            </div>
           </div>
         ) : (
           filtered.map((session) => (
