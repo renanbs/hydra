@@ -41,6 +41,11 @@ fn get_system_status() -> String {
 }
 
 #[tauri::command]
+fn get_app_version(app: AppHandle) -> String {
+    app.package_info().version.to_string()
+}
+
+#[tauri::command]
 fn get_repo_git_status() -> Result<GitRepoStatus, String> {
     get_git_status()
 }
@@ -281,6 +286,7 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![
             get_system_status,
+            get_app_version,
             get_repo_git_status,
             list_projects,
             register_existing_project,

@@ -147,6 +147,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const [previewAppFont, setPreviewAppFont] = useState<string | null>(null);
   const [availableAgents, setAvailableAgents] = useState<{ id: string; label: string }[]>([]);
   const [availableShells, setAvailableShells] = useState<{ id: string; label: string; path: string }[]>([]);
+  const [appVersion, setAppVersion] = useState<string | null>(null);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const terminalFontSuggestions = ["JetBrains Mono","Fira Code","Cascadia Code","SF Mono","Menlo","Consolas","Liberation Mono","DejaVu Sans Mono","Source Code Pro","Ubuntu Mono","Hack","Iosevka","Geist Mono","Berkeley Mono","JetBrainsMono Nerd Font"];
   // Live preview for interface font (hover in FontAutocomplete)
@@ -166,6 +167,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
       invoke<HydraSettings>("get_settings").then((s) => { if (s) { const n = normalizeHydraSettings(s); setSettings(n); setTerminalTarget(resolveEffectiveTerminalAppearance(n, getSystemPrefersDark()).mode); }}).catch(console.error);
       invoke<{ id: string; label: string }[]>("list_available_agents").then((a) => { if (Array.isArray(a)) setAvailableAgents(a.map((x: any) => ({ id: x.id ?? x.name ?? x, label: x.label ?? x.name ?? x}))); }).catch(()=>{});
       invoke<{ id: string; label: string; path: string }[]>("list_available_shells").then((s)=>{ if(Array.isArray(s)) setAvailableShells(s.map((x:any)=>({id:x.id, label:x.label, path:x.path}))); }).catch(()=>{});
+      invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
     }
   }, [isOpen]);
 
@@ -267,7 +269,10 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
           </div>
           <div className="border-t border-worktree-sidebar-border px-3 py-3 text-[11px] text-muted-foreground">
             <div className="flex items-center gap-1.5"><Sliders className="size-3.5 text-emerald-500" /> Hydra Settings</div>
-            <div className="font-mono text-[10px] mt-1">SQLite WAL · ~/.config/hydra/</div>
+            <div className="font-mono text-[10px] mt-1 flex items-center justify-between">
+              <span>SQLite WAL · ~/.config/hydra/</span>
+              {appVersion && <span className="text-worktree-sidebar-foreground/70">v{appVersion}</span>}
+            </div>
           </div>
         </aside>
 
@@ -591,7 +596,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
             </div>
           </div>
           <div className="border-t px-8 py-3 flex items-center justify-between bg-muted/30">
-            <span className="text-[11px] font-mono text-muted-foreground">SQLite WAL · ~/.config/hydra/ · oled→dark migrated</span>
+            <span className="text-[11px] font-mono text-muted-foreground">{appVersion ? `Hydra v${appVersion} · ` : ""}SQLite WAL · ~/.config/hydra/ · oled→dark migrated</span>
             <div className="flex items-center gap-2">
               {savedFeedback && <span className="flex items-center gap-1 text-emerald-600 text-[12px]"><Check className="size-3.5" /> Saved</span>}
               <button onClick={handleSave} className="px-4 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-medium">Save Changes</button>

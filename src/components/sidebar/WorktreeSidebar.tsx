@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { 
   GitBranch, 
   Plus, 
@@ -109,6 +110,10 @@ export function WorktreeSidebar({
     hideCliCreated: false,
     hideDetachedHead: false,
   });
+  const [appVersion, setAppVersion] = useState<string | null>(null);
+  useEffect(() => {
+    invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = () => {
@@ -442,7 +447,7 @@ export function WorktreeSidebar({
         onOptionsChange={setDisplayOptions}
       />
 
-      {/* 6. Orca Sidebar Footer */}
+      {/* 6. Orca Sidebar Footer — version like Orca GeneralUpdateSettingsSection */}
       <div className="h-8 border-t border-[#1f2024] px-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono bg-[#101114] shrink-0">
         <button
           onClick={onOpenSettings}
@@ -452,12 +457,17 @@ export function WorktreeSidebar({
           <Settings className="w-3 h-3 text-neutral-400 hover:text-emerald-400 transition" />
           <span>Settings</span>
         </button>
-        {gitStatus?.head_commit && (
-          <span className="flex items-center gap-1 text-neutral-400">
-            <GitCommit className="w-2.5 h-2.5 text-neutral-500" />
-            <span>{gitStatus.head_commit}</span>
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {appVersion && (
+            <span className="text-[10px] text-neutral-500" title={`Hydra v${appVersion}`}>v{appVersion}</span>
+          )}
+          {gitStatus?.head_commit && (
+            <span className="flex items-center gap-1 text-neutral-400">
+              <GitCommit className="w-2.5 h-2.5 text-neutral-500" />
+              <span>{gitStatus.head_commit.slice(0,7)}</span>
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
