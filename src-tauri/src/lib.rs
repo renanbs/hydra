@@ -6,8 +6,10 @@ pub mod agent_discovery;
 pub mod agent_state;
 pub mod db;
 pub mod git_status;
+pub mod keep_awake;
 pub mod pairing;
 pub mod project_manager;
+pub mod shell_detection;
 pub mod terminal;
 pub mod window_actions;
 pub mod worktree_ops;
@@ -16,7 +18,9 @@ use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
 use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState};
 use git_status::{get_git_status, GitRepoStatus};
+use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
+use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
 use project_manager::{add_existing_project, list_local_projects, remove_added_project, HydraProject};
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
@@ -28,11 +32,17 @@ pub struct AppState {
     pub terminal: Arc<TerminalManager>,
     pub db: Arc<DatabaseManager>,
     pub pairing: Arc<PairingManager>,
+    pub keep_awake: Arc<KeepAwakeManager>,
 }
 
 #[tauri::command]
 fn get_system_status() -> String {
     "Hydra Core Active (Rust 1.98 / Wayland)".to_string()
+}
+
+#[tauri::command]
+fn get_app_version(app: AppHandle) -> String {
+    app.package_info().version.to_string()
 }
 
 #[tauri::command]
@@ -96,6 +106,11 @@ fn save_layout_persistence(layout: UiLayoutState, state: State<'_, AppState>) ->
 #[tauri::command]
 fn list_available_agents() -> Vec<AvailableAgent> {
     probe_available_agents()
+}
+
+#[tauri::command]
+fn list_available_shells() -> Vec<AvailableShell> {
+    probe_available_shells()
 }
 
 #[tauri::command]
@@ -193,7 +208,27 @@ fn get_settings(state: State<'_, AppState>) -> Result<HydraSettings, String> {
 
 #[tauri::command]
 fn save_settings(settings: HydraSettings, state: State<'_, AppState>) -> Result<(), String> {
-    state.db.save_settings(&settings)
+    let enabled = settings.keep_computer_awake_while_agents_run;
+    state.db.save_settings(&settings)?;
+    state.keep_awake.set_enabled(enabled);
+    Ok(())
+}
+
+#[tauri::command]
+fn get_keep_awake_status(state: State<'_, AppState>) -> KeepAwakeStatus {
+    state.keep_awake.get_status()
+}
+
+#[tauri::command]
+fn sync_keep_awake(enabled: bool, working_count: usize, state: State<'_, AppState>) -> KeepAwakeStatus {
+    state.keep_awake.sync(enabled, working_count);
+    state.keep_awake.get_status()
+}
+
+#[tauri::command]
+fn set_keep_awake_working_count(working_count: usize, state: State<'_, AppState>) -> KeepAwakeStatus {
+    state.keep_awake.set_working_count(working_count);
+    state.keep_awake.get_status()
 }
 
 #[tauri::command]
@@ -227,11 +262,17 @@ pub fn run() {
     let terminal_manager = Arc::new(TerminalManager::new());
     let db_manager = Arc::new(DatabaseManager::new().expect("Failed to initialize SQLite database"));
     let pairing_manager = Arc::new(PairingManager::new());
+    let initial_enabled = db_manager
+        .get_settings()
+        .map(|s| s.keep_computer_awake_while_agents_run)
+        .unwrap_or(false);
+    let keep_awake_manager = Arc::new(KeepAwakeManager::new(initial_enabled));
 
     let state = AppState {
         terminal: terminal_manager,
         db: db_manager,
         pairing: pairing_manager,
+        keep_awake: keep_awake_manager,
     };
 
     tauri::Builder::default()
@@ -245,6 +286,7 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![
             get_system_status,
+            get_app_version,
             get_repo_git_status,
             list_projects,
             register_existing_project,
@@ -269,6 +311,10 @@ pub fn run() {
             get_pairing_qr,
             get_settings,
             save_settings,
+            get_keep_awake_status,
+            sync_keep_awake,
+            set_keep_awake_working_count,
+            list_available_shells,
             resolve_tool_approval,
             window_actions::window_minimize,
             window_actions::window_toggle_maximize,

@@ -15,7 +15,10 @@ import {
 import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
 import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
 import { PairingModal } from "./components/PairingModal";
-import { SettingsModal, type HydraSettings } from "./components/SettingsModal";
+import { SettingsModal } from "./components/SettingsModal";
+import type { HydraSettings } from "./shared/settings-types";
+import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings } from "./shared/settings-types";
+import { applyDocumentTheme } from "./lib/document-theme";
 import { CommandPalette } from "./components/CommandPalette";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
@@ -31,7 +34,8 @@ import {
   SplitSquareVertical,
   Trash2,
   GitBranch,
-  Pencil
+  Pencil,
+  Coffee
 } from "lucide-react";
 import "./App.css";
 
@@ -77,6 +81,19 @@ export default function App() {
   const [activeProject, setActiveProject] = useState<HydraProject | null>(null);
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
+  const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
+  // Apply interface font live (Orca appFontFamily → --app-font-family)
+  useEffect(() => {
+    const f = hydraSettings.app_font_family;
+    if (f) {
+      document.documentElement.style.setProperty("--app-font-family", f);
+      document.body.style.fontFamily = f;
+    }
+  }, [hydraSettings.app_font_family]);
+  const syncKeepAwake = (enabled: boolean, workingCount: number) => {
+    invoke("sync_keep_awake", { enabled, workingCount }).catch(()=>{});
+  };
+  const [keepAwakeActive, setKeepAwakeActive] = useState(false);
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -222,6 +239,27 @@ export default function App() {
       .then(setAvailableAgents)
       .catch(console.error);
 
+    invoke<HydraSettings>("get_settings").then((s) => {
+      if (s) {
+        const n = normalizeHydraSettings(s);
+        setHydraSettings(n);
+        applyDocumentTheme(n.theme);
+        try { localStorage.setItem("hydra:theme", n.theme); } catch {}
+      }
+    }).catch(console.error);
+
+    // Listen for system theme changes when theme=system
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const onSystemChange = () => {
+      invoke<HydraSettings>("get_settings").then((s) => {
+        if (s) {
+          const n = normalizeHydraSettings(s);
+          if (n.theme === "system") applyDocumentTheme("system");
+        }
+      }).catch(()=>{});
+    };
+    mql.addEventListener("change", onSystemChange);
+
     invoke<GitRepoStatus>("get_repo_git_status")
       .then(setGitStatus)
       .catch(console.error);
@@ -249,6 +287,7 @@ export default function App() {
           ]);
           setActiveTabId(firstTabId);
         } else {
+          const effectiveShell = (hydraSettings as any).terminal_default_shell || "bash";
           const defaultSession: WorktreeSession = {
             id: `sess_main_${Date.now().toString().slice(-4)}`,
             project_path: projectPath,
@@ -256,8 +295,8 @@ export default function App() {
             branch: "main",
             state: "idle",
             active: true,
-            agentName: "bash",
-            executable: "bash",
+            agentName: effectiveShell,
+            executable: effectiveShell,
           };
           setSessions([defaultSession]);
           invoke("save_session_record", {
@@ -283,27 +322,54 @@ export default function App() {
       .catch(console.error);
   };
 
-  // Live polling of Herdr state engine
+  // Live polling of Herdr state engine + keep-awake sync (Orca AgentAwakeService auto)
+  useEffect(() => {
+    // Initial sync on hydraSettings change
+    const workingInitial = sessions.filter((s) => s.state === "working").length;
+    syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), workingInitial);
+  }, [hydraSettings, sessions.map(s=>s.state).join(",")]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const currentActive = sessions.find((s) => s.active);
-      if (!currentActive) return;
-
-      invoke<string>("check_agent_state", { sessionId: currentActive.id })
-        .then((detectedState) => {
-          if (detectedState) {
-            setSessions((prev) =>
-              prev.map((s) =>
-                s.active ? { ...s, state: detectedState as WorktreeSession["state"] } : s
-              )
-            );
-          }
-        })
-        .catch(() => {});
+      if (currentActive) {
+        invoke<string>("check_agent_state", { sessionId: currentActive.id })
+          .then((detectedState) => {
+            if (detectedState) {
+              setSessions((prev) => {
+                const next = prev.map((s) => s.active ? { ...s, state: detectedState as WorktreeSession["state"] } : s);
+                // Sync keep-awake with new working count
+                const wc = next.filter((s) => s.state === "working").length;
+                syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+                return next;
+              });
+            } else {
+              const wc = sessions.filter((s) => s.state === "working").length;
+              syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+            }
+          })
+          .catch(() => {});
+      } else {
+        const wc = sessions.filter((s) => s.state === "working").length;
+        syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+      }
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [sessions]);
+  }, [sessions, hydraSettings]);
+
+  // Poll keep-awake status for UI indicator (like Orca CaffeinateStatusSegment)
+  useEffect(() => {
+    const id = setInterval(() => {
+      invoke<{ enabled: boolean; working_count: number; active: boolean }>("get_keep_awake_status")
+        .then((s) => setKeepAwakeActive(s.active))
+        .catch(()=>{});
+    }, 3000);
+    invoke<{ enabled: boolean; working_count: number; active: boolean }>("get_keep_awake_status")
+      .then((s) => setKeepAwakeActive(s.active))
+      .catch(()=>{});
+    return () => clearInterval(id);
+  }, []);
 
   const handleSelectProject = (proj: HydraProject) => {
     setActiveProject(proj);
@@ -433,7 +499,8 @@ export default function App() {
 
   const handleNewTab = () => {
     const id = `tab_${Date.now()}`;
-    setTabs((prev) => [...prev, { id, title: `bash #${prev.length + 1}`, type: "terminal" }]);
+    const sh = (hydraSettings as any).terminal_default_shell || "bash";
+    setTabs((prev) => [...prev, { id, title: `${sh} #${prev.length + 1}`, type: "terminal" }]);
     setActiveTabId(id);
   };
 
@@ -605,12 +672,16 @@ export default function App() {
   };
 
   const handleSettingsSaved = (newSettings: HydraSettings) => {
+    const n = normalizeHydraSettings(newSettings);
+    setHydraSettings(n);
+    applyDocumentTheme(n.theme);
+    try { localStorage.setItem("hydra:theme", n.theme); } catch {}
     setMessages((prev) => [
       ...prev,
       {
         id: Date.now(),
         role: "agent",
-        content: `Settings updated: font size ${newSettings.terminal_font_size}px, auto-approve reads: ${newSettings.auto_approve_reads ? "on" : "off"}.`
+        content: `Settings updated: theme ${n.theme} · terminal ${n.terminal_theme_dark} / ${n.terminal_theme_light} · font ${n.terminal_font_size}px · auto-approve reads: ${n.auto_approve_reads ? "on" : "off"}.`
       }
     ]);
   };
@@ -619,7 +690,7 @@ export default function App() {
   const activeSession = sessions.find((s) => s.active);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#0c0d0e] text-[#ededed] font-sans antialiased select-none overflow-hidden">
+    <div className="flex flex-col h-screen w-screen font-sans antialiased select-none overflow-hidden" style={{ background: "var(--app-bg)", color: "var(--app-fg)" }}>
       {/* Custom Window Titlebar */}
       <WindowTitlebar 
         title={status} 
@@ -676,7 +747,7 @@ export default function App() {
         )}
 
         {/* Central Workspace: Multi-Tab Workbench Surface */}
-        <main className="flex-1 flex flex-col bg-[#0c0d0e] min-w-0 overflow-hidden">
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ background: "var(--app-bg)" }}>
           <WorkbenchTabBar 
             tabs={tabs}
             activeTabId={activeTabId}
@@ -692,13 +763,15 @@ export default function App() {
               <CodeDiffViewer 
                 original={MOCK_ORIGINAL} 
                 modified={MOCK_MODIFIED} 
-                language="rust" 
+                language="rust"
+                theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
               />
             ) : (
               <TerminalDrawer 
-                key={activeSession?.id ?? "sess_main"}
+                key={`${activeSession?.id ?? "sess_main"}-${hydraSettings.terminal_default_shell}`}
                 sessionId={activeSession?.id ?? "sess_main"} 
-                executable={activeSession?.executable ?? "bash"}
+                executable={activeSession?.executable ?? (hydraSettings.terminal_default_shell || "bash")}
+                settings={hydraSettings}
                 onContextMenu={handleTerminalContextMenu}
               />
             )}
@@ -729,6 +802,12 @@ export default function App() {
                   Active Agent
                 </span>
                 <div className="flex items-center gap-2">
+                  {keepAwakeActive && (
+                    <span title="Keep awake active — preventing display/system sleep while agents work" className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      <Coffee className="w-3 h-3" />
+                      awake
+                    </span>
+                  )}
                   <button
                     onClick={() => setIsPairingOpen(true)}
                     title="Pair Mobile Companion"
@@ -890,6 +969,7 @@ export default function App() {
       <SettingsModal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
+        onLiveChange={(live) => { const n = normalizeHydraSettings(live); setHydraSettings(n); applyDocumentTheme(n.theme); }}
         onSaved={handleSettingsSaved}
       />
     </div>
