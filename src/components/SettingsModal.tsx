@@ -132,10 +132,10 @@ interface SettingsModalProps {
   onLiveChange?: (settings: HydraSettings) => void;
 }
 
-type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git";
+type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general";
 
 export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: SettingsModalProps) {
-  const [activeId, setActiveId] = useState<HydraNavId>("appearance");
+  const [activeId, setActiveId] = useState<HydraNavId>("general");
   const [settings, setSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   const [savedFeedback, setSavedFeedback] = useState(false);
   const [shortcutFilter, setShortcutFilter] = useState("");
@@ -149,6 +149,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const [availableShells, setAvailableShells] = useState<{ id: string; label: string; path: string }[]>([]);
   const [appVersion, setAppVersion] = useState<string | null>(null);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+  const [worktreeRootDraft, setWorktreeRootDraft] = useState("");
   const terminalFontSuggestions = ["JetBrains Mono","Fira Code","Cascadia Code","SF Mono","Menlo","Consolas","Liberation Mono","DejaVu Sans Mono","Source Code Pro","Ubuntu Mono","Hack","Iosevka","Geist Mono","Berkeley Mono","JetBrainsMono Nerd Font"];
   // Live preview for interface font (hover in FontAutocomplete)
   useEffect(() => {
@@ -211,8 +212,11 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const matchDarkMode = !settings.terminal_use_separate_light_theme;
   const showCustomControls = !(isLightTarget && matchDarkMode);
 
-  // Groups: Interface / Workflows
-  const navGroups: { id: string; title: string; items: { id: HydraNavId; label: string; icon: any }[] }[] = [
+  // Groups: Orca-faithful General + Hydra existing
+  const navGroups: { id: string; title: string; items: { id: HydraNavId; label: string; icon: any; badge?: string }[] }[] = [
+    { id: "setup", title: "Set up", items: [
+      { id: "general", label: "General", icon: Sliders },
+    ]},
     { id: "interface", title: "Interface", items: [
       { id: "appearance", label: "Appearance", icon: AppWindow },
       { id: "input", label: "Input", icon: TextCursorInput },
@@ -280,6 +284,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
         <div className="flex min-h-0 flex-1 flex-col bg-background">
           <div className="flex items-center justify-between border-b px-8 py-4">
             <h2 className="text-[15px] font-semibold flex items-center gap-2">
+              {activeId==="general" && <><Sliders className="size-4 text-emerald-500" /> General</>}
               {activeId==="appearance" && <><AppWindow className="size-4 text-purple-500" /> Appearance</>}
               {activeId==="agents" && <><Bot className="size-4 text-emerald-500" /> Agents</>}
               {activeId==="input" && <><TextCursorInput className="size-4 text-blue-500" /> Input</>}
@@ -291,6 +296,236 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-8 py-8 pb-24">
+              {activeId==="general" && (
+                <div className="space-y-6">
+                  {/* Header — Orca General 1:1 */}
+                  <div className="space-y-1">
+                    <h3 className="text-[20px] font-semibold tracking-tight">General</h3>
+                    <p className="text-[13px] text-muted-foreground">Workspace defaults, app setup, and maintenance.</p>
+                  </div>
+                  {/* Orca card: Navigation + Workspace */}
+                  <div className="rounded-xl border bg-card overflow-hidden">
+                    {/* Navigation */}
+                    <div className="p-6 space-y-6">
+                      <div>
+                        <h4 className="text-[13px] font-semibold">Navigation</h4>
+                      </div>
+                      <div className="flex items-center justify-between gap-4 py-2">
+                        <div>
+                          <div className="text-[13px] font-medium">Tab Order</div>
+                        </div>
+                        <div className="relative">
+                          <select
+                            value={(settings as any).ctrl_tab_order_mode ?? "mru"}
+                            onChange={(e)=> setSettingsLive({ ...settings, ctrl_tab_order_mode: e.target.value as any })}
+                            className="appearance-none bg-background border rounded-md pl-3 pr-8 py-2 text-[13px] min-w-[160px] focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="mru">Most recent</option>
+                            <option value="lru">Least recent</option>
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        </div>
+                      </div>
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-1">
+                        <div className="pr-4">
+                          <div className="text-[13px] font-medium">Confirm before closing pinned tabs</div>
+                          <div className="text-[12px] text-muted-foreground">Show a confirmation dialog before a pinned tab is closed.</div>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={Boolean((settings as any).confirm_close_pinned_tab ?? true)}
+                          onClick={()=> setSettingsLive({ ...settings, confirm_close_pinned_tab: !((settings as any).confirm_close_pinned_tab ?? true)} as any)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${((settings as any).confirm_close_pinned_tab ?? true) ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}
+                        >
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${((settings as any).confirm_close_pinned_tab ?? true) ? "translate-x-4" : "translate-x-0.5"}`} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="h-px bg-border" />
+                    {/* Workspace */}
+                    <div className="p-6 space-y-6">
+                      <div>
+                        <h4 className="text-[13px] font-semibold">Workspace</h4>
+                        <p className="text-[12px] text-muted-foreground">Configure where new workspaces are created.</p>
+                      </div>
+
+                      {/* Workspace Directory */}
+                      <div className="space-y-2">
+                        <div className="text-[13px] font-medium">Workspace Directory</div>
+                        <div className="flex gap-2">
+                          <input
+                            value={settings.workspace_dir}
+                            onChange={(e)=> setSettingsLive({ ...settings, workspace_dir: e.target.value })}
+                            placeholder="/home/renan/orca/workspaces"
+                            className="flex-1 bg-background border rounded-md px-3 py-2 font-mono text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                          <button
+                            onClick={async ()=>{
+                              try {
+                                const picked = await dialogOpen({ directory: true, multiple: false });
+                                if (typeof picked === "string" && picked) setSettingsLive({ ...settings, workspace_dir: picked });
+                              } catch {}
+                            }}
+                            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-md border bg-background text-[13px] hover:bg-muted"
+                          >
+                            <FolderGit2 className="size-3.5" /> Browse
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">Use a relative path (e.g. .orca/worktrees) for a per-project location, or an absolute path for one shared folder.</p>
+                      </div>
+
+                      {/* Sources */}
+                      <div className="space-y-2">
+                        <div className="text-[13px] font-medium">Sources</div>
+                        <p className="text-[12px] text-muted-foreground">Shown sources include current and future worktrees in the sidebar.</p>
+                        <div className="overflow-hidden rounded-lg border bg-muted/30">
+                          {([
+                            { id: "claude" as const, label: "Claude Code", sub: ".claude/worktrees/*" },
+                            { id: "gsd" as const, label: "GSD", sub: ".gsd-workspaces/*" },
+                          ] as const).map((row)=> {
+                            const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                            const vis = (wvd.sourcePreferences?.builtIn?.[row.id] ?? "hide") as "show"|"hide";
+                            const setVis = (next: "show"|"hide")=> {
+                              const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                              const nextPrefs = { ...(cur.sourcePreferences ?? { builtIn: {}, custom: {} }), builtIn: { ...(cur.sourcePreferences?.builtIn ?? {}), [row.id]: next } };
+                              setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, sourcePreferences: nextPrefs } } as any);
+                            };
+                            return (
+                              <div key={row.id} className="flex items-center justify-between gap-2 px-3 py-3 border-b last:border-0 bg-card">
+                                <div className="min-w-0">
+                                  <div className="text-[13px] font-medium">{row.label}</div>
+                                  <div className="font-mono text-[11px] text-muted-foreground">{row.sub}</div>
+                                </div>
+                                <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                                  {(["Show","Hide"] as const).map((lbl)=>{
+                                    const val = lbl.toLowerCase() as "show"|"hide";
+                                    const active = vis===val;
+                                    return (
+                                      <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {/* Other locations */}
+                          {(()=>{
+                            const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                            const vis = (wvd.external ?? "hide") as "show"|"hide";
+                            const setVis = (next: "show"|"hide")=> {
+                              const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                              setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, external: next } } as any);
+                            };
+                            return (
+                              <div className="flex items-center justify-between gap-2 px-3 py-3 border-b bg-card">
+                                <div className="min-w-0">
+                                  <div className="text-[13px] font-medium">Other locations</div>
+                                  <div className="font-mono text-[11px] text-muted-foreground">Outside listed sources</div>
+                                </div>
+                                <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                                  {(["Show","Hide"] as const).map((lbl)=>{
+                                    const val = lbl.toLowerCase() as "show"|"hide";
+                                    const active = vis===val;
+                                    return (
+                                      <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                          {/* Worktree root */}
+                          <div className="px-3 py-3 bg-card space-y-2">
+                            <div className="text-[13px] font-medium">Worktree root</div>
+                            <div className="flex gap-2">
+                              <input
+                                value={worktreeRootDraft}
+                                onChange={(e)=> setWorktreeRootDraft(e.target.value)}
+                                onKeyDown={(e)=> {
+                                  if (e.key==="Enter" && worktreeRootDraft.trim()) {
+                                    const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                                    const id = Math.random().toString(36).slice(2,10);
+                                    const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
+                                    setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                                    setWorktreeRootDraft("");
+                                  }
+                                }}
+                                placeholder=""
+                                className="flex-1 bg-background border rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
+                              />
+                              <button
+                                onClick={()=>{
+                                  if (!worktreeRootDraft.trim()) return;
+                                  const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                                  const id = Math.random().toString(36).slice(2,10);
+                                  const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
+                                  setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                                  setWorktreeRootDraft("");
+                                }}
+                                className="px-4 py-2 rounded-md bg-foreground text-background text-[13px] font-medium hover:bg-foreground/90"
+                              >Add</button>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">Orca will recognize worktrees beneath this folder.</p>
+                            {(((settings as any).worktree_visibility_defaults?.customSources ?? []) as Array<{id:string;rootPath:string}>).length>0 && (
+                              <div className="space-y-1 pt-2">
+                                {((settings as any).worktree_visibility_defaults.customSources as Array<{id:string;rootPath:string}>).map((cs)=>(
+                                  <div key={cs.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md border bg-muted/20 text-[12px]">
+                                    <span className="truncate font-mono">{cs.rootPath}</span>
+                                    <button
+                                      onClick={()=>{
+                                        const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                                        const next = (cur.customSources ?? []).filter((x: {id:string})=> x.id!==cs.id);
+                                        setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                                      }}
+                                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                                    ><Trash2 className="size-3.5" /></button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Nest Workspaces */}
+                      <div className="flex items-center justify-between gap-4 py-2">
+                        <div className="pr-4">
+                          <div className="text-[13px] font-medium">Nest Workspaces</div>
+                          <div className="text-[12px] text-muted-foreground">Create workspaces inside a repo-named subfolder.</div>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={settings.nest_workspaces}
+                          onClick={()=> setSettingsLive({ ...settings, nest_workspaces: !settings.nest_workspaces })}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.nest_workspaces ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}
+                        >
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.nest_workspaces ? "translate-x-4" : "translate-x-0.5"}`} />
+                        </button>
+                      </div>
+
+                      {/* Ask Before Deleting */}
+                      <div className="flex items-center justify-between gap-4 py-2">
+                        <div className="pr-4">
+                          <div className="text-[13px] font-medium">Ask Before Deleting Workspaces</div>
+                          <div className="text-[12px] text-muted-foreground">Show a confirmation before deleting a workspace.</div>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={!((settings as any).skip_delete_worktree_confirm ?? false)}
+                          onClick={()=> setSettingsLive({ ...settings, skip_delete_worktree_confirm: !((settings as any).skip_delete_worktree_confirm ?? false)} as any)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${!((settings as any).skip_delete_worktree_confirm ?? false) ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}
+                        >
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${!((settings as any).skip_delete_worktree_confirm ?? false) ? "translate-x-4" : "translate-x-0.5"}`} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               {activeId==="appearance" && (
                 <div className="space-y-8">
                   {/* Interface */}

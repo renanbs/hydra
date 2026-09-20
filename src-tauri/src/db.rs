@@ -80,6 +80,46 @@ fn default_workspace_dir() -> String {
     let home = std::env::var("HOME").unwrap_or_else(|_| "/home/renan".to_string());
     format!("{home}/src")
 }
+fn default_nest_workspaces() -> bool { true }
+fn default_ctrl_tab_order_mode() -> String { "mru".to_string() }
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub struct OrcaWorkspaceLayout {
+    #[serde(default)]
+    pub path: String,
+    #[serde(default = "default_nest_workspaces")]
+    pub nest_workspaces: bool,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub struct CustomWorktreeSource {
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
+    pub root_path: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub struct SourcePreferences {
+    #[serde(default)]
+    pub built_in: Option<std::collections::HashMap<String, String>>,
+    #[serde(default)]
+    pub custom: Option<std::collections::HashMap<String, String>>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub struct WorktreeVisibilityDefaults {
+    #[serde(default)]
+    pub external: Option<String>,
+    #[serde(default)]
+    pub custom_sources: Option<Vec<CustomWorktreeSource>>,
+    #[serde(default, alias = "customSources")]
+    pub customSources: Option<Vec<CustomWorktreeSource>>,
+    #[serde(default)]
+    pub source_preferences: Option<SourcePreferences>,
+    #[serde(default, alias = "sourcePreferences")]
+    pub sourcePreferences: Option<SourcePreferences>,
+}
 fn deserialize_theme<'de, D>(deserializer: D) -> Result<String, D::Error>
 where D: serde::Deserializer<'de> {
     let s = String::deserialize(deserializer)?;
@@ -90,6 +130,7 @@ where D: serde::Deserializer<'de> {
     })
 }
 
+#[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct TerminalColorOverrides {
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -138,6 +179,7 @@ pub struct TerminalColorOverrides {
     pub brightWhite: Option<String>,
 }
 
+#[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TerminalCustomTheme {
     #[serde(default)]
@@ -220,6 +262,20 @@ pub struct HydraSettings {
     pub default_branch_prefix: String,
     #[serde(default = "default_workspace_dir")]
     pub workspace_dir: String,
+    #[serde(default = "default_nest_workspaces")]
+    pub nest_workspaces: bool,
+    #[serde(default)]
+    pub workspace_dir_history: Vec<OrcaWorkspaceLayout>,
+    #[serde(default = "default_ctrl_tab_order_mode")]
+    pub ctrl_tab_order_mode: String,
+    #[serde(default = "default_true")]
+    pub confirm_close_pinned_tab: bool,
+    #[serde(default = "default_false")]
+    pub skip_close_terminal_with_running_process_confirm: bool,
+    #[serde(default = "default_false")]
+    pub skip_delete_worktree_confirm: bool,
+    #[serde(default, alias = "worktreeVisibilityDefaults")]
+    pub worktree_visibility_defaults: Option<WorktreeVisibilityDefaults>,
     #[serde(default)]
     pub terminal_default_shell: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -276,6 +332,19 @@ impl Default for HydraSettings {
             notification_on_blocked: true,
             default_branch_prefix: default_branch_prefix(),
             workspace_dir: default_workspace_dir(),
+            nest_workspaces: default_nest_workspaces(),
+            workspace_dir_history: vec![],
+            ctrl_tab_order_mode: default_ctrl_tab_order_mode(),
+            confirm_close_pinned_tab: true,
+            skip_close_terminal_with_running_process_confirm: false,
+            skip_delete_worktree_confirm: false,
+            worktree_visibility_defaults: Some(WorktreeVisibilityDefaults {
+                external: Some("hide".to_string()),
+                custom_sources: Some(vec![]),
+                customSources: Some(vec![]),
+                source_preferences: Some(SourcePreferences { built_in: Some(std::collections::HashMap::new()), custom: Some(std::collections::HashMap::new()) }),
+                sourcePreferences: Some(SourcePreferences { built_in: Some(std::collections::HashMap::new()), custom: Some(std::collections::HashMap::new()) }),
+            }),
             terminal_default_shell: String::new(),
             default_tui_agent: None,
             disabled_tui_agents: vec![],
@@ -558,6 +627,127 @@ impl DatabaseManager {
         )
         .map_err(|e| format!("Error saving settings: {e}"))?;
         Ok(())
+    }
+    #[cfg(test)]
+    pub fn new_in_memory() -> Result<Self, String> {
+        let conn = Connection::open_in_memory().map_err(|e| format!("Error opening SQLite in memory: {e}"))?;
+        conn.execute_batch(
+            "PRAGMA foreign_keys = ON;
+             CREATE TABLE IF NOT EXISTS sessions (
+                 id TEXT PRIMARY KEY,
+                 project_path TEXT NOT NULL DEFAULT '',
+                 title TEXT NOT NULL,
+                 branch TEXT NOT NULL DEFAULT 'main',
+                 agent_name TEXT NOT NULL DEFAULT 'bash',
+                 executable TEXT NOT NULL DEFAULT 'bash',
+                 created_at INTEGER NOT NULL,
+                 updated_at INTEGER NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS messages (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 session_id TEXT NOT NULL,
+                 role TEXT NOT NULL,
+                 content TEXT NOT NULL,
+                 created_at INTEGER NOT NULL,
+                 FOREIGN KEY(session_id) REFERENCES sessions(id) ON DELETE CASCADE
+             );
+             CREATE TABLE IF NOT EXISTS tool_approvals (
+                 id TEXT PRIMARY KEY,
+                 session_id TEXT NOT NULL,
+                 tool_name TEXT NOT NULL,
+                 command TEXT NOT NULL,
+                 status TEXT NOT NULL,
+                 created_at INTEGER NOT NULL,
+                 FOREIGN KEY(session_id) REFERENCES sessions(id) ON DELETE CASCADE
+             );
+             CREATE TABLE IF NOT EXISTS settings (
+                 key TEXT PRIMARY KEY,
+                 value TEXT NOT NULL
+             );"
+        )
+        .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
+
+        Ok(Self {
+            conn: Mutex::new(conn),
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_db_sessions_crud() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let rec = DbSessionRecord {
+            id: "sess_1".to_string(),
+            project_path: "/home/user/repo".to_string(),
+            title: "Test Session".to_string(),
+            branch: "feat-test".to_string(),
+            agent_name: "claude".to_string(),
+            executable: "claude".to_string(),
+            created_at: 1000,
+            updated_at: 1000,
+        };
+        db.upsert_session(&rec).expect("upsert");
+
+        let list = db.list_sessions(Some("/home/user/repo")).expect("list");
+        assert_eq!(list.len(), 1);
+        assert_eq!(list[0].id, "sess_1");
+        assert_eq!(list[0].title, "Test Session");
+
+        db.delete_session("sess_1").expect("delete");
+        let list2 = db.list_sessions(Some("/home/user/repo")).expect("list after delete");
+        assert_eq!(list2.len(), 0);
+    }
+
+    #[test]
+    fn test_db_messages() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let rec = DbSessionRecord {
+            id: "sess_msg".to_string(),
+            project_path: "/home/user/repo".to_string(),
+            title: "Msg Session".to_string(),
+            branch: "main".to_string(),
+            agent_name: "bash".to_string(),
+            executable: "bash".to_string(),
+            created_at: 1000,
+            updated_at: 1000,
+        };
+        db.upsert_session(&rec).expect("upsert");
+
+        let msg_id = db.save_message("sess_msg", "user", "Hello agent").expect("save message");
+        assert!(msg_id > 0);
+
+        let msgs = db.list_messages("sess_msg").expect("list messages");
+        assert_eq!(msgs.len(), 1);
+        assert_eq!(msgs[0].content, "Hello agent");
+        assert_eq!(msgs[0].role, "user");
+    }
+
+    #[test]
+    fn test_db_settings_and_layout() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let mut settings = HydraSettings::default();
+        settings.terminal_font_size = 18;
+        settings.theme = "dark".to_string();
+        db.save_settings(&settings).expect("save settings");
+
+        let loaded = db.get_settings().expect("get settings");
+        assert_eq!(loaded.terminal_font_size, 18);
+        assert_eq!(loaded.theme, "dark");
+
+        let layout = UiLayoutState {
+            left_sidebar_open: false,
+            right_sidebar_open: true,
+            left_sidebar_width: 320,
+            right_sidebar_width: 400,
+        };
+        db.save_layout_state(&layout).expect("save layout");
+        let loaded_layout = db.get_layout_state().expect("get layout");
+        assert_eq!(loaded_layout.left_sidebar_open, false);
+        assert_eq!(loaded_layout.left_sidebar_width, 320);
     }
 }
 

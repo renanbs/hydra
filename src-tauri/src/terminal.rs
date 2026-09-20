@@ -1,5 +1,5 @@
 use parking_lot::Mutex;
-use portable_pty::{CommandBuilder, NativePtySystem, PtySize, PtySystem};
+use portable_pty::{CommandBuilder, MasterPty, NativePtySystem, PtySize, PtySystem};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -9,6 +9,7 @@ use tauri::{AppHandle, Emitter};
 pub struct TerminalSession {
     pub parser: Arc<Mutex<vt100::Parser>>,
     pub writer: Arc<Mutex<Box<dyn Write + Send>>>,
+    pub master: Arc<Mutex<Box<dyn MasterPty + Send>>>,
     pub agent_id: String,
 }
 
@@ -35,6 +36,7 @@ impl TerminalManager {
         session_id: &str,
         executable: &str,
         args: Vec<String>,
+        cwd: Option<String>,
         app: AppHandle,
     ) -> Result<(), String> {
         let mut guard = self.sessions.lock();
@@ -56,10 +58,16 @@ impl TerminalManager {
         for arg in args {
             cmd.arg(arg);
         }
-        if let Ok(dir) = std::env::current_dir() {
+        if let Some(c) = &cwd {
+            let p = std::path::PathBuf::from(c);
+            if p.exists() {
+                cmd.cwd(p);
+            } else if let Ok(dir) = std::env::current_dir() {
+                cmd.cwd(dir);
+            }
+        } else if let Ok(dir) = std::env::current_dir() {
             cmd.cwd(dir);
         }
-
         let _child = pair
             .slave
             .spawn_command(cmd)
@@ -75,6 +83,7 @@ impl TerminalManager {
             .try_clone_reader()
             .map_err(|e| format!("Failed to get PTY reader: {e}"))?;
 
+        let master = Arc::new(Mutex::new(pair.master));
         let parser = Arc::new(Mutex::new(vt100::Parser::new(28, 100, 3000)));
         let parser_clone = Arc::clone(&parser);
         let s_id = session_id.to_string();
@@ -112,6 +121,7 @@ impl TerminalManager {
             TerminalSession {
                 parser,
                 writer: Arc::new(Mutex::new(writer)),
+                master,
                 agent_id: executable.to_string(),
             },
         );
@@ -154,5 +164,27 @@ impl TerminalManager {
     pub fn close_session(&self, session_id: &str) {
         let mut guard = self.sessions.lock();
         guard.remove(session_id);
+    }
+
+    pub fn resize_session(&self, session_id: &str, rows: u16, cols: u16) -> Result<(), String> {
+        let guard = self.sessions.lock();
+        if let Some(sess) = guard.get(session_id) {
+            // Resize vt100 shadow buffer
+            {
+                let mut p = sess.parser.lock();
+                p.screen_mut().set_size(rows, cols);
+            }
+            let m = sess.master.lock();
+            m.resize(PtySize {
+                rows,
+                cols,
+                pixel_width: 0,
+                pixel_height: 0,
+            })
+            .map_err(|e| format!("Failed to resize PTY: {e}"))?;
+            Ok(())
+        } else {
+            Err(format!("No active terminal session for ID '{session_id}'"))
+        }
     }
 }

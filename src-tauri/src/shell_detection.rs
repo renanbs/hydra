@@ -70,3 +70,15 @@ pub fn list_available_shells() -> Vec<AvailableShell> {
     shells.sort_by(|a,b| a.id.cmp(&b.id));
     shells
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_list_available_shells() {
+        let shells = list_available_shells();
+        assert!(!shells.is_empty(), "Should discover at least one system shell (e.g. sh or bash)");
+        assert!(shells.iter().any(|s| s.id == "bash" || s.id == "sh"), "Should discover bash or sh");
+    }
+}

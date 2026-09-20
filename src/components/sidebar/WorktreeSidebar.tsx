@@ -31,6 +31,7 @@ export interface HydraProject {
   path: string;
   is_git: boolean;
   current_branch: string;
+  worktree_base_path?: string | null;
 }
 
 export interface GitWorktreeInfo {
@@ -213,10 +214,13 @@ export function WorktreeSidebar({
           projects.map((proj) => {
             const isActiveProject = proj.path === activeProject?.path;
             const isCollapsed = collapsedProjects.has(proj.id);
-            const projectSessions = sessions.filter(
-              (s) => s.project_path === proj.path || (!s.project_path && isActiveProject)
-            );
             const projectWorktrees = isActiveProject ? gitWorktrees : [];
+            const projectSessions = sessions.filter(
+              (s) => s.project_path === proj.path 
+                || (!s.project_path && isActiveProject)
+                || projectWorktrees.some((wt) => wt.path === s.project_path)
+                || s.project_path.startsWith(proj.path)
+            );
             const isMenuOpen = activeProjectMenuId === proj.id;
 
             return (
@@ -280,6 +284,28 @@ export function WorktreeSidebar({
                           >
                             <Sliders className="w-3.5 h-3.5 text-neutral-400" />
                             <span className="text-[11px]">Project Settings</span>
+                          </button>
+
+                          <button
+                            onClick={async () => {
+                              setActiveProjectMenuId(null);
+                              const cur = (proj.worktree_base_path ?? "") as string;
+                              const input = window.prompt(
+                                "Worktree base path (relative to project or absolute).\nEx: .worktrees  ou  /home/you/src/worktrees\nLeave empty to use global workspaceDir:",
+                                cur
+                              );
+                              if (input === null) return;
+                              const trimmed = input.trim();
+                              try {
+                                await invoke("set_project_worktree_base", { path: proj.path, basePath: trimmed ? trimmed : null });
+                                // refresh projects list via page reload hint — parent will re-list on next focus; trigger reload by emitting event
+                                window.location.reload();
+                              } catch (e) { console.error(e); }
+                            }}
+                            className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+                          >
+                            <FolderTree className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-[11px]">Worktree Base: {proj.worktree_base_path || "global"}</span>
                           </button>
 
                           <button
@@ -347,10 +373,15 @@ export function WorktreeSidebar({
                           className="group relative p-2.5 rounded-lg cursor-pointer worktree-sidebar-card-hover text-neutral-300 flex items-center justify-between"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="w-2 h-2 rounded-full border border-neutral-500 shrink-0" />
+                            <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
                             <span className="truncate text-[11px] font-medium text-neutral-200">
-                              {proj.name} workspace
+                              {wt.branch || proj.name}
                             </span>
+                            {isMain && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400 shrink-0">
+                                default
+                              </span>
+                            )}
                           </div>
                           {!isMain && (
                             <button

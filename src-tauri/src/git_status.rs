@@ -53,3 +53,15 @@ pub fn get_git_status() -> Result<GitRepoStatus, String> {
         head_commit,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_git_status() {
+        let status = get_git_status().expect("git status");
+        assert!(!status.branch.is_empty());
+        assert!(!status.head_commit.is_empty());
+    }
+}

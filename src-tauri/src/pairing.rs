@@ -16,6 +16,7 @@ pub struct PairingPayload {
 }
 
 pub struct PairingManager {
+    #[allow(dead_code)]
     secret: StaticSecret,
     public_key: PublicKey,
     auth_token: String,
@@ -69,5 +70,22 @@ impl PairingManager {
             port,
             qr_svg: image,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pairing_payload_generation() {
+        let pm = PairingManager::new();
+        let payload = pm.generate_pairing_payload().expect("Failed to generate pairing payload");
+
+        assert_eq!(payload.version, 1);
+        assert_eq!(payload.public_key.len(), 64); // 32 bytes in hex = 64 chars
+        assert_eq!(payload.auth_token.len(), 32);  // 16 bytes in hex = 32 chars
+        assert!(payload.qr_svg.contains("<svg"));
+        assert!(payload.qr_svg.contains("</svg>"));
     }
 }
