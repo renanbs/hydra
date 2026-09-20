@@ -2145,6 +2145,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87"
 
 [[package]]
+name = "hydra"
+version = "0.1.0"
+dependencies = [
+ "image",
+ "keepawake",
+ "parking_lot",
+ "portable-pty",
+ "qrcode",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-opener",
+ "tauri-plugin-window-state",
+ "tokio",
+ "vt100",
+ "which 6.0.3",
+ "x25519-dalek",
+]
+
+[[package]]
 name = "hyper"
 version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4884,29 +4907,6 @@ dependencies = [
  "webview2-com",
  "window-vibrancy",
  "windows 0.61.3",
-]
-
-[[package]]
-name = "tauri-app"
-version = "0.1.0"
-dependencies = [
- "image",
- "keepawake",
- "parking_lot",
- "portable-pty",
- "qrcode",
- "rusqlite",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-opener",
- "tauri-plugin-window-state",
- "tokio",
- "vt100",
- "which 6.0.3",
- "x25519-dalek",
 ]
 
 [[package]]
