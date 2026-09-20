@@ -104,3 +104,27 @@ impl KeepAwakeManager {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_keep_awake_status_sync() {
+        let manager = KeepAwakeManager::new(false);
+        let status = manager.get_status();
+        assert!(!status.enabled);
+        assert_eq!(status.working_count, 0);
+
+        manager.sync(true, 2);
+        let status2 = manager.get_status();
+        assert!(status2.enabled);
+        assert_eq!(status2.working_count, 2);
+
+        manager.set_working_count(0);
+        let status3 = manager.get_status();
+        assert!(status3.enabled);
+        assert_eq!(status3.working_count, 0);
+        assert!(!status3.active);
+    }
+}

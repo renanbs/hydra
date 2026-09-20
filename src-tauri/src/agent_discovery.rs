@@ -45,3 +45,16 @@ fn is_binary_in_path(bin: &str) -> bool {
         .map(|out| out.status.success())
         .unwrap_or(false)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_probe_available_agents() {
+        let agents = probe_available_agents();
+        assert!(!agents.is_empty());
+        let bash = agents.iter().find(|a| a.id == "bash").expect("bash agent");
+        assert!(bash.is_installed);
+    }
+}

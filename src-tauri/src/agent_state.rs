@@ -97,3 +97,48 @@ pub fn fold_terminal_output(raw_text: &str, max_lines: usize) -> String {
 
     result.join("\n")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_detect_state_blocked() {
+        let text = "Would you like to run `cargo test`? [y/N]";
+        assert_eq!(detect_agent_state(text), AgentState::Blocked);
+
+        let text2 = "Tool bash wants to execute `rm -rf target`. Allow this command?";
+        assert_eq!(detect_agent_state(text2), AgentState::Blocked);
+    }
+
+    #[test]
+    fn test_detect_state_working() {
+        let text = "Compiling serde_json v1.0.151\nBuilding hydra-core...";
+        assert_eq!(detect_agent_state(text), AgentState::Working);
+
+        let text2 = "Agent thinking...\nDownloading dependencies...";
+        assert_eq!(detect_agent_state(text2), AgentState::Working);
+    }
+
+    #[test]
+    fn test_detect_state_idle() {
+        let text = "user@workstation:~/hydra $";
+        assert_eq!(detect_agent_state(text), AgentState::Idle);
+
+        let text_empty = "";
+        assert_eq!(detect_agent_state(text_empty), AgentState::Idle);
+    }
+
+    #[test]
+    fn test_fold_terminal_output() {
+        let raw = (1..=100).map(|i| format!("line {i}")).collect::<Vec<_>>().join("\n");
+        let folded = fold_terminal_output(&raw, 30);
+        assert!(folded.contains("LOG FOLDING"));
+        assert!(folded.contains("line 1"));
+        assert!(folded.contains("line 100"));
+
+        // Small output should not be folded
+        let short = "line 1\nline 2\nline 3";
+        assert_eq!(fold_terminal_output(short, 10), short);
+    }
+}

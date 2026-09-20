@@ -34,6 +34,8 @@ export type HydraSettings = {
   notification_on_blocked: boolean;
   default_branch_prefix: string;
   workspace_dir: string;
+  nest_workspaces: boolean;
+  workspace_dir_history: { path: string; nest_workspaces: boolean }[];
   terminal_default_shell: string;
   // Agents — Orca-faithful (AgentsPane.tsx:141)
   default_tui_agent?: string | "blank" | null;
@@ -45,6 +47,19 @@ export type HydraSettings = {
   tab_auto_generate_title?: boolean;
   keep_computer_awake_while_agents_run?: boolean;
   agent_permission_mode?: "yolo" | "manual";
+  // General — Orca-faithful (GeneralPane.tsx)
+  ctrl_tab_order_mode?: "mru" | "lru";
+  confirm_close_pinned_tab?: boolean;
+  skip_close_terminal_with_running_process_confirm?: boolean;
+  skip_delete_worktree_confirm?: boolean;
+  worktree_visibility_defaults?: {
+    external?: "show" | "hide";
+    customSources?: { id: string; rootPath: string }[];
+    sourcePreferences?: {
+      builtIn?: Partial<Record<"claude" | "gsd", "show" | "hide">>;
+      custom?: Record<string, "show" | "hide">;
+    };
+  };
 };
 
 export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
@@ -76,6 +91,8 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   notification_on_blocked: true,
   default_branch_prefix: "feat/",
   workspace_dir: "/home/renan/src",
+  nest_workspaces: true,
+  workspace_dir_history: [],
   terminal_default_shell: "",
   default_tui_agent: null,
   disabled_tui_agents: [],
@@ -86,6 +103,11 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   tab_auto_generate_title: false,
   keep_computer_awake_while_agents_run: false,
   agent_permission_mode: "yolo",
+  ctrl_tab_order_mode: "mru",
+  confirm_close_pinned_tab: true,
+  skip_close_terminal_with_running_process_confirm: false,
+  skip_delete_worktree_confirm: false,
+  worktree_visibility_defaults: { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } },
 };
 
 export function normalizeHydraSettings(input: unknown): HydraSettings {
@@ -133,5 +155,45 @@ export function normalizeHydraSettings(input: unknown): HydraSettings {
     terminal_divider_thickness_px: get("terminal_divider_thickness_px", "terminalDividerThicknessPx", DEFAULT_HYDRA_SETTINGS.terminal_divider_thickness_px) as number,
     terminal_focus_follows_mouse: get("terminal_focus_follows_mouse", "terminalFocusFollowsMouse", DEFAULT_HYDRA_SETTINGS.terminal_focus_follows_mouse) as boolean,
     terminal_scrollback_rows: get("terminal_scrollback_rows", "terminalScrollbackRows", DEFAULT_HYDRA_SETTINGS.terminal_scrollback_rows) as number,
+    nest_workspaces: get("nest_workspaces", "nestWorkspaces", DEFAULT_HYDRA_SETTINGS.nest_workspaces) as boolean,
+    workspace_dir_history: (() => {
+      const rawHist = (raw as Record<string, unknown>).workspace_dir_history ?? (raw as Record<string, unknown>).workspaceDirHistory;
+      if (Array.isArray(rawHist)) {
+        return (rawHist as Array<Record<string, unknown>>).map((h) => ({
+          path: String(h.path ?? ""),
+          nest_workspaces: Boolean((h as Record<string, unknown>).nest_workspaces ?? (h as Record<string, unknown>).nestWorkspaces ?? true),
+        })).filter((h) => h.path);
+      }
+      return DEFAULT_HYDRA_SETTINGS.workspace_dir_history;
+    })(),
+    ctrl_tab_order_mode: (() => {
+      const v = raw.ctrl_tab_order_mode ?? (raw as Record<string, unknown>).ctrlTabOrderMode;
+      return v === "lru" ? "lru" : "mru";
+    })() as HydraSettings["ctrl_tab_order_mode"],
+    confirm_close_pinned_tab: get("confirm_close_pinned_tab", "confirmClosePinnedTab", DEFAULT_HYDRA_SETTINGS.confirm_close_pinned_tab) as boolean,
+    skip_close_terminal_with_running_process_confirm: get("skip_close_terminal_with_running_process_confirm", "skipCloseTerminalWithRunningProcessConfirm", DEFAULT_HYDRA_SETTINGS.skip_close_terminal_with_running_process_confirm) as boolean,
+    skip_delete_worktree_confirm: get("skip_delete_worktree_confirm", "skipDeleteWorktreeConfirm", DEFAULT_HYDRA_SETTINGS.skip_delete_worktree_confirm) as boolean,
+    worktree_visibility_defaults: (() => {
+      const rawWvd = (raw as Record<string, unknown>).worktree_visibility_defaults ?? (raw as Record<string, unknown>).worktreeVisibilityDefaults;
+      if (rawWvd && typeof rawWvd === "object" && !Array.isArray(rawWvd)) {
+        const w = rawWvd as Record<string, unknown>;
+        const ext = w.external === "show" ? "show" : "hide";
+        const cs = Array.isArray(w.customSources ?? (w as Record<string, unknown>).custom_sources)
+          ? ((w.customSources ?? (w as Record<string, unknown>).custom_sources) as Array<Record<string, unknown>>).map((c) => ({ id: String(c.id ?? ""), rootPath: String(c.rootPath ?? c.root_path ?? "") })).filter((c) => c.id && c.rootPath)
+          : [];
+        const spRaw = (w.sourcePreferences ?? (w as Record<string, unknown>).source_preferences) as Record<string, unknown> | undefined;
+        let sp: any = undefined;
+        if (spRaw && typeof spRaw === "object") {
+          const builtIn = (spRaw as Record<string, unknown>).builtIn ?? (spRaw as Record<string, unknown>).built_in;
+          const custom = (spRaw as Record<string, unknown>).custom;
+          sp = {
+            ...(builtIn && typeof builtIn === "object" ? { builtIn: builtIn as Record<string, "show"|"hide"> } : {}),
+            ...(custom && typeof custom === "object" ? { custom: custom as Record<string, "show"|"hide"> } : {}),
+          };
+        }
+        return { external: ext, customSources: cs, sourcePreferences: (sp ?? { builtIn: {}, custom: {} }) };
+      }
+      return DEFAULT_HYDRA_SETTINGS.worktree_visibility_defaults;
+    })(),
   };
 }

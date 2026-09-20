@@ -14,10 +14,10 @@ import { resolveTerminalFontWeights } from "../shared/terminal-fonts";
 interface TerminalDrawerProps {
   sessionId: string;
   executable?: string;
+  cwd?: string;
   settings?: HydraSettings;
   onContextMenu?: (x: number, y: number) => void;
 }
-
 const FALLBACK_FONTS = [
   "SF Mono", "Menlo", "Monaco", "Cascadia Mono", "Consolas",
   "DejaVu Sans Mono", "Liberation Mono",
@@ -74,6 +74,7 @@ function buildXtermTheme(settings: HydraSettings | undefined): ITheme {
 export function TerminalDrawer({
   sessionId,
   executable = "bash",
+  cwd,
   settings,
   onContextMenu,
 }: TerminalDrawerProps) {
@@ -144,28 +145,45 @@ export function TerminalDrawer({
     term.loadAddon(fitAddon);
     fitAddonRef.current = fitAddon;
     term.open(containerRef.current);
-    fitAddon.fit();
+    const doFitAndSync = () => {
+      try {
+        fitAddon.fit();
+        if (term.rows > 0 && term.cols > 0) {
+          invoke("resize_terminal", { sessionId, rows: term.rows, cols: term.cols }).catch(() => {});
+        }
+      } catch {}
+    };
+
+    doFitAndSync();
     xtermRef.current = term;
     term.onData((data) => {
       invoke("send_terminal_input", { sessionId, input: data }).catch(console.error);
     });
-    invoke("start_agent_terminal", { sessionId, executable, args: [] })
+    invoke("start_agent_terminal", { sessionId, executable, cwd: cwd || null, args: [] })
       .then(() => invoke<{ session_id: string; formatted: string; clean_text: string }>("get_terminal_snapshot", { sessionId }))
       .then((snapshot) => { if (snapshot && snapshot.formatted) term.write(snapshot.formatted); })
       .catch(console.error);
     const unlistenPromise = listen<{ session_id: string; output: string }>("terminal:output", (event) => {
       if (event.payload.session_id === sessionId) term.write(event.payload.output);
     });
-    const onResize = () => fitAddon.fit();
-    window.addEventListener("resize", onResize);
+
+    const resizeObserver = new ResizeObserver(() => {
+      doFitAndSync();
+    });
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    window.addEventListener("resize", doFitAndSync);
     return () => {
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", doFitAndSync);
+      resizeObserver.disconnect();
       unlistenPromise.then((unlisten) => unlisten());
       term.dispose();
       fitAddonRef.current = null;
       xtermRef.current = null;
     };
-  }, [sessionId, executable]);
+  }, [sessionId, executable, cwd]);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();

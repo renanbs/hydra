@@ -404,12 +404,12 @@ export default function App() {
   };
 
   const handleSelectGitWorktree = (wt: GitWorktreeInfo) => {
-    const id = `sess_wt_${wt.branch.replace('/', '_')}`;
+    const id = `sess_wt_${wt.branch.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
     if (!sessions.some((s) => s.id === id)) {
       const newSess: WorktreeSession = {
         id,
-        project_path: activeProject?.path ?? "",
-        title: `Worktree: ${wt.branch}`,
+        project_path: wt.path,
+        title: wt.branch,
         branch: wt.branch,
         state: "idle",
         active: true,
@@ -422,7 +422,7 @@ export default function App() {
     }
     const tabId = `tab_${id}`;
     if (!tabs.some((t) => t.id === tabId)) {
-      setTabs((prev) => [...prev, { id: tabId, title: `${wt.branch} (wt)`, type: "terminal" }]);
+      setTabs((prev) => [...prev, { id: tabId, title: wt.branch, type: "terminal" }]);
     }
     setActiveTabId(tabId);
   };
@@ -439,13 +439,12 @@ export default function App() {
       .catch(console.error);
   };
 
-  const handleCreatedWorkspace = (worktreePath: string, agentName: string, executable: string) => {
+  const handleCreatedWorkspace = (worktreePath: string, branchName: string, agentName: string, executable: string) => {
     if (activeProject) refreshGitWorktrees(activeProject.path);
-    const branchName = worktreePath.split("-").pop() ?? "feature";
     const id = `sess_wt_${Date.now().toString().slice(-4)}`;
     const newSession: WorktreeSession = {
       id,
-      project_path: activeProject?.path ?? "",
+      project_path: worktreePath,
       title: `${branchName}`,
       branch: branchName,
       state: "working",
@@ -460,7 +459,7 @@ export default function App() {
     invoke("save_session_record", {
       record: {
         id: newSession.id,
-        project_path: activeProject?.path ?? "",
+        project_path: worktreePath,
         title: newSession.title,
         branch: newSession.branch,
         agent_name: newSession.agentName,
@@ -771,6 +770,7 @@ export default function App() {
                 key={`${activeSession?.id ?? "sess_main"}-${hydraSettings.terminal_default_shell}`}
                 sessionId={activeSession?.id ?? "sess_main"} 
                 executable={activeSession?.executable ?? (hydraSettings.terminal_default_shell || "bash")}
+                cwd={activeSession?.project_path || activeProject?.path}
                 settings={hydraSettings}
                 onContextMenu={handleTerminalContextMenu}
               />
@@ -955,9 +955,12 @@ export default function App() {
       {/* Orca 100% New Workspace Composer Modal */}
       <NewWorkspaceComposer
         isOpen={isNewWorkspaceOpen}
-        activeProjectName={activeProject?.name ?? "hydra"}
-        activeRepoPath={activeProject?.path ?? "/home/renan/src/hydra"}
+        activeProject={activeProject}
+        projects={projects}
         availableAgents={availableAgents}
+        onSelectProject={handleSelectProject}
+        onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
         onClose={() => setIsNewWorkspaceOpen(false)}
         onCreated={handleCreatedWorkspace}
       />

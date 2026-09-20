@@ -21,7 +21,10 @@ use git_status::{get_git_status, GitRepoStatus};
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
 use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
-use project_manager::{add_existing_project, list_local_projects, remove_added_project, HydraProject};
+use project_manager::{
+    add_existing_project, get_project_worktree_base_path, list_local_projects, remove_added_project,
+    set_project_worktree_base_path, HydraProject,
+};
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
     create_git_worktree, create_new_project, list_git_worktrees, remove_git_worktree,
@@ -63,6 +66,16 @@ fn register_existing_project(path: String) -> Result<HydraProject, String> {
 #[tauri::command]
 fn remove_project(path: String) -> Result<(), String> {
     remove_added_project(&path)
+}
+
+#[tauri::command]
+fn get_project_worktree_base(path: String) -> Option<String> {
+    get_project_worktree_base_path(&path)
+}
+
+#[tauri::command]
+fn set_project_worktree_base(path: String, base_path: Option<String>) -> Result<(), String> {
+    set_project_worktree_base_path(&path, base_path.as_deref())
 }
 
 #[tauri::command]
@@ -138,10 +151,21 @@ fn start_agent_terminal(
     session_id: String,
     executable: String,
     args: Vec<String>,
+    cwd: Option<String>,
     app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
-    state.terminal.start_session(&session_id, &executable, args, app)
+    state.terminal.start_session(&session_id, &executable, args, cwd, app)
+}
+
+#[tauri::command]
+fn resize_terminal(
+    session_id: String,
+    rows: u16,
+    cols: u16,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state.terminal.resize_session(&session_id, rows, cols)
 }
 
 #[tauri::command]
@@ -304,6 +328,8 @@ pub fn run() {
             list_projects,
             register_existing_project,
             remove_project,
+            get_project_worktree_base,
+            set_project_worktree_base,
             list_worktrees,
             create_project,
             create_worktree,
@@ -326,6 +352,7 @@ pub fn run() {
             save_settings,
             get_keep_awake_status,
             sync_keep_awake,
+            resize_terminal,
             set_keep_awake_working_count,
             list_available_shells,
             resolve_tool_approval,
