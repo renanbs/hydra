@@ -33,6 +33,7 @@ qrcode = "0.14.1"
 tauri-plugin-dialog = "2.7.3"
 keepawake = "0.5"
 which = "6"
+image = "0.25"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

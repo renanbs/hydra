@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_window_state::StateFlags;
 
 pub mod agent_discovery;
@@ -284,6 +284,19 @@ pub fn run() {
                 .with_state_flags(StateFlags::all())
                 .build(),
         )
+        .setup(|app| {
+            // Ensure Wayland taskbar/dock shows hydra crest, not generic Wayland icon (dev + installed)
+            if let Some(window) = app.get_webview_window("main") {
+                let icon_bytes = include_bytes!("../icons/icon.png");
+                if let Ok(img) = image::load_from_memory(icon_bytes) {
+                    let rgba = img.into_rgba8();
+                    let (width, height) = rgba.dimensions();
+                    let image = tauri::image::Image::new_owned(rgba.into_raw(), width, height);
+                    let _ = window.set_icon(image);
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_system_status,
             get_app_version,
