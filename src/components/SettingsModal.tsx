@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
 import {
-  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Upload, Trash2, Info, ChevronDown
+  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Upload, Trash2, Info, ChevronDown, RotateCcw
 } from "lucide-react";
 import { getOpenInAppPresets, isOpenInAppPresetAdded, OpenInApplicationIcon } from "../lib/open-in-app-catalog";
 import type { OpenInApplication } from "../shared/settings-types";
@@ -135,7 +135,7 @@ interface SettingsModalProps {
   onLiveChange?: (settings: HydraSettings) => void;
 }
 
-type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general";
+type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal";
 
 export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: SettingsModalProps) {
   const [activeId, setActiveId] = useState<HydraNavId>("general");
@@ -153,6 +153,11 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const [appVersion, setAppVersion] = useState<string | null>(null);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [worktreeRootDraft, setWorktreeRootDraft] = useState("");
+  const [scrollbackMode, setScrollbackMode] = useState<"preset" | "custom">("preset");
+  const [scrollbackDraft, setScrollbackDraft] = useState<string>("10000");
+  const [contrastDraft, setContrastDraft] = useState<number>(4.5);
+  const [terminalSessions, setTerminalSessions] = useState<string[]>([]);
+  const [terminalSessionsLoading, setTerminalSessionsLoading] = useState(false);
   const terminalFontSuggestions = ["JetBrains Mono","Fira Code","Cascadia Code","SF Mono","Menlo","Consolas","Liberation Mono","DejaVu Sans Mono","Source Code Pro","Ubuntu Mono","Hack","Iosevka","Geist Mono","Berkeley Mono","JetBrainsMono Nerd Font"];
   // Live preview for interface font (hover in FontAutocomplete)
   useEffect(() => {
@@ -166,9 +171,14 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   }, [previewAppFont, settings.app_font_family]);
   const interfaceFontSuggestions = ["Geist","Inter","SF Pro Text","Segoe UI","Roboto","Helvetica","Arial","System UI","-apple-system","BlinkMacSystemFont","Ubuntu","Cantarell","Noto Sans"];
 
+  const refreshTerminalSessions = () => {
+    setTerminalSessionsLoading(true);
+    invoke<string[]>("list_terminal_sessions").then((list)=> setTerminalSessions(Array.isArray(list)? list : [])).catch(()=>{}).finally(()=> setTerminalSessionsLoading(false));
+  };
   useEffect(() => {
     if (isOpen) {
-      invoke<HydraSettings>("get_settings").then((s) => { if (s) { const n = normalizeHydraSettings(s); setSettings(n); setTerminalTarget(resolveEffectiveTerminalAppearance(n, getSystemPrefersDark()).mode); }}).catch(console.error);
+      invoke<HydraSettings>("get_settings").then((s) => { if (s) { const n = normalizeHydraSettings(s); setSettings(n); setTerminalTarget(resolveEffectiveTerminalAppearance(n, getSystemPrefersDark()).mode); setScrollbackDraft(String(n.terminal_scrollback_rows)); setContrastDraft(n.terminal_minimum_contrast_ratio ?? 4.5); const isPreset=[5000,10000,25000,50000].includes(n.terminal_scrollback_rows as any); setScrollbackMode(isPreset ? "preset" : "custom"); }}).catch(console.error);
+      refreshTerminalSessions();
       invoke<{ id: string; label: string }[]>("list_available_agents").then((a) => { if (Array.isArray(a)) setAvailableAgents(a.map((x: any) => ({ id: x.id ?? x.name ?? x, label: x.label ?? x.name ?? x}))); }).catch(()=>{});
       invoke<{ id: string; label: string; path: string }[]>("list_available_shells").then((s)=>{ if(Array.isArray(s)) setAvailableShells(s.map((x:any)=>({id:x.id, label:x.label, path:x.path}))); }).catch(()=>{});
       invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
@@ -215,7 +225,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const matchDarkMode = !settings.terminal_use_separate_light_theme;
   const showCustomControls = !(isLightTarget && matchDarkMode);
 
-  // Groups: Orca-faithful General + Hydra existing
+  // Groups: Orca-faithful General + Hydra existing + Terminal (image 1:1)
   const navGroups: { id: string; title: string; items: { id: HydraNavId; label: string; icon: any; badge?: string }[] }[] = [
     { id: "setup", title: "Set up", items: [
       { id: "general", label: "General", icon: Sliders },
@@ -229,6 +239,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
       { id: "agents", label: "Agents", icon: Bot },
       { id: "security", label: "Security & Gate", icon: Shield },
       { id: "git", label: "Workspace & Git", icon: FolderGit2 },
+      { id: "terminal", label: "Terminal", icon: TerminalSquare },
     ]},
   ];
 
@@ -294,6 +305,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
               {activeId==="shortcuts" && <><Keyboard className="size-4 text-amber-500" /> Shortcuts</>}
               {activeId==="security" && <><Shield className="size-4 text-red-500" /> Security & Gate</>}
               {activeId==="git" && <><FolderGit2 className="size-4" /> Workspace & Git</>}
+              {activeId==="terminal" && <><TerminalSquare className="size-4 text-emerald-500" /> Terminal</>}
             </h2>
             <button onClick={onClose} className="rounded-md p-1.5 hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
           </div>
@@ -769,16 +781,15 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                     <div className="text-[11px] text-muted-foreground">Applies to new terminals/tabs. Existing PTYs keep their original shell until recreated.</div>
                   </section>
 
-                  {/* Advanced */}
+                  {/* Advanced — pane chrome only, Terminal settings moved to Terminal pane */}
                   <section className="space-y-4">
-                    <h3 className="text-[13px] font-semibold">Advanced Terminal</h3>
+                    <h3 className="text-[13px] font-semibold">Advanced Pane Chrome</h3>
+                    <p className="text-[12px] text-muted-foreground">GPU, scrollback, contrast and clipboard moved to <span className="font-medium text-foreground">Terminal</span> pane.</p>
                     <div className="rounded-xl border bg-card divide-y">
                       <div className="p-4 grid grid-cols-3 gap-4">
                         <div><label className="block text-[12px] font-medium mb-1.5">Cursor Style</label><div className="relative"><select value={settings.terminal_cursor_style} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_style: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="block">Block</option><option value="underline">Underline</option><option value="bar">Bar</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
-                        <div className="space-y-2 pt-6"><label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={settings.terminal_cursor_blink} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_blink: e.target.checked })} /> Cursor Blink</label><label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={settings.terminal_focus_follows_mouse} onChange={(e)=>setSettingsLive({ ...settings, terminal_focus_follows_mouse: e.target.checked })} /> Focus Follows Mouse</label></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">GPU Acceleration</label><div className="relative"><select value={settings.terminal_gpu_acceleration} onChange={(e)=>setSettingsLive({ ...settings, terminal_gpu_acceleration: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="auto">Auto</option><option value="on">On</option><option value="off">Off</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
+                        <div className="space-y-2 pt-6"><label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={settings.terminal_cursor_blink} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_blink: e.target.checked })} /> Cursor Blink</label></div>
                         <div><label className="block text-[12px] font-medium mb-1.5">Ligatures</label><div className="relative"><select value={settings.terminal_ligatures} onChange={(e)=>setSettingsLive({ ...settings, terminal_ligatures: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="auto">Auto</option><option value="on">On</option><option value="off">Off</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">Scrollback Rows</label><input type="number" value={settings.terminal_scrollback_rows} onChange={(e)=>setSettingsLive({ ...settings, terminal_scrollback_rows: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
                         <div><label className="block text-[12px] font-medium mb-1.5">Divider Thickness (px)</label><input type="number" min={1} max={12} value={settings.terminal_divider_thickness_px} onChange={(e)=>setSettingsLive({ ...settings, terminal_divider_thickness_px: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
                       </div>
                       <div className="p-4 grid grid-cols-3 gap-4">
@@ -786,7 +797,6 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                         <div><label className="block text-[12px] font-medium mb-1.5">Active Opacity</label><input type="number" min={0} max={1} step={0.05} value={settings.terminal_active_pane_opacity} onChange={(e)=>setSettingsLive({ ...settings, terminal_active_pane_opacity: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
                         <div><label className="block text-[12px] font-medium mb-1.5">Opacity Transition (ms)</label><input type="number" value={settings.terminal_pane_opacity_transition_ms} onChange={(e)=>setSettingsLive({ ...settings, terminal_pane_opacity_transition_ms: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
                         <div><label className="block text-[12px] font-medium mb-1.5">Background Opacity</label><input type="number" min={0} max={1} step={0.05} value={settings.terminal_background_opacity ?? 1} onChange={(e)=>setSettingsLive({ ...settings, terminal_background_opacity: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">Min Contrast Ratio</label><input type="number" min={1} max={21} step={0.5} value={settings.terminal_minimum_contrast_ratio ?? ""} onChange={(e)=>setSettingsLive({ ...settings, terminal_minimum_contrast_ratio: e.target.value==="" ? undefined : Number(e.target.value) })} placeholder="auto" className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
                       </div>
                     </div>
                   </section>
@@ -951,6 +961,209 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                   <div className="space-y-4">
                     <div><label className="block text-[12px] font-medium mb-1.5">Default Workspaces Root</label><input value={settings.workspace_dir} onChange={(e)=>setSettingsLive({ ...settings, workspace_dir: e.target.value })} className="w-full bg-background border rounded-md px-3 py-2 font-mono text-[13px]" /></div>
                     <div><label className="block text-[12px] font-medium mb-1.5">Auto-generated Branch Prefix</label><input value={settings.default_branch_prefix} onChange={(e)=>setSettingsLive({ ...settings, default_branch_prefix: e.target.value })} className="w-full bg-background border rounded-md px-3 py-2 font-mono text-[13px]" /><span className="text-[11px] text-muted-foreground">Prefix for parallel git branches (e.g. feat/, task/).</span></div>
+                  </div>
+                </div>
+              )}
+
+              {activeId==="terminal" && (
+                <div className="space-y-6">
+                  <div className="space-y-1">
+                    <h3 className="text-[20px] font-semibold tracking-tight">Terminal</h3>
+                    <p className="text-[13px] text-muted-foreground">Shells, renderer, sessions, and terminal behavior.</p>
+                  </div>
+
+                  {/* Rendering — GPU + Contrast + Inline Images */}
+                  <div className="rounded-xl border bg-card overflow-hidden">
+                    <div className="p-6 space-y-6">
+                      <div>
+                        <h4 className="text-[13px] font-semibold">Rendering</h4>
+                        <p className="text-[12px] text-muted-foreground">Terminal renderer behavior for live panes and new panes.</p>
+                      </div>
+                      <div className="flex items-center justify-between gap-4 py-2">
+                        <div className="pr-4">
+                          <div className="text-[13px] font-medium">GPU Acceleration</div>
+                          <div className="text-[12px] text-muted-foreground">
+                            {settings.terminal_gpu_acceleration==="off" ? "WebGL disabled; DOM renderer for max compatibility." : settings.terminal_gpu_acceleration==="on" ? "WebGL is always attempted for terminal panes." : "Auto tries WebGL, with DOM fallback for unsupported or risky renderers."}
+                          </div>
+                        </div>
+                        <SegmentedControl value={settings.terminal_gpu_acceleration} onChange={(v)=>setSettingsLive({ ...settings, terminal_gpu_acceleration: v as any })} options={[{value:"auto",label:"Auto"},{value:"on",label:"On"},{value:"off",label:"Off"}]} />
+                      </div>
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-2">
+                        <div className="pr-4">
+                          <div className="text-[13px] font-medium">Color Contrast</div>
+                          <div className="text-[12px] text-muted-foreground">
+                            {(settings.terminal_minimum_contrast_ratio===undefined ? "Balances readability with your terminal theme. Recommended." : settings.terminal_minimum_contrast_ratio===1 ? "Keeps program colors unchanged, including dim text and Powerline separators." : "Choose how much to increase contrast between text and its background.")}
+                          </div>
+                        </div>
+                        <SegmentedControl value={settings.terminal_minimum_contrast_ratio===undefined ? "auto" : settings.terminal_minimum_contrast_ratio===1 ? "off" : "custom"} onChange={(v)=> {
+                          if(v==="auto") setSettingsLive({ ...settings, terminal_minimum_contrast_ratio: undefined });
+                          else if(v==="off") setSettingsLive({ ...settings, terminal_minimum_contrast_ratio: 1 });
+                          else setSettingsLive({ ...settings, terminal_minimum_contrast_ratio: contrastDraft || 4.5 });
+                        }} options={[{value:"auto",label:"Automatic"},{value:"off",label:"Off"},{value:"custom",label:"Custom"}]} />
+                      </div>
+                      {settings.terminal_minimum_contrast_ratio!==undefined && settings.terminal_minimum_contrast_ratio!==1 && (
+                        <div className="space-y-3 pb-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[12px] font-medium">Contrast target</span>
+                            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-muted border">{(contrastDraft ?? settings.terminal_minimum_contrast_ratio ?? 4.5).toFixed(1)}:1</span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">Higher values increase contrast where possible. Background colors stay unchanged.</p>
+                          <input type="range" min={1.1} max={21} step={0.1} value={contrastDraft ?? settings.terminal_minimum_contrast_ratio ?? 4.5} onChange={(e)=>{ const v=Number(e.target.value); setContrastDraft(v); }} onMouseUp={()=>{ if(contrastDraft!==undefined) setSettingsLive({ ...settings, terminal_minimum_contrast_ratio: contrastDraft }); }} onTouchEnd={()=>{ if(contrastDraft!==undefined) setSettingsLive({ ...settings, terminal_minimum_contrast_ratio: contrastDraft }); }} className="w-full" />
+                          <div className="flex justify-between text-[11px] text-muted-foreground"><span>Subtle</span><span>Strong</span></div>
+                        </div>
+                      )}
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-2">
+                        <div className="pr-4">
+                          <div className="text-[13px] font-medium">Inline Images</div>
+                          <div className="text-[12px] text-muted-foreground">Display images directly in the terminal using SIXEL, iTerm2 (IIP), and Kitty graphics protocols.</div>
+                        </div>
+                        <button type="button" role="switch" aria-checked={settings.terminal_inline_images!==false} onClick={()=>setSettingsLive({ ...settings, terminal_inline_images: !(settings.terminal_inline_images!==false) })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.terminal_inline_images!==false ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}>
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.terminal_inline_images!==false ? "translate-x-4" : "translate-x-0.5"}`} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Terminal Interaction */}
+                  <div className="rounded-xl border bg-card overflow-hidden">
+                    <div className="p-6 space-y-6">
+                      <div>
+                        <h4 className="text-[13px] font-semibold">Terminal Interaction</h4>
+                        <p className="text-[12px] text-muted-foreground">Mouse and clipboard behavior for terminal panes.</p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-0.5">
+                            <div className="text-[13px] font-medium">Scroll Speed</div>
+                            <div className="text-[12px] text-muted-foreground max-w-xl">Adjust how wheel input feels in scrollback and in mouse-aware terminal apps.</div>
+                          </div>
+                          <button onClick={()=>setSettingsLive({ ...settings, terminal_scroll_sensitivity: 1.15, terminal_fast_scroll_sensitivity: 5, terminal_tui_scroll_sensitivity: 1 })} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border bg-background text-[12px] hover:bg-muted shrink-0"><RotateCcw className="size-3.5" /> Reset</button>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-3">
+                          {[
+                            {label:"Normal",desc:"Scrollback wheel multiplier.",val: settings.terminal_scroll_sensitivity ?? 1.15, min:0.5,max:3,step:0.05, key:"terminal_scroll_sensitivity" as const},
+                            {label:"Fast",desc:"Extra multiplier while scrolling with a modifier key.",val: settings.terminal_fast_scroll_sensitivity ?? 5, min:1,max:10,step:0.5, key:"terminal_fast_scroll_sensitivity" as const},
+                            {label:"TUI",desc:"Discrete wheel reports for full-screen terminal apps.",val: settings.terminal_tui_scroll_sensitivity ?? 1, min:1,max:10,step:1, key:"terminal_tui_scroll_sensitivity" as const},
+                          ].map(card=> (
+                            <div key={card.key} className="rounded-md border border-border/60 bg-background/50 p-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0 space-y-0.5"><div className="text-xs font-medium">{card.label}</div><div className="text-[11px] leading-4 text-muted-foreground">{card.desc}</div></div>
+                                <span className="shrink-0 rounded-md border border-border/50 bg-muted/40 px-1.5 py-0.5 font-mono text-[11px] tabular-nums">{Number.isInteger(card.val)? String(card.val) : card.val.toFixed(2).replace(/0+$/,"").replace(/\.$/,"")}x</span>
+                              </div>
+                              <input type="range" min={card.min} max={card.max} step={card.step} value={card.val} onChange={(e)=> setSettingsLive({ ...settings, [card.key]: Number(e.target.value) } as any)} className="mt-3 w-full" />
+                              <div className="mt-1 flex justify-between font-mono text-[10px] text-muted-foreground"><span>{card.min}</span><span>{card.max}</span></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-3">
+                        <div className="pr-4"><div className="text-[13px] font-medium">Right-click to paste</div><div className="text-[12px] text-muted-foreground">Right-click pastes the clipboard. Ctrl+right-click opens the context menu.</div></div>
+                        <button type="button" role="switch" aria-checked={Boolean(settings.terminal_right_click_to_paste)} onClick={()=>setSettingsLive({ ...settings, terminal_right_click_to_paste: !settings.terminal_right_click_to_paste })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.terminal_right_click_to_paste ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.terminal_right_click_to_paste ? "translate-x-4" : "translate-x-0.5"}`} /></button>
+                      </div>
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-3">
+                        <div className="pr-4"><div className="text-[13px] font-medium">Focus Follows Mouse</div><div className="text-[12px] text-muted-foreground">Hovering a terminal pane activates it without needing to click.</div></div>
+                        <button type="button" role="switch" aria-checked={Boolean(settings.terminal_focus_follows_mouse)} onClick={()=>setSettingsLive({ ...settings, terminal_focus_follows_mouse: !settings.terminal_focus_follows_mouse })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.terminal_focus_follows_mouse ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.terminal_focus_follows_mouse ? "translate-x-4" : "translate-x-0.5"}`} /></button>
+                      </div>
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-3">
+                        <div className="pr-4"><div className="text-[13px] font-medium">Copy on Select</div><div className="text-[12px] text-muted-foreground">Automatically copy terminal selections to the clipboard.</div></div>
+                        <button type="button" role="switch" aria-checked={settings.terminal_clipboard_on_select!==false} onClick={()=>setSettingsLive({ ...settings, terminal_clipboard_on_select: !(settings.terminal_clipboard_on_select!==false) })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.terminal_clipboard_on_select!==false ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.terminal_clipboard_on_select!==false ? "translate-x-4" : "translate-x-0.5"}`} /></button>
+                      </div>
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-3">
+                        <div className="pr-4"><div className="text-[13px] font-medium">Trim Gutter on Copy</div><div className="text-[12px] text-muted-foreground">Drop the left gutter agent output is painted behind, so copied text is not indented. Only the indent every selected line shares is removed.</div></div>
+                        <button type="button" role="switch" aria-checked={settings.terminal_copy_trims_gutter!==false} onClick={()=>setSettingsLive({ ...settings, terminal_copy_trims_gutter: !(settings.terminal_copy_trims_gutter!==false) })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.terminal_copy_trims_gutter!==false ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.terminal_copy_trims_gutter!==false ? "translate-x-4" : "translate-x-0.5"}`} /></button>
+                      </div>
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-3">
+                        <div className="pr-4"><div className="text-[13px] font-medium">Allow TUI Clipboard Writes (OSC 52)</div><div className="text-[12px] text-muted-foreground">Let programs in the terminal (Zellij, tmux, Neovim, fzf, Grok, SSH) copy to your system clipboard.</div></div>
+                        <button type="button" role="switch" aria-checked={settings.terminal_allow_osc52_clipboard!==false} onClick={()=>setSettingsLive({ ...settings, terminal_allow_osc52_clipboard: !(settings.terminal_allow_osc52_clipboard!==false) })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.terminal_allow_osc52_clipboard!==false ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.terminal_allow_osc52_clipboard!==false ? "translate-x-4" : "translate-x-0.5"}`} /></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Workspace Setup Script */}
+                  <div className="rounded-xl border bg-card p-6 space-y-4">
+                    <div>
+                      <h4 className="text-[13px] font-semibold">Workspace Setup Script</h4>
+                      <p className="text-[12px] text-muted-foreground">Where the repository setup script runs when a new workspace is created.</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="pr-4">
+                        <div className="text-[13px] font-medium">Setup Script Location</div>
+                        <div className="text-[12px] text-muted-foreground">"New Tab" opens the setup command in a background tab titled "Setup" without stealing focus.</div>
+                      </div>
+                      <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                        {(["new-tab","split-vertical","split-horizontal"] as const).map(v=> {
+                          const active = (settings.setup_script_launch_mode ?? "new-tab")===v;
+                          const label = v==="new-tab" ? "New Tab" : v==="split-vertical" ? "Split Vertically" : "Split Horizontally";
+                          return <button key={v} onClick={()=>setSettingsLive({ ...settings, setup_script_launch_mode: v })} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{label}</button>
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Advanced */}
+                  <div className="rounded-xl border bg-card overflow-hidden">
+                    <div className="p-6 space-y-4">
+                      <div>
+                        <h4 className="text-[13px] font-semibold">Advanced</h4>
+                        <p className="text-[12px] text-muted-foreground">Scrollback, word boundaries, and platform-specific terminal behaviors.</p>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="pr-4"><div className="text-[13px] font-medium">Scrollback Rows</div><div className="text-[12px] text-muted-foreground">Retained desktop terminal rows for new and open panes.</div></div>
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                            {([5000,10000,25000,50000] as const).map(preset=> {
+                              const isPreset = [5000,10000,25000,50000].includes(settings.terminal_scrollback_rows as any);
+                              const active = scrollbackMode!=="custom" && isPreset && settings.terminal_scrollback_rows===preset;
+                              const label = preset>=1000 ? `${preset/1000}k` : String(preset);
+                              return <button key={preset} onClick={()=>{ setScrollbackMode("preset"); setSettingsLive({ ...settings, terminal_scrollback_rows: preset }); setScrollbackDraft(String(preset)); }} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{label}</button>
+                            })}
+                            <button onClick={()=>setScrollbackMode("custom")} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${scrollbackMode==="custom" ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>Custom</button>
+                          </div>
+                          {scrollbackMode==="custom" && (
+                            <div className="flex items-center gap-2">
+                              <input type="number" min={1000} max={50000} step={100} value={scrollbackDraft} onChange={(e)=>setScrollbackDraft(e.target.value)} onBlur={()=>{ const v=Number(scrollbackDraft); if(Number.isFinite(v)){ const c=Math.min(50000,Math.max(1000,Math.floor(v))); setSettingsLive({ ...settings, terminal_scrollback_rows: c }); setScrollbackDraft(String(c)); } else setScrollbackDraft(String(settings.terminal_scrollback_rows)); }} onKeyDown={(e)=>{ if(e.key==="Enter"){ const v=Number(scrollbackDraft); if(Number.isFinite(v)){ const c=Math.min(50000,Math.max(1000,Math.floor(v))); setSettingsLive({ ...settings, terminal_scrollback_rows: c }); setScrollbackDraft(String(c)); }}}} className="w-24 bg-background border rounded-md px-2 py-1 text-[13px] tabular-nums" />
+                              <span className="text-[11px] text-muted-foreground">rows</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="pr-4"><div className="text-[13px] font-medium">Word Separators</div><div className="text-[12px] text-muted-foreground">Characters treated as word boundaries for double-click selection.</div></div>
+                        <input value={settings.terminal_word_separator ?? ""} onChange={(e)=>setSettingsLive({ ...settings, terminal_word_separator: e.target.value || undefined })} placeholder={` ()[]{},'"\``} className="w-56 bg-background border rounded-md px-3 py-2 font-mono text-xs" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Manage Sessions — Orca ManageSessionsSection faithful, simplified for Hydra daemon */}
+                  <div className="rounded-xl border bg-card p-6 space-y-4">
+                    <div className="space-y-1">
+                      <h4 className="text-[13px] font-semibold">Manage Sessions</h4>
+                      <p className="text-[12px] text-muted-foreground">Recover from a frozen or misbehaving terminal by killing sessions. Daemon `hydra.sock` survives UI restart.</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] text-muted-foreground">{terminalSessions.length} active session{terminalSessions.length!==1?"s":""} {terminalSessionsLoading ? "(refreshing…)" : ""}</span>
+                      <button onClick={refreshTerminalSessions} className="px-3 py-1.5 rounded-md border bg-background text-[12px] hover:bg-muted">Refresh</button>
+                    </div>
+                    <div className="rounded-lg border divide-y max-h-[220px] overflow-y-auto">
+                      {terminalSessions.length===0 ? (
+                        <div className="px-4 py-8 text-center text-[13px] text-muted-foreground">No active PTY sessions.</div>
+                      ) : terminalSessions.map(sid=> (
+                        <div key={sid} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50">
+                          <span className="font-mono text-[12px] truncate pr-4">{sid}</span>
+                          <button onClick={()=>{ invoke("delete_session_record", { sessionId: sid }).then(()=> refreshTerminalSessions()).catch(()=>{}); }} className="px-2.5 py-1 rounded-md border bg-background text-[11px] hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20">Kill</button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

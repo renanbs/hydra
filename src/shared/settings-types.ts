@@ -35,6 +35,21 @@ export type HydraSettings = {
   terminal_divider_thickness_px: number;
   terminal_focus_follows_mouse: boolean;
   terminal_scrollback_rows: number;
+  // Terminal Interaction — Orca TerminalPane faithful (image 1:1)
+  terminal_scroll_sensitivity?: number;
+  terminal_fast_scroll_sensitivity?: number;
+  terminal_tui_scroll_sensitivity?: number;
+  terminal_inline_images?: boolean;
+  terminal_right_click_to_paste?: boolean;
+  terminal_clipboard_on_select?: boolean;
+  terminal_copy_trims_gutter?: boolean;
+  terminal_allow_osc52_clipboard?: boolean;
+  terminal_word_separator?: string;
+  terminal_tui_scroll_sensitivity_defaulted_to_one?: boolean;
+  // Mac/Win future compat (no UI on Linux yet)
+  terminal_mac_option_as_alt?: "auto" | "true" | "false" | "left" | "right";
+  terminal_jis_yen_to_backslash?: boolean;
+  setup_script_launch_mode?: "new-tab" | "split-vertical" | "split-horizontal";
   primary_selection_middle_click_paste: boolean;
   auto_approve_reads: boolean;
   notification_on_blocked: boolean;
@@ -116,6 +131,16 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   terminal_divider_thickness_px: 3,
   terminal_focus_follows_mouse: false,
   terminal_scrollback_rows: 10000,
+  terminal_scroll_sensitivity: 1.15,
+  terminal_fast_scroll_sensitivity: 5,
+  terminal_tui_scroll_sensitivity: 1,
+  terminal_inline_images: true,
+  terminal_right_click_to_paste: false,
+  terminal_clipboard_on_select: true,
+  terminal_copy_trims_gutter: true,
+  terminal_allow_osc52_clipboard: true,
+  terminal_word_separator: undefined,
+  setup_script_launch_mode: "new-tab",
   primary_selection_middle_click_paste: true,
   auto_approve_reads: true,
   notification_on_blocked: true,
@@ -186,6 +211,16 @@ export function normalizeHydraSettings(input: unknown): HydraSettings {
     terminal_divider_thickness_px: get("terminal_divider_thickness_px", "terminalDividerThicknessPx", DEFAULT_HYDRA_SETTINGS.terminal_divider_thickness_px) as number,
     terminal_focus_follows_mouse: get("terminal_focus_follows_mouse", "terminalFocusFollowsMouse", DEFAULT_HYDRA_SETTINGS.terminal_focus_follows_mouse) as boolean,
     terminal_scrollback_rows: get("terminal_scrollback_rows", "terminalScrollbackRows", DEFAULT_HYDRA_SETTINGS.terminal_scrollback_rows) as number,
+    terminal_scroll_sensitivity: (() => { const v = get("terminal_scroll_sensitivity","terminalScrollSensitivity", DEFAULT_HYDRA_SETTINGS.terminal_scroll_sensitivity) as number; return typeof v==="number"&&Number.isFinite(v)? Math.min(3,Math.max(0.5,v)) : DEFAULT_HYDRA_SETTINGS.terminal_scroll_sensitivity!; })() as number,
+    terminal_fast_scroll_sensitivity: (() => { const v = get("terminal_fast_scroll_sensitivity","terminalFastScrollSensitivity", DEFAULT_HYDRA_SETTINGS.terminal_fast_scroll_sensitivity) as number; return typeof v==="number"&&Number.isFinite(v)? Math.min(10,Math.max(1,v)) : DEFAULT_HYDRA_SETTINGS.terminal_fast_scroll_sensitivity!; })() as number,
+    terminal_tui_scroll_sensitivity: (() => { const v = get("terminal_tui_scroll_sensitivity","terminalTuiScrollSensitivity", DEFAULT_HYDRA_SETTINGS.terminal_tui_scroll_sensitivity) as number; return typeof v==="number"&&Number.isFinite(v)? Math.min(10,Math.max(1,v)) : DEFAULT_HYDRA_SETTINGS.terminal_tui_scroll_sensitivity!; })() as number,
+    terminal_inline_images: get("terminal_inline_images","terminalInlineImages", DEFAULT_HYDRA_SETTINGS.terminal_inline_images) as boolean,
+    terminal_right_click_to_paste: get("terminal_right_click_to_paste","terminalRightClickToPaste", DEFAULT_HYDRA_SETTINGS.terminal_right_click_to_paste) as boolean,
+    terminal_clipboard_on_select: get("terminal_clipboard_on_select","terminalClipboardOnSelect", DEFAULT_HYDRA_SETTINGS.terminal_clipboard_on_select) as boolean,
+    terminal_copy_trims_gutter: get("terminal_copy_trims_gutter","terminalCopyTrimsGutter", DEFAULT_HYDRA_SETTINGS.terminal_copy_trims_gutter) as boolean,
+    terminal_allow_osc52_clipboard: get("terminal_allow_osc52_clipboard","terminalAllowOsc52Clipboard", DEFAULT_HYDRA_SETTINGS.terminal_allow_osc52_clipboard) as boolean,
+    terminal_word_separator: (get("terminal_word_separator","terminalWordSeparator", DEFAULT_HYDRA_SETTINGS.terminal_word_separator) as string | undefined) || undefined,
+    setup_script_launch_mode: (() => { const v = get("setup_script_launch_mode","setupScriptLaunchMode", DEFAULT_HYDRA_SETTINGS.setup_script_launch_mode) as string; return v==="split-vertical"||v==="split-horizontal"||v==="new-tab"? v : "new-tab"; })() as HydraSettings["setup_script_launch_mode"],
     nest_workspaces: get("nest_workspaces", "nestWorkspaces", DEFAULT_HYDRA_SETTINGS.nest_workspaces) as boolean,
     workspace_dir_history: (() => {
       const rawHist = (raw as Record<string, unknown>).workspace_dir_history ?? (raw as Record<string, unknown>).workspaceDirHistory;

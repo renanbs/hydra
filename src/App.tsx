@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { open as openFileDialog } from "@tauri-apps/plugin-dialog";
 import { usePanelResize } from "./hooks/usePanelResize";
 import { TerminalDrawer } from "./components/TerminalDrawer";
 import { WindowTitlebar } from "./components/WindowTitlebar";
@@ -74,9 +75,7 @@ export default function App() {
   const [diffOriginal, setDiffOriginal] = useState(MOCK_ORIGINAL);
   const [diffModified, setDiffModified] = useState(MOCK_MODIFIED);
   const [previewLanguage, setPreviewLanguage] = useState("rust");
-  const [fileTabContents, setFileTabContents] = useState<Record<string, { original: string; modified: string; lang: string }>>({
-    "tab_diff_1": { original: MOCK_ORIGINAL, modified: MOCK_MODIFIED, lang: "rust" },
-  });
+  const [fileTabContents, setFileTabContents] = useState<Record<string, { original: string; modified: string; lang: string }>>({});
   const [promptInput, setPromptInput] = useState("");
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [projects, setProjects] = useState<HydraProject[]>([]);
@@ -110,7 +109,6 @@ export default function App() {
   // Center Workbench Tabs
   const [tabs, setTabs] = useState<TabItem[]>([
     { id: "tab_main", title: "bash (active)", type: "terminal" },
-    { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
   ]);
   const [activeTabId, setActiveTabId] = useState("tab_main");
 
@@ -205,6 +203,26 @@ export default function App() {
         e.preventDefault();
         setIsSettingsOpen(true);
       }
+      if (isChord && e.key.toLowerCase() === "t") {
+        e.preventDefault();
+        handleNewTerminalTab();
+      }
+      if (isChord && e.key.toLowerCase() === "n" && !e.shiftKey) {
+        e.preventDefault();
+        handleNewFileTab();
+      }
+      if (isChord && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        handleOpenFileTab();
+      }
+      if (isChord && e.shiftKey && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        handleOpenDiffTab();
+      }
+      if (isChord && e.shiftKey && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        setIsNewWorkspaceOpen(true);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -228,11 +246,26 @@ export default function App() {
 
     invoke<HydraProject[]>("list_projects")
       .then((projs) => {
-        setProjects(projs);
-        if (projs.length > 0) {
-          setActiveProject(projs[0]);
-          loadSessionsForProject(projs[0].path);
-          refreshGitWorktrees(projs[0].path);
+        let sorted = projs;
+        try {
+          const saved = localStorage.getItem("hydra:projects_order");
+          if (saved) {
+            const order: string[] = JSON.parse(saved);
+            sorted = [...projs].sort((a, b) => {
+              const idxA = order.indexOf(a.id);
+              const idxB = order.indexOf(b.id);
+              if (idxA === -1 && idxB === -1) return 0;
+              if (idxA === -1) return 1;
+              if (idxB === -1) return -1;
+              return idxA - idxB;
+            });
+          }
+        } catch {}
+        setProjects(sorted);
+        if (sorted.length > 0) {
+          setActiveProject(sorted[0]);
+          loadSessionsForProject(sorted[0].path);
+          refreshGitWorktrees(sorted[0].path);
         }
       })
       .catch(console.error);
@@ -271,7 +304,7 @@ export default function App() {
     invoke<DbSessionRecord[]>("list_persisted_sessions", { projectPath })
       .then((persisted) => {
         if (persisted && persisted.length > 0) {
-          const loaded: WorktreeSession[] = persisted.map((p, idx) => ({
+          let loaded: WorktreeSession[] = persisted.map((p, idx) => ({
             id: p.id,
             project_path: p.project_path,
             title: p.title,
@@ -281,15 +314,35 @@ export default function App() {
             state: "idle",
             active: idx === 0,
           }));
+          try {
+            const saved = localStorage.getItem("hydra:sessions_order");
+            if (saved) {
+              const order: string[] = JSON.parse(saved);
+              loaded = [...loaded].sort((a, b) => {
+                const idxA = order.indexOf(a.id);
+                const idxB = order.indexOf(b.id);
+                if (idxA === -1 && idxB === -1) return 0;
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+              });
+            }
+          } catch {}
           setSessions(loaded);
           const firstTabId = `tab_${loaded[0].id}`;
           setTabs([
-            { id: firstTabId, title: `${loaded[0].executable} (active)`, type: "terminal" },
-            { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
+            {
+              id: firstTabId,
+              title: `${loaded[0].executable} (active)`,
+              type: "terminal",
+              sessionId: loaded[0].id,
+              executable: loaded[0].executable,
+              cwd: loaded[0].project_path || projectPath,
+            },
           ]);
           setActiveTabId(firstTabId);
         } else {
-          const effectiveShell = (hydraSettings as any).terminal_default_shell || "bash";
+          const effectiveShell = hydraSettings.terminal_default_shell || "bash";
           const defaultSession: WorktreeSession = {
             id: `sess_main_${Date.now().toString().slice(-4)}`,
             project_path: projectPath,
@@ -315,8 +368,14 @@ export default function App() {
           }).catch(console.error);
           const firstTabId = `tab_${defaultSession.id}`;
           setTabs([
-            { id: firstTabId, title: "bash (active)", type: "terminal" },
-            { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
+            {
+              id: firstTabId,
+              title: `${defaultSession.executable} (active)`,
+              type: "terminal",
+              sessionId: defaultSession.id,
+              executable: defaultSession.executable,
+              cwd: defaultSession.project_path || projectPath,
+            },
           ]);
           setActiveTabId(firstTabId);
         }
@@ -481,14 +540,23 @@ export default function App() {
       prev.map((s) => ({ ...s, active: s.id === id }))
     );
     const tabId = `tab_${id}`;
-    if (!tabs.some((t) => t.id === tabId)) {
+    const existing = tabs.find((t) => t.id === tabId || t.sessionId === id);
+    if (!existing) {
       const targetSession = sessions.find((s) => s.id === id);
-      setTabs((prev) => [
-        ...prev,
-        { id: tabId, title: `${targetSession?.executable ?? "shell"}`, type: "terminal" }
-      ]);
+      const sh = targetSession?.executable ?? "shell";
+      const newTab: TabItem = {
+        id: tabId,
+        title: targetSession?.title || `${sh} (active)`,
+        type: "terminal",
+        sessionId: id,
+        executable: sh,
+        cwd: targetSession?.project_path || activeProject?.path,
+      };
+      setTabs((prev) => [...prev, newTab]);
+      setActiveTabId(tabId);
+    } else {
+      setActiveTabId(existing.id);
     }
-    setActiveTabId(tabId);
   };
 
   const handleDeleteSession = (id: string) => {
@@ -498,31 +566,204 @@ export default function App() {
     setTabs((prev) => prev.filter((t) => t.id !== `tab_${id}`));
   };
 
-  const handleNewTab = () => {
-    const id = `tab_${Date.now()}`;
-    const sh = (hydraSettings as any).terminal_default_shell || "bash";
-    setTabs((prev) => [...prev, { id, title: `${sh} #${prev.length + 1}`, type: "terminal" }]);
+  const handleReorderSessions = (newSessions: WorktreeSession[]) => {
+    setSessions(newSessions);
+    try {
+      localStorage.setItem("hydra:sessions_order", JSON.stringify(newSessions.map(s => s.id)));
+    } catch {}
+  };
+
+  const handleReorderProjects = (newProjects: HydraProject[]) => {
+    setProjects(newProjects);
+    try {
+      localStorage.setItem("hydra:projects_order", JSON.stringify(newProjects.map(p => p.id)));
+    } catch {}
+  };
+
+  const handleReorderWorktrees = (newWorktrees: GitWorktreeInfo[]) => {
+    setGitWorktrees(newWorktrees);
+    try {
+      localStorage.setItem("hydra:worktrees_order", JSON.stringify(newWorktrees.map(w => w.path)));
+    } catch {}
+  };
+
+  const handleNewTerminalTab = (shell?: string) => {
+    const sh = shell || hydraSettings.terminal_default_shell || "bash";
+    const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const tabId = `tab_${sessionId}`;
+    const title = `${sh} #${sessions.filter((s) => s.executable === sh).length + 1}`;
+    const newSession: WorktreeSession = {
+      id: sessionId,
+      project_path: activeProject?.path ?? "",
+      title: `Terminal (${sh})`,
+      branch: activeProject?.current_branch ?? "main",
+      state: "idle",
+      active: true,
+      agentName: sh,
+      executable: sh,
+    };
+    invoke("save_session_record", {
+      record: {
+        id: sessionId,
+        project_path: newSession.project_path,
+        title: newSession.title,
+        branch: newSession.branch,
+        agent_name: newSession.agentName,
+        executable: newSession.executable,
+        created_at: Date.now(),
+        updated_at: Date.now(),
+      },
+    }).catch(console.error);
+
+    setSessions((prev) => [
+      ...prev.map((s) => ({ ...s, active: false })),
+      newSession,
+    ]);
+    setTabs((prev) => [
+      ...prev,
+      {
+        id: tabId,
+        title,
+        type: "terminal",
+        sessionId,
+        executable: sh,
+        cwd: newSession.project_path,
+      },
+    ]);
+    setActiveTabId(tabId);
+  };
+  const handleLaunchAgent = (agent: AvailableAgent) => {
+    const sessionId = `sess_${agent.id}_${Date.now().toString().slice(-4)}`;
+    const tabId = `tab_${sessionId}`;
+    const newSession: WorktreeSession = {
+      id: sessionId,
+      project_path: activeProject?.path ?? "",
+      title: `${agent.name} (active)`,
+      branch: activeProject?.current_branch ?? "main",
+      state: "working",
+      active: true,
+      agentName: agent.name,
+      executable: agent.executable,
+    };
+    invoke("save_session_record", {
+      record: {
+        id: sessionId,
+        project_path: newSession.project_path,
+        title: newSession.title,
+        branch: newSession.branch,
+        agent_name: newSession.agentName,
+        executable: newSession.executable,
+        created_at: Date.now(),
+        updated_at: Date.now(),
+      },
+    }).catch(console.error);
+
+    setSessions((prev) => [
+      ...prev.map((s) => ({ ...s, active: false })),
+      newSession,
+    ]);
+    const newTab: TabItem = {
+      id: tabId,
+      title: agent.name,
+      type: "terminal",
+      sessionId,
+      executable: agent.executable,
+      cwd: newSession.project_path,
+    };
+    setTabs((prev) => [...prev, newTab]);
+    setActiveTabId(tabId);
+  };
+
+
+  const handleSelectWorkbenchTab = (tabId: string) => {
+    setActiveTabId(tabId);
+    if (tabId.startsWith("tab_sess_")) {
+      const sId = tabId.replace("tab_", "");
+      setSessions((prev) =>
+        prev.map((s) => ({ ...s, active: s.id === sId }))
+      );
+    }
+  };
+
+  const handleNewFileTab = () => {
+    const count = Object.keys(fileTabContents).filter((k) => k.startsWith("tab_untitled_")).length + 1;
+    const id = `tab_untitled_${Date.now()}`;
+    const fileName = `Untitled-${count}.txt`;
+    setFileTabContents((prev) => ({ ...prev, [id]: { original: "", modified: "", lang: "plaintext" } }));
+    setTabs((prev) => [...prev, { id, title: fileName, type: "editor" }]);
     setActiveTabId(id);
+  };
+
+  const handleOpenFileTab = async () => {
+    try {
+      const selected = await openFileDialog({
+        multiple: false,
+        directory: false,
+        defaultPath: activeProject?.path ?? undefined,
+      });
+      if (selected && typeof selected === "string") {
+        const path = selected;
+        const ext = path.split(".").pop()?.toLowerCase() ?? "";
+        const lang = ({ rs: "rust", ts: "typescript", tsx: "typescript", js: "javascript", json: "json", md: "markdown", py: "python", go: "go" } as Record<string, string>)[ext] ?? "plaintext";
+        const res = await invoke<{ path: string; content: string }>("read_file_text_cmd", { path });
+        const content = res.content;
+        const truncated = content.length > 20000 ? content.slice(0, 20000) + "\n… truncated" : content;
+        const fileName = path.split("/").pop() ?? path;
+        const tabId = `tab_file_${path}`;
+        setFileTabContents((prev) => ({ ...prev, [tabId]: { original: "", modified: truncated, lang } }));
+        setPreviewLanguage(lang);
+        setTabs((prev) => {
+          if (prev.some((t) => t.id === tabId)) return prev;
+          return [...prev, { id: tabId, title: fileName, type: "editor" }];
+        });
+        setActiveTabId(tabId);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleOpenDiffTab = () => {
+    const tabId = `tab_diff_${Date.now()}`;
+    setFileTabContents((prev) => ({
+      ...prev,
+      [tabId]: { original: diffOriginal, modified: diffModified, lang: previewLanguage },
+    }));
+    const title = activeProject?.name ? `${activeProject.name} (diff)` : "Git Diff";
+    setTabs((prev) => [...prev, { id: tabId, title, type: "diff" }]);
+    setActiveTabId(tabId);
   };
 
   const handleCloseTab = (id: string) => {
     if (tabs.length <= 1) return;
+    if (id.startsWith("tab_sess_")) {
+      const sId = id.replace("tab_", "");
+      invoke("delete_session_record", { sessionId: sId }).catch(console.error);
+      setSessions((prev) => prev.filter((s) => s.id !== sId));
+    }
     const remaining = tabs.filter((t) => t.id !== id);
     setTabs(remaining);
-    setFileTabContents(prev => {
+    setFileTabContents((prev) => {
       const { [id]: _, ...rest } = prev;
       return rest;
     });
     if (activeTabId === id) {
-      setActiveTabId(remaining[remaining.length - 1].id);
+      const nextActiveId = remaining[remaining.length - 1].id;
+      setActiveTabId(nextActiveId);
+      if (nextActiveId.startsWith("tab_sess_")) {
+        const nextSId = nextActiveId.replace("tab_", "");
+        setSessions((prev) =>
+          prev.map((s) => ({ ...s, active: s.id === nextSId }))
+        );
+      }
     }
   };
-
   const handleRenameTab = (tabId: string, newTitle: string) => {
     setTabs((prev) =>
       prev.map((t) => (t.id === tabId ? { ...t, title: newTitle } : t))
     );
   };
+
 
   // Context Menu Handlers
   const handleTerminalContextMenu = (x: number, y: number) => {
@@ -564,7 +805,7 @@ export default function App() {
         {
           label: "Split Terminal Tab",
           icon: <SplitSquareVertical className="w-3.5 h-3.5" />,
-          onClick: () => handleNewTab()
+          onClick: () => handleNewTerminalTab()
         }
       ]
     });
@@ -695,7 +936,6 @@ export default function App() {
   };
 
   const currentTab = tabs.find((t) => t.id === activeTabId);
-  const activeSession = sessions.find((s) => s.active);
 
   return (
     <div className="flex flex-col h-screen w-screen font-sans antialiased select-none overflow-hidden" style={{ background: "var(--app-bg)", color: "var(--app-fg)" }}>
@@ -739,6 +979,9 @@ export default function App() {
                   setIsNewWorkspaceOpen(true);
                 }}
                 onSessionContextMenu={handleSessionContextMenu}
+                onReorderSessions={handleReorderSessions}
+                onReorderProjects={handleReorderProjects}
+                onReorderWorktrees={handleReorderWorktrees}
               />
             </aside>
 
@@ -759,9 +1002,14 @@ export default function App() {
           <WorkbenchTabBar 
             tabs={tabs}
             activeTabId={activeTabId}
-            onSelectTab={setActiveTabId}
+            onSelectTab={handleSelectWorkbenchTab}
             onCloseTab={handleCloseTab}
-            onNewTab={handleNewTab}
+            onNewTab={() => handleNewTerminalTab()}
+            onNewTerminalTab={handleNewTerminalTab}
+            onNewFileTab={handleNewFileTab}
+            onOpenFileTab={handleOpenFileTab}
+            onLaunchAgent={handleLaunchAgent}
+            detectedAgents={availableAgents}
             onRenameTab={handleRenameTab}
             onTabContextMenu={handleTabContextMenu}
           />
@@ -787,16 +1035,29 @@ export default function App() {
                   path={activeTabId.replace("tab_file_","")}
                 />
               );
-            })() : (
-              <TerminalDrawer 
-                key={`${activeSession?.id ?? "sess_main"}-${hydraSettings.terminal_default_shell}`}
-                sessionId={activeSession?.id ?? "sess_main"} 
-                executable={activeSession?.executable ?? (hydraSettings.terminal_default_shell || "bash")}
-                cwd={activeSession?.project_path || activeProject?.path}
-                settings={hydraSettings}
-                onContextMenu={handleTerminalContextMenu}
-              />
-            )}
+            })() : null}
+
+            {/* Orca TerminalOverlaySlot parity: keep each terminal tab mounted in DOM and toggle visibility via hidden so processes and scrollback survive tab switching */}
+            {tabs
+              .filter((t) => t.type === "terminal")
+              .map((t) => {
+                const isActive = currentTab?.type === "terminal" && activeTabId === t.id;
+                const sId = t.sessionId || (t.id.startsWith("tab_") ? t.id.replace("tab_", "") : t.id);
+                return (
+                  <div
+                    key={t.id}
+                    className={`absolute inset-0 w-full h-full ${isActive ? "block" : "hidden pointer-events-none"}`}
+                  >
+                    <TerminalDrawer 
+                      sessionId={sId} 
+                      executable={t.executable ?? (hydraSettings.terminal_default_shell || "bash")}
+                      cwd={t.cwd || activeProject?.path}
+                      settings={hydraSettings}
+                      onContextMenu={handleTerminalContextMenu}
+                    />
+                  </div>
+                );
+              })}
           </div>
         </main>
 
@@ -878,7 +1139,7 @@ export default function App() {
       <CommandPalette 
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
-        onNewTerminal={handleNewTab}
+        onNewTerminal={() => handleNewTerminalTab()}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenPairing={() => setIsPairingOpen(true)}
         onSwitchTab={setActiveTabId}
