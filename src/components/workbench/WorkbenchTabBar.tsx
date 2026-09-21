@@ -15,6 +15,7 @@ interface WorkbenchTabBarProps {
   onNewTab: () => void;
   onRenameTab: (id: string, newTitle: string) => void;
   onTabContextMenu?: (e: React.MouseEvent, tab: TabItem) => void;
+  onTabBarContextMenu?: (e: React.MouseEvent) => void;
 }
 
 export function WorkbenchTabBar({
@@ -25,6 +26,7 @@ export function WorkbenchTabBar({
   onNewTab,
   onRenameTab,
   onTabContextMenu,
+  onTabBarContextMenu,
 }: WorkbenchTabBarProps) {
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
@@ -51,7 +53,15 @@ export function WorkbenchTabBar({
   };
 
   return (
-    <div className="h-8 border-b border-[#222] bg-[#111214] flex items-center px-1 select-none overflow-x-auto shrink-0">
+    <div
+      className="h-8 border-b border-[#222] bg-[#111214] flex items-center px-1 select-none overflow-x-auto shrink-0"
+      onContextMenu={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          onTabBarContextMenu?.(e);
+        }
+      }}
+    >
       {/* Abas e botão '+' posicionado imediatamente após a última aba (Orca Style) */}
       <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
@@ -96,7 +106,7 @@ export function WorkbenchTabBar({
                 </span>
               )}
 
-              {tabs.length > 1 && !isEditing && (
+              {!isEditing && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -123,7 +133,14 @@ export function WorkbenchTabBar({
       </div>
 
       {/* Espaço restante vazio da barra de abas */}
-      <div className="flex-1 h-full" />
+      <div
+        className="flex-1 h-full"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onTabBarContextMenu?.(e);
+        }}
+      />
     </div>
   );
 }

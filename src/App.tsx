@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { usePanelResize } from "./hooks/usePanelResize";
-import { TerminalDrawer } from "./components/TerminalDrawer";
+import { TerminalDrawer, type TerminalContextActions } from "./components/TerminalDrawer";
+import { Landing } from "./components/Landing";
 import { WindowTitlebar } from "./components/WindowTitlebar";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
 import { FileEditor } from "./components/workbench/FileEditor";
@@ -31,6 +32,12 @@ import {
   Trash2,
   GitBranch,
   Pencil,
+  X,
+  ListX,
+  PanelRightClose,
+  PanelBottomClose,
+  PanelLeftClose,
+  TextSelect,
 } from "lucide-react";
 import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
@@ -96,6 +103,11 @@ export default function App() {
     invoke("sync_keep_awake", { enabled, workingCount }).catch(()=>{});
   };
   const [_keepAwakeActive, setKeepAwakeActive] = useState(false);
+  const isMac = typeof navigator !== "undefined" && navigator.userAgent.includes("Mac");
+  const projectsRef = useRef(projects);
+  projectsRef.current = projects;
+  const activeProjectRef = useRef(activeProject);
+  activeProjectRef.current = activeProject;
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -112,7 +124,11 @@ export default function App() {
     { id: "tab_main", title: "bash (active)", type: "terminal" },
     { id: "tab_diff_1", title: "main.rs (diff)", type: "diff" },
   ]);
+  const tabsRef = useRef(tabs);
+  tabsRef.current = tabs;
   const [activeTabId, setActiveTabId] = useState("tab_main");
+  const activeTabIdRef = useRef(activeTabId);
+  activeTabIdRef.current = activeTabId;
 
   const [_messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
     {
@@ -180,10 +196,50 @@ export default function App() {
     window.addEventListener("contextmenu", handleGlobalContextMenu);
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
+
+      // Dismiss any open modal or context menu on Escape
+      if (e.key === "Escape") {
+        if (contextMenu) {
+          e.preventDefault();
+          setContextMenu(null);
+          return;
+        }
+        if (isCommandPaletteOpen) {
+          e.preventDefault();
+          setIsCommandPaletteOpen(false);
+          return;
+        }
+        if (isSettingsOpen) {
+          e.preventDefault();
+          setIsSettingsOpen(false);
+          return;
+        }
+        if (isNewWorkspaceOpen) {
+          e.preventDefault();
+          setIsNewWorkspaceOpen(false);
+          return;
+        }
+        if (isAddRepoOpen) {
+          e.preventDefault();
+          setIsAddRepoOpen(false);
+          return;
+        }
+        if (isPairingOpen) {
+          e.preventDefault();
+          setIsPairingOpen(false);
+          return;
+        }
+      }
+
+      const target = e.target as HTMLElement | null;
+      const isInputFocused = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || Boolean(target?.isContentEditable);
+      const isModalOpen = isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen;
       const isChord = e.ctrlKey || e.metaKey;
       if (isChord && e.key.toLowerCase() === "p") {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
+        return;
       }
       if (isChord && e.key.toLowerCase() === "b") {
         e.preventDefault();
@@ -192,6 +248,7 @@ export default function App() {
           updateLeftSidebar(next);
           return next;
         });
+        return;
       }
       if (isChord && e.key.toLowerCase() === "j") {
         e.preventDefault();
@@ -200,10 +257,39 @@ export default function App() {
           updateRightSidebar(next);
           return next;
         });
+        return;
       }
       if (isChord && e.key === ",") {
         e.preventDefault();
         setIsSettingsOpen(true);
+        return;
+      }
+      if (isChord && !e.shiftKey && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        setIsNewWorkspaceOpen(true);
+        return;
+      }
+      // Guard against background tab closure or navigation when dialogs or inputs have focus
+      if (isModalOpen || isInputFocused) {
+        return;
+      }
+      if (isChord && !e.shiftKey && e.key.toLowerCase() === "w") {
+        e.preventDefault();
+        if (activeTabIdRef.current) {
+          handleCloseTab(activeTabIdRef.current);
+        }
+      }
+      if (isChord && !e.shiftKey && e.key.toLowerCase() === "t") {
+        e.preventDefault();
+        handleNewTab();
+      }
+      if (isChord && e.shiftKey && e.key === "ArrowUp") {
+        e.preventDefault();
+        handleNavigateWorkspace("up");
+      }
+      if (isChord && e.shiftKey && e.key === "ArrowDown") {
+        e.preventDefault();
+        handleNavigateWorkspace("down");
       }
     };
 
@@ -212,7 +298,18 @@ export default function App() {
       window.removeEventListener("contextmenu", handleGlobalContextMenu);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isLeftSidebarOpen, isRightSidebarOpen, leftSidebar.width, rightSidebar.width]);
+  }, [
+    isLeftSidebarOpen,
+    isRightSidebarOpen,
+    leftSidebar.width,
+    rightSidebar.width,
+    contextMenu,
+    isCommandPaletteOpen,
+    isSettingsOpen,
+    isNewWorkspaceOpen,
+    isAddRepoOpen,
+    isPairingOpen
+  ]);
 
   const refreshGitWorktrees = (repoPath: string) => {
     invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath })
@@ -248,7 +345,10 @@ export default function App() {
         applyDocumentTheme(n.theme);
         try { localStorage.setItem("hydra:theme", n.theme); } catch {}
       }
-    }).catch(console.error);
+    }).catch(() => {
+      const savedTheme = localStorage.getItem("hydra:theme") as "dark" | "light" | "system" | null;
+      applyDocumentTheme(savedTheme ?? "dark");
+    });
 
     // Listen for system theme changes when theme=system
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
@@ -377,6 +477,24 @@ export default function App() {
     setActiveProject(proj);
     loadSessionsForProject(proj.path);
     refreshGitWorktrees(proj.path);
+    if (tabs.length === 0) {
+      const sId = `sess_${Date.now()}`;
+      const id = `tab_${sId}`;
+      const sh = hydraSettings.terminal_default_shell || "bash";
+      const newSession: WorktreeSession = {
+        id: sId,
+        project_path: proj.path,
+        title: proj.name,
+        branch: proj.current_branch || "main",
+        state: "idle",
+        active: true,
+        agentName: sh,
+        executable: sh,
+      };
+      setSessions([newSession]);
+      setTabs([{ id, title: proj.name, type: "terminal" }]);
+      setActiveTabId(id);
+    }
     setMessages((prev) => [
       ...prev,
       {
@@ -385,6 +503,22 @@ export default function App() {
         content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
       }
     ]);
+  };
+
+  const handleNavigateWorkspace = (direction: "up" | "down") => {
+    const projs = projectsRef.current;
+    if (projs.length === 0) return;
+    const current = activeProjectRef.current;
+    const currentIdx = current
+      ? projs.findIndex((p) => p.path === current.path)
+      : -1;
+    let nextIdx = 0;
+    if (direction === "up") {
+      nextIdx = currentIdx <= 0 ? projs.length - 1 : currentIdx - 1;
+    } else {
+      nextIdx = currentIdx >= projs.length - 1 ? 0 : currentIdx + 1;
+    }
+    handleSelectProject(projs[nextIdx]);
   };
 
   const handleRemoveProject = (proj: HydraProject) => {
@@ -423,7 +557,7 @@ export default function App() {
       setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === id })));
     }
     const tabId = `tab_${id}`;
-    if (!tabs.some((t) => t.id === tabId)) {
+    if (!tabsRef.current.some((t) => t.id === tabId)) {
       setTabs((prev) => [...prev, { id: tabId, title: wt.branch, type: "terminal" }]);
     }
     setActiveTabId(tabId);
@@ -481,7 +615,7 @@ export default function App() {
       prev.map((s) => ({ ...s, active: s.id === id }))
     );
     const tabId = `tab_${id}`;
-    if (!tabs.some((t) => t.id === tabId)) {
+    if (!tabsRef.current.some((t) => t.id === tabId)) {
       const targetSession = sessions.find((s) => s.id === id);
       setTabs((prev) => [
         ...prev,
@@ -498,24 +632,81 @@ export default function App() {
     setTabs((prev) => prev.filter((t) => t.id !== `tab_${id}`));
   };
 
-  const handleNewTab = () => {
-    const id = `tab_${Date.now()}`;
-    const sh = (hydraSettings as any).terminal_default_shell || "bash";
-    setTabs((prev) => [...prev, { id, title: `${sh} #${prev.length + 1}`, type: "terminal" }]);
+  const handleSelectTab = (id: string) => {
     setActiveTabId(id);
+    const sId = id.replace(/^tab_/, "");
+    setSessions((prev) => {
+      if (prev.some((s) => s.id === sId)) {
+        return prev.map((s) => ({ ...s, active: s.id === sId }));
+      }
+      return prev;
+    });
+  };
+
+  const handleNewTab = () => {
+    const sId = `sess_${Date.now()}`;
+    const tabId = `tab_${sId}`;
+    const sh = hydraSettings.terminal_default_shell || "bash";
+    const terminalCount = tabsRef.current.filter((t) => t.type === "terminal").length;
+    const title = terminalCount === 0 ? "Terminal" : `Terminal ${terminalCount + 1}`;
+    const newSession: WorktreeSession = {
+      id: sId,
+      project_path: activeProject?.path || "",
+      title,
+      branch: activeProject?.current_branch || "main",
+      state: "idle",
+      active: true,
+      agentName: sh,
+      executable: sh,
+    };
+    setSessions((prev) => [newSession, ...prev.map((s) => ({ ...s, active: false }))]);
+    setTabs((prev) => [...prev, { id: tabId, title, type: "terminal" }]);
+    setActiveTabId(tabId);
   };
 
   const handleCloseTab = (id: string) => {
-    if (tabs.length <= 1) return;
-    const remaining = tabs.filter((t) => t.id !== id);
-    setTabs(remaining);
-    setFileTabContents(prev => {
+    const sId = id.replace(/^tab_/, "");
+    setSessions((prev) => prev.filter((s) => s.id !== sId));
+    setTabs((prev) => {
+      const remaining = prev.filter((t) => t.id !== id);
+      if (activeTabIdRef.current === id) {
+        setActiveTabId(remaining.length > 0 ? remaining[remaining.length - 1].id : "");
+      }
+      return remaining;
+    });
+    setFileTabContents((prev) => {
       const { [id]: _, ...rest } = prev;
       return rest;
     });
-    if (activeTabId === id) {
-      setActiveTabId(remaining[remaining.length - 1].id);
-    }
+  };
+
+  const handleCloseTabsToRight = (id: string) => {
+    setTabs((prev) => {
+      const idx = prev.findIndex((t) => t.id === id);
+      if (idx === -1) return prev;
+      const remaining = prev.slice(0, idx + 1);
+      if (!remaining.some((t) => t.id === activeTabIdRef.current)) {
+        setActiveTabId(id);
+      }
+      return remaining;
+    });
+  };
+
+  const handleCloseTabsToLeft = (id: string) => {
+    setTabs((prev) => {
+      const idx = prev.findIndex((t) => t.id === id);
+      if (idx === -1) return prev;
+      const remaining = prev.slice(idx);
+      if (!remaining.some((t) => t.id === activeTabIdRef.current)) {
+        setActiveTabId(id);
+      }
+      return remaining;
+    });
+  };
+  const handleCloseAllTabs = () => {
+    setTabs([]);
+    setFileTabContents({});
+    setActiveTabId("");
   };
 
   const handleRenameTab = (tabId: string, newTitle: string) => {
@@ -525,57 +716,144 @@ export default function App() {
   };
 
   // Context Menu Handlers
-  const handleTerminalContextMenu = (x: number, y: number) => {
+  const handleTerminalContextMenu = (
+    x: number,
+    y: number,
+    actions?: TerminalContextActions
+  ) => {
     const currentActive = sessions.find((s) => s.active);
     const sId = currentActive?.id ?? "sess_main";
+    const hasSelection = actions ? actions.hasSelection() : Boolean(window.getSelection()?.toString());
 
     setContextMenu({
       x,
       y,
       items: [
         {
-          label: "Copy Selection",
+          label: "Copy",
           icon: <Copy className="w-3.5 h-3.5" />,
-          shortcut: "Ctrl+Shift+C",
+          shortcut: isMac ? "⌘C" : "Ctrl+Shift+C",
+          disabled: !hasSelection,
           onClick: () => {
-            const sel = window.getSelection()?.toString();
-            if (sel) navigator.clipboard.writeText(sel);
+            const text = actions ? actions.getSelection() : window.getSelection()?.toString();
+            if (text) navigator.clipboard.writeText(text).catch(console.error);
           }
         },
         {
-          label: "Paste into Terminal",
+          label: "Select All",
+          icon: <TextSelect className="w-3.5 h-3.5" />,
+          shortcut: isMac ? "⌘A" : "Ctrl+Shift+A",
+          onClick: () => {
+            actions?.selectAll();
+          }
+        },
+        {
+          label: "Paste",
           icon: <ClipboardPaste className="w-3.5 h-3.5" />,
-          shortcut: "Ctrl+Shift+V",
+          shortcut: isMac ? "⌘V" : "Ctrl+Shift+V",
           onClick: () => {
-            navigator.clipboard.readText().then((txt) => {
-              if (txt) invoke("send_terminal_input", { sessionId: sId, input: txt });
-            });
+            if (actions) {
+              actions.paste();
+            } else {
+              navigator.clipboard
+                .readText()
+                .then((txt) => {
+                  if (txt) invoke("send_terminal_input", { sessionId: sId, input: txt });
+                })
+                .catch(console.error);
+            }
           }
         },
         {
-          label: "Clear Terminal Screen",
+          separator: true,
+          label: "Split Terminal Right",
+          icon: <PanelRightClose className="w-3.5 h-3.5" />,
+          shortcut: isMac ? "⌘\\" : "Ctrl+Shift+D",
+          onClick: () => handleNewTab()
+        },
+        {
+          label: "Split Terminal Down",
+          icon: <PanelBottomClose className="w-3.5 h-3.5" />,
+          shortcut: isMac ? "⌘Shift+\\" : "Ctrl+Shift+E",
+          onClick: () => handleNewTab()
+        },
+        {
+          separator: true,
+          label: "Set Title…",
+          icon: <Pencil className="w-3.5 h-3.5" />,
+          shortcut: "Ctrl+Shift+R",
+          onClick: () => {
+            const currentTab = tabs.find((t) => t.id === activeTabId);
+            const newName = window.prompt("Enter new tab name:", currentTab?.title ?? "Terminal");
+            if (newName && newName.trim()) {
+              handleRenameTab(activeTabId, newName.trim());
+            }
+          }
+        },
+        {
+          label: "Copy Terminal ID",
+          icon: <Copy className="w-3.5 h-3.5" />,
+          onClick: () => {
+            navigator.clipboard.writeText(sId).catch(console.error);
+          }
+        },
+        {
+          separator: true,
+          label: "Clear Screen",
           icon: <Eraser className="w-3.5 h-3.5" />,
           shortcut: "Ctrl+L",
-          separator: true,
           onClick: () => {
-            invoke("send_terminal_input", { sessionId: sId, input: "\x0c" });
+            if (actions) {
+              actions.clearScreen();
+            } else {
+              invoke("send_terminal_input", { sessionId: sId, input: "\x0c" });
+            }
           }
         },
         {
-          label: "Split Terminal Tab",
-          icon: <SplitSquareVertical className="w-3.5 h-3.5" />,
-          onClick: () => handleNewTab()
+          label: "Clear Scrollback",
+          icon: <Eraser className="w-3.5 h-3.5" />,
+          onClick: () => {
+            actions?.clearScrollback();
+          }
+        },
+        {
+          separator: true,
+          label: "Close Terminal",
+          icon: <Trash2 className="w-3.5 h-3.5" />,
+          shortcut: isMac ? "⌘W" : "Ctrl+W",
+          danger: true,
+          onClick: () => {
+            handleCloseTab(activeTabId);
+          }
         }
       ]
     });
   };
 
   const handleTabContextMenu = (e: React.MouseEvent, tab: TabItem) => {
+    const tabIdx = tabs.findIndex((t) => t.id === tab.id);
+    const hasTabsToRight = tabIdx >= 0 && tabIdx < tabs.length - 1;
+    const hasTabsToLeft = tabIdx > 0;
+
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
       items: [
         {
+          label: "Split Terminal Right",
+          icon: <PanelRightClose className="w-3.5 h-3.5" />,
+          shortcut: isMac ? "⌘\\" : "Ctrl+Shift+D",
+          onClick: () => handleNewTab()
+        },
+        {
+          label: "Split Terminal Down",
+          icon: <PanelBottomClose className="w-3.5 h-3.5" />,
+          shortcut: isMac ? "⌘Shift+\\" : "Ctrl+Shift+E",
+          onClick: () => handleNewTab()
+        },
+        {
+          separator: true,
           label: "Rename Tab...",
           icon: <Pencil className="w-3.5 h-3.5" />,
           onClick: () => {
@@ -586,30 +864,77 @@ export default function App() {
           }
         },
         {
-          label: "Close Tab",
-          icon: <Trash2 className="w-3.5 h-3.5" />,
-          shortcut: "Ctrl+W",
+          label: "Duplicate Tab",
+          icon: <Copy className="w-3.5 h-3.5" />,
+          onClick: () => {
+            const newId = `tab_${Date.now()}`;
+            setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)` }]);
+            setActiveTabId(newId);
+          }
+        },
+        {
           separator: true,
+          label: "Close Tab",
+          icon: <X className="w-3.5 h-3.5" />,
+          shortcut: isMac ? "⌘W" : "Ctrl+W",
+          danger: true,
           onClick: () => handleCloseTab(tab.id)
         },
         {
           label: "Close Other Tabs",
+          icon: <ListX className="w-3.5 h-3.5" />,
+          disabled: tabs.length <= 1,
           onClick: () => {
             setTabs([tab]);
             setActiveTabId(tab.id);
           }
         },
         {
-          label: "Duplicate Tab",
-          onClick: () => {
-            const newId = `tab_${Date.now()}`;
-            setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)` }]);
-            setActiveTabId(newId);
-          }
+          label: "Close Tabs to the Right",
+          icon: <PanelRightClose className="w-3.5 h-3.5" />,
+          disabled: !hasTabsToRight,
+          onClick: () => handleCloseTabsToRight(tab.id)
+        },
+        {
+          label: "Close Tabs to the Left",
+          icon: <PanelLeftClose className="w-3.5 h-3.5" />,
+          disabled: !hasTabsToLeft,
+          onClick: () => handleCloseTabsToLeft(tab.id)
+        },
+        {
+          separator: true,
+          label: "Close All Tabs",
+          icon: <Trash2 className="w-3.5 h-3.5" />,
+          danger: true,
+          onClick: () => handleCloseAllTabs()
         }
       ]
     });
   };
+
+  const handleTabBarContextMenu = (e: React.MouseEvent) => {
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      items: [
+        {
+          label: "New Terminal Tab",
+          icon: <SplitSquareVertical className="w-3.5 h-3.5" />,
+          shortcut: isMac ? "⌘T" : "Ctrl+T",
+          onClick: () => handleNewTab()
+        },
+        {
+          separator: true,
+          label: "Close All Tabs",
+          icon: <Trash2 className="w-3.5 h-3.5" />,
+          disabled: tabs.length === 0,
+          danger: true,
+          onClick: () => handleCloseAllTabs()
+        }
+      ]
+    });
+  };
+
 
   const handleSessionContextMenu = (e: React.MouseEvent, session: WorktreeSession) => {
     setContextMenu({
@@ -619,7 +944,7 @@ export default function App() {
         {
           label: `Copy Branch: ${session.branch}`,
           icon: <GitBranch className="w-3.5 h-3.5" />,
-          onClick: () => navigator.clipboard.writeText(session.branch)
+          onClick: () => navigator.clipboard.writeText(session.branch).catch(console.error)
         },
         {
           label: "Rename Session...",
@@ -696,6 +1021,9 @@ export default function App() {
 
   const currentTab = tabs.find((t) => t.id === activeTabId);
   const activeSession = sessions.find((s) => s.active);
+  const terminalSessionId = activeTabId.startsWith("tab_")
+    ? activeTabId.replace(/^tab_/, "")
+    : (activeSession?.id ?? "sess_main");
 
   return (
     <div className="flex flex-col h-screen w-screen font-sans antialiased select-none overflow-hidden" style={{ background: "var(--app-bg)", color: "var(--app-fg)" }}>
@@ -755,49 +1083,70 @@ export default function App() {
         )}
 
         {/* Central Workspace: Multi-Tab Workbench Surface */}
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ background: "var(--app-bg)" }}>
-          <WorkbenchTabBar 
-            tabs={tabs}
-            activeTabId={activeTabId}
-            onSelectTab={setActiveTabId}
-            onCloseTab={handleCloseTab}
-            onNewTab={handleNewTab}
-            onRenameTab={handleRenameTab}
-            onTabContextMenu={handleTabContextMenu}
-          />
-
-          <div className="flex-1 overflow-hidden relative">
-            {currentTab?.type === "diff" ? (() => {
-              const c = fileTabContents[activeTabId] ?? { original: diffOriginal, modified: diffModified, lang: previewLanguage };
-              return (
-                <CodeDiffViewer 
-                  original={c.original} 
-                  modified={c.modified} 
-                  language={c.lang}
-                  theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
-                />
-              );
-            })() : currentTab?.type === "editor" ? (() => {
-              const c = fileTabContents[activeTabId];
-              return (
-                <FileEditor
-                  content={c?.modified ?? ""}
-                  language={c?.lang ?? previewLanguage}
-                  theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
-                  path={activeTabId.replace("tab_file_","")}
-                />
-              );
-            })() : (
-              <TerminalDrawer 
-                key={`${activeSession?.id ?? "sess_main"}-${hydraSettings.terminal_default_shell}`}
-                sessionId={activeSession?.id ?? "sess_main"} 
-                executable={activeSession?.executable ?? (hydraSettings.terminal_default_shell || "bash")}
-                cwd={activeSession?.project_path || activeProject?.path}
-                settings={hydraSettings}
-                onContextMenu={handleTerminalContextMenu}
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative" style={{ background: "var(--app-bg)" }}>
+          {tabs.length > 0 ? (
+            <>
+              <WorkbenchTabBar 
+                tabs={tabs}
+                activeTabId={activeTabId}
+                onSelectTab={handleSelectTab}
+                onCloseTab={handleCloseTab}
+                onNewTab={handleNewTab}
+                onRenameTab={handleRenameTab}
+                onTabContextMenu={handleTabContextMenu}
+                onTabBarContextMenu={handleTabBarContextMenu}
               />
-            )}
-          </div>
+
+              <div className="flex-1 overflow-hidden relative">
+                {currentTab?.type === "diff" ? (() => {
+                  const c = fileTabContents[activeTabId] ?? { original: diffOriginal, modified: diffModified, lang: previewLanguage };
+                  return (
+                    <CodeDiffViewer 
+                      original={c.original} 
+                      modified={c.modified} 
+                      language={c.lang}
+                      theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
+                    />
+                  );
+                })() : currentTab?.type === "editor" ? (() => {
+                  const c = fileTabContents[activeTabId];
+                  return (
+                    <FileEditor
+                      content={c?.modified ?? ""}
+                      language={c?.lang ?? previewLanguage}
+                      theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
+                      path={activeTabId.replace("tab_file_","")}
+                    />
+                  );
+                })() : (
+                  <TerminalDrawer 
+                    key={`${terminalSessionId}-${hydraSettings.terminal_default_shell}`}
+                    sessionId={terminalSessionId} 
+                    executable={activeSession?.executable ?? (hydraSettings.terminal_default_shell || "bash")}
+                    cwd={activeSession?.project_path || activeProject?.path}
+                    settings={hydraSettings}
+                    onContextMenu={handleTerminalContextMenu}
+                  />
+                )}
+              </div>
+            </>
+          ) : (
+            <Landing
+              hasProjects={projects.length > 0}
+              onAddProject={() => setIsAddRepoOpen(true)}
+              onCreateWorktree={() => {
+                if (projects.length === 0) {
+                  setIsAddRepoOpen(true);
+                  return;
+                }
+                if (!activeProject && projects.length > 0) {
+                  handleSelectProject(projects[0]);
+                }
+                setIsNewWorkspaceOpen(true);
+              }}
+              createTargetLabel={projects.length > 0 && projects.every((p) => p.is_git) ? "worktree" : "workspace"}
+            />
+          )}
         </main>
 
         {/* Right Panel: Explorer + Source Control — copia Orca right-sidebar/index.tsx */}
