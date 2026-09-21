@@ -49,3 +49,16 @@ Its core engineering principle is: **Orca's UX and visual fidelity merged with H
 ### 4. Remote Companion Protocol
 - Local WebSocket server on Unix domain sockets or Tailscale IP (`100.x.y.z`).
 - E2EE pairing via `x25519-dalek` and QR Code for secure mobile supervision without exposed public ports.
+
+### 5. Wayland, WebKitGTK & Tauri Event Loop Discipline
+- **Mandatory Async Commands**:
+  - All `#[tauri::command]` handlers that perform I/O, IPC socket communication, or database operations MUST be declared as `async fn`.
+  - In WebKitGTK (Linux), synchronous commands run directly on the GTK main thread; any blocking read freezes the Wayland event loop, causing compositor socket overflow (`wayland-0`) and ping-pong timeouts ("Window not responding").
+- **Push Over Poll for High-Frequency Output**:
+  - High-frequency data (terminal output, agent logs) MUST NEVER be polled via frontend `setInterval` + `invoke`.
+  - The Rust daemon/core MUST push stream deltas to the frontend via `app.emit("terminal:output", ...)` listened to via `@tauri-apps/api/event`.
+- **Strict Socket Timeouts on Local IPC**:
+  - Any Unix domain socket stream (`LocalStream`) interacting with the background daemon MUST configure strict read/write timeouts (`set_recv_timeout(300ms)` / `set_send_timeout(300ms)`).
+  - Socket availability checks MUST use atomic TTL caching (≥500ms) to prevent listen queue saturation.
+- **Zero-Allocation / Zero-DB Discipline in PTY Reader Loops**:
+  - The PTY reader thread runs at raw OS stream speed. Opening SQLite connections or executing queries (`DatabaseManager::new()`) inside the chunk loop is strictly prohibited. Session settings must be read once at spawn.
