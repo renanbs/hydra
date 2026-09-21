@@ -67,3 +67,14 @@ All agents contributing to this repository MUST load and adhere to the project s
   - `src-tauri/src/db.rs` — SQLite WAL persistence.
   - `src-tauri/src/window_actions.rs` — Native window controls.
 - `.agents/skills/` — Canonical project skills.
+
+---
+
+## Memory
+
+```yaml
+memory:
+  vault: vault
+  path: /home/renan/src/vault
+  produtos: [Hydra]
+```
