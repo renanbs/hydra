@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg3" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#09261f" stop-opacity="0.7"/>
+      <stop offset="60%" stop-color="#020a08" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="1"/>
+    </radialGradient>
+
+    <linearGradient id="emerald-blade" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0"/>
+      <stop offset="30%" stop-color="#10b981"/>
+      <stop offset="70%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#064e3b"/>
+    </linearGradient>
+
+    <linearGradient id="cyan-blade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </linearGradient>
+
+    <linearGradient id="steel-dark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+
+    <filter id="glow3" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Pitch Black -->
+  <rect width="512" height="512" fill="#000000"/>
+  <rect width="512" height="512" fill="url(#bg3)"/>
+
+  <!-- Outer Hexagonal Tech Badge -->
+  <polygon points="256,22 470,118 470,394 256,490 42,394 42,118" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.25"/>
+  <polygon points="256,34 458,124 458,388 256,478 54,388 54,124" fill="none" stroke="#00f5d4" stroke-width="0.8" stroke-opacity="0.12" stroke-dasharray="12 8"/>
+
+  <!-- Ambient Glow Core -->
+  <circle cx="256" cy="240" r="90" fill="#10b981" opacity="0.14" filter="url(#glow3)"/>
+
+  <!-- ==================== WINGS / FLANKING HEADS ==================== -->
+  <!-- Left Wing Head (Agent 1) -->
+  <g id="left-wing">
+    <!-- Blade 1 -->
+    <polygon points="120,130 180,190 145,280 90,200" fill="url(#steel-dark)" stroke="#10b981" stroke-width="1.2"/>
+    <!-- Blade 2 (Outer Fang) -->
+    <polygon points="70,160 120,130 90,200" fill="url(#emerald-blade)"/>
+    <!-- Upper Left Serpent Horn -->
+    <polygon points="120,130 140,80 160,140" fill="url(#cyan-blade)"/>
+    <!-- Glowing Eye -->
+    <polygon points="130,150 145,155 138,163 125,158" fill="#ffffff" filter="url(#glow3)"/>
+    <!-- Conduits -->
+    <line x1="145" y1="280" x2="215" y2="335" stroke="#10b981" stroke-width="2" stroke-opacity="0.8"/>
+  </g>
+
+  <!-- Right Wing Head (Agent 3) -->
+  <g id="right-wing">
+    <!-- Blade 1 -->
+    <polygon points="392,130 332,190 367,280 422,200" fill="url(#steel-dark)" stroke="#10b981" stroke-width="1.2"/>
+    <!-- Blade 2 (Outer Fang) -->
+    <polygon points="442,160 392,130 422,200" fill="url(#emerald-blade)"/>
+    <!-- Upper Right Serpent Horn -->
+    <polygon points="392,130 372,80 352,140" fill="url(#cyan-blade)"/>
+    <!-- Glowing Eye -->
+    <polygon points="382,150 367,155 374,163 387,158" fill="#ffffff" filter="url(#glow3)"/>
+    <!-- Conduits -->
+    <line x1="367" y1="280" x2="297" y2="335" stroke="#10b981" stroke-width="2" stroke-opacity="0.8"/>
+  </g>
+
+  <!-- ==================== CENTER APEX HEAD (Agent Leader) ==================== -->
+  <g id="center-crest">
+    <!-- Main Apex Blade -->
+    <polygon points="256,58 295,145 256,175 217,145" fill="url(#emerald-blade)" stroke="#6ee7b7" stroke-width="1.5"/>
+    
+    <!-- Crown Spine Segments -->
+    <polygon points="256,58 256,175 217,145" fill="#047857" opacity="0.6"/>
+
+    <!-- Central Visor / Terminal Eye -->
+    <polygon points="256,130 278,145 256,160 234,145" fill="#00f5d4" filter="url(#glow3)"/>
+    <polygon points="256,135 270,145 256,155 242,145" fill="#ffffff"/>
+
+    <!-- Mandibles -->
+    <polygon points="234,145 210,185 240,195 256,175" fill="url(#steel-dark)" stroke="#10b981" stroke-width="1"/>
+    <polygon points="278,145 302,185 272,195 256,175" fill="url(#steel-dark)" stroke="#10b981" stroke-width="1"/>
+  </g>
+
+  <!-- ==================== MONOGRAM 'H' CHASSIS ==================== -->
+  <!-- Left Pillar of 'H' -->
+  <polygon points="190,210 220,225 220,380 190,360" fill="url(#steel-dark)" stroke="#34d399" stroke-width="1.2"/>
+  <polygon points="190,210 190,360 170,345 170,225" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+
+  <!-- Right Pillar of 'H' -->
+  <polygon points="322,210 292,225 292,380 322,360" fill="url(#steel-dark)" stroke="#34d399" stroke-width="1.2"/>
+  <polygon points="322,210 322,360 342,345 342,225" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+
+  <!-- Crossbar of 'H' (Terminal Daemon Core) -->
+  <polygon points="205,280 307,280 295,315 217,315" fill="url(#emerald-blade)" stroke="#a7f3d0" stroke-width="1.2"/>
+  <line x1="220" y1="297" x2="292" y2="297" stroke="#ffffff" stroke-width="2.5" filter="url(#glow3)"/>
+
+  <!-- Lower Anchor Fang -->
+  <polygon points="256,335 292,380 256,430 220,380" fill="url(#emerald-blade)" stroke="#34d399" stroke-width="1.5"/>
+  <polygon points="256,355 275,385 256,415 237,385" fill="#022c22"/>
+  <circle cx="256" cy="385" r="4.5" fill="#00f5d4" filter="url(#glow3)"/>
+</svg>

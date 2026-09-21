@@ -26,21 +26,24 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
   const handleClose = () => {
     setStep("start");
     setError(null);
     onClose();
   };
+
   useEffect(() => {
+    if (!isOpen) return;
+    setStep("start");
+    setError(null);
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [isOpen]);
 
+  if (!isOpen) return null;
 
   // 1. AÇÃO PRINCIPAL DO ORCA: Browse Folder (Selecionar pasta existente no sistema)
   const handleBrowseFolder = async () => {
@@ -71,12 +74,9 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
     setIsSubmitting(true);
     setError(null);
 
-    const repoName = cloneUrl.split("/").pop()?.replace(".git", "") || "repo";
-
-    invoke<string>("create_project", {
-      name: repoName,
-      parentDir: cloneDest,
-      initGit: false,
+    invoke<string>("clone_project", {
+      url: cloneUrl.trim(),
+      parentDir: cloneDest.trim(),
     })
       .then(() => {
         setIsSubmitting(false);
@@ -112,7 +112,7 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
   };
 
   return (
-    <div onClick={handleClose} className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs select-none">
+    <div onClick={handleClose} className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/60 select-none">
       <div onClick={(e) => e.stopPropagation()} className="relative w-[500px] rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl overflow-hidden text-xs text-neutral-200">
         {/* Orca AddRepoStepIndicator Header */}
         <div className="h-11 border-b border-[#222327] px-4 flex items-center justify-between bg-[#111214]">

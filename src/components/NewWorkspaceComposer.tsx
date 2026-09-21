@@ -51,9 +51,12 @@ export function NewWorkspaceComposer({
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Focus name field on open
+  // Focus name field on open & auto-select project if missing
   useEffect(() => {
     if (isOpen) {
+      if (!activeProject && projects.length > 0) {
+        onSelectProject?.(projects[0]);
+      }
       setName("");
       setCustomBranch("");
       setNote("");
@@ -63,7 +66,7 @@ export function NewWorkspaceComposer({
       setAgentPickerOpen(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [isOpen]);
+  }, [isOpen, activeProject, projects, onSelectProject]);
 
   // Handle global shortcuts inside composer (Esc to close, Ctrl+Enter to submit)
   useEffect(() => {
@@ -83,7 +86,8 @@ export function NewWorkspaceComposer({
 
   if (!isOpen) return null;
 
-  const isGit = activeProject?.is_git ?? true;
+  const effectiveProject = activeProject || (projects.length > 0 ? projects[0] : null);
+  const isGit = effectiveProject?.is_git ?? true;
   const primaryActionLabel = isGit ? "Create worktree" : "Create workspace";
 
   const chosenAgent = availableAgents.find((a) => a.id === selectedAgentId) || {
@@ -95,7 +99,8 @@ export function NewWorkspaceComposer({
 
   const handleSubmit = (e?: React.SyntheticEvent) => {
     if (e) e.preventDefault();
-    if (!activeProject) {
+    const proj = effectiveProject;
+    if (!proj) {
       setError("Please select a project first.");
       return;
     }
@@ -105,7 +110,7 @@ export function NewWorkspaceComposer({
     setError(null);
 
     invoke<string>("create_worktree", {
-      repoPath: activeProject.path,
+      repoPath: proj.path,
       branchName: branchToUse,
       newBranch: true,
     })
@@ -128,7 +133,7 @@ export function NewWorkspaceComposer({
 
   return (
     <div 
-      className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/65 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/60 select-none"
       onClick={onClose}
     >
       <div 
@@ -191,11 +196,11 @@ export function NewWorkspaceComposer({
                 <div className="flex items-center gap-2 min-w-0">
                   <FolderGit2 className="size-3.5 text-emerald-400 shrink-0" />
                   <span className="truncate text-xs font-medium text-neutral-200">
-                    {activeProject?.name ?? "Choose project"}
+                    {effectiveProject?.name ?? "Choose project"}
                   </span>
-                  {activeProject?.current_branch && (
+                  {effectiveProject?.current_branch && (
                     <span className="text-[11px] text-neutral-500 font-mono truncate">
-                      ({activeProject.current_branch})
+                      ({effectiveProject.current_branch})
                     </span>
                   )}
                 </div>
@@ -214,7 +219,7 @@ export function NewWorkspaceComposer({
                         setProjectPickerOpen(false);
                       }}
                       className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-left transition cursor-pointer ${
-                        proj.path === activeProject?.path 
+                        proj.path === effectiveProject?.path 
                           ? "bg-emerald-500/15 text-emerald-400 font-medium" 
                           : "text-neutral-300 hover:bg-neutral-800/80"
                       }`}
@@ -226,7 +231,7 @@ export function NewWorkspaceComposer({
                           ({proj.current_branch})
                         </span>
                       </div>
-                      {proj.path === activeProject?.path && (
+                      {proj.path === effectiveProject?.path && (
                         <Check className="size-3.5 text-emerald-400 shrink-0" />
                       )}
                     </button>

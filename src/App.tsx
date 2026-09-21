@@ -1365,11 +1365,14 @@ export default function App() {
                   setIsAddRepoOpen(true);
                   return;
                 }
+                const targetProj = activeProject || projects[0];
                 if (!activeProject && projects.length > 0) {
-                  handleSelectProject(projects[0]);
+                  handleSelectProject(targetProj);
                 }
                 setIsNewWorkspaceOpen(true);
               }}
+              onNavigateWorkspace={handleNavigateWorkspace}
+              onNewTab={() => handleNewTerminalTab()}
               createTargetLabel={projects.length > 0 && projects.every((p) => p.is_git) ? "worktree" : "workspace"}
             />
           )}
@@ -1466,7 +1469,20 @@ export default function App() {
         onProjectAdded={() => {
           invoke<HydraProject[]>("list_projects").then((projs) => {
             setProjects(projs);
-            if (projs.length > 0) handleSelectProject(projs[0]);
+            if (projs.length > 0) {
+              handleSelectProject(projs[0]);
+              if (tabsRef.current.length === 0) {
+                const tabId = `tab_${Date.now().toString().slice(-4)}`;
+                const initialTab: TabItem = {
+                  id: tabId,
+                  title: `${projs[0].name} (main)`,
+                  type: "terminal",
+                  cwd: projs[0].path,
+                };
+                setTabs([initialTab]);
+                setActiveTabId(tabId);
+              }
+            }
           }).catch(console.error);
         }}
       />
