@@ -682,6 +682,33 @@ pub fn create_new_project(params: CreateProjectParams) -> Result<String, String>
     Ok(project_dir.to_string_lossy().to_string())
 }
 
+pub fn clone_git_repository(url: &str, parent_dir: &str) -> Result<String, String> {
+    let parent = PathBuf::from(parent_dir);
+    if !parent.exists() {
+        std::fs::create_dir_all(&parent).map_err(|e| format!("Failed to create destination directory: {e}"))?;
+    }
+
+    let out = Command::new("git")
+        .args(["clone", url])
+        .current_dir(&parent)
+        .output()
+        .map_err(|e| format!("Failed to run git clone: {e}"))?;
+
+    if !out.status.success() {
+        return Err(String::from_utf8_lossy(&out.stderr).to_string());
+    }
+
+    let repo_name = url
+        .trim_end_matches('/')
+        .split('/')
+        .last()
+        .unwrap_or("repo")
+        .trim_end_matches(".git");
+
+    let cloned_path = parent.join(repo_name);
+    Ok(cloned_path.to_string_lossy().to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

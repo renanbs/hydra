@@ -9,9 +9,9 @@ import {
   X,
 } from "lucide-react";
 import { ShortcutKeyCombo } from "./ShortcutKeyCombo";
-import orcaLogo from "../assets/orca-logo.svg";
+import hydraLogo from "../assets/hydra-logo.svg";
 
-const ORCA_GITHUB_URL = "https://github.com/stablyai/orca";
+const HYDRA_GITHUB_URL = "https://github.com/renanbs/hydra";
 
 export type LandingStarState = "loading" | "starred" | "not-starred" | "web-fallback" | "hidden";
 
@@ -90,13 +90,21 @@ function PreflightBanner({ issues }: { issues: PreflightIssue[] }) {
 }
 
 function GitHubStarButton({ hasProjects }: { hasProjects: boolean }) {
-  const [state, setState] = useState<LandingStarState>("loading");
+  const [state, setState] = useState<LandingStarState>(() => {
+    try {
+      if (localStorage.getItem("hydra:hideStarButton") === "true") {
+        return "hidden";
+      }
+    } catch {}
+    return "loading";
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (state === "hidden") return;
     let cancelled = false;
-    invoke<boolean | null>("check_github_starred_cmd", { repo: "stablyai/orca" })
+    invoke<boolean | null>("check_github_starred_cmd", { repo: "renanbs/hydra" })
       .then((res) => {
         if (cancelled) return;
         if (res === null) {
@@ -113,7 +121,6 @@ function GitHubStarButton({ hasProjects }: { hasProjects: boolean }) {
       cancelled = true;
     };
   }, []);
-
   useEffect(() => {
     if (!menuOpen) return;
     const onDocClick = (e: MouseEvent) => {
@@ -131,14 +138,14 @@ function GitHubStarButton({ hasProjects }: { hasProjects: boolean }) {
       return;
     }
     if (state === "web-fallback") {
-      invoke("open_external_url_cmd", { url: ORCA_GITHUB_URL }).catch(() => window.open(ORCA_GITHUB_URL, "_blank"));
+      invoke("open_external_url_cmd", { url: HYDRA_GITHUB_URL }).catch(() => window.open(HYDRA_GITHUB_URL, "_blank"));
       return;
     }
     if (state !== "not-starred") return;
 
     setState("starred"); // optimistic
     try {
-      const ok = await invoke<boolean>("star_github_repo_cmd", { repo: "stablyai/orca" });
+      const ok = await invoke<boolean>("star_github_repo_cmd", { repo: "renanbs/hydra" });
       if (!ok) {
         setState("web-fallback");
       }
@@ -183,8 +190,6 @@ function GitHubStarButton({ hasProjects }: { hasProjects: boolean }) {
         )}
         {state === "starred"
           ? "Starred on GitHub"
-          : state === "web-fallback"
-          ? "Open GitHub"
           : "Star on GitHub"}
       </button>
       {state === "starred" && menuOpen && (
@@ -194,6 +199,9 @@ function GitHubStarButton({ hasProjects }: { hasProjects: boolean }) {
             onClick={() => {
               setMenuOpen(false);
               setState("hidden");
+              try {
+                localStorage.setItem("hydra:hideStarButton", "true");
+              } catch {}
             }}
           >
             Hide
@@ -208,6 +216,8 @@ interface LandingProps {
   hasProjects: boolean;
   onAddProject: () => void;
   onCreateWorktree: () => void;
+  onNavigateWorkspace?: (direction: "up" | "down") => void;
+  onNewTab?: () => void;
   createTargetLabel?: string;
 }
 
@@ -215,6 +225,8 @@ export function Landing({
   hasProjects,
   onAddProject,
   onCreateWorktree,
+  onNavigateWorkspace,
+  onNewTab,
   createTargetLabel = "worktree",
 }: LandingProps) {
   const [preflightIssues, setPreflightIssues] = useState<PreflightIssue[]>([]);
@@ -238,7 +250,7 @@ export function Landing({
           issues.push({
             id: "gh",
             title: "GitHub CLI is not installed",
-            description: "Orca uses the GitHub CLI (gh) to show pull requests, issues, and checks.",
+            description: "Hydra uses the GitHub CLI (gh) to show pull requests, issues, and checks.",
             fixLabel: "Install GitHub CLI",
             fixUrl: "https://cli.github.com",
             dismissible: true,
@@ -271,19 +283,32 @@ export function Landing({
         id: "create",
         action: `Create ${createTargetLabel.toLowerCase()}`,
         keys: [modKey, "N"],
+        onClick: onCreateWorktree,
       },
+      ...(onNewTab
+        ? [
+            {
+              id: "terminal",
+              action: "New terminal",
+              keys: [modKey, "T"],
+              onClick: onNewTab,
+            },
+          ]
+        : []),
       {
         id: "up",
         action: "Move up workspace",
         keys: [modKey, "Shift", "↑"],
+        onClick: () => onNavigateWorkspace?.("up"),
       },
       {
         id: "down",
         action: "Move down workspace",
         keys: [modKey, "Shift", "↓"],
+        onClick: () => onNavigateWorkspace?.("down"),
       },
     ],
-    [createTargetLabel, modKey]
+    [createTargetLabel, modKey, onCreateWorktree, onNewTab, onNavigateWorkspace]
   );
 
   return (
@@ -291,17 +316,17 @@ export function Landing({
       <div className="w-full max-w-lg px-6">
         <div className="flex flex-col items-center gap-4 py-8">
           <div
-            className="flex items-center justify-center size-20 rounded-2xl border border-border/80 shadow-lg shadow-black/40"
-            style={{ backgroundColor: "#12181e" }}
+            className="flex items-center justify-center size-20 rounded-2xl border border-emerald-500/30 shadow-lg shadow-black/60 overflow-hidden"
+            style={{ backgroundColor: "#020a08" }}
           >
             <img
-              src={orcaLogo}
-              alt="Orca logo"
-              className="size-12"
+              src={hydraLogo}
+              alt="Hydra logo"
+              className="size-16 object-contain"
             />
           </div>
           <h1 className="text-4xl font-bold text-foreground tracking-tight">
-            ORCA
+            HYDRA
           </h1>
 
           {preflightIssues.length > 0 && <PreflightBanner issues={preflightIssues} />}
@@ -330,15 +355,22 @@ export function Landing({
             </button>
           </div>
 
-          <div className="mt-6 w-full max-w-xs space-y-2">
+          <div className="mt-6 w-full max-w-xs space-y-1.5">
             {shortcuts.map((shortcut) => (
-              <div key={shortcut.id} className="grid grid-cols-[1fr_auto] items-center gap-3">
-                <span className="text-sm text-muted-foreground">{shortcut.action}</span>
+              <button
+                key={shortcut.id}
+                type="button"
+                onClick={shortcut.onClick}
+                className="w-full grid grid-cols-[1fr_auto] items-center gap-3 px-2 py-1.5 rounded-md hover:bg-muted/60 text-left transition-colors cursor-pointer group"
+              >
+                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  {shortcut.action}
+                </span>
                 <ShortcutKeyCombo
                   keys={shortcut.keys}
                   separatorClassName="mx-0.5 text-[10px] text-muted-foreground"
                 />
-              </div>
+              </button>
             ))}
           </div>
         </div>

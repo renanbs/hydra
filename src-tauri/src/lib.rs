@@ -40,8 +40,8 @@ use project_manager::{
 };
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
-    create_git_worktree, create_new_project, list_git_worktrees, remove_git_worktree,
-    CreateProjectParams, CreateWorktreeParams, GitWorktreeInfo,
+    clone_git_repository, create_git_worktree, create_new_project, list_git_worktrees,
+    remove_git_worktree, CreateProjectParams, CreateWorktreeParams, GitWorktreeInfo,
 };
 
 pub struct AppState {
@@ -61,25 +61,29 @@ fn get_app_version(app: AppHandle) -> String {
     app.package_info().version.to_string()
 }
 #[tauri::command]
-fn check_preflight_tools_cmd() -> PreflightStatus {
-    check_preflight_tools()
+async fn check_preflight_tools_cmd() -> PreflightStatus {
+    tokio::task::spawn_blocking(check_preflight_tools).await.unwrap_or(PreflightStatus {
+        git_installed: false,
+        gh_installed: false,
+        gh_authenticated: false,
+    })
 }
 
 #[tauri::command]
-fn check_github_starred_cmd(repo: Option<String>) -> Option<bool> {
-    let r = repo.unwrap_or_else(|| "stablyai/orca".to_string());
-    check_github_starred(&r)
+async fn check_github_starred_cmd(repo: Option<String>) -> Option<bool> {
+    let r = repo.unwrap_or_else(|| "renanbs/hydra".to_string());
+    tokio::task::spawn_blocking(move || check_github_starred(&r)).await.ok().flatten()
 }
 
 #[tauri::command]
-fn star_github_repo_cmd(repo: Option<String>) -> Result<bool, String> {
-    let r = repo.unwrap_or_else(|| "stablyai/orca".to_string());
-    star_github_repo(&r)
+async fn star_github_repo_cmd(repo: Option<String>) -> Result<bool, String> {
+    let r = repo.unwrap_or_else(|| "renanbs/hydra".to_string());
+    tokio::task::spawn_blocking(move || star_github_repo(&r)).await.map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-fn open_external_url_cmd(url: String) -> Result<(), String> {
-    open_external_url(&url)
+async fn open_external_url_cmd(url: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || open_external_url(&url)).await.map_err(|e| e.to_string())?
 }
 
 
@@ -239,14 +243,30 @@ fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
 }
 
 #[tauri::command]
-fn create_project(name: String, parent_dir: String, init_git: bool) -> Result<String, String> {
-    create_new_project(CreateProjectParams {
-        name,
-        parent_dir,
-        init_git,
+async fn create_project(name: String, parent_dir: String, init_git: bool) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || {
+        let path = create_new_project(CreateProjectParams {
+            name,
+            parent_dir,
+            init_git,
+        })?;
+        let _ = add_existing_project(&path);
+        Ok(path)
     })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
+#[tauri::command]
+async fn clone_project(url: String, parent_dir: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || {
+        let path = clone_git_repository(&url, &parent_dir)?;
+        let _ = add_existing_project(&path);
+        Ok(path)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
 #[tauri::command]
 fn create_worktree(repo_path: String, branch_name: String, new_branch: bool) -> Result<String, String> {
     create_git_worktree(CreateWorktreeParams {
@@ -662,6 +682,7 @@ pub fn run() {
             set_project_worktree_base,
             list_worktrees,
             create_project,
+            clone_project,
             create_worktree,
             delete_worktree,
             get_layout_persistence,
