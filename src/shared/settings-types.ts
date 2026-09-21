@@ -1,6 +1,12 @@
 import type { TerminalCustomTheme } from "./terminal-custom-themes";
 import type { TerminalColorOverrides } from "./terminal-color-overrides";
 
+export type OpenInApplication = {
+  id: string;
+  label: string;
+  command: string;
+};
+
 export type HydraSettings = {
   // Appearance — faithful to Orca GlobalSettings (snake_case for Rust compat)
   theme: "system" | "dark" | "light";
@@ -60,7 +66,31 @@ export type HydraSettings = {
       custom?: Record<string, "show" | "hide">;
     };
   };
+  // Open In Apps — copia Orca shared/open-in-applications.ts
+  open_in_applications?: OpenInApplication[];
 };
+
+export const OPEN_IN_APPLICATIONS_MAX = 8;
+export const DEFAULT_OPEN_IN_APPLICATIONS: OpenInApplication[] = [{ id: "vscode", label: "VS Code", command: "code" }];
+
+export function normalizeOpenInApplications(value: unknown): OpenInApplication[] {
+  if (!Array.isArray(value)) return [...DEFAULT_OPEN_IN_APPLICATIONS];
+  const out: OpenInApplication[] = [];
+  const seen = new Set<string>();
+  for (const [i, row] of (value as any[]).entries()) {
+    if (out.length >= OPEN_IN_APPLICATIONS_MAX) break;
+    if (!row || typeof row !== "object") continue;
+    const label = typeof (row as any).label === "string" ? (row as any).label.trim() : "";
+    const command = typeof (row as any).command === "string" ? (row as any).command.trim() : "";
+    if (!label || !command) continue;
+    let id = typeof (row as any).id === "string" ? (row as any).id.trim() : "";
+    if (!id) id = `open-in-${i+1}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push({ id, label, command });
+  }
+  return out;
+}
 
 export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   theme: "system",
@@ -108,6 +138,7 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   skip_close_terminal_with_running_process_confirm: false,
   skip_delete_worktree_confirm: false,
   worktree_visibility_defaults: { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } },
+  open_in_applications: [...DEFAULT_OPEN_IN_APPLICATIONS],
 };
 
 export function normalizeHydraSettings(input: unknown): HydraSettings {
@@ -195,5 +226,6 @@ export function normalizeHydraSettings(input: unknown): HydraSettings {
       }
       return DEFAULT_HYDRA_SETTINGS.worktree_visibility_defaults;
     })(),
+    open_in_applications: normalizeOpenInApplications((raw as Record<string, unknown>).open_in_applications ?? (raw as Record<string, unknown>).openInApplications),
   };
 }

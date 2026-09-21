@@ -4,6 +4,9 @@ import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
 import {
   X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Upload, Trash2, Info, ChevronDown
 } from "lucide-react";
+import { getOpenInAppPresets, isOpenInAppPresetAdded, OpenInApplicationIcon } from "../lib/open-in-app-catalog";
+import type { OpenInApplication } from "../shared/settings-types";
+import { DEFAULT_OPEN_IN_APPLICATIONS } from "../shared/settings-types";
 import { applyDocumentTheme } from "../lib/document-theme";
 import { getSystemPrefersDark } from "../lib/terminal-theme";
 import {
@@ -521,6 +524,129 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                         >
                           <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${!((settings as any).skip_delete_worktree_confirm ?? false) ? "translate-x-4" : "translate-x-0.5"}`} />
                         </button>
+                      </div>
+                      <div className="h-px bg-border my-2" />
+                      <div className="flex items-center justify-between gap-4 py-2">
+                        <div className="pr-4">
+                          <div className="text-[13px] font-medium">Ask Before Deleting Automations</div>
+                          <div className="text-[12px] text-muted-foreground">Show a confirmation before deleting automations and their run history.</div>
+                        </div>
+                        <button type="button" role="switch" aria-checked={true} onClick={()=>{}} className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border bg-foreground border-foreground">
+                          <span className="inline-block h-4 w-4 transform rounded-full bg-background shadow translate-x-4" />
+                        </button>
+                      </div>
+                      <div className="h-px bg-border my-2" />
+                      <div className="flex items-center justify-between gap-4 py-2">
+                        <div className="pr-4">
+                          <div className="text-[13px] font-medium">Ask Before Deleting Artifacts</div>
+                          <div className="text-[12px] text-muted-foreground">Show a confirmation before deleting a shared artifact. Anyone holding its public link loses access.</div>
+                        </div>
+                        <button type="button" role="switch" aria-checked={true} onClick={()=>{}} className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border bg-foreground border-foreground">
+                          <span className="inline-block h-4 w-4 transform rounded-full bg-background shadow translate-x-4" />
+                        </button>
+                      </div>
+                      <div className="h-px bg-border my-2" />
+                      {/* Open In Apps — copia Orca OpenInMenuSetting */}
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-[13px] font-medium">Open In Apps</div>
+                            <div className="text-[12px] text-muted-foreground">Choose apps available from a workspace's Open in menu.</div>
+                          </div>
+                          <div className="relative">
+                            <button
+                              onClick={() => {
+                                const el = document.getElementById("hydra-openin-add-menu");
+                                if (el) el.classList.toggle("hidden");
+                              }}
+                              className="h-8 px-3 rounded-md border bg-background text-[13px] flex items-center gap-1.5 hover:bg-muted"
+                            >
+                              Add app <ChevronDown className="size-3.5" />
+                            </button>
+                            <div id="hydra-openin-add-menu" className="hidden absolute right-0 top-9 z-10 w-64 rounded-md border bg-popover shadow-xl p-1">
+                              {getOpenInAppPresets().map(preset => {
+                                const apps = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[];
+                                const added = isOpenInAppPresetAdded(apps, preset);
+                                return (
+                                  <button
+                                    key={preset.id}
+                                    disabled={added || apps.length >= 8}
+                                    onClick={() => {
+                                      if (added || apps.length >= 8) return;
+                                      const next = [...apps, { id: preset.id, label: preset.label, command: preset.command }];
+                                      setSettingsLive({ ...settings, open_in_applications: next } as any);
+                                      document.getElementById("hydra-openin-add-menu")?.classList.add("hidden");
+                                    }}
+                                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[13px] hover:bg-muted ${added ? "opacity-50" : ""}`}
+                                  >
+                                    <OpenInApplicationIcon application={preset} size={14} />
+                                    <span className="truncate">{preset.label}</span>
+                                    {added && <span className="ml-auto text-[11px] text-muted-foreground flex items-center gap-1"><Check className="size-3" /> Added</span>}
+                                  </button>
+                                );
+                              })}
+                              <button
+                                onClick={() => {
+                                  const apps = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[];
+                                  if (apps.length >= 8) return;
+                                  const id = `open-in-${Date.now().toString(36)}`;
+                                  const next = [...apps, { id, label: "", command: "" }];
+                                  setSettingsLive({ ...settings, open_in_applications: next } as any);
+                                  document.getElementById("hydra-openin-add-menu")?.classList.add("hidden");
+                                }}
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[13px] hover:bg-muted"
+                              >
+                                <AppWindow className="size-3.5" /> Custom app
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="divide-y divide-border/40 border rounded-lg overflow-hidden">
+                          {((settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[]).length === 0 ? (
+                            <div className="px-3 py-6 text-center text-sm text-muted-foreground">No apps — add VS Code, Zed or Cursor</div>
+                          ) : (
+                            (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS as OpenInApplication[]).map((app, idx) => (
+                              <div key={app.id} className="p-3 flex items-start gap-3 bg-card">
+                                <div className="size-7 rounded border bg-background flex items-center justify-center shrink-0">
+                                  <OpenInApplicationIcon application={app} size={16} />
+                                </div>
+                                <div className="flex-1 min-w-0 space-y-1">
+                                  <input
+                                    value={app.label}
+                                    placeholder="App name"
+                                    onChange={e => {
+                                      const next = [...(settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS)];
+                                      next[idx] = { ...app, label: e.target.value };
+                                      setSettingsLive({ ...settings, open_in_applications: next } as any);
+                                    }}
+                                    className="w-full bg-background border rounded px-2 py-1 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+                                  />
+                                  <input
+                                    value={app.command}
+                                    placeholder="command (e.g. code, zed, cursor)"
+                                    spellCheck={false}
+                                    onChange={e => {
+                                      const next = [...(settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS)];
+                                      next[idx] = { ...app, command: e.target.value };
+                                      setSettingsLive({ ...settings, open_in_applications: next } as any);
+                                    }}
+                                    className="w-full bg-background border rounded px-2 py-1 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                                  />
+                                  <div className="text-[11px] text-muted-foreground">The command you would type in Terminal to open this app.</div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    const next = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS).filter(a => a.id !== app.id);
+                                    setSettingsLive({ ...settings, open_in_applications: next } as any);
+                                  }}
+                                  className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </button>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

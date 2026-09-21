@@ -4,6 +4,7 @@ import { usePanelResize } from "./hooks/usePanelResize";
 import { TerminalDrawer } from "./components/TerminalDrawer";
 import { WindowTitlebar } from "./components/WindowTitlebar";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
+import { FileEditor } from "./components/workbench/FileEditor";
 import { 
   WorktreeSidebar, 
   type WorktreeSession, 
@@ -17,17 +18,12 @@ import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchT
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal } from "./components/SettingsModal";
 import type { HydraSettings } from "./shared/settings-types";
-import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings } from "./shared/settings-types";
+import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, DEFAULT_OPEN_IN_APPLICATIONS } from "./shared/settings-types";
 import { applyDocumentTheme } from "./lib/document-theme";
 import { CommandPalette } from "./components/CommandPalette";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { 
-  Bot, 
-  Play, 
-  CheckCircle2, 
-  Send,
-  Smartphone,
   Copy,
   ClipboardPaste,
   Eraser,
@@ -35,8 +31,8 @@ import {
   Trash2,
   GitBranch,
   Pencil,
-  Coffee
 } from "lucide-react";
+import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
 
 const MOCK_ORIGINAL = `fn main() {
@@ -68,7 +64,6 @@ interface UiLayoutState {
 
 export default function App() {
   const [status, setStatus] = useState("Initializing...");
-  const [promptInput, setPromptInput] = useState("");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
@@ -76,6 +71,13 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
+  const [diffOriginal, setDiffOriginal] = useState(MOCK_ORIGINAL);
+  const [diffModified, setDiffModified] = useState(MOCK_MODIFIED);
+  const [previewLanguage, setPreviewLanguage] = useState("rust");
+  const [fileTabContents, setFileTabContents] = useState<Record<string, { original: string; modified: string; lang: string }>>({
+    "tab_diff_1": { original: MOCK_ORIGINAL, modified: MOCK_MODIFIED, lang: "rust" },
+  });
+  const [promptInput, setPromptInput] = useState("");
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [projects, setProjects] = useState<HydraProject[]>([]);
   const [activeProject, setActiveProject] = useState<HydraProject | null>(null);
@@ -93,7 +95,7 @@ export default function App() {
   const syncKeepAwake = (enabled: boolean, workingCount: number) => {
     invoke("sync_keep_awake", { enabled, workingCount }).catch(()=>{});
   };
-  const [keepAwakeActive, setKeepAwakeActive] = useState(false);
+  const [_keepAwakeActive, setKeepAwakeActive] = useState(false);
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -112,7 +114,7 @@ export default function App() {
   ]);
   const [activeTabId, setActiveTabId] = useState("tab_main");
 
-  const [messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
+  const [_messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
     {
       id: 1,
       role: "agent",
@@ -507,6 +509,10 @@ export default function App() {
     if (tabs.length <= 1) return;
     const remaining = tabs.filter((t) => t.id !== id);
     setTabs(remaining);
+    setFileTabContents(prev => {
+      const { [id]: _, ...rest } = prev;
+      return rest;
+    });
     if (activeTabId === id) {
       setActiveTabId(remaining[remaining.length - 1].id);
     }
@@ -649,6 +655,8 @@ export default function App() {
     });
   };
 
+  // kept for future prompt bar; suppress unused until agent tab returns
+  void promptInput;
   const handleSendMessage = () => {
     if (!promptInput.trim()) return;
     const text = promptInput;
@@ -669,6 +677,7 @@ export default function App() {
       { id: Date.now() + 1, role: "agent", content: `Command saved to SQLite: "${text}". Monitored by Herdr state engine.` }
     ]);
   };
+  void handleSendMessage;
 
   const handleSettingsSaved = (newSettings: HydraSettings) => {
     const n = normalizeHydraSettings(newSettings);
@@ -758,14 +767,27 @@ export default function App() {
           />
 
           <div className="flex-1 overflow-hidden relative">
-            {currentTab?.type === "diff" ? (
-              <CodeDiffViewer 
-                original={MOCK_ORIGINAL} 
-                modified={MOCK_MODIFIED} 
-                language="rust"
-                theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
-              />
-            ) : (
+            {currentTab?.type === "diff" ? (() => {
+              const c = fileTabContents[activeTabId] ?? { original: diffOriginal, modified: diffModified, lang: previewLanguage };
+              return (
+                <CodeDiffViewer 
+                  original={c.original} 
+                  modified={c.modified} 
+                  language={c.lang}
+                  theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
+                />
+              );
+            })() : currentTab?.type === "editor" ? (() => {
+              const c = fileTabContents[activeTabId];
+              return (
+                <FileEditor
+                  content={c?.modified ?? ""}
+                  language={c?.lang ?? previewLanguage}
+                  theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
+                  path={activeTabId.replace("tab_file_","")}
+                />
+              );
+            })() : (
               <TerminalDrawer 
                 key={`${activeSession?.id ?? "sess_main"}-${hydraSettings.terminal_default_shell}`}
                 sessionId={activeSession?.id ?? "sess_main"} 
@@ -778,7 +800,7 @@ export default function App() {
           </div>
         </main>
 
-        {/* Right Panel: Agent Fleet, Chat & Actions */}
+        {/* Right Panel: Explorer + Source Control — copia Orca right-sidebar/index.tsx */}
         {isRightSidebarOpen && (
           <>
             {/* Right Resize Handle */}
@@ -796,125 +818,47 @@ export default function App() {
               style={{ width: `${rightSidebar.width}px` }}
               className="flex flex-col border-l border-[#222] bg-[#0e0f11] shrink-0 overflow-hidden relative"
             >
-              <div className="h-8 border-b border-[#222] px-3 flex items-center justify-between text-[11px] uppercase tracking-wider text-neutral-400 font-medium bg-[#111214] shrink-0">
-                <span className="flex items-center gap-1.5 text-neutral-200">
-                  <Bot className="w-3.5 h-3.5 text-emerald-400" />
-                  Active Agent
-                </span>
-                <div className="flex items-center gap-2">
-                  {keepAwakeActive && (
-                    <span title="Keep awake active — preventing display/system sleep while agents work" className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                      <Coffee className="w-3 h-3" />
-                      awake
-                    </span>
-                  )}
-                  <button
-                    onClick={() => setIsPairingOpen(true)}
-                    title="Pair Mobile Companion"
-                    className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition flex items-center gap-1 cursor-pointer"
-                  >
-                    <Smartphone className="w-3.5 h-3.5 text-blue-400" />
-                  </button>
-                  <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-medium ${
-                    activeSession?.state === "working" 
-                      ? "bg-amber-500/20 text-amber-400 animate-pulse" 
-                      : activeSession?.state === "blocked" 
-                        ? "bg-red-500/20 text-red-400" 
-                        : "bg-emerald-500/20 text-emerald-400"
-                  }`}>
-                    {activeSession?.state.toUpperCase() ?? "IDLE"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex-1 p-3 overflow-y-auto space-y-3">
-                {messages.map((m) => (
-                  <div 
-                    key={m.id} 
-                    className={`p-3 rounded-lg border text-xs ${
-                      m.role === "user" 
-                        ? "bg-[#18191d] border-[#2c2d33] text-neutral-100 ml-4" 
-                        : "bg-[#141518] border-[#26272b] text-neutral-300 mr-4"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                        m.role === "user" ? "bg-blue-500/20 text-blue-400" : "bg-emerald-500/20 text-emerald-400"
-                      }`}>
-                        {m.role === "user" ? "U" : "H"}
-                      </div>
-                      <span className="font-semibold text-neutral-300 capitalize">{m.role}</span>
-                    </div>
-                    <p className="leading-relaxed text-[11px]">{m.content}</p>
-                  </div>
-                ))}
-
-                {/* Tool Approval Card (Orca Style) */}
-                <div className="p-3 rounded-lg bg-neutral-950 border border-amber-500/30 text-xs">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 flex items-center gap-1">
-                      <Play className="w-3 h-3" />
-                      Tool Execution Request
-                    </span>
-                    <span className="text-[10px] text-neutral-500 font-mono">bash</span>
-                  </div>
-                  <div className="bg-[#111214] p-2 rounded font-mono text-[11px] text-neutral-200 border border-neutral-800 mb-3 overflow-x-auto">
-                    cargo test --workspace
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => {
-                        invoke("resolve_tool_approval", {
-                          approvalId: "appr_1",
-                          sessionId: activeSession?.id ?? "sess_main",
-                          status: "approved"
-                        }).catch(console.error);
-                      }}
-                      className="flex-1 py-1 px-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] flex items-center justify-center gap-1 transition cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-3 h-3" />
-                      Approve (Ctrl+Enter)
-                    </button>
-                    <button 
-                      onClick={() => {
-                        invoke("resolve_tool_approval", {
-                          approvalId: "appr_1",
-                          sessionId: activeSession?.id ?? "sess_main",
-                          status: "rejected"
-                        }).catch(console.error);
-                      }}
-                      className="px-3 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] transition cursor-pointer"
-                    >
-                      Reject (Esc)
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Input Prompt */}
-              <div className="p-3 border-t border-[#222] bg-[#111214] shrink-0">
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="text"
-                    value={promptInput}
-                    onChange={(e) => setPromptInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    placeholder="Instruct Hydra agent... (Enter to send)"
-                    className="flex-1 bg-[#0c0d0e] border border-[#26272b] rounded-md px-3 py-2 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500/80 transition font-sans"
-                  />
-                  <button 
-                    onClick={handleSendMessage}
-                    className="p-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
+              <RightSidebar
+                rootPath={activeProject?.path ?? null}
+                isGit={activeProject?.is_git ?? false}
+                openInApps={hydraSettings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenFile={async (path) => {
+                  const ext = path.split(".").pop()?.toLowerCase() ?? "";
+                  const lang = ({ rs:"rust", ts:"typescript", tsx:"typescript", js:"javascript", json:"json", md:"markdown", py:"python", go:"go" } as Record<string,string>)[ext] ?? "plaintext";
+                  try {
+                    const res = await invoke<{ path:string, content:string }>("read_file_text_cmd", { path });
+                    const content = res.content;
+                    const truncated = content.length > 20000 ? content.slice(0,20000) + "\n… truncated" : content;
+                    const fileName = path.split("/").pop() ?? path;
+                    const tabId = `tab_file_${path}`;
+                    const payload = { original: "", modified: truncated, lang };
+                    setFileTabContents(prev => ({ ...prev, [tabId]: payload }));
+                    setPreviewLanguage(lang);
+                    setTabs(prev => {
+                      const exists = prev.find(t => t.id === tabId);
+                      if (exists) return prev;
+                      return [...prev, { id: tabId, title: fileName, type: "editor" as const }];
+                    });
+                    setActiveTabId(tabId);
+                  } catch (e) { console.error(e); }
+                }}
+                onOpenDiff={async (relPath, staged) => {
+                  if (!activeProject?.path) return;
+                  try {
+                    const diff = await invoke<string>("git_diff_cmd", { repoPath: activeProject.path, file: relPath, staged });
+                    const tabId = `tab_diff_${relPath}_${staged ? "staged":"wt"}`;
+                    const title = `${relPath}${staged ? " (staged)" : ""}`;
+                    const payload = { original: "", modified: diff || `No diff for ${relPath}`, lang: "diff" };
+                    setFileTabContents(prev => ({ ...prev, [tabId]: payload }));
+                    setDiffOriginal(payload.original);
+                    setDiffModified(payload.modified);
+                    setPreviewLanguage("diff");
+                    setTabs(prev => prev.find(t=>t.id===tabId) ? prev : [...prev, { id: tabId, title, type:"diff" }]);
+                    setActiveTabId(tabId);
+                  } catch (e) { console.error(e); }
+                }}
+              />
             </aside>
           </>
         )}

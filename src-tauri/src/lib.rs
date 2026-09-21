@@ -5,6 +5,7 @@ use tauri_plugin_window_state::StateFlags;
 pub mod agent_discovery;
 pub mod agent_state;
 pub mod db;
+pub mod fs_ops;
 pub mod git_status;
 pub mod keep_awake;
 pub mod pairing;
@@ -17,7 +18,14 @@ pub mod worktree_ops;
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
 use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState};
-use git_status::{get_git_status, GitRepoStatus};
+use fs_ops::{create_file, create_folder, delete_path, list_directory, rename_path, search_files_content, DirectoryListing, FileContent, read_file_text, SearchResult};
+use git_status::{
+    check_git_ignored, get_branch_commits, get_detailed_git_status, get_diff_numstat, get_git_history,
+    get_git_status, get_git_status_for_path, get_submodule_live_status, git_commit, git_commit_amend,
+    git_diff, git_discard_file, git_pull, git_push, git_stash_list, git_stash_pop, git_stash_push,
+    git_stage_all, git_stage_file, git_stage_paths, git_unstage_all, git_unstage_file,
+    git_unstage_paths, DetailedGitStatus, DiffNumStat, GitCommitEntry, GitRepoStatus,
+};
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
 use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
@@ -51,6 +59,126 @@ fn get_app_version(app: AppHandle) -> String {
 #[tauri::command]
 fn get_repo_git_status() -> Result<GitRepoStatus, String> {
     get_git_status()
+}
+
+#[tauri::command]
+fn get_repo_git_status_for_path(repoPath: String) -> Result<GitRepoStatus, String> {
+    get_git_status_for_path(&repoPath)
+}
+
+#[tauri::command]
+fn get_detailed_git_status_cmd(repoPath: String) -> Result<DetailedGitStatus, String> {
+    get_detailed_git_status(&repoPath)
+}
+
+#[tauri::command]
+fn git_stage(repoPath: String, file: String) -> Result<(), String> {
+    git_stage_file(&repoPath, &file)
+}
+#[tauri::command]
+fn git_unstage(repoPath: String, file: String) -> Result<(), String> {
+    git_unstage_file(&repoPath, &file)
+}
+#[tauri::command]
+fn git_discard(repoPath: String, file: String) -> Result<(), String> {
+    git_discard_file(&repoPath, &file)
+}
+#[tauri::command]
+fn git_commit_cmd(repoPath: String, message: String) -> Result<String, String> {
+    git_commit(&repoPath, &message)
+}
+#[tauri::command]
+fn git_commit_amend_cmd(repoPath: String, message: String) -> Result<String, String> {
+    git_commit_amend(&repoPath, &message)
+}
+#[tauri::command]
+fn git_diff_cmd(repoPath: String, file: String, staged: bool) -> Result<String, String> {
+    git_diff(&repoPath, &file, staged)
+}
+
+#[tauri::command]
+fn list_directory_cmd(path: String) -> Result<DirectoryListing, String> {
+    list_directory(&path)
+}
+#[tauri::command]
+fn read_file_text_cmd(path: String) -> Result<FileContent, String> {
+    read_file_text(&path)
+}
+#[tauri::command]
+fn search_files_cmd(repoPath: String, query: String, maxResults: usize) -> Result<Vec<SearchResult>, String> {
+    search_files_content(&repoPath, &query, maxResults)
+}
+#[tauri::command]
+fn get_git_history_cmd(repoPath: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
+    get_git_history(&repoPath, limit)
+}
+#[tauri::command]
+fn git_stage_all_cmd(repoPath: String) -> Result<(), String> {
+    git_stage_all(&repoPath)
+}
+#[tauri::command]
+fn git_unstage_all_cmd(repoPath: String) -> Result<(), String> {
+    git_unstage_all(&repoPath)
+}
+#[tauri::command]
+fn check_git_ignored_cmd(repoPath: String, paths: Vec<String>) -> Result<Vec<String>, String> {
+    check_git_ignored(&repoPath, &paths)
+}
+#[tauri::command]
+fn get_diff_numstat_cmd(repoPath: String, staged: bool) -> Result<Vec<DiffNumStat>, String> {
+    get_diff_numstat(&repoPath, staged)
+}
+#[tauri::command]
+fn create_file_cmd(path: String) -> Result<(), String> { create_file(&path) }
+#[tauri::command]
+fn create_folder_cmd(path: String) -> Result<(), String> { create_folder(&path) }
+#[tauri::command]
+fn rename_path_cmd(oldPath: String, newPath: String) -> Result<(), String> { rename_path(&oldPath, &newPath) }
+#[tauri::command]
+fn delete_path_cmd(path: String) -> Result<(), String> { delete_path(&path) }
+#[tauri::command]
+fn get_branch_commits_cmd(repoPath: String, baseRef: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
+    get_branch_commits(&repoPath, &baseRef, limit)
+}
+#[tauri::command]
+fn git_push_cmd(repoPath: String) -> Result<String, String> { git_push(&repoPath) }
+#[tauri::command]
+fn git_pull_cmd(repoPath: String) -> Result<String, String> { git_pull(&repoPath) }
+#[tauri::command]
+fn git_stage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> { git_stage_paths(&repoPath, &paths) }
+#[tauri::command]
+fn git_unstage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> { git_unstage_paths(&repoPath, &paths) }
+#[tauri::command]
+fn get_submodule_paths_cmd(repoPath: String) -> Vec<String> { get_submodule_live_status(&repoPath) }
+#[tauri::command]
+fn git_stash_list_cmd(repoPath: String) -> Result<Vec<GitCommitEntry>, String> { git_stash_list(&repoPath) }
+#[tauri::command]
+fn git_stash_push_cmd(repoPath: String, message: String) -> Result<String, String> { git_stash_push(&repoPath, &message) }
+#[tauri::command]
+fn git_stash_pop_cmd(repoPath: String) -> Result<String, String> { git_stash_pop(&repoPath) }
+
+#[tauri::command]
+fn open_in_file_manager(path: String) -> Result<(), String> {
+    let p = std::path::Path::new(&path);
+    let target = if p.is_file() { p.parent().unwrap_or(p).to_string_lossy().to_string() } else { path.clone() };
+    #[cfg(target_os = "linux")]
+    { std::process::Command::new("xdg-open").arg(&target).spawn().map_err(|e| e.to_string())?; }
+    #[cfg(target_os = "macos")]
+    { std::process::Command::new("open").arg(&target).spawn().map_err(|e| e.to_string())?; }
+    #[cfg(target_os = "windows")]
+    { std::process::Command::new("explorer").arg(&target).spawn().map_err(|e| e.to_string())?; }
+    Ok(())
+}
+#[tauri::command]
+fn open_in_external_editor(path: String, command: String) -> Result<(), String> {
+    if command.trim().is_empty() { return Err("No command".to_string()); }
+    let cmd = command.trim().split_whitespace().next().unwrap_or(&command);
+    let args: Vec<&str> = command.trim().split_whitespace().skip(1).collect();
+    let mut c = std::process::Command::new(cmd);
+    for a in args { c.arg(a); }
+    c.arg(&path);
+    c.spawn().map_err(|e| format!("Failed to launch '{}': {}", command, e))?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -325,6 +453,37 @@ pub fn run() {
             get_system_status,
             get_app_version,
             get_repo_git_status,
+            get_repo_git_status_for_path,
+            get_detailed_git_status_cmd,
+            git_stage,
+            git_unstage,
+            git_discard,
+            git_commit_cmd,
+            git_diff_cmd,
+            list_directory_cmd,
+            read_file_text_cmd,
+            search_files_cmd,
+            get_git_history_cmd,
+            git_stage_all_cmd,
+            git_unstage_all_cmd,
+            check_git_ignored_cmd,
+            get_diff_numstat_cmd,
+            create_file_cmd,
+            create_folder_cmd,
+            rename_path_cmd,
+            delete_path_cmd,
+            get_branch_commits_cmd,
+            git_push_cmd,
+            git_pull_cmd,
+            git_stage_paths_cmd,
+            git_unstage_paths_cmd,
+            get_submodule_paths_cmd,
+            git_stash_list_cmd,
+            git_stash_push_cmd,
+            git_stash_pop_cmd,
+            git_commit_amend_cmd,
+            open_in_file_manager,
+            open_in_external_editor,
             list_projects,
             register_existing_project,
             remove_project,

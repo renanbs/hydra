@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Terminal, Plus, X } from "lucide-react";
+import { Terminal, Plus, X, File, GitCompare } from "lucide-react";
 
 export interface TabItem {
   id: string;
   title: string;
-  type: "terminal" | "diff";
+  type: "terminal" | "diff" | "editor";
 }
 
 interface WorkbenchTabBarProps {
@@ -74,7 +74,7 @@ export function WorkbenchTabBar({
                   : "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200"
               }`}
             >
-              <Terminal className="w-3 h-3 text-emerald-400 shrink-0" />
+              {tab.type === "editor" ? <File className="w-3 h-3 text-blue-400 shrink-0" /> : tab.type === "diff" ? <GitCompare className="w-3 h-3 text-amber-400 shrink-0" /> : <Terminal className="w-3 h-3 text-emerald-400 shrink-0" />}
 
               {isEditing ? (
                 <input

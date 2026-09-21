@@ -108,6 +108,17 @@ pub struct SourcePreferences {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub struct OpenInApplication {
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
+    pub label: String,
+    #[serde(default)]
+    pub command: String,
+}
+fn default_open_in_applications() -> Vec<OpenInApplication> { vec![OpenInApplication { id: "vscode".to_string(), label: "VS Code".to_string(), command: "code".to_string() }] }
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct WorktreeVisibilityDefaults {
     #[serde(default)]
     pub external: Option<String>,
@@ -296,6 +307,8 @@ pub struct HydraSettings {
     pub agent_default_args: std::collections::HashMap<String, String>,
     #[serde(default)]
     pub agent_default_env: std::collections::HashMap<String, std::collections::HashMap<String, String>>,
+    #[serde(default = "default_open_in_applications", alias = "openInApplications")]
+    pub open_in_applications: Vec<OpenInApplication>,
 }
 
 impl Default for HydraSettings {
@@ -355,6 +368,7 @@ impl Default for HydraSettings {
             agent_cmd_overrides: std::collections::HashMap::new(),
             agent_default_args: std::collections::HashMap::new(),
             agent_default_env: std::collections::HashMap::new(),
+            open_in_applications: default_open_in_applications(),
         }
     }
 }
