@@ -39,6 +39,20 @@ import {
   PanelBottomClose,
   PanelLeftClose,
   TextSelect,
+  Pin,
+  PinOff,
+  Bell,
+  BellOff,
+  FolderInput,
+  FolderPlus,
+  FolderTree,
+  Workflow,
+  Unlink,
+  Moon,
+  ExternalLink,
+  FolderOpen,
+  Sliders,
+  MoreHorizontal,
 } from "lucide-react";
 import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
@@ -114,6 +128,33 @@ export default function App() {
     y: number;
     items: ContextMenuItem[];
   } | null>(null);
+
+  // Orca parity: pinned/unread/groups/lineage persisted via localStorage
+  const [pinnedProjects, setPinnedProjects] = useState<Set<string>>(() => {
+    try { const v = localStorage.getItem("hydra:pinned_projects"); return v ? new Set(JSON.parse(v)) : new Set(); } catch { return new Set(); }
+  });
+  const [unreadProjects, setUnreadProjects] = useState<Set<string>>(() => {
+    try { const v = localStorage.getItem("hydra:unread_projects"); return v ? new Set(JSON.parse(v)) : new Set(); } catch { return new Set(); }
+  });
+  const [pinnedWorktrees, setPinnedWorktrees] = useState<Set<string>>(() => {
+    try { const v = localStorage.getItem("hydra:pinned_worktrees"); return v ? new Set(JSON.parse(v)) : new Set(); } catch { return new Set(); }
+  });
+  const [unreadWorktrees, setUnreadWorktrees] = useState<Set<string>>(() => {
+    try { const v = localStorage.getItem("hydra:unread_worktrees"); return v ? new Set(JSON.parse(v)) : new Set(); } catch { return new Set(); }
+  });
+  const [projectGroups, setProjectGroups] = useState<Array<{ id: string; name: string }>>(() => {
+    try { const v = localStorage.getItem("hydra:project_groups"); return v ? JSON.parse(v) : []; } catch { return []; }
+  });
+  const [projectGroupMap, setProjectGroupMap] = useState<Record<string, string>>(() => {
+    try { const v = localStorage.getItem("hydra:project_group_map"); return v ? JSON.parse(v) : {}; } catch { return {}; }
+  });
+  const [worktreeLineage, setWorktreeLineage] = useState<Record<string, string>>(() => {
+    try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
+  });
+  const persistSet = (key: string, set: Set<string>) => { try { localStorage.setItem(key, JSON.stringify([...set])); } catch {} };
+  const persistGroups = (groups: Array<{ id: string; name: string }>) => { try { localStorage.setItem("hydra:project_groups", JSON.stringify(groups)); } catch {} };
+  const persistGroupMap = (m: Record<string, string>) => { try { localStorage.setItem("hydra:project_group_map", JSON.stringify(m)); } catch {} };
+  const persistLineage = (m: Record<string, string>) => { try { localStorage.setItem("hydra:worktree_lineage", JSON.stringify(m)); } catch {} };
 
   // Agent Fleet Sessions
   const [sessions, setSessions] = useState<WorktreeSession[]>([]);
@@ -367,6 +408,28 @@ export default function App() {
       })
       .catch(console.error);
 
+    const handleRefreshProjects = () => {
+      invoke<HydraProject[]>("list_projects").then((projs) => {
+        let sorted = projs;
+        try {
+          const saved = localStorage.getItem("hydra:projects_order");
+          if (saved) {
+            const order: string[] = JSON.parse(saved);
+            sorted = [...projs].sort((a,b) => {
+              const idxA = order.indexOf(a.id);
+              const idxB = order.indexOf(b.id);
+              if (idxA === -1 && idxB === -1) return 0;
+              if (idxA === -1) return 1;
+              if (idxB === -1) return -1;
+              return idxA - idxB;
+            });
+          }
+        } catch {}
+        setProjects(sorted);
+      }).catch(console.error);
+    };
+    window.addEventListener("hydra:refresh-projects", handleRefreshProjects);
+
     invoke<AvailableAgent[]>("list_available_agents")
       .then(setAvailableAgents)
       .catch(console.error);
@@ -398,6 +461,10 @@ export default function App() {
     invoke<GitRepoStatus>("get_repo_git_status")
       .then(setGitStatus)
       .catch(console.error);
+    return () => {
+      window.removeEventListener("hydra:refresh-projects", handleRefreshProjects);
+      mql.removeEventListener("change", onSystemChange);
+    };
   }, []);
 
   const loadSessionsForProject = (projectPath: string) => {
@@ -1145,46 +1212,242 @@ export default function App() {
   };
 
 
-  const handleSessionContextMenu = (e: React.MouseEvent, session: WorktreeSession) => {
+  // Helpers for Orca parity: Open In submenu, file-manager label, etc.
+  const getOpenInItems = (path: string): ContextMenuItem[] => {
+    const apps = hydraSettings.open_in_applications ?? [];
+    const items: ContextMenuItem[] = apps.map((app) => ({
+      label: app.label || app.command,
+      icon: <ExternalLink className="w-3.5 h-3.5" />,
+      onClick: () => invoke("open_in_external_editor", { path, command: app.command }).catch(console.error),
+    }));
+    items.push({
+      label: "Reveal in File Manager",
+      icon: <FolderOpen className="w-3.5 h-3.5" />,
+      onClick: () => invoke("open_in_file_manager", { path }).catch(console.error),
+    });
+    items.push({
+      label: "Customize apps...",
+      icon: <Sliders className="w-3.5 h-3.5" />,
+      separator: true,
+      onClick: () => setIsSettingsOpen(true),
+    });
+    return items;
+  };
+  const sleepSessionsForPaths = (paths: string[]) => {
+    const ids = sessions.filter((s) => paths.some((p) => s.project_path === p || s.project_path.startsWith(p))).map((s) => s.id);
+    // close associated tabs and mark sessions inactive; emulate Orca sleep (close panels)
+    setTabs((prev) => prev.filter((t) => !ids.some((id) => t.id === `tab_${id}` || t.sessionId === id)));
+    setSessions((prev) => prev.map((s) => ids.includes(s.id) ? { ...s, state: "idle" as const } : s));
+  };
+
+  const togglePinProject = (id: string) => {
+    setPinnedProjects((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); persistSet("hydra:pinned_projects", next); return next; });
+  };
+  const toggleUnreadProject = (id: string) => {
+    setUnreadProjects((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); persistSet("hydra:unread_projects", next); return next; });
+  };
+  const togglePinWorktree = (path: string) => {
+    setPinnedWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); persistSet("hydra:pinned_worktrees", next); return next; });
+  };
+  const toggleUnreadWorktree = (path: string) => {
+    setUnreadWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); persistSet("hydra:unread_worktrees", next); return next; });
+  };
+
+  const handleProjectContextMenu = (e: React.MouseEvent, proj: HydraProject) => {
+    const isPinned = pinnedProjects.has(proj.id);
+    const isUnread = unreadProjects.has(proj.id);
+    const groupId = projectGroupMap[proj.id];
+    const groupName = groupId ? projectGroups.find((g) => g.id === groupId)?.name : undefined;
+    void groupName;
+    const lineageParent = worktreeLineage[proj.path];
+    const eligibleParents = projects.filter((p) => p.id !== proj.id).concat(gitWorktrees.filter((w) => w.path !== proj.path).map((w) => ({ id: w.path, name: w.branch || w.path } as any)));
+    const developerRevealed = e.altKey;
+    const openInChildren = getOpenInItems(proj.path);
+
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
       items: [
+        { label: "Workspace", isLabel: true, onClick: () => {} },
         {
-          label: `Copy Branch: ${session.branch}`,
-          icon: <GitBranch className="w-3.5 h-3.5" />,
-          onClick: () => navigator.clipboard.writeText(session.branch).catch(console.error)
-        },
-        {
-          label: "Rename Session...",
+          label: "Update Project...",
           icon: <Pencil className="w-3.5 h-3.5" />,
           onClick: () => {
+            const newName = window.prompt("Project display name:", proj.name);
+            if (newName && newName.trim() && newName.trim() !== proj.name) {
+              try {
+                const overrides = JSON.parse(localStorage.getItem("hydra:project_name_overrides") || "{}");
+                overrides[proj.id] = newName.trim();
+                localStorage.setItem("hydra:project_name_overrides", JSON.stringify(overrides));
+                setProjects((prev) => prev.map((p) => p.id === proj.id ? { ...p, name: newName.trim() } : p));
+                if (activeProject?.id === proj.id) setActiveProject((prev) => prev ? { ...prev, name: newName.trim() } : prev);
+              } catch {}
+            }
+          },
+        },
+        {
+          label: "Open in",
+          icon: <FolderOpen className="w-3.5 h-3.5" />,
+          children: openInChildren,
+          onClick: () => {},
+        },
+        {
+          label: "Copy Path",
+          icon: <Copy className="w-3.5 h-3.5" />,
+          onClick: () => navigator.clipboard.writeText(proj.path).catch(console.error),
+        },
+        { label: "Copy Project Name", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(proj.name).catch(console.error) },
+        { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, onClick: () => togglePinProject(proj.id), separator: true },
+        { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadProject(proj.id) },
+        { label: "New group from project", icon: <FolderPlus className="w-3.5 h-3.5" />, separator: true, onClick: () => {
+            const name = window.prompt("New group name:", `${proj.name} group`);
+            if (!name || !name.trim()) return;
+            const id = `grp_${Date.now()}`;
+            const next = [...projectGroups, { id, name: name.trim() }];
+            setProjectGroups(next); persistGroups(next);
+            const nextMap = { ...projectGroupMap, [proj.id]: id };
+            setProjectGroupMap(nextMap); persistGroupMap(nextMap);
+          }
+        },
+        ...(projectGroups.length > 0 ? [{
+          label: "Move to group",
+          icon: <FolderInput className="w-3.5 h-3.5" />,
+          children: projectGroups.map((g) => ({
+            label: g.name,
+            icon: undefined,
+            disabled: projectGroupMap[proj.id] === g.id,
+            onClick: () => {
+              const nextMap = { ...projectGroupMap, [proj.id]: g.id };
+              setProjectGroupMap(nextMap); persistGroupMap(nextMap);
+            },
+          })),
+          onClick: () => {},
+        } as ContextMenuItem] : []),
+        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const m = { ...projectGroupMap }; delete m[proj.id]; setProjectGroupMap(m); persistGroupMap(m); } } as ContextMenuItem] : []),
+        { label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...", icon: <FolderTree className="w-3.5 h-3.5" />, separator: true, disabled: eligibleParents.length === 0, title: eligibleParents.length === 0 ? "No eligible parents" : undefined, onClick: () => {
+            if (eligibleParents.length === 0) return;
+            const opts = eligibleParents.map((p: any) => `${p.name} — ${p.path || p.id}`).join("\n");
+            const sel = window.prompt(`Choose parent (paste path):\n${opts}\n\nEnter parent path:`);
+            if (sel && sel.trim()) {
+              const next = { ...worktreeLineage, [proj.path]: sel.trim() };
+              setWorktreeLineage(next); persistLineage(next);
+            }
+          }
+        },
+        ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
+              const parentProj = projects.find((p) => p.path === lineageParent);
+              if (parentProj) handleSelectProject(parentProj);
+              else invoke("open_in_file_manager", { path: lineageParent }).catch(console.error);
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[proj.path]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
+        ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Path: ${proj.path}`, icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(proj.path).catch(console.error) } as ContextMenuItem, { label: `Is Git: ${proj.is_git ? "yes" : "no"} · Branch: ${proj.current_branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => {} } as ContextMenuItem] : []),
+        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([proj.path]) },
+        { label: "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, disabled: true, title: "Primary worktree — can't be deleted. Remove the project instead.", onClick: () => {}, separator: true },
+        { label: "Remove Project from Hydra", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, onClick: () => handleRemoveProject(proj) },
+      ]
+    });
+  };
+
+  const handleWorktreeContextMenu = (e: React.MouseEvent, wt: GitWorktreeInfo, proj: HydraProject) => {
+    const isMain = wt.path === proj.path;
+    const isPinned = pinnedWorktrees.has(wt.path);
+    const isUnread = unreadWorktrees.has(wt.path);
+    const lineageParent = worktreeLineage[wt.path];
+    const eligibleParents = projects.filter((p) => p.path !== wt.path).concat(gitWorktrees.filter((w) => w.path !== wt.path).map((w) => ({ id: w.path, name: w.branch } as any)));
+    const developerRevealed = e.altKey;
+    const openInChildren = getOpenInItems(wt.path);
+    const descendantCount = Object.values(worktreeLineage).filter((parent) => parent === wt.path).length;
+
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      items: [
+        { label: "Workspace", isLabel: true, onClick: () => {} },
+        { label: "Update Worktree...", icon: <Pencil className="w-3.5 h-3.5" />, onClick: () => {
+            const newBranch = window.prompt("Rename branch / display:", wt.branch);
+            if (newBranch && newBranch.trim() && newBranch.trim() !== wt.branch) {
+              // Not implemented as git rename; just copy for now
+              navigator.clipboard.writeText(newBranch.trim()).catch(console.error);
+            }
+          }
+        },
+        { label: "Open in", icon: <FolderOpen className="w-3.5 h-3.5" />, children: openInChildren, onClick: () => {} },
+        { label: "Copy Path", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.path).catch(console.error) },
+        { label: `Copy Branch: ${wt.branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.branch).catch(console.error) },
+        { label: "Copy Commit", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) },
+        { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(wt.path) },
+        { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(wt.path) },
+        { label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...", icon: <FolderTree className="w-3.5 h-3.5" />, separator: true, disabled: eligibleParents.length === 0, onClick: () => {
+            const opts = eligibleParents.map((p: any) => `${p.name} — ${p.path || p.id}`).join("\n");
+            const sel = window.prompt(`Choose parent:\n${opts}\n\nEnter parent path:`);
+            if (sel && sel.trim()) { const next = { ...worktreeLineage, [wt.path]: sel.trim() }; setWorktreeLineage(next); persistLineage(next); }
+          }
+        },
+        ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
+              const parentProj = projects.find((p) => p.path === lineageParent) || null;
+              if (parentProj) handleSelectProject(parentProj);
+              else {
+                const wtParent = gitWorktrees.find((w) => w.path === lineageParent);
+                if (wtParent) handleSelectGitWorktree(wtParent);
+                else invoke("open_in_file_manager", { path: lineageParent }).catch(console.error);
+              }
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[wt.path]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
+        ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Head: ${wt.head_commit.slice(0,7)} · Bare: ${wt.is_bare ? "yes":"no"}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) } as ContextMenuItem] : []),
+        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([wt.path]) },
+        ...(descendantCount > 0 ? [{ label: `Sleep with Descendants (${descendantCount})`, icon: <Moon className="w-3.5 h-3.5" />, onClick: () => {
+              const subtree = Object.entries(worktreeLineage).filter(([, parent]) => parent === wt.path).map(([child]) => child);
+              sleepSessionsForPaths([wt.path, ...subtree]);
+            } } as ContextMenuItem] : []),
+        ...(isMain ? [{ label: "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, disabled: true, title: "Primary worktree — can't be deleted. Remove the project instead.", separator: true, onClick: () => {} } as ContextMenuItem, { label: "Remove Project from Hydra", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, onClick: () => handleRemoveProject(proj) } as ContextMenuItem] : [{ label: descendantCount > 0 ? `Delete with Descendants…` : "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, separator: true, onClick: () => handleDeleteGitWorktree(wt) } as ContextMenuItem]),
+      ]
+    });
+  };
+
+  const handleSessionContextMenu = (e: React.MouseEvent, session: WorktreeSession) => {
+    const isPinned = pinnedWorktrees.has(session.id) || pinnedWorktrees.has(session.project_path);
+    const isUnread = unreadWorktrees.has(session.id);
+    const lineageParent = worktreeLineage[session.project_path] || worktreeLineage[session.id];
+    const openInChildren = getOpenInItems(session.project_path);
+    const developerRevealed = e.altKey;
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      items: [
+        { label: "Workspace", isLabel: true, onClick: () => {} },
+        { label: "Update Session...", icon: <Pencil className="w-3.5 h-3.5" />, onClick: () => {
             const newTitle = window.prompt("Enter new session title:", session.title);
             if (newTitle && newTitle.trim()) {
               const updated = { ...session, title: newTitle.trim() };
               setSessions((prev) => prev.map((s) => (s.id === session.id ? updated : s)));
-              invoke("save_session_record", {
-                record: {
-                  id: updated.id,
-                  project_path: activeProject?.path ?? "",
-                  title: updated.title,
-                  branch: updated.branch,
-                  agent_name: updated.agentName,
-                  executable: updated.executable,
-                  created_at: Date.now(),
-                  updated_at: Date.now(),
-                }
-              }).catch(console.error);
+              invoke("save_session_record", { record: { id: updated.id, project_path: session.project_path, title: updated.title, branch: updated.branch, agent_name: updated.agentName, executable: updated.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(console.error);
             }
           }
         },
-        {
-          label: "Close / Delete Fleet Session",
-          icon: <Trash2 className="w-3.5 h-3.5" />,
-          danger: true,
-          separator: true,
-          onClick: () => handleDeleteSession(session.id)
-        }
+        { label: "Open in", icon: <FolderOpen className="w-3.5 h-3.5" />, children: openInChildren, onClick: () => {} },
+        { label: `Copy Branch: ${session.branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.branch).catch(console.error) },
+        { label: "Copy Path", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.project_path).catch(console.error) },
+        { label: "Copy Session Title", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.title).catch(console.error) },
+        { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(session.id) },
+        { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(session.id) },
+        { label: "Duplicate Session", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => {
+            const newId = `sess_${Date.now()}`;
+            const dup: WorktreeSession = { ...session, id: newId, title: `${session.title} (copy)`, active: false };
+            setSessions((prev) => [...prev, dup]);
+            invoke("save_session_record", { record: { id: dup.id, project_path: dup.project_path, title: dup.title, branch: dup.branch, agent_name: dup.agentName, executable: dup.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(console.error);
+          }
+        },
+        { label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...", icon: <FolderTree className="w-3.5 h-3.5" />, separator: true, disabled: projects.length === 0, onClick: () => {
+            const opts = projects.map((p) => `${p.name} — ${p.path}`).join("\n");
+            const sel = window.prompt(`Choose parent:\n${opts}\n\nEnter parent path:`);
+            if (sel && sel.trim()) { const next = { ...worktreeLineage, [session.project_path]: sel.trim(), [session.id]: sel.trim() }; setWorktreeLineage(next); persistLineage(next); }
+          }
+        },
+        ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
+              const parentProj = projects.find((p) => p.path === lineageParent);
+              if (parentProj) handleSelectProject(parentProj);
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[session.project_path]; delete m[session.id]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
+        ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `ID: ${session.id}`, icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.id).catch(console.error) } as ContextMenuItem, { label: `Agent: ${session.agentName} · ${session.executable}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => {} } as ContextMenuItem] : []),
+        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([session.project_path]) },
+        { label: "Close / Delete Fleet Session", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, separator: true, onClick: () => handleDeleteSession(session.id) },
       ]
     });
   };
@@ -1272,9 +1535,17 @@ export default function App() {
                   setIsNewWorkspaceOpen(true);
                 }}
                 onSessionContextMenu={handleSessionContextMenu}
+                onProjectContextMenu={handleProjectContextMenu}
+                onWorktreeContextMenu={handleWorktreeContextMenu}
                 onReorderSessions={handleReorderSessions}
                 onReorderProjects={handleReorderProjects}
                 onReorderWorktrees={handleReorderWorktrees}
+                pinnedProjects={pinnedProjects}
+                unreadProjects={unreadProjects}
+                pinnedWorktrees={pinnedWorktrees}
+                unreadWorktrees={unreadWorktrees}
+                projectGroupMap={projectGroupMap}
+                projectGroups={projectGroups}
               />
             </aside>
 
