@@ -415,7 +415,7 @@ export default function App() {
         setProjects(sorted);
         if (sorted.length > 0) {
           setActiveProject(sorted[0]);
-          loadSessionsForProject(sorted[0].path);
+          loadAllSessions();
           refreshGitWorktrees(sorted[0].path);
         }
       })
@@ -558,6 +558,56 @@ export default function App() {
             },
           ]);
           setActiveTabId(firstTabId);
+        }
+      })
+      .catch(console.error);
+  };
+
+  // Load ALL sessions from ALL projects (for Agents view)
+  const loadAllSessions = () => {
+    invoke<DbSessionRecord[]>("list_persisted_sessions", { projectPath: null })
+      .then((persisted) => {
+        if (persisted && persisted.length > 0) {
+          let loaded: WorktreeSession[] = persisted.map((p, idx) => ({
+            id: p.id,
+            project_path: p.project_path,
+            title: p.title,
+            branch: p.branch,
+            agentName: p.agent_name,
+            executable: p.executable,
+            state: "idle",
+            active: idx === 0,
+          }));
+          try {
+            const saved = localStorage.getItem("hydra:sessions_order");
+            if (saved) {
+              const order: string[] = JSON.parse(saved);
+              loaded = [...loaded].sort((a, b) => {
+                const idxA = order.indexOf(a.id);
+                const idxB = order.indexOf(b.id);
+                if (idxA === -1 && idxB === -1) return 0;
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+              });
+            }
+          } catch {}
+          setSessions(loaded);
+          const firstTabId = `tab_${loaded[0].id}`;
+          setTabs([
+            {
+              id: firstTabId,
+              title: `${loaded[0].executable} (active)`,
+              type: "terminal",
+              sessionId: loaded[0].id,
+              executable: loaded[0].executable,
+              cwd: loaded[0].project_path,
+            },
+          ]);
+          setActiveTabId(firstTabId);
+        } else if (activeProject) {
+          // Fallback: create default session for active project
+          loadSessionsForProject(activeProject.path);
         }
       })
       .catch(console.error);
