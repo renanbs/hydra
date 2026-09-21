@@ -237,21 +237,24 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const matchDarkMode = !settings.terminal_use_separate_light_theme;
   const showCustomControls = !(isLightTarget && matchDarkMode);
 
-  // Groups: Orca-faithful General + Hydra existing + Terminal (image 1:1)
+  // Groups: Orca-lite coherent (Setup → Interface → Workspace → Capabilities → Privacy) — dedup workspace_dir, unificado Terminal
   const navGroups: { id: string; title: string; items: { id: HydraNavId; label: string; icon: any; badge?: string }[] }[] = [
-    { id: "setup", title: "Set up", items: [
+    { id: "setup", title: "Setup", items: [
       { id: "general", label: "General", icon: Sliders },
     ]},
     { id: "interface", title: "Interface", items: [
       { id: "appearance", label: "Appearance", icon: AppWindow },
-      { id: "input", label: "Input", icon: TextCursorInput },
       { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
     ]},
-    { id: "workflows", title: "Workflows", items: [
-      { id: "agents", label: "Agents", icon: Bot },
-      { id: "security", label: "Security & Gate", icon: Shield },
+    { id: "workspace", title: "Workspace", items: [
       { id: "git", label: "Workspace & Git", icon: FolderGit2 },
       { id: "terminal", label: "Terminal", icon: TerminalSquare },
+    ]},
+    { id: "capabilities", title: "AI Capabilities", items: [
+      { id: "agents", label: "Agents", icon: Bot },
+    ]},
+    { id: "security", title: "Privacy & Security", items: [
+      { id: "security", label: "Security & Gate", icon: Shield },
     ]},
   ];
 
@@ -330,16 +333,17 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                     <h3 className="text-[20px] font-semibold tracking-tight">General</h3>
                     <p className="text-[13px] text-muted-foreground">Workspace defaults, app setup, and maintenance.</p>
                   </div>
-                  {/* Orca card: Navigation + Workspace */}
+                  {/* Navigation — app shell */}
                   <div className="rounded-xl border bg-card overflow-hidden">
-                    {/* Navigation */}
                     <div className="p-6 space-y-6">
                       <div>
                         <h4 className="text-[13px] font-semibold">Navigation</h4>
+                        <p className="text-[12px] text-muted-foreground">App shell and tab behavior.</p>
                       </div>
                       <div className="flex items-center justify-between gap-4 py-2">
                         <div>
                           <div className="text-[13px] font-medium">Tab Order</div>
+                          <div className="text-[12px] text-muted-foreground">Ctrl+Tab cycles MRU vs LRU.</div>
                         </div>
                         <div className="relative">
                           <select
@@ -370,322 +374,24 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                         </button>
                       </div>
                     </div>
-                    <div className="h-px bg-border" />
-                    {/* Workspace */}
-                    <div className="p-6 space-y-6">
-                      <div>
-                        <h4 className="text-[13px] font-semibold">Workspace</h4>
-                        <p className="text-[12px] text-muted-foreground">Configure where new workspaces are created.</p>
-                      </div>
-
-                      {/* Workspace Directory */}
-                      <div className="space-y-2">
-                        <div className="text-[13px] font-medium">Workspace Directory</div>
-                        <div className="flex gap-2">
-                          <input
-                            value={settings.workspace_dir}
-                            onChange={(e)=> setSettingsLive({ ...settings, workspace_dir: e.target.value })}
-                            placeholder="/home/renan/orca/workspaces"
-                            className="flex-1 bg-background border rounded-md px-3 py-2 font-mono text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
-                          />
-                          <button
-                            onClick={async ()=>{
-                              try {
-                                const picked = await dialogOpen({ directory: true, multiple: false });
-                                if (typeof picked === "string" && picked) setSettingsLive({ ...settings, workspace_dir: picked });
-                              } catch {}
-                            }}
-                            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-md border bg-background text-[13px] hover:bg-muted"
-                          >
-                            <FolderGit2 className="size-3.5" /> Browse
-                          </button>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">Use a relative path (e.g. .orca/worktrees) for a per-project location, or an absolute path for one shared folder.</p>
-                      </div>
-
-                      {/* Sources */}
-                      <div className="space-y-2">
-                        <div className="text-[13px] font-medium">Sources</div>
-                        <p className="text-[12px] text-muted-foreground">Shown sources include current and future worktrees in the sidebar.</p>
-                        <div className="overflow-hidden rounded-lg border bg-muted/30">
-                          {([
-                            { id: "claude" as const, label: "Claude Code", sub: ".claude/worktrees/*" },
-                            { id: "gsd" as const, label: "GSD", sub: ".gsd-workspaces/*" },
-                          ] as const).map((row)=> {
-                            const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                            const vis = (wvd.sourcePreferences?.builtIn?.[row.id] ?? "hide") as "show"|"hide";
-                            const setVis = (next: "show"|"hide")=> {
-                              const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                              const nextPrefs = { ...(cur.sourcePreferences ?? { builtIn: {}, custom: {} }), builtIn: { ...(cur.sourcePreferences?.builtIn ?? {}), [row.id]: next } };
-                              setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, sourcePreferences: nextPrefs } } as any);
-                            };
-                            return (
-                              <div key={row.id} className="flex items-center justify-between gap-2 px-3 py-3 border-b last:border-0 bg-card">
-                                <div className="min-w-0">
-                                  <div className="text-[13px] font-medium">{row.label}</div>
-                                  <div className="font-mono text-[11px] text-muted-foreground">{row.sub}</div>
-                                </div>
-                                <div className="inline-flex rounded-md border p-0.5 bg-muted">
-                                  {(["Show","Hide"] as const).map((lbl)=>{
-                                    const val = lbl.toLowerCase() as "show"|"hide";
-                                    const active = vis===val;
-                                    return (
-                                      <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          })}
-                          {/* Other locations */}
-                          {(()=>{
-                            const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                            const vis = (wvd.external ?? "hide") as "show"|"hide";
-                            const setVis = (next: "show"|"hide")=> {
-                              const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                              setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, external: next } } as any);
-                            };
-                            return (
-                              <div className="flex items-center justify-between gap-2 px-3 py-3 border-b bg-card">
-                                <div className="min-w-0">
-                                  <div className="text-[13px] font-medium">Other locations</div>
-                                  <div className="font-mono text-[11px] text-muted-foreground">Outside listed sources</div>
-                                </div>
-                                <div className="inline-flex rounded-md border p-0.5 bg-muted">
-                                  {(["Show","Hide"] as const).map((lbl)=>{
-                                    const val = lbl.toLowerCase() as "show"|"hide";
-                                    const active = vis===val;
-                                    return (
-                                      <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          })()}
-                          {/* Worktree root */}
-                          <div className="px-3 py-3 bg-card space-y-2">
-                            <div className="text-[13px] font-medium">Worktree root</div>
-                            <div className="flex gap-2">
-                              <input
-                                value={worktreeRootDraft}
-                                onChange={(e)=> setWorktreeRootDraft(e.target.value)}
-                                onKeyDown={(e)=> {
-                                  if (e.key==="Enter" && worktreeRootDraft.trim()) {
-                                    const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                                    const id = Math.random().toString(36).slice(2,10);
-                                    const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
-                                    setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
-                                    setWorktreeRootDraft("");
-                                  }
-                                }}
-                                placeholder=""
-                                className="flex-1 bg-background border rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
-                              />
-                              <button
-                                onClick={()=>{
-                                  if (!worktreeRootDraft.trim()) return;
-                                  const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                                  const id = Math.random().toString(36).slice(2,10);
-                                  const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
-                                  setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
-                                  setWorktreeRootDraft("");
-                                }}
-                                className="px-4 py-2 rounded-md bg-foreground text-background text-[13px] font-medium hover:bg-foreground/90"
-                              >Add</button>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground">Orca will recognize worktrees beneath this folder.</p>
-                            {(((settings as any).worktree_visibility_defaults?.customSources ?? []) as Array<{id:string;rootPath:string}>).length>0 && (
-                              <div className="space-y-1 pt-2">
-                                {((settings as any).worktree_visibility_defaults.customSources as Array<{id:string;rootPath:string}>).map((cs)=>(
-                                  <div key={cs.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md border bg-muted/20 text-[12px]">
-                                    <span className="truncate font-mono">{cs.rootPath}</span>
-                                    <button
-                                      onClick={()=>{
-                                        const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                                        const next = (cur.customSources ?? []).filter((x: {id:string})=> x.id!==cs.id);
-                                        setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
-                                      }}
-                                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                                    ><Trash2 className="size-3.5" /></button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Nest Workspaces */}
-                      <div className="flex items-center justify-between gap-4 py-2">
-                        <div className="pr-4">
-                          <div className="text-[13px] font-medium">Nest Workspaces</div>
-                          <div className="text-[12px] text-muted-foreground">Create workspaces inside a repo-named subfolder.</div>
-                        </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={settings.nest_workspaces}
-                          onClick={()=> setSettingsLive({ ...settings, nest_workspaces: !settings.nest_workspaces })}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.nest_workspaces ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.nest_workspaces ? "translate-x-4" : "translate-x-0.5"}`} />
-                        </button>
-                      </div>
-
-                      {/* Ask Before Deleting */}
-                      <div className="flex items-center justify-between gap-4 py-2">
-                        <div className="pr-4">
-                          <div className="text-[13px] font-medium">Ask Before Deleting Workspaces</div>
-                          <div className="text-[12px] text-muted-foreground">Show a confirmation before deleting a workspace.</div>
-                        </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={!((settings as any).skip_delete_worktree_confirm ?? false)}
-                          onClick={()=> setSettingsLive({ ...settings, skip_delete_worktree_confirm: !((settings as any).skip_delete_worktree_confirm ?? false)} as any)}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${!((settings as any).skip_delete_worktree_confirm ?? false) ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}
-                        >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${!((settings as any).skip_delete_worktree_confirm ?? false) ? "translate-x-4" : "translate-x-0.5"}`} />
-                        </button>
-                      </div>
-                      <div className="h-px bg-border my-2" />
-                      <div className="flex items-center justify-between gap-4 py-2">
-                        <div className="pr-4">
-                          <div className="text-[13px] font-medium">Ask Before Deleting Automations</div>
-                          <div className="text-[12px] text-muted-foreground">Show a confirmation before deleting automations and their run history.</div>
-                        </div>
-                        <button type="button" role="switch" aria-checked={true} onClick={()=>{}} className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border bg-foreground border-foreground">
-                          <span className="inline-block h-4 w-4 transform rounded-full bg-background shadow translate-x-4" />
-                        </button>
-                      </div>
-                      <div className="h-px bg-border my-2" />
-                      <div className="flex items-center justify-between gap-4 py-2">
-                        <div className="pr-4">
-                          <div className="text-[13px] font-medium">Ask Before Deleting Artifacts</div>
-                          <div className="text-[12px] text-muted-foreground">Show a confirmation before deleting a shared artifact. Anyone holding its public link loses access.</div>
-                        </div>
-                        <button type="button" role="switch" aria-checked={true} onClick={()=>{}} className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border bg-foreground border-foreground">
-                          <span className="inline-block h-4 w-4 transform rounded-full bg-background shadow translate-x-4" />
-                        </button>
-                      </div>
-                      <div className="h-px bg-border my-2" />
-                      {/* Open In Apps — copia Orca OpenInMenuSetting */}
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-[13px] font-medium">Open In Apps</div>
-                            <div className="text-[12px] text-muted-foreground">Choose apps available from a workspace's Open in menu.</div>
-                          </div>
-                          <div className="relative">
-                            <button
-                              onClick={() => {
-                                const el = document.getElementById("hydra-openin-add-menu");
-                                if (el) el.classList.toggle("hidden");
-                              }}
-                              className="h-8 px-3 rounded-md border bg-background text-[13px] flex items-center gap-1.5 hover:bg-muted"
-                            >
-                              Add app <ChevronDown className="size-3.5" />
-                            </button>
-                            <div id="hydra-openin-add-menu" className="hidden absolute right-0 top-9 z-10 w-64 rounded-md border bg-popover shadow-xl p-1">
-                              {getOpenInAppPresets().map(preset => {
-                                const apps = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[];
-                                const added = isOpenInAppPresetAdded(apps, preset);
-                                return (
-                                  <button
-                                    key={preset.id}
-                                    disabled={added || apps.length >= 8}
-                                    onClick={() => {
-                                      if (added || apps.length >= 8) return;
-                                      const next = [...apps, { id: preset.id, label: preset.label, command: preset.command }];
-                                      setSettingsLive({ ...settings, open_in_applications: next } as any);
-                                      document.getElementById("hydra-openin-add-menu")?.classList.add("hidden");
-                                    }}
-                                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[13px] hover:bg-muted ${added ? "opacity-50" : ""}`}
-                                  >
-                                    <OpenInApplicationIcon application={preset} size={14} />
-                                    <span className="truncate">{preset.label}</span>
-                                    {added && <span className="ml-auto text-[11px] text-muted-foreground flex items-center gap-1"><Check className="size-3" /> Added</span>}
-                                  </button>
-                                );
-                              })}
-                              <button
-                                onClick={() => {
-                                  const apps = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[];
-                                  if (apps.length >= 8) return;
-                                  const id = `open-in-${Date.now().toString(36)}`;
-                                  const next = [...apps, { id, label: "", command: "" }];
-                                  setSettingsLive({ ...settings, open_in_applications: next } as any);
-                                  document.getElementById("hydra-openin-add-menu")?.classList.add("hidden");
-                                }}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[13px] hover:bg-muted"
-                              >
-                                <AppWindow className="size-3.5" /> Custom app
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="divide-y divide-border/40 border rounded-lg overflow-hidden">
-                          {((settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[]).length === 0 ? (
-                            <div className="px-3 py-6 text-center text-sm text-muted-foreground">No apps — add VS Code, Zed or Cursor</div>
-                          ) : (
-                            (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS as OpenInApplication[]).map((app, idx) => (
-                              <div key={app.id} className="p-3 flex items-start gap-3 bg-card">
-                                <div className="size-7 rounded border bg-background flex items-center justify-center shrink-0">
-                                  <OpenInApplicationIcon application={app} size={16} />
-                                </div>
-                                <div className="flex-1 min-w-0 space-y-1">
-                                  <input
-                                    value={app.label}
-                                    placeholder="App name"
-                                    onChange={e => {
-                                      const next = [...(settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS)];
-                                      next[idx] = { ...app, label: e.target.value };
-                                      setSettingsLive({ ...settings, open_in_applications: next } as any);
-                                    }}
-                                    className="w-full bg-background border rounded px-2 py-1 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
-                                  />
-                                  <input
-                                    value={app.command}
-                                    placeholder="command (e.g. code, zed, cursor)"
-                                    spellCheck={false}
-                                    onChange={e => {
-                                      const next = [...(settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS)];
-                                      next[idx] = { ...app, command: e.target.value };
-                                      setSettingsLive({ ...settings, open_in_applications: next } as any);
-                                    }}
-                                    className="w-full bg-background border rounded px-2 py-1 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-ring"
-                                  />
-                                  <div className="text-[11px] text-muted-foreground">The command you would type in Terminal to open this app.</div>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    const next = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS).filter(a => a.id !== app.id);
-                                    setSettingsLive({ ...settings, open_in_applications: next } as any);
-                                  }}
-                                  className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                                >
-                                  <Trash2 className="size-3.5" />
-                                </button>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    </div>
                   </div>
+                  <p className="text-[11px] text-muted-foreground px-1">Workspace, Git and Open In moved to <span className="font-medium text-foreground">Workspace → Workspace & Git</span> for coherence (Orca: Workflows → Git).</p>
                 </div>
               )}
               {activeId==="appearance" && (
                 <div className="space-y-8">
-                  {/* Interface */}
+                  <div className="space-y-1">
+                    <h3 className="text-[20px] font-semibold tracking-tight">Appearance</h3>
+                    <p className="text-[13px] text-muted-foreground">App chrome theme and interface typeface — terminal moved to <span className="font-medium text-foreground">Workspace → Terminal</span>.</p>
+                  </div>
+                  {/* Interface — app only, terminal unified elsewhere */}
                   <section className="space-y-4">
                     <div className="space-y-1">
                       <h3 className="text-[13px] font-semibold">Interface</h3>
                       <p className="text-[12px] text-muted-foreground">Theme: <code className="px-1 py-0.5 rounded bg-muted border text-[11px]">system | dark | light</code> — system respects <code>prefers-color-scheme</code>.</p>
                     </div>
                     <div className="rounded-xl border bg-card p-4 flex items-center justify-between">
-                      <div><div className="text-[13px] font-medium">Theme</div><div className="text-[12px] text-muted-foreground">App chrome theme. Terminal can differ per mode below.</div></div>
+                      <div><div className="text-[13px] font-medium">Theme</div><div className="text-[12px] text-muted-foreground">App chrome theme. Terminal themes now in Terminal pane.</div></div>
                       <SegmentedControl value={settings.theme} onChange={(v)=>handleThemeChange(v as HydraSettings["theme"])} options={[{value:"system",label:"System"},{value:"dark",label:"Dark"},{value:"light",label:"Light"}]} />
                     </div>
                     <div className="rounded-xl border bg-card p-4 space-y-2">
@@ -701,117 +407,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                       <div className="text-[11px] text-muted-foreground" style={{ fontFamily: previewAppFont ?? settings.app_font_family }}>Preview: The quick brown fox jumps over the lazy dog — 1234567890</div>
                     </div>
                   </section>
-
-                  {/* Terminal Typography */}
-                  <section className="space-y-4">
-                    <h3 className="text-[13px] font-semibold flex items-center gap-2"><TerminalSquare className="size-4 text-emerald-500" /> Terminal — Typography</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="col-span-2">
-                        <label className="block text-[12px] font-medium mb-1.5">Font Family</label>
-                        <FontAutocomplete
-                          value={previewTerminalFont ?? settings.terminal_font_family}
-                          suggestions={terminalFontSuggestions}
-                          placeholder="JetBrains Mono"
-                          onPreviewFontFamily={setPreviewTerminalFont}
-                          onChange={(v)=>setSettingsLive({ ...settings, terminal_font_family: v })}
-                        />
-                        <div className="text-[11px] text-muted-foreground mt-1 font-mono" style={{ fontFamily: previewTerminalFont ?? settings.terminal_font_family }}>Preview: hydra --help — 0123456789 — ligatures fi fl</div>
-                      </div>
-                      <div><label className="block text-[12px] font-medium mb-1.5">Font Size (px)</label><input type="number" min={8} max={32} value={settings.terminal_font_size} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_size: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                      <div><label className="block text-[12px] font-medium mb-1.5">Line Height</label><input type="number" min={0.8} max={2} step={0.05} value={settings.terminal_line_height} onChange={(e)=>setSettingsLive({ ...settings, terminal_line_height: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                      <div><label className="block text-[12px] font-medium mb-1.5">Weight</label><input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_weight: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                      <div><label className="block text-[12px] font-medium mb-1.5">Weight Bold</label><input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight_bold} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_weight_bold: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                    </div>
-                  </section>
-
-                  {/* Terminal Themes */}
-                  <section className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-[13px] font-semibold">Terminal Themes</h3>
-                      <button onClick={handleImportCustomTheme} className="px-3 py-1.5 rounded-md border bg-background text-[12px] hover:bg-muted flex items-center gap-1.5"><Upload className="size-3.5" /> Import JSON/YAML</button>
-                    </div>
-                    <p className="text-[12px] text-muted-foreground">Catalog: {DEFAULT_TERMINAL_THEME_DARK} (dark) + {DEFAULT_TERMINAL_THEME_LIGHT} (light) + classic/popular — {getAvailableTerminalThemeOptions(settings).length} themes.</p>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[12px] font-medium">Target</span>
-                      <SegmentedControl value={terminalTarget} onChange={(v)=>setTerminalTarget(v as "dark"|"light")} options={[{value:"dark",label:"Dark"},{value:"light",label:"Light"}]} />
-                      {isLightTarget && <label className="ml-2 flex items-center gap-2 text-[12px]"><input type="checkbox" checked={matchDarkMode} onChange={()=>setSettingsLive({ ...settings, terminal_use_separate_light_theme: !settings.terminal_use_separate_light_theme })} className="accent-emerald-600" /> Match dark mode</label>}
-                    </div>
-                    {showCustomControls ? (
-                      <div className="space-y-4">
-                        <ThemePicker selectedTheme={isLightTarget ? settings.terminal_theme_light : settings.terminal_theme_dark} settings={settings} query={themeSearch} onQueryChange={setThemeSearch} onSelect={(v)=>setSettingsLive(isLightTarget ? { ...settings, terminal_theme_light: v } : { ...settings, terminal_theme_dark: v })} />
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-[12px] font-medium mb-1.5">{isLightTarget ? "Light Divider Color" : "Dark Divider Color"}</label>
-                            <div className="flex gap-2">
-                              <input type="color" value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e)=>setSettingsLive(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="h-9 w-9 rounded border p-1" />
-                              <input value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e)=>setSettingsLive(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="flex-1 bg-background border rounded-md px-3 py-2 font-mono text-[12px]" />
-                            </div>
-                          </div>
-                          <div className="flex items-end"><div className="w-full h-9 rounded border" style={{ background: isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark }} /></div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Light mode is matching dark. Disable “Match dark mode” to pick a separate light theme/divider.</div>
-                    )}
-                    {importError && <div className="text-[12px] text-destructive">{importError}</div>}
-                    {settings.terminal_custom_themes.length>0 && (
-                      <div className="space-y-2">
-                        <div className="text-[12px] font-medium">Imported Custom Themes ({settings.terminal_custom_themes.length}/200)</div>
-                        <div className="space-y-1 max-h-[140px] overflow-y-auto">
-                          {normalizeTerminalCustomThemes(settings.terminal_custom_themes).map((t)=>(
-                            <div key={t.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-background text-[12px]">
-                              <span className="w-3.5 h-3.5 rounded border" style={{ background: t.terminal.background }} />
-                              <span className="flex-1 truncate">{t.name} <span className="text-muted-foreground">({t.id})</span></span>
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{t.source}</span>
-                              <button onClick={()=>setSettingsLive({ ...settings, terminal_custom_themes: settings.terminal_custom_themes.filter((x)=>x.id!==t.id) })} className="p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" /></button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    <MiniTerminalPreview settings={previewTerminalFont ? { ...settings, terminal_font_family: previewTerminalFont } : settings} target={terminalTarget} />
-                  </section>
-
-                  {/* Default Shell — Hydra shell_detection.rs faithful */}
-                  <section className="rounded-xl border bg-card p-4 space-y-3">
-                    <h3 className="text-[13px] font-medium">Default Shell</h3>
-                    <p className="text-[12px] text-muted-foreground">Which shell Hydra launches for new terminals. Empty = system default (<code>bash</code>). Detected via <code>which</code> + <code>/etc/shells</code> — like Orca terminalDefaultShell.</p>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <select value={settings.terminal_default_shell} onChange={(e)=>setSettingsLive({ ...settings, terminal_default_shell: e.target.value })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring">
-                          <option value="">System default (bash)</option>
-                          {availableShells.map(s=> <option key={s.id} value={s.id}>{s.label}</option>)}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                      </div>
-                      <button onClick={()=>invoke<{id:string;label:string;path:string}[]>("list_available_shells").then((s:any)=>setAvailableShells(s.map((x:any)=>({id:x.id,label:x.label,path:x.path})))).catch(()=>{})} className="px-3 py-2 rounded-md border bg-background text-[12px] hover:bg-muted">Refresh</button>
-                    </div>
-                    <div className="flex gap-2">
-                      <input value={settings.terminal_default_shell} onChange={(e)=>setSettingsLive({ ...settings, terminal_default_shell: e.target.value })} placeholder="Custom shell (e.g. /usr/bin/zsh)" className="flex-1 bg-background border border-input rounded-md px-3 py-2 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
-                      <span className="text-[11px] text-muted-foreground self-center">Current: {settings.terminal_default_shell || "bash"} · {availableShells.length} found</span>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">Applies to new terminals/tabs. Existing PTYs keep their original shell until recreated.</div>
-                  </section>
-
-                  {/* Advanced — pane chrome only, Terminal settings moved to Terminal pane */}
-                  <section className="space-y-4">
-                    <h3 className="text-[13px] font-semibold">Advanced Pane Chrome</h3>
-                    <p className="text-[12px] text-muted-foreground">GPU, scrollback, contrast and clipboard moved to <span className="font-medium text-foreground">Terminal</span> pane.</p>
-                    <div className="rounded-xl border bg-card divide-y">
-                      <div className="p-4 grid grid-cols-3 gap-4">
-                        <div><label className="block text-[12px] font-medium mb-1.5">Cursor Style</label><div className="relative"><select value={settings.terminal_cursor_style} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_style: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="block">Block</option><option value="underline">Underline</option><option value="bar">Bar</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
-                        <div className="space-y-2 pt-6"><label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={settings.terminal_cursor_blink} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_blink: e.target.checked })} /> Cursor Blink</label></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">Ligatures</label><div className="relative"><select value={settings.terminal_ligatures} onChange={(e)=>setSettingsLive({ ...settings, terminal_ligatures: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="auto">Auto</option><option value="on">On</option><option value="off">Off</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">Divider Thickness (px)</label><input type="number" min={1} max={12} value={settings.terminal_divider_thickness_px} onChange={(e)=>setSettingsLive({ ...settings, terminal_divider_thickness_px: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                      </div>
-                      <div className="p-4 grid grid-cols-3 gap-4">
-                        <div><label className="block text-[12px] font-medium mb-1.5">Inactive Opacity</label><input type="number" min={0} max={1} step={0.05} value={settings.terminal_inactive_pane_opacity} onChange={(e)=>setSettingsLive({ ...settings, terminal_inactive_pane_opacity: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">Active Opacity</label><input type="number" min={0} max={1} step={0.05} value={settings.terminal_active_pane_opacity} onChange={(e)=>setSettingsLive({ ...settings, terminal_active_pane_opacity: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">Opacity Transition (ms)</label><input type="number" value={settings.terminal_pane_opacity_transition_ms} onChange={(e)=>setSettingsLive({ ...settings, terminal_pane_opacity_transition_ms: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                        <div><label className="block text-[12px] font-medium mb-1.5">Background Opacity</label><input type="number" min={0} max={1} step={0.05} value={settings.terminal_background_opacity ?? 1} onChange={(e)=>setSettingsLive({ ...settings, terminal_background_opacity: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
-                      </div>
-                    </div>
-                  </section>
+                  <p className="text-[11px] text-muted-foreground px-1">Typography, Themes, Shell and Pane Chrome moved to <span className="font-medium text-foreground">Workspace → Terminal</span> (Orca: Workflows → Terminal).</p>
                 </div>
               )}
 
@@ -921,8 +517,16 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
               {activeId==="input" && (
                 <div className="space-y-6">
                   <h3 className="text-[13px] font-semibold">Input & Editing</h3>
-                  <div className="rounded-xl border bg-card p-4">
-                    <SettingsSwitchRow label="Middle-click Paste from Selection" description="Linux (X11/Wayland) primary selection buffer without altering clipboard." checked={settings.primary_selection_middle_click_paste} onChange={()=>setSettingsLive({ ...settings, primary_selection_middle_click_paste: !settings.primary_selection_middle_click_paste })} />
+                  <div className="rounded-xl border bg-amber-500/10 border-amber-500/20 p-4 flex items-start gap-3">
+                    <Info className="size-4 text-amber-600 mt-0.5" />
+                    <div className="space-y-1">
+                      <div className="text-[13px] font-medium">Moved to Terminal</div>
+                      <div className="text-[12px] text-muted-foreground">Middle-click Paste now lives in <span className="font-medium text-foreground">Workspace → Terminal → Interaction</span> for coherence (Orca: Interface → Input merged). Use search or navigate there.</div>
+                      <button onClick={()=>setActiveId("terminal")} className="text-[12px] text-emerald-600 hover:underline">Go to Terminal →</button>
+                    </div>
+                  </div>
+                  <div className="rounded-xl border bg-card p-4 opacity-60">
+                    <SettingsSwitchRow label="Middle-click Paste from Selection (alias)" description="Alias — canonical control is in Terminal." checked={settings.primary_selection_middle_click_paste} onChange={()=>setSettingsLive({ ...settings, primary_selection_middle_click_paste: !settings.primary_selection_middle_click_paste })} />
                   </div>
                 </div>
               )}
@@ -969,10 +573,296 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
 
               {activeId==="git" && (
                 <div className="space-y-6">
-                  <h3 className="text-[13px] font-semibold">Workspace & Git</h3>
-                  <div className="space-y-4">
-                    <div><label className="block text-[12px] font-medium mb-1.5">Default Workspaces Root</label><input value={settings.workspace_dir} onChange={(e)=>setSettingsLive({ ...settings, workspace_dir: e.target.value })} className="w-full bg-background border rounded-md px-3 py-2 font-mono text-[13px]" /></div>
+                  <div className="space-y-1">
+                    <h3 className="text-[20px] font-semibold tracking-tight">Workspace & Git</h3>
+                    <p className="text-[13px] text-muted-foreground">Where workspaces live, how they appear in the sidebar, and Git defaults — consolidated from General (Orca: Workflows → Git).</p>
+                  </div>
+
+                  {/* Workspace Directory — moved from General */}
+                  <div className="rounded-xl border bg-card p-6 space-y-3">
+                    <h4 className="text-[13px] font-semibold">Workspace Directory</h4>
+                    <div className="flex gap-2">
+                      <input
+                        value={settings.workspace_dir}
+                        onChange={(e)=> setSettingsLive({ ...settings, workspace_dir: e.target.value })}
+                        placeholder="/home/renan/orca/workspaces"
+                        className="flex-1 bg-background border rounded-md px-3 py-2 font-mono text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <button
+                        onClick={async ()=>{
+                          try {
+                            const picked = await dialogOpen({ directory: true, multiple: false });
+                            if (typeof picked === "string" && picked) setSettingsLive({ ...settings, workspace_dir: picked });
+                          } catch {}
+                        }}
+                        className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-md border bg-background text-[13px] hover:bg-muted"
+                      >
+                        <FolderGit2 className="size-3.5" /> Browse
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">Use relative path (e.g. .orca/worktrees) for per-project, or absolute for shared folder. Duplicated field from General removed — single source of truth.</p>
+                  </div>
+
+                  {/* Sources — moved from General */}
+                  <div className="rounded-xl border bg-card p-6 space-y-3">
+                    <h4 className="text-[13px] font-semibold">Sources</h4>
+                    <p className="text-[12px] text-muted-foreground">Shown sources include current and future worktrees in the sidebar.</p>
+                    <div className="overflow-hidden rounded-lg border bg-muted/30">
+                      {([
+                        { id: "claude" as const, label: "Claude Code", sub: ".claude/worktrees/*" },
+                        { id: "gsd" as const, label: "GSD", sub: ".gsd-workspaces/*" },
+                      ] as const).map((row)=> {
+                        const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                        const vis = (wvd.sourcePreferences?.builtIn?.[row.id] ?? "hide") as "show"|"hide";
+                        const setVis = (next: "show"|"hide")=> {
+                          const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                          const nextPrefs = { ...(cur.sourcePreferences ?? { builtIn: {}, custom: {} }), builtIn: { ...(cur.sourcePreferences?.builtIn ?? {}), [row.id]: next } };
+                          setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, sourcePreferences: nextPrefs } } as any);
+                        };
+                        return (
+                          <div key={row.id} className="flex items-center justify-between gap-2 px-3 py-3 border-b last:border-0 bg-card">
+                            <div className="min-w-0">
+                              <div className="text-[13px] font-medium">{row.label}</div>
+                              <div className="font-mono text-[11px] text-muted-foreground">{row.sub}</div>
+                            </div>
+                            <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                              {(["Show","Hide"] as const).map((lbl)=>{
+                                const val = lbl.toLowerCase() as "show"|"hide";
+                                const active = vis===val;
+                                return (
+                                  <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {(()=>{
+                        const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                        const vis = (wvd.external ?? "hide") as "show"|"hide";
+                        const setVis = (next: "show"|"hide")=> {
+                          const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                          setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, external: next } } as any);
+                        };
+                        return (
+                          <div className="flex items-center justify-between gap-2 px-3 py-3 border-b bg-card">
+                            <div className="min-w-0">
+                              <div className="text-[13px] font-medium">Other locations</div>
+                              <div className="font-mono text-[11px] text-muted-foreground">Outside listed sources</div>
+                            </div>
+                            <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                              {(["Show","Hide"] as const).map((lbl)=>{
+                                const val = lbl.toLowerCase() as "show"|"hide";
+                                const active = vis===val;
+                                return (
+                                  <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                      <div className="px-3 py-3 bg-card space-y-2">
+                        <div className="text-[13px] font-medium">Worktree root</div>
+                        <div className="flex gap-2">
+                          <input
+                            value={worktreeRootDraft}
+                            onChange={(e)=> setWorktreeRootDraft(e.target.value)}
+                            onKeyDown={(e)=> {
+                              if (e.key==="Enter" && worktreeRootDraft.trim()) {
+                                const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                                const id = Math.random().toString(36).slice(2,10);
+                                const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
+                                setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                                setWorktreeRootDraft("");
+                              }
+                            }}
+                            placeholder=""
+                            className="flex-1 bg-background border rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                          <button
+                            onClick={()=>{
+                              if (!worktreeRootDraft.trim()) return;
+                              const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                              const id = Math.random().toString(36).slice(2,10);
+                              const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
+                              setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                              setWorktreeRootDraft("");
+                            }}
+                            className="px-4 py-2 rounded-md bg-foreground text-background text-[13px] font-medium hover:bg-foreground/90"
+                          >Add</button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">Orca will recognize worktrees beneath this folder.</p>
+                        {(((settings as any).worktree_visibility_defaults?.customSources ?? []) as Array<{id:string;rootPath:string}>).length>0 && (
+                          <div className="space-y-1 pt-2">
+                            {((settings as any).worktree_visibility_defaults.customSources as Array<{id:string;rootPath:string}>).map((cs)=>(
+                              <div key={cs.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md border bg-muted/20 text-[12px]">
+                                <span className="truncate font-mono">{cs.rootPath}</span>
+                                <button
+                                  onClick={()=>{
+                                    const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                                    const next = (cur.customSources ?? []).filter((x: {id:string})=> x.id!==cs.id);
+                                    setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                                  }}
+                                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                                ><Trash2 className="size-3.5" /></button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border bg-card p-6 space-y-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="pr-4">
+                        <div className="text-[13px] font-medium">Nest Workspaces</div>
+                        <div className="text-[12px] text-muted-foreground">Create workspaces inside a repo-named subfolder.</div>
+                      </div>
+                      <button type="button" role="switch" aria-checked={settings.nest_workspaces} onClick={()=> setSettingsLive({ ...settings, nest_workspaces: !settings.nest_workspaces })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.nest_workspaces ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.nest_workspaces ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                    <div className="h-px bg-border" />
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="pr-4">
+                        <div className="text-[13px] font-medium">Ask Before Deleting Workspaces</div>
+                        <div className="text-[12px] text-muted-foreground">Show a confirmation before deleting a workspace.</div>
+                      </div>
+                      <button type="button" role="switch" aria-checked={!((settings as any).skip_delete_worktree_confirm ?? false)} onClick={()=> setSettingsLive({ ...settings, skip_delete_worktree_confirm: !((settings as any).skip_delete_worktree_confirm ?? false)} as any)} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${!((settings as any).skip_delete_worktree_confirm ?? false) ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${!((settings as any).skip_delete_worktree_confirm ?? false) ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Git defaults */}
+                  <div className="rounded-xl border bg-card p-6 space-y-4">
+                    <h4 className="text-[13px] font-semibold">Git Defaults</h4>
                     <div><label className="block text-[12px] font-medium mb-1.5">Auto-generated Branch Prefix</label><input value={settings.default_branch_prefix} onChange={(e)=>setSettingsLive({ ...settings, default_branch_prefix: e.target.value })} className="w-full bg-background border rounded-md px-3 py-2 font-mono text-[13px]" /><span className="text-[11px] text-muted-foreground">Prefix for parallel git branches (e.g. feat/, task/).</span></div>
+                  </div>
+
+                  {/* Setup Script — moved from Terminal */}
+                  <div className="rounded-xl border bg-card p-6 space-y-4">
+                    <div>
+                      <h4 className="text-[13px] font-semibold">Workspace Setup Script</h4>
+                      <p className="text-[12px] text-muted-foreground">Where the repository setup script runs when a new workspace is created.</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="pr-4">
+                        <div className="text-[13px] font-medium">Setup Script Location</div>
+                        <div className="text-[12px] text-muted-foreground">"New Tab" opens in background titled "Setup" without stealing focus.</div>
+                      </div>
+                      <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                        {(["new-tab","split-vertical","split-horizontal"] as const).map(v=> {
+                          const active = (settings.setup_script_launch_mode ?? "new-tab")===v;
+                          const label = v==="new-tab" ? "New Tab" : v==="split-vertical" ? "Split Vertically" : "Split Horizontally";
+                          return <button key={v} onClick={()=>setSettingsLive({ ...settings, setup_script_launch_mode: v })} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{label}</button>
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Open In Apps — moved from General */}
+                  <div className="rounded-xl border bg-card p-6 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-[13px] font-medium">Open In Apps</div>
+                        <div className="text-[12px] text-muted-foreground">Choose apps available from a workspace's Open in menu (used in sidebar context menu).</div>
+                      </div>
+                      <div className="relative">
+                        <button
+                          onClick={() => {
+                            const el = document.getElementById("hydra-openin-add-menu-git");
+                            if (el) el.classList.toggle("hidden");
+                          }}
+                          className="h-8 px-3 rounded-md border bg-background text-[13px] flex items-center gap-1.5 hover:bg-muted"
+                        >
+                          Add app <ChevronDown className="size-3.5" />
+                        </button>
+                        <div id="hydra-openin-add-menu-git" className="hidden absolute right-0 top-9 z-10 w-64 rounded-md border bg-popover shadow-xl p-1">
+                          {getOpenInAppPresets().map(preset => {
+                            const apps = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[];
+                            const added = isOpenInAppPresetAdded(apps, preset);
+                            return (
+                              <button
+                                key={preset.id}
+                                disabled={added || apps.length >= 8}
+                                onClick={() => {
+                                  if (added || apps.length >= 8) return;
+                                  const next = [...apps, { id: preset.id, label: preset.label, command: preset.command }];
+                                  setSettingsLive({ ...settings, open_in_applications: next } as any);
+                                  document.getElementById("hydra-openin-add-menu-git")?.classList.add("hidden");
+                                }}
+                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[13px] hover:bg-muted ${added ? "opacity-50" : ""}`}
+                              >
+                                <OpenInApplicationIcon application={preset} size={14} />
+                                <span className="truncate">{preset.label}</span>
+                                {added && <span className="ml-auto text-[11px] text-muted-foreground flex items-center gap-1"><Check className="size-3" /> Added</span>}
+                              </button>
+                            );
+                          })}
+                          <button
+                            onClick={() => {
+                              const apps = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[];
+                              if (apps.length >= 8) return;
+                              const id = `open-in-${Date.now().toString(36)}`;
+                              const next = [...apps, { id, label: "", command: "" }];
+                              setSettingsLive({ ...settings, open_in_applications: next } as any);
+                              document.getElementById("hydra-openin-add-menu-git")?.classList.add("hidden");
+                            }}
+                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[13px] hover:bg-muted"
+                          >
+                            <AppWindow className="size-3.5" /> Custom app
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-border/40 border rounded-lg overflow-hidden">
+                      {((settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS) as OpenInApplication[]).length === 0 ? (
+                        <div className="px-3 py-6 text-center text-sm text-muted-foreground">No apps — add VS Code, Zed or Cursor</div>
+                      ) : (
+                        (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS as OpenInApplication[]).map((app, idx) => (
+                          <div key={app.id} className="p-3 flex items-start gap-3 bg-card">
+                            <div className="size-7 rounded border bg-background flex items-center justify-center shrink-0">
+                              <OpenInApplicationIcon application={app} size={16} />
+                            </div>
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <input
+                                value={app.label}
+                                placeholder="App name"
+                                onChange={e => {
+                                  const next = [...(settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS)];
+                                  next[idx] = { ...app, label: e.target.value };
+                                  setSettingsLive({ ...settings, open_in_applications: next } as any);
+                                }}
+                                className="w-full bg-background border rounded px-2 py-1 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+                              />
+                              <input
+                                value={app.command}
+                                placeholder="command (e.g. code, zed, cursor)"
+                                spellCheck={false}
+                                onChange={e => {
+                                  const next = [...(settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS)];
+                                  next[idx] = { ...app, command: e.target.value };
+                                  setSettingsLive({ ...settings, open_in_applications: next } as any);
+                                }}
+                                className="w-full bg-background border rounded px-2 py-1 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                              />
+                            </div>
+                            <button
+                              onClick={() => {
+                                const next = (settings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS).filter(a => a.id !== app.id);
+                                setSettingsLive({ ...settings, open_in_applications: next } as any);
+                              }}
+                              className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -981,8 +871,118 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                 <div className="space-y-6">
                   <div className="space-y-1">
                     <h3 className="text-[20px] font-semibold tracking-tight">Terminal</h3>
-                    <p className="text-[13px] text-muted-foreground">Shells, renderer, sessions, and terminal behavior.</p>
+                    <p className="text-[13px] text-muted-foreground">Typography, themes, renderer and behavior — unified from Appearance (Orca: Workflows → Terminal).</p>
                   </div>
+
+                  {/* Typography — moved from Appearance for coherence */}
+                  <section className="space-y-4">
+                    <h3 className="text-[13px] font-semibold flex items-center gap-2"><TerminalSquare className="size-4 text-emerald-500" /> Typography</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <label className="block text-[12px] font-medium mb-1.5">Font Family</label>
+                        <FontAutocomplete
+                          value={previewTerminalFont ?? settings.terminal_font_family}
+                          suggestions={terminalFontSuggestions}
+                          placeholder="JetBrains Mono"
+                          onPreviewFontFamily={setPreviewTerminalFont}
+                          onChange={(v)=>setSettingsLive({ ...settings, terminal_font_family: v })}
+                        />
+                        <div className="text-[11px] text-muted-foreground mt-1 font-mono" style={{ fontFamily: previewTerminalFont ?? settings.terminal_font_family }}>Preview: hydra --help — 0123456789 — ligatures fi fl</div>
+                      </div>
+                      <div><label className="block text-[12px] font-medium mb-1.5">Font Size (px)</label><input type="number" min={8} max={32} value={settings.terminal_font_size} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_size: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                      <div><label className="block text-[12px] font-medium mb-1.5">Line Height</label><input type="number" min={0.8} max={2} step={0.05} value={settings.terminal_line_height} onChange={(e)=>setSettingsLive({ ...settings, terminal_line_height: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                      <div><label className="block text-[12px] font-medium mb-1.5">Weight</label><input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_weight: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                      <div><label className="block text-[12px] font-medium mb-1.5">Weight Bold</label><input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight_bold} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_weight_bold: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                    </div>
+                  </section>
+
+                  {/* Terminal Themes — moved from Appearance */}
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-[13px] font-semibold">Terminal Themes</h3>
+                      <button onClick={handleImportCustomTheme} className="px-3 py-1.5 rounded-md border bg-background text-[12px] hover:bg-muted flex items-center gap-1.5"><Upload className="size-3.5" /> Import JSON/YAML</button>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground">Catalog: {DEFAULT_TERMINAL_THEME_DARK} (dark) + {DEFAULT_TERMINAL_THEME_LIGHT} (light) — {getAvailableTerminalThemeOptions(settings).length} themes.</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[12px] font-medium">Target</span>
+                      <SegmentedControl value={terminalTarget} onChange={(v)=>setTerminalTarget(v as "dark"|"light")} options={[{value:"dark",label:"Dark"},{value:"light",label:"Light"}]} />
+                      {isLightTarget && <label className="ml-2 flex items-center gap-2 text-[12px]"><input type="checkbox" checked={matchDarkMode} onChange={()=>setSettingsLive({ ...settings, terminal_use_separate_light_theme: !settings.terminal_use_separate_light_theme })} className="accent-emerald-600" /> Match dark mode</label>}
+                    </div>
+                    {showCustomControls ? (
+                      <div className="space-y-4">
+                        <ThemePicker selectedTheme={isLightTarget ? settings.terminal_theme_light : settings.terminal_theme_dark} settings={settings} query={themeSearch} onQueryChange={setThemeSearch} onSelect={(v)=>setSettingsLive(isLightTarget ? { ...settings, terminal_theme_light: v } : { ...settings, terminal_theme_dark: v })} />
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[12px] font-medium mb-1.5">{isLightTarget ? "Light Divider Color" : "Dark Divider Color"}</label>
+                            <div className="flex gap-2">
+                              <input type="color" value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e)=>setSettingsLive(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="h-9 w-9 rounded border p-1" />
+                              <input value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e)=>setSettingsLive(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="flex-1 bg-background border rounded-md px-3 py-2 font-mono text-[12px]" />
+                            </div>
+                          </div>
+                          <div className="flex items-end"><div className="w-full h-9 rounded border" style={{ background: isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark }} /></div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Light mode is matching dark. Disable “Match dark mode” to pick a separate light theme/divider.</div>
+                    )}
+                    {importError && <div className="text-[12px] text-destructive">{importError}</div>}
+                    {settings.terminal_custom_themes.length>0 && (
+                      <div className="space-y-2">
+                        <div className="text-[12px] font-medium">Imported Custom Themes ({settings.terminal_custom_themes.length}/200)</div>
+                        <div className="space-y-1 max-h-[140px] overflow-y-auto">
+                          {normalizeTerminalCustomThemes(settings.terminal_custom_themes).map((t)=>(
+                            <div key={t.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-background text-[12px]">
+                              <span className="w-3.5 h-3.5 rounded border" style={{ background: t.terminal.background }} />
+                              <span className="flex-1 truncate">{t.name} <span className="text-muted-foreground">({t.id})</span></span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{t.source}</span>
+                              <button onClick={()=>setSettingsLive({ ...settings, terminal_custom_themes: settings.terminal_custom_themes.filter((x)=>x.id!==t.id) })} className="p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" /></button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <MiniTerminalPreview settings={previewTerminalFont ? { ...settings, terminal_font_family: previewTerminalFont } : settings} target={terminalTarget} />
+                  </section>
+
+                  {/* Default Shell */}
+                  <section className="rounded-xl border bg-card p-4 space-y-3">
+                    <h3 className="text-[13px] font-medium">Default Shell</h3>
+                    <p className="text-[12px] text-muted-foreground">Which shell Hydra launches for new terminals. Empty = system default (<code>bash</code>).</p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <select value={settings.terminal_default_shell} onChange={(e)=>setSettingsLive({ ...settings, terminal_default_shell: e.target.value })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring">
+                          <option value="">System default (bash)</option>
+                          {availableShells.map(s=> <option key={s.id} value={s.id}>{s.label}</option>)}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      </div>
+                      <button onClick={()=>invoke<{id:string;label:string;path:string}[]>("list_available_shells").then((s:any)=>setAvailableShells(s.map((x:any)=>({id:x.id,label:x.label,path:x.path})))).catch(()=>{})} className="px-3 py-2 rounded-md border bg-background text-[12px] hover:bg-muted">Refresh</button>
+                    </div>
+                    <div className="flex gap-2">
+                      <input value={settings.terminal_default_shell} onChange={(e)=>setSettingsLive({ ...settings, terminal_default_shell: e.target.value })} placeholder="Custom shell (e.g. /usr/bin/zsh)" className="flex-1 bg-background border border-input rounded-md px-3 py-2 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
+                      <span className="text-[11px] text-muted-foreground self-center">Current: {settings.terminal_default_shell || "bash"} · {availableShells.length} found</span>
+                    </div>
+                  </section>
+
+                  {/* Pane Chrome — moved from Appearance */}
+                  <section className="space-y-4">
+                    <h3 className="text-[13px] font-semibold">Pane Chrome</h3>
+                    <p className="text-[12px] text-muted-foreground">Cursor, ligatures, divider and opacity for terminal panes.</p>
+                    <div className="rounded-xl border bg-card divide-y">
+                      <div className="p-4 grid grid-cols-3 gap-4">
+                        <div><label className="block text-[12px] font-medium mb-1.5">Cursor Style</label><div className="relative"><select value={settings.terminal_cursor_style} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_style: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="block">Block</option><option value="underline">Underline</option><option value="bar">Bar</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
+                        <div className="space-y-2 pt-6"><label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={settings.terminal_cursor_blink} onChange={(e)=>setSettingsLive({ ...settings, terminal_cursor_blink: e.target.checked })} /> Cursor Blink</label></div>
+                        <div><label className="block text-[12px] font-medium mb-1.5">Ligatures</label><div className="relative"><select value={settings.terminal_ligatures} onChange={(e)=>setSettingsLive({ ...settings, terminal_ligatures: e.target.value as any })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"><option value="auto">Auto</option><option value="on">On</option><option value="off">Off</option></select><ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div></div>
+                        <div><label className="block text-[12px] font-medium mb-1.5">Divider Thickness (px)</label><input type="number" min={1} max={12} value={settings.terminal_divider_thickness_px} onChange={(e)=>setSettingsLive({ ...settings, terminal_divider_thickness_px: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                      </div>
+                      <div className="p-4 grid grid-cols-3 gap-4">
+                        <div><label className="block text-[12px] font-medium mb-1.5">Inactive Opacity</label><input type="number" min={0} max={1} step={0.05} value={settings.terminal_inactive_pane_opacity} onChange={(e)=>setSettingsLive({ ...settings, terminal_inactive_pane_opacity: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                        <div><label className="block text-[12px] font-medium mb-1.5">Active Opacity</label><input type="number" min={0} max={1} step={0.05} value={settings.terminal_active_pane_opacity} onChange={(e)=>setSettingsLive({ ...settings, terminal_active_pane_opacity: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                        <div><label className="block text-[12px] font-medium mb-1.5">Opacity Transition (ms)</label><input type="number" value={settings.terminal_pane_opacity_transition_ms} onChange={(e)=>setSettingsLive({ ...settings, terminal_pane_opacity_transition_ms: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                        <div><label className="block text-[12px] font-medium mb-1.5">Background Opacity</label><input type="number" min={0} max={1} step={0.05} value={settings.terminal_background_opacity ?? 1} onChange={(e)=>setSettingsLive({ ...settings, terminal_background_opacity: Number(e.target.value) })} className="w-full bg-background border rounded-md px-3 py-2 text-[13px]" /></div>
+                      </div>
+                    </div>
+                  </section>
 
                   {/* Rendering — GPU + Contrast + Inline Images */}
                   <div className="rounded-xl border bg-card overflow-hidden">
@@ -1094,29 +1094,13 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                       </div>
                       <div className="h-px bg-border" />
                       <div className="flex items-center justify-between gap-4 py-3">
+                        <div className="pr-4"><div className="text-[13px] font-medium">Middle-click Paste (Primary Selection)</div><div className="text-[12px] text-muted-foreground">Linux primary selection — moved from Input pane for coherence.</div></div>
+                        <button type="button" role="switch" aria-checked={Boolean(settings.primary_selection_middle_click_paste)} onClick={()=>setSettingsLive({ ...settings, primary_selection_middle_click_paste: !settings.primary_selection_middle_click_paste })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.primary_selection_middle_click_paste ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.primary_selection_middle_click_paste ? "translate-x-4" : "translate-x-0.5"}`} /></button>
+                      </div>
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-4 py-3">
                         <div className="pr-4"><div className="text-[13px] font-medium">Allow TUI Clipboard Writes (OSC 52)</div><div className="text-[12px] text-muted-foreground">Let programs in the terminal (Zellij, tmux, Neovim, fzf, Grok, SSH) copy to your system clipboard.</div></div>
                         <button type="button" role="switch" aria-checked={settings.terminal_allow_osc52_clipboard!==false} onClick={()=>setSettingsLive({ ...settings, terminal_allow_osc52_clipboard: !(settings.terminal_allow_osc52_clipboard!==false) })} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.terminal_allow_osc52_clipboard!==false ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.terminal_allow_osc52_clipboard!==false ? "translate-x-4" : "translate-x-0.5"}`} /></button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Workspace Setup Script */}
-                  <div className="rounded-xl border bg-card p-6 space-y-4">
-                    <div>
-                      <h4 className="text-[13px] font-semibold">Workspace Setup Script</h4>
-                      <p className="text-[12px] text-muted-foreground">Where the repository setup script runs when a new workspace is created.</p>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="pr-4">
-                        <div className="text-[13px] font-medium">Setup Script Location</div>
-                        <div className="text-[12px] text-muted-foreground">"New Tab" opens the setup command in a background tab titled "Setup" without stealing focus.</div>
-                      </div>
-                      <div className="inline-flex rounded-md border p-0.5 bg-muted">
-                        {(["new-tab","split-vertical","split-horizontal"] as const).map(v=> {
-                          const active = (settings.setup_script_launch_mode ?? "new-tab")===v;
-                          const label = v==="new-tab" ? "New Tab" : v==="split-vertical" ? "Split Vertically" : "Split Horizontally";
-                          return <button key={v} onClick={()=>setSettingsLive({ ...settings, setup_script_launch_mode: v })} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{label}</button>
-                        })}
                       </div>
                     </div>
                   </div>

@@ -79,9 +79,17 @@ interface WorktreeSidebarProps {
   onOpenAddRepoDialog: () => void;
   onOpenNewWorkspaceModal: (proj?: HydraProject) => void;
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
+  onProjectContextMenu?: (e: React.MouseEvent, project: HydraProject) => void;
+  onWorktreeContextMenu?: (e: React.MouseEvent, worktree: GitWorktreeInfo, project: HydraProject) => void;
   onReorderSessions?: (sessions: WorktreeSession[]) => void;
   onReorderProjects?: (projects: HydraProject[]) => void;
   onReorderWorktrees?: (worktrees: GitWorktreeInfo[]) => void;
+  pinnedProjects?: Set<string>;
+  unreadProjects?: Set<string>;
+  pinnedWorktrees?: Set<string>;
+  unreadWorktrees?: Set<string>;
+  projectGroupMap?: Record<string, string>;
+  projectGroups?: Array<{ id: string; name: string }>;
 }
 
 export function WorktreeSidebar({
@@ -100,9 +108,17 @@ export function WorktreeSidebar({
   onOpenAddRepoDialog,
   onOpenNewWorkspaceModal,
   onSessionContextMenu,
+  onProjectContextMenu,
+  onWorktreeContextMenu,
   onReorderSessions,
   onReorderProjects,
   onReorderWorktrees,
+  pinnedProjects,
+  unreadProjects,
+  pinnedWorktrees,
+  unreadWorktrees,
+  projectGroupMap,
+  projectGroups,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
@@ -360,6 +376,11 @@ export function WorktreeSidebar({
                   onDrop={(e) => handleProjectDrop(e, proj.id)}
                   onDragEnd={handleProjectDragEnd}
                   onClick={() => onSelectProject(proj)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onProjectContextMenu?.(e, proj);
+                  }}
                   className={`group relative flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer transition ${
                     draggedProjectId === proj.id ? "opacity-30" : ""
                   } ${
@@ -379,6 +400,9 @@ export function WorktreeSidebar({
                   <div className="flex items-center gap-2 min-w-0">
                     <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
                     <FolderGit2 className={`w-3.5 h-3.5 shrink-0 ${isActiveProject ? "text-emerald-400" : "text-neutral-500"}`} />
+                    {pinnedProjects?.has(proj.id) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
+                    {unreadProjects?.has(proj.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+                    {projectGroupMap?.[proj.id] && (() => { const g = projectGroups?.find((x) => x.id === projectGroupMap[proj.id]); return <span className="text-[8px] px-1 py-0.2 rounded bg-neutral-800 text-neutral-400 shrink-0 truncate max-w-[60px]" title={g?.name ?? projectGroupMap[proj.id]}>{(g?.name ?? projectGroupMap[proj.id]).slice(0,12)}</span>; })()}
                     <span className="truncate text-[12px] font-semibold tracking-tight">{proj.name}</span>
                   </div>
 
@@ -440,8 +464,8 @@ export function WorktreeSidebar({
                               const trimmed = input.trim();
                               try {
                                 await invoke("set_project_worktree_base", { path: proj.path, basePath: trimmed ? trimmed : null });
-                                // refresh projects list via page reload hint — parent will re-list on next focus; trigger reload by emitting event
-                                window.location.reload();
+                                // Evita reload que mata PTYs shadow buffer — emite evento para o parent recarregar lista
+                                window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
                               } catch (e) { console.error(e); }
                             }}
                             className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
@@ -517,6 +541,11 @@ export function WorktreeSidebar({
                           onDrop={(e) => handleWorktreeDrop(e, wt.path)}
                           onDragEnd={handleWorktreeDragEnd}
                           onClick={() => onSelectGitWorktree(wt)}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onWorktreeContextMenu?.(e, wt, proj);
+                          }}
                           className={`group relative p-2.5 rounded-lg cursor-pointer worktree-sidebar-card-hover text-neutral-300 flex items-center justify-between transition-all ${
                             draggedWorktreePath === wt.path ? "opacity-30" : ""
                           }`}
@@ -530,6 +559,8 @@ export function WorktreeSidebar({
                           )}
                           <div className="flex items-center gap-2 min-w-0">
                             <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+                            {pinnedWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
+                            {unreadWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
                             <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
                             <span className="truncate text-[11px] font-medium text-neutral-200">
                               {wt.branch || proj.name}
@@ -598,6 +629,8 @@ export function WorktreeSidebar({
                           <div className="flex items-center justify-between mb-1 pl-1">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+                              {(pinnedWorktrees?.has(session.id) || pinnedWorktrees?.has(session.project_path)) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
+                              {unreadWorktrees?.has(session.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
                               <span className="font-medium truncate text-neutral-100 text-[11px]">
                                 {session.title}
                               </span>
