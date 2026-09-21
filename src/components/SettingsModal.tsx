@@ -184,6 +184,18 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
       invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
     }
   }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
 
   const setSettingsLive = (next: HydraSettings) => {
     setSettings(next);

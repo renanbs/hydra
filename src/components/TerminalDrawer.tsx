@@ -14,12 +14,22 @@ import {
 import { resolveTerminalFontWeights } from "../shared/terminal-fonts";
 import { createTerminalTuiMouseWheelDistanceState, normalizeTerminalTuiMouseWheelMultiplier, resolveTerminalTuiMouseWheelReportCount } from "../lib/terminal-tui-wheel";
 
+export interface TerminalContextActions {
+  getSelection: () => string;
+  hasSelection: () => boolean;
+  selectAll: () => void;
+  clearSelection: () => void;
+  clearScrollback: () => void;
+  clearScreen: () => void;
+  paste: () => void;
+}
+
 interface TerminalDrawerProps {
   sessionId: string;
   executable?: string;
   cwd?: string;
   settings?: HydraSettings;
-  onContextMenu?: (x: number, y: number) => void;
+  onContextMenu?: (x: number, y: number, actions: TerminalContextActions) => void;
 }
 const FALLBACK_FONTS = [
   "SF Mono", "Menlo", "Monaco", "Cascadia Mono", "Consolas",
@@ -378,7 +388,26 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     }
     e.preventDefault();
     e.stopPropagation();
-    onContextMenu?.(e.clientX, e.clientY);
+    const term = xtermRef.current;
+    const actions: TerminalContextActions = {
+      getSelection: () => term?.getSelection() ?? "",
+      hasSelection: () => Boolean(term?.hasSelection()),
+      selectAll: () => term?.selectAll(),
+      clearSelection: () => term?.clearSelection(),
+      clearScrollback: () => term?.clear(),
+      clearScreen: () => {
+        invoke("send_terminal_input", { sessionId, input: "\x0c" }).catch(console.error);
+      },
+      paste: () => {
+        navigator.clipboard
+          .readText()
+          .then((txt) => {
+            if (txt) invoke("send_terminal_input", { sessionId, input: txt }).catch(console.error);
+          })
+          .catch(console.error);
+      },
+    };
+    onContextMenu?.(e.clientX, e.clientY, actions);
   };
 
   const handleMouseEnter = () => {

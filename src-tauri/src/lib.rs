@@ -17,6 +17,7 @@ pub mod shell_detection;
 pub mod terminal;
 pub mod window_actions;
 pub mod worktree_ops;
+pub mod preflight;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
@@ -32,6 +33,7 @@ use git_status::{
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
 use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
+use preflight::{check_github_starred, check_preflight_tools, open_external_url, star_github_repo, PreflightStatus};
 use project_manager::{
     add_existing_project, get_project_worktree_base_path, list_local_projects, remove_added_project,
     set_project_worktree_base_path, HydraProject,
@@ -58,6 +60,28 @@ fn get_system_status() -> String {
 fn get_app_version(app: AppHandle) -> String {
     app.package_info().version.to_string()
 }
+#[tauri::command]
+fn check_preflight_tools_cmd() -> PreflightStatus {
+    check_preflight_tools()
+}
+
+#[tauri::command]
+fn check_github_starred_cmd(repo: Option<String>) -> Option<bool> {
+    let r = repo.unwrap_or_else(|| "stablyai/orca".to_string());
+    check_github_starred(&r)
+}
+
+#[tauri::command]
+fn star_github_repo_cmd(repo: Option<String>) -> Result<bool, String> {
+    let r = repo.unwrap_or_else(|| "stablyai/orca".to_string());
+    star_github_repo(&r)
+}
+
+#[tauri::command]
+fn open_external_url_cmd(url: String) -> Result<(), String> {
+    open_external_url(&url)
+}
+
 
 #[tauri::command]
 fn get_repo_git_status() -> Result<GitRepoStatus, String> {
@@ -668,7 +692,11 @@ pub fn run() {
             window_actions::window_minimize,
             window_actions::window_toggle_maximize,
             window_actions::window_close,
-            window_actions::window_start_dragging
+            window_actions::window_start_dragging,
+            check_preflight_tools_cmd,
+            check_github_starred_cmd,
+            star_github_repo_cmd,
+            open_external_url_cmd,
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");

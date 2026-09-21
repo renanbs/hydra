@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { 
   X, 
@@ -28,6 +28,18 @@ export function AddProjectOrWorktreeModal({
   const [initGit, setInitGit] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
 
   if (!isOpen) return null;
 
@@ -76,8 +88,8 @@ export function AddProjectOrWorktreeModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs select-none">
-      <div className="relative w-[500px] rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl overflow-hidden text-xs text-neutral-200">
+    <div onClick={onClose} className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs select-none">
+      <div onClick={(e) => e.stopPropagation()} className="relative w-[500px] rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl overflow-hidden text-xs text-neutral-200">
         {/* Header */}
         <div className="h-11 border-b border-[#222327] px-4 flex items-center justify-between bg-[#111214]">
           <div className="flex items-center gap-2 font-semibold text-neutral-200">

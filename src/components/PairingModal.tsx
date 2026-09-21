@@ -26,6 +26,18 @@ export function PairingModal({ isOpen, onClose }: PairingModalProps) {
         .catch(console.error);
     }
   }, [isOpen, data]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
 
   if (!isOpen) return null;
 
@@ -38,8 +50,8 @@ export function PairingModal({ isOpen, onClose }: PairingModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs select-none">
-      <div className="relative w-[420px] rounded-xl bg-[#111214] border border-[#26272b] p-6 shadow-2xl text-xs text-neutral-300">
+    <div onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs select-none">
+      <div onClick={(e) => e.stopPropagation()} className="relative w-[420px] rounded-xl bg-[#111214] border border-[#26272b] p-6 shadow-2xl text-xs text-neutral-300">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition"

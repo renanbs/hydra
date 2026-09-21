@@ -52,10 +52,17 @@ export function WorkspaceOptionsMenu({
         onClose();
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     if (isOpen) {
       window.addEventListener("mousedown", handleOutside);
+      window.addEventListener("keydown", handleKeyDown);
     }
-    return () => window.removeEventListener("mousedown", handleOutside);
+    return () => {
+      window.removeEventListener("mousedown", handleOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose, triggerRef]);
 
   // Ancoragem 100% igual ao Orca: side="right", align="start", sideOffset=8

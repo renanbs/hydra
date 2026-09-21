@@ -5,6 +5,7 @@ export interface ContextMenuItem {
   icon?: React.ReactNode;
   shortcut?: string;
   danger?: boolean;
+  disabled?: boolean;
   separator?: boolean;
   onClick: () => void;
 }
@@ -22,11 +23,18 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
 
   useEffect(() => {
     const handleOutsideClick = () => onClose();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("click", handleOutsideClick);
     window.addEventListener("contextmenu", handleOutsideClick);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("wheel", handleOutsideClick, { passive: true });
     return () => {
       window.removeEventListener("click", handleOutsideClick);
       window.removeEventListener("contextmenu", handleOutsideClick);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("wheel", handleOutsideClick);
     };
   }, [onClose]);
 
@@ -71,14 +79,18 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
         <div key={idx}>
           {item.separator && <div className="h-px bg-[#222327] my-1" />}
           <button
+            disabled={item.disabled}
             onClick={() => {
+              if (item.disabled) return;
               item.onClick();
               onClose();
             }}
-            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors cursor-pointer ${
-              item.danger
-                ? "hover:bg-red-500/20 text-red-400"
-                : "hover:bg-neutral-800/80 text-neutral-200 hover:text-white"
+            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
+              item.disabled
+                ? "opacity-40 cursor-not-allowed text-neutral-500"
+                : item.danger
+                ? "hover:bg-red-500/20 text-red-400 cursor-pointer"
+                : "hover:bg-neutral-800/80 text-neutral-200 hover:text-white cursor-pointer"
             }`}
           >
             <div className="flex items-center gap-2 min-w-0">
