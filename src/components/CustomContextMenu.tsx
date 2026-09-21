@@ -90,7 +90,7 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
     const hasChildren = item.children && item.children.length > 0;
     return (
       <div key={idx}>
-        {item.separator && <div className="h-px bg-[#222327] my-1" />}
+        {item.separator && <div className="h-px bg-border my-1" />}
         <button
           disabled={item.disabled && !hasChildren}
           title={item.title}
@@ -109,7 +109,7 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
               ? "opacity-40 cursor-not-allowed text-neutral-500"
               : item.danger
               ? "hover:bg-red-500/20 text-red-400 cursor-pointer"
-              : "hover:bg-neutral-800/80 text-neutral-200 hover:text-white cursor-pointer"
+              : "hover:bg-accent text-popover-foreground hover:text-foreground cursor-pointer"
           }`}
         >
           <div className="flex items-center gap-2 min-w-0">
@@ -134,7 +134,7 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
         style={{ left: `${coords.x}px`, top: `${coords.y}px` }}
         onClick={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.preventDefault()}
-        className="fixed z-[99999] w-56 rounded-xl bg-[#141518] border border-[#28292e] p-1.5 shadow-2xl text-xs select-none backdrop-blur-md"
+        className="fixed z-[99999] w-56 rounded-xl bg-popover border border-border p-1.5 shadow-2xl text-xs select-none backdrop-blur-md text-popover-foreground"
       >
         {items.map((item, idx) => renderItem(item, idx))}
       </div>
@@ -144,11 +144,11 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
           style={{ left: `${submenuCoords.x}px`, top: `${submenuCoords.y}px` }}
           onClick={(e) => e.stopPropagation()}
           onMouseLeave={() => setOpenSubmenuIdx(null)}
-          className="fixed z-[99999] w-52 rounded-xl bg-[#141518] border border-[#28292e] p-1.5 shadow-2xl text-xs select-none backdrop-blur-md"
+          className="fixed z-[99999] w-52 rounded-xl bg-popover border border-border p-1.5 shadow-2xl text-xs select-none backdrop-blur-md text-popover-foreground"
         >
           {activeSubmenu.map((sub, sIdx) => (
             <div key={sIdx}>
-              {sub.separator && <div className="h-px bg-[#222327] my-1" />}
+              {sub.separator && <div className="h-px bg-border my-1" />}
               {sub.isLabel ? (
                 <div className="px-2 py-1 text-[11px] font-medium text-neutral-500">{sub.label}</div>
               ) : (

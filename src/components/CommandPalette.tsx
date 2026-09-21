@@ -46,17 +46,17 @@ export function CommandPalette({
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="w-[540px] rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl overflow-hidden text-xs text-neutral-200"
+        className="w-[540px] rounded-xl bg-popover border border-border shadow-2xl overflow-hidden text-xs text-popover-foreground"
       >
         <Command label="Hydra Command Palette" className="w-full">
-          <div className="flex items-center gap-2.5 px-3 border-b border-[#222327] bg-[#111214]">
+          <div className="flex items-center gap-2.5 px-3 border-b border-border bg-popover">
             <Search className="w-4 h-4 text-neutral-500 shrink-0" />
             <Command.Input
               autoFocus
               value={search}
               onValueChange={setSearch}
               placeholder="Type a command or search workspace..."
-              className="w-full h-11 bg-transparent text-xs text-neutral-100 placeholder-neutral-500 focus:outline-none font-sans"
+              className="w-full h-11 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none font-sans"
             />
           </div>
 
@@ -112,7 +112,7 @@ export function CommandPalette({
             </Command.Group>
           </Command.List>
 
-          <div className="h-8 border-t border-[#222327] px-3 flex items-center justify-between text-[10px] text-neutral-500 bg-[#0e0f11] font-mono">
+          <div className="h-8 border-t border-border px-3 flex items-center justify-between text-[10px] text-muted-foreground bg-muted/40 font-mono">
             <span>Use ↑↓ to navigate, Enter to select</span>
             <span>Esc to close</span>
           </div>

@@ -9,7 +9,7 @@ type Props = {
 
 export function FileEditor({ content, language, theme, path }: Props) {
   return (
-    <div className="h-full w-full overflow-hidden bg-[#0c0d0e]">
+    <div className="h-full w-full overflow-hidden bg-editor-surface">
       <Editor
         height="100%"
         language={language}

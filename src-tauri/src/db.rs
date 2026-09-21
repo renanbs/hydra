@@ -86,6 +86,13 @@ fn default_workspace_dir() -> String {
 }
 fn default_nest_workspaces() -> bool { true }
 fn default_ctrl_tab_order_mode() -> String { "mru".to_string() }
+fn default_ui_zoom() -> f32 { 1.0 }
+fn default_left_sidebar_appearance_mode() -> String { "default".to_string() }
+fn default_left_sidebar_tint_color() -> String { "#336699".to_string() }
+fn default_left_sidebar_tint_opacity() -> f32 { 0.1 }
+fn default_usage_percentage_display() -> String { "used".to_string() }
+fn default_cursor_opacity() -> f32 { 1.0 }
+fn default_padding() -> u32 { 4 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct OrcaWorkspaceLayout {
@@ -333,6 +340,42 @@ pub struct HydraSettings {
     pub agent_default_env: std::collections::HashMap<String, std::collections::HashMap<String, String>>,
     #[serde(default = "default_open_in_applications", alias = "openInApplications")]
     pub open_in_applications: Vec<OpenInApplication>,
+    #[serde(default = "default_ui_zoom", alias = "uiZoom")]
+    pub ui_zoom: f32,
+    #[serde(default = "default_false", alias = "compactWorktreeCards")]
+    pub compact_worktree_cards: bool,
+    #[serde(default = "default_left_sidebar_appearance_mode", alias = "leftSidebarAppearanceMode")]
+    pub left_sidebar_appearance_mode: String,
+    #[serde(default = "default_left_sidebar_tint_color", alias = "leftSidebarTintColor")]
+    pub left_sidebar_tint_color: String,
+    #[serde(default = "default_left_sidebar_tint_opacity", alias = "leftSidebarTintOpacity")]
+    pub left_sidebar_tint_opacity: f32,
+    #[serde(default = "default_usage_percentage_display", alias = "usagePercentageDisplay")]
+    pub usage_percentage_display: String,
+    #[serde(default = "default_true", alias = "statusBarClaudeUsage")]
+    pub status_bar_claude_usage: bool,
+    #[serde(default = "default_true", alias = "statusBarAntigravityUsage")]
+    pub status_bar_antigravity_usage: bool,
+    #[serde(default = "default_true", alias = "statusBarOpencodeUsage")]
+    pub status_bar_opencode_usage: bool,
+    #[serde(default = "default_true", alias = "statusBarMinimaxUsage")]
+    pub status_bar_minimax_usage: bool,
+    #[serde(default = "default_true", alias = "statusBarRemoteHosts")]
+    pub status_bar_remote_hosts: bool,
+    #[serde(default = "default_true", alias = "statusBarResourceManager")]
+    pub status_bar_resource_manager: bool,
+    #[serde(default = "default_true", alias = "statusBarPorts")]
+    pub status_bar_ports: bool,
+    #[serde(default = "default_cursor_opacity", alias = "terminalCursorOpacity")]
+    pub terminal_cursor_opacity: f32,
+    #[serde(default = "default_padding", alias = "terminalPaddingX")]
+    pub terminal_padding_x: u32,
+    #[serde(default = "default_padding", alias = "terminalPaddingY")]
+    pub terminal_padding_y: u32,
+    #[serde(default = "default_false", alias = "windowBackgroundBlur")]
+    pub window_background_blur: bool,
+    #[serde(default = "default_false", alias = "terminalMouseHideWhileTyping")]
+    pub terminal_mouse_hide_while_typing: bool,
 }
 
 impl Default for HydraSettings {
@@ -403,6 +446,24 @@ impl Default for HydraSettings {
             agent_default_args: std::collections::HashMap::new(),
             agent_default_env: std::collections::HashMap::new(),
             open_in_applications: default_open_in_applications(),
+            ui_zoom: default_ui_zoom(),
+            compact_worktree_cards: false,
+            left_sidebar_appearance_mode: default_left_sidebar_appearance_mode(),
+            left_sidebar_tint_color: default_left_sidebar_tint_color(),
+            left_sidebar_tint_opacity: default_left_sidebar_tint_opacity(),
+            usage_percentage_display: default_usage_percentage_display(),
+            status_bar_claude_usage: true,
+            status_bar_antigravity_usage: true,
+            status_bar_opencode_usage: true,
+            status_bar_minimax_usage: true,
+            status_bar_remote_hosts: true,
+            status_bar_resource_manager: true,
+            status_bar_ports: true,
+            terminal_cursor_opacity: 1.0,
+            terminal_padding_x: 4,
+            terminal_padding_y: 4,
+            window_background_blur: false,
+            terminal_mouse_hide_while_typing: false,
         }
     }
 }

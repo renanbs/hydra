@@ -312,12 +312,12 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Header — Branch context + push/pull + viewMode */}
-      <div className="shrink-0 border-b border-[#222] bg-[#0e0f11]">
+      <div className="shrink-0 border-b border-border bg-sidebar">
         <div className="flex items-center justify-between px-2.5 py-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <GitBranch className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-            <span className="text-[11px] font-medium text-neutral-200 truncate">{status?.branch ?? "—"}</span>
-            {status?.upstream && <span className="text-[10px] text-neutral-500 truncate">→ {status.upstream}</span>}
+            <GitBranch className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="text-[11px] font-medium text-foreground truncate">{status?.branch ?? "—"}</span>
+            {status?.upstream && <span className="text-[10px] text-muted-foreground truncate">→ {status.upstream}</span>}
             {(status?.ahead ?? 0) > 0 && <span className="text-[10px] bg-emerald-500/15 text-emerald-400 px-1 py-0 rounded flex items-center gap-0.5"><Upload className="w-3 h-3" />{status?.ahead}</span>}
             {(status?.behind ?? 0) > 0 && <span className="text-[10px] bg-amber-500/15 text-amber-400 px-1 py-0 rounded flex items-center gap-0.5"><Download className="w-3 h-3" />{status?.behind}</span>}
           </div>
@@ -328,10 +328,10 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
             <button onClick={handlePush} disabled={pushing} title="Push" className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-white disabled:opacity-50">
               <ArrowUpFromLine className={`w-3.5 h-3.5 ${pushing ? "animate-spin" : ""}`} />
             </button>
-            <div className="w-px h-4 bg-[#222] mx-1" />
-            <div className="flex rounded border border-[#222] overflow-hidden text-[10px]">
-              <button onClick={() => setViewMode("list")} title="List view" className={`p-1 ${viewMode==="list" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}><List className="w-3 h-3" /></button>
-              <button onClick={() => setViewMode("tree")} title="Tree view" className={`p-1 ${viewMode==="tree" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}><FolderTree className="w-3 h-3" /></button>
+            <div className="w-px h-4 bg-border mx-1" />
+            <div className="flex rounded border border-border overflow-hidden text-[10px]">
+              <button onClick={() => setViewMode("list")} title="List view" className={`p-1 ${viewMode==="list" ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}><List className="w-3 h-3" /></button>
+              <button onClick={() => setViewMode("tree")} title="Tree view" className={`p-1 ${viewMode==="tree" ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}><FolderTree className="w-3 h-3" /></button>
             </div>
             <button onClick={fetchStatus} title="Refresh" className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-neutral-200">
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -340,8 +340,8 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
         </div>
         {/* baseRef picker (Orca CompareSummary baseRef) */}
         <div className="px-2.5 pb-2 flex items-center gap-2">
-          <input value={baseRef} onChange={e=>setBaseRef(e.target.value)} placeholder={status?.upstream || "origin/main"} className="flex-1 bg-[#121316] border border-[#222] rounded px-2 py-1 text-[10px] font-mono text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-emerald-500/50" />
-          <button onClick={fetchBranchCommits} disabled={branchCommitsLoading} className="text-[10px] px-2 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">
+          <input value={baseRef} onChange={e=>setBaseRef(e.target.value)} placeholder={status?.upstream || "origin/main"} className="flex-1 bg-background border border-border rounded px-2 py-1 text-[10px] font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+          <button onClick={fetchBranchCommits} disabled={branchCommitsLoading} className="text-[10px] px-2 py-1 rounded bg-accent hover:bg-accent/80 text-foreground transition-colors">
             {branchCommitsLoading ? "…" : "Compare"}
           </button>
         </div>
@@ -363,13 +363,13 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
       </div>
 
       {/* Commit area + draft/amend (Orca commit-drafts.ts) */}
-      <div className="shrink-0 border-b border-[#222] p-2.5 bg-[#111214] space-y-2">
+      <div className="shrink-0 border-b border-border p-2.5 bg-card space-y-2">
         <textarea
           value={commitMsg}
           onChange={e => setCommitMsg(e.target.value)}
           placeholder="Message (Ctrl+Enter to commit)"
           rows={3}
-          className="w-full bg-[#0c0d0e] border border-[#26272b] rounded-md px-2.5 py-2 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500/80 resize-none font-sans"
+          className="w-full bg-background border border-border rounded-md px-2.5 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none font-sans"
           onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); handleCommit(); } }}
         />
         <div className="flex items-center justify-between">
@@ -418,7 +418,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
               {viewMode==="tree"
                 ? groupByDir(staged).map(([dir, files]) => (
                     <div key={dir}>
-                      <div className="px-6 py-1 text-[10px] font-mono text-neutral-500 bg-[#141518] border-y border-[#1a1c1e]">{dir}/</div>
+                      <div className="px-6 py-1 text-[10px] font-mono text-muted-foreground bg-muted/40 border-y border-border/50">{dir}/</div>
                       {files.map(f => <FileRow key={`staged-${f.path}`} f={f} staged numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onUnstage={() => handleUnstage(f)} onOpenDiff={() => onOpenDiff?.(f.path, true)} onContextMenu={e => handleFileContextMenu(e, f.path)} />)}
                     </div>
                   ))
@@ -437,7 +437,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
               {viewMode==="tree"
                 ? groupByDir(unstaged).map(([dir, files])=> (
                     <div key={dir}>
-                      <div className="px-6 py-1 text-[10px] font-mono text-neutral-500 bg-[#141518] border-y border-[#1a1c1e]">{dir}/</div>
+                      <div className="px-6 py-1 text-[10px] font-mono text-muted-foreground bg-muted/40 border-y border-border/50">{dir}/</div>
                       {files.map(f => <FileRow key={`changes-${f.path}`} f={f} numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onStage={() => handleStage(f)} onDiscard={() => handleDiscard(f)} onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} />)}
                     </div>
                   ))
@@ -480,19 +480,19 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
 
         {/* Branch Commits — copia Orca branch-section (commits ahead) */}
         {(status?.ahead ?? 0) > 0 && (
-          <div className="border-t border-[#222] bg-[#0e0f11]">
-            <button onClick={() => toggleGroup("commits")} className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold tracking-wide hover:bg-[#1a1c1e] text-neutral-300">
-              {expandedGroups.has("commits") ? <ChevronDown className="w-3 h-3 text-neutral-500" /> : <ChevronRight className="w-3 h-3 text-neutral-500" />}
-              <GitCommit className="w-3.5 h-3.5 text-neutral-500" />
+          <div className="border-t border-border bg-sidebar">
+            <button onClick={() => toggleGroup("commits")} className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold tracking-wide hover:bg-accent text-foreground transition-colors">
+              {expandedGroups.has("commits") ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+              <GitCommit className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Commits ahead of {baseRef || status?.upstream || "base"}</span>
               <span className="ml-1 px-1 py-0 rounded text-[10px] font-mono bg-emerald-500/15 text-emerald-400">{branchCommits.length || (status?.ahead ?? 0)}</span>
             </button>
             {expandedGroups.has("commits") && (
-              <div className="max-h-[180px] overflow-y-auto border-t border-[#1a1c1e]">
-                {branchCommitsLoading ? <div className="px-3 py-2 text-[11px] text-neutral-500">Loading…</div> :
-                  branchCommits.length===0 ? <div className="px-3 py-2 text-[11px] text-neutral-500">No commits ahead or base not found</div> :
+              <div className="max-h-[180px] overflow-y-auto border-t border-border">
+                {branchCommitsLoading ? <div className="px-3 py-2 text-[11px] text-muted-foreground">Loading…</div> :
+                  branchCommits.length===0 ? <div className="px-3 py-2 text-[11px] text-muted-foreground">No commits ahead or base not found</div> :
                   branchCommits.map(c => (
-                    <div key={c.hash} className="flex items-center gap-2 px-2 py-1 hover:bg-[#1a1c1e] border-b border-[#1a1c1e]/50 last:border-0">
+                    <div key={c.hash} className="flex items-center gap-2 px-2 py-1 hover:bg-accent border-b border-border/50 last:border-0 transition-colors">
                       <span className="text-[10px] font-mono text-amber-400">{c.short_hash}</span>
                       <span className="flex-1 truncate text-[11px] text-neutral-300" title={c.message}>{c.message}</span>
                       <span className="text-[10px] text-neutral-500">{c.date}</span>
@@ -505,9 +505,9 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
         )}
 
         {/* Stash (Orca stash via git) */}
-        <div className="border-t border-[#222] bg-[#0e0f11]">
-          <button onClick={() => toggleGroup("stash")} className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold tracking-wide hover:bg-[#1a1c1e] text-neutral-300">
-            {expandedGroups.has("stash") ? <ChevronDown className="w-3 h-3 text-neutral-500" /> : <ChevronRight className="w-3 h-3 text-neutral-500" />}
+        <div className="border-t border-border bg-sidebar">
+          <button onClick={() => toggleGroup("stash")} className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold tracking-wide hover:bg-accent text-foreground transition-colors">
+            {expandedGroups.has("stash") ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
             <span>Stash</span>
             <span className="ml-1 px-1 py-0 rounded text-[10px] font-mono bg-neutral-800 text-neutral-300">{stashList.length}</span>
             <span className="ml-auto flex items-center gap-1">
@@ -516,11 +516,11 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
             </span>
           </button>
           {expandedGroups.has("stash") && (
-            <div className="max-h-[160px] overflow-y-auto border-t border-[#1a1c1e]">
-              {stashLoading ? <div className="px-3 py-2 text-[11px] text-neutral-500">Loading…</div> :
-                stashList.length===0 ? <div className="px-3 py-2 text-[11px] text-neutral-500 text-center">No stash</div> :
+            <div className="max-h-[160px] overflow-y-auto border-t border-border">
+              {stashLoading ? <div className="px-3 py-2 text-[11px] text-muted-foreground">Loading…</div> :
+                stashList.length===0 ? <div className="px-3 py-2 text-[11px] text-muted-foreground text-center">No stash</div> :
                 stashList.map(c => (
-                  <div key={c.hash} className="flex items-center gap-2 px-2 py-1 hover:bg-[#1a1c1e] border-b border-[#1a1c1e]/50 last:border-0">
+                  <div key={c.hash} className="flex items-center gap-2 px-2 py-1 hover:bg-accent border-b border-border/50 last:border-0 transition-colors">
                     <span className="text-[10px] font-mono text-amber-400">{c.short_hash}</span>
                     <span className="flex-1 truncate text-[11px] text-neutral-300" title={c.message}>{c.message}</span>
                     <span className="text-[10px] text-neutral-500">{c.date}</span>
@@ -532,22 +532,22 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
         </div>
 
         {/* Notes shelf (Orca diff-comments notes) — local per repoPath */}
-        <div className="border-t border-[#222] bg-[#0e0f11]">
-          <button onClick={() => toggleGroup("notes")} className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold tracking-wide hover:bg-[#1a1c1e] text-neutral-300">
-            {expandedGroups.has("notes") ? <ChevronDown className="w-3 h-3 text-neutral-500" /> : <ChevronRight className="w-3 h-3 text-neutral-500" />}
+        <div className="border-t border-border bg-sidebar">
+          <button onClick={() => toggleGroup("notes")} className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold tracking-wide hover:bg-accent text-foreground transition-colors">
+            {expandedGroups.has("notes") ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
             <span>Notes</span>
             <span className="ml-1 px-1 py-0 rounded text-[10px] font-mono bg-neutral-800 text-neutral-300">{Object.keys(notes).length}</span>
           </button>
           {expandedGroups.has("notes") && (
-            <div className="p-2 space-y-2 border-t border-[#1a1c1e]">
+            <div className="p-2 space-y-2 border-t border-border">
               <div className="flex gap-1">
-                <input value={newNotePath} onChange={e=>setNewNotePath(e.target.value)} placeholder="path" className="flex-1 bg-[#121316] border border-[#222] rounded px-1.5 py-1 text-[10px] font-mono text-neutral-300" />
-                <input value={newNoteText} onChange={e=>setNewNoteText(e.target.value)} placeholder="note" className="flex-1 bg-[#121316] border border-[#222] rounded px-1.5 py-1 text-[10px] text-neutral-300" />
+                <input value={newNotePath} onChange={e=>setNewNotePath(e.target.value)} placeholder="path" className="flex-1 bg-background border border-border rounded px-1.5 py-1 text-[10px] font-mono text-foreground" />
+                <input value={newNoteText} onChange={e=>setNewNoteText(e.target.value)} placeholder="note" className="flex-1 bg-background border border-border rounded px-1.5 py-1 text-[10px] text-foreground" />
                 <button onClick={handleAddNote} className="text-[10px] px-2 py-1 rounded bg-emerald-600 text-white">Add</button>
               </div>
               {Object.keys(notes).length===0 ? <div className="text-[11px] text-neutral-500 text-center py-2">No notes — local shelf (Orca diff-comments)</div> :
                 Object.entries(notes).map(([p, t]) => (
-                  <div key={p} className="flex items-center gap-2 px-1 py-1 hover:bg-[#1a1c1e] rounded">
+                  <div key={p} className="flex items-center gap-2 px-1 py-1 hover:bg-accent rounded transition-colors">
                     <span className="text-[10px] font-mono text-[#dcb67a] truncate flex-1" title={p}>{p}</span>
                     <span className="text-[11px] text-neutral-300 truncate flex-1" title={t}>{t}</span>
                     <button onClick={()=>{ const n={...notes}; delete n[p]; setNotes(n); try{ localStorage.setItem(`hydra:notes:${repoPath}`, JSON.stringify(n)); }catch{} }} className="text-[10px] text-red-400 hover:text-red-300">×</button>
@@ -559,10 +559,10 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
         </div>
 
         {/* Git History — docked bottom */}
-        <div className="border-t border-[#222] bg-[#0e0f11]">
-          <button onClick={() => toggleGroup("history")} className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold tracking-wide hover:bg-[#1a1c1e] text-neutral-300">
-            {expandedGroups.has("history") ? <ChevronDown className="w-3 h-3 text-neutral-500" /> : <ChevronRight className="w-3 h-3 text-neutral-500" />}
-            <History className="w-3.5 h-3.5 text-neutral-500" />
+        <div className="border-t border-border bg-sidebar">
+          <button onClick={() => toggleGroup("history")} className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold tracking-wide hover:bg-accent text-foreground transition-colors">
+            {expandedGroups.has("history") ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+            <History className="w-3.5 h-3.5 text-muted-foreground" />
             <span>History</span>
             <span className="ml-1 px-1 py-0 rounded text-[10px] font-mono bg-neutral-800 text-neutral-300">{history.length}</span>
             <span className="ml-auto text-[10px] text-neutral-500 font-mono">{historyLoading ? "loading…" : ""}</span>

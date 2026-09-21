@@ -90,6 +90,7 @@ interface WorktreeSidebarProps {
   unreadWorktrees?: Set<string>;
   projectGroupMap?: Record<string, string>;
   projectGroups?: Array<{ id: string; name: string }>;
+  compactCards?: boolean;
 }
 
 export function WorktreeSidebar({
@@ -119,6 +120,7 @@ export function WorktreeSidebar({
   unreadWorktrees,
   projectGroupMap,
   projectGroups,
+  compactCards = false,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
@@ -280,16 +282,16 @@ export function WorktreeSidebar({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0e0f12] select-none relative font-sans text-neutral-300">
+    <div className="flex flex-col h-full bg-worktree-sidebar select-none relative font-sans text-worktree-sidebar-foreground">
       {/* 1. TOP NAV STRIP (Orca SidebarNav.tsx) */}
-      <div className="px-3 pt-3 pb-2 space-y-1 border-b border-[#1f2024] shrink-0 text-xs">
-        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40 cursor-pointer transition">
-          <GitCommit className="w-3.5 h-3.5 text-neutral-500" />
+      <div className="px-3 pt-3 pb-2 space-y-1 border-b border-worktree-sidebar-border shrink-0 text-xs">
+        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 cursor-pointer transition">
+          <GitCommit className="w-3.5 h-3.5 text-worktree-sidebar-foreground/50" />
           <span className="font-medium text-[11px]">Automations</span>
         </div>
-        <div className="flex items-center justify-between px-2 py-1.5 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40 cursor-pointer transition">
+        <div className="flex items-center justify-between px-2 py-1.5 rounded-lg text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 cursor-pointer transition">
           <div className="flex items-center gap-2.5">
-            <FolderGit2 className="w-3.5 h-3.5 text-neutral-500" />
+            <FolderGit2 className="w-3.5 h-3.5 text-worktree-sidebar-foreground/50" />
             <span className="font-medium text-[11px]">Agent Dashboard</span>
           </div>
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
@@ -298,7 +300,7 @@ export function WorktreeSidebar({
 
       {/* 2. PROJECTS HEADER (Orca SidebarHeader.tsx: 'Projects' + SlidersHorizontal + FolderPlus) */}
       <div className="mt-2.5 flex h-7 min-w-0 items-center justify-between px-3 shrink-0">
-        <span className="select-none text-[11px] font-semibold text-neutral-400/90 tracking-wider">
+        <span className="select-none text-[11px] font-semibold text-worktree-sidebar-foreground/70 tracking-wider uppercase">
           Projects
         </span>
 
@@ -312,7 +314,7 @@ export function WorktreeSidebar({
             }}
             title="Workspace display options"
             className={`p-1 rounded transition cursor-pointer ${
-              optionsMenuOpen ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800/60"
+              optionsMenuOpen ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground" : "text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60"
             }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -321,7 +323,7 @@ export function WorktreeSidebar({
           <button
             onClick={onOpenAddRepoDialog}
             title="Add project (Folder / Clone)"
-            className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-800/60 transition cursor-pointer"
+            className="p-1 rounded text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 transition cursor-pointer"
           >
             <FolderPlus className="w-3.5 h-3.5" />
           </button>
@@ -335,7 +337,7 @@ export function WorktreeSidebar({
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter projects and workspaces..."
-          className="w-full bg-[#121316] border border-[#202126] rounded-md px-2.5 py-1 text-[11px] text-neutral-300 placeholder-neutral-500 focus:outline-none focus:border-emerald-500/50"
+          className="w-full bg-worktree-sidebar-accent/50 border border-worktree-sidebar-border rounded-md px-2.5 py-1 text-[11px] text-worktree-sidebar-foreground placeholder:text-worktree-sidebar-foreground/40 focus:outline-none focus:ring-1 focus:ring-worktree-sidebar-ring"
         />
       </div>
 
@@ -385,8 +387,8 @@ export function WorktreeSidebar({
                     draggedProjectId === proj.id ? "opacity-30" : ""
                   } ${
                     isActiveProject
-                      ? "bg-[#18191e] border border-neutral-700/60 text-white font-medium shadow-sm"
-                      : "hover:bg-neutral-800/40 text-neutral-300"
+                      ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border/60 font-medium shadow-xs"
+                      : "hover:bg-worktree-sidebar-accent/50 text-worktree-sidebar-foreground/80 border border-transparent"
                   }`}
                 >
                   {projectDropTarget?.id === proj.id && (
@@ -438,7 +440,7 @@ export function WorktreeSidebar({
 
                       {isMenuOpen && (
                         <div 
-                          className="absolute right-0 top-7 w-56 rounded-xl bg-[#141518] border border-[#28292e] p-1.5 shadow-2xl z-50 text-xs space-y-0.5"
+                          className="absolute right-0 top-7 w-56 rounded-xl bg-popover border border-border p-1.5 shadow-2xl z-50 text-xs space-y-0.5 text-popover-foreground"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
@@ -446,12 +448,11 @@ export function WorktreeSidebar({
                               setActiveProjectMenuId(null);
                               onOpenSettings();
                             }}
-                            className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+                            className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-muted text-popover-foreground text-left transition cursor-pointer"
                           >
-                            <Sliders className="w-3.5 h-3.5 text-neutral-400" />
+                            <Sliders className="w-3.5 h-3.5 text-muted-foreground" />
                             <span className="text-[11px]">Project Settings</span>
                           </button>
-
                           <button
                             onClick={async () => {
                               setActiveProjectMenuId(null);
@@ -496,14 +497,12 @@ export function WorktreeSidebar({
                             <span className="text-[11px]">New Worktree from Project</span>
                           </button>
 
-                          <div className="h-px bg-[#222327] my-1" />
-
+                          <div className="h-px bg-border my-1" />
                           <button
                             onClick={() => {
                               setActiveProjectMenuId(null);
                               onRemoveProject(proj);
                             }}
-                            className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/20 text-red-400 text-left transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             <span className="text-[11px]">Remove Project</span>
@@ -528,8 +527,7 @@ export function WorktreeSidebar({
 
                 {/* WORKTREE ROWS ANINHADAS DENTRO DO PROJETO */}
                 {!isCollapsed && (
-                  <div className="pl-3.5 ml-2 border-l border-[#202126] space-y-1 pt-0.5">
-                    {/* Worktrees reais do Git no disco */}
+                  <div className="pl-3.5 ml-2 border-l border-worktree-sidebar-border space-y-1 pt-0.5">
                     {projectWorktrees.map((wt) => {
                       const isMain = wt.path === proj.path;
                       return (
@@ -546,7 +544,7 @@ export function WorktreeSidebar({
                             e.stopPropagation();
                             onWorktreeContextMenu?.(e, wt, proj);
                           }}
-                          className={`group relative p-2.5 rounded-lg cursor-pointer worktree-sidebar-card-hover text-neutral-300 flex items-center justify-between transition-all ${
+                          className={`group relative ${compactCards ? "py-1.5 px-2 text-[11px]" : "p-2.5"} rounded-lg cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground flex items-center justify-between transition-all ${
                             draggedWorktreePath === wt.path ? "opacity-30" : ""
                           }`}
                         >
@@ -607,12 +605,12 @@ export function WorktreeSidebar({
                             e.stopPropagation();
                             onSessionContextMenu?.(e, session);
                           }}
-                          className={`group relative p-2.5 rounded-lg text-xs cursor-pointer select-none transition-all ${
+                          className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
                             draggedSessionId === session.id ? "opacity-30 scale-[0.98]" : ""
                           } ${
                             session.active && isActiveProject
-                              ? "worktree-sidebar-card-active text-neutral-100"
-                              : "worktree-sidebar-card-hover text-neutral-400 hover:text-neutral-200"
+                              ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
+                              : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
                           }`}
                         >
                           {sessionDropTarget?.id === session.id && (
@@ -688,14 +686,14 @@ export function WorktreeSidebar({
         onOptionsChange={setDisplayOptions}
       />
 
-      {/* 6. Orca Sidebar Footer — version like Orca GeneralUpdateSettingsSection */}
-      <div className="h-8 border-t border-[#1f2024] px-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono bg-[#101114] shrink-0">
+      {/* 6. Orca Sidebar Footer */}
+      <div className="h-8 border-t border-worktree-sidebar-border px-3 flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 font-mono bg-worktree-sidebar shrink-0">
         <button
           onClick={onOpenSettings}
           title="Open Settings (Ctrl+,)"
-          className="flex items-center gap-1.5 hover:text-neutral-300 transition cursor-pointer"
+          className="flex items-center gap-1.5 hover:text-worktree-sidebar-foreground transition cursor-pointer"
         >
-          <Settings className="w-3 h-3 text-neutral-400 hover:text-emerald-400 transition" />
+          <Settings className="w-3 h-3 text-worktree-sidebar-foreground/50 hover:text-emerald-400 transition" />
           <span>Settings</span>
         </button>
         <div className="flex items-center gap-2">

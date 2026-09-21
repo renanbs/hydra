@@ -428,52 +428,52 @@ export function FileExplorer({ rootPath, openInApps, onOpenFile, onOpenSettings 
             <Ellipsis className="size-3" />
           </button>
           {showMoreMenu && (
-            <div className="absolute right-0 top-7 z-50 min-w-[14rem] rounded-md border border-[#222] bg-[#141518] p-1 shadow-xl">
-              <label className="flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-200 hover:bg-neutral-800 rounded cursor-pointer">
+            <div className="absolute right-0 top-7 z-50 min-w-[14rem] rounded-md border border-border bg-popover p-1 shadow-xl text-popover-foreground">
+              <label className="flex items-center gap-2 px-2 py-1.5 text-xs text-popover-foreground hover:bg-accent rounded cursor-pointer">
                 <input type="checkbox" checked={showHidden} onChange={e => setShowHidden(e.target.checked)} className="accent-emerald-500" /> Show Dotfiles
               </label>
-              <label className="flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-200 hover:bg-neutral-800 rounded cursor-pointer">
+              <label className="flex items-center gap-2 px-2 py-1.5 text-xs text-popover-foreground hover:bg-accent rounded cursor-pointer">
                 <input type="checkbox" checked={showGitIgnored} onChange={e => setShowGitIgnored(e.target.checked)} className="accent-emerald-500" /> Show Git Ignored Files
               </label>
-              <div className="h-px bg-[#222] my-1" />
-              <button onClick={() => { setShowMoreMenu(false); handleCreateFile(rootPath); }} className="w-full text-left px-2 py-1.5 text-xs text-neutral-200 hover:bg-neutral-800 rounded">New File…</button>
-              <button onClick={() => { setShowMoreMenu(false); handleCreateFolder(rootPath); }} className="w-full text-left px-2 py-1.5 text-xs text-neutral-200 hover:bg-neutral-800 rounded">New Folder…</button>
-              <div className="h-px bg-[#222] my-1" />
+              <div className="h-px bg-border my-1" />
+              <button onClick={() => { setShowMoreMenu(false); handleCreateFile(rootPath); }} className="w-full text-left px-2 py-1.5 text-xs text-popover-foreground hover:bg-accent rounded">New File…</button>
+              <button onClick={() => { setShowMoreMenu(false); handleCreateFolder(rootPath); }} className="w-full text-left px-2 py-1.5 text-xs text-popover-foreground hover:bg-accent rounded">New Folder…</button>
+              <div className="h-px bg-border my-1" />
               <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">Open in</div>
               {getWorktreeOpenInEntries(openInApps ?? DEFAULT_OPEN_IN_APPLICATIONS, "File Manager").map(en => (
                 <button
                   key={en.id}
                   onClick={() => { setShowMoreMenu(false); openWorktreePath({ target: en.target, worktreePath: rootPath, command: en.command }); }}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs text-neutral-200 hover:bg-neutral-800"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs text-popover-foreground hover:bg-accent"
                 >
                   {en.target === "file-manager" ? <Folder className="w-3.5 h-3.5" /> : en.command ? <OpenInApplicationIcon application={{ command: en.command }} size={14} /> : <ExternalLink className="w-3.5 h-3.5" />}
                   <span>{en.target === "file-manager" ? "File Manager" : en.label}</span>
                 </button>
               ))}
-              <button onClick={() => { setShowMoreMenu(false); onOpenSettings?.(); }} className="w-full text-left px-2 py-1.5 text-xs text-neutral-400 hover:bg-neutral-800 rounded">Customize…</button>
+              <button onClick={() => { setShowMoreMenu(false); onOpenSettings?.(); }} className="w-full text-left px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent rounded">Customize…</button>
             </div>
           )}
         </div>
       </div>
 
       {/* QueryStrip — ViewSwitch */}
-      <div className="flex items-center gap-1 px-2 py-1 border-b border-[#222] bg-[#0e0f11] shrink-0">
-        <div className="flex rounded-md border border-[#222] overflow-hidden text-[11px]">
-          <button onClick={() => setView("files")} className={`px-2 py-1 ${view==="files" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}>Files</button>
-          <button onClick={() => setView("search")} className={`px-2 py-1 ${view==="search" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}>Search</button>
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-sidebar shrink-0">
+        <div className="flex rounded-md border border-border overflow-hidden text-[11px]">
+          <button onClick={() => setView("files")} className={`px-2 py-1 ${view==="files" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>Files</button>
+          <button onClick={() => setView("search")} className={`px-2 py-1 ${view==="search" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>Search</button>
         </div>
         <div className="flex-1 relative ml-1">
           {view === "files" ? (
             <>
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
-              <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="Filter by name…" className="w-full bg-[#121316] border border-[#202126] rounded-md pl-7 pr-7 py-1 text-[11px] text-neutral-300 placeholder-neutral-500 focus:outline-none focus:border-emerald-500/50" />
-              {filter && <button onClick={() => setFilter("")} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-neutral-800 text-neutral-500"><X className="w-3 h-3" /></button>}
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="Filter by name…" className="w-full bg-background border border-border rounded-md pl-7 pr-7 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+              {filter && <button onClick={() => setFilter("")} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-accent text-muted-foreground"><X className="w-3 h-3" /></button>}
             </>
           ) : (
             <>
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => { if (e.key==="Enter") handleSearch(); }} placeholder="Search content… (rg)" className="w-full bg-[#121316] border border-[#202126] rounded-md pl-7 pr-7 py-1 text-[11px] text-neutral-300 placeholder-neutral-500 focus:outline-none focus:border-emerald-500/50" />
-              {searchLoading && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 animate-spin text-neutral-500" />}
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => { if (e.key==="Enter") handleSearch(); }} placeholder="Search content… (rg)" className="w-full bg-background border border-border rounded-md pl-7 pr-7 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+              {searchLoading && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 animate-spin text-muted-foreground" />}
             </>
           )}
         </div>
@@ -483,7 +483,7 @@ export function FileExplorer({ rootPath, openInApps, onOpenFile, onOpenSettings 
         <>
           {/* inline create (Orca FileExplorerInlineInputRow) */}
           {inlineInput && inlineInput.type !== 'rename' && (
-            <div className="flex items-center gap-1 px-2 py-1 bg-[#1e2023] border-b border-[#222] shrink-0" style={{ paddingLeft: `${8 + inlineInput.depth * 14}px` }}>
+            <div className="flex items-center gap-1 px-2 py-1 bg-accent/40 border-b border-border shrink-0" style={{ paddingLeft: `${8 + inlineInput.depth * 14}px` }}>
               <File className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
               <input
                 autoFocus
@@ -492,7 +492,7 @@ export function FileExplorer({ rootPath, openInApps, onOpenFile, onOpenSettings 
                 onKeyDown={e => { if (e.key==="Enter") handleInlineSubmit(); if (e.key==="Escape") handleInlineCancel(); }}
                 onBlur={handleInlineSubmit}
                 placeholder={inlineInput.type==='file' ? "filename" : "folder name"}
-                className="flex-1 bg-[#0c0d0e] border border-emerald-500/50 rounded px-1.5 py-0.5 text-[11px] text-white focus:outline-none"
+                className="flex-1 bg-background border border-border rounded px-1.5 py-0.5 text-[11px] text-foreground focus:outline-none"
               />
               <button onClick={handleInlineSubmit} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-600 text-white">OK</button>
               <button onClick={handleInlineCancel} className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-700 text-white">Cancel</button>
@@ -535,7 +535,7 @@ export function FileExplorer({ rootPath, openInApps, onOpenFile, onOpenSettings 
                       const isRenaming = inlineInput?.type==='rename' && inlineInput.target===entry.path;
                       if (isRenaming) {
                         return (
-                          <div key={entry.path} className="flex items-center gap-1 px-2 bg-[#1e2023] border border-emerald-500/30" style={{ paddingLeft: `${8 + depth * 14}px`, height: ROW_H }}>
+                          <div key={entry.path} className="flex items-center gap-1 px-2 bg-accent/40 border border-ring/40" style={{ paddingLeft: `${8 + depth * 14}px`, height: ROW_H }}>
                             <FileIcon isDir={entry.is_dir} expanded={expanded} name={entry.name} />
                             <input
                               autoFocus
@@ -543,7 +543,7 @@ export function FileExplorer({ rootPath, openInApps, onOpenFile, onOpenSettings 
                               onChange={e => setInlineInput(prev => prev ? { ...prev, value: e.target.value } : prev)}
                               onKeyDown={e => { if (e.key==="Enter") handleInlineSubmit(); if (e.key==="Escape") handleInlineCancel(); }}
                               onBlur={handleInlineSubmit}
-                              className="flex-1 bg-[#0c0d0e] border border-emerald-500/50 rounded px-1.5 py-0.5 text-[11px] text-white focus:outline-none"
+                              className="flex-1 bg-background border border-border rounded px-1.5 py-0.5 text-[11px] text-foreground focus:outline-none"
                             />
                           </div>
                         );
@@ -578,7 +578,7 @@ export function FileExplorer({ rootPath, openInApps, onOpenFile, onOpenSettings 
                             }
                           }}
                           onContextMenu={e => openContextForEntry(e, entry)}
-                          className={`group flex items-center gap-1 px-2 cursor-pointer text-[12px] select-none ${isSelected ? "bg-[#1e2023] text-white" : dragOverPath===entry.path ? "bg-amber-500/20 ring-1 ring-amber-500/30" : "hover:bg-[#1a1c1e] text-neutral-400"}`}
+                          className={`group flex items-center gap-1 px-2 cursor-pointer text-[12px] select-none ${isSelected ? "bg-accent text-foreground font-medium" : dragOverPath===entry.path ? "bg-amber-500/20 ring-1 ring-amber-500/30" : "hover:bg-accent/40 text-foreground/80 hover:text-foreground"}`}
                           style={{ paddingLeft: `${8 + depth * 14}px`, height: ROW_H, lineHeight: `${ROW_H}px` }}
                           title={entry.path}
                         >
@@ -596,7 +596,7 @@ export function FileExplorer({ rootPath, openInApps, onOpenFile, onOpenSettings 
               );
             })()}
           </div>
-          <div className="px-2 py-1 border-t border-[#222] text-[10px] text-neutral-500 font-mono bg-[#0e0f11] shrink-0">
+          <div className="px-2 py-1 border-t border-border text-[10px] text-muted-foreground font-mono bg-sidebar shrink-0">
             {rows.length}{rows.length>=5000 ? "+" : ""} items {filter ? `· filter: "${filter}"` : ""} {showHidden ? "· dotfiles" : ""} {!showGitIgnored ? "· no-ignored" : ""} · virtualized {selectedPaths.size>1 ? `· ${selectedPaths.size} selected` : ""} {dragSrc ? "· drag" : ""}
           </div>
         </>
@@ -610,7 +610,7 @@ export function FileExplorer({ rootPath, openInApps, onOpenFile, onOpenSettings 
             <div className="space-y-0.5">
               <div className="px-2 py-1 text-[10px] text-neutral-500 font-mono border-b border-[#222]">{searchResults.length} matches (max 100, Rust rg)</div>
               {searchResults.map((r, i) => (
-                <div key={`${r.path}:${r.line}:${i}`} onClick={() => onOpenFile?.(r.path)} onContextMenu={e => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, items: [{ label:"Copy Path", icon:<Copy className="w-3.5 h-3.5" />, onClick:()=>navigator.clipboard.writeText(r.path)}]});}} className="px-2 py-1 hover:bg-[#1a1c1e] cursor-pointer group">
+                <div key={`${r.path}:${r.line}:${i}`} onClick={() => onOpenFile?.(r.path)} onContextMenu={e => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, items: [{ label:"Copy Path", icon:<Copy className="w-3.5 h-3.5" />, onClick:()=>navigator.clipboard.writeText(r.path)}]});}} className="px-2 py-1 hover:bg-accent/50 cursor-pointer group">
                   <div className="text-[11px] text-neutral-300 truncate"><span className="text-[#dcb67a]">{r.relative_path}</span><span className="text-neutral-500">:{r.line}:{r.col}</span></div>
                   <div className="text-[11px] font-mono text-neutral-400 truncate pl-2 border-l-2 border-neutral-700 ml-1">{r.text.trim()}</div>
                 </div>
