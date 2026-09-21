@@ -193,6 +193,8 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     }
     if (containerRef.current) {
       containerRef.current.style.backgroundColor = theme.background ?? "#0c0d0e";
+      containerRef.current.style.padding = `${settings.terminal_padding_y ?? 4}px ${settings.terminal_padding_x ?? 4}px`;
+      containerRef.current.style.setProperty("--terminal-cursor-opacity", String(settings.terminal_cursor_opacity ?? 1));
     }
     // Force xterm to re-measure glyphs and refit — mirrors Orca safeFit/applyOrDeferPaneMetricOptions
     try { (term as unknown as { _core?: { _renderService?: { clear: () => void } } })._core?._renderService?.clear(); } catch {}
@@ -259,6 +261,11 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
         if (ligaturesAddonRef.current) return;
         try { const a = new (LigaturesAddon as unknown as new()=>unknown)(); (term as unknown as { loadAddon:(a:unknown)=>void }).loadAddon(a); ligaturesAddonRef.current = a; } catch (e) { console.warn("[Hydra] Ligatures init failed", e); }
       }).catch(()=>{});
+    }
+    if (containerRef.current) {
+      containerRef.current.style.backgroundColor = theme.background ?? "#0c0d0e";
+      containerRef.current.style.padding = `${s?.terminal_padding_y ?? 4}px ${s?.terminal_padding_x ?? 4}px`;
+      containerRef.current.style.setProperty("--terminal-cursor-opacity", String(s?.terminal_cursor_opacity ?? 1));
     }
     term.open(containerRef.current);
     const doFitAndSync = () => {
@@ -356,8 +363,22 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     }
 
     window.addEventListener("resize", doFitAndSync);
+    const handleMouseMove = () => {
+      if (containerRef.current && containerRef.current.style.cursor === "none") {
+        containerRef.current.style.cursor = "";
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (settings?.terminal_mouse_hide_while_typing && containerRef.current && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        containerRef.current.style.cursor = "none";
+      }
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    containerRef.current.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("resize", doFitAndSync);
+      window.removeEventListener("mousemove", handleMouseMove);
+      containerRef.current?.removeEventListener("keydown", handleKeyDown);
       resizeObserver.disconnect();
       unlistenPromise.then((unlisten) => unlisten());
       try { (webglAddonRef.current as unknown as { dispose?: ()=>void })?.dispose?.(); } catch {}

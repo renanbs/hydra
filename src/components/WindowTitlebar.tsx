@@ -70,14 +70,17 @@ interface WindowTitlebarProps {
   title: string;
   isLeftOpen: boolean;
   isRightOpen: boolean;
+  leftWidth?: number;
+  leftStyle?: React.CSSProperties;
   onToggleLeft: () => void;
   onToggleRight: () => void;
 }
-
 export function WindowTitlebar({
   title,
   isLeftOpen,
   isRightOpen,
+  leftWidth,
+  leftStyle,
   onToggleLeft,
   onToggleRight,
 }: WindowTitlebarProps) {
@@ -88,64 +91,86 @@ export function WindowTitlebar({
   };
 
   return (
-    <header className="h-9 border-b border-[#222] px-3 flex items-center justify-between text-xs bg-[#111214] select-none shrink-0 cursor-default relative">
-      {/* Left Cluster: App Brand + Sidebar Toggle (Orca Style) */}
-      <div 
-        className="flex items-center gap-2 z-20"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggleLeft();
-          }}
-          title="Toggle Left Sidebar (Ctrl+B)"
-          className={`p-1.5 rounded transition cursor-pointer ${
-            isLeftOpen ? "text-emerald-400 bg-neutral-800" : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60"
-          }`}
+    <header className="h-9 flex items-stretch text-xs select-none shrink-0 cursor-default relative">
+      {/* Left Column Header: Matches Orca .titlebar-left when open */}
+      {isLeftOpen ? (
+        <div
+          data-tauri-drag-region
+          style={{ width: leftWidth ? `${leftWidth}px` : undefined, ...leftStyle }}
+          onMouseDown={handleDragMouseDown}
+          className="h-9 flex items-center gap-2 px-3 shrink-0 border-r border-worktree-sidebar-border border-b border-worktree-sidebar-border bg-worktree-sidebar text-worktree-sidebar-foreground select-none relative z-20 cursor-default"
         >
-          <PanelLeft className="w-3.5 h-3.5" />
-        </button>
-        <img src="/hydra-icon.png" alt="Hydra" className="w-4 h-4 rounded-sm object-contain pointer-events-none shrink-0" />
-        <span className="font-semibold text-neutral-200 tracking-wider pointer-events-none">HYDRA</span>
-        <span className="text-neutral-600 pointer-events-none">|</span>
-        <span className="text-neutral-400 font-mono text-[11px] pointer-events-none">{title}</span>
-      </div>
+          <button
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleLeft();
+            }}
+            title="Toggle Left Sidebar (Ctrl+B)"
+            className="p-1.5 rounded transition cursor-pointer text-worktree-sidebar-accent-foreground bg-worktree-sidebar-accent hover:opacity-90"
+          >
+            <PanelLeft className="w-3.5 h-3.5" />
+          </button>
+          <img src="/hydra-icon.png" alt="Hydra" className="w-4 h-4 rounded-sm object-contain pointer-events-none shrink-0" />
+          <span className="font-semibold tracking-wider pointer-events-none text-worktree-sidebar-foreground">HYDRA</span>
+          <span className="opacity-40 pointer-events-none">|</span>
+          <span className="opacity-70 font-mono text-[11px] truncate pointer-events-none max-w-[120px]">{title}</span>
+        </div>
+      ) : null}
 
-      {/* Center Drag Region: Cobre o centro e permite arrastar a janela */}
-      <div 
-        data-tauri-drag-region
-        onMouseDown={handleDragMouseDown}
-        className="flex-1 h-full flex items-center justify-center cursor-default z-10"
-      >
-        <span className="text-neutral-500 text-[11px] tracking-wide font-medium pointer-events-none">
-          Hydra Autonomous Development Environment
-        </span>
-      </div>
+      {/* Main Titlebar: Matches Orca .titlebar-main-strip */}
+      <div className="flex-1 flex items-center justify-between border-b border-border bg-card text-foreground px-3 min-w-0 relative">
+        {/* When sidebar is closed, show sidebar toggle here */}
+        {!isLeftOpen && (
+          <div className="flex items-center gap-2 z-20 mr-3" onMouseDown={(e) => e.stopPropagation()}>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleLeft();
+              }}
+              title="Toggle Left Sidebar (Ctrl+B)"
+              className="p-1.5 rounded transition cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent/60"
+            >
+              <PanelLeft className="w-3.5 h-3.5" />
+            </button>
+            <img src="/hydra-icon.png" alt="Hydra" className="w-4 h-4 rounded-sm object-contain pointer-events-none shrink-0" />
+            <span className="font-semibold text-foreground tracking-wider pointer-events-none">HYDRA</span>
+          </div>
+        )}
 
-      {/* Right Controls: Toggle Agent Panel + Spacer for Window Controls */}
-      <div 
-        className="flex items-center gap-1 z-20"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggleRight();
-          }}
-          title="Toggle Agent Panel (Ctrl+J)"
-          className={`p-1.5 rounded transition mr-2 cursor-pointer ${
-            isRightOpen ? "text-emerald-400 bg-neutral-800" : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60"
-          }`}
+        {/* Center Drag Region */}
+        <div
+          data-tauri-drag-region
+          onMouseDown={handleDragMouseDown}
+          className="flex-1 h-full flex items-center justify-center cursor-default z-10"
         >
-          <PanelRight className="w-3.5 h-3.5" />
-        </button>
-        <div className="w-[138px] shrink-0 pointer-events-none" />
-      </div>
+          <span className="text-muted-foreground/60 text-[11px] tracking-wide font-medium pointer-events-none">
+            Hydra Autonomous Development Environment
+          </span>
+        </div>
 
-      <WindowControls />
+        {/* Right Controls: Toggle Right Sidebar + Window Controls */}
+        <div className="flex items-center gap-1 z-20" onMouseDown={(e) => e.stopPropagation()}>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleRight();
+            }}
+            title="Toggle Right Panel (Ctrl+J)"
+            className={`p-1.5 rounded transition mr-2 cursor-pointer ${
+              isRightOpen ? "text-foreground bg-accent" : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
+            }`}
+          >
+            <PanelRight className="w-3.5 h-3.5" />
+          </button>
+          <div className="w-[138px] shrink-0 pointer-events-none" />
+        </div>
+
+        <WindowControls />
+      </div>
     </header>
   );
 }

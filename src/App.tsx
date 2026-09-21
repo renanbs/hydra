@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open as openFileDialog } from "@tauri-apps/plugin-dialog";
 import { usePanelResize } from "./hooks/usePanelResize";
@@ -23,6 +23,7 @@ import type { HydraSettings } from "./shared/settings-types";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, DEFAULT_OPEN_IN_APPLICATIONS } from "./shared/settings-types";
 import { applyDocumentTheme } from "./lib/document-theme";
 import { CommandPalette } from "./components/CommandPalette";
+import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { 
@@ -112,6 +113,18 @@ export default function App() {
       document.body.style.fontFamily = f;
     }
   }, [hydraSettings.app_font_family]);
+  // Apply UI zoom live (Orca uiZoom → document.documentElement.style.zoom)
+  useEffect(() => {
+    const z = hydraSettings.ui_zoom;
+    if (typeof z === "number" && z > 0) {
+      document.documentElement.style.zoom = String(z);
+    }
+  }, [hydraSettings.ui_zoom]);
+  // Left sidebar appearance style (Orca leftSidebarAppearanceMode)
+  const leftSidebarStyle = useMemo(() => {
+    const sysDark = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)").matches : true;
+    return resolveLeftSidebarStyleVariables(hydraSettings, sysDark) as React.CSSProperties | undefined;
+  }, [hydraSettings]);
   const syncKeepAwake = (enabled: boolean, workingCount: number) => {
     invoke("sync_keep_awake", { enabled, workingCount }).catch(()=>{});
   };
@@ -1500,6 +1513,8 @@ export default function App() {
         title={status} 
         isLeftOpen={isLeftSidebarOpen}
         isRightOpen={isRightSidebarOpen}
+        leftWidth={leftSidebar.width}
+        leftStyle={leftSidebarStyle}
         onToggleLeft={() => updateLeftSidebar(!isLeftSidebarOpen)}
         onToggleRight={() => updateRightSidebar(!isRightSidebarOpen)}
       />
@@ -1511,8 +1526,8 @@ export default function App() {
           <>
             <aside 
               ref={leftSidebar.containerRef}
-              style={{ width: `${leftSidebar.width}px` }}
-              className="flex flex-col border-r border-[#222] bg-[#0e0f11] shrink-0 overflow-hidden relative"
+              style={{ width: `${leftSidebar.width}px`, ...leftSidebarStyle }}
+              className="flex flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar shrink-0 overflow-hidden relative"
             >
               <WorktreeSidebar 
                 sessions={sessions}
@@ -1546,6 +1561,7 @@ export default function App() {
                 unreadWorktrees={unreadWorktrees}
                 projectGroupMap={projectGroupMap}
                 projectGroups={projectGroups}
+                compactCards={Boolean(hydraSettings.compact_worktree_cards)}
               />
             </aside>
 
@@ -1665,7 +1681,7 @@ export default function App() {
             <aside 
               ref={rightSidebar.containerRef}
               style={{ width: `${rightSidebar.width}px` }}
-              className="flex flex-col border-l border-[#222] bg-[#0e0f11] shrink-0 overflow-hidden relative"
+              className="flex flex-col border-l border-sidebar-border bg-sidebar shrink-0 overflow-hidden relative"
             >
               <RightSidebar
                 rootPath={activeProject?.path ?? null}

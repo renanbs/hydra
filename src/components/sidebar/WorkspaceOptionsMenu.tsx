@@ -104,37 +104,37 @@ export function WorkspaceOptionsMenu({
       ref={menuRef}
       style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
       onClick={(e) => e.stopPropagation()}
-      className="fixed w-72 rounded-xl bg-[#141518] border border-[#28292e] p-2 shadow-2xl z-[99999] text-xs text-neutral-200 select-none space-y-2.5 font-sans"
+      className="fixed w-72 rounded-xl bg-popover border border-border p-2 shadow-2xl z-[99999] text-xs text-popover-foreground select-none space-y-2.5 font-sans"
     >
       {/* Header */}
-      <div className="px-2 pt-1 font-semibold text-neutral-100 text-xs">
+      <div className="px-2 pt-1 font-semibold text-foreground text-xs">
         Workspace options
       </div>
 
       {/* Show Section */}
       <div className="space-y-1">
-        <div className="px-2 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
+        <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Show
         </div>
-        <div className="flex items-center justify-between px-2 py-1 text-[11px] text-neutral-300 hover:bg-neutral-800/50 rounded cursor-pointer">
+        <div className="flex items-center justify-between px-2 py-1 text-[11px] text-popover-foreground hover:bg-accent rounded cursor-pointer transition-colors">
           <div className="flex items-center gap-1.5">
             <span>Projects</span>
           </div>
-          <span className="text-[10px] text-neutral-500 font-mono flex items-center gap-0.5">
+          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
             <span>All projects ({projects.length})</span>
-            <ChevronRight className="w-3 h-3 text-neutral-600" />
+            <ChevronRight className="w-3 h-3 text-muted-foreground" />
           </span>
         </div>
       </div>
 
-      <div className="h-px bg-[#222327]" />
+      <div className="h-px bg-border" />
 
       {/* Group by Toggle Group (Orca SidebarGroupByToggle 100%) */}
       <div className="space-y-1">
-        <div className="px-2 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
+        <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Group by
         </div>
-        <div className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-[#0e0f11] border border-[#222327]">
+        <div className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
           {[
             { id: "none", label: "None" },
             { id: "workspace-status", label: "Status" },
@@ -149,8 +149,8 @@ export function WorkspaceOptionsMenu({
                 onClick={() => onOptionsChange({ ...options, groupBy: item.id as GroupByMode })}
                 className={`py-1 text-[10px] font-medium rounded transition text-center cursor-pointer ${
                   isSelected
-                    ? "bg-neutral-800 text-white font-semibold shadow-xs"
-                    : "text-neutral-400 hover:text-neutral-200"
+                    ? "bg-background text-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {item.label}
@@ -162,46 +162,46 @@ export function WorkspaceOptionsMenu({
 
       {/* Sort & Display rows */}
       <div className="space-y-0.5 text-[11px]">
-        <div className="flex items-center justify-between px-2 py-1 hover:bg-neutral-800/50 rounded cursor-pointer text-neutral-300">
+        <div className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors">
           <span>Sort by</span>
-          <span className="text-[10px] text-neutral-500 font-mono flex items-center gap-0.5">
+          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
             <span>Agent Activity</span>
-            <ChevronRight className="w-3 h-3 text-neutral-600" />
+            <ChevronRight className="w-3 h-3 text-muted-foreground" />
           </span>
         </div>
-        <div className="flex items-center justify-between px-2 py-1 hover:bg-neutral-800/50 rounded cursor-pointer text-neutral-300">
+        <div className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors">
           <span>Project order</span>
-          <span className="text-[10px] text-neutral-500 font-mono flex items-center gap-0.5">
+          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
             <span>Manual</span>
-            <ChevronRight className="w-3 h-3 text-neutral-600" />
+            <ChevronRight className="w-3 h-3 text-muted-foreground" />
           </span>
         </div>
-        <div className="flex items-center justify-between px-2 py-1 hover:bg-neutral-800/50 rounded cursor-pointer text-neutral-300">
+        <div className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors">
           <span>Card display</span>
-          <span className="text-[10px] text-neutral-500 font-mono flex items-center gap-0.5">
-            <ChevronRight className="w-3 h-3 text-neutral-600" />
+          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
+            <ChevronRight className="w-3 h-3 text-muted-foreground" />
           </span>
         </div>
       </div>
 
-      <div className="h-px bg-[#222327]" />
+      <div className="h-px bg-border" />
 
       {/* Filters Section (Orca SidebarWorkspaceFilterSection 100%) */}
       <div className="space-y-1">
-        <div className="px-2 text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
+        <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Filters
         </div>
 
         {/* 1. Hide sleeping */}
         <div 
           onClick={() => handleToggle("hideSleeping")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-neutral-800/50 cursor-pointer text-[11px] text-neutral-300"
+          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Moon className="w-3.5 h-3.5 text-neutral-400" />
+            <Moon className="w-3.5 h-3.5 text-muted-foreground" />
             <span>Hide sleeping</span>
           </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideSleeping ? "bg-emerald-500" : "bg-neutral-800"}`}>
+          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideSleeping ? "bg-emerald-600" : "bg-input"}`}>
             <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideSleeping ? "translate-x-3" : "translate-x-0"}`} />
           </div>
         </div>
@@ -209,13 +209,13 @@ export function WorkspaceOptionsMenu({
         {/* 2. Hide default branch */}
         <div 
           onClick={() => handleToggle("hideDefaultBranch")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-neutral-800/50 cursor-pointer text-[11px] text-neutral-300"
+          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
         >
           <div className="flex items-center gap-2">
-            <GitBranch className="w-3.5 h-3.5 text-neutral-400" />
+            <GitBranch className="w-3.5 h-3.5 text-muted-foreground" />
             <span>Hide default branch</span>
           </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideDefaultBranch ? "bg-emerald-500" : "bg-neutral-800"}`}>
+          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideDefaultBranch ? "bg-emerald-600" : "bg-input"}`}>
             <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideDefaultBranch ? "translate-x-3" : "translate-x-0"}`} />
           </div>
         </div>
@@ -223,13 +223,13 @@ export function WorkspaceOptionsMenu({
         {/* 3. Hide automation-created */}
         <div 
           onClick={() => handleToggle("hideAutomationCreated")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-neutral-800/50 cursor-pointer text-[11px] text-neutral-300"
+          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
         >
           <div className="flex items-center gap-2">
-            <CalendarClock className="w-3.5 h-3.5 text-neutral-400" />
+            <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" />
             <span>Hide automation-created</span>
           </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideAutomationCreated ? "bg-emerald-500" : "bg-neutral-800"}`}>
+          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideAutomationCreated ? "bg-emerald-600" : "bg-input"}`}>
             <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideAutomationCreated ? "translate-x-3" : "translate-x-0"}`} />
           </div>
         </div>
@@ -237,13 +237,13 @@ export function WorkspaceOptionsMenu({
         {/* 4. Hide CLI-created */}
         <div 
           onClick={() => handleToggle("hideCliCreated")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-neutral-800/50 cursor-pointer text-[11px] text-neutral-300"
+          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
         >
           <div className="flex items-center gap-2">
-            <SquareTerminal className="w-3.5 h-3.5 text-neutral-400" />
+            <SquareTerminal className="w-3.5 h-3.5 text-muted-foreground" />
             <span>Hide CLI-created</span>
           </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideCliCreated ? "bg-emerald-500" : "bg-neutral-800"}`}>
+          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideCliCreated ? "bg-emerald-600" : "bg-input"}`}>
             <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideCliCreated ? "translate-x-3" : "translate-x-0"}`} />
           </div>
         </div>
@@ -251,13 +251,13 @@ export function WorkspaceOptionsMenu({
         {/* 5. Hide detached HEAD */}
         <div 
           onClick={() => handleToggle("hideDetachedHead")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-neutral-800/50 cursor-pointer text-[11px] text-neutral-300"
+          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
         >
           <div className="flex items-center gap-2">
-            <GitCommitHorizontal className="w-3.5 h-3.5 text-neutral-400" />
+            <GitCommitHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
             <span>Hide detached HEAD</span>
           </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideDetachedHead ? "bg-emerald-500" : "bg-neutral-800"}`}>
+          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideDetachedHead ? "bg-emerald-600" : "bg-input"}`}>
             <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideDetachedHead ? "translate-x-3" : "translate-x-0"}`} />
           </div>
         </div>

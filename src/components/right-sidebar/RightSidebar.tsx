@@ -19,9 +19,9 @@ export function RightSidebar({ rootPath, isGit, openInApps, onOpenFile, onOpenDi
   const [activeTab, setActiveTab] = useState<TabId>("explorer");
 
   return (
-    <div className="flex flex-col h-full bg-[#0e0f11] overflow-hidden">
+    <div className="flex flex-col h-full bg-sidebar text-sidebar-foreground overflow-hidden">
       {/* Activity bar — topo — copia Orca activity-bar-buttons.tsx: icon 16px, 36x36 hit, active underline 2px */}
-      <div className="flex items-center gap-0 border-b border-[#222] bg-[#0e0f11] shrink-0 h-[36px] px-1">
+      <div className="flex items-center gap-0 border-b border-border bg-sidebar shrink-0 h-[36px] px-1">
         <button
           onClick={() => setActiveTab("explorer")}
           title="Explorer (Files)"
@@ -39,7 +39,7 @@ export function RightSidebar({ rootPath, isGit, openInApps, onOpenFile, onOpenDi
           {activeTab === "source-control" && <div className="absolute bottom-0 left-[25%] right-[25%] h-[2px] bg-foreground rounded-t" />}
         </button>
         <div className="flex-1" />
-        <span className="text-[10px] text-neutral-500 font-mono pr-2">{activeTab === "explorer" ? "EXPLORER" : "SOURCE CONTROL"}</span>
+        <span className="text-[10px] text-muted-foreground font-mono pr-2">{activeTab === "explorer" ? "EXPLORER" : "SOURCE CONTROL"}</span>
       </div>
 
       {/* Panel content — copia Orca right-sidebar-panel-content.tsx com lazy */}

@@ -11,6 +11,19 @@ export type HydraSettings = {
   // Appearance — faithful to Orca GlobalSettings (snake_case for Rust compat)
   theme: "system" | "dark" | "light";
   app_font_family: string;
+  ui_zoom?: number;
+  compact_worktree_cards?: boolean;
+  left_sidebar_appearance_mode?: "default" | "match-terminal" | "tinted";
+  left_sidebar_tint_color?: string;
+  left_sidebar_tint_opacity?: number;
+  usage_percentage_display?: "used" | "remaining";
+  status_bar_claude_usage?: boolean;
+  status_bar_antigravity_usage?: boolean;
+  status_bar_opencode_usage?: boolean;
+  status_bar_minimax_usage?: boolean;
+  status_bar_remote_hosts?: boolean;
+  status_bar_resource_manager?: boolean;
+  status_bar_ports?: boolean;
   terminal_font_family: string;
   terminal_font_size: number;
   terminal_font_weight: number;
@@ -26,6 +39,11 @@ export type HydraSettings = {
   terminal_divider_color_dark: string;
   terminal_divider_color_light: string;
   terminal_custom_themes: TerminalCustomTheme[];
+  terminal_cursor_opacity?: number;
+  terminal_padding_x?: number;
+  terminal_padding_y?: number;
+  window_background_blur?: boolean;
+  terminal_mouse_hide_while_typing?: boolean;
   terminal_background_opacity?: number;
   terminal_minimum_contrast_ratio?: number;
   terminal_color_overrides?: TerminalColorOverrides;
@@ -109,6 +127,19 @@ export function normalizeOpenInApplications(value: unknown): OpenInApplication[]
 
 export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   theme: "system",
+  ui_zoom: 1,
+  compact_worktree_cards: false,
+  left_sidebar_appearance_mode: "default",
+  left_sidebar_tint_color: "#336699",
+  left_sidebar_tint_opacity: 0.1,
+  usage_percentage_display: "used",
+  status_bar_claude_usage: true,
+  status_bar_antigravity_usage: true,
+  status_bar_opencode_usage: true,
+  status_bar_minimax_usage: true,
+  status_bar_remote_hosts: true,
+  status_bar_resource_manager: true,
+  status_bar_ports: true,
   app_font_family: "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   terminal_font_family: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
   terminal_font_size: 14,
@@ -125,6 +156,11 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   terminal_divider_color_dark: "#3f3f46",
   terminal_divider_color_light: "#d4d4d8",
   terminal_custom_themes: [],
+  terminal_cursor_opacity: 1,
+  terminal_padding_x: 4,
+  terminal_padding_y: 4,
+  window_background_blur: false,
+  terminal_mouse_hide_while_typing: false,
   terminal_inactive_pane_opacity: 0.6,
   terminal_active_pane_opacity: 1,
   terminal_pane_opacity_transition_ms: 140,
@@ -189,6 +225,19 @@ export function normalizeHydraSettings(input: unknown): HydraSettings {
     app_font_family: get("app_font_family", "appFontFamily", DEFAULT_HYDRA_SETTINGS.app_font_family) as string,
     terminal_font_family: get("terminal_font_family", "terminalFontFamily", DEFAULT_HYDRA_SETTINGS.terminal_font_family) as string,
     terminal_font_size: get("terminal_font_size", "terminalFontSize", DEFAULT_HYDRA_SETTINGS.terminal_font_size) as number,
+    ui_zoom: (() => { const v = get("ui_zoom", "uiZoom", DEFAULT_HYDRA_SETTINGS.ui_zoom); return typeof v === "number" && Number.isFinite(v) ? Math.min(2, Math.max(0.5, v)) : 1; })(),
+    compact_worktree_cards: Boolean(get("compact_worktree_cards", "compactWorktreeCards", DEFAULT_HYDRA_SETTINGS.compact_worktree_cards)),
+    left_sidebar_appearance_mode: (() => { const v = get("left_sidebar_appearance_mode", "leftSidebarAppearanceMode", "default"); return v === "match-terminal" || v === "tinted" ? v : "default"; })(),
+    left_sidebar_tint_color: String(get("left_sidebar_tint_color", "leftSidebarTintColor", "#336699")),
+    left_sidebar_tint_opacity: (() => { const v = get("left_sidebar_tint_opacity", "leftSidebarTintOpacity", 0.1); return typeof v === "number" && Number.isFinite(v) ? Math.min(0.5, Math.max(0, v)) : 0.1; })(),
+    usage_percentage_display: (() => { const v = get("usage_percentage_display", "usagePercentageDisplay", "used"); return v === "remaining" ? "remaining" : "used"; })(),
+    status_bar_claude_usage: Boolean(get("status_bar_claude_usage", "statusBarClaudeUsage", true)),
+    status_bar_antigravity_usage: Boolean(get("status_bar_antigravity_usage", "statusBarAntigravityUsage", true)),
+    status_bar_opencode_usage: Boolean(get("status_bar_opencode_usage", "statusBarOpencodeUsage", true)),
+    status_bar_minimax_usage: Boolean(get("status_bar_minimax_usage", "statusBarMinimaxUsage", true)),
+    status_bar_remote_hosts: Boolean(get("status_bar_remote_hosts", "statusBarRemoteHosts", true)),
+    status_bar_resource_manager: Boolean(get("status_bar_resource_manager", "statusBarResourceManager", true)),
+    status_bar_ports: Boolean(get("status_bar_ports", "statusBarPorts", true)),
     terminal_font_weight: get("terminal_font_weight", "terminalFontWeight", DEFAULT_HYDRA_SETTINGS.terminal_font_weight) as number,
     terminal_font_weight_bold: get("terminal_font_weight_bold", "terminalFontWeightBold", DEFAULT_HYDRA_SETTINGS.terminal_font_weight_bold) as number,
     terminal_line_height: get("terminal_line_height", "terminalLineHeight", DEFAULT_HYDRA_SETTINGS.terminal_line_height) as number,
@@ -203,6 +252,11 @@ export function normalizeHydraSettings(input: unknown): HydraSettings {
     terminal_divider_color_light: get("terminal_divider_color_light", "terminalDividerColorLight", DEFAULT_HYDRA_SETTINGS.terminal_divider_color_light) as string,
     terminal_custom_themes: Array.isArray(raw.terminal_custom_themes ?? (raw as Record<string,unknown>).terminalCustomThemes) ? (raw.terminal_custom_themes ?? (raw as Record<string,unknown>).terminalCustomThemes) as TerminalCustomTheme[] : [],
     terminal_background_opacity: (raw.terminal_background_opacity ?? raw.terminalBackgroundOpacity ?? undefined) as number | undefined,
+    terminal_cursor_opacity: (() => { const v = get("terminal_cursor_opacity", "terminalCursorOpacity", 1); return typeof v === "number" && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1; })(),
+    terminal_padding_x: (() => { const v = get("terminal_padding_x", "terminalPaddingX", 4); return typeof v === "number" && Number.isFinite(v) ? Math.max(0, v) : 4; })(),
+    terminal_padding_y: (() => { const v = get("terminal_padding_y", "terminalPaddingY", 4); return typeof v === "number" && Number.isFinite(v) ? Math.max(0, v) : 4; })(),
+    window_background_blur: Boolean(get("window_background_blur", "windowBackgroundBlur", false)),
+    terminal_mouse_hide_while_typing: Boolean(get("terminal_mouse_hide_while_typing", "terminalMouseHideWhileTyping", false)),
     terminal_minimum_contrast_ratio: (raw.terminal_minimum_contrast_ratio ?? raw.terminalMinimumContrastRatio ?? undefined) as number | undefined,
     terminal_color_overrides: (raw.terminal_color_overrides ?? raw.terminalColorOverrides ?? undefined) as TerminalColorOverrides | undefined,
     terminal_inactive_pane_opacity: get("terminal_inactive_pane_opacity", "terminalInactivePaneOpacity", DEFAULT_HYDRA_SETTINGS.terminal_inactive_pane_opacity) as number,

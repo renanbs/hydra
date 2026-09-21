@@ -46,6 +46,9 @@
   --color-worktree-sidebar-ring: var(--worktree-sidebar-ring);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-editor-surface: var(--editor-surface);
+  --color-tab-group-split-divider: var(--tab-group-split-divider);
+  --color-tab-group-split-divider-strong: var(--tab-group-split-divider-strong);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -66,6 +69,7 @@
   --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
   /* Dark — Hydra default, matches Orca .dark */
   --background: #0a0a0a;
+  --editor-surface: #1e1e1e;
   --foreground: #fafafa;
   --card: #171717;
   --card-foreground: #fafafa;
@@ -84,12 +88,13 @@
   --border: rgb(255 255 255 / 0.07);
   --input: rgb(255 255 255 / 0.15);
   --ring: #737373;
-  --worktree-sidebar: #121316;
+  /* Orca dark worktree sidebar — lift above #0a0a0a canvas */
+  --worktree-sidebar: #2a2a2a;
   --worktree-sidebar-foreground: #fafafa;
-  --worktree-sidebar-accent: #1e1f24;
-  --worktree-sidebar-accent-foreground: #ffffff;
-  --worktree-sidebar-border: rgba(255, 255, 255, 0.07);
-  --worktree-sidebar-ring: #10b981;
+  --worktree-sidebar-accent: #353535;
+  --worktree-sidebar-accent-foreground: #fafafa;
+  --worktree-sidebar-border: rgb(255 255 255 / 0.07);
+  --worktree-sidebar-ring: #737373;
   --sidebar: #171717;
   --sidebar-foreground: #fafafa;
   --sidebar-primary: #1447e6;
@@ -98,6 +103,9 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: rgb(255 255 255 / 0.07);
   --sidebar-ring: #525252;
+  --tab-group-split-divider: #71717a;
+  --tab-group-split-divider-strong: #a1a1aa;
+  --bg-titlebar: var(--card);
   /* Hydra aliases */
   --app-bg: var(--background);
   --app-fg: var(--foreground);
@@ -107,6 +115,7 @@
 }
 .dark {
   --background: #0a0a0a;
+  --editor-surface: #1e1e1e;
   --foreground: #fafafa;
   --card: #171717;
   --card-foreground: #fafafa;
@@ -125,12 +134,12 @@
   --border: rgb(255 255 255 / 0.07);
   --input: rgb(255 255 255 / 0.15);
   --ring: #737373;
-  --worktree-sidebar: #121316;
+  --worktree-sidebar: #2a2a2a;
   --worktree-sidebar-foreground: #fafafa;
-  --worktree-sidebar-accent: #1e1f24;
-  --worktree-sidebar-accent-foreground: #ffffff;
-  --worktree-sidebar-border: rgba(255, 255, 255, 0.07);
-  --worktree-sidebar-ring: #10b981;
+  --worktree-sidebar-accent: #353535;
+  --worktree-sidebar-accent-foreground: #fafafa;
+  --worktree-sidebar-border: rgb(255 255 255 / 0.07);
+  --worktree-sidebar-ring: #737373;
   --sidebar: #171717;
   --sidebar-foreground: #fafafa;
   --sidebar-primary: #1447e6;
@@ -139,6 +148,9 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: rgb(255 255 255 / 0.07);
   --sidebar-ring: #525252;
+  --tab-group-split-divider: #71717a;
+  --tab-group-split-divider-strong: #a1a1aa;
+  --bg-titlebar: var(--card);
   --app-bg: var(--background);
   --app-fg: var(--foreground);
   --surface: var(--card);
@@ -150,6 +162,7 @@
   color-scheme: light;
   /* Light — matches Orca :root */
   --background: #fff;
+  --editor-surface: #ffffff;
   --foreground: #0a0a0a;
   --card: #fff;
   --card-foreground: #0a0a0a;
@@ -182,6 +195,9 @@
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a1a1a1;
+  --tab-group-split-divider: #868690;
+  --tab-group-split-divider-strong: #71717a;
+  --bg-titlebar: var(--card);
   --app-bg: #fff;
   --app-fg: #0a0a0a;
   --surface: var(--card);
@@ -208,6 +224,34 @@
 .worktree-sidebar-card-hover { background: transparent; border: 1px solid transparent; transition: all 120ms ease; }
 .worktree-sidebar-card-hover:hover { background: color-mix(in srgb, var(--sidebar-foreground) 4%, transparent); border-color: color-mix(in srgb, var(--worktree-sidebar-border) 40%, transparent); }
 .dark .worktree-sidebar-card-hover:hover { background: color-mix(in srgb, var(--sidebar-accent) 40%, transparent); }
+/* Orca active worktree cards */
+[data-worktree-card-surface][data-worktree-card-active='primary'] {
+  border-color: color-mix(in srgb, var(--worktree-sidebar-border) 40%, transparent);
+  background: color-mix(in srgb, var(--worktree-sidebar-foreground) 8%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--worktree-sidebar-foreground) 4%, transparent);
+}
+.dark [data-worktree-card-surface][data-worktree-card-active='primary'] {
+  border-color: color-mix(in srgb, var(--worktree-sidebar-foreground) 18%, var(--worktree-sidebar-border));
+  background: color-mix(in srgb, var(--worktree-sidebar-foreground) 10%, transparent);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+/* Orca active tab bottom indicator */
+.tab-active-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: color-mix(in srgb, var(--foreground) 60%, var(--card));
+  z-index: 20;
+  pointer-events: none;
+}
+
+/* Terminal cursor opacity */
+.xterm .xterm-cursor {
+  opacity: var(--terminal-cursor-opacity, 1) !important;
+}
 
 /* Window controls — Orca titlebar */
 .window-controls { position: fixed; top: 0; right: 0; z-index: 9999; display: flex; height: 36px; -webkit-app-region: no-drag; }
