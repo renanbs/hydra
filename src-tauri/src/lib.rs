@@ -4,12 +4,15 @@ use tauri_plugin_window_state::StateFlags;
 
 pub mod agent_discovery;
 pub mod agent_state;
+pub mod daemon_client;
 pub mod db;
 pub mod fs_ops;
 pub mod git_status;
+pub mod ipc;
 pub mod keep_awake;
 pub mod pairing;
 pub mod project_manager;
+pub mod server;
 pub mod shell_detection;
 pub mod terminal;
 pub mod window_actions;
@@ -268,14 +271,19 @@ fn save_session_record(record: DbSessionRecord, state: State<'_, AppState>) -> R
 }
 
 #[tauri::command]
-fn delete_session_record(session_id: String, state: State<'_, AppState>) -> Result<(), String> {
+async fn delete_session_record(session_id: String, state: State<'_, AppState>) -> Result<(), String> {
     state.db.delete_session(&session_id)?;
+    // Try daemon first
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "close".to_string(), session_id: Some(session_id.clone()), executable: None, args: None, cwd: None, input: None, rows: None, cols: None, offset: None };
+        let _ = daemon_client::daemon_request(&req);
+    }
     state.terminal.close_session(&session_id);
     Ok(())
 }
 
 #[tauri::command]
-fn start_agent_terminal(
+async fn start_agent_terminal(
     session_id: String,
     executable: String,
     args: Vec<String>,
@@ -283,50 +291,147 @@ fn start_agent_terminal(
     app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "start".to_string(), session_id: Some(session_id.clone()), executable: Some(executable.clone()), args: Some(args.clone()), cwd: cwd.clone(), input: None, rows: None, cols: None, offset: None };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => {
+                let sid = session_id.clone();
+                let app_handle = app.clone();
+                std::thread::spawn(move || {
+                    let mut offset = 0;
+                    loop {
+                        std::thread::sleep(std::time::Duration::from_millis(50));
+                        let poll_req = daemon_client::DaemonRequest {
+                            op: "poll".to_string(),
+                            session_id: Some(sid.clone()),
+                            executable: None,
+                            args: None,
+                            cwd: None,
+                            input: None,
+                            rows: None,
+                            cols: None,
+                            offset: Some(offset),
+                        };
+                        match daemon_client::daemon_request(&poll_req) {
+                            Ok(res) if res.ok => {
+                                if let Some(data) = res.data {
+                                    let chunk = data.get("data").and_then(|v| v.as_str()).unwrap_or("");
+                                    let next = data.get("next_offset").and_then(|v| v.as_u64()).unwrap_or(offset as u64) as usize;
+                                    if !chunk.is_empty() {
+                                        #[derive(serde::Serialize, Clone)]
+                                        struct OutputPayload {
+                                            session_id: String,
+                                            output: String,
+                                        }
+                                        use tauri::Emitter;
+                                        let _ = app_handle.emit(
+                                            "terminal:output",
+                                            OutputPayload {
+                                                session_id: sid.clone(),
+                                                output: chunk.to_string(),
+                                            },
+                                        );
+                                    }
+                                    offset = next;
+                                }
+                            }
+                            _ => break,
+                        }
+                    }
+                });
+                return Ok(());
+            }
+            Ok(r) => return Err(r.error.unwrap_or_else(|| "daemon error".to_string())),
+            Err(_) => {} // fallback to local
+        }
+    }
     state.terminal.start_session(&session_id, &executable, args, cwd, app)
 }
 
 #[tauri::command]
-fn resize_terminal(
+async fn resize_terminal(
     session_id: String,
     rows: u16,
     cols: u16,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "resize".to_string(), session_id: Some(session_id.clone()), executable: None, args: None, cwd: None, input: None, rows: Some(rows), cols: Some(cols), offset: None };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => return Ok(()),
+            Ok(r) => return Err(r.error.unwrap_or_else(|| "daemon error".to_string())),
+            Err(_) => {}
+        }
+    }
     state.terminal.resize_session(&session_id, rows, cols)
 }
 
 #[tauri::command]
-fn send_terminal_input(
+async fn send_terminal_input(
     session_id: String,
     input: String,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "write".to_string(), session_id: Some(session_id.clone()), executable: None, args: None, cwd: None, input: Some(input.clone()), rows: None, cols: None, offset: None };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => return Ok(()),
+            Ok(r) => return Err(r.error.unwrap_or_else(|| "daemon error".to_string())),
+            Err(_) => {}
+        }
+    }
     state.terminal.write_input(&session_id, &input)
 }
 
 #[tauri::command]
-fn get_terminal_snapshot(
+async fn get_terminal_snapshot(
     session_id: String,
     state: State<'_, AppState>,
 ) -> Result<TerminalSnapshot, String> {
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "snapshot".to_string(), session_id: Some(session_id.clone()), executable: None, args: None, cwd: None, input: None, rows: None, cols: None, offset: None };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => {
+                if let Some(data) = r.data {
+                    if let Ok(snap) = serde_json::from_value::<TerminalSnapshot>(data) {
+                        return Ok(snap);
+                    }
+                }
+                return Err("bad daemon snapshot".to_string());
+            },
+            Ok(r) => return Err(r.error.unwrap_or_else(|| "daemon error".to_string())),
+            Err(_) => {}
+        }
+    }
     state.terminal.get_snapshot(&session_id)
 }
 
 #[tauri::command]
-fn check_agent_state(session_id: String, state: State<'_, AppState>) -> Result<String, String> {
-    let snapshot = state.terminal.get_snapshot(&session_id)?;
+async fn check_agent_state(session_id: String, state: State<'_, AppState>) -> Result<String, String> {
+    let snapshot = if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "snapshot".to_string(), session_id: Some(session_id.clone()), executable: None, args: None, cwd: None, input: None, rows: None, cols: None, offset: None };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => r.data.and_then(|d| serde_json::from_value::<TerminalSnapshot>(d).ok()).ok_or_else(|| "bad daemon snapshot".to_string())?,
+            _ => state.terminal.get_snapshot(&session_id)?,
+        }
+    } else { state.terminal.get_snapshot(&session_id)? };
     let detected = detect_agent_state(&snapshot.clean_text);
     Ok(detected.as_str().to_string())
 }
 
 #[tauri::command]
-fn get_folded_logs(
+async fn get_folded_logs(
     session_id: String,
     max_lines: usize,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    let snapshot = state.terminal.get_snapshot(&session_id)?;
+    let snapshot = if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "snapshot".to_string(), session_id: Some(session_id.clone()), executable: None, args: None, cwd: None, input: None, rows: None, cols: None, offset: None };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => r.data.and_then(|d| serde_json::from_value::<TerminalSnapshot>(d).ok()).ok_or_else(|| "bad daemon snapshot".to_string())?,
+            _ => state.terminal.get_snapshot(&session_id)?,
+        }
+    } else { state.terminal.get_snapshot(&session_id)? };
     Ok(fold_terminal_output(&snapshot.clean_text, max_lines))
 }
 
@@ -364,6 +469,42 @@ fn save_settings(settings: HydraSettings, state: State<'_, AppState>) -> Result<
     state.db.save_settings(&settings)?;
     state.keep_awake.set_enabled(enabled);
     Ok(())
+}
+
+#[tauri::command]
+async fn list_terminal_sessions(state: State<'_, AppState>) -> Result<Vec<String>, String> {
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "list".to_string(), session_id: None, executable: None, args: None, cwd: None, input: None, rows: None, cols: None, offset: None };
+        if let Ok(r) = daemon_client::daemon_request(&req) {
+            if r.ok {
+                if let Some(data) = r.data {
+                    if let Ok(list) = serde_json::from_value::<Vec<String>>(data) {
+                        return Ok(list);
+                    }
+                }
+            }
+        }
+    }
+    Ok(state.terminal.list_sessions())
+}
+
+#[tauri::command]
+async fn poll_terminal_output(session_id: String, offset: usize, state: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest { op: "poll".to_string(), session_id: Some(session_id.clone()), executable: None, args: None, cwd: None, input: None, rows: None, cols: None, offset: Some(offset) };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => return Ok(r.data.unwrap_or(serde_json::json!({"data":"","next_offset":offset}))),
+            Ok(r) => return Err(r.error.unwrap_or_else(|| "daemon error".to_string())),
+            Err(_) => {}
+        }
+    }
+    let (data, next) = state.terminal.poll_output(&session_id, offset)?;
+    Ok(serde_json::json!({"data": data, "next_offset": next}))
+}
+
+#[tauri::command]
+async fn is_daemon_available() -> bool {
+    daemon_client::daemon_available()
 }
 
 #[tauri::command]
@@ -447,6 +588,12 @@ pub fn run() {
                     let _ = window.set_icon(image);
                 }
             }
+            // Herdr-style daemon auto-spawn: if hydra.sock not live, spawn hydra-daemon
+            std::thread::spawn(|| {
+                if !daemon_client::daemon_available() {
+                    daemon_client::ensure_daemon_spawned();
+                }
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -514,6 +661,9 @@ pub fn run() {
             resize_terminal,
             set_keep_awake_working_count,
             list_available_shells,
+            list_terminal_sessions,
+            poll_terminal_output,
+            is_daemon_available,
             resolve_tool_approval,
             window_actions::window_minimize,
             window_actions::window_toggle_maximize,

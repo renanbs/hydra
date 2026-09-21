@@ -76,6 +76,10 @@ fn default_divider_thickness() -> u32 { 3 }
 fn default_scrollback() -> u32 { 10000 }
 fn default_branch_prefix() -> String { "feat/".to_string() }
 fn default_agent_perm() -> String { "yolo".to_string() }
+fn default_scroll_sensitivity() -> f32 { 1.15 }
+fn default_fast_scroll_sensitivity() -> f32 { 5.0 }
+fn default_tui_scroll_sensitivity() -> f32 { 1.0 }
+fn default_setup_script_launch_mode() -> String { "new-tab".to_string() }
 fn default_workspace_dir() -> String {
     let home = std::env::var("HOME").unwrap_or_else(|_| "/home/renan".to_string());
     format!("{home}/src")
@@ -263,6 +267,26 @@ pub struct HydraSettings {
     pub terminal_focus_follows_mouse: bool,
     #[serde(default = "default_scrollback")]
     pub terminal_scrollback_rows: u32,
+    #[serde(default = "default_scroll_sensitivity")]
+    pub terminal_scroll_sensitivity: f32,
+    #[serde(default = "default_fast_scroll_sensitivity")]
+    pub terminal_fast_scroll_sensitivity: f32,
+    #[serde(default = "default_tui_scroll_sensitivity")]
+    pub terminal_tui_scroll_sensitivity: f32,
+    #[serde(default = "default_true")]
+    pub terminal_inline_images: bool,
+    #[serde(default = "default_false")]
+    pub terminal_right_click_to_paste: bool,
+    #[serde(default = "default_true")]
+    pub terminal_clipboard_on_select: bool,
+    #[serde(default = "default_true")]
+    pub terminal_copy_trims_gutter: bool,
+    #[serde(default = "default_true")]
+    pub terminal_allow_osc52_clipboard: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub terminal_word_separator: Option<String>,
+    #[serde(default = "default_setup_script_launch_mode")]
+    pub setup_script_launch_mode: String,
     #[serde(default = "default_true")]
     pub primary_selection_middle_click_paste: bool,
     #[serde(default = "default_true")]
@@ -340,6 +364,16 @@ impl Default for HydraSettings {
             terminal_divider_thickness_px: default_divider_thickness(),
             terminal_focus_follows_mouse: false,
             terminal_scrollback_rows: default_scrollback(),
+            terminal_scroll_sensitivity: default_scroll_sensitivity(),
+            terminal_fast_scroll_sensitivity: default_fast_scroll_sensitivity(),
+            terminal_tui_scroll_sensitivity: default_tui_scroll_sensitivity(),
+            terminal_inline_images: true,
+            terminal_right_click_to_paste: false,
+            terminal_clipboard_on_select: true,
+            terminal_copy_trims_gutter: true,
+            terminal_allow_osc52_clipboard: true,
+            terminal_word_separator: None,
+            setup_script_launch_mode: default_setup_script_launch_mode(),
             primary_selection_middle_click_paste: true,
             auto_approve_reads: true,
             notification_on_blocked: true,

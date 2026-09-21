@@ -44,6 +44,11 @@ All agents contributing to this repository MUST load and adhere to the project s
 4. **Wayland & Linux Native Compliance**:
    - Window decorations remain `decorations: false`. Window dragging is handled via `window.start_dragging()`.
    - Desktop entry must declare `StartupWMClass=hydra`.
+5. **Event Loop & IPC Discipline (Wayland / WebKitGTK Freeze Prevention)**:
+   - All `#[tauri::command]` handlers that perform I/O, IPC socket communication, or DB queries MUST be `async fn` (never blocking `fn`). Synchronous commands run on the GTK main thread and block compositor ping/pong.
+   - High-frequency output MUST use Push (`app.emit("terminal:output")`), never frontend `setInterval` polling.
+   - All local IPC streams MUST have read/write timeouts (`set_recv_timeout(300ms)`).
+   - The PTY reader loop runs at OS stream speed: zero allocations, zero SQLite queries per chunk.
 
 ---
 

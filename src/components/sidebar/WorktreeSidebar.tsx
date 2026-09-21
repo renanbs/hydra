@@ -14,7 +14,8 @@ import {
   SlidersHorizontal,
   Sliders,
   Copy,
-  FolderTree
+  FolderTree,
+  GripVertical
 } from "lucide-react";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 
@@ -78,6 +79,9 @@ interface WorktreeSidebarProps {
   onOpenAddRepoDialog: () => void;
   onOpenNewWorkspaceModal: (proj?: HydraProject) => void;
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
+  onReorderSessions?: (sessions: WorktreeSession[]) => void;
+  onReorderProjects?: (projects: HydraProject[]) => void;
+  onReorderWorktrees?: (worktrees: GitWorktreeInfo[]) => void;
 }
 
 export function WorktreeSidebar({
@@ -96,6 +100,9 @@ export function WorktreeSidebar({
   onOpenAddRepoDialog,
   onOpenNewWorkspaceModal,
   onSessionContextMenu,
+  onReorderSessions,
+  onReorderProjects,
+  onReorderWorktrees,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
@@ -114,6 +121,126 @@ export function WorktreeSidebar({
     hideCliCreated: false,
     hideDetachedHead: false,
   });
+  // Drag and Drop state
+  const [draggedSessionId, setDraggedSessionId] = useState<string | null>(null);
+  const [draggedWorktreePath, setDraggedWorktreePath] = useState<string | null>(null);
+  const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
+  const [sessionDropTarget, setSessionDropTarget] = useState<{ id: string; position: "top" | "bottom" } | null>(null);
+  const [worktreeDropTarget, setWorktreeDropTarget] = useState<{ path: string; position: "top" | "bottom" } | null>(null);
+  const [projectDropTarget, setProjectDropTarget] = useState<{ id: string; position: "top" | "bottom" } | null>(null);
+
+  const reorderList = <T,>(list: T[], fromIndex: number, toIndex: number, position: "top" | "bottom"): T[] => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length) return list;
+    const result = [...list];
+    const [removed] = result.splice(fromIndex, 1);
+    let insertIndex = toIndex;
+    if (position === "bottom" && fromIndex > toIndex) insertIndex = toIndex + 1;
+    else if (position === "top" && fromIndex < toIndex) insertIndex = toIndex - 1;
+    result.splice(Math.max(0, Math.min(insertIndex, result.length)), 0, removed);
+    return result;
+  };
+
+  const handleSessionDragStart = (e: React.DragEvent, id: string) => {
+    e.stopPropagation();
+    setDraggedSessionId(id);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("application/x-hydra-session-id", id);
+  };
+  const handleSessionDragOver = (e: React.DragEvent, targetId: string) => {
+    if (!draggedSessionId || draggedSessionId === targetId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const isTop = e.clientY - rect.top < rect.height / 2;
+    setSessionDropTarget({ id: targetId, position: isTop ? "top" : "bottom" });
+  };
+  const handleSessionDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const sourceId = draggedSessionId || e.dataTransfer.getData("application/x-hydra-session-id");
+    if (sourceId && sourceId !== targetId && onReorderSessions) {
+      const fromIdx = sessions.findIndex((s) => s.id === sourceId);
+      const toIdx = sessions.findIndex((s) => s.id === targetId);
+      if (fromIdx !== -1 && toIdx !== -1) {
+        const next = reorderList(sessions, fromIdx, toIdx, sessionDropTarget?.position ?? "bottom");
+        onReorderSessions(next);
+      }
+    }
+    setDraggedSessionId(null);
+    setSessionDropTarget(null);
+  };
+
+  const handleWorktreeDragStart = (e: React.DragEvent, path: string) => {
+    e.stopPropagation();
+    setDraggedWorktreePath(path);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("application/x-hydra-worktree-path", path);
+  };
+  const handleWorktreeDragOver = (e: React.DragEvent, targetPath: string) => {
+    if (!draggedWorktreePath || draggedWorktreePath === targetPath) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const isTop = e.clientY - rect.top < rect.height / 2;
+    setWorktreeDropTarget({ path: targetPath, position: isTop ? "top" : "bottom" });
+  };
+  const handleWorktreeDrop = (e: React.DragEvent, targetPath: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const sourcePath = draggedWorktreePath || e.dataTransfer.getData("application/x-hydra-worktree-path");
+    if (sourcePath && sourcePath !== targetPath && onReorderWorktrees) {
+      const fromIdx = gitWorktrees.findIndex((w) => w.path === sourcePath);
+      const toIdx = gitWorktrees.findIndex((w) => w.path === targetPath);
+      if (fromIdx !== -1 && toIdx !== -1) {
+        const next = reorderList(gitWorktrees, fromIdx, toIdx, worktreeDropTarget?.position ?? "bottom");
+        onReorderWorktrees(next);
+      }
+    }
+    setDraggedWorktreePath(null);
+    setWorktreeDropTarget(null);
+  };
+
+  const handleProjectDragStart = (e: React.DragEvent, id: string) => {
+    e.stopPropagation();
+    setDraggedProjectId(id);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("application/x-hydra-project-id", id);
+  };
+  const handleProjectDragOver = (e: React.DragEvent, targetId: string) => {
+    if (!draggedProjectId || draggedProjectId === targetId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const isTop = e.clientY - rect.top < rect.height / 2;
+    setProjectDropTarget({ id: targetId, position: isTop ? "top" : "bottom" });
+  };
+  const handleProjectDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const sourceId = draggedProjectId || e.dataTransfer.getData("application/x-hydra-project-id");
+    if (sourceId && sourceId !== targetId && onReorderProjects) {
+      const fromIdx = projects.findIndex((p) => p.id === sourceId);
+      const toIdx = projects.findIndex((p) => p.id === targetId);
+      if (fromIdx !== -1 && toIdx !== -1) {
+        const next = reorderList(projects, fromIdx, toIdx, projectDropTarget?.position ?? "bottom");
+        onReorderProjects(next);
+      }
+    }
+    setDraggedProjectId(null);
+    setProjectDropTarget(null);
+  };
+  const handleSessionDragEnd = () => {
+    setDraggedSessionId(null);
+    setSessionDropTarget(null);
+  };
+  const handleWorktreeDragEnd = () => {
+    setDraggedWorktreePath(null);
+    setWorktreeDropTarget(null);
+  };
+  const handleProjectDragEnd = () => {
+    setDraggedProjectId(null);
+    setProjectDropTarget(null);
+  };
   const [appVersion, setAppVersion] = useState<string | null>(null);
   useEffect(() => {
     invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
@@ -227,15 +354,30 @@ export function WorktreeSidebar({
               <div key={proj.id} className="space-y-1">
                 {/* REPO HEADER ROW: [Icon + Project Name]  -----  [ChevronDown/Right] [...] [+] */}
                 <div
+                  draggable={true}
+                  onDragStart={(e) => handleProjectDragStart(e, proj.id)}
+                  onDragOver={(e) => handleProjectDragOver(e, proj.id)}
+                  onDrop={(e) => handleProjectDrop(e, proj.id)}
+                  onDragEnd={handleProjectDragEnd}
                   onClick={() => onSelectProject(proj)}
                   className={`group relative flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer transition ${
+                    draggedProjectId === proj.id ? "opacity-30" : ""
+                  } ${
                     isActiveProject
                       ? "bg-[#18191e] border border-neutral-700/60 text-white font-medium shadow-sm"
                       : "hover:bg-neutral-800/40 text-neutral-300"
                   }`}
                 >
+                  {projectDropTarget?.id === proj.id && (
+                    <div
+                      className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${
+                        projectDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"
+                      }`}
+                    />
+                  )}
                   {/* Left: Project Icon + Display Name */}
                   <div className="flex items-center gap-2 min-w-0">
+                    <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
                     <FolderGit2 className={`w-3.5 h-3.5 shrink-0 ${isActiveProject ? "text-emerald-400" : "text-neutral-500"}`} />
                     <span className="truncate text-[12px] font-semibold tracking-tight">{proj.name}</span>
                   </div>
@@ -369,10 +511,25 @@ export function WorktreeSidebar({
                       return (
                         <div
                           key={wt.path}
+                          draggable={true}
+                          onDragStart={(e) => handleWorktreeDragStart(e, wt.path)}
+                          onDragOver={(e) => handleWorktreeDragOver(e, wt.path)}
+                          onDrop={(e) => handleWorktreeDrop(e, wt.path)}
+                          onDragEnd={handleWorktreeDragEnd}
                           onClick={() => onSelectGitWorktree(wt)}
-                          className="group relative p-2.5 rounded-lg cursor-pointer worktree-sidebar-card-hover text-neutral-300 flex items-center justify-between"
+                          className={`group relative p-2.5 rounded-lg cursor-pointer worktree-sidebar-card-hover text-neutral-300 flex items-center justify-between transition-all ${
+                            draggedWorktreePath === wt.path ? "opacity-30" : ""
+                          }`}
                         >
+                          {worktreeDropTarget?.path === wt.path && (
+                            <div
+                              className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${
+                                worktreeDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"
+                              }`}
+                            />
+                          )}
                           <div className="flex items-center gap-2 min-w-0">
+                            <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
                             <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
                             <span className="truncate text-[11px] font-medium text-neutral-200">
                               {wt.branch || proj.name}
@@ -408,26 +565,43 @@ export function WorktreeSidebar({
                       projectSessions.map((session) => (
                         <div
                           key={session.id}
+                          draggable={true}
+                          onDragStart={(e) => handleSessionDragStart(e, session.id)}
+                          onDragOver={(e) => handleSessionDragOver(e, session.id)}
+                          onDrop={(e) => handleSessionDrop(e, session.id)}
+                          onDragEnd={handleSessionDragEnd}
                           onClick={() => onSelectSession(session.id)}
                           onContextMenu={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             onSessionContextMenu?.(e, session);
                           }}
-                          className={`group relative p-2.5 rounded-lg text-xs cursor-pointer select-none ${
+                          className={`group relative p-2.5 rounded-lg text-xs cursor-pointer select-none transition-all ${
+                            draggedSessionId === session.id ? "opacity-30 scale-[0.98]" : ""
+                          } ${
                             session.active && isActiveProject
                               ? "worktree-sidebar-card-active text-neutral-100"
                               : "worktree-sidebar-card-hover text-neutral-400 hover:text-neutral-200"
                           }`}
                         >
+                          {sessionDropTarget?.id === session.id && (
+                            <div
+                              className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${
+                                sessionDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"
+                              }`}
+                            />
+                          )}
                           {session.active && isActiveProject && (
                             <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />
                           )}
 
                           <div className="flex items-center justify-between mb-1 pl-1">
-                            <span className="font-medium truncate text-neutral-100 text-[11px]">
-                              {session.title}
-                            </span>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+                              <span className="font-medium truncate text-neutral-100 text-[11px]">
+                                {session.title}
+                              </span>
+                            </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span
                                 className={`w-2 h-2 rounded-full shrink-0 ${
