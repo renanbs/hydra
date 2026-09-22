@@ -162,10 +162,19 @@ export function WorkspaceOptionsMenu({
 
       {/* Sort & Display rows */}
       <div className="space-y-0.5 text-[11px]">
-        <div className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors">
+        <div
+          onClick={() => {
+            const order: WorkspaceDisplayOptions["sortBy"][] = ["agent-activity", "name", "recent"];
+            const idx = order.indexOf(options.sortBy);
+            const next = order[(idx + 1) % order.length] as WorkspaceDisplayOptions["sortBy"];
+            onOptionsChange({ ...options, sortBy: next });
+          }}
+          className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors"
+          title="Click to cycle: Agent Activity → Name → Recent"
+        >
           <span>Sort by</span>
           <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-            <span>Agent Activity</span>
+            <span>{options.sortBy === "agent-activity" ? "Agent Activity" : options.sortBy === "name" ? "Name" : "Recent"}</span>
             <ChevronRight className="w-3 h-3 text-muted-foreground" />
           </span>
         </div>
