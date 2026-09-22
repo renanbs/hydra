@@ -92,6 +92,9 @@ interface WorktreeSidebarProps {
   projectGroupMap?: Record<string, string>;
   projectGroups?: Array<{ id: string; name: string }>;
   compactCards?: boolean;
+  onSelectNextSession?: (direction: "up" | "down") => void;
+  onSelectPrevSession?: (direction: "up" | "down") => void;
+  isModalOpen?: boolean;
 }
 
 export function WorktreeSidebar({
@@ -122,9 +125,13 @@ export function WorktreeSidebar({
   projectGroupMap,
   projectGroups,
   compactCards = false,
+  onSelectNextSession,
+  onSelectPrevSession,
+  isModalOpen = false,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+  const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
   const [activeProjectMenuId, setActiveProjectMenuId] = useState<string | null>(null);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
   const [sidebarBody, setSidebarBody] = useState<"workspaces" | "agents">("workspaces");
@@ -143,6 +150,8 @@ export function WorktreeSidebar({
   });
   // Drag and Drop state
   const [draggedSessionId, setDraggedSessionId] = useState<string | null>(null);
+  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
+  const [lastClickedSessionId, setLastClickedSessionId] = useState<string | null>(null);
   const [draggedWorktreePath, setDraggedWorktreePath] = useState<string | null>(null);
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
   const [sessionDropTarget, setSessionDropTarget] = useState<{ id: string; position: "top" | "bottom" } | null>(null);
@@ -188,6 +197,47 @@ export function WorktreeSidebar({
     }
     setDraggedSessionId(null);
     setSessionDropTarget(null);
+  };
+
+  const handleSessionClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const shiftKey = e.shiftKey;
+    const ctrlKey = e.ctrlKey || e.metaKey;
+    
+    if (ctrlKey) {
+      // Toggle selection
+      setSelectedSessions(prev => {
+        const n = new Set(prev);
+        if (n.has(id)) n.delete(id);
+        else n.add(id);
+        return n;
+      });
+      setLastClickedSessionId(id);
+      return;
+    }
+    
+    if (shiftKey && lastClickedSessionId) {
+      // Shift+Click: select range between last clicked and current
+      const currentIdx = sessions.findIndex(s => s.id === id);
+      const lastIdx = sessions.findIndex(s => s.id === lastClickedSessionId);
+      if (currentIdx === -1 || lastIdx === -1) return;
+      
+      const [start, end] = currentIdx < lastIdx ? [currentIdx, lastIdx] : [lastIdx, currentIdx];
+      const newSelection = new Set<string>();
+      for (let i = start; i <= end; i++) {
+        newSelection.add(sessions[i].id);
+      }
+      setSelectedSessions(newSelection);
+      setLastClickedSessionId(id);
+      // Also select the current session in the workbench
+      onSelectSession(id);
+      return;
+    }
+    
+    // Default: single select (deselect others if not ctrl-clicking)
+    setSelectedSessions(new Set([id]));
+    setLastClickedSessionId(id);
+    onSelectSession(id);
   };
 
   const handleWorktreeDragStart = (e: React.DragEvent, path: string) => {
@@ -273,6 +323,52 @@ export function WorktreeSidebar({
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Arrow key navigation between sessions (when no modal/input has focus)
+      if (isModalOpen) return;
+      const target = e.target as HTMLElement;
+      const isInputFocused = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || Boolean(target.isContentEditable);
+
+      if (isInputFocused) return;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setFocusedSessionId(prev => {
+          if (prev === null) {
+            // Start with first session
+            const firstId = sessions.length > 0 ? sessions[0].id : null;
+            if (firstId) onSelectNextSession?.("down");
+            return firstId;
+          }
+          const currentIdx = sessions.findIndex(s => s.id === prev);
+          if (currentIdx === -1) return prev;
+          const nextIdx = currentIdx + 1;
+          const max = sessions.length - 1;
+          const nextId = nextIdx > max ? null : sessions[nextIdx].id;
+          if (nextId) onSelectNextSession?.("down");
+          return nextId;
+        });
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setFocusedSessionId(prev => {
+          if (prev === null) return null;
+          const currentIdx = sessions.findIndex(s => s.id === prev);
+          if (currentIdx === -1 || currentIdx === 0) return null;
+          const prevIdx = currentIdx - 1;
+          const prevId = sessions[prevIdx].id;
+          if (prevId) onSelectPrevSession?.("up");
+          return prevId;
+        });
+        return;
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sessions, onSelectNextSession, onSelectPrevSession, isModalOpen]);
 
   const toggleProjectCollapse = (projectId: string) => {
     setCollapsedProjects((prev) => {
@@ -731,7 +827,7 @@ export function WorktreeSidebar({
                               onDragOver={(e) => handleSessionDragOver(e, session.id)}
                               onDrop={(e) => handleSessionDrop(e, session.id)}
                               onDragEnd={handleSessionDragEnd}
-                              onClick={() => onSelectSession(session.id)}
+                              onClick={(e) => handleSessionClick(e, session.id)}
                               onContextMenu={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -743,6 +839,14 @@ export function WorktreeSidebar({
                                 session.active && isActiveProject
                                   ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
                                   : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+                              } ${
+                                focusedSessionId === session.id
+                                  ? "border-indigo-500/50 ring-indigo-500/20"
+                                  : ""
+                              } ${
+                                selectedSessions.has(session.id)
+                                  ? "bg-indigo-500/20 select-none"
+                                  : ""
                               }`}
                             >
                               {sessionDropTarget?.id === session.id && (
@@ -788,6 +892,7 @@ export function WorktreeSidebar({
             onSelectSession={onSelectSession}
             onDeleteSession={onDeleteSession}
             compactCards={compactCards}
+            isModalOpen={isModalOpen}
           />
         )}
       </div>

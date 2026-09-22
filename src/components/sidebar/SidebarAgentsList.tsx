@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { AgentBrandIcon } from "../AgentIcon";
 import { WorktreeSession } from "./WorktreeSidebar";
 
@@ -8,6 +8,9 @@ type SidebarAgentsListProps = {
   onSelectSession: (id: string) => void;
   onDeleteSession: (id: string) => void;
   compactCards?: boolean;
+  onSelectNextSession?: (direction: "up" | "down") => void;
+  onSelectPrevSession?: (direction: "up" | "down") => void;
+  isModalOpen?: boolean;
 };
 
 export function SidebarAgentsList({
@@ -16,10 +19,15 @@ export function SidebarAgentsList({
   onSelectSession,
   onDeleteSession,
   compactCards = false,
+  onSelectNextSession,
+  onSelectPrevSession,
+  isModalOpen = false,
 }: SidebarAgentsListProps) {
   const [filter, setFilter] = useState("");
   const [groupBy, setGroupBy] = useState<"state" | "project">("state");
   const [statusFilter, setStatusFilter] = useState<"all" | "blocked" | "working" | "idle">("all");
+  const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
+  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
 
   // Get project name for a session
   const getProjectName = useCallback(
@@ -271,11 +279,35 @@ export function SidebarAgentsList({
             {group.sessions.map((session) => (
               <div
                 key={session.id}
-                onClick={() => onSelectSession(session.id)}
+                onClick={(e) => {
+                e.stopPropagation();
+                const ctrlKey = e.ctrlKey || e.metaKey;
+                
+                if (ctrlKey) {
+                  setSelectedSessions(prev => {
+                    const n = new Set(prev);
+                    if (n.has(session.id)) n.delete(session.id);
+                    else n.add(session.id);
+                    return n;
+                  });
+                  return;
+                }
+                
+                onSelectSession(session.id);
+                setSelectedSessions(new Set([session.id]));
+              }}
                 className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
                   session.active
                     ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
                     : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+                } ${
+                  focusedSessionId === session.id
+                    ? "border-indigo-500/50 ring-indigo-500/20"
+                    : ""
+                } ${
+                  selectedSessions.has(session.id)
+                    ? "bg-indigo-500/20 select-none"
+                    : ""
                 }`}
               >
                 {session.active && (
@@ -336,4 +368,46 @@ export function SidebarAgentsList({
       </div>
     </div>
   );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isModalOpen) return;
+      const target = e.target as HTMLElement;
+      const isInputFocused = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || Boolean(target.isContentEditable);
+
+      if (isInputFocused) return;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setFocusedSessionId(prev => {
+          if (prev === null) {
+            const firstId = sessions.length > 0 ? sessions[0].id : null;
+            if (firstId) onSelectNextSession?.("down");
+            return firstId;
+          }
+          const currentIdx = sessions.findIndex(s => s.id === prev);
+          if (currentIdx === -1) return prev;
+          const nextIdx = currentIdx + 1;
+          const nextId = nextIdx >= sessions.length ? null : sessions[nextIdx].id;
+          if (nextId) onSelectNextSession?.("down");
+          return nextId;
+        });
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setFocusedSessionId(prev => {
+          if (prev === null || sessions[0]?.id === prev) return null;
+          const currentIdx = sessions.findIndex(s => s.id === prev);
+          if (currentIdx <= 0) return null;
+          const prevId = sessions[currentIdx - 1].id;
+          if (prevId) onSelectPrevSession?.("up");
+          return prevId;
+        });
+        return;
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sessions, onSelectNextSession, onSelectPrevSession, isModalOpen]);
 }
