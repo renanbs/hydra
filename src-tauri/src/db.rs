@@ -53,6 +53,23 @@ impl Default for UiLayoutState {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct WorkbenchState {
+    pub tabs_json: String,
+    pub active_tab_id: String,
+    pub updated_at: i64,
+}
+
+impl Default for WorkbenchState {
+    fn default() -> Self {
+        Self {
+            tabs_json: "[]".to_string(),
+            active_tab_id: "".to_string(),
+            updated_at: 0,
+        }
+    }
+}
+
 fn default_theme() -> String { "system".to_string() }
 fn default_app_font_family() -> String { "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif".to_string() }
 fn default_terminal_font_family() -> String { "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace".to_string() }
@@ -561,6 +578,32 @@ impl DatabaseManager {
         Ok(())
     }
 
+    pub fn get_workbench_state(&self) -> Result<WorkbenchState, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT value FROM settings WHERE key = 'workbench_state'")
+            .map_err(|e| format!("Error querying workbench state: {e}"))?;
+
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json_str: String = row.get(0).map_err(|e| e.to_string())?;
+            serde_json::from_str(&json_str).map_err(|e| format!("JSON parse error: {e}"))
+        } else {
+            Ok(WorkbenchState::default())
+        }
+    }
+
+    pub fn save_workbench_state(&self, state: &WorkbenchState) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let json_str = serde_json::to_string(state).map_err(|e| e.to_string())?;
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('workbench_state', ?1)",
+            params![json_str],
+        )
+        .map_err(|e| format!("Error saving workbench state: {e}"))?;
+        Ok(())
+    }
+
     pub fn list_sessions(&self, project_path: Option<&str>) -> Result<Vec<DbSessionRecord>, String> {
         let conn = self.conn.lock();
 
@@ -709,6 +752,83 @@ impl DatabaseManager {
             ],
         )
         .map_err(|e| format!("Error saving tool approval: {e}"))?;
+        Ok(())
+    }
+
+    pub fn list_tool_approvals(&self, session_id: Option<&str>) -> Result<Vec<ToolApprovalRecord>, String> {
+        let conn = self.conn.lock();
+        let mut out = Vec::new();
+        if let Some(sid) = session_id.filter(|s| !s.is_empty()) {
+            let mut stmt = conn
+                .prepare("SELECT id, session_id, tool_name, command, status, created_at FROM tool_approvals WHERE session_id = ?1 ORDER BY created_at DESC LIMIT 100")
+                .map_err(|e| format!("Error preparing tool_approvals select: {e}"))?;
+            let rows = stmt
+                .query_map(params![sid], |row| {
+                    Ok(ToolApprovalRecord {
+                        id: row.get(0)?,
+                        session_id: row.get(1)?,
+                        tool_name: row.get(2)?,
+                        command: row.get(3)?,
+                        status: row.get(4)?,
+                        created_at: row.get(5)?,
+                    })
+                })
+                .map_err(|e| format!("Query error: {e}"))?;
+            for r in rows.flatten() {
+                out.push(r);
+            }
+        } else {
+            let mut stmt = conn
+                .prepare("SELECT id, session_id, tool_name, command, status, created_at FROM tool_approvals ORDER BY created_at DESC LIMIT 100")
+                .map_err(|e| format!("Error preparing tool_approvals select: {e}"))?;
+            let rows = stmt
+                .query_map(params![], |row| {
+                    Ok(ToolApprovalRecord {
+                        id: row.get(0)?,
+                        session_id: row.get(1)?,
+                        tool_name: row.get(2)?,
+                        command: row.get(3)?,
+                        status: row.get(4)?,
+                        created_at: row.get(5)?,
+                    })
+                })
+                .map_err(|e| format!("Query error: {e}"))?;
+            for r in rows.flatten() {
+                out.push(r);
+            }
+        }
+        Ok(out)
+    }
+
+    pub fn get_tool_approval(&self, id: &str) -> Result<Option<ToolApprovalRecord>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT id, session_id, tool_name, command, status, created_at FROM tool_approvals WHERE id = ?1")
+            .map_err(|e| format!("Error preparing tool_approval get: {e}"))?;
+        let mut rows = stmt.query(params![id]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let rec = ToolApprovalRecord {
+                id: row.get(0).map_err(|e| e.to_string())?,
+                session_id: row.get(1).map_err(|e| e.to_string())?,
+                tool_name: row.get(2).map_err(|e| e.to_string())?,
+                command: row.get(3).map_err(|e| e.to_string())?,
+                status: row.get(4).map_err(|e| e.to_string())?,
+                created_at: row.get(5).map_err(|e| e.to_string())?,
+            };
+            Ok(Some(rec))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn update_tool_approval_status(&self, id: &str, status: &str) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let changed = conn
+            .execute("UPDATE tool_approvals SET status = ?1 WHERE id = ?2", params![status, id])
+            .map_err(|e| format!("Error updating tool approval: {e}"))?;
+        if changed == 0 {
+            return Err(format!("No tool approval with id '{id}'"));
+        }
         Ok(())
     }
 

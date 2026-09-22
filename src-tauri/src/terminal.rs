@@ -6,6 +6,8 @@ use std::io::{Read, Write};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 
+use crate::agent_state::{detect_agent_state, AgentState};
+
 pub struct TerminalSession {
     pub parser: Arc<Mutex<vt100::Parser>>,
     pub writer: Arc<Mutex<Box<dyn Write + Send>>>,
@@ -116,6 +118,7 @@ impl TerminalManager {
         let scrollback_cap = db_settings.as_ref().map(|s| std::cmp::max(2 * 1024 * 1024, s.terminal_scrollback_rows as usize * 120)).unwrap_or(2 * 1024 * 1024);
         std::thread::spawn(move || {
             let mut buf = [0u8; 4096];
+            let mut last_state: Option<AgentState> = None;
             while let Ok(n) = reader.read(&mut buf) {
                 if n == 0 {
                     break;
@@ -143,12 +146,38 @@ impl TerminalManager {
                     (None, true)
                 };
                 let emit_chunk = effective.as_deref().unwrap_or(chunk);
-                if should_emit {
-                    {
+                let do_emit_terminal = should_emit && !emit_chunk.is_empty();
+                // --- PTY shadow buffer (vt100) always processes emit_chunk when non-empty ---
+                // Zero DB queries per chunk, zero allocations beyond vt100 parser (AGENTS.md discipline).
+                // State detection runs after vt100 process and only emits on transition (push <500ms).
+                if !emit_chunk.is_empty() {
+                    let new_state = {
                         let mut p = parser_clone.lock();
                         p.process(emit_chunk);
+                        let contents = p.screen().contents();
+                        detect_agent_state(&contents)
+                    };
+                    if last_state != Some(new_state) {
+                        if let Some(ref app_handle) = app {
+                            #[derive(Serialize, Clone)]
+                            struct AgentStatePayload {
+                                session_id: String,
+                                #[serde(rename = "sessionId")]
+                                session_id_camel: String,
+                                state: String,
+                            }
+                            let payload = AgentStatePayload {
+                                session_id: s_id.clone(),
+                                session_id_camel: s_id.clone(),
+                                state: new_state.as_str().to_string(),
+                            };
+                            let _ = app_handle.emit("agent:state", payload);
+                        }
+                        last_state = Some(new_state);
                     }
-                    // Keep raw output buffer for daemon poll (Orca backlogCapChars)
+                }
+                if do_emit_terminal {
+                    // Keep raw output buffer for poll fallback (Orca backlogCapChars)
                     {
                         let mut out = output_clone.lock();
                         out.extend_from_slice(emit_chunk);
@@ -173,10 +202,6 @@ impl TerminalManager {
                             },
                         );
                     }
-                } else if !emit_chunk.is_empty() {
-                    // Even if not emitting, still process non-OSC52 part for vt100
-                    let mut p = parser_clone.lock();
-                    p.process(emit_chunk);
                 }
             }
         });

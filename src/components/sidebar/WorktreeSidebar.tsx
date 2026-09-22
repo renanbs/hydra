@@ -350,7 +350,7 @@ export function WorktreeSidebar({
                   (s) => s.project_path === proj.path 
                     || (!s.project_path && isActiveProject)
                     || projectWorktrees.some((wt) => wt.path === s.project_path)
-                    || s.project_path.startsWith(proj.path)
+                    || s.project_path.startsWith(proj.path + "/")
                 );
                 const isMenuOpen = activeProjectMenuId === proj.id;
 
@@ -513,69 +513,215 @@ export function WorktreeSidebar({
 
                     {/* WORKTREE ROWS ANINHADAS DENTRO DO PROJETO */}
                     {!isCollapsed && (
-                      <div className="pl-3.5 ml-2 border-l border-worktree-sidebar-border space-y-1 pt-0.5">
-                        {projectWorktrees.map((wt) => {
-                          const isMain = wt.path === proj.path;
-                          return (
-                            <div
-                              key={wt.path}
-                              draggable={true}
-                              onDragStart={(e) => handleWorktreeDragStart(e, wt.path)}
-                              onDragOver={(e) => handleWorktreeDragOver(e, wt.path)}
-                              onDrop={(e) => handleWorktreeDrop(e, wt.path)}
-                              onDragEnd={handleWorktreeDragEnd}
-                              onClick={() => onSelectGitWorktree(wt)}
-                              onContextMenu={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onWorktreeContextMenu?.(e, wt, proj);
-                              }}
-                              className={`group relative ${compactCards ? "py-1.5 px-2 text-[11px]" : "p-2.5"} rounded-lg cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground flex items-center justify-between transition-all ${
-                                draggedWorktreePath === wt.path ? "opacity-30" : ""
-                              }`}
-                            >
-                              {worktreeDropTarget?.path === wt.path && (
-                                <div
-                                  className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${
-                                    worktreeDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"
-                                  }`}
-                                />
-                              )}
-                              <div className="flex items-center gap-2 min-w-0">
-                                <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
-                                {pinnedWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
-                                {unreadWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
-                                <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
-                                <span className="truncate text-[11px] font-medium text-neutral-200">
-                                  {wt.branch || proj.name}
-                                </span>
-                                {isMain && (
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400 shrink-0">
-                                    default
-                                  </span>
-                                )}
-                              </div>
-                              {!isMain && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteGitWorktree(wt);
-                                  }}
-                                  title="Delete worktree from disk"
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-
-                        {/* Sessões e Frotas de Agentes deste Projeto */}
-                        {projectSessions.length === 0 && projectWorktrees.length === 0 ? (
+                      <div className="pl-3.5 ml-2 border-l border-worktree-sidebar-border space-y-2 pt-0.5">
+                        {projectWorktrees.length === 0 && projectSessions.length === 0 ? (
                           <div className="py-2 px-2 text-[11px] text-neutral-600 italic">
                             No active worktrees in this project.
                           </div>
+                        ) : projectWorktrees.length > 0 ? (
+                          <>
+                            {projectWorktrees.map((wt) => {
+                              const isMain = wt.path === proj.path;
+                              const wtSessions = projectSessions.filter(
+                                (s) => s.project_path === wt.path || (!s.project_path && isMain)
+                              );
+                              return (
+                                <div key={wt.path} className="space-y-1">
+                                  <div
+                                    draggable={true}
+                                    onDragStart={(e) => handleWorktreeDragStart(e, wt.path)}
+                                    onDragOver={(e) => handleWorktreeDragOver(e, wt.path)}
+                                    onDrop={(e) => handleWorktreeDrop(e, wt.path)}
+                                    onDragEnd={handleWorktreeDragEnd}
+                                    onClick={() => onSelectGitWorktree(wt)}
+                                    onContextMenu={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      onWorktreeContextMenu?.(e, wt, proj);
+                                    }}
+                                    className={`group relative ${compactCards ? "py-1.5 px-2 text-[11px]" : "p-2.5"} rounded-lg cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground flex items-center justify-between transition-all ${
+                                      draggedWorktreePath === wt.path ? "opacity-30" : ""
+                                    }`}
+                                  >
+                                    {worktreeDropTarget?.path === wt.path && (
+                                      <div
+                                        className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${
+                                          worktreeDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"
+                                        }`}
+                                      />
+                                    )}
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+                                      {pinnedWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
+                                      {unreadWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+                                      <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
+                                      <span className="truncate text-[11px] font-medium text-neutral-200">
+                                        {wt.branch || proj.name}
+                                      </span>
+                                      {isMain && (
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400 shrink-0">
+                                          default
+                                        </span>
+                                      )}
+                                      {wtSessions.length > 0 && (
+                                        <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800 text-neutral-500 shrink-0">
+                                          {wtSessions.length}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {!isMain && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onDeleteGitWorktree(wt);
+                                        }}
+                                        title="Delete worktree from disk"
+                                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </button>
+                                    )}
+                                  </div>
+                                  {wtSessions.length > 0 && (
+                                    <div className="ml-2 pl-2 border-l border-worktree-sidebar-border/40 space-y-1">
+                                      {wtSessions.map((session) => (
+                                        <div
+                                          key={session.id}
+                                          draggable={true}
+                                          onDragStart={(e) => handleSessionDragStart(e, session.id)}
+                                          onDragOver={(e) => handleSessionDragOver(e, session.id)}
+                                          onDrop={(e) => handleSessionDrop(e, session.id)}
+                                          onDragEnd={handleSessionDragEnd}
+                                          onClick={() => onSelectSession(session.id)}
+                                          onContextMenu={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            onSessionContextMenu?.(e, session);
+                                          }}
+                                          className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
+                                            draggedSessionId === session.id ? "opacity-30 scale-[0.98]" : ""
+                                          } ${
+                                            session.active && isActiveProject
+                                              ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
+                                              : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+                                          }`}
+                                        >
+                                          {sessionDropTarget?.id === session.id && (
+                                            <div
+                                              className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${
+                                                sessionDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"
+                                              }`}
+                                            />
+                                          )}
+                                          {session.active && isActiveProject && (
+                                            <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />
+                                          )}
+                                          <div className="flex items-center justify-between mb-1 pl-1">
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                              <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+                                              {(pinnedWorktrees?.has(session.id) || pinnedWorktrees?.has(session.project_path)) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
+                                              {unreadWorktrees?.has(session.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+                                              <span className="font-medium truncate text-neutral-100 text-[11px]">
+                                                {session.title}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                              <span
+                                                className={`w-2 h-2 rounded-full shrink-0 ${
+                                                  session.state === "working"
+                                                    ? "bg-amber-400 animate-pulse"
+                                                    : session.state === "blocked"
+                                                      ? "bg-red-400 ring-2 ring-red-500/30"
+                                                      : "bg-emerald-400"
+                                                }`}
+                                                title={`Herdr State: ${session.state}`}
+                                              />
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  onDeleteSession(session.id);
+                                                }}
+                                                className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"
+                                              >
+                                                <Trash2 className="w-3 h-3" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
+                                            <span className="flex items-center gap-1 truncate">
+                                              <GitBranch className="w-2.5 h-2.5 text-neutral-400" />
+                                              {session.branch}
+                                            </span>
+                                            <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">
+                                              {session.agentName}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            {(() => {
+                              const orphanSessions = projectSessions.filter(
+                                (s) => !projectWorktrees.some((wt) => wt.path === s.project_path) && !(!s.project_path && projectWorktrees.some((wt) => wt.path === proj.path))
+                              );
+                              if (orphanSessions.length === 0) return null;
+                              return (
+                                <div className="space-y-1 pt-1 border-t border-worktree-sidebar-border/30">
+                                  {orphanSessions.map((session) => (
+                                    <div
+                                      key={session.id}
+                                      draggable={true}
+                                      onDragStart={(e) => handleSessionDragStart(e, session.id)}
+                                      onDragOver={(e) => handleSessionDragOver(e, session.id)}
+                                      onDrop={(e) => handleSessionDrop(e, session.id)}
+                                      onDragEnd={handleSessionDragEnd}
+                                      onClick={() => onSelectSession(session.id)}
+                                      onContextMenu={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onSessionContextMenu?.(e, session);
+                                      }}
+                                      className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
+                                        draggedSessionId === session.id ? "opacity-30 scale-[0.98]" : ""
+                                      } ${
+                                        session.active && isActiveProject
+                                          ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
+                                          : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+                                      }`}
+                                    >
+                                      {sessionDropTarget?.id === session.id && (
+                                        <div
+                                          className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${
+                                            sessionDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"
+                                          }`}
+                                        />
+                                      )}
+                                      {session.active && isActiveProject && (
+                                        <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />
+                                      )}
+                                      <div className="flex items-center justify-between mb-1 pl-1">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+                                          <span className="font-medium truncate text-neutral-100 text-[11px]">{session.title}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                          <span className={`w-2 h-2 rounded-full shrink-0 ${session.state === "working" ? "bg-amber-400 animate-pulse" : session.state === "blocked" ? "bg-red-400 ring-2 ring-red-500/30" : "bg-emerald-400"}`} title={`Herdr State: ${session.state}`} />
+                                          <button onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }} className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"><Trash2 className="w-3 h-3" /></button>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
+                                        <span className="flex items-center gap-1 truncate"><GitBranch className="w-2.5 h-2.5 text-neutral-400" />{session.branch}</span>
+                                        <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">{session.agentName}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </>
                         ) : (
                           projectSessions.map((session) => (
                             <div
@@ -609,47 +755,21 @@ export function WorktreeSidebar({
                               {session.active && isActiveProject && (
                                 <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />
                               )}
-
                               <div className="flex items-center justify-between mb-1 pl-1">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                   <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
                                   {(pinnedWorktrees?.has(session.id) || pinnedWorktrees?.has(session.project_path)) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
                                   {unreadWorktrees?.has(session.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
-                                  <span className="font-medium truncate text-neutral-100 text-[11px]">
-                                    {session.title}
-                                  </span>
+                                  <span className="font-medium truncate text-neutral-100 text-[11px]">{session.title}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 shrink-0">
-                                  <span
-                                    className={`w-2 h-2 rounded-full shrink-0 ${
-                                      session.state === "working"
-                                        ? "bg-amber-400 animate-pulse"
-                                        : session.state === "blocked"
-                                          ? "bg-red-400 ring-2 ring-red-500/30"
-                                          : "bg-emerald-400"
-                                    }`}
-                                    title={`Herdr State: ${session.state}`}
-                                  />
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onDeleteSession(session.id);
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
+                                  <span className={`w-2 h-2 rounded-full shrink-0 ${session.state === "working" ? "bg-amber-400 animate-pulse" : session.state === "blocked" ? "bg-red-400 ring-2 ring-red-500/30" : "bg-emerald-400"}`} title={`Herdr State: ${session.state}`} />
+                                  <button onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }} className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"><Trash2 className="w-3 h-3" /></button>
                                 </div>
                               </div>
-
                               <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
-                                <span className="flex items-center gap-1 truncate">
-                                  <GitBranch className="w-2.5 h-2.5 text-neutral-400" />
-                                  {session.branch}
-                                </span>
-                                <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">
-                                  {session.agentName}
-                                </span>
+                                <span className="flex items-center gap-1 truncate"><GitBranch className="w-2.5 h-2.5 text-neutral-400" />{session.branch}</span>
+                                <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">{session.agentName}</span>
                               </div>
                             </div>
                           ))

@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { open as openFileDialog } from "@tauri-apps/plugin-dialog";
 import { usePanelResize } from "./hooks/usePanelResize";
 import { TerminalDrawer, type TerminalContextActions } from "./components/TerminalDrawer";
@@ -16,7 +17,8 @@ import {
   type GitWorktreeInfo 
 } from "./components/sidebar/WorktreeSidebar";
 import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
-import { WorkbenchTabBar, type TabItem } from "./components/workbench/WorkbenchTabBar";
+import { WorkbenchTabBar, type TabItem, type SplitPane } from "./components/workbench/WorkbenchTabBar";
+import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal } from "./components/SettingsModal";
 import type { HydraSettings } from "./shared/settings-types";
@@ -83,6 +85,12 @@ interface UiLayoutState {
   right_sidebar_open: boolean;
   left_sidebar_width: number;
   right_sidebar_width: number;
+}
+
+interface WorkbenchState {
+  tabs_json: string;
+  active_tab_id: string;
+  updated_at: number;
 }
 
 export default function App() {
@@ -176,11 +184,160 @@ export default function App() {
   const [tabs, setTabs] = useState<TabItem[]>([
     { id: "tab_main", title: "bash (active)", type: "terminal" },
   ]);
+  const [workbenchLoaded, setWorkbenchLoaded] = useState(false);
   const tabsRef = useRef(tabs);
   tabsRef.current = tabs;
   const [activeTabId, setActiveTabId] = useState("tab_main");
   const activeTabIdRef = useRef(activeTabId);
   activeTabIdRef.current = activeTabId;
+  // Sprint 2 P0: focused pane per tab (sessionId)
+  const [focusedPaneMap, setFocusedPaneMap] = useState<Record<string, string>>({});
+
+  // ---- Sprint 2 P0: Split Terminal Helpers ----
+  const getPanesForTab = useCallback((tab: TabItem): SplitPane[] => {
+    if (tab.splitLayout?.panes && tab.splitLayout.panes.length > 0) return tab.splitLayout.panes;
+    if (tab.splitPanes && tab.splitPanes.length > 0) return tab.splitPanes;
+    if (tab.splitSessionIds && tab.splitSessionIds.length > 0) {
+      return tab.splitSessionIds.map((sid) => ({ sessionId: sid, executable: tab.executable, cwd: tab.cwd }));
+    }
+    if (tab.sessionId) return [{ sessionId: tab.sessionId, executable: tab.executable, cwd: tab.cwd }];
+    return [];
+  }, []);
+
+  const getSplitDirectionForTab = useCallback((tab: TabItem): "horizontal" | "vertical" => {
+    if (tab.splitLayout?.direction) return tab.splitLayout.direction;
+    if (tab.splitDirection) return tab.splitDirection;
+    return "horizontal";
+  }, []);
+
+  const handleSplitTerminal = useCallback((direction: "horizontal" | "vertical") => {
+    const tab = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
+    if (!tab || tab.type !== "terminal") {
+      // inline new terminal tab creation to avoid TDZ dependency on handleNewTerminalTab
+      const shFallback = (hydraSettings as any).terminal_default_shell || "bash";
+      const sidFallback = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const tabIdFallback = `tab_${sidFallback}`;
+      const terminalCountFallback = tabsRef.current.filter((t) => t.type === "terminal").length;
+      const titleFallback = terminalCountFallback === 0 ? "Terminal" : `Terminal ${terminalCountFallback + 1}`;
+      const fallbackSession: WorktreeSession = {
+        id: sidFallback,
+        project_path: activeProjectRef.current?.path ?? "",
+        title: `Terminal (${shFallback})`,
+        branch: activeProjectRef.current?.current_branch ?? "main",
+        state: "idle",
+        active: true,
+        agentName: shFallback,
+        executable: shFallback,
+      };
+      invoke("save_session_record", { record: { id: sidFallback, project_path: fallbackSession.project_path, title: fallbackSession.title, branch: fallbackSession.branch, agent_name: fallbackSession.agentName, executable: fallbackSession.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
+      setSessions((prev) => [...prev.map((s) => ({ ...s, active: false })), fallbackSession]);
+      setTabs((prev) => [...prev, { id: tabIdFallback, title: titleFallback, type: "terminal", sessionId: sidFallback, executable: shFallback, cwd: fallbackSession.project_path }]);
+      setActiveTabId(tabIdFallback);
+      return;
+    }
+    const existingPanes = getPanesForTab(tab);
+    if (existingPanes.length >= 4) return;
+    const sh = tab.executable || (hydraSettings as any).terminal_default_shell || "bash";
+    const cwd = tab.cwd || activeProjectRef.current?.path || "";
+    const newSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const newPaneSession: WorktreeSession = {
+      id: newSessionId,
+      project_path: cwd,
+      title: `Terminal (${sh})`,
+      branch: activeProjectRef.current?.current_branch ?? "main",
+      state: "idle",
+      active: false,
+      agentName: sh,
+      executable: sh,
+    };
+    invoke("save_session_record", {
+      record: {
+        id: newSessionId,
+        project_path: cwd,
+        title: newPaneSession.title,
+        branch: newPaneSession.branch,
+        agent_name: sh,
+        executable: sh,
+        created_at: Date.now(),
+        updated_at: Date.now(),
+      },
+    }).catch(() => {});
+    setSessions((prev) => [...prev, newPaneSession]);
+    // Rust split helper (P0): create_split_terminal ensures PTY + vt100 + push emission
+    invoke<string>("create_split_terminal", {
+      sessionId: newSessionId,
+      executable: sh,
+      cwd,
+    })
+      .then(() => {})
+      .catch(() => {
+        // fallback: also try parent-based generation if server expects parentSessionId
+        invoke<string>("create_split_terminal", {
+          parentSessionId: existingPanes[0]?.sessionId ?? tab.sessionId ?? newSessionId,
+          executable: sh,
+          cwd,
+        }).catch(() => {});
+      });
+    const newPane: SplitPane = { sessionId: newSessionId, executable: sh, cwd };
+    setTabs((prev) =>
+      prev.map((t) => {
+        if (t.id !== tab.id) return t;
+        let panes: SplitPane[];
+        if (t.splitLayout) {
+          panes = [...t.splitLayout.panes, newPane];
+          return { ...t, splitLayout: { direction, panes }, splitPanes: panes, splitDirection: direction, splitSessionIds: panes.map((p) => p.sessionId) };
+        }
+        if (t.splitPanes || t.splitSessionIds) {
+          const cur = getPanesForTab(t);
+          panes = [...cur, newPane];
+          return { ...t, splitPanes: panes, splitSessionIds: panes.map((p) => p.sessionId), splitDirection: direction, splitLayout: { direction, panes } };
+        }
+        const basePane: SplitPane = {
+          sessionId: t.sessionId ?? existingPanes[0]?.sessionId ?? `sess_fallback_${Date.now()}`,
+          executable: t.executable ?? sh,
+          cwd: t.cwd ?? cwd,
+        };
+        panes = [basePane, newPane];
+        return { ...t, splitPanes: panes, splitSessionIds: panes.map((p) => p.sessionId), splitDirection: direction, splitLayout: { direction, panes } };
+      })
+    );
+    // focus new pane
+    setFocusedPaneMap((prev) => ({ ...prev, [tab.id]: newSessionId }));
+  }, [getPanesForTab, getSplitDirectionForTab, hydraSettings]);
+
+  const handleCloseSplitPane = useCallback((tabId: string, paneSessionId: string) => {
+    invoke("delete_session_record", { sessionId: paneSessionId }).catch(() => {});
+    invoke("close_split_terminal", { sessionId: paneSessionId }).catch(() => {});
+    setSessions((prev) => prev.filter((s) => s.id !== paneSessionId));
+    setTabs((prev) =>
+      prev.map((t) => {
+        if (t.id !== tabId) return t;
+        const panes = getPanesForTab(t).filter((p) => p.sessionId !== paneSessionId);
+        if (panes.length <= 1) {
+          const remaining = panes[0];
+          if (!remaining) {
+            const { splitPanes: _a, splitSessionIds: _b, splitDirection: _c, splitLayout: _d, ...rest } = t as any;
+            return rest as TabItem;
+          }
+          const { splitPanes: _a, splitSessionIds: _b, splitDirection: _c, splitLayout: _d, ...rest } = t as any;
+          return { ...(rest as TabItem), sessionId: remaining.sessionId, executable: remaining.executable ?? (rest as TabItem).executable, cwd: remaining.cwd ?? (rest as TabItem).cwd };
+        }
+        const dir = getSplitDirectionForTab(t);
+        return { ...t, splitPanes: panes, splitSessionIds: panes.map((p) => p.sessionId), splitDirection: dir, splitLayout: { direction: dir, panes } };
+      })
+    );
+    setFocusedPaneMap((prev) => {
+      const cur = prev[tabId];
+      if (cur === paneSessionId) {
+        const next = { ...prev };
+        delete next[tabId];
+        return next;
+      }
+      return prev;
+    });
+  }, [getPanesForTab, getSplitDirectionForTab]);
+
+
 
   const [_messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
     {
@@ -216,6 +373,59 @@ export default function App() {
       .catch(console.error);
   }, []);
 
+  // 2. Carrega o estado persistido do workbench (tabs + active tab) — com dedupe por sessionId/title
+  useEffect(() => {
+    invoke<WorkbenchState>("get_workbench_persistence")
+      .then((state) => {
+        if (state && state.tabs_json) {
+          try {
+            const raw = JSON.parse(state.tabs_json) as TabItem[];
+            // Dedupe 1: por sessionId exato
+            const seenSid = new Set<string>();
+            let deduped = raw.filter((t) => {
+              if (t.sessionId) {
+                if (seenSid.has(t.sessionId)) return false;
+                seenSid.add(t.sessionId);
+              }
+              return true;
+            });
+            // Dedupe 2: por conteúdo (title+executable+cwd) — pega 2x OpenCode com sessionIds diferentes
+            const seenContent = new Set<string>();
+            deduped = deduped.filter((t) => {
+              const ckey = `${t.title}|${t.executable ?? ""}|${t.cwd ?? ""}|${t.type}`;
+              if (seenContent.has(ckey)) return false;
+              seenContent.add(ckey);
+              return true;
+            });
+            // Remove órfã sem sessionId se já existe tab com session para mesmo cwd
+            deduped = deduped.filter((t) => {
+              if (!t.sessionId && t.cwd) {
+                return !deduped.some((o) => o !== t && o.sessionId && o.cwd === t.cwd);
+              }
+              return true;
+            });
+            const finalTabs = deduped;
+            if (finalTabs.length > 0 && finalTabs.length !== raw.length) {
+              // Persiste a versão limpa para não voltar duplicata
+              invoke("save_workbench_persistence", { state: { tabs_json: JSON.stringify(finalTabs), active_tab_id: state.active_tab_id, updated_at: Date.now() } }).catch(console.error);
+            }
+            if (finalTabs.length > 0) {
+              setTabs(finalTabs);
+              if (state.active_tab_id && finalTabs.some(t => t.id === state.active_tab_id)) {
+                setActiveTabId(state.active_tab_id);
+              } else {
+                setActiveTabId(finalTabs[0].id);
+              }
+              setWorkbenchLoaded(true);
+            }
+          } catch (e) {
+            console.error("Failed to parse saved tabs:", e);
+          }
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const updateLeftSidebar = (open: boolean) => {
     setIsLeftSidebarOpen(open);
     invoke("save_layout_persistence", {
@@ -240,148 +450,19 @@ export default function App() {
     }).catch(console.error);
   };
 
-  // Global Keyboard Shortcuts
+  const saveWorkbenchPersistence = useCallback(() => {
+    const state: WorkbenchState = {
+      tabs_json: JSON.stringify(tabs),
+      active_tab_id: activeTabId,
+      updated_at: Date.now(),
+    };
+    invoke("save_workbench_persistence", { state }).catch(console.error);
+  }, [tabs, activeTabId]);
+
+  // Persist workbench state when tabs or active tab change
   useEffect(() => {
-    const handleGlobalContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener("contextmenu", handleGlobalContextMenu);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented) return;
-
-      // Dismiss any open modal or context menu on Escape
-      if (e.key === "Escape") {
-        if (contextMenu) {
-          e.preventDefault();
-          setContextMenu(null);
-          return;
-        }
-        if (isCommandPaletteOpen) {
-          e.preventDefault();
-          setIsCommandPaletteOpen(false);
-          return;
-        }
-        if (isSettingsOpen) {
-          e.preventDefault();
-          setIsSettingsOpen(false);
-          return;
-        }
-        if (isNewWorkspaceOpen) {
-          e.preventDefault();
-          setIsNewWorkspaceOpen(false);
-          return;
-        }
-        if (isAddRepoOpen) {
-          e.preventDefault();
-          setIsAddRepoOpen(false);
-          return;
-        }
-        if (isPairingOpen) {
-          e.preventDefault();
-          setIsPairingOpen(false);
-          return;
-        }
-      }
-
-      const target = e.target as HTMLElement | null;
-      const isInputFocused = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || Boolean(target?.isContentEditable);
-      const isModalOpen = isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen;
-      const isChord = e.ctrlKey || e.metaKey;
-      if (isChord && e.key.toLowerCase() === "p") {
-        e.preventDefault();
-        setIsCommandPaletteOpen((prev) => !prev);
-        return;
-      }
-      if (isChord && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        setIsLeftSidebarOpen((prev) => {
-          const next = !prev;
-          updateLeftSidebar(next);
-          return next;
-        });
-        return;
-      }
-      if (isChord && e.key.toLowerCase() === "j") {
-        e.preventDefault();
-        setIsRightSidebarOpen((prev) => {
-          const next = !prev;
-          updateRightSidebar(next);
-          return next;
-        });
-        return;
-      }
-      if (isChord && e.key === ",") {
-        e.preventDefault();
-        setIsSettingsOpen(true);
-        return;
-      }
-      if (isChord && !e.shiftKey && e.key.toLowerCase() === "n") {
-        e.preventDefault();
-        setIsNewWorkspaceOpen(true);
-        return;
-      }
-      // Guard against background tab closure or navigation when dialogs or inputs have focus
-      if (isModalOpen || isInputFocused) {
-        return;
-      }
-      if (isChord && !e.shiftKey && e.key.toLowerCase() === "w") {
-        e.preventDefault();
-        if (activeTabIdRef.current) {
-          handleCloseTab(activeTabIdRef.current);
-        }
-      }
-      if (isChord && !e.shiftKey && e.key.toLowerCase() === "t") {
-        e.preventDefault();
-        handleNewTab();
-      }
-      if (isChord && e.shiftKey && e.key === "ArrowUp") {
-        e.preventDefault();
-        handleNavigateWorkspace("up");
-      }
-      if (isChord && e.shiftKey && e.key === "ArrowDown") {
-        e.preventDefault();
-        handleNavigateWorkspace("down");
-      }
-      if (isChord && e.key.toLowerCase() === "t") {
-        e.preventDefault();
-        handleNewTerminalTab();
-      }
-      if (isChord && e.key.toLowerCase() === "n" && !e.shiftKey) {
-        e.preventDefault();
-        handleNewFileTab();
-      }
-      if (isChord && e.key.toLowerCase() === "o") {
-        e.preventDefault();
-        handleOpenFileTab();
-      }
-      if (isChord && e.shiftKey && e.key.toLowerCase() === "d") {
-        e.preventDefault();
-        handleOpenDiffTab();
-      }
-      if (isChord && e.shiftKey && e.key.toLowerCase() === "n") {
-        e.preventDefault();
-        setIsNewWorkspaceOpen(true);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("contextmenu", handleGlobalContextMenu);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [
-    isLeftSidebarOpen,
-    isRightSidebarOpen,
-    leftSidebar.width,
-    rightSidebar.width,
-    contextMenu,
-    isCommandPaletteOpen,
-    isSettingsOpen,
-    isNewWorkspaceOpen,
-    isAddRepoOpen,
-    isPairingOpen
-  ]);
+    saveWorkbenchPersistence();
+  }, [saveWorkbenchPersistence]);
 
   const refreshGitWorktrees = (repoPath: string) => {
     invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath })
@@ -415,7 +496,9 @@ export default function App() {
         setProjects(sorted);
         if (sorted.length > 0) {
           setActiveProject(sorted[0]);
-          loadAllSessions();
+          if (!workbenchLoaded) {
+            loadAllSessions();
+          }
           refreshGitWorktrees(sorted[0].path);
         }
       })
@@ -484,7 +567,15 @@ export default function App() {
     invoke<DbSessionRecord[]>("list_persisted_sessions", { projectPath })
       .then((persisted) => {
         if (persisted && persisted.length > 0) {
-          let loaded: WorktreeSession[] = persisted.map((p, idx) => ({
+          // Dedupe por conteúdo (project_path+executable+title) — evita 2x OpenCode
+          const seenSess = new Set<string>();
+          const dedupedPersisted = persisted.filter((p) => {
+            const k = `${p.project_path}|${p.executable}|${p.title}`;
+            if (seenSess.has(k)) return false;
+            seenSess.add(k);
+            return true;
+          });
+          let loaded: WorktreeSession[] = dedupedPersisted.map((p, idx) => ({
             id: p.id,
             project_path: p.project_path,
             title: p.title,
@@ -509,18 +600,22 @@ export default function App() {
             }
           } catch {}
           setSessions(loaded);
-          const firstTabId = `tab_${loaded[0].id}`;
-          setTabs([
-            {
-              id: firstTabId,
-              title: `${loaded[0].executable} (active)`,
-              type: "terminal",
-              sessionId: loaded[0].id,
-              executable: loaded[0].executable,
-              cwd: loaded[0].project_path || projectPath,
-            },
-          ]);
-          setActiveTabId(firstTabId);
+          // Não sobrescreve tabs se workbench já foi restaurado (race) ou já tem abas reais
+          const hasRealTabs = tabsRef.current.length > 1 || (tabsRef.current.length === 1 && tabsRef.current[0].id !== "tab_main");
+          if (!workbenchLoaded && !hasRealTabs) {
+            const firstTabId = `tab_${loaded[0].id}`;
+            setTabs([
+              {
+                id: firstTabId,
+                title: `${loaded[0].executable} (active)`,
+                type: "terminal",
+                sessionId: loaded[0].id,
+                executable: loaded[0].executable,
+                cwd: loaded[0].project_path || projectPath,
+              },
+            ]);
+            setActiveTabId(firstTabId);
+          }
         } else {
           const effectiveShell = hydraSettings.terminal_default_shell || "bash";
           const defaultSession: WorktreeSession = {
@@ -563,12 +658,19 @@ export default function App() {
       .catch(console.error);
   };
 
-  // Load ALL sessions from ALL projects (for Agents view)
+  // Load ALL sessions from ALL projects (for Agents view) — com dedupe
   const loadAllSessions = () => {
     invoke<DbSessionRecord[]>("list_persisted_sessions", { projectPath: null })
       .then((persisted) => {
         if (persisted && persisted.length > 0) {
-          let loaded: WorktreeSession[] = persisted.map((p, idx) => ({
+          const seenSess = new Set<string>();
+          const dedupedPersisted = persisted.filter((p) => {
+            const k = `${p.project_path}|${p.executable}|${p.title}`;
+            if (seenSess.has(k)) return false;
+            seenSess.add(k);
+            return true;
+          });
+          let loaded: WorktreeSession[] = dedupedPersisted.map((p, idx) => ({
             id: p.id,
             project_path: p.project_path,
             title: p.title,
@@ -593,18 +695,21 @@ export default function App() {
             }
           } catch {}
           setSessions(loaded);
-          const firstTabId = `tab_${loaded[0].id}`;
-          setTabs([
-            {
-              id: firstTabId,
-              title: `${loaded[0].executable} (active)`,
-              type: "terminal",
-              sessionId: loaded[0].id,
-              executable: loaded[0].executable,
-              cwd: loaded[0].project_path,
-            },
-          ]);
-          setActiveTabId(firstTabId);
+          const hasRealTabs = tabsRef.current.length > 1 || (tabsRef.current.length === 1 && tabsRef.current[0].id !== "tab_main");
+          if (!workbenchLoaded && !hasRealTabs) {
+            const firstTabId = `tab_${loaded[0].id}`;
+            setTabs([
+              {
+                id: firstTabId,
+                title: `${loaded[0].executable} (active)`,
+                type: "terminal",
+                sessionId: loaded[0].id,
+                executable: loaded[0].executable,
+                cwd: loaded[0].project_path,
+              },
+            ]);
+            setActiveTabId(firstTabId);
+          }
         } else if (activeProject) {
           // Fallback: create default session for active project
           loadSessionsForProject(activeProject.path);
@@ -620,6 +725,41 @@ export default function App() {
     syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), workingInitial);
   }, [hydraSettings, sessions.map(s=>s.state).join(",")]);
 
+  // Sprint 2 P0: push via agent:state event (<500ms) — primary; polling is fallback
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+    const setup = async () => {
+      try {
+        const un = await listen<{ session_id?: string; sessionId?: string; state: string }>("agent:state", (event) => {
+          const payload = event.payload as unknown as Record<string, unknown>;
+          const sid = (payload.sessionId as string) ?? (payload.session_id as string) ?? (payload.id as string);
+          const state = payload.state as string;
+          if (!sid || !state) return;
+          setSessions((prev) => {
+            const target = prev.find((s) => s.id === sid);
+            if (!target) return prev;
+            if (target.state === state) return prev;
+            const next = prev.map((s) => (s.id === sid ? { ...s, state: state as WorktreeSession["state"] } : s));
+            const wc = next.filter((s) => s.state === "working").length;
+            syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+            return next;
+          });
+        });
+        if (!cancelled) unlisten = un;
+        else un();
+      } catch {
+        // ignore if not in Tauri (browser preview)
+      }
+    };
+    setup();
+    return () => {
+      cancelled = true;
+      if (unlisten) try { unlisten(); } catch {}
+    };
+  }, [hydraSettings]);
+
+  // Fallback polling — push is primary (<500ms), poll every 5s for resilience / daemon without push
   useEffect(() => {
     const interval = setInterval(() => {
       const currentActive = sessions.find((s) => s.active);
@@ -644,12 +784,12 @@ export default function App() {
         const wc = sessions.filter((s) => s.state === "working").length;
         syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
       }
-    }, 1500);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [sessions, hydraSettings]);
 
-  // Poll keep-awake status for UI indicator (like Orca CaffeinateStatusSegment)
+  // Poll keep-awake status for UI indicator (like Orca CaffeinateStatusSegment) — fallback, push is primary
   useEffect(() => {
     const id = setInterval(() => {
       invoke<{ enabled: boolean; working_count: number; active: boolean }>("get_keep_awake_status")
@@ -662,9 +802,31 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
+  // Sprint 2 P0: push keep_awake:status (<500ms) — primary, polling fallback above
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+    const setup = async () => {
+      try {
+        const un = await listen<{ enabled: boolean; working_count: number; active: boolean }>("keep_awake:status", (event) => {
+          setKeepAwakeActive(event.payload.active);
+        });
+        if (!cancelled) unlisten = un;
+        else un();
+      } catch {}
+    };
+    setup();
+    return () => {
+      cancelled = true;
+      if (unlisten) try { unlisten(); } catch {}
+    };
+  }, []);
+
   const handleSelectProject = (proj: HydraProject) => {
     setActiveProject(proj);
-    loadSessionsForProject(proj.path);
+    if (!workbenchLoaded) {
+      loadSessionsForProject(proj.path);
+    }
     refreshGitWorktrees(proj.path);
     if (tabs.length === 0) {
       const sId = `sess_${Date.now()}`;
@@ -747,7 +909,7 @@ export default function App() {
     }
     const tabId = `tab_${id}`;
     if (!tabsRef.current.some((t) => t.id === tabId)) {
-      setTabs((prev) => [...prev, { id: tabId, title: wt.branch, type: "terminal" }]);
+      setTabs((prev) => [...prev, { id: tabId, title: wt.branch, type: "terminal", sessionId: id, executable: "bash", cwd: wt.path }]);
     }
     setActiveTabId(tabId);
   };
@@ -795,7 +957,7 @@ export default function App() {
     }).catch(console.error);
 
     const tabId = `tab_${id}`;
-    setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (fleet)`, type: "terminal" }]);
+    setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (fleet)`, type: "terminal", sessionId: id, executable, cwd: worktreePath }]);
     setActiveTabId(tabId);
   };
 
@@ -1000,9 +1162,23 @@ export default function App() {
   };
 
   const handleCloseTab = (id: string) => {
-    if (id.startsWith("tab_sess_")) {
+    const closingTab = tabsRef.current.find((t) => t.id === id);
+    if (closingTab) {
+      const panes = getPanesForTab(closingTab);
+      for (const pane of panes) {
+        invoke("delete_session_record", { sessionId: pane.sessionId }).catch(() => {});
+        invoke("close_split_terminal", { sessionId: pane.sessionId }).catch(() => {});
+      }
+      // keep sessions cleanup for legacy single-id path
+      if (closingTab.sessionId) {
+        setSessions((prev) => prev.filter((s) => !panes.some((p) => p.sessionId === s.id)));
+      } else if (panes.length > 0) {
+        setSessions((prev) => prev.filter((s) => !panes.some((p) => p.sessionId === s.id)));
+      }
+    } else if (id.startsWith("tab_sess_")) {
       const sId = id.replace("tab_", "");
       invoke("delete_session_record", { sessionId: sId }).catch(console.error);
+      invoke("close_split_terminal", { sessionId: sId }).catch(() => {});
       setSessions((prev) => prev.filter((s) => s.id !== sId));
     }
     setTabs((prev) => {
@@ -1016,13 +1192,29 @@ export default function App() {
       const { [id]: _, ...rest } = prev;
       return rest;
     });
+    setFocusedPaneMap((prev) => {
+      const { [id]: _, ...rest } = prev;
+      return rest;
+    });
   };
 
   const handleCloseTabsToRight = (id: string) => {
+    // cleanup sessions for tabs being closed
+    const idx = tabsRef.current.findIndex((t) => t.id === id);
+    if (idx !== -1) {
+      const toClose = tabsRef.current.slice(idx + 1);
+      for (const t of toClose) {
+        for (const pane of getPanesForTab(t)) {
+          invoke("delete_session_record", { sessionId: pane.sessionId }).catch(() => {});
+          invoke("close_split_terminal", { sessionId: pane.sessionId }).catch(() => {});
+        }
+      }
+      setSessions((prev) => prev.filter((s) => !toClose.some((t) => getPanesForTab(t).some((p) => p.sessionId === s.id))));
+    }
     setTabs((prev) => {
-      const idx = prev.findIndex((t) => t.id === id);
-      if (idx === -1) return prev;
-      const remaining = prev.slice(0, idx + 1);
+      const i = prev.findIndex((t) => t.id === id);
+      if (i === -1) return prev;
+      const remaining = prev.slice(0, i + 1);
       if (!remaining.some((t) => t.id === activeTabIdRef.current)) {
         setActiveTabId(id);
       }
@@ -1031,10 +1223,21 @@ export default function App() {
   };
 
   const handleCloseTabsToLeft = (id: string) => {
+    const idx = tabsRef.current.findIndex((t) => t.id === id);
+    if (idx !== -1) {
+      const toClose = tabsRef.current.slice(0, idx);
+      for (const t of toClose) {
+        for (const pane of getPanesForTab(t)) {
+          invoke("delete_session_record", { sessionId: pane.sessionId }).catch(() => {});
+          invoke("close_split_terminal", { sessionId: pane.sessionId }).catch(() => {});
+        }
+      }
+      setSessions((prev) => prev.filter((s) => !toClose.some((t) => getPanesForTab(t).some((p) => p.sessionId === s.id))));
+    }
     setTabs((prev) => {
-      const idx = prev.findIndex((t) => t.id === id);
-      if (idx === -1) return prev;
-      const remaining = prev.slice(idx);
+      const i = prev.findIndex((t) => t.id === id);
+      if (i === -1) return prev;
+      const remaining = prev.slice(i);
       if (!remaining.some((t) => t.id === activeTabIdRef.current)) {
         setActiveTabId(id);
       }
@@ -1043,15 +1246,195 @@ export default function App() {
   };
 
   const handleCloseAllTabs = () => {
+    for (const t of tabsRef.current) {
+      for (const pane of getPanesForTab(t)) {
+        invoke("delete_session_record", { sessionId: pane.sessionId }).catch(() => {});
+        invoke("close_split_terminal", { sessionId: pane.sessionId }).catch(() => {});
+      }
+    }
+    setSessions([]);
     setTabs([]);
     setFileTabContents({});
     setActiveTabId("");
+    setFocusedPaneMap({});
   };
   const handleRenameTab = (tabId: string, newTitle: string) => {
     setTabs((prev) =>
       prev.map((t) => (t.id === tabId ? { ...t, title: newTitle } : t))
     );
   };
+
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleGlobalContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("contextmenu", handleGlobalContextMenu);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
+
+      // Dismiss any open modal or context menu on Escape
+      if (e.key === "Escape") {
+        if (contextMenu) {
+          e.preventDefault();
+          setContextMenu(null);
+          return;
+        }
+        if (isCommandPaletteOpen) {
+          e.preventDefault();
+          setIsCommandPaletteOpen(false);
+          return;
+        }
+        if (isSettingsOpen) {
+          e.preventDefault();
+          setIsSettingsOpen(false);
+          return;
+        }
+        if (isNewWorkspaceOpen) {
+          e.preventDefault();
+          setIsNewWorkspaceOpen(false);
+          return;
+        }
+        if (isAddRepoOpen) {
+          e.preventDefault();
+          setIsAddRepoOpen(false);
+          return;
+        }
+        if (isPairingOpen) {
+          e.preventDefault();
+          setIsPairingOpen(false);
+          return;
+        }
+      }
+
+      const target = e.target as HTMLElement | null;
+      const isInputFocused = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || Boolean(target?.isContentEditable);
+      const isModalOpen = isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen;
+      const isChord = e.ctrlKey || e.metaKey;
+      if (isChord && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+        return;
+      }
+      if (isChord && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setIsLeftSidebarOpen((prev) => {
+          const next = !prev;
+          updateLeftSidebar(next);
+          return next;
+        });
+        return;
+      }
+      if (isChord && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        setIsRightSidebarOpen((prev) => {
+          const next = !prev;
+          updateRightSidebar(next);
+          return next;
+        });
+        return;
+      }
+      if (isChord && e.key === ",") {
+        e.preventDefault();
+        setIsSettingsOpen(true);
+        return;
+      }
+      if (isChord && !e.shiftKey && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        setIsNewWorkspaceOpen(true);
+        return;
+      }
+      // Guard against background tab closure or navigation when dialogs or inputs have focus
+      if (isModalOpen || isInputFocused) {
+        return;
+      }
+      // Sprint 2 P0: split shortcuts — must precede diff/file shortcuts
+      if (isChord && e.shiftKey && e.key.toLowerCase() === "d") {
+        const cur = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
+        if (cur?.type === "terminal") {
+          e.preventDefault();
+          handleSplitTerminal("horizontal");
+          return;
+        }
+      }
+      if (isChord && e.shiftKey && e.key.toLowerCase() === "e") {
+        const cur = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
+        if (cur?.type === "terminal") {
+          e.preventDefault();
+          handleSplitTerminal("vertical");
+          return;
+        }
+      }
+      if (isChord && (e.key === "\\" || e.key === "|" || e.key === "Dead")) {
+        const cur = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
+        if (cur?.type === "terminal") {
+          e.preventDefault();
+          if (e.shiftKey) handleSplitTerminal("vertical");
+          else handleSplitTerminal("horizontal");
+          return;
+        }
+      }
+      if (isChord && !e.shiftKey && e.key.toLowerCase() === "w") {
+        e.preventDefault();
+        if (activeTabIdRef.current) {
+          handleCloseTab(activeTabIdRef.current);
+        }
+      }
+      if (isChord && !e.shiftKey && e.key.toLowerCase() === "t") {
+        e.preventDefault();
+        handleNewTab();
+      }
+      if (isChord && e.shiftKey && e.key === "ArrowUp") {
+        e.preventDefault();
+        handleNavigateWorkspace("up");
+      }
+      if (isChord && e.shiftKey && e.key === "ArrowDown") {
+        e.preventDefault();
+        handleNavigateWorkspace("down");
+      }
+      if (isChord && e.key.toLowerCase() === "t") {
+        e.preventDefault();
+        handleNewTerminalTab();
+      }
+      if (isChord && e.key.toLowerCase() === "n" && !e.shiftKey) {
+        e.preventDefault();
+        handleNewFileTab();
+      }
+      if (isChord && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        handleOpenFileTab();
+      }
+      if (isChord && e.shiftKey && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        handleOpenDiffTab();
+      }
+      if (isChord && e.shiftKey && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        setIsNewWorkspaceOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("contextmenu", handleGlobalContextMenu);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [
+    isLeftSidebarOpen,
+    isRightSidebarOpen,
+    leftSidebar.width,
+    rightSidebar.width,
+    contextMenu,
+    isCommandPaletteOpen,
+    isSettingsOpen,
+    isNewWorkspaceOpen,
+    isAddRepoOpen,
+    isPairingOpen,
+    handleSplitTerminal,
+    handleCloseTab
+  ]);
 
 
   // Context Menu Handlers
@@ -1108,13 +1491,13 @@ export default function App() {
           label: "Split Terminal Right",
           icon: <PanelRightClose className="w-3.5 h-3.5" />,
           shortcut: isMac ? "⌘\\" : "Ctrl+Shift+D",
-          onClick: () => handleNewTab()
+          onClick: () => handleSplitTerminal("horizontal")
         },
         {
           label: "Split Terminal Down",
           icon: <PanelBottomClose className="w-3.5 h-3.5" />,
           shortcut: isMac ? "⌘Shift+\\" : "Ctrl+Shift+E",
-          onClick: () => handleNewTab()
+          onClick: () => handleSplitTerminal("vertical")
         },
         {
           separator: true,
@@ -1183,13 +1566,70 @@ export default function App() {
           label: "Split Terminal Right",
           icon: <PanelRightClose className="w-3.5 h-3.5" />,
           shortcut: isMac ? "⌘\\" : "Ctrl+Shift+D",
-          onClick: () => handleNewTab()
+          onClick: () => {
+            // Ensure this tab becomes active before split
+            setActiveTabId(tab.id);
+            activeTabIdRef.current = tab.id;
+            handleSplitTerminal("horizontal");
+            // Also split explicitly for this tab if active mismatch (fallback)
+            setTimeout(() => {
+              const cur = tabsRef.current.find((t) => t.id === tab.id);
+              if (cur) {
+                const panes = getPanesForTab(cur);
+                if (panes.length === 1) {
+                  // if previous split didn't apply due to active race, split now
+                  const sh = cur.executable || "bash";
+                  const cwd = cur.cwd || activeProjectRef.current?.path || "";
+                  const newSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                  invoke("save_session_record", { record: { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
+                  setSessions((prev) => [...prev, { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh }]);
+                  invoke<string>("create_split_terminal", { sessionId: newSessionId, executable: sh, cwd }).catch(()=>{ invoke<string>("create_split_terminal", { parentSessionId: panes[0]?.sessionId ?? cur.sessionId ?? newSessionId, executable: sh, cwd }).catch(()=>{}); });
+                  setTabs((prev) => prev.map((t) => {
+                    if (t.id !== tab.id) return t;
+                    const panes2 = getPanesForTab(t);
+                    if (panes2.length > 1) return t; // already split
+                    const basePane: SplitPane = { sessionId: t.sessionId ?? panes2[0]?.sessionId ?? `sess_fallback_${Date.now()}`, executable: t.executable ?? sh, cwd: t.cwd ?? cwd };
+                    const newPane: SplitPane = { sessionId: newSessionId, executable: sh, cwd };
+                    const newPanes = [basePane, newPane];
+                    return { ...t, splitPanes: newPanes, splitSessionIds: newPanes.map((p) => p.sessionId), splitDirection: "horizontal", splitLayout: { direction: "horizontal", panes: newPanes } };
+                  }));
+                }
+              }
+            }, 50);
+          }
         },
         {
           label: "Split Terminal Down",
           icon: <PanelBottomClose className="w-3.5 h-3.5" />,
           shortcut: isMac ? "⌘Shift+\\" : "Ctrl+Shift+E",
-          onClick: () => handleNewTab()
+          onClick: () => {
+            setActiveTabId(tab.id);
+            activeTabIdRef.current = tab.id;
+            handleSplitTerminal("vertical");
+            setTimeout(() => {
+              const cur = tabsRef.current.find((t) => t.id === tab.id);
+              if (cur) {
+                const panes = getPanesForTab(cur);
+                if (panes.length === 1) {
+                  const sh = cur.executable || "bash";
+                  const cwd = cur.cwd || activeProjectRef.current?.path || "";
+                  const newSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                  invoke("save_session_record", { record: { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
+                  setSessions((prev) => [...prev, { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh }]);
+                  invoke<string>("create_split_terminal", { sessionId: newSessionId, executable: sh, cwd }).catch(()=>{ invoke<string>("create_split_terminal", { parentSessionId: panes[0]?.sessionId ?? cur.sessionId ?? newSessionId, executable: sh, cwd }).catch(()=>{}); });
+                  setTabs((prev) => prev.map((t) => {
+                    if (t.id !== tab.id) return t;
+                    const panes2 = getPanesForTab(t);
+                    if (panes2.length > 1) return t;
+                    const basePane: SplitPane = { sessionId: t.sessionId ?? panes2[0]?.sessionId ?? `sess_fallback_${Date.now()}`, executable: t.executable ?? sh, cwd: t.cwd ?? cwd };
+                    const newPane: SplitPane = { sessionId: newSessionId, executable: sh, cwd };
+                    const newPanes = [basePane, newPane];
+                    return { ...t, splitPanes: newPanes, splitSessionIds: newPanes.map((p) => p.sessionId), splitDirection: "vertical", splitLayout: { direction: "vertical", panes: newPanes } };
+                  }));
+                }
+              }
+            }, 50);
+          }
         },
         {
           separator: true,
@@ -1207,7 +1647,30 @@ export default function App() {
           icon: <Copy className="w-3.5 h-3.5" />,
           onClick: () => {
             const newId = `tab_${Date.now()}`;
-            setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)` }]);
+            // Sprint 2 P0: duplicate split panes with fresh PTY ids to avoid sharing
+            const panes = getPanesForTab(tab);
+            if (panes.length > 1) {
+              const newPanes: SplitPane[] = panes.map((p) => ({
+                sessionId: `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                executable: p.executable,
+                cwd: p.cwd,
+              }));
+              // persist new sessions minimally
+              for (const np of newPanes) {
+                invoke("save_session_record", { record: { id: np.sessionId, project_path: np.cwd ?? "", title: `Terminal (${np.executable ?? "bash"})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: np.executable ?? "bash", executable: np.executable ?? "bash", created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
+                setSessions((prev) => [...prev, { id: np.sessionId, project_path: np.cwd ?? "", title: `Terminal (${np.executable ?? "bash"})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: np.executable ?? "bash", executable: np.executable ?? "bash" }]);
+              }
+              const dir = getSplitDirectionForTab(tab);
+              setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)`, splitPanes: newPanes, splitSessionIds: newPanes.map((p)=>p.sessionId), splitDirection: dir, splitLayout: { direction: dir, panes: newPanes }, sessionId: newPanes[0].sessionId }]);
+            } else {
+              // single pane duplicate: new tab with fresh session
+              const sh = tab.executable ?? "bash";
+              const cwd = tab.cwd ?? "";
+              const newSid = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+              invoke("save_session_record", { record: { id: newSid, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
+              setSessions((prev) => [...prev, { id: newSid, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh }]);
+              setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)`, sessionId: newSid, splitPanes: undefined, splitSessionIds: undefined, splitDirection: undefined, splitLayout: undefined }]);
+            }
             setActiveTabId(newId);
           }
         },
@@ -1671,23 +2134,39 @@ export default function App() {
                 })() : null}
 
                 {/* Orca TerminalOverlaySlot parity: keep each terminal tab mounted in DOM and toggle visibility via hidden so processes and scrollback survive tab switching */}
+                {/* Sprint 2 P0: split grid per tab */}
                 {tabs
                   .filter((t) => t.type === "terminal")
                   .map((t) => {
                     const isActive = currentTab?.type === "terminal" && activeTabId === t.id;
-                    const sId = t.sessionId || (t.id.startsWith("tab_") ? t.id.replace("tab_", "") : t.id);
+                    const panes = getPanesForTab(t);
+                    const direction = getSplitDirectionForTab(t);
+                    const isSplit = panes.length > 1;
+                    const sIdSingle = t.sessionId || (t.id.startsWith("tab_") ? t.id.replace("tab_", "") : t.id);
                     return (
                       <div
                         key={t.id}
                         className={`absolute inset-0 w-full h-full ${isActive ? "block" : "hidden pointer-events-none"}`}
                       >
-                        <TerminalDrawer 
-                          sessionId={sId} 
-                          executable={t.executable ?? (hydraSettings.terminal_default_shell || "bash")}
-                          cwd={t.cwd || activeProject?.path}
-                          settings={hydraSettings}
-                          onContextMenu={handleTerminalContextMenu}
-                        />
+                        {isSplit ? (
+                          <SplitTerminalGrid
+                            panes={panes}
+                            direction={direction}
+                            settings={hydraSettings}
+                            activePaneId={focusedPaneMap[t.id] ?? panes[0]?.sessionId}
+                            onPaneFocus={(sid) => setFocusedPaneMap((prev) => ({ ...prev, [t.id]: sid }))}
+                            onClosePane={(sid) => handleCloseSplitPane(t.id, sid)}
+                            onContextMenu={handleTerminalContextMenu}
+                          />
+                        ) : (
+                          <TerminalDrawer 
+                            sessionId={sIdSingle} 
+                            executable={t.executable ?? (hydraSettings.terminal_default_shell || "bash")}
+                            cwd={t.cwd || activeProject?.path}
+                            settings={hydraSettings}
+                            onContextMenu={handleTerminalContextMenu}
+                          />
+                        )}
                       </div>
                     );
                   })}
@@ -1737,6 +2216,15 @@ export default function App() {
                 rootPath={activeProject?.path ?? null}
                 isGit={activeProject?.is_git ?? false}
                 openInApps={hydraSettings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS}
+                activeSessionId={(() => {
+                  const active = sessions.find((s) => s.active);
+                  if (active) return active.id;
+                  const cur = tabs.find((t) => t.id === activeTabId);
+                  if (cur?.sessionId) return cur.sessionId;
+                  const panes = cur?.splitLayout?.panes ?? cur?.splitPanes ?? [];
+                  if (panes.length > 0) return panes[0].sessionId;
+                  return null;
+                })()}
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onOpenFile={async (path) => {
                   const ext = path.split(".").pop()?.toLowerCase() ?? "";
