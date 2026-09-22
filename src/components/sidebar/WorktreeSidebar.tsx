@@ -201,6 +201,43 @@ export function WorktreeSidebar({
     return wtSessions.every((s) => s.state === "idle");
   }, [sessions]);
 
+  const sortWorktreesByOption = useCallback((wts: GitWorktreeInfo[], _proj: HydraProject): GitWorktreeInfo[] => {
+    if (displayOptions.sortBy === "name") {
+      return [...wts].sort((a, b) => (a.branch || a.path).localeCompare(b.branch || b.path));
+    }
+    if (displayOptions.sortBy === "recent") {
+      return [...wts].sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0));
+    }
+    // agent-activity: working > blocked > idle, then most recent session
+    return [...wts].sort((a, b) => {
+      const aSess = sessions.filter((s) => s.project_path === a.path);
+      const bSess = sessions.filter((s) => s.project_path === b.path);
+      const rank = (sess: WorktreeSession[]) => sess.some((s) => s.state === "working") ? 0 : sess.some((s) => s.state === "blocked") ? 1 : sess.some((s) => s.state === "idle") ? 2 : 3;
+      const ra = rank(aSess);
+      const rb = rank(bSess);
+      if (ra !== rb) return ra - rb;
+      const aRecent = Math.max(...aSess.map((s) => s.updated_at ?? s.created_at ?? 0), (a.created_at ?? 0) * 1000);
+      const bRecent = Math.max(...bSess.map((s) => s.updated_at ?? s.created_at ?? 0), (b.created_at ?? 0) * 1000);
+      return bRecent - aRecent;
+    });
+  }, [sessions, displayOptions.sortBy]);
+
+  const sortSessionsByOption = useCallback((sess: WorktreeSession[]): WorktreeSession[] => {
+    if (displayOptions.sortBy === "name") {
+      return [...sess].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    if (displayOptions.sortBy === "recent") {
+      return [...sess].sort((a, b) => (b.updated_at ?? b.created_at ?? 0) - (a.updated_at ?? a.created_at ?? 0));
+    }
+    const rank = (s: WorktreeSession) => s.state === "working" ? 0 : s.state === "blocked" ? 1 : s.state === "idle" ? 2 : 3;
+    return [...sess].sort((a, b) => {
+      const ra = rank(a);
+      const rb = rank(b);
+      if (ra !== rb) return ra - rb;
+      return (b.updated_at ?? b.created_at ?? 0) - (a.updated_at ?? a.created_at ?? 0);
+    });
+  }, [displayOptions.sortBy]);
+
   const SessionAgentIcon = ({ agentName, size }: { agentName: string; size: number }) => {
     const lower = agentName.toLowerCase();
     if (["bash", "sh", "zsh", "shell", "terminal"].includes(lower)) {
@@ -631,10 +668,13 @@ export function WorktreeSidebar({
         ? displayFilteredWorktrees.filter((wt) => wt.branch.toLowerCase().includes(lowerFilter) || filteredSessions.some((s) => s.project_path === wt.path))
         : displayFilteredWorktrees;
 
+      const sortedWorktrees = sortWorktreesByOption(filteredWorktrees, proj);
+      const sortedSessions = sortSessionsByOption(filteredSessions);
+
       const hiddenByText = displayFilteredWorktrees.length - filteredWorktrees.length;
       const hiddenCount = hiddenByDisplay + hiddenByText;
 
-      if (!projectMatches(proj, filteredSessions, filteredWorktrees) && hiddenCount === 0) {
+      if (!projectMatches(proj, sortedSessions, sortedWorktrees) && hiddenCount === 0) {
         // Keep project visible if it has hidden worktrees (so pill can show) even when filter hides all
         if (rawProjectWorktrees.length === 0 && projectSessions.length === 0 && !lowerFilter) {
           // no content and no filter -> still show? We'll keep project header anyway if it has raw worktrees hidden?
@@ -648,30 +688,30 @@ export function WorktreeSidebar({
         continue;
       }
 
-      if (filteredWorktrees.length > 0) {
-        for (const wt of filteredWorktrees) {
+      if (sortedWorktrees.length > 0) {
+        for (const wt of sortedWorktrees) {
           rows.push({ type: "worktree", wt, proj });
-          const wtSessions = filteredSessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
+          const wtSessions = sortedSessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
           for (const s of wtSessions) {
             rows.push({ type: "session", session: s, proj, wt, isNested: true });
           }
         }
-        const orphanSessions = filteredSessions.filter(
-          (s) => !filteredWorktrees.some((wt) => wt.path === s.project_path) && !(!s.project_path && filteredWorktrees.some((wt) => wt.path === proj.path))
+        const orphanSessions = sortedSessions.filter(
+          (s) => !sortedWorktrees.some((wt) => wt.path === s.project_path) && !(!s.project_path && sortedWorktrees.some((wt) => wt.path === proj.path))
         );
         for (const s of orphanSessions) {
           rows.push({ type: "session", session: s, proj, isOrphan: true, isNested: false });
         }
         if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
       } else {
-        if (filteredSessions.length === 0) {
+        if (sortedSessions.length === 0) {
           if (hiddenCount > 0) {
             rows.push({ type: "hidden-pill", proj, hiddenCount });
           } else {
             rows.push({ type: "empty", proj, message: "No active worktrees in this project." });
           }
         } else {
-          for (const s of filteredSessions) {
+          for (const s of sortedSessions) {
             rows.push({ type: "session", session: s, proj, isNested: false });
           }
           if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
@@ -679,7 +719,7 @@ export function WorktreeSidebar({
       }
     }
     return rows;
-  }, [projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree]);
+  }, [projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]);
 
   const getRowHeight = useCallback(
     (index: number) => {
@@ -1015,9 +1055,11 @@ export function WorktreeSidebar({
                 });
                 const lowerFilter = filter.trim().toLowerCase();
                 const matchesFilter = (s: WorktreeSession) => !lowerFilter || s.title.toLowerCase().includes(lowerFilter) || s.branch.toLowerCase().includes(lowerFilter) || s.agentName.toLowerCase().includes(lowerFilter);
-                const projectSessions = displayOptions.hideSleeping ? projectSessionsRaw.filter((s) => s.state !== "idle" && (!lowerFilter || matchesFilter(s))) : (lowerFilter ? projectSessionsRaw.filter(matchesFilter) : projectSessionsRaw);
-                const projectWorktrees = lowerFilter ? displayFilteredWts.filter((wt) => wt.branch.toLowerCase().includes(lowerFilter) || projectSessions.some((s) => s.project_path === wt.path)) : displayFilteredWts;
-                const hiddenCount = rawProjectWorktrees.length - projectWorktrees.length;
+                const projectSessionsUnsorted = displayOptions.hideSleeping ? projectSessionsRaw.filter((s) => s.state !== "idle" && (!lowerFilter || matchesFilter(s))) : (lowerFilter ? projectSessionsRaw.filter(matchesFilter) : projectSessionsRaw);
+                const projectWorktreesUnsorted = lowerFilter ? displayFilteredWts.filter((wt) => wt.branch.toLowerCase().includes(lowerFilter) || projectSessionsUnsorted.some((s) => s.project_path === wt.path)) : displayFilteredWts;
+                const hiddenCount = rawProjectWorktrees.length - projectWorktreesUnsorted.length;
+                const projectWorktrees = sortWorktreesByOption(projectWorktreesUnsorted, proj);
+                const projectSessions = sortSessionsByOption(projectSessionsUnsorted);
                 const isMenuOpen = activeProjectMenuId === proj.id;
 
                 return (
