@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_window_state::StateFlags;
 
 pub mod agent_discovery;
@@ -21,7 +21,7 @@ pub mod preflight;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
-use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState};
+use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState, WorkbenchState};
 use fs_ops::{create_file, create_folder, delete_path, list_directory, rename_path, search_files_content, DirectoryListing, FileContent, read_file_text, SearchResult};
 use git_status::{
     check_git_ignored, get_branch_commits, get_detailed_git_status, get_diff_numstat, get_git_history,
@@ -292,6 +292,16 @@ fn save_layout_persistence(layout: UiLayoutState, state: State<'_, AppState>) ->
 }
 
 #[tauri::command]
+fn get_workbench_persistence(state: State<'_, AppState>) -> Result<WorkbenchState, String> {
+    state.db.get_workbench_state()
+}
+
+#[tauri::command]
+fn save_workbench_persistence(state: WorkbenchState, state_db: State<'_, AppState>) -> Result<(), String> {
+    state_db.db.save_workbench_state(&state)
+}
+
+#[tauri::command]
 fn list_available_agents() -> Vec<AvailableAgent> {
     probe_available_agents()
 }
@@ -342,7 +352,9 @@ async fn start_agent_terminal(
                 let sid = session_id.clone();
                 let app_handle = app.clone();
                 std::thread::spawn(move || {
-                    let mut offset = 0;
+                    let mut offset = 0usize;
+                    let mut last_state: Option<String> = None;
+                    let mut poll_counter: usize = 0;
                     loop {
                         std::thread::sleep(std::time::Duration::from_millis(50));
                         let poll_req = daemon_client::DaemonRequest {
@@ -377,6 +389,43 @@ async fn start_agent_terminal(
                                         );
                                     }
                                     offset = next;
+                                }
+                                // Push agent state via snapshot every ~200ms (4 * 50ms) — throttle to avoid IPC flood
+                                poll_counter = poll_counter.wrapping_add(1);
+                                if poll_counter % 4 == 0 {
+                                    let snap_req = daemon_client::DaemonRequest {
+                                        op: "snapshot".to_string(),
+                                        session_id: Some(sid.clone()),
+                                        executable: None,
+                                        args: None,
+                                        cwd: None,
+                                        input: None,
+                                        rows: None,
+                                        cols: None,
+                                        offset: None,
+                                    };
+                                    if let Ok(snap_res) = daemon_client::daemon_request(&snap_req) {
+                                        if snap_res.ok {
+                                            if let Some(snap_data) = snap_res.data {
+                                                if let Ok(snap) = serde_json::from_value::<TerminalSnapshot>(snap_data) {
+                                                    let detected = detect_agent_state(&snap.clean_text);
+                                                    let state_str = detected.as_str().to_string();
+                                                    if last_state.as_deref() != Some(&state_str) {
+                                                        use tauri::Emitter;
+                                                        let _ = app_handle.emit(
+                                                            "agent:state",
+                                                            serde_json::json!({
+                                                                "session_id": sid.clone(),
+                                                                "sessionId": sid.clone(),
+                                                                "state": state_str.clone()
+                                                            }),
+                                                        );
+                                                        last_state = Some(state_str);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             _ => break,
@@ -508,10 +557,15 @@ fn get_settings(state: State<'_, AppState>) -> Result<HydraSettings, String> {
 }
 
 #[tauri::command]
-fn save_settings(settings: HydraSettings, state: State<'_, AppState>) -> Result<(), String> {
+fn save_settings(settings: HydraSettings, app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
     let enabled = settings.keep_computer_awake_while_agents_run;
+    let before = state.keep_awake.get_status();
     state.db.save_settings(&settings)?;
     state.keep_awake.set_enabled(enabled);
+    let after = state.keep_awake.get_status();
+    if before.active != after.active || before.enabled != after.enabled {
+        let _ = app.emit("keep_awake:status", after.clone());
+    }
     Ok(())
 }
 
@@ -546,6 +600,159 @@ async fn poll_terminal_output(session_id: String, offset: usize, state: State<'_
     Ok(serde_json::json!({"data": data, "next_offset": next}))
 }
 
+/// Sprint 2 P0: create a split terminal pane (new PTY) paired to an existing tab grid.
+/// Uses same PTY manager + vt100 shadow as single terminals, emits via `terminal:output`.
+/// Frontend may pre-generate sessionId or let server generate via parent_session_id.
+#[tauri::command]
+async fn create_split_terminal(
+    session_id: Option<String>,
+    parent_session_id: Option<String>,
+    executable: Option<String>,
+    cwd: Option<String>,
+    args: Option<Vec<String>>,
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let exec = executable.unwrap_or_else(|| "bash".to_string());
+    let new_id = if let Some(sid) = session_id.filter(|s| !s.is_empty()) {
+        sid
+    } else if let Some(parent) = parent_session_id.filter(|s| !s.is_empty()) {
+        format!(
+            "{}_split_{}",
+            parent,
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis() % 100000
+        )
+    } else {
+        format!(
+            "sess_split_{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis()
+        )
+    };
+    let a = args.unwrap_or_default();
+    // Try daemon first
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest {
+            op: "start".to_string(),
+            session_id: Some(new_id.clone()),
+            executable: Some(exec.clone()),
+            args: Some(a.clone()),
+            cwd: cwd.clone(),
+            input: None,
+            rows: None,
+            cols: None,
+            offset: None,
+        };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => {
+                let sid = new_id.clone();
+                let app_handle = app.clone();
+                std::thread::spawn(move || {
+                    let mut offset = 0usize;
+                    let mut last_state: Option<String> = None;
+                    let mut poll_counter: usize = 0;
+                    loop {
+                        std::thread::sleep(std::time::Duration::from_millis(50));
+                        let poll_req = daemon_client::DaemonRequest {
+                            op: "poll".to_string(),
+                            session_id: Some(sid.clone()),
+                            executable: None,
+                            args: None,
+                            cwd: None,
+                            input: None,
+                            rows: None,
+                            cols: None,
+                            offset: Some(offset),
+                        };
+                        match daemon_client::daemon_request(&poll_req) {
+                            Ok(res) if res.ok => {
+                                if let Some(data) = res.data {
+                                    let chunk = data.get("data").and_then(|v| v.as_str()).unwrap_or("");
+                                    let next = data.get("next_offset").and_then(|v| v.as_u64()).unwrap_or(offset as u64) as usize;
+                                    if !chunk.is_empty() {
+                                        #[derive(serde::Serialize, Clone)]
+                                        struct OutputPayload { session_id: String, output: String }
+                                        use tauri::Emitter;
+                                        let _ = app_handle.emit("terminal:output", OutputPayload { session_id: sid.clone(), output: chunk.to_string() });
+                                    }
+                                    offset = next;
+                                }
+                                poll_counter = poll_counter.wrapping_add(1);
+                                if poll_counter % 4 == 0 {
+                                    let snap_req = daemon_client::DaemonRequest {
+                                        op: "snapshot".to_string(),
+                                        session_id: Some(sid.clone()),
+                                        executable: None,
+                                        args: None,
+                                        cwd: None,
+                                        input: None,
+                                        rows: None,
+                                        cols: None,
+                                        offset: None,
+                                    };
+                                    if let Ok(snap_res) = daemon_client::daemon_request(&snap_req) {
+                                        if snap_res.ok {
+                                            if let Some(snap_data) = snap_res.data {
+                                                if let Ok(snap) = serde_json::from_value::<TerminalSnapshot>(snap_data) {
+                                                    let detected = detect_agent_state(&snap.clean_text);
+                                                    let state_str = detected.as_str().to_string();
+                                                    if last_state.as_deref() != Some(&state_str) {
+                                                        use tauri::Emitter;
+                                                        let _ = app_handle.emit(
+                                                            "agent:state",
+                                                            serde_json::json!({
+                                                                "session_id": sid.clone(),
+                                                                "sessionId": sid.clone(),
+                                                                "state": state_str.clone()
+                                                            }),
+                                                        );
+                                                        last_state = Some(state_str);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            _ => break,
+                        }
+                    }
+                });
+                return Ok(new_id);
+            }
+            Ok(r) => return Err(r.error.unwrap_or_else(|| "daemon error".to_string())),
+            Err(_) => {}
+        }
+    }
+    state.terminal.start_session(&new_id, &exec, a, cwd, app)?;
+    Ok(new_id)
+}
+
+#[tauri::command]
+async fn close_split_terminal(session_id: String, state: State<'_, AppState>) -> Result<(), String> {
+    if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest {
+            op: "close".to_string(),
+            session_id: Some(session_id.clone()),
+            executable: None,
+            args: None,
+            cwd: None,
+            input: None,
+            rows: None,
+            cols: None,
+            offset: None,
+        };
+        let _ = daemon_client::daemon_request(&req);
+    }
+    state.terminal.close_session(&session_id);
+    Ok(())
+}
+
 #[tauri::command]
 async fn is_daemon_available() -> bool {
     daemon_client::daemon_available()
@@ -557,40 +764,120 @@ fn get_keep_awake_status(state: State<'_, AppState>) -> KeepAwakeStatus {
 }
 
 #[tauri::command]
-fn sync_keep_awake(enabled: bool, working_count: usize, state: State<'_, AppState>) -> KeepAwakeStatus {
+fn sync_keep_awake(enabled: bool, working_count: usize, app: AppHandle, state: State<'_, AppState>) -> KeepAwakeStatus {
+    let before = state.keep_awake.get_status();
     state.keep_awake.sync(enabled, working_count);
-    state.keep_awake.get_status()
+    let after = state.keep_awake.get_status();
+    // Emit push when status changes (active/enabled/working_count) — frontend listens for instant update
+    if before.active != after.active || before.enabled != after.enabled || before.working_count != after.working_count {
+        let _ = app.emit("keep_awake:status", after.clone());
+    }
+    after
 }
 
 #[tauri::command]
-fn set_keep_awake_working_count(working_count: usize, state: State<'_, AppState>) -> KeepAwakeStatus {
+fn set_keep_awake_working_count(working_count: usize, app: AppHandle, state: State<'_, AppState>) -> KeepAwakeStatus {
+    let before = state.keep_awake.get_status();
     state.keep_awake.set_working_count(working_count);
-    state.keep_awake.get_status()
+    let after = state.keep_awake.get_status();
+    if before.active != after.active || before.working_count != after.working_count {
+        let _ = app.emit("keep_awake:status", after.clone());
+    }
+    after
 }
 
 #[tauri::command]
-fn resolve_tool_approval(
-    approval_id: String,
-    session_id: String,
-    status: String,
+async fn resolve_tool_approval(
+    id: Option<String>,
+    approval_id: Option<String>,
+    approved: Option<bool>,
+    status: Option<String>,
+    session_id: Option<String>,
     app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
+    // Flexible signature: frontend may send {id, approved} (P0 spec) or legacy {approval_id, session_id, status}
+    let resolved_id = id
+        .or(approval_id)
+        .ok_or_else(|| "Missing id / approval_id".to_string())?;
+    let resolved_status = if let Some(a) = approved {
+        if a { "approved".to_string() } else { "rejected".to_string() }
+    } else if let Some(s) = status {
+        s
+    } else {
+        return Err("Missing approved / status".to_string());
+    };
+    let db = &state.db;
+    // Try to update existing record; if not found, create a minimal one so UI can reflect status
+    if let Ok(Some(mut existing)) = db.get_tool_approval(&resolved_id) {
+        existing.status = resolved_status.clone();
+        // keep session_id from existing if not provided
+        db.save_tool_approval(&existing)?;
+        use tauri::Emitter;
+        let _ = app.emit("tool_approval:resolved", existing);
+        return Ok(());
+    }
+    // No existing record — try to update via SQL first (covers case where id exists but get failed due to lock ordering)
+    if db.update_tool_approval_status(&resolved_id, &resolved_status).is_ok() {
+        if let Ok(Some(updated)) = db.get_tool_approval(&resolved_id) {
+            use tauri::Emitter;
+            let _ = app.emit("tool_approval:resolved", updated);
+            return Ok(());
+        }
+        use tauri::Emitter;
+        let _ = app.emit(
+            "tool_approval:resolved",
+            ToolApprovalRecord {
+                id: resolved_id.clone(),
+                session_id: session_id.clone().unwrap_or_default(),
+                tool_name: "bash".to_string(),
+                command: String::new(),
+                status: resolved_status.clone(),
+                created_at: std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs() as i64,
+            },
+        );
+        return Ok(());
+    }
+    // Fallback: create minimal record
+    let sid = session_id.unwrap_or_default();
     let record = ToolApprovalRecord {
-        id: approval_id.clone(),
-        session_id,
+        id: resolved_id.clone(),
+        session_id: sid,
         tool_name: "bash".to_string(),
         command: String::new(),
-        status: status.clone(),
+        status: resolved_status.clone(),
         created_at: std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs() as i64,
     };
-    state.db.save_tool_approval(&record)?;
-
+    db.save_tool_approval(&record)?;
     use tauri::Emitter;
     let _ = app.emit("tool_approval:resolved", record);
+    Ok(())
+}
+
+#[tauri::command]
+async fn list_tool_approvals(
+    session_id: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<Vec<ToolApprovalRecord>, String> {
+    state.db.list_tool_approvals(session_id.as_deref())
+}
+
+#[tauri::command]
+async fn create_tool_approval(
+    record: ToolApprovalRecord,
+    state: State<'_, AppState>,
+    app: AppHandle,
+) -> Result<(), String> {
+    state.db.save_tool_approval(&record)?;
+    use tauri::Emitter;
+    let _ = app.emit("tool:approval:request", record.clone());
+    let _ = app.emit("tool_approval:request", record);
     Ok(())
 }
 
@@ -687,6 +974,8 @@ pub fn run() {
             delete_worktree,
             get_layout_persistence,
             save_layout_persistence,
+            get_workbench_persistence,
+            save_workbench_persistence,
             list_available_agents,
             list_persisted_sessions,
             save_session_record,
@@ -709,7 +998,11 @@ pub fn run() {
             list_terminal_sessions,
             poll_terminal_output,
             is_daemon_available,
+            create_split_terminal,
+            close_split_terminal,
             resolve_tool_approval,
+            list_tool_approvals,
+            create_tool_approval,
             window_actions::window_minimize,
             window_actions::window_toggle_maximize,
             window_actions::window_close,

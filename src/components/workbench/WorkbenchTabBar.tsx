@@ -11,6 +11,17 @@ import {
 } from "lucide-react";
 import { AgentBrandIcon } from "../AgentIcon";
 
+export interface SplitPane {
+  sessionId: string;
+  executable?: string;
+  cwd?: string;
+}
+
+export interface SplitLayout {
+  direction: "horizontal" | "vertical";
+  panes: SplitPane[];
+}
+
 export interface TabItem {
   id: string;
   title: string;
@@ -18,6 +29,11 @@ export interface TabItem {
   sessionId?: string;
   executable?: string;
   cwd?: string;
+  /** Sprint 2 P0: split terminals within a single tab */
+  splitSessionIds?: string[];
+  splitDirection?: "horizontal" | "vertical";
+  splitPanes?: SplitPane[];
+  splitLayout?: SplitLayout;
 }
 
 export interface DetectedAgent {
