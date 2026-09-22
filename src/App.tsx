@@ -145,6 +145,7 @@ export default function App() {
   projectsRef.current = projects;
   const activeProjectRef = useRef(activeProject);
   activeProjectRef.current = activeProject;
+  const prevProjectPathRef = useRef<string | null>(null);
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -431,6 +432,62 @@ export default function App() {
       .finally(() => { workbenchCheckedRef.current = true; });
   }, []);
 
+  // Sprint 3 #14: per-project workbench tabs — load/save por worktree (Orca tabs por worktree)
+  useEffect(() => {
+    if (!activeProject) return;
+    const prevPath = prevProjectPathRef.current;
+    // Save current tabs to previous project's state before switching
+    if (prevPath && prevPath !== activeProject.path && tabsRef.current.length > 0) {
+      const prevState: WorkbenchState = {
+        tabs_json: JSON.stringify(tabsRef.current),
+        active_tab_id: activeTabIdRef.current,
+        updated_at: Date.now(),
+      };
+      invoke("save_workbench_persistence_for_project", { projectPath: prevPath, state: prevState }).catch(console.error);
+    }
+    // Load new project's workbench state (per-project), fallback to global already loaded
+    invoke<WorkbenchState>("get_workbench_persistence_for_project", { projectPath: activeProject.path })
+      .then((state) => {
+        if (state && state.tabs_json && state.tabs_json !== "[]" && state.tabs_json !== "null") {
+          try {
+            const raw = JSON.parse(state.tabs_json) as TabItem[];
+            if (raw.length === 0) return;
+            const seenSid = new Set<string>();
+            let deduped = raw.filter((t) => {
+              if (t.sessionId) {
+                if (seenSid.has(t.sessionId)) return false;
+                seenSid.add(t.sessionId);
+              }
+              return true;
+            });
+            deduped = deduped.filter((t) => {
+              if (!t.sessionId && t.cwd) {
+                return !deduped.some((o) => o !== t && o.sessionId && o.cwd === t.cwd);
+              }
+              return true;
+            });
+            const finalTabs = deduped;
+            if (finalTabs.length > 0) {
+              setTabs(finalTabs);
+              if (state.active_tab_id && finalTabs.some((t) => t.id === state.active_tab_id)) {
+                setActiveTabId(state.active_tab_id);
+              } else {
+                setActiveTabId(finalTabs[0].id);
+              }
+              setWorkbenchLoaded(true);
+            }
+          } catch (e) {
+            console.error("Failed to parse per-project tabs:", e);
+          }
+        }
+      })
+      .catch(console.error)
+      .finally(() => {
+        prevProjectPathRef.current = activeProject.path;
+        workbenchCheckedRef.current = true;
+      });
+  }, [activeProject?.path]);
+
   const updateLeftSidebar = (open: boolean) => {
     setIsLeftSidebarOpen(open);
     invoke("save_layout_persistence", {
@@ -461,7 +518,14 @@ export default function App() {
       active_tab_id: activeTabId,
       updated_at: Date.now(),
     };
-    invoke("save_workbench_persistence", { state }).catch(console.error);
+    // Sprint 3 #14: per-project workbench state — Orca tabs por worktree
+    if (activeProjectRef.current?.path) {
+      invoke("save_workbench_persistence_for_project", { projectPath: activeProjectRef.current.path, state }).catch(console.error);
+      // also save global for backwards compat
+      invoke("save_workbench_persistence", { state }).catch(console.error);
+    } else {
+      invoke("save_workbench_persistence", { state }).catch(console.error);
+    }
   }, [tabs, activeTabId]);
 
   // Persist workbench state when tabs or active tab change
@@ -652,44 +716,8 @@ export default function App() {
             setActiveTabId(firstTabId);
           }
         } else {
-          const effectiveShell = hydraSettings.terminal_default_shell || "bash";
-          const defaultSession: WorktreeSession = {
-            id: `sess_main_${Date.now().toString().slice(-4)}`,
-            project_path: projectPath,
-            title: "Main Terminal Session",
-            branch: "main",
-            state: "idle",
-            active: true,
-            agentName: effectiveShell,
-            executable: effectiveShell,
-            created_at: Date.now(),
-            updated_at: Date.now(),
-          };
-          setSessions([defaultSession]);
-          invoke("save_session_record", {
-            record: {
-              id: defaultSession.id,
-              project_path: projectPath,
-              title: defaultSession.title,
-              branch: defaultSession.branch,
-              agent_name: defaultSession.agentName,
-              executable: defaultSession.executable,
-              created_at: Date.now(),
-              updated_at: Date.now(),
-            }
-          }).catch(console.error);
-          const firstTabId = `tab_${defaultSession.id}`;
-          setTabs([
-            {
-              id: firstTabId,
-              title: `${defaultSession.executable} (active)`,
-              type: "terminal",
-              sessionId: defaultSession.id,
-              executable: defaultSession.executable,
-              cwd: defaultSession.project_path || projectPath,
-            },
-          ]);
-          setActiveTabId(firstTabId);
+          // Sprint 3 #11 Orca parity: do not create fake Main Terminal Session — workspace only exists with agent
+          setSessions([]);
         }
       })
       .catch(console.error);
@@ -751,8 +779,10 @@ export default function App() {
             setActiveTabId(firstTabId);
           }
         } else if (activeProject) {
-          // Fallback: create default session for active project
-          loadSessionsForProject(activeProject.path);
+          // Sprint 3 #11 Orca parity: do not auto-create Main Terminal — keep empty
+          setSessions([]);
+        } else {
+          setSessions([]);
         }
       })
       .catch(console.error);

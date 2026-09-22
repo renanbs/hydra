@@ -62,7 +62,48 @@ pub fn list_local_projects() -> Vec<HydraProject> {
         }
     }
 
-    projects
+    // ── Sprint 3 #2: Folder workspace expansion — Orca parity
+    // If a project is a folder (non-git) that contains sub-repos with .git, expose each sub-repo
+    // as a virtual HydraProject so the sidebar shows 3 rows like Orca `malhaclub-api/app/lp`
+    // instead of a single `code` folder. Deduplicate if sub-repo already added as separate project.
+    let mut expanded: Vec<HydraProject> = Vec::new();
+    let mut seen_paths: std::collections::HashSet<String> = projects.iter().map(|p| p.path.clone()).collect();
+    for proj in &projects {
+        expanded.push(proj.clone());
+        let p = PathBuf::from(&proj.path);
+        if !proj.is_git && p.is_dir() {
+            if let Ok(entries) = std::fs::read_dir(&p) {
+                let mut sub_repos: Vec<PathBuf> = entries
+                    .flatten()
+                    .map(|e| e.path())
+                    .filter(|sub| sub.is_dir() && sub.join(".git").exists())
+                    .collect();
+                sub_repos.sort();
+                for sub in sub_repos {
+                    let sub_str = sub.to_string_lossy().to_string();
+                    if seen_paths.contains(&sub_str) {
+                        continue;
+                    }
+                    seen_paths.insert(sub_str.clone());
+                    let name = sub.file_name().and_then(|n| n.to_str()).unwrap_or("repo").to_string();
+                    let branch = get_branch_for_path(&sub);
+                    expanded.push(HydraProject {
+                        id: format!("proj_{name}_{}", proj.id),
+                        name,
+                        path: sub_str,
+                        is_git: true,
+                        current_branch: branch,
+                        worktree_base_path: None,
+                    });
+                }
+            }
+        }
+    }
+    if expanded.len() != projects.len() {
+        expanded
+    } else {
+        projects
+    }
 }
 
 pub fn get_project_worktree_base_path(path_str: &str) -> Option<String> {
