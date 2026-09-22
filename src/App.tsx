@@ -234,6 +234,8 @@ export default function App() {
         active: true,
         agentName: shFallback,
         executable: shFallback,
+        created_at: Date.now(),
+        updated_at: Date.now(),
       };
       invoke("save_session_record", { record: { id: sidFallback, project_path: fallbackSession.project_path, title: fallbackSession.title, branch: fallbackSession.branch, agent_name: fallbackSession.agentName, executable: fallbackSession.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
       setSessions((prev) => [...prev.map((s) => ({ ...s, active: false })), fallbackSession]);
@@ -255,6 +257,8 @@ export default function App() {
       active: false,
       agentName: sh,
       executable: sh,
+      created_at: Date.now(),
+      updated_at: Date.now(),
     };
     invoke("save_session_record", {
       record: {
@@ -611,6 +615,8 @@ export default function App() {
             executable: p.executable,
             state: "idle",
             active: idx === 0,
+            created_at: p.created_at,
+            updated_at: p.updated_at,
           }));
           try {
             const saved = localStorage.getItem("hydra:sessions_order");
@@ -656,6 +662,8 @@ export default function App() {
             active: true,
             agentName: effectiveShell,
             executable: effectiveShell,
+            created_at: Date.now(),
+            updated_at: Date.now(),
           };
           setSessions([defaultSession]);
           invoke("save_session_record", {
@@ -708,6 +716,8 @@ export default function App() {
             executable: p.executable,
             state: "idle",
             active: idx === 0,
+            created_at: p.created_at,
+            updated_at: p.updated_at,
           }));
           try {
             const saved = localStorage.getItem("hydra:sessions_order");
@@ -932,6 +942,8 @@ export default function App() {
         active: true,
         agentName: "bash",
         executable: "bash",
+        created_at: Date.now(),
+        updated_at: Date.now(),
       };
       setSessions((prev) => [newSess, ...prev.map((s) => ({ ...s, active: false }))]);
     } else {
@@ -983,6 +995,8 @@ export default function App() {
       active: true,
       agentName,
       executable,
+      created_at: Date.now(),
+      updated_at: Date.now(),
     };
     setSessions((prev) => [
       newSession,
@@ -1087,6 +1101,8 @@ export default function App() {
       active: true,
       agentName: sh,
       executable: sh,
+      created_at: Date.now(),
+      updated_at: Date.now(),
     };
     invoke("save_session_record", {
       record: {
@@ -1132,6 +1148,8 @@ export default function App() {
       active: true,
       agentName: agent.name,
       executable: agent.executable,
+      created_at: Date.now(),
+      updated_at: Date.now(),
     };
     invoke("save_session_record", {
       record: {
@@ -1641,7 +1659,7 @@ export default function App() {
                   const cwd = cur.cwd || activeProjectRef.current?.path || "";
                   const newSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
                   invoke("save_session_record", { record: { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
-                  setSessions((prev) => [...prev, { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh }]);
+                  setSessions((prev) => [...prev, { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() }]);
                   invoke<string>("create_split_terminal", { sessionId: newSessionId, executable: sh, cwd }).catch(()=>{ invoke<string>("create_split_terminal", { parentSessionId: panes[0]?.sessionId ?? cur.sessionId ?? newSessionId, executable: sh, cwd }).catch(()=>{}); });
                   setTabs((prev) => prev.map((t) => {
                     if (t.id !== tab.id) return t;
@@ -1674,7 +1692,7 @@ export default function App() {
                   const cwd = cur.cwd || activeProjectRef.current?.path || "";
                   const newSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
                   invoke("save_session_record", { record: { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
-                  setSessions((prev) => [...prev, { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh }]);
+                  setSessions((prev) => [...prev, { id: newSessionId, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() }]);
                   invoke<string>("create_split_terminal", { sessionId: newSessionId, executable: sh, cwd }).catch(()=>{ invoke<string>("create_split_terminal", { parentSessionId: panes[0]?.sessionId ?? cur.sessionId ?? newSessionId, executable: sh, cwd }).catch(()=>{}); });
                   setTabs((prev) => prev.map((t) => {
                     if (t.id !== tab.id) return t;
@@ -1717,7 +1735,7 @@ export default function App() {
               // persist new sessions minimally
               for (const np of newPanes) {
                 invoke("save_session_record", { record: { id: np.sessionId, project_path: np.cwd ?? "", title: `Terminal (${np.executable ?? "bash"})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: np.executable ?? "bash", executable: np.executable ?? "bash", created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
-                setSessions((prev) => [...prev, { id: np.sessionId, project_path: np.cwd ?? "", title: `Terminal (${np.executable ?? "bash"})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: np.executable ?? "bash", executable: np.executable ?? "bash" }]);
+                setSessions((prev) => [...prev, { id: np.sessionId, project_path: np.cwd ?? "", title: `Terminal (${np.executable ?? "bash"})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: np.executable ?? "bash", executable: np.executable ?? "bash", created_at: Date.now(), updated_at: Date.now() }]);
               }
               const dir = getSplitDirectionForTab(tab);
               setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)`, splitPanes: newPanes, splitSessionIds: newPanes.map((p)=>p.sessionId), splitDirection: dir, splitLayout: { direction: dir, panes: newPanes }, sessionId: newPanes[0].sessionId }]);
@@ -1727,7 +1745,7 @@ export default function App() {
               const cwd = tab.cwd ?? "";
               const newSid = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
               invoke("save_session_record", { record: { id: newSid, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
-              setSessions((prev) => [...prev, { id: newSid, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh }]);
+              setSessions((prev) => [...prev, { id: newSid, project_path: cwd, title: `Terminal (${sh})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: sh, executable: sh, created_at: Date.now(), updated_at: Date.now() }]);
               setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)`, sessionId: newSid, splitPanes: undefined, splitSessionIds: undefined, splitDirection: undefined, splitLayout: undefined }]);
             }
             setActiveTabId(newId);
