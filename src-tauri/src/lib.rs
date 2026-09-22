@@ -214,32 +214,32 @@ fn open_in_external_editor(path: String, command: String) -> Result<(), String> 
 }
 
 #[tauri::command]
-fn list_projects() -> Vec<HydraProject> {
+async fn list_projects() -> Vec<HydraProject> {
     list_local_projects()
 }
 
 #[tauri::command]
-fn register_existing_project(path: String) -> Result<HydraProject, String> {
+async fn register_existing_project(path: String) -> Result<HydraProject, String> {
     add_existing_project(&path)
 }
 
 #[tauri::command]
-fn remove_project(path: String) -> Result<(), String> {
+async fn remove_project(path: String) -> Result<(), String> {
     remove_added_project(&path)
 }
 
 #[tauri::command]
-fn get_project_worktree_base(path: String) -> Option<String> {
+async fn get_project_worktree_base(path: String) -> Option<String> {
     get_project_worktree_base_path(&path)
 }
 
 #[tauri::command]
-fn set_project_worktree_base(path: String, base_path: Option<String>) -> Result<(), String> {
+async fn set_project_worktree_base(path: String, base_path: Option<String>) -> Result<(), String> {
     set_project_worktree_base_path(&path, base_path.as_deref())
 }
 
 #[tauri::command]
-fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
+async fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
     list_git_worktrees(&repo_path)
 }
 
@@ -283,22 +283,22 @@ fn delete_worktree(repo_path: String, worktree_path: String) -> Result<(), Strin
 }
 
 #[tauri::command]
-fn get_layout_persistence(state: State<'_, AppState>) -> Result<UiLayoutState, String> {
+async fn get_layout_persistence(state: State<'_, AppState>) -> Result<UiLayoutState, String> {
     state.db.get_layout_state()
 }
 
 #[tauri::command]
-fn save_layout_persistence(layout: UiLayoutState, state: State<'_, AppState>) -> Result<(), String> {
+async fn save_layout_persistence(layout: UiLayoutState, state: State<'_, AppState>) -> Result<(), String> {
     state.db.save_layout_state(&layout)
 }
 
 #[tauri::command]
-fn get_workbench_persistence(state: State<'_, AppState>) -> Result<WorkbenchState, String> {
+async fn get_workbench_persistence(state: State<'_, AppState>) -> Result<WorkbenchState, String> {
     state.db.get_workbench_state()
 }
 
 #[tauri::command]
-fn save_workbench_persistence(state: WorkbenchState, state_db: State<'_, AppState>) -> Result<(), String> {
+async fn save_workbench_persistence(state: WorkbenchState, state_db: State<'_, AppState>) -> Result<(), String> {
     state_db.db.save_workbench_state(&state)
 }
 
@@ -330,7 +330,7 @@ fn list_available_shells() -> Vec<AvailableShell> {
 }
 
 #[tauri::command]
-fn list_persisted_sessions(
+async fn list_persisted_sessions(
     project_path: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<Vec<DbSessionRecord>, String> {
@@ -338,7 +338,7 @@ fn list_persisted_sessions(
 }
 
 #[tauri::command]
-fn save_session_record(record: DbSessionRecord, state: State<'_, AppState>) -> Result<(), String> {
+async fn save_session_record(record: DbSessionRecord, state: State<'_, AppState>) -> Result<(), String> {
     state.db.upsert_session(&record)
 }
 
@@ -570,12 +570,12 @@ fn get_pairing_qr(state: State<'_, AppState>) -> Result<PairingPayload, String> 
 }
 
 #[tauri::command]
-fn get_settings(state: State<'_, AppState>) -> Result<HydraSettings, String> {
+async fn get_settings(state: State<'_, AppState>) -> Result<HydraSettings, String> {
     state.db.get_settings()
 }
 
 #[tauri::command]
-fn save_settings(settings: HydraSettings, app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+async fn save_settings(settings: HydraSettings, app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
     let enabled = settings.keep_computer_awake_while_agents_run;
     let before = state.keep_awake.get_status();
     state.db.save_settings(&settings)?;

@@ -62,12 +62,18 @@ pub fn list_local_projects() -> Vec<HydraProject> {
         }
     }
 
-    // ── Sprint 3 #2: Folder workspace expansion — Orca parity
-    // If a project is a folder (non-git) that contains sub-repos with .git, expose each sub-repo
-    // as a virtual HydraProject so the sidebar shows 3 rows like Orca `malhaclub-api/app/lp`
-    // instead of a single `code` folder. Deduplicate if sub-repo already added as separate project.
+    // ── Sprint 3 #2: Folder workspace expansion — Orca parity (limit 20, normalize, inherit base)
     let mut expanded: Vec<HydraProject> = Vec::new();
-    let mut seen_paths: std::collections::HashSet<String> = projects.iter().map(|p| p.path.clone()).collect();
+    let mut seen_paths: std::collections::HashSet<String> = projects
+        .iter()
+        .map(|p| {
+            let mut s = p.path.replace('\\', "/");
+            while s.ends_with('/') && s.len() > 1 {
+                s.pop();
+            }
+            s
+        })
+        .collect();
     for proj in &projects {
         expanded.push(proj.clone());
         let p = PathBuf::from(&proj.path);
@@ -79,21 +85,29 @@ pub fn list_local_projects() -> Vec<HydraProject> {
                     .filter(|sub| sub.is_dir() && sub.join(".git").exists())
                     .collect();
                 sub_repos.sort();
-                for sub in sub_repos {
-                    let sub_str = sub.to_string_lossy().to_string();
-                    if seen_paths.contains(&sub_str) {
+                // Limit to 20 to avoid scanning massive dirs like /home
+                for sub in sub_repos.into_iter().take(20) {
+                    let sub_str = sub.to_string_lossy().to_string().replace('\\', "/");
+                    let mut norm = sub_str.clone();
+                    while norm.ends_with('/') && norm.len() > 1 {
+                        norm.pop();
+                    }
+                    if seen_paths.contains(&norm) || seen_paths.contains(&sub_str) {
                         continue;
                     }
+                    seen_paths.insert(norm.clone());
                     seen_paths.insert(sub_str.clone());
                     let name = sub.file_name().and_then(|n| n.to_str()).unwrap_or("repo").to_string();
                     let branch = get_branch_for_path(&sub);
+                    // id unique by path hash, not just name+parent
+                    let id_suffix = sub_str.replace('/', "_").replace('\\', "_").replace(':', "_");
                     expanded.push(HydraProject {
-                        id: format!("proj_{name}_{}", proj.id),
+                        id: format!("proj_{id_suffix}"),
                         name,
                         path: sub_str,
                         is_git: true,
                         current_branch: branch,
-                        worktree_base_path: None,
+                        worktree_base_path: proj.worktree_base_path.clone(),
                     });
                 }
             }

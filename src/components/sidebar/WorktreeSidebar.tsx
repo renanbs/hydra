@@ -153,15 +153,26 @@ export function WorktreeSidebar({
   // Ref para ancoragem exata do botão SlidersHorizontal
   const optionsButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>({
-    groupBy: "repo",
-    sortBy: "agent-activity",
-    hideSleeping: false,
-    hideDefaultBranch: false,
-    hideAutomationCreated: false,
-    hideCliCreated: false,
-    hideDetachedHead: false,
+  const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>(() => {
+    try {
+      const saved = localStorage.getItem("hydra:display_options");
+      if (saved) return JSON.parse(saved) as WorkspaceDisplayOptions;
+    } catch {}
+    return {
+      groupBy: "repo",
+      sortBy: "agent-activity",
+      hideSleeping: false,
+      hideDefaultBranch: false,
+      hideAutomationCreated: false,
+      hideCliCreated: false,
+      hideDetachedHead: false,
+    };
   });
+  useEffect(() => {
+    try {
+      localStorage.setItem("hydra:display_options", JSON.stringify(displayOptions));
+    } catch {}
+  }, [displayOptions]);
 
   // ---- Sprint 3 P0: helpers for displayOptions + worktreesByProject ----
   const getWorktreesForProject = useCallback((proj: HydraProject): GitWorktreeInfo[] => {

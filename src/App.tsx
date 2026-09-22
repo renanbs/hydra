@@ -518,11 +518,8 @@ export default function App() {
       active_tab_id: activeTabId,
       updated_at: Date.now(),
     };
-    // Sprint 3 #14: per-project workbench state — Orca tabs por worktree
     if (activeProjectRef.current?.path) {
       invoke("save_workbench_persistence_for_project", { projectPath: activeProjectRef.current.path, state }).catch(console.error);
-      // also save global for backwards compat
-      invoke("save_workbench_persistence", { state }).catch(console.error);
     } else {
       invoke("save_workbench_persistence", { state }).catch(console.error);
     }
