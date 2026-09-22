@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
+import { List } from "react-window";
 import { AgentBrandIcon } from "../AgentIcon";
 import { WorktreeSession } from "./WorktreeSidebar";
 
@@ -106,6 +107,115 @@ export function SidebarAgentsList({
         sessions: stateGroups[state],
       }));
   }, [filteredSessions, groupBy, getProjectName]);
+
+  // Virtualization: flatten grouped sessions into rows for react-window (500+ sessions)
+  type AgentFlatRow =
+    | { type: "group-header"; label: string; state: string; count: number }
+    | { type: "session"; session: WorktreeSession };
+
+  const agentFlatRows: AgentFlatRow[] = useMemo(() => {
+    const rows: AgentFlatRow[] = [];
+    for (const group of groupedSessions) {
+      rows.push({ type: "group-header", label: group.label, state: group.state, count: group.sessions.length });
+      for (const s of group.sessions) {
+        rows.push({ type: "session", session: s });
+      }
+    }
+    return rows;
+  }, [groupedSessions]);
+
+  const getAgentRowHeight = useCallback((index: number) => {
+    const row = agentFlatRows[index];
+    if (!row) return 40;
+    if (row.type === "group-header") return 28;
+    return compactCards ? 52 : 68;
+  }, [agentFlatRows, compactCards]);
+
+  const useAgentVirtualization = agentFlatRows.length > 30 || filteredSessions.length > 50;
+
+  const AgentVirtualRow = ({ index, style, ariaAttributes }: { index: number; style: React.CSSProperties; ariaAttributes?: any }) => {
+    const row = agentFlatRows[index];
+    if (!row) return null;
+    const rowStyle: React.CSSProperties = { ...style, left: 0, right: 0, width: "100%" };
+    if (row.type === "group-header") {
+      return (
+        <div style={rowStyle} {...ariaAttributes} className="px-2">
+          <div className="flex items-center gap-2 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-worktree-sidebar-foreground/50">
+            {row.state !== "project" && (
+              <span
+                className={`inline-flex size-3 shrink-0 items-center justify-center ${
+                  row.state === "blocked"
+                    ? "bg-red-400/20 text-red-400"
+                    : row.state === "working"
+                    ? "bg-amber-400/20 text-amber-400"
+                    : row.state === "idle"
+                    ? "bg-emerald-400/20 text-emerald-400"
+                    : "bg-neutral-700 text-neutral-400"
+                } rounded`}
+              />
+            )}
+            <span className="truncate">{row.label}</span>
+            <span className="ml-auto rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70">
+              {row.count}
+            </span>
+          </div>
+        </div>
+      );
+    }
+    const session = row.session;
+    return (
+      <div style={rowStyle} {...ariaAttributes} className="px-2">
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            const ctrlKey = e.ctrlKey || e.metaKey;
+            if (ctrlKey) {
+              setSelectedSessions((prev) => {
+                const n = new Set(prev);
+                if (n.has(session.id)) n.delete(session.id);
+                else n.add(session.id);
+                return n;
+              });
+              return;
+            }
+            onSelectSession(session.id);
+            setSelectedSessions(new Set());
+          }}
+          className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
+            session.active
+              ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
+              : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+          } ${focusedSessionId === session.id ? "border-indigo-500/50 ring-indigo-500/20" : ""} ${
+            selectedSessions.has(session.id) ? "bg-indigo-500/20 select-none" : ""
+          }`}
+        >
+          {session.active && <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />}
+          <div className="flex items-center justify-between mb-1 pl-1">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <AgentBrandIcon agentId={session.agentName} size={13} />
+              <span className="font-medium truncate text-[11px]">{session.title}</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${getStateBadge(session.state)}`} title={`Herdr State: ${getStateLabel(session.state)}`} />
+              <button onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }} className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition" aria-label="Delete session">
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 pl-1 font-mono">
+            <span className="flex items-center gap-1 truncate">
+              <svg className="w-2.5 h-2.5 text-worktree-sidebar-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="3" x2="6" y2="15"></line><line x1="18" y1="3" x2="18" y2="15"></line><path d="M4 21h16"></path><path d="M8 3h8"></path></svg>
+              {session.branch}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="text-[9px] bg-worktree-sidebar-border/50 border border-worktree-sidebar-border px-1.5 py-0.2 rounded">{session.agentName}</span>
+              <span className="text-[9px] text-worktree-sidebar-foreground/40">{getProjectName(session.project_path)}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // State badge colors
   const getStateBadge = (state: WorktreeSession["state"]) => {
@@ -250,122 +360,165 @@ export function SidebarAgentsList({
         </div>
       </div>
 
-      {/* Session List */}
-      <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
-        {groupedSessions.map((group) => (
-          <div key={group.label} className="space-y-1">
-            {/* Group Header */}
-            <div className="flex items-center gap-2 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-worktree-sidebar-foreground/50">
-              {group.state !== "project" && (
-                <span
-                  className={`inline-flex size-3 shrink-0 items-center justify-center ${
-                    group.state === "blocked"
-                      ? "bg-red-400/20 text-red-400"
-                      : group.state === "working"
-                      ? "bg-amber-400/20 text-amber-400"
-                      : group.state === "idle"
-                      ? "bg-emerald-400/20 text-emerald-400"
-                      : "bg-neutral-700 text-neutral-400"
-                  } rounded`}
-                />
-              )}
-              <span className="truncate">{group.label}</span>
-              <span className="ml-auto rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70">
-                {group.sessions.length}
-              </span>
-            </div>
-
-            {/* Session Cards */}
-            {group.sessions.map((session) => (
-              <div
-                key={session.id}
-                onClick={(e) => {
-                e.stopPropagation();
-                const ctrlKey = e.ctrlKey || e.metaKey;
-                
-                if (ctrlKey) {
-                  setSelectedSessions(prev => {
-                    const n = new Set(prev);
-                    if (n.has(session.id)) n.delete(session.id);
-                    else n.add(session.id);
-                    return n;
-                  });
-                  return;
-                }
-                
-                onSelectSession(session.id);
-                setSelectedSessions(new Set([session.id]));
-              }}
-                className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
-                  session.active
-                    ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
-                    : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
-                } ${
-                  focusedSessionId === session.id
-                    ? "border-indigo-500/50 ring-indigo-500/20"
-                    : ""
-                } ${
-                  selectedSessions.has(session.id)
-                    ? "bg-indigo-500/20 select-none"
-                    : ""
-                }`}
-              >
-                {session.active && (
-                  <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />
+      {/* Session List — virtualized when >30 rows (500+ sessions) */}
+      {useAgentVirtualization ? (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <List
+            rowCount={agentFlatRows.length}
+            rowHeight={getAgentRowHeight}
+            rowComponent={AgentVirtualRow}
+            // @ts-ignore
+            rowProps={{}}
+            style={{ height: "100%", width: "100%" }}
+            className="py-2"
+            overscanCount={8}
+          />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
+          {groupedSessions.map((group) => (
+            <div key={group.label} className="space-y-1">
+              {/* Group Header */}
+              <div className="flex items-center gap-2 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-worktree-sidebar-foreground/50">
+                {group.state !== "project" && (
+                  <span
+                    className={`inline-flex size-3 shrink-0 items-center justify-center ${
+                      group.state === "blocked"
+                        ? "bg-red-400/20 text-red-400"
+                        : group.state === "working"
+                        ? "bg-amber-400/20 text-amber-400"
+                        : group.state === "idle"
+                        ? "bg-emerald-400/20 text-emerald-400"
+                        : "bg-neutral-700 text-neutral-400"
+                    } rounded`}
+                  />
                 )}
-
-                <div className="flex items-center justify-between mb-1 pl-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <AgentBrandIcon agentId={session.agentName} size={13} />
-                    <span className="font-medium truncate text-[11px]">
-                      {session.title}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span
-                      className={`w-2 h-2 rounded-full shrink-0 ${getStateBadge(session.state)}`}
-                      title={`Herdr State: ${getStateLabel(session.state)}`}
-                    />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteSession(session.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"
-                      aria-label="Delete session"
-                    >
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 pl-1 font-mono">
-                  <span className="flex items-center gap-1 truncate">
-                    <svg className="w-2.5 h-2.5 text-worktree-sidebar-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="6" y1="3" x2="6" y2="15"></line>
-                      <line x1="18" y1="3" x2="18" y2="15"></line>
-                      <path d="M4 21h16"></path>
-                      <path d="M8 3h8"></path>
-                    </svg>
-                    {session.branch}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="text-[9px] bg-worktree-sidebar-border/50 border border-worktree-sidebar-border px-1.5 py-0.2 rounded">
-                      {session.agentName}
-                    </span>
-                    <span className="text-[9px] text-worktree-sidebar-foreground/40">
-                      {getProjectName(session.project_path)}
-                    </span>
-                  </span>
-                </div>
+                <span className="truncate">{group.label}</span>
+                <span className="ml-auto rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70">
+                  {group.sessions.length}
+                </span>
               </div>
-            ))}
+
+              {/* Session Cards */}
+              {group.sessions.map((session) => (
+                <div
+                  key={session.id}
+                  onClick={(e) => {
+                  e.stopPropagation();
+                  const ctrlKey = e.ctrlKey || e.metaKey;
+                  
+                  if (ctrlKey) {
+                    setSelectedSessions(prev => {
+                      const n = new Set(prev);
+                      if (n.has(session.id)) n.delete(session.id);
+                      else n.add(session.id);
+                      return n;
+                    });
+                    return;
+                  }
+                  
+                  onSelectSession(session.id);
+                  setSelectedSessions(new Set());
+                }}
+                  className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
+                    session.active
+                      ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
+                      : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+                  } ${
+                    focusedSessionId === session.id
+                      ? "border-indigo-500/50 ring-indigo-500/20"
+                      : ""
+                  } ${
+                    selectedSessions.has(session.id)
+                      ? "bg-indigo-500/20 select-none"
+                      : ""
+                  }`}
+                >
+                  {session.active && (
+                    <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />
+                  )}
+
+                  <div className="flex items-center justify-between mb-1 pl-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <AgentBrandIcon agentId={session.agentName} size={13} />
+                      <span className="font-medium truncate text-[11px]">
+                        {session.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${getStateBadge(session.state)}`}
+                        title={`Herdr State: ${getStateLabel(session.state)}`}
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteSession(session.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"
+                        aria-label="Delete session"
+                      >
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 pl-1 font-mono">
+                    <span className="flex items-center gap-1 truncate">
+                      <svg className="w-2.5 h-2.5 text-worktree-sidebar-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="6" y1="3" x2="6" y2="15"></line>
+                        <line x1="18" y1="3" x2="18" y2="15"></line>
+                        <path d="M4 21h16"></path>
+                        <path d="M8 3h8"></path>
+                      </svg>
+                      {session.branch}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-[9px] bg-worktree-sidebar-border/50 border border-worktree-sidebar-border px-1.5 py-0.2 rounded">
+                        {session.agentName}
+                      </span>
+                      <span className="text-[9px] text-worktree-sidebar-foreground/40">
+                        {getProjectName(session.project_path)}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Footer with batch delete — only for explicit multi-select */}
+      {selectedSessions.size > 1 && (
+        <div className="border-t border-red-500/20 bg-red-500/5 px-3 py-2 flex items-center justify-between text-[11px] shrink-0">
+          <span className="text-red-300 font-medium">{selectedSessions.size} selected</span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setSelectedSessions(new Set())}
+              className="px-2 py-1 rounded text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-foreground transition cursor-pointer"
+            >
+              Clear
+            </button>
+            <button
+              onClick={() => {
+                selectedSessions.forEach((id) => onDeleteSession(id));
+                setSelectedSessions(new Set());
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/20 transition cursor-pointer"
+            >
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Delete</span>
+            </button>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 
@@ -377,37 +530,69 @@ export function SidebarAgentsList({
 
       if (isInputFocused) return;
 
-      if (e.key === "ArrowDown") {
+      // Flatten grouped sessions for navigation
+      const allSessions = groupedSessions.flatMap((g) => g.sessions);
+
+      // Escape: clear focus + clear batch selection
+      if (e.key === "Escape") {
         e.preventDefault();
-        setFocusedSessionId(prev => {
-          if (prev === null) {
-            const firstId = sessions.length > 0 ? sessions[0].id : null;
-            if (firstId) onSelectNextSession?.("down");
-            return firstId;
-          }
-          const currentIdx = sessions.findIndex(s => s.id === prev);
-          if (currentIdx === -1) return prev;
-          const nextIdx = currentIdx + 1;
-          const nextId = nextIdx >= sessions.length ? null : sessions[nextIdx].id;
-          if (nextId) onSelectNextSession?.("down");
-          return nextId;
-        });
+        setFocusedSessionId(null);
+        setSelectedSessions(new Set());
         return;
       }
-      if (e.key === "ArrowUp") {
+
+      // Enter: activate focused session
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        setFocusedSessionId(prev => {
-          if (prev === null || sessions[0]?.id === prev) return null;
-          const currentIdx = sessions.findIndex(s => s.id === prev);
-          if (currentIdx <= 0) return null;
-          const prevId = sessions[currentIdx - 1].id;
-          if (prevId) onSelectPrevSession?.("up");
-          return prevId;
-        });
+        if (focusedSessionId) {
+          onSelectSession(focusedSessionId);
+        }
+        return;
+      }
+
+      // F2: Rename focused session
+      if (e.key === "F2" && focusedSessionId) {
+        e.preventDefault();
+        const session = sessions.find((s) => s.id === focusedSessionId);
+        if (session) {
+          const newTitle = window.prompt("Enter new session title:", session.title);
+          if (newTitle && newTitle.trim()) {
+            // The actual rename is handled by parent via onSessionContextMenu
+            // We just update local focus state here; parent handles persistence
+          }
+        }
+        return;
+      }
+
+      // Arrow navigation
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const direction = e.key === "ArrowDown" ? "down" : "up";
+        const currentFocused = focusedSessionId;
+        
+        if (!currentFocused) {
+          // No focus - start with first item
+          const first = allSessions[0];
+          if (first) {
+            setFocusedSessionId(first.id);
+            onSelectNextSession?.(direction);
+          }
+          return;
+        }
+
+        const currentIdx = allSessions.findIndex((s) => s.id === currentFocused);
+        if (currentIdx === -1) return;
+
+        const nextIdx = direction === "down" ? currentIdx + 1 : currentIdx - 1;
+        if (nextIdx < 0 || nextIdx >= allSessions.length) return;
+
+        const next = allSessions[nextIdx];
+        setFocusedSessionId(next.id);
+        onSelectNextSession?.(direction);
         return;
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [sessions, onSelectNextSession, onSelectPrevSession, isModalOpen]);
+  }, [sessions, groupedSessions, onSelectNextSession, onSelectPrevSession, onSelectSession, isModalOpen, focusedSessionId]);
 }

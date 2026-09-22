@@ -56,6 +56,8 @@ import {
   FolderOpen,
   Sliders,
   MoreHorizontal,
+  Hash,
+  Terminal,
 } from "lucide-react";
 import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
@@ -1940,7 +1942,9 @@ export default function App() {
       y: e.clientY,
       items: [
         { label: "Workspace", isLabel: true, onClick: () => {} },
-        { label: "Update Session...", icon: <Pencil className="w-3.5 h-3.5" />, onClick: () => {
+        { label: "Split Terminal Right", icon: <SplitSquareVertical className="w-3.5 h-3.5" />, shortcut: "Ctrl+Shift+D", onClick: () => handleSplitTerminal("horizontal") },
+        { label: "Split Terminal Down", icon: <Terminal className="w-3.5 h-3.5" />, shortcut: "Ctrl+Shift+E", onClick: () => handleSplitTerminal("vertical") },
+        { label: "Rename", icon: <Pencil className="w-3.5 h-3.5" />, shortcut: "F2", onClick: () => {
             const newTitle = window.prompt("Enter new session title:", session.title);
             if (newTitle && newTitle.trim()) {
               const updated = { ...session, title: newTitle.trim() };
@@ -1953,6 +1957,8 @@ export default function App() {
         { label: `Copy Branch: ${session.branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.branch).catch(console.error) },
         { label: "Copy Path", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.project_path).catch(console.error) },
         { label: "Copy Session Title", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.title).catch(console.error) },
+        { label: "Copy Session ID", icon: <Hash className="w-3.5 h-3.5" />, shortcut: "Alt+C", onClick: () => navigator.clipboard.writeText(session.id).catch(console.error) },
+        { label: "Copy Terminal ID", icon: <Terminal className="w-3.5 h-3.5" />, shortcut: "Alt+T", onClick: () => navigator.clipboard.writeText(session.id).catch(console.error) },
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(session.id) },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(session.id) },
         { label: "Duplicate Session", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => {
