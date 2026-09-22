@@ -101,6 +101,13 @@ export type HydraSettings = {
   };
   // Open In Apps — copia Orca shared/open-in-applications.ts
   open_in_applications?: OpenInApplication[];
+  // Theme-parity additions (Orca-faithful)
+  editor_font_family?: string;
+  editor_minimap_enabled?: boolean;
+  editor_word_wrap?: boolean;
+  terminal_quick_commands?: unknown[];
+  terminal_scope_history_by_worktree?: boolean;
+  status_bar_items?: string[];
 };
 
 export const OPEN_IN_APPLICATIONS_MAX = 8;
@@ -161,6 +168,12 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   terminal_padding_y: 4,
   window_background_blur: false,
   terminal_mouse_hide_while_typing: false,
+  editor_font_family: undefined,
+  editor_minimap_enabled: true,
+  editor_word_wrap: true,
+  terminal_quick_commands: undefined,
+  terminal_scope_history_by_worktree: true,
+  status_bar_items: ["resource-usage", "ports", "ssh", "claude", "codex"],
   terminal_inactive_pane_opacity: 0.6,
   terminal_active_pane_opacity: 1,
   terminal_pane_opacity_transition_ms: 140,

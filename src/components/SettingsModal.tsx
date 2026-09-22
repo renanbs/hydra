@@ -1,26 +1,18 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
 import {
-  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Upload, Trash2, Info, ChevronDown, ChevronRight, RotateCcw, Minus, Plus, Palette, PanelLeft
+  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Trash2, Info, ChevronDown, RotateCcw
 } from "lucide-react";
 import { getOpenInAppPresets, isOpenInAppPresetAdded, OpenInApplicationIcon } from "../lib/open-in-app-catalog";
 import type { OpenInApplication } from "../shared/settings-types";
 import { DEFAULT_OPEN_IN_APPLICATIONS } from "../shared/settings-types";
 import { applyDocumentTheme } from "../lib/document-theme";
 import { getSystemPrefersDark } from "../lib/terminal-theme";
-import {
-  getAvailableTerminalThemeOptions,
-  resolveEffectiveTerminalAppearance,
-  DEFAULT_TERMINAL_THEME_DARK,
-  DEFAULT_TERMINAL_THEME_LIGHT,
-} from "../lib/terminal-theme";
+import { resolveEffectiveTerminalAppearance } from "../lib/terminal-theme";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, type HydraSettings } from "../shared/settings-types";
-import { FontAutocomplete } from "./settings/FontAutocomplete";
 import { normalizeTerminalCustomThemes } from "../shared/terminal-custom-themes";
-import { resolveLeftSidebarStyleVariables } from "../lib/left-sidebar-appearance";
-import type { ITheme } from "@xterm/xterm";
-import type { TerminalColorOverrides } from "../shared/terminal-color-overrides";
+import { AppearancePane } from "./settings/AppearancePane";
 
 export type { HydraSettings };
 
@@ -60,413 +52,8 @@ function SegmentedControl({ value, onChange, options }: { value: string; onChang
   );
 }
 
-function SettingsNumberRow({
-  label,
-  description,
-  defaultValue,
-  value,
-  min,
-  max,
-  step = 1,
-  suffix,
-  onChange,
-}: {
-  label: string;
-  description?: string;
-  defaultValue?: number | string;
-  value: number;
-  min?: number;
-  max?: number;
-  step?: number;
-  suffix?: string;
-  onChange: (val: number) => void;
-}) {
-  const [draft, setDraft] = useState(String(value));
-  useEffect(() => {
-    setDraft(String(value));
-  }, [value]);
-  const commit = () => {
-    const n = Number(draft);
-    if (Number.isFinite(n)) {
-      const clamped = min !== undefined && max !== undefined ? Math.min(max, Math.max(min, n)) : min !== undefined ? Math.max(min, n) : n;
-      onChange(clamped);
-      setDraft(String(clamped));
-    } else {
-      setDraft(String(value));
-    }
-  };
-  return (
-    <div className="flex items-center justify-between gap-4 py-2.5">
-      <div className="space-y-0.5 pr-4">
-        <div className="text-[13px] font-medium text-foreground">{label}</div>
-        {(description || defaultValue !== undefined) && (
-          <div className="text-[12px] leading-relaxed text-muted-foreground">
-            {description}
-            {defaultValue !== undefined && (
-              <span className="text-muted-foreground/60">
-                {description ? " · " : ""}Default: {defaultValue}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <input
-          type="number"
-          min={min}
-          max={max}
-          step={step}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => { if (e.key === "Enter") commit(); }}
-          className="w-24 bg-background text-foreground border border-input rounded-md px-3 py-1.5 text-[13px] font-mono tabular-nums text-right focus:outline-none focus:ring-1 focus:ring-ring"
-        />
-        {suffix && <span className="text-[12px] text-muted-foreground w-8 shrink-0">{suffix}</span>}
-      </div>
-    </div>
-  );
-}
-
-function ColorOverridesSection({
-  settings,
-  onChange,
-}: {
-  settings: HydraSettings;
-  onChange: (overrides: TerminalColorOverrides | undefined) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const current = settings.terminal_color_overrides ?? {};
-  type ColorKey = keyof TerminalColorOverrides;
-
-  const updateColor = (key: ColorKey, val: string) => {
-    const next = { ...current, [key]: val || undefined };
-    onChange(next);
-  };
-
-  const clearAll = () => {
-    onChange(undefined);
-  };
-
-  const hasAny = Object.values(current).some(Boolean);
-
-  const baseColors: { key: ColorKey; label: string; def: string }[] = [
-    { key: "foreground", label: "Foreground", def: "#ffffff" },
-    { key: "background", label: "Background", def: "#000000" },
-    { key: "cursor", label: "Cursor", def: "#ffffff" },
-    { key: "cursorAccent", label: "Cursor Text", def: "#000000" },
-    { key: "selectionBackground", label: "Selection Background", def: "#5a7898" },
-  ];
-
-  const ansiColors: { key: ColorKey; label: string }[] = [
-    { key: "black", label: "Black" },
-    { key: "red", label: "Red" },
-    { key: "green", label: "Green" },
-    { key: "yellow", label: "Yellow" },
-    { key: "blue", label: "Blue" },
-    { key: "magenta", label: "Magenta" },
-    { key: "cyan", label: "Cyan" },
-    { key: "white", label: "White" },
-    { key: "brightBlack", label: "Bright Black" },
-    { key: "brightRed", label: "Bright Red" },
-    { key: "brightGreen", label: "Bright Green" },
-    { key: "brightYellow", label: "Bright Yellow" },
-    { key: "brightBlue", label: "Bright Blue" },
-    { key: "brightMagenta", label: "Bright Magenta" },
-    { key: "brightCyan", label: "Bright Cyan" },
-    { key: "brightWhite", label: "Bright White" },
-  ];
-
-  return (
-    <div className="pt-2">
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-1.5 py-1 text-[13px] font-medium text-foreground hover:text-foreground/80 cursor-pointer"
-        >
-          <ChevronRight className={`size-3.5 transition-transform duration-200 ${open ? "rotate-90" : ""}`} />
-          <span>Color Overrides</span>
-        </button>
-        {hasAny && (
-          <button
-            type="button"
-            onClick={clearAll}
-            className="text-[11px] text-muted-foreground hover:text-destructive cursor-pointer"
-          >
-            Reset Overrides
-          </button>
-        )}
-      </div>
-      {open && (
-        <div className="mt-3 ml-4 p-3 rounded-lg border border-border bg-muted/20 space-y-4">
-          <div className="space-y-2">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Base Colors</div>
-            <div className="grid grid-cols-2 gap-3">
-              {baseColors.map(c => (
-                <div key={c.key} className="flex items-center justify-between gap-2">
-                  <span className="text-[12px] text-foreground">{c.label}</span>
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="color"
-                      value={current[c.key] ?? c.def}
-                      onChange={e => updateColor(c.key, e.target.value)}
-                      className="h-6 w-6 rounded border border-border p-0.5 bg-background cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={current[c.key] ?? ""}
-                      placeholder={c.def}
-                      onChange={e => updateColor(c.key, e.target.value)}
-                      className="w-20 bg-background border border-input rounded px-1.5 py-0.5 font-mono text-[11px] text-foreground"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="h-px bg-border/40" />
-          <div className="space-y-2">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">ANSI Colors</div>
-            <div className="grid grid-cols-2 gap-2">
-              {ansiColors.map(c => (
-                <div key={c.key} className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] text-muted-foreground">{c.label}</span>
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="color"
-                      value={current[c.key] ?? "#888888"}
-                      onChange={e => updateColor(c.key, e.target.value)}
-                      className="h-5 w-5 rounded border border-border p-0.5 bg-background cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={current[c.key] ?? ""}
-                      placeholder="#..."
-                      onChange={e => updateColor(c.key, e.target.value)}
-                      className="w-20 bg-background border border-input rounded px-1 py-0.5 font-mono text-[10px] text-foreground"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function UIZoomControl({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const percent = Math.round(value * 100);
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => onChange(Math.max(0.7, Math.round((value - 0.1) * 10) / 10))}
-        disabled={value <= 0.7}
-        className="h-8 w-8 inline-flex items-center justify-center rounded-md border bg-background text-foreground hover:bg-muted disabled:opacity-40 transition cursor-pointer"
-        title="Zoom out"
-      >
-        <Minus className="size-3.5" />
-      </button>
-      <span className="w-14 text-center font-mono text-[13px] font-medium text-foreground">
-        {percent}%
-      </span>
-      <button
-        type="button"
-        onClick={() => onChange(Math.min(1.5, Math.round((value + 0.1) * 10) / 10))}
-        disabled={value >= 1.5}
-        className="h-8 w-8 inline-flex items-center justify-center rounded-md border bg-background text-foreground hover:bg-muted disabled:opacity-40 transition cursor-pointer"
-        title="Zoom in"
-      >
-        <Plus className="size-3.5" />
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange(1.0)}
-        disabled={value === 1.0}
-        className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border bg-background text-[12px] text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-40 transition cursor-pointer"
-        title="Reset zoom to 100%"
-      >
-        <RotateCcw className="size-3" />
-        <span>Reset</span>
-      </button>
-    </div>
-  );
-}
-
-function AppearanceSection({
-  id,
-  icon: Icon,
-  title,
-  summary,
-  open,
-  onToggle,
-  children,
-}: {
-  id: string;
-  icon: React.ElementType;
-  title: string;
-  summary?: string;
-  open: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) {
-  const contentId = `appearance-section-${id}`;
-  return (
-    <div className={`overflow-hidden rounded-xl border bg-card transition-colors ${open ? "border-ring/40 shadow-xs" : "border-border/60"}`}>
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={contentId}
-        onClick={onToggle}
-        className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-colors hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 cursor-pointer"
-      >
-        <span className="grid size-8 shrink-0 place-items-center rounded-md bg-secondary text-foreground [&_svg]:size-4">
-          <Icon className="size-4" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[14px] font-semibold text-foreground">{title}</span>
-          {!open && summary ? (
-            <span className="block truncate text-[12px] text-muted-foreground">{summary}</span>
-          ) : null}
-        </span>
-        <ChevronDown
-          className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180 text-foreground" : ""}`}
-        />
-      </button>
-      {open && (
-        <div id={contentId} role="region" className="border-t border-border/50 px-4 pt-4 pb-5 space-y-5">
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AppearanceAdvancedDisclosure({
-  label = "Advanced",
-  children,
-}: {
-  label?: string;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="mt-3 pt-2">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 py-1 text-[13px] font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-      >
-        <ChevronRight
-          className={`size-3.5 transition-transform duration-200 ${open ? "rotate-90 text-foreground" : ""}`}
-        />
-        <span>{label}</span>
-      </button>
-      {open && <div className="ml-4 pt-3 space-y-4 border-l border-border/40 pl-3">{children}</div>}
-    </div>
-  );
-}
-
 // Preview
-function MiniTerminalPreview({
-  settings,
-  target,
-  showDivider = false,
-}: {
-  settings: HydraSettings;
-  target: "dark" | "light";
-  showDivider?: boolean;
-}) {
-  const sysDark = target === "dark";
-  const previewSettings = { ...settings, theme: target } as HydraSettings;
-  const appearance = resolveEffectiveTerminalAppearance(previewSettings, sysDark);
-  const theme = appearance.theme as ITheme | null;
-  if (!theme) return null;
-  const ansi = [theme.black, theme.red, theme.green, theme.yellow, theme.blue, theme.magenta, theme.cyan, theme.white, theme.brightBlack, theme.brightRed, theme.brightGreen, theme.brightYellow, theme.brightBlue, theme.brightMagenta, theme.brightCyan, theme.brightWhite];
-  const dividerW = Math.max(1, settings.terminal_divider_thickness_px ?? 1);
-  return (
-    <div className="rounded-xl border border-border overflow-hidden bg-card">
-      <div className="px-3 py-2 flex items-center justify-between text-[12px] border-b border-border" style={{ background: theme.background, color: theme.foreground }}>
-        <span className="font-medium">{target === "dark" ? "Dark Preview" : "Light Preview"} — {appearance.themeName}</span>
-        <span className="text-[11px] opacity-60">divider {appearance.dividerColor} ({dividerW}px)</span>
-      </div>
-      <div className="p-4 space-y-3" style={{ background: theme.background, color: theme.foreground, fontFamily: settings.terminal_font_family, fontSize: 11 }}>
-        <div className="flex gap-1.5 flex-wrap">{ansi.map((c, i) => (<span key={i} className="w-5 h-5 rounded border border-white/10" style={{ background: c ?? "#000" }} />))}</div>
-        {showDivider ? (
-          <div className="grid grid-cols-2 gap-0 border rounded overflow-hidden" style={{ borderColor: appearance.dividerColor }}>
-            <div className="p-3 font-mono text-[11px] leading-relaxed border-r" style={{ borderColor: appearance.dividerColor, borderWidth: `${dividerW}px` }}>
-              <div><span style={{ color: theme.green }}>$</span> hydra --help</div>
-              <div className="opacity-80">Hydra ADE — Fleet Orchestrator</div>
-              <div><span style={{ color: theme.cyan }}>✔</span> cargo test <span className="opacity-60">0.42s</span></div>
-            </div>
-            <div className="p-3 font-mono text-[11px] leading-relaxed" style={{ opacity: settings.terminal_inactive_pane_opacity ?? 0.9 }}>
-              <div><span style={{ color: theme.yellow }}>$</span> git diff</div>
-              <div style={{ color: theme.red }}>- const padding = 2;</div>
-              <div style={{ color: theme.green }}>+ const padding = 4;</div>
-            </div>
-          </div>
-        ) : (
-          <div className="font-mono text-[11px] leading-relaxed space-y-1">
-            <div><span style={{ color: theme.green }}>$</span> hydra --help</div>
-            <div className="opacity-80">Hydra ADE — Autonomous Development Environment</div>
-            <div><span style={{ color: theme.cyan }}>✔</span> cargo test --workspace <span className="opacity-60">0.42s</span></div>
-          </div>
-        )}
-        <div className="h-px w-full" style={{ background: appearance.dividerColor }} />
-        <div className="text-[10px] opacity-60 flex items-center justify-between">
-          <span>font {settings.terminal_font_family} · {settings.terminal_font_size}px · weight {settings.terminal_font_weight}/{settings.terminal_font_weight_bold}</span>
-          <span>cursor: {settings.terminal_cursor_style ?? "block"} ({settings.terminal_cursor_opacity ?? 1})</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ThemePicker({ selectedTheme, settings, query, onQueryChange, onSelect }: { selectedTheme: string; settings: HydraSettings; query: string; onQueryChange: (q: string) => void; onSelect: (v: string) => void }) {
-  const options = useMemo(() => getAvailableTerminalThemeOptions(settings), [settings.terminal_custom_themes]);
-  const filtered = useMemo(() => { const q = query.trim().toLowerCase(); if (!q) return options; return options.filter((o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)); }, [options, query]);
-  const builtin = filtered.filter((o) => o.group === "built-in");
-  const imported = filtered.filter((o) => o.group === "imported");
-  return (
-    <div className="space-y-2">
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <input value={query} onChange={(e) => onQueryChange(e.target.value)} placeholder="Search themes… (e.g. Tango, Ghostty, Tokyo Night)" className="w-full bg-background border rounded-md pl-9 pr-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring" />
-      </div>
-      <div className="max-h-[200px] overflow-y-auto rounded-lg border bg-background divide-y">
-        {imported.length > 0 && (
-          <div>
-            <div className="px-3 py-1.5 text-[11px] uppercase tracking-wider font-medium text-emerald-600 bg-muted/50">Imported ({imported.length})</div>
-            {imported.map((o) => (
-              <button key={o.value} onClick={() => onSelect(o.value)} className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted ${selectedTheme === o.value ? "bg-emerald-500/10 border-l-2 border-emerald-500" : "border-l-2 border-transparent"}`}>
-                <span className="w-3.5 h-3.5 rounded border shrink-0" style={{ background: (o.previewTheme as ITheme)?.background ?? "#282c34" }} />
-                <span className="flex-1 text-[13px] truncate">{o.label}</span>
-                {o.sourceLabel && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{o.sourceLabel}</span>}
-                {selectedTheme === o.value && <Check className="size-3.5 text-emerald-600 shrink-0" />}
-              </button>
-            ))}
-          </div>
-        )}
-        <div>
-          <div className="px-3 py-1.5 text-[11px] uppercase tracking-wider font-medium text-muted-foreground bg-muted/30">Built-in ({builtin.length})</div>
-          {builtin.map((o) => (
-            <button key={o.value} onClick={() => onSelect(o.value)} className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted ${selectedTheme === o.value ? "bg-emerald-500/10 border-l-2 border-emerald-500" : "border-l-2 border-transparent"}`}>
-              <span className="w-3.5 h-3.5 rounded border shrink-0" style={{ background: (o.previewTheme as ITheme)?.background ?? "#000" }} />
-              <span className="flex-1 text-[13px] truncate">{o.label}</span>
-              {selectedTheme === o.value && <Check className="size-3.5 text-emerald-600 shrink-0" />}
-            </button>
-          ))}
-        </div>
-        {filtered.length === 0 && <div className="px-3 py-8 text-center text-sm text-muted-foreground">No themes match “{query}”</div>}
-      </div>
-      <div className="text-[11px] text-muted-foreground">Selected: <span className="font-mono text-foreground">{selectedTheme}</span></div>
-    </div>
-  );
-}
+// Inline picker delegated to fiel components: src/components/settings/TerminalThemePicker.tsx and TerminalSettingsPreview.tsx (Orca parity)
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -484,7 +71,6 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const [shortcutFilter, setShortcutFilter] = useState("");
   const [themeSearch, setThemeSearch] = useState("");
   const [terminalTarget, setTerminalTarget] = useState<"dark" | "light">("dark");
-  const [showPreviewDivider, setShowPreviewDivider] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [importError, setImportError] = useState<string | null>(null);
   const [previewTerminalFont, setPreviewTerminalFont] = useState<string | null>(null);
@@ -499,18 +85,13 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const [contrastDraft, setContrastDraft] = useState<number>(4.5);
   const [terminalSessions, setTerminalSessions] = useState<string[]>([]);
   const [terminalSessionsLoading, setTerminalSessionsLoading] = useState(false);
-  const [openAppearanceSections, setOpenAppearanceSections] = useState<Record<string, boolean>>({
-    interface: true,
-    terminal: true,
-    window: true,
-  });
-  const toggleAppearanceSection = (id: string) => {
-    setOpenAppearanceSections((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-  const leftSidebarStyle = useMemo(() => {
-    const sysDark = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)").matches : true;
-    return resolveLeftSidebarStyleVariables(settings, sysDark) as React.CSSProperties | undefined;
-  }, [settings]);
+  const [ghosttyPreview, setGhosttyPreview] = useState<any>(null);
+  const [ghosttyLoading, setGhosttyLoading] = useState(false);
+  const [warpPreview, setWarpPreview] = useState<any>(null);
+  const [warpLoading, setWarpLoading] = useState(false);
+  const [importedHighlightSignal, setImportedHighlightSignal] = useState(0);
+  const [typographyAdvancedOpen, setTypographyAdvancedOpen] = useState(false);
+  const [colorOverridesExpanded, setColorOverridesExpanded] = useState(false);
   const terminalFontSuggestions = ["JetBrains Mono","Fira Code","Cascadia Code","SF Mono","Menlo","Consolas","Liberation Mono","DejaVu Sans Mono","Source Code Pro","Ubuntu Mono","Hack","Iosevka","Geist Mono","Berkeley Mono","JetBrainsMono Nerd Font"];
   // Live preview for interface font (hover in FontAutocomplete)
   useEffect(() => {
@@ -522,7 +103,6 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
       document.body.style.fontFamily = settings.app_font_family;
     }
   }, [previewAppFont, settings.app_font_family]);
-  const interfaceFontSuggestions = ["Geist","Inter","SF Pro Text","Segoe UI","Roboto","Helvetica","Arial","System UI","-apple-system","BlinkMacSystemFont","Ubuntu","Cantarell","Noto Sans"];
 
   const refreshTerminalSessions = () => {
     setTerminalSessionsLoading(true);
@@ -530,26 +110,10 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   };
   useEffect(() => {
     if (isOpen) {
-      invoke<HydraSettings>("get_settings").then((s) => {
-        if (s) {
-          const n = normalizeHydraSettings(s);
-          setSettings(n);
-          setTerminalTarget(resolveEffectiveTerminalAppearance(n, getSystemPrefersDark()).mode);
-          setScrollbackDraft(String(n.terminal_scrollback_rows));
-          setContrastDraft(n.terminal_minimum_contrast_ratio ?? 4.5);
-          const isPreset = ([5000, 10000, 25000, 50000] as readonly number[]).includes(n.terminal_scrollback_rows);
-          setScrollbackMode(isPreset ? "preset" : "custom");
-        }
-      }).catch(console.error);
+      invoke<HydraSettings>("get_settings").then((s) => { if (s) { const n = normalizeHydraSettings(s); setSettings(n); setTerminalTarget(resolveEffectiveTerminalAppearance(n, getSystemPrefersDark()).mode); setScrollbackDraft(String(n.terminal_scrollback_rows)); setContrastDraft(n.terminal_minimum_contrast_ratio ?? 4.5); const isPreset=[5000,10000,25000,50000].includes(n.terminal_scrollback_rows as any); setScrollbackMode(isPreset ? "preset" : "custom"); }}).catch(console.error);
       refreshTerminalSessions();
-      invoke<Array<{ id?: string; name?: string; label?: string }>>("list_available_agents").then((a) => {
-        if (Array.isArray(a)) {
-          setAvailableAgents(a.map((x) => ({ id: x.id ?? x.name ?? "agent", label: x.label ?? x.name ?? "Agent" })));
-        }
-      }).catch(()=>{});
-      invoke<Array<{ id: string; label: string; path: string }>>("list_available_shells").then((s)=>{
-        if (Array.isArray(s)) setAvailableShells(s.map((x)=>({id:x.id, label:x.label, path:x.path})));
-      }).catch(()=>{});
+      invoke<{ id: string; label: string }[]>("list_available_agents").then((a) => { if (Array.isArray(a)) setAvailableAgents(a.map((x: any) => ({ id: x.id ?? x.name ?? x, label: x.label ?? x.name ?? x}))); }).catch(()=>{});
+      invoke<{ id: string; label: string; path: string }[]>("list_available_shells").then((s)=>{ if(Array.isArray(s)) setAvailableShells(s.map((x:any)=>({id:x.id, label:x.label, path:x.path}))); }).catch(()=>{});
       invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
     }
   }, [isOpen]);
@@ -571,11 +135,6 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
     onLiveChange?.(next);
     if (next.theme !== settings.theme) { applyDocumentTheme(next.theme); try { localStorage.setItem("hydra:theme", next.theme); } catch {}}
   };
-  const handleThemeChange = (t: HydraSettings["theme"]) => {
-    const next = { ...settings, theme: t };
-    setSettingsLive(next);
-  };
-
   if (!isOpen) return null;
 
   const handleSave = () => {
@@ -601,23 +160,91 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
       setSettingsLive({ ...settings, terminal_custom_themes: nextThemes });
     } catch (e) { setImportError(String(e)); }
   };
+  const handleGhosttyPreview = async () => {
+    setGhosttyLoading(true); setImportError(null);
+    try {
+      const res: any = await invoke("preview_ghostty_import");
+      setGhosttyPreview(res);
+      if (!res.found) setImportError(res.error ?? "Ghostty config not found at ~/.config/ghostty/config");
+    } catch (e: any) { setImportError(String(e)); }
+    finally { setGhosttyLoading(false); }
+  };
+  const handleApplyGhostty = async () => {
+    if (!ghosttyPreview?.found) return;
+    const overrides = ghosttyPreview.diff?.terminalColorOverrides;
+    if (overrides) {
+      const merged = { ...(settings.terminal_color_overrides ?? {}), ...overrides };
+      setSettingsLive({ ...settings, terminal_color_overrides: merged } as HydraSettings);
+    }
+    setGhosttyPreview(null);
+  };
+  const handleWarpPreview = async () => {
+    setWarpLoading(true); setImportError(null);
+    try {
+      // Orca fiel: first try Warp YAML file picker (multi), then folder picker, then fallback to ~/.warp/themes
+      const filePicked = await dialogOpen({ multiple: true, filters: [{ name: "Warp theme YAML", extensions: ["yaml", "yml"] }] } as any).catch(()=>null);
+      if (Array.isArray(filePicked) && filePicked.length > 0) {
+        const allThemes: any[] = [];
+        const allSkipped: any[] = [];
+        for (const fp of filePicked.slice(0, 200)) {
+          const res: any = await invoke("preview_warp_themes", { path: fp });
+          if (res.themes) allThemes.push(...res.themes);
+          if (res.skippedFiles) allSkipped.push(...res.skippedFiles);
+        }
+        // Dedup ids — Orca uses content hash discriminator for manual picks
+        const seen = new Set<string>();
+        for (const t of allThemes) {
+          let id = t.id as string;
+          const base = id;
+          let n = 1;
+          while (seen.has(id)) { id = `${base}-${n++}`; }
+          if (id !== (t.id as string)) { t.id = id; (t as any).selectionValue = `custom:${id}`; }
+          seen.add(id);
+        }
+        const res = { found: allThemes.length > 0, sourceLabel: filePicked.length === 1 ? filePicked[0] : "Selected Warp themes", themes: allThemes.slice(0, 200), skippedFiles: allSkipped, error: allThemes.length === 0 ? "No valid Warp YAML found" : undefined };
+        setWarpPreview(res);
+        if (!res.found) setImportError(res.error ?? "No valid Warp YAML found");
+        return;
+      }
+      if (typeof filePicked === "string" && filePicked) {
+        const res: any = await invoke("preview_warp_themes", { path: filePicked });
+        setWarpPreview(res);
+        if (!res.found) setImportError(res.error ?? "No Warp themes found");
+        return;
+      }
+      const folderPicked = await dialogOpen({ directory: true, multiple: false } as any).catch(()=>null);
+      const pathArg = typeof folderPicked === "string" ? folderPicked : null;
+      const res: any = await invoke("preview_warp_themes", { path: pathArg });
+      setWarpPreview(res);
+      if (!res.found) setImportError(res.error ?? "No Warp themes found");
+    } catch (e: any) { setImportError(String(e)); }
+    finally { setWarpLoading(false); }
+  };
+  const handleApplyWarpThemes = (selectedIds: string[]) => {
+    if (!warpPreview?.themes) return;
+    const toAdd = warpPreview.themes.filter((t: any) => selectedIds.includes(t.id));
+    if (toAdd.length===0) return;
+    const next = [...normalizeTerminalCustomThemes(settings.terminal_custom_themes), ...toAdd].slice(-200);
+    setSettingsLive({ ...settings, terminal_custom_themes: next });
+    setWarpPreview(null);
+    setImportedHighlightSignal((s) => s + 1);
+  };
 
-  const isLightTarget = terminalTarget === "light";
-  const matchDarkMode = !settings.terminal_use_separate_light_theme;
-  const showCustomControls = !(isLightTarget && matchDarkMode);
+  // target handled fiel inside TerminalThemeCatalogSection (Orca parity)
+  void terminalTarget;
 
-  // Groups: Orca-faithful (Setup → Interface → Workspace → Capabilities → Privacy)
-  const navGroups: { id: string; title: string; items: { id: HydraNavId; label: string; icon: React.ElementType; badge?: string }[] }[] = [
+  // Groups: Orca-lite coherent (Setup → Interface → Workspace → Capabilities → Privacy) — dedup workspace_dir, unificado Terminal
+  const navGroups: { id: string; title: string; items: { id: HydraNavId; label: string; icon: any; badge?: string }[] }[] = [
     { id: "setup", title: "Setup", items: [
       { id: "general", label: "General", icon: Sliders },
     ]},
     { id: "interface", title: "Interface", items: [
-      { id: "appearance", label: "Appearance", icon: Palette },
+      { id: "appearance", label: "Appearance", icon: AppWindow },
       { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
     ]},
     { id: "workspace", title: "Workspace", items: [
       { id: "git", label: "Workspace & Git", icon: FolderGit2 },
-      { id: "terminal", label: "Terminal Execution", icon: TerminalSquare },
+      { id: "terminal", label: "Terminal", icon: TerminalSquare },
     ]},
     { id: "capabilities", title: "AI Capabilities", items: [
       { id: "agents", label: "Agents", icon: Bot },
@@ -637,10 +264,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
     <div className="fixed left-0 right-0 bottom-0 top-[36px] z-50 flex flex-col bg-background border-t border-border">
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar: 280px worktree-sidebar */}
-        <aside
-          className="flex w-[280px] shrink-0 flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar"
-          style={leftSidebarStyle}
-        >
+        <aside className="flex w-[280px] shrink-0 flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar">
           <div className="border-b border-worktree-sidebar-border px-3 py-3">
             <button onClick={onClose} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[13px] text-muted-foreground hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-accent-foreground transition">
               <ArrowLeft className="size-4" /> Back to app
@@ -686,13 +310,13 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
           <div className="flex items-center justify-between border-b px-8 py-4">
             <h2 className="text-[15px] font-semibold flex items-center gap-2">
               {activeId==="general" && <><Sliders className="size-4 text-emerald-500" /> General</>}
-              {activeId==="appearance" && <><Palette className="size-4 text-purple-500" /> Appearance</>}
+              {activeId==="appearance" && <><AppWindow className="size-4 text-purple-500" /> Appearance</>}
               {activeId==="agents" && <><Bot className="size-4 text-emerald-500" /> Agents</>}
               {activeId==="input" && <><TextCursorInput className="size-4 text-blue-500" /> Input</>}
               {activeId==="shortcuts" && <><Keyboard className="size-4 text-amber-500" /> Shortcuts</>}
               {activeId==="security" && <><Shield className="size-4 text-red-500" /> Security & Gate</>}
               {activeId==="git" && <><FolderGit2 className="size-4" /> Workspace & Git</>}
-              {activeId==="terminal" && <><TerminalSquare className="size-4 text-emerald-500" /> Terminal Execution</>}
+              {activeId==="terminal" && <><TerminalSquare className="size-4 text-emerald-500" /> Terminal</>}
             </h2>
             <button onClick={onClose} className="rounded-md p-1.5 hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
           </div>
@@ -719,8 +343,8 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                         </div>
                         <div className="relative">
                           <select
-                            value={settings.ctrl_tab_order_mode ?? "mru"}
-                            onChange={(e)=> setSettingsLive({ ...settings, ctrl_tab_order_mode: e.target.value as "mru" | "lru" })}
+                            value={(settings as any).ctrl_tab_order_mode ?? "mru"}
+                            onChange={(e)=> setSettingsLive({ ...settings, ctrl_tab_order_mode: e.target.value as any })}
                             className="appearance-none bg-background border rounded-md pl-3 pr-8 py-2 text-[13px] min-w-[160px] focus:outline-none focus:ring-2 focus:ring-ring"
                           >
                             <option value="mru">Most recent</option>
@@ -738,11 +362,11 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                         <button
                           type="button"
                           role="switch"
-                          aria-checked={Boolean(settings.confirm_close_pinned_tab ?? true)}
-                          onClick={()=> setSettingsLive({ ...settings, confirm_close_pinned_tab: !(settings.confirm_close_pinned_tab ?? true) })}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${(settings.confirm_close_pinned_tab ?? true) ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}
+                          aria-checked={Boolean((settings as any).confirm_close_pinned_tab ?? true)}
+                          onClick={()=> setSettingsLive({ ...settings, confirm_close_pinned_tab: !((settings as any).confirm_close_pinned_tab ?? true)} as any)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${((settings as any).confirm_close_pinned_tab ?? true) ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}
                         >
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${(settings.confirm_close_pinned_tab ?? true) ? "translate-x-4" : "translate-x-0.5"}`} />
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${((settings as any).confirm_close_pinned_tab ?? true) ? "translate-x-4" : "translate-x-0.5"}`} />
                         </button>
                       </div>
                     </div>
@@ -751,487 +375,34 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                 </div>
               )}
               {activeId==="appearance" && (
-                <div className="space-y-6">
-                  <div className="space-y-1">
-                    <h3 className="text-[20px] font-semibold tracking-tight">Appearance</h3>
-                    <p className="text-[13px] text-muted-foreground">Theme, zoom, typography, terminal appearance, and workspace sidebars.</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Section 1: Interface */}
-                    <AppearanceSection
-                      id="interface"
-                      icon={AppWindow}
-                      title="Interface"
-                      summary={`${settings.theme === "system" ? "System" : settings.theme === "dark" ? "Dark" : "Light"} · ${Math.round((settings.ui_zoom ?? 1) * 100)}% · ${(settings.app_font_family || "Geist").split(",")[0].trim().replace(/['"]/g, "")}`}
-                      open={openAppearanceSections.interface}
-                      onToggle={() => toggleAppearanceSection("interface")}
-                    >
-                      <div className="space-y-5 divide-y divide-border/40">
-                        <div className="flex items-center justify-between gap-4 pt-1">
-                          <div>
-                            <div className="text-[13px] font-medium text-foreground">Theme</div>
-                            <div className="text-[12px] text-muted-foreground">App chrome theme. System respects prefers-color-scheme.</div>
-                          </div>
-                          <SegmentedControl
-                            value={settings.theme}
-                            onChange={(v)=>handleThemeChange(v as HydraSettings["theme"])}
-                            options={[{value:"system",label:"System"},{value:"dark",label:"Dark"},{value:"light",label:"Light"}]}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between gap-4 pt-4">
-                          <div>
-                            <div className="text-[13px] font-medium text-foreground">UI Zoom</div>
-                            <div className="text-[12px] text-muted-foreground">Scale interface density and font proportions.</div>
-                          </div>
-                          <UIZoomControl
-                            value={settings.ui_zoom ?? 1}
-                            onChange={(z) => {
-                              setSettingsLive({ ...settings, ui_zoom: z });
-                              document.documentElement.style.zoom = String(z);
-                            }}
-                          />
-                        </div>
-
-                        <div className="space-y-2 pt-4">
-                          <div className="text-[13px] font-medium text-foreground">IDE Font</div>
-                          <p className="text-[12px] text-muted-foreground">Interface typeface for sidebar, titlebar and panels. Preview updates live.</p>
-                          <FontAutocomplete
-                            value={previewAppFont ?? settings.app_font_family}
-                            suggestions={interfaceFontSuggestions}
-                            placeholder="Geist"
-                            onPreviewFontFamily={setPreviewAppFont}
-                            onChange={(v)=>{
-                              const next = { ...settings, app_font_family: v.trim() || "Geist, sans-serif" };
-                              setSettingsLive(next);
-                              document.documentElement.style.setProperty("--app-font-family", next.app_font_family);
-                              document.body.style.fontFamily = next.app_font_family;
-                            }}
-                          />
-                          <div className="text-[11px] text-muted-foreground" style={{ fontFamily: previewAppFont ?? settings.app_font_family }}>
-                            Preview: The quick brown fox jumps over the lazy dog — 1234567890
-                          </div>
-                        </div>
-                      </div>
-                    </AppearanceSection>
-
-                    {/* Section 2: Terminal */}
-                    <AppearanceSection
-                      id="terminal"
-                      icon={TerminalSquare}
-                      title="Terminal"
-                      summary={`${settings.terminal_theme_dark} · ${(settings.terminal_font_family || "SF Mono").split(",")[0].trim().replace(/['"]/g, "")} · ${settings.terminal_font_size}px`}
-                      open={openAppearanceSections.terminal}
-                      onToggle={() => toggleAppearanceSection("terminal")}
-                    >
-                      <div className="space-y-6">
-                        {/* 1. Terminal Typography (FIRST per Orca order) */}
-                        <div className="space-y-4">
-                          <div className="text-[13px] font-semibold text-foreground">Terminal Typography</div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2">
-                              <label className="block text-[12px] font-medium mb-1.5 text-foreground">Font Family</label>
-                              <FontAutocomplete
-                                value={previewTerminalFont ?? settings.terminal_font_family}
-                                suggestions={terminalFontSuggestions}
-                                placeholder="JetBrains Mono"
-                                onPreviewFontFamily={setPreviewTerminalFont}
-                                onChange={(v)=>setSettingsLive({ ...settings, terminal_font_family: v })}
-                              />
-                              <div className="text-[11px] text-muted-foreground mt-1 font-mono" style={{ fontFamily: previewTerminalFont ?? settings.terminal_font_family }}>
-                                Preview: hydra --help — 0123456789 — ligatures fi fl
-                              </div>
-                            </div>
-                            <div>
-                              <label className="block text-[12px] font-medium mb-1.5 text-foreground">Font Size (px)</label>
-                              <input type="number" min={8} max={32} value={settings.terminal_font_size} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_size: Number(e.target.value) })} className="w-full bg-background border border-input rounded-md px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
-                            </div>
-                          </div>
-
-                          {/* Typography > Advanced (Line height, weights) */}
-                          <AppearanceAdvancedDisclosure label="Advanced Typography">
-                            <div className="grid grid-cols-3 gap-4">
-                              <div>
-                                <label className="block text-[12px] font-medium mb-1.5 text-foreground">Line Height</label>
-                                <input type="number" min={0.8} max={2} step={0.05} value={settings.terminal_line_height} onChange={(e)=>setSettingsLive({ ...settings, terminal_line_height: Number(e.target.value) })} className="w-full bg-background border border-input rounded-md px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
-                              </div>
-                              <div>
-                                <label className="block text-[12px] font-medium mb-1.5 text-foreground">Weight Normal</label>
-                                <input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_weight: Number(e.target.value) })} className="w-full bg-background border border-input rounded-md px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
-                              </div>
-                              <div>
-                                <label className="block text-[12px] font-medium mb-1.5 text-foreground">Weight Bold</label>
-                                <input type="number" min={100} max={900} step={100} value={settings.terminal_font_weight_bold} onChange={(e)=>setSettingsLive({ ...settings, terminal_font_weight_bold: Number(e.target.value) })} className="w-full bg-background border border-input rounded-md px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
-                              </div>
-                            </div>
-                          </AppearanceAdvancedDisclosure>
-                        </div>
-
-                        {/* 2. Terminal Themes (SECOND per Orca order) */}
-                        <div className="space-y-4 pt-4 border-t border-border/40">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-[13px] font-semibold text-foreground">Terminal Themes</div>
-                              <div className="text-[12px] text-muted-foreground">Catalog: {DEFAULT_TERMINAL_THEME_DARK} (dark) + {DEFAULT_TERMINAL_THEME_LIGHT} (light)</div>
-                            </div>
-                            <button onClick={handleImportCustomTheme} className="px-3 py-1.5 rounded-md border border-border bg-background text-[12px] text-foreground hover:bg-muted flex items-center gap-1.5 transition cursor-pointer">
-                              <Upload className="size-3.5" /> Import JSON/YAML
-                            </button>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-[12px] font-medium text-foreground">Target</span>
-                            <SegmentedControl value={terminalTarget} onChange={(v)=>setTerminalTarget(v as "dark"|"light")} options={[{value:"dark",label:"Dark"},{value:"light",label:"Light"}]} />
-                            {isLightTarget && (
-                              <label className="ml-2 flex items-center gap-2 text-[12px] text-foreground cursor-pointer">
-                                <input type="checkbox" checked={matchDarkMode} onChange={()=>setSettingsLive({ ...settings, terminal_use_separate_light_theme: !settings.terminal_use_separate_light_theme })} className="accent-emerald-600" />
-                                Match dark mode
-                              </label>
-                            )}
-                          </div>
-                          {showCustomControls ? (
-                            <div className="space-y-4">
-                              <ThemePicker
-                                selectedTheme={isLightTarget ? settings.terminal_theme_light : settings.terminal_theme_dark}
-                                settings={settings}
-                                query={themeSearch}
-                                onQueryChange={setThemeSearch}
-                                onSelect={(v)=>setSettingsLive(isLightTarget ? { ...settings, terminal_theme_light: v } : { ...settings, terminal_theme_dark: v })}
-                              />
-                              <div className="flex items-center justify-between gap-4 py-2 border-t border-border/40">
-                                <div className="space-y-0.5">
-                                  <div className="text-[13px] font-medium text-foreground">{isLightTarget ? "Light Divider Color" : "Dark Divider Color"}</div>
-                                  <div className="text-[12px] text-muted-foreground">Controls the split divider line between panes in {terminalTarget} mode.</div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <input type="color" value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e)=>setSettingsLive(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="h-8 w-8 rounded border border-border p-1 cursor-pointer bg-background" />
-                                  <input value={isLightTarget ? settings.terminal_divider_color_light : settings.terminal_divider_color_dark} onChange={(e)=>setSettingsLive(isLightTarget ? { ...settings, terminal_divider_color_light: e.target.value } : { ...settings, terminal_divider_color_dark: e.target.value })} className="w-28 bg-background border border-input rounded-md px-2.5 py-1.5 font-mono text-[12px] text-foreground text-center" />
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Light mode is matching dark. Disable “Match dark mode” to pick a separate light theme/divider.</div>
-                          )}
-                          {importError && <div className="text-[12px] text-destructive">{importError}</div>}
-                          {(settings.terminal_custom_themes ?? []).length > 0 && (
-                            <div className="space-y-2">
-                              <div className="text-[12px] font-medium text-foreground">Imported Custom Themes ({(settings.terminal_custom_themes ?? []).length}/200)</div>
-                              <div className="space-y-1 max-h-[140px] overflow-y-auto">
-                                {normalizeTerminalCustomThemes(settings.terminal_custom_themes).map((t)=>(
-                                  <div key={t.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background text-[12px] text-foreground">
-                                    <span className="w-3.5 h-3.5 rounded border border-border" style={{ background: t.terminal.background }} />
-                                    <span className="flex-1 truncate">{t.name} <span className="text-muted-foreground">({t.id})</span></span>
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t.source}</span>
-                                    <button onClick={()=>setSettingsLive({ ...settings, terminal_custom_themes: (settings.terminal_custom_themes ?? []).filter((x)=>x.id!==t.id) })} className="p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive cursor-pointer"><Trash2 className="size-3.5" /></button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Themes > Advanced (1:1 with Orca screenshot) */}
-                          <AppearanceAdvancedDisclosure label="Advanced">
-                            <div className="space-y-6 pt-1">
-                              {/* 1. Terminal Cursor */}
-                              <div className="space-y-2">
-                                <h4 className="text-[13px] font-semibold text-foreground">Terminal Cursor</h4>
-                                <div className="divide-y divide-border/30">
-                                  <div className="flex items-center justify-between gap-4 py-2.5">
-                                    <div className="text-[13px] font-medium text-foreground">Cursor Shape</div>
-                                    <SegmentedControl
-                                      value={settings.terminal_cursor_style ?? "block"}
-                                      onChange={(v) => setSettingsLive({ ...settings, terminal_cursor_style: v as HydraSettings["terminal_cursor_style"] })}
-                                      options={[
-                                        { value: "bar", label: "Bar" },
-                                        { value: "block", label: "Block" },
-                                        { value: "underline", label: "Underline" },
-                                      ]}
-                                    />
-                                  </div>
-                                  <SettingsSwitchRow
-                                    label="Blinking Cursor"
-                                    checked={settings.terminal_cursor_blink !== false}
-                                    onChange={() => setSettingsLive({ ...settings, terminal_cursor_blink: !(settings.terminal_cursor_blink !== false) })}
-                                  />
-                                  <SettingsNumberRow
-                                    label="Cursor Opacity"
-                                    defaultValue={1}
-                                    value={settings.terminal_cursor_opacity ?? 1}
-                                    min={0}
-                                    max={1}
-                                    step={0.05}
-                                    suffix="0-1"
-                                    onChange={(val) => setSettingsLive({ ...settings, terminal_cursor_opacity: val })}
-                                  />
-                                </div>
-                              </div>
-
-                              {/* 2. Terminal Panes */}
-                              <div className="space-y-2">
-                                <h4 className="text-[13px] font-semibold text-foreground">Terminal Panes</h4>
-                                <div className="divide-y divide-border/30">
-                                  <SettingsNumberRow
-                                    label="Inactive Pane Opacity"
-                                    description="Dim unfocused panes."
-                                    defaultValue={0.9}
-                                    value={settings.terminal_inactive_pane_opacity ?? 0.9}
-                                    min={0}
-                                    max={1}
-                                    step={0.05}
-                                    suffix="0-1"
-                                    onChange={(val) => setSettingsLive({ ...settings, terminal_inactive_pane_opacity: val })}
-                                  />
-                                  <SettingsNumberRow
-                                    label="Divider Thickness"
-                                    defaultValue={1}
-                                    value={settings.terminal_divider_thickness_px ?? 3}
-                                    min={1}
-                                    max={16}
-                                    step={1}
-                                    suffix="px"
-                                    onChange={(val) => setSettingsLive({ ...settings, terminal_divider_thickness_px: val })}
-                                  />
-                                </div>
-                              </div>
-
-                              {/* 3. Window */}
-                              <div className="space-y-2">
-                                <div>
-                                  <h4 className="text-[13px] font-semibold text-foreground">Window</h4>
-                                  <p className="text-[12px] text-muted-foreground">Window appearance and background settings.</p>
-                                </div>
-                                <div className="divide-y divide-border/30">
-                                  <SettingsNumberRow
-                                    label="Background Opacity"
-                                    description="Controls the transparency of the terminal background. 1 is fully opaque, 0 is fully transparent."
-                                    defaultValue={1}
-                                    value={settings.terminal_background_opacity ?? 1}
-                                    min={0}
-                                    max={1}
-                                    step={0.05}
-                                    suffix="0 to 1"
-                                    onChange={(val) => setSettingsLive({ ...settings, terminal_background_opacity: val })}
-                                  />
-                                  <SettingsSwitchRow
-                                    label="Window Blur"
-                                    description="Apply background blur to the terminal window. Requires restart."
-                                    checked={Boolean(settings.window_background_blur)}
-                                    onChange={() => setSettingsLive({ ...settings, window_background_blur: !settings.window_background_blur })}
-                                  />
-                                  <SettingsNumberRow
-                                    label="Horizontal Padding"
-                                    defaultValue={4}
-                                    value={settings.terminal_padding_x ?? 4}
-                                    min={0}
-                                    max={128}
-                                    step={1}
-                                    suffix="px"
-                                    onChange={(val) => setSettingsLive({ ...settings, terminal_padding_x: val })}
-                                  />
-                                  <SettingsNumberRow
-                                    label="Vertical Padding"
-                                    defaultValue={4}
-                                    value={settings.terminal_padding_y ?? 4}
-                                    min={0}
-                                    max={128}
-                                    step={1}
-                                    suffix="px"
-                                    onChange={(val) => setSettingsLive({ ...settings, terminal_padding_y: val })}
-                                  />
-                                  <SettingsSwitchRow
-                                    label="Hide Mouse While Typing"
-                                    checked={Boolean(settings.terminal_mouse_hide_while_typing)}
-                                    onChange={() => setSettingsLive({ ...settings, terminal_mouse_hide_while_typing: !settings.terminal_mouse_hide_while_typing })}
-                                  />
-                                  <ColorOverridesSection
-                                    settings={settings}
-                                    onChange={(overrides) => setSettingsLive({ ...settings, terminal_color_overrides: overrides })}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </AppearanceAdvancedDisclosure>
-
-                          {/* Dark / Light Mode Preview with Pane divider switch (1:1 with Orca screenshot) */}
-                          <div className="space-y-3 pt-3 border-t border-border/40">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h4 className="text-[13px] font-semibold text-foreground">
-                                  {terminalTarget === "dark" ? "Dark Mode Preview" : "Light Mode Preview"}
-                                </h4>
-                                <p className="text-[12px] text-muted-foreground">
-                                  Shows the effective {terminalTarget} terminal appearance.
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[12px] text-muted-foreground">Pane divider</span>
-                                <button
-                                  type="button"
-                                  role="switch"
-                                  aria-checked={showPreviewDivider}
-                                  onClick={() => setShowPreviewDivider(!showPreviewDivider)}
-                                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${showPreviewDivider ? "bg-emerald-600 border-emerald-600" : "bg-input border-transparent"}`}
-                                >
-                                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${showPreviewDivider ? "translate-x-4" : "translate-x-0.5"}`} />
-                                </button>
-                              </div>
-                            </div>
-                            <MiniTerminalPreview
-                              settings={previewTerminalFont ? { ...settings, terminal_font_family: previewTerminalFont } : settings}
-                              target={terminalTarget}
-                              showDivider={showPreviewDivider}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </AppearanceSection>
-
-                    {/* Section 3: Window & Sidebar (1:1 with Orca screenshot) */}
-                    <AppearanceSection
-                      id="window"
-                      icon={PanelLeft}
-                      title="Window & Sidebar"
-                      summary="Sidebar, status bar, and file explorer"
-                      open={openAppearanceSections.window}
-                      onToggle={() => toggleAppearanceSection("window")}
-                    >
-                      <div className="space-y-5 divide-y divide-border/40">
-                        {/* 1. Left Sidebar Appearance */}
-                        <div className="space-y-3 pt-1">
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <div className="text-[13px] font-medium text-foreground">Left Sidebar Appearance</div>
-                              <div className="text-[12px] text-muted-foreground">Make the left sidebar match your terminal, stay default, or use a tint.</div>
-                            </div>
-                            <SegmentedControl
-                              value={settings.left_sidebar_appearance_mode ?? "default"}
-                              onChange={(v) => setSettingsLive({ ...settings, left_sidebar_appearance_mode: v as HydraSettings["left_sidebar_appearance_mode"] })}
-                              options={[
-                                { value: "default", label: "Default" },
-                                { value: "match-terminal", label: "Match Terminal" },
-                                { value: "tinted", label: "Tinted" },
-                              ]}
-                            />
-                          </div>
-                          <div className="flex items-center gap-3 p-3 rounded-lg border border-border mt-2 transition-colors" style={leftSidebarStyle}>
-                            <div className="w-3.5 h-3.5 rounded-full border border-border" style={{ background: "var(--worktree-sidebar-accent, #353535)" }} />
-                            <span className="text-[12px] font-medium" style={{ color: "var(--worktree-sidebar-foreground, #fafafa)" }}>
-                              Preview: Left Sidebar Surface ({settings.left_sidebar_appearance_mode ?? "default"})
-                            </span>
-                          </div>
-                          {(settings.left_sidebar_appearance_mode === "tinted") && (
-                            <div className="grid grid-cols-2 gap-4 rounded-lg border border-border bg-muted/20 p-3 mt-2">
-                              <div>
-                                <label className="block text-[12px] font-medium mb-1.5 text-foreground">Sidebar Tint</label>
-                                <div className="flex gap-2">
-                                  <input
-                                    type="color"
-                                    value={settings.left_sidebar_tint_color ?? "#336699"}
-                                    onChange={(e) => setSettingsLive({ ...settings, left_sidebar_tint_color: e.target.value })}
-                                    className="h-8 w-8 rounded border border-border p-1 bg-background cursor-pointer"
-                                  />
-                                  <input
-                                    value={settings.left_sidebar_tint_color ?? "#336699"}
-                                    onChange={(e) => setSettingsLive({ ...settings, left_sidebar_tint_color: e.target.value })}
-                                    className="flex-1 bg-background border border-input rounded-md px-2.5 py-1 text-xs font-mono text-foreground"
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <div className="flex justify-between text-[12px] mb-1.5 text-foreground">
-                                  <span>Tint Strength</span>
-                                  <span className="font-mono">{Math.round((settings.left_sidebar_tint_opacity ?? 0.1) * 100)}%</span>
-                                </div>
-                                <input
-                                  type="range"
-                                  min={0}
-                                  max={0.5}
-                                  step={0.01}
-                                  value={settings.left_sidebar_tint_opacity ?? 0.1}
-                                  onChange={(e) => setSettingsLive({ ...settings, left_sidebar_tint_opacity: Number(e.target.value) })}
-                                  className="w-full mt-1.5"
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* 2. Status Bar (TODO / Em desenvolvimento) */}
-                        <div className="space-y-3 pt-4">
-                          <div>
-                            <div className="text-[13px] font-semibold text-foreground flex items-center gap-2">
-                              <span>Status Bar</span>
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 font-medium">TODO / Em desenvolvimento</span>
-                            </div>
-                            <div className="text-[12px] text-muted-foreground mt-0.5">A superfície da barra de status inferior ainda não foi implementada no Hydra. Os indicadores serão ativados quando a barra de status for adicionada ao layout.</div>
-                          </div>
-                          <div className="divide-y divide-border/30 rounded-xl border border-dashed border-border/80 bg-muted/10 opacity-75">
-                            <div className="p-3 flex items-center justify-between gap-4">
-                              <div>
-                                <div className="text-[13px] font-medium text-foreground">Usage percentages</div>
-                                <div className="text-[12px] text-muted-foreground">Choose whether provider limits show the percentage used or remaining.</div>
-                              </div>
-                              <SegmentedControl
-                                value={settings.usage_percentage_display ?? "used"}
-                                onChange={(v) => setSettingsLive({ ...settings, usage_percentage_display: v as "used" | "remaining" })}
-                                options={[
-                                  { value: "used", label: "Used" },
-                                  { value: "remaining", label: "Remaining" },
-                                ]}
-                              />
-                            </div>
-                            <div className="px-3 py-1">
-                              <SettingsSwitchRow
-                                label="Claude Usage"
-                                description="Show Claude token and cost usage for the active workspace."
-                                checked={settings.status_bar_claude_usage !== false}
-                                onChange={() => setSettingsLive({ ...settings, status_bar_claude_usage: !(settings.status_bar_claude_usage !== false) })}
-                              />
-                            </div>
-                            <div className="px-3 py-1">
-                              <SettingsSwitchRow
-                                label="Antigravity Usage"
-                                description="Show Antigravity subscription usage for the active workspace."
-                                checked={settings.status_bar_antigravity_usage !== false}
-                                onChange={() => setSettingsLive({ ...settings, status_bar_antigravity_usage: !(settings.status_bar_antigravity_usage !== false) })}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 3. Window & Sidebar > Advanced */}
-                        <div className="pt-2">
-                          <AppearanceAdvancedDisclosure label="Advanced Window & Worktree">
-                            <div className="space-y-3">
-                              <SettingsSwitchRow
-                                label="Compact worktree cards"
-                                description="Hide redundant branch and status labels when they match to maximize vertical card density in the fleet sidebar."
-                                checked={Boolean(settings.compact_worktree_cards)}
-                                onChange={() => setSettingsLive({ ...settings, compact_worktree_cards: !settings.compact_worktree_cards })}
-                              />
-                              <div className="border-t border-border/30 pt-3">
-                                <SettingsSwitchRow
-                                  label="Confirm before closing pinned tabs"
-                                  description="Show a confirmation prompt when closing pinned workbench tabs."
-                                  checked={Boolean(settings.confirm_close_pinned_tab ?? true)}
-                                  onChange={() => setSettingsLive({ ...settings, confirm_close_pinned_tab: !(settings.confirm_close_pinned_tab ?? true) })}
-                                />
-                              </div>
-                              <div className="border-t border-border/30 pt-3">
-                                <SettingsSwitchRow
-                                  label="Confirm before deleting worktrees"
-                                  description="Prompt for confirmation before permanently deleting a git worktree."
-                                  checked={!Boolean(settings.skip_delete_worktree_confirm)}
-                                  onChange={() => setSettingsLive({ ...settings, skip_delete_worktree_confirm: !Boolean(settings.skip_delete_worktree_confirm) })}
-                                />
-                              </div>
-                            </div>
-                          </AppearanceAdvancedDisclosure>
-                        </div>
-                      </div>
-                    </AppearanceSection>
-                  </div>
-                </div>
+                <AppearancePane
+                  settings={settings}
+                  updateSettings={(u) => setSettingsLive({ ...settings, ...u } as any)}
+                  previewTerminalFont={previewTerminalFont}
+                  setPreviewTerminalFont={setPreviewTerminalFont}
+                  previewAppFont={previewAppFont}
+                  setPreviewAppFont={setPreviewAppFont}
+                  terminalFontSuggestions={terminalFontSuggestions}
+                  themeSearch={themeSearch}
+                  setThemeSearch={setThemeSearch}
+                  importedHighlightSignal={importedHighlightSignal}
+                  onGhostty={handleGhosttyPreview}
+                  onWarp={handleWarpPreview}
+                  ghosttyLoading={ghosttyLoading}
+                  warpLoading={warpLoading}
+                  ghosttyPreview={ghosttyPreview}
+                  warpPreview={warpPreview}
+                  importError={importError}
+                  handleImportCustomTheme={handleImportCustomTheme}
+                  handleApplyGhostty={handleApplyGhostty}
+                  handleApplyWarpThemes={handleApplyWarpThemes}
+                  setGhosttyPreview={setGhosttyPreview}
+                  setWarpPreview={setWarpPreview}
+                  typographyAdvancedOpen={typographyAdvancedOpen}
+                  setTypographyAdvancedOpen={setTypographyAdvancedOpen}
+                  colorOverridesExpanded={colorOverridesExpanded}
+                  setColorOverridesExpanded={setColorOverridesExpanded}
+                />
               )}
 
               {activeId==="agents" && (
@@ -1693,9 +864,13 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
               {activeId==="terminal" && (
                 <div className="space-y-6">
                   <div className="space-y-1">
-                    <h3 className="text-[20px] font-semibold tracking-tight">Terminal Execution</h3>
-                    <p className="text-[13px] text-muted-foreground">Shell runtime, rendering engine, scrollback buffer, and keyboard/mouse interaction rules. Typography and themes live in <span className="font-medium text-foreground">Interface → Appearance</span>.</p>
+                    <h3 className="text-[20px] font-semibold tracking-tight">Terminal</h3>
+                    <p className="text-[13px] text-muted-foreground">Typography, themes, renderer and behavior — unified from Appearance (Orca: Workflows → Terminal).</p>
                   </div>
+
+                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Typography moved to <span className="font-medium text-foreground">Appearance → Terminal</span> — Orca faithful.</div>
+
+                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Terminal themes moved to <span className="font-medium text-foreground">Appearance → Terminal</span> — Orca faithful. Use Appearance to change themes.</div>
 
                   {/* Default Shell */}
                   <section className="rounded-xl border bg-card p-4 space-y-3">
@@ -1709,13 +884,16 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                         </select>
                         <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                       </div>
-                      <button onClick={()=>invoke<{id:string;label:string;path:string}[]>("list_available_shells").then((s)=>{ if (Array.isArray(s)) setAvailableShells(s.map((x)=>({id:x.id,label:x.label,path:x.path}))); }).catch(()=>{})} className="px-3 py-2 rounded-md border bg-background text-[12px] hover:bg-muted">Refresh</button>
+                      <button onClick={()=>invoke<{id:string;label:string;path:string}[]>("list_available_shells").then((s:any)=>setAvailableShells(s.map((x:any)=>({id:x.id,label:x.label,path:x.path})))).catch(()=>{})} className="px-3 py-2 rounded-md border bg-background text-[12px] hover:bg-muted">Refresh</button>
                     </div>
                     <div className="flex gap-2">
                       <input value={settings.terminal_default_shell} onChange={(e)=>setSettingsLive({ ...settings, terminal_default_shell: e.target.value })} placeholder="Custom shell (e.g. /usr/bin/zsh)" className="flex-1 bg-background border border-input rounded-md px-3 py-2 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
                       <span className="text-[11px] text-muted-foreground self-center">Current: {settings.terminal_default_shell || "bash"} · {availableShells.length} found</span>
                     </div>
                   </section>
+
+                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Cursor, Panes and Window moved to <span className="font-medium text-foreground">Appearance → Terminal</span> — Orca faithful (advancedContent inside theme preview).</div>
+
                   {/* Rendering — GPU + Contrast + Inline Images */}
                   <div className="rounded-xl border bg-card overflow-hidden">
                     <div className="p-6 space-y-6">

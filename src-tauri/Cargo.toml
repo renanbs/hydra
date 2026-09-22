@@ -29,6 +29,8 @@ vt100 = "0.16.2"
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 tokio = { version = "1.53.1", features = ["full"] }
 parking_lot = "0.12.5"
+chrono = { version = "0.4", features = ["clock"] }
+serde_yaml = "0.9"
 interprocess = "2.4.2"
 x25519-dalek = { version = "3.0.0", features = ["static_secrets"] }
 qrcode = "0.14.1"
