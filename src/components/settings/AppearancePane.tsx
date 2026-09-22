@@ -265,7 +265,21 @@ export function AppearancePane({ settings, updateSettings, previewTerminalFont, 
                       <button type="button" role="switch" aria-checked={enabled} onClick={() => {
                         const cur = new Set(settings.status_bar_items ?? []);
                         if (enabled) cur.delete(id); else cur.add(id);
-                        updateSettings({ status_bar_items: Array.from(cur) } as any);
+                        const nextItems = Array.from(cur);
+                        // Sync legacy booleans for single-source truth (old readers still use booleans)
+                        const boolMap: Record<string,string> = {
+                          "resource-usage":"status_bar_resource_manager",
+                          "ports":"status_bar_ports",
+                          "ssh":"status_bar_remote_hosts",
+                          "claude":"status_bar_claude_usage",
+                          "codex":"status_bar_opencode_usage",
+                          "opencode-go":"status_bar_opencode_usage",
+                          "antigravity":"status_bar_antigravity_usage",
+                          "minimax":"status_bar_minimax_usage",
+                        };
+                        const patch: any = { status_bar_items: nextItems };
+                        if (boolMap[id]) patch[boolMap[id]] = !enabled;
+                        updateSettings(patch as any);
                       }} className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${enabled ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${enabled ? "translate-x-4" : "translate-x-0.5"}`} /></button>
                     </label>
                   );

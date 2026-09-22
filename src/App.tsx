@@ -130,7 +130,7 @@ export default function App() {
       document.documentElement.style.zoom = String(z);
     }
   }, [hydraSettings.ui_zoom]);
-  // Left sidebar appearance style (Orca leftSidebarAppearanceMode)
+  // Single tint source fix: leftSidebarStyle kept only for WindowTitlebar header continuity; outer aside uses WorktreeSidebar inner color-mix (12a73e2)
   const leftSidebarStyle = useMemo(() => {
     const sysDark = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)").matches : true;
     return resolveLeftSidebarStyleVariables(hydraSettings, sysDark) as React.CSSProperties | undefined;
@@ -2041,12 +2041,12 @@ export default function App() {
 
       {/* Main Resizable Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Panel: Worktree / Fleet Manager with Project Switcher */}
+        {/* Left Panel: Worktree / Fleet Manager with Project Switcher — single tint source via WorktreeSidebar inner style */}
         {isLeftSidebarOpen && (
           <>
             <aside 
               ref={leftSidebar.containerRef}
-              style={{ width: `${leftSidebar.width}px`, ...leftSidebarStyle }}
+              style={{ width: `${leftSidebar.width}px` }}
               className="flex flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar shrink-0 overflow-hidden relative"
             >
               <WorktreeSidebar 

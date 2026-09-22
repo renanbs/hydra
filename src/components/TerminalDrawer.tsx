@@ -208,7 +208,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
       const px = (settings as any)?.terminal_padding_x;
       const py = (settings as any)?.terminal_padding_y;
       if (px != null || py != null) {
-        containerRef.current.style.padding = `${py ?? 8}px ${px ?? 8}px`;
+        containerRef.current.style.padding = `${py ?? 4}px ${px ?? 4}px`;
       }
       // Cursor opacity — Orca TerminalCursorAppearanceSection
       const co = (settings as any)?.terminal_cursor_opacity;
@@ -466,7 +466,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
   const debugInfo = settings ? `${settings.terminal_font_family.split(",")[0].trim().replace(/['"]/g,"")} ${settings.terminal_font_size}px` : "";
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ backgroundColor: bg }}>
-      <div ref={containerRef} onContextMenu={handleContextMenu} onMouseEnter={handleMouseEnter} className="w-full h-full overflow-hidden" style={{ backgroundColor: bg, padding: `${(settings as any)?.terminal_padding_y ?? 8}px ${(settings as any)?.terminal_padding_x ?? 8}px` }} />
+      <div ref={containerRef} onContextMenu={handleContextMenu} onMouseEnter={handleMouseEnter} className="w-full h-full overflow-hidden" style={{ backgroundColor: bg, padding: `${(settings as any)?.terminal_padding_y ?? 4}px ${(settings as any)?.terminal_padding_x ?? 4}px` }} />
       <TerminalSearch
         isOpen={isSearchOpen}
         onClose={() => {

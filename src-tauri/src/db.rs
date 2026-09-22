@@ -111,8 +111,6 @@ fn default_usage_percentage_display() -> String { "used".to_string() }
 fn default_cursor_opacity() -> f32 { 1.0 }
 fn default_padding() -> u32 { 4 }
 fn default_status_bar_items() -> Vec<String> { vec!["resource-usage".to_string(), "ports".to_string(), "ssh".to_string(), "claude".to_string(), "codex".to_string()] }
-fn default_editor_minimap() -> bool { true }
-fn default_editor_word_wrap() -> bool { true }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct OrcaWorkspaceLayout {
