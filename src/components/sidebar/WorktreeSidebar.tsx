@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { List } from "react-window";
 import { 
   GitBranch, 
   Plus, 
@@ -135,6 +136,8 @@ export function WorktreeSidebar({
   const [activeProjectMenuId, setActiveProjectMenuId] = useState<string | null>(null);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
   const [sidebarBody, setSidebarBody] = useState<"workspaces" | "agents">("workspaces");
+  const [focusedWorktreePath, setFocusedWorktreePath] = useState<string | null>(null);
+  const [focusedProjectId, setFocusedProjectId] = useState<string | null>(null);
   
   // Ref para ancoragem exata do botão SlidersHorizontal
   const optionsButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -234,8 +237,9 @@ export function WorktreeSidebar({
       return;
     }
     
-    // Default: single select (deselect others if not ctrl-clicking)
-    setSelectedSessions(new Set([id]));
+    // Default: single click — activate session only, clear batch selection
+    // Batch delete bar only appears after explicit Ctrl/Shift multi-select
+    setSelectedSessions(new Set());
     setLastClickedSessionId(id);
     onSelectSession(id);
   };
@@ -326,49 +330,130 @@ export function WorktreeSidebar({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Arrow key navigation between sessions (when no modal/input has focus)
+      // Arrow key navigation between sessions, worktrees, projects (when no modal/input has focus)
       if (isModalOpen) return;
       const target = e.target as HTMLElement;
       const isInputFocused = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || Boolean(target.isContentEditable);
 
       if (isInputFocused) return;
 
-      if (e.key === "ArrowDown") {
+      // Collect all focusable items in order: projects -> worktrees -> sessions
+      const allFocusable: Array<{ type: "project" | "worktree" | "session"; id: string }> = [];
+      
+      projects.forEach((proj) => {
+        allFocusable.push({ type: "project", id: proj.id });
+        const isCollapsed = collapsedProjects.has(proj.id);
+        const isActiveProject = proj.path === activeProject?.path;
+        const projectWorktrees = isActiveProject ? gitWorktrees : [];
+        if (!isCollapsed && isActiveProject) {
+          projectWorktrees.forEach((wt) => {
+            allFocusable.push({ type: "worktree", id: wt.path });
+            const wtSessions = sessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
+            wtSessions.forEach((s) => allFocusable.push({ type: "session", id: s.id }));
+          });
+        }
+        // Sessions not under worktrees (orphan or when no worktrees)
+        if (!isCollapsed) {
+          const projectSessions = sessions.filter(
+            (s) => s.project_path === proj.path 
+              || (!s.project_path && isActiveProject)
+              || projectWorktrees.some((wt) => wt.path === s.project_path)
+              || s.project_path.startsWith(proj.path + "/")
+          );
+          projectSessions.forEach((s) => {
+            if (!allFocusable.some((f) => f.type === "session" && f.id === s.id)) {
+              allFocusable.push({ type: "session", id: s.id });
+            }
+          });
+        }
+      });
+
+      // Escape: clear focus + clear batch selection
+      if (e.key === "Escape") {
         e.preventDefault();
-        setFocusedSessionId(prev => {
-          if (prev === null) {
-            // Start with first session
-            const firstId = sessions.length > 0 ? sessions[0].id : null;
-            if (firstId) onSelectNextSession?.("down");
-            return firstId;
-          }
-          const currentIdx = sessions.findIndex(s => s.id === prev);
-          if (currentIdx === -1) return prev;
-          const nextIdx = currentIdx + 1;
-          const max = sessions.length - 1;
-          const nextId = nextIdx > max ? null : sessions[nextIdx].id;
-          if (nextId) onSelectNextSession?.("down");
-          return nextId;
-        });
+        setFocusedSessionId(null);
+        setFocusedWorktreePath(null);
+        setFocusedProjectId(null);
+        setSelectedSessions(new Set());
         return;
       }
-      if (e.key === "ArrowUp") {
+
+      // Enter / Space: activate focused item
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        setFocusedSessionId(prev => {
-          if (prev === null) return null;
-          const currentIdx = sessions.findIndex(s => s.id === prev);
-          if (currentIdx === -1 || currentIdx === 0) return null;
-          const prevIdx = currentIdx - 1;
-          const prevId = sessions[prevIdx].id;
-          if (prevId) onSelectPrevSession?.("up");
-          return prevId;
-        });
+        if (focusedSessionId) {
+          onSelectSession(focusedSessionId);
+        } else if (focusedWorktreePath) {
+          const wt = gitWorktrees.find((w) => w.path === focusedWorktreePath);
+          if (wt) onSelectGitWorktree(wt);
+        } else if (focusedProjectId) {
+          const proj = projects.find((p) => p.id === focusedProjectId);
+          if (proj) onSelectProject(proj);
+        }
+        return;
+      }
+
+      // F2: Rename focused session
+      if (e.key === "F2" && focusedSessionId) {
+        e.preventDefault();
+        const session = sessions.find((s) => s.id === focusedSessionId);
+        if (session) {
+          const newTitle = window.prompt("Enter new session title:", session.title);
+          if (newTitle && newTitle.trim()) {
+            invoke("save_session_record", { record: { id: session.id, project_path: session.project_path, title: newTitle.trim(), branch: session.branch, agent_name: session.agentName, executable: session.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(console.error);
+            // Parent App will handle the session update via the invoke callback
+          }
+        }
+        return;
+      }
+
+      // Arrow navigation
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const direction = e.key === "ArrowDown" ? "down" : "up";
+        const currentFocused = focusedSessionId || focusedWorktreePath || focusedProjectId;
+        
+        if (!currentFocused) {
+          // No focus - start with first item
+          const first = allFocusable[0];
+          if (first) {
+            if (first.type === "session") setFocusedSessionId(first.id);
+            else if (first.type === "worktree") setFocusedWorktreePath(first.id);
+            else setFocusedProjectId(first.id);
+            if (first.type === "session") {
+              onSelectNextSession?.(direction);
+            }
+          }
+          return;
+        }
+
+        const currentIdx = allFocusable.findIndex((f) => f.id === currentFocused);
+        if (currentIdx === -1) return;
+
+        const nextIdx = direction === "down" ? currentIdx + 1 : currentIdx - 1;
+        if (nextIdx < 0 || nextIdx >= allFocusable.length) return;
+
+        const next = allFocusable[nextIdx];
+        if (next.type === "session") {
+          setFocusedSessionId(next.id);
+          setFocusedWorktreePath(null);
+          setFocusedProjectId(null);
+          onSelectNextSession?.(direction);
+        } else if (next.type === "worktree") {
+          setFocusedWorktreePath(next.id);
+          setFocusedSessionId(null);
+          setFocusedProjectId(null);
+        } else {
+          setFocusedProjectId(next.id);
+          setFocusedSessionId(null);
+          setFocusedWorktreePath(null);
+        }
         return;
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [sessions, onSelectNextSession, onSelectPrevSession, isModalOpen]);
+  }, [sessions, projects, gitWorktrees, activeProject, collapsedProjects, onSelectNextSession, onSelectPrevSession, onSelectSession, onSelectGitWorktree, onSelectProject, onSessionContextMenu, isModalOpen, focusedSessionId, focusedWorktreePath, focusedProjectId]);
 
   const toggleProjectCollapse = (projectId: string) => {
     setCollapsedProjects((prev) => {
@@ -377,6 +462,290 @@ export function WorktreeSidebar({
       else next.add(projectId);
       return next;
     });
+  };
+
+  // Virtualization: flatten workspaces view into rows for react-window (500+ sessions)
+  type FlatRow =
+    | { type: "project-header"; proj: HydraProject; isActive: boolean; isCollapsed: boolean; isMenuOpen: boolean }
+    | { type: "worktree"; wt: GitWorktreeInfo; proj: HydraProject }
+    | { type: "session"; session: WorktreeSession; proj: HydraProject; wt?: GitWorktreeInfo; isOrphan?: boolean; isNested: boolean }
+    | { type: "empty"; proj: HydraProject; message: string };
+
+  const flatRows: FlatRow[] = useMemo(() => {
+    if (sidebarBody !== "workspaces" || projects.length === 0) return [];
+    const rows: FlatRow[] = [];
+    // Optional: filter projects/sessions by filter string if present
+    const lowerFilter = filter.trim().toLowerCase();
+    const matchesFilter = (s: WorktreeSession) =>
+      !lowerFilter ||
+      s.title.toLowerCase().includes(lowerFilter) ||
+      s.branch.toLowerCase().includes(lowerFilter) ||
+      s.agentName.toLowerCase().includes(lowerFilter);
+    const projectMatches = (proj: HydraProject, projectSessions: WorktreeSession[], projectWorktrees: GitWorktreeInfo[]) => {
+      if (!lowerFilter) return true;
+      if (proj.name.toLowerCase().includes(lowerFilter)) return true;
+      if (projectSessions.some(matchesFilter)) return true;
+      if (projectWorktrees.some((wt) => wt.branch.toLowerCase().includes(lowerFilter))) return true;
+      return false;
+    };
+
+    for (const proj of projects) {
+      const isActive = proj.path === activeProject?.path;
+      const isCollapsed = collapsedProjects.has(proj.id);
+      const isMenuOpen = activeProjectMenuId === proj.id;
+      const projectWorktrees = isActive ? gitWorktrees : [];
+      const projectSessions = sessions.filter(
+        (s) =>
+          s.project_path === proj.path ||
+          (!s.project_path && isActive) ||
+          projectWorktrees.some((wt) => wt.path === s.project_path) ||
+          s.project_path.startsWith(proj.path + "/")
+      );
+      // Filtered sessions for display
+      const filteredSessions = lowerFilter ? projectSessions.filter(matchesFilter) : projectSessions;
+      const filteredWorktrees = lowerFilter
+        ? projectWorktrees.filter((wt) => wt.branch.toLowerCase().includes(lowerFilter) || filteredSessions.some((s) => s.project_path === wt.path))
+        : projectWorktrees;
+
+      if (!projectMatches(proj, filteredSessions, filteredWorktrees)) continue;
+
+      rows.push({ type: "project-header", proj, isActive, isCollapsed, isMenuOpen });
+
+      if (isCollapsed) continue;
+
+      if (filteredWorktrees.length > 0) {
+        for (const wt of filteredWorktrees) {
+          rows.push({ type: "worktree", wt, proj });
+          const wtSessions = filteredSessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
+          for (const s of wtSessions) {
+            rows.push({ type: "session", session: s, proj, wt, isNested: true });
+          }
+        }
+        const orphanSessions = filteredSessions.filter(
+          (s) => !filteredWorktrees.some((wt) => wt.path === s.project_path) && !(!s.project_path && filteredWorktrees.some((wt) => wt.path === proj.path))
+        );
+        for (const s of orphanSessions) {
+          rows.push({ type: "session", session: s, proj, isOrphan: true, isNested: false });
+        }
+        if (filteredWorktrees.length === 0 && filteredSessions.length === 0) {
+          // No worktrees/sessions after filter
+        }
+      } else {
+        if (filteredSessions.length === 0) {
+          rows.push({ type: "empty", proj, message: "No active worktrees in this project." });
+        } else {
+          for (const s of filteredSessions) {
+            rows.push({ type: "session", session: s, proj, isNested: false });
+          }
+        }
+      }
+    }
+    return rows;
+  }, [projects, sessions, gitWorktrees, activeProject, collapsedProjects, activeProjectMenuId, filter, sidebarBody]);
+
+  const getRowHeight = useCallback(
+    (index: number) => {
+      const row = flatRows[index];
+      if (!row) return 40;
+      if (row.type === "project-header") return 40;
+      if (row.type === "worktree") return compactCards ? 32 : 44;
+      if (row.type === "session") return compactCards ? 52 : 68;
+      if (row.type === "empty") return 32;
+      return 40;
+    },
+    [flatRows, compactCards]
+  );
+
+  // Use virtualization when rows > 30 or any project has >50 sessions (500+ scenario)
+  const useVirtualization = flatRows.length > 30 || sessions.length > 50;
+
+  // Row component for react-window virtualization
+  const VirtualRow = ({ index, style, ariaAttributes }: { index: number; style: React.CSSProperties; ariaAttributes?: any }) => {
+    const row = flatRows[index];
+    if (!row) return null;
+    // Common style for virtual row positioning
+    const rowStyle: React.CSSProperties = { ...style, left: 0, right: 0, width: "100%" };
+
+    if (row.type === "project-header") {
+      const { proj, isActive, isCollapsed, isMenuOpen } = row;
+      return (
+        <div style={rowStyle} {...ariaAttributes} className="px-2" >
+          <div
+            draggable={true}
+            onDragStart={(e) => handleProjectDragStart(e, proj.id)}
+            onDragOver={(e) => handleProjectDragOver(e, proj.id)}
+            onDrop={(e) => handleProjectDrop(e, proj.id)}
+            onDragEnd={handleProjectDragEnd}
+            onClick={() => onSelectProject(proj)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onProjectContextMenu?.(e, proj);
+            }}
+            className={`group relative flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer transition ${
+              draggedProjectId === proj.id ? "opacity-30" : ""
+            } ${
+              isActive
+                ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border/60 font-medium shadow-xs"
+                : "hover:bg-worktree-sidebar-accent/50 text-worktree-sidebar-foreground/80 border border-transparent"
+            } ${focusedProjectId === proj.id ? "border-indigo-500/50 ring-indigo-500/20 bg-worktree-sidebar-accent/30" : ""}`}
+          >
+            {projectDropTarget?.id === proj.id && (
+              <div
+                className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${
+                  projectDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"
+                }`}
+              />
+            )}
+            <div className="flex items-center gap-2 min-w-0">
+              <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+              <FolderGit2 className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-emerald-400" : "text-neutral-500"}`} />
+              {pinnedProjects?.has(proj.id) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
+              {unreadProjects?.has(proj.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+              {projectGroupMap?.[proj.id] && (() => { const g = projectGroups?.find((x) => x.id === projectGroupMap[proj.id]); return <span className="text-[8px] px-1 py-0.2 rounded bg-neutral-800 text-neutral-400 shrink-0 truncate max-w-[60px]" title={g?.name ?? projectGroupMap[proj.id]}>{(g?.name ?? projectGroupMap[proj.id]).slice(0,12)}</span>; })()}
+              <span className="truncate text-[12px] font-semibold tracking-tight">{proj.name}</span>
+            </div>
+            <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => toggleProjectCollapse(proj.id)}
+                title={isCollapsed ? "Expand workspaces" : "Collapse workspaces"}
+                className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
+              >
+                {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveProjectMenuId(isMenuOpen ? null : proj.id);
+                  }}
+                  title="Project actions"
+                  className={`p-1 rounded transition cursor-pointer ${isMenuOpen ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
+                >
+                  <MoreHorizontal className="w-3.5 h-3.5" />
+                </button>
+                {isMenuOpen && (
+                  <div className="absolute right-0 top-7 w-56 rounded-xl bg-popover border border-border p-1.5 shadow-2xl z-50 text-xs space-y-0.5 text-popover-foreground" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => { setActiveProjectMenuId(null); onOpenSettings(); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-muted text-popover-foreground text-left transition cursor-pointer"><Sliders className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-[11px]">Project Settings</span></button>
+                    <button onClick={async () => { setActiveProjectMenuId(null); const cur = (proj.worktree_base_path ?? "") as string; const input = window.prompt("Worktree base path (relative to project or absolute).\nEx: .worktrees  ou  /home/you/src/worktrees\nLeave empty to use global workspaceDir:", cur); if (input === null) return; const trimmed = input.trim(); try { await invoke("set_project_worktree_base", { path: proj.path, basePath: trimmed ? trimmed : null }); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } catch (e) { console.error(e); } }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><FolderTree className="w-3.5 h-3.5 text-emerald-400" /><span className="text-[11px]">Worktree Base: {proj.worktree_base_path || "global"}</span></button>
+                    <button onClick={() => { setActiveProjectMenuId(null); navigator.clipboard.writeText(proj.path); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><Copy className="w-3.5 h-3.5 text-neutral-400" /><span className="text-[11px]">Copy Project Path</span></button>
+                    <button onClick={() => { setActiveProjectMenuId(null); onOpenNewWorkspaceModal(proj); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><FolderTree className="w-3.5 h-3.5 text-neutral-400" /><span className="text-[11px]">New Worktree from Project</span></button>
+                    <div className="h-px bg-border my-1" />
+                    <button onClick={() => { setActiveProjectMenuId(null); onRemoveProject(proj); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /><span className="text-[11px]">Remove Project</span></button>
+                  </div>
+                )}
+              </div>
+              <button onClick={() => { onSelectProject(proj); onOpenNewWorkspaceModal(proj); }} title={`New workspace for ${proj.name}`} className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"><Plus className="w-3.5 h-3.5 text-emerald-400" /></button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (row.type === "worktree") {
+      const { wt, proj } = row;
+      const isMain = wt.path === proj.path;
+      const wtSessions = sessions.filter((s) => s.project_path === wt.path || (!s.project_path && isMain));
+      return (
+        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-6">
+          <div
+            draggable={true}
+            onDragStart={(e) => handleWorktreeDragStart(e, wt.path)}
+            onDragOver={(e) => handleWorktreeDragOver(e, wt.path)}
+            onDrop={(e) => handleWorktreeDrop(e, wt.path)}
+            onDragEnd={handleWorktreeDragEnd}
+            onClick={() => onSelectGitWorktree(wt)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onWorktreeContextMenu?.(e, wt, proj);
+            }}
+            className={`group relative ${compactCards ? "py-1.5 px-2 text-[11px]" : "p-2.5"} rounded-lg cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground flex items-center justify-between transition-all ml-2 border-l border-worktree-sidebar-border pl-3 ${
+              draggedWorktreePath === wt.path ? "opacity-30" : ""
+            } ${focusedWorktreePath === wt.path ? "border-indigo-500/50 ring-indigo-500/20 bg-worktree-sidebar-accent/30" : ""}`}
+          >
+            {worktreeDropTarget?.path === wt.path && (
+              <div className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${worktreeDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"}`} />
+            )}
+            <div className="flex items-center gap-2 min-w-0">
+              <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+              {pinnedWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
+              {unreadWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+              <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
+              <span className="truncate text-[11px] font-medium text-neutral-200">{wt.branch || proj.name}</span>
+              {isMain && <span className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400 shrink-0">default</span>}
+              {wtSessions.length > 0 && <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800 text-neutral-500 shrink-0">{wtSessions.length}</span>}
+            </div>
+            {!isMain && (
+              <button onClick={(e) => { e.stopPropagation(); onDeleteGitWorktree(wt); }} title="Delete worktree from disk" className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition"><Trash2 className="w-3 h-3" /></button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (row.type === "session") {
+      const { session, proj, isNested } = row;
+      const isActiveProject = proj.path === activeProject?.path;
+      const indentClass = isNested ? "ml-8 pl-2 border-l border-worktree-sidebar-border/40" : "ml-6 pl-2 border-l border-worktree-sidebar-border";
+      return (
+        <div style={rowStyle} {...ariaAttributes} className={`px-2 ${indentClass}`}>
+          <div
+            draggable={true}
+            onDragStart={(e) => handleSessionDragStart(e, session.id)}
+            onDragOver={(e) => handleSessionDragOver(e, session.id)}
+            onDrop={(e) => handleSessionDrop(e, session.id)}
+            onDragEnd={handleSessionDragEnd}
+            onClick={(e) => handleSessionClick(e, session.id)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSessionContextMenu?.(e, session);
+            }}
+            className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
+              draggedSessionId === session.id ? "opacity-30 scale-[0.98]" : ""
+            } ${
+              session.active && isActiveProject
+                ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
+                : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+            } ${focusedSessionId === session.id ? "border-indigo-500/50 ring-indigo-500/20" : ""} ${
+              selectedSessions.has(session.id) ? "bg-indigo-500/20 select-none" : ""
+            }`}
+          >
+            {sessionDropTarget?.id === session.id && (
+              <div className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${sessionDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"}`} />
+            )}
+            {session.active && isActiveProject && <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />}
+            <div className="flex items-center justify-between mb-1 pl-1">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+                {(pinnedWorktrees?.has(session.id) || pinnedWorktrees?.has(session.project_path)) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
+                {unreadWorktrees?.has(session.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+                <span className="font-medium truncate text-neutral-100 text-[11px]">{session.title}</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${session.state === "working" ? "bg-amber-400 animate-pulse" : session.state === "blocked" ? "bg-red-400 ring-2 ring-red-500/30" : "bg-emerald-400"}`} title={`Herdr State: ${session.state}`} />
+                <button onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }} className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"><Trash2 className="w-3 h-3" /></button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
+              <span className="flex items-center gap-1 truncate"><GitBranch className="w-2.5 h-2.5 text-neutral-400" />{session.branch}</span>
+              <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">{session.agentName}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (row.type === "empty") {
+      return (
+        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-6">
+          <div className="py-2 px-2 text-[11px] text-neutral-600 italic ml-2 border-l border-worktree-sidebar-border pl-3">No active worktrees in this project.</div>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -421,24 +790,38 @@ export function WorktreeSidebar({
         </div>
       )}
 
-      {/* 4. MAIN CONTENT AREA - Conditional: Workspaces Tree OR Agents List */}
-      <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3">
-        {sidebarBody === "workspaces" ? (
-          <>
-            {projects.length === 0 ? (
-              <div className="p-6 text-center text-neutral-500 text-xs space-y-3">
-                <p className="text-neutral-400 font-medium">No projects added yet.</p>
-                <p className="text-[11px] text-neutral-500">Add an existing project from disk to begin working with agents.</p>
-                <button
-                  onClick={onOpenAddRepoDialog}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-medium transition cursor-pointer"
-                >
-                  <FolderPlus className="w-3.5 h-3.5" />
-                  <span>Add Existing Project</span>
-                </button>
-              </div>
-            ) : (
-              projects.map((proj) => {
+      {/* 4. MAIN CONTENT AREA - Conditional: Workspaces Tree OR Agents List — virtualized when >30 rows (500+ sessions) */}
+      {sidebarBody === "workspaces" ? (
+        projects.length === 0 ? (
+          <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3">
+            <div className="p-6 text-center text-neutral-500 text-xs space-y-3">
+              <p className="text-neutral-400 font-medium">No projects added yet.</p>
+              <p className="text-[11px] text-neutral-500">Add an existing project from disk to begin working with agents.</p>
+              <button
+                onClick={onOpenAddRepoDialog}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-medium transition cursor-pointer"
+              >
+                <FolderPlus className="w-3.5 h-3.5" />
+                <span>Add Existing Project</span>
+              </button>
+            </div>
+          </div>
+        ) : useVirtualization ? (
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <List
+              rowCount={flatRows.length}
+              rowHeight={getRowHeight}
+              rowComponent={VirtualRow}
+              // @ts-ignore
+              rowProps={{}}
+              style={{ height: "100%", width: "100%" }}
+              className="py-2"
+              overscanCount={8}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3">
+            {projects.map((proj) => {
                 const isActiveProject = proj.path === activeProject?.path;
                 const isCollapsed = collapsedProjects.has(proj.id);
                 const projectWorktrees = isActiveProject ? gitWorktrees : [];
@@ -471,6 +854,10 @@ export function WorktreeSidebar({
                         isActiveProject
                           ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border/60 font-medium shadow-xs"
                           : "hover:bg-worktree-sidebar-accent/50 text-worktree-sidebar-foreground/80 border border-transparent"
+                      } ${
+                        focusedProjectId === proj.id
+                          ? "border-indigo-500/50 ring-indigo-500/20 bg-worktree-sidebar-accent/30"
+                          : ""
                       }`}
                     >
                       {projectDropTarget?.id === proj.id && (
@@ -637,6 +1024,10 @@ export function WorktreeSidebar({
                                     }}
                                     className={`group relative ${compactCards ? "py-1.5 px-2 text-[11px]" : "p-2.5"} rounded-lg cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground flex items-center justify-between transition-all ${
                                       draggedWorktreePath === wt.path ? "opacity-30" : ""
+                                    } ${
+                                      focusedWorktreePath === wt.path
+                                        ? "border-indigo-500/50 ring-indigo-500/20 bg-worktree-sidebar-accent/30"
+                                        : ""
                                     }`}
                                   >
                                     {worktreeDropTarget?.path === wt.path && (
@@ -700,6 +1091,10 @@ export function WorktreeSidebar({
                                             session.active && isActiveProject
                                               ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
                                               : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+                                          } ${
+                                            focusedSessionId === session.id
+                                              ? "border-indigo-500/50 ring-indigo-500/20"
+                                              : ""
                                           }`}
                                         >
                                           {sessionDropTarget?.id === session.id && (
@@ -786,6 +1181,10 @@ export function WorktreeSidebar({
                                         session.active && isActiveProject
                                           ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
                                           : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+                                      } ${
+                                        focusedSessionId === session.id
+                                          ? "border-indigo-500/50 ring-indigo-500/20"
+                                          : ""
                                       }`}
                                     >
                                       {sessionDropTarget?.id === session.id && (
@@ -882,20 +1281,19 @@ export function WorktreeSidebar({
                     )}
                   </div>
                 );
-              })
-            )}
-          </>
-        ) : (
-          <SidebarAgentsList
-            sessions={sessions}
-            projects={projects}
-            onSelectSession={onSelectSession}
-            onDeleteSession={onDeleteSession}
-            compactCards={compactCards}
-            isModalOpen={isModalOpen}
-          />
-        )}
-      </div>
+              })}
+          </div>
+        )
+      ) : (
+        <SidebarAgentsList
+          sessions={sessions}
+          projects={projects}
+          onSelectSession={onSelectSession}
+          onDeleteSession={onDeleteSession}
+          compactCards={compactCards}
+          isModalOpen={isModalOpen}
+        />
+      )}
 
       {/* 5. Orca Workspace Options Menu Overlay com ancoragem precisa */}
       <WorkspaceOptionsMenu
@@ -906,6 +1304,31 @@ export function WorktreeSidebar({
         onClose={() => setOptionsMenuOpen(false)}
         onOptionsChange={setDisplayOptions}
       />
+
+      {/* 5b. Batch delete bar — only for explicit multi-select (Ctrl/Shift), never on single click */}
+      {selectedSessions.size > 1 && (
+        <div className="border-t border-red-500/20 bg-red-500/5 px-3 py-2 flex items-center justify-between text-[11px] shrink-0">
+          <span className="text-red-300 font-medium">{selectedSessions.size} selected</span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setSelectedSessions(new Set())}
+              className="px-2 py-1 rounded text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-foreground transition cursor-pointer"
+            >
+              Clear
+            </button>
+            <button
+              onClick={() => {
+                selectedSessions.forEach((id) => onDeleteSession(id));
+                setSelectedSessions(new Set());
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/20 transition cursor-pointer"
+            >
+              <Trash2 className="w-3 h-3" />
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 6. Orca Sidebar Footer */}
       <div className="h-8 border-t border-worktree-sidebar-border px-3 flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 font-mono bg-worktree-sidebar shrink-0">
