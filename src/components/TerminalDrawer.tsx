@@ -58,6 +58,14 @@ function normalizeLineHeight(v: unknown): number {
   return Math.min(3, Math.max(1, n));
 }
 
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.length === 3 ? h[0]+h[0] : h.slice(0,2), 16);
+  const g = parseInt(h.length === 3 ? h[1]+h[1] : h.slice(2,4), 16);
+  const b = parseInt(h.length === 3 ? h[2]+h[2] : h.slice(4,6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function buildXtermTheme(settings: HydraSettings | undefined): ITheme {
   if (!settings) {
     return {
@@ -76,7 +84,11 @@ function buildXtermTheme(settings: HydraSettings | undefined): ITheme {
   }
   const sysDark = getSystemPrefersDark();
   const appearance = resolveEffectiveTerminalAppearance(settings as HydraSettings, sysDark);
-  const base = (appearance.theme as ITheme) ?? {};
+  let base = (appearance.theme as ITheme) ?? {};
+  // Background opacity — Orca composeActiveTerminalTheme
+  if (settings.terminal_background_opacity !== undefined && settings.terminal_background_opacity < 1 && base.background) {
+    base = { ...base, background: hexToRgba(base.background as string, settings.terminal_background_opacity) };
+  }
   const overrides = settings.terminal_color_overrides;
   if (overrides) {
     return { ...base, ...Object.fromEntries(Object.entries(overrides).filter(([, v]) => !!v)) } as ITheme;
@@ -193,14 +205,45 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     }
     if (containerRef.current) {
       containerRef.current.style.backgroundColor = theme.background ?? "#0c0d0e";
-      containerRef.current.style.padding = `${settings.terminal_padding_y ?? 4}px ${settings.terminal_padding_x ?? 4}px`;
-      containerRef.current.style.setProperty("--terminal-cursor-opacity", String(settings.terminal_cursor_opacity ?? 1));
+      const px = (settings as any)?.terminal_padding_x;
+      const py = (settings as any)?.terminal_padding_y;
+      if (px != null || py != null) {
+        containerRef.current.style.padding = `${py ?? 8}px ${px ?? 8}px`;
+      }
+      // Cursor opacity — Orca TerminalCursorAppearanceSection
+      const co = (settings as any)?.terminal_cursor_opacity;
+      if (co !== undefined && co !== null) {
+        containerRef.current.style.setProperty("--xterm-cursor-opacity", String(co));
+      } else {
+        containerRef.current.style.removeProperty("--xterm-cursor-opacity");
+      }
     }
     // Force xterm to re-measure glyphs and refit — mirrors Orca safeFit/applyOrDeferPaneMetricOptions
     try { (term as unknown as { _core?: { _renderService?: { clear: () => void } } })._core?._renderService?.clear(); } catch {}
     try { term.refresh(0, term.rows - 1); } catch {}
     try { fitAddon?.fit(); } catch {}
   }, [settings]);
+
+  // Hide mouse while typing — Orca TerminalWindowSection
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (!(settings as any)?.terminal_mouse_hide_while_typing) return;
+    const hide = () => { el.style.cursor = "none"; };
+    const show = () => { el.style.cursor = ""; };
+    el.addEventListener("mousemove", show);
+    const term = xtermRef.current;
+    // hide on any data (typing) — hook via term.onData if available
+    let dispose: (()=>void) | undefined;
+    if (term && (term as any).onData) {
+      const d = (term as any).onData(() => hide());
+      dispose = () => d.dispose?.();
+    } else {
+      window.addEventListener("keydown", hide);
+      dispose = () => window.removeEventListener("keydown", hide);
+    }
+    return () => { el.removeEventListener("mousemove", show); dispose?.(); el.style.cursor = ""; };
+  }, [settings?.terminal_mouse_hide_while_typing]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -261,11 +304,6 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
         if (ligaturesAddonRef.current) return;
         try { const a = new (LigaturesAddon as unknown as new()=>unknown)(); (term as unknown as { loadAddon:(a:unknown)=>void }).loadAddon(a); ligaturesAddonRef.current = a; } catch (e) { console.warn("[Hydra] Ligatures init failed", e); }
       }).catch(()=>{});
-    }
-    if (containerRef.current) {
-      containerRef.current.style.backgroundColor = theme.background ?? "#0c0d0e";
-      containerRef.current.style.padding = `${s?.terminal_padding_y ?? 4}px ${s?.terminal_padding_x ?? 4}px`;
-      containerRef.current.style.setProperty("--terminal-cursor-opacity", String(s?.terminal_cursor_opacity ?? 1));
     }
     term.open(containerRef.current);
     const doFitAndSync = () => {
@@ -363,22 +401,8 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     }
 
     window.addEventListener("resize", doFitAndSync);
-    const handleMouseMove = () => {
-      if (containerRef.current && containerRef.current.style.cursor === "none") {
-        containerRef.current.style.cursor = "";
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (settings?.terminal_mouse_hide_while_typing && containerRef.current && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        containerRef.current.style.cursor = "none";
-      }
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    containerRef.current.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("resize", doFitAndSync);
-      window.removeEventListener("mousemove", handleMouseMove);
-      containerRef.current?.removeEventListener("keydown", handleKeyDown);
       resizeObserver.disconnect();
       unlistenPromise.then((unlisten) => unlisten());
       try { (webglAddonRef.current as unknown as { dispose?: ()=>void })?.dispose?.(); } catch {}
@@ -442,7 +466,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
   const debugInfo = settings ? `${settings.terminal_font_family.split(",")[0].trim().replace(/['"]/g,"")} ${settings.terminal_font_size}px` : "";
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ backgroundColor: bg }}>
-      <div ref={containerRef} onContextMenu={handleContextMenu} onMouseEnter={handleMouseEnter} className="w-full h-full p-2 overflow-hidden" style={{ backgroundColor: bg }} />
+      <div ref={containerRef} onContextMenu={handleContextMenu} onMouseEnter={handleMouseEnter} className="w-full h-full overflow-hidden" style={{ backgroundColor: bg, padding: `${(settings as any)?.terminal_padding_y ?? 8}px ${(settings as any)?.terminal_padding_x ?? 8}px` }} />
       <TerminalSearch
         isOpen={isSearchOpen}
         onClose={() => {

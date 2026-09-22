@@ -20,6 +20,7 @@ import {
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarAgentsList } from "./SidebarAgentsList";
+import type { HydraSettings } from "../../shared/settings-types";
 
 export interface AvailableAgent {
   id: string;
@@ -96,6 +97,7 @@ interface WorktreeSidebarProps {
   onSelectNextSession?: (direction: "up" | "down") => void;
   onSelectPrevSession?: (direction: "up" | "down") => void;
   isModalOpen?: boolean;
+  settings?: HydraSettings;
 }
 
 export function WorktreeSidebar({
@@ -129,6 +131,7 @@ export function WorktreeSidebar({
   onSelectNextSession,
   onSelectPrevSession,
   isModalOpen = false,
+  settings,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
@@ -748,8 +751,17 @@ export function WorktreeSidebar({
     return null;
   };
 
+  const sidebarTintStyle = (() => {
+    if (settings?.left_sidebar_appearance_mode === "tinted" && settings.left_sidebar_tint_color) {
+      const color = settings.left_sidebar_tint_color;
+      const opacity = settings.left_sidebar_tint_opacity ?? 0.1;
+      return { backgroundColor: `color-mix(in srgb, ${color} ${Math.round(opacity * 100)}%, #121316)` } as const;
+    }
+    return {};
+  })();
+
   return (
-    <div className="flex flex-col h-full bg-worktree-sidebar select-none relative font-sans text-worktree-sidebar-foreground">
+    <div className="flex flex-col h-full bg-worktree-sidebar select-none relative font-sans text-worktree-sidebar-foreground" style={sidebarTintStyle}>
       {/* 1. TOP NAV STRIP (Orca SidebarNav.tsx) */}
       <div className="px-3 pt-3 pb-2 space-y-1 border-b border-worktree-sidebar-border shrink-0 text-xs">
         <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 cursor-pointer transition">

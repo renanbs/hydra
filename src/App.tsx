@@ -2082,6 +2082,7 @@ export default function App() {
                 projectGroupMap={projectGroupMap}
                 projectGroups={projectGroups}
                 compactCards={Boolean(hydraSettings.compact_worktree_cards)}
+                settings={hydraSettings as any}
                 isModalOpen={isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen}
               />
             </aside>

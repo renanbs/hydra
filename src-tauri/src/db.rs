@@ -110,6 +110,9 @@ fn default_left_sidebar_tint_opacity() -> f32 { 0.1 }
 fn default_usage_percentage_display() -> String { "used".to_string() }
 fn default_cursor_opacity() -> f32 { 1.0 }
 fn default_padding() -> u32 { 4 }
+fn default_status_bar_items() -> Vec<String> { vec!["resource-usage".to_string(), "ports".to_string(), "ssh".to_string(), "claude".to_string(), "codex".to_string()] }
+fn default_editor_minimap() -> bool { true }
+fn default_editor_word_wrap() -> bool { true }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct OrcaWorkspaceLayout {
@@ -393,6 +396,19 @@ pub struct HydraSettings {
     pub window_background_blur: bool,
     #[serde(default = "default_false", alias = "terminalMouseHideWhileTyping")]
     pub terminal_mouse_hide_while_typing: bool,
+    // Theme-parity Orca additions (optional, keep main's required fields intact)
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "editorFontFamily")]
+    pub editor_font_family: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "editorMinimapEnabled")]
+    pub editor_minimap_enabled: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "editorWordWrap")]
+    pub editor_word_wrap: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "terminalQuickCommands")]
+    pub terminal_quick_commands: Option<Vec<serde_json::Value>>,
+    #[serde(default = "default_true", alias = "terminalScopeHistoryByWorktree")]
+    pub terminal_scope_history_by_worktree: bool,
+    #[serde(default = "default_status_bar_items", alias = "statusBarItems")]
+    pub status_bar_items: Vec<String>,
 }
 
 impl Default for HydraSettings {
@@ -481,6 +497,12 @@ impl Default for HydraSettings {
             terminal_padding_y: 4,
             window_background_blur: false,
             terminal_mouse_hide_while_typing: false,
+            editor_font_family: None,
+            editor_minimap_enabled: Some(true),
+            editor_word_wrap: Some(true),
+            terminal_quick_commands: None,
+            terminal_scope_history_by_worktree: true,
+            status_bar_items: default_status_bar_items(),
         }
     }
 }

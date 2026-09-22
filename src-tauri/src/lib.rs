@@ -18,6 +18,7 @@ pub mod terminal;
 pub mod window_actions;
 pub mod worktree_ops;
 pub mod preflight;
+pub mod theme_import;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, fold_terminal_output};
@@ -1003,6 +1004,9 @@ pub fn run() {
             resolve_tool_approval,
             list_tool_approvals,
             create_tool_approval,
+            theme_import::preview_ghostty_import,
+            theme_import::preview_warp_themes,
+            theme_import::choose_warp_themes_file,
             window_actions::window_minimize,
             window_actions::window_toggle_maximize,
             window_actions::window_close,
