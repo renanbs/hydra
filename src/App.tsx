@@ -185,6 +185,9 @@ export default function App() {
     { id: "tab_main", title: "bash (active)", type: "terminal" },
   ]);
   const [workbenchLoaded, setWorkbenchLoaded] = useState(false);
+  const workbenchLoadedRef = useRef(workbenchLoaded);
+  workbenchLoadedRef.current = workbenchLoaded;
+  const workbenchCheckedRef = useRef(false);
   const tabsRef = useRef(tabs);
   tabsRef.current = tabs;
   const [activeTabId, setActiveTabId] = useState("tab_main");
@@ -380,21 +383,15 @@ export default function App() {
         if (state && state.tabs_json) {
           try {
             const raw = JSON.parse(state.tabs_json) as TabItem[];
-            // Dedupe 1: por sessionId exato
+            // Dedupe apenas por sessionId + órfã sem sessionId. Não dedupar por conteúdo (title|executable|cwd)
+            // para não remover 2× Terminal intencional no mesmo cwd — duplicatas OpenCode já foram
+            // eliminadas via DB ROW_NUMBER + sessions dedupe, e legacy tab_2711 cai na órfã abaixo.
             const seenSid = new Set<string>();
             let deduped = raw.filter((t) => {
               if (t.sessionId) {
                 if (seenSid.has(t.sessionId)) return false;
                 seenSid.add(t.sessionId);
               }
-              return true;
-            });
-            // Dedupe 2: por conteúdo (title+executable+cwd) — pega 2x OpenCode com sessionIds diferentes
-            const seenContent = new Set<string>();
-            deduped = deduped.filter((t) => {
-              const ckey = `${t.title}|${t.executable ?? ""}|${t.cwd ?? ""}|${t.type}`;
-              if (seenContent.has(ckey)) return false;
-              seenContent.add(ckey);
               return true;
             });
             // Remove órfã sem sessionId se já existe tab com session para mesmo cwd
@@ -423,7 +420,8 @@ export default function App() {
           }
         }
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => { workbenchCheckedRef.current = true; });
   }, []);
 
   const updateLeftSidebar = (open: boolean) => {
@@ -600,9 +598,11 @@ export default function App() {
             }
           } catch {}
           setSessions(loaded);
-          // Não sobrescreve tabs se workbench já foi restaurado (race) ou já tem abas reais
+          // Race fix: se workbench ainda não foi checado, não cria tab — deixa workbench decidir.
+          // Só cria initial tab se workbench já foi checado e ainda está no default (first run).
+          if (!workbenchCheckedRef.current) return;
           const hasRealTabs = tabsRef.current.length > 1 || (tabsRef.current.length === 1 && tabsRef.current[0].id !== "tab_main");
-          if (!workbenchLoaded && !hasRealTabs) {
+          if (!hasRealTabs) {
             const firstTabId = `tab_${loaded[0].id}`;
             setTabs([
               {
@@ -695,8 +695,9 @@ export default function App() {
             }
           } catch {}
           setSessions(loaded);
+          if (!workbenchCheckedRef.current) return;
           const hasRealTabs = tabsRef.current.length > 1 || (tabsRef.current.length === 1 && tabsRef.current[0].id !== "tab_main");
-          if (!workbenchLoaded && !hasRealTabs) {
+          if (!hasRealTabs) {
             const firstTabId = `tab_${loaded[0].id}`;
             setTabs([
               {
