@@ -624,6 +624,42 @@ impl DatabaseManager {
         Ok(())
     }
 
+    pub fn get_workbench_state_for_project(&self, project_path: &str) -> Result<WorkbenchState, String> {
+        let conn = self.conn.lock();
+        let key = format!("workbench_state:{}", project_path);
+        let mut stmt = conn
+            .prepare("SELECT value FROM settings WHERE key = ?1")
+            .map_err(|e| format!("Error querying workbench state: {e}"))?;
+        let mut rows = stmt.query(params![key]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json_str: String = row.get(0).map_err(|e| e.to_string())?;
+            serde_json::from_str(&json_str).map_err(|e| format!("JSON parse error: {e}"))
+        } else {
+            // fallback to global for backwards compat
+            drop(rows);
+            drop(stmt);
+            self.get_workbench_state()
+        }
+    }
+
+    pub fn save_workbench_state_for_project(&self, project_path: &str, state: &WorkbenchState) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let json_str = serde_json::to_string(state).map_err(|e| e.to_string())?;
+        let key = format!("workbench_state:{}", project_path);
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
+            params![key, json_str],
+        )
+        .map_err(|e| format!("Error saving workbench state: {e}"))?;
+        // also save global for backwards compat
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('workbench_state', ?1)",
+            params![json_str],
+        )
+        .map_err(|e| format!("Error saving workbench state: {e}"))?;
+        Ok(())
+    }
+
     pub fn list_sessions(&self, project_path: Option<&str>) -> Result<Vec<DbSessionRecord>, String> {
         let conn = self.conn.lock();
 

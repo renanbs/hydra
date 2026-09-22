@@ -303,6 +303,23 @@ fn save_workbench_persistence(state: WorkbenchState, state_db: State<'_, AppStat
 }
 
 #[tauri::command]
+async fn get_workbench_persistence_for_project(
+    project_path: String,
+    app_state: State<'_, AppState>,
+) -> Result<WorkbenchState, String> {
+    app_state.db.get_workbench_state_for_project(&project_path)
+}
+
+#[tauri::command]
+async fn save_workbench_persistence_for_project(
+    project_path: String,
+    state: WorkbenchState,
+    app_state: State<'_, AppState>,
+) -> Result<(), String> {
+    app_state.db.save_workbench_state_for_project(&project_path, &state)
+}
+
+#[tauri::command]
 fn list_available_agents() -> Vec<AvailableAgent> {
     probe_available_agents()
 }
@@ -977,6 +994,8 @@ pub fn run() {
             save_layout_persistence,
             get_workbench_persistence,
             save_workbench_persistence,
+            get_workbench_persistence_for_project,
+            save_workbench_persistence_for_project,
             list_available_agents,
             list_persisted_sessions,
             save_session_record,
