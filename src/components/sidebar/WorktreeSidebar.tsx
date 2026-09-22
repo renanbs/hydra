@@ -974,22 +974,7 @@ export function WorktreeSidebar({
 
   return (
     <div className="flex flex-col h-full bg-worktree-sidebar select-none relative font-sans text-worktree-sidebar-foreground" style={sidebarTintStyle}>
-      {/* 1. TOP NAV STRIP (Orca SidebarNav.tsx) */}
-      <div className="px-3 pt-3 pb-2 space-y-1 border-b border-worktree-sidebar-border shrink-0 text-xs">
-        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 cursor-pointer transition">
-          <GitCommit className="w-3.5 h-3.5 text-worktree-sidebar-foreground/50" />
-          <span className="font-medium text-[11px]">Automations</span>
-        </div>
-        <div className="flex items-center justify-between px-2 py-1.5 rounded-lg text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 cursor-pointer transition">
-          <div className="flex items-center gap-2.5">
-            <FolderGit2 className="w-3.5 h-3.5 text-worktree-sidebar-foreground/50" />
-            <span className="font-medium text-[11px]">Agent Dashboard</span>
-          </div>
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-        </div>
-      </div>
-
-      {/* 2. SIDEBAR HEADER (Orca SidebarHeader.tsx with Bell toggle) */}
+      {/* 1. SIDEBAR HEADER (Orca SidebarHeader.tsx with Bell toggle) */}
       <SidebarHeader
         sidebarBody={sidebarBody}
         setSidebarBody={setSidebarBody}

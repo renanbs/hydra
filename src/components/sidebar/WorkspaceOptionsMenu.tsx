@@ -40,6 +40,10 @@ export function WorkspaceOptionsMenu({
 }: WorkspaceOptionsMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
+  const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | null>(null);
+  useEffect(() => {
+    if (!isOpen) setOpenSubmenu(null);
+  }, [isOpen]);
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
@@ -111,19 +115,37 @@ export function WorkspaceOptionsMenu({
         Workspace options
       </div>
 
-      {/* Show Section */}
+      {/* Show Section — Orca: host + repo filter */}
       <div className="space-y-1">
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Show
         </div>
-        <div className="flex items-center justify-between px-2 py-1 text-[11px] text-popover-foreground hover:bg-accent rounded cursor-pointer transition-colors">
-          <div className="flex items-center gap-1.5">
-            <span>Projects</span>
+        <div className="relative">
+          <div
+            onClick={() => setOpenSubmenu(openSubmenu === "show" ? null : "show")}
+            className={`flex items-center justify-between px-2 py-1 text-[11px] text-popover-foreground hover:bg-accent rounded cursor-pointer transition-colors ${openSubmenu === "show" ? "bg-accent" : ""}`}
+          >
+            <div className="flex items-center gap-1.5">
+              <span>Projects</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
+              <span>All projects ({projects.length})</span>
+              <ChevronRight className="w-3 h-3 text-muted-foreground" />
+            </span>
           </div>
-          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-            <span>All projects ({projects.length})</span>
-            <ChevronRight className="w-3 h-3 text-muted-foreground" />
-          </span>
+          {openSubmenu === "show" && (
+            <div className="absolute left-full top-0 ml-1 w-56 rounded-lg border border-border bg-popover p-1 shadow-xl z-10 max-h-64 overflow-y-auto">
+              <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase">Filter by project</div>
+              <div className="px-2 py-1 text-[11px] text-muted-foreground">All projects visible</div>
+              {projects.slice(0, 10).map((proj) => (
+                <div key={proj.id} className="flex items-center gap-2 px-2 py-1 text-[11px] text-popover-foreground">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="truncate">{proj.name}</span>
+                </div>
+              ))}
+              {projects.length > 10 && <div className="px-2 py-1 text-[10px] text-muted-foreground">+{projects.length - 10} more</div>}
+            </div>
+          )}
         </div>
       </div>
 
@@ -160,36 +182,90 @@ export function WorkspaceOptionsMenu({
         </div>
       </div>
 
-      {/* Sort & Display rows */}
+      {/* Sort & Display rows — Orca parity: submenus com radio */}
       <div className="space-y-0.5 text-[11px]">
-        <div
-          onClick={() => {
-            const order: WorkspaceDisplayOptions["sortBy"][] = ["agent-activity", "name", "recent"];
-            const idx = order.indexOf(options.sortBy);
-            const next = order[(idx + 1) % order.length] as WorkspaceDisplayOptions["sortBy"];
-            onOptionsChange({ ...options, sortBy: next });
-          }}
-          className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors"
-          title="Click to cycle: Agent Activity → Name → Recent"
-        >
-          <span>Sort by</span>
-          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-            <span>{options.sortBy === "agent-activity" ? "Agent Activity" : options.sortBy === "name" ? "Name" : "Recent"}</span>
-            <ChevronRight className="w-3 h-3 text-muted-foreground" />
-          </span>
+        <div className="relative">
+          <div
+            onClick={() => setOpenSubmenu(openSubmenu === "sort" ? null : "sort")}
+            className={`flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors ${openSubmenu === "sort" ? "bg-accent" : ""}`}
+          >
+            <span>Sort by</span>
+            <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
+              <span>{options.sortBy === "agent-activity" ? "Agent Activity" : options.sortBy === "name" ? "Name" : "Recent"}</span>
+              <ChevronRight className="w-3 h-3 text-muted-foreground" />
+            </span>
+          </div>
+          {openSubmenu === "sort" && (
+            <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
+              {[
+                { id: "agent-activity", label: "Agent Activity" },
+                { id: "name", label: "Name" },
+                { id: "recent", label: "Recent" },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    onOptionsChange({ ...options, sortBy: opt.id as WorkspaceDisplayOptions["sortBy"] });
+                    setOpenSubmenu(null);
+                  }}
+                  className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] transition cursor-pointer ${options.sortBy === opt.id ? "bg-accent text-foreground font-medium" : "text-popover-foreground hover:bg-accent"}`}
+                >
+                  <span>{opt.label}</span>
+                  {options.sortBy === opt.id && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors">
-          <span>Project order</span>
-          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-            <span>Manual</span>
-            <ChevronRight className="w-3 h-3 text-muted-foreground" />
-          </span>
-        </div>
-        <div className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors">
-          <span>Card display</span>
-          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-            <ChevronRight className="w-3 h-3 text-muted-foreground" />
-          </span>
+        {options.groupBy === "repo" && (
+          <div className="relative">
+            <div
+              onClick={() => setOpenSubmenu(openSubmenu === "projectOrder" ? null : "projectOrder")}
+              className={`flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors ${openSubmenu === "projectOrder" ? "bg-accent" : ""}`}
+            >
+              <span>Project order</span>
+              <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
+                <span>Manual</span>
+                <ChevronRight className="w-3 h-3 text-muted-foreground" />
+              </span>
+            </div>
+            {openSubmenu === "projectOrder" && (
+              <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
+                <button
+                  onClick={() => setOpenSubmenu(null)}
+                  className="w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] bg-accent text-foreground font-medium cursor-pointer"
+                >
+                  <span>Manual</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                </button>
+                <div className="px-2 py-1 text-[10px] text-muted-foreground">Drag to reorder projects</div>
+              </div>
+            )}
+          </div>
+        )}
+        <div className="relative">
+          <div
+            onClick={() => setOpenSubmenu(openSubmenu === "cardDisplay" ? null : "cardDisplay")}
+            className={`flex items-center justify-between px-2 py-1 hover:bg-accent rounded cursor-pointer text-popover-foreground transition-colors ${openSubmenu === "cardDisplay" ? "bg-accent" : ""}`}
+          >
+            <span>Card display</span>
+            <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
+              <ChevronRight className="w-3 h-3 text-muted-foreground" />
+            </span>
+          </div>
+          {openSubmenu === "cardDisplay" && (
+            <div className="absolute left-full top-0 ml-1 w-48 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
+              <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase">Card layout</div>
+              <button
+                onClick={() => setOpenSubmenu(null)}
+                className="w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] bg-accent text-foreground font-medium cursor-pointer"
+              >
+                <span>Detailed</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              </button>
+              <div className="px-2 py-1 text-[10px] text-muted-foreground">Compact via Settings → Appearance</div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -641,7 +641,7 @@ impl DatabaseManager {
         if let Some(json_str) = maybe_json {
             serde_json::from_str(&json_str).map_err(|e| format!("JSON parse error: {e}"))
         } else {
-            self.get_workbench_state()
+            Ok(WorkbenchState::default())
         }
     }
 
