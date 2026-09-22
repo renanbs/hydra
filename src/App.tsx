@@ -114,6 +114,7 @@ export default function App() {
   const [activeProject, setActiveProject] = useState<HydraProject | null>(null);
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
+  const [worktreesByProject, setWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   // Apply interface font live (Orca appFontFamily → --app-font-family)
   useEffect(() => {
@@ -466,9 +467,34 @@ export default function App() {
 
   const refreshGitWorktrees = (repoPath: string) => {
     invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath })
-      .then(setGitWorktrees)
+      .then((wts) => {
+        setGitWorktrees(wts);
+        setWorktreesByProject((prev) => ({ ...prev, [repoPath]: wts }));
+      })
       .catch(console.error);
   };
+
+  const refreshAllWorktrees = useCallback((projs: HydraProject[]) => {
+    if (projs.length === 0) return;
+    Promise.all(
+      projs.map((proj) =>
+        invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath: proj.path })
+          .then((wts) => ({ path: proj.path, wts }))
+          .catch(() => ({ path: proj.path, wts: [] as GitWorktreeInfo[] }))
+      )
+    ).then((results) => {
+      const map: Record<string, GitWorktreeInfo[]> = {};
+      for (const r of results) map[r.path] = r.wts;
+      setWorktreesByProject(map);
+      // keep active's list in sync for backwards compat
+      if (activeProjectRef.current) {
+        const activeWts = map[activeProjectRef.current.path];
+        if (activeWts) setGitWorktrees(activeWts);
+      } else if (projs[0]) {
+        setGitWorktrees(map[projs[0].path] ?? []);
+      }
+    });
+  }, []);
 
   // Hydrate Sessions and Projects on startup
   useEffect(() => {
@@ -499,7 +525,7 @@ export default function App() {
           if (!workbenchLoaded) {
             loadAllSessions();
           }
-          refreshGitWorktrees(sorted[0].path);
+          refreshAllWorktrees(sorted);
         }
       })
       .catch(console.error);
@@ -522,6 +548,7 @@ export default function App() {
           }
         } catch {}
         setProjects(sorted);
+        refreshAllWorktrees(sorted);
       }).catch(console.error);
     };
     window.addEventListener("hydra:refresh-projects", handleRefreshProjects);
@@ -918,13 +945,28 @@ export default function App() {
   };
 
   const handleDeleteGitWorktree = (wt: GitWorktreeInfo) => {
-    if (!activeProject) return;
+    // Sprint 3: find repo for wt even if inactive project (worktreesByProject multi-project)
+    let repoPath = activeProject?.path ?? "";
+    // try to find owning project via worktreesByProject
+    for (const proj of projectsRef.current) {
+      const list = worktreesByProject[proj.path];
+      if (list && list.some((w) => w.path === wt.path)) {
+        repoPath = proj.path;
+        break;
+      }
+      // fallback: wt.path is inside project dir
+      if (wt.path === proj.path || wt.path.startsWith(proj.path + "/")) {
+        // candidate, but prefer exact match above
+        if (!repoPath) repoPath = proj.path;
+      }
+    }
+    if (!repoPath) return;
     invoke("delete_worktree", {
-      repoPath: activeProject.path,
+      repoPath,
       worktreePath: wt.path,
     })
       .then(() => {
-        refreshGitWorktrees(activeProject.path);
+        refreshGitWorktrees(repoPath);
       })
       .catch(console.error);
   };
@@ -1009,11 +1051,25 @@ export default function App() {
     } catch {}
   };
 
-  const handleReorderWorktrees = (newWorktrees: GitWorktreeInfo[]) => {
-    setGitWorktrees(newWorktrees);
-    try {
-      localStorage.setItem("hydra:worktrees_order", JSON.stringify(newWorktrees.map(w => w.path)));
-    } catch {}
+  const handleReorderWorktrees = (newWorktrees: GitWorktreeInfo[], projectPath?: string) => {
+    const targetPath = projectPath ?? activeProjectRef.current?.path;
+    if (targetPath) {
+      setWorktreesByProject((prev) => ({ ...prev, [targetPath]: newWorktrees }));
+      if (targetPath === activeProjectRef.current?.path) setGitWorktrees(newWorktrees);
+      try {
+        localStorage.setItem(`hydra:worktrees_order:${targetPath}`, JSON.stringify(newWorktrees.map((w) => w.path)));
+      } catch {}
+      if (targetPath === activeProjectRef.current?.path) {
+        try {
+          localStorage.setItem("hydra:worktrees_order", JSON.stringify(newWorktrees.map((w) => w.path)));
+        } catch {}
+      }
+    } else {
+      setGitWorktrees(newWorktrees);
+      try {
+        localStorage.setItem("hydra:worktrees_order", JSON.stringify(newWorktrees.map((w) => w.path)));
+      } catch {}
+    }
   };
 
   const handleNewTerminalTab = (shell?: string) => {
@@ -2056,6 +2112,7 @@ export default function App() {
                 activeProject={activeProject}
                 gitStatus={gitStatus}
                 gitWorktrees={gitWorktrees}
+                worktreesByProject={worktreesByProject}
                 onSelectProject={handleSelectProject}
                 onRemoveProject={handleRemoveProject}
                 onSelectSession={handleSelectSession}

@@ -15,11 +15,13 @@ import {
   Sliders,
   Copy,
   FolderTree,
-  GripVertical
+  GripVertical,
+  Terminal
 } from "lucide-react";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarAgentsList } from "./SidebarAgentsList";
+import { AgentBrandIcon } from "../AgentIcon";
 import type { HydraSettings } from "../../shared/settings-types";
 
 export interface AvailableAgent {
@@ -71,6 +73,7 @@ interface WorktreeSidebarProps {
   activeProject: HydraProject | null;
   gitStatus: GitRepoStatus | null;
   gitWorktrees: GitWorktreeInfo[];
+  worktreesByProject?: Record<string, GitWorktreeInfo[]>;
   onSelectProject: (proj: HydraProject) => void;
   onRemoveProject: (proj: HydraProject) => void;
   onSelectSession: (id: string) => void;
@@ -86,7 +89,7 @@ interface WorktreeSidebarProps {
   onWorktreeContextMenu?: (e: React.MouseEvent, worktree: GitWorktreeInfo, project: HydraProject) => void;
   onReorderSessions?: (sessions: WorktreeSession[]) => void;
   onReorderProjects?: (projects: HydraProject[]) => void;
-  onReorderWorktrees?: (worktrees: GitWorktreeInfo[]) => void;
+  onReorderWorktrees?: (worktrees: GitWorktreeInfo[], projectPath?: string) => void;
   pinnedProjects?: Set<string>;
   unreadProjects?: Set<string>;
   pinnedWorktrees?: Set<string>;
@@ -106,6 +109,7 @@ export function WorktreeSidebar({
   activeProject,
   gitStatus,
   gitWorktrees,
+  worktreesByProject,
   onSelectProject,
   onRemoveProject,
   onSelectSession,
@@ -154,6 +158,53 @@ export function WorktreeSidebar({
     hideCliCreated: false,
     hideDetachedHead: false,
   });
+
+  // ---- Sprint 3 P0: helpers for displayOptions + worktreesByProject ----
+  const getWorktreesForProject = useCallback((proj: HydraProject): GitWorktreeInfo[] => {
+    if (worktreesByProject && worktreesByProject[proj.path]) return worktreesByProject[proj.path];
+    if (proj.path === activeProject?.path) return gitWorktrees;
+    return [];
+  }, [worktreesByProject, gitWorktrees, activeProject]);
+
+  const isDefaultBranchWt = useCallback((wt: GitWorktreeInfo, proj: HydraProject): boolean => {
+    const b = wt.branch?.trim() ?? "";
+    if (!b) return false;
+    const defaultBranch = proj.current_branch?.trim() ?? "main";
+    return b === defaultBranch || b === "main" || b === "master";
+  }, []);
+
+  const isDetachedHeadWt = useCallback((wt: GitWorktreeInfo): boolean => {
+    const b = (wt.branch ?? "").trim();
+    return b === "" || b === "HEAD" || b === "(detached)";
+  }, []);
+
+  const isAutomationCreatedWt = useCallback((wt: GitWorktreeInfo): boolean => {
+    const b = (wt.branch ?? "").toLowerCase();
+    return b.startsWith("workspace-") || b.includes("automation") || b.includes("agent-") || b.startsWith("feat/automation");
+  }, []);
+
+  const isCliCreatedWt = useCallback((wt: GitWorktreeInfo): boolean => {
+    const b = (wt.branch ?? "").trim();
+    if (!b) return false;
+    if (b === "main" || b === "master") return false;
+    if (b.includes("workspace-") || b.includes("automation")) return false;
+    return !b.includes("/");
+  }, []);
+
+  const isSleepingWorktree = useCallback((wt: GitWorktreeInfo, proj: HydraProject): boolean => {
+    const wtSessions = sessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
+    if (wtSessions.length === 0) return wt.path !== proj.path;
+    return wtSessions.every((s) => s.state === "idle");
+  }, [sessions]);
+
+  const SessionAgentIcon = ({ agentName, size }: { agentName: string; size: number }) => {
+    const lower = agentName.toLowerCase();
+    if (["bash", "sh", "zsh", "shell", "terminal"].includes(lower)) {
+      return <Terminal className="shrink-0 text-neutral-500" style={{ width: size, height: size }} />;
+    }
+    return <AgentBrandIcon agentId={agentName} size={size} />;
+  };
+
   // Drag and Drop state
   const [draggedSessionId, setDraggedSessionId] = useState<string | null>(null);
   const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
@@ -261,16 +312,42 @@ export function WorktreeSidebar({
     const isTop = e.clientY - rect.top < rect.height / 2;
     setWorktreeDropTarget({ path: targetPath, position: isTop ? "top" : "bottom" });
   };
+  const findProjectForWorktree = useCallback((path: string): HydraProject | undefined => {
+    for (const proj of projects) {
+      const wts = getWorktreesForProject(proj);
+      if (wts.some((w) => w.path === path)) return proj;
+    }
+    // fallback: path inside project dir
+    for (const proj of projects) {
+      if (path === proj.path || path.startsWith(proj.path + "/")) return proj;
+    }
+    return undefined;
+  }, [projects, getWorktreesForProject]);
+
   const handleWorktreeDrop = (e: React.DragEvent, targetPath: string) => {
     e.preventDefault();
     e.stopPropagation();
     const sourcePath = draggedWorktreePath || e.dataTransfer.getData("application/x-hydra-worktree-path");
     if (sourcePath && sourcePath !== targetPath && onReorderWorktrees) {
-      const fromIdx = gitWorktrees.findIndex((w) => w.path === sourcePath);
-      const toIdx = gitWorktrees.findIndex((w) => w.path === targetPath);
-      if (fromIdx !== -1 && toIdx !== -1) {
-        const next = reorderList(gitWorktrees, fromIdx, toIdx, worktreeDropTarget?.position ?? "bottom");
-        onReorderWorktrees(next);
+      const sourceProj = findProjectForWorktree(sourcePath);
+      const targetProj = findProjectForWorktree(targetPath);
+      // Only reorder within same project
+      if (sourceProj && targetProj && sourceProj.path === targetProj.path) {
+        const list = getWorktreesForProject(sourceProj);
+        const fromIdx = list.findIndex((w) => w.path === sourcePath);
+        const toIdx = list.findIndex((w) => w.path === targetPath);
+        if (fromIdx !== -1 && toIdx !== -1) {
+          const next = reorderList(list, fromIdx, toIdx, worktreeDropTarget?.position ?? "bottom");
+          onReorderWorktrees(next, sourceProj.path);
+        }
+      } else if (!sourceProj && !targetProj) {
+        // fallback to global gitWorktrees (active project only, legacy)
+        const fromIdx = gitWorktrees.findIndex((w) => w.path === sourcePath);
+        const toIdx = gitWorktrees.findIndex((w) => w.path === targetPath);
+        if (fromIdx !== -1 && toIdx !== -1) {
+          const next = reorderList(gitWorktrees, fromIdx, toIdx, worktreeDropTarget?.position ?? "bottom");
+          onReorderWorktrees(next);
+        }
       }
     }
     setDraggedWorktreePath(null);
@@ -346,9 +423,9 @@ export function WorktreeSidebar({
       projects.forEach((proj) => {
         allFocusable.push({ type: "project", id: proj.id });
         const isCollapsed = collapsedProjects.has(proj.id);
-        const isActiveProject = proj.path === activeProject?.path;
-        const projectWorktrees = isActiveProject ? gitWorktrees : [];
-        if (!isCollapsed && isActiveProject) {
+        const projectWorktrees = getWorktreesForProject(proj);
+        const isActiveForSessions = proj.path === activeProject?.path;
+        if (!isCollapsed) {
           projectWorktrees.forEach((wt) => {
             allFocusable.push({ type: "worktree", id: wt.path });
             const wtSessions = sessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
@@ -359,7 +436,7 @@ export function WorktreeSidebar({
         if (!isCollapsed) {
           const projectSessions = sessions.filter(
             (s) => s.project_path === proj.path 
-              || (!s.project_path && isActiveProject)
+              || (!s.project_path && isActiveForSessions)
               || projectWorktrees.some((wt) => wt.path === s.project_path)
               || s.project_path.startsWith(proj.path + "/")
           );
@@ -387,7 +464,13 @@ export function WorktreeSidebar({
         if (focusedSessionId) {
           onSelectSession(focusedSessionId);
         } else if (focusedWorktreePath) {
-          const wt = gitWorktrees.find((w) => w.path === focusedWorktreePath);
+          let wt: GitWorktreeInfo | undefined = gitWorktrees.find((w) => w.path === focusedWorktreePath);
+          if (!wt && worktreesByProject) {
+            for (const list of Object.values(worktreesByProject)) {
+              wt = list.find((w) => w.path === focusedWorktreePath);
+              if (wt) break;
+            }
+          }
           if (wt) onSelectGitWorktree(wt);
         } else if (focusedProjectId) {
           const proj = projects.find((p) => p.id === focusedProjectId);
@@ -456,7 +539,7 @@ export function WorktreeSidebar({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [sessions, projects, gitWorktrees, activeProject, collapsedProjects, onSelectNextSession, onSelectPrevSession, onSelectSession, onSelectGitWorktree, onSelectProject, onSessionContextMenu, isModalOpen, focusedSessionId, focusedWorktreePath, focusedProjectId]);
+  }, [sessions, projects, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, onSelectNextSession, onSelectPrevSession, onSelectSession, onSelectGitWorktree, onSelectProject, onSessionContextMenu, isModalOpen, focusedSessionId, focusedWorktreePath, focusedProjectId]);
 
   const toggleProjectCollapse = (projectId: string) => {
     setCollapsedProjects((prev) => {
@@ -472,12 +555,12 @@ export function WorktreeSidebar({
     | { type: "project-header"; proj: HydraProject; isActive: boolean; isCollapsed: boolean; isMenuOpen: boolean }
     | { type: "worktree"; wt: GitWorktreeInfo; proj: HydraProject }
     | { type: "session"; session: WorktreeSession; proj: HydraProject; wt?: GitWorktreeInfo; isOrphan?: boolean; isNested: boolean }
-    | { type: "empty"; proj: HydraProject; message: string };
+    | { type: "empty"; proj: HydraProject; message: string }
+    | { type: "hidden-pill"; proj: HydraProject; hiddenCount: number };
 
   const flatRows: FlatRow[] = useMemo(() => {
     if (sidebarBody !== "workspaces" || projects.length === 0) return [];
     const rows: FlatRow[] = [];
-    // Optional: filter projects/sessions by filter string if present
     const lowerFilter = filter.trim().toLowerCase();
     const matchesFilter = (s: WorktreeSession) =>
       !lowerFilter ||
@@ -492,29 +575,56 @@ export function WorktreeSidebar({
       return false;
     };
 
+    const applyDisplayFiltersToWorktree = (wt: GitWorktreeInfo, proj: HydraProject): boolean => {
+      if (displayOptions.hideDefaultBranch && isDefaultBranchWt(wt, proj)) return true;
+      if (displayOptions.hideDetachedHead && isDetachedHeadWt(wt)) return true;
+      if (displayOptions.hideAutomationCreated && isAutomationCreatedWt(wt)) return true;
+      if (displayOptions.hideCliCreated && isCliCreatedWt(wt)) return true;
+      if (displayOptions.hideSleeping && isSleepingWorktree(wt, proj)) return true;
+      return false;
+    };
+
     for (const proj of projects) {
       const isActive = proj.path === activeProject?.path;
       const isCollapsed = collapsedProjects.has(proj.id);
       const isMenuOpen = activeProjectMenuId === proj.id;
-      const projectWorktrees = isActive ? gitWorktrees : [];
+      const rawProjectWorktrees = getWorktreesForProject(proj);
       const projectSessions = sessions.filter(
         (s) =>
           s.project_path === proj.path ||
           (!s.project_path && isActive) ||
-          projectWorktrees.some((wt) => wt.path === s.project_path) ||
+          rawProjectWorktrees.some((wt) => wt.path === s.project_path) ||
           s.project_path.startsWith(proj.path + "/")
       );
-      // Filtered sessions for display
-      const filteredSessions = lowerFilter ? projectSessions.filter(matchesFilter) : projectSessions;
+      // Apply displayOptions filtering to worktrees (pre-text filter)
+      const displayFilteredWorktrees = rawProjectWorktrees.filter((wt) => !applyDisplayFiltersToWorktree(wt, proj));
+      const hiddenByDisplay = rawProjectWorktrees.length - displayFilteredWorktrees.length;
+      // Text filter stage
+      const filteredSessionsBase = lowerFilter ? projectSessions.filter(matchesFilter) : projectSessions;
+      // hideSleeping also filters idle orphan sessions
+      const filteredSessions = displayOptions.hideSleeping
+        ? filteredSessionsBase.filter((s) => s.state !== "idle")
+        : filteredSessionsBase;
       const filteredWorktrees = lowerFilter
-        ? projectWorktrees.filter((wt) => wt.branch.toLowerCase().includes(lowerFilter) || filteredSessions.some((s) => s.project_path === wt.path))
-        : projectWorktrees;
+        ? displayFilteredWorktrees.filter((wt) => wt.branch.toLowerCase().includes(lowerFilter) || filteredSessions.some((s) => s.project_path === wt.path))
+        : displayFilteredWorktrees;
 
-      if (!projectMatches(proj, filteredSessions, filteredWorktrees)) continue;
+      const hiddenByText = displayFilteredWorktrees.length - filteredWorktrees.length;
+      const hiddenCount = hiddenByDisplay + hiddenByText;
 
+      if (!projectMatches(proj, filteredSessions, filteredWorktrees) && hiddenCount === 0) {
+        // Keep project visible if it has hidden worktrees (so pill can show) even when filter hides all
+        if (rawProjectWorktrees.length === 0 && projectSessions.length === 0 && !lowerFilter) {
+          // no content and no filter -> still show? We'll keep project header anyway if it has raw worktrees hidden?
+        } else if (hiddenCount === 0) continue;
+      }
+      // If project has only hidden worktrees and no visible, still show header + pill
       rows.push({ type: "project-header", proj, isActive, isCollapsed, isMenuOpen });
 
-      if (isCollapsed) continue;
+      if (isCollapsed) {
+        if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
+        continue;
+      }
 
       if (filteredWorktrees.length > 0) {
         for (const wt of filteredWorktrees) {
@@ -530,21 +640,24 @@ export function WorktreeSidebar({
         for (const s of orphanSessions) {
           rows.push({ type: "session", session: s, proj, isOrphan: true, isNested: false });
         }
-        if (filteredWorktrees.length === 0 && filteredSessions.length === 0) {
-          // No worktrees/sessions after filter
-        }
+        if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
       } else {
         if (filteredSessions.length === 0) {
-          rows.push({ type: "empty", proj, message: "No active worktrees in this project." });
+          if (hiddenCount > 0) {
+            rows.push({ type: "hidden-pill", proj, hiddenCount });
+          } else {
+            rows.push({ type: "empty", proj, message: "No active worktrees in this project." });
+          }
         } else {
           for (const s of filteredSessions) {
             rows.push({ type: "session", session: s, proj, isNested: false });
           }
+          if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
         }
       }
     }
     return rows;
-  }, [projects, sessions, gitWorktrees, activeProject, collapsedProjects, activeProjectMenuId, filter, sidebarBody]);
+  }, [projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree]);
 
   const getRowHeight = useCallback(
     (index: number) => {
@@ -554,6 +667,7 @@ export function WorktreeSidebar({
       if (row.type === "worktree") return compactCards ? 32 : 44;
       if (row.type === "session") return compactCards ? 52 : 68;
       if (row.type === "empty") return 32;
+      if (row.type === "hidden-pill") return 28;
       return 40;
     },
     [flatRows, compactCards]
@@ -675,9 +789,9 @@ export function WorktreeSidebar({
               {pinnedWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
               {unreadWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
               <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
-              <span className="truncate text-[11px] font-medium text-neutral-200">{wt.branch || proj.name}</span>
-              {isMain && <span className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400 shrink-0">default</span>}
-              {wtSessions.length > 0 && <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800 text-neutral-500 shrink-0">{wtSessions.length}</span>}
+              <span className="truncate text-[11px] font-medium text-neutral-200" title={wt.branch || proj.name}>{wt.branch || proj.name}</span>
+              {isMain && <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/40 border border-emerald-800/50 text-emerald-300 shrink-0 font-semibold">primary</span>}
+              {wtSessions.length > 0 && <span className="text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 shrink-0 font-mono">{wtSessions.length} {wtSessions.length === 1 ? "agent" : "agents"}</span>}
             </div>
             {!isMain && (
               <button onClick={(e) => { e.stopPropagation(); onDeleteGitWorktree(wt); }} title="Delete worktree from disk" className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition"><Trash2 className="w-3 h-3" /></button>
@@ -724,6 +838,7 @@ export function WorktreeSidebar({
                 <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
                 {(pinnedWorktrees?.has(session.id) || pinnedWorktrees?.has(session.project_path)) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
                 {unreadWorktrees?.has(session.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+                <SessionAgentIcon agentName={session.agentName} size={12} />
                 <span className="font-medium truncate text-neutral-100 text-[11px]">{session.title}</span>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
@@ -733,9 +848,28 @@ export function WorktreeSidebar({
             </div>
             <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
               <span className="flex items-center gap-1 truncate"><GitBranch className="w-2.5 h-2.5 text-neutral-400" />{session.branch}</span>
-              <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">{session.agentName}</span>
+              <span className="flex items-center gap-1 text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded"><SessionAgentIcon agentName={session.agentName} size={10} />{session.agentName}</span>
             </div>
           </div>
+        </div>
+      );
+    }
+
+    if (row.type === "hidden-pill") {
+      const { hiddenCount } = row;
+      return (
+        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-6">
+          <button
+            onClick={() => {
+              setDisplayOptions({ groupBy: "repo", sortBy: "agent-activity", hideSleeping: false, hideDefaultBranch: false, hideAutomationCreated: false, hideCliCreated: false, hideDetachedHead: false });
+            }}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-worktree-sidebar-border bg-worktree-sidebar-accent/30 text-[10px] font-medium text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/50 hover:border-worktree-sidebar-border transition cursor-pointer ml-2"
+            title="Clear filters to show hidden worktrees"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
+            <span>{hiddenCount} hidden {hiddenCount === 1 ? "worktree" : "worktrees"}</span>
+            <span className="text-[9px] text-worktree-sidebar-foreground/40">— click to show</span>
+          </button>
         </div>
       );
     }
@@ -836,13 +970,27 @@ export function WorktreeSidebar({
             {projects.map((proj) => {
                 const isActiveProject = proj.path === activeProject?.path;
                 const isCollapsed = collapsedProjects.has(proj.id);
-                const projectWorktrees = isActiveProject ? gitWorktrees : [];
-                const projectSessions = sessions.filter(
+                const rawProjectWorktrees = getWorktreesForProject(proj);
+                const projectSessionsRaw = sessions.filter(
                   (s) => s.project_path === proj.path 
                     || (!s.project_path && isActiveProject)
-                    || projectWorktrees.some((wt) => wt.path === s.project_path)
+                    || rawProjectWorktrees.some((wt) => wt.path === s.project_path)
                     || s.project_path.startsWith(proj.path + "/")
                 );
+                // Sprint 3: apply displayOptions filtering (same as flatRows)
+                const displayFilteredWts = rawProjectWorktrees.filter((wt) => {
+                  if (displayOptions.hideDefaultBranch && isDefaultBranchWt(wt, proj)) return false;
+                  if (displayOptions.hideDetachedHead && isDetachedHeadWt(wt)) return false;
+                  if (displayOptions.hideAutomationCreated && isAutomationCreatedWt(wt)) return false;
+                  if (displayOptions.hideCliCreated && isCliCreatedWt(wt)) return false;
+                  if (displayOptions.hideSleeping && isSleepingWorktree(wt, proj)) return false;
+                  return true;
+                });
+                const lowerFilter = filter.trim().toLowerCase();
+                const matchesFilter = (s: WorktreeSession) => !lowerFilter || s.title.toLowerCase().includes(lowerFilter) || s.branch.toLowerCase().includes(lowerFilter) || s.agentName.toLowerCase().includes(lowerFilter);
+                const projectSessions = displayOptions.hideSleeping ? projectSessionsRaw.filter((s) => s.state !== "idle" && (!lowerFilter || matchesFilter(s))) : (lowerFilter ? projectSessionsRaw.filter(matchesFilter) : projectSessionsRaw);
+                const projectWorktrees = lowerFilter ? displayFilteredWts.filter((wt) => wt.branch.toLowerCase().includes(lowerFilter) || projectSessions.some((s) => s.project_path === wt.path)) : displayFilteredWts;
+                const hiddenCount = rawProjectWorktrees.length - projectWorktrees.length;
                 const isMenuOpen = activeProjectMenuId === proj.id;
 
                 return (
@@ -1010,9 +1158,23 @@ export function WorktreeSidebar({
                     {!isCollapsed && (
                       <div className="pl-3.5 ml-2 border-l border-worktree-sidebar-border space-y-2 pt-0.5">
                         {projectWorktrees.length === 0 && projectSessions.length === 0 ? (
-                          <div className="py-2 px-2 text-[11px] text-neutral-600 italic">
-                            No active worktrees in this project.
-                          </div>
+                          hiddenCount > 0 ? (
+                            <button
+                              onClick={() => {
+                                setDisplayOptions({ groupBy: "repo", sortBy: "agent-activity", hideSleeping: false, hideDefaultBranch: false, hideAutomationCreated: false, hideCliCreated: false, hideDetachedHead: false });
+                              }}
+                              className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-worktree-sidebar-border bg-worktree-sidebar-accent/30 text-[10px] font-medium text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/50 hover:border-worktree-sidebar-border transition cursor-pointer"
+                              title="Clear filters to show hidden worktrees"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
+                              <span>{hiddenCount} hidden {hiddenCount === 1 ? "worktree" : "worktrees"}</span>
+                              <span className="text-[9px] text-worktree-sidebar-foreground/40">— click to show</span>
+                            </button>
+                          ) : (
+                            <div className="py-2 px-2 text-[11px] text-neutral-600 italic">
+                              No active worktrees in this project.
+                            </div>
+                          )
                         ) : projectWorktrees.length > 0 ? (
                           <>
                             {projectWorktrees.map((wt) => {
@@ -1054,17 +1216,17 @@ export function WorktreeSidebar({
                                       {pinnedWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
                                       {unreadWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
                                       <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
-                                      <span className="truncate text-[11px] font-medium text-neutral-200">
+                                      <span className="truncate text-[11px] font-medium text-neutral-200" title={wt.branch || proj.name}>
                                         {wt.branch || proj.name}
                                       </span>
                                       {isMain && (
-                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400 shrink-0">
-                                          default
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/40 border border-emerald-800/50 text-emerald-300 shrink-0 font-semibold">
+                                          primary
                                         </span>
                                       )}
                                       {wtSessions.length > 0 && (
-                                        <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800 text-neutral-500 shrink-0">
-                                          {wtSessions.length}
+                                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 shrink-0 font-mono">
+                                          {wtSessions.length} {wtSessions.length === 1 ? "agent" : "agents"}
                                         </span>
                                       )}
                                     </div>
@@ -1124,6 +1286,7 @@ export function WorktreeSidebar({
                                               <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
                                               {(pinnedWorktrees?.has(session.id) || pinnedWorktrees?.has(session.project_path)) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
                                               {unreadWorktrees?.has(session.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+                                              <SessionAgentIcon agentName={session.agentName} size={12} />
                                               <span className="font-medium truncate text-neutral-100 text-[11px]">
                                                 {session.title}
                                               </span>
@@ -1155,9 +1318,7 @@ export function WorktreeSidebar({
                                               <GitBranch className="w-2.5 h-2.5 text-neutral-400" />
                                               {session.branch}
                                             </span>
-                                            <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">
-                                              {session.agentName}
-                                            </span>
+                                            <span className="flex items-center gap-1 text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded"><SessionAgentIcon agentName={session.agentName} size={10} />{session.agentName}</span>
                                           </div>
                                         </div>
                                       ))}
@@ -1212,6 +1373,7 @@ export function WorktreeSidebar({
                                       <div className="flex items-center justify-between mb-1 pl-1">
                                         <div className="flex items-center gap-1.5 min-w-0">
                                           <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
+                                          <SessionAgentIcon agentName={session.agentName} size={12} />
                                           <span className="font-medium truncate text-neutral-100 text-[11px]">{session.title}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 shrink-0">
@@ -1221,16 +1383,30 @@ export function WorktreeSidebar({
                                       </div>
                                       <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
                                         <span className="flex items-center gap-1 truncate"><GitBranch className="w-2.5 h-2.5 text-neutral-400" />{session.branch}</span>
-                                        <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">{session.agentName}</span>
+                                        <span className="flex items-center gap-1 text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded"><SessionAgentIcon agentName={session.agentName} size={10} />{session.agentName}</span>
                                       </div>
                                     </div>
                                   ))}
                                 </div>
                               );
                             })()}
+                            {hiddenCount > 0 && (
+                              <button
+                                onClick={() => {
+                                  setDisplayOptions({ groupBy: "repo", sortBy: "agent-activity", hideSleeping: false, hideDefaultBranch: false, hideAutomationCreated: false, hideCliCreated: false, hideDetachedHead: false });
+                                }}
+                                className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-worktree-sidebar-border bg-worktree-sidebar-accent/30 text-[10px] font-medium text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/50 hover:border-worktree-sidebar-border transition cursor-pointer"
+                                title="Clear filters to show hidden worktrees"
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
+                                <span>{hiddenCount} hidden {hiddenCount === 1 ? "worktree" : "worktrees"}</span>
+                                <span className="text-[9px] text-worktree-sidebar-foreground/40">— click to show</span>
+                              </button>
+                            )}
                           </>
                         ) : (
-                          projectSessions.map((session) => (
+                          <>
+                          {projectSessions.map((session) => (
                             <div
                               key={session.id}
                               draggable={true}
@@ -1275,6 +1451,7 @@ export function WorktreeSidebar({
                                   <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
                                   {(pinnedWorktrees?.has(session.id) || pinnedWorktrees?.has(session.project_path)) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
                                   {unreadWorktrees?.has(session.id) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
+                                  <SessionAgentIcon agentName={session.agentName} size={12} />
                                   <span className="font-medium truncate text-neutral-100 text-[11px]">{session.title}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 shrink-0">
@@ -1284,10 +1461,24 @@ export function WorktreeSidebar({
                               </div>
                               <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
                                 <span className="flex items-center gap-1 truncate"><GitBranch className="w-2.5 h-2.5 text-neutral-400" />{session.branch}</span>
-                                <span className="text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded">{session.agentName}</span>
+                                <span className="flex items-center gap-1 text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded"><SessionAgentIcon agentName={session.agentName} size={10} />{session.agentName}</span>
                               </div>
                             </div>
-                          ))
+                          ))}
+                          {hiddenCount > 0 && (
+                            <button
+                              onClick={() => {
+                                setDisplayOptions({ groupBy: "repo", sortBy: "agent-activity", hideSleeping: false, hideDefaultBranch: false, hideAutomationCreated: false, hideCliCreated: false, hideDetachedHead: false });
+                              }}
+                              className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-worktree-sidebar-border bg-worktree-sidebar-accent/30 text-[10px] font-medium text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/50 hover:border-worktree-sidebar-border transition cursor-pointer mt-2"
+                              title="Clear filters to show hidden worktrees"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
+                              <span>{hiddenCount} hidden {hiddenCount === 1 ? "worktree" : "worktrees"}</span>
+                              <span className="text-[9px] text-worktree-sidebar-foreground/40">— click to show</span>
+                            </button>
+                          )}
+                          </>
                         )}
                       </div>
                     )}
