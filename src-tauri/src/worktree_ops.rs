@@ -9,6 +9,10 @@ pub struct GitWorktreeInfo {
     pub branch: String,
     pub is_bare: bool,
     pub is_locked: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -504,10 +508,12 @@ fn list_git_worktrees_with_context(
             }
         }
         if !mains.is_empty() {
+            fill_worktree_metadata(&mut mains);
             return Ok(mains);
         }
     }
 
+    fill_worktree_metadata(&mut filtered);
     // If folder workspace and filtered is empty due to strict filtering, but user expects discovery,
     // fall through: return filtered (could be empty) — caller will show empty list, which is Orca-correct if outside workspaceDir.
     Ok(filtered)
@@ -520,6 +526,7 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
     let mut current_branch = String::new();
     let mut is_bare = false;
     let mut is_locked = false;
+    let mut is_prunable = false;
 
     for line in stdout.lines() {
         if line.starts_with("worktree ") {
@@ -530,11 +537,14 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
                     branch: current_branch,
                     is_bare,
                     is_locked,
+                    created_at: None,
+                    status: if is_prunable { Some("prunable".to_string()) } else { None },
                 });
                 current_head = String::new();
                 current_branch = String::new();
                 is_bare = false;
                 is_locked = false;
+                is_prunable = false;
             }
             current_path = line.strip_prefix("worktree ").unwrap_or("").trim().to_string();
         } else if line.starts_with("HEAD ") {
@@ -546,6 +556,8 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
             is_bare = true;
         } else if line.starts_with("locked") {
             is_locked = true;
+        } else if line.starts_with("prunable") {
+            is_prunable = true;
         }
     }
 
@@ -556,10 +568,47 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
             branch: current_branch,
             is_bare,
             is_locked,
+            created_at: None,
+            status: if is_prunable { Some("prunable".to_string()) } else { None },
         });
     }
 
     worktrees
+}
+
+fn get_worktree_created_at(path: &str) -> Option<i64> {
+    // 1) Try filesystem mtime of worktree directory (most reliable for age)
+    if let Ok(meta) = std::fs::metadata(path) {
+        if let Ok(modified) = meta.modified() {
+            if let Ok(dur) = modified.duration_since(std::time::UNIX_EPOCH) {
+                return Some(dur.as_secs() as i64);
+            }
+        }
+    }
+    // 2) Fallback: git log -1 --format=%ct for that worktree's HEAD
+    if let Ok(out) = std::process::Command::new("git")
+        .args(["log", "-1", "--format=%ct"])
+        .current_dir(path)
+        .output()
+    {
+        if out.status.success() {
+            let s = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            if let Ok(ts) = s.parse::<i64>() {
+                return Some(ts);
+            }
+        }
+    }
+    None
+}
+
+fn fill_worktree_metadata(worktrees: &mut [GitWorktreeInfo]) {
+    for wt in worktrees.iter_mut() {
+        if wt.created_at.is_none() {
+            wt.created_at = get_worktree_created_at(&wt.path);
+        }
+        // status: keep prunable from parser; add heuristic for rename failed if branch looks like temp but path missing?
+        // For now, only prunable is set. Future: read Hydra sessions for rename errors.
+    }
 }
 
 /// Executa `git worktree add -b <branch> <path>` — respeita worktreeBasePath configurado (Orca: resolveConfiguredWorktreeBasePaths)
@@ -763,11 +812,11 @@ branch refs/heads/feat/auth\n";
         let repo_path = "/home/user/src/my-repo";
         let history: Vec<OrcaWorkspaceLayout> = vec![];
         // Worktree inside nested workspaceDir should be External → visible
-        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false };
+        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None };
         // Worktree inside .claude/worktrees without configured base should be AgentScratch → hidden
-        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false };
+        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None };
         // Worktree outside any layout → UnknownLegacy → hidden
-        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false };
+        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None };
 
         let configured: Vec<String> = vec![];
         let known = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured);

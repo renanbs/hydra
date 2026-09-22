@@ -46,6 +46,8 @@ export interface GitWorktreeInfo {
   branch: string;
   is_bare: boolean;
   is_locked: boolean;
+  created_at?: number | null;
+  status?: string | null;
 }
 
 export interface WorktreeSession {
@@ -57,6 +59,8 @@ export interface WorktreeSession {
   active: boolean;
   agentName: string;
   executable: string;
+  created_at?: number | null;
+  updated_at?: number | null;
 }
 
 export interface GitRepoStatus {
@@ -203,6 +207,24 @@ export function WorktreeSidebar({
       return <Terminal className="shrink-0 text-neutral-500" style={{ width: size, height: size }} />;
     }
     return <AgentBrandIcon agentId={agentName} size={size} />;
+  };
+
+  const formatAge = (ts?: number | null): string | null => {
+    if (!ts) return null;
+    const millis = ts < 10000000000 ? ts * 1000 : ts;
+    const diff = Date.now() - millis;
+    if (diff < 0) return null;
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return `${sec}s`;
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min}m`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr}h`;
+    const days = Math.floor(hr / 24);
+    if (days < 7) return `${days}d`;
+    if (days < 30) return `${Math.floor(days / 7)}w`;
+    const months = Math.floor(days / 30);
+    return `${months}mo`;
   };
 
   // Drag and Drop state
@@ -792,6 +814,8 @@ export function WorktreeSidebar({
               <span className="truncate text-[11px] font-medium text-neutral-200" title={wt.branch || proj.name}>{wt.branch || proj.name}</span>
               {isMain && <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/40 border border-emerald-800/50 text-emerald-300 shrink-0 font-semibold">primary</span>}
               {wtSessions.length > 0 && <span className="text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 shrink-0 font-mono">{wtSessions.length} {wtSessions.length === 1 ? "agent" : "agents"}</span>}
+              {formatAge(wt.created_at) && <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800/50 text-neutral-500 shrink-0 font-mono">{formatAge(wt.created_at)}</span>}
+              {wt.status && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-900/30 border border-red-800/50 text-red-400 shrink-0" title={wt.status}>{wt.status}</span>}
             </div>
             {!isMain && (
               <button onClick={(e) => { e.stopPropagation(); onDeleteGitWorktree(wt); }} title="Delete worktree from disk" className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition"><Trash2 className="w-3 h-3" /></button>
@@ -848,7 +872,10 @@ export function WorktreeSidebar({
             </div>
             <div className="flex items-center justify-between text-[10px] text-neutral-500 pl-1 font-mono">
               <span className="flex items-center gap-1 truncate"><GitBranch className="w-2.5 h-2.5 text-neutral-400" />{session.branch}</span>
-              <span className="flex items-center gap-1 text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded"><SessionAgentIcon agentName={session.agentName} size={10} />{session.agentName}</span>
+              <span className="flex items-center gap-1">
+                {formatAge(session.updated_at ?? session.created_at) && <span className="text-[9px] text-neutral-500 font-mono">{formatAge(session.updated_at ?? session.created_at)}</span>}
+                <span className="flex items-center gap-1 text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded"><SessionAgentIcon agentName={session.agentName} size={10} />{session.agentName}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -1229,6 +1256,8 @@ export function WorktreeSidebar({
                                           {wtSessions.length} {wtSessions.length === 1 ? "agent" : "agents"}
                                         </span>
                                       )}
+                                      {formatAge(wt.created_at) && <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800/50 text-neutral-500 shrink-0 font-mono">{formatAge(wt.created_at)}</span>}
+                                      {wt.status && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-900/30 border border-red-800/50 text-red-400 shrink-0" title={wt.status}>{wt.status}</span>}
                                     </div>
                                     {!isMain && (
                                       <button
@@ -1318,7 +1347,10 @@ export function WorktreeSidebar({
                                               <GitBranch className="w-2.5 h-2.5 text-neutral-400" />
                                               {session.branch}
                                             </span>
-                                            <span className="flex items-center gap-1 text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded"><SessionAgentIcon agentName={session.agentName} size={10} />{session.agentName}</span>
+                                            <span className="flex items-center gap-1">
+                                              {formatAge(session.updated_at ?? session.created_at) && <span className="text-[9px] text-neutral-500 font-mono">{formatAge(session.updated_at ?? session.created_at)}</span>}
+                                              <span className="flex items-center gap-1 text-neutral-400 text-[9px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded"><SessionAgentIcon agentName={session.agentName} size={10} />{session.agentName}</span>
+                                            </span>
                                           </div>
                                         </div>
                                       ))}
