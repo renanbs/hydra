@@ -445,13 +445,18 @@ export default function App() {
       };
       invoke("save_workbench_persistence_for_project", { projectPath: prevPath, state: prevState }).catch(console.error);
     }
-    // Load new project's workbench state (per-project), fallback to global already loaded
+    // Load new project's workbench state (per-project) — Orca parity: tabs por worktree, landing se vazio
     invoke<WorkbenchState>("get_workbench_persistence_for_project", { projectPath: activeProject.path })
       .then((state) => {
         if (state && state.tabs_json && state.tabs_json !== "[]" && state.tabs_json !== "null") {
           try {
             const raw = JSON.parse(state.tabs_json) as TabItem[];
-            if (raw.length === 0) return;
+            if (raw.length === 0) {
+              setTabs([]);
+              setActiveTabId("");
+              setWorkbenchLoaded(true);
+              return;
+            }
             const seenSid = new Set<string>();
             let deduped = raw.filter((t) => {
               if (t.sessionId) {
@@ -475,10 +480,19 @@ export default function App() {
                 setActiveTabId(finalTabs[0].id);
               }
               setWorkbenchLoaded(true);
+            } else {
+              setTabs([]);
+              setActiveTabId("");
+              setWorkbenchLoaded(true);
             }
           } catch (e) {
             console.error("Failed to parse per-project tabs:", e);
           }
+        } else {
+          // No per-project tabs — show landing / empty workbench for this project (Orca: no fake bash)
+          setTabs([]);
+          setActiveTabId("");
+          setWorkbenchLoaded(true);
         }
       })
       .catch(console.error)
