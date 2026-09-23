@@ -139,7 +139,7 @@ export function WorkbenchTabBar({
 
   return (
     <div
-      className="h-8 border-b border-border bg-card flex items-stretch select-none overflow-x-auto shrink-0"
+      className="h-8 border-b border-border flex items-stretch select-none overflow-x-auto shrink-0"
       onContextMenu={(e) => {
         if (e.target === e.currentTarget) {
           e.preventDefault();
@@ -148,7 +148,7 @@ export function WorkbenchTabBar({
       }}
     >
       {/* Abas e botão '+' posicionado imediatamente após a última aba (Orca Style) */}
-      <div className="flex items-stretch overflow-x-auto no-scrollbar">
+      <div className="inline-flex items-stretch no-scrollbar bg-card">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
           const isEditing = tab.id === editingTabId;
@@ -212,7 +212,7 @@ export function WorkbenchTabBar({
         })}
 
         {/* Botão de Nova Aba (+) — hit area 32x32 sem dead zone, z-10 para não ser coberto pelo flex-1 */}
-        <div className="relative flex items-center h-8 shrink-0 pr-1 z-10">
+        <div className="relative flex items-center h-8 shrink-0 z-10">
           <button
             ref={buttonRef}
             onClick={handleToggleMenu}
@@ -324,15 +324,7 @@ export function WorkbenchTabBar({
         </div>
       </div>
 
-      {/* Espaço restante vazio da barra de abas */}
-      <div
-        className="flex-1 h-full"
-        onContextMenu={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onTabBarContextMenu?.(e);
-        }}
-      />
+      {/* Filler removido — botão '+' fica grudado à direita (Orca/Code estilo) */}
     </div>
   );
 }
