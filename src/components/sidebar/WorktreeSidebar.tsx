@@ -21,6 +21,7 @@ import {
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarAgentsList } from "./SidebarAgentsList";
+import { SidebarNav } from "./SidebarNav";
 import { AgentBrandIcon } from "../AgentIcon";
 import type { HydraSettings } from "../../shared/settings-types";
 
@@ -985,7 +986,13 @@ export function WorktreeSidebar({
 
   return (
     <div className="flex flex-col h-full bg-worktree-sidebar select-none relative font-sans text-worktree-sidebar-foreground" style={sidebarTintStyle}>
-      {/* 1. SIDEBAR HEADER (Orca SidebarHeader.tsx with Bell toggle) */}
+      {/* 1. TOP NAV STRIP — Orca SidebarNav.tsx parity (Search, Tasks, Automations, Agent Dashboard, Orca Mobile) */}
+      <SidebarNav
+        onOpenCommandPalette={() => window.dispatchEvent(new CustomEvent("hydra:open-command-palette"))}
+      />
+      <div className="h-px bg-worktree-sidebar-border mx-3 my-1" />
+
+      {/* 2. SIDEBAR HEADER (Orca SidebarHeader.tsx with Bell toggle) */}
       <SidebarHeader
         sidebarBody={sidebarBody}
         setSidebarBody={setSidebarBody}

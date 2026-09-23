@@ -647,6 +647,8 @@ export default function App() {
       }).catch(console.error);
     };
     window.addEventListener("hydra:refresh-projects", handleRefreshProjects);
+    const handleOpenPalette = () => setIsCommandPaletteOpen(true);
+    window.addEventListener("hydra:open-command-palette", handleOpenPalette);
 
     invoke<AvailableAgent[]>("list_available_agents")
       .then(setAvailableAgents)
@@ -681,6 +683,7 @@ export default function App() {
       .catch(console.error);
     return () => {
       window.removeEventListener("hydra:refresh-projects", handleRefreshProjects);
+      window.removeEventListener("hydra:open-command-palette", handleOpenPalette);
       mql.removeEventListener("change", onSystemChange);
     };
   }, []);
