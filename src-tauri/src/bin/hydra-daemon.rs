@@ -30,8 +30,8 @@ async fn async_main() -> std::io::Result<()> {
     }
     info!(path=%socket_path.display(), "hydra daemon listening");
 
-    let terminal = Arc::new(TerminalManager::new());
     let db = Arc::new(DatabaseManager::new().expect("db"));
+    let terminal = Arc::new(TerminalManager::new(Arc::clone(&db)));
     let should_quit = Arc::new(AtomicBool::new(false));
     let sq = should_quit.clone();
     ctrlc::set_handler(move || sq.store(true, Ordering::SeqCst)).ok();
