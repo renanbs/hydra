@@ -97,9 +97,55 @@ fn default_scroll_sensitivity() -> f32 { 1.15 }
 fn default_fast_scroll_sensitivity() -> f32 { 5.0 }
 fn default_tui_scroll_sensitivity() -> f32 { 1.0 }
 fn default_setup_script_launch_mode() -> String { "new-tab".to_string() }
+
+/// Best-effort home directory for this user: `$HOME`, then the passwd entry of
+/// the effective uid (via `libc::getpwuid_r`), then a neutral temp dir.
+/// Bug #14: the old fallback hardcoded "/home/renan", leaking a developer's
+/// HOME into the default workspace dir when `$HOME` was unset.
+pub fn user_home_dir() -> PathBuf {
+    if let Ok(home) = std::env::var("HOME") {
+        if !home.is_empty() {
+            return PathBuf::from(home);
+        }
+    }
+    if let Some(home) = passwd_home_dir() {
+        return home;
+    }
+    std::env::temp_dir()
+}
+
+#[cfg(unix)]
+fn passwd_home_dir() -> Option<PathBuf> {
+    use std::ffi::CStr;
+    unsafe {
+        let uid = libc::geteuid();
+        let mut pwd: libc::passwd = std::mem::zeroed();
+        let mut buf = vec![0u8; 4096];
+        let mut result: *mut libc::passwd = std::ptr::null_mut();
+        let rc = libc::getpwuid_r(
+            uid,
+            &mut pwd,
+            buf.as_mut_ptr() as *mut libc::c_char,
+            buf.len(),
+            &mut result,
+        );
+        if rc == 0 && !result.is_null() {
+            let home = CStr::from_ptr(pwd.pw_dir).to_string_lossy();
+            if !home.is_empty() {
+                return Some(PathBuf::from(home.into_owned()));
+            }
+        }
+        None
+    }
+}
+
+#[cfg(not(unix))]
+fn passwd_home_dir() -> Option<PathBuf> {
+    None
+}
+
 fn default_workspace_dir() -> String {
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/home/renan".to_string());
-    format!("{home}/src")
+    user_home_dir().join("src").to_string_lossy().to_string()
 }
 fn default_nest_workspaces() -> bool { true }
 fn default_ctrl_tab_order_mode() -> String { "mru".to_string() }
@@ -1128,6 +1174,23 @@ mod tests {
         let m: WorktreeVisibilityDefaults = serde_json::from_str(mixed).expect("deserialize mixed");
         let m_src = m.custom_sources.as_ref().expect("mixed custom_sources");
         assert!(m_src.iter().any(|s| s.id == "b"), "camel occurrence should win: {m_src:?}");
+    }
+
+    #[test]
+    fn user_home_dir_prefers_env_and_default_has_no_hardcoded_home() {
+        // Bug #14: when HOME is set, the helper uses it verbatim (its passwd /
+        // temp-dir fallbacks apply only when HOME is absent or empty).
+        if let Ok(home) = std::env::var("HOME") {
+            if !home.is_empty() {
+                assert_eq!(user_home_dir(), std::path::PathBuf::from(&home));
+            }
+        }
+        // The default workspace dir must derive from the RESOLVED home
+        // (env → passwd → temp), never from a hardcoded developer path that
+        // would be wrong on any machine whose HOME differs (or is unset).
+        let ws = default_workspace_dir();
+        assert_eq!(ws, user_home_dir().join("src").to_string_lossy().to_string());
+        assert!(ws.ends_with("/src"), "workspace dir should end with /src: {ws}");
     }
 }
 

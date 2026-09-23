@@ -281,8 +281,9 @@ pub fn list_git_worktrees(repo_path: &str) -> Result<Vec<GitWorktreeInfo>, Strin
 
 fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorkspaceLayout>, Option<String>) {
     // Try load from SQLite; fallback to defaults (Orca defaults: workspaceDir ~/src, nestWorkspaces true)
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/home/renan".to_string());
-    let default_dir = format!("{home}/src");
+    // Bug #14: resolve the home dir properly instead of a hardcoded "/home/renan".
+    let home = crate::db::user_home_dir();
+    let default_dir = home.join("src").to_string_lossy().to_string();
     let mut workspace_dir = default_dir.clone();
     let mut nest_workspaces = true;
     let mut history: Vec<OrcaWorkspaceLayout> = vec![];
