@@ -1287,17 +1287,6 @@ export default function App() {
     }
   };
 
-  const handleOpenDiffTab = () => {
-    const tabId = `tab_diff_${Date.now()}`;
-    setFileTabContents((prev) => ({
-      ...prev,
-      [tabId]: { original: diffOriginal, modified: diffModified, lang: previewLanguage },
-    }));
-    const title = activeProject?.name ? `${activeProject.name} (diff)` : "Git Diff";
-    setTabs((prev) => [...prev, { id: tabId, title, type: "diff" }]);
-    setActiveTabId(tabId);
-  };
-
   const handleCloseTab = (id: string) => {
     const closingTab = tabsRef.current.find((t) => t.id === id);
     if (closingTab) {
@@ -1487,16 +1476,21 @@ export default function App() {
       if (isModalOpen || isInputFocused) {
         return;
       }
-      // Sprint 2 P0: split shortcuts — must precede diff/file shortcuts
+      // Sprint 2 P0: split shortcuts. Each chord is handled by exactly one
+      // branch with an early return — no fall-through between handlers
+      // (bug #4: Ctrl+T used to spawn two terminal tabs, and Ctrl+Shift+D
+      // split + opened a diff on non-terminal tabs instead of only splitting).
       if (isChord && e.shiftKey && e.key.toLowerCase() === "d") {
+        // Canonical binding: "Split Terminal Right" (context menu label).
+        e.preventDefault();
         const cur = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
         if (cur?.type === "terminal") {
-          e.preventDefault();
           handleSplitTerminal("horizontal");
-          return;
         }
+        return;
       }
       if (isChord && e.shiftKey && e.key.toLowerCase() === "e") {
+        // Canonical binding: "Split Terminal Down".
         const cur = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
         if (cur?.type === "terminal") {
           e.preventDefault();
@@ -1518,38 +1512,39 @@ export default function App() {
         if (activeTabIdRef.current) {
           handleCloseTab(activeTabIdRef.current);
         }
+        return;
       }
-      if (isChord && !e.shiftKey && e.key.toLowerCase() === "t") {
+      // Ctrl+T / Ctrl+Shift+T = new terminal tab. handleNewTab is an alias of
+      // handleNewTerminalTab, so a second handler for the same chord used to
+      // spawn two terminals per keystroke.
+      if (isChord && e.key.toLowerCase() === "t") {
         e.preventDefault();
-        handleNewTab();
+        handleNewTerminalTab();
+        return;
       }
       if (isChord && e.shiftKey && e.key === "ArrowUp") {
         e.preventDefault();
         handleNavigateWorkspace("up");
+        return;
       }
       if (isChord && e.shiftKey && e.key === "ArrowDown") {
         e.preventDefault();
         handleNavigateWorkspace("down");
-      }
-      if (isChord && e.key.toLowerCase() === "t") {
-        e.preventDefault();
-        handleNewTerminalTab();
-      }
-      if (isChord && e.key.toLowerCase() === "n" && !e.shiftKey) {
-        e.preventDefault();
-        handleNewFileTab();
+        return;
       }
       if (isChord && e.key.toLowerCase() === "o") {
         e.preventDefault();
         handleOpenFileTab();
+        return;
       }
-      if (isChord && e.shiftKey && e.key.toLowerCase() === "d") {
-        e.preventDefault();
-        handleOpenDiffTab();
-      }
+      // Ctrl+Shift+N = new file tab. Ctrl+N is already handled up top
+      // (new workspace), so this is the only chord producing a file tab —
+      // previously both chords opened the workspace modal and the file-tab
+      // handler was unreachable.
       if (isChord && e.shiftKey && e.key.toLowerCase() === "n") {
         e.preventDefault();
-        setIsNewWorkspaceOpen(true);
+        handleNewFileTab();
+        return;
       }
     };
 
