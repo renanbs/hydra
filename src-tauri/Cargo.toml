@@ -36,6 +36,7 @@ x25519-dalek = { version = "3.0.0", features = ["static_secrets"] }
 qrcode = "0.14.1"
 tauri-plugin-dialog = "2.7.3"
 keepawake = "0.5"
+libc = "0.2"
 which = "6"
 image = "0.25"
 notify = "6"
