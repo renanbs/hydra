@@ -104,6 +104,15 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
+  // Live mirrors of the sidebar open-state: persistence snapshots read these
+  // refs so a rapid toggle of both sidebars never persists a render-lagged
+  // value for the other sidebar (bug #6).
+  const leftSidebarOpenRef = useRef(isLeftSidebarOpen);
+  const rightSidebarOpenRef = useRef(isRightSidebarOpen);
+  useEffect(() => {
+    leftSidebarOpenRef.current = isLeftSidebarOpen;
+    rightSidebarOpenRef.current = isRightSidebarOpen;
+  }, [isLeftSidebarOpen, isRightSidebarOpen]);
   const [diffOriginal, setDiffOriginal] = useState(MOCK_ORIGINAL);
   const [diffModified, setDiffModified] = useState(MOCK_MODIFIED);
   const [previewLanguage, setPreviewLanguage] = useState("rust");
@@ -523,7 +532,7 @@ export default function App() {
     invoke("save_layout_persistence", {
       layout: {
         left_sidebar_open: open,
-        right_sidebar_open: isRightSidebarOpen,
+        right_sidebar_open: rightSidebarOpenRef.current,
         left_sidebar_width: leftSidebar.width,
         right_sidebar_width: rightSidebar.width,
       }
@@ -534,7 +543,7 @@ export default function App() {
     setIsRightSidebarOpen(open);
     invoke("save_layout_persistence", {
       layout: {
-        left_sidebar_open: isLeftSidebarOpen,
+        left_sidebar_open: leftSidebarOpenRef.current,
         right_sidebar_open: open,
         left_sidebar_width: leftSidebar.width,
         right_sidebar_width: rightSidebar.width,
