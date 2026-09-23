@@ -1706,7 +1706,9 @@ export default function App() {
           shortcut: isMac ? "⌘W" : "Ctrl+W",
           danger: true,
           onClick: () => {
-            handleCloseTab(activeTabId);
+            // Bug #11: activeTabId in this closure is the value from when the
+            // menu was built (stale); read the live ref at click time instead.
+            handleCloseTab(activeTabIdRef.current || activeTabId);
           }
         }
       ]
