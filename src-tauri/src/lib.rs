@@ -384,7 +384,12 @@ async fn delete_session_record(session_id: String, state: State<'_, AppState>) -
         let req = daemon_client::DaemonRequest { op: "close".to_string(), session_id: Some(session_id.clone()), executable: None, args: None, cwd: None, input: None, rows: None, cols: None, offset: None };
         let _ = daemon_client::daemon_request(&req);
     }
-    state.terminal.close_session(&session_id);
+    // close_session terminates the PTY process group, reaps it and joins the
+    // reader thread — it may block briefly, so never run it on the tokio runtime.
+    let terminal = state.terminal.clone();
+    tokio::task::spawn_blocking(move || terminal.close_session(&session_id))
+        .await
+        .map_err(|e| format!("Failed to join terminal close task: {e}"))?;
     Ok(())
 }
 
@@ -810,7 +815,12 @@ async fn close_split_terminal(session_id: String, state: State<'_, AppState>) ->
         };
         let _ = daemon_client::daemon_request(&req);
     }
-    state.terminal.close_session(&session_id);
+    // close_session terminates the PTY process group, reaps it and joins the
+    // reader thread — it may block briefly, so never run it on the tokio runtime.
+    let terminal = state.terminal.clone();
+    tokio::task::spawn_blocking(move || terminal.close_session(&session_id))
+        .await
+        .map_err(|e| format!("Failed to join terminal close task: {e}"))?;
     Ok(())
 }
 

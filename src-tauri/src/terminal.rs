@@ -1,5 +1,5 @@
 use parking_lot::Mutex;
-use portable_pty::{CommandBuilder, MasterPty, NativePtySystem, PtySize, PtySystem};
+use portable_pty::{Child, CommandBuilder, MasterPty, NativePtySystem, PtySize, PtySystem};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -14,6 +14,11 @@ pub struct TerminalSession {
     pub master: Arc<Mutex<Box<dyn MasterPty + Send>>>,
     pub agent_id: String,
     pub output: Arc<Mutex<Vec<u8>>>,
+    /// Handle of the spawned process, kept so `close_session` can signal it and
+    /// reap it. Without the wait, the process becomes a zombie when it exits.
+    pub child: Box<dyn Child + Send + Sync>,
+    /// Handle of the PTY reader thread, kept so `close_session` can join it.
+    pub reader_thread: Option<std::thread::JoinHandle<()>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -92,7 +97,7 @@ impl TerminalManager {
         } else if let Ok(dir) = std::env::current_dir() {
             cmd.cwd(dir);
         }
-        let _child = pair
+        let child = pair
             .slave
             .spawn_command(cmd)
             .map_err(|e| format!("Failed to spawn executable '{executable}': {e}"))?;
@@ -116,7 +121,7 @@ impl TerminalManager {
         let db_settings = crate::db::DatabaseManager::new().ok().and_then(|db| db.get_settings().ok());
         let allow_osc52 = db_settings.as_ref().map(|s| s.terminal_allow_osc52_clipboard).unwrap_or(true);
         let scrollback_cap = db_settings.as_ref().map(|s| std::cmp::max(2 * 1024 * 1024, s.terminal_scrollback_rows as usize * 120)).unwrap_or(2 * 1024 * 1024);
-        std::thread::spawn(move || {
+        let reader_thread = std::thread::spawn(move || {
             let mut buf = [0u8; 4096];
             let mut last_state: Option<AgentState> = None;
             while let Ok(n) = reader.read(&mut buf) {
@@ -214,6 +219,8 @@ impl TerminalManager {
                 master,
                 agent_id: executable.to_string(),
                 output,
+                child,
+                reader_thread: Some(reader_thread),
             },
         );
 
@@ -253,8 +260,64 @@ impl TerminalManager {
     }
 
     pub fn close_session(&self, session_id: &str) {
-        let mut guard = self.sessions.lock();
-        guard.remove(session_id);
+        let session = self.sessions.lock().remove(session_id);
+
+        let Some(sess) = session else {
+            return;
+        };
+
+        let mut child = sess.child;
+        let reader_thread = sess.reader_thread;
+
+        // The spawned process calls setsid() in its pre_exec, so its pid is also
+        // its process-group id. Signal the whole group (shell + subprocesses),
+        // otherwise orphaned children keep the PTY slave fds open and the reader
+        // thread never reaches EOF/EIO.
+        if let Some(pid) = child.process_id() {
+            unsafe {
+                libc::kill(-(pid as i32), libc::SIGHUP);
+            }
+        } else {
+            let _ = child.kill();
+        }
+
+        // Grace window for a clean exit, then escalate to SIGKILL. Reaping via
+        // wait()/try_wait() prevents zombie processes from accumulating.
+        let deadline = std::time::Instant::now() + std::time::Duration::from_millis(600);
+        loop {
+            match child.try_wait() {
+                Ok(Some(_)) => break, // already exited and reaped
+                Ok(None) => {
+                    if std::time::Instant::now() >= deadline {
+                        if let Some(pid) = child.process_id() {
+                            unsafe {
+                                libc::kill(-(pid as i32), libc::SIGKILL);
+                            }
+                        } else {
+                            let _ = child.kill();
+                        }
+                        // Reap immediately; wait() only fails in the unlikely
+                        // race where the process exited between try_wait and kill.
+                        if child.wait().is_err() {
+                            let _ = child.try_wait();
+                        }
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(20));
+                }
+                Err(_) => break,
+            }
+        }
+
+        // Join the reader thread: once the slave side is fully closed (child
+        // group dead), the master read hits EIO/EOF and the loop ends.
+        // Known edge: a grandchild that fully detaches (setsid + keeps the pty
+        // fds open) survives the group kill and would keep the slave open,
+        // making this join block. Such daemonized descendants are rare in
+        // terminal sessions and lie outside the zombie-reaping scope of this fix.
+        if let Some(thread) = reader_thread {
+            let _ = thread.join();
+        }
     }
 
     pub fn resize_session(&self, session_id: &str, rows: u16, cols: u16) -> Result<(), String> {
@@ -329,4 +392,110 @@ fn truncate_osc52(input: &[u8], cap: usize) -> Vec<u8> {
     let mut v = input.to_vec();
     v.truncate(cap);
     v
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Closing a session must terminate the PTY process group, reap the child
+    /// (no zombie left behind) and join the reader thread before returning.
+    #[test]
+    fn close_session_reaps_child_and_joins_reader_thread() {
+        let manager = TerminalManager::new();
+        let sid = "test-reap-1";
+
+        manager
+            .start_session_headless(sid, "/bin/sh", vec!["-c".into(), "sleep 300".into()], None)
+            .unwrap();
+
+        let pid = manager
+            .sessions
+            .lock()
+            .get(sid)
+            .expect("session present")
+            .child
+            .process_id()
+            .expect("child process id");
+
+        // Process exists (kill(pid, 0) succeeds).
+        assert_eq!(unsafe { libc::kill(pid as i32, 0) }, 0, "child should be alive before close");
+
+        manager.close_session(sid);
+
+        // Process was reaped: a zombie still answers kill(pid, 0) == 0, so
+        // ESRCH here means it was waited on, not merely killed.
+        assert_eq!(
+            unsafe { libc::kill(pid as i32, 0) },
+            -1,
+            "child should be reaped after close"
+        );
+        assert_eq!(
+            std::io::Error::last_os_error().raw_os_error(),
+            Some(libc::ESRCH),
+            "reaped process must be gone from the process table"
+        );
+
+        // Session is gone and the reader thread was joined (close_session
+        // returns only after join()).
+        assert!(manager.sessions.lock().get(sid).is_none());
+    }
+
+    /// Reaping must also work when the child exits by itself before the
+    /// session is closed (the classic zombie accumulation path). The shell is
+    /// left as a real zombie (state `Z`, never waited on) and `close_session`
+    /// is what must reap it.
+    #[test]
+    fn close_session_reaps_an_already_exited_child() {
+        let manager = TerminalManager::new();
+        let sid = "test-reap-2";
+
+        manager
+            .start_session_headless(sid, "/bin/sh", vec!["-c".into(), "exit 0".into()], None)
+            .unwrap();
+
+        let pid = manager
+            .sessions
+            .lock()
+            .get(sid)
+            .expect("session present")
+            .child
+            .process_id()
+            .expect("child process id");
+
+        // Wait until the short-lived child shows up as a zombie. A zombie still
+        // occupies its pid and answers kill(pid, 0) successfully; only reaping
+        // removes it from the process table.
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        loop {
+            if proc_state(pid) == "Z" {
+                break;
+            }
+            if std::time::Instant::now() >= deadline {
+                panic!("child did not become a zombie in time (state={})", proc_state(pid));
+            }
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        }
+
+        manager.close_session(sid);
+
+        // close_session reaped the zombie: pid no longer exists.
+        assert_eq!(
+            unsafe { libc::kill(pid as i32, 0) },
+            -1,
+            "already-exited child must be reaped by close_session"
+        );
+        assert_eq!(
+            std::io::Error::last_os_error().raw_os_error(),
+            Some(libc::ESRCH)
+        );
+    }
+
+    /// Reads the state letter (field 3) of /proc/<pid>/stat: "Z" = zombie.
+    fn proc_state(pid: u32) -> String {
+        std::fs::read_to_string(format!("/proc/{pid}/stat"))
+            .ok()
+            .map(|s| s.rsplit(')').next().unwrap_or("").trim_start().chars().next().unwrap_or('?').to_string())
+            .unwrap_or_default()
+    }
 }
