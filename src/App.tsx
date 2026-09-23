@@ -184,17 +184,15 @@ export default function App() {
   // Agent Fleet Sessions
   const [sessions, setSessions] = useState<WorktreeSession[]>([]);
 
-  // Center Workbench Tabs
-  const [tabs, setTabs] = useState<TabItem[]>([
-    { id: "tab_main", title: "bash (active)", type: "terminal" },
-  ]);
+  // Center Workbench Tabs — Orca parity: landing vazia, sem bash auto (fix #11)
+  const [tabs, setTabs] = useState<TabItem[]>([]);
   const [workbenchLoaded, setWorkbenchLoaded] = useState(false);
   const workbenchLoadedRef = useRef(workbenchLoaded);
   workbenchLoadedRef.current = workbenchLoaded;
   const workbenchCheckedRef = useRef(false);
   const tabsRef = useRef(tabs);
   tabsRef.current = tabs;
-  const [activeTabId, setActiveTabId] = useState("tab_main");
+  const [activeTabId, setActiveTabId] = useState("");
   const activeTabIdRef = useRef(activeTabId);
   activeTabIdRef.current = activeTabId;
   // Sprint 2 P0: focused pane per tab (sessionId)
@@ -414,6 +412,15 @@ export default function App() {
               // Persiste a versão limpa para não voltar duplicata
               invoke("save_workbench_persistence", { state: { tabs_json: JSON.stringify(finalTabs), active_tab_id: state.active_tab_id, updated_at: Date.now() } }).catch(console.error);
             }
+            // Orca parity #11: filtrar bash default auto-criado (tab_main) quando é o único tab — mostrar landing
+            const isDefaultBashOnly = finalTabs.length === 1 && finalTabs[0].id === "tab_main" && finalTabs[0].title === "bash (active)" && (finalTabs[0] as any).type === "terminal" && !(finalTabs[0] as any).sessionId;
+            if (isDefaultBashOnly) {
+              setTabs([]);
+              setActiveTabId("");
+              setWorkbenchLoaded(true);
+              invoke("save_workbench_persistence", { state: { tabs_json: "[]", active_tab_id: "", updated_at: Date.now() } }).catch(console.error);
+              return;
+            }
             if (finalTabs.length > 0) {
               setTabs(finalTabs);
               if (state.active_tab_id && finalTabs.some(t => t.id === state.active_tab_id)) {
@@ -472,6 +479,15 @@ export default function App() {
               return true;
             });
             const finalTabs = deduped;
+            // Orca parity #11: filtrar bash default
+            const isDefaultBashOnlyPerProject = finalTabs.length === 1 && finalTabs[0].id === "tab_main" && finalTabs[0].title === "bash (active)" && (finalTabs[0] as any).type === "terminal" && !(finalTabs[0] as any).sessionId;
+            if (isDefaultBashOnlyPerProject) {
+              setTabs([]);
+              setActiveTabId("");
+              setWorkbenchLoaded(true);
+              invoke("save_workbench_persistence_for_project", { projectPath: activeProject.path, state: { tabs_json: "[]", active_tab_id: "", updated_at: Date.now() } }).catch(console.error);
+              return;
+            }
             if (finalTabs.length > 0) {
               setTabs(finalTabs);
               if (state.active_tab_id && finalTabs.some((t) => t.id === state.active_tab_id)) {
