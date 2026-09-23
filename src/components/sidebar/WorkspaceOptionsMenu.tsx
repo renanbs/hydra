@@ -19,6 +19,7 @@ export interface WorkspaceDisplayOptions {
   hideAutomationCreated: boolean;
   hideCliCreated: boolean;
   hideDetachedHead: boolean;
+  filterProjectIds?: string[];
 }
 
 interface WorkspaceOptionsMenuProps {
@@ -41,8 +42,12 @@ export function WorkspaceOptionsMenu({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
   const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | null>(null);
+  const [projectSearch, setProjectSearch] = useState("");
   useEffect(() => {
-    if (!isOpen) setOpenSubmenu(null);
+    if (!isOpen) {
+      setOpenSubmenu(null);
+      setProjectSearch("");
+    }
   }, [isOpen]);
 
   useEffect(() => {
@@ -134,16 +139,87 @@ export function WorkspaceOptionsMenu({
             </span>
           </div>
           {openSubmenu === "show" && (
-            <div className="absolute left-full top-0 ml-1 w-56 rounded-lg border border-border bg-popover p-1 shadow-xl z-10 max-h-64 overflow-y-auto">
-              <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase">Filter by project</div>
-              <div className="px-2 py-1 text-[11px] text-muted-foreground">All projects visible</div>
-              {projects.slice(0, 10).map((proj) => (
-                <div key={proj.id} className="flex items-center gap-2 px-2 py-1 text-[11px] text-popover-foreground">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span className="truncate">{proj.name}</span>
+            <div className="absolute left-full top-0 ml-1 w-64 rounded-lg border border-border bg-popover p-1 shadow-xl z-10 max-h-80 overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between px-2 py-1">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase">Projects - {options.filterProjectIds?.length ? options.filterProjectIds.length : projects.length}</span>
+                {options.filterProjectIds?.length ? (
+                  <button
+                    onClick={() => onOptionsChange({ ...options, filterProjectIds: [] })}
+                    className="text-[10px] text-primary hover:text-primary/80 font-medium cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                ) : null}
+              </div>
+              {options.filterProjectIds?.length ? (
+                <div className="flex flex-wrap gap-1 px-2 py-1">
+                  {options.filterProjectIds.map((id) => {
+                    const proj = projects.find((p) => p.id === id);
+                    if (!proj) return null;
+                    return (
+                      <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent border border-border text-[10px] text-foreground">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        {proj.name}
+                        <button
+                          onClick={() => {
+                            const next = (options.filterProjectIds || []).filter((pid) => pid !== id);
+                            onOptionsChange({ ...options, filterProjectIds: next });
+                          }}
+                          className="ml-1 hover:text-foreground cursor-pointer"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
                 </div>
-              ))}
-              {projects.length > 10 && <div className="px-2 py-1 text-[10px] text-muted-foreground">+{projects.length - 10} more</div>}
+              ) : null}
+              <div className="px-1 py-1">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={projectSearch}
+                    onChange={(e) => setProjectSearch(e.target.value)}
+                    placeholder="Add project..."
+                    className="w-full bg-muted/50 border border-border rounded-md pl-7 pr-2 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="absolute left-2 top-1.5 text-muted-foreground">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                  </span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto max-h-48 space-y-0.5 px-1">
+                {projects
+                  .filter((proj) => !projectSearch || proj.name.toLowerCase().includes(projectSearch.toLowerCase()))
+                  .map((proj) => {
+                    const isExplicitlySelected = options.filterProjectIds?.includes(proj.id);
+                    const showAsSelected = options.filterProjectIds?.length ? isExplicitlySelected : true;
+                    return (
+                      <button
+                        key={proj.id}
+                        onClick={() => {
+                          const current = options.filterProjectIds || [];
+                          let next: string[];
+                          if (current.length === 0) {
+                            // Currently showing all, clicking one should filter to just that one
+                            next = [proj.id];
+                          } else if (current.includes(proj.id)) {
+                            next = current.filter((id) => id !== proj.id);
+                          } else {
+                            next = [...current, proj.id];
+                          }
+                          onOptionsChange({ ...options, filterProjectIds: next });
+                        }}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] text-left transition cursor-pointer ${showAsSelected ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${showAsSelected ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
+                        <span className="truncate">{proj.name}</span>
+                        {showAsSelected && options.filterProjectIds?.length ? <span className="ml-auto text-[10px] text-muted-foreground">✓</span> : null}
+                      </button>
+                    );
+                  })}
+              </div>
             </div>
           )}
         </div>
