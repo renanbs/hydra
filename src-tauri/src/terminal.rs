@@ -38,12 +38,17 @@ pub struct TerminalSnapshot {
 
 pub struct TerminalManager {
     pub sessions: Mutex<HashMap<String, TerminalSession>>,
+    /// Shared SQLite connection. Session start reads settings from here
+    /// instead of opening a fresh connection + running migrations per session
+    /// (bug #7) — the connection is already kept in AppState.db.
+    pub db: Arc<crate::db::DatabaseManager>,
 }
 
 impl TerminalManager {
-    pub fn new() -> Self {
+    pub fn new(db: Arc<crate::db::DatabaseManager>) -> Self {
         Self {
             sessions: Mutex::new(HashMap::new()),
+            db,
         }
     }
 
@@ -126,7 +131,7 @@ impl TerminalManager {
         let output = Arc::new(Mutex::new(OutputBuffer { bytes: Vec::new(), base: 0 }));
         let output_clone = Arc::clone(&output);
         let s_id = session_id.to_string();
-        let db_settings = crate::db::DatabaseManager::new().ok().and_then(|db| db.get_settings().ok());
+        let db_settings = self.db.get_settings().ok();
         let allow_osc52 = db_settings.as_ref().map(|s| s.terminal_allow_osc52_clipboard).unwrap_or(true);
         let scrollback_cap = db_settings.as_ref().map(|s| std::cmp::max(2 * 1024 * 1024, s.terminal_scrollback_rows as usize * 120)).unwrap_or(2 * 1024 * 1024);
         let reader_thread = std::thread::spawn(move || {
@@ -415,7 +420,7 @@ mod tests {
     /// (no zombie left behind) and join the reader thread before returning.
     #[test]
     fn close_session_reaps_child_and_joins_reader_thread() {
-        let manager = TerminalManager::new();
+        let manager = TerminalManager::new(Arc::new(crate::db::DatabaseManager::new_in_memory().expect("in-memory db")));
         let sid = "test-reap-1";
 
         manager
@@ -460,7 +465,7 @@ mod tests {
     /// is what must reap it.
     #[test]
     fn close_session_reaps_an_already_exited_child() {
-        let manager = TerminalManager::new();
+        let manager = TerminalManager::new(Arc::new(crate::db::DatabaseManager::new_in_memory().expect("in-memory db")));
         let sid = "test-reap-2";
 
         manager
@@ -517,7 +522,7 @@ mod tests {
     /// stale offset resyncs to the start of the retained window.
     #[test]
     fn poll_output_offsets_survive_buffer_drain() {
-        let manager = TerminalManager::new();
+        let manager = TerminalManager::new(Arc::new(crate::db::DatabaseManager::new_in_memory().expect("in-memory db")));
         let sid = "test-poll-drain";
 
         manager

@@ -964,8 +964,8 @@ async fn create_tool_approval(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let terminal_manager = Arc::new(TerminalManager::new());
     let db_manager = Arc::new(DatabaseManager::new().expect("Failed to initialize SQLite database"));
+    let terminal_manager = Arc::new(TerminalManager::new(Arc::clone(&db_manager)));
     let pairing_manager = Arc::new(PairingManager::new());
     let initial_enabled = db_manager
         .get_settings()
