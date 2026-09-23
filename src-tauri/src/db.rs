@@ -124,13 +124,16 @@ pub struct OrcaWorkspaceLayout {
 pub struct CustomWorktreeSource {
     #[serde(default)]
     pub id: String,
-    #[serde(default)]
+    // Wire format is the camelCase the frontend writes/reads (bug #8: the old
+    // snake-only field dropped the frontend's `rootPath` key on save, and the
+    // duplicates emitted both keys). Snake alias keeps old persisted JSON valid.
+    #[serde(default, rename = "rootPath", alias = "root_path")]
     pub root_path: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct SourcePreferences {
-    #[serde(default)]
+    #[serde(default, rename = "builtIn", alias = "built_in")]
     pub built_in: Option<std::collections::HashMap<String, String>>,
     #[serde(default)]
     pub custom: Option<std::collections::HashMap<String, String>>,
@@ -147,18 +150,56 @@ pub struct OpenInApplication {
 }
 fn default_open_in_applications() -> Vec<OpenInApplication> { vec![OpenInApplication { id: "vscode".to_string(), label: "VS Code".to_string(), command: "code".to_string() }] }
 
-#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+// Bug #8: custom_sources and customSources used to be separate fields, so BOTH
+// were serialized and readers of one never saw the other's data. Now a single
+// field per logical value: serialized as the canonical camelCase the frontend
+// writes/reads, deserialized via the manual impl below which tolerates legacy
+// JSON carrying BOTH spellings (the old derive would fail with
+// "duplicate field" on such payloads, breaking get_settings for users with
+// existing saved settings).
+#[derive(Serialize, Clone, Debug, Default)]
 pub struct WorktreeVisibilityDefaults {
     #[serde(default)]
     pub external: Option<String>,
-    #[serde(default)]
+    #[serde(rename = "customSources")]
     pub custom_sources: Option<Vec<CustomWorktreeSource>>,
-    #[serde(default, alias = "customSources")]
-    pub customSources: Option<Vec<CustomWorktreeSource>>,
-    #[serde(default)]
+    #[serde(rename = "sourcePreferences")]
     pub source_preferences: Option<SourcePreferences>,
-    #[serde(default, alias = "sourcePreferences")]
-    pub sourcePreferences: Option<SourcePreferences>,
+}
+
+// Deserialization-only shape mirroring the pre-fix struct (distinct fields per
+// spelling) so legacy JSON with duplicate keys never trips serde's
+// duplicate-field guard. The public struct collapses to a single value.
+#[allow(non_snake_case)]
+#[derive(Deserialize)]
+struct WorktreeVisibilityDefaultsRaw {
+    #[serde(default)]
+    external: Option<String>,
+    #[serde(default)]
+    custom_sources: Option<Vec<CustomWorktreeSource>>,
+    #[serde(default)]
+    customSources: Option<Vec<CustomWorktreeSource>>,
+    #[serde(default)]
+    source_preferences: Option<SourcePreferences>,
+    #[serde(default)]
+    sourcePreferences: Option<SourcePreferences>,
+}
+
+impl<'de> Deserialize<'de> for WorktreeVisibilityDefaults {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let raw = WorktreeVisibilityDefaultsRaw::deserialize(deserializer)?;
+        // When both spellings are present (legacy JSON), the camelCase entry
+        // wins — it is the canonical shape the frontend writes today; the two
+        // always carried identical values in the buggy version.
+        Ok(WorktreeVisibilityDefaults {
+            external: raw.external,
+            custom_sources: raw.customSources.or(raw.custom_sources),
+            source_preferences: raw.sourcePreferences.or(raw.source_preferences),
+        })
+    }
 }
 fn deserialize_theme<'de, D>(deserializer: D) -> Result<String, D::Error>
 where D: serde::Deserializer<'de> {
@@ -462,9 +503,7 @@ impl Default for HydraSettings {
             worktree_visibility_defaults: Some(WorktreeVisibilityDefaults {
                 external: Some("hide".to_string()),
                 custom_sources: Some(vec![]),
-                customSources: Some(vec![]),
                 source_preferences: Some(SourcePreferences { built_in: Some(std::collections::HashMap::new()), custom: Some(std::collections::HashMap::new()) }),
-                sourcePreferences: Some(SourcePreferences { built_in: Some(std::collections::HashMap::new()), custom: Some(std::collections::HashMap::new()) }),
             }),
             terminal_default_shell: String::new(),
             default_tui_agent: None,
@@ -1030,6 +1069,65 @@ mod tests {
         let loaded_layout = db.get_layout_state().expect("get layout");
         assert_eq!(loaded_layout.left_sidebar_open, false);
         assert_eq!(loaded_layout.left_sidebar_width, 320);
+    }
+
+    #[test]
+    fn test_worktree_visibility_defaults_single_canonical_keys() {
+        // Bug #8: serialization must emit exactly ONE key per logical field
+        // (canonical camelCase wire) — never both spellings.
+        let mut built_in = std::collections::HashMap::new();
+        built_in.insert("claude".to_string(), "show".to_string());
+        let wvd = WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: Some(vec![CustomWorktreeSource {
+                id: "s1".to_string(),
+                root_path: "/worktrees".to_string(),
+            }]),
+            source_preferences: Some(SourcePreferences {
+                built_in: Some(built_in),
+                custom: Some(std::collections::HashMap::new()),
+            }),
+        };
+
+        let json = serde_json::to_string(&wvd).expect("serialize wvd");
+        assert!(json.contains("\"customSources\""), "missing canonical key: {json}");
+        assert!(!json.contains("custom_sources"), "duplicate snake key emitted: {json}");
+        assert!(json.contains("\"sourcePreferences\""), "missing canonical key: {json}");
+        assert!(!json.contains("source_preferences"), "duplicate snake key emitted: {json}");
+        assert!(json.contains("\"rootPath\""), "missing canonical key: {json}");
+        assert!(!json.contains("root_path"), "duplicate snake key emitted: {json}");
+        assert!(json.contains("\"builtIn\""), "missing canonical key: {json}");
+        assert!(!json.contains("built_in"), "duplicate snake key emitted: {json}");
+
+        // Round-trip from the camelCase payload the frontend sends on save
+        // (single field reads what the other spelling would have written).
+        let back: WorktreeVisibilityDefaults = serde_json::from_str(&json).expect("deserialize camel");
+        assert_eq!(back.external.as_deref(), Some("hide"));
+        let src = back.custom_sources.as_ref().expect("custom_sources");
+        assert_eq!(src.len(), 1);
+        assert_eq!(src[0].id, "s1");
+        assert_eq!(src[0].root_path, "/worktrees");
+        assert_eq!(
+            back.source_preferences.as_ref().and_then(|sp| sp.built_in.as_ref()).unwrap()["claude"],
+            "show"
+        );
+
+        // Old snake_case payloads (written by the buggy version) still deserialize.
+        let legacy = r#"{"external":"hide","custom_sources":[{"id":"s2","root_path":"/old"}],"source_preferences":{"built_in":{"gsd":"hide"},"custom":{}}}"#;
+        let old: WorktreeVisibilityDefaults = serde_json::from_str(legacy).expect("deserialize snake");
+        let old_src = old.custom_sources.as_ref().expect("old custom_sources");
+        assert_eq!(old_src[0].id, "s2");
+        assert_eq!(old_src[0].root_path, "/old");
+        assert_eq!(
+            old.source_preferences.as_ref().and_then(|sp| sp.built_in.as_ref()).unwrap()["gsd"],
+            "hide"
+        );
+
+        // Mixed old payload carrying BOTH duplicate keys collapses to one value.
+        let mixed = r#"{"custom_sources":[{"id":"a","root_path":"/snake"}],"customSources":[{"id":"b","rootPath":"/camel"}]}"#;
+        let m: WorktreeVisibilityDefaults = serde_json::from_str(mixed).expect("deserialize mixed");
+        let m_src = m.custom_sources.as_ref().expect("mixed custom_sources");
+        assert!(m_src.iter().any(|s| s.id == "b"), "camel occurrence should win: {m_src:?}");
     }
 }
 
