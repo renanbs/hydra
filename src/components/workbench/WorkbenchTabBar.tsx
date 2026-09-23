@@ -211,16 +211,17 @@ export function WorkbenchTabBar({
           );
         })}
 
-        {/* Botão de Nova Aba (+) com menu suspenso idêntico ao Orca — hit area cobre todo o wrapper */}
-        <div className="relative flex items-center shrink-0">
+        {/* Botão de Nova Aba (+) — hit area 32x32 sem dead zone, Orca 46x36 parity */}
+        <div className="relative flex items-center h-8 shrink-0">
           <button
             ref={buttonRef}
             onClick={handleToggleMenu}
+            onMouseDown={(e) => e.stopPropagation()}
             title="New Tab (+)"
-            className={`flex items-center justify-center w-8 h-8 rounded transition cursor-pointer shrink-0 ${
+            className={`flex items-center justify-center w-8 h-8 mx-0.5 rounded transition cursor-pointer shrink-0 border border-transparent ${
               isMenuOpen
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
+                ? "bg-accent text-foreground border-border"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/60 hover:border-border/50"
             }`}
           >
             <Plus className="w-3.5 h-3.5" />
