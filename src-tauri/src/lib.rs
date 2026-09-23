@@ -89,128 +89,156 @@ async fn open_external_url_cmd(url: String) -> Result<(), String> {
 
 
 #[tauri::command]
-fn get_repo_git_status() -> Result<GitRepoStatus, String> {
-    get_git_status()
+async fn get_repo_git_status() -> Result<GitRepoStatus, String> {
+    tokio::task::spawn_blocking(get_git_status).await.map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-fn get_repo_git_status_for_path(repoPath: String) -> Result<GitRepoStatus, String> {
-    get_git_status_for_path(&repoPath)
+async fn get_repo_git_status_for_path(repoPath: String) -> Result<GitRepoStatus, String> {
+    tokio::task::spawn_blocking(move || get_git_status_for_path(&repoPath)).await.map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-fn get_detailed_git_status_cmd(repoPath: String) -> Result<DetailedGitStatus, String> {
-    get_detailed_git_status(&repoPath)
+async fn get_detailed_git_status_cmd(repoPath: String) -> Result<DetailedGitStatus, String> {
+    tokio::task::spawn_blocking(move || get_detailed_git_status(&repoPath)).await.map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-fn git_stage(repoPath: String, file: String) -> Result<(), String> {
-    git_stage_file(&repoPath, &file)
+async fn git_stage(repoPath: String, file: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_stage_file(&repoPath, &file)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn git_unstage(repoPath: String, file: String) -> Result<(), String> {
-    git_unstage_file(&repoPath, &file)
+async fn git_unstage(repoPath: String, file: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_unstage_file(&repoPath, &file)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn git_discard(repoPath: String, file: String) -> Result<(), String> {
-    git_discard_file(&repoPath, &file)
+async fn git_discard(repoPath: String, file: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_discard_file(&repoPath, &file)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn git_commit_cmd(repoPath: String, message: String) -> Result<String, String> {
-    git_commit(&repoPath, &message)
+async fn git_commit_cmd(repoPath: String, message: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_commit(&repoPath, &message)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn git_commit_amend_cmd(repoPath: String, message: String) -> Result<String, String> {
-    git_commit_amend(&repoPath, &message)
+async fn git_commit_amend_cmd(repoPath: String, message: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_commit_amend(&repoPath, &message)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn git_diff_cmd(repoPath: String, file: String, staged: bool) -> Result<String, String> {
-    git_diff(&repoPath, &file, staged)
+async fn git_diff_cmd(repoPath: String, file: String, staged: bool) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_diff(&repoPath, &file, staged)).await.map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-fn list_directory_cmd(path: String) -> Result<DirectoryListing, String> {
-    list_directory(&path)
+async fn list_directory_cmd(path: String) -> Result<DirectoryListing, String> {
+    tokio::task::spawn_blocking(move || list_directory(&path)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn read_file_text_cmd(path: String) -> Result<FileContent, String> {
-    read_file_text(&path)
+async fn read_file_text_cmd(path: String) -> Result<FileContent, String> {
+    tokio::task::spawn_blocking(move || read_file_text(&path)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn search_files_cmd(repoPath: String, query: String, maxResults: usize) -> Result<Vec<SearchResult>, String> {
-    search_files_content(&repoPath, &query, maxResults)
+async fn search_files_cmd(repoPath: String, query: String, maxResults: usize) -> Result<Vec<SearchResult>, String> {
+    tokio::task::spawn_blocking(move || search_files_content(&repoPath, &query, maxResults)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn get_git_history_cmd(repoPath: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
-    get_git_history(&repoPath, limit)
+async fn get_git_history_cmd(repoPath: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
+    tokio::task::spawn_blocking(move || get_git_history(&repoPath, limit)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn git_stage_all_cmd(repoPath: String) -> Result<(), String> {
-    git_stage_all(&repoPath)
+async fn git_stage_all_cmd(repoPath: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_stage_all(&repoPath)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn git_unstage_all_cmd(repoPath: String) -> Result<(), String> {
-    git_unstage_all(&repoPath)
+async fn git_unstage_all_cmd(repoPath: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_unstage_all(&repoPath)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn check_git_ignored_cmd(repoPath: String, paths: Vec<String>) -> Result<Vec<String>, String> {
-    check_git_ignored(&repoPath, &paths)
+async fn check_git_ignored_cmd(repoPath: String, paths: Vec<String>) -> Result<Vec<String>, String> {
+    tokio::task::spawn_blocking(move || check_git_ignored(&repoPath, &paths)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn get_diff_numstat_cmd(repoPath: String, staged: bool) -> Result<Vec<DiffNumStat>, String> {
-    get_diff_numstat(&repoPath, staged)
+async fn get_diff_numstat_cmd(repoPath: String, staged: bool) -> Result<Vec<DiffNumStat>, String> {
+    tokio::task::spawn_blocking(move || get_diff_numstat(&repoPath, staged)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn create_file_cmd(path: String) -> Result<(), String> { create_file(&path) }
-#[tauri::command]
-fn create_folder_cmd(path: String) -> Result<(), String> { create_folder(&path) }
-#[tauri::command]
-fn rename_path_cmd(oldPath: String, newPath: String) -> Result<(), String> { rename_path(&oldPath, &newPath) }
-#[tauri::command]
-fn delete_path_cmd(path: String) -> Result<(), String> { delete_path(&path) }
-#[tauri::command]
-fn get_branch_commits_cmd(repoPath: String, baseRef: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
-    get_branch_commits(&repoPath, &baseRef, limit)
+async fn create_file_cmd(path: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || create_file(&path)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn git_push_cmd(repoPath: String) -> Result<String, String> { git_push(&repoPath) }
+async fn create_folder_cmd(path: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || create_folder(&path)).await.map_err(|e| e.to_string())?
+}
 #[tauri::command]
-fn git_pull_cmd(repoPath: String) -> Result<String, String> { git_pull(&repoPath) }
+async fn rename_path_cmd(oldPath: String, newPath: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || rename_path(&oldPath, &newPath)).await.map_err(|e| e.to_string())?
+}
 #[tauri::command]
-fn git_stage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> { git_stage_paths(&repoPath, &paths) }
+async fn delete_path_cmd(path: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || delete_path(&path)).await.map_err(|e| e.to_string())?
+}
 #[tauri::command]
-fn git_unstage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> { git_unstage_paths(&repoPath, &paths) }
+async fn get_branch_commits_cmd(repoPath: String, baseRef: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
+    tokio::task::spawn_blocking(move || get_branch_commits(&repoPath, &baseRef, limit)).await.map_err(|e| e.to_string())?
+}
 #[tauri::command]
-fn get_submodule_paths_cmd(repoPath: String) -> Vec<String> { get_submodule_live_status(&repoPath) }
+async fn git_push_cmd(repoPath: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_push(&repoPath)).await.map_err(|e| e.to_string())?
+}
 #[tauri::command]
-fn git_stash_list_cmd(repoPath: String) -> Result<Vec<GitCommitEntry>, String> { git_stash_list(&repoPath) }
+async fn git_pull_cmd(repoPath: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_pull(&repoPath)).await.map_err(|e| e.to_string())?
+}
 #[tauri::command]
-fn git_stash_push_cmd(repoPath: String, message: String) -> Result<String, String> { git_stash_push(&repoPath, &message) }
+async fn git_stage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_stage_paths(&repoPath, &paths)).await.map_err(|e| e.to_string())?
+}
 #[tauri::command]
-fn git_stash_pop_cmd(repoPath: String) -> Result<String, String> { git_stash_pop(&repoPath) }
+async fn git_unstage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_unstage_paths(&repoPath, &paths)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn get_submodule_paths_cmd(repoPath: String) -> Result<Vec<String>, String> {
+    tokio::task::spawn_blocking(move || get_submodule_live_status(&repoPath)).await.map_err(|e| e.to_string())
+}
+#[tauri::command]
+async fn git_stash_list_cmd(repoPath: String) -> Result<Vec<GitCommitEntry>, String> {
+    tokio::task::spawn_blocking(move || git_stash_list(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_stash_push_cmd(repoPath: String, message: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_stash_push(&repoPath, &message)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_stash_pop_cmd(repoPath: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_stash_pop(&repoPath)).await.map_err(|e| e.to_string())?
+}
 
 #[tauri::command]
-fn open_in_file_manager(path: String) -> Result<(), String> {
+async fn open_in_file_manager(path: String) -> Result<(), String> {
     let p = std::path::Path::new(&path);
     let target = if p.is_file() { p.parent().unwrap_or(p).to_string_lossy().to_string() } else { path.clone() };
-    #[cfg(target_os = "linux")]
-    { std::process::Command::new("xdg-open").arg(&target).spawn().map_err(|e| e.to_string())?; }
-    #[cfg(target_os = "macos")]
-    { std::process::Command::new("open").arg(&target).spawn().map_err(|e| e.to_string())?; }
-    #[cfg(target_os = "windows")]
-    { std::process::Command::new("explorer").arg(&target).spawn().map_err(|e| e.to_string())?; }
-    Ok(())
+    tokio::task::spawn_blocking(move || {
+        #[cfg(target_os = "linux")]
+        { std::process::Command::new("xdg-open").arg(&target).spawn().map_err(|e| e.to_string())?; }
+        #[cfg(target_os = "macos")]
+        { std::process::Command::new("open").arg(&target).spawn().map_err(|e| e.to_string())?; }
+        #[cfg(target_os = "windows")]
+        { std::process::Command::new("explorer").arg(&target).spawn().map_err(|e| e.to_string())?; }
+        Ok(())
+    }).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn open_in_external_editor(path: String, command: String) -> Result<(), String> {
+async fn open_in_external_editor(path: String, command: String) -> Result<(), String> {
     if command.trim().is_empty() { return Err("No command".to_string()); }
-    let cmd = command.trim().split_whitespace().next().unwrap_or(&command);
-    let args: Vec<&str> = command.trim().split_whitespace().skip(1).collect();
-    let mut c = std::process::Command::new(cmd);
-    for a in args { c.arg(a); }
-    c.arg(&path);
-    c.spawn().map_err(|e| format!("Failed to launch '{}': {}", command, e))?;
-    Ok(())
+    let cmd = command.trim().split_whitespace().next().unwrap_or(&command).to_string();
+    let args: Vec<String> = command.trim().split_whitespace().skip(1).map(|s| s.to_string()).collect();
+    tokio::task::spawn_blocking(move || {
+        let mut c = std::process::Command::new(&cmd);
+        for a in &args { c.arg(a); }
+        c.arg(&path);
+        c.spawn().map_err(|e| format!("Failed to launch '{}': {}", cmd, e))?;
+        Ok(())
+    }).await.map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -269,17 +297,23 @@ async fn clone_project(url: String, parent_dir: String) -> Result<String, String
     .map_err(|e| e.to_string())?
 }
 #[tauri::command]
-fn create_worktree(repo_path: String, branch_name: String, new_branch: bool) -> Result<String, String> {
-    create_git_worktree(CreateWorktreeParams {
-        repo_path,
-        branch_name,
-        new_branch,
+async fn create_worktree(repo_path: String, branch_name: String, new_branch: bool) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || {
+        create_git_worktree(CreateWorktreeParams {
+            repo_path,
+            branch_name,
+            new_branch,
+        })
     })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-fn delete_worktree(repo_path: String, worktree_path: String) -> Result<(), String> {
-    remove_git_worktree(&repo_path, &worktree_path)
+async fn delete_worktree(repo_path: String, worktree_path: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || remove_git_worktree(&repo_path, &worktree_path))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -320,13 +354,13 @@ async fn save_workbench_persistence_for_project(
 }
 
 #[tauri::command]
-fn list_available_agents() -> Vec<AvailableAgent> {
-    probe_available_agents()
+async fn list_available_agents() -> Vec<AvailableAgent> {
+    tokio::task::spawn_blocking(probe_available_agents).await.unwrap_or_default()
 }
 
 #[tauri::command]
-fn list_available_shells() -> Vec<AvailableShell> {
-    probe_available_shells()
+async fn list_available_shells() -> Vec<AvailableShell> {
+    tokio::task::spawn_blocking(probe_available_shells).await.unwrap_or_default()
 }
 
 #[tauri::command]
@@ -547,26 +581,35 @@ async fn get_folded_logs(
 }
 
 #[tauri::command]
-fn save_chat_message(
+async fn save_chat_message(
     session_id: String,
     role: String,
     content: String,
     state: State<'_, AppState>,
 ) -> Result<i64, String> {
-    state.db.save_message(&session_id, &role, &content)
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.save_message(&session_id, &role, &content))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-fn get_session_messages(
+async fn get_session_messages(
     session_id: String,
     state: State<'_, AppState>,
 ) -> Result<Vec<ChatMessage>, String> {
-    state.db.list_messages(&session_id)
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.list_messages(&session_id))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-fn get_pairing_qr(state: State<'_, AppState>) -> Result<PairingPayload, String> {
-    state.pairing.generate_pairing_payload()
+async fn get_pairing_qr(state: State<'_, AppState>) -> Result<PairingPayload, String> {
+    let pairing = state.pairing.clone();
+    tokio::task::spawn_blocking(move || pairing.generate_pairing_payload())
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -782,26 +825,36 @@ fn get_keep_awake_status(state: State<'_, AppState>) -> KeepAwakeStatus {
 }
 
 #[tauri::command]
-fn sync_keep_awake(enabled: bool, working_count: usize, app: AppHandle, state: State<'_, AppState>) -> KeepAwakeStatus {
-    let before = state.keep_awake.get_status();
-    state.keep_awake.sync(enabled, working_count);
-    let after = state.keep_awake.get_status();
+async fn sync_keep_awake(enabled: bool, working_count: usize, app: AppHandle, state: State<'_, AppState>) -> Result<KeepAwakeStatus, String> {
+    let keep_awake = state.keep_awake.clone();
+    let before = keep_awake.get_status();
+    let after = tokio::task::spawn_blocking(move || {
+        keep_awake.sync(enabled, working_count);
+        keep_awake.get_status()
+    })
+    .await
+    .map_err(|e| e.to_string())?;
     // Emit push when status changes (active/enabled/working_count) — frontend listens for instant update
     if before.active != after.active || before.enabled != after.enabled || before.working_count != after.working_count {
         let _ = app.emit("keep_awake:status", after.clone());
     }
-    after
+    Ok(after)
 }
 
 #[tauri::command]
-fn set_keep_awake_working_count(working_count: usize, app: AppHandle, state: State<'_, AppState>) -> KeepAwakeStatus {
-    let before = state.keep_awake.get_status();
-    state.keep_awake.set_working_count(working_count);
-    let after = state.keep_awake.get_status();
+async fn set_keep_awake_working_count(working_count: usize, app: AppHandle, state: State<'_, AppState>) -> Result<KeepAwakeStatus, String> {
+    let keep_awake = state.keep_awake.clone();
+    let before = keep_awake.get_status();
+    let after = tokio::task::spawn_blocking(move || {
+        keep_awake.set_working_count(working_count);
+        keep_awake.get_status()
+    })
+    .await
+    .map_err(|e| e.to_string())?;
     if before.active != after.active || before.working_count != after.working_count {
         let _ = app.emit("keep_awake:status", after.clone());
     }
-    after
+    Ok(after)
 }
 
 #[tauri::command]
