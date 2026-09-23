@@ -922,7 +922,7 @@ export default function App() {
     };
   }, []);
 
-  const handleSelectProject = (proj: HydraProject) => {
+  const handleSelectProject = useCallback((proj: HydraProject) => {
     setActiveProject(proj);
     if (!workbenchLoaded) {
       loadSessionsForProject(proj.path);
@@ -954,9 +954,9 @@ export default function App() {
         content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
       }
     ]);
-  };
+  }, [workbenchLoaded, loadSessionsForProject, refreshGitWorktrees, tabs, hydraSettings]);
 
-  const handleNavigateWorkspace = (direction: "up" | "down") => {
+  const handleNavigateWorkspace = useCallback((direction: "up" | "down") => {
     const projs = projectsRef.current;
     if (projs.length === 0) return;
     const current = activeProjectRef.current;
@@ -970,7 +970,7 @@ export default function App() {
       nextIdx = currentIdx >= projs.length - 1 ? 0 : currentIdx + 1;
     }
     handleSelectProject(projs[nextIdx]);
-  };
+  }, [handleSelectProject]);
 
   const handleRemoveProject = (proj: HydraProject) => {
     invoke("remove_project", { path: proj.path })
@@ -1146,7 +1146,7 @@ export default function App() {
     }
   };
 
-  const handleNewTerminalTab = (shell?: string) => {
+  const handleNewTerminalTab = useCallback((shell?: string) => {
     const sh = shell || hydraSettings.terminal_default_shell || "bash";
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const tabId = `tab_${sessionId}`;
@@ -1193,7 +1193,7 @@ export default function App() {
       },
     ]);
     setActiveTabId(tabId);
-  };
+  }, [hydraSettings, activeProject]);
   const handleNewTab = () => handleNewTerminalTab();
 
   const handleLaunchAgent = (agent: AvailableAgent) => {
@@ -1248,17 +1248,17 @@ export default function App() {
     );
   };
 
-  const handleNewFileTab = () => {
+  const handleNewFileTab = useCallback(() => {
     const count = Object.keys(fileTabContents).filter((k) => k.startsWith("tab_untitled_")).length + 1;
     const id = `tab_untitled_${Date.now()}`;
     const fileName = `Untitled-${count}.txt`;
     setFileTabContents((prev) => ({ ...prev, [id]: { original: "", modified: "", lang: "plaintext" } }));
     setTabs((prev) => [...prev, { id, title: fileName, type: "editor" }]);
     setActiveTabId(id);
-  };
+  }, [fileTabContents]);
 
 
-  const handleOpenFileTab = async () => {
+  const handleOpenFileTab = useCallback(async () => {
     try {
       const selected = await openFileDialog({
         multiple: false,
@@ -1285,9 +1285,9 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [activeProject]);
 
-  const handleCloseTab = (id: string) => {
+  const handleCloseTab = useCallback((id: string) => {
     const closingTab = tabsRef.current.find((t) => t.id === id);
     if (closingTab) {
       const panes = getPanesForTab(closingTab);
@@ -1322,7 +1322,7 @@ export default function App() {
       const { [id]: _, ...rest } = prev;
       return rest;
     });
-  };
+  }, [getPanesForTab]);
 
   const handleCloseTabsToRight = (id: string) => {
     // cleanup sessions for tabs being closed
@@ -1565,7 +1565,11 @@ export default function App() {
     isAddRepoOpen,
     isPairingOpen,
     handleSplitTerminal,
-    handleCloseTab
+    handleCloseTab,
+    handleNewTerminalTab,
+    handleNewFileTab,
+    handleOpenFileTab,
+    handleNavigateWorkspace
   ]);
 
 
