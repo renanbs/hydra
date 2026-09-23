@@ -156,7 +156,12 @@ export function WorktreeSidebar({
   const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>(() => {
     try {
       const saved = localStorage.getItem("hydra:display_options");
-      if (saved) return JSON.parse(saved) as WorkspaceDisplayOptions;
+      if (saved) {
+        const parsed = JSON.parse(saved) as WorkspaceDisplayOptions;
+        // Ensure filterProjectIds is array
+        if (!Array.isArray(parsed.filterProjectIds)) parsed.filterProjectIds = [];
+        return parsed;
+      }
     } catch {}
     return {
       groupBy: "repo",
@@ -166,6 +171,7 @@ export function WorktreeSidebar({
       hideAutomationCreated: false,
       hideCliCreated: false,
       hideDetachedHead: false,
+      filterProjectIds: [],
     };
   });
   useEffect(() => {
@@ -173,6 +179,11 @@ export function WorktreeSidebar({
       localStorage.setItem("hydra:display_options", JSON.stringify(displayOptions));
     } catch {}
   }, [displayOptions]);
+
+  const displayProjects = useMemo(() => {
+    if (!displayOptions.filterProjectIds?.length) return projects;
+    return projects.filter((p) => displayOptions.filterProjectIds!.includes(p.id));
+  }, [projects, displayOptions.filterProjectIds]);
 
   // ---- Sprint 3 P0: helpers for displayOptions + worktreesByProject ----
   const getWorktreesForProject = useCallback((proj: HydraProject): GitWorktreeInfo[] => {
@@ -490,7 +501,7 @@ export function WorktreeSidebar({
       // Collect all focusable items in order: projects -> worktrees -> sessions
       const allFocusable: Array<{ type: "project" | "worktree" | "session"; id: string }> = [];
       
-      projects.forEach((proj) => {
+      displayProjects.forEach((proj) => {
         allFocusable.push({ type: "project", id: proj.id });
         const isCollapsed = collapsedProjects.has(proj.id);
         const projectWorktrees = getWorktreesForProject(proj);
@@ -609,7 +620,7 @@ export function WorktreeSidebar({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [sessions, projects, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, onSelectNextSession, onSelectPrevSession, onSelectSession, onSelectGitWorktree, onSelectProject, onSessionContextMenu, isModalOpen, focusedSessionId, focusedWorktreePath, focusedProjectId]);
+  }, [sessions, displayProjects, projects, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, onSelectNextSession, onSelectPrevSession, onSelectSession, onSelectGitWorktree, onSelectProject, onSessionContextMenu, isModalOpen, focusedSessionId, focusedWorktreePath, focusedProjectId]);
 
   const toggleProjectCollapse = (projectId: string) => {
     setCollapsedProjects((prev) => {
@@ -654,7 +665,7 @@ export function WorktreeSidebar({
       return false;
     };
 
-    for (const proj of projects) {
+    for (const proj of displayProjects) {
       const isActive = proj.path === activeProject?.path;
       const isCollapsed = collapsedProjects.has(proj.id);
       const isMenuOpen = activeProjectMenuId === proj.id;
@@ -730,7 +741,7 @@ export function WorktreeSidebar({
       }
     }
     return rows;
-  }, [projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]);
+  }, [displayProjects, projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]);
 
   const getRowHeight = useCallback(
     (index: number) => {
@@ -1001,20 +1012,35 @@ export function WorktreeSidebar({
 
       {/* 4. MAIN CONTENT AREA - Conditional: Workspaces Tree OR Agents List — virtualized when >30 rows (500+ sessions) */}
       {sidebarBody === "workspaces" ? (
-        projects.length === 0 ? (
-          <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3">
-            <div className="p-6 text-center text-neutral-500 text-xs space-y-3">
-              <p className="text-neutral-400 font-medium">No projects added yet.</p>
-              <p className="text-[11px] text-neutral-500">Add an existing project from disk to begin working with agents.</p>
-              <button
-                onClick={onOpenAddRepoDialog}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-medium transition cursor-pointer"
-              >
-                <FolderPlus className="w-3.5 h-3.5" />
-                <span>Add Existing Project</span>
-              </button>
+        displayProjects.length === 0 ? (
+          projects.length === 0 ? (
+            <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3">
+              <div className="p-6 text-center text-neutral-500 text-xs space-y-3">
+                <p className="text-neutral-400 font-medium">No projects added yet.</p>
+                <p className="text-[11px] text-neutral-500">Add an existing project from disk to begin working with agents.</p>
+                <button
+                  onClick={onOpenAddRepoDialog}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-medium transition cursor-pointer"
+                >
+                  <FolderPlus className="w-3.5 h-3.5" />
+                  <span>Add Existing Project</span>
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3">
+              <div className="p-6 text-center text-neutral-500 text-xs space-y-3">
+                <p className="text-neutral-400 font-medium">No projects match filter.</p>
+                <p className="text-[11px] text-neutral-500">Clear Projects filter in Workspace options → Show.</p>
+                <button
+                  onClick={() => setDisplayOptions({ ...displayOptions, filterProjectIds: [] })}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-accent hover:bg-accent/80 text-foreground text-[11px] font-medium transition cursor-pointer border border-border"
+                >
+                  Clear filter
+                </button>
+              </div>
+            </div>
+          )
         ) : useVirtualization ? (
           <div className="flex-1 min-h-0 overflow-hidden">
             <List
@@ -1030,7 +1056,7 @@ export function WorktreeSidebar({
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3">
-            {projects.map((proj) => {
+            {displayProjects.map((proj) => {
                 const isActiveProject = proj.path === activeProject?.path;
                 const isCollapsed = collapsedProjects.has(proj.id);
                 const rawProjectWorktrees = getWorktreesForProject(proj);
