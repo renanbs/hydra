@@ -845,7 +845,7 @@ export default function App() {
   useEffect(() => {
     // Initial sync on hydraSettings change
     const workingInitial = sessions.filter((s) => s.state === "working").length;
-    syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), workingInitial);
+    syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), workingInitial);
   }, [hydraSettings, sessions.map(s=>s.state).join(",")]);
 
   // Sprint 2 P0: push via agent:state event (<500ms) — primary; polling is fallback
@@ -865,7 +865,7 @@ export default function App() {
             if (target.state === state) return prev;
             const next = prev.map((s) => (s.id === sid ? { ...s, state: state as WorktreeSession["state"] } : s));
             const wc = next.filter((s) => s.state === "working").length;
-            syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+            syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
             return next;
           });
         });
@@ -894,18 +894,18 @@ export default function App() {
                 const next = prev.map((s) => s.active ? { ...s, state: detectedState as WorktreeSession["state"] } : s);
                 // Sync keep-awake with new working count
                 const wc = next.filter((s) => s.state === "working").length;
-                syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+                syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
                 return next;
               });
             } else {
               const wc = sessions.filter((s) => s.state === "working").length;
-              syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+              syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
             }
           })
           .catch(() => {});
       } else {
         const wc = sessions.filter((s) => s.state === "working").length;
-        syncKeepAwake(Boolean((hydraSettings as any).keep_computer_awake_while_agents_run), wc);
+        syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
       }
     }, 5000);
 
