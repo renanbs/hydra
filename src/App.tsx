@@ -954,6 +954,21 @@ export default function App() {
       setSessions([newSession]);
       setTabs([{ id, title: proj.name, type: "terminal" }]);
       setActiveTabId(id);
+      // Bug #10: this session used to live only in React state — it was never
+      // persisted, so it vanished on restart. Persist it now, same shape as the
+      // other save_session_record call sites.
+      invoke("save_session_record", {
+        record: {
+          id: sId,
+          project_path: proj.path,
+          title: proj.name,
+          branch: proj.current_branch || "main",
+          agent_name: sh,
+          executable: sh,
+          created_at: Date.now(),
+          updated_at: Date.now(),
+        },
+      }).catch(() => {});
     }
     setMessages((prev) => [
       ...prev,
