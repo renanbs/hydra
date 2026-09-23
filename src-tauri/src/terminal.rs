@@ -13,12 +13,20 @@ pub struct TerminalSession {
     pub writer: Arc<Mutex<Box<dyn Write + Send>>>,
     pub master: Arc<Mutex<Box<dyn MasterPty + Send>>>,
     pub agent_id: String,
-    pub output: Arc<Mutex<Vec<u8>>>,
+    pub output: Arc<Mutex<OutputBuffer>>,
     /// Handle of the spawned process, kept so `close_session` can signal it and
     /// reap it. Without the wait, the process becomes a zombie when it exits.
     pub child: Box<dyn Child + Send + Sync>,
     /// Handle of the PTY reader thread, kept so `close_session` can join it.
     pub reader_thread: Option<std::thread::JoinHandle<()>>,
+}
+
+/// Retained window of the raw PTY output stream, backing the poll fallback.
+/// `base` is the absolute position (in the full stream) of `bytes[0]`, so the
+/// frontend's absolute offsets stay valid across buffer drains.
+pub struct OutputBuffer {
+    pub bytes: Vec<u8>,
+    pub base: usize,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -115,7 +123,7 @@ impl TerminalManager {
         let master = Arc::new(Mutex::new(pair.master));
         let parser = Arc::new(Mutex::new(vt100::Parser::new(28, 100, 3000)));
         let parser_clone = Arc::clone(&parser);
-        let output = Arc::new(Mutex::new(Vec::<u8>::new()));
+        let output = Arc::new(Mutex::new(OutputBuffer { bytes: Vec::new(), base: 0 }));
         let output_clone = Arc::clone(&output);
         let s_id = session_id.to_string();
         let db_settings = crate::db::DatabaseManager::new().ok().and_then(|db| db.get_settings().ok());
@@ -184,13 +192,16 @@ impl TerminalManager {
                 if do_emit_terminal {
                     // Keep raw output buffer for poll fallback (Orca backlogCapChars)
                     {
-                        let mut out = output_clone.lock();
-                        out.extend_from_slice(emit_chunk);
+                        let mut win = output_clone.lock();
+                        win.bytes.extend_from_slice(emit_chunk);
                         // cap at max(2MB, scrollback*120) — configured once on session start
                         let cap = scrollback_cap;
-                        if out.len() > cap {
-                            let drain = out.len() - cap;
-                            out.drain(0..drain);
+                        if win.bytes.len() > cap {
+                            let drain = win.bytes.len() - cap;
+                            win.bytes.drain(0..drain);
+                            // Advance the absolute stream position of bytes[0] so
+                            // poll offsets remain valid across drains (bug #5).
+                            win.base += drain;
                         }
                     }
                     if let Some(ref app) = app {
@@ -349,13 +360,15 @@ impl TerminalManager {
     pub fn poll_output(&self, session_id: &str, offset: usize) -> Result<(String, usize), String> {
         let guard = self.sessions.lock();
         if let Some(sess) = guard.get(session_id) {
-            let out = sess.output.lock();
-            if offset >= out.len() {
-                return Ok((String::new(), out.len()));
-            }
-            let slice = &out[offset..];
+            let win = sess.output.lock();
+            let window_end = win.base + win.bytes.len();
+            // `offset` is an absolute stream position. If it was already evicted
+            // from the retained window by a drain, resync from the window start;
+            // if it is ahead of the stream, return an empty slice at `window_end`.
+            let from = offset.min(window_end).max(win.base);
+            let slice = &win.bytes[(from - win.base)..];
             let s = String::from_utf8_lossy(slice).to_string();
-            Ok((s, out.len()))
+            Ok((s, window_end))
         } else {
             Err(format!("No active terminal session for ID '{session_id}'"))
         }
@@ -497,5 +510,59 @@ mod tests {
             .ok()
             .map(|s| s.rsplit(')').next().unwrap_or("").trim_start().chars().next().unwrap_or('?').to_string())
             .unwrap_or_default()
+    }
+
+    /// Absolute poll offsets must stay valid after the retained window drains
+    /// from the front (bug #5): the returned `next_offset` is absolute, and a
+    /// stale offset resyncs to the start of the retained window.
+    #[test]
+    fn poll_output_offsets_survive_buffer_drain() {
+        let manager = TerminalManager::new();
+        let sid = "test-poll-drain";
+
+        manager
+            .start_session_headless(sid, "/bin/sh", vec!["-c".into(), "exit 0".into()], None)
+            .unwrap();
+
+        // Wait for the reader thread to finish so it cannot overwrite the
+        // crafted window below (the child exits immediately, no output).
+        let reader = manager
+            .sessions
+            .lock()
+            .get_mut(sid)
+            .unwrap()
+            .reader_thread
+            .take()
+            .unwrap();
+        reader.join().unwrap();
+
+        // Simulate a reader drain: the retained window starts at absolute
+        // position 100 and holds bytes [100, 1100), with bytes[j] ≡ 'a' + (100+j) % 26.
+        {
+            let mut sessions_guard = manager.sessions.lock();
+            let sess = sessions_guard.get_mut(sid).unwrap();
+            let mut win = sess.output.lock();
+            win.base = 100;
+            win.bytes = (0..1000u32).map(|j| b'a' + ((100 + j) % 26) as u8).collect();
+        }
+
+        // Poll at an absolute position already evicted by the drain: resync to
+        // the start of the retained window, `next` is absolute and correct.
+        let (data, next) = manager.poll_output(sid, 50).unwrap();
+        assert_eq!(next, 1100);
+        assert_eq!(data.len(), 1000);
+        assert_eq!(data.as_bytes()[0], b'a' + (100 % 26) as u8); // absolute 100
+        assert_eq!(data.as_bytes()[999], b'a' + (1099 % 26) as u8); // absolute 1099
+
+        // Poll at a valid absolute offset inside the window.
+        let (data2, next2) = manager.poll_output(sid, 500).unwrap();
+        assert_eq!(next2, 1100);
+        assert_eq!(data2.len(), 600); // bytes [500, 1100)
+        assert_eq!(data2.as_bytes()[0], b'a' + (500 % 26) as u8); // absolute 500
+
+        // Poll at the absolute end: empty slice, cursor stays stable.
+        let (empty, next3) = manager.poll_output(sid, 1100).unwrap();
+        assert!(empty.is_empty());
+        assert_eq!(next3, 1100);
     }
 }
