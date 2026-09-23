@@ -125,6 +125,11 @@ export default function App() {
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
   const [worktreesByProject, setWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
+  // Bug #12: system theme must be reactive, not sampled once when hydraSettings
+  // change. Kept in state + updated by the MediaQueryList change listener below.
+  const [systemDark, setSystemDark] = useState<boolean>(
+    () => (typeof window !== "undefined" && window.matchMedia) ? window.matchMedia("(prefers-color-scheme: dark)").matches : true
+  );
   // Apply interface font live (Orca appFontFamily → --app-font-family)
   useEffect(() => {
     const f = hydraSettings.app_font_family;
@@ -141,10 +146,19 @@ export default function App() {
     }
   }, [hydraSettings.ui_zoom]);
   // Single tint source fix: leftSidebarStyle kept only for WindowTitlebar header continuity; outer aside uses WorktreeSidebar inner color-mix (12a73e2)
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
   const leftSidebarStyle = useMemo(() => {
-    const sysDark = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)").matches : true;
-    return resolveLeftSidebarStyleVariables(hydraSettings, sysDark) as React.CSSProperties | undefined;
-  }, [hydraSettings]);
+    // Bug #12: sysDark used to be sampled here while hydraSettings was the only
+    // dep, so an OS theme switch never recomputed the style. systemDark is now
+    // reactive state fed by the matchMedia change listener above.
+    return resolveLeftSidebarStyleVariables(hydraSettings, systemDark) as React.CSSProperties | undefined;
+  }, [hydraSettings, systemDark]);
   const syncKeepAwake = (enabled: boolean, workingCount: number) => {
     invoke("sync_keep_awake", { enabled, workingCount }).catch(()=>{});
   };
