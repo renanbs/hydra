@@ -15,7 +15,8 @@ import {
   Copy,
   FolderTree,
   GripVertical,
-  Terminal
+  Terminal,
+  ChevronsUp
 } from "lucide-react";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
@@ -34,6 +35,15 @@ import {
 } from "./worktree-list/pointer-drag-dom";
 import type { SidebarRow, SidebarStatusState } from "./worktree-list/types";
 import { getFocusableRowKeys, resolveCycledFocusKey } from "./worktree-list/keyboard-cycle";
+import {
+  HARD_SCROLL_UP,
+  createHardScrollUpDetectorState,
+  reduceHardScrollUpOnDismiss,
+  reduceHardScrollUpOnIdle,
+  reduceHardScrollUpOnScroll,
+  reduceHardScrollUpOnWheel,
+  type HardScrollUpDetectorState
+} from "./worktree-list/hard-scroll-up";
 
 // PR-10 (Orca main.css parity): the drag preview/badge styling ships as CSS rules in
 // Orca; this PR's scope is restricted to this file + pointer-drag-dom.ts, so the same
@@ -688,6 +698,185 @@ export function SidebarShell({
     }
     listRef.current?.scrollToRow({ index: rowIndex, align: "auto", behavior: "smooth" });
   }, [flatRows, activeProject, listRef]);
+  // Jump-to-top hard-scroll-up detector (Orca useWorktreeListScrollToTop parity):
+  // Detects sustained or burst upward scroll gestures and displays a floating "Topo"
+  // button that smoothly returns the virtual viewport to row 0.
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const showScrollToTopRef = useRef(false);
+  const detectorRef = useRef<HardScrollUpDetectorState>(createHardScrollUpDetectorState());
+  const idleTimerRef = useRef<number | null>(null);
+  const scrollbarDragRef = useRef(false);
+  const touchScrollRef = useRef(false);
+  const suppressDetectionUntilRef = useRef(0);
+
+  const clearIdleTimer = useCallback(() => {
+    if (idleTimerRef.current !== null) {
+      window.clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+  }, []);
+
+  const publishVisible = useCallback((next: HardScrollUpDetectorState) => {
+    detectorRef.current = next;
+    if (showScrollToTopRef.current !== next.visible) {
+      showScrollToTopRef.current = next.visible;
+      setShowScrollToTop(next.visible);
+    }
+  }, []);
+
+  const armIdleHide = useCallback(
+    (element: HTMLElement, lastIntentAt: number) => {
+      clearIdleTimer();
+      const fireAt = lastIntentAt + HARD_SCROLL_UP.hideAfterIdleMs;
+      const delayMs = Math.max(0, fireAt - window.performance.now());
+
+      idleTimerRef.current = window.setTimeout(() => {
+        idleTimerRef.current = null;
+        const now = window.performance.now();
+
+        if (now < suppressDetectionUntilRef.current) {
+          publishVisible(createHardScrollUpDetectorState());
+          return;
+        }
+
+        const maxScroll = Math.max(0, element.scrollHeight - element.clientHeight);
+        const next = reduceHardScrollUpOnIdle(detectorRef.current, {
+          scrollTop: element.scrollTop,
+          maxScroll,
+          t: now
+        });
+        if (next.visible && now - next.lastIntentAt >= HARD_SCROLL_UP.hideAfterIdleMs) {
+          publishVisible(createHardScrollUpDetectorState());
+          return;
+        }
+        publishVisible(next);
+      }, delayMs);
+    },
+    [clearIdleTimer, publishVisible]
+  );
+
+  const applyDetectorResult = useCallback(
+    (
+      element: HTMLElement,
+      previous: HardScrollUpDetectorState,
+      next: HardScrollUpDetectorState
+    ) => {
+      publishVisible(next);
+      if (!next.visible) {
+        clearIdleTimer();
+        return;
+      }
+      if (next.lastIntentAt !== previous.lastIntentAt) {
+        armIdleHide(element, next.lastIntentAt);
+      }
+    },
+    [armIdleHide, clearIdleTimer, publishVisible]
+  );
+
+  const handleScrollToTop = useCallback(() => {
+    detectorRef.current = reduceHardScrollUpOnDismiss(detectorRef.current);
+    clearIdleTimer();
+    publishVisible(detectorRef.current);
+    suppressDetectionUntilRef.current =
+      window.performance.now() + HARD_SCROLL_UP.suppressAfterJumpMs;
+    listRef.current?.scrollToRow({ index: 0, align: "auto", behavior: "smooth" });
+  }, [clearIdleTimer, publishVisible, listRef]);
+
+  useEffect(() => {
+    const scrollElement = listRef.current?.element;
+    if (!scrollElement || sidebarBody !== "workspaces") {
+      clearIdleTimer();
+      publishVisible(createHardScrollUpDetectorState());
+      return;
+    }
+
+    const onWheel = (event: WheelEvent): void => {
+      const now = window.performance.now();
+      const maxScroll = Math.max(0, scrollElement.scrollHeight - scrollElement.clientHeight);
+      const scrollTop = scrollElement.scrollTop;
+
+      if (scrollTop <= HARD_SCROLL_UP.nearTopPx || maxScroll < HARD_SCROLL_UP.minScrollablePx) {
+        publishVisible(createHardScrollUpDetectorState());
+        clearIdleTimer();
+        return;
+      }
+
+      if (now < suppressDetectionUntilRef.current) {
+        return;
+      }
+
+      const previous = detectorRef.current;
+      const next = reduceHardScrollUpOnWheel(previous, {
+        scrollTop,
+        maxScroll,
+        t: now,
+        deltaY: event.deltaY,
+        deltaMode: event.deltaMode
+      });
+      applyDetectorResult(scrollElement, previous, next);
+    };
+
+    const onScroll = (): void => {
+      const now = window.performance.now();
+      const maxScroll = Math.max(0, scrollElement.scrollHeight - scrollElement.clientHeight);
+      const scrollTop = scrollElement.scrollTop;
+
+      if (scrollTop <= HARD_SCROLL_UP.nearTopPx || maxScroll < HARD_SCROLL_UP.minScrollablePx) {
+        publishVisible(createHardScrollUpDetectorState());
+        clearIdleTimer();
+        return;
+      }
+
+      if (now < suppressDetectionUntilRef.current) {
+        return;
+      }
+
+      if (!scrollbarDragRef.current && !touchScrollRef.current) {
+        return;
+      }
+
+      const previous = detectorRef.current;
+      const next = reduceHardScrollUpOnScroll(previous, {
+        scrollTop,
+        maxScroll,
+        t: now
+      });
+      applyDetectorResult(scrollElement, previous, next);
+    };
+
+    const onPointerDown = (event: PointerEvent): void => {
+      if (event.pointerType === "touch") {
+        touchScrollRef.current = true;
+        return;
+      }
+      const rect = scrollElement.getBoundingClientRect();
+      const nativeScrollbarWidth = scrollElement.offsetWidth - scrollElement.clientWidth;
+      const scrollbarHitWidth = Math.max(12, nativeScrollbarWidth);
+      scrollbarDragRef.current =
+        event.target === scrollElement && event.clientX >= rect.right - scrollbarHitWidth;
+    };
+
+    const onPointerEnd = (): void => {
+      scrollbarDragRef.current = false;
+      touchScrollRef.current = false;
+    };
+
+    scrollElement.addEventListener("wheel", onWheel, { passive: true });
+    scrollElement.addEventListener("scroll", onScroll, { passive: true });
+    scrollElement.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("pointerup", onPointerEnd, { passive: true });
+    window.addEventListener("pointercancel", onPointerEnd, { passive: true });
+
+    return () => {
+      scrollElement.removeEventListener("wheel", onWheel);
+      scrollElement.removeEventListener("scroll", onScroll);
+      scrollElement.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", onPointerEnd);
+      window.removeEventListener("pointercancel", onPointerEnd);
+      onPointerEnd();
+      clearIdleTimer();
+    };
+  }, [applyDetectorResult, clearIdleTimer, publishVisible, sidebarBody, displayProjects.length, projects.length, flatRows.length]);
 
   // Keyboard navigation — Orca worktree-keyboard-cycle semantics: arrows cycle with
   // wrap-around over the rows the projection rendered, Enter/Space activates the
@@ -1082,7 +1271,7 @@ export function SidebarShell({
             </div>
           )
         ) : (
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="relative flex-1 min-h-0 overflow-hidden">
             <List
               listRef={listRef}
               rowCount={flatRows.length}
@@ -1093,6 +1282,20 @@ export function SidebarShell({
               className="py-2"
               overscanCount={8}
             />
+            {showScrollToTop && (
+              <div className="pointer-events-none absolute bottom-3 right-3 z-30 flex items-center">
+                <button
+                  type="button"
+                  onClick={handleScrollToTop}
+                  className="pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-worktree-sidebar-accent/90 hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-[11px] font-medium shadow-md border border-worktree-sidebar-border backdrop-blur-sm transition-all duration-150 animate-in fade-in-0 slide-in-from-bottom-2 cursor-pointer"
+                  aria-label="Scroll to top"
+                  title="Scroll to top"
+                >
+                  <ChevronsUp className="w-3.5 h-3.5 text-worktree-sidebar-foreground/70" />
+                  <span>Topo</span>
+                </button>
+              </div>
+            )}
           </div>
         )
       ) : (
