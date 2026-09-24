@@ -1153,6 +1153,23 @@ export default function App() {
             );
             const wc = next.filter((s) => s.state === "working").length;
             syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
+
+            // PR-15: unread badge driven by agent:state transitions.
+            // A session that transitions to a needing-attention state without
+            // being the active session marks its worktree + project unread.
+            // Cleared below in handleSelectSession / handleSelectWorkbenchTab.
+            const updated = next.find((s) => s.id === sid);
+            if (updated && (state === "blocked" || state === "waiting")) {
+              const isActiveSession = Boolean(updated.active);
+              const hasVisibleTab = tabsRef.current.some((t) => t.sessionId === sid || t.id === `tab_${sid}`);
+              const isActiveTab = hasVisibleTab && tabsRef.current.find((t) => t.sessionId === sid || t.id === `tab_${sid}`)?.id === activeTabIdRef.current;
+              if (!isActiveSession || !isActiveTab) {
+                if (updated.project_path) markUnreadWorktree(updated.project_path);
+                // Propagate to the owning project so the project header also glows
+                const proj = projectsRef.current.find((p) => updated.project_path === p.path || updated.project_path.startsWith(p.path + "/"));
+                if (proj) markUnreadProject(proj.id);
+              }
+            }
             return next;
           });
         });
@@ -1409,6 +1426,13 @@ export default function App() {
     setSessions((prev) =>
       prev.map((s) => ({ ...s, active: s.id === id }))
     );
+    // PR-15: selecting a session clears its unread badge (and the owning project's).
+    const selectedSession = sessions.find((s) => s.id === id);
+    if (selectedSession?.project_path) {
+      clearUnreadWorktree(selectedSession.project_path);
+      const owningProject = projects.find((p) => selectedSession.project_path === p.path || selectedSession.project_path.startsWith(p.path + "/"));
+      if (owningProject) clearUnreadProject(owningProject.id);
+    }
     const tabId = `tab_${id}`;
     const existing = tabs.find((t) => t.id === tabId || t.sessionId === id);
     if (!existing) {
@@ -1568,6 +1592,13 @@ export default function App() {
   const handleSelectWorkbenchTab = (tabId: string) => {
     setActiveTabId(tabId);
     const sId = tabId.startsWith("tab_") ? tabId.replace("tab_", "") : tabId;
+    // PR-15: activating a workbench tab clears its session's unread badge.
+    const session = sessions.find((s) => s.id === sId);
+    if (session?.project_path) {
+      clearUnreadWorktree(session.project_path);
+      const owningProject = projects.find((p) => session.project_path === p.path || session.project_path.startsWith(p.path + "/"));
+      if (owningProject) clearUnreadProject(owningProject.id);
+    }
     setSessions((prev) =>
       prev.map((s) => ({ ...s, active: s.id === sId }))
     );
@@ -2240,6 +2271,21 @@ export default function App() {
   };
   const toggleUnreadWorktree = (path: string) => {
     setUnreadWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); return next; });
+  };
+
+  // PR-15: conditional unread drives from agent:state events (not toggle).
+  // Marks on blocked/working transitions of non-active sessions; clears on reveal.
+  const markUnreadWorktree = (path: string) => {
+    setUnreadWorktrees((prev) => { if (prev.has(path)) return prev; const next = new Set(prev); next.add(path); return next; });
+  };
+  const clearUnreadWorktree = (path: string) => {
+    setUnreadWorktrees((prev) => { if (!prev.has(path)) return prev; const next = new Set(prev); next.delete(path); return next; });
+  };
+  const markUnreadProject = (id: string) => {
+    setUnreadProjects((prev) => { if (prev.has(id)) return prev; const next = new Set(prev); next.add(id); return next; });
+  };
+  const clearUnreadProject = (id: string) => {
+    setUnreadProjects((prev) => { if (!prev.has(id)) return prev; const next = new Set(prev); next.delete(id); return next; });
   };
 
   const handleProjectContextMenu = (e: React.MouseEvent, proj: HydraProject) => {
