@@ -712,6 +712,40 @@ export default function App() {
       }).catch(console.error);
     };
     window.addEventListener("hydra:refresh-projects", handleRefreshProjects);
+    // PR-12: group-header menu mutations arrive as events (SidebarShell owns the menu UI;
+    // App owns group state + localStorage persistence). Persistence inside the functional
+    // updater mirrors the existing togglePinWorktree convention — the write is idempotent
+    // even if StrictMode double-invokes the updater.
+    const handleRenameProjectGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ id: string; name: string }>).detail;
+      if (!detail?.id || typeof detail.name !== "string" || !detail.name.trim()) return;
+      setProjectGroups((prev) => {
+        const next = prev.map((g) => (g.id === detail.id ? { ...g, name: detail.name.trim() } : g));
+        persistGroups(next);
+        return next;
+      });
+      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    };
+    const handleDeleteProjectGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ id: string }>).detail;
+      if (!detail?.id) return;
+      setProjectGroups((prev) => {
+        const next = prev.filter((g) => g.id !== detail.id);
+        persistGroups(next);
+        return next;
+      });
+      // Delete strips the membership map — member projects render ungrouped again.
+      setProjectGroupMap((prev) => {
+        const entries = Object.entries(prev).filter(([, gid]) => gid !== detail.id);
+        if (entries.length === Object.keys(prev).length) return prev;
+        const next = Object.fromEntries(entries);
+        persistGroupMap(next);
+        return next;
+      });
+      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    };
+    window.addEventListener("hydra:rename-project-group", handleRenameProjectGroup);
+    window.addEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
     const handleOpenPalette = () => setIsCommandPaletteOpen(true);
     window.addEventListener("hydra:open-command-palette", handleOpenPalette);
 
@@ -748,6 +782,8 @@ export default function App() {
       .catch(console.error);
     return () => {
       window.removeEventListener("hydra:refresh-projects", handleRefreshProjects);
+      window.removeEventListener("hydra:rename-project-group", handleRenameProjectGroup);
+      window.removeEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
       window.removeEventListener("hydra:open-command-palette", handleOpenPalette);
       mql.removeEventListener("change", onSystemChange);
     };
@@ -2058,6 +2094,7 @@ export default function App() {
             setProjectGroups(next); persistGroups(next);
             const nextMap = { ...projectGroupMap, [proj.id]: id };
             setProjectGroupMap(nextMap); persistGroupMap(nextMap);
+            window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
           }
         },
         ...(projectGroups.length > 0 ? [{
@@ -2070,11 +2107,12 @@ export default function App() {
             onClick: () => {
               const nextMap = { ...projectGroupMap, [proj.id]: g.id };
               setProjectGroupMap(nextMap); persistGroupMap(nextMap);
+              window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
             },
           })),
           onClick: () => {},
         } as ContextMenuItem] : []),
-        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const m = { ...projectGroupMap }; delete m[proj.id]; setProjectGroupMap(m); persistGroupMap(m); } } as ContextMenuItem] : []),
+        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const m = { ...projectGroupMap }; delete m[proj.id]; setProjectGroupMap(m); persistGroupMap(m); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } } as ContextMenuItem] : []),
         { label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...", icon: <FolderTree className="w-3.5 h-3.5" />, separator: true, disabled: eligibleParents.length === 0, title: eligibleParents.length === 0 ? "No eligible parents" : undefined, onClick: () => {
             if (eligibleParents.length === 0) return;
             const opts = eligibleParents.map((p: any) => `${p.name} — ${p.path || p.id}`).join("\n");

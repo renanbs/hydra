@@ -89,8 +89,10 @@ function sessionsOfProject(input: SidebarProjectionInput, proj: HydraProject, is
 }
 
 /**
- * Original tree projection (groupBy: "repo"), preserved byte-for-byte: project-header →
- * worktree → nested session, orphan sessions, hidden-pill and empty rows.
+ * Original tree projection (groupBy: "repo"): project-header → worktree → nested session,
+ * orphan sessions, hidden-pill and empty rows. When persisted project groups exist
+ * (PR-12), member projects nest under a group-header row; without a group map the tree
+ * is byte-for-byte the pre-PR-12 projection.
  * Orca reference: grouping/build-rows.ts repo path.
  */
 function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
@@ -128,7 +130,8 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
     return false;
   };
 
-  for (const proj of displayProjects) {
+  /** One project's block: header + worktrees/sessions/pills — the original repo-map body. */
+  const emitProject = (proj: HydraProject, inGroup: boolean): void => {
     const isActive = proj.path === activeProject?.path;
     const isCollapsed = collapsedProjects.has(proj.id);
     const isMenuOpen = activeProjectMenuId === proj.id;
@@ -157,14 +160,14 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
       // Keep project visible if it has hidden worktrees (so pill can show) even when filter hides all
       if (rawProjectWorktrees.length === 0 && projectSessions.length === 0 && !lowerFilter) {
         // no content and no filter -> still show? We'll keep project header anyway if it has raw worktrees hidden?
-      } else if (hiddenCount === 0) continue;
+      } else if (hiddenCount === 0) return;
     }
     // If project has only hidden worktrees and no visible, still show header + pill
-    rows.push({ type: "project-header", proj, isActive, isCollapsed, isMenuOpen });
+    rows.push({ type: "project-header", proj, isActive, isCollapsed, isMenuOpen, inGroup });
 
     if (isCollapsed) {
       if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
-      continue;
+      return;
     }
 
     if (sortedWorktrees.length > 0) {
@@ -196,6 +199,48 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
         if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
       }
     }
+  };
+
+  // PR-12 (Orca Project Groups): repo mode only — a group section anchors at the position
+  // of its first member in the project order, and later members join it there instead of
+  // rendering twice. A collapsed group emits only its header. With an empty map/list (or
+  // groupsEnabled === false) the projection is byte-for-byte the pre-PR-12 tree; the
+  // "none"/"workspace-status" projections never see groups by construction.
+  const projectGroups = input.groupsEnabled === false ? [] : (input.projectGroups ?? []);
+  const projectGroupMap = input.projectGroupMap ?? {};
+  const groupById = new Map(projectGroups.map((g) => [g.id, g]));
+  const hasVisibleGroupedProject = displayProjects.some((p) => {
+    const gid = projectGroupMap[p.id];
+    return gid !== undefined && groupById.has(gid);
+  });
+  if (projectGroups.length === 0 || !hasVisibleGroupedProject) {
+    for (const proj of displayProjects) emitProject(proj, false);
+    return rows;
+  }
+
+  const emittedGroups = new Set<string>();
+  for (const proj of displayProjects) {
+    const gid = projectGroupMap[proj.id];
+    const group = gid !== undefined ? groupById.get(gid) : undefined;
+    if (!group) {
+      emitProject(proj, false);
+      continue;
+    }
+    if (emittedGroups.has(group.id)) continue;
+    emittedGroups.add(group.id);
+    const members = displayProjects.filter((p) => projectGroupMap[p.id] === group.id);
+    // count = total sessions in the group, deduped by id — a session can belong to two
+    // projects (nested paths) and the chip must not double-count it.
+    const sessionIds = new Set<string>();
+    for (const member of members) {
+      for (const s of sessionsOfProject(input, member, member.path === activeProject?.path)) {
+        sessionIds.add(s.id);
+      }
+    }
+    const isCollapsed = input.collapsedGroups?.has(group.id) ?? group.isCollapsed ?? false;
+    rows.push({ type: "group-header", group, count: sessionIds.size, isCollapsed });
+    if (isCollapsed) continue;
+    for (const member of members) emitProject(member, true);
   }
   return rows;
 }

@@ -7,11 +7,20 @@ import type { WorkspaceDisplayOptions } from "../WorkspaceOptionsMenu";
 /** Attention bucket of a session's Herdr state — the "workspace-status" group header vocabulary. */
 export type SidebarStatusState = "blocked" | "waiting" | "working" | "done" | "idle" | "unknown";
 
+/** A named project group (Orca Project Groups parity; localStorage-backed until PR-14). */
+export interface ProjectGroup {
+  id: string;
+  name: string;
+  /** Orca persists collapse on the group record; Hydra keeps it in hydra:collapsed_groups. */
+  isCollapsed?: boolean;
+}
+
 /** Union of every row the workspaces sidebar viewport can render. */
 export type SidebarRow =
-  | { type: "project-header"; proj: HydraProject; isActive: boolean; isCollapsed: boolean; isMenuOpen: boolean }
+  | { type: "project-header"; proj: HydraProject; isActive: boolean; isCollapsed: boolean; isMenuOpen: boolean; /** True when nested under a group-header (extra indent). */ inGroup?: boolean }
   | { type: "worktree"; wt: GitWorktreeInfo; proj: HydraProject }
   | { type: "status-header"; state: SidebarStatusState; count: number }
+  | { type: "group-header"; group: ProjectGroup; count: number; isCollapsed: boolean }
   | { type: "session"; session: WorktreeSession; proj: HydraProject; wt?: GitWorktreeInfo; isOrphan?: boolean; isNested: boolean }
   | { type: "empty"; proj: HydraProject; message: string }
   | { type: "hidden-pill"; proj: HydraProject; hiddenCount: number };
@@ -57,6 +66,14 @@ export interface SidebarProjectionInput {
   activeProject: HydraProject | null;
   /** Collapsed project ids (repo mode only — "none"/"workspace-status" render no project headers). */
   collapsedProjects: Set<string>;
+  /** Collapsed group ids (localStorage hydra:collapsed_groups); repo mode only. */
+  collapsedGroups?: Set<string>;
+  /** Persisted project groups (localStorage hydra:project_groups); repo mode only. */
+  projectGroups?: ProjectGroup[];
+  /** project id → group id (localStorage hydra:project_group_map). */
+  projectGroupMap?: Record<string, string>;
+  /** Orca Groups UI flag (description.v.groupsEnabled); defaults to enabled. */
+  groupsEnabled?: boolean;
   activeProjectMenuId: string | null;
   /** Free-text filter over titles, branches and agent names. */
   filter: string;

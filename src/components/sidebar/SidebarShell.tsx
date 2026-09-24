@@ -13,6 +13,7 @@ import {
   MoreHorizontal,
   Sliders,
   Copy,
+  Pencil,
   FolderTree,
   GripVertical,
   Terminal,
@@ -160,8 +161,20 @@ export function SidebarShell({
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+  // PR-12 (Orca Project Groups): persisted group collapse — survives restart via
+  // localStorage, unlike collapsedProjects (which PR-14 moves to SQLite together).
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem("hydra:collapsed_groups");
+      const parsed = saved ? (JSON.parse(saved) as unknown) : [];
+      return new Set(Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : []);
+    } catch {
+      return new Set();
+    }
+  });
   const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
   const [activeProjectMenuId, setActiveProjectMenuId] = useState<string | null>(null);
+  const [activeGroupMenuId, setActiveGroupMenuId] = useState<string | null>(null);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
   const [sidebarBody, setSidebarBody] = useState<"workspaces" | "agents">("workspaces");
   const [focusedWorktreePath, setFocusedWorktreePath] = useState<string | null>(null);
@@ -606,6 +619,7 @@ export function SidebarShell({
   useEffect(() => {
     const handleClickOutside = () => {
       setActiveProjectMenuId(null);
+      setActiveGroupMenuId(null);
     };
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
@@ -616,6 +630,18 @@ export function SidebarShell({
       const next = new Set(prev);
       if (next.has(projectId)) next.delete(projectId);
       else next.add(projectId);
+      return next;
+    });
+  };
+
+  const toggleGroupCollapse = (groupId: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      try {
+        localStorage.setItem("hydra:collapsed_groups", JSON.stringify([...next]));
+      } catch {}
       return next;
     });
   };
@@ -632,6 +658,9 @@ export function SidebarShell({
         worktreesByProject,
         activeProject,
         collapsedProjects,
+        collapsedGroups,
+        projectGroups,
+        projectGroupMap,
         activeProjectMenuId,
         filter,
         displayOptions,
@@ -645,7 +674,7 @@ export function SidebarShell({
         sortWorktreesByOption,
         sortSessionsByOption,
       }),
-    [displayProjects, projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]
+    [displayProjects, projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, collapsedGroups, projectGroups, projectGroupMap, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]
   );
 
   const getRowHeight = useCallback(
@@ -653,6 +682,7 @@ export function SidebarShell({
       const row = flatRows[index];
       if (!row) return 40;
       if (row.type === "status-header") return 28;
+      if (row.type === "group-header") return 32;
       if (row.type === "project-header") return 40;
       if (row.type === "worktree") return compactCards ? 32 : 44;
       if (row.type === "session") return compactCards ? 52 : 68;
@@ -970,10 +1000,84 @@ export function SidebarShell({
     // Common style for virtual row positioning
     const rowStyle: React.CSSProperties = { ...style, left: 0, right: 0, width: "100%" };
 
-    if (row.type === "project-header") {
-      const { proj, isActive, isCollapsed, isMenuOpen } = row;
+    if (row.type === "group-header") {
+      const { group, count, isCollapsed } = row;
+      const isGroupMenuOpen = activeGroupMenuId === group.id;
+      // PR-12 (Orca Project Groups): decorative section header — like status-header it's
+      // never keyboard-focusable (getFocusableRowKeys only emits project/worktree/session)
+      // and never draggable (no drag handlers). Visual mirrors the project-header one
+      // hierarchy step up: FolderTree icon, semibold label, session-count chip.
       return (
-        <div style={rowStyle} {...ariaAttributes} className="px-2" >
+        <div style={rowStyle} {...ariaAttributes} className="px-2">
+          <div
+            onClick={() => toggleGroupCollapse(group.id)}
+            title={isCollapsed ? "Expand group" : "Collapse group"}
+            className="group relative flex items-center justify-between px-2 py-1 rounded-lg cursor-pointer transition hover:bg-worktree-sidebar-accent/50 text-worktree-sidebar-foreground/80 border border-transparent"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <FolderTree className="w-3.5 h-3.5 shrink-0 text-emerald-400/80" />
+              <span className="truncate text-[12px] font-semibold tracking-tight">{group.name}</span>
+              <span className="rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70 shrink-0">
+                {count}
+              </span>
+            </div>
+            <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => toggleGroupCollapse(group.id)}
+                title={isCollapsed ? "Expand group" : "Collapse group"}
+                className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
+              >
+                {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveGroupMenuId(isGroupMenuOpen ? null : group.id);
+                  }}
+                  title="Group actions"
+                  className={`p-1 rounded transition cursor-pointer ${isGroupMenuOpen ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
+                >
+                  <MoreHorizontal className="w-3.5 h-3.5" />
+                </button>
+                {isGroupMenuOpen && (
+                  <div className="absolute right-0 top-7 w-48 rounded-xl bg-popover border border-border p-1.5 shadow-2xl z-50 text-xs space-y-0.5 text-popover-foreground" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => {
+                        setActiveGroupMenuId(null);
+                        const name = window.prompt("Group name:", group.name);
+                        if (!name || !name.trim() || name.trim() === group.name) return;
+                        // App.tsx owns group state + persistence (hydra:project_groups).
+                        window.dispatchEvent(new CustomEvent("hydra:rename-project-group", { detail: { id: group.id, name: name.trim() } }));
+                      }}
+                      className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-neutral-400" /><span className="text-[11px]">Rename Group</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveGroupMenuId(null);
+                        if (!window.confirm(`Delete group "${group.name}"? Member projects stay in the sidebar, ungrouped.`)) return;
+                        // App.tsx removes the group and strips its map entries (hydra:project_group_map).
+                        window.dispatchEvent(new CustomEvent("hydra:delete-project-group", { detail: { id: group.id } }));
+                      }}
+                      className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /><span className="text-[11px]">Delete Group</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (row.type === "project-header") {
+      const { proj, isActive, isCollapsed, isMenuOpen, inGroup } = row;
+      return (
+        <div style={rowStyle} {...ariaAttributes} className={`px-2 ${inGroup ? "pl-4" : ""}`} >
           <div
             draggable={true}
             onDragStart={(e) => handleProjectDragStart(e, proj.id)}
