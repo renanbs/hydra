@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open as openFileDialog } from "@tauri-apps/plugin-dialog";
 import { usePanelResize } from "./hooks/usePanelResize";
+import { useSidebarResize, clampSidebarResizeWidth } from "./hooks/useSidebarResize";
 import { TerminalDrawer, type TerminalContextActions } from "./components/TerminalDrawer";
 import { Landing } from "./components/Landing";
 import { WindowTitlebar } from "./components/WindowTitlebar";
@@ -106,9 +107,13 @@ export default function App() {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
   // refs so a rapid toggle of both sidebars never persists a render-lagged
-  // value for the other sidebar (bug #6).
+  // value for the other sidebar (bug #6). leftSidebarWidthRef follows the
+  // same mirror pattern for the width: the resize hook keeps it current (rAF
+  // drafts during the drag, commit on mouseup) with no per-frame setState.
   const leftSidebarOpenRef = useRef(isLeftSidebarOpen);
   const rightSidebarOpenRef = useRef(isRightSidebarOpen);
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(260);
+  const leftSidebarWidthRef = useRef(leftSidebarWidth);
   useEffect(() => {
     leftSidebarOpenRef.current = isLeftSidebarOpen;
     rightSidebarOpenRef.current = isRightSidebarOpen;
@@ -379,11 +384,19 @@ export default function App() {
     }
   ]);
 
-  const leftSidebar = usePanelResize({
-    initialWidth: 260,
+  // Orca parity: left panel resizes via useSidebarResize — rAF drag drafts go
+  // straight to the DOM (containerRef), state commits only on mouseup.
+  const onLeftSidebarDraftWidthChange = useCallback((width: number) => {
+    leftSidebarWidthRef.current = width;
+  }, []);
+  const leftSidebar = useSidebarResize<HTMLElement>({
+    isOpen: isLeftSidebarOpen,
+    width: leftSidebarWidth,
     minWidth: 180,
     maxWidth: 480,
     deltaSign: 1,
+    setWidth: setLeftSidebarWidth,
+    onDraftWidthChange: onLeftSidebarDraftWidthChange,
   });
 
   const rightSidebar = usePanelResize({
@@ -393,13 +406,17 @@ export default function App() {
     deltaSign: -1,
   });
 
-  // 1. Carrega o estado persistido de visibilidade dos painéis
+  // 1. Carrega o estado persistido de visibilidade dos painéis + largura do sidebar esquerdo
   useEffect(() => {
     invoke<UiLayoutState>("get_layout_persistence")
       .then((layout) => {
         if (layout) {
           setIsLeftSidebarOpen(layout.left_sidebar_open);
           setIsRightSidebarOpen(layout.right_sidebar_open);
+          const persistedWidth = layout.left_sidebar_width;
+          if (typeof persistedWidth === "number" && Number.isFinite(persistedWidth)) {
+            setLeftSidebarWidth(clampSidebarResizeWidth(persistedWidth, 180, 480));
+          }
         }
       })
       .catch(console.error);
@@ -547,7 +564,7 @@ export default function App() {
       layout: {
         left_sidebar_open: open,
         right_sidebar_open: rightSidebarOpenRef.current,
-        left_sidebar_width: leftSidebar.width,
+        left_sidebar_width: leftSidebarWidthRef.current,
         right_sidebar_width: rightSidebar.width,
       }
     }).catch(console.error);
@@ -559,11 +576,36 @@ export default function App() {
       layout: {
         left_sidebar_open: leftSidebarOpenRef.current,
         right_sidebar_open: open,
-        left_sidebar_width: leftSidebar.width,
+        left_sidebar_width: leftSidebarWidthRef.current,
         right_sidebar_width: rightSidebar.width,
       }
     }).catch(console.error);
   };
+
+  // Persiste a largura do sidebar esquerdo uma única vez por drag, no mouseup
+  // do resize — os rascunhos do rAF tocam só o DOM e o ref, nunca o estado
+  // (paridade Orca: commit no mouseup; persistência nunca por frame).
+  useEffect(() => {
+    if (!leftSidebar.isResizing) {
+      return;
+    }
+    const onLeftSidebarResizeEnd = () => {
+      const finalWidth = leftSidebarWidthRef.current;
+      setLeftSidebarWidth(finalWidth);
+      invoke("save_layout_persistence", {
+        layout: {
+          left_sidebar_open: leftSidebarOpenRef.current,
+          right_sidebar_open: rightSidebarOpenRef.current,
+          left_sidebar_width: finalWidth,
+          right_sidebar_width: rightSidebar.width,
+        }
+      }).catch(console.error);
+    };
+    window.addEventListener("mouseup", onLeftSidebarResizeEnd);
+    return () => {
+      window.removeEventListener("mouseup", onLeftSidebarResizeEnd);
+    };
+  }, [leftSidebar.isResizing, rightSidebar.width]);
 
   const saveWorkbenchPersistence = useCallback(() => {
     const state: WorkbenchState = {
@@ -1594,7 +1636,7 @@ export default function App() {
   }, [
     isLeftSidebarOpen,
     isRightSidebarOpen,
-    leftSidebar.width,
+    leftSidebarWidth,
     rightSidebar.width,
     contextMenu,
     isCommandPaletteOpen,
@@ -2206,7 +2248,7 @@ export default function App() {
         title={status} 
         isLeftOpen={isLeftSidebarOpen}
         isRightOpen={isRightSidebarOpen}
-        leftWidth={leftSidebar.width}
+        leftWidth={leftSidebarWidth}
         leftStyle={leftSidebarStyle}
         onToggleLeft={() => updateLeftSidebar(!isLeftSidebarOpen)}
         onToggleRight={() => updateRightSidebar(!isRightSidebarOpen)}
@@ -2219,7 +2261,6 @@ export default function App() {
           <>
             <aside 
               ref={leftSidebar.containerRef}
-              style={{ width: `${leftSidebar.width}px` }}
               className="flex flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar shrink-0 overflow-hidden relative"
             >
               <WorktreeSidebar 
