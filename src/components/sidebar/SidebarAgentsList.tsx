@@ -2,6 +2,18 @@ import { useMemo, useState, useCallback, useEffect } from "react";
 import { List } from "react-window";
 import { AgentBrandIcon } from "../AgentIcon";
 import { WorktreeSession } from "./WorktreeSidebar";
+import { IDLE, resolveSessionAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
+
+// Session record → smart-attention input, field-for-field parity with the adapter in
+// SidebarShell (hasLivePty: the daemon holds the PTY for the lifetime of the session
+// record, so a listed session is live). Module scope: pure adapter, no closures over
+// component state — the memoized comparator below captures it safely across renders.
+const sessionInput = (s: WorktreeSession): SessionAttentionInput => ({
+  state: s.state,
+  stateStartedAt: s.state_started_at,
+  lastActivityAt: s.updated_at ?? s.created_at ?? undefined,
+  hasLivePty: true,
+});
 
 type SidebarAgentsListProps = {
   sessions: WorktreeSession[];
@@ -60,6 +72,25 @@ export function SidebarAgentsList({
 
   // Group sessions
   const groupedSessions = useMemo(() => {
+    // Orca smart-sort parity (same comparator as SidebarShell.sortSessionsByOption):
+    // attention class ASC (needs-you first), attentionTimestamp DESC, recency DESC.
+    // resolveSessionAttention owns the per-class timestamp chain
+    // (state_started_at ?? updated_at ?? created_at); idle resolves to ts 0 and falls
+    // through to the recency tiebreak. One resolution per session — the sort itself
+    // stays O(n log n) map lookups, no resolver calls inside the comparator.
+    const now = Date.now();
+    const attentionById = new Map<string, SessionAttention>();
+    for (const s of filteredSessions) {
+      attentionById.set(s.id, resolveSessionAttention(sessionInput(s), now));
+    }
+    const compareByAttention = (a: WorktreeSession, b: WorktreeSession) => {
+      const aa = attentionById.get(a.id) ?? IDLE;
+      const bb = attentionById.get(b.id) ?? IDLE;
+      if (aa.cls !== bb.cls) return aa.cls - bb.cls;
+      if (aa.attentionTimestamp !== bb.attentionTimestamp) return bb.attentionTimestamp - aa.attentionTimestamp;
+      return (b.updated_at ?? b.created_at ?? 0) - (a.updated_at ?? a.created_at ?? 0);
+    };
+
     if (groupBy === "project") {
       const groups: Record<string, WorktreeSession[]> = {};
       for (const session of filteredSessions) {
@@ -70,7 +101,8 @@ export function SidebarAgentsList({
       return Object.entries(groups).map(([projectName, sessions]) => ({
         label: projectName,
         state: "project" as const,
-        sessions,
+        // Buckets are memo-local — in-place sort never touches filteredSessions.
+        sessions: sessions.sort(compareByAttention),
       }));
     }
 
@@ -115,7 +147,8 @@ export function SidebarAgentsList({
             ? "Idle"
             : "Unknown",
         state: state as "blocked" | "waiting" | "working" | "done" | "idle" | "unknown",
-        sessions: stateGroups[state],
+        // Buckets are memo-local — in-place sort never touches filteredSessions.
+        sessions: stateGroups[state].sort(compareByAttention),
       }));
   }, [filteredSessions, groupBy, getProjectName]);
 
