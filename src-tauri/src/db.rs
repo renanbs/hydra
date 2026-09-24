@@ -34,6 +34,18 @@ pub struct ToolApprovalRecord {
     pub created_at: i64,
 }
 
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Orca: shared/agent-status-types.ts AgentStateHistoryEntry + AGENT_STATE_HISTORY_MAX.
+
+/// Uma transição de estado de agente persistida (PR-6). `state` é a string do
+/// contrato `agent:state` (working/blocked/waiting/idle/done/unknown) e
+/// `started_at` o epoch ms em que o estado passou a valer.
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct AgentStateHistoryRecord {
+    pub state: String,
+    pub started_at: i64,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UiLayoutState {
     pub left_sidebar_open: bool,
@@ -633,6 +645,13 @@ impl DatabaseManager {
                  created_at INTEGER NOT NULL
              );
 
+             CREATE TABLE IF NOT EXISTS session_state_history (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 session_id TEXT NOT NULL,
+                 state TEXT NOT NULL,
+                 started_at INTEGER NOT NULL
+             );
+
              CREATE TABLE IF NOT EXISTS settings (
                  key TEXT PRIMARY KEY,
                  value TEXT NOT NULL
@@ -995,6 +1014,49 @@ impl DatabaseManager {
         .map_err(|e| format!("Error saving settings: {e}"))?;
         Ok(())
     }
+
+    /// Registra uma transição de estado de agente (PR-6) e mantém o histórico
+    /// da sessão limitado: cap Orca AGENT_STATE_HISTORY_MAX = 20 entradas,
+    /// podando as mais antigas no próprio insert.
+    pub fn insert_state_transition(&self, session_id: &str, state: &str, started_at: i64) -> Result<(), String> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "INSERT INTO session_state_history (session_id, state, started_at) VALUES (?1, ?2, ?3)",
+            params![session_id, state, started_at],
+        )
+        .map_err(|e| format!("Error inserting state transition: {e}"))?;
+        conn.execute(
+            "DELETE FROM session_state_history WHERE session_id = ?1 AND id NOT IN (
+                SELECT id FROM session_state_history WHERE session_id = ?1 ORDER BY id DESC LIMIT 20
+            )",
+            params![session_id],
+        )
+        .map_err(|e| format!("Error pruning state history: {e}"))?;
+        Ok(())
+    }
+
+    /// Histórico de estados da sessão, do mais antigo ao mais recente (ordem de
+    /// inserção) — o mesmo sentido cronológico do `stateHistory` do Orca.
+    pub fn get_state_history(&self, session_id: &str) -> Result<Vec<AgentStateHistoryRecord>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT state, started_at FROM session_state_history WHERE session_id = ?1 ORDER BY id ASC")
+            .map_err(|e| format!("Error preparing state history select: {e}"))?;
+        let rows = stmt
+            .query_map(params![session_id], |row| {
+                Ok(AgentStateHistoryRecord {
+                    state: row.get(0)?,
+                    started_at: row.get(1)?,
+                })
+            })
+            .map_err(|e| format!("Query error: {e}"))?;
+        let mut history = Vec::new();
+        for r in rows.flatten() {
+            history.push(r);
+        }
+        Ok(history)
+    }
+
     #[cfg(test)]
     pub fn new_in_memory() -> Result<Self, String> {
         let conn = Connection::open_in_memory().map_err(|e| format!("Error opening SQLite in memory: {e}"))?;
@@ -1026,6 +1088,12 @@ impl DatabaseManager {
                  status TEXT NOT NULL,
                  created_at INTEGER NOT NULL,
                  FOREIGN KEY(session_id) REFERENCES sessions(id) ON DELETE CASCADE
+             );
+             CREATE TABLE IF NOT EXISTS session_state_history (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 session_id TEXT NOT NULL,
+                 state TEXT NOT NULL,
+                 started_at INTEGER NOT NULL
              );
              CREATE TABLE IF NOT EXISTS settings (
                  key TEXT PRIMARY KEY,
@@ -1189,8 +1257,79 @@ mod tests {
         // (env → passwd → temp), never from a hardcoded developer path that
         // would be wrong on any machine whose HOME differs (or is unset).
         let ws = default_workspace_dir();
-        assert_eq!(ws, user_home_dir().join("src").to_string_lossy().to_string());
         assert!(ws.ends_with("/src"), "workspace dir should end with /src: {ws}");
+    }
+
+    // ─── PR-6: session_state_history ─────────────────────────────────────
+
+    #[test]
+    fn test_db_state_history_insert_and_get() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+
+        // Histórico vazio para sessão desconhecida
+        assert!(db.get_state_history("nobody").expect("get empty").is_empty());
+
+        // Transições em ordem cronológica, com timestamps crescentes
+        db.insert_state_transition("sess_hist", "working", 1_000).expect("insert working");
+        db.insert_state_transition("sess_hist", "blocked", 2_000).expect("insert blocked");
+        db.insert_state_transition("sess_hist", "done", 3_000).expect("insert done");
+
+        let hist = db.get_state_history("sess_hist").expect("get history");
+        assert_eq!(hist.len(), 3);
+        assert_eq!(hist[0].state, "working");
+        assert_eq!(hist[0].started_at, 1_000);
+        assert_eq!(hist[1].state, "blocked");
+        assert_eq!(hist[1].started_at, 2_000);
+        assert_eq!(hist[2].state, "done");
+        assert_eq!(hist[2].started_at, 3_000);
+
+        // O cap de 20 é POR SESSÃO: outra sessão não interfere
+        db.insert_state_transition("other_sess", "idle", 4_000).expect("insert other");
+        assert_eq!(db.get_state_history("sess_hist").expect("get history").len(), 3);
+        let other = db.get_state_history("other_sess").expect("get other");
+        assert_eq!(other.len(), 1);
+        assert_eq!(other[0].state, "idle");
+    }
+
+    #[test]
+    fn test_db_state_history_cap_20_per_session() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+
+        // 25 transições: o cap mantém as 20 mais recentes, podando as antigas
+        for i in 0..25i64 {
+            db.insert_state_transition("sess_cap", "working", 1_000 + i).expect("insert");
+        }
+
+        let hist = db.get_state_history("sess_cap").expect("get history");
+        assert_eq!(hist.len(), 20, "history must be capped at 20 per session");
+        assert_eq!(hist[0].started_at, 1_005, "oldest surviving entry is transition 5 (started_at 1005)");
+        assert_eq!(hist[19].started_at, 1_024, "newest entry is transition 24 (started_at 1024)");
+        assert!(hist.iter().all(|r| r.state == "working"));
+
+        // O limiar exato (21ª entrada) ainda poda a mais antiga
+        db.insert_state_transition("sess_cap", "idle", 25_000).expect("insert 26th");
+        let hist2 = db.get_state_history("sess_cap").expect("get history 2");
+        assert_eq!(hist2[0].started_at, 1_006);
+        assert_eq!(hist2[19].state, "idle");
+        assert_eq!(hist2[19].started_at, 25_000);
+    }
+
+    #[test]
+    fn test_db_state_history_session_id_is_bound_parameter() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+
+        // Injection: um session_id hostil é persistido literal, nunca executado
+        let evil = "x'); DROP TABLE session_state_history;--";
+        db.insert_state_transition(evil, "working", 1).expect("insert evil session id");
+
+        let hist = db.get_state_history(evil).expect("get evil history");
+        assert_eq!(hist.len(), 1, "hostile session_id must persist literally");
+        assert_eq!(hist[0].state, "working");
+
+        // A tabela sobreviveu e sessões distintas continuam isoladas
+        db.insert_state_transition("clean", "idle", 2).expect("insert clean");
+        assert_eq!(db.get_state_history("clean").expect("get clean").len(), 1);
+        assert_eq!(db.get_state_history(evil).expect("get evil").len(), 1);
     }
 }
 

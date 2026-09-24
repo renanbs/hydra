@@ -21,8 +21,8 @@ pub mod preflight;
 pub mod theme_import;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
-use agent_state::{detect_agent_state, fold_terminal_output};
-use db::{ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState, WorkbenchState};
+use agent_state::{detect_agent_state, detect_with_decay, fold_terminal_output, AgentState};
+use db::{AgentStateHistoryRecord, ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState, WorkbenchState};
 use fs_ops::{create_file, create_folder, delete_path, list_directory, rename_path, search_files_content, DirectoryListing, FileContent, read_file_text, SearchResult};
 use git_status::{
     check_git_ignored, get_branch_commits, get_detailed_git_status, get_diff_numstat, get_git_history,
@@ -408,9 +408,16 @@ async fn start_agent_terminal(
             Ok(r) if r.ok => {
                 let sid = session_id.clone();
                 let app_handle = app.clone();
+                let db_handle = state.db.clone();
                 std::thread::spawn(move || {
                     let mut offset = 0usize;
-                    let mut last_state: Option<String> = None;
+                    // PR-6 freshness tracking (per session, poller-local — the
+                    // daemon owns the PTY, so from here the reader loop does not
+                    // exist and this thread IS the state authority): last state
+                    // seen and the epoch ms it started at. The pair doubles as
+                    // the transition cache — persist + emit only when it changes.
+                    let mut last_state: AgentState = AgentState::Unknown;
+                    let mut state_started_at = crate::agent_state::now_epoch_ms();
                     let mut poll_counter: usize = 0;
                     loop {
                         std::thread::sleep(std::time::Duration::from_millis(50));
@@ -465,19 +472,38 @@ async fn start_agent_terminal(
                                         if snap_res.ok {
                                             if let Some(snap_data) = snap_res.data {
                                                 if let Ok(snap) = serde_json::from_value::<TerminalSnapshot>(snap_data) {
-                                                    let detected = detect_agent_state(&snap.clean_text);
+                                                    let detected = detect_with_decay(
+                                                        &snap.clean_text,
+                                                        last_state,
+                                                        state_started_at,
+                                                        crate::agent_state::now_epoch_ms(),
+                                                        true,
+                                                    ).state;
                                                     let state_str = detected.as_str().to_string();
-                                                    if last_state.as_deref() != Some(&state_str) {
+                                                    if detected != last_state {
+                                                        let started = crate::agent_state::now_epoch_ms();
                                                         use tauri::Emitter;
                                                         let _ = app_handle.emit(
                                                             "agent:state",
                                                             serde_json::json!({
                                                                 "session_id": sid.clone(),
                                                                 "sessionId": sid.clone(),
-                                                                "state": state_str.clone()
+                                                                "state": state_str.clone(),
+                                                                "state_started_at": started
                                                             }),
                                                         );
-                                                        last_state = Some(state_str);
+                                                        // Persist the transition (PR-6): this poll
+                                                        // thread is outside the PTY reader loop, so
+                                                        // SQLite is allowed here. The last_state pair
+                                                        // above guarantees one write per transition,
+                                                        // never per poll.
+                                                        let _ = db_handle.insert_state_transition(
+                                                            &sid,
+                                                            &state_str,
+                                                        started as i64,
+                                                        );
+                                                        last_state = detected;
+                                                        state_started_at = started;
                                                     }
                                                 }
                                             }
@@ -583,6 +609,19 @@ async fn get_folded_logs(
         }
     } else { state.terminal.get_snapshot(&session_id)? };
     Ok(fold_terminal_output(&snapshot.clean_text, max_lines))
+}
+
+/// Histórico persistido de transições de estado da sessão (PR-6) — leitura da
+/// tabela session_state_history, cap 20 por sessão, ordem cronológica.
+#[tauri::command]
+async fn get_session_state_history(
+    session_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<AgentStateHistoryRecord>, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.get_state_history(&session_id))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -718,9 +757,14 @@ async fn create_split_terminal(
             Ok(r) if r.ok => {
                 let sid = new_id.clone();
                 let app_handle = app.clone();
+                let db_handle = state.db.clone();
                 std::thread::spawn(move || {
                     let mut offset = 0usize;
-                    let mut last_state: Option<String> = None;
+                    // PR-6 freshness tracking (per session, poller-local) — same
+                    // contract as start_agent_terminal: decay via detect_with_decay,
+                    // emit + persist on transition only.
+                    let mut last_state: AgentState = AgentState::Unknown;
+                    let mut state_started_at = crate::agent_state::now_epoch_ms();
                     let mut poll_counter: usize = 0;
                     loop {
                         std::thread::sleep(std::time::Duration::from_millis(50));
@@ -765,19 +809,33 @@ async fn create_split_terminal(
                                         if snap_res.ok {
                                             if let Some(snap_data) = snap_res.data {
                                                 if let Ok(snap) = serde_json::from_value::<TerminalSnapshot>(snap_data) {
-                                                    let detected = detect_agent_state(&snap.clean_text);
+                                                    let detected = detect_with_decay(
+                                                        &snap.clean_text,
+                                                        last_state,
+                                                        state_started_at,
+                                                        crate::agent_state::now_epoch_ms(),
+                                                        true,
+                                                    ).state;
                                                     let state_str = detected.as_str().to_string();
-                                                    if last_state.as_deref() != Some(&state_str) {
+                                                    if detected != last_state {
+                                                        let started = crate::agent_state::now_epoch_ms();
                                                         use tauri::Emitter;
                                                         let _ = app_handle.emit(
                                                             "agent:state",
                                                             serde_json::json!({
                                                                 "session_id": sid.clone(),
                                                                 "sessionId": sid.clone(),
-                                                                "state": state_str.clone()
+                                                                "state": state_str.clone(),
+                                                                "state_started_at": started
                                                             }),
                                                         );
-                                                        last_state = Some(state_str);
+                                                        let _ = db_handle.insert_state_transition(
+                                                            &sid,
+                                                            &state_str,
+                                                        started as i64,
+                                                        );
+                                                        last_state = detected;
+                                                        state_started_at = started;
                                                     }
                                                 }
                                             }
@@ -1085,6 +1143,7 @@ pub fn run() {
             close_split_terminal,
             resolve_tool_approval,
             list_tool_approvals,
+            get_session_state_history,
             create_tool_approval,
             theme_import::preview_ghostty_import,
             theme_import::preview_warp_themes,
