@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback, useEffect } from "react";
 import { List } from "react-window";
 import { AgentBrandIcon } from "../AgentIcon";
 import { WorktreeSession } from "./WorktreeSidebar";
+import type { AgentsGroupBy, AgentsStatusFilter } from "./types";
 import { IDLE, resolveSessionAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 
 // Session record → smart-attention input, field-for-field parity with the adapter in
@@ -24,6 +25,11 @@ type SidebarAgentsListProps = {
   onSelectNextSession?: (direction: "up" | "down") => void;
   onSelectPrevSession?: (direction: "up" | "down") => void;
   isModalOpen?: boolean;
+  // PR-14: controlled pelo SidebarShell — App persiste no blob "ui.sidebar".
+  groupBy: AgentsGroupBy;
+  onGroupByChange: (groupBy: AgentsGroupBy) => void;
+  statusFilter: AgentsStatusFilter;
+  onStatusFilterChange: (filter: AgentsStatusFilter) => void;
 };
 
 export function SidebarAgentsList({
@@ -35,10 +41,12 @@ export function SidebarAgentsList({
   onSelectNextSession,
   onSelectPrevSession,
   isModalOpen = false,
+  groupBy,
+  onGroupByChange,
+  statusFilter,
+  onStatusFilterChange,
 }: SidebarAgentsListProps) {
   const [filter, setFilter] = useState("");
-  const [groupBy, setGroupBy] = useState<"state" | "project">("state");
-  const [statusFilter, setStatusFilter] = useState<"all" | "blocked" | "waiting" | "working" | "done" | "idle">("all");
   const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
   const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
 
@@ -364,7 +372,7 @@ export function SidebarAgentsList({
           ).map(({ value, label }) => (
             <button
               key={value}
-              onClick={() => setStatusFilter(value)}
+              onClick={() => onStatusFilterChange(value)}
               className={`flex shrink-0 items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition ${
                 statusFilter === value
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
@@ -397,7 +405,7 @@ export function SidebarAgentsList({
           <span className="shrink-0">Group by:</span>
           <div className="flex items-center gap-0.5 bg-worktree-sidebar-accent/50 rounded-md p-0.5">
             <button
-              onClick={() => setGroupBy("state")}
+              onClick={() => onGroupByChange("state")}
               className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
                 groupBy === "state"
                   ? "bg-worktree-sidebar text-worktree-sidebar-foreground shadow-xs"
@@ -408,7 +416,7 @@ export function SidebarAgentsList({
               State
             </button>
             <button
-              onClick={() => setGroupBy("project")}
+              onClick={() => onGroupByChange("project")}
               className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
                 groupBy === "project"
                   ? "bg-worktree-sidebar text-worktree-sidebar-foreground shadow-xs"

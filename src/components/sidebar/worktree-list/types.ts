@@ -11,7 +11,7 @@ export type SidebarStatusState = "blocked" | "waiting" | "working" | "done" | "i
 export interface ProjectGroup {
   id: string;
   name: string;
-  /** Orca persists collapse on the group record; Hydra keeps it in hydra:collapsed_groups. */
+  /** Orca persists collapse on the group record; Hydra keeps it in SQLite sidebar_prefs (PR-14). */
   isCollapsed?: boolean;
 }
 
@@ -66,11 +66,11 @@ export interface SidebarProjectionInput {
   activeProject: HydraProject | null;
   /** Collapsed project ids (repo mode only — "none"/"workspace-status" render no project headers). */
   collapsedProjects: Set<string>;
-  /** Collapsed group ids (localStorage hydra:collapsed_groups); repo mode only. */
+  /** Collapsed group ids (SQLite sidebar_prefs "ui.sidebar", PR-14); repo mode only. */
   collapsedGroups?: Set<string>;
-  /** Persisted project groups (localStorage hydra:project_groups); repo mode only. */
+  /** Persisted project groups (SQLite sidebar_prefs "ui.sidebar", PR-14); repo mode only. */
   projectGroups?: ProjectGroup[];
-  /** project id → group id (localStorage hydra:project_group_map). */
+  /** project id → group id (SQLite sidebar_prefs "ui.sidebar", PR-14). */
   projectGroupMap?: Record<string, string>;
   /** Orca Groups UI flag (description.v.groupsEnabled); defaults to enabled. */
   groupsEnabled?: boolean;

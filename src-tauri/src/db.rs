@@ -655,6 +655,11 @@ impl DatabaseManager {
              CREATE TABLE IF NOT EXISTS settings (
                  key TEXT PRIMARY KEY,
                  value TEXT NOT NULL
+             );
+
+             CREATE TABLE IF NOT EXISTS sidebar_prefs (
+                 key TEXT PRIMARY KEY,
+                 json TEXT NOT NULL
              );",
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
@@ -1057,6 +1062,32 @@ impl DatabaseManager {
         Ok(history)
     }
 
+    /// PR-14: sidebar UI prefs persisted as an opaque JSON blob per key (the
+    /// frontend owns the shape under "ui.sidebar"; Rust never parses it).
+    pub fn save_sidebar_pref(&self, key: &str, json: &str) -> Result<(), String> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "INSERT OR REPLACE INTO sidebar_prefs (key, json) VALUES (?1, ?2)",
+            params![key, json],
+        )
+        .map_err(|e| format!("Error saving sidebar pref: {e}"))?;
+        Ok(())
+    }
+
+    pub fn get_sidebar_pref(&self, key: &str) -> Result<Option<String>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT json FROM sidebar_prefs WHERE key = ?1")
+            .map_err(|e| format!("Error querying sidebar pref: {e}"))?;
+        let mut rows = stmt.query(params![key]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json_str: String = row.get(0).map_err(|e| e.to_string())?;
+            Ok(Some(json_str))
+        } else {
+            Ok(None)
+        }
+    }
+
     #[cfg(test)]
     pub fn new_in_memory() -> Result<Self, String> {
         let conn = Connection::open_in_memory().map_err(|e| format!("Error opening SQLite in memory: {e}"))?;
@@ -1098,6 +1129,10 @@ impl DatabaseManager {
              CREATE TABLE IF NOT EXISTS settings (
                  key TEXT PRIMARY KEY,
                  value TEXT NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS sidebar_prefs (
+                 key TEXT PRIMARY KEY,
+                 json TEXT NOT NULL
              );"
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
@@ -1330,6 +1365,62 @@ mod tests {
         db.insert_state_transition("clean", "idle", 2).expect("insert clean");
         assert_eq!(db.get_state_history("clean").expect("get clean").len(), 1);
         assert_eq!(db.get_state_history(evil).expect("get evil").len(), 1);
+    }
+
+    // ─── PR-14: sidebar_prefs ───────────────────────────────────────────
+
+    #[test]
+    fn test_db_sidebar_prefs_roundtrip_per_key() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+
+        // Chave desconhecida → None (o frontend cai no default/first-run)
+        assert_eq!(db.get_sidebar_pref("ui.sidebar").expect("get missing"), None);
+
+        // Roundtrip por chave, com isolamento entre chaves distintas
+        db.save_sidebar_pref("ui.sidebar", r#"{"sidebarBody":"agents"}"#).expect("save ui.sidebar");
+        db.save_sidebar_pref("ui.other", r#"{"x":1}"#).expect("save ui.other");
+        assert_eq!(
+            db.get_sidebar_pref("ui.sidebar").expect("get ui.sidebar").as_deref(),
+            Some(r#"{"sidebarBody":"agents"}"#)
+        );
+        assert_eq!(
+            db.get_sidebar_pref("ui.other").expect("get ui.other").as_deref(),
+            Some(r#"{"x":1}"#)
+        );
+    }
+
+    #[test]
+    fn test_db_sidebar_prefs_overwrite() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+
+        db.save_sidebar_pref("ui.sidebar", r#"{"sidebarBody":"workspaces"}"#).expect("save v1");
+        db.save_sidebar_pref("ui.sidebar", r#"{"sidebarBody":"agents"}"#).expect("save v2");
+        assert_eq!(
+            db.get_sidebar_pref("ui.sidebar").expect("get after overwrite").as_deref(),
+            Some(r#"{"sidebarBody":"agents"}"#),
+            "INSERT OR REPLACE must keep exactly the latest blob per key"
+        );
+    }
+
+    #[test]
+    fn test_db_sidebar_prefs_key_is_bound_parameter() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+
+        // Injection: uma key hostil é persistida literal, nunca executada
+        let evil = "x'); DROP TABLE sidebar_prefs;--";
+        db.save_sidebar_pref(evil, r#"{"evil":true}"#).expect("save evil key");
+        assert_eq!(
+            db.get_sidebar_pref(evil).expect("get evil key").as_deref(),
+            Some(r#"{"evil":true}"#),
+            "hostile key must persist literally"
+        );
+
+        // A tabela sobreviveu e chaves normais continuam funcionando
+        db.save_sidebar_pref("ui.sidebar", r#"{"ok":1}"#).expect("save clean");
+        assert_eq!(
+            db.get_sidebar_pref("ui.sidebar").expect("get clean").as_deref(),
+            Some(r#"{"ok":1}"#)
+        );
     }
 }
 

@@ -15,8 +15,11 @@ import {
   type AvailableAgent, 
   type GitRepoStatus, 
   type HydraProject,
-  type GitWorktreeInfo 
+  type GitWorktreeInfo,
+  type SidebarPrefsSnapshot,
+  type SidebarShellPrefs
 } from "./components/sidebar/WorktreeSidebar";
+import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
 import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
 import { WorkbenchTabBar, type TabItem, type SplitPane } from "./components/workbench/WorkbenchTabBar";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
@@ -94,6 +97,131 @@ interface WorkbenchState {
   tabs_json: string;
   active_tab_id: string;
   updated_at: number;
+}
+
+// ─── PR-14: sidebar prefs migradas de localStorage → SQLite ──────────────────
+// Blob merged único sob a key "ui.sidebar" da tabela sidebar_prefs. O App detém
+// pinned/unread/groups; o SidebarShell detém body/collapsed/displayOptions/agents
+// e reporta mudanças via onSidebarPrefsChange (o App faz merge + save debounced
+// 250ms via timeoutRef). No boot o App hidrata do SQLite; na primeira execução
+// pós-upgrade migra as chaves legadas (merge legacy-abaixo-do-stored, removeItem
+// das 8 chaves) marcada por hydra:sidebar_prefs_migrated para rodar uma vez só.
+const SIDEBAR_PREFS_KEY = "ui.sidebar";
+const SIDEBAR_PREFS_MIGRATED_KEY = "hydra:sidebar_prefs_migrated";
+const LEGACY_SIDEBAR_PREF_KEYS = [
+  "hydra:pinned_projects",
+  "hydra:unread_projects",
+  "hydra:pinned_worktrees",
+  "hydra:unread_worktrees",
+  "hydra:project_groups",
+  "hydra:project_group_map",
+  "hydra:collapsed_groups",
+  "hydra:display_options",
+] as const;
+
+function asStringArrayPref(value: unknown): string[] | undefined {
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : undefined;
+}
+
+function asStringRecordPref(value: unknown): Record<string, string> | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(value)) {
+    if (typeof v === "string") out[k] = v;
+  }
+  return out;
+}
+
+function asProjectGroupsPref(value: unknown): Array<{ id: string; name: string }> | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return value.filter(
+    (g): g is { id: string; name: string } =>
+      !!g && typeof g === "object" && "id" in g && typeof g.id === "string" && "name" in g && typeof g.name === "string"
+  );
+}
+
+function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  // Boundary: object-ness já guardada acima; cada campo é validado antes do uso e o
+  // resultado é um objeto fresco (nunca o blob mutado). filterProjectIds preenche
+  // ausente/malformado com [] — mesma guarda do reader antigo do Shell.
+  const src = value as Record<keyof WorkspaceDisplayOptions, unknown>;
+  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead } = src;
+  if (groupBy !== "none" && groupBy !== "workspace-status" && groupBy !== "repo") return undefined;
+  if (sortBy !== "agent-activity" && sortBy !== "name" && sortBy !== "recent") return undefined;
+  if (
+    typeof hideSleeping !== "boolean" || typeof hideDefaultBranch !== "boolean" ||
+    typeof hideAutomationCreated !== "boolean" || typeof hideCliCreated !== "boolean" ||
+    typeof hideDetachedHead !== "boolean"
+  ) {
+    return undefined;
+  }
+  return {
+    groupBy,
+    sortBy,
+    hideSleeping,
+    hideDefaultBranch,
+    hideAutomationCreated,
+    hideCliCreated,
+    hideDetachedHead,
+    filterProjectIds: asStringArrayPref(src.filterProjectIds) ?? [],
+  };
+}
+
+/** Valida/normaliza um blob cru (SQLite ou legacy localStorage) campo a campo. */
+function sanitizeSidebarPrefsSnapshot(input: unknown): SidebarPrefsSnapshot {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return {};
+  // Boundary: cada campo é revalidado por guarda antes de entrar no snapshot.
+  const src = input as Record<string, unknown>;
+  const out: SidebarPrefsSnapshot = {};
+  if (src.sidebarBody === "workspaces" || src.sidebarBody === "agents") out.sidebarBody = src.sidebarBody;
+  const collapsedProjects = asStringArrayPref(src.collapsedProjects);
+  if (collapsedProjects) out.collapsedProjects = collapsedProjects;
+  const collapsedGroups = asStringArrayPref(src.collapsedGroups);
+  if (collapsedGroups) out.collapsedGroups = collapsedGroups;
+  const pinnedProjects = asStringArrayPref(src.pinnedProjects);
+  if (pinnedProjects) out.pinnedProjects = pinnedProjects;
+  const unreadProjects = asStringArrayPref(src.unreadProjects);
+  if (unreadProjects) out.unreadProjects = unreadProjects;
+  const pinnedWorktrees = asStringArrayPref(src.pinnedWorktrees);
+  if (pinnedWorktrees) out.pinnedWorktrees = pinnedWorktrees;
+  const unreadWorktrees = asStringArrayPref(src.unreadWorktrees);
+  if (unreadWorktrees) out.unreadWorktrees = unreadWorktrees;
+  const projectGroupMap = asStringRecordPref(src.projectGroupMap);
+  if (projectGroupMap) out.projectGroupMap = projectGroupMap;
+  const projectGroups = asProjectGroupsPref(src.projectGroups);
+  if (projectGroups) out.projectGroups = projectGroups;
+  const displayOptions = normalizeDisplayOptionsPref(src.displayOptions);
+  if (displayOptions) out.displayOptions = displayOptions;
+  if (
+    src.agentsReadFilter === "all" || src.agentsReadFilter === "blocked" ||
+    src.agentsReadFilter === "waiting" || src.agentsReadFilter === "working" ||
+    src.agentsReadFilter === "done" || src.agentsReadFilter === "idle"
+  ) {
+    out.agentsReadFilter = src.agentsReadFilter;
+  }
+  if (src.agentsGroupBy === "state" || src.agentsGroupBy === "project") out.agentsGroupBy = src.agentsGroupBy;
+  return out;
+}
+
+/** Lê as chaves legadas de localStorage como um blob cru (pré-migração). */
+function readLegacySidebarPrefsRaw(): Record<string, unknown> {
+  const raw: Record<string, unknown> = {};
+  const readInto = (storageKey: string, field: string) => {
+    try {
+      const value = localStorage.getItem(storageKey);
+      if (value !== null) raw[field] = JSON.parse(value);
+    } catch {}
+  };
+  readInto("hydra:pinned_projects", "pinnedProjects");
+  readInto("hydra:unread_projects", "unreadProjects");
+  readInto("hydra:pinned_worktrees", "pinnedWorktrees");
+  readInto("hydra:unread_worktrees", "unreadWorktrees");
+  readInto("hydra:project_groups", "projectGroups");
+  readInto("hydra:project_group_map", "projectGroupMap");
+  readInto("hydra:collapsed_groups", "collapsedGroups");
+  readInto("hydra:display_options", "displayOptions");
+  return raw;
 }
 
 export default function App() {
@@ -182,32 +310,63 @@ export default function App() {
     items: ContextMenuItem[];
   } | null>(null);
 
-  // Orca parity: pinned/unread/groups/lineage persisted via localStorage
-  const [pinnedProjects, setPinnedProjects] = useState<Set<string>>(() => {
-    try { const v = localStorage.getItem("hydra:pinned_projects"); return v ? new Set(JSON.parse(v)) : new Set(); } catch { return new Set(); }
-  });
-  const [unreadProjects, setUnreadProjects] = useState<Set<string>>(() => {
-    try { const v = localStorage.getItem("hydra:unread_projects"); return v ? new Set(JSON.parse(v)) : new Set(); } catch { return new Set(); }
-  });
-  const [pinnedWorktrees, setPinnedWorktrees] = useState<Set<string>>(() => {
-    try { const v = localStorage.getItem("hydra:pinned_worktrees"); return v ? new Set(JSON.parse(v)) : new Set(); } catch { return new Set(); }
-  });
-  const [unreadWorktrees, setUnreadWorktrees] = useState<Set<string>>(() => {
-    try { const v = localStorage.getItem("hydra:unread_worktrees"); return v ? new Set(JSON.parse(v)) : new Set(); } catch { return new Set(); }
-  });
-  const [projectGroups, setProjectGroups] = useState<Array<{ id: string; name: string }>>(() => {
-    try { const v = localStorage.getItem("hydra:project_groups"); return v ? JSON.parse(v) : []; } catch { return []; }
-  });
-  const [projectGroupMap, setProjectGroupMap] = useState<Record<string, string>>(() => {
-    try { const v = localStorage.getItem("hydra:project_group_map"); return v ? JSON.parse(v) : {}; } catch { return {}; }
-  });
+  // PR-14: pinned/unread/groups migraram do localStorage para o SQLite
+  // (sidebar_prefs, key "ui.sidebar"). Defaults até a hidratação assíncrona
+  // completar (mesmo padrão do layout hydration abaixo). worktree_lineage segue
+  // em localStorage — fora do escopo do PR-14.
+  const [pinnedProjects, setPinnedProjects] = useState<Set<string>>(new Set());
+  const [unreadProjects, setUnreadProjects] = useState<Set<string>>(new Set());
+  const [pinnedWorktrees, setPinnedWorktrees] = useState<Set<string>>(new Set());
+  const [unreadWorktrees, setUnreadWorktrees] = useState<Set<string>>(new Set());
+  const [projectGroups, setProjectGroups] = useState<Array<{ id: string; name: string }>>([]);
+  const [projectGroupMap, setProjectGroupMap] = useState<Record<string, string>>({});
   const [worktreeLineage, setWorktreeLineage] = useState<Record<string, string>>(() => {
     try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
   });
-  const persistSet = (key: string, set: Set<string>) => { try { localStorage.setItem(key, JSON.stringify([...set])); } catch {} };
-  const persistGroups = (groups: Array<{ id: string; name: string }>) => { try { localStorage.setItem("hydra:project_groups", JSON.stringify(groups)); } catch {} };
-  const persistGroupMap = (m: Record<string, string>) => { try { localStorage.setItem("hydra:project_group_map", JSON.stringify(m)); } catch {} };
   const persistLineage = (m: Record<string, string>) => { try { localStorage.setItem("hydra:worktree_lineage", JSON.stringify(m)); } catch {} };
+
+  // PR-14: blob merged + debounce 250ms. sidebarPrefsHydratedRef faz gate das
+  // escritas até a hidratação completar — sem o gate, o mount dispararia os
+  // effects com defaults e clobber-aria o blob persistido antes do invoke resolver.
+  const [initialSidebarPrefs, setInitialSidebarPrefs] = useState<SidebarPrefsSnapshot | null>(null);
+  const sidebarPrefsRef = useRef<SidebarPrefsSnapshot>({});
+  const sidebarPrefsHydratedRef = useRef(false);
+  const sidebarPrefsSaveTimerRef = useRef<number | null>(null);
+  const scheduleSidebarPrefsSave = useCallback(() => {
+    if (!sidebarPrefsHydratedRef.current) return;
+    if (sidebarPrefsSaveTimerRef.current !== null) window.clearTimeout(sidebarPrefsSaveTimerRef.current);
+    sidebarPrefsSaveTimerRef.current = window.setTimeout(() => {
+      sidebarPrefsSaveTimerRef.current = null;
+      invoke("save_sidebar_pref", { key: SIDEBAR_PREFS_KEY, json: JSON.stringify(sidebarPrefsRef.current) }).catch(() => {});
+    }, 250);
+  }, []);
+  useEffect(() => () => {
+    if (sidebarPrefsSaveTimerRef.current !== null) window.clearTimeout(sidebarPrefsSaveTimerRef.current);
+  }, []);
+
+  // Fatia App-owned (pinned/unread/groups) → merge no blob + save debounced.
+  useEffect(() => {
+    const snap = sidebarPrefsRef.current;
+    snap.pinnedProjects = [...pinnedProjects];
+    snap.unreadProjects = [...unreadProjects];
+    snap.pinnedWorktrees = [...pinnedWorktrees];
+    snap.unreadWorktrees = [...unreadWorktrees];
+    snap.projectGroups = projectGroups;
+    snap.projectGroupMap = projectGroupMap;
+    scheduleSidebarPrefsSave();
+  }, [pinnedProjects, unreadProjects, pinnedWorktrees, unreadWorktrees, projectGroups, projectGroupMap, scheduleSidebarPrefsSave]);
+
+  // Fatia Shell-owned (body/collapsed/displayOptions/agents*) sobe por este callback.
+  const handleSidebarPrefsChange = useCallback((prefs: SidebarShellPrefs) => {
+    const snap = sidebarPrefsRef.current;
+    snap.sidebarBody = prefs.sidebarBody;
+    snap.collapsedProjects = prefs.collapsedProjects;
+    snap.collapsedGroups = prefs.collapsedGroups;
+    snap.displayOptions = prefs.displayOptions;
+    snap.agentsReadFilter = prefs.agentsReadFilter;
+    snap.agentsGroupBy = prefs.agentsGroupBy;
+    scheduleSidebarPrefsSave();
+  }, [scheduleSidebarPrefsSave]);
 
   // Agent Fleet Sessions
   const [sessions, setSessions] = useState<WorktreeSession[]>([]);
@@ -386,8 +545,12 @@ export default function App() {
 
   // Orca parity: left panel resizes via useSidebarResize — rAF drag drafts go
   // straight to the DOM (containerRef), state commits only on mouseup.
+  // PR-13 encaixe: o titlebar-left acompanha o draft de width ao vivo (sem
+  // re-render) — o WindowTitlebar aplica este ref no div titlebar-left.
+  const leftTitlebarRef = useRef<HTMLDivElement | null>(null);
   const onLeftSidebarDraftWidthChange = useCallback((width: number) => {
     leftSidebarWidthRef.current = width;
+    leftTitlebarRef.current?.style.setProperty("width", `${width}px`);
   }, []);
   const leftSidebar = useSidebarResize<HTMLElement>({
     isOpen: isLeftSidebarOpen,
@@ -420,6 +583,56 @@ export default function App() {
         }
       })
       .catch(console.error);
+
+    // PR-14: hidrata as prefs do sidebar do SQLite; na primeira execução migra as
+    // chaves legadas de localStorage e as remove (flag hydra:sidebar_prefs_migrated).
+    invoke<string | null>("get_sidebar_pref", { key: SIDEBAR_PREFS_KEY })
+      .then((storedJson) => {
+        let parsedRaw: unknown = null;
+        if (storedJson) {
+          try { parsedRaw = JSON.parse(storedJson); } catch {}
+        }
+        let stored = sanitizeSidebarPrefsSnapshot(parsedRaw);
+        let migrated = false;
+        try { migrated = localStorage.getItem(SIDEBAR_PREFS_MIGRATED_KEY) === "1"; } catch {}
+        if (!migrated) {
+          // Legado embaixo: um campo presente no SQLite vence; um ausente cai no
+          // valor migrado do localStorage (mesma leitura dos readers antigos).
+          stored = { ...sanitizeSidebarPrefsSnapshot(readLegacySidebarPrefsRaw()), ...stored };
+        }
+        const merged = stored;
+        // Fast-forward do ref ANTES de liberar a gate: qualquer change posterior
+        // (Effects acima ou do Shell) faz merge sobre o blob hidratado.
+        sidebarPrefsRef.current = merged;
+        sidebarPrefsHydratedRef.current = true;
+        // Fallback undefined → default atual = comportamento de first-run intacto.
+        setPinnedProjects(new Set(merged.pinnedProjects ?? []));
+        setUnreadProjects(new Set(merged.unreadProjects ?? []));
+        setPinnedWorktrees(new Set(merged.pinnedWorktrees ?? []));
+        setUnreadWorktrees(new Set(merged.unreadWorktrees ?? []));
+        setProjectGroups(merged.projectGroups ?? []);
+        setProjectGroupMap(merged.projectGroupMap ?? {});
+        // Fatia Shell-owned desce como props one-shot (initialSidebarBody etc.).
+        setInitialSidebarPrefs(merged);
+        // Flush direto (sem debounce): grava o blob merged — cobre a primeira
+        // escrita da migração e normaliza blobs parciais legados do próprio SQLite.
+        invoke("save_sidebar_pref", { key: SIDEBAR_PREFS_KEY, json: JSON.stringify(merged) })
+          .then(() => {
+            if (migrated) return;
+            // Só aposenta o localStorage depois que o SQLite confirmou a escrita —
+            // se o save falhar, o próximo boot retenta a migração intacta.
+            try {
+              for (const legacyKey of LEGACY_SIDEBAR_PREF_KEYS) localStorage.removeItem(legacyKey);
+              localStorage.setItem(SIDEBAR_PREFS_MIGRATED_KEY, "1");
+            } catch {}
+          })
+          .catch(() => {});
+      })
+      .catch(() => {
+        // Backend indisponível: defaults permanecem, mas a gate precisa abrir para
+        // não descartar silenciosamente as mudanças do usuário nesta sessão.
+        sidebarPrefsHydratedRef.current = true;
+      });
   }, []);
 
   // 2. Carrega o estado persistido do workbench (tabs + active tab) — com dedupe por sessionId/title
@@ -713,34 +926,23 @@ export default function App() {
     };
     window.addEventListener("hydra:refresh-projects", handleRefreshProjects);
     // PR-12: group-header menu mutations arrive as events (SidebarShell owns the menu UI;
-    // App owns group state + localStorage persistence). Persistence inside the functional
-    // updater mirrors the existing togglePinWorktree convention — the write is idempotent
-    // even if StrictMode double-invokes the updater.
+    // App owns group state). PR-14: persistence deixou os updaters — o effect da fatia
+    // App-owned observa o estado e grava o blob merged no SQLite (debounced 250ms).
     const handleRenameProjectGroup = (e: Event) => {
       const detail = (e as CustomEvent<{ id: string; name: string }>).detail;
       if (!detail?.id || typeof detail.name !== "string" || !detail.name.trim()) return;
-      setProjectGroups((prev) => {
-        const next = prev.map((g) => (g.id === detail.id ? { ...g, name: detail.name.trim() } : g));
-        persistGroups(next);
-        return next;
-      });
+      setProjectGroups((prev) => prev.map((g) => (g.id === detail.id ? { ...g, name: detail.name.trim() } : g)));
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
     };
     const handleDeleteProjectGroup = (e: Event) => {
       const detail = (e as CustomEvent<{ id: string }>).detail;
       if (!detail?.id) return;
-      setProjectGroups((prev) => {
-        const next = prev.filter((g) => g.id !== detail.id);
-        persistGroups(next);
-        return next;
-      });
+      setProjectGroups((prev) => prev.filter((g) => g.id !== detail.id));
       // Delete strips the membership map — member projects render ungrouped again.
       setProjectGroupMap((prev) => {
         const entries = Object.entries(prev).filter(([, gid]) => gid !== detail.id);
         if (entries.length === Object.keys(prev).length) return prev;
-        const next = Object.fromEntries(entries);
-        persistGroupMap(next);
-        return next;
+        return Object.fromEntries(entries);
       });
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
     };
@@ -2028,16 +2230,16 @@ export default function App() {
   };
 
   const togglePinProject = (id: string) => {
-    setPinnedProjects((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); persistSet("hydra:pinned_projects", next); return next; });
+    setPinnedProjects((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
   const toggleUnreadProject = (id: string) => {
-    setUnreadProjects((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); persistSet("hydra:unread_projects", next); return next; });
+    setUnreadProjects((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
   const togglePinWorktree = (path: string) => {
-    setPinnedWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); persistSet("hydra:pinned_worktrees", next); return next; });
+    setPinnedWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); return next; });
   };
   const toggleUnreadWorktree = (path: string) => {
-    setUnreadWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); persistSet("hydra:unread_worktrees", next); return next; });
+    setUnreadWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); return next; });
   };
 
   const handleProjectContextMenu = (e: React.MouseEvent, proj: HydraProject) => {
@@ -2091,9 +2293,9 @@ export default function App() {
             if (!name || !name.trim()) return;
             const id = `grp_${Date.now()}`;
             const next = [...projectGroups, { id, name: name.trim() }];
-            setProjectGroups(next); persistGroups(next);
+            setProjectGroups(next);
             const nextMap = { ...projectGroupMap, [proj.id]: id };
-            setProjectGroupMap(nextMap); persistGroupMap(nextMap);
+            setProjectGroupMap(nextMap);
             window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
           }
         },
@@ -2106,13 +2308,13 @@ export default function App() {
             disabled: projectGroupMap[proj.id] === g.id,
             onClick: () => {
               const nextMap = { ...projectGroupMap, [proj.id]: g.id };
-              setProjectGroupMap(nextMap); persistGroupMap(nextMap);
+              setProjectGroupMap(nextMap);
               window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
             },
           })),
           onClick: () => {},
         } as ContextMenuItem] : []),
-        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const m = { ...projectGroupMap }; delete m[proj.id]; setProjectGroupMap(m); persistGroupMap(m); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } } as ContextMenuItem] : []),
+        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const m = { ...projectGroupMap }; delete m[proj.id]; setProjectGroupMap(m); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } } as ContextMenuItem] : []),
         { label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...", icon: <FolderTree className="w-3.5 h-3.5" />, separator: true, disabled: eligibleParents.length === 0, title: eligibleParents.length === 0 ? "No eligible parents" : undefined, onClick: () => {
             if (eligibleParents.length === 0) return;
             const opts = eligibleParents.map((p: any) => `${p.name} — ${p.path || p.id}`).join("\n");
@@ -2295,6 +2497,7 @@ export default function App() {
         isRightOpen={isRightSidebarOpen}
         leftWidth={leftSidebarWidth}
         leftStyle={leftSidebarStyle}
+        leftRef={leftTitlebarRef}
         onToggleLeft={() => updateLeftSidebar(!isLeftSidebarOpen)}
         onToggleRight={() => updateRightSidebar(!isRightSidebarOpen)}
       />
@@ -2341,6 +2544,13 @@ export default function App() {
                 unreadWorktrees={unreadWorktrees}
                 projectGroupMap={projectGroupMap}
                 projectGroups={projectGroups}
+                initialSidebarBody={initialSidebarPrefs?.sidebarBody}
+                initialCollapsedProjects={initialSidebarPrefs?.collapsedProjects}
+                initialCollapsedGroups={initialSidebarPrefs?.collapsedGroups}
+                initialDisplayOptions={initialSidebarPrefs?.displayOptions}
+                initialAgentsReadFilter={initialSidebarPrefs?.agentsReadFilter}
+                initialAgentsGroupBy={initialSidebarPrefs?.agentsGroupBy}
+                onSidebarPrefsChange={handleSidebarPrefsChange}
                 compactCards={Boolean(hydraSettings.compact_worktree_cards)}
                 settings={hydraSettings as any}
                 isModalOpen={isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen}

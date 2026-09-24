@@ -353,6 +353,20 @@ async fn save_workbench_persistence_for_project(
     app_state.db.save_workbench_state_for_project(&project_path, &state)
 }
 
+// PR-14: sidebar UI prefs (opaque JSON blob per key — the frontend owns the shape
+// under "ui.sidebar"). Same direct-call pattern as the other db commands above:
+// DatabaseManager is a parking_lot Mutex over SQLite, so the lock never crosses an
+// await point on the tokio runtime.
+#[tauri::command]
+async fn save_sidebar_pref(key: String, json: String, state: State<'_, AppState>) -> Result<(), String> {
+    state.db.save_sidebar_pref(&key, &json)
+}
+
+#[tauri::command]
+async fn get_sidebar_pref(key: String, state: State<'_, AppState>) -> Result<Option<String>, String> {
+    state.db.get_sidebar_pref(&key)
+}
+
 #[tauri::command]
 async fn list_available_agents() -> Vec<AvailableAgent> {
     tokio::task::spawn_blocking(probe_available_agents).await.unwrap_or_default()
@@ -1113,6 +1127,8 @@ pub fn run() {
             delete_worktree,
             get_layout_persistence,
             save_layout_persistence,
+            get_sidebar_pref,
+            save_sidebar_pref,
             get_workbench_persistence,
             save_workbench_persistence,
             get_workbench_persistence_for_project,

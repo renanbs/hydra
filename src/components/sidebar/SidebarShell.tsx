@@ -17,7 +17,8 @@ import {
   FolderTree,
   GripVertical,
   Terminal,
-  ChevronsUp
+  ChevronsUp,
+  X
 } from "lucide-react";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
@@ -25,7 +26,7 @@ import { SidebarAgentsList } from "./SidebarAgentsList";
 import { SidebarNav } from "./SidebarNav";
 import { AgentBrandIcon } from "../AgentIcon";
 import { SidebarFooter } from "./SidebarFooter";
-import type { HydraProject, GitWorktreeInfo, WorktreeSession, WorktreeSidebarProps } from "./types";
+import type { HydraProject, GitWorktreeInfo, WorktreeSession, WorktreeSidebarProps, AgentsGroupBy, AgentsStatusFilter } from "./types";
 import { IDLE, resolveSessionAttention, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { buildSidebarRows } from "./worktree-list/buildSidebarRows";
 import {
@@ -158,57 +159,70 @@ export function SidebarShell({
   onSelectNextSession,
   isModalOpen = false,
   settings,
+  initialSidebarBody,
+  initialCollapsedProjects,
+  initialCollapsedGroups,
+  initialDisplayOptions,
+  initialAgentsReadFilter,
+  initialAgentsGroupBy,
+  onSidebarPrefsChange,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
-  // PR-12 (Orca Project Groups): persisted group collapse — survives restart via
-  // localStorage, unlike collapsedProjects (which PR-14 moves to SQLite together).
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem("hydra:collapsed_groups");
-      const parsed = saved ? (JSON.parse(saved) as unknown) : [];
-      return new Set(Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : []);
-    } catch {
-      return new Set();
-    }
-  });
+  // PR-14: collapsedGroups/collapsedProjects/sidebarBody/displayOptions/agents*
+  // deixaram o localStorage e vivem no SQLite (sidebar_prefs, key "ui.sidebar").
+  // O App é a fonte única de leitura: hidrata no boot e entrega os valores via
+  // initial* props (one-shot); os writes locais sobem via onSidebarPrefsChange.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
   const [activeProjectMenuId, setActiveProjectMenuId] = useState<string | null>(null);
   const [activeGroupMenuId, setActiveGroupMenuId] = useState<string | null>(null);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
   const [sidebarBody, setSidebarBody] = useState<"workspaces" | "agents">("workspaces");
+  // PR-14: agents-view prefs lifted de SidebarAgentsList (agora controlado) para
+  // participarem do blob persistido pelo App.
+  const [agentsStatusFilter, setAgentsStatusFilter] = useState<AgentsStatusFilter>("all");
+  const [agentsGroupBy, setAgentsGroupBy] = useState<AgentsGroupBy>("state");
   const [focusedWorktreePath, setFocusedWorktreePath] = useState<string | null>(null);
   const [focusedProjectId, setFocusedProjectId] = useState<string | null>(null);
   
   // Ref para ancoragem exata do botão SlidersHorizontal
   const optionsButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>(() => {
-    try {
-      const saved = localStorage.getItem("hydra:display_options");
-      if (saved) {
-        const parsed = JSON.parse(saved) as WorkspaceDisplayOptions;
-        // Ensure filterProjectIds is array
-        if (!Array.isArray(parsed.filterProjectIds)) parsed.filterProjectIds = [];
-        return parsed;
-      }
-    } catch {}
-    return {
-      groupBy: "repo",
-      sortBy: "agent-activity",
-      hideSleeping: false,
-      hideDefaultBranch: false,
-      hideAutomationCreated: false,
-      hideCliCreated: false,
-      hideDetachedHead: false,
-      filterProjectIds: [],
-    };
-  });
+  const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>(() => ({
+    groupBy: "repo",
+    sortBy: "agent-activity",
+    hideSleeping: false,
+    hideDefaultBranch: false,
+    hideAutomationCreated: false,
+    hideCliCreated: false,
+    hideDetachedHead: false,
+    filterProjectIds: [],
+  }));
+
+  // PR-14 hydration: as initial* props chegam uma vez do App (snapshot SQLite +
+  // migração legacy) e aplicam aqui; o App nunca re-emite, então mudanças locais
+  // posteriores não são sobrescritas.
+  useEffect(() => { if (initialSidebarBody !== undefined) setSidebarBody(initialSidebarBody); }, [initialSidebarBody]);
+  useEffect(() => { if (initialCollapsedProjects !== undefined) setCollapsedProjects(new Set(initialCollapsedProjects)); }, [initialCollapsedProjects]);
+  useEffect(() => { if (initialCollapsedGroups !== undefined) setCollapsedGroups(new Set(initialCollapsedGroups)); }, [initialCollapsedGroups]);
+  useEffect(() => { if (initialDisplayOptions !== undefined) setDisplayOptions(initialDisplayOptions); }, [initialDisplayOptions]);
+  useEffect(() => { if (initialAgentsReadFilter !== undefined) setAgentsStatusFilter(initialAgentsReadFilter); }, [initialAgentsReadFilter]);
+  useEffect(() => { if (initialAgentsGroupBy !== undefined) setAgentsGroupBy(initialAgentsGroupBy); }, [initialAgentsGroupBy]);
+
+  // PR-14 notify: o App faz merge com a fatia dele (pinned/unread/groups) e
+  // persiste debounced 250ms via save_sidebar_pref. Pré-hidratação o App ignora
+  // notificações (gate) para nunca clobber o blob persistido com defaults.
   useEffect(() => {
-    try {
-      localStorage.setItem("hydra:display_options", JSON.stringify(displayOptions));
-    } catch {}
-  }, [displayOptions]);
+    onSidebarPrefsChange?.({
+      sidebarBody,
+      collapsedProjects: [...collapsedProjects],
+      collapsedGroups: [...collapsedGroups],
+      displayOptions,
+      agentsReadFilter: agentsStatusFilter,
+      agentsGroupBy,
+    });
+  }, [onSidebarPrefsChange, sidebarBody, collapsedProjects, collapsedGroups, displayOptions, agentsStatusFilter, agentsGroupBy]);
 
   const displayProjects = useMemo(() => {
     if (!displayOptions.filterProjectIds?.length) return projects;
@@ -635,13 +649,12 @@ export function SidebarShell({
   };
 
   const toggleGroupCollapse = (groupId: string) => {
+    // PR-14: persistência sai daqui — o notify-effect reporta collapsedGroups ao
+    // App, que escreve o blob merged no SQLite (debounced 250ms).
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(groupId)) next.delete(groupId);
       else next.add(groupId);
-      try {
-        localStorage.setItem("hydra:collapsed_groups", JSON.stringify([...next]));
-      } catch {}
       return next;
     });
   };
@@ -1047,7 +1060,7 @@ export function SidebarShell({
                         setActiveGroupMenuId(null);
                         const name = window.prompt("Group name:", group.name);
                         if (!name || !name.trim() || name.trim() === group.name) return;
-                        // App.tsx owns group state + persistence (hydra:project_groups).
+                        // App.tsx owns group state + persistence (PR-14: SQLite sidebar_prefs).
                         window.dispatchEvent(new CustomEvent("hydra:rename-project-group", { detail: { id: group.id, name: name.trim() } }));
                       }}
                       className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
@@ -1058,7 +1071,7 @@ export function SidebarShell({
                       onClick={() => {
                         setActiveGroupMenuId(null);
                         if (!window.confirm(`Delete group "${group.name}"? Member projects stay in the sidebar, ungrouped.`)) return;
-                        // App.tsx removes the group and strips its map entries (hydra:project_group_map).
+                        // App.tsx removes the group and strips its map entries (PR-14: SQLite sidebar_prefs).
                         window.dispatchEvent(new CustomEvent("hydra:delete-project-group", { detail: { id: group.id } }));
                       }}
                       className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
@@ -1333,13 +1346,38 @@ export function SidebarShell({
       {/* 3. Filter Search Bar - only show in workspaces view */}
       {sidebarBody === "workspaces" && (
         <div className="p-2 shrink-0">
-          <input
-            type="text"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter projects and workspaces..."
-            className="w-full bg-worktree-sidebar-accent/50 border border-worktree-sidebar-border rounded-md px-2.5 py-1 text-[11px] text-worktree-sidebar-foreground placeholder:text-worktree-sidebar-foreground/40 focus:outline-none focus:ring-1 focus:ring-worktree-sidebar-ring"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              onKeyDown={(e) => {
+                // Orca SidebarFilter pattern: Escape clears a non-empty query
+                // first; with an empty query it just leaves the field. (The
+                // window-level sidebar keymap ignores INPUT targets already.)
+                if (e.key !== "Escape") return;
+                e.stopPropagation();
+                if (filter) {
+                  setFilter("");
+                } else {
+                  e.currentTarget.blur();
+                }
+              }}
+              placeholder="Filter projects and workspaces..."
+              className="w-full bg-worktree-sidebar-accent/50 border border-worktree-sidebar-border rounded-md pl-2.5 pr-7 py-1 text-[11px] text-worktree-sidebar-foreground placeholder:text-worktree-sidebar-foreground/40 focus:outline-none focus:ring-1 focus:ring-worktree-sidebar-ring"
+            />
+            {filter ? (
+              <button
+                type="button"
+                onClick={() => setFilter("")}
+                aria-label="Clear filter"
+                title="Clear filter"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex size-4 items-center justify-center rounded-sm text-worktree-sidebar-foreground/50 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent transition cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-worktree-sidebar-ring"
+              >
+                <X className="w-2.5 h-2.5" />
+              </button>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -1410,6 +1448,10 @@ export function SidebarShell({
           onDeleteSession={onDeleteSession}
           compactCards={compactCards}
           isModalOpen={isModalOpen}
+          groupBy={agentsGroupBy}
+          onGroupByChange={setAgentsGroupBy}
+          statusFilter={agentsStatusFilter}
+          onStatusFilterChange={setAgentsStatusFilter}
         />
       )}
 

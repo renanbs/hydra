@@ -1,4 +1,37 @@
 import type { HydraSettings } from "../../shared/settings-types";
+import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+
+// ─── PR-14: sidebar prefs (SQLite sidebar_prefs, key "ui.sidebar") ──────────
+// O blob merged é um JSON plano; todos os campos são opcionais para que um blob
+// parcial hidrate campo a campo com fallback para os defaults atuais.
+export type SidebarBody = "workspaces" | "agents";
+export type AgentsStatusFilter = "all" | "blocked" | "waiting" | "working" | "done" | "idle";
+export type AgentsGroupBy = "state" | "project";
+
+export interface SidebarPrefsSnapshot {
+  sidebarBody?: SidebarBody;
+  collapsedProjects?: string[];
+  collapsedGroups?: string[];
+  pinnedProjects?: string[];
+  unreadProjects?: string[];
+  pinnedWorktrees?: string[];
+  unreadWorktrees?: string[];
+  projectGroupMap?: Record<string, string>;
+  projectGroups?: Array<{ id: string; name: string }>;
+  displayOptions?: WorkspaceDisplayOptions;
+  agentsReadFilter?: AgentsStatusFilter;
+  agentsGroupBy?: AgentsGroupBy;
+}
+
+/** Fatia das prefs que o SidebarShell detém localmente e reporta ao App no change. */
+export interface SidebarShellPrefs {
+  sidebarBody: SidebarBody;
+  collapsedProjects: string[];
+  collapsedGroups: string[];
+  displayOptions: WorkspaceDisplayOptions;
+  agentsReadFilter: AgentsStatusFilter;
+  agentsGroupBy: AgentsGroupBy;
+}
 
 export interface AvailableAgent {
   id: string;
@@ -86,4 +119,14 @@ export interface WorktreeSidebarProps {
   onSelectPrevSession?: (direction: "up" | "down") => void;
   isModalOpen?: boolean;
   settings?: HydraSettings;
+  // PR-14: one-shot hydration do snapshot SQLite (aplicado uma vez quando cada
+  // prop chega: undefined → valor; o App nunca re-emite) + notificação de mudança
+  // para a persistência debounced que o App centraliza.
+  initialSidebarBody?: SidebarBody;
+  initialCollapsedProjects?: string[];
+  initialCollapsedGroups?: string[];
+  initialDisplayOptions?: WorkspaceDisplayOptions;
+  initialAgentsReadFilter?: AgentsStatusFilter;
+  initialAgentsGroupBy?: AgentsGroupBy;
+  onSidebarPrefsChange?: (prefs: SidebarShellPrefs) => void;
 }
