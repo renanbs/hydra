@@ -1,7 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 import { invoke } from "@tauri-apps/api/core";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { List, type RowComponentProps } from "react-window";
+import { List, type ListImperativeAPI, type RowComponentProps } from "react-window";
 import {
   GitBranch,
   Plus,
@@ -26,7 +26,61 @@ import { SidebarFooter } from "./SidebarFooter";
 import type { HydraProject, GitWorktreeInfo, WorktreeSession, WorktreeSidebarProps } from "./types";
 import { IDLE, resolveSessionAttention, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { buildSidebarRows } from "./worktree-list/buildSidebarRows";
+import {
+  createSidebarDragPreview,
+  isSidebarPointerDragBlocked,
+  setSidebarPointerDragDocumentStyles,
+  updateSidebarDragPreviewPosition,
+} from "./worktree-list/pointer-drag-dom";
 import type { SidebarRow, SidebarStatusState } from "./worktree-list/types";
+import { getFocusableRowKeys, resolveCycledFocusKey } from "./worktree-list/keyboard-cycle";
+
+// PR-10 (Orca main.css parity): the drag preview/badge styling ships as CSS rules in
+// Orca; this PR's scope is restricted to this file + pointer-drag-dom.ts, so the same
+// rules are injected once at runtime instead. Every referenced token
+// (--worktree-sidebar, --shadow-floating, --radius, --sidebar-ring, --sidebar) already
+// exists in App.css / left-sidebar-appearance.ts.
+const DRAG_PREVIEW_STYLE_ELEMENT_ID = "hydra-sidebar-drag-preview-styles";
+const DRAG_PREVIEW_CSS = `
+[data-worktree-sidebar-drag-preview='true'] {
+  z-index: 2147483000;
+  overflow: visible;
+  border-radius: var(--radius);
+  opacity: 0.96;
+  background: var(--worktree-sidebar);
+  box-shadow: var(--shadow-floating);
+  will-change: transform;
+}
+
+[data-worktree-sidebar-drag-preview='true'] * {
+  cursor: grabbing !important;
+}
+
+[data-worktree-sidebar-drag-count='true'] {
+  position: absolute;
+  top: -6px;
+  right: 8px;
+  display: inline-flex;
+  min-width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--sidebar-ring);
+  color: var(--sidebar);
+  font-size: 10px;
+  font-weight: 700;
+  box-shadow: 0 0 0 2px var(--sidebar);
+}
+`;
+
+function ensureSidebarDragPreviewStyles(): void {
+  if (document.getElementById(DRAG_PREVIEW_STYLE_ELEMENT_ID)) return;
+  const style = document.createElement("style");
+  style.id = DRAG_PREVIEW_STYLE_ELEMENT_ID;
+  style.textContent = DRAG_PREVIEW_CSS;
+  document.head.appendChild(style);
+}
 
 // Status-group header vocabulary for the "workspace-status" groupBy mode — Orca
 // SidebarStatusHeader language, same dot colors as the agents view (SidebarAgentsList).
@@ -91,7 +145,6 @@ export function SidebarShell({
   projectGroups,
   compactCards = false,
   onSelectNextSession,
-  onSelectPrevSession,
   isModalOpen = false,
   settings,
 }: WorktreeSidebarProps) {
@@ -273,6 +326,42 @@ export function SidebarShell({
   const [worktreeDropTarget, setWorktreeDropTarget] = useState<{ path: string; position: "top" | "bottom" } | null>(null);
   const [projectDropTarget, setProjectDropTarget] = useState<{ id: string; position: "top" | "bottom" } | null>(null);
 
+  // PR-10 (Orca pointer-drag-dom): the native HTML5 ghost is replaced by a clone-based
+  // preview (count badge on multi-select) that tracks the pointer. dragover fires on
+  // drop targets only, so the tracking listener lives on document (capture phase —
+  // row handlers stopPropagation while gating drops).
+  const dragPreviewRef = useRef<{ preview: HTMLElement; ghost: HTMLCanvasElement; offsetX: number; offsetY: number } | null>(null);
+
+  const clearSidebarDragPreview = () => {
+    dragPreviewRef.current?.preview.remove();
+    dragPreviewRef.current?.ghost.remove();
+    dragPreviewRef.current = null;
+    setSidebarPointerDragDocumentStyles(false);
+  };
+
+  const beginSidebarDragPreview = (e: React.DragEvent, draggedCount: number) => {
+    ensureSidebarDragPreviewStyles();
+    // Hide the native ghost: transparent 1x1 canvas. Attached offscreen because
+    // WebKitGTK ignores detached elements passed to setDragImage.
+    const ghost = document.createElement("canvas");
+    ghost.width = 1;
+    ghost.height = 1;
+    ghost.style.position = "fixed";
+    ghost.style.top = "-10px";
+    document.body.appendChild(ghost);
+    e.dataTransfer.setDragImage(ghost, 0, 0);
+    // Defensive: a drag interrupted without dragend must not orphan the previous clone.
+    clearSidebarDragPreview();
+    const { preview, offsetX, offsetY } = createSidebarDragPreview({
+      sourceRow: e.currentTarget as HTMLElement,
+      pointerX: e.clientX,
+      pointerY: e.clientY,
+      draggedCount,
+    });
+    dragPreviewRef.current = { preview, ghost, offsetX, offsetY };
+    setSidebarPointerDragDocumentStyles(true);
+  };
+
   const reorderList = <T,>(list: T[], fromIndex: number, toIndex: number, position: "top" | "bottom"): T[] => {
     if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length) return list;
     const result = [...list];
@@ -286,9 +375,15 @@ export function SidebarShell({
 
   const handleSessionDragStart = (e: React.DragEvent, id: string) => {
     e.stopPropagation();
+    // Orca pointer-drag-dom: never start a row drag from buttons/menus/portaled popovers.
+    if (isSidebarPointerDragBlocked(e.target, e.currentTarget as HTMLElement)) {
+      e.preventDefault();
+      return;
+    }
     setDraggedSessionId(id);
     e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("application/x-hydra-session-id", id);
+    e.dataTransfer.setData("application/x-hydra-session-drag", id);
+    beginSidebarDragPreview(e, selectedSessions.size > 1 ? selectedSessions.size : 1);
   };
   const handleSessionDragOver = (e: React.DragEvent, targetId: string) => {
     if (!draggedSessionId || draggedSessionId === targetId) return;
@@ -301,7 +396,7 @@ export function SidebarShell({
   const handleSessionDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const sourceId = draggedSessionId || e.dataTransfer.getData("application/x-hydra-session-id");
+    const sourceId = draggedSessionId || e.dataTransfer.getData("application/x-hydra-session-drag");
     if (sourceId && sourceId !== targetId && onReorderSessions) {
       const fromIdx = sessions.findIndex((s) => s.id === sourceId);
       const toIdx = sessions.findIndex((s) => s.id === targetId);
@@ -312,6 +407,7 @@ export function SidebarShell({
     }
     setDraggedSessionId(null);
     setSessionDropTarget(null);
+    clearSidebarDragPreview();
   };
 
   const handleSessionClick = (e: React.MouseEvent, id: string) => {
@@ -358,9 +454,15 @@ export function SidebarShell({
 
   const handleWorktreeDragStart = (e: React.DragEvent, path: string) => {
     e.stopPropagation();
+    // Orca pointer-drag-dom: never start a row drag from buttons/menus/portaled popovers.
+    if (isSidebarPointerDragBlocked(e.target, e.currentTarget as HTMLElement)) {
+      e.preventDefault();
+      return;
+    }
     setDraggedWorktreePath(path);
     e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("application/x-hydra-worktree-path", path);
+    e.dataTransfer.setData("application/x-hydra-worktree-drag", path);
+    beginSidebarDragPreview(e, 1);
   };
   const handleWorktreeDragOver = (e: React.DragEvent, targetPath: string) => {
     if (!draggedWorktreePath || draggedWorktreePath === targetPath) return;
@@ -385,7 +487,7 @@ export function SidebarShell({
   const handleWorktreeDrop = (e: React.DragEvent, targetPath: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const sourcePath = draggedWorktreePath || e.dataTransfer.getData("application/x-hydra-worktree-path");
+    const sourcePath = draggedWorktreePath || e.dataTransfer.getData("application/x-hydra-worktree-drag");
     if (sourcePath && sourcePath !== targetPath && onReorderWorktrees) {
       const sourceProj = findProjectForWorktree(sourcePath);
       const targetProj = findProjectForWorktree(targetPath);
@@ -410,13 +512,20 @@ export function SidebarShell({
     }
     setDraggedWorktreePath(null);
     setWorktreeDropTarget(null);
+    clearSidebarDragPreview();
   };
 
   const handleProjectDragStart = (e: React.DragEvent, id: string) => {
     e.stopPropagation();
+    // Orca pointer-drag-dom: never start a row drag from buttons/menus/portaled popovers.
+    if (isSidebarPointerDragBlocked(e.target, e.currentTarget as HTMLElement)) {
+      e.preventDefault();
+      return;
+    }
     setDraggedProjectId(id);
     e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("application/x-hydra-project-id", id);
+    e.dataTransfer.setData("application/x-hydra-project-drag", id);
+    beginSidebarDragPreview(e, 1);
   };
   const handleProjectDragOver = (e: React.DragEvent, targetId: string) => {
     if (!draggedProjectId || draggedProjectId === targetId) return;
@@ -429,7 +538,7 @@ export function SidebarShell({
   const handleProjectDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const sourceId = draggedProjectId || e.dataTransfer.getData("application/x-hydra-project-id");
+    const sourceId = draggedProjectId || e.dataTransfer.getData("application/x-hydra-project-drag");
     if (sourceId && sourceId !== targetId && onReorderProjects) {
       const fromIdx = projects.findIndex((p) => p.id === sourceId);
       const toIdx = projects.findIndex((p) => p.id === targetId);
@@ -440,19 +549,45 @@ export function SidebarShell({
     }
     setDraggedProjectId(null);
     setProjectDropTarget(null);
+    clearSidebarDragPreview();
   };
   const handleSessionDragEnd = () => {
     setDraggedSessionId(null);
     setSessionDropTarget(null);
+    clearSidebarDragPreview();
   };
   const handleWorktreeDragEnd = () => {
     setDraggedWorktreePath(null);
     setWorktreeDropTarget(null);
+    clearSidebarDragPreview();
   };
   const handleProjectDragEnd = () => {
     setDraggedProjectId(null);
     setProjectDropTarget(null);
+    clearSidebarDragPreview();
   };
+
+  const isDraggingSidebarRow = draggedSessionId !== null || draggedWorktreePath !== null || draggedProjectId !== null;
+  useEffect(() => {
+    if (!isDraggingSidebarRow) return;
+    const onDocumentDragOver = (event: DragEvent) => {
+      const active = dragPreviewRef.current;
+      if (!active) return;
+      updateSidebarDragPreviewPosition({
+        preview: active.preview,
+        pointerX: event.clientX,
+        pointerY: event.clientY,
+        offsetX: active.offsetX,
+        offsetY: active.offsetY,
+      });
+    };
+    document.addEventListener("dragover", onDocumentDragOver, true);
+    return () => document.removeEventListener("dragover", onDocumentDragOver, true);
+  }, [isDraggingSidebarRow]);
+
+  // Unmount safety: never leak the body-level preview or the user-select lock.
+  useEffect(() => clearSidebarDragPreview, []);
+
   const [appVersion, setAppVersion] = useState<string | null>(null);
   useEffect(() => {
     invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
@@ -465,139 +600,6 @@ export function SidebarShell({
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Arrow key navigation between sessions, worktrees, projects (when no modal/input has focus)
-      if (isModalOpen) return;
-      const target = e.target as HTMLElement;
-      const isInputFocused = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || Boolean(target.isContentEditable);
-
-      if (isInputFocused) return;
-
-      // Collect all focusable items in order: projects -> worktrees -> sessions
-      const allFocusable: Array<{ type: "project" | "worktree" | "session"; id: string }> = [];
-      
-      displayProjects.forEach((proj) => {
-        allFocusable.push({ type: "project", id: proj.id });
-        const isCollapsed = collapsedProjects.has(proj.id);
-        const projectWorktrees = getWorktreesForProject(proj);
-        const isActiveForSessions = proj.path === activeProject?.path;
-        if (!isCollapsed) {
-          projectWorktrees.forEach((wt) => {
-            allFocusable.push({ type: "worktree", id: wt.path });
-            const wtSessions = sessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
-            wtSessions.forEach((s) => allFocusable.push({ type: "session", id: s.id }));
-          });
-        }
-        // Sessions not under worktrees (orphan or when no worktrees)
-        if (!isCollapsed) {
-          const projectSessions = sessions.filter(
-            (s) => s.project_path === proj.path 
-              || (!s.project_path && isActiveForSessions)
-              || projectWorktrees.some((wt) => wt.path === s.project_path)
-              || s.project_path.startsWith(proj.path + "/")
-          );
-          projectSessions.forEach((s) => {
-            if (!allFocusable.some((f) => f.type === "session" && f.id === s.id)) {
-              allFocusable.push({ type: "session", id: s.id });
-            }
-          });
-        }
-      });
-
-      // Escape: clear focus + clear batch selection
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setFocusedSessionId(null);
-        setFocusedWorktreePath(null);
-        setFocusedProjectId(null);
-        setSelectedSessions(new Set());
-        return;
-      }
-
-      // Enter / Space: activate focused item
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        if (focusedSessionId) {
-          onSelectSession(focusedSessionId);
-        } else if (focusedWorktreePath) {
-          let wt: GitWorktreeInfo | undefined = gitWorktrees.find((w) => w.path === focusedWorktreePath);
-          if (!wt && worktreesByProject) {
-            for (const list of Object.values(worktreesByProject)) {
-              wt = list.find((w) => w.path === focusedWorktreePath);
-              if (wt) break;
-            }
-          }
-          if (wt) onSelectGitWorktree(wt);
-        } else if (focusedProjectId) {
-          const proj = projects.find((p) => p.id === focusedProjectId);
-          if (proj) onSelectProject(proj);
-        }
-        return;
-      }
-
-      // F2: Rename focused session
-      if (e.key === "F2" && focusedSessionId) {
-        e.preventDefault();
-        const session = sessions.find((s) => s.id === focusedSessionId);
-        if (session) {
-          const newTitle = window.prompt("Enter new session title:", session.title);
-          if (newTitle && newTitle.trim()) {
-            invoke("save_session_record", { record: { id: session.id, project_path: session.project_path, title: newTitle.trim(), branch: session.branch, agent_name: session.agentName, executable: session.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(console.error);
-            // Parent App will handle the session update via the invoke callback
-          }
-        }
-        return;
-      }
-
-      // Arrow navigation
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        const direction = e.key === "ArrowDown" ? "down" : "up";
-        const currentFocused = focusedSessionId || focusedWorktreePath || focusedProjectId;
-        
-        if (!currentFocused) {
-          // No focus - start with first item
-          const first = allFocusable[0];
-          if (first) {
-            if (first.type === "session") setFocusedSessionId(first.id);
-            else if (first.type === "worktree") setFocusedWorktreePath(first.id);
-            else setFocusedProjectId(first.id);
-            if (first.type === "session") {
-              onSelectNextSession?.(direction);
-            }
-          }
-          return;
-        }
-
-        const currentIdx = allFocusable.findIndex((f) => f.id === currentFocused);
-        if (currentIdx === -1) return;
-
-        const nextIdx = direction === "down" ? currentIdx + 1 : currentIdx - 1;
-        if (nextIdx < 0 || nextIdx >= allFocusable.length) return;
-
-        const next = allFocusable[nextIdx];
-        if (next.type === "session") {
-          setFocusedSessionId(next.id);
-          setFocusedWorktreePath(null);
-          setFocusedProjectId(null);
-          onSelectNextSession?.(direction);
-        } else if (next.type === "worktree") {
-          setFocusedWorktreePath(next.id);
-          setFocusedSessionId(null);
-          setFocusedProjectId(null);
-        } else {
-          setFocusedProjectId(next.id);
-          setFocusedSessionId(null);
-          setFocusedWorktreePath(null);
-        }
-        return;
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [sessions, displayProjects, projects, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, onSelectNextSession, onSelectPrevSession, onSelectSession, onSelectGitWorktree, onSelectProject, onSessionContextMenu, isModalOpen, focusedSessionId, focusedWorktreePath, focusedProjectId]);
 
   const toggleProjectCollapse = (projectId: string) => {
     setCollapsedProjects((prev) => {
@@ -650,6 +652,127 @@ export function SidebarShell({
     },
     [flatRows, compactCards]
   );
+
+  const listRef = useRef<ListImperativeAPI>(null);
+
+  // Focusable vocabulary derived from the rendered projection (Orca
+  // worktree-list/navigation/use-keyboard.ts parity): cycling over exactly what is on
+  // screen means a collapsed project, an active filter or the current groupBy cannot
+  // desync the key order from the viewport. Status-header/empty/hidden-pill rows are
+  // separators/feedback, never focus targets (getFocusableRowKeys owns that filter).
+  const focusableRows = useMemo(() => getFocusableRowKeys(flatRows), [flatRows]);
+
+  /**
+   * Reveal-to-current (Orca ScrollToCurrentWorkspaceToolbarButton parity): scroll the
+   * virtual viewport to the session the workbench has active. Works in every groupBy —
+   * the workspace-status projection is sessions-only, so the same lookup covers all
+   * modes. Focus follows the reveal so the next Arrow key continues from the current
+   * session instead of restarting the cycle.
+   */
+  const handleRevealCurrent = useCallback(() => {
+    const findActiveIndex = (matchActiveProject: boolean): number =>
+      flatRows.findIndex(
+        (row) =>
+          row.type === "session" &&
+          row.session.active &&
+          (!matchActiveProject || row.proj.path === activeProject?.path)
+      );
+    const inActiveProject = findActiveIndex(true);
+    const rowIndex = inActiveProject !== -1 ? inActiveProject : findActiveIndex(false);
+    if (rowIndex === -1) return;
+    const row = flatRows[rowIndex];
+    if (row?.type === "session") {
+      setFocusedSessionId(row.session.id);
+      setFocusedWorktreePath(null);
+      setFocusedProjectId(null);
+    }
+    listRef.current?.scrollToRow({ index: rowIndex, align: "auto", behavior: "smooth" });
+  }, [flatRows, activeProject, listRef]);
+
+  // Keyboard navigation — Orca worktree-keyboard-cycle semantics: arrows cycle with
+  // wrap-around over the rows the projection rendered, Enter/Space activates the
+  // focused row, F2 renames the focused session, Escape clears focus + batch selection.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isModalOpen) return;
+      const target = e.target as HTMLElement;
+      const isInputFocused = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || Boolean(target.isContentEditable);
+      if (isInputFocused) return;
+
+      const setFocus = (key: { type: "project" | "worktree" | "session"; id: string } | null) => {
+        setFocusedSessionId(key?.type === "session" ? key.id : null);
+        setFocusedWorktreePath(key?.type === "worktree" ? key.id : null);
+        setFocusedProjectId(key?.type === "project" ? key.id : null);
+      };
+
+      // Escape: clear focus + clear batch selection (either sidebar body)
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setFocus(null);
+        setSelectedSessions(new Set());
+        return;
+      }
+
+      // The agents body owns its own keymap (SidebarAgentsList); this handler cycles
+      // only the workspaces projection.
+      if (sidebarBody !== "workspaces") return;
+
+      const focused =
+        (focusedSessionId && { type: "session" as const, id: focusedSessionId }) ||
+        (focusedWorktreePath && { type: "worktree" as const, id: focusedWorktreePath }) ||
+        (focusedProjectId && { type: "project" as const, id: focusedProjectId }) ||
+        null;
+
+      // Enter / Space: activate the focused row. The lookup runs against flatRows — the
+      // row carries the objects (no id re-lookup), and a hidden/collapsed row is a no-op.
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (!focused) return;
+        const row = flatRows.find(
+          (r) =>
+            (r.type === "session" && focused.type === "session" && r.session.id === focused.id) ||
+            (r.type === "worktree" && focused.type === "worktree" && r.wt.path === focused.id) ||
+            (r.type === "project-header" && focused.type === "project" && r.proj.id === focused.id)
+        );
+        if (!row) return;
+        if (row.type === "session") onSelectSession(row.session.id);
+        else if (row.type === "worktree") onSelectGitWorktree(row.wt);
+        else if (row.type === "project-header") onSelectProject(row.proj);
+        return;
+      }
+
+      // F2: Rename focused session
+      if (e.key === "F2" && focusedSessionId) {
+        e.preventDefault();
+        const session = sessions.find((s) => s.id === focusedSessionId);
+        if (session) {
+          const newTitle = window.prompt("Enter new session title:", session.title);
+          if (newTitle && newTitle.trim()) {
+            invoke("save_session_record", { record: { id: session.id, project_path: session.project_path, title: newTitle.trim(), branch: session.branch, agent_name: session.agentName, executable: session.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(console.error);
+            // Parent App will handle the session update via the invoke callback
+          }
+        }
+        return;
+      }
+
+      // Arrow cycling with wrap-around (Orca resolveCycledWorktreeId: at an edge the
+      // cycle wraps; with no live focus, enter from the end the keypress points away from)
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const direction = e.key === "ArrowDown" ? "down" : "up";
+        const next = resolveCycledFocusKey({ keys: focusableRows, focused, direction });
+        if (!next) return;
+        setFocus(next);
+        // A virtualized viewport only paints focus rings on mounted rows — keep the
+        // focused row visible (Orca: virtualizer.scrollToIndex with align auto).
+        listRef.current?.scrollToRow({ index: next.rowIndex, align: "auto" });
+        if (next.type === "session") onSelectNextSession?.(direction);
+        return;
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [flatRows, focusableRows, sidebarBody, isModalOpen, focusedSessionId, focusedWorktreePath, focusedProjectId, sessions, onSelectSession, onSelectGitWorktree, onSelectProject, onSelectNextSession, listRef]);
 
   // Row component for react-window virtualization
   const VirtualRow = ({ index, style, ariaAttributes }: RowComponentProps) => {
@@ -961,6 +1084,7 @@ export function SidebarShell({
         ) : (
           <div className="flex-1 min-h-0 overflow-hidden">
             <List
+              listRef={listRef}
               rowCount={flatRows.length}
               rowHeight={getRowHeight}
               rowComponent={VirtualRow}
@@ -1017,8 +1141,13 @@ export function SidebarShell({
         </div>
       )}
 
-      {/* 6. Orca Sidebar Footer */}
-      <SidebarFooter appVersion={appVersion} gitStatus={gitStatus} onOpenSettings={onOpenSettings} />
+      {/* 6. Orca Sidebar Footer — reveal-to-current only exists in the workspaces body */}
+      <SidebarFooter
+        appVersion={appVersion}
+        gitStatus={gitStatus}
+        onOpenSettings={onOpenSettings}
+        onRevealCurrent={sidebarBody === "workspaces" ? handleRevealCurrent : undefined}
+      />
     </div>
   );
 }
