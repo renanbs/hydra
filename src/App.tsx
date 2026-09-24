@@ -896,16 +896,23 @@ export default function App() {
     let cancelled = false;
     const setup = async () => {
       try {
-        const un = await listen<{ session_id?: string; sessionId?: string; state: string }>("agent:state", (event) => {
+        const un = await listen<{ session_id?: string; sessionId?: string; state: string; state_started_at?: number }>("agent:state", (event) => {
           const payload = event.payload as unknown as Record<string, unknown>;
           const sid = (payload.sessionId as string) ?? (payload.session_id as string) ?? (payload.id as string);
           const state = payload.state as string;
+          // PR-6: the Rust engine stamps the epoch ms the state began — feeds the
+          // smart-attention sort tiebreak. Legacy daemons omit it; the sort falls back.
+          const stateStartedAt = payload.state_started_at;
           if (!sid || !state) return;
           setSessions((prev) => {
             const target = prev.find((s) => s.id === sid);
             if (!target) return prev;
             if (target.state === state) return prev;
-            const next = prev.map((s) => (s.id === sid ? { ...s, state: state as WorktreeSession["state"] } : s));
+            const next = prev.map((s) =>
+              s.id === sid
+                ? { ...s, state: state as WorktreeSession["state"], state_started_at: typeof stateStartedAt === "number" ? stateStartedAt : undefined }
+                : s
+            );
             const wc = next.filter((s) => s.state === "working").length;
             syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
             return next;

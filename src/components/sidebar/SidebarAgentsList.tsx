@@ -26,7 +26,7 @@ export function SidebarAgentsList({
 }: SidebarAgentsListProps) {
   const [filter, setFilter] = useState("");
   const [groupBy, setGroupBy] = useState<"state" | "project">("state");
-  const [statusFilter, setStatusFilter] = useState<"all" | "blocked" | "working" | "idle">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "blocked" | "waiting" | "working" | "done" | "idle">("all");
   const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
   const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
 
@@ -74,22 +74,29 @@ export function SidebarAgentsList({
       }));
     }
 
-    // Group by state: blocked > working > idle
-    const stateOrder: Array<"blocked" | "working" | "idle" | "unknown"> = [
+    // Group by state, in attention order (Orca smart-sort class order): needs-you first.
+    const stateOrder: Array<"blocked" | "waiting" | "working" | "done" | "idle" | "unknown"> = [
       "blocked",
+      "waiting",
       "working",
+      "done",
       "idle",
       "unknown",
     ];
     const stateGroups: Record<string, WorktreeSession[]> = {
       blocked: [],
+      waiting: [],
       working: [],
+      done: [],
       idle: [],
       unknown: [],
     };
 
     for (const session of filteredSessions) {
-      stateGroups[session.state].push(session);
+      // Wire safety: a legacy daemon can emit a string outside the six-state union
+      // (App.tsx casts it unchecked). Land it in the neutral `unknown` group instead
+      // of crashing on a missing key.
+      (stateGroups[session.state] ?? stateGroups.unknown).push(session);
     }
 
     return stateOrder
@@ -98,12 +105,16 @@ export function SidebarAgentsList({
         label:
           state === "blocked"
             ? "Blocked"
+            : state === "waiting"
+            ? "Waiting"
             : state === "working"
             ? "Working"
+            : state === "done"
+            ? "Done"
             : state === "idle"
             ? "Idle"
             : "Unknown",
-        state: state as "blocked" | "working" | "idle" | "unknown",
+        state: state as "blocked" | "waiting" | "working" | "done" | "idle" | "unknown",
         sessions: stateGroups[state],
       }));
   }, [filteredSessions, groupBy, getProjectName]);
@@ -146,8 +157,12 @@ export function SidebarAgentsList({
                 className={`inline-flex size-3 shrink-0 items-center justify-center ${
                   row.state === "blocked"
                     ? "bg-red-400/20 text-red-400"
+                    : row.state === "waiting"
+                    ? "bg-orange-400/20 text-orange-400"
                     : row.state === "working"
                     ? "bg-amber-400/20 text-amber-400"
+                    : row.state === "done"
+                    ? "bg-blue-400/20 text-blue-400"
                     : row.state === "idle"
                     ? "bg-emerald-400/20 text-emerald-400"
                     : "bg-neutral-700 text-neutral-400"
@@ -217,13 +232,17 @@ export function SidebarAgentsList({
     );
   };
 
-  // State badge colors
+  // State badge colors (waiting/done arrive via the Herdr PR-6 wire contract)
   const getStateBadge = (state: WorktreeSession["state"]) => {
     switch (state) {
       case "working":
         return "bg-amber-400 animate-pulse";
       case "blocked":
         return "bg-red-400 ring-2 ring-red-500/30";
+      case "waiting":
+        return "bg-orange-400 animate-pulse";
+      case "done":
+        return "bg-blue-400";
       case "idle":
         return "bg-emerald-400";
       default:
@@ -237,6 +256,10 @@ export function SidebarAgentsList({
         return "Working";
       case "blocked":
         return "Blocked";
+      case "waiting":
+        return "Waiting";
+      case "done":
+        return "Done";
       case "idle":
         return "Idle";
       default:
@@ -300,7 +323,9 @@ export function SidebarAgentsList({
             [
               { value: "all", label: "All" },
               { value: "blocked", label: "Blocked" },
+              { value: "waiting", label: "Waiting" },
               { value: "working", label: "Working" },
+              { value: "done", label: "Done" },
               { value: "idle", label: "Idle" },
             ] as const
           ).map(({ value, label }) => (
@@ -321,6 +346,10 @@ export function SidebarAgentsList({
                       ? "bg-amber-400"
                       : value === "blocked"
                       ? "bg-red-400"
+                      : value === "waiting"
+                      ? "bg-orange-400"
+                      : value === "done"
+                      ? "bg-blue-400"
                       : "bg-emerald-400"
                   }`}
                 />
@@ -385,8 +414,12 @@ export function SidebarAgentsList({
                     className={`inline-flex size-3 shrink-0 items-center justify-center ${
                       group.state === "blocked"
                         ? "bg-red-400/20 text-red-400"
+                        : group.state === "waiting"
+                        ? "bg-orange-400/20 text-orange-400"
                         : group.state === "working"
                         ? "bg-amber-400/20 text-amber-400"
+                        : group.state === "done"
+                        ? "bg-blue-400/20 text-blue-400"
                         : group.state === "idle"
                         ? "bg-emerald-400/20 text-emerald-400"
                         : "bg-neutral-700 text-neutral-400"

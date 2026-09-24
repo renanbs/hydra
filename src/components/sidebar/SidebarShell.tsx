@@ -24,8 +24,42 @@ import { SidebarNav } from "./SidebarNav";
 import { AgentBrandIcon } from "../AgentIcon";
 import { SidebarFooter } from "./SidebarFooter";
 import type { HydraProject, GitWorktreeInfo, WorktreeSession, WorktreeSidebarProps } from "./types";
+import { IDLE, resolveSessionAttention, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { buildSidebarRows } from "./worktree-list/buildSidebarRows";
-import type { SidebarRow } from "./worktree-list/types";
+import type { SidebarRow, SidebarStatusState } from "./worktree-list/types";
+
+// Status-group header vocabulary for the "workspace-status" groupBy mode — Orca
+// SidebarStatusHeader language, same dot colors as the agents view (SidebarAgentsList).
+const STATUS_HEADER_LABEL: Record<SidebarStatusState, string> = {
+  blocked: "Blocked",
+  waiting: "Waiting",
+  working: "Working",
+  done: "Done",
+  idle: "Idle",
+  unknown: "Unknown",
+};
+const STATUS_HEADER_DOT: Record<SidebarStatusState, string> = {
+  blocked: "bg-red-400",
+  waiting: "bg-orange-400",
+  working: "bg-amber-400",
+  done: "bg-blue-400",
+  idle: "bg-emerald-400",
+  unknown: "bg-neutral-500",
+};
+
+// Session record → smart-attention input. hasLivePty mirrors the Orca decay split:
+// a session whose state is `unknown` but still has a pane attached is "unverifiable"
+// (Class 4), not idle. The daemon holds the PTY for the lifetime of the session record,
+// so a session that exists is live; only an explicitly deleted/closed state is not.
+// (App.tsx marks batch-closed sessions idle, never unknown, so the split holds.)
+// Module scope: pure adapter, no closures over component state — memoized sort
+// callbacks capture it safely across renders.
+const sessionInput = (s: WorktreeSession): SessionAttentionInput => ({
+  state: s.state,
+  stateStartedAt: s.state_started_at,
+  lastActivityAt: s.updated_at ?? s.created_at ?? undefined,
+  hasLivePty: true,
+});
 
 export function SidebarShell({
   sessions,
@@ -150,16 +184,31 @@ export function SidebarShell({
     if (displayOptions.sortBy === "recent") {
       return [...wts].sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0));
     }
-    // agent-activity: working > blocked > idle, then most recent session
+    // agent-activity (Orca "smart" sort): resolve each worktree's attention once
+    // (min class wins across its sessions, max ts within the class), then rank by
+    // class ASC — needs-you (1) first — tie-break attentionTimestamp DESC, recency DESC.
+    // inputsByPath groups sessions once so the sort itself stays O(sessions + worktrees),
+    // not O(worktrees × sessions).
+    const now = Date.now();
+    const inputsByPath = new Map<string, SessionAttentionInput[]>();
+    for (const s of sessions) {
+      const list = inputsByPath.get(s.project_path);
+      if (list) list.push(sessionInput(s));
+      else inputsByPath.set(s.project_path, [sessionInput(s)]);
+    }
+    const attentionByPath = new Map<string, SessionAttention>();
+    for (const [path, inputs] of inputsByPath) {
+      attentionByPath.set(path, resolveWorktreeAttention(inputs, now));
+    }
     return [...wts].sort((a, b) => {
-      const aSess = sessions.filter((s) => s.project_path === a.path);
-      const bSess = sessions.filter((s) => s.project_path === b.path);
-      const rank = (sess: WorktreeSession[]) => sess.some((s) => s.state === "working") ? 0 : sess.some((s) => s.state === "blocked") ? 1 : sess.some((s) => s.state === "idle") ? 2 : 3;
-      const ra = rank(aSess);
-      const rb = rank(bSess);
-      if (ra !== rb) return ra - rb;
-      const aRecent = Math.max(...aSess.map((s) => s.updated_at ?? s.created_at ?? 0), (a.created_at ?? 0) * 1000);
-      const bRecent = Math.max(...bSess.map((s) => s.updated_at ?? s.created_at ?? 0), (b.created_at ?? 0) * 1000);
+      const aa = attentionByPath.get(a.path) ?? IDLE;
+      const bb = attentionByPath.get(b.path) ?? IDLE;
+      // Why: 1 < 2 < 3 < 4 < 5 — lower class outranks higher (corrects the former
+      // ternary that ranked working above blocked).
+      if (aa.cls !== bb.cls) return aa.cls - bb.cls;
+      if (aa.attentionTimestamp !== bb.attentionTimestamp) return bb.attentionTimestamp - aa.attentionTimestamp;
+      const aRecent = Math.max(...sessions.filter((s) => s.project_path === a.path).map((s) => s.updated_at ?? s.created_at ?? 0), (a.created_at ?? 0) * 1000);
+      const bRecent = Math.max(...sessions.filter((s) => s.project_path === b.path).map((s) => s.updated_at ?? s.created_at ?? 0), (b.created_at ?? 0) * 1000);
       return bRecent - aRecent;
     });
   }, [sessions, displayOptions.sortBy]);
@@ -171,11 +220,19 @@ export function SidebarShell({
     if (displayOptions.sortBy === "recent") {
       return [...sess].sort((a, b) => (b.updated_at ?? b.created_at ?? 0) - (a.updated_at ?? a.created_at ?? 0));
     }
-    const rank = (s: WorktreeSession) => s.state === "working" ? 0 : s.state === "blocked" ? 1 : s.state === "idle" ? 2 : 3;
+    // agent-activity (Orca "smart" sort): attention class ASC (needs-you 1 first —
+    // corrects the former ternary that ranked working(0) above blocked(1)), then
+    // attentionTimestamp DESC, then updated_at DESC. One resolution per session.
+    const now = Date.now();
+    const attentionById = new Map<string, SessionAttention>();
+    for (const s of sess) {
+      attentionById.set(s.id, resolveSessionAttention(sessionInput(s), now));
+    }
     return [...sess].sort((a, b) => {
-      const ra = rank(a);
-      const rb = rank(b);
-      if (ra !== rb) return ra - rb;
+      const aa = attentionById.get(a.id) ?? IDLE;
+      const bb = attentionById.get(b.id) ?? IDLE;
+      if (aa.cls !== bb.cls) return aa.cls - bb.cls;
+      if (aa.attentionTimestamp !== bb.attentionTimestamp) return bb.attentionTimestamp - aa.attentionTimestamp;
       return (b.updated_at ?? b.created_at ?? 0) - (a.updated_at ?? a.created_at ?? 0);
     });
   }, [displayOptions.sortBy]);
@@ -583,6 +640,7 @@ export function SidebarShell({
     (index: number) => {
       const row = flatRows[index];
       if (!row) return 40;
+      if (row.type === "status-header") return 28;
       if (row.type === "project-header") return 40;
       if (row.type === "worktree") return compactCards ? 32 : 44;
       if (row.type === "session") return compactCards ? 52 : 68;
@@ -767,7 +825,7 @@ export function SidebarShell({
                 <span className="font-medium truncate text-neutral-100 text-[11px]">{session.title}</span>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className={`w-2 h-2 rounded-full shrink-0 ${session.state === "working" ? "bg-amber-400 animate-pulse" : session.state === "blocked" ? "bg-red-400 ring-2 ring-red-500/30" : "bg-emerald-400"}`} title={`Herdr State: ${session.state}`} />
+                <span className={`w-2 h-2 rounded-full shrink-0 ${session.state === "working" ? "bg-amber-400 animate-pulse" : session.state === "blocked" ? "bg-red-400 ring-2 ring-red-500/30" : session.state === "waiting" ? "bg-orange-400 animate-pulse" : session.state === "done" ? "bg-blue-400" : session.state === "idle" ? "bg-emerald-400" : "bg-neutral-500"}`} title={`Herdr State: ${session.state}`} />
                 <button onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }} className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"><Trash2 className="w-3 h-3" /></button>
               </div>
             </div>
@@ -806,6 +864,20 @@ export function SidebarShell({
       return (
         <div style={rowStyle} {...ariaAttributes} className="px-2 pl-6">
           <div className="py-2 px-2 text-[11px] text-neutral-600 italic ml-2 border-l border-worktree-sidebar-border pl-3">No active worktrees in this project.</div>
+        </div>
+      );
+    }
+
+    if (row.type === "status-header") {
+      return (
+        <div style={rowStyle} {...ariaAttributes} className="px-2">
+          <div className="flex items-center gap-2 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-worktree-sidebar-foreground/50">
+            <span className={`inline-flex size-3 shrink-0 items-center justify-center ${STATUS_HEADER_DOT[row.state]} rounded`} />
+            <span className="truncate">{STATUS_HEADER_LABEL[row.state]}</span>
+            <span className="ml-auto rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70">
+              {row.count}
+            </span>
+          </div>
         </div>
       );
     }

@@ -31,12 +31,17 @@ export interface WorktreeSession {
   project_path: string;
   title: string;
   branch: string;
-  state: "working" | "blocked" | "idle" | "unknown";
+  // Herdr wire contract (Rust PR-6): working | blocked | waiting | idle | done | unknown.
+  // Unknown strings still arrive on legacy records — consumers must treat anything
+  // outside this union as neutral/idle (default branches), never crash on it.
+  state: "working" | "blocked" | "waiting" | "idle" | "done" | "unknown";
   active: boolean;
   agentName: string;
   executable: string;
   created_at?: number | null;
   updated_at?: number | null;
+  /** Epoch ms the current state began (Rust `agent:state` payload field). Optional: absent on records created before PR-6. */
+  state_started_at?: number;
 }
 
 export interface GitRepoStatus {
