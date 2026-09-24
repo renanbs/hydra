@@ -31,9 +31,9 @@ export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealC
             onClick={onRevealCurrent}
             title="Reveal active workspace"
             aria-label="Reveal active workspace"
-            className="flex items-center justify-center p-1 rounded text-worktree-sidebar-foreground/50 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent transition cursor-pointer"
+            className="inline-flex size-6 items-center justify-center rounded-md text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 transition-all outline-none cursor-pointer focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50"
           >
-            <Crosshair className="w-3 h-3" />
+            <Crosshair className="size-3.5" />
           </button>
         )}
         {appVersion && (

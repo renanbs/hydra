@@ -5,7 +5,9 @@ import {
   GitBranch, 
   CalendarClock, 
   SquareTerminal, 
-  GitCommitHorizontal
+  GitCommitHorizontal,
+  Search,
+  X
 } from "lucide-react";
 import type { HydraProject } from "./WorktreeSidebar";
 
@@ -40,6 +42,7 @@ export function WorkspaceOptionsMenu({
   onOptionsChange,
 }: WorkspaceOptionsMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const projectSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
   const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | null>(null);
   const [projectSearch, setProjectSearch] = useState("");
@@ -177,16 +180,42 @@ export function WorkspaceOptionsMenu({
               <div className="px-1 py-1">
                 <div className="relative">
                   <input
+                    ref={projectSearchInputRef}
+                    autoFocus
                     type="text"
                     value={projectSearch}
                     onChange={(e) => setProjectSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      // Orca SidebarFilter pattern: Escape clears a non-empty query
+                      // first (keeps the menu open); an empty query lets the menu's
+                      // own window-level Escape close run.
+                      if (e.key === "Escape" && projectSearch) {
+                        e.stopPropagation();
+                        setProjectSearch("");
+                      }
+                    }}
                     placeholder="Add project..."
-                    className="w-full bg-muted/50 border border-border rounded-md pl-7 pr-2 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full bg-muted/50 border border-border rounded-md pl-7 pr-6 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="absolute left-2 top-1.5 text-muted-foreground">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                  <span className="absolute left-2 top-1.5 text-muted-foreground pointer-events-none">
+                    <Search className="w-3 h-3" />
                   </span>
+                  {projectSearch ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setProjectSearch("");
+                        projectSearchInputRef.current?.focus();
+                      }}
+                      aria-label="Clear project search"
+                      title="Clear project search"
+                      className="absolute right-1.5 top-1 inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  ) : null}
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto max-h-48 space-y-0.5 px-1">
