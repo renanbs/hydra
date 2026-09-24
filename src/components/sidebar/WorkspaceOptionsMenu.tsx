@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type { HydraProject } from "./WorktreeSidebar";
 
-export type GroupByMode = "none" | "workspace-status" | "pr-status" | "repo";
+export type GroupByMode = "none" | "workspace-status" | "repo";
 
 export interface WorkspaceDisplayOptions {
   groupBy: GroupByMode;
@@ -232,11 +232,10 @@ export function WorkspaceOptionsMenu({
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Group by
         </div>
-        <div className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
+        <div className="grid grid-cols-3 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
           {[
             { id: "none", label: "None" },
             { id: "workspace-status", label: "Status" },
-            { id: "pr-status", label: "PR" },
             { id: "repo", label: "Project" },
           ].map((item) => {
             const isSelected = options.groupBy === item.id;

@@ -4,10 +4,14 @@
 import type { GitWorktreeInfo, HydraProject, WorktreeSession } from "../types";
 import type { WorkspaceDisplayOptions } from "../WorkspaceOptionsMenu";
 
+/** Attention bucket of a session's Herdr state — the "workspace-status" group header vocabulary. */
+export type SidebarStatusState = "blocked" | "waiting" | "working" | "done" | "idle" | "unknown";
+
 /** Union of every row the workspaces sidebar viewport can render. */
 export type SidebarRow =
   | { type: "project-header"; proj: HydraProject; isActive: boolean; isCollapsed: boolean; isMenuOpen: boolean }
   | { type: "worktree"; wt: GitWorktreeInfo; proj: HydraProject }
+  | { type: "status-header"; state: SidebarStatusState; count: number }
   | { type: "session"; session: WorktreeSession; proj: HydraProject; wt?: GitWorktreeInfo; isOrphan?: boolean; isNested: boolean }
   | { type: "empty"; proj: HydraProject; message: string }
   | { type: "hidden-pill"; proj: HydraProject; hiddenCount: number };
@@ -51,6 +55,7 @@ export interface SidebarProjectionInput {
   /** Worktrees per project path; takes precedence over gitWorktrees. */
   worktreesByProject?: Record<string, GitWorktreeInfo[]>;
   activeProject: HydraProject | null;
+  /** Collapsed project ids (repo mode only — "none"/"workspace-status" render no project headers). */
   collapsedProjects: Set<string>;
   activeProjectMenuId: string | null;
   /** Free-text filter over titles, branches and agent names. */
