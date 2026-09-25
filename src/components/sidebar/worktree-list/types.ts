@@ -20,7 +20,7 @@ export type SidebarRow =
   | { type: "project-header"; proj: HydraProject; isActive: boolean; isCollapsed: boolean; isMenuOpen: boolean; /** True when nested under a group-header (extra indent). */ inGroup?: boolean }
   | { type: "worktree"; wt: GitWorktreeInfo; proj: HydraProject }
   | { type: "status-header"; state: SidebarStatusState; count: number }
-  | { type: "group-header"; group: ProjectGroup; count: number; isCollapsed: boolean }
+  | { type: "group-header"; group: ProjectGroup; count: number; isCollapsed: boolean; /** True quando algum membro (projeto, worktree ou sessão) tem unread — dot agregado no header (PR-16). Ausente = false. */ hasUnread?: boolean }
   | { type: "session"; session: WorktreeSession; proj: HydraProject; wt?: GitWorktreeInfo; isOrphan?: boolean; isNested: boolean }
   | { type: "empty"; proj: HydraProject; message: string }
   | { type: "hidden-pill"; proj: HydraProject; hiddenCount: number };
@@ -72,6 +72,10 @@ export interface SidebarProjectionInput {
   projectGroups?: ProjectGroup[];
   /** project id → group id (SQLite sidebar_prefs "ui.sidebar", PR-14). */
   projectGroupMap?: Record<string, string>;
+  /** Unread project ids (PR-15); repo-mode group headers agregam o unread dos membros (PR-16). */
+  unreadProjects?: ReadonlySet<string>;
+  /** Unread worktree paths / session ids (PR-15); agregados ao group-header junto com unreadProjects. */
+  unreadWorktrees?: ReadonlySet<string>;
   /** Orca Groups UI flag (description.v.groupsEnabled); defaults to enabled. */
   groupsEnabled?: boolean;
   activeProjectMenuId: string | null;

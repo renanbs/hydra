@@ -111,6 +111,20 @@ export function WorkspaceOptionsMenu({
     });
   };
 
+  // Orca SidebarRepositoryFilterSection.getProjectFilterVisibilityLabel: o label do
+  // submenu "Show → Projects" reflete o filtro ativo — "All projects" sem sufixo,
+  // o nome do projeto quando só um está selecionado, ou "N projects". Derivado de
+  // `projects` para ids obsoletos (projeto removido) não inflarem a contagem.
+  const selectedFilterProjects = options.filterProjectIds?.length
+    ? projects.filter((p) => options.filterProjectIds!.includes(p.id))
+    : [];
+  const projectFilterLabel =
+    selectedFilterProjects.length === 0
+      ? "All projects"
+      : selectedFilterProjects.length === 1
+        ? selectedFilterProjects[0].name
+        : `${selectedFilterProjects.length} projects`;
+
   return (
     <div
       ref={menuRef}
@@ -137,14 +151,19 @@ export function WorkspaceOptionsMenu({
               <span>Projects</span>
             </div>
             <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-              <span>All projects ({projects.length})</span>
+              <span>{projectFilterLabel}</span>
               <ChevronRight className="w-3 h-3 text-muted-foreground" />
             </span>
           </div>
           {openSubmenu === "show" && (
             <div className="absolute left-full top-0 ml-1 w-64 rounded-lg border border-border bg-popover p-1 shadow-xl z-10 max-h-80 overflow-hidden flex flex-col">
               <div className="flex items-center justify-between px-2 py-1">
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase">Projects - {options.filterProjectIds?.length ? options.filterProjectIds.length : projects.length}</span>
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                  Projects
+                  {selectedFilterProjects.length > 0 && (
+                    <span className="ml-1.5 font-medium text-foreground normal-case">· {selectedFilterProjects.length}</span>
+                  )}
+                </span>
                 {options.filterProjectIds?.length ? (
                   <button
                     onClick={() => onOptionsChange({ ...options, filterProjectIds: [] })}
