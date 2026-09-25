@@ -310,10 +310,33 @@ async fn create_worktree(repo_path: String, branch_name: String, new_branch: boo
 }
 
 #[tauri::command]
-async fn delete_worktree(repo_path: String, worktree_path: String) -> Result<(), String> {
-    tokio::task::spawn_blocking(move || remove_git_worktree(&repo_path, &worktree_path))
-        .await
-        .map_err(|e| e.to_string())?
+async fn delete_worktree(
+    state: State<'_, AppState>,
+    repo_path: String,
+    worktree_path: String,
+) -> Result<(), String> {
+    let terminal = state.terminal.clone();
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        // Orca parity (executeWorktreeRemoval): sweep PTYs of sessions bound to
+        // the doomed worktree BEFORE the directory disappears, then purge their
+        // persisted records so no ghost row survives the refetch. list_sessions
+        // also returns the projectless main session (project_path = '') — keep it.
+        let doomed: Vec<String> = db
+            .list_sessions(Some(&worktree_path))
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|s| !s.project_path.is_empty())
+            .map(|s| s.id)
+            .collect();
+        for id in &doomed {
+            let _ = terminal.close_session(id);
+            let _ = db.delete_session(id);
+        }
+        remove_git_worktree(&repo_path, &worktree_path)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
