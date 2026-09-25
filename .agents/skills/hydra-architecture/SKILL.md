@@ -32,6 +32,11 @@ Its core engineering principle is: **Orca's UX and visual fidelity merged with H
   - Uses `portable-pty` for async OS process spawning.
   - Uses `vt100::Parser` in memory (< 200 KB RAM) as the authority of terminal screen state.
   - Zero UI leakage: heavy outputs (build logs, test dumps) are processed in memory without locking the visual canvas.
+- **PTY children are interactive color terminals**:
+  - Every PTY spawn (`start_session_inner` in `src-tauri/src/terminal.rs`, app and daemon) MUST advertise `TERM=xterm-256color` and `COLORTERM=truecolor`.
+  - The spawn MUST remove inherited non-interactive color suppression: `NO_COLOR`, `NODE_DISABLE_COLORS`, and `CI`.
+  - `CI` is not a Hydra setting. Agent shells and CI runners set it so CLIs skip prompts. Claude Code returns color depth 1 as soon as `CI` is present, before it reads `COLORTERM`, so an inherited `CI=true` paints the logo in the default foreground.
+  - Do not paper over this by launching Hydra from a clean shell. The child environment is owned at spawn.
 - **Log Folding for LLM Token Economy**:
   - Terminal output sent to models is folded via `fold_terminal_output`: truncates long logs to keep relevant headers and error tails, cutting token costs by up to 90%.
 - **Herdr State Engine**:

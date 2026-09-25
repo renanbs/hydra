@@ -102,6 +102,15 @@ impl TerminalManager {
         for arg in args {
             cmd.arg(arg);
         }
+        // xterm.js paints 24-bit SGR. The parent is often an agent shell
+        // (TERM=dumb, NO_COLOR, CI). Claude Code returns color depth 1 as soon
+        // as CI is set, before it reads COLORTERM, so the logo stays gray.
+        // Advertise the emulator and drop the non-interactive suppressors.
+        cmd.env("TERM", "xterm-256color");
+        cmd.env("COLORTERM", "truecolor");
+        cmd.env_remove("NO_COLOR");
+        cmd.env_remove("NODE_DISABLE_COLORS");
+        cmd.env_remove("CI");
         if let Some(c) = &cwd {
             let p = std::path::PathBuf::from(c);
             if p.exists() {
@@ -584,5 +593,90 @@ mod tests {
         let (empty, next3) = manager.poll_output(sid, 1100).unwrap();
         assert!(empty.is_empty());
         assert_eq!(next3, 1100);
+    }
+
+    /// The PTY is an xterm.js surface. Children must see 256-color + truecolor
+    /// even when the parent was launched with TERM=dumb, NO_COLOR, and CI.
+    /// Claude Code treats any CI as "no color" before it reads COLORTERM.
+    #[test]
+    fn spawned_pty_advertises_truecolor() {
+        let saved_term = std::env::var("TERM").ok();
+        let saved_no_color = std::env::var("NO_COLOR").ok();
+        let saved_node_disable = std::env::var("NODE_DISABLE_COLORS").ok();
+        let saved_ci = std::env::var("CI").ok();
+        std::env::set_var("TERM", "dumb");
+        std::env::set_var("NO_COLOR", "1");
+        std::env::set_var("NODE_DISABLE_COLORS", "1");
+        std::env::set_var("CI", "true");
+
+        let manager = TerminalManager::new(Arc::new(
+            crate::db::DatabaseManager::new_in_memory().expect("in-memory db"),
+        ));
+        let sid = "test-truecolor";
+        let started = manager.start_session_headless(
+            sid,
+            "/bin/sh",
+            vec![
+                "-c".into(),
+                r#"printf 'TERM=%s COLORTERM=%s NO_COLOR=%s NODE_DISABLE_COLORS=%s CI=%s
+' "$TERM" "$COLORTERM" "${NO_COLOR-unset}" "${NODE_DISABLE_COLORS-unset}" "${CI-unset}""#.into(),
+            ],
+            None,
+        );
+
+        match saved_term {
+            Some(value) => std::env::set_var("TERM", value),
+            None => std::env::remove_var("TERM"),
+        }
+        match saved_no_color {
+            Some(value) => std::env::set_var("NO_COLOR", value),
+            None => std::env::remove_var("NO_COLOR"),
+        }
+        match saved_node_disable {
+            Some(value) => std::env::set_var("NODE_DISABLE_COLORS", value),
+            None => std::env::remove_var("NODE_DISABLE_COLORS"),
+        }
+        match saved_ci {
+            Some(value) => std::env::set_var("CI", value),
+            None => std::env::remove_var("CI"),
+        }
+        started.unwrap();
+
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        let mut seen = String::new();
+        loop {
+            if let Ok((chunk, _)) = manager.poll_output(sid, 0) {
+                seen = chunk;
+            }
+            if seen.contains("COLORTERM=") {
+                break;
+            }
+            if std::time::Instant::now() >= deadline {
+                panic!("timed out waiting for env probe, saw: {seen:?}");
+            }
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        }
+        manager.close_session(sid);
+
+        assert!(
+            seen.contains("TERM=xterm-256color"),
+            "TERM must advertise xterm.js, saw: {seen:?}"
+        );
+        assert!(
+            seen.contains("COLORTERM=truecolor"),
+            "COLORTERM must advertise 24-bit color, saw: {seen:?}"
+        );
+        assert!(
+            seen.contains("NO_COLOR=unset"),
+            "inherited NO_COLOR must not disable terminal color, saw: {seen:?}"
+        );
+        assert!(
+            seen.contains("NODE_DISABLE_COLORS=unset"),
+            "inherited NODE_DISABLE_COLORS must not disable terminal color, saw: {seen:?}"
+        );
+        assert!(
+            seen.contains("CI=unset"),
+            "inherited CI must not mark the PTY as non-interactive, saw: {seen:?}"
+        );
     }
 }
