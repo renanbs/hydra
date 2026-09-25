@@ -674,6 +674,8 @@ export function SidebarShell({
         collapsedGroups,
         projectGroups,
         projectGroupMap,
+        unreadProjects,
+        unreadWorktrees,
         activeProjectMenuId,
         filter,
         displayOptions,
@@ -687,7 +689,7 @@ export function SidebarShell({
         sortWorktreesByOption,
         sortSessionsByOption,
       }),
-    [displayProjects, projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, collapsedGroups, projectGroups, projectGroupMap, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]
+    [displayProjects, projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, collapsedGroups, projectGroups, projectGroupMap, unreadProjects, unreadWorktrees, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]
   );
 
   const getRowHeight = useCallback(
@@ -1014,7 +1016,7 @@ export function SidebarShell({
     const rowStyle: React.CSSProperties = { ...style, left: 0, right: 0, width: "100%" };
 
     if (row.type === "group-header") {
-      const { group, count, isCollapsed } = row;
+      const { group, count, isCollapsed, hasUnread = false } = row;
       const isGroupMenuOpen = activeGroupMenuId === group.id;
       // PR-12 (Orca Project Groups): decorative section header — like status-header it's
       // never keyboard-focusable (getFocusableRowKeys only emits project/worktree/session)
@@ -1029,6 +1031,8 @@ export function SidebarShell({
           >
             <div className="flex items-center gap-2 min-w-0">
               <FolderTree className="w-3.5 h-3.5 shrink-0 text-emerald-400/80" />
+              {/* PR-16: dot agregado — algum membro (projeto/worktree/sessão) tem unread. */}
+              {hasUnread && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread activity in this group" />}
               <span className="truncate text-[12px] font-semibold tracking-tight">{group.name}</span>
               <span className="rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70 shrink-0">
                 {count}
@@ -1168,7 +1172,10 @@ export function SidebarShell({
       const isMain = wt.path === proj.path;
       const wtSessions = sessions.filter((s) => s.project_path === wt.path || (!s.project_path && isMain));
       return (
-        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-6">
+        // PR-16 (gap 2, Orca parity): um tree-step de padding-only (pl-4 = 16px,
+        // alinha a surface do card com o ícone do project-header) em vez de
+        // px-2 pl-6 + ml-2 + border-l (45px de conteúdo + trilho fragmentado).
+        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-4">
           <div
             draggable={true}
             onDragStart={(e) => handleWorktreeDragStart(e, wt.path)}
@@ -1181,7 +1188,7 @@ export function SidebarShell({
               e.stopPropagation();
               onWorktreeContextMenu?.(e, wt, proj);
             }}
-            className={`group relative ${compactCards ? "py-1.5 px-2 text-[11px]" : "p-2.5"} rounded-lg cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground flex items-center justify-between transition-all ml-2 border-l border-worktree-sidebar-border pl-3 ${
+            className={`group relative ${compactCards ? "py-1.5 px-2 text-[11px]" : "p-2.5"} rounded-lg cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground flex items-center justify-between transition-all border border-transparent ${
               draggedWorktreePath === wt.path ? "opacity-30" : ""
             } ${focusedWorktreePath === wt.path ? "border-indigo-500/50 ring-indigo-500/20 bg-worktree-sidebar-accent/30" : ""}`}
           >
@@ -1210,7 +1217,10 @@ export function SidebarShell({
     if (row.type === "session") {
       const { session, proj, isNested } = row;
       const isActiveProject = proj.path === activeProject?.path;
-      const indentClass = isNested ? "ml-8 pl-2 border-l border-worktree-sidebar-border/40" : "ml-6 pl-2 border-l border-worktree-sidebar-border";
+      // PR-16 (gap 2): padding-only — as trilhas border-l por linha eram fragmentos
+      // desalinhados; nested (sob worktree) dá um tree-step a mais que o card (~18px
+      // Orca ⇒ pl-9), órfã/solta alinha com o worktree (pl-4).
+      const indentClass = isNested ? "pl-9" : "pl-4";
       // Orca/manual parity: orphan session block sits below a hairline separator, after the
       // worktree lanes. In the flat viewport each row is its own container, so only the
       // first orphan of a consecutive run carries the divider.
@@ -1273,12 +1283,12 @@ export function SidebarShell({
     if (row.type === "hidden-pill") {
       const { hiddenCount } = row;
       return (
-        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-6">
+        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-4">
           <button
             onClick={() => {
               setDisplayOptions({ groupBy: "repo", sortBy: "agent-activity", hideSleeping: false, hideDefaultBranch: false, hideAutomationCreated: false, hideCliCreated: false, hideDetachedHead: false });
             }}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-worktree-sidebar-border bg-worktree-sidebar-accent/30 text-[10px] font-medium text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/50 hover:border-worktree-sidebar-border transition cursor-pointer ml-2"
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-worktree-sidebar-border bg-worktree-sidebar-accent/30 text-[10px] font-medium text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/50 hover:border-worktree-sidebar-border transition cursor-pointer"
             title="Clear filters to show hidden worktrees"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
@@ -1291,8 +1301,8 @@ export function SidebarShell({
 
     if (row.type === "empty") {
       return (
-        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-6">
-          <div className="py-2 px-2 text-[11px] text-neutral-600 italic ml-2 border-l border-worktree-sidebar-border pl-3">No active worktrees in this project.</div>
+        <div style={rowStyle} {...ariaAttributes} className="px-2 pl-4">
+          <div className="py-2 px-2 text-[11px] text-neutral-600 italic">No active worktrees in this project.</div>
         </div>
       );
     }

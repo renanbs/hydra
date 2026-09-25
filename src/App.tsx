@@ -204,6 +204,24 @@ function sanitizeSidebarPrefsSnapshot(input: unknown): SidebarPrefsSnapshot {
   return out;
 }
 
+/**
+ * Lê apenas as coleções de grupos legadas (PR-16 gap 1): usado pela recuperação
+ * dirigida quando a migração one-shot já marcou a flag mas as chaves
+ * hydra:project_groups / hydra:project_group_map ficaram órfãs no localStorage.
+ */
+function readLegacyProjectGroupsRaw(): Record<string, unknown> {
+  const raw: Record<string, unknown> = {};
+  const readInto = (storageKey: string, field: string) => {
+    try {
+      const value = localStorage.getItem(storageKey);
+      if (value !== null) raw[field] = JSON.parse(value);
+    } catch {}
+  };
+  readInto("hydra:project_groups", "projectGroups");
+  readInto("hydra:project_group_map", "projectGroupMap");
+  return raw;
+}
+
 /** Lê as chaves legadas de localStorage como um blob cru (pré-migração). */
 function readLegacySidebarPrefsRaw(): Record<string, unknown> {
   const raw: Record<string, unknown> = {};
@@ -600,6 +618,37 @@ export default function App() {
           // valor migrado do localStorage (mesma leitura dos readers antigos).
           stored = { ...sanitizeSidebarPrefsSnapshot(readLegacySidebarPrefsRaw()), ...stored };
         }
+        // PR-16 (gap 1): recuperação dirigida de grupos. A migração one-shot pode ter
+        // rodado num build anterior à entrada das chaves de grupo na lista de migração
+        // (ou com a flag setada por um build intermediário), deixando
+        // hydra:project_groups / hydra:project_group_map órfãs no localStorage — o
+        // header do grupo ("MalhaClub Dev" etc.) nunca renderiza porque o blob do
+        // SQLite não tem as coleções. Se o blob stored está sem grupos e o
+        // localStorage ainda guarda dados válidos, fazemos o merge aqui; o flush
+        // direto abaixo persiste o blob merged (shape intacto) no SQLite e só então
+        // aposenta as duas chaves legadas.
+        let recoveredLegacyGroups = false;
+        if (migrated) {
+          const storedHasGroups =
+            (stored.projectGroups?.length ?? 0) > 0 ||
+            Object.keys(stored.projectGroupMap ?? {}).length > 0;
+          if (!storedHasGroups) {
+            const legacyGroups = sanitizeSidebarPrefsSnapshot(readLegacyProjectGroupsRaw());
+            const legacyGroupCount = legacyGroups.projectGroups?.length ?? 0;
+            const legacyMappingCount = Object.keys(legacyGroups.projectGroupMap ?? {}).length;
+            if (legacyGroupCount > 0 || legacyMappingCount > 0) {
+              stored = { ...stored };
+              if (legacyGroups.projectGroups) stored.projectGroups = legacyGroups.projectGroups;
+              if (legacyGroups.projectGroupMap) stored.projectGroupMap = legacyGroups.projectGroupMap;
+              recoveredLegacyGroups = true;
+              // Feedback explícito de migração (uma vez por boot): grupos legados
+              // recuperados mesmo com os demais campos em defaults.
+              console.info(
+                `[sidebar] PR-16: recuperados ${legacyGroupCount} grupo(s) e ${legacyMappingCount} mapeamento(s) de projeto do localStorage legado para as prefs SQLite`
+              );
+            }
+          }
+        }
         const merged = stored;
         // Fast-forward do ref ANTES de liberar a gate: qualquer change posterior
         // (Effects acima ou do Shell) faz merge sobre o blob hidratado.
@@ -618,12 +667,18 @@ export default function App() {
         // escrita da migração e normaliza blobs parciais legados do próprio SQLite.
         invoke("save_sidebar_pref", { key: SIDEBAR_PREFS_KEY, json: JSON.stringify(merged) })
           .then(() => {
-            if (migrated) return;
             // Só aposenta o localStorage depois que o SQLite confirmou a escrita —
             // se o save falhar, o próximo boot retenta a migração intacta.
             try {
-              for (const legacyKey of LEGACY_SIDEBAR_PREF_KEYS) localStorage.removeItem(legacyKey);
-              localStorage.setItem(SIDEBAR_PREFS_MIGRATED_KEY, "1");
+              if (!migrated) {
+                for (const legacyKey of LEGACY_SIDEBAR_PREF_KEYS) localStorage.removeItem(legacyKey);
+                localStorage.setItem(SIDEBAR_PREFS_MIGRATED_KEY, "1");
+              } else if (recoveredLegacyGroups) {
+                // Recuperação dirigida (PR-16): aposenta só as duas coleções de
+                // grupos — as demais chaves legadas já foram removidas antes.
+                localStorage.removeItem("hydra:project_groups");
+                localStorage.removeItem("hydra:project_group_map");
+              }
             } catch {}
           })
           .catch(() => {});

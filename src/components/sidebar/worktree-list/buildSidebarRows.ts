@@ -230,15 +230,29 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
     emittedGroups.add(group.id);
     const members = displayProjects.filter((p) => projectGroupMap[p.id] === group.id);
     // count = total sessions in the group, deduped by id — a session can belong to two
-    // projects (nested paths) and the chip must not double-count it.
+    // projects (nested paths) and the chip must not double-count it. Na mesma passada
+    // (PR-16): hasUnread agrega o unread de cada membro — projeto (unreadProjects),
+    // worktree (path) ou sessão (id) em unreadWorktrees — para o dot do header; a
+    // agregação roda mesmo com o grupo colapsado (membros fora da tela).
     const sessionIds = new Set<string>();
+    let hasUnread = false;
+    const unreadProjects = input.unreadProjects;
+    const unreadWorktrees = input.unreadWorktrees;
     for (const member of members) {
-      for (const s of sessionsOfProject(input, member, member.path === activeProject?.path)) {
+      const memberIsActive = member.path === activeProject?.path;
+      if (unreadProjects?.has(member.id)) hasUnread = true;
+      if (unreadWorktrees && unreadWorktrees.size > 0) {
+        for (const wt of getWorktreesForProject(member)) {
+          if (unreadWorktrees.has(wt.path)) { hasUnread = true; break; }
+        }
+      }
+      for (const s of sessionsOfProject(input, member, memberIsActive)) {
         sessionIds.add(s.id);
+        if (unreadWorktrees?.has(s.id)) hasUnread = true;
       }
     }
     const isCollapsed = input.collapsedGroups?.has(group.id) ?? group.isCollapsed ?? false;
-    rows.push({ type: "group-header", group, count: sessionIds.size, isCollapsed });
+    rows.push({ type: "group-header", group, count: sessionIds.size, isCollapsed, hasUnread });
     if (isCollapsed) continue;
     for (const member of members) emitProject(member, true);
   }
