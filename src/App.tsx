@@ -32,6 +32,7 @@ import { CommandPalette } from "./components/CommandPalette";
 import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
+import { DeleteWorktreeDialog, type DeleteWorktreeDialogState } from "./components/DeleteWorktreeDialog";
 import { 
   Copy,
   ClipboardPaste,
@@ -327,6 +328,16 @@ export default function App() {
     y: number;
     items: ContextMenuItem[];
   } | null>(null);
+
+  // Orca parity: dedicated DeleteWorktreeDialog state (openModal('delete-worktree')).
+  const [deleteWorktreeModal, setDeleteWorktreeModal] = useState<{
+    repoPath: string;
+    worktrees: GitWorktreeInfo[];
+    error: string | null;
+  } | null>(null);
+  const [deleteStateByWorktreeId, setDeleteStateByWorktreeId] = useState<DeleteWorktreeDialogState>({});
+  const [dirtyChangeCountsByWorktreeId, setDirtyChangeCountsByWorktreeId] = useState<Record<string, number | null>>({});
+
 
   // PR-14: pinned/unread/groups migraram do localStorage para o SQLite
   // (sidebar_prefs, key "ui.sidebar"). Defaults até a hidratação assíncrona
@@ -1430,15 +1441,42 @@ export default function App() {
       }
     }
     if (!repoPath) return;
-    invoke("delete_worktree", {
-      repoPath,
-      worktreePath: wt.path,
-    })
-      .then(() => {
-        refreshGitWorktrees(repoPath);
-      })
-      .catch(console.error);
+    // Orca parity (runWorktreeDelete): resolve the target, then open the
+    // dedicated DeleteWorktreeDialog — never window.confirm. skipConfirm only
+    // bypasses the dialog when the user explicitly opted in (and Orca still
+    // shows it for lineage children; Hydra has no lineage batch yet).
+    if (hydraSettings.skip_delete_worktree_confirm) {
+      setDeleteWorktreeModal(null);
+      invoke("delete_worktree", { repoPath, worktreePath: wt.path })
+        .then(() => refreshGitWorktrees(repoPath))
+        .catch((err) => {
+          console.error("delete_worktree failed:", err);
+          setDeleteWorktreeModal({ repoPath, worktrees: [wt], error: String(err) });
+        });
+      return;
+    }
+    setDeleteWorktreeModal({ repoPath, worktrees: [wt], error: null });
   };
+
+  // Orca parity (useDeleteWorktreeStatusHydration): hydrate dirty-change counts
+  // for the dialog targets when it opens.
+  useEffect(() => {
+    if (!deleteWorktreeModal) return;
+    for (const wt of deleteWorktreeModal.worktrees) {
+      invoke<{ unstaged_count: number; untracked_count: number; staged_count: number }>(
+        "get_detailed_git_status_cmd",
+        { repoPath: wt.path }
+      )
+        .then((res) => {
+          const dirty = (res?.unstaged_count ?? 0) + (res?.untracked_count ?? 0) + (res?.staged_count ?? 0);
+          setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [wt.path]: dirty }));
+        })
+        .catch(() => {
+          setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [wt.path]: null }));
+        });
+    }
+  }, [deleteWorktreeModal]);
+
 
   const handleCreatedWorkspace = (worktreePath: string, branchName: string, agentName: string, executable: string) => {
     if (activeProject) refreshGitWorktrees(activeProject.path);
@@ -2907,6 +2945,35 @@ export default function App() {
 
       {/* Mobile Companion Pairing Modal */}
       <PairingModal isOpen={isPairingOpen} onClose={() => setIsPairingOpen(false)} />
+
+      {/* Orca parity: dedicated DeleteWorktreeDialog (NOT window.confirm) */}
+      <DeleteWorktreeDialog
+        open={deleteWorktreeModal != null}
+        worktrees={deleteWorktreeModal?.worktrees ?? []}
+        isMainWorktree={deleteWorktreeModal?.worktrees.some((w) => w.path === deleteWorktreeModal?.repoPath) ?? false}
+        deleteStateByWorktreeId={deleteStateByWorktreeId}
+        dirtyChangeCountsByWorktreeId={dirtyChangeCountsByWorktreeId}
+        onPersistSkipConfirmPreference={() => {
+          const next = { ...hydraSettings, skip_delete_worktree_confirm: true } as HydraSettings;
+          setHydraSettings(next);
+          invoke("save_settings", { settings: next }).catch(console.error);
+        }}
+        onClose={() => setDeleteWorktreeModal(null)}
+        onDeleted={(deletedPaths) => {
+          if (deleteWorktreeModal) refreshGitWorktrees(deleteWorktreeModal.repoPath);
+          // Orca parity: purge renderer state for deleted rows.
+          setDeleteStateByWorktreeId((prev) => {
+            const next = { ...prev };
+            for (const p of deletedPaths) delete next[p];
+            return next;
+          });
+        }}
+        onForceDeleted={() => {
+          if (deleteWorktreeModal) refreshGitWorktrees(deleteWorktreeModal.repoPath);
+        }}
+        repoPath={deleteWorktreeModal?.repoPath ?? ""}
+      />
+
 
       {/* Settings Modal */}
       <SettingsModal 

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -676,25 +676,86 @@ pub fn create_git_worktree(params: CreateWorktreeParams) -> Result<String, Strin
 }
 
 pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), String> {
-    let repo = PathBuf::from(repo_path);
-    let target_repo = if repo.join(".git").exists() {
-        repo
+    // Orca parity (remove-registered-local-worktree): resolve the repo that owns
+    // the worktree canonically. `git rev-parse --git-common-dir` from the
+    // worktree directory works for nested repos at ANY depth — a first-level
+    // scan of repo_path fails for multi-level layouts (e.g. repo inside
+    // repo/worktrees) and made every delete fail with "not a git repository".
+    let wt = PathBuf::from(worktree_path);
+    let canonical = if wt.join(".git").exists() {
+        Some(wt.clone())
     } else {
-        let mut found = None;
-        if let Ok(entries) = std::fs::read_dir(&repo) {
-            for entry in entries.flatten() {
-                let p = entry.path();
-                if p.is_dir() && p.join(".git").exists() {
-                    found = Some(p);
-                    break;
-                }
+        // Path spelling mismatch (trailing slash, symlink, ../): try the
+        // canonical absolute path git recorded for it.
+        let out = Command::new("git")
+            .args(["worktree", "list", "--porcelain"])
+            .current_dir(repo_path)
+            .output()
+            .ok();
+        out.and_then(|o| {
+            if o.status.success() {
+                let stdout = String::from_utf8_lossy(&o.stdout);
+                parse_worktree_porcelain(&stdout)
+                    .into_iter()
+                    .map(|info| PathBuf::from(&info.path))
+                    .find(|p| *p == wt || p.file_name() == wt.file_name())
+            } else {
+                None
             }
-        }
-        found.unwrap_or(repo)
+        })
     };
 
+    let target_repo = match &canonical {
+        Some(c) => {
+            let out = Command::new("git")
+                .args(["rev-parse", "--git-common-dir"])
+                .current_dir(c)
+                .output()
+                .map_err(|e| format!("Failed to resolve git common dir: {e}"))?;
+            if !out.status.success() {
+                return Err(format!(
+                    "Failed to resolve git common dir: {}",
+                    String::from_utf8_lossy(&out.stderr).trim()
+                ));
+            }
+            let common = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            let common_path = PathBuf::from(&common);
+            let abs = if common_path.is_absolute() {
+                common_path
+            } else {
+                c.join(common_path)
+            };
+            // git-common-dir points at <repo>/.git — the repo root is its parent.
+            abs.parent().map(|p| p.to_path_buf()).unwrap_or_else(|| c.clone())
+        }
+        None => {
+            // Fallback: deepest .git owner under repo_path (legacy behavior).
+            let repo = PathBuf::from(repo_path);
+            if repo.join(".git").exists() {
+                repo
+            } else {
+                let mut found = repo.clone();
+                let mut candidates: Vec<PathBuf> = Vec::new();
+                collect_git_repos(&repo, &mut candidates, 4);
+                // Prefer the deepest repo containing the worktree path.
+                candidates.sort_by_key(|p| std::cmp::Reverse(p.components().count()));
+                for c in candidates {
+                    if worktree_path.starts_with(&c.to_string_lossy().to_string()) {
+                        found = c;
+                        break;
+                    }
+                }
+                found
+            }
+        }
+    };
+
+    let wt_for_git = canonical
+        .map(|c| c.to_string_lossy().to_string())
+        .unwrap_or_else(|| worktree_path.to_string());
+
     let out = Command::new("git")
-        .args(["worktree", "remove", "--force", worktree_path])
+        .args(["worktree", "remove", "--force", &wt_for_git])
         .current_dir(&target_repo)
         .output()
         .map_err(|e| format!("Failed to remove git worktree: {e}"))?;
@@ -703,6 +764,24 @@ pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), S
         Ok(())
     } else {
         Err(String::from_utf8_lossy(&out.stderr).to_string())
+    }
+}
+
+/// Recursively collects directories owning a `.git` entry up to `max_depth`.
+fn collect_git_repos(dir: &Path, out: &mut Vec<PathBuf>, max_depth: u32) {
+    if max_depth == 0 {
+        return;
+    }
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let p = entry.path();
+            if p.is_dir() {
+                if p.join(".git").exists() {
+                    out.push(p.clone());
+                }
+                collect_git_repos(&p, out, max_depth - 1);
+            }
+        }
     }
 }
 
