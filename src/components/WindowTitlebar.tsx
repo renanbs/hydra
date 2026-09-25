@@ -72,6 +72,13 @@ interface WindowTitlebarProps {
   isRightOpen: boolean;
   leftWidth?: number;
   leftStyle?: React.CSSProperties;
+  /**
+   * Orca titlebar-left parity (AppWorkspaceShell): the header must track in-flight
+   * drag resizes of the left sidebar. The committed `leftWidth` prop only updates on
+   * mouseup, so the resize hook's draft callback writes `style.width` into this ref
+   * imperatively — no re-render per rAF frame.
+   */
+  leftRef?: React.RefObject<HTMLDivElement | null>;
   onToggleLeft: () => void;
   onToggleRight: () => void;
 }
@@ -81,6 +88,7 @@ export function WindowTitlebar({
   isRightOpen,
   leftWidth,
   leftStyle,
+  leftRef,
   onToggleLeft,
   onToggleRight,
 }: WindowTitlebarProps) {
@@ -95,10 +103,11 @@ export function WindowTitlebar({
       {/* Left Column Header: Matches Orca .titlebar-left when open */}
       {isLeftOpen ? (
         <div
+          ref={leftRef}
           data-tauri-drag-region
           style={{ width: leftWidth ? `${leftWidth}px` : undefined, ...leftStyle }}
           onMouseDown={handleDragMouseDown}
-          className="h-9 flex items-center gap-2 px-3 shrink-0 border-r border-worktree-sidebar-border border-b border-worktree-sidebar-border bg-worktree-sidebar text-worktree-sidebar-foreground select-none relative z-20 cursor-default"
+          className="h-9 flex items-center gap-2 px-3 shrink-0 border-r border-worktree-sidebar-border bg-worktree-sidebar text-worktree-sidebar-foreground select-none relative z-20 cursor-default shadow-[inset_0_-1px_0_var(--border)]"
         >
           <button
             onMouseDown={(e) => e.stopPropagation()}

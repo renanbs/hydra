@@ -1,5 +1,5 @@
 import { useState, useId, useEffect } from "react";
-import { Bell, FolderPlus } from "lucide-react";
+import { Bell, FolderPlus, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 type SidebarHeaderProps = {
@@ -47,10 +47,10 @@ export function SidebarHeader({
   const activityLabel = agentsViewActive ? "Turn off activity view" : "View activity";
 
   return (
-    <div className="mt-2 flex h-7 min-w-0 items-center justify-between gap-1.5 px-2">
+    <div className="mt-2 flex h-8 min-w-0 items-center justify-between gap-1.5 px-2">
       <div className="flex min-w-0 items-center gap-1">
         <span
-          className="min-w-0 truncate select-none pl-2 pr-0.5 text-xs font-semibold text-worktree-sidebar-foreground/70 tracking-wider uppercase"
+          className="min-w-0 truncate select-none pl-2 pr-0.5 text-[11px] font-semibold uppercase tracking-wider text-worktree-sidebar-foreground/70"
           data-sidebar-section-title="projects"
         >
           {sidebarTitle}
@@ -62,7 +62,8 @@ export function SidebarHeader({
           <button
             type="button"
             className={cn(
-              "p-1 rounded transition cursor-pointer",
+              "inline-flex size-6 items-center justify-center rounded-md transition-all outline-none cursor-pointer",
+              "focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50",
               "text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60",
               agentsViewActive && "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground"
             )}
@@ -71,7 +72,7 @@ export function SidebarHeader({
             onClick={() => setSidebarBody(agentsViewActive ? "workspaces" : "agents")}
             title={activityLabel}
           >
-            <Bell className="w-3.5 h-3.5" strokeWidth={2.25} />
+            <Bell className="size-3.5" strokeWidth={2.25} />
           </button>
         </span>
 
@@ -80,41 +81,44 @@ export function SidebarHeader({
             {/* Orca SidebarWorkspaceOptionsMenu Trigger com ref */}
             <button
               ref={optionsButtonRef}
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setOptionsMenuOpen(!optionsMenuOpen);
               }}
               title="Workspace display options"
-              className={`p-1 rounded transition cursor-pointer ${
+              aria-label="Workspace display options"
+              aria-haspopup="menu"
+              aria-expanded={optionsMenuOpen}
+              className={cn(
+                "inline-flex size-6 items-center justify-center rounded-md transition-all outline-none cursor-pointer",
+                "focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50",
                 optionsMenuOpen
                   ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground"
                   : "text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60"
-              }`}
+              )}
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="21" x2="4" y2="14"></line>
-                <line x1="4" y1="10" x2="4" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12" y2="3"></line>
-                <line x1="20" y1="21" x2="20" y2="16"></line>
-                <line x1="20" y1="12" x2="20" y2="3"></line>
-                <line x1="1" y1="14" x2="7" y2="14"></line>
-                <line x1="9" y1="8" x2="15" y2="8"></line>
-                <line x1="17" y1="16" x2="23" y2="16"></line>
-              </svg>
+              <SlidersHorizontal className="size-3.5" strokeWidth={2.25} />
             </button>
 
             <button
+              type="button"
               onClick={onOpenAddRepoDialog}
               title="Add project (Folder / Clone)"
-              className="p-1 rounded text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 transition cursor-pointer"
+              aria-label="Add project (Folder / Clone)"
+              className={cn(
+                "inline-flex size-6 items-center justify-center rounded-md transition-all outline-none cursor-pointer",
+                "focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50",
+                "text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60"
+              )}
             >
-              <FolderPlus className="w-3.5 h-3.5" />
+              <FolderPlus className="size-3.5" strokeWidth={2.25} />
             </button>
           </>
         )}
 
         <button
+          type="button"
           onClick={() => {
             if (projects.length > 0) {
               onOpenNewWorkspaceModal(projects[0]);
@@ -123,12 +127,14 @@ export function SidebarHeader({
             }
           }}
           title="New workspace (Mod+N)"
-          className="p-1 rounded text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 transition cursor-pointer"
+          aria-label="New workspace (Mod+N)"
+          className={cn(
+            "inline-flex size-6 items-center justify-center rounded-md transition-all outline-none cursor-pointer",
+            "focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50",
+            "text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60"
+          )}
         >
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          <Plus className="size-3.5" strokeWidth={2.25} />
         </button>
 
         {/* Intro Popover for Agents view */}
@@ -141,9 +147,7 @@ export function SidebarHeader({
           >
             <div className="space-y-2.5">
               <div className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+                <Sparkles className="size-4 shrink-0 text-emerald-400" aria-hidden="true" />
                 <h3 id={introTitleId} className="text-sm font-semibold text-worktree-sidebar-foreground">
                   Agents are easier to find
                 </h3>

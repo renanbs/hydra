@@ -5,11 +5,13 @@ import {
   GitBranch, 
   CalendarClock, 
   SquareTerminal, 
-  GitCommitHorizontal
+  GitCommitHorizontal,
+  Search,
+  X
 } from "lucide-react";
 import type { HydraProject } from "./WorktreeSidebar";
 
-export type GroupByMode = "none" | "workspace-status" | "pr-status" | "repo";
+export type GroupByMode = "none" | "workspace-status" | "repo";
 
 export interface WorkspaceDisplayOptions {
   groupBy: GroupByMode;
@@ -40,6 +42,7 @@ export function WorkspaceOptionsMenu({
   onOptionsChange,
 }: WorkspaceOptionsMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const projectSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
   const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | null>(null);
   const [projectSearch, setProjectSearch] = useState("");
@@ -108,6 +111,20 @@ export function WorkspaceOptionsMenu({
     });
   };
 
+  // Orca SidebarRepositoryFilterSection.getProjectFilterVisibilityLabel: o label do
+  // submenu "Show → Projects" reflete o filtro ativo — "All projects" sem sufixo,
+  // o nome do projeto quando só um está selecionado, ou "N projects". Derivado de
+  // `projects` para ids obsoletos (projeto removido) não inflarem a contagem.
+  const selectedFilterProjects = options.filterProjectIds?.length
+    ? projects.filter((p) => options.filterProjectIds!.includes(p.id))
+    : [];
+  const projectFilterLabel =
+    selectedFilterProjects.length === 0
+      ? "All projects"
+      : selectedFilterProjects.length === 1
+        ? selectedFilterProjects[0].name
+        : `${selectedFilterProjects.length} projects`;
+
   return (
     <div
       ref={menuRef}
@@ -134,14 +151,19 @@ export function WorkspaceOptionsMenu({
               <span>Projects</span>
             </div>
             <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-              <span>All projects ({projects.length})</span>
+              <span>{projectFilterLabel}</span>
               <ChevronRight className="w-3 h-3 text-muted-foreground" />
             </span>
           </div>
           {openSubmenu === "show" && (
             <div className="absolute left-full top-0 ml-1 w-64 rounded-lg border border-border bg-popover p-1 shadow-xl z-10 max-h-80 overflow-hidden flex flex-col">
               <div className="flex items-center justify-between px-2 py-1">
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase">Projects - {options.filterProjectIds?.length ? options.filterProjectIds.length : projects.length}</span>
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                  Projects
+                  {selectedFilterProjects.length > 0 && (
+                    <span className="ml-1.5 font-medium text-foreground normal-case">· {selectedFilterProjects.length}</span>
+                  )}
+                </span>
                 {options.filterProjectIds?.length ? (
                   <button
                     onClick={() => onOptionsChange({ ...options, filterProjectIds: [] })}
@@ -177,16 +199,42 @@ export function WorkspaceOptionsMenu({
               <div className="px-1 py-1">
                 <div className="relative">
                   <input
+                    ref={projectSearchInputRef}
+                    autoFocus
                     type="text"
                     value={projectSearch}
                     onChange={(e) => setProjectSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      // Orca SidebarFilter pattern: Escape clears a non-empty query
+                      // first (keeps the menu open); an empty query lets the menu's
+                      // own window-level Escape close run.
+                      if (e.key === "Escape" && projectSearch) {
+                        e.stopPropagation();
+                        setProjectSearch("");
+                      }
+                    }}
                     placeholder="Add project..."
-                    className="w-full bg-muted/50 border border-border rounded-md pl-7 pr-2 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full bg-muted/50 border border-border rounded-md pl-7 pr-6 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="absolute left-2 top-1.5 text-muted-foreground">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                  <span className="absolute left-2 top-1.5 text-muted-foreground pointer-events-none">
+                    <Search className="w-3 h-3" />
                   </span>
+                  {projectSearch ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setProjectSearch("");
+                        projectSearchInputRef.current?.focus();
+                      }}
+                      aria-label="Clear project search"
+                      title="Clear project search"
+                      className="absolute right-1.5 top-1 inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  ) : null}
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto max-h-48 space-y-0.5 px-1">
@@ -232,11 +280,10 @@ export function WorkspaceOptionsMenu({
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Group by
         </div>
-        <div className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
+        <div className="grid grid-cols-3 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
           {[
             { id: "none", label: "None" },
             { id: "workspace-status", label: "Status" },
-            { id: "pr-status", label: "PR" },
             { id: "repo", label: "Project" },
           ].map((item) => {
             const isSelected = options.groupBy === item.id;

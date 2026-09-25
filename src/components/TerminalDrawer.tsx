@@ -13,6 +13,10 @@ import {
 } from "../lib/terminal-theme";
 import { resolveTerminalFontWeights } from "../shared/terminal-fonts";
 import { createTerminalTuiMouseWheelDistanceState, normalizeTerminalTuiMouseWheelMultiplier, resolveTerminalTuiMouseWheelReportCount } from "../lib/terminal-tui-wheel";
+import {
+  createTerminalPixelSizeQueryResponder,
+  installTerminalCapabilityReplyHandlers,
+} from "./terminal-pane/terminal-capability-replies";
 
 export interface TerminalContextActions {
   getSelection: () => string;
@@ -251,6 +255,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     const theme = buildXtermTheme(s);
     const weights = s ? resolveTerminalFontWeights(s.terminal_font_weight, s.terminal_font_weight_bold) : { fontWeight: 500, fontWeightBold: 700 };
     const term = new Terminal({
+      allowProposedApi: true,
       cursorBlink: s?.terminal_cursor_blink ?? true,
       fontSize: s?.terminal_font_size ?? 14,
       fontFamily: buildFontFamily(s?.terminal_font_family ?? "'JetBrains Mono', 'Fira Code', monospace"),
@@ -317,9 +322,29 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
 
     doFitAndSync();
     xtermRef.current = term;
-    term.onData((data) => {
+    // Orca pty-input-forward + terminal-capability-replies: answer DA1 / OSC
+    // color / pixel-size queries as the parser sees them. Replaying recorded
+    // bytes must not leak those replies onto a fresh shell. Live bytes are not replay.
+    let replaying = false;
+    const sendInput = (data: string): void => {
+      if (replaying || !data) return;
       invoke("send_terminal_input", { sessionId, input: data }).catch(console.error);
+    };
+    term.onData((data) => {
+      sendInput(data);
     });
+    const capabilityReplies = installTerminalCapabilityReplyHandlers({
+      terminal: term,
+      parser: term.parser,
+      sendInput,
+      isReplaying: () => replaying,
+    });
+    const respondToPixelSizeQueries = createTerminalPixelSizeQueryResponder(term, sendInput);
+    const writeLive = (data: string): void => {
+      if (!data) return;
+      respondToPixelSizeQueries(data);
+      term.write(data);
+    };
     // Copy on Select — Orca Trim Gutter faithfull: strip common indent if enabled
     try {
       (term as unknown as { onSelectionChange?: (cb: ()=>void)=>void }).onSelectionChange?.(() => {
@@ -385,13 +410,42 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
       });
     } catch {}
     const shellArgs = executable === "bash" ? ["--noprofile", "--norc"] : [];
-    invoke("start_agent_terminal", { sessionId, executable, cwd: cwd || null, args: shellArgs })
-      .then(() => invoke<{ session_id: string; formatted: string; clean_text: string }>("get_terminal_snapshot", { sessionId }))
-      .then((snapshot) => { if (snapshot && snapshot.formatted) { term.write(snapshot.formatted); (term as unknown as Record<string,unknown>)._lastCleanText = snapshot.clean_text; } try { term.focus(); } catch {} })
-      .catch(console.error);
+    // Claude Code colors its logo only after the host answers CSI c (device
+    // attributes). That query is not in the vt100 snapshot, and the first
+    // terminal:output burst can fire before this listener is subscribed, so
+    // replay the raw PTY backlog once — it still contains the query.
+    let live = false;
+    const queued: string[] = [];
     const unlistenPromise = listen<{ session_id: string; output: string }>("terminal:output", (event) => {
-      if (event.payload.session_id === sessionId) term.write(event.payload.output);
+      if (event.payload.session_id !== sessionId) return;
+      if (live) writeLive(event.payload.output);
+      else queued.push(event.payload.output);
     });
+    void (async () => {
+      try {
+        await unlistenPromise;
+        await invoke("start_agent_terminal", { sessionId, executable, cwd: cwd || null, args: shellArgs });
+        const polled = await invoke<{ data?: string }>("poll_terminal_output", { sessionId, offset: 0 });
+        const raw = polled?.data ?? "";
+        const buffered = queued.splice(0).join("");
+        if (raw) writeLive(raw);
+        if (buffered.startsWith(raw)) {
+          const rest = buffered.slice(raw.length);
+          if (rest) writeLive(rest);
+        } else if (buffered && !raw.endsWith(buffered)) {
+          writeLive(buffered);
+        }
+        live = true;
+        const late = queued.splice(0).join("");
+        if (late) writeLive(late);
+        try { term.focus(); } catch {}
+      } catch (err) {
+        live = true;
+        const late = queued.splice(0).join("");
+        if (late) writeLive(late);
+        console.error(err);
+      }
+    })();
 
     const resizeObserver = new ResizeObserver(() => {
       doFitAndSync();
@@ -405,6 +459,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
       window.removeEventListener("resize", doFitAndSync);
       resizeObserver.disconnect();
       unlistenPromise.then((unlisten) => unlisten());
+      capabilityReplies.dispose();
       try { (webglAddonRef.current as unknown as { dispose?: ()=>void })?.dispose?.(); } catch {}
       try { (imageAddonRef.current as unknown as { dispose?: ()=>void })?.dispose?.(); } catch {}
       try { (ligaturesAddonRef.current as unknown as { dispose?: ()=>void })?.dispose?.(); } catch {}

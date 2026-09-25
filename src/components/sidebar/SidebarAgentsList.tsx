@@ -2,6 +2,19 @@ import { useMemo, useState, useCallback, useEffect } from "react";
 import { List } from "react-window";
 import { AgentBrandIcon } from "../AgentIcon";
 import { WorktreeSession } from "./WorktreeSidebar";
+import type { AgentsGroupBy, AgentsStatusFilter } from "./types";
+import { IDLE, resolveSessionAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
+
+// Session record → smart-attention input, field-for-field parity with the adapter in
+// SidebarShell (hasLivePty: the daemon holds the PTY for the lifetime of the session
+// record, so a listed session is live). Module scope: pure adapter, no closures over
+// component state — the memoized comparator below captures it safely across renders.
+const sessionInput = (s: WorktreeSession): SessionAttentionInput => ({
+  state: s.state,
+  stateStartedAt: s.state_started_at,
+  lastActivityAt: s.updated_at ?? s.created_at ?? undefined,
+  hasLivePty: true,
+});
 
 type SidebarAgentsListProps = {
   sessions: WorktreeSession[];
@@ -12,6 +25,11 @@ type SidebarAgentsListProps = {
   onSelectNextSession?: (direction: "up" | "down") => void;
   onSelectPrevSession?: (direction: "up" | "down") => void;
   isModalOpen?: boolean;
+  // PR-14: controlled pelo SidebarShell — App persiste no blob "ui.sidebar".
+  groupBy: AgentsGroupBy;
+  onGroupByChange: (groupBy: AgentsGroupBy) => void;
+  statusFilter: AgentsStatusFilter;
+  onStatusFilterChange: (filter: AgentsStatusFilter) => void;
 };
 
 export function SidebarAgentsList({
@@ -23,10 +41,12 @@ export function SidebarAgentsList({
   onSelectNextSession,
   onSelectPrevSession,
   isModalOpen = false,
+  groupBy,
+  onGroupByChange,
+  statusFilter,
+  onStatusFilterChange,
 }: SidebarAgentsListProps) {
   const [filter, setFilter] = useState("");
-  const [groupBy, setGroupBy] = useState<"state" | "project">("state");
-  const [statusFilter, setStatusFilter] = useState<"all" | "blocked" | "working" | "idle">("all");
   const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
   const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
 
@@ -60,6 +80,25 @@ export function SidebarAgentsList({
 
   // Group sessions
   const groupedSessions = useMemo(() => {
+    // Orca smart-sort parity (same comparator as SidebarShell.sortSessionsByOption):
+    // attention class ASC (needs-you first), attentionTimestamp DESC, recency DESC.
+    // resolveSessionAttention owns the per-class timestamp chain
+    // (state_started_at ?? updated_at ?? created_at); idle resolves to ts 0 and falls
+    // through to the recency tiebreak. One resolution per session — the sort itself
+    // stays O(n log n) map lookups, no resolver calls inside the comparator.
+    const now = Date.now();
+    const attentionById = new Map<string, SessionAttention>();
+    for (const s of filteredSessions) {
+      attentionById.set(s.id, resolveSessionAttention(sessionInput(s), now));
+    }
+    const compareByAttention = (a: WorktreeSession, b: WorktreeSession) => {
+      const aa = attentionById.get(a.id) ?? IDLE;
+      const bb = attentionById.get(b.id) ?? IDLE;
+      if (aa.cls !== bb.cls) return aa.cls - bb.cls;
+      if (aa.attentionTimestamp !== bb.attentionTimestamp) return bb.attentionTimestamp - aa.attentionTimestamp;
+      return (b.updated_at ?? b.created_at ?? 0) - (a.updated_at ?? a.created_at ?? 0);
+    };
+
     if (groupBy === "project") {
       const groups: Record<string, WorktreeSession[]> = {};
       for (const session of filteredSessions) {
@@ -70,26 +109,34 @@ export function SidebarAgentsList({
       return Object.entries(groups).map(([projectName, sessions]) => ({
         label: projectName,
         state: "project" as const,
-        sessions,
+        // Buckets are memo-local — in-place sort never touches filteredSessions.
+        sessions: sessions.sort(compareByAttention),
       }));
     }
 
-    // Group by state: blocked > working > idle
-    const stateOrder: Array<"blocked" | "working" | "idle" | "unknown"> = [
+    // Group by state, in attention order (Orca smart-sort class order): needs-you first.
+    const stateOrder: Array<"blocked" | "waiting" | "working" | "done" | "idle" | "unknown"> = [
       "blocked",
+      "waiting",
       "working",
+      "done",
       "idle",
       "unknown",
     ];
     const stateGroups: Record<string, WorktreeSession[]> = {
       blocked: [],
+      waiting: [],
       working: [],
+      done: [],
       idle: [],
       unknown: [],
     };
 
     for (const session of filteredSessions) {
-      stateGroups[session.state].push(session);
+      // Wire safety: a legacy daemon can emit a string outside the six-state union
+      // (App.tsx casts it unchecked). Land it in the neutral `unknown` group instead
+      // of crashing on a missing key.
+      (stateGroups[session.state] ?? stateGroups.unknown).push(session);
     }
 
     return stateOrder
@@ -98,13 +145,18 @@ export function SidebarAgentsList({
         label:
           state === "blocked"
             ? "Blocked"
+            : state === "waiting"
+            ? "Waiting"
             : state === "working"
             ? "Working"
+            : state === "done"
+            ? "Done"
             : state === "idle"
             ? "Idle"
             : "Unknown",
-        state: state as "blocked" | "working" | "idle" | "unknown",
-        sessions: stateGroups[state],
+        state: state as "blocked" | "waiting" | "working" | "done" | "idle" | "unknown",
+        // Buckets are memo-local — in-place sort never touches filteredSessions.
+        sessions: stateGroups[state].sort(compareByAttention),
       }));
   }, [filteredSessions, groupBy, getProjectName]);
 
@@ -146,8 +198,12 @@ export function SidebarAgentsList({
                 className={`inline-flex size-3 shrink-0 items-center justify-center ${
                   row.state === "blocked"
                     ? "bg-red-400/20 text-red-400"
+                    : row.state === "waiting"
+                    ? "bg-orange-400/20 text-orange-400"
                     : row.state === "working"
                     ? "bg-amber-400/20 text-amber-400"
+                    : row.state === "done"
+                    ? "bg-blue-400/20 text-blue-400"
                     : row.state === "idle"
                     ? "bg-emerald-400/20 text-emerald-400"
                     : "bg-neutral-700 text-neutral-400"
@@ -217,13 +273,17 @@ export function SidebarAgentsList({
     );
   };
 
-  // State badge colors
+  // State badge colors (waiting/done arrive via the Herdr PR-6 wire contract)
   const getStateBadge = (state: WorktreeSession["state"]) => {
     switch (state) {
       case "working":
         return "bg-amber-400 animate-pulse";
       case "blocked":
         return "bg-red-400 ring-2 ring-red-500/30";
+      case "waiting":
+        return "bg-orange-400 animate-pulse";
+      case "done":
+        return "bg-blue-400";
       case "idle":
         return "bg-emerald-400";
       default:
@@ -237,6 +297,10 @@ export function SidebarAgentsList({
         return "Working";
       case "blocked":
         return "Blocked";
+      case "waiting":
+        return "Waiting";
+      case "done":
+        return "Done";
       case "idle":
         return "Idle";
       default:
@@ -300,13 +364,15 @@ export function SidebarAgentsList({
             [
               { value: "all", label: "All" },
               { value: "blocked", label: "Blocked" },
+              { value: "waiting", label: "Waiting" },
               { value: "working", label: "Working" },
+              { value: "done", label: "Done" },
               { value: "idle", label: "Idle" },
             ] as const
           ).map(({ value, label }) => (
             <button
               key={value}
-              onClick={() => setStatusFilter(value)}
+              onClick={() => onStatusFilterChange(value)}
               className={`flex shrink-0 items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition ${
                 statusFilter === value
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
@@ -321,6 +387,10 @@ export function SidebarAgentsList({
                       ? "bg-amber-400"
                       : value === "blocked"
                       ? "bg-red-400"
+                      : value === "waiting"
+                      ? "bg-orange-400"
+                      : value === "done"
+                      ? "bg-blue-400"
                       : "bg-emerald-400"
                   }`}
                 />
@@ -335,7 +405,7 @@ export function SidebarAgentsList({
           <span className="shrink-0">Group by:</span>
           <div className="flex items-center gap-0.5 bg-worktree-sidebar-accent/50 rounded-md p-0.5">
             <button
-              onClick={() => setGroupBy("state")}
+              onClick={() => onGroupByChange("state")}
               className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
                 groupBy === "state"
                   ? "bg-worktree-sidebar text-worktree-sidebar-foreground shadow-xs"
@@ -346,7 +416,7 @@ export function SidebarAgentsList({
               State
             </button>
             <button
-              onClick={() => setGroupBy("project")}
+              onClick={() => onGroupByChange("project")}
               className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
                 groupBy === "project"
                   ? "bg-worktree-sidebar text-worktree-sidebar-foreground shadow-xs"
@@ -385,8 +455,12 @@ export function SidebarAgentsList({
                     className={`inline-flex size-3 shrink-0 items-center justify-center ${
                       group.state === "blocked"
                         ? "bg-red-400/20 text-red-400"
+                        : group.state === "waiting"
+                        ? "bg-orange-400/20 text-orange-400"
                         : group.state === "working"
                         ? "bg-amber-400/20 text-amber-400"
+                        : group.state === "done"
+                        ? "bg-blue-400/20 text-blue-400"
                         : group.state === "idle"
                         ? "bg-emerald-400/20 text-emerald-400"
                         : "bg-neutral-700 text-neutral-400"
