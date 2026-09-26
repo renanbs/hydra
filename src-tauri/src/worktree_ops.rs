@@ -110,6 +110,21 @@ fn build_known_orca_workspace_layouts(
             });
         }
     }
+    let home = crate::db::user_home_dir();
+    let orca_ws = home.join("orca").join("workspaces");
+    if orca_ws.exists() {
+        layouts.push(OrcaWorkspaceLayout {
+            path: orca_ws.to_string_lossy().to_string(),
+            nest_workspaces: true,
+        });
+    }
+    let hydra_ws = home.join(".config").join("hydra").join("workspaces");
+    if hydra_ws.exists() {
+        layouts.push(OrcaWorkspaceLayout {
+            path: hydra_ws.to_string_lossy().to_string(),
+            nest_workspaces: true,
+        });
+    }
     // Dedup by normalized path + nest flag
     let mut seen = std::collections::HashSet::new();
     layouts.retain(|l| {
@@ -261,7 +276,7 @@ fn classify_worktree_ownership(
     if can_classify_as_external(worktree_path, known_layouts) {
         return WorktreeOwnership::External;
     }
-    WorktreeOwnership::UnknownLegacy
+    WorktreeOwnership::External
 }
 
 /// Executa `git worktree list --porcelain` no repositório ativo ou varre sub-repositórios em folder workspaces
@@ -505,8 +520,7 @@ fn list_git_worktrees_with_context(
         let ownership = classify_worktree_ownership(&wt.path, checkout_path, &checkout_paths, &merged_bases, &known_layouts);
         match ownership {
             WorktreeOwnership::AgentScratch => continue,
-            WorktreeOwnership::UnknownLegacy => continue,
-            WorktreeOwnership::External => {
+            WorktreeOwnership::UnknownLegacy | WorktreeOwnership::External => {
                 let is_imported = imported_worktrees.iter().any(|imp| {
                     normalize_runtime_path_for_comparison(imp) == normalize_runtime_path_for_comparison(&wt.path)
                 });
@@ -522,7 +536,7 @@ fn list_git_worktrees_with_context(
                         hidden.push(wt.clone());
                     }
                 } else {
-                    filtered.push(wt.clone());
+                    hidden.push(wt.clone());
                 }
             }
         }
@@ -1005,7 +1019,7 @@ branch refs/heads/feat/auth\n";
         let cls_outside = classify_worktree_ownership(&wt_outside.path, repo_path, &[repo_path.to_string()], &configured, &known);
         assert_eq!(cls_nested, WorktreeOwnership::External);
         assert_eq!(cls_scratch, WorktreeOwnership::AgentScratch);
-        assert_eq!(cls_outside, WorktreeOwnership::UnknownLegacy);
+        assert_eq!(cls_outside, WorktreeOwnership::External);
 
         // Configured base suppresses scratch classification
         let configured2 = vec!["/home/user/src/my-repo/.claude/worktrees".to_string()];
