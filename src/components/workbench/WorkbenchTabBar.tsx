@@ -42,6 +42,22 @@ export interface DetectedAgent {
   executable: string;
   is_installed: boolean;
 }
+
+/** Upper bound on how long a close may wait on the agent-state probe before it asks
+ *  instead. An X button that looks dead for longer is the same class of bug as one
+ *  that never asks — but an unanswered probe is not evidence of an idle shell, so
+ *  the timeout raises the prompt rather than closing a possibly-running tab
+ *  (Orca running-terminal-close-guard.ts #10142). */
+export const RUNNING_CLOSE_PROBE_TIMEOUT_MS = 4_000;
+
+/** Plain shells get the 'command' copy ("Stop running command?"); anything else is a
+ *  launched AI agent and gets the 'agent' copy ("Stop this agent?"). Mirrors Orca's
+ *  resolveBusyPtyCloseCopyKind, keyed on the tab's executable instead of a remote map. */
+export const SHELL_EXECUTABLES: Record<string, true> = {
+  bash: true, sh: true, zsh: true, fish: true, dash: true, ksh: true, csh: true,
+  tcsh: true, pwsh: true, powershell: true, cmd: true,
+};
+
 interface WorkbenchTabBarProps {
   tabs: TabItem[];
   activeTabId: string;

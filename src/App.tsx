@@ -21,7 +21,12 @@ import {
 } from "./components/sidebar/WorktreeSidebar";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
 import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
-import { WorkbenchTabBar, type TabItem, type SplitPane } from "./components/workbench/WorkbenchTabBar";
+import { WorkbenchTabBar, type TabItem, type SplitPane, RUNNING_CLOSE_PROBE_TIMEOUT_MS, SHELL_EXECUTABLES } from "./components/workbench/WorkbenchTabBar";
+import {
+  RunningTerminalCloseDialog,
+  type RunningTerminalCloseConfirmRequest,
+  type CloseTerminalDialogCopyKind,
+} from "./components/RunningTerminalCloseDialog";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal } from "./components/SettingsModal";
@@ -413,6 +418,28 @@ export default function App() {
   activeTabIdRef.current = activeTabId;
   // Sprint 2 P0: focused pane per tab (sessionId)
   const [focusedPaneMap, setFocusedPaneMap] = useState<Record<string, string>>({});
+
+  // Orca running-terminal-close parity: pending confirmation for closing a terminal
+  // tab whose shell still has a running child process. `onConfirm` performs the
+  // original close (executeCloseTab). Store-less: Hydra has no zustand, so the
+  // request lives in App state next to the sibling deleteWorktreeModal.
+  const [runningTerminalCloseConfirm, setRunningTerminalCloseConfirm] =
+    useState<RunningTerminalCloseConfirmRequest | null>(null);
+  const handleRunningTerminalCloseConfirm = (dontAskAgain: boolean) => {
+    const request = runningTerminalCloseConfirm;
+    setRunningTerminalCloseConfirm(null);
+    if (!request) return;
+    if (dontAskAgain) {
+      // Orca parity: "Don't ask again" persists the opt-out, then performs this close.
+      const next = {
+        ...hydraSettings,
+        skip_close_terminal_with_running_process_confirm: true,
+      } as HydraSettings;
+      setHydraSettings(next);
+      invoke("save_settings", { settings: next }).catch(console.error);
+    }
+    request.onConfirm();
+  };
 
   // ---- Sprint 2 P0: Split Terminal Helpers ----
   const getPanesForTab = useCallback((tab: TabItem): SplitPane[] => {
@@ -1736,7 +1763,9 @@ export default function App() {
     }
   }, [activeProject]);
 
-  const handleCloseTab = useCallback((id: string) => {
+  /** The original close — kills PTYs, clears state. Runs immediately for idle tabs
+   *  and after the running-process confirmation. */
+  const executeCloseTab = useCallback((id: string) => {
     const closingTab = tabsRef.current.find((t) => t.id === id);
     if (closingTab) {
       const panes = getPanesForTab(closingTab);
@@ -1772,6 +1801,75 @@ export default function App() {
       return rest;
     });
   }, [getPanesForTab]);
+
+  const handleCloseTab = useCallback((id: string) => {
+    const closingTab = tabsRef.current.find((t) => t.id === id);
+    // Orca running-terminal-close-guard parity: an interactive user close with a live
+    // child process asks before killing. Probes each owned session's Herdr state via
+    // check_agent_state with a 4s deadline (a dead probe is not evidence of an idle
+    // shell — it raises the prompt instead of closing a possibly-running tab).
+    if (closingTab) {
+      const panes = getPanesForTab(closingTab);
+      const probeSessionIds = panes
+        .map((p) => p.sessionId)
+        .filter((s): s is string => Boolean(s));
+      if (
+        probeSessionIds.length > 0 &&
+        !hydraSettings.skip_close_terminal_with_running_process_confirm
+      ) {
+        let decided = false;
+        const performImmediateClose = (): void => {
+          if (decided) return;
+          decided = true;
+          executeCloseTab(id);
+        };
+        const confirmClose = (): void => {
+          if (decided) return;
+          decided = true;
+          const executable = panes[0]?.executable ?? closingTab.executable ?? "";
+          // Orca copy-kind: agent tabs (launched AI agents) ask "Stop Agent?",
+          // plain shells ask "Stop running command?".
+          const copyKind: CloseTerminalDialogCopyKind =
+            closingTab.title.includes("(active)") || (executable !== "" && !SHELL_EXECUTABLES[executable])
+              ? "agent"
+              : "command";
+          setRunningTerminalCloseConfirm({
+            terminalTabId: id,
+            tabLabel: closingTab.title,
+            copyKind,
+            onConfirm: () => {
+              executeCloseTab(id);
+            },
+            onCancel: () => {
+              setRunningTerminalCloseConfirm(null);
+            },
+          });
+        };
+        let deadline: ReturnType<typeof setTimeout> | undefined;
+        const probeOnce = (sessionId: string): Promise<string | null> =>
+          Promise.race([
+            invoke<string>("check_agent_state", { sessionId }).catch(() => null),
+            new Promise<null>((resolve) => {
+              deadline = setTimeout(() => resolve(null), RUNNING_CLOSE_PROBE_TIMEOUT_MS);
+            }),
+          ]);
+        void Promise.all(probeSessionIds.map(probeOnce))
+          .then((states) => {
+            if (decided) return;
+            // Unknown (probe error/timeout) is not idle: ask, so a degraded snapshot
+            // costs a click instead of a killed command.
+            const hasLive = states.some((s) => s === "working" || s === "blocked" || s === "waiting");
+            const hasUnknown = states.some((s) => s === null || s === "unknown");
+            if (hasLive || hasUnknown) confirmClose();
+            else performImmediateClose();
+          })
+          .catch(() => performImmediateClose())
+          .finally(() => clearTimeout(deadline));
+        return;
+      }
+    }
+    executeCloseTab(id);
+  }, [executeCloseTab, getPanesForTab, hydraSettings.skip_close_terminal_with_running_process_confirm]);
 
   const handleCloseTabsToRight = (id: string) => {
     // cleanup sessions for tabs being closed
@@ -2945,6 +3043,14 @@ export default function App() {
 
       {/* Mobile Companion Pairing Modal */}
       <PairingModal isOpen={isPairingOpen} onClose={() => setIsPairingOpen(false)} />
+
+      {/* Orca parity: running-terminal close confirmation for tab-level closes with a
+          live child process (tab-strip X, middle-click, tab menu, keyboard). */}
+      <RunningTerminalCloseDialog
+        request={runningTerminalCloseConfirm}
+        onConfirm={handleRunningTerminalCloseConfirm}
+        onCancel={() => setRunningTerminalCloseConfirm(null)}
+      />
 
       {/* Orca parity: dedicated DeleteWorktreeDialog (NOT window.confirm) */}
       <DeleteWorktreeDialog
