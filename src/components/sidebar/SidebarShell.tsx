@@ -38,7 +38,7 @@ import {
   setSidebarPointerDragDocumentStyles,
   updateSidebarDragPreviewPosition,
 } from "./worktree-list/pointer-drag-dom";
-import type { SidebarRow, SidebarStatusState } from "./worktree-list/types";
+import type { SidebarRow, SidebarStatusState, ProjectGroup } from "./worktree-list/types";
 import { getFocusableRowKeys, resolveCycledFocusKey } from "./worktree-list/keyboard-cycle";
 import {
   HARD_SCROLL_UP,
@@ -178,8 +178,10 @@ export function SidebarShell({
   // initial* props (one-shot); os writes locais sobem via onSidebarPrefsChange.
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
-  const [activeProjectMenuId, setActiveProjectMenuId] = useState<string | null>(null);
-  const [activeGroupMenuId, setActiveGroupMenuId] = useState<string | null>(null);
+  const [activeProjectMenu, setActiveProjectMenu] = useState<{ proj: HydraProject; x: number; y: number } | null>(null);
+  const [activeGroupMenu, setActiveGroupMenu] = useState<{ group: ProjectGroup; x: number; y: number } | null>(null);
+  const activeProjectMenuId = activeProjectMenu?.proj.id ?? null;
+  const activeGroupMenuId = activeGroupMenu?.group.id ?? null;
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
   const [sidebarBody, setSidebarBody] = useState<"workspaces" | "agents">("workspaces");
   // PR-14: agents-view prefs lifted de SidebarAgentsList (agora controlado) para
@@ -690,8 +692,8 @@ export function SidebarShell({
 
   useEffect(() => {
     const handleClickOutside = () => {
-      setActiveProjectMenuId(null);
-      setActiveGroupMenuId(null);
+      setActiveProjectMenu(null);
+      setActiveGroupMenu(null);
     };
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
@@ -1139,51 +1141,18 @@ export function SidebarShell({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveGroupMenuId(isGroupMenuOpen ? null : group.id);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setActiveGroupMenu((prev) =>
+                      prev?.group.id === group.id
+                        ? null
+                        : { group, x: rect.right, y: rect.bottom + 4 }
+                    );
                   }}
                   title="Group actions"
                   className={`p-1 rounded transition cursor-pointer ${isGroupMenuOpen ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
                 >
                   <MoreHorizontal className="w-3.5 h-3.5" />
                 </button>
-                {isGroupMenuOpen && (
-                  <div className="absolute right-0 top-7 w-48 rounded-xl bg-popover border border-border p-1.5 shadow-2xl z-50 text-xs space-y-0.5 text-popover-foreground" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => {
-                        setActiveGroupMenuId(null);
-                        setGroupNameDialog({
-                          open: true,
-                          title: "Rename Project Group",
-                          description: "Enter a new name for this project group.",
-                          initialName: group.name,
-                          confirmLabel: "Save",
-                          onSubmit: (name) => {
-                            window.dispatchEvent(
-                              new CustomEvent("hydra:rename-project-group", {
-                                detail: { id: group.id, name },
-                              })
-                            );
-                          },
-                        });
-                      }}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
-                    >
-                      <Pencil className="w-3.5 h-3.5 text-neutral-400" /><span className="text-[11px]">Rename Group</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveGroupMenuId(null);
-                        setGroupDeleteDialog({
-                          open: true,
-                          group,
-                        });
-                      }}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /><span className="text-[11px]">Delete Group</span>
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -1242,92 +1211,18 @@ export function SidebarShell({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveProjectMenuId(isMenuOpen ? null : proj.id);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setActiveProjectMenu((prev) =>
+                      prev?.proj.id === proj.id
+                        ? null
+                        : { proj, x: rect.right, y: rect.bottom + 4 }
+                    );
                   }}
                   title="Project actions"
                   className={`p-1 rounded transition cursor-pointer ${isMenuOpen ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
                 >
                   <MoreHorizontal className="w-3.5 h-3.5" />
                 </button>
-                {isMenuOpen && (
-                  <div className="absolute right-0 top-7 w-56 rounded-xl bg-popover border border-border p-1.5 shadow-2xl z-50 text-xs space-y-0.5 text-popover-foreground" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => { setActiveProjectMenuId(null); onOpenSettings(); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-muted text-popover-foreground text-left transition cursor-pointer"><Sliders className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-[11px]">Project Settings</span></button>
-                    <button onClick={async () => { setActiveProjectMenuId(null); const cur = (proj.worktree_base_path ?? "") as string; const input = window.prompt("Worktree base path (relative to project or absolute).\nEx: .worktrees  ou  /home/you/src/worktrees\nLeave empty to use global workspaceDir:", cur); if (input === null) return; const trimmed = input.trim(); try { await invoke("set_project_worktree_base", { path: proj.path, basePath: trimmed ? trimmed : null }); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } catch (e) { console.error(e); } }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><FolderTree className="w-3.5 h-3.5 text-emerald-400" /><span className="text-[11px]">Worktree Base: {proj.worktree_base_path || "global"}</span></button>
-                    <button onClick={() => { setActiveProjectMenuId(null); navigator.clipboard.writeText(proj.path); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><Copy className="w-3.5 h-3.5 text-neutral-400" /><span className="text-[11px]">Copy Project Path</span></button>
-                    <button onClick={() => { setActiveProjectMenuId(null); onOpenNewWorkspaceModal(proj); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><FolderTree className="w-3.5 h-3.5 text-neutral-400" /><span className="text-[11px]">New Worktree from Project</span></button>
-                    <div className="h-px bg-border my-1" />
-                    <button
-                      onClick={() => {
-                        setActiveProjectMenuId(null);
-                        setGroupNameDialog({
-                          open: true,
-                          title: "New Project Group",
-                          description: "Create a group to organize projects in your sidebar.",
-                          initialName: `${proj.name} group`,
-                          confirmLabel: "Create Group",
-                          onSubmit: (name) => {
-                            window.dispatchEvent(
-                              new CustomEvent("hydra:create-project-group", {
-                                detail: { name, projectId: proj.id },
-                              })
-                            );
-                          },
-                        });
-                      }}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
-                    >
-                      <FolderPlus className="w-3.5 h-3.5 text-neutral-400" />
-                      <span className="text-[11px]">New group from project</span>
-                    </button>
-                    {projectGroups && projectGroups.length > 0 && (
-                      <div className="pt-0.5 pb-0.5">
-                        <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-                          Move to group
-                        </div>
-                        {projectGroups.map((g) => (
-                          <button
-                            key={g.id}
-                            disabled={projectGroupMap?.[proj.id] === g.id}
-                            onClick={() => {
-                              setActiveProjectMenuId(null);
-                              window.dispatchEvent(
-                                new CustomEvent("hydra:move-project-to-group", {
-                                  detail: { projectId: proj.id, groupId: g.id },
-                                })
-                              );
-                            }}
-                            className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-lg text-left text-[11px] transition ${
-                              projectGroupMap?.[proj.id] === g.id
-                                ? "opacity-40 cursor-default"
-                                : "hover:bg-neutral-800 text-neutral-300 cursor-pointer"
-                            }`}
-                          >
-                            <FolderInput className="w-3 h-3 text-neutral-400" />
-                            <span className="truncate">{g.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {projectGroupMap?.[proj.id] && (
-                      <button
-                        onClick={() => {
-                          setActiveProjectMenuId(null);
-                          window.dispatchEvent(
-                            new CustomEvent("hydra:remove-project-from-group", {
-                              detail: { projectId: proj.id },
-                            })
-                          );
-                        }}
-                        className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5 text-neutral-400" />
-                        <span className="text-[11px]">Remove from group</span>
-                      </button>
-                    )}
-                    <div className="h-px bg-border my-1" />
-                    <button onClick={() => { setActiveProjectMenuId(null); onRemoveProject(proj); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /><span className="text-[11px]">Remove Project</span></button>
-                  </div>
-                )}
               </div>
               <button onClick={() => { onSelectProject(proj); onOpenNewWorkspaceModal(proj); }} title={`New workspace for ${proj.name}`} className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"><Plus className="w-3.5 h-3.5 text-emerald-400" /></button>
             </div>
@@ -1704,6 +1599,238 @@ export function SidebarShell({
           }
         }}
       />
+
+      {/* Fixed Floating Menus — 100% opaque bg-[#141518], z-[99999] outside virtualized viewport */}
+      {activeGroupMenu && (
+        <>
+          <div
+            className="fixed inset-0 z-[99998]"
+            onClick={() => setActiveGroupMenu(null)}
+            onContextMenu={(e) => { e.preventDefault(); setActiveGroupMenu(null); }}
+          />
+          <div
+            style={{
+              position: "fixed",
+              top: Math.min(window.innerHeight - 150, activeGroupMenu.y),
+              left: Math.max(10, Math.min(window.innerWidth - 210, activeGroupMenu.x - 192)),
+              zIndex: 99999,
+            }}
+            className="w-48 rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl p-1.5 text-xs space-y-0.5 text-neutral-200 select-none animate-in fade-in-0 zoom-in-95 duration-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                const group = activeGroupMenu.group;
+                setActiveGroupMenu(null);
+                setGroupNameDialog({
+                  open: true,
+                  title: "Rename Project Group",
+                  description: "Enter a new name for this project group.",
+                  initialName: group.name,
+                  confirmLabel: "Save",
+                  onSubmit: (name) => {
+                    window.dispatchEvent(
+                      new CustomEvent("hydra:rename-project-group", {
+                        detail: { id: group.id, name },
+                      })
+                    );
+                  },
+                });
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+            >
+              <Pencil className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-[11px]">Rename Group</span>
+            </button>
+            <button
+              onClick={() => {
+                const group = activeGroupMenu.group;
+                setActiveGroupMenu(null);
+                setGroupDeleteDialog({
+                  open: true,
+                  group,
+                });
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="text-[11px]">Delete Group</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {activeProjectMenu && (
+        <>
+          <div
+            className="fixed inset-0 z-[99998]"
+            onClick={() => setActiveProjectMenu(null)}
+            onContextMenu={(e) => { e.preventDefault(); setActiveProjectMenu(null); }}
+          />
+          <div
+            style={{
+              position: "fixed",
+              top: Math.min(window.innerHeight - 340, activeProjectMenu.y),
+              left: Math.max(10, Math.min(window.innerWidth - 240, activeProjectMenu.x - 224)),
+              zIndex: 99999,
+            }}
+            className="w-56 rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl p-1.5 text-xs space-y-0.5 text-neutral-200 select-none max-h-[80vh] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setActiveProjectMenu(null);
+                onOpenSettings();
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+            >
+              <Sliders className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-[11px]">Project Settings</span>
+            </button>
+            <button
+              onClick={async () => {
+                const proj = activeProjectMenu.proj;
+                setActiveProjectMenu(null);
+                const cur = (proj.worktree_base_path ?? "") as string;
+                const input = window.prompt(
+                  "Worktree base path (relative to project or absolute).\nEx: .worktrees  ou  /home/you/src/worktrees\nLeave empty to use global workspaceDir:",
+                  cur
+                );
+                if (input === null) return;
+                const trimmed = input.trim();
+                try {
+                  await invoke("set_project_worktree_base", {
+                    path: proj.path,
+                    basePath: trimmed ? trimmed : null,
+                  });
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+            >
+              <FolderTree className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-[11px]">Configured Base Path...</span>
+            </button>
+            <button
+              onClick={() => {
+                const proj = activeProjectMenu.proj;
+                setActiveProjectMenu(null);
+                navigator.clipboard.writeText(proj.path);
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+            >
+              <Copy className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-[11px]">Copy Project Path</span>
+            </button>
+            <button
+              onClick={() => {
+                const proj = activeProjectMenu.proj;
+                setActiveProjectMenu(null);
+                onOpenNewWorkspaceModal(proj);
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+            >
+              <FolderTree className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-[11px]">New Worktree from Project</span>
+            </button>
+
+            <div className="h-px bg-neutral-800 my-1" />
+
+            <button
+              onClick={() => {
+                const proj = activeProjectMenu.proj;
+                setActiveProjectMenu(null);
+                setGroupNameDialog({
+                  open: true,
+                  title: "New Project Group",
+                  description: "Create a group to organize projects in your sidebar.",
+                  initialName: `${proj.name} group`,
+                  confirmLabel: "Create Group",
+                  onSubmit: (name) => {
+                    window.dispatchEvent(
+                      new CustomEvent("hydra:create-project-group", {
+                        detail: { name, projectId: proj.id },
+                      })
+                    );
+                  },
+                });
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+            >
+              <FolderPlus className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-[11px]">New group from project</span>
+            </button>
+
+            {projectGroups && projectGroups.length > 0 && (
+              <div className="pt-0.5 pb-0.5">
+                <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                  Move to group
+                </div>
+                {projectGroups.map((g) => {
+                  const proj = activeProjectMenu.proj;
+                  const isCur = projectGroupMap?.[proj.id] === g.id;
+                  return (
+                    <button
+                      key={g.id}
+                      disabled={isCur}
+                      onClick={() => {
+                        setActiveProjectMenu(null);
+                        window.dispatchEvent(
+                          new CustomEvent("hydra:move-project-to-group", {
+                            detail: { projectId: proj.id, groupId: g.id },
+                          })
+                        );
+                      }}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-lg text-left text-[11px] transition ${
+                        isCur
+                          ? "opacity-40 cursor-default text-neutral-500"
+                          : "hover:bg-neutral-800 text-neutral-300 cursor-pointer"
+                      }`}
+                    >
+                      <FolderInput className="w-3 h-3 text-neutral-400 shrink-0" />
+                      <span className="truncate">{g.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {projectGroupMap?.[activeProjectMenu.proj.id] && (
+              <button
+                onClick={() => {
+                  const proj = activeProjectMenu.proj;
+                  setActiveProjectMenu(null);
+                  window.dispatchEvent(
+                    new CustomEvent("hydra:remove-project-from-group", {
+                      detail: { projectId: proj.id },
+                    })
+                  );
+                }}
+                className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5 text-neutral-400" />
+                <span className="text-[11px]">Remove from group</span>
+              </button>
+            )}
+
+            <div className="h-px bg-neutral-800 my-1" />
+
+            <button
+              onClick={() => {
+                const proj = activeProjectMenu.proj;
+                setActiveProjectMenu(null);
+                onRemoveProject(proj);
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="text-[11px]">Remove Project</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
