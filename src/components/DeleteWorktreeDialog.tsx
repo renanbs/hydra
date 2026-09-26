@@ -42,6 +42,8 @@ export function DeleteWorktreeDialog({
   repoPath,
 }: DeleteWorktreeDialogProps) {
   const [dontAskAgain, setDontAskAgain] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [isDeletingLocal, setIsDeletingLocal] = useState(false);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   const isBatchDelete = worktrees.length > 1;
@@ -49,9 +51,10 @@ export function DeleteWorktreeDialog({
     () => worktrees.map((wt) => deleteStateByWorktreeId[wt.path] ?? null),
     [deleteStateByWorktreeId, worktrees]
   );
-  const isDeleting = deleteStates.some((s) => s?.isDeleting);
+  const isDeleting = isDeletingLocal || deleteStates.some((s) => s?.isDeleting);
   const firstError = !isBatchDelete ? (deleteStates[0]?.error ?? null) : null;
-  const canForceDelete = !isBatchDelete && firstError != null;
+  const effectiveError = localError || firstError;
+  const canForceDelete = !isBatchDelete && effectiveError != null;
   const allowSkipConfirm = !isBatchDelete && !isMainWorktree && !canForceDelete;
 
   const label = isDeleting
@@ -63,13 +66,15 @@ export function DeleteWorktreeDialog({
       : canForceDelete
         ? "Force Delete"
         : "Delete Workspace";
-
   // Why: one-shot dialog intent; reset as soon as the dialog closes so a later
   // delete never inherits a cancelled choice (Orca DeleteWorktreeDialog.tsx:186-191).
   useEffect(() => {
-    if (!open && dontAskAgain) setDontAskAgain(false);
+    if (!open) {
+      if (dontAskAgain) setDontAskAgain(false);
+      setLocalError(null);
+      setIsDeletingLocal(false);
+    }
   }, [open, dontAskAgain]);
-
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -90,11 +95,10 @@ export function DeleteWorktreeDialog({
 
   const handleDelete = (force = false) => {
     if (worktrees.length === 0) return;
-    // Why (Orca handleDelete): force-delete is a recovery path after a failed
-    // first delete; "don't ask again" is only persisted on the primary confirm.
     if (dontAskAgain && allowSkipConfirm && !force) onPersistSkipConfirmPreference();
-    // Orca parity: mark all targets deleting up front, run deletes, close the
-    // dialog as soon as deletion begins (the sidebar owns in-progress feedback).
+    setIsDeletingLocal(true);
+    setLocalError(null);
+
     const deletedPaths: string[] = [];
     const failures: { path: string; error: string }[] = [];
     let pending = worktrees.length;
@@ -110,8 +114,13 @@ export function DeleteWorktreeDialog({
         .finally(() => {
           pending -= 1;
           if (pending === 0) {
-            onClose();
-            if (deletedPaths.length > 0) onDeleted(deletedPaths);
+            setIsDeletingLocal(false);
+            if (failures.length === 0) {
+              onClose();
+              if (deletedPaths.length > 0) onDeleted(deletedPaths);
+            } else {
+              setLocalError(failures.map((f) => f.error).join("\n"));
+            }
           }
         });
     }
@@ -163,10 +172,10 @@ export function DeleteWorktreeDialog({
         </div>
 
         {/* Orca DeleteWorktreeWarningPanels parity: error panel */}
-        {firstError && (
+        {effectiveError && (
           <div className="mt-3 p-2.5 rounded bg-red-500/15 border border-red-500/30 text-red-400 text-[11px]">
-            <p className="font-medium mb-1">Previous delete failed:</p>
-            <p className="font-mono break-all whitespace-pre-wrap">{firstError}</p>
+            <p className="font-medium mb-1">Delete failed:</p>
+            <p className="font-mono break-all whitespace-pre-wrap">{effectiveError}</p>
           </div>
         )}
         {isMainWorktree && (

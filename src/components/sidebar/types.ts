@@ -96,7 +96,7 @@ export interface WorktreeSidebarProps {
   onRemoveProject: (proj: HydraProject) => void;
   onSelectSession: (id: string) => void;
   onSelectGitWorktree: (wt: GitWorktreeInfo) => void;
-  onDeleteGitWorktree: (wt: GitWorktreeInfo) => void;
+  onDeleteGitWorktree: (wt: GitWorktreeInfo, proj?: HydraProject) => void;
   onNewSessionWithAgent?: (agent: AvailableAgent) => void;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;

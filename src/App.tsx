@@ -1483,31 +1483,34 @@ export default function App() {
     setActiveTabId(tabId);
   };
 
-  const handleDeleteGitWorktree = (wt: GitWorktreeInfo) => {
-    // Sprint 3: find repo for wt even if inactive project (worktreesByProject multi-project)
-    let repoPath = activeProject?.path ?? "";
-    // try to find owning project via worktreesByProject
-    for (const proj of projectsRef.current) {
-      const list = worktreesByProject[proj.path];
-      if (list && list.some((w) => w.path === wt.path)) {
-        repoPath = proj.path;
-        break;
+  const handleDeleteGitWorktree = (wt: GitWorktreeInfo, owningProj?: HydraProject) => {
+    // If owning project is provided directly and is a git repo, use it!
+    let repoPath = (owningProj && owningProj.is_git) ? owningProj.path : "";
+    if (!repoPath) {
+      for (const proj of projectsRef.current) {
+        if (!proj.is_git) continue;
+        const list = worktreesByProject[proj.path];
+        if (list && list.some((w) => w.path === wt.path)) {
+          repoPath = proj.path;
+          break;
+        }
       }
-      // fallback: wt.path is inside project dir
-      if (wt.path === proj.path || wt.path.startsWith(proj.path + "/")) {
-        // candidate, but prefer exact match above
-        if (!repoPath) repoPath = proj.path;
+      if (!repoPath) {
+        repoPath = owningProj?.path || activeProject?.path || "";
       }
     }
     if (!repoPath) return;
-    // Orca parity (runWorktreeDelete): resolve the target, then open the
-    // dedicated DeleteWorktreeDialog — never window.confirm. skipConfirm only
-    // bypasses the dialog when the user explicitly opted in (and Orca still
-    // shows it for lineage children; Hydra has no lineage batch yet).
+
     if (hydraSettings.skip_delete_worktree_confirm) {
       setDeleteWorktreeModal(null);
       invoke("delete_worktree", { repoPath, worktreePath: wt.path })
-        .then(() => refreshGitWorktrees(repoPath))
+        .then(() => {
+          refreshGitWorktrees(repoPath);
+          if (activeProject && activeProject.path !== repoPath) {
+            refreshGitWorktrees(activeProject.path);
+          }
+          window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+        })
         .catch((err) => {
           console.error("delete_worktree failed:", err);
           setDeleteWorktreeModal({ repoPath, worktrees: [wt], error: String(err) });
@@ -3091,8 +3094,13 @@ export default function App() {
         }}
         onClose={() => setDeleteWorktreeModal(null)}
         onDeleted={(deletedPaths) => {
-          if (deleteWorktreeModal) refreshGitWorktrees(deleteWorktreeModal.repoPath);
-          // Orca parity: purge renderer state for deleted rows.
+          if (deleteWorktreeModal) {
+            refreshGitWorktrees(deleteWorktreeModal.repoPath);
+          }
+          if (activeProject && activeProject.path !== deleteWorktreeModal?.repoPath) {
+            refreshGitWorktrees(activeProject.path);
+          }
+          window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
           setDeleteStateByWorktreeId((prev) => {
             const next = { ...prev };
             for (const p of deletedPaths) delete next[p];
@@ -3100,7 +3108,13 @@ export default function App() {
           });
         }}
         onForceDeleted={() => {
-          if (deleteWorktreeModal) refreshGitWorktrees(deleteWorktreeModal.repoPath);
+          if (deleteWorktreeModal) {
+            refreshGitWorktrees(deleteWorktreeModal.repoPath);
+          }
+          if (activeProject && activeProject.path !== deleteWorktreeModal?.repoPath) {
+            refreshGitWorktrees(activeProject.path);
+          }
+          window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
         repoPath={deleteWorktreeModal?.repoPath ?? ""}
       />

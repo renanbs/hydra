@@ -676,94 +676,166 @@ pub fn create_git_worktree(params: CreateWorktreeParams) -> Result<String, Strin
 }
 
 pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), String> {
-    // Orca parity (remove-registered-local-worktree): resolve the repo that owns
-    // the worktree canonically. `git rev-parse --git-common-dir` from the
-    // worktree directory works for nested repos at ANY depth — a first-level
-    // scan of repo_path fails for multi-level layouts (e.g. repo inside
-    // repo/worktrees) and made every delete fail with "not a git repository".
     let wt = PathBuf::from(worktree_path);
-    let canonical = if wt.join(".git").exists() {
-        Some(wt.clone())
-    } else {
-        // Path spelling mismatch (trailing slash, symlink, ../): try the
-        // canonical absolute path git recorded for it.
-        let out = Command::new("git")
-            .args(["worktree", "list", "--porcelain"])
-            .current_dir(repo_path)
-            .output()
-            .ok();
-        out.and_then(|o| {
-            if o.status.success() {
-                let stdout = String::from_utf8_lossy(&o.stdout);
-                parse_worktree_porcelain(&stdout)
-                    .into_iter()
-                    .map(|info| PathBuf::from(&info.path))
-                    .find(|p| *p == wt || p.file_name() == wt.file_name())
-            } else {
-                None
-            }
-        })
-    };
+    let wt_existed = wt.exists();
 
-    let target_repo = match &canonical {
-        Some(c) => {
-            let out = Command::new("git")
+    // 1. Resolve owning Git repository
+    let mut resolved_repo: Option<PathBuf> = None;
+
+    // Strategy 1: Direct from worktree .git file or directory
+    let git_entry = wt.join(".git");
+    if git_entry.exists() {
+        if git_entry.is_file() {
+            if let Ok(content) = std::fs::read_to_string(&git_entry) {
+                for line in content.lines() {
+                    let trimmed = line.trim();
+                    if let Some(rest) = trimmed.strip_prefix("gitdir:") {
+                        let gd_str = rest.trim();
+                        let gd_path = PathBuf::from(gd_str);
+                        let abs_gd = if gd_path.is_absolute() {
+                            gd_path
+                        } else {
+                            wt.join(gd_path)
+                        };
+                        // abs_gd is typically <repo_root>/.git/worktrees/<name>
+                        if let Some(worktrees_dir) = abs_gd.parent() {
+                            if let Some(dot_git) = worktrees_dir.parent() {
+                                if let Some(repo_root) = dot_git.parent() {
+                                    if repo_root.exists() {
+                                        resolved_repo = Some(repo_root.to_path_buf());
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if resolved_repo.is_none() {
+            // Try `git rev-parse --git-common-dir`
+            if let Ok(out) = Command::new("git")
                 .args(["rev-parse", "--git-common-dir"])
+                .current_dir(&wt)
+                .output()
+            {
+                if out.status.success() {
+                    let common = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                    let common_path = PathBuf::from(&common);
+                    let abs = if common_path.is_absolute() {
+                        common_path
+                    } else {
+                        wt.join(common_path)
+                    };
+                    if let Some(repo_root) = abs.parent() {
+                        resolved_repo = Some(repo_root.to_path_buf());
+                    }
+                }
+            }
+        }
+    }
+
+    // Strategy 2: If repo_path itself is a valid git repository
+    if resolved_repo.is_none() {
+        let candidate_repo = PathBuf::from(repo_path);
+        if candidate_repo.join(".git").exists() {
+            resolved_repo = Some(candidate_repo);
+        }
+    }
+
+    // Strategy 3: If repo_path is a folder workspace (e.g. /code with child repos),
+    // or candidate_repo doesn't have the worktree, find which child repository owns this worktree!
+    let repo_root = PathBuf::from(repo_path);
+    let mut candidates: Vec<PathBuf> = Vec::new();
+    collect_git_repos(&repo_root, &mut candidates, 4);
+
+    if resolved_repo.is_none() || (resolved_repo.is_some() && !resolved_repo.as_ref().unwrap().join(".git").exists()) {
+        for c in &candidates {
+            if let Ok(out) = Command::new("git")
+                .args(["worktree", "list", "--porcelain"])
                 .current_dir(c)
                 .output()
-                .map_err(|e| format!("Failed to resolve git common dir: {e}"))?;
-            if !out.status.success() {
-                return Err(format!(
-                    "Failed to resolve git common dir: {}",
-                    String::from_utf8_lossy(&out.stderr).trim()
-                ));
-            }
-            let common = String::from_utf8_lossy(&out.stdout).trim().to_string();
-            let common_path = PathBuf::from(&common);
-            let abs = if common_path.is_absolute() {
-                common_path
-            } else {
-                c.join(common_path)
-            };
-            // git-common-dir points at <repo>/.git — the repo root is its parent.
-            abs.parent().map(|p| p.to_path_buf()).unwrap_or_else(|| c.clone())
-        }
-        None => {
-            // Fallback: deepest .git owner under repo_path (legacy behavior).
-            let repo = PathBuf::from(repo_path);
-            if repo.join(".git").exists() {
-                repo
-            } else {
-                let mut found = repo.clone();
-                let mut candidates: Vec<PathBuf> = Vec::new();
-                collect_git_repos(&repo, &mut candidates, 4);
-                // Prefer the deepest repo containing the worktree path.
-                candidates.sort_by_key(|p| std::cmp::Reverse(p.components().count()));
-                for c in candidates {
-                    if worktree_path.starts_with(&c.to_string_lossy().to_string()) {
-                        found = c;
+            {
+                if out.status.success() {
+                    let stdout = String::from_utf8_lossy(&out.stdout);
+                    let has_wt = parse_worktree_porcelain(&stdout).into_iter().any(|info| {
+                        normalize_runtime_path_for_comparison(&info.path) == normalize_runtime_path_for_comparison(worktree_path)
+                            || Path::new(&info.path).file_name() == wt.file_name()
+                    });
+                    if has_wt {
+                        resolved_repo = Some(c.clone());
                         break;
                     }
                 }
-                found
             }
         }
-    };
 
-    let wt_for_git = canonical
-        .map(|c| c.to_string_lossy().to_string())
-        .unwrap_or_else(|| worktree_path.to_string());
+        // If still not matched by worktree list, check if worktree_path is inside candidate
+        if resolved_repo.is_none() {
+            for c in &candidates {
+                if normalize_runtime_path_for_comparison(worktree_path).starts_with(&normalize_runtime_path_for_comparison(&c.to_string_lossy())) {
+                    resolved_repo = Some(c.clone());
+                    break;
+                }
+            }
+        }
+    }
 
-    let out = Command::new("git")
-        .args(["worktree", "remove", "--force", &wt_for_git])
-        .current_dir(&target_repo)
-        .output()
-        .map_err(|e| format!("Failed to remove git worktree: {e}"))?;
+    // 2. Perform Removal via Git if target repo was identified
+    let mut git_remove_succeeded = false;
+    let mut git_error: Option<String> = None;
 
-    if out.status.success() {
-        Ok(())
+    if let Some(target) = &resolved_repo {
+        // Run git worktree remove --force <worktree_path>
+        let out = Command::new("git")
+            .args(["worktree", "remove", "--force", worktree_path])
+            .current_dir(target)
+            .output();
+
+        match out {
+            Ok(o) if o.status.success() => {
+                git_remove_succeeded = true;
+            }
+            Ok(o) => {
+                let err_msg = String::from_utf8_lossy(&o.stderr).trim().to_string();
+                git_error = Some(err_msg);
+            }
+            Err(e) => {
+                git_error = Some(e.to_string());
+            }
+        }
+
+        // Run git worktree prune to clean up any prunable / stale metadata
+        let _ = Command::new("git")
+            .args(["worktree", "prune"])
+            .current_dir(target)
+            .output();
     } else {
-        Err(String::from_utf8_lossy(&out.stderr).to_string())
+        // If no target resolved yet, try running prune on all candidates in a folder workspace
+        for c in &candidates {
+            let _ = Command::new("git")
+                .args(["worktree", "prune"])
+                .current_dir(c)
+                .output();
+        }
+    }
+
+    // 3. Guarantee filesystem directory removal (Orca parity)
+    if wt_existed && wt.exists() {
+        if let Err(e) = std::fs::remove_dir_all(&wt) {
+            if e.kind() != std::io::ErrorKind::NotFound {
+                return Err(format!("Failed to delete worktree directory {}: {}", worktree_path, e));
+            }
+        }
+    }
+
+    // If git remove succeeded or the directory is now gone, return Ok(())
+    if git_remove_succeeded || !wt.exists() {
+        Ok(())
+    } else if let Some(err) = git_error {
+        Err(err)
+    } else {
+        Err(format!("Could not find git repository owning worktree {}", worktree_path))
     }
 }
 
@@ -921,5 +993,52 @@ branch refs/heads/feat/auth\n";
         assert_eq!(resolve_configured_worktree_base_paths(repo, Some("/tmp/ws")), vec!["/tmp/ws"]);
         assert!(resolve_configured_worktree_base_paths(repo, None).is_empty());
         assert!(resolve_configured_worktree_base_paths(repo, Some("  ")).is_empty());
+    }
+
+    #[test]
+    fn test_remove_git_worktree_folder_workspace() {
+        let tmp = std::env::temp_dir().join(format!("hydra-test-rm-wt-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        let _ = std::fs::create_dir_all(&tmp);
+
+        // Child repo A
+        let child_a = tmp.join("sub-repo-a");
+        let _ = std::fs::create_dir_all(&child_a);
+        let _ = Command::new("git").args(["init", "-b", "main"]).current_dir(&child_a).output();
+        let _ = Command::new("git").args(["config", "user.name", "Test"]).current_dir(&child_a).output();
+        let _ = Command::new("git").args(["config", "user.email", "test@test.com"]).current_dir(&child_a).output();
+        let _ = std::fs::write(child_a.join("README.md"), "hello");
+        let _ = Command::new("git").args(["add", "."]).current_dir(&child_a).output();
+        let _ = Command::new("git").args(["commit", "-m", "initial"]).current_dir(&child_a).output();
+
+        // Create worktree under folder workspace .worktrees/
+        let wt_dir = tmp.join(".worktrees").join("workspace-1754");
+        let _ = std::fs::create_dir_all(tmp.join(".worktrees"));
+        let add_out = Command::new("git")
+            .args(["worktree", "add", "-b", "feature/test-1754", wt_dir.to_str().unwrap()])
+            .current_dir(&child_a)
+            .output()
+            .expect("git worktree add");
+        assert!(add_out.status.success(), "worktree add must succeed");
+        assert!(wt_dir.exists(), "worktree directory must exist on disk");
+
+        // Now remove using the parent folder workspace path (which has NO .git!)
+        let folder_ws_str = tmp.to_str().unwrap();
+        let wt_str = wt_dir.to_str().unwrap();
+        let rm_res = remove_git_worktree(folder_ws_str, wt_str);
+        assert!(rm_res.is_ok(), "remove_git_worktree must succeed even when repo_path is folder workspace: {:?}", rm_res);
+
+        // Verify directory is deleted from disk
+        assert!(!wt_dir.exists(), "worktree directory must be removed from disk");
+
+        // Verify git worktree list in child_a no longer contains workspace-1754
+        let list_out = Command::new("git")
+            .args(["worktree", "list", "--porcelain"])
+            .current_dir(&child_a)
+            .output()
+            .expect("git worktree list");
+        let stdout = String::from_utf8_lossy(&list_out.stdout);
+        assert!(!stdout.contains("workspace-1754"), "worktree must be unregistered in git");
+
+        let _ = std::fs::remove_dir_all(&tmp);
     }
 }

@@ -1376,7 +1376,7 @@ export function SidebarShell({
               {wt.status && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-900/30 border border-red-800/50 text-red-400 shrink-0" title={wt.status}>{wt.status}</span>}
             </div>
             {!isMain && (
-              <button onClick={(e) => { e.stopPropagation(); onDeleteGitWorktree(wt); }} title="Delete worktree from disk" className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition"><Trash2 className="w-3 h-3" /></button>
+              <button onClick={(e) => { e.stopPropagation(); onDeleteGitWorktree(wt, proj); }} title="Delete worktree from disk" className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition cursor-pointer"><Trash2 className="w-3 h-3" /></button>
             )}
           </div>
         </div>
