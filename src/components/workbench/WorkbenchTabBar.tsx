@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { 
-  Terminal, 
+  Terminal,
   Plus, 
   X, 
   File, 
@@ -10,7 +10,11 @@ import {
   FileText
 } from "lucide-react";
 import { AgentBrandIcon } from "../AgentIcon";
+import { TerminalTabLeadingIcon } from "./TerminalTabLeadingIcon";
+import { resolveTabAgent } from "./tab-agent";
+import { stripLeadingAgentTitleDecoration } from "./agent-title-decoration";
 import type { WorktreeSession } from "../sidebar/types";
+
 export interface SplitPane {
   sessionId: string;
   executable?: string;
@@ -29,13 +33,13 @@ export interface TabItem {
   sessionId?: string;
   executable?: string;
   cwd?: string;
+  agentName?: string;
+  agentId?: string;
   /** Sprint 2 P0: split terminals within a single tab */
   splitSessionIds?: string[];
   splitDirection?: "horizontal" | "vertical";
   splitPanes?: SplitPane[];
   splitLayout?: SplitLayout;
-  agentName?: string;
-  agentId?: string;
 }
 
 export interface DetectedAgent {
@@ -81,6 +85,8 @@ interface WorkbenchTabBarProps {
 export function WorkbenchTabBar({
   tabs,
   activeTabId,
+  sessions,
+  unreadWorktrees,
   onSelectTab,
   onCloseTab,
   onNewTab,
@@ -172,6 +178,15 @@ export function WorkbenchTabBar({
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
           const isEditing = tab.id === editingTabId;
+          const tabAgent = resolveTabAgent(tab, sessions);
+          const tabSession = tab.sessionId ? sessions?.find((s) => s.id === tab.sessionId) : undefined;
+          const activityStatus = tabSession?.state;
+          const isUnread = Boolean(
+            tab.sessionId &&
+              (unreadWorktrees?.has(tab.sessionId) ||
+                (tabSession?.project_path && unreadWorktrees?.has(tabSession.project_path)))
+          );
+          const displayTitle = tabAgent ? stripLeadingAgentTitleDecoration(tab.title) : tab.title;
 
           return (
             <div
@@ -192,7 +207,19 @@ export function WorkbenchTabBar({
               {isActive && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-[color-mix(in_srgb,var(--foreground)_60%,var(--card))] z-20" />
               )}
-              {tab.type === "editor" ? <File className="w-3.5 h-3.5 text-blue-400 shrink-0" /> : tab.type === "diff" ? <GitCompare className="w-3.5 h-3.5 text-amber-400 shrink-0" /> : <Terminal className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+              {tab.type === "editor" ? (
+                <File className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              ) : tab.type === "diff" ? (
+                <GitCompare className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              ) : (
+                <TerminalTabLeadingIcon
+                  agent={tabAgent}
+                  activityStatus={activityStatus}
+                  shell={tab.executable}
+                  showUnreadActivity={isUnread && !isActive}
+                  isActive={isActive}
+                />
+              )}
 
               {isEditing ? (
                 <input
@@ -211,10 +238,9 @@ export function WorkbenchTabBar({
                 />
               ) : (
                 <span className="truncate max-w-[140px] text-[11px] font-mono">
-                  {tab.title}
+                  {displayTitle}
                 </span>
               )}
-
               {!isEditing && (
                 <button
                   onClick={(e) => {
