@@ -1021,6 +1021,33 @@ export default function App() {
     // PR-12: group-header menu mutations arrive as events (SidebarShell owns the menu UI;
     // App owns group state). PR-14: persistence deixou os updaters — o effect da fatia
     // App-owned observa o estado e grava o blob merged no SQLite (debounced 250ms).
+    const handleCreateProjectGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ name: string; projectId?: string }>).detail;
+      if (!detail?.name || typeof detail.name !== "string" || !detail.name.trim()) return;
+      const id = `grp_${Date.now()}`;
+      const newGroup = { id, name: detail.name.trim() };
+      setProjectGroups((prev) => [...prev, newGroup]);
+      if (detail.projectId) {
+        setProjectGroupMap((prev) => ({ ...prev, [detail.projectId!]: id }));
+      }
+      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    };
+    const handleMoveProjectToGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ projectId: string; groupId: string }>).detail;
+      if (!detail?.projectId || !detail?.groupId) return;
+      setProjectGroupMap((prev) => ({ ...prev, [detail.projectId]: detail.groupId }));
+      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    };
+    const handleRemoveProjectFromGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ projectId: string }>).detail;
+      if (!detail?.projectId) return;
+      setProjectGroupMap((prev) => {
+        const next = { ...prev };
+        delete next[detail.projectId];
+        return next;
+      });
+      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    };
     const handleRenameProjectGroup = (e: Event) => {
       const detail = (e as CustomEvent<{ id: string; name: string }>).detail;
       if (!detail?.id || typeof detail.name !== "string" || !detail.name.trim()) return;
@@ -1039,6 +1066,9 @@ export default function App() {
       });
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
     };
+    window.addEventListener("hydra:create-project-group", handleCreateProjectGroup);
+    window.addEventListener("hydra:move-project-to-group", handleMoveProjectToGroup);
+    window.addEventListener("hydra:remove-project-from-group", handleRemoveProjectFromGroup);
     window.addEventListener("hydra:rename-project-group", handleRenameProjectGroup);
     window.addEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
     const handleOpenPalette = () => setIsCommandPaletteOpen(true);
@@ -1076,7 +1106,9 @@ export default function App() {
       .then(setGitStatus)
       .catch(console.error);
     return () => {
-      window.removeEventListener("hydra:refresh-projects", handleRefreshProjects);
+      window.removeEventListener("hydra:create-project-group", handleCreateProjectGroup);
+      window.removeEventListener("hydra:move-project-to-group", handleMoveProjectToGroup);
+      window.removeEventListener("hydra:remove-project-from-group", handleRemoveProjectFromGroup);
       window.removeEventListener("hydra:rename-project-group", handleRenameProjectGroup);
       window.removeEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
       window.removeEventListener("hydra:open-command-palette", handleOpenPalette);
@@ -2526,14 +2558,7 @@ export default function App() {
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, onClick: () => togglePinProject(proj.id), separator: true },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadProject(proj.id) },
         { label: "New group from project", icon: <FolderPlus className="w-3.5 h-3.5" />, separator: true, onClick: () => {
-            const name = window.prompt("New group name:", `${proj.name} group`);
-            if (!name || !name.trim()) return;
-            const id = `grp_${Date.now()}`;
-            const next = [...projectGroups, { id, name: name.trim() }];
-            setProjectGroups(next);
-            const nextMap = { ...projectGroupMap, [proj.id]: id };
-            setProjectGroupMap(nextMap);
-            window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+            window.dispatchEvent(new CustomEvent("hydra:open-new-group-dialog", { detail: { projectId: proj.id, defaultName: `${proj.name} group` } }));
           }
         },
         ...(projectGroups.length > 0 ? [{

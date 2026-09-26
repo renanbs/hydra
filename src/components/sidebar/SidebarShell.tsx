@@ -18,8 +18,11 @@ import {
   GripVertical,
   Terminal,
   ChevronsUp,
+  FolderInput,
   X
 } from "lucide-react";
+import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
+import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarAgentsList } from "./SidebarAgentsList";
@@ -185,6 +188,54 @@ export function SidebarShell({
   const [agentsGroupBy, setAgentsGroupBy] = useState<AgentsGroupBy>("state");
   const [focusedWorktreePath, setFocusedWorktreePath] = useState<string | null>(null);
   const [focusedProjectId, setFocusedProjectId] = useState<string | null>(null);
+  const [groupDropTargetId, setGroupDropTargetId] = useState<string | null>(null);
+
+  const [groupNameDialog, setGroupNameDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    initialName: string;
+    confirmLabel: string;
+    onSubmit: (name: string) => Promise<void> | void;
+  }>({
+    open: false,
+    title: "",
+    description: "",
+    initialName: "",
+    confirmLabel: "Save",
+    onSubmit: () => {},
+  });
+
+  const [groupDeleteDialog, setGroupDeleteDialog] = useState<{
+    open: boolean;
+    group: { id: string; name: string } | null;
+  }>({
+    open: false,
+    group: null,
+  });
+
+  useEffect(() => {
+    const handleOpenNewGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ projectId?: string; defaultName?: string }>).detail;
+      setGroupNameDialog({
+        open: true,
+        title: "New Project Group",
+        description: "Create a group to organize projects in your sidebar.",
+        initialName: detail?.defaultName ?? "New Group",
+        confirmLabel: "Create Group",
+        onSubmit: (name) => {
+          window.dispatchEvent(
+            new CustomEvent("hydra:create-project-group", {
+              detail: { name, projectId: detail?.projectId },
+            })
+          );
+        },
+      });
+    };
+    window.addEventListener("hydra:open-new-group-dialog", handleOpenNewGroup);
+    return () => window.removeEventListener("hydra:open-new-group-dialog", handleOpenNewGroup);
+  }, []);
+
   
   // Ref para ancoragem exata do botão SlidersHorizontal
   const optionsButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -228,6 +279,13 @@ export function SidebarShell({
     if (!displayOptions.filterProjectIds?.length) return projects;
     return projects.filter((p) => displayOptions.filterProjectIds!.includes(p.id));
   }, [projects, displayOptions.filterProjectIds]);
+
+  const groupDeleteMembers = useMemo(() => {
+    if (!groupDeleteDialog.group) return [];
+    return displayProjects.filter(
+      (p) => projectGroupMap?.[p.id] === groupDeleteDialog.group?.id
+    );
+  }, [displayProjects, projectGroupMap, groupDeleteDialog.group]);
 
   // ---- Sprint 3 P0: helpers for displayOptions + worktreesByProject ----
   const getWorktreesForProject = useCallback((proj: HydraProject): GitWorktreeInfo[] => {
@@ -1023,17 +1081,48 @@ export function SidebarShell({
       // and never draggable (no drag handlers). Visual mirrors the project-header one
       // hierarchy step up: FolderTree icon, semibold label, session-count chip.
       return (
-        <div style={rowStyle} {...ariaAttributes} className="px-2">
+        <div
+          style={rowStyle}
+          {...ariaAttributes}
+          className="px-2"
+          onDragOver={(e) => {
+            if (draggedProjectId) {
+              e.preventDefault();
+              setGroupDropTargetId(group.id);
+            }
+          }}
+          onDragLeave={() => {
+            if (groupDropTargetId === group.id) setGroupDropTargetId(null);
+          }}
+          onDrop={(e) => {
+            if (draggedProjectId) {
+              e.preventDefault();
+              setGroupDropTargetId(null);
+              window.dispatchEvent(
+                new CustomEvent("hydra:move-project-to-group", {
+                  detail: { projectId: draggedProjectId, groupId: group.id },
+                })
+              );
+              setDraggedProjectId(null);
+            }
+          }}
+        >
           <div
             onClick={() => toggleGroupCollapse(group.id)}
             title={isCollapsed ? "Expand group" : "Collapse group"}
-            className="group relative flex items-center justify-between px-2 py-1 rounded-lg cursor-pointer transition hover:bg-worktree-sidebar-accent/50 text-worktree-sidebar-foreground/80 border border-transparent"
+            className={`group relative flex items-center justify-between px-2 py-1 rounded-lg cursor-pointer transition text-worktree-sidebar-foreground/80 border ${
+              groupDropTargetId === group.id
+                ? "border-emerald-500/80 bg-emerald-500/10 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
+                : "border-transparent hover:bg-worktree-sidebar-accent/50"
+            }`}
           >
             <div className="flex items-center gap-2 min-w-0">
               <FolderTree className="w-3.5 h-3.5 shrink-0 text-emerald-400/80" />
               {/* PR-16: dot agregado — algum membro (projeto/worktree/sessão) tem unread. */}
               {hasUnread && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread activity in this group" />}
-              <span className="truncate text-[12px] font-semibold tracking-tight">{group.name}</span>
+              <span className="truncate text-[11px] font-bold uppercase tracking-wider text-worktree-sidebar-foreground/85">
+                {group.name}
+              </span>
               <span className="rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70 shrink-0">
                 {count}
               </span>
@@ -1062,10 +1151,20 @@ export function SidebarShell({
                     <button
                       onClick={() => {
                         setActiveGroupMenuId(null);
-                        const name = window.prompt("Group name:", group.name);
-                        if (!name || !name.trim() || name.trim() === group.name) return;
-                        // App.tsx owns group state + persistence (PR-14: SQLite sidebar_prefs).
-                        window.dispatchEvent(new CustomEvent("hydra:rename-project-group", { detail: { id: group.id, name: name.trim() } }));
+                        setGroupNameDialog({
+                          open: true,
+                          title: "Rename Project Group",
+                          description: "Enter a new name for this project group.",
+                          initialName: group.name,
+                          confirmLabel: "Save",
+                          onSubmit: (name) => {
+                            window.dispatchEvent(
+                              new CustomEvent("hydra:rename-project-group", {
+                                detail: { id: group.id, name },
+                              })
+                            );
+                          },
+                        });
                       }}
                       className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
                     >
@@ -1074,9 +1173,10 @@ export function SidebarShell({
                     <button
                       onClick={() => {
                         setActiveGroupMenuId(null);
-                        if (!window.confirm(`Delete group "${group.name}"? Member projects stay in the sidebar, ungrouped.`)) return;
-                        // App.tsx removes the group and strips its map entries (PR-14: SQLite sidebar_prefs).
-                        window.dispatchEvent(new CustomEvent("hydra:delete-project-group", { detail: { id: group.id } }));
+                        setGroupDeleteDialog({
+                          open: true,
+                          group,
+                        });
                       }}
                       className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
                     >
@@ -1155,6 +1255,75 @@ export function SidebarShell({
                     <button onClick={async () => { setActiveProjectMenuId(null); const cur = (proj.worktree_base_path ?? "") as string; const input = window.prompt("Worktree base path (relative to project or absolute).\nEx: .worktrees  ou  /home/you/src/worktrees\nLeave empty to use global workspaceDir:", cur); if (input === null) return; const trimmed = input.trim(); try { await invoke("set_project_worktree_base", { path: proj.path, basePath: trimmed ? trimmed : null }); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } catch (e) { console.error(e); } }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><FolderTree className="w-3.5 h-3.5 text-emerald-400" /><span className="text-[11px]">Worktree Base: {proj.worktree_base_path || "global"}</span></button>
                     <button onClick={() => { setActiveProjectMenuId(null); navigator.clipboard.writeText(proj.path); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><Copy className="w-3.5 h-3.5 text-neutral-400" /><span className="text-[11px]">Copy Project Path</span></button>
                     <button onClick={() => { setActiveProjectMenuId(null); onOpenNewWorkspaceModal(proj); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"><FolderTree className="w-3.5 h-3.5 text-neutral-400" /><span className="text-[11px]">New Worktree from Project</span></button>
+                    <div className="h-px bg-border my-1" />
+                    <button
+                      onClick={() => {
+                        setActiveProjectMenuId(null);
+                        setGroupNameDialog({
+                          open: true,
+                          title: "New Project Group",
+                          description: "Create a group to organize projects in your sidebar.",
+                          initialName: `${proj.name} group`,
+                          confirmLabel: "Create Group",
+                          onSubmit: (name) => {
+                            window.dispatchEvent(
+                              new CustomEvent("hydra:create-project-group", {
+                                detail: { name, projectId: proj.id },
+                              })
+                            );
+                          },
+                        });
+                      }}
+                      className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+                    >
+                      <FolderPlus className="w-3.5 h-3.5 text-neutral-400" />
+                      <span className="text-[11px]">New group from project</span>
+                    </button>
+                    {projectGroups && projectGroups.length > 0 && (
+                      <div className="pt-0.5 pb-0.5">
+                        <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                          Move to group
+                        </div>
+                        {projectGroups.map((g) => (
+                          <button
+                            key={g.id}
+                            disabled={projectGroupMap?.[proj.id] === g.id}
+                            onClick={() => {
+                              setActiveProjectMenuId(null);
+                              window.dispatchEvent(
+                                new CustomEvent("hydra:move-project-to-group", {
+                                  detail: { projectId: proj.id, groupId: g.id },
+                                })
+                              );
+                            }}
+                            className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-lg text-left text-[11px] transition ${
+                              projectGroupMap?.[proj.id] === g.id
+                                ? "opacity-40 cursor-default"
+                                : "hover:bg-neutral-800 text-neutral-300 cursor-pointer"
+                            }`}
+                          >
+                            <FolderInput className="w-3 h-3 text-neutral-400" />
+                            <span className="truncate">{g.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {projectGroupMap?.[proj.id] && (
+                      <button
+                        onClick={() => {
+                          setActiveProjectMenuId(null);
+                          window.dispatchEvent(
+                            new CustomEvent("hydra:remove-project-from-group", {
+                              detail: { projectId: proj.id },
+                            })
+                          );
+                        }}
+                        className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5 text-neutral-400" />
+                        <span className="text-[11px]">Remove from group</span>
+                      </button>
+                    )}
                     <div className="h-px bg-border my-1" />
                     <button onClick={() => { setActiveProjectMenuId(null); onRemoveProject(proj); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /><span className="text-[11px]">Remove Project</span></button>
                   </div>
@@ -1506,6 +1675,34 @@ export function SidebarShell({
         gitStatus={gitStatus}
         onOpenSettings={onOpenSettings}
         onRevealCurrent={sidebarBody === "workspaces" ? handleRevealCurrent : undefined}
+      />
+
+      {/* Project Group Modals (Orca Parity) */}
+      <ProjectGroupNameDialog
+        open={groupNameDialog.open}
+        title={groupNameDialog.title}
+        description={groupNameDialog.description}
+        initialName={groupNameDialog.initialName}
+        confirmLabel={groupNameDialog.confirmLabel}
+        onOpenChange={(open) => setGroupNameDialog((prev) => ({ ...prev, open }))}
+        onSubmit={groupNameDialog.onSubmit}
+      />
+
+      <ProjectGroupDeleteDialog
+        open={groupDeleteDialog.open}
+        groupName={groupDeleteDialog.group?.name ?? ""}
+        projectCount={groupDeleteMembers.length}
+        projectNames={groupDeleteMembers.map((p) => p.name)}
+        onOpenChange={(open) => setGroupDeleteDialog((prev) => ({ ...prev, open }))}
+        onConfirm={() => {
+          if (groupDeleteDialog.group) {
+            window.dispatchEvent(
+              new CustomEvent("hydra:delete-project-group", {
+                detail: { id: groupDeleteDialog.group.id },
+              })
+            );
+          }
+        }}
       />
     </div>
   );
