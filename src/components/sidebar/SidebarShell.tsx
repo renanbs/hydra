@@ -19,10 +19,13 @@ import {
   Terminal,
   ChevronsUp,
   FolderInput,
+  Eye,
   X
 } from "lucide-react";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
+import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
+import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarAgentsList } from "./SidebarAgentsList";
@@ -156,6 +159,7 @@ export function SidebarShell({
   unreadProjects,
   pinnedWorktrees,
   unreadWorktrees,
+  hiddenWorktreesByProject,
   projectGroupMap,
   projectGroups,
   compactCards = false,
@@ -214,6 +218,15 @@ export function SidebarShell({
   }>({
     open: false,
     group: null,
+  });
+  const [visibilityDialog, setVisibilityDialog] = useState<{
+    open: boolean;
+    project: HydraProject | null;
+    hiddenWorktrees: GitWorktreeInfo[];
+  }>({
+    open: false,
+    project: null,
+    hiddenWorktrees: [],
   });
 
   useEffect(() => {
@@ -729,6 +742,7 @@ export function SidebarShell({
         sessions,
         gitWorktrees,
         worktreesByProject,
+        hiddenWorktreesByProject,
         activeProject,
         collapsedProjects,
         collapsedGroups,
@@ -749,7 +763,7 @@ export function SidebarShell({
         sortWorktreesByOption,
         sortSessionsByOption,
       }),
-    [displayProjects, projects, sessions, gitWorktrees, worktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, collapsedGroups, projectGroups, projectGroupMap, unreadProjects, unreadWorktrees, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]
+    [displayProjects, projects, sessions, gitWorktrees, worktreesByProject, hiddenWorktreesByProject, getWorktreesForProject, activeProject, collapsedProjects, collapsedGroups, projectGroups, projectGroupMap, unreadProjects, unreadWorktrees, activeProjectMenuId, filter, sidebarBody, displayOptions, isDefaultBranchWt, isDetachedHeadWt, isAutomationCreatedWt, isCliCreatedWt, isSleepingWorktree, sortWorktreesByOption, sortSessionsByOption]
   );
 
   const getRowHeight = useCallback(
@@ -763,6 +777,7 @@ export function SidebarShell({
       if (row.type === "session") return compactCards ? 52 : 68;
       if (row.type === "empty") return 32;
       if (row.type === "hidden-pill") return 28;
+      if (row.type === "external-inbox") return 36;
       return 40;
     },
     [flatRows, compactCards]
@@ -1230,6 +1245,32 @@ export function SidebarShell({
         </div>
       );
     }
+    if (row.type === "external-inbox") {
+      const { proj, hiddenWorktrees } = row;
+      return (
+        <div style={rowStyle} {...ariaAttributes} className="px-2">
+          <NewExternalWorktreesInboxLine
+            repoDisplayName={proj.name}
+            inboxCount={hiddenWorktrees.length}
+            onReview={() => {
+              setVisibilityDialog({
+                open: true,
+                project: proj,
+                hiddenWorktrees,
+              });
+            }}
+            onSuppress={async () => {
+              try {
+                await invoke("suppress_worktree_inbox", { projectPath: proj.path });
+                window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
+        </div>
+      );
+    }
 
     if (row.type === "worktree") {
       const { wt, proj } = row;
@@ -1599,6 +1640,15 @@ export function SidebarShell({
           }
         }}
       />
+      <WorktreeVisibilityDialog
+        open={visibilityDialog.open}
+        project={visibilityDialog.project}
+        hiddenWorktrees={visibilityDialog.hiddenWorktrees}
+        onOpenChange={(open) => setVisibilityDialog((prev) => ({ ...prev, open }))}
+        onImported={() => {
+          window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+        }}
+      />
 
       {/* Fixed Floating Menus — 100% opaque bg-[#141518], z-[99999] outside virtualized viewport */}
       {activeGroupMenu && (
@@ -1723,6 +1773,22 @@ export function SidebarShell({
             >
               <Copy className="w-3.5 h-3.5 text-neutral-400" />
               <span className="text-[11px]">Copy Project Path</span>
+            </button>
+            <button
+              onClick={() => {
+                const proj = activeProjectMenu.proj;
+                setActiveProjectMenu(null);
+                const hidden = hiddenWorktreesByProject?.[proj.path] ?? [];
+                setVisibilityDialog({
+                  open: true,
+                  project: proj,
+                  hiddenWorktrees: hidden,
+                });
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-[11px]">Non-Hydra worktrees</span>
             </button>
             <button
               onClick={() => {

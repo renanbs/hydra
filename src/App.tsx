@@ -281,6 +281,7 @@ export default function App() {
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
   const [worktreesByProject, setWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
+  const [hiddenWorktreesByProject, setHiddenWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   // Bug #12: system theme must be reactive, not sampled once when hydraSettings
   // change. Kept in state + updated by the MediaQueryList change listener below.
@@ -932,27 +933,43 @@ export default function App() {
   }, [saveWorkbenchPersistence]);
 
   const refreshGitWorktrees = (repoPath: string) => {
-    invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath })
-      .then((wts) => {
-        setGitWorktrees(wts);
-        setWorktreesByProject((prev) => ({ ...prev, [repoPath]: wts }));
+    invoke<{ visible: GitWorktreeInfo[]; hidden: GitWorktreeInfo[]; isSuppressed: boolean }>("scan_worktrees", { repoPath })
+      .then((scan) => {
+        setGitWorktrees(scan.visible);
+        setWorktreesByProject((prev) => ({ ...prev, [repoPath]: scan.visible }));
+        setHiddenWorktreesByProject((prev) => ({ ...prev, [repoPath]: scan.hidden }));
       })
-      .catch(console.error);
+      .catch(() => {
+        invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath })
+          .then((wts) => {
+            setGitWorktrees(wts);
+            setWorktreesByProject((prev) => ({ ...prev, [repoPath]: wts }));
+          })
+          .catch(console.error);
+      });
   };
 
   const refreshAllWorktrees = useCallback((projs: HydraProject[]) => {
     if (projs.length === 0) return;
     Promise.all(
       projs.map((proj) =>
-        invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath: proj.path })
-          .then((wts) => ({ path: proj.path, wts }))
-          .catch(() => ({ path: proj.path, wts: [] as GitWorktreeInfo[] }))
+        invoke<{ visible: GitWorktreeInfo[]; hidden: GitWorktreeInfo[]; isSuppressed: boolean }>("scan_worktrees", { repoPath: proj.path })
+          .then((scan) => ({ path: proj.path, wts: scan.visible, hidden: scan.hidden }))
+          .catch(() =>
+            invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath: proj.path })
+              .then((wts) => ({ path: proj.path, wts, hidden: [] as GitWorktreeInfo[] }))
+              .catch(() => ({ path: proj.path, wts: [] as GitWorktreeInfo[], hidden: [] as GitWorktreeInfo[] }))
+          )
       )
     ).then((results) => {
       const map: Record<string, GitWorktreeInfo[]> = {};
-      for (const r of results) map[r.path] = r.wts;
+      const hiddenMap: Record<string, GitWorktreeInfo[]> = {};
+      for (const r of results) {
+        map[r.path] = r.wts;
+        hiddenMap[r.path] = r.hidden;
+      }
       setWorktreesByProject(map);
-      // keep active's list in sync for backwards compat
+      setHiddenWorktreesByProject(hiddenMap);
       if (activeProjectRef.current) {
         const activeWts = map[activeProjectRef.current.path];
         if (activeWts) setGitWorktrees(activeWts);
@@ -1600,6 +1617,7 @@ export default function App() {
         sessionId: id,
         executable: sh,
         cwd: targetSession?.project_path || activeProject?.path,
+        agentName: targetSession?.agentName,
       };
       setTabs((prev) => [...prev, newTab]);
       setActiveTabId(tabId);
@@ -1739,6 +1757,8 @@ export default function App() {
       sessionId,
       executable: agent.executable,
       cwd: newSession.project_path,
+      agentName: agent.name,
+      agentId: agent.id,
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(tabId);
@@ -2807,6 +2827,7 @@ export default function App() {
                 unreadProjects={unreadProjects}
                 pinnedWorktrees={pinnedWorktrees}
                 unreadWorktrees={unreadWorktrees}
+                hiddenWorktreesByProject={hiddenWorktreesByProject}
                 projectGroupMap={projectGroupMap}
                 projectGroups={projectGroups}
                 initialSidebarBody={initialSidebarPrefs?.sidebarBody}
@@ -2841,6 +2862,8 @@ export default function App() {
               <WorkbenchTabBar 
                 tabs={tabs}
                 activeTabId={activeTabId}
+                sessions={sessions}
+                unreadWorktrees={unreadWorktrees}
                 onSelectTab={handleSelectWorkbenchTab}
                 onCloseTab={handleCloseTab}
                 onNewTab={() => handleNewTerminalTab()}

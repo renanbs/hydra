@@ -23,7 +23,8 @@ export type SidebarRow =
   | { type: "group-header"; group: ProjectGroup; count: number; isCollapsed: boolean; /** True quando algum membro (projeto, worktree ou sessão) tem unread — dot agregado no header (PR-16). Ausente = false. */ hasUnread?: boolean }
   | { type: "session"; session: WorktreeSession; proj: HydraProject; wt?: GitWorktreeInfo; isOrphan?: boolean; isNested: boolean }
   | { type: "empty"; proj: HydraProject; message: string }
-  | { type: "hidden-pill"; proj: HydraProject; hiddenCount: number };
+  | { type: "hidden-pill"; proj: HydraProject; hiddenCount: number }
+  | { type: "external-inbox"; proj: HydraProject; hiddenWorktrees: GitWorktreeInfo[] };
 
 /** Text-filter predicate over a session (title, branch or agent name). */
 export type MatchesFilter = (session: WorktreeSession) => boolean;
@@ -63,6 +64,7 @@ export interface SidebarProjectionInput {
   gitWorktrees: GitWorktreeInfo[];
   /** Worktrees per project path; takes precedence over gitWorktrees. */
   worktreesByProject?: Record<string, GitWorktreeInfo[]>;
+  hiddenWorktreesByProject?: Record<string, GitWorktreeInfo[]>;
   activeProject: HydraProject | null;
   /** Collapsed project ids (repo mode only — "none"/"workspace-status" render no project headers). */
   collapsedProjects: Set<string>;

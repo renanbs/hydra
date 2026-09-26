@@ -170,6 +170,10 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
       return;
     }
 
+    const detectedHidden = input.hiddenWorktreesByProject?.[proj.path] ?? [];
+    if (detectedHidden.length > 0 && !proj.suppressed_discovery) {
+      rows.push({ type: "external-inbox", proj, hiddenWorktrees: detectedHidden });
+    }
     if (sortedWorktrees.length > 0) {
       for (const wt of sortedWorktrees) {
         rows.push({ type: "worktree", wt, proj });

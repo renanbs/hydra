@@ -36,13 +36,15 @@ use pairing::{PairingManager, PairingPayload};
 use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
 use preflight::{check_github_starred, check_preflight_tools, open_external_url, star_github_repo, PreflightStatus};
 use project_manager::{
-    add_existing_project, get_project_worktree_base_path, list_local_projects, remove_added_project,
-    set_project_worktree_base_path, HydraProject,
+    add_existing_project, get_project_worktree_base_path, import_external_worktree_for_project,
+    list_local_projects, remove_added_project, set_project_worktree_base_path,
+    suppress_discovery_for_project, HydraProject,
 };
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
     clone_git_repository, create_git_worktree, create_new_project, list_git_worktrees,
-    remove_git_worktree, CreateProjectParams, CreateWorktreeParams, GitWorktreeInfo,
+    remove_git_worktree, scan_project_worktrees, CreateProjectParams, CreateWorktreeParams,
+    GitWorktreeInfo, ProjectWorktreeScanResult,
 };
 
 pub struct AppState {
@@ -269,6 +271,24 @@ async fn set_project_worktree_base(path: String, base_path: Option<String>) -> R
 #[tauri::command]
 async fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
     list_git_worktrees(&repo_path)
+}
+#[tauri::command]
+async fn scan_worktrees(repo_path: String) -> Result<ProjectWorktreeScanResult, String> {
+    tokio::task::spawn_blocking(move || {
+        scan_project_worktrees(&repo_path)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn import_worktree(project_path: String, worktree_path: String) -> Result<(), String> {
+    import_external_worktree_for_project(&project_path, &worktree_path)
+}
+
+#[tauri::command]
+async fn suppress_worktree_inbox(project_path: String) -> Result<(), String> {
+    suppress_discovery_for_project(&project_path)
 }
 
 #[tauri::command]
@@ -1144,6 +1164,9 @@ pub fn run() {
             get_project_worktree_base,
             set_project_worktree_base,
             list_worktrees,
+            scan_worktrees,
+            import_worktree,
+            suppress_worktree_inbox,
             create_project,
             clone_project,
             create_worktree,

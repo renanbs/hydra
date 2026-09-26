@@ -12,6 +12,10 @@ pub struct HydraProject {
     /// Relative paths resolve from `path` (see configured-worktree-base-path.ts:18)
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub worktree_base_path: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub imported_worktrees: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suppressed_discovery: Option<bool>,
 }
 
 pub fn list_local_projects() -> Vec<HydraProject> {
@@ -33,13 +37,23 @@ pub fn list_local_projects() -> Vec<HydraProject> {
                 "ALTER TABLE added_projects ADD COLUMN worktree_base_path TEXT",
                 rusqlite::params![],
             );
+            let _ = conn.execute(
+                "ALTER TABLE added_projects ADD COLUMN imported_worktrees TEXT",
+                rusqlite::params![],
+            );
+            let _ = conn.execute(
+                "ALTER TABLE added_projects ADD COLUMN suppressed_discovery INTEGER",
+                rusqlite::params![],
+            );
 
-            if let Ok(mut stmt) = conn.prepare("SELECT path, name, worktree_base_path FROM added_projects ORDER BY added_at DESC") {
+            if let Ok(mut stmt) = conn.prepare("SELECT path, name, worktree_base_path, imported_worktrees, suppressed_discovery FROM added_projects ORDER BY added_at DESC") {
                 if let Ok(rows) = stmt.query_map(rusqlite::params![], |row| {
                     Ok((
                         row.get::<_, String>(0)?,
                         row.get::<_, String>(1)?,
                         row.get::<_, Option<String>>(2)?,
+                        row.get::<_, Option<String>>(3)?,
+                        row.get::<_, Option<i64>>(4)?,
                     ))
                 }) {
                     for r in rows.flatten() {
@@ -54,6 +68,8 @@ pub fn list_local_projects() -> Vec<HydraProject> {
                                 is_git,
                                 current_branch: branch,
                                 worktree_base_path: r.2.filter(|s| !s.trim().is_empty()),
+                                imported_worktrees: r.3.and_then(|s| serde_json::from_str::<Vec<String>>(&s).ok()),
+                                suppressed_discovery: r.4.map(|v| v != 0),
                             });
                         }
                     }
@@ -108,6 +124,8 @@ pub fn list_local_projects() -> Vec<HydraProject> {
                         is_git: true,
                         current_branch: branch,
                         worktree_base_path: proj.worktree_base_path.clone(),
+                        imported_worktrees: proj.imported_worktrees.clone(),
+                        suppressed_discovery: proj.suppressed_discovery,
                     });
                 }
             }
@@ -201,7 +219,53 @@ pub fn add_existing_project(path_str: &str) -> Result<HydraProject, String> {
         is_git,
         current_branch: branch,
         worktree_base_path: existing_base,
+        imported_worktrees: None,
+        suppressed_discovery: None,
     })
+}
+pub fn import_external_worktree_for_project(project_path: &str, worktree_path: &str) -> Result<(), String> {
+    if let Ok(home) = std::env::var("HOME") {
+        let db_path = PathBuf::from(home).join(".config").join("hydra").join("hydra_sessions.sqlite3");
+        if let Ok(conn) = rusqlite::Connection::open(&db_path) {
+            let _ = conn.execute("ALTER TABLE added_projects ADD COLUMN imported_worktrees TEXT", rusqlite::params![]);
+            let current_json: Option<String> = conn.query_row(
+                "SELECT imported_worktrees FROM added_projects WHERE path = ?1",
+                rusqlite::params![project_path],
+                |row| row.get(0),
+            ).unwrap_or(None);
+
+            let mut list: Vec<String> = current_json
+                .and_then(|s| serde_json::from_str(&s).ok())
+                .unwrap_or_default();
+
+            if !list.contains(&worktree_path.to_string()) {
+                list.push(worktree_path.to_string());
+            }
+
+            let new_json = serde_json::to_string(&list).map_err(|e| e.to_string())?;
+            conn.execute(
+                "UPDATE added_projects SET imported_worktrees = ?1 WHERE path = ?2",
+                rusqlite::params![new_json, project_path],
+            ).map_err(|e| e.to_string())?;
+            return Ok(());
+        }
+    }
+    Err("Failed to open database".to_string())
+}
+
+pub fn suppress_discovery_for_project(project_path: &str) -> Result<(), String> {
+    if let Ok(home) = std::env::var("HOME") {
+        let db_path = PathBuf::from(home).join(".config").join("hydra").join("hydra_sessions.sqlite3");
+        if let Ok(conn) = rusqlite::Connection::open(&db_path) {
+            let _ = conn.execute("ALTER TABLE added_projects ADD COLUMN suppressed_discovery INTEGER", rusqlite::params![]);
+            conn.execute(
+                "UPDATE added_projects SET suppressed_discovery = 1 WHERE path = ?1",
+                rusqlite::params![project_path],
+            ).map_err(|e| e.to_string())?;
+            return Ok(());
+        }
+    }
+    Err("Failed to open database".to_string())
 }
 
 pub fn remove_added_project(path_str: &str) -> Result<(), String> {

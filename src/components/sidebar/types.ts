@@ -47,6 +47,8 @@ export interface HydraProject {
   is_git: boolean;
   current_branch: string;
   worktree_base_path?: string | null;
+  imported_worktrees?: string[];
+  suppressed_discovery?: boolean;
 }
 
 export interface GitWorktreeInfo {
@@ -112,6 +114,7 @@ export interface WorktreeSidebarProps {
   unreadProjects?: Set<string>;
   pinnedWorktrees?: Set<string>;
   unreadWorktrees?: Set<string>;
+  hiddenWorktreesByProject?: Record<string, GitWorktreeInfo[]>;
   projectGroupMap?: Record<string, string>;
   projectGroups?: Array<{ id: string; name: string }>;
   compactCards?: boolean;

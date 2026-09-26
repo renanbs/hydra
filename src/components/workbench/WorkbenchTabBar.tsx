@@ -10,7 +10,7 @@ import {
   FileText
 } from "lucide-react";
 import { AgentBrandIcon } from "../AgentIcon";
-
+import type { WorktreeSession } from "../sidebar/types";
 export interface SplitPane {
   sessionId: string;
   executable?: string;
@@ -34,6 +34,8 @@ export interface TabItem {
   splitDirection?: "horizontal" | "vertical";
   splitPanes?: SplitPane[];
   splitLayout?: SplitLayout;
+  agentName?: string;
+  agentId?: string;
 }
 
 export interface DetectedAgent {
@@ -61,6 +63,8 @@ export const SHELL_EXECUTABLES: Record<string, true> = {
 interface WorkbenchTabBarProps {
   tabs: TabItem[];
   activeTabId: string;
+  sessions?: WorktreeSession[];
+  unreadWorktrees?: Set<string>;
   onSelectTab: (id: string) => void;
   onCloseTab: (id: string) => void;
   onNewTab?: () => void;
