@@ -110,21 +110,7 @@ fn build_known_orca_workspace_layouts(
             });
         }
     }
-    let home = crate::db::user_home_dir();
-    let orca_ws = home.join("orca").join("workspaces");
-    if orca_ws.exists() {
-        layouts.push(OrcaWorkspaceLayout {
-            path: orca_ws.to_string_lossy().to_string(),
-            nest_workspaces: true,
-        });
-    }
-    let hydra_ws = home.join(".config").join("hydra").join("workspaces");
-    if hydra_ws.exists() {
-        layouts.push(OrcaWorkspaceLayout {
-            path: hydra_ws.to_string_lossy().to_string(),
-            nest_workspaces: true,
-        });
-    }
+
     // Dedup by normalized path + nest flag
     let mut seen = std::collections::HashSet::new();
     layouts.retain(|l| {
@@ -296,7 +282,7 @@ pub fn list_git_worktrees(repo_path: &str) -> Result<Vec<GitWorktreeInfo>, Strin
 }
 
 pub fn scan_project_worktrees(repo_path: &str) -> Result<ProjectWorktreeScanResult, String> {
-    let (workspace_dir, nest_workspaces, workspace_dir_history, worktree_base_path, imported_worktrees, is_suppressed) = load_hydra_workspace_context(repo_path);
+    let (workspace_dir, nest_workspaces, workspace_dir_history, worktree_base_path, imported_worktrees, is_suppressed, visibility_defaults) = load_hydra_workspace_context(repo_path);
     let (mut visible, mut hidden) = list_git_worktrees_with_context(
         repo_path,
         worktree_base_path.as_deref(),
@@ -304,6 +290,7 @@ pub fn scan_project_worktrees(repo_path: &str) -> Result<ProjectWorktreeScanResu
         nest_workspaces,
         &workspace_dir_history,
         &imported_worktrees,
+        visibility_defaults.as_ref(),
     )?;
     fill_worktree_metadata(&mut visible);
     fill_worktree_metadata(&mut hidden);
@@ -314,7 +301,7 @@ pub fn scan_project_worktrees(repo_path: &str) -> Result<ProjectWorktreeScanResu
     })
 }
 
-fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorkspaceLayout>, Option<String>, Vec<String>, bool) {
+fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorkspaceLayout>, Option<String>, Vec<String>, bool, Option<crate::db::WorktreeVisibilityDefaults>) {
     // Try load from SQLite; fallback to defaults (Orca defaults: workspaceDir ~/src, nestWorkspaces true)
     // Bug #14: resolve the home dir properly instead of a hardcoded "/home/renan".
     let home = crate::db::user_home_dir();
@@ -322,6 +309,7 @@ fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorks
     let mut workspace_dir = default_dir.clone();
     let mut nest_workspaces = true;
     let mut history: Vec<OrcaWorkspaceLayout> = vec![];
+    let mut visibility_defaults: Option<crate::db::WorktreeVisibilityDefaults> = None;
     if let Ok(db_path) = std::path::Path::new(&home).join(".config/hydra/hydra_sessions.sqlite3").canonicalize().or_else(|_| Ok::<_, String>(PathBuf::from(&home).join(".config/hydra/hydra_sessions.sqlite3")) ) {
         if let Ok(conn) = rusqlite::Connection::open(&db_path) {
             if let Ok(mut stmt) = conn.prepare("SELECT value FROM settings WHERE key = 'global_settings'") {
@@ -329,6 +317,11 @@ fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorks
                     if let Ok(Some(row)) = rows.next() {
                         if let Ok(json_str) = row.get::<_, String>(0) {
                             if let Ok(v) = serde_json::from_str::<serde_json::Value>(&json_str) {
+                                if let Some(wvd) = v.get("worktree_visibility_defaults").or_else(|| v.get("worktreeVisibilityDefaults")) {
+                                    if let Ok(d) = serde_json::from_value::<crate::db::WorktreeVisibilityDefaults>(wvd.clone()) {
+                                        visibility_defaults = Some(d);
+                                    }
+                                }
                                 if let Some(wd) = v.get("workspace_dir").and_then(|x| x.as_str()) {
                                     workspace_dir = wd.to_string();
                                 } else if let Some(wd) = v.get("workspaceDir").and_then(|x| x.as_str()) {
@@ -376,13 +369,13 @@ fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorks
                             .and_then(|s| serde_json::from_str::<Vec<String>>(&s).ok())
                             .unwrap_or_default();
                         let is_suppressed = suppressed_raw.map(|v| v != 0).unwrap_or(false);
-                        return (workspace_dir, nest_workspaces, history, base.filter(|s| !s.trim().is_empty()), imported, is_suppressed);
+                        return (workspace_dir, nest_workspaces, history, base.filter(|s| !s.trim().is_empty()), imported, is_suppressed, visibility_defaults);
                     }
                 }
             }
         }
     }
-    (workspace_dir, nest_workspaces, history, None, vec![], false)
+    (workspace_dir, nest_workspaces, history, None, vec![], false, visibility_defaults)
 }
 
 fn list_git_worktrees_with_context(
@@ -392,6 +385,7 @@ fn list_git_worktrees_with_context(
     nest_workspaces: bool,
     workspace_dir_history: &[OrcaWorkspaceLayout],
     imported_worktrees: &[String],
+    visibility_defaults: Option<&crate::db::WorktreeVisibilityDefaults>,
 ) -> Result<(Vec<GitWorktreeInfo>, Vec<GitWorktreeInfo>), String> {
     let repo = PathBuf::from(repo_path);
     if !repo.exists() {
@@ -497,13 +491,27 @@ fn list_git_worktrees_with_context(
             }
         }
 
-        let known_layouts = build_known_orca_workspace_layouts(
+        let mut known_layouts = build_known_orca_workspace_layouts(
             workspace_dir,
             nest_workspaces,
             workspace_dir_history,
             &checkout_path,
             &merged_bases,
         );
+        if let Some(vd) = visibility_defaults {
+            if let Some(cs) = vd.custom_sources.as_ref() {
+                for src in cs {
+                    if src.root_path.trim().is_empty() {
+                        continue;
+                    }
+                    let rp = resolve_workspace_layout_path(&checkout_path, &src.root_path);
+                    known_layouts.push(OrcaWorkspaceLayout {
+                        path: rp,
+                        nest_workspaces: true,
+                    });
+                }
+            }
+        }
 
         // Folder workspace: hide child mains (wt.path == checkout_path but checkout != root).
         // Only the root's own main checkout is kept as "default". Child mains are the repos themselves,
@@ -519,7 +527,33 @@ fn list_git_worktrees_with_context(
         let checkout_paths = vec![checkout_path.clone()];
         let ownership = classify_worktree_ownership(&wt.path, checkout_path, &checkout_paths, &merged_bases, &known_layouts);
         match ownership {
-            WorktreeOwnership::AgentScratch => continue,
+            WorktreeOwnership::AgentScratch => {
+                let norm = normalize_runtime_path_for_comparison(&wt.path);
+                let is_claude = norm.contains("/.claude/worktrees");
+                let is_gsd = norm.contains("/.gsd-workspaces");
+                let show_scratch = if is_claude {
+                    visibility_defaults
+                        .and_then(|vd| vd.source_preferences.as_ref())
+                        .and_then(|sp| sp.built_in.as_ref())
+                        .and_then(|b| b.get("claude"))
+                        .map(|v| v == "show")
+                        .unwrap_or(false)
+                } else if is_gsd {
+                    visibility_defaults
+                        .and_then(|vd| vd.source_preferences.as_ref())
+                        .and_then(|sp| sp.built_in.as_ref())
+                        .and_then(|b| b.get("gsd"))
+                        .map(|v| v == "show")
+                        .unwrap_or(false)
+                } else {
+                    false
+                };
+                if show_scratch {
+                    filtered.push(wt.clone());
+                } else {
+                    continue;
+                }
+            }
             WorktreeOwnership::UnknownLegacy | WorktreeOwnership::External => {
                 let is_imported = imported_worktrees.iter().any(|imp| {
                     normalize_runtime_path_for_comparison(imp) == normalize_runtime_path_for_comparison(&wt.path)
@@ -528,15 +562,28 @@ fn list_git_worktrees_with_context(
                     filtered.push(wt.clone());
                     continue;
                 }
+                let external_policy = visibility_defaults
+                    .and_then(|vd| vd.external.as_deref())
+                    .unwrap_or("hide");
+
                 let has_base = !merged_bases.is_empty();
                 if has_base {
                     if merged_bases.iter().any(|b| relative_path_inside_root(b, &wt.path).is_some()) {
+                        filtered.push(wt.clone());
+                    } else if external_policy == "show" {
                         filtered.push(wt.clone());
                     } else {
                         hidden.push(wt.clone());
                     }
                 } else {
-                    hidden.push(wt.clone());
+                    let in_known = known_layouts.iter().any(|l| relative_path_inside_root(&l.path, &wt.path).is_some());
+                    if in_known {
+                        filtered.push(wt.clone());
+                    } else if external_policy == "show" {
+                        filtered.push(wt.clone());
+                    } else {
+                        hidden.push(wt.clone());
+                    }
                 }
             }
         }
@@ -662,7 +709,7 @@ pub fn create_git_worktree(params: CreateWorktreeParams) -> Result<String, Strin
     }
 
     // Carrega base configurada para decidir onde criar o worktree (Orca worktree-create-base.ts)
-    let (_, _, _, worktree_base_opt, _, _) = load_hydra_workspace_context(&params.repo_path);
+    let (_, _, _, worktree_base_opt, _, _, _) = load_hydra_workspace_context(&params.repo_path);
     let target_repo = if repo.join(".git").exists() {
         repo.clone()
     } else {
@@ -991,7 +1038,7 @@ branch refs/heads/feat/auth\n";
         // Create a workspace_dir that contains the child repo's worktree path would not exist yet, so filtering would hide it.
         // To keep test passing, we use an empty workspace_dir (no filtering) via direct raw parse test.
         // Instead we test the raw parsing + that folder scanning still discovers at least the main checkout via the unfiltered helper.
-        let (list, _) = list_git_worktrees_with_context(tmp.to_str().unwrap(), None, "", true, &[], &[])
+        let (list, _) = list_git_worktrees_with_context(tmp.to_str().unwrap(), None, "", true, &[], &[], None)
             .expect("list worktrees on folder workspace");
         // With empty workspace_dir, only the main checkout should be visible (filtered result includes main)
         assert!(!list.is_empty(), "Folder workspace should discover sub-repo worktrees (main at least)");

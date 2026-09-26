@@ -135,6 +135,10 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
     onLiveChange?.(next);
     if (next.theme !== settings.theme) { applyDocumentTheme(next.theme); try { localStorage.setItem("hydra:theme", next.theme); } catch {}}
   };
+  const persistSettings = (next: HydraSettings) => {
+    setSettingsLive(next);
+    invoke("save_settings", { settings: next }).catch(console.error);
+  };
   if (!isOpen) return null;
 
   const handleSave = () => {
@@ -371,7 +375,142 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                       </div>
                     </div>
                   </div>
-                  <p className="text-[11px] text-muted-foreground px-1">Workspace, Git and Open In moved to <span className="font-medium text-foreground">Workspace → Workspace & Git</span> for coherence (Orca: Workflows → Git).</p>
+                  {/* Workspace Directory — Orca Settings → General */}
+                  <div className="rounded-xl border bg-card p-6 space-y-3">
+                    <h4 className="text-[13px] font-semibold">Workspace Directory</h4>
+                    <div className="flex gap-2">
+                      <input
+                        value={settings.workspace_dir}
+                        onChange={(e)=> persistSettings({ ...settings, workspace_dir: e.target.value })}
+                        placeholder="/home/renan/orca/workspaces"
+                        className="flex-1 bg-background border rounded-md px-3 py-2 font-mono text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <button
+                        onClick={async ()=>{
+                          try {
+                            const picked = await dialogOpen({ directory: true, multiple: false });
+                            if (typeof picked === "string" && picked) persistSettings({ ...settings, workspace_dir: picked });
+                          } catch {}
+                        }}
+                        className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-md border bg-background text-[13px] hover:bg-muted"
+                      >
+                        <FolderGit2 className="size-3.5" /> Browse
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">Root directory where workspace folders are created. Relative (e.g. .orca/worktrees) for per-project, or absolute for a shared folder. Hydra uses this path — not a hardcoded orca/workspaces — to discover worktrees.</p>
+                  </div>
+
+                  {/* Sources — Orca Settings → General */}
+                  <div className="rounded-xl border bg-card p-6 space-y-3">
+                    <h4 className="text-[13px] font-semibold">Sources</h4>
+                    <p className="text-[12px] text-muted-foreground">Shown sources include current and future worktrees in the sidebar.</p>
+                    <div className="overflow-hidden rounded-lg border bg-muted/30">
+                      {([
+                        { id: "claude" as const, label: "Claude Code", sub: ".claude/worktrees/*" },
+                        { id: "gsd" as const, label: "GSD", sub: ".gsd-workspaces/*" },
+                      ] as const).map((row)=> {
+                        const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                        const vis = (wvd.sourcePreferences?.builtIn?.[row.id] ?? "hide") as "show"|"hide";
+                        const setVis = (next: "show"|"hide")=> {
+                          const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                          const nextPrefs = { ...(cur.sourcePreferences ?? { builtIn: {}, custom: {} }), builtIn: { ...(cur.sourcePreferences?.builtIn ?? {}), [row.id]: next } };
+                          persistSettings({ ...settings, worktree_visibility_defaults: { ...cur, sourcePreferences: nextPrefs } } as any);
+                        };
+                        return (
+                          <div key={row.id} className="flex items-center justify-between gap-2 px-3 py-3 border-b last:border-0 bg-card">
+                            <div className="min-w-0">
+                              <div className="text-[13px] font-medium">{row.label}</div>
+                              <div className="font-mono text-[11px] text-muted-foreground">{row.sub}</div>
+                            </div>
+                            <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                              {(["Show","Hide"] as const).map((lbl)=>{
+                                const val = lbl.toLowerCase() as "show"|"hide";
+                                const active = vis===val;
+                                return (
+                                  <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {(()=>{
+                        const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                        const vis = (wvd.external ?? "hide") as "show"|"hide";
+                        const setVis = (next: "show"|"hide")=> {
+                          const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                          persistSettings({ ...settings, worktree_visibility_defaults: { ...cur, external: next } } as any);
+                        };
+                        return (
+                          <div className="flex items-center justify-between gap-2 px-3 py-3 border-b bg-card">
+                            <div className="min-w-0">
+                              <div className="text-[13px] font-medium">Other locations</div>
+                              <div className="font-mono text-[11px] text-muted-foreground">Outside listed sources</div>
+                            </div>
+                            <div className="inline-flex rounded-md border p-0.5 bg-muted">
+                              {(["Show","Hide"] as const).map((lbl)=>{
+                                const val = lbl.toLowerCase() as "show"|"hide";
+                                const active = vis===val;
+                                return (
+                                  <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                      <div className="px-3 py-3 bg-card space-y-2">
+                        <div className="text-[13px] font-medium">Worktree root</div>
+                        <div className="flex gap-2">
+                          <input
+                            value={worktreeRootDraft}
+                            onChange={(e)=> setWorktreeRootDraft(e.target.value)}
+                            onKeyDown={(e)=> {
+                              if (e.key==="Enter" && worktreeRootDraft.trim()) {
+                                const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                                const id = Math.random().toString(36).slice(2,10);
+                                const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
+                                persistSettings({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                                setWorktreeRootDraft("");
+                              }
+                            }}
+                            placeholder=""
+                            className="flex-1 bg-background border rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                          <button
+                            onClick={()=>{
+                              if (!worktreeRootDraft.trim()) return;
+                              const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                              const id = Math.random().toString(36).slice(2,10);
+                              const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
+                              persistSettings({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                              setWorktreeRootDraft("");
+                            }}
+                            className="px-4 py-2 rounded-md bg-foreground text-background text-[13px] font-medium hover:bg-foreground/90"
+                          >Add</button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">Hydra will recognize worktrees beneath this folder.</p>
+                        {(((settings as any).worktree_visibility_defaults?.customSources ?? []) as Array<{id:string;rootPath:string}>).length>0 && (
+                          <div className="space-y-1 pt-2">
+                            {((settings as any).worktree_visibility_defaults.customSources as Array<{id:string;rootPath:string}>).map((cs)=>(
+                              <div key={cs.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md border bg-muted/20 text-[12px]">
+                                <span className="truncate font-mono">{cs.rootPath}</span>
+                                <button
+                                  onClick={()=>{
+                                    const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
+                                    const next = (cur.customSources ?? []).filter((x: {id:string})=> x.id!==cs.id);
+                                    persistSettings({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
+                                  }}
+                                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                                ><Trash2 className="size-3.5" /></button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               )}
               {activeId==="appearance" && (
@@ -569,143 +708,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                 <div className="space-y-6">
                   <div className="space-y-1">
                     <h3 className="text-[20px] font-semibold tracking-tight">Workspace & Git</h3>
-                    <p className="text-[13px] text-muted-foreground">Where workspaces live, how they appear in the sidebar, and Git defaults — consolidated from General (Orca: Workflows → Git).</p>
-                  </div>
-
-                  {/* Workspace Directory — moved from General */}
-                  <div className="rounded-xl border bg-card p-6 space-y-3">
-                    <h4 className="text-[13px] font-semibold">Workspace Directory</h4>
-                    <div className="flex gap-2">
-                      <input
-                        value={settings.workspace_dir}
-                        onChange={(e)=> setSettingsLive({ ...settings, workspace_dir: e.target.value })}
-                        placeholder="/home/renan/orca/workspaces"
-                        className="flex-1 bg-background border rounded-md px-3 py-2 font-mono text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                      <button
-                        onClick={async ()=>{
-                          try {
-                            const picked = await dialogOpen({ directory: true, multiple: false });
-                            if (typeof picked === "string" && picked) setSettingsLive({ ...settings, workspace_dir: picked });
-                          } catch {}
-                        }}
-                        className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-md border bg-background text-[13px] hover:bg-muted"
-                      >
-                        <FolderGit2 className="size-3.5" /> Browse
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">Use relative path (e.g. .orca/worktrees) for per-project, or absolute for shared folder. Duplicated field from General removed — single source of truth.</p>
-                  </div>
-
-                  {/* Sources — moved from General */}
-                  <div className="rounded-xl border bg-card p-6 space-y-3">
-                    <h4 className="text-[13px] font-semibold">Sources</h4>
-                    <p className="text-[12px] text-muted-foreground">Shown sources include current and future worktrees in the sidebar.</p>
-                    <div className="overflow-hidden rounded-lg border bg-muted/30">
-                      {([
-                        { id: "claude" as const, label: "Claude Code", sub: ".claude/worktrees/*" },
-                        { id: "gsd" as const, label: "GSD", sub: ".gsd-workspaces/*" },
-                      ] as const).map((row)=> {
-                        const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                        const vis = (wvd.sourcePreferences?.builtIn?.[row.id] ?? "hide") as "show"|"hide";
-                        const setVis = (next: "show"|"hide")=> {
-                          const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                          const nextPrefs = { ...(cur.sourcePreferences ?? { builtIn: {}, custom: {} }), builtIn: { ...(cur.sourcePreferences?.builtIn ?? {}), [row.id]: next } };
-                          setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, sourcePreferences: nextPrefs } } as any);
-                        };
-                        return (
-                          <div key={row.id} className="flex items-center justify-between gap-2 px-3 py-3 border-b last:border-0 bg-card">
-                            <div className="min-w-0">
-                              <div className="text-[13px] font-medium">{row.label}</div>
-                              <div className="font-mono text-[11px] text-muted-foreground">{row.sub}</div>
-                            </div>
-                            <div className="inline-flex rounded-md border p-0.5 bg-muted">
-                              {(["Show","Hide"] as const).map((lbl)=>{
-                                const val = lbl.toLowerCase() as "show"|"hide";
-                                const active = vis===val;
-                                return (
-                                  <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {(()=>{
-                        const wvd = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                        const vis = (wvd.external ?? "hide") as "show"|"hide";
-                        const setVis = (next: "show"|"hide")=> {
-                          const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                          setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, external: next } } as any);
-                        };
-                        return (
-                          <div className="flex items-center justify-between gap-2 px-3 py-3 border-b bg-card">
-                            <div className="min-w-0">
-                              <div className="text-[13px] font-medium">Other locations</div>
-                              <div className="font-mono text-[11px] text-muted-foreground">Outside listed sources</div>
-                            </div>
-                            <div className="inline-flex rounded-md border p-0.5 bg-muted">
-                              {(["Show","Hide"] as const).map((lbl)=>{
-                                const val = lbl.toLowerCase() as "show"|"hide";
-                                const active = vis===val;
-                                return (
-                                  <button key={lbl} onClick={()=> setVis(val)} className={`px-2.5 py-1 text-[11px] rounded font-medium transition ${active ? "bg-foreground text-background shadow" : "text-muted-foreground hover:text-foreground"}`}>{lbl}</button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })()}
-                      <div className="px-3 py-3 bg-card space-y-2">
-                        <div className="text-[13px] font-medium">Worktree root</div>
-                        <div className="flex gap-2">
-                          <input
-                            value={worktreeRootDraft}
-                            onChange={(e)=> setWorktreeRootDraft(e.target.value)}
-                            onKeyDown={(e)=> {
-                              if (e.key==="Enter" && worktreeRootDraft.trim()) {
-                                const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                                const id = Math.random().toString(36).slice(2,10);
-                                const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
-                                setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
-                                setWorktreeRootDraft("");
-                              }
-                            }}
-                            placeholder=""
-                            className="flex-1 bg-background border rounded-md px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring"
-                          />
-                          <button
-                            onClick={()=>{
-                              if (!worktreeRootDraft.trim()) return;
-                              const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                              const id = Math.random().toString(36).slice(2,10);
-                              const next = [...(cur.customSources ?? []), { id, rootPath: worktreeRootDraft.trim() }];
-                              setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
-                              setWorktreeRootDraft("");
-                            }}
-                            className="px-4 py-2 rounded-md bg-foreground text-background text-[13px] font-medium hover:bg-foreground/90"
-                          >Add</button>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">Orca will recognize worktrees beneath this folder.</p>
-                        {(((settings as any).worktree_visibility_defaults?.customSources ?? []) as Array<{id:string;rootPath:string}>).length>0 && (
-                          <div className="space-y-1 pt-2">
-                            {((settings as any).worktree_visibility_defaults.customSources as Array<{id:string;rootPath:string}>).map((cs)=>(
-                              <div key={cs.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md border bg-muted/20 text-[12px]">
-                                <span className="truncate font-mono">{cs.rootPath}</span>
-                                <button
-                                  onClick={()=>{
-                                    const cur = (settings as any).worktree_visibility_defaults ?? { external: "hide", customSources: [], sourcePreferences: { builtIn: {}, custom: {} } };
-                                    const next = (cur.customSources ?? []).filter((x: {id:string})=> x.id!==cs.id);
-                                    setSettingsLive({ ...settings, worktree_visibility_defaults: { ...cur, customSources: next } } as any);
-                                  }}
-                                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                                ><Trash2 className="size-3.5" /></button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    <p className="text-[13px] text-muted-foreground">Git defaults, nesting, and Open In apps. Workspace Directory and Sources live in Setup → General (Orca: Settings → General).</p>
                   </div>
 
                   <div className="rounded-xl border bg-card p-6 space-y-4">
