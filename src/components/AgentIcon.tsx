@@ -50,6 +50,25 @@ export function OmpIcon({ size = 14 }: { size?: number }) {
     </svg>
   );
 }
+export function PiIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      height={size}
+      width={size}
+      viewBox="0 0 800 800"
+      xmlns="http://www.w3.org/2000/svg"
+      className="text-current shrink-0"
+    >
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M165.29 165.29 H517.36 V400 H400 V517.36 H282.65 V634.72 H165.29 Z M282.65 282.65 V400 H400 V282.65 Z"
+      />
+      <path fill="currentColor" d="M517.36 400 H634.72 V634.72 H517.36 Z" />
+    </svg>
+  );
+}
+
 
 export function OpenCodeIcon({ size = 14 }: { size?: number }) {
   return (
@@ -140,7 +159,9 @@ export function GeminiIcon({ size = 14 }: { size?: number }) {
 export function AgentBrandIcon({ agentId, size = 15 }: { agentId: string; size?: number }) {
   const id = agentId.toLowerCase();
   if (id.includes("claude")) return <ClaudeIcon size={size} />;
-  if (id.includes("omp") || id.includes("pi")) return <OmpIcon size={size} />;
+  if (id.includes("omp") || id.includes("oh my pi")) return <OmpIcon size={size} />;
+  if (id === "pi" || id.startsWith("pi-") || id.endsWith("-pi") || id.includes("pi.dev")) return <PiIcon size={size} />;
+  if (id.includes("pi")) return <OmpIcon size={size} />;
   if (id.includes("opencode")) return <OpenCodeIcon size={size} />;
   if (id.includes("cursor")) return <CursorIcon size={size} />;
   if (id.includes("codex") || id.includes("openai")) return <CodexIcon size={size} />;
