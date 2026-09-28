@@ -1142,7 +1142,10 @@ export function SidebarShell({
         );
         if (!row) return;
         if (row.type === "session") onSelectSession(row.session.id);
-        else if (row.type === "worktree") onSelectGitWorktree(row.wt);
+        else if (row.type === "worktree") {
+          setFocusedWorktreePath(row.wt.path);
+          onSelectGitWorktree(row.wt);
+        }
         else if (row.type === "project-header") onSelectProject(row.proj);
         return;
       }
@@ -1243,7 +1246,11 @@ export function SidebarShell({
             </div>
             <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
               <button
-                onClick={() => toggleGroupCollapse(group.id)}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleGroupCollapse(group.id);
+                }}
                 title={isCollapsed ? "Expand group" : "Collapse group"}
                 className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
               >
@@ -1313,7 +1320,11 @@ export function SidebarShell({
             </div>
             <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
               <button
-                onClick={() => toggleProjectCollapse(proj.id)}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleProjectCollapse(proj.id);
+                }}
                 title={isCollapsed ? "Expand workspaces" : "Collapse workspaces"}
                 className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
               >
@@ -1388,7 +1399,10 @@ export function SidebarShell({
             isDragged={draggedWorktreePath === wt.path}
             dropTarget={worktreeDropTarget}
             ports={portsByWorktree.get(wt.path)}
-            onSelect={onSelectGitWorktree}
+            onSelect={(selectedWt) => {
+              setFocusedWorktreePath(selectedWt.path);
+              onSelectGitWorktree(selectedWt);
+            }}
             onDelete={onDeleteGitWorktree}
             onRename={(newTitle) => handleRenameWorktree(wt, newTitle)}
             onContextMenu={onWorktreeContextMenu}

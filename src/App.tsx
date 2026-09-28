@@ -1440,39 +1440,6 @@ export default function App() {
       loadSessionsForProject(proj.path);
     }
     refreshGitWorktrees(proj.path);
-    if (tabs.length === 0) {
-      const sId = `sess_${Date.now()}`;
-      const id = `tab_${sId}`;
-      const sh = hydraSettings.terminal_default_shell || "bash";
-      const newSession: WorktreeSession = {
-        id: sId,
-        project_path: proj.path,
-        title: proj.name,
-        branch: proj.current_branch || "main",
-        state: "idle",
-        active: true,
-        agentName: sh,
-        executable: sh,
-      };
-      setSessions([newSession]);
-      setTabs([{ id, title: proj.name, type: "terminal" }]);
-      setActiveTabId(id);
-      // Bug #10: this session used to live only in React state — it was never
-      // persisted, so it vanished on restart. Persist it now, same shape as the
-      // other save_session_record call sites.
-      invoke("save_session_record", {
-        record: {
-          id: sId,
-          project_path: proj.path,
-          title: proj.name,
-          branch: proj.current_branch || "main",
-          agent_name: sh,
-          executable: sh,
-          created_at: Date.now(),
-          updated_at: Date.now(),
-        },
-      }).catch(() => {});
-    }
     setMessages((prev) => [
       ...prev,
       {
@@ -1481,7 +1448,7 @@ export default function App() {
         content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
       }
     ]);
-  }, [workbenchLoaded, loadSessionsForProject, refreshGitWorktrees, tabs, hydraSettings]);
+  }, [workbenchLoaded, loadSessionsForProject, refreshGitWorktrees]);
 
   const handleNavigateWorkspace = useCallback((direction: "up" | "down") => {
     const projs = projectsRef.current;
@@ -1518,33 +1485,46 @@ export default function App() {
   };
 
   const handleSelectGitWorktree = (wt: GitWorktreeInfo) => {
-    const id = `sess_wt_${wt.branch.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
-    if (!sessions.some((s) => s.id === id)) {
-      const newSess: WorktreeSession = {
-        id,
-        project_path: wt.path,
-        title: wt.branch,
-        branch: wt.branch,
-        state: "idle",
-        active: true,
-        agentName: "bash",
-        executable: "bash",
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      };
-      setSessions((prev) => [newSess, ...prev.map((s) => ({ ...s, active: false }))]);
-    } else {
-      setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === id })));
-    }
-    const tabId = `tab_${id}`;
-    if (!tabsRef.current.some((t) => t.id === tabId)) {
-      setTabs((prev) => [...prev, { id: tabId, title: wt.branch, type: "terminal", sessionId: id, executable: "bash", cwd: wt.path }]);
-    }
     clearUnreadWorktree(wt.path);
-    clearUnreadWorktree(id);
     const owningProj = projectsRef.current.find((p) => wt.path === p.path || wt.path.startsWith(p.path + "/"));
-    if (owningProj) clearUnreadProject(owningProj.id);
-    setActiveTabId(tabId);
+    if (owningProj) {
+      if (!activeProject || activeProject.path !== owningProj.path) {
+        setActiveProject(owningProj);
+      }
+      clearUnreadProject(owningProj.id);
+    }
+
+    // Orca Parity: If this worktree already has an active or existing session, activate it!
+    const existingSession =
+      sessions.find((s) => s.project_path === wt.path && s.active) ||
+      sessions.find((s) => s.project_path === wt.path);
+
+    if (existingSession) {
+      setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === existingSession.id })));
+      clearUnreadWorktree(existingSession.id);
+      const existingTab = tabsRef.current.find(
+        (t) => t.sessionId === existingSession.id || t.id === `tab_${existingSession.id}`
+      );
+      if (existingTab) {
+        setActiveTabId(existingTab.id);
+      }
+      return;
+    }
+
+    // Check if there is an existing tab for this worktree cwd
+    const existingTab = tabsRef.current.find((t) => t.cwd === wt.path);
+    if (existingTab) {
+      setActiveTabId(existingTab.id);
+      if (existingTab.sessionId) {
+        setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === existingTab.sessionId })));
+        clearUnreadWorktree(existingTab.sessionId);
+      }
+      return;
+    }
+
+    // Orca Parity: If the worktree has NO existing sessions and NO existing tabs,
+    // DO NOT spawn a phantom bash session or open an unwanted terminal tab.
+    // The worktree is focused cleanly in the sidebar context.
   };
 
   const handleDeleteGitWorktree = (wt: GitWorktreeInfo, owningProj?: HydraProject) => {
