@@ -346,6 +346,18 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
       respondToPixelSizeQueries(data);
       term.write(data);
     };
+    const replayIntoTerminal = (data: string): Promise<void> => {
+      if (!data) return Promise.resolve();
+      return new Promise<void>((resolve) => {
+        replaying = true;
+        term.write(data, () => {
+          queueMicrotask(() => {
+            replaying = false;
+            resolve();
+          });
+        });
+      });
+    };
     // Copy on Select — Orca Trim Gutter faithfull: strip common indent if enabled
     try {
       (term as unknown as { onSelectionChange?: (cb: ()=>void)=>void }).onSelectionChange?.(() => {
@@ -430,18 +442,18 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
         const raw = polled?.data ?? "";
         const buffered = queued.splice(0).join("");
         if (raw) {
-          writeLive(raw);
+          await replayIntoTerminal(raw);
         } else {
           // Cold parking fallback: if raw buffer is empty (e.g. after daemon reconnect or buffer drain),
           // restore formatted screen from Rust vt100 parser shadow buffer directly.
           const snap = await invoke<{ formatted?: string }>("get_terminal_snapshot", { sessionId }).catch(() => null);
-          if (snap?.formatted) writeLive(snap.formatted);
+          if (snap?.formatted) await replayIntoTerminal(snap.formatted);
         }
         if (buffered.startsWith(raw)) {
           const rest = buffered.slice(raw.length);
-          if (rest) writeLive(rest);
+          if (rest) await replayIntoTerminal(rest);
         } else if (buffered && !raw.endsWith(buffered)) {
-          writeLive(buffered);
+          await replayIntoTerminal(buffered);
         }
         live = true;
         const late = queued.splice(0).join("");
