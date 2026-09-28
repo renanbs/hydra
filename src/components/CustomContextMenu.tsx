@@ -26,17 +26,118 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | null>(null);
   const [submenuCoords, setSubmenuCoords] = useState<{ x: number; y: number } | null>(null);
   const submenuRef = useRef<HTMLDivElement | null>(null);
+  const submenuTimerRef = useRef<number | undefined>(undefined);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+  const [highlightedSubIndex, setHighlightedSubIndex] = useState<number>(-1);
+
+  const getInteractiveIndices = (itemList: ContextMenuItem[]): number[] =>
+    itemList
+      .map((item, idx) => (!item.isLabel && !item.disabled ? idx : -1))
+      .filter((idx) => idx !== -1);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // allow submenu interactions
       if (menuRef.current?.contains(target) || submenuRef.current?.contains(target)) return;
       onClose();
     };
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      const activeSubmenu = openSubmenuIdx !== null ? items[openSubmenuIdx]?.children : null;
+      const isSubmenuFocused = activeSubmenu && highlightedSubIndex >= 0;
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (openSubmenuIdx !== null) {
+          setOpenSubmenuIdx(null);
+          setHighlightedSubIndex(-1);
+        } else {
+          onClose();
+        }
+        return;
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (isSubmenuFocused && activeSubmenu) {
+          const valid = getInteractiveIndices(activeSubmenu);
+          if (valid.length === 0) return;
+          const curPos = valid.indexOf(highlightedSubIndex);
+          const nextPos = curPos === -1 || curPos === valid.length - 1 ? 0 : curPos + 1;
+          setHighlightedSubIndex(valid[nextPos]);
+        } else {
+          const valid = getInteractiveIndices(items);
+          if (valid.length === 0) return;
+          const curPos = valid.indexOf(highlightedIndex);
+          const nextPos = curPos === -1 || curPos === valid.length - 1 ? 0 : curPos + 1;
+          setHighlightedIndex(valid[nextPos]);
+        }
+        return;
+      }
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (isSubmenuFocused && activeSubmenu) {
+          const valid = getInteractiveIndices(activeSubmenu);
+          if (valid.length === 0) return;
+          const curPos = valid.indexOf(highlightedSubIndex);
+          const nextPos = curPos <= 0 ? valid.length - 1 : curPos - 1;
+          setHighlightedSubIndex(valid[nextPos]);
+        } else {
+          const valid = getInteractiveIndices(items);
+          if (valid.length === 0) return;
+          const curPos = valid.indexOf(highlightedIndex);
+          const nextPos = curPos <= 0 ? valid.length - 1 : curPos - 1;
+          setHighlightedIndex(valid[nextPos]);
+        }
+        return;
+      }
+
+      if (e.key === "ArrowRight") {
+        const item = items[highlightedIndex];
+        if (item && item.children && item.children.length > 0) {
+          e.preventDefault();
+          const button = menuRef.current?.querySelectorAll<HTMLElement>("[role='menuitem']")[highlightedIndex];
+          if (button) handleSubmenuOpen(highlightedIndex, button);
+          const valid = getInteractiveIndices(item.children);
+          if (valid.length > 0) setHighlightedSubIndex(valid[0]);
+        }
+        return;
+      }
+
+      if (e.key === "ArrowLeft") {
+        if (openSubmenuIdx !== null) {
+          e.preventDefault();
+          setOpenSubmenuIdx(null);
+          setHighlightedSubIndex(-1);
+        }
+        return;
+      }
+
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (isSubmenuFocused && activeSubmenu) {
+          const sub = activeSubmenu[highlightedSubIndex];
+          if (sub && !sub.disabled) {
+            sub.onClick();
+            onClose();
+          }
+        } else if (highlightedIndex >= 0) {
+          const item = items[highlightedIndex];
+          if (!item || item.disabled) return;
+          if (item.children && item.children.length > 0) {
+            const button = menuRef.current?.querySelectorAll<HTMLElement>("[role='menuitem']")[highlightedIndex];
+            if (button) handleSubmenuOpen(highlightedIndex, button);
+            const valid = getInteractiveIndices(item.children);
+            if (valid.length > 0) setHighlightedSubIndex(valid[0]);
+          } else {
+            item.onClick();
+            onClose();
+          }
+        }
+      }
     };
+
     window.addEventListener("click", handleOutsideClick);
     window.addEventListener("contextmenu", handleOutsideClick);
     window.addEventListener("keydown", handleKeyDown);
@@ -46,8 +147,9 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
       window.removeEventListener("contextmenu", handleOutsideClick);
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("wheel", onClose);
+      clearTimeout(submenuTimerRef.current);
     };
-  }, [onClose]);
+  }, [highlightedIndex, highlightedSubIndex, items, onClose, openSubmenuIdx]);
 
   useLayoutEffect(() => {
     if (!menuRef.current) return;
@@ -79,19 +181,48 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
     setOpenSubmenuIdx(idx);
   };
 
+  const scheduleSubmenuOpen = (idx: number, anchor: HTMLElement) => {
+    clearTimeout(submenuTimerRef.current);
+    submenuTimerRef.current = window.setTimeout(() => {
+      handleSubmenuOpen(idx, anchor);
+    }, 120);
+  };
+
+  const scheduleSubmenuClose = () => {
+    clearTimeout(submenuTimerRef.current);
+    submenuTimerRef.current = window.setTimeout(() => {
+      setOpenSubmenuIdx(null);
+      setHighlightedSubIndex(-1);
+    }, 150);
+  };
+
+  const cancelSubmenuClose = () => {
+    if (submenuTimerRef.current !== undefined) {
+      clearTimeout(submenuTimerRef.current);
+      submenuTimerRef.current = undefined;
+    }
+  };
+
   const renderItem = (item: ContextMenuItem, idx: number) => {
     if (item.isLabel) {
       return (
-        <div key={idx} className="px-2 py-1 text-[11px] font-medium text-muted-foreground text-neutral-500 tracking-wide">
+        <div key={idx} className="px-2 py-1 text-[11px] font-medium text-neutral-500 tracking-wide select-none">
           {item.label}
         </div>
       );
     }
-    const hasChildren = item.children && item.children.length > 0;
+    const hasChildren = Boolean(item.children && item.children.length > 0);
+    const isHighlighted = highlightedIndex === idx;
+    const isSubmenuOpen = openSubmenuIdx === idx;
+
     return (
       <div key={idx}>
         {item.separator && <div className="h-px bg-border my-1" />}
         <button
+          role="menuitem"
+          tabIndex={-1}
+          aria-haspopup={hasChildren ? "menu" : undefined}
+          aria-expanded={hasChildren ? isSubmenuOpen : undefined}
           disabled={item.disabled && !hasChildren}
           title={item.title}
           onClick={() => {
@@ -101,12 +232,20 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
             onClose();
           }}
           onMouseEnter={(e) => {
-            if (hasChildren && !item.disabled) handleSubmenuOpen(idx, e.currentTarget);
-            else if (!hasChildren) setOpenSubmenuIdx(null);
+            setHighlightedIndex(idx);
+            if (hasChildren && !item.disabled) {
+              scheduleSubmenuOpen(idx, e.currentTarget);
+            } else {
+              scheduleSubmenuClose();
+            }
           }}
           className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
             item.disabled
               ? "opacity-40 cursor-not-allowed text-neutral-500"
+              : isHighlighted || isSubmenuOpen
+              ? item.danger
+                ? "bg-red-500/25 text-red-300"
+                : "bg-accent text-accent-foreground"
               : item.danger
               ? "hover:bg-red-500/20 text-red-400 cursor-pointer"
               : "hover:bg-accent text-popover-foreground hover:text-foreground cursor-pointer"
@@ -131,53 +270,68 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
     <>
       <div
         ref={menuRef}
+        role="menu"
+        aria-orientation="vertical"
         style={{ left: `${coords.x}px`, top: `${coords.y}px` }}
         onClick={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.preventDefault()}
-        className="fixed z-[99999] w-56 rounded-xl bg-popover border border-border p-1.5 shadow-2xl text-xs select-none backdrop-blur-md text-popover-foreground"
+        className="fixed z-[99999] w-56 rounded-xl bg-popover border border-border p-1.5 shadow-2xl text-xs select-none backdrop-blur-md text-popover-foreground animate-in fade-in-0 zoom-in-95 duration-100"
       >
         {items.map((item, idx) => renderItem(item, idx))}
       </div>
       {activeSubmenu && submenuCoords && (
         <div
           ref={submenuRef}
+          role="menu"
+          aria-orientation="vertical"
           style={{ left: `${submenuCoords.x}px`, top: `${submenuCoords.y}px` }}
           onClick={(e) => e.stopPropagation()}
-          onMouseLeave={() => setOpenSubmenuIdx(null)}
-          className="fixed z-[99999] w-52 rounded-xl bg-popover border border-border p-1.5 shadow-2xl text-xs select-none backdrop-blur-md text-popover-foreground"
+          onMouseEnter={cancelSubmenuClose}
+          onMouseLeave={scheduleSubmenuClose}
+          className="fixed z-[99999] w-52 rounded-xl bg-popover border border-border p-1.5 shadow-2xl text-xs select-none backdrop-blur-md text-popover-foreground animate-in fade-in-0 zoom-in-95 duration-100"
         >
-          {activeSubmenu.map((sub, sIdx) => (
-            <div key={sIdx}>
-              {sub.separator && <div className="h-px bg-border my-1" />}
-              {sub.isLabel ? (
-                <div className="px-2 py-1 text-[11px] font-medium text-neutral-500">{sub.label}</div>
-              ) : (
-                <button
-                  disabled={sub.disabled}
-                  title={sub.title}
-                  onClick={() => {
-                    if (sub.disabled) return;
-                    if (sub.children && sub.children.length > 0) return;
-                    sub.onClick();
-                    onClose();
-                  }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
-                    sub.disabled
-                      ? "opacity-40 cursor-not-allowed text-neutral-500"
-                      : sub.danger
-                      ? "hover:bg-red-500/20 text-red-400 cursor-pointer"
-                      : "hover:bg-neutral-800/80 text-neutral-200 hover:text-white cursor-pointer"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    {sub.icon && <span className="text-neutral-400 shrink-0">{sub.icon}</span>}
-                    <span className="text-[11px] truncate">{sub.label}</span>
-                  </div>
-                  {sub.shortcut && <span className="text-[10px] text-neutral-500 font-mono ml-2 shrink-0">{sub.shortcut}</span>}
-                </button>
-              )}
-            </div>
-          ))}
+          {activeSubmenu.map((sub, sIdx) => {
+            const isSubHighlighted = highlightedSubIndex === sIdx;
+            return (
+              <div key={sIdx}>
+                {sub.separator && <div className="h-px bg-border my-1" />}
+                {sub.isLabel ? (
+                  <div className="px-2 py-1 text-[11px] font-medium text-neutral-500">{sub.label}</div>
+                ) : (
+                  <button
+                    role="menuitem"
+                    tabIndex={-1}
+                    disabled={sub.disabled}
+                    title={sub.title}
+                    onClick={() => {
+                      if (sub.disabled) return;
+                      if (sub.children && sub.children.length > 0) return;
+                      sub.onClick();
+                      onClose();
+                    }}
+                    onMouseEnter={() => setHighlightedSubIndex(sIdx)}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
+                      sub.disabled
+                        ? "opacity-40 cursor-not-allowed text-neutral-500"
+                        : isSubHighlighted
+                        ? sub.danger
+                          ? "bg-red-500/25 text-red-300"
+                          : "bg-accent text-accent-foreground"
+                        : sub.danger
+                        ? "hover:bg-red-500/20 text-red-400 cursor-pointer"
+                        : "hover:bg-accent text-popover-foreground hover:text-foreground cursor-pointer"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      {sub.icon && <span className="text-neutral-400 shrink-0">{sub.icon}</span>}
+                      <span className="text-[11px] truncate">{sub.label}</span>
+                    </div>
+                    {sub.shortcut && <span className="text-[10px] text-neutral-500 font-mono ml-2 shrink-0">{sub.shortcut}</span>}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </>
