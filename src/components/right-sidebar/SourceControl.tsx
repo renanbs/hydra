@@ -22,6 +22,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { CustomContextMenu, type ContextMenuItem } from "../CustomContextMenu";
+import { PromptDialog } from "../PromptDialog";
 import { getWorktreeOpenInEntries, openWorktreePath } from "./WorktreeOpenInMenu";
 import { OpenInApplicationIcon } from "../../lib/open-in-app-catalog";
 import type { OpenInApplication } from "../../shared/settings-types";
@@ -106,6 +107,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   const [pulling, setPulling] = useState(false);
   const [stashList, setStashList] = useState<GitCommitEntry[]>([]);
   const [stashLoading, setStashLoading] = useState(false);
+  const [stashPromptOpen, setStashPromptOpen] = useState(false);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [newNotePath, setNewNotePath] = useState("");
   const [newNoteText, setNewNoteText] = useState("");
@@ -246,10 +248,9 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
       fetchBranchCommits();
     } catch (e: any) { setError(String(e)); } finally { setCommitting(false); }
   };
-  const handleStashPush = async () => {
+  const handleStashPush = () => {
     if (!repoPath) return;
-    const m = window.prompt("Stash message:", "hydra stash") ?? "";
-    try { await invoke("git_stash_push_cmd", { repoPath, message: m }); fetchStash(); fetchStatus(); } catch(e:any){ setError(String(e)); }
+    setStashPromptOpen(true);
   };
   const handleStashPop = async () => {
     if (!repoPath) return;
@@ -586,6 +587,26 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
         </div>
       </div>
       {contextMenu && <CustomContextMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} onClose={() => setContextMenu(null)} />}
+      {stashPromptOpen && (
+        <PromptDialog
+          open={stashPromptOpen}
+          title="Stash Changes"
+          placeholder="hydra stash"
+          initialValue="hydra stash"
+          confirmLabel="Stash"
+          onOpenChange={setStashPromptOpen}
+          onSubmit={async (message) => {
+            if (!repoPath) return;
+            try {
+              await invoke("git_stash_push_cmd", { repoPath, message });
+              fetchStash();
+              fetchStatus();
+            } catch (e: unknown) {
+              setError(String(e));
+            }
+          }}
+        />
+      )}
 
       {/* Footer */}
       <div className="shrink-0 border-t border-[#222] px-2 py-1 flex items-center justify-between text-[10px] text-neutral-500 font-mono bg-[#0e0f11]">

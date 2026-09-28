@@ -1,8 +1,10 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { List } from "react-window";
+import { invoke } from "@tauri-apps/api/core";
 import { AgentBrandIcon } from "../AgentIcon";
 import { WorktreeSession } from "./WorktreeSidebar";
 import type { AgentsGroupBy, AgentsStatusFilter } from "./types";
+import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
 import { IDLE, resolveSessionAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 
 // Session record → smart-attention input, field-for-field parity with the adapter in
@@ -49,6 +51,7 @@ export function SidebarAgentsList({
   const [filter, setFilter] = useState("");
   const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
   const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
+  const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
 
   // Get project name for a session
   const getProjectName = useCallback(
@@ -307,6 +310,85 @@ export function SidebarAgentsList({
         return "Unknown";
     }
   };
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isModalOpen) return;
+      const target = e.target as HTMLElement;
+      const isInputFocused = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || Boolean(target.isContentEditable);
+      if (isInputFocused) return;
+
+      const allSessions = groupedSessions.flatMap((g) => g.sessions);
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setFocusedSessionId(null);
+        setSelectedSessions(new Set());
+        return;
+      }
+
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (focusedSessionId) {
+          onSelectSession(focusedSessionId);
+        }
+        return;
+      }
+
+      if (e.key === "F2" && focusedSessionId) {
+        e.preventDefault();
+        const session = sessions.find((s) => s.id === focusedSessionId);
+        if (session) {
+          setPromptDialog({
+            open: true,
+            title: "Rename Session",
+            initialValue: session.title,
+            onSubmit: (newTitle) => {
+              if (newTitle.trim()) {
+                invoke("save_session_record", {
+                  record: {
+                    id: session.id,
+                    project_path: session.project_path,
+                    title: newTitle.trim(),
+                    branch: session.branch,
+                    agent_name: session.agentName,
+                    executable: session.executable,
+                    created_at: Date.now(),
+                    updated_at: Date.now(),
+                  },
+                }).catch(console.error);
+              }
+            },
+          });
+        }
+        return;
+      }
+
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const direction = e.key === "ArrowDown" ? "down" : "up";
+        const currentFocused = focusedSessionId;
+        if (!currentFocused) {
+          const first = allSessions[0];
+          if (first) {
+            setFocusedSessionId(first.id);
+            onSelectNextSession?.(direction);
+          }
+          return;
+        }
+        const currentIdx = allSessions.findIndex((s) => s.id === currentFocused);
+        if (currentIdx === -1) return;
+        const nextIdx = direction === "down" ? currentIdx + 1 : currentIdx - 1;
+        if (nextIdx < 0 || nextIdx >= allSessions.length) return;
+        const next = allSessions[nextIdx];
+        setFocusedSessionId(next.id);
+        onSelectNextSession?.(direction);
+        return;
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sessions, groupedSessions, onSelectNextSession, onSelectPrevSession, onSelectSession, isModalOpen, focusedSessionId]);
+
 
   if (sessions.length === 0) {
     return (
@@ -593,80 +675,24 @@ export function SidebarAgentsList({
           </div>
         </div>
       )}
+      {promptDialog && (
+        <PromptDialog
+          open={promptDialog.open}
+          title={promptDialog.title}
+          description={promptDialog.description}
+          initialValue={promptDialog.initialValue}
+          placeholder={promptDialog.placeholder}
+          confirmLabel={promptDialog.confirmLabel}
+          onOpenChange={(open) => {
+            if (!open) setPromptDialog(null);
+          }}
+          onSubmit={async (val) => {
+            await promptDialog.onSubmit(val);
+            setPromptDialog(null);
+          }}
+        />
+      )}
     </div>
   );
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isModalOpen) return;
-      const target = e.target as HTMLElement;
-      const isInputFocused = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || Boolean(target.isContentEditable);
-
-      if (isInputFocused) return;
-
-      // Flatten grouped sessions for navigation
-      const allSessions = groupedSessions.flatMap((g) => g.sessions);
-
-      // Escape: clear focus + clear batch selection
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setFocusedSessionId(null);
-        setSelectedSessions(new Set());
-        return;
-      }
-
-      // Enter: activate focused session
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        if (focusedSessionId) {
-          onSelectSession(focusedSessionId);
-        }
-        return;
-      }
-
-      // F2: Rename focused session
-      if (e.key === "F2" && focusedSessionId) {
-        e.preventDefault();
-        const session = sessions.find((s) => s.id === focusedSessionId);
-        if (session) {
-          const newTitle = window.prompt("Enter new session title:", session.title);
-          if (newTitle && newTitle.trim()) {
-            // The actual rename is handled by parent via onSessionContextMenu
-            // We just update local focus state here; parent handles persistence
-          }
-        }
-        return;
-      }
-
-      // Arrow navigation
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        const direction = e.key === "ArrowDown" ? "down" : "up";
-        const currentFocused = focusedSessionId;
-        
-        if (!currentFocused) {
-          // No focus - start with first item
-          const first = allSessions[0];
-          if (first) {
-            setFocusedSessionId(first.id);
-            onSelectNextSession?.(direction);
-          }
-          return;
-        }
-
-        const currentIdx = allSessions.findIndex((s) => s.id === currentFocused);
-        if (currentIdx === -1) return;
-
-        const nextIdx = direction === "down" ? currentIdx + 1 : currentIdx - 1;
-        if (nextIdx < 0 || nextIdx >= allSessions.length) return;
-
-        const next = allSessions[nextIdx];
-        setFocusedSessionId(next.id);
-        onSelectNextSession?.(direction);
-        return;
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [sessions, groupedSessions, onSelectNextSession, onSelectPrevSession, onSelectSession, isModalOpen, focusedSessionId]);
 }

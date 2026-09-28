@@ -38,6 +38,8 @@ import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance"
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState } from "./components/DeleteWorktreeDialog";
+import { PromptDialog, type PromptDialogProps } from "./components/PromptDialog";
+import { ParentPickerModal, type ParentCandidate } from "./components/sidebar/ParentPickerModal";
 import { 
   Copy,
   ClipboardPaste,
@@ -344,6 +346,15 @@ export default function App() {
   } | null>(null);
   const [deleteStateByWorktreeId, setDeleteStateByWorktreeId] = useState<DeleteWorktreeDialogState>({});
   const [dirtyChangeCountsByWorktreeId, setDirtyChangeCountsByWorktreeId] = useState<Record<string, number | null>>({});
+  // Non-blocking prompt & picker dialogs (replaces window.prompt to prevent WebKitGTK / Wayland freezes)
+  const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
+  const [parentPickerModal, setParentPickerModal] = useState<{
+    targetName: string;
+    currentParentPath?: string | null;
+    candidates: ParentCandidate[];
+    onSelect: (path: string) => void;
+    onRemoveParent?: () => void;
+  } | null>(null);
 
 
   // PR-14: pinned/unread/groups migraram do localStorage para o SQLite
@@ -2277,10 +2288,16 @@ export default function App() {
           shortcut: "Ctrl+Shift+R",
           onClick: () => {
             const currentTab = tabs.find((t) => t.id === activeTabId);
-            const newName = window.prompt("Enter new tab name:", currentTab?.title ?? "Terminal");
-            if (newName && newName.trim()) {
-              handleRenameTab(activeTabId, newName.trim());
-            }
+            setPromptDialog({
+              open: true,
+              title: "Rename Terminal Tab",
+              initialValue: currentTab?.title ?? "Terminal",
+              onSubmit: (newName) => {
+                if (newName.trim()) {
+                  handleRenameTab(activeTabId, newName.trim());
+                }
+              },
+            });
           }
         },
         {
@@ -2409,10 +2426,16 @@ export default function App() {
           label: "Rename Tab...",
           icon: <Pencil className="w-3.5 h-3.5" />,
           onClick: () => {
-            const newName = window.prompt("Enter new tab name:", tab.title);
-            if (newName && newName.trim()) {
-              handleRenameTab(tab.id, newName.trim());
-            }
+            setPromptDialog({
+              open: true,
+              title: "Rename Tab",
+              initialValue: tab.title,
+              onSubmit: (newName) => {
+                if (newName.trim()) {
+                  handleRenameTab(tab.id, newName.trim());
+                }
+              },
+            });
           }
         },
         {
@@ -2574,7 +2597,14 @@ export default function App() {
     const groupName = groupId ? projectGroups.find((g) => g.id === groupId)?.name : undefined;
     void groupName;
     const lineageParent = worktreeLineage[proj.path];
-    const eligibleParents = projects.filter((p) => p.id !== proj.id).concat(gitWorktrees.filter((w) => w.path !== proj.path).map((w) => ({ id: w.path, name: w.branch || w.path } as any)));
+    const eligibleParents: ParentCandidate[] = projects
+      .filter((p) => p.id !== proj.id)
+      .map((p) => ({ id: p.id, name: p.name, path: p.path, branch: p.current_branch }))
+      .concat(
+        gitWorktrees
+          .filter((w) => w.path !== proj.path)
+          .map((w) => ({ id: w.path, name: w.branch || w.path, path: w.path, branch: w.branch }))
+      );
     const developerRevealed = e.altKey;
     const openInChildren = getOpenInItems(proj.path);
 
@@ -2587,16 +2617,22 @@ export default function App() {
           label: "Update Project...",
           icon: <Pencil className="w-3.5 h-3.5" />,
           onClick: () => {
-            const newName = window.prompt("Project display name:", proj.name);
-            if (newName && newName.trim() && newName.trim() !== proj.name) {
-              try {
-                const overrides = JSON.parse(localStorage.getItem("hydra:project_name_overrides") || "{}");
-                overrides[proj.id] = newName.trim();
-                localStorage.setItem("hydra:project_name_overrides", JSON.stringify(overrides));
-                setProjects((prev) => prev.map((p) => p.id === proj.id ? { ...p, name: newName.trim() } : p));
-                if (activeProject?.id === proj.id) setActiveProject((prev) => prev ? { ...prev, name: newName.trim() } : prev);
-              } catch {}
-            }
+            setPromptDialog({
+              open: true,
+              title: "Update Project Display Name",
+              initialValue: proj.name,
+              onSubmit: (newName) => {
+                if (newName.trim() && newName.trim() !== proj.name) {
+                  try {
+                    const overrides = JSON.parse(localStorage.getItem("hydra:project_name_overrides") || "{}");
+                    overrides[proj.id] = newName.trim();
+                    localStorage.setItem("hydra:project_name_overrides", JSON.stringify(overrides));
+                    setProjects((prev) => prev.map((p) => p.id === proj.id ? { ...p, name: newName.trim() } : p));
+                    if (activeProject?.id === proj.id) setActiveProject((prev) => prev ? { ...prev, name: newName.trim() } : prev);
+                  } catch {}
+                }
+              },
+            });
           },
         },
         {
@@ -2633,15 +2669,39 @@ export default function App() {
           onClick: () => {},
         } as ContextMenuItem] : []),
         ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const m = { ...projectGroupMap }; delete m[proj.id]; setProjectGroupMap(m); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } } as ContextMenuItem] : []),
-        { label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...", icon: <FolderTree className="w-3.5 h-3.5" />, separator: true, disabled: eligibleParents.length === 0, title: eligibleParents.length === 0 ? "No eligible parents" : undefined, onClick: () => {
+        {
+          label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
+          icon: <FolderTree className="w-3.5 h-3.5" />,
+          separator: true,
+          disabled: eligibleParents.length === 0,
+          title: eligibleParents.length === 0 ? "No eligible parents" : undefined,
+          onClick: () => {
             if (eligibleParents.length === 0) return;
-            const opts = eligibleParents.map((p: any) => `${p.name} — ${p.path || p.id}`).join("\n");
-            const sel = window.prompt(`Choose parent (paste path):\n${opts}\n\nEnter parent path:`);
-            if (sel && sel.trim()) {
-              const next = { ...worktreeLineage, [proj.path]: sel.trim() };
-              setWorktreeLineage(next); persistLineage(next);
-            }
-          }
+            const candidates: ParentCandidate[] = eligibleParents.map(
+              (p: { id?: string; name?: string; path?: string; branch?: string }) => ({
+                id: p.id || p.path || "",
+                name: p.name || p.id || "",
+                path: p.path || p.id || "",
+                branch: p.branch,
+              })
+            );
+            setParentPickerModal({
+              targetName: proj.name,
+              currentParentPath: lineageParent,
+              candidates,
+              onSelect: (selectedPath) => {
+                const next = { ...worktreeLineage, [proj.path]: selectedPath };
+                setWorktreeLineage(next);
+                persistLineage(next);
+              },
+              onRemoveParent: () => {
+                const next = { ...worktreeLineage };
+                delete next[proj.path];
+                setWorktreeLineage(next);
+                persistLineage(next);
+              },
+            });
+          },
         },
         ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
               const parentProj = projects.find((p) => p.path === lineageParent);
@@ -2661,7 +2721,14 @@ export default function App() {
     const isPinned = pinnedWorktrees.has(wt.path);
     const isUnread = unreadWorktrees.has(wt.path);
     const lineageParent = worktreeLineage[wt.path];
-    const eligibleParents = projects.filter((p) => p.path !== wt.path).concat(gitWorktrees.filter((w) => w.path !== wt.path).map((w) => ({ id: w.path, name: w.branch } as any)));
+    const eligibleParents: ParentCandidate[] = projects
+      .filter((p) => p.path !== wt.path)
+      .map((p) => ({ id: p.id, name: p.name, path: p.path, branch: p.current_branch }))
+      .concat(
+        gitWorktrees
+          .filter((w) => w.path !== wt.path)
+          .map((w) => ({ id: w.path, name: w.branch || w.path, path: w.path, branch: w.branch }))
+      );
     const developerRevealed = e.altKey;
     const openInChildren = getOpenInItems(wt.path);
     const descendantCount = Object.values(worktreeLineage).filter((parent) => parent === wt.path).length;
@@ -2671,13 +2738,23 @@ export default function App() {
       y: e.clientY,
       items: [
         { label: "Workspace", isLabel: true, onClick: () => {} },
-        { label: "Update Worktree...", icon: <Pencil className="w-3.5 h-3.5" />, onClick: () => {
-            const newBranch = window.prompt("Rename branch / display:", wt.branch);
-            if (newBranch && newBranch.trim() && newBranch.trim() !== wt.branch) {
-              // Not implemented as git rename; just copy for now
-              navigator.clipboard.writeText(newBranch.trim()).catch(console.error);
-            }
-          }
+        {
+          label: "Update Worktree...",
+          icon: <Pencil className="w-3.5 h-3.5" />,
+          onClick: () => {
+            setPromptDialog({
+              open: true,
+              title: "Update Worktree",
+              description: "Copy branch name to clipboard",
+              initialValue: wt.branch,
+              confirmLabel: "Copy",
+              onSubmit: (newBranch) => {
+                if (newBranch.trim()) {
+                  navigator.clipboard.writeText(newBranch.trim()).catch(console.error);
+                }
+              },
+            });
+          },
         },
         { label: "Open in", icon: <FolderOpen className="w-3.5 h-3.5" />, children: openInChildren, onClick: () => {} },
         { label: "Copy Path", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.path).catch(console.error) },
@@ -2685,11 +2762,38 @@ export default function App() {
         { label: "Copy Commit", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) },
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(wt.path) },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(wt.path) },
-        { label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...", icon: <FolderTree className="w-3.5 h-3.5" />, separator: true, disabled: eligibleParents.length === 0, onClick: () => {
-            const opts = eligibleParents.map((p: any) => `${p.name} — ${p.path || p.id}`).join("\n");
-            const sel = window.prompt(`Choose parent:\n${opts}\n\nEnter parent path:`);
-            if (sel && sel.trim()) { const next = { ...worktreeLineage, [wt.path]: sel.trim() }; setWorktreeLineage(next); persistLineage(next); }
-          }
+        {
+          label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
+          icon: <FolderTree className="w-3.5 h-3.5" />,
+          separator: true,
+          disabled: eligibleParents.length === 0,
+          onClick: () => {
+            if (eligibleParents.length === 0) return;
+            const candidates: ParentCandidate[] = eligibleParents.map(
+              (p: { id?: string; name?: string; path?: string; branch?: string }) => ({
+                id: p.id || p.path || "",
+                name: p.name || p.branch || p.id || "",
+                path: p.path || p.id || "",
+                branch: p.branch,
+              })
+            );
+            setParentPickerModal({
+              targetName: wt.branch || wt.path,
+              currentParentPath: lineageParent,
+              candidates,
+              onSelect: (selectedPath) => {
+                const next = { ...worktreeLineage, [wt.path]: selectedPath };
+                setWorktreeLineage(next);
+                persistLineage(next);
+              },
+              onRemoveParent: () => {
+                const next = { ...worktreeLineage };
+                delete next[wt.path];
+                setWorktreeLineage(next);
+                persistLineage(next);
+              },
+            });
+          },
         },
         ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
               const parentProj = projects.find((p) => p.path === lineageParent) || null;
@@ -2724,14 +2828,35 @@ export default function App() {
         { label: "Workspace", isLabel: true, onClick: () => {} },
         { label: "Split Terminal Right", icon: <SplitSquareVertical className="w-3.5 h-3.5" />, shortcut: "Ctrl+Shift+D", onClick: () => handleSplitTerminal("horizontal") },
         { label: "Split Terminal Down", icon: <Terminal className="w-3.5 h-3.5" />, shortcut: "Ctrl+Shift+E", onClick: () => handleSplitTerminal("vertical") },
-        { label: "Rename", icon: <Pencil className="w-3.5 h-3.5" />, shortcut: "F2", onClick: () => {
-            const newTitle = window.prompt("Enter new session title:", session.title);
-            if (newTitle && newTitle.trim()) {
-              const updated = { ...session, title: newTitle.trim() };
-              setSessions((prev) => prev.map((s) => (s.id === session.id ? updated : s)));
-              invoke("save_session_record", { record: { id: updated.id, project_path: session.project_path, title: updated.title, branch: updated.branch, agent_name: updated.agentName, executable: updated.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(console.error);
-            }
-          }
+        {
+          label: "Rename",
+          icon: <Pencil className="w-3.5 h-3.5" />,
+          shortcut: "F2",
+          onClick: () => {
+            setPromptDialog({
+              open: true,
+              title: "Rename Session",
+              initialValue: session.title,
+              onSubmit: (newTitle) => {
+                if (newTitle.trim()) {
+                  const updated = { ...session, title: newTitle.trim() };
+                  setSessions((prev) => prev.map((s) => (s.id === session.id ? updated : s)));
+                  invoke("save_session_record", {
+                    record: {
+                      id: updated.id,
+                      project_path: session.project_path,
+                      title: updated.title,
+                      branch: updated.branch,
+                      agent_name: updated.agentName,
+                      executable: updated.executable,
+                      created_at: Date.now(),
+                      updated_at: Date.now(),
+                    },
+                  }).catch(console.error);
+                }
+              },
+            });
+          },
         },
         { label: "Open in", icon: <FolderOpen className="w-3.5 h-3.5" />, children: openInChildren, onClick: () => {} },
         { label: `Copy Branch: ${session.branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.branch).catch(console.error) },
@@ -2748,11 +2873,40 @@ export default function App() {
             invoke("save_session_record", { record: { id: dup.id, project_path: dup.project_path, title: dup.title, branch: dup.branch, agent_name: dup.agentName, executable: dup.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(console.error);
           }
         },
-        { label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...", icon: <FolderTree className="w-3.5 h-3.5" />, separator: true, disabled: projects.length === 0, onClick: () => {
-            const opts = projects.map((p) => `${p.name} — ${p.path}`).join("\n");
-            const sel = window.prompt(`Choose parent:\n${opts}\n\nEnter parent path:`);
-            if (sel && sel.trim()) { const next = { ...worktreeLineage, [session.project_path]: sel.trim(), [session.id]: sel.trim() }; setWorktreeLineage(next); persistLineage(next); }
-          }
+        {
+          label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
+          icon: <FolderTree className="w-3.5 h-3.5" />,
+          separator: true,
+          disabled: projects.length === 0,
+          onClick: () => {
+            const candidates: ParentCandidate[] = projects.map((p) => ({
+              id: p.id,
+              name: p.name,
+              path: p.path,
+              branch: p.current_branch,
+            }));
+            setParentPickerModal({
+              targetName: session.title,
+              currentParentPath: lineageParent,
+              candidates,
+              onSelect: (selectedPath) => {
+                const next = {
+                  ...worktreeLineage,
+                  [session.project_path]: selectedPath,
+                  [session.id]: selectedPath,
+                };
+                setWorktreeLineage(next);
+                persistLineage(next);
+              },
+              onRemoveParent: () => {
+                const next = { ...worktreeLineage };
+                delete next[session.project_path];
+                delete next[session.id];
+                setWorktreeLineage(next);
+                persistLineage(next);
+              },
+            });
+          },
         },
         ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
               const parentProj = projects.find((p) => p.path === lineageParent);
@@ -3077,6 +3231,49 @@ export default function App() {
           y={contextMenu.y}
           items={contextMenu.items}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+      {/* Non-blocking Prompt Dialog */}
+      {promptDialog && (
+        <PromptDialog
+          open={promptDialog.open}
+          title={promptDialog.title}
+          description={promptDialog.description}
+          initialValue={promptDialog.initialValue}
+          placeholder={promptDialog.placeholder}
+          confirmLabel={promptDialog.confirmLabel}
+          onOpenChange={(open) => {
+            if (!open) setPromptDialog(null);
+          }}
+          onSubmit={async (val) => {
+            await promptDialog.onSubmit(val);
+            setPromptDialog(null);
+          }}
+        />
+      )}
+
+      {/* Non-blocking Parent Picker Modal */}
+      {parentPickerModal && (
+        <ParentPickerModal
+          open={true}
+          targetName={parentPickerModal.targetName}
+          currentParentPath={parentPickerModal.currentParentPath}
+          candidates={parentPickerModal.candidates}
+          onOpenChange={(open) => {
+            if (!open) setParentPickerModal(null);
+          }}
+          onSelect={(parentPath) => {
+            parentPickerModal.onSelect(parentPath);
+            setParentPickerModal(null);
+          }}
+          onRemoveParent={
+            parentPickerModal.onRemoveParent
+              ? () => {
+                  parentPickerModal.onRemoveParent?.();
+                  setParentPickerModal(null);
+                }
+              : undefined
+          }
         />
       )}
 

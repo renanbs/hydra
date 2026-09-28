@@ -26,6 +26,7 @@ import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
+import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
 import { WorktreeCard } from "./WorktreeCard";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
@@ -196,6 +197,7 @@ export function SidebarShell({
   const [agentsStatusFilter, setAgentsStatusFilter] = useState<AgentsStatusFilter>("all");
   const [agentsGroupBy, setAgentsGroupBy] = useState<AgentsGroupBy>("state");
   const [focusedWorktreePath, setFocusedWorktreePath] = useState<string | null>(null);
+  const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
   const [focusedProjectId, setFocusedProjectId] = useState<string | null>(null);
   const [groupDropTargetId, setGroupDropTargetId] = useState<string | null>(null);
 
@@ -1155,11 +1157,27 @@ export function SidebarShell({
         e.preventDefault();
         const session = sessions.find((s) => s.id === focusedSessionId);
         if (session) {
-          const newTitle = window.prompt("Enter new session title:", session.title);
-          if (newTitle && newTitle.trim()) {
-            invoke("save_session_record", { record: { id: session.id, project_path: session.project_path, title: newTitle.trim(), branch: session.branch, agent_name: session.agentName, executable: session.executable, created_at: Date.now(), updated_at: Date.now() } }).catch(console.error);
-            // Parent App will handle the session update via the invoke callback
-          }
+          setPromptDialog({
+            open: true,
+            title: "Rename Session",
+            initialValue: session.title,
+            onSubmit: (newTitle) => {
+              if (newTitle.trim()) {
+                invoke("save_session_record", {
+                  record: {
+                    id: session.id,
+                    project_path: session.project_path,
+                    title: newTitle.trim(),
+                    branch: session.branch,
+                    agent_name: session.agentName,
+                    executable: session.executable,
+                    created_at: Date.now(),
+                    updated_at: Date.now(),
+                  },
+                }).catch(console.error);
+              }
+            },
+          });
         }
         return;
       }
@@ -1767,6 +1785,23 @@ export function SidebarShell({
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
       />
+      {promptDialog && (
+        <PromptDialog
+          open={promptDialog.open}
+          title={promptDialog.title}
+          description={promptDialog.description}
+          initialValue={promptDialog.initialValue}
+          placeholder={promptDialog.placeholder}
+          confirmLabel={promptDialog.confirmLabel}
+          onOpenChange={(open) => {
+            if (!open) setPromptDialog(null);
+          }}
+          onSubmit={async (val) => {
+            await promptDialog.onSubmit(val);
+            setPromptDialog(null);
+          }}
+        />
+      )}
 
       {/* Fixed Floating Menus — 100% opaque bg-[#141518], z-[99999] outside virtualized viewport */}
       {activeGroupMenu && (
@@ -1860,21 +1895,27 @@ export function SidebarShell({
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
                 const cur = (proj.worktree_base_path ?? "") as string;
-                const input = window.prompt(
-                  "Worktree base path (relative to project or absolute).\nEx: .worktrees  ou  /home/you/src/worktrees\nLeave empty to use global workspaceDir:",
-                  cur
-                );
-                if (input === null) return;
-                const trimmed = input.trim();
-                try {
-                  await invoke("set_project_worktree_base", {
-                    path: proj.path,
-                    basePath: trimmed ? trimmed : null,
-                  });
-                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-                } catch (e) {
-                  console.error(e);
-                }
+                setPromptDialog({
+                  open: true,
+                  title: "Configured Worktree Base Path",
+                  description:
+                    "Relative to project or absolute (e.g. .worktrees or /home/you/src/worktrees). Leave empty to use global workspaceDir.",
+                  initialValue: cur,
+                  placeholder: ".worktrees",
+                  confirmLabel: "Save",
+                  onSubmit: async (input) => {
+                    const trimmed = input.trim();
+                    try {
+                      await invoke("set_project_worktree_base", {
+                        path: proj.path,
+                        basePath: trimmed ? trimmed : null,
+                      });
+                      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  },
+                });
               }}
               className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-neutral-800 text-neutral-200 text-left transition cursor-pointer"
             >
