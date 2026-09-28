@@ -36,6 +36,7 @@ import { applyDocumentTheme } from "./lib/document-theme";
 import { CommandPalette } from "./components/CommandPalette";
 import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
+import { buildTerminalQuickCommandItems } from "./components/workbench/TerminalQuickCommandsSubmenu";
 import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
@@ -2442,6 +2443,34 @@ export default function App() {
                 .catch(console.error);
             }
           }
+        },
+        {
+          separator: true,
+          label: "Quick Commands",
+          icon: <Terminal className="w-3.5 h-3.5 text-amber-400" />,
+          children: buildTerminalQuickCommandItems({
+            onRun: (cmd) => {
+              invoke("send_terminal_input", { sessionId: targetSessionId, input: `${cmd}\r` }).catch(console.error);
+            },
+            onInsert: (cmd) => {
+              invoke("send_terminal_input", { sessionId: targetSessionId, input: cmd }).catch(console.error);
+            },
+            onCustomPrompt: () => {
+              setPromptDialog({
+                open: true,
+                title: "Run Command in Terminal",
+                description: "Enter a custom shell command to run",
+                initialValue: "",
+                confirmLabel: "Run",
+                onSubmit: (cmd) => {
+                  if (cmd.trim()) {
+                    invoke("send_terminal_input", { sessionId: targetSessionId, input: `${cmd.trim()}\r` }).catch(console.error);
+                  }
+                },
+              });
+            },
+          }),
+          onClick: () => {},
         },
         {
           separator: true,
