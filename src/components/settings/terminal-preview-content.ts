@@ -11,7 +11,7 @@ const BG_GREEN = '\x1b[42m'
 const FG_BLACK = '\x1b[30m'
 
 function prompt(): string {
-  return `${BLUE}~/orca${RESET} ${MAGENTA}main${RESET} ${YELLOW}*${RESET} $ `
+  return `${BLUE}~/hydra${RESET} ${MAGENTA}main${RESET} ${YELLOW}*${RESET} $ `
 }
 
 const lines: string[] = [
