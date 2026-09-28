@@ -177,10 +177,6 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
     if (sortedWorktrees.length > 0) {
       for (const wt of sortedWorktrees) {
         rows.push({ type: "worktree", wt, proj });
-        const wtSessions = sortedSessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
-        for (const s of wtSessions) {
-          rows.push({ type: "session", session: s, proj, wt, isNested: true });
-        }
       }
       const orphanSessions = sortedSessions.filter(
         (s) => !sortedWorktrees.some((wt) => wt.path === s.project_path) && !(!s.project_path && sortedWorktrees.some((wt) => wt.path === proj.path))
@@ -317,10 +313,6 @@ function buildFlatRows(input: SidebarProjectionInput): SidebarRow[] {
     if (sortedWorktrees.length > 0) {
       for (const wt of sortedWorktrees) {
         rows.push({ type: "worktree", wt, proj });
-        const wtSessions = sortedSessions.filter((s) => s.project_path === wt.path || (!s.project_path && wt.path === proj.path));
-        for (const s of wtSessions) {
-          rows.push({ type: "session", session: s, proj, wt, isNested: true });
-        }
       }
       const orphanSessions = sortedSessions.filter(
         (s) => !sortedWorktrees.some((wt) => wt.path === s.project_path) && !(!s.project_path && sortedWorktrees.some((wt) => wt.path === proj.path))

@@ -839,14 +839,22 @@ export function SidebarShell({
       if (row.type === "status-header") return 28;
       if (row.type === "group-header") return 32;
       if (row.type === "project-header") return 40;
-      if (row.type === "worktree") return compactCards ? 42 : 52;
+      if (row.type === "worktree") {
+        const isMain = row.wt.path === row.proj.path;
+        const wtSessions = sessions.filter(
+          (s) => s.project_path === row.wt.path || (!s.project_path && isMain)
+        );
+        const baseHeight = compactCards ? 42 : 52;
+        if (wtSessions.length === 0) return baseHeight;
+        return baseHeight + wtSessions.length * 26 + 8;
+      }
       if (row.type === "session") return compactCards ? 52 : 68;
       if (row.type === "empty") return 32;
       if (row.type === "hidden-pill") return 28;
       if (row.type === "external-inbox") return 36;
       return 40;
     },
-    [flatRows, compactCards]
+    [flatRows, compactCards, sessions]
   );
 
   const listRef = useRef<ListImperativeAPI>(null);
