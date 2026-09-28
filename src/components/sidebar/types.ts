@@ -59,6 +59,10 @@ export interface GitWorktreeInfo {
   is_locked: boolean;
   created_at?: number | null;
   status?: string | null;
+  display_name?: string | null;
+  first_agent_message_rename_error?: string | null;
+  is_sparse?: boolean;
+  sparse_directories?: string[];
 }
 
 export interface WorktreeSession {
@@ -100,6 +104,7 @@ export interface WorktreeSidebarProps {
   onSelectGitWorktree: (wt: GitWorktreeInfo) => void;
   onDeleteGitWorktree: (wt: GitWorktreeInfo, proj?: HydraProject) => void;
   onNewSessionWithAgent?: (agent: AvailableAgent) => void;
+  onRenameWorktreeTitle?: (worktreePath: string, newTitle: string) => Promise<void> | void;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;
   onOpenAddRepoDialog: () => void;

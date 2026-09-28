@@ -26,6 +26,7 @@ import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
+import { WorktreeCard } from "./WorktreeCard";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarAgentsList } from "./SidebarAgentsList";
@@ -173,6 +174,7 @@ export function SidebarShell({
   initialAgentsReadFilter,
   initialAgentsGroupBy,
   onSidebarPrefsChange,
+  onRenameWorktreeTitle,
 }: WorktreeSidebarProps) {
   const [filter, setFilter] = useState("");
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
@@ -677,6 +679,25 @@ export function SidebarShell({
     clearSidebarDragPreview();
   };
 
+  const handleRenameWorktree = useCallback(
+    async (wt: GitWorktreeInfo, newTitle: string) => {
+      if (onRenameWorktreeTitle) {
+        await onRenameWorktreeTitle(wt.path, newTitle);
+      } else {
+        try {
+          await invoke("set_worktree_display_name", {
+            worktreePath: wt.path,
+            displayName: newTitle,
+          });
+        } catch {
+          wt.display_name = newTitle;
+        }
+        window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      }
+    },
+    [onRenameWorktreeTitle]
+  );
+
   const isDraggingSidebarRow = draggedSessionId !== null || draggedWorktreePath !== null || draggedProjectId !== null;
   useEffect(() => {
     if (!isDraggingSidebarRow) return;
@@ -773,7 +794,7 @@ export function SidebarShell({
       if (row.type === "status-header") return 28;
       if (row.type === "group-header") return 32;
       if (row.type === "project-header") return 40;
-      if (row.type === "worktree") return compactCards ? 32 : 44;
+      if (row.type === "worktree") return compactCards ? 42 : 52;
       if (row.type === "session") return compactCards ? 52 : 68;
       if (row.type === "empty") return 32;
       if (row.type === "hidden-pill") return 28;
@@ -1277,44 +1298,47 @@ export function SidebarShell({
       const isMain = wt.path === proj.path;
       const wtSessions = sessions.filter((s) => s.project_path === wt.path || (!s.project_path && isMain));
       return (
-        // PR-16 (gap 2, Orca parity): um tree-step de padding-only (pl-4 = 16px,
-        // alinha a surface do card com o ícone do project-header) em vez de
-        // px-2 pl-6 + ml-2 + border-l (45px de conteúdo + trilho fragmentado).
         <div style={rowStyle} {...ariaAttributes} className="px-2 pl-4">
-          <div
-            draggable={true}
-            onDragStart={(e) => handleWorktreeDragStart(e, wt.path)}
-            onDragOver={(e) => handleWorktreeDragOver(e, wt.path)}
-            onDrop={(e) => handleWorktreeDrop(e, wt.path)}
+          <WorktreeCard
+            worktree={wt}
+            project={proj}
+            compactCards={compactCards}
+            isPinned={pinnedWorktrees?.has(wt.path)}
+            isUnread={unreadWorktrees?.has(wt.path)}
+            isFocused={focusedWorktreePath === wt.path}
+            isDragged={draggedWorktreePath === wt.path}
+            dropTarget={worktreeDropTarget}
+            onSelect={onSelectGitWorktree}
+            onDelete={onDeleteGitWorktree}
+            onRename={(newTitle) => handleRenameWorktree(wt, newTitle)}
+            onContextMenu={onWorktreeContextMenu}
+            onDragStart={handleWorktreeDragStart}
+            onDragOver={handleWorktreeDragOver}
+            onDrop={handleWorktreeDrop}
             onDragEnd={handleWorktreeDragEnd}
-            onClick={() => onSelectGitWorktree(wt)}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onWorktreeContextMenu?.(e, wt, proj);
-            }}
-            className={`group relative ${compactCards ? "py-1.5 px-2 text-[11px]" : "p-2.5"} rounded-lg cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground flex items-center justify-between transition-all border border-transparent ${
-              draggedWorktreePath === wt.path ? "opacity-30" : ""
-            } ${focusedWorktreePath === wt.path ? "border-indigo-500/50 ring-indigo-500/20 bg-worktree-sidebar-accent/30" : ""}`}
-          >
-            {worktreeDropTarget?.path === wt.path && (
-              <div className={`absolute left-1 right-1 h-[2px] bg-emerald-500 rounded-full z-20 pointer-events-none shadow-[0_0_8px_rgba(16,185,129,0.9)] ${worktreeDropTarget.position === "top" ? "-top-0.5" : "-bottom-0.5"}`} />
-            )}
-            <div className="flex items-center gap-2 min-w-0">
-              <GripVertical className="w-3 h-3 text-neutral-600 opacity-0 group-hover:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0" />
-              {pinnedWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Pinned" />}
-              {unreadWorktrees?.has(wt.path) && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 animate-pulse" title="Unread" />}
-              <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
-              <span className="truncate text-[11px] font-medium text-neutral-200" title={wt.branch || proj.name}>{wt.branch || proj.name}</span>
-              {isMain && <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/40 border border-emerald-800/50 text-emerald-300 shrink-0 font-semibold">primary</span>}
-              {wtSessions.length > 0 && <span className="text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 shrink-0 font-mono">{wtSessions.length} {wtSessions.length === 1 ? "agent" : "agents"}</span>}
-              {formatAge(wt.created_at) && <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800/50 text-neutral-500 shrink-0 font-mono">{formatAge(wt.created_at)}</span>}
-              {wt.status && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-900/30 border border-red-800/50 text-red-400 shrink-0" title={wt.status}>{wt.status}</span>}
-            </div>
-            {!isMain && (
-              <button onClick={(e) => { e.stopPropagation(); onDeleteGitWorktree(wt, proj); }} title="Delete worktree from disk" className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition cursor-pointer"><Trash2 className="w-3 h-3" /></button>
-            )}
-          </div>
+            metaRowChildren={
+              <>
+                {wtSessions.length > 0 && (
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 shrink-0 font-mono">
+                    {wtSessions.length} {wtSessions.length === 1 ? "agent" : "agents"}
+                  </span>
+                )}
+                {formatAge(wt.created_at) && (
+                  <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800/50 text-neutral-500 shrink-0 font-mono">
+                    {formatAge(wt.created_at)}
+                  </span>
+                )}
+                {wt.status && (
+                  <span
+                    className="text-[8px] px-1.5 py-0.5 rounded bg-red-900/30 border border-red-800/50 text-red-400 shrink-0"
+                    title={wt.status}
+                  >
+                    {wt.status}
+                  </span>
+                )}
+              </>
+            }
+          />
         </div>
       );
     }
