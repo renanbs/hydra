@@ -272,19 +272,19 @@ pub fn extract_agent_detailed_status(
     previous_state: Option<AgentState>,
 ) -> AgentDetailedStatus {
     let detection = detect_agent_state_detection(screen_text, previous_state);
-    let lines: Vec<&str> = screen_text.lines().map(|l| l.trim()).filter(|l| !l.is_empty()).collect();
-
+    let mut tail_lines: Vec<&str> = screen_text
+        .lines()
+        .map(|l| l.trim())
+        .filter(|l| !l.is_empty())
+        .rev()
+        .take(25)
+        .collect();
+    tail_lines.reverse();
     let mut tool_name = None;
     let mut tool_input = None;
     let mut last_assistant_message = None;
     let mut subagents = Vec::new();
     let mut coordinator_handle = None;
-
-    let tail_lines = if lines.len() > 25 {
-        &lines[lines.len() - 25..]
-    } else {
-        &lines[..]
-    };
 
     for line in tail_lines {
         let lower = line.to_lowercase();

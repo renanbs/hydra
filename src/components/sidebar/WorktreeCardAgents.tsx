@@ -16,6 +16,7 @@ interface WorktreeCardAgentsProps {
 }
 
 export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
+  worktreePath: _worktreePath,
   sessions,
   onSelectSession,
   activeSessionId,

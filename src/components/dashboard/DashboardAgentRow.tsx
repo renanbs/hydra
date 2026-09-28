@@ -157,7 +157,7 @@ export const DashboardAgentRow = React.memo(function DashboardAgentRow({
 
         {timeAgo && (
           <span
-            className="shrink-0 text-[10px] text-neutral-500 font-mono"
+            className="shrink-0 text-[10px] text-neutral-500 font-mono cursor-pointer hover:text-neutral-300 transition-colors"
             onClick={handleToggleExpanded}
             title={expanded ? "Collapse details" : "Expand details"}
           >
