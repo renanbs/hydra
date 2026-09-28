@@ -765,6 +765,36 @@ async fn check_agent_state(session_id: String, state: State<'_, AppState>) -> Re
 }
 
 #[tauri::command]
+async fn check_agent_detailed_status(
+    session_id: String,
+    state: State<'_, AppState>,
+) -> Result<agent_state::AgentDetailedStatus, String> {
+    let snapshot = if daemon_client::daemon_available() {
+        let req = daemon_client::DaemonRequest {
+            op: "snapshot".to_string(),
+            session_id: Some(session_id.clone()),
+            executable: None,
+            args: None,
+            cwd: None,
+            input: None,
+            rows: None,
+            cols: None,
+            offset: None,
+        };
+        match daemon_client::daemon_request(&req) {
+            Ok(r) if r.ok => r
+                .data
+                .and_then(|d| serde_json::from_value::<TerminalSnapshot>(d).ok())
+                .ok_or_else(|| "bad daemon snapshot".to_string())?,
+            _ => state.terminal.get_snapshot(&session_id)?,
+        }
+    } else {
+        state.terminal.get_snapshot(&session_id)?
+    };
+    Ok(agent_state::extract_agent_detailed_status(&session_id, &snapshot.clean_text, None))
+}
+
+#[tauri::command]
 async fn get_folded_logs(
     session_id: String,
     max_lines: usize,
@@ -1304,6 +1334,7 @@ pub fn run() {
             send_terminal_input,
             get_terminal_snapshot,
             check_agent_state,
+            check_agent_detailed_status,
             get_folded_logs,
             save_chat_message,
             get_session_messages,

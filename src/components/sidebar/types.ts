@@ -1,5 +1,6 @@
 import type { HydraSettings } from "../../shared/settings-types";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import type { AgentSubagentSnapshot } from "./agent-status-types";
 
 // ─── PR-14: sidebar prefs (SQLite sidebar_prefs, key "ui.sidebar") ──────────
 // O blob merged é um JSON plano; todos os campos são opcionais para que um blob
@@ -97,6 +98,12 @@ export interface WorktreeSession {
   updated_at?: number | null;
   /** Epoch ms the current state began (Rust `agent:state` payload field). Optional: absent on records created before PR-6. */
   state_started_at?: number;
+  tool_name?: string;
+  tool_input?: string;
+  last_assistant_message?: string;
+  parent_pane_key?: string;
+  coordinator_handle?: string;
+  subagents?: AgentSubagentSnapshot[];
 }
 
 export interface GitRepoStatus {

@@ -1348,6 +1348,9 @@ export function SidebarShell({
             worktree={wt}
             project={proj}
             compactCards={compactCards}
+            sessions={wtSessions}
+            onSelectSession={onSelectSession}
+            activeSessionId={sessions.find((s) => s.active)?.id}
             isPinned={pinnedWorktrees?.has(wt.path)}
             isUnread={unreadWorktrees?.has(wt.path)}
             isFocused={focusedWorktreePath === wt.path}

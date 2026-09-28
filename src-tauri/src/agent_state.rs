@@ -233,9 +233,147 @@ pub fn fold_terminal_output(raw_text: &str, max_lines: usize) -> String {
     result.join("\n")
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AgentSubagentSnapshot {
+    pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub agent_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub state: String,
+    pub started_at: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AgentDetailedStatus {
+    pub session_id: String,
+    pub state: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub working_mode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_input: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_assistant_message: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent_pane_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub coordinator_handle: Option<String>,
+    pub subagents: Vec<AgentSubagentSnapshot>,
+    pub updated_at: u64,
+}
+
+pub fn extract_agent_detailed_status(
+    session_id: &str,
+    screen_text: &str,
+    previous_state: Option<AgentState>,
+) -> AgentDetailedStatus {
+    let detection = detect_agent_state_detection(screen_text, previous_state);
+    let lines: Vec<&str> = screen_text.lines().map(|l| l.trim()).filter(|l| !l.is_empty()).collect();
+
+    let mut tool_name = None;
+    let mut tool_input = None;
+    let mut last_assistant_message = None;
+    let mut subagents = Vec::new();
+    let mut coordinator_handle = None;
+
+    let tail_lines = if lines.len() > 25 {
+        &lines[lines.len() - 25..]
+    } else {
+        &lines[..]
+    };
+
+    for line in tail_lines {
+        let lower = line.to_lowercase();
+        // Detect MCP tool calls: e.g. mcp__server__tool
+        if let Some(pos) = line.find("mcp__") {
+            let slice = &line[pos..];
+            let end = slice.find(|c: char| !c.is_alphanumeric() && c != '_' && c != '-').unwrap_or(slice.len());
+            tool_name = Some(slice[..end].to_string());
+        } else if lower.starts_with("tool:") || lower.starts_with("executing:") || lower.starts_with("running tool:") {
+            let parts: Vec<&str> = line.splitn(2, ':').collect();
+            if parts.len() == 2 {
+                let t_name = parts[1].trim();
+                let first_word = t_name.split_whitespace().next().unwrap_or(t_name);
+                tool_name = Some(first_word.to_string());
+            }
+        }
+
+        // Detect tool input/command
+        if line.starts_with("input:") || line.starts_with("args:") || line.starts_with("command:") {
+            let parts: Vec<&str> = line.splitn(2, ':').collect();
+            if parts.len() == 2 {
+                tool_input = Some(parts[1].trim().to_string());
+            }
+        }
+
+        // Detect subagents
+        if lower.contains("dispatched subagent") || lower.contains("spawned agent") || lower.contains("subagent:") {
+            let id = format!("sub_{}", subagents.len() + 1);
+            subagents.push(AgentSubagentSnapshot {
+                id,
+                agent_type: Some("Subagent".to_string()),
+                model: None,
+                description: Some(line.to_string()),
+                state: "working".to_string(),
+                started_at: now_epoch_ms(),
+            });
+            coordinator_handle = Some(session_id.to_string());
+        }
+
+        // Assistant explanation message candidate
+        if !line.starts_with('$')
+            && !line.starts_with('#')
+            && !line.starts_with('>')
+            && !lower.starts_with("input:")
+            && !lower.starts_with("args:")
+            && !lower.starts_with("command:")
+            && !lower.starts_with("tool:")
+            && !lower.starts_with("calling")
+            && !lower.starts_with("executing")
+            && line.len() > 10
+            && line.len() < 220
+        {
+            if !lower.contains("compiling") && !lower.contains("building") && !lower.contains("progress") {
+                last_assistant_message = Some(line.to_string());
+            }
+        }
+    }
+    let final_state = if (detection.state == AgentState::Unknown || detection.state == AgentState::Idle) && tool_name.is_some() {
+        "working".to_string()
+    } else {
+        detection.state.as_str().to_string()
+    };
+
+    AgentDetailedStatus {
+        session_id: session_id.to_string(),
+        state: final_state,
+        working_mode: None,
+        tool_name,
+        tool_input,
+        last_assistant_message,
+        parent_pane_key: None,
+        coordinator_handle,
+        subagents,
+        updated_at: now_epoch_ms(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn test_extract_agent_detailed_status() {
+        let text = "I am looking into the test failures.\nCalling tool: mcp__claude_ai_Slack__slack_read_channel\nInput: {\"channel\": \"#general\"}\nCompiling...";
+        let status = extract_agent_detailed_status("test-sess-1", text, None);
+        assert_eq!(status.session_id, "test-sess-1");
+        assert_eq!(status.state, "working");
+        assert_eq!(status.tool_name.as_deref(), Some("mcp__claude_ai_Slack__slack_read_channel"));
+        assert_eq!(status.last_assistant_message.as_deref(), Some("I am looking into the test failures."));
+    }
 
     #[test]
     fn test_detect_state_blocked() {

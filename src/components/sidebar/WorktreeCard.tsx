@@ -1,12 +1,13 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 import React, { useState } from "react";
-import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from "./types";
+import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus, WorktreeSession } from "./types";
 import { WorktreeCardHeader } from "./WorktreeCardHeader";
 import { WorktreeCardMetaRow } from "./WorktreeCardMetaRow";
 import { AutoRenameFailedDialog } from "./AutoRenameFailedDialog";
 import { WorktreeCardPortsTrigger } from "./WorktreeCardPortsTrigger";
 import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
 import { WorktreeCardDetailsHover } from "./WorktreeCardDetailsHover";
+import { WorktreeCardAgents } from "./WorktreeCardAgents";
 
 export interface WorktreeCardProps {
   worktree: GitWorktreeInfo;
@@ -28,6 +29,9 @@ export interface WorktreeCardProps {
   ports?: WorkspacePort[];
   review?: WorktreeReviewStatus;
   metaRowChildren?: React.ReactNode;
+  sessions?: WorktreeSession[];
+  onSelectSession?: (id: string) => void;
+  activeSessionId?: string | null;
 }
 
 export function WorktreeCard({
@@ -50,6 +54,9 @@ export function WorktreeCard({
   ports,
   review,
   metaRowChildren,
+  sessions,
+  onSelectSession,
+  activeSessionId,
 }: WorktreeCardProps): React.JSX.Element {
   const [isEditing, setIsEditing] = useState(false);
   const [renameErrorDialog, setRenameErrorDialog] = useState<string | null>(null);
@@ -118,6 +125,15 @@ export function WorktreeCard({
           {review && <WorktreeCardReviewBadge review={review} />}
           {metaRowChildren}
         </WorktreeCardMetaRow>
+
+        {sessions && sessions.length > 0 && onSelectSession && (
+          <WorktreeCardAgents
+            worktreePath={worktree.path}
+            sessions={sessions}
+            onSelectSession={onSelectSession}
+            activeSessionId={activeSessionId}
+          />
+        )}
         </div>
       </WorktreeCardDetailsHover>
 

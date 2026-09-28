@@ -1288,9 +1288,22 @@ export default function App() {
             const target = prev.find((s) => s.id === sid);
             if (!target) return prev;
             if (target.state === state) return prev;
+            const toolName = typeof payload.tool_name === "string" ? payload.tool_name : undefined;
+            const toolInput = typeof payload.tool_input === "string" ? payload.tool_input : undefined;
+            const lastMsg = typeof payload.last_assistant_message === "string" ? payload.last_assistant_message : undefined;
+            const subagents = Array.isArray(payload.subagents) ? (payload.subagents as WorktreeSession["subagents"]) : undefined;
+
             const next = prev.map((s) =>
               s.id === sid
-                ? { ...s, state: state as WorktreeSession["state"], state_started_at: typeof stateStartedAt === "number" ? stateStartedAt : undefined }
+                ? {
+                    ...s,
+                    state: state as WorktreeSession["state"],
+                    state_started_at: typeof stateStartedAt === "number" ? stateStartedAt : s.state_started_at,
+                    tool_name: toolName ?? s.tool_name,
+                    tool_input: toolInput ?? s.tool_input,
+                    last_assistant_message: lastMsg ?? s.last_assistant_message,
+                    subagents: subagents ?? s.subagents,
+                  }
                 : s
             );
             const wc = next.filter((s) => s.state === "working").length;
@@ -1333,12 +1346,32 @@ export default function App() {
     const interval = setInterval(() => {
       const currentActive = sessions.find((s) => s.active);
       if (currentActive) {
-        invoke<string>("check_agent_state", { sessionId: currentActive.id })
-          .then((detectedState) => {
-            if (detectedState) {
+        invoke<{
+          state: string;
+          tool_name?: string;
+          tool_input?: string;
+          last_assistant_message?: string;
+          subagents?: WorktreeSession["subagents"];
+          coordinator_handle?: string;
+          parent_pane_key?: string;
+        }>("check_agent_detailed_status", { sessionId: currentActive.id })
+          .then((detailed) => {
+            if (detailed && detailed.state) {
               setSessions((prev) => {
-                const next = prev.map((s) => s.active ? { ...s, state: detectedState as WorktreeSession["state"] } : s);
-                // Sync keep-awake with new working count
+                const next = prev.map((s) =>
+                  s.active
+                    ? {
+                        ...s,
+                        state: detailed.state as WorktreeSession["state"],
+                        tool_name: detailed.tool_name ?? s.tool_name,
+                        tool_input: detailed.tool_input ?? s.tool_input,
+                        last_assistant_message: detailed.last_assistant_message ?? s.last_assistant_message,
+                        subagents: detailed.subagents ?? s.subagents,
+                        coordinator_handle: detailed.coordinator_handle ?? s.coordinator_handle,
+                        parent_pane_key: detailed.parent_pane_key ?? s.parent_pane_key,
+                      }
+                    : s
+                );
                 const wc = next.filter((s) => s.state === "working").length;
                 syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
                 return next;
@@ -1348,7 +1381,16 @@ export default function App() {
               syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
             }
           })
-          .catch(() => {});
+          .catch(() => {
+            // Fallback to basic state check
+            invoke<string>("check_agent_state", { sessionId: currentActive.id })
+              .then((detectedState) => {
+                if (detectedState) {
+                  setSessions((prev) => prev.map((s) => s.active ? { ...s, state: detectedState as WorktreeSession["state"] } : s));
+                }
+              })
+              .catch(() => {});
+          });
       } else {
         const wc = sessions.filter((s) => s.state === "working").length;
         syncKeepAwake(Boolean(hydraSettings.keep_computer_awake_while_agents_run), wc);
