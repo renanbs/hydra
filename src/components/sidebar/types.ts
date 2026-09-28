@@ -65,6 +65,22 @@ export interface GitWorktreeInfo {
   sparse_directories?: string[];
 }
 
+export interface WorkspacePort {
+  port: number;
+  host: string;
+  pid?: number | null;
+  process_name?: string | null;
+  worktree_path: string;
+}
+
+export interface WorktreeReviewStatus {
+  pr_number?: number | null;
+  title?: string | null;
+  state?: "open" | "merged" | "closed" | "draft";
+  url?: string | null;
+  has_failing_checks?: boolean;
+}
+
 export interface WorktreeSession {
   id: string;
   project_path: string;

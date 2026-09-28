@@ -19,6 +19,7 @@ pub mod window_actions;
 pub mod worktree_ops;
 pub mod preflight;
 pub mod theme_import;
+pub mod port_scanner;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, detect_with_decay, fold_terminal_output, AgentState};
@@ -426,6 +427,30 @@ async fn auto_rename_worktree(
     let _ = state.db.set_worktree_display_name(&worktree_path, Some(&truncated_slug));
     let _ = state.db.set_worktree_rename_error(&worktree_path, None);
     Ok(truncated_slug)
+}
+
+#[tauri::command]
+async fn scan_workspace_ports(
+    worktree_paths: Vec<String>,
+) -> Result<Vec<port_scanner::WorkspacePort>, String> {
+    tokio::task::spawn_blocking(move || {
+        Ok(port_scanner::scan_listening_ports_for_worktrees(&worktree_paths))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn kill_port_process(pid: u32) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || {
+        #[cfg(unix)]
+        unsafe {
+            libc::kill(pid as i32, libc::SIGTERM);
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -1243,6 +1268,8 @@ pub fn run() {
             set_worktree_display_name,
             set_worktree_rename_error,
             auto_rename_worktree,
+            scan_workspace_ports,
+            kill_port_process,
             get_layout_persistence,
             save_layout_persistence,
             get_sidebar_pref,

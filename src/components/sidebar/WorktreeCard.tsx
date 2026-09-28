@@ -1,9 +1,11 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 import React, { useState } from "react";
-import type { GitWorktreeInfo, HydraProject } from "./types";
+import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from "./types";
 import { WorktreeCardHeader } from "./WorktreeCardHeader";
 import { WorktreeCardMetaRow } from "./WorktreeCardMetaRow";
 import { AutoRenameFailedDialog } from "./AutoRenameFailedDialog";
+import { WorktreeCardPortsTrigger } from "./WorktreeCardPortsTrigger";
+import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
 
 export interface WorktreeCardProps {
   worktree: GitWorktreeInfo;
@@ -22,6 +24,8 @@ export interface WorktreeCardProps {
   onDragOver?: (e: React.DragEvent, path: string) => void;
   onDrop?: (e: React.DragEvent, path: string) => void;
   onDragEnd?: () => void;
+  ports?: WorkspacePort[];
+  review?: WorktreeReviewStatus;
   metaRowChildren?: React.ReactNode;
 }
 
@@ -42,6 +46,8 @@ export function WorktreeCard({
   onDragOver,
   onDrop,
   onDragEnd,
+  ports,
+  review,
   metaRowChildren,
 }: WorktreeCardProps): React.JSX.Element {
   const [isEditing, setIsEditing] = useState(false);
@@ -101,6 +107,8 @@ export function WorktreeCard({
         />
 
         <WorktreeCardMetaRow worktree={worktree} compactCards={compactCards}>
+          {ports && ports.length > 0 && <WorktreeCardPortsTrigger ports={ports} />}
+          {review && <WorktreeCardReviewBadge review={review} />}
           {metaRowChildren}
         </WorktreeCardMetaRow>
       </div>

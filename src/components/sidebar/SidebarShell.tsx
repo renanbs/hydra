@@ -33,7 +33,7 @@ import { SidebarAgentsList } from "./SidebarAgentsList";
 import { SidebarNav } from "./SidebarNav";
 import { AgentBrandIcon } from "../AgentIcon";
 import { SidebarFooter } from "./SidebarFooter";
-import type { HydraProject, GitWorktreeInfo, WorktreeSession, WorktreeSidebarProps, AgentsGroupBy, AgentsStatusFilter } from "./types";
+import type { HydraProject, GitWorktreeInfo, WorktreeSession, WorktreeSidebarProps, AgentsGroupBy, AgentsStatusFilter, WorkspacePort } from "./types";
 import { IDLE, resolveSessionAttention, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { buildSidebarRows } from "./worktree-list/buildSidebarRows";
 import {
@@ -230,7 +230,7 @@ export function SidebarShell({
     project: null,
     hiddenWorktrees: [],
   });
-
+  const [portsByWorktree, setPortsByWorktree] = useState<Map<string, WorkspacePort[]>>(() => new Map());
   useEffect(() => {
     const handleOpenNewGroup = (e: Event) => {
       const detail = (e as CustomEvent<{ projectId?: string; defaultName?: string }>).detail;
@@ -310,6 +310,46 @@ export function SidebarShell({
     if (proj.path === activeProject?.path) return gitWorktrees;
     return [];
   }, [worktreesByProject, gitWorktrees, activeProject]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const scanPorts = async () => {
+      const pathsSet = new Set<string>();
+      for (const p of projects) {
+        pathsSet.add(p.path);
+        const wts = getWorktreesForProject(p);
+        for (const w of wts) {
+          pathsSet.add(w.path);
+        }
+      }
+      if (pathsSet.size === 0) return;
+      try {
+        const ports = await invoke<WorkspacePort[]>("scan_workspace_ports", {
+          worktreePaths: Array.from(pathsSet),
+        });
+        if (cancelled) return;
+        const byWt = new Map<string, WorkspacePort[]>();
+        for (const item of ports) {
+          const existing = byWt.get(item.worktree_path);
+          if (existing) {
+            existing.push(item);
+          } else {
+            byWt.set(item.worktree_path, [item]);
+          }
+        }
+        setPortsByWorktree(byWt);
+      } catch {
+        /* best-effort port scanning */
+      }
+    };
+
+    scanPorts();
+    const timer = setInterval(scanPorts, 8000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [projects, getWorktreesForProject]);
 
   const isDefaultBranchWt = useCallback((wt: GitWorktreeInfo, proj: HydraProject): boolean => {
     const b = wt.branch?.trim() ?? "";
@@ -1308,6 +1348,7 @@ export function SidebarShell({
             isFocused={focusedWorktreePath === wt.path}
             isDragged={draggedWorktreePath === wt.path}
             dropTarget={worktreeDropTarget}
+            ports={portsByWorktree.get(wt.path)}
             onSelect={onSelectGitWorktree}
             onDelete={onDeleteGitWorktree}
             onRename={(newTitle) => handleRenameWorktree(wt, newTitle)}
