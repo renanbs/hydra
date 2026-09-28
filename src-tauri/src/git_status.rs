@@ -57,6 +57,19 @@ pub fn get_git_status_for_path(repo_path: &str) -> Result<GitRepoStatus, String>
         head_commit,
     })
 }
+pub fn rename_branch_for_path(repo_path: &str, old_name: &str, new_name: &str) -> Result<(), String> {
+    let out = Command::new("git")
+        .args(["-C", repo_path, "branch", "-m", old_name, new_name])
+        .output()
+        .map_err(|e| format!("Failed to run git branch -m: {e}"))?;
+
+    if !out.status.success() {
+        let err = String::from_utf8_lossy(&out.stderr);
+        return Err(format!("git branch -m error: {err}"));
+    }
+    Ok(())
+}
+
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DetailedFileStatus {

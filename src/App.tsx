@@ -2783,18 +2783,73 @@ export default function App() {
       items: [
         { label: "Workspace", isLabel: true, onClick: () => {} },
         {
-          label: "Update Worktree...",
+          label: "Rename Worktree Display Name...",
           icon: <Pencil className="w-3.5 h-3.5" />,
           onClick: () => {
             setPromptDialog({
               open: true,
-              title: "Update Worktree",
-              description: "Copy branch name to clipboard",
+              title: "Rename Worktree",
+              description: "Custom display title stored in SQLite",
+              initialValue: wt.display_name || wt.branch,
+              confirmLabel: "Save",
+              onSubmit: async (newTitle) => {
+                const trimmed = newTitle.trim();
+                if (!trimmed) return;
+                try {
+                  await invoke("set_worktree_display_name", {
+                    worktreePath: wt.path,
+                    displayName: trimmed,
+                  });
+                  setGitWorktrees((prev) =>
+                    prev.map((w) => (w.path === wt.path ? { ...w, display_name: trimmed } : w))
+                  );
+                  setWorktreesByProject((prev) => {
+                    const next = { ...prev };
+                    for (const k of Object.keys(next)) {
+                      next[k] = next[k].map((w) => (w.path === wt.path ? { ...w, display_name: trimmed } : w));
+                    }
+                    return next;
+                  });
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (e) {
+                  console.error("Failed to rename worktree display name:", e);
+                }
+              },
+            });
+          },
+        },
+        {
+          label: "Rename Branch in Git...",
+          icon: <GitBranch className="w-3.5 h-3.5" />,
+          onClick: () => {
+            setPromptDialog({
+              open: true,
+              title: "Rename Branch in Git",
+              description: `Rename branch '${wt.branch}' using git branch -m`,
               initialValue: wt.branch,
-              confirmLabel: "Copy",
-              onSubmit: (newBranch) => {
-                if (newBranch.trim()) {
-                  navigator.clipboard.writeText(newBranch.trim()).catch(console.error);
+              confirmLabel: "Rename",
+              onSubmit: async (newBranch) => {
+                const trimmed = newBranch.trim();
+                if (!trimmed || trimmed === wt.branch) return;
+                try {
+                  await invoke("git_rename_branch_cmd", {
+                    repoPath: wt.path,
+                    oldName: wt.branch,
+                    newName: trimmed,
+                  });
+                  setGitWorktrees((prev) =>
+                    prev.map((w) => (w.path === wt.path ? { ...w, branch: trimmed } : w))
+                  );
+                  setWorktreesByProject((prev) => {
+                    const next = { ...prev };
+                    for (const k of Object.keys(next)) {
+                      next[k] = next[k].map((w) => (w.path === wt.path ? { ...w, branch: trimmed } : w));
+                    }
+                    return next;
+                  });
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (e) {
+                  console.error("Failed to rename git branch:", e);
                 }
               },
             });

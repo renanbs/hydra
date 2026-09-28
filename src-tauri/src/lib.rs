@@ -164,6 +164,12 @@ async fn get_diff_numstat_cmd(repoPath: String, staged: bool) -> Result<Vec<Diff
     tokio::task::spawn_blocking(move || get_diff_numstat(&repoPath, staged)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
+async fn git_rename_branch_cmd(repo_path: String, old_name: String, new_name: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || crate::git_status::rename_branch_for_path(&repo_path, &old_name, &new_name))
+        .await
+        .map_err(|e| e.to_string())?
+}
+#[tauri::command]
 async fn create_file_cmd(path: String) -> Result<(), String> {
     tokio::task::spawn_blocking(move || create_file(&path)).await.map_err(|e| e.to_string())?
 }
@@ -1298,6 +1304,7 @@ pub fn run() {
             git_stash_push_cmd,
             git_stash_pop_cmd,
             git_commit_amend_cmd,
+            git_rename_branch_cmd,
             open_in_file_manager,
             open_in_external_editor,
             list_projects,
