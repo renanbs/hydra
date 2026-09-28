@@ -35,6 +35,7 @@ import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, DEFAULT_OPEN_IN_APPLICA
 import { applyDocumentTheme } from "./lib/document-theme";
 import { CommandPalette } from "./components/CommandPalette";
 import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
+import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
 import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
@@ -436,6 +437,47 @@ export default function App() {
   activeTabIdRef.current = activeTabId;
   // Sprint 2 P0: focused pane per tab (sessionId)
   const [focusedPaneMap, setFocusedPaneMap] = useState<Record<string, string>>({});
+  const [mruTabIds, setMruTabIds] = useState<string[]>([]);
+  const [isRecentTabSwitcherOpen, setIsRecentTabSwitcherOpen] = useState(false);
+  const [recentTabSwitcherIndex, setRecentTabSwitcherIndex] = useState(0);
+  const isRecentTabSwitcherOpenRef = useRef(isRecentTabSwitcherOpen);
+  const recentTabSwitcherIndexRef = useRef(recentTabSwitcherIndex);
+
+  useEffect(() => {
+    isRecentTabSwitcherOpenRef.current = isRecentTabSwitcherOpen;
+    recentTabSwitcherIndexRef.current = recentTabSwitcherIndex;
+  }, [isRecentTabSwitcherOpen, recentTabSwitcherIndex]);
+
+  useEffect(() => {
+    if (!activeTabId) return;
+    setMruTabIds((prev) => [activeTabId, ...prev.filter((id) => id !== activeTabId)]);
+  }, [activeTabId]);
+
+  useEffect(() => {
+    const existing = new Set(tabs.map((t) => t.id));
+    setMruTabIds((prev) => prev.filter((id) => existing.has(id)));
+  }, [tabs]);
+
+  const mruTabs = useMemo(() => {
+    const map = new Map(tabs.map((t) => [t.id, t]));
+    const list: TabItem[] = [];
+    for (const id of mruTabIds) {
+      const tab = map.get(id);
+      if (tab) {
+        list.push(tab);
+        map.delete(id);
+      }
+    }
+    for (const tab of map.values()) {
+      list.push(tab);
+    }
+    return list;
+  }, [tabs, mruTabIds]);
+
+  const mruTabsRef = useRef(mruTabs);
+  useEffect(() => {
+    mruTabsRef.current = mruTabs;
+  }, [mruTabs]);
 
   // Orca running-terminal-close parity: pending confirmation for closing a terminal
   // tab whose shell still has a running child process. `onConfirm` performs the
@@ -2111,6 +2153,12 @@ export default function App() {
           setContextMenu(null);
           return;
         }
+        if (isRecentTabSwitcherOpenRef.current) {
+          e.preventDefault();
+          setIsRecentTabSwitcherOpen(false);
+          isRecentTabSwitcherOpenRef.current = false;
+          return;
+        }
         if (isJumpPaletteOpen) {
           e.preventDefault();
           setIsJumpPaletteOpen(false);
@@ -2147,6 +2195,26 @@ export default function App() {
       const isInputFocused = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || Boolean(target?.isContentEditable);
       const isModalOpen = isJumpPaletteOpen || isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen;
       const isChord = e.ctrlKey || e.metaKey;
+      if (isChord && e.key === "Tab") {
+        e.preventDefault();
+        const currentMru = mruTabsRef.current;
+        if (currentMru.length > 1) {
+          if (!isRecentTabSwitcherOpenRef.current) {
+            setIsRecentTabSwitcherOpen(true);
+            isRecentTabSwitcherOpenRef.current = true;
+            const initialIdx = e.shiftKey ? currentMru.length - 1 : 1;
+            setRecentTabSwitcherIndex(initialIdx);
+            recentTabSwitcherIndexRef.current = initialIdx;
+          } else {
+            const nextIdx = e.shiftKey
+              ? (recentTabSwitcherIndexRef.current - 1 + currentMru.length) % currentMru.length
+              : (recentTabSwitcherIndexRef.current + 1) % currentMru.length;
+            setRecentTabSwitcherIndex(nextIdx);
+            recentTabSwitcherIndexRef.current = nextIdx;
+          }
+        }
+        return;
+      }
       if (isChord && e.key.toLowerCase() === "p") {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
@@ -2261,10 +2329,37 @@ export default function App() {
       }
     };
 
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (
+        isRecentTabSwitcherOpenRef.current &&
+        (e.key === "Control" || e.key === "Meta" || (!e.ctrlKey && !e.metaKey))
+      ) {
+        e.preventDefault();
+        const target = mruTabsRef.current[recentTabSwitcherIndexRef.current];
+        if (target) {
+          setActiveTabId(target.id);
+        }
+        setIsRecentTabSwitcherOpen(false);
+        isRecentTabSwitcherOpenRef.current = false;
+      }
+    };
+
+    const handleWindowBlur = () => {
+      if (isRecentTabSwitcherOpenRef.current) {
+        setIsRecentTabSwitcherOpen(false);
+        isRecentTabSwitcherOpenRef.current = false;
+      }
+    };
+
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleWindowBlur);
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("contextmenu", handleGlobalContextMenu);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleWindowBlur);
     };
   }, [
     isLeftSidebarOpen,
@@ -3506,6 +3601,26 @@ export default function App() {
           }
         />
       )}
+
+      {/* Recent Tab Switcher (Ctrl+Tab) */}
+      <RecentTabSwitcher
+        isOpen={isRecentTabSwitcherOpen}
+        tabs={mruTabs}
+        selectedIndex={recentTabSwitcherIndex}
+        onSelectIndex={(idx) => {
+          setRecentTabSwitcherIndex(idx);
+          recentTabSwitcherIndexRef.current = idx;
+        }}
+        onCommit={(tabId) => {
+          setActiveTabId(tabId);
+          setIsRecentTabSwitcherOpen(false);
+          isRecentTabSwitcherOpenRef.current = false;
+        }}
+        onCancel={() => {
+          setIsRecentTabSwitcherOpen(false);
+          isRecentTabSwitcherOpenRef.current = false;
+        }}
+      />
 
       {/* Command Palette */}
       <CommandPalette 
