@@ -113,6 +113,7 @@ export function WorktreeCardDetailsHover({
     try {
       await invoke("kill_port_process", { pid });
       onPortKilled?.();
+      window.dispatchEvent(new CustomEvent("hydra:refresh-ports"));
     } catch (e) {
       console.error("Failed to stop port process:", e);
     } finally {

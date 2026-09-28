@@ -345,9 +345,14 @@ export function SidebarShell({
 
     scanPorts();
     const timer = setInterval(scanPorts, 8000);
+    const handleImmediateRefresh = () => {
+      void scanPorts();
+    };
+    window.addEventListener("hydra:refresh-ports", handleImmediateRefresh);
     return () => {
       cancelled = true;
       clearInterval(timer);
+      window.removeEventListener("hydra:refresh-ports", handleImmediateRefresh);
     };
   }, [projects, getWorktreesForProject]);
 

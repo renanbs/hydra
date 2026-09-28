@@ -22,6 +22,7 @@ export function WorktreeTitleInlineRename({
   onBeginEditingConsumed,
 }: WorktreeTitleInlineRenameProps): React.JSX.Element {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const cancellingRef = useRef(false);
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(displayName);
   const [saving, setSaving] = useState(false);
@@ -78,6 +79,7 @@ export function WorktreeTitleInlineRename({
     } else if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();
+      cancellingRef.current = true;
       setValue(displayName);
       setEditing(false);
       onEditingChange?.(false);
@@ -85,6 +87,10 @@ export function WorktreeTitleInlineRename({
   };
 
   const handleBlur = () => {
+    if (cancellingRef.current) {
+      cancellingRef.current = false;
+      return;
+    }
     if (editing && !saving) {
       commit(value);
     }

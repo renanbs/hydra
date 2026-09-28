@@ -442,6 +442,9 @@ async fn scan_workspace_ports(
 
 #[tauri::command]
 async fn kill_port_process(pid: u32) -> Result<(), String> {
+    if pid <= 1 {
+        return Err("Cannot kill system process (PID <= 1)".to_string());
+    }
     tokio::task::spawn_blocking(move || {
         #[cfg(unix)]
         unsafe {
