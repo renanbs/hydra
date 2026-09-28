@@ -101,6 +101,7 @@ interface WorkbenchTabBarProps {
   onLaunchAgent?: (agent: DetectedAgent) => void;
   detectedAgents?: DetectedAgent[];
   onRenameTab: (id: string, newTitle: string) => void;
+  onReorderTabs?: (newTabs: TabItem[]) => void;
   onTabContextMenu?: (e: React.MouseEvent, tab: TabItem) => void;
   onTabBarContextMenu?: (e: React.MouseEvent) => void;
 }
@@ -119,6 +120,7 @@ export function WorkbenchTabBar({
   onLaunchAgent,
   detectedAgents,
   onRenameTab,
+  onReorderTabs,
   onTabContextMenu,
   onTabBarContextMenu,
 }: WorkbenchTabBarProps) {
@@ -142,6 +144,8 @@ export function WorkbenchTabBar({
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
+  const [dropIndicator, setDropIndicator] = useState<{ tabId: string; side: "left" | "right" } | null>(null);
 
   useEffect(() => {
     if (editingTabId && inputRef.current) {
@@ -210,10 +214,86 @@ export function WorkbenchTabBar({
                 (tabSession?.project_path && unreadWorktrees?.has(tabSession.project_path)))
           );
           const displayTitle = tabAgent ? stripLeadingAgentTitleDecoration(tab.title) : tab.title;
+          const isDragging = draggedTabId === tab.id;
+          const indicatorSide = dropIndicator?.tabId === tab.id ? dropIndicator.side : null;
+          const dropIndicatorClass = 
+            indicatorSide === "left"
+              ? "before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:bg-blue-500 before:z-30 before:content-['']"
+              : indicatorSide === "right"
+              ? "after:absolute after:inset-y-0 after:right-0 after:w-[2px] after:bg-blue-500 after:z-30 after:content-['']"
+              : "";
 
           return (
             <div
               key={tab.id}
+              draggable={!isEditing}
+              onDragStart={(e) => {
+                if (isEditing) {
+                  e.preventDefault();
+                  return;
+                }
+                e.dataTransfer.setData("text/plain", tab.id);
+                e.dataTransfer.effectAllowed = "move";
+                setDraggedTabId(tab.id);
+              }}
+              onDragOver={(e) => {
+                if (!draggedTabId || draggedTabId === tab.id) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                const rect = e.currentTarget.getBoundingClientRect();
+                const midX = rect.left + rect.width / 2;
+                const side = e.clientX < midX ? "left" : "right";
+                setDropIndicator((prev) => {
+                  if (prev?.tabId === tab.id && prev?.side === side) return prev;
+                  return { tabId: tab.id, side };
+                });
+              }}
+              onDragLeave={(e) => {
+                if (dropIndicator?.tabId === tab.id) {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  if (
+                    e.clientX < rect.left ||
+                    e.clientX >= rect.right ||
+                    e.clientY < rect.top ||
+                    e.clientY >= rect.bottom
+                  ) {
+                    setDropIndicator(null);
+                  }
+                }
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (!draggedTabId || draggedTabId === tab.id) {
+                  setDropIndicator(null);
+                  setDraggedTabId(null);
+                  return;
+                }
+                const rect = e.currentTarget.getBoundingClientRect();
+                const side = e.clientX < (rect.left + rect.width / 2) ? "left" : "right";
+                
+                const sourceIdx = tabs.findIndex((t) => t.id === draggedTabId);
+                if (sourceIdx === -1) {
+                  setDropIndicator(null);
+                  setDraggedTabId(null);
+                  return;
+                }
+                const sourceTab = tabs[sourceIdx];
+                const newTabs = tabs.filter((t) => t.id !== draggedTabId);
+                let targetIdx = newTabs.findIndex((t) => t.id === tab.id);
+                if (targetIdx === -1) {
+                  targetIdx = newTabs.length;
+                } else if (side === "right") {
+                  targetIdx += 1;
+                }
+                newTabs.splice(targetIdx, 0, sourceTab);
+                onReorderTabs?.(newTabs);
+                setDropIndicator(null);
+                setDraggedTabId(null);
+              }}
+              onDragEnd={() => {
+                setDropIndicator(null);
+                setDraggedTabId(null);
+              }}
               onClick={() => onSelectTab(tab.id)}
               onDoubleClick={() => handleStartRename(tab)}
               onMouseUp={preventMiddleButtonDefault}
@@ -230,7 +310,9 @@ export function WorkbenchTabBar({
                 e.stopPropagation();
                 onTabContextMenu?.(e, tab);
               }}
-              className={`group relative flex items-center gap-2 h-8 px-3 text-xs border-r border-border cursor-pointer transition-colors shrink-0 ${
+              className={`group relative flex items-center gap-2 h-8 px-3 text-xs border-r border-border cursor-pointer transition-colors shrink-0 ${dropIndicatorClass} ${
+                isDragging ? "opacity-40" : ""
+              } ${
                 isActive
                   ? "bg-[color-mix(in_srgb,var(--foreground)_6%,var(--card))] text-foreground font-medium"
                   : "bg-card text-muted-foreground hover:text-foreground hover:bg-accent/40"

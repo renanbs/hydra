@@ -3174,6 +3174,7 @@ export default function App() {
                 onLaunchAgent={handleLaunchAgent}
                 detectedAgents={availableAgents}
                 onRenameTab={handleRenameTab}
+                onReorderTabs={setTabs}
                 onTabContextMenu={handleTabContextMenu}
                 onTabBarContextMenu={handleTabBarContextMenu}
               />
