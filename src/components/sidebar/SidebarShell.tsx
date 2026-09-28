@@ -127,11 +127,12 @@ const STATUS_HEADER_DOT: Record<SidebarStatusState, string> = {
 // (App.tsx marks batch-closed sessions idle, never unknown, so the split holds.)
 // Module scope: pure adapter, no closures over component state — memoized sort
 // callbacks capture it safely across renders.
-const sessionInput = (s: WorktreeSession): SessionAttentionInput => ({
+const sessionInput = (s: WorktreeSession, isUnvisited?: boolean): SessionAttentionInput => ({
   state: s.state,
   stateStartedAt: s.state_started_at,
   lastActivityAt: s.updated_at ?? s.created_at ?? undefined,
   hasLivePty: true,
+  isUnvisited,
 });
 
 export function SidebarShell({
@@ -402,26 +403,44 @@ export function SidebarShell({
     const now = Date.now();
     const inputsByPath = new Map<string, SessionAttentionInput[]>();
     for (const s of sessions) {
+      const isUnvisited = Boolean(
+        unreadWorktrees?.has(s.id) ||
+        (s.project_path && unreadWorktrees?.has(s.project_path))
+      );
       const list = inputsByPath.get(s.project_path);
-      if (list) list.push(sessionInput(s));
-      else inputsByPath.set(s.project_path, [sessionInput(s)]);
+      if (list) list.push(sessionInput(s, isUnvisited));
+      else inputsByPath.set(s.project_path, [sessionInput(s, isUnvisited)]);
     }
     const attentionByPath = new Map<string, SessionAttention>();
     for (const [path, inputs] of inputsByPath) {
-      attentionByPath.set(path, resolveWorktreeAttention(inputs, now));
+      const isWtUnvisited = Boolean(unreadWorktrees?.has(path));
+      const effectiveInputs = isWtUnvisited
+        ? inputs.map((inp) => (inp.isUnvisited ? inp : { ...inp, isUnvisited: true }))
+        : inputs;
+      attentionByPath.set(path, resolveWorktreeAttention(effectiveInputs, now));
     }
     return [...wts].sort((a, b) => {
-      const aa = attentionByPath.get(a.path) ?? IDLE;
-      const bb = attentionByPath.get(b.path) ?? IDLE;
-      // Why: 1 < 2 < 3 < 4 < 5 — lower class outranks higher (corrects the former
-      // ternary that ranked working above blocked).
+      let aa = attentionByPath.get(a.path);
+      if (!aa && unreadWorktrees?.has(a.path)) {
+        aa = { cls: 3, attentionTimestamp: (a.created_at ?? 0) * 1000 };
+      }
+      aa = aa ?? IDLE;
+
+      let bb = attentionByPath.get(b.path);
+      if (!bb && unreadWorktrees?.has(b.path)) {
+        bb = { cls: 3, attentionTimestamp: (b.created_at ?? 0) * 1000 };
+      }
+      bb = bb ?? IDLE;
+
+      // Why: 1 < 2 < 3 < 4 < 5 — Phase 5.1 Smart Sort order:
+      // 1: blocked/waiting > 2: working > 3: done/unvisited > 4: unverifiable > 5: idle
       if (aa.cls !== bb.cls) return aa.cls - bb.cls;
       if (aa.attentionTimestamp !== bb.attentionTimestamp) return bb.attentionTimestamp - aa.attentionTimestamp;
       const aRecent = Math.max(...sessions.filter((s) => s.project_path === a.path).map((s) => s.updated_at ?? s.created_at ?? 0), (a.created_at ?? 0) * 1000);
       const bRecent = Math.max(...sessions.filter((s) => s.project_path === b.path).map((s) => s.updated_at ?? s.created_at ?? 0), (b.created_at ?? 0) * 1000);
       return bRecent - aRecent;
     });
-  }, [sessions, displayOptions.sortBy]);
+  }, [sessions, displayOptions.sortBy, unreadWorktrees]);
 
   const sortSessionsByOption = useCallback((sess: WorktreeSession[]): WorktreeSession[] => {
     if (displayOptions.sortBy === "name") {
@@ -436,7 +455,11 @@ export function SidebarShell({
     const now = Date.now();
     const attentionById = new Map<string, SessionAttention>();
     for (const s of sess) {
-      attentionById.set(s.id, resolveSessionAttention(sessionInput(s), now));
+      const isUnvisited = Boolean(
+        unreadWorktrees?.has(s.id) ||
+        (s.project_path && unreadWorktrees?.has(s.project_path))
+      );
+      attentionById.set(s.id, resolveSessionAttention(sessionInput(s, isUnvisited), now));
     }
     return [...sess].sort((a, b) => {
       const aa = attentionById.get(a.id) ?? IDLE;
@@ -445,7 +468,7 @@ export function SidebarShell({
       if (aa.attentionTimestamp !== bb.attentionTimestamp) return bb.attentionTimestamp - aa.attentionTimestamp;
       return (b.updated_at ?? b.created_at ?? 0) - (a.updated_at ?? a.created_at ?? 0);
     });
-  }, [displayOptions.sortBy]);
+  }, [displayOptions.sortBy, unreadWorktrees]);
 
   const SessionAgentIcon = ({ agentName, size }: { agentName: string; size: number }) => {
     const lower = agentName.toLowerCase();

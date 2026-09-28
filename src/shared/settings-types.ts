@@ -53,6 +53,7 @@ export type HydraSettings = {
   terminal_divider_thickness_px: number;
   terminal_focus_follows_mouse: boolean;
   terminal_scrollback_rows: number;
+  terminal_cold_parking?: boolean;
   // Terminal Interaction — Orca TerminalPane faithful (image 1:1)
   terminal_scroll_sensitivity?: number;
   terminal_fast_scroll_sensitivity?: number;
