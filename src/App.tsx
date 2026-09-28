@@ -21,7 +21,7 @@ import {
 } from "./components/sidebar/WorktreeSidebar";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
 import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
-import { WorkbenchTabBar, type TabItem, type SplitPane, RUNNING_CLOSE_PROBE_TIMEOUT_MS, SHELL_EXECUTABLES } from "./components/workbench/WorkbenchTabBar";
+import { WorkbenchTabBar, type TabItem, type SplitPane, RUNNING_CLOSE_PROBE_TIMEOUT_MS, SHELL_EXECUTABLES, TAB_COLORS } from "./components/workbench/WorkbenchTabBar";
 import {
   RunningTerminalCloseDialog,
   type RunningTerminalCloseConfirmRequest,
@@ -56,6 +56,7 @@ import {
   TextSelect,
   Pin,
   PinOff,
+  Palette,
   Bell,
   BellOff,
   FolderInput,
@@ -2485,9 +2486,39 @@ export default function App() {
         },
         {
           separator: true,
+          label: tab.isPinned ? "Unpin Tab" : "Pin Tab",
+          icon: tab.isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />,
+          onClick: () => {
+            setTabs((prev) =>
+              prev.map((t) => (t.id === tab.id ? { ...t, isPinned: !t.isPinned } : t))
+            );
+          }
+        },
+        {
+          label: "Tab Color",
+          icon: <Palette className="w-3.5 h-3.5" />,
+          children: TAB_COLORS.map((c) => ({
+            label: c.label,
+            icon: c.value ? (
+              <span
+                className="w-2.5 h-2.5 rounded-full inline-block border border-white/20"
+                style={{ backgroundColor: c.value }}
+              />
+            ) : undefined,
+            onClick: () => {
+              setTabs((prev) =>
+                prev.map((t) => (t.id === tab.id ? { ...t, color: c.value } : t))
+              );
+            }
+          })),
+          onClick: () => {}
+        },
+        {
+          separator: true,
           label: "Close Tab",
           icon: <X className="w-3.5 h-3.5" />,
           shortcut: isMac ? "⌘W" : "Ctrl+W",
+          disabled: Boolean(tab.isPinned),
           danger: true,
           onClick: () => handleCloseTab(tab.id)
         },

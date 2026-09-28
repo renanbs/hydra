@@ -7,7 +7,8 @@ import {
   File, 
   GitCompare,
   FilePlus, 
-  FileText
+  FileText,
+  Pin
 } from "lucide-react";
 import { AgentBrandIcon } from "../AgentIcon";
 import { TerminalTabLeadingIcon } from "./TerminalTabLeadingIcon";
@@ -35,12 +36,27 @@ export interface TabItem {
   cwd?: string;
   agentName?: string;
   agentId?: string;
+  isPinned?: boolean;
+  color?: string | null;
   /** Sprint 2 P0: split terminals within a single tab */
   splitSessionIds?: string[];
   splitDirection?: "horizontal" | "vertical";
   splitPanes?: SplitPane[];
   splitLayout?: SplitLayout;
 }
+
+export const TAB_COLORS = [
+  { label: "None", value: null },
+  { label: "Blue", value: "#3b82f6" },
+  { label: "Purple", value: "#a855f7" },
+  { label: "Pink", value: "#ec4899" },
+  { label: "Red", value: "#ef4444" },
+  { label: "Orange", value: "#f97316" },
+  { label: "Yellow", value: "#eab308" },
+  { label: "Green", value: "#22c55e" },
+  { label: "Teal", value: "#14b8a6" },
+  { label: "Gray", value: "#9ca3af" },
+] as const;
 
 export interface DetectedAgent {
   id: string;
@@ -202,7 +218,7 @@ export function WorkbenchTabBar({
               onDoubleClick={() => handleStartRename(tab)}
               onMouseUp={preventMiddleButtonDefault}
               onAuxClick={(e) => {
-                if (isEditing) return;
+                if (isEditing || tab.isPinned) return;
                 if (e.button === 1) {
                   e.preventDefault();
                   e.stopPropagation();
@@ -222,6 +238,16 @@ export function WorkbenchTabBar({
             >
               {isActive && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-[color-mix(in_srgb,var(--foreground)_60%,var(--card))] z-20" />
+              )}
+              {tab.isPinned && !isEditing && (
+                <Pin className="w-2.5 h-2.5 text-muted-foreground shrink-0" aria-hidden />
+              )}
+              {tab.color && !isEditing && (
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: tab.color }}
+                  aria-hidden
+                />
               )}
               {tab.type === "editor" ? (
                 <File className="w-3.5 h-3.5 text-blue-400 shrink-0" />
@@ -257,7 +283,7 @@ export function WorkbenchTabBar({
                   {displayTitle}
                 </span>
               )}
-              {!isEditing && (
+              {!isEditing && !tab.isPinned && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
