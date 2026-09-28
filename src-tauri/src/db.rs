@@ -45,7 +45,13 @@ pub struct AgentStateHistoryRecord {
     pub state: String,
     pub started_at: i64,
 }
-
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
+pub struct WorktreeMetadataRecord {
+    pub worktree_path: String,
+    pub display_name: Option<String>,
+    pub first_agent_message_rename_error: Option<String>,
+    pub updated_at: i64,
+}
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UiLayoutState {
     pub left_sidebar_open: bool,
@@ -660,6 +666,12 @@ impl DatabaseManager {
              CREATE TABLE IF NOT EXISTS sidebar_prefs (
                  key TEXT PRIMARY KEY,
                  json TEXT NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS worktree_metadata (
+                 worktree_path TEXT PRIMARY KEY,
+                 display_name TEXT,
+                 first_agent_message_rename_error TEXT,
+                 updated_at INTEGER NOT NULL
              );",
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
@@ -674,7 +686,7 @@ impl DatabaseManager {
         })
     }
 
-    fn get_db_path() -> Result<PathBuf, String> {
+    pub fn get_db_path() -> Result<PathBuf, String> {
         let home = std::env::var("HOME").map_err(|_| "HOME not found".to_string())?;
         let dir = PathBuf::from(home).join(".config").join("hydra");
         std::fs::create_dir_all(&dir).map_err(|e| format!("Failed to create ~/.config/hydra: {e}"))?;
@@ -1088,6 +1100,71 @@ impl DatabaseManager {
         }
     }
 
+    pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, updated_at FROM worktree_metadata WHERE worktree_path = ?1")
+            .map_err(|e| format!("Error preparing worktree_metadata select: {e}"))?;
+        let mut rows = stmt.query(params![worktree_path]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            Ok(Some(WorktreeMetadataRecord {
+                worktree_path: row.get(0).map_err(|e| e.to_string())?,
+                display_name: row.get(1).ok().flatten(),
+                first_agent_message_rename_error: row.get(2).ok().flatten(),
+                updated_at: row.get(3).unwrap_or(0),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn get_all_worktree_metadata(&self) -> Result<std::collections::HashMap<String, WorktreeMetadataRecord>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, updated_at FROM worktree_metadata")
+            .map_err(|e| format!("Error preparing worktree_metadata select all: {e}"))?;
+        let rows = stmt
+            .query_map(params![], |row| {
+                Ok(WorktreeMetadataRecord {
+                    worktree_path: row.get(0)?,
+                    display_name: row.get(1).ok().flatten(),
+                    first_agent_message_rename_error: row.get(2).ok().flatten(),
+                    updated_at: row.get(3).unwrap_or(0),
+                })
+            })
+            .map_err(|e| format!("Query error: {e}"))?;
+        let mut map = std::collections::HashMap::new();
+        for r in rows.flatten() {
+            map.insert(r.worktree_path.clone(), r);
+        }
+        Ok(map)
+    }
+
+    pub fn set_worktree_display_name(&self, worktree_path: &str, display_name: Option<&str>) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO worktree_metadata (worktree_path, display_name, first_agent_message_rename_error, updated_at)
+             VALUES (?1, ?2, NULL, ?3)
+             ON CONFLICT(worktree_path) DO UPDATE SET display_name = excluded.display_name, updated_at = excluded.updated_at",
+            params![worktree_path, display_name, now],
+        )
+        .map_err(|e| format!("Error setting worktree display name: {e}"))?;
+        Ok(())
+    }
+
+    pub fn set_worktree_rename_error(&self, worktree_path: &str, error: Option<&str>) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO worktree_metadata (worktree_path, display_name, first_agent_message_rename_error, updated_at)
+             VALUES (?1, NULL, ?2, ?3)
+             ON CONFLICT(worktree_path) DO UPDATE SET first_agent_message_rename_error = excluded.first_agent_message_rename_error, updated_at = excluded.updated_at",
+            params![worktree_path, error, now],
+        )
+        .map_err(|e| format!("Error setting worktree rename error: {e}"))?;
+        Ok(())
+    }
     #[cfg(test)]
     pub fn new_in_memory() -> Result<Self, String> {
         let conn = Connection::open_in_memory().map_err(|e| format!("Error opening SQLite in memory: {e}"))?;
@@ -1133,6 +1210,12 @@ impl DatabaseManager {
              CREATE TABLE IF NOT EXISTS sidebar_prefs (
                  key TEXT PRIMARY KEY,
                  json TEXT NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS worktree_metadata (
+                 worktree_path TEXT PRIMARY KEY,
+                 display_name TEXT,
+                 first_agent_message_rename_error TEXT,
+                 updated_at INTEGER NOT NULL
              );"
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
@@ -1421,6 +1504,37 @@ mod tests {
             db.get_sidebar_pref("ui.sidebar").expect("get clean").as_deref(),
             Some(r#"{"ok":1}"#)
         );
+    }
+
+    #[test]
+    fn test_worktree_metadata_persistence() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let wt_path = "/home/renan/src/hydra/.worktrees/feature-test";
+
+        // Initial query returns None
+        let initial = db.get_worktree_metadata(wt_path).expect("query initial");
+        assert!(initial.is_none());
+
+        // Set display name
+        db.set_worktree_display_name(wt_path, Some("Test Feature")).expect("set display name");
+        let record = db.get_worktree_metadata(wt_path).expect("query after rename").expect("record exists");
+        assert_eq!(record.display_name.as_deref(), Some("Test Feature"));
+        assert!(record.first_agent_message_rename_error.is_none());
+
+        // Set rename error
+        db.set_worktree_rename_error(wt_path, Some("CLI timeout error")).expect("set rename error");
+        let record_err = db.get_worktree_metadata(wt_path).expect("query after error").expect("record exists");
+        assert_eq!(record_err.display_name.as_deref(), Some("Test Feature"));
+        assert_eq!(record_err.first_agent_message_rename_error.as_deref(), Some("CLI timeout error"));
+
+        // Clear rename error
+        db.set_worktree_rename_error(wt_path, None).expect("clear rename error");
+        let record_cleared = db.get_worktree_metadata(wt_path).expect("query after clear").expect("record exists");
+        assert_eq!(record_cleared.first_agent_message_rename_error, None);
+
+        // All worktree metadata map
+        let all = db.get_all_worktree_metadata().expect("query all");
+        assert!(all.contains_key(wt_path));
     }
 }
 

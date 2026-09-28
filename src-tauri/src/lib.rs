@@ -358,6 +358,75 @@ async fn delete_worktree(
     .await
     .map_err(|e| e.to_string())?
 }
+#[tauri::command]
+async fn set_worktree_display_name(
+    worktree_path: String,
+    display_name: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state.db.set_worktree_display_name(&worktree_path, display_name.as_deref())
+}
+
+#[tauri::command]
+async fn set_worktree_rename_error(
+    worktree_path: String,
+    error: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state.db.set_worktree_rename_error(&worktree_path, error.as_deref())
+}
+
+#[tauri::command]
+async fn auto_rename_worktree(
+    worktree_path: String,
+    prompt: String,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let trimmed = prompt.trim();
+    if trimmed.is_empty() {
+        let err = "Prompt is empty; cannot generate branch name".to_string();
+        let _ = state.db.set_worktree_rename_error(&worktree_path, Some(&err));
+        return Err(err);
+    }
+
+    let words: Vec<&str> = trimmed
+        .split(|c: char| !c.is_alphanumeric() && c != '-' && c != '_')
+        .map(|w| w.trim())
+        .filter(|w| {
+            let lw = w.to_lowercase();
+            !w.is_empty()
+                && w.len() > 1
+                && lw != "the"
+                && lw != "and"
+                && lw != "for"
+                && lw != "with"
+                && lw != "from"
+                && lw != "please"
+                && lw != "make"
+                && lw != "create"
+                && lw != "can"
+                && lw != "you"
+        })
+        .take(4)
+        .collect();
+
+    if words.is_empty() {
+        let err = "Could not extract semantic keywords from prompt".to_string();
+        let _ = state.db.set_worktree_rename_error(&worktree_path, Some(&err));
+        return Err(err);
+    }
+
+    let slug = words.join("-").to_lowercase();
+    let truncated_slug = if slug.len() > 32 {
+        slug[..32].trim_end_matches('-').to_string()
+    } else {
+        slug
+    };
+
+    let _ = state.db.set_worktree_display_name(&worktree_path, Some(&truncated_slug));
+    let _ = state.db.set_worktree_rename_error(&worktree_path, None);
+    Ok(truncated_slug)
+}
 
 #[tauri::command]
 async fn get_layout_persistence(state: State<'_, AppState>) -> Result<UiLayoutState, String> {
@@ -1171,6 +1240,9 @@ pub fn run() {
             clone_project,
             create_worktree,
             delete_worktree,
+            set_worktree_display_name,
+            set_worktree_rename_error,
+            auto_rename_worktree,
             get_layout_persistence,
             save_layout_persistence,
             get_sidebar_pref,

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct GitWorktreeInfo {
     pub path: String,
@@ -13,6 +13,14 @@ pub struct GitWorktreeInfo {
     pub created_at: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub first_agent_message_rename_error: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_sparse: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sparse_directories: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -629,6 +637,10 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
                     is_locked,
                     created_at: None,
                     status: if is_prunable { Some("prunable".to_string()) } else { None },
+                    display_name: None,
+                    first_agent_message_rename_error: None,
+                    is_sparse: None,
+                    sparse_directories: None,
                 });
                 current_head = String::new();
                 current_branch = String::new();
@@ -660,6 +672,10 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
             is_locked,
             created_at: None,
             status: if is_prunable { Some("prunable".to_string()) } else { None },
+            display_name: None,
+            first_agent_message_rename_error: None,
+            is_sparse: None,
+            sparse_directories: None,
         });
     }
 
@@ -691,13 +707,91 @@ fn get_worktree_created_at(path: &str) -> Option<i64> {
     None
 }
 
+fn load_all_persisted_worktree_metadata() -> HashMap<String, (Option<String>, Option<String>)> {
+    let mut map = HashMap::new();
+    if let Ok(db_path) = crate::db::DatabaseManager::get_db_path() {
+        if let Ok(conn) = rusqlite::Connection::open(&db_path) {
+            let _ = conn.execute(
+                "CREATE TABLE IF NOT EXISTS worktree_metadata (
+                    worktree_path TEXT PRIMARY KEY,
+                    display_name TEXT,
+                    first_agent_message_rename_error TEXT,
+                    updated_at INTEGER NOT NULL
+                )",
+                rusqlite::params![],
+            );
+            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error FROM worktree_metadata") {
+                if let Ok(rows) = stmt.query_map(rusqlite::params![], |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, Option<String>>(1)?,
+                        row.get::<_, Option<String>>(2)?,
+                    ))
+                }) {
+                    for r in rows.flatten() {
+                        map.insert(r.0, (r.1, r.2));
+                    }
+                }
+            }
+        }
+    }
+    map
+}
+
+fn check_sparse_checkout(wt: &mut GitWorktreeInfo) {
+    let wt_path = Path::new(&wt.path);
+    let dot_git = wt_path.join(".git");
+    let git_dir = if dot_git.is_file() {
+        if let Ok(content) = std::fs::read_to_string(&dot_git) {
+            if let Some(rest) = content.trim().strip_prefix("gitdir:") {
+                let p = rest.trim();
+                let candidate = Path::new(p);
+                if candidate.is_absolute() {
+                    candidate.to_path_buf()
+                } else {
+                    wt_path.join(candidate)
+                }
+            } else {
+                dot_git
+            }
+        } else {
+            dot_git
+        }
+    } else {
+        dot_git
+    };
+
+    let sparse_info = git_dir.join("info").join("sparse-checkout");
+    if sparse_info.is_file() {
+        if let Ok(content) = std::fs::read_to_string(&sparse_info) {
+            let dirs: Vec<String> = content
+                .lines()
+                .map(|l| l.trim().to_string())
+                .filter(|l| !l.is_empty() && !l.starts_with('#'))
+                .collect();
+            if !dirs.is_empty() {
+                wt.is_sparse = Some(true);
+                wt.sparse_directories = Some(dirs);
+            }
+        }
+    }
+}
+
 fn fill_worktree_metadata(worktrees: &mut [GitWorktreeInfo]) {
+    let metadata_map = load_all_persisted_worktree_metadata();
     for wt in worktrees.iter_mut() {
         if wt.created_at.is_none() {
             wt.created_at = get_worktree_created_at(&wt.path);
         }
-        // status: keep prunable from parser; add heuristic for rename failed if branch looks like temp but path missing?
-        // For now, only prunable is set. Future: read Hydra sessions for rename errors.
+        if let Some((d_name, err)) = metadata_map.get(&wt.path) {
+            if wt.display_name.is_none() {
+                wt.display_name = d_name.clone();
+            }
+            if wt.first_agent_message_rename_error.is_none() {
+                wt.first_agent_message_rename_error = err.clone();
+            }
+        }
+        check_sparse_checkout(wt);
     }
 }
 
@@ -1053,11 +1147,11 @@ branch refs/heads/feat/auth\n";
         let repo_path = "/home/user/src/my-repo";
         let history: Vec<OrcaWorkspaceLayout> = vec![];
         // Worktree inside nested workspaceDir should be External → visible
-        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None };
+        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_sparse: None, sparse_directories: None };
         // Worktree inside .claude/worktrees without configured base should be AgentScratch → hidden
-        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None };
+        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_sparse: None, sparse_directories: None };
         // Worktree outside any layout → UnknownLegacy → hidden
-        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None };
+        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_sparse: None, sparse_directories: None };
 
         let configured: Vec<String> = vec![];
         let known = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured);

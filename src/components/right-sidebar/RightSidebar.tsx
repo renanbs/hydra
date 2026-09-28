@@ -212,7 +212,7 @@ export function RightSidebar({ rootPath, isGit, openInApps, onOpenFile, onOpenDi
             </div>
 
             {/* PromptBar — pinned bottom */}
-            <PromptBar activeSessionId={activeSessionId} />
+            <PromptBar activeSessionId={activeSessionId} worktreePath={rootPath} />
           </div>
         )}
         {activeTab === "explorer" && <FileExplorer rootPath={rootPath} openInApps={openInApps} onOpenFile={onOpenFile} onOpenSettings={onOpenSettings} />}

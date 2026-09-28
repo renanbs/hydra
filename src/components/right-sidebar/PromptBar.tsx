@@ -4,10 +4,11 @@ import { Send, Loader2 } from "lucide-react";
 
 type Props = {
   activeSessionId?: string | null;
+  worktreePath?: string | null;
   onSent?: (prompt: string) => void;
 };
 
-export function PromptBar({ activeSessionId, onSent }: Props) {
+export function PromptBar({ activeSessionId, worktreePath, onSent }: Props) {
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState<string[]>(() => {
@@ -41,6 +42,19 @@ export function PromptBar({ activeSessionId, onSent }: Props) {
       setHistIdx(null);
       setValue("");
       onSent?.(txt);
+      if (worktreePath) {
+        invoke("auto_rename_worktree", {
+          worktreePath,
+          prompt: txt,
+        })
+          .then(() => {
+            window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+          })
+          .catch((err) => {
+            console.debug("[PromptBar] auto_rename_worktree result:", err);
+            window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+          });
+      }
       requestAnimationFrame(() => textareaRef.current?.focus());
     } catch (e) {
       console.error("[PromptBar] send_terminal_input failed", e);
