@@ -19,6 +19,7 @@ import {
 } from "./terminal-pane/terminal-capability-replies";
 
 export interface TerminalContextActions {
+  sessionId: string;
   getSelection: () => string;
   hasSelection: () => boolean;
   selectAll: () => void;
@@ -497,6 +498,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     e.stopPropagation();
     const term = xtermRef.current;
     const actions: TerminalContextActions = {
+      sessionId,
       getSelection: () => term?.getSelection() ?? "",
       hasSelection: () => Boolean(term?.hasSelection()),
       selectAll: () => term?.selectAll(),

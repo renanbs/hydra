@@ -2225,8 +2225,20 @@ export default function App() {
     y: number,
     actions?: TerminalContextActions
   ) => {
-    const currentActive = sessions.find((s) => s.active);
-    const sId = currentActive?.id ?? "sess_main";
+    const targetSessionId = actions?.sessionId ?? sessions.find((s) => s.active)?.id ?? "sess_main";
+    const owningTab = tabs.find(
+      (t) =>
+        t.sessionId === targetSessionId ||
+        t.splitSessionIds?.includes(targetSessionId) ||
+        t.splitPanes?.some((p) => p.sessionId === targetSessionId)
+    );
+    const targetTabId = owningTab?.id ?? activeTabIdRef.current ?? activeTabId;
+    if (owningTab && owningTab.id !== activeTabIdRef.current) {
+      setActiveTabId(owningTab.id);
+    }
+    if (actions?.sessionId) {
+      setFocusedPaneMap((prev) => ({ ...prev, [targetTabId]: actions.sessionId }));
+    }
     const hasSelection = actions ? actions.hasSelection() : Boolean(window.getSelection()?.toString());
 
     setContextMenu({
@@ -2262,7 +2274,7 @@ export default function App() {
               navigator.clipboard
                 .readText()
                 .then((txt) => {
-                  if (txt) invoke("send_terminal_input", { sessionId: sId, input: txt });
+                  if (txt) invoke("send_terminal_input", { sessionId: targetSessionId, input: txt });
                 })
                 .catch(console.error);
             }
@@ -2287,14 +2299,13 @@ export default function App() {
           icon: <Pencil className="w-3.5 h-3.5" />,
           shortcut: "Ctrl+Shift+R",
           onClick: () => {
-            const currentTab = tabs.find((t) => t.id === activeTabId);
             setPromptDialog({
               open: true,
               title: "Rename Terminal Tab",
-              initialValue: currentTab?.title ?? "Terminal",
+              initialValue: owningTab?.title ?? "Terminal",
               onSubmit: (newName) => {
                 if (newName.trim()) {
-                  handleRenameTab(activeTabId, newName.trim());
+                  handleRenameTab(targetTabId, newName.trim());
                 }
               },
             });
@@ -2304,7 +2315,7 @@ export default function App() {
           label: "Copy Terminal ID",
           icon: <Copy className="w-3.5 h-3.5" />,
           onClick: () => {
-            navigator.clipboard.writeText(sId).catch(console.error);
+            navigator.clipboard.writeText(targetSessionId).catch(console.error);
           }
         },
         {
@@ -2316,7 +2327,7 @@ export default function App() {
             if (actions) {
               actions.clearScreen();
             } else {
-              invoke("send_terminal_input", { sessionId: sId, input: "\x0c" });
+              invoke("send_terminal_input", { sessionId: targetSessionId, input: "\x0c" });
             }
           }
         },
@@ -2329,14 +2340,16 @@ export default function App() {
         },
         {
           separator: true,
-          label: "Close Terminal",
+          label: owningTab && getPanesForTab(owningTab).length > 1 ? "Close Pane" : "Close Terminal",
           icon: <Trash2 className="w-3.5 h-3.5" />,
           shortcut: isMac ? "⌘W" : "Ctrl+W",
           danger: true,
           onClick: () => {
-            // Bug #11: activeTabId in this closure is the value from when the
-            // menu was built (stale); read the live ref at click time instead.
-            handleCloseTab(activeTabIdRef.current || activeTabId);
+            if (owningTab && getPanesForTab(owningTab).length > 1) {
+              handleCloseSplitPane(targetTabId, targetSessionId);
+            } else {
+              handleCloseTab(targetTabId);
+            }
           }
         }
       ]
