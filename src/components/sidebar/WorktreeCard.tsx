@@ -6,6 +6,7 @@ import { WorktreeCardMetaRow } from "./WorktreeCardMetaRow";
 import { AutoRenameFailedDialog } from "./AutoRenameFailedDialog";
 import { WorktreeCardPortsTrigger } from "./WorktreeCardPortsTrigger";
 import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
+import { WorktreeCardDetailsHover } from "./WorktreeCardDetailsHover";
 
 export interface WorktreeCardProps {
   worktree: GitWorktreeInfo;
@@ -63,7 +64,13 @@ export function WorktreeCard({
 
   return (
     <>
-      <div
+      <WorktreeCardDetailsHover
+        worktree={worktree}
+        project={project}
+        ports={ports}
+        review={review}
+      >
+        <div
         draggable={!isEditing}
         onDragStart={(e) => onDragStart?.(e, worktree.path)}
         onDragOver={(e) => onDragOver?.(e, worktree.path)}
@@ -111,7 +118,8 @@ export function WorktreeCard({
           {review && <WorktreeCardReviewBadge review={review} />}
           {metaRowChildren}
         </WorktreeCardMetaRow>
-      </div>
+        </div>
+      </WorktreeCardDetailsHover>
 
       <AutoRenameFailedDialog
         open={renameErrorDialog !== null}
