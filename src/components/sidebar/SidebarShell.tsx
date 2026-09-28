@@ -1142,7 +1142,10 @@ export function SidebarShell({
         );
         if (!row) return;
         if (row.type === "session") onSelectSession(row.session.id);
-        else if (row.type === "worktree") onSelectGitWorktree(row.wt);
+        else if (row.type === "worktree") {
+          setFocusedWorktreePath(row.wt.path);
+          onSelectGitWorktree(row.wt);
+        }
         else if (row.type === "project-header") onSelectProject(row.proj);
         return;
       }
@@ -1388,7 +1391,10 @@ export function SidebarShell({
             isDragged={draggedWorktreePath === wt.path}
             dropTarget={worktreeDropTarget}
             ports={portsByWorktree.get(wt.path)}
-            onSelect={onSelectGitWorktree}
+            onSelect={(selectedWt) => {
+              setFocusedWorktreePath(selectedWt.path);
+              onSelectGitWorktree(selectedWt);
+            }}
             onDelete={onDeleteGitWorktree}
             onRename={(newTitle) => handleRenameWorktree(wt, newTitle)}
             onContextMenu={onWorktreeContextMenu}

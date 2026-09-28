@@ -126,6 +126,7 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
   return (
     <div
       data-worktree-card-agents=""
+      onClick={(e) => e.stopPropagation()}
       className={`mt-1 flex flex-col gap-0.5 border-t border-neutral-800/60 pt-1 ${className ?? ""}`}
     >
       {rootRows.map((rootRow) => {
