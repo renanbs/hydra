@@ -34,6 +34,7 @@ import type { HydraSettings } from "./shared/settings-types";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, DEFAULT_OPEN_IN_APPLICATIONS } from "./shared/settings-types";
 import { applyDocumentTheme } from "./lib/document-theme";
 import { CommandPalette } from "./components/CommandPalette";
+import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
@@ -258,6 +259,7 @@ export default function App() {
   const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
   const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -1105,6 +1107,8 @@ export default function App() {
     window.addEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
     const handleOpenPalette = () => setIsCommandPaletteOpen(true);
     window.addEventListener("hydra:open-command-palette", handleOpenPalette);
+    const handleOpenJumpPalette = () => setIsJumpPaletteOpen(true);
+    window.addEventListener("hydra:open-jump-palette", handleOpenJumpPalette);
 
     invoke<AvailableAgent[]>("list_available_agents")
       .then(setAvailableAgents)
@@ -2055,6 +2059,11 @@ export default function App() {
           setContextMenu(null);
           return;
         }
+        if (isJumpPaletteOpen) {
+          e.preventDefault();
+          setIsJumpPaletteOpen(false);
+          return;
+        }
         if (isCommandPaletteOpen) {
           e.preventDefault();
           setIsCommandPaletteOpen(false);
@@ -2084,7 +2093,7 @@ export default function App() {
 
       const target = e.target as HTMLElement | null;
       const isInputFocused = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || Boolean(target?.isContentEditable);
-      const isModalOpen = isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen;
+      const isModalOpen = isJumpPaletteOpen || isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen;
       const isChord = e.ctrlKey || e.metaKey;
       if (isChord && e.key.toLowerCase() === "p") {
         e.preventDefault();
@@ -2107,6 +2116,11 @@ export default function App() {
           updateRightSidebar(next);
           return next;
         });
+        return;
+      }
+      if (isChord && !e.shiftKey && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        setIsJumpPaletteOpen((prev) => !prev);
         return;
       }
       if (isChord && e.key === ",") {
@@ -2206,6 +2220,7 @@ export default function App() {
     leftSidebarWidth,
     rightSidebar.width,
     contextMenu,
+    isJumpPaletteOpen,
     isCommandPaletteOpen,
     isSettingsOpen,
     isNewWorkspaceOpen,
@@ -3125,7 +3140,7 @@ export default function App() {
                 onSidebarPrefsChange={handleSidebarPrefsChange}
                 compactCards={Boolean(hydraSettings.compact_worktree_cards)}
                 settings={hydraSettings as any}
-                isModalOpen={isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen}
+                isModalOpen={isJumpPaletteOpen || isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen}
               />
             </aside>
 
@@ -3384,6 +3399,27 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenPairing={() => setIsPairingOpen(true)}
         onSwitchTab={setActiveTabId}
+      />
+
+      {/* Worktree Jump Palette (Ctrl+J) */}
+      <WorktreeJumpPalette
+        isOpen={isJumpPaletteOpen}
+        onClose={() => setIsJumpPaletteOpen(false)}
+        projects={projects}
+        activeProject={activeProject}
+        worktreesByProject={worktreesByProject}
+        sessions={sessions}
+        onSelectProject={handleSelectProject}
+        onSelectWorktree={(wt, proj) => {
+          if (proj && (!activeProject || activeProject.path !== proj.path)) {
+            handleSelectProject(proj);
+          }
+          handleSelectGitWorktree(wt);
+        }}
+        onSelectSession={(sess) => handleSelectSession(sess.id)}
+        onNewWorkspace={() => setIsNewWorkspaceOpen(true)}
+        onNewTerminal={() => handleNewTerminalTab()}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Orca 100% Add Project Dialog (Clone / Create / Browse Folder) */}
