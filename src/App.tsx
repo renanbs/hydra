@@ -260,6 +260,7 @@ export default function App() {
   const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
+  const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -1866,12 +1867,62 @@ export default function App() {
       console.error(e);
     }
   }, [activeProject]);
+  const handleOpenFilePath = useCallback(async (path: string) => {
+    try {
+      const ext = path.split(".").pop()?.toLowerCase() ?? "";
+      const lang = ({ rs: "rust", ts: "typescript", tsx: "typescript", js: "javascript", json: "json", md: "markdown", py: "python", go: "go" } as Record<string, string>)[ext] ?? "plaintext";
+      const res = await invoke<{ path: string; content: string }>("read_file_text_cmd", { path });
+      const content = res.content;
+      const truncated = content.length > 20000 ? content.slice(0, 20000) + "\n… truncated" : content;
+      const fileName = path.split("/").pop() ?? path;
+      const tabId = `tab_file_${path}`;
+      setFileTabContents((prev) => ({ ...prev, [tabId]: { original: "", modified: truncated, lang } }));
+      setPreviewLanguage(lang);
+      setTabs((prev) => {
+        if (prev.some((t) => t.id === tabId)) return prev;
+        return [...prev, { id: tabId, title: fileName, type: "editor" }];
+      });
+      setActiveTabId(tabId);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const handleRestoreClosedTab = useCallback((tab: TabItem) => {
+    if (tab.type === "terminal") {
+      handleNewTerminalTab(tab.executable);
+    } else if (tab.type === "editor" && tab.id.startsWith("tab_file_")) {
+      handleOpenFilePath(tab.id.replace("tab_file_", ""));
+    } else {
+      setTabs((prev) => [...prev, tab]);
+      setActiveTabId(tab.id);
+    }
+  }, [handleNewTerminalTab, handleOpenFilePath]);
+
+  const handleRunQuickCommand = useCallback((cmd: string) => {
+    const cur = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
+    if (cur?.type === "terminal") {
+      const sid = cur.sessionId || (cur.id.startsWith("tab_") ? cur.id.replace("tab_", "") : cur.id);
+      invoke("write_terminal", { sessionId: sid, data: `${cmd}\r` }).catch(console.error);
+    } else {
+      handleNewTerminalTab();
+      setTimeout(() => {
+        const curNew = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
+        const sid = curNew?.sessionId || (curNew?.id.startsWith("tab_") ? curNew.id.replace("tab_", "") : curNew?.id);
+        if (sid) {
+          invoke("write_terminal", { sessionId: sid, data: `${cmd}\r` }).catch(console.error);
+        }
+      }, 300);
+    }
+  }, [handleNewTerminalTab]);
+
 
   /** The original close — kills PTYs, clears state. Runs immediately for idle tabs
    *  and after the running-process confirmation. */
   const executeCloseTab = useCallback((id: string) => {
     const closingTab = tabsRef.current.find((t) => t.id === id);
     if (closingTab) {
+      setRecentlyClosedTabs((prev) => [closingTab, ...prev.filter((t) => t.id !== closingTab.id)].slice(0, 10));
       const panes = getPanesForTab(closingTab);
       for (const pane of panes) {
         invoke("delete_session_record", { sessionId: pane.sessionId }).catch(() => {});
@@ -3177,6 +3228,11 @@ export default function App() {
                 onReorderTabs={setTabs}
                 onTabContextMenu={handleTabContextMenu}
                 onTabBarContextMenu={handleTabBarContextMenu}
+                worktreePath={activeProject?.path}
+                recentlyClosedTabs={recentlyClosedTabs}
+                onOpenFile={handleOpenFilePath}
+                onRestoreClosedTab={handleRestoreClosedTab}
+                onRunQuickCommand={handleRunQuickCommand}
               />
 
               <div className="flex-1 overflow-hidden relative">

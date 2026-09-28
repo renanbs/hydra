@@ -1,18 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { 
-  Terminal,
   Plus, 
   X, 
   File, 
   GitCompare,
-  FilePlus, 
-  FileText,
   Pin
 } from "lucide-react";
-import { AgentBrandIcon } from "../AgentIcon";
 import { TerminalTabLeadingIcon } from "./TerminalTabLeadingIcon";
 import { resolveTabAgent } from "./tab-agent";
+import { TabBarCreateEntry } from "./TabBarCreateEntry";
 import { stripLeadingAgentTitleDecoration } from "./agent-title-decoration";
 import type { WorktreeSession } from "../sidebar/types";
 
@@ -104,6 +100,11 @@ interface WorkbenchTabBarProps {
   onReorderTabs?: (newTabs: TabItem[]) => void;
   onTabContextMenu?: (e: React.MouseEvent, tab: TabItem) => void;
   onTabBarContextMenu?: (e: React.MouseEvent) => void;
+  worktreePath?: string;
+  recentlyClosedTabs?: TabItem[];
+  onOpenFile?: (path: string) => void;
+  onRestoreClosedTab?: (tab: TabItem) => void;
+  onRunQuickCommand?: (command: string) => void;
 }
 
 export function WorkbenchTabBar({
@@ -123,6 +124,11 @@ export function WorkbenchTabBar({
   onReorderTabs,
   onTabContextMenu,
   onTabBarContextMenu,
+  worktreePath,
+  recentlyClosedTabs,
+  onOpenFile,
+  onRestoreClosedTab,
+  onRunQuickCommand,
 }: WorkbenchTabBarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
@@ -397,100 +403,21 @@ export function WorkbenchTabBar({
             <Plus className="w-3.5 h-3.5" />
           </button>
 
-          {isMenuOpen && menuPos && createPortal(
-            <div
-              ref={menuRef}
-              style={{
-                position: "fixed",
-                top: `${menuPos.top}px`,
-                left: `${menuPos.left}px`,
-                zIndex: 9999,
-              }}
-              className="w-64 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-2xl backdrop-blur-md"
-            >
-              {/* New Terminal (default shell) */}
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  if (onNewTerminalTab) onNewTerminalTab();
-                  else onNewTab?.();
-                }}
-                className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-popover-foreground text-left transition cursor-pointer group"
-              >
-                <div className="flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[12px] font-medium text-foreground">New Terminal</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground font-mono">Ctrl+T</span>
-              </button>
-
-              {/* Detected AI Coding Agents (Orca parity) */}
-              {detectedAgents && detectedAgents.filter((a) => a.is_installed && a.id !== "bash").length > 0 && (
-                <>
-                  <div className="h-px bg-border my-1" />
-                  <div className="px-2.5 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    AI Coding Agents
-                  </div>
-                  {detectedAgents
-                    .filter((agent) => agent.is_installed && agent.id !== "bash")
-                    .map((agent) => (
-                      <button
-                        key={agent.id}
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          onLaunchAgent?.(agent);
-                        }}
-                        className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-popover-foreground text-left transition cursor-pointer group"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <AgentBrandIcon agentId={agent.id} size={15} />
-                          <span className="text-[12px] font-medium text-neutral-200 truncate">
-                            {agent.name}
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-emerald-400/80 font-mono shrink-0">
-                          {agent.executable}
-                        </span>
-                      </button>
-                    ))}
-                </>
-              )}
-
-              <div className="h-px bg-border my-1" />
-
-              {/* New File / Editor */}
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  onNewFileTab?.();
-                }}
-                className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-popover-foreground text-left transition cursor-pointer group"
-              >
-                <div className="flex items-center gap-2">
-                  <FilePlus className="w-4 h-4 text-blue-400" />
-                  <span className="text-[12px] font-medium text-foreground">New File</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground font-mono">Ctrl+N</span>
-              </button>
-
-              {/* Open File... */}
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  onOpenFileTab?.();
-                }}
-                className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-popover-foreground text-left transition cursor-pointer group"
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-indigo-400" />
-                  <span className="text-[12px] font-medium text-foreground">Open File...</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground font-mono">Ctrl+O</span>
-              </button>
-
-            </div>,
-            document.body
-          )}
+          <TabBarCreateEntry
+            isOpen={isMenuOpen}
+            anchorPos={menuPos}
+            onClose={() => setIsMenuOpen(false)}
+            worktreePath={worktreePath}
+            detectedAgents={detectedAgents}
+            recentlyClosedTabs={recentlyClosedTabs}
+            onNewTerminalTab={onNewTerminalTab ?? onNewTab}
+            onNewFileTab={onNewFileTab}
+            onOpenFileTab={onOpenFileTab}
+            onOpenFile={onOpenFile}
+            onLaunchAgent={onLaunchAgent}
+            onRestoreClosedTab={onRestoreClosedTab}
+            onRunQuickCommand={onRunQuickCommand}
+          />
         </div>
       </div>
 
