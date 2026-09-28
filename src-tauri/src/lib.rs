@@ -384,6 +384,15 @@ async fn set_worktree_rename_error(
 }
 
 #[tauri::command]
+async fn set_worktree_status(
+    worktree_path: String,
+    status: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state.db.set_worktree_status(&worktree_path, status.as_deref())
+}
+
+#[tauri::command]
 async fn auto_rename_worktree(
     worktree_path: String,
     prompt: String,
@@ -1322,6 +1331,7 @@ pub fn run() {
             delete_worktree,
             set_worktree_display_name,
             set_worktree_rename_error,
+            set_worktree_status,
             auto_rename_worktree,
             scan_workspace_ports,
             kill_port_process,

@@ -707,7 +707,7 @@ fn get_worktree_created_at(path: &str) -> Option<i64> {
     None
 }
 
-fn load_all_persisted_worktree_metadata() -> HashMap<String, (Option<String>, Option<String>)> {
+fn load_all_persisted_worktree_metadata() -> HashMap<String, (Option<String>, Option<String>, Option<String>)> {
     let mut map = HashMap::new();
     if let Ok(db_path) = crate::db::DatabaseManager::get_db_path() {
         if let Ok(conn) = rusqlite::Connection::open(&db_path) {
@@ -716,20 +716,23 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, (Option<String>, Op
                     worktree_path TEXT PRIMARY KEY,
                     display_name TEXT,
                     first_agent_message_rename_error TEXT,
+                    status TEXT,
                     updated_at INTEGER NOT NULL
                 )",
                 rusqlite::params![],
             );
-            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error FROM worktree_metadata") {
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", rusqlite::params![]);
+            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status FROM worktree_metadata") {
                 if let Ok(rows) = stmt.query_map(rusqlite::params![], |row| {
                     Ok((
                         row.get::<_, String>(0)?,
                         row.get::<_, Option<String>>(1)?,
                         row.get::<_, Option<String>>(2)?,
+                        row.get::<_, Option<String>>(3)?,
                     ))
                 }) {
                     for r in rows.flatten() {
-                        map.insert(r.0, (r.1, r.2));
+                        map.insert(r.0, (r.1, r.2, r.3));
                     }
                 }
             }
@@ -783,12 +786,15 @@ fn fill_worktree_metadata(worktrees: &mut [GitWorktreeInfo]) {
         if wt.created_at.is_none() {
             wt.created_at = get_worktree_created_at(&wt.path);
         }
-        if let Some((d_name, err)) = metadata_map.get(&wt.path) {
+        if let Some((d_name, err, status)) = metadata_map.get(&wt.path) {
             if wt.display_name.is_none() {
                 wt.display_name = d_name.clone();
             }
             if wt.first_agent_message_rename_error.is_none() {
                 wt.first_agent_message_rename_error = err.clone();
+            }
+            if wt.status.is_none() {
+                wt.status = status.clone();
             }
         }
         check_sparse_checkout(wt);

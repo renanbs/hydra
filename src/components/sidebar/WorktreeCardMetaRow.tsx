@@ -48,6 +48,36 @@ export function WorktreeCardMetaRow({
             </span>
           </div>
         )}
+        {worktree.status && (
+          <span
+            className={`inline-flex items-center gap-1 font-mono text-[9px] font-medium px-1.5 py-0.2 rounded border leading-tight capitalize shrink-0 ${
+              worktree.status === "blocked"
+                ? "bg-red-950/60 text-red-300 border-red-800/60"
+                : worktree.status === "waiting"
+                ? "bg-amber-950/60 text-amber-300 border-amber-800/60"
+                : worktree.status === "working"
+                ? "bg-emerald-950/60 text-emerald-300 border-emerald-800/60"
+                : worktree.status === "done"
+                ? "bg-blue-950/60 text-blue-300 border-blue-800/60"
+                : "bg-neutral-800 text-neutral-400 border-neutral-700"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                worktree.status === "blocked"
+                  ? "bg-red-400"
+                  : worktree.status === "waiting"
+                  ? "bg-amber-400"
+                  : worktree.status === "working"
+                  ? "bg-emerald-400 animate-pulse"
+                  : worktree.status === "done"
+                  ? "bg-blue-400"
+                  : "bg-neutral-400"
+              }`}
+            />
+            {worktree.status}
+          </span>
+        )}
       </div>
 
       {children && (

@@ -33,7 +33,7 @@ const STATUS_GROUP_ORDER: readonly SidebarStatusState[] = ["blocked", "waiting",
  * runtime strings emitted by the daemon (e.g. "waiting"/"done") are claims, never
  * index-by-shape: extending WorktreeSession["state"] (PR-7) needs no change here.
  */
-function statusBucketOf(state: WorktreeSession["state"]): SidebarStatusState {
+function statusBucketOf(state?: string | null): SidebarStatusState {
   switch (state) {
     case "blocked":
     case "waiting":
@@ -350,7 +350,7 @@ function buildStatusRows(input: SidebarProjectionInput): SidebarRow[] {
   for (const proj of displayProjects) {
     const isActive = proj.path === activeProject?.path;
     for (const s of sessionsOfProject(input, proj, isActive)) {
-      if (seenSessionIds.has(s.id)) continue; // a session can match two projects — keep the first
+      if (seenSessionIds.has(s.id)) continue;
       if (lowerFilter && !matchesFilter(s)) continue;
       if (displayOptions.hideSleeping && s.state === "idle") continue;
       seenSessionIds.add(s.id);
@@ -361,13 +361,33 @@ function buildStatusRows(input: SidebarProjectionInput): SidebarRow[] {
     }
   }
 
+  const worktreeGroups = new Map<SidebarStatusState, Array<{ wt: GitWorktreeInfo; proj: HydraProject }>>();
+  const seenWorktreePaths = new Set<string>();
+  for (const proj of displayProjects) {
+    const wts = input.worktreesByProject?.[proj.path] || (proj.path === activeProject?.path ? input.gitWorktrees : []);
+    for (const wt of wts) {
+      if (!wt.status) continue;
+      if (seenWorktreePaths.has(wt.path)) continue;
+      seenWorktreePaths.add(wt.path);
+      const bucket = statusBucketOf(wt.status);
+      const list = worktreeGroups.get(bucket);
+      if (list) list.push({ wt, proj });
+      else worktreeGroups.set(bucket, [{ wt, proj }]);
+    }
+  }
+
   const rows: SidebarRow[] = [];
   for (const state of STATUS_GROUP_ORDER) {
-    const bucket = groups.get(state);
-    if (!bucket || bucket.length === 0) continue;
+    const bucket = groups.get(state) || [];
+    const wtBucket = worktreeGroups.get(state) || [];
+    const totalCount = bucket.length + wtBucket.length;
+    if (totalCount === 0) continue;
+    rows.push({ type: "status-header", state, count: totalCount });
+    for (const item of wtBucket) {
+      rows.push({ type: "worktree", wt: item.wt, proj: item.proj });
+    }
     const projBySessionId = new Map(bucket.map((entry) => [entry.session.id, entry.proj]));
     const sorted = sortSessionsByOption(bucket.map((entry) => entry.session));
-    rows.push({ type: "status-header", state, count: sorted.length });
     for (const s of sorted) {
       const proj = projBySessionId.get(s.id);
       if (proj) rows.push({ type: "session", session: s, proj, isNested: false });

@@ -50,6 +50,7 @@ pub struct WorktreeMetadataRecord {
     pub worktree_path: String,
     pub display_name: Option<String>,
     pub first_agent_message_rename_error: Option<String>,
+    pub status: Option<String>,
     pub updated_at: i64,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -671,11 +672,13 @@ impl DatabaseManager {
                  worktree_path TEXT PRIMARY KEY,
                  display_name TEXT,
                  first_agent_message_rename_error TEXT,
+                 status TEXT,
                  updated_at INTEGER NOT NULL
              );",
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
 
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN project_path TEXT NOT NULL DEFAULT ''", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN branch TEXT NOT NULL DEFAULT 'main'", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN agent_name TEXT NOT NULL DEFAULT 'bash'", params![]);
@@ -1103,7 +1106,7 @@ impl DatabaseManager {
     pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, updated_at FROM worktree_metadata WHERE worktree_path = ?1")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, updated_at FROM worktree_metadata WHERE worktree_path = ?1")
             .map_err(|e| format!("Error preparing worktree_metadata select: {e}"))?;
         let mut rows = stmt.query(params![worktree_path]).map_err(|e| e.to_string())?;
         if let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -1111,7 +1114,8 @@ impl DatabaseManager {
                 worktree_path: row.get(0).map_err(|e| e.to_string())?,
                 display_name: row.get(1).ok().flatten(),
                 first_agent_message_rename_error: row.get(2).ok().flatten(),
-                updated_at: row.get(3).unwrap_or(0),
+                status: row.get(3).ok().flatten(),
+                updated_at: row.get(4).unwrap_or(0),
             }))
         } else {
             Ok(None)
@@ -1121,7 +1125,7 @@ impl DatabaseManager {
     pub fn get_all_worktree_metadata(&self) -> Result<std::collections::HashMap<String, WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, updated_at FROM worktree_metadata")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, updated_at FROM worktree_metadata")
             .map_err(|e| format!("Error preparing worktree_metadata select all: {e}"))?;
         let rows = stmt
             .query_map(params![], |row| {
@@ -1129,7 +1133,8 @@ impl DatabaseManager {
                     worktree_path: row.get(0)?,
                     display_name: row.get(1).ok().flatten(),
                     first_agent_message_rename_error: row.get(2).ok().flatten(),
-                    updated_at: row.get(3).unwrap_or(0),
+                    status: row.get(3).ok().flatten(),
+                    updated_at: row.get(4).unwrap_or(0),
                 })
             })
             .map_err(|e| format!("Query error: {e}"))?;
@@ -1163,6 +1168,19 @@ impl DatabaseManager {
             params![worktree_path, error, now],
         )
         .map_err(|e| format!("Error setting worktree rename error: {e}"))?;
+        Ok(())
+    }
+
+    pub fn set_worktree_status(&self, worktree_path: &str, status: Option<&str>) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO worktree_metadata (worktree_path, display_name, first_agent_message_rename_error, status, updated_at)
+             VALUES (?1, NULL, NULL, ?2, ?3)
+             ON CONFLICT(worktree_path) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at",
+            params![worktree_path, status, now],
+        )
+        .map_err(|e| format!("Error setting worktree status: {e}"))?;
         Ok(())
     }
     #[cfg(test)]
@@ -1215,10 +1233,12 @@ impl DatabaseManager {
                  worktree_path TEXT PRIMARY KEY,
                  display_name TEXT,
                  first_agent_message_rename_error TEXT,
+                 status TEXT,
                  updated_at INTEGER NOT NULL
              );"
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", params![]);
 
         Ok(Self {
             conn: Mutex::new(conn),
@@ -1535,6 +1555,16 @@ mod tests {
         // All worktree metadata map
         let all = db.get_all_worktree_metadata().expect("query all");
         assert!(all.contains_key(wt_path));
+
+        // Set status
+        db.set_worktree_status(wt_path, Some("blocked")).expect("set worktree status");
+        let record_status = db.get_worktree_metadata(wt_path).expect("query after status").expect("record exists");
+        assert_eq!(record_status.status.as_deref(), Some("blocked"));
+
+        // Clear status
+        db.set_worktree_status(wt_path, None).expect("clear worktree status");
+        let record_status_cleared = db.get_worktree_metadata(wt_path).expect("query after status clear").expect("record exists");
+        assert!(record_status_cleared.status.is_none());
     }
 }
 
