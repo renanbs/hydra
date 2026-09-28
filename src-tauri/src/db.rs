@@ -65,7 +65,7 @@ impl Default for UiLayoutState {
         Self {
             left_sidebar_open: true,
             right_sidebar_open: true,
-            left_sidebar_width: 260,
+            left_sidebar_width: 280,
             right_sidebar_width: 360,
         }
     }

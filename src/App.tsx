@@ -264,12 +264,13 @@ export default function App() {
   // drafts during the drag, commit on mouseup) with no per-frame setState.
   const leftSidebarOpenRef = useRef(isLeftSidebarOpen);
   const rightSidebarOpenRef = useRef(isRightSidebarOpen);
-  const [leftSidebarWidth, setLeftSidebarWidth] = useState(260);
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(280);
   const leftSidebarWidthRef = useRef(leftSidebarWidth);
   useEffect(() => {
     leftSidebarOpenRef.current = isLeftSidebarOpen;
     rightSidebarOpenRef.current = isRightSidebarOpen;
-  }, [isLeftSidebarOpen, isRightSidebarOpen]);
+    leftSidebarWidthRef.current = leftSidebarWidth;
+  }, [isLeftSidebarOpen, isRightSidebarOpen, leftSidebarWidth]);
   const [diffOriginal, setDiffOriginal] = useState(MOCK_ORIGINAL);
   const [diffModified, setDiffModified] = useState(MOCK_MODIFIED);
   const [previewLanguage, setPreviewLanguage] = useState("rust");
@@ -635,7 +636,9 @@ export default function App() {
           setIsRightSidebarOpen(layout.right_sidebar_open);
           const persistedWidth = layout.left_sidebar_width;
           if (typeof persistedWidth === "number" && Number.isFinite(persistedWidth)) {
-            setLeftSidebarWidth(clampSidebarResizeWidth(persistedWidth, 180, 480));
+            const clamped = clampSidebarResizeWidth(persistedWidth, 180, 480);
+            leftSidebarWidthRef.current = clamped;
+            setLeftSidebarWidth(clamped);
           }
         }
       })
