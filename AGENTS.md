@@ -50,6 +50,19 @@ All agents contributing to this repository MUST load and adhere to the project s
    - All local IPC streams MUST have read/write timeouts (`set_recv_timeout(300ms)`).
    - The PTY reader loop runs at OS stream speed: zero allocations, zero SQLite queries per chunk.
 
+6. **Zero External AI SDKs in Production Runtime**:
+   - The Hydra binary (Rust `Cargo.toml`) and frontend bundle (React `package.json`) MUST NOT depend on external LLM or decision engine SDKs (TypeSafe Jev, OpenAI, Anthropic, etc.).
+   - Hydra's runtime engine uses pure deterministic Rust (`portable-pty`, `vt100`, regex/state machine in `agent_state.rs`).
+   - TypeSafe Jev is strictly a **Development & CI Harness Tool** used by autonomous agents (OMP, Claude, Cursor) to accelerate analysis, validate diffs, and prune token usage.
+
+---
+
+## Agent Harness & Development Workflow (TypeSafe Jev System 1)
+
+All coding agents operating on this repository SHOULD offload deterministic checks to Jev System 1 models during the engineering loop to conserve context and reduce latency:
+- **Never burn generative tokens** to classify test errors, check Wayland blocking risks, or triage dead code.
+- **Credential retrieval**: Dynamic via system keyring (`secret-tool lookup service typesafe account default 2>/dev/null` or `pass show typesafe/api-key`).
+- Load skill: **`skill://hydra-dev-accelerator`** (`.agents/skills/hydra-dev-accelerator/SKILL.md`).
 ---
 
 ## Repository Layout
