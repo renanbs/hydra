@@ -1440,39 +1440,6 @@ export default function App() {
       loadSessionsForProject(proj.path);
     }
     refreshGitWorktrees(proj.path);
-    if (tabs.length === 0) {
-      const sId = `sess_${Date.now()}`;
-      const id = `tab_${sId}`;
-      const sh = hydraSettings.terminal_default_shell || "bash";
-      const newSession: WorktreeSession = {
-        id: sId,
-        project_path: proj.path,
-        title: proj.name,
-        branch: proj.current_branch || "main",
-        state: "idle",
-        active: true,
-        agentName: sh,
-        executable: sh,
-      };
-      setSessions([newSession]);
-      setTabs([{ id, title: proj.name, type: "terminal" }]);
-      setActiveTabId(id);
-      // Bug #10: this session used to live only in React state — it was never
-      // persisted, so it vanished on restart. Persist it now, same shape as the
-      // other save_session_record call sites.
-      invoke("save_session_record", {
-        record: {
-          id: sId,
-          project_path: proj.path,
-          title: proj.name,
-          branch: proj.current_branch || "main",
-          agent_name: sh,
-          executable: sh,
-          created_at: Date.now(),
-          updated_at: Date.now(),
-        },
-      }).catch(() => {});
-    }
     setMessages((prev) => [
       ...prev,
       {
@@ -1481,7 +1448,7 @@ export default function App() {
         content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
       }
     ]);
-  }, [workbenchLoaded, loadSessionsForProject, refreshGitWorktrees, tabs, hydraSettings]);
+  }, [workbenchLoaded, loadSessionsForProject, refreshGitWorktrees]);
 
   const handleNavigateWorkspace = useCallback((direction: "up" | "down") => {
     const projs = projectsRef.current;
