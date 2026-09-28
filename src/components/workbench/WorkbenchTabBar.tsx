@@ -63,6 +63,13 @@ export const SHELL_EXECUTABLES: Record<string, true> = {
   bash: true, sh: true, zsh: true, fish: true, dash: true, ksh: true, csh: true,
   tcsh: true, pwsh: true, powershell: true, cmd: true,
 };
+export function preventMiddleButtonDefault(event: React.MouseEvent): void {
+  if (event.button === 1) {
+    // Why: Linux primary-selection paste is gated on mouseup;
+    // mousedown/auxclick cancellation alone still lets it reach the next terminal.
+    event.preventDefault();
+  }
+}
 
 interface WorkbenchTabBarProps {
   tabs: TabItem[];
@@ -193,6 +200,15 @@ export function WorkbenchTabBar({
               key={tab.id}
               onClick={() => onSelectTab(tab.id)}
               onDoubleClick={() => handleStartRename(tab)}
+              onMouseUp={preventMiddleButtonDefault}
+              onAuxClick={(e) => {
+                if (isEditing) return;
+                if (e.button === 1) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onCloseTab(tab.id);
+                }
+              }}
               onContextMenu={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
