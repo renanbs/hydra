@@ -441,14 +441,29 @@ async fn scan_workspace_ports(
 }
 
 #[tauri::command]
-async fn kill_port_process(pid: u32) -> Result<(), String> {
+async fn kill_port_process(pid: u32, worktree_path: Option<String>) -> Result<(), String> {
     if pid <= 1 {
         return Err("Cannot kill system process (PID <= 1)".to_string());
     }
     tokio::task::spawn_blocking(move || {
         #[cfg(unix)]
-        unsafe {
-            libc::kill(pid as i32, libc::SIGTERM);
+        {
+            // Verify PID still exists and ownership/cwd matches worktree to avoid PID-reuse kill race
+            if let Some(wt) = &worktree_path {
+                let canonical_wt = std::path::Path::new(wt).canonicalize().unwrap_or_else(|_| std::path::PathBuf::from(wt));
+                let proc_cwd_str = format!("/proc/{pid}/cwd");
+                let proc_cwd = std::path::Path::new(&proc_cwd_str);
+                if let Ok(cwd_target) = std::fs::read_link(proc_cwd) {
+                    if cwd_target != canonical_wt && !cwd_target.starts_with(&canonical_wt) {
+                        return Err(format!("Process PID {pid} is no longer running in worktree {wt}; PID may have been reused"));
+                    }
+                } else {
+                    return Err(format!("Process PID {pid} has already exited"));
+                }
+            }
+            unsafe {
+                libc::kill(pid as i32, libc::SIGTERM);
+            }
         }
         Ok(())
     })

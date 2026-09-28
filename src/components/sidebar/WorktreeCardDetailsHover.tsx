@@ -111,7 +111,7 @@ export function WorktreeCardDetailsHover({
   const handleStopPort = async (pid: number) => {
     setStoppingPid(pid);
     try {
-      await invoke("kill_port_process", { pid });
+      await invoke("kill_port_process", { pid, worktreePath: worktree.path });
       onPortKilled?.();
       window.dispatchEvent(new CustomEvent("hydra:refresh-ports"));
     } catch (e) {
