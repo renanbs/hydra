@@ -428,7 +428,14 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
         const polled = await invoke<{ data?: string }>("poll_terminal_output", { sessionId, offset: 0 });
         const raw = polled?.data ?? "";
         const buffered = queued.splice(0).join("");
-        if (raw) writeLive(raw);
+        if (raw) {
+          writeLive(raw);
+        } else {
+          // Cold parking fallback: if raw buffer is empty (e.g. after daemon reconnect or buffer drain),
+          // restore formatted screen from Rust vt100 parser shadow buffer directly.
+          const snap = await invoke<{ formatted?: string }>("get_terminal_snapshot", { sessionId }).catch(() => null);
+          if (snap?.formatted) writeLive(snap.formatted);
+        }
         if (buffered.startsWith(raw)) {
           const rest = buffered.slice(raw.length);
           if (rest) writeLive(rest);

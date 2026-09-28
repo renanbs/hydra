@@ -18,6 +18,13 @@
  *   5 — Idle (nothing to assert)
  *
  * Primary sort key; ties fall back to the attention timestamp.
+ *
+ * Phase 5.1 Smart Sort priority order:
+ *   1 — Needs you (`blocked` / `waiting`)
+ *   2 — Working (`working` with active spinner / compilation)
+ *   3 — Done & Unvisited (`done` awaiting user review / `isUnvisited`)
+ *   4 — Unverifiable (`unknown` on a session with a live PTY)
+ *   5 — Idle / Visited (`idle`, or `done` already seen by the user)
  */
 export type SmartClass = 1 | 2 | 3 | 4 | 5
 
@@ -31,6 +38,8 @@ export type SessionAttentionInput = {
   lastActivityAt?: number;
   /** Whether the daemon still holds the session's PTY. Decides `unknown` → Class 4 vs Class 5. */
   hasLivePty: boolean;
+  /** Whether this session or its worktree has unread activity (unvisited). */
+  isUnvisited?: boolean;
 };
 
 /** A session's (or worktree's) resolved attention. */
@@ -45,15 +54,15 @@ export const IDLE: SessionAttention = { cls: 5, attentionTimestamp: 0 };
  * Class for one session state. Wire safety: a state string outside the six-state contract
  * falls to Class 5 — an unrecognized state never claims attention.
  */
-function classFor(state: string, hasLivePty: boolean): SmartClass {
+function classFor(state: string, hasLivePty: boolean, isUnvisited?: boolean): SmartClass {
   switch (state) {
     case "blocked":
     case "waiting":
       return 1;
-    case "done":
-      return 2;
     case "working":
-      return 3;
+      return 2;
+    case "done":
+      return isUnvisited ? 3 : (hasLivePty ? 4 : 5);
     case "unknown":
       // Why hasLivePty: losing the reporting stream is not the same as nothing running
       // there — a live PTY outranks a genuinely empty session, but never a reporting one.
@@ -71,7 +80,7 @@ function classFor(state: string, hasLivePty: boolean): SmartClass {
  * ordering falls through to recency in the comparator. Class 5 → always 0.
  */
 export function resolveSessionAttention(input: SessionAttentionInput, now: number): SessionAttention {
-  const cls = classFor(input.state, input.hasLivePty);
+  const cls = classFor(input.state, input.hasLivePty, input.isUnvisited);
   if (cls === 5) return IDLE;
 
   if (typeof input.stateStartedAt === "number" && Number.isFinite(input.stateStartedAt)) {

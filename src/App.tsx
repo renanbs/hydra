@@ -1314,12 +1314,13 @@ export default function App() {
             // being the active session marks its worktree + project unread.
             // Cleared below in handleSelectSession / handleSelectWorkbenchTab.
             const updated = next.find((s) => s.id === sid);
-            if (updated && (state === "blocked" || state === "waiting")) {
+            if (updated && (state === "blocked" || state === "waiting" || state === "done")) {
               const isActiveSession = Boolean(updated.active);
               const hasVisibleTab = tabsRef.current.some((t) => t.sessionId === sid || t.id === `tab_${sid}`);
               const isActiveTab = hasVisibleTab && tabsRef.current.find((t) => t.sessionId === sid || t.id === `tab_${sid}`)?.id === activeTabIdRef.current;
               if (!isActiveSession || !isActiveTab) {
                 if (updated.project_path) markUnreadWorktree(updated.project_path);
+                markUnreadWorktree(updated.id);
                 // Propagate to the owning project so the project header also glows
                 const proj = projectsRef.current.find((p) => updated.project_path === p.path || updated.project_path.startsWith(p.path + "/"));
                 if (proj) markUnreadProject(proj.id);
@@ -1539,6 +1540,10 @@ export default function App() {
     if (!tabsRef.current.some((t) => t.id === tabId)) {
       setTabs((prev) => [...prev, { id: tabId, title: wt.branch, type: "terminal", sessionId: id, executable: "bash", cwd: wt.path }]);
     }
+    clearUnreadWorktree(wt.path);
+    clearUnreadWorktree(id);
+    const owningProj = projectsRef.current.find((p) => wt.path === p.path || wt.path.startsWith(p.path + "/"));
+    if (owningProj) clearUnreadProject(owningProj.id);
     setActiveTabId(tabId);
   };
 
@@ -1642,6 +1647,7 @@ export default function App() {
     );
     // PR-15: selecting a session clears its unread badge (and the owning project's).
     const selectedSession = sessions.find((s) => s.id === id);
+    clearUnreadWorktree(id);
     if (selectedSession?.project_path) {
       clearUnreadWorktree(selectedSession.project_path);
       const owningProject = projects.find((p) => selectedSession.project_path === p.path || selectedSession.project_path.startsWith(p.path + "/"));
@@ -1810,6 +1816,8 @@ export default function App() {
     setActiveTabId(tabId);
     const sId = tabId.startsWith("tab_") ? tabId.replace("tab_", "") : tabId;
     // PR-15: activating a workbench tab clears its session's unread badge.
+    clearUnreadWorktree(sId);
+    clearUnreadWorktree(tabId);
     const session = sessions.find((s) => s.id === sId);
     if (session?.project_path) {
       clearUnreadWorktree(session.project_path);
@@ -2942,12 +2950,15 @@ export default function App() {
                   );
                 })() : null}
 
-                {/* Orca TerminalOverlaySlot parity: keep each terminal tab mounted in DOM and toggle visibility via hidden so processes and scrollback survive tab switching */}
+                {/* Phase 5.2 — Cold Parking: background terminals unmount from DOM to free WebGL/xterm contexts.
+                    Processes and scrollback are held silently in Rust vt100/OutputBuffer and restore on activation. */}
                 {/* Sprint 2 P0: split grid per tab */}
                 {tabs
                   .filter((t) => t.type === "terminal")
                   .map((t) => {
                     const isActive = currentTab?.type === "terminal" && activeTabId === t.id;
+                    const coldParking = hydraSettings.terminal_cold_parking !== false;
+                    if (coldParking && !isActive) return null;
                     const panes = getPanesForTab(t);
                     const direction = getSplitDirectionForTab(t);
                     const isSplit = panes.length > 1;

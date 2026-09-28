@@ -60,7 +60,7 @@ export function WorktreeCardHeader({
         <WorktreeTitleInlineRename
           displayName={visibleTitle}
           disabled={isDeleting}
-          className={`${compactCards ? "text-[12px]" : "text-[13px]"} leading-tight font-medium text-neutral-100`}
+          className={`${compactCards ? "text-[12px]" : "text-[13px]"} leading-tight ${isUnread ? "font-bold text-white" : "font-medium text-neutral-100"}`}
           onRename={onRename}
           onEditingChange={onEditingChange}
         />
