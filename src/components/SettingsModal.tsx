@@ -675,7 +675,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                     {[
                       { action: "Command Palette", chord: "Ctrl+P", desc: "Quick search and command dispatcher" },
                       { action: "Toggle Left Sidebar", chord: "Ctrl+B", desc: "Toggle Worktree / Fleet sidebar" },
-                      { action: "Toggle Agent Panel", chord: "Ctrl+J", desc: "Toggle active agent panel" },
+                      { action: "Toggle Agent Panel", chord: "Ctrl+Shift+J", desc: "Toggle active agent panel" },
                       { action: "Open Settings", chord: "Ctrl+,", desc: "Open Hydra preferences hub" },
                       { action: "New Terminal Tab", chord: "Ctrl+T", desc: "Spawn fresh bash PTY in active workbench" },
                       { action: "Close Tab", chord: "Ctrl+W", desc: "Close focused editor or terminal tab" },

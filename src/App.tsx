@@ -2099,7 +2099,7 @@ export default function App() {
         });
         return;
       }
-      if (isChord && e.key.toLowerCase() === "j") {
+      if (isChord && e.shiftKey && e.key.toLowerCase() === "j") {
         e.preventDefault();
         setIsRightSidebarOpen((prev) => {
           const next = !prev;

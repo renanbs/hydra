@@ -168,7 +168,7 @@ export function WindowTitlebar({
               e.stopPropagation();
               onToggleRight();
             }}
-            title="Toggle Right Panel (Ctrl+J)"
+            title="Toggle Right Panel (Ctrl+Shift+J)"
             className={`p-1.5 rounded transition mr-2 cursor-pointer ${
               isRightOpen ? "text-foreground bg-accent" : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
             }`}
