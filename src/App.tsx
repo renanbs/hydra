@@ -3525,6 +3525,7 @@ export default function App() {
                 onOpenFile={handleOpenFilePath}
                 onRestoreClosedTab={handleRestoreClosedTab}
                 onRunQuickCommand={handleRunQuickCommand}
+                onOpenSettings={() => setIsSettingsOpen(true)}
               />
 
               <div className="flex-1 overflow-hidden relative">

@@ -107,6 +107,7 @@ interface WorkbenchTabBarProps {
   onOpenFile?: (path: string) => void;
   onRestoreClosedTab?: (tab: TabItem) => void;
   onRunQuickCommand?: (command: string) => void;
+  onOpenSettings?: () => void;
 }
 
 export function WorkbenchTabBar({
@@ -131,6 +132,7 @@ export function WorkbenchTabBar({
   onOpenFile,
   onRestoreClosedTab,
   onRunQuickCommand,
+  onOpenSettings,
 }: WorkbenchTabBarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
@@ -419,6 +421,7 @@ export function WorkbenchTabBar({
             onLaunchAgent={onLaunchAgent}
             onRestoreClosedTab={onRestoreClosedTab}
             onRunQuickCommand={onRunQuickCommand}
+            onOpenSettings={onOpenSettings}
           />
         </div>
       </div>

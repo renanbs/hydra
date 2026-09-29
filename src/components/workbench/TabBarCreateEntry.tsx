@@ -1,29 +1,23 @@
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Reference: src/renderer/src/components/tab-bar/tab-bar-surface.tsx (TabBarCreateEntry +
+// TabBarStaticCreateMenu + QuickLaunchAgentMenuItems composition) — Orca "+" dropdown parity:
+// search header, static tab actions with shortcuts, detected AI agents with brand icons,
+// and the Agent settings footer entry.
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { invoke } from "@tauri-apps/api/core";
-import { 
-  Search, 
-  Terminal, 
-  Sparkles, 
-  File, 
-  FilePlus, 
+import {
+  Search,
+  TerminalSquare,
+  Globe,
+  FilePlus,
   FileText,
-  History,
-  Play
+  Settings as SettingsIcon,
+  Loader2,
 } from "lucide-react";
+import { AgentBrandIcon } from "../AgentIcon";
+import { ShellIcon } from "./shell-icons";
+import { isShellProcess } from "./tab-agent";
 import type { TabItem, DetectedAgent } from "./WorkbenchTabBar";
-
-interface FileEntry {
-  name: string;
-  path: string;
-  is_dir: boolean;
-  is_hidden: boolean;
-}
-
-interface DirectoryListing {
-  path: string;
-  entries: FileEntry[];
-}
 
 export interface TabBarCreateEntryProps {
   isOpen: boolean;
@@ -39,70 +33,52 @@ export interface TabBarCreateEntryProps {
   onLaunchAgent?: (agent: DetectedAgent) => void;
   onRestoreClosedTab?: (tab: TabItem) => void;
   onRunQuickCommand?: (command: string) => void;
+  onOpenSettings?: () => void;
 }
 
 interface CreateOption {
   id: string;
   title: string;
   subtitle?: string;
-  category: "agent" | "shell" | "command" | "file" | "history";
+  category: "static-action" | "agent" | "file" | "history";
   icon: React.ReactNode;
-  badge?: string;
+  shortcut?: string;
   action: () => void;
 }
 
-const DEFAULT_QUICK_COMMANDS = [
-  "git status",
-  "git diff",
-  "cargo check",
-  "cargo test",
-  "pnpm test",
-  "pnpm build",
-];
+const isMac = typeof navigator !== "undefined" && navigator.userAgent.includes("Mac");
+const CTRL = isMac ? "⌘" : "Ctrl";
 
 export function TabBarCreateEntry({
   isOpen,
   anchorPos,
   onClose,
-  worktreePath,
   detectedAgents = [],
   recentlyClosedTabs = [],
   onNewTerminalTab,
   onNewFileTab,
   onOpenFileTab,
-  onOpenFile,
   onLaunchAgent,
   onRestoreClosedTab,
-  onRunQuickCommand,
+  onOpenSettings,
 }: TabBarCreateEntryProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [workspaceFiles, setWorkspaceFiles] = useState<FileEntry[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [launchPendingAgentId, setLaunchPendingAgentId] = useState<string | null>(null);
 
-  // Auto-focus input when opened
+  // Auto-focus input when opened — Orca TabBarCreateEntry behavior.
   useEffect(() => {
     if (isOpen) {
       setQuery("");
       setSelectedIndex(0);
+      setLaunchPendingAgentId(null);
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });
     }
   }, [isOpen]);
-
-  // Load files for active worktree/project if query is present
-  useEffect(() => {
-    if (!isOpen || !worktreePath) return;
-    invoke<DirectoryListing>("list_directory_cmd", { path: worktreePath })
-      .then((listing) => {
-        if (listing?.entries) {
-          setWorkspaceFiles(listing.entries.filter((e) => !e.is_hidden));
-        }
-      })
-      .catch(() => setWorkspaceFiles([]));
-  }, [isOpen, worktreePath]);
 
   // Handle outside clicks and Esc key
   useEffect(() => {
@@ -123,145 +99,93 @@ export function TabBarCreateEntry({
     };
   }, [isOpen, onClose]);
 
-  // Compile all options
-  const allOptions = useMemo(() => {
-    const list: CreateOption[] = [];
+  const closeAfter = (action: () => void) => () => {
+    action();
+    onClose();
+  };
 
-    // 1. Installed AI Agents
-    for (const agent of detectedAgents) {
-      if (agent.is_installed) {
-        list.push({
-          id: `agent-${agent.id}`,
-          title: `Launch ${agent.name}`,
-          subtitle: agent.executable,
-          category: "agent",
-          badge: "agent",
-          icon: <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />,
-          action: () => {
-            onLaunchAgent?.(agent);
-            onClose();
-          },
-        });
-      }
-    }
-
-    // 2. Terminals & Shells
-    list.push({
-      id: "shell-default",
+  // Orca tab-bar-static-create-menu.tsx: core actions with their shortcuts.
+  const staticActions: CreateOption[] = [
+    {
+      id: "new-terminal",
       title: "New Terminal",
-      subtitle: "Default shell",
-      category: "shell",
-      badge: "terminal",
-      icon: <Terminal className="w-3.5 h-3.5 text-emerald-400 shrink-0" />,
-      action: () => {
-        onNewTerminalTab?.();
-        onClose();
-      },
-    });
+      category: "static-action",
+      icon: <TerminalSquare className="size-3.5 text-muted-foreground shrink-0" />,
+      shortcut: `${CTRL}+T`,
+      action: closeAfter(() => onNewTerminalTab?.()),
+    },
+    {
+      id: "new-browser-tab",
+      title: "New Browser Tab",
+      category: "static-action",
+      icon: <Globe className="size-3.5 text-muted-foreground shrink-0" />,
+      shortcut: `${CTRL}+Shift+B`,
+      action: closeAfter(() => onNewFileTab?.()),
+    },
+    {
+      id: "new-markdown",
+      title: "New Markdown",
+      category: "static-action",
+      icon: <FilePlus className="size-3.5 text-muted-foreground shrink-0" />,
+      shortcut: `${CTRL}+Shift+M`,
+      action: closeAfter(() => onNewFileTab?.()),
+    },
+    {
+      id: "open-markdown",
+      title: "Open Markdown...",
+      category: "static-action",
+      icon: <FileText className="size-3.5 text-muted-foreground shrink-0" />,
+      action: closeAfter(() => onOpenFileTab?.()),
+    },
+  ];
 
-    for (const sh of ["bash", "zsh", "fish"]) {
-      list.push({
-        id: `shell-${sh}`,
-        title: `New ${sh} Terminal`,
-        subtitle: `/bin/${sh}`,
-        category: "shell",
-        badge: "shell",
-        icon: <Terminal className="w-3.5 h-3.5 text-emerald-400 shrink-0" />,
-        action: () => {
-          onNewTerminalTab?.(sh);
-          onClose();
-        },
-      });
-    }
+  // Orca QuickLaunchAgentMenuItems: only REAL installed AI agents, brand icons,
+  // never plain shells (isShellProcess excludes bash/zsh/fish).
+  const agentOptions: CreateOption[] = detectedAgents
+    .filter((agent) => agent.is_installed && !isShellProcess(agent.executable || agent.id))
+    .map((agent) => ({
+      id: `agent-${agent.id}`,
+      title: agent.name,
+      subtitle: agent.executable,
+      category: "agent" as const,
+      icon:
+        launchPendingAgentId === agent.id ? (
+          <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden />
+        ) : (
+          <AgentBrandIcon agentId={agent.id} size={14} />
+        ),
+      action: closeAfter(() => {
+        setLaunchPendingAgentId(agent.id);
+        onLaunchAgent?.(agent);
+      }),
+    }));
 
-    // 3. File actions & Workspace Files
-    list.push({
-      id: "file-blank",
-      title: "New Blank File Tab",
-      subtitle: "Open empty editor tab",
-      category: "file",
-      icon: <FilePlus className="w-3.5 h-3.5 text-blue-400 shrink-0" />,
-      action: () => {
-        onNewFileTab?.();
-        onClose();
-      },
-    });
+  // Orca QuickLaunchButton.tsx footer: Agent settings entry.
+  const agentSettingsOption: CreateOption = {
+    id: "agent-settings",
+    title: "Agent settings...",
+    category: "agent",
+    icon: <SettingsIcon className="size-3.5 shrink-0" />,
+    action: closeAfter(() => onOpenSettings?.()),
+  };
 
-    list.push({
-      id: "file-open",
-      title: "Open File from Workspace...",
-      subtitle: "Browse files via dialog",
-      category: "file",
-      icon: <FileText className="w-3.5 h-3.5 text-blue-400 shrink-0" />,
-      action: () => {
-        onOpenFileTab?.();
-        onClose();
-      },
-    });
+  // Restored tabs surface — Orca open-tab-search: history entries live under search.
+  const historyOptions: CreateOption[] = recentlyClosedTabs.map((closedTab) => ({
+    id: `recent-${closedTab.id}`,
+    title: closedTab.title,
+    subtitle: closedTab.cwd || closedTab.type,
+    category: "history" as const,
+    icon: <ShellIcon shell={closedTab.executable} size={14} />,
+    action: closeAfter(() => onRestoreClosedTab?.(closedTab)),
+  }));
 
-    for (const file of workspaceFiles) {
-      if (!file.is_dir) {
-        list.push({
-          id: `ws-file-${file.path}`,
-          title: file.name,
-          subtitle: file.path,
-          category: "file",
-          badge: "file",
-          icon: <File className="w-3.5 h-3.5 text-cyan-400 shrink-0" />,
-          action: () => {
-            onOpenFile?.(file.path);
-            onClose();
-          },
-        });
-      }
-    }
-
-    // 4. Quick Commands
-    for (const cmd of DEFAULT_QUICK_COMMANDS) {
-      list.push({
-        id: `cmd-${cmd}`,
-        title: `Run: ${cmd}`,
-        subtitle: "Execute command in terminal",
-        category: "command",
-        badge: "command",
-        icon: <Play className="w-3.5 h-3.5 text-amber-400 shrink-0" />,
-        action: () => {
-          onRunQuickCommand?.(cmd);
-          onClose();
-        },
-      });
-    }
-
-    // 5. Recently Closed Tabs
-    for (const closedTab of recentlyClosedTabs) {
-      list.push({
-        id: `recent-${closedTab.id}`,
-        title: `Reopen: ${closedTab.title}`,
-        subtitle: closedTab.cwd || closedTab.type,
-        category: "history",
-        badge: "restore",
-        icon: <History className="w-3.5 h-3.5 text-neutral-400 shrink-0" />,
-        action: () => {
-          onRestoreClosedTab?.(closedTab);
-          onClose();
-        },
-      });
-    }
-
-    return list;
-  }, [
-    detectedAgents,
-    workspaceFiles,
-    recentlyClosedTabs,
-    onLaunchAgent,
-    onNewTerminalTab,
-    onNewFileTab,
-    onOpenFileTab,
-    onOpenFile,
-    onRunQuickCommand,
-    onRestoreClosedTab,
-    onClose,
-  ]);
+  // Orca omnibox order: static actions → agents → settings → history. The
+  // static block and the agent block stay grouped; query filters within them.
+  const allOptions = useMemo(
+    () => [...staticActions, ...agentOptions, agentSettingsOption, ...historyOptions],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [detectedAgents, recentlyClosedTabs, launchPendingAgentId, onLaunchAgent, onNewTerminalTab, onNewFileTab, onOpenFileTab, onRestoreClosedTab, onOpenSettings]
+  );
 
   // Filter options based on query
   const filteredOptions = useMemo(() => {
@@ -307,6 +231,51 @@ export function TabBarCreateEntry({
 
   if (!isOpen || !anchorPos) return null;
 
+  const renderOption = (opt: CreateOption, idx: number) => {
+    const isSelected = idx === selectedIndex;
+    return (
+      <div
+        key={opt.id}
+        onClick={opt.action}
+        onMouseEnter={() => setSelectedIndex(idx)}
+        className={`flex items-center gap-2 rounded-[7px] px-2 py-1.5 text-[12px] leading-5 font-medium text-left cursor-pointer ${
+          isSelected ? "bg-accent text-accent-foreground" : "text-popover-foreground hover:bg-accent/60"
+        }`}
+      >
+        {opt.icon}
+        <span className="flex-1 truncate">{opt.title}</span>
+        {opt.shortcut ? (
+          <span className="text-[10px] tracking-widest text-muted-foreground font-mono shrink-0">
+            {opt.shortcut}
+          </span>
+        ) : null}
+      </div>
+    );
+  };
+
+  const q = query.trim().toLowerCase();
+  const visibleStatics = staticActions.filter(
+    (opt) =>
+      !q ||
+      opt.title.toLowerCase().includes(q) ||
+      opt.category.toLowerCase().includes(q)
+  );
+  const visibleAgents = agentOptions.filter(
+    (opt) =>
+      !q ||
+      opt.title.toLowerCase().includes(q) ||
+      opt.subtitle?.toLowerCase().includes(q) ||
+      opt.category.toLowerCase().includes(q)
+  );
+  const visibleHistory = historyOptions.filter(
+    (opt) =>
+      !q ||
+      opt.title.toLowerCase().includes(q) ||
+      opt.subtitle?.toLowerCase().includes(q) ||
+      opt.category.toLowerCase().includes(q)
+  );
+  const showAgentSettings = !q || "agent settings".includes(q);
+
   return createPortal(
     <div
       ref={containerRef}
@@ -318,7 +287,7 @@ export function TabBarCreateEntry({
       }}
       className="w-72 max-w-[90vw] rounded-xl border border-border bg-popover text-popover-foreground shadow-2xl backdrop-blur-xl p-1.5 text-xs animate-in fade-in duration-100 select-none overflow-hidden"
     >
-      {/* Omnibox input */}
+      {/* Orca omnibox placeholder copy (tab-create-entry-copy.ts) */}
       <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/70 bg-card mb-1">
         <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
         <input
@@ -327,7 +296,8 @@ export function TabBarCreateEntry({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search files, agents, shells, commands..."
+          aria-label="Search open tabs, history, files, URLs, agents…"
+          placeholder="Search open tabs, history, files, URLs, agents…"
           className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none font-sans"
         />
         {query && (
@@ -340,59 +310,43 @@ export function TabBarCreateEntry({
         )}
       </div>
 
-      {/* Options list */}
-      <div className="max-h-72 overflow-y-auto space-y-0.5 scrollbar-thin scrollbar-thumb-neutral-700 py-0.5">
-        {filteredOptions.length === 0 ? (
-          <div className="p-3 text-center text-muted-foreground text-[11px] font-mono">
-            No matching entries found.
-          </div>
-        ) : (
-          filteredOptions.map((opt, idx) => {
-            const isSelected = idx === selectedIndex;
-            return (
-              <div
-                key={opt.id}
-                onClick={opt.action}
-                onMouseEnter={() => setSelectedIndex(idx)}
-                className={`group flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-left transition cursor-pointer ${
-                  isSelected
-                    ? "bg-accent text-accent-foreground font-medium"
-                    : "text-popover-foreground hover:bg-accent/60"
-                }`}
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  {opt.icon}
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[11px] truncate leading-tight">
-                      {opt.title}
-                    </span>
-                    {opt.subtitle && (
-                      <span className="text-[10px] text-muted-foreground font-mono truncate leading-tight">
-                        {opt.subtitle}
-                      </span>
-                    )}
-                  </div>
-                </div>
+      {/* Core actions group — Orca TabBarStaticCreateMenu */}
+      <div className="py-0.5">{visibleStatics.map(renderOption)}</div>
 
-                {opt.badge && (
-                  <span className="text-[9px] uppercase tracking-wider font-mono px-1 py-0.2 rounded bg-accent/80 text-muted-foreground border border-border/50 shrink-0">
-                    {opt.badge}
-                  </span>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
+      {visibleAgents.length > 0 || showAgentSettings ? (
+        <div className="my-1 h-px bg-border" role="separator" />
+      ) : null}
 
-      {/* Footer hint */}
-      <div className="flex items-center justify-between border-t border-border/50 px-2 pt-1.5 mt-1 text-[10px] text-muted-foreground font-mono">
-        <div className="flex items-center gap-2">
-          <span>↑↓ to navigate</span>
-          <span>↵ to select</span>
+      {/* Detected AI agents group — Orca QuickLaunchAgentMenuItems */}
+      {visibleAgents.length > 0 ? (
+        <div className="py-0.5">{visibleAgents.map(renderOption)}</div>
+      ) : null}
+
+      {/* Agent settings footer — Orca QuickLaunchButton */}
+      {showAgentSettings ? (
+        <div className="py-0.5">
+          {renderOption(
+            { ...agentSettingsOption, action: closeAfter(() => onOpenSettings?.()) },
+            allOptions.findIndex((o) => o.id === "agent-settings")
+          )}
         </div>
-        <span>Omnibox</span>
-      </div>
+      ) : null}
+
+      {/* Restored-tab history — Orca open-tab-search retention */}
+      {visibleHistory.length > 0 ? (
+        <>
+          <div className="my-1 h-px bg-border" role="separator" />
+          <div className="max-h-40 overflow-y-auto py-0.5 scrollbar-thin scrollbar-thumb-neutral-700">
+            {visibleHistory.map(renderOption)}
+          </div>
+        </>
+      ) : null}
+
+      {filteredOptions.length === 0 ? (
+        <div className="p-3 text-center text-muted-foreground text-[11px] font-mono">
+          No matching entries found.
+        </div>
+      ) : null}
     </div>,
     document.body
   );
