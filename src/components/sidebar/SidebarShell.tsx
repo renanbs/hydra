@@ -37,6 +37,7 @@ import { SidebarFooter } from "./SidebarFooter";
 import type { HydraProject, GitWorktreeInfo, WorktreeSession, WorktreeSidebarProps, AgentsGroupBy, AgentsStatusFilter, WorkspacePort } from "./types";
 import { IDLE, resolveSessionAttention, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { buildSidebarRows } from "./worktree-list/buildSidebarRows";
+import { isShellProcess } from "../workbench/tab-agent";
 import {
   createSidebarDragPreview,
   isSidebarPointerDragBlocked,
@@ -1404,13 +1405,14 @@ export function SidebarShell({
       const { wt, proj } = row;
       const isMain = wt.path === proj.path;
       const wtSessions = sessions.filter((s) => s.project_path === wt.path || (!s.project_path && isMain));
+      const wtAgentSessions = wtSessions.filter((s) => !isShellProcess(s.agentName || s.executable));
       return (
         <div style={rowStyle} {...ariaAttributes} className="px-2 pl-4">
           <WorktreeCard
             worktree={wt}
             project={proj}
             compactCards={compactCards}
-            sessions={wtSessions}
+            sessions={wtAgentSessions}
             onSelectSession={onSelectSession}
             activeSessionId={sessions.find((s) => s.active)?.id}
             isPinned={pinnedWorktrees?.has(wt.path)}
@@ -1432,9 +1434,9 @@ export function SidebarShell({
             onDragEnd={handleWorktreeDragEnd}
             metaRowChildren={
               <>
-                {wtSessions.length > 0 && (
+                {wtAgentSessions.length > 0 && (
                   <span className="text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 shrink-0 font-mono">
-                    {wtSessions.length} {wtSessions.length === 1 ? "agent" : "agents"}
+                    {wtAgentSessions.length} {wtAgentSessions.length === 1 ? "agent" : "agents"}
                   </span>
                 )}
                 {formatAge(wt.created_at) && (

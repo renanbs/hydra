@@ -4,6 +4,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { DashboardAgentRow } from "../dashboard/DashboardAgentRow";
 import { buildAgentRowLineageTree } from "./agent-row-lineage-model";
+import { isShellProcess } from "../workbench/tab-agent";
 import type { DashboardAgentRowData } from "./agent-status-types";
 import type { WorktreeSession } from "./types";
 
@@ -46,6 +47,9 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
     const list: DashboardAgentRowData[] = [];
 
     for (const session of sessions) {
+      if (isShellProcess(session.agentName || session.executable)) {
+        continue;
+      }
       const paneKey = session.id;
       const startedAt = session.state_started_at ?? session.created_at ?? Date.now();
 
