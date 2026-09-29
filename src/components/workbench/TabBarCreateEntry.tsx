@@ -98,6 +98,13 @@ export function TabBarCreateEntry({
     };
   }, [isOpen, onClose]);
 
+  // Orca DropdownMenuItem onSelect fires on the pointer-down phase; a
+  // click-based action dies when an outside-mousedown listener unmounts the
+  // row mid-press (mousedown closes the menu, mouseup lands on a dead node,
+  // click never fires). Fire on mousedown, before any dismissal.
+  const fireAction = (action: () => void) => {
+    action();
+  };
   const closeAfter = (action: () => void) => () => {
     action();
     onClose();
@@ -227,7 +234,11 @@ export function TabBarCreateEntry({
     return (
       <div
         key={opt.id}
-        onClick={opt.action}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          fireAction(opt.action);
+        }}
         onMouseEnter={() => setSelectedIndex(idx)}
         className={`flex items-center gap-2 rounded-[7px] px-2 py-1.5 text-[12px] leading-5 font-medium text-left cursor-pointer ${
           isSelected ? "bg-accent text-accent-foreground" : "text-popover-foreground hover:bg-accent/60"
