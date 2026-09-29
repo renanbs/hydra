@@ -3,7 +3,7 @@
 // TabBarStaticCreateMenu + QuickLaunchAgentMenuItems composition) — Orca "+" dropdown parity:
 // search header, static tab actions with shortcuts, detected AI agents with brand icons,
 // and the Agent settings footer entry.
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import { Fragment, useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   Search,
@@ -291,10 +291,10 @@ export function TabBarCreateEntry({
             const prev = idx > 0 ? filteredOptions[idx - 1] : null;
             const showSeparator = prev !== null && opt.category !== prev.category;
             return (
-              <React.Fragment key={opt.id}>
+              <Fragment key={opt.id}>
                 {showSeparator ? <div className="my-1 h-px bg-border" role="separator" /> : null}
                 {renderOption(opt, idx)}
-              </React.Fragment>
+              </Fragment>
             );
           })
         )}
