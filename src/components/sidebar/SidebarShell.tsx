@@ -140,6 +140,7 @@ export function SidebarShell({
   sessions,
   projects,
   activeProject,
+  activeWorktreePath,
   gitStatus,
   gitWorktrees,
   worktreesByProject,
@@ -197,6 +198,7 @@ export function SidebarShell({
   const [agentsStatusFilter, setAgentsStatusFilter] = useState<AgentsStatusFilter>("all");
   const [agentsGroupBy, setAgentsGroupBy] = useState<AgentsGroupBy>("state");
   const [focusedWorktreePath, setFocusedWorktreePath] = useState<string | null>(null);
+  const effectiveFocusedWorktreePath = activeWorktreePath !== undefined ? activeWorktreePath : focusedWorktreePath;
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
   const [focusedProjectId, setFocusedProjectId] = useState<string | null>(null);
   const [groupDropTargetId, setGroupDropTargetId] = useState<string | null>(null);
@@ -1127,7 +1129,7 @@ export function SidebarShell({
 
       const focused =
         (focusedSessionId && { type: "session" as const, id: focusedSessionId }) ||
-        (focusedWorktreePath && { type: "worktree" as const, id: focusedWorktreePath }) ||
+        (effectiveFocusedWorktreePath && { type: "worktree" as const, id: effectiveFocusedWorktreePath }) ||
         (focusedProjectId && { type: "project" as const, id: focusedProjectId }) ||
         null;
 
@@ -1199,7 +1201,7 @@ export function SidebarShell({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [flatRows, focusableRows, sidebarBody, isModalOpen, focusedSessionId, focusedWorktreePath, focusedProjectId, sessions, onSelectSession, onSelectGitWorktree, onSelectProject, onSelectNextSession, listRef]);
+  }, [flatRows, focusableRows, sidebarBody, isModalOpen, focusedSessionId, effectiveFocusedWorktreePath, focusedProjectId, sessions, onSelectSession, onSelectGitWorktree, onSelectProject, onSelectNextSession, listRef]);
 
   // Row component for react-window virtualization
   const VirtualRow = ({ index, style, ariaAttributes }: RowComponentProps) => {
@@ -1413,7 +1415,7 @@ export function SidebarShell({
             activeSessionId={sessions.find((s) => s.active)?.id}
             isPinned={pinnedWorktrees?.has(wt.path)}
             isUnread={unreadWorktrees?.has(wt.path)}
-            isFocused={focusedWorktreePath === wt.path}
+            isFocused={effectiveFocusedWorktreePath === wt.path}
             isDragged={draggedWorktreePath === wt.path}
             dropTarget={worktreeDropTarget}
             ports={portsByWorktree.get(wt.path)}
