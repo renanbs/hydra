@@ -60,11 +60,13 @@ interface SettingsModalProps {
   onClose: () => void;
   onSaved?: (settings: HydraSettings) => void;
   onLiveChange?: (settings: HydraSettings) => void;
+  // Orca parity (openSettingsPage): section the modal should land on when opened.
+  initialSection?: HydraNavId;
 }
 
 type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal";
 
-export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialSection }: SettingsModalProps) {
   const [activeId, setActiveId] = useState<HydraNavId>("general");
   const [settings, setSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   const [savedFeedback, setSavedFeedback] = useState(false);
@@ -77,6 +79,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
   const [previewAppFont, setPreviewAppFont] = useState<string | null>(null);
   const [availableAgents, setAvailableAgents] = useState<{ id: string; label: string }[]>([]);
   const [availableShells, setAvailableShells] = useState<{ id: string; label: string; path: string }[]>([]);
+  const [systemShell, setSystemShell] = useState<{ id: string; label: string; path: string } | null>(null);
   const [appVersion, setAppVersion] = useState<string | null>(null);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [worktreeRootDraft, setWorktreeRootDraft] = useState("");
@@ -104,6 +107,14 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
     }
   }, [previewAppFont, settings.app_font_family]);
 
+  // Orca openSettingsPage parity: a caller that requests a specific section
+  // (e.g. "Agent settings..." in the create menu) lands there on open.
+  useEffect(() => {
+    if (isOpen && initialSection) {
+      setActiveId(initialSection);
+    }
+  }, [isOpen, initialSection]);
+
   const refreshTerminalSessions = () => {
     setTerminalSessionsLoading(true);
     invoke<string[]>("list_terminal_sessions").then((list)=> setTerminalSessions(Array.isArray(list)? list : [])).catch(()=>{}).finally(()=> setTerminalSessionsLoading(false));
@@ -115,6 +126,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
       invoke<{ id: string; label: string }[]>("list_available_agents").then((a) => { if (Array.isArray(a)) setAvailableAgents(a.map((x: any) => ({ id: x.id ?? x.name ?? x, label: x.label ?? x.name ?? x}))); }).catch(()=>{});
       invoke<{ id: string; label: string; path: string }[]>("list_available_shells").then((s)=>{ if(Array.isArray(s)) setAvailableShells(s.map((x:any)=>({id:x.id, label:x.label, path:x.path}))); }).catch(()=>{});
       invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
+      invoke<{ id: string; label: string; path: string }>("get_default_system_shell").then(setSystemShell).catch(()=>{});
     }
   }, [isOpen]);
   useEffect(() => {
@@ -878,11 +890,11 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                   {/* Default Shell */}
                   <section className="rounded-xl border bg-card p-4 space-y-3">
                     <h3 className="text-[13px] font-medium">Default Shell</h3>
-                    <p className="text-[12px] text-muted-foreground">Which shell Hydra launches for new terminals. Empty = system default (<code>bash</code>).</p>
+                    <p className="text-[12px] text-muted-foreground">Which shell Hydra launches for new terminals. Empty = system default (<code>{systemShell?.id ?? "zsh"}</code>).</p>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
                         <select value={settings.terminal_default_shell} onChange={(e)=>setSettingsLive({ ...settings, terminal_default_shell: e.target.value })} className="w-full appearance-none bg-background text-foreground border border-input rounded-md pl-3 pr-8 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring">
-                          <option value="">System default (bash)</option>
+                          <option value="">System default ({systemShell?.id ?? "zsh"})</option>
                           {availableShells.map(s=> <option key={s.id} value={s.id}>{s.label}</option>)}
                         </select>
                         <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -890,8 +902,8 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
                       <button onClick={()=>invoke<{id:string;label:string;path:string}[]>("list_available_shells").then((s:any)=>setAvailableShells(s.map((x:any)=>({id:x.id,label:x.label,path:x.path})))).catch(()=>{})} className="px-3 py-2 rounded-md border bg-background text-[12px] hover:bg-muted">Refresh</button>
                     </div>
                     <div className="flex gap-2">
-                      <input value={settings.terminal_default_shell} onChange={(e)=>setSettingsLive({ ...settings, terminal_default_shell: e.target.value })} placeholder="Custom shell (e.g. /usr/bin/zsh)" className="flex-1 bg-background border border-input rounded-md px-3 py-2 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
-                      <span className="text-[11px] text-muted-foreground self-center">Current: {settings.terminal_default_shell || "bash"} · {availableShells.length} found</span>
+                      <input value={settings.terminal_default_shell} onChange={(e)=>setSettingsLive({ ...settings, terminal_default_shell: e.target.value })} placeholder={`Custom shell (e.g. ${systemShell?.path ?? "/bin/zsh"})`} className="flex-1 bg-background border border-input rounded-md px-3 py-2 font-mono text-[12px] focus:outline-none focus:ring-2 focus:ring-ring" />
+                      <span className="text-[11px] text-muted-foreground self-center">Current: {settings.terminal_default_shell || (systemShell?.id ?? "zsh")} · {availableShells.length} found</span>
                     </div>
                   </section>
 

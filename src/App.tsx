@@ -264,6 +264,7 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
+  const [settingsSectionRequested, setSettingsSectionRequested] = useState<"agents" | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -299,6 +300,16 @@ export default function App() {
   const [worktreesByProject, setWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hiddenWorktreesByProject, setHiddenWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
+  const [systemDefaultShell, setSystemDefaultShell] = useState<string>("zsh");
+  const systemDefaultShellRef = useRef<string>("zsh");
+  systemDefaultShellRef.current = systemDefaultShell;
+
+  const resolveDefaultShell = useCallback((): string => {
+    if (hydraSettings.terminal_default_shell && hydraSettings.terminal_default_shell.trim()) {
+      return hydraSettings.terminal_default_shell.trim();
+    }
+    return systemDefaultShellRef.current || "zsh";
+  }, [hydraSettings.terminal_default_shell]);
   // Bug #12: system theme must be reactive, not sampled once when hydraSettings
   // change. Kept in state + updated by the MediaQueryList change listener below.
   const [systemDark, setSystemDark] = useState<boolean>(
@@ -529,7 +540,7 @@ export default function App() {
     const tab = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
     if (!tab || tab.type !== "terminal") {
       // inline new terminal tab creation to avoid TDZ dependency on handleNewTerminalTab
-      const shFallback = (hydraSettings as any).terminal_default_shell || "bash";
+      const shFallback = resolveDefaultShell();
       const sidFallback = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const tabIdFallback = `tab_${sidFallback}`;
       const terminalCountFallback = tabsRef.current.filter((t) => t.type === "terminal").length;
@@ -554,7 +565,7 @@ export default function App() {
     }
     const existingPanes = getPanesForTab(tab);
     if (existingPanes.length >= 4) return;
-    const sh = tab.executable || (hydraSettings as any).terminal_default_shell || "bash";
+    const sh = tab.executable || resolveDefaultShell();
     const cwd = tab.cwd || activeProjectRef.current?.path || "";
     const newSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const newPaneSession: WorktreeSession = {
@@ -1166,6 +1177,14 @@ export default function App() {
     invoke<AvailableAgent[]>("list_available_agents")
       .then(setAvailableAgents)
       .catch(console.error);
+    invoke<{ id: string; label: string; path: string }>("get_default_system_shell")
+      .then((shell) => {
+        if (shell?.id) {
+          setSystemDefaultShell(shell.id);
+        }
+      })
+      .catch(() => {});
+
 
     invoke<HydraSettings>("get_settings").then((s) => {
       if (s) {
@@ -1567,37 +1586,116 @@ export default function App() {
       clearUnreadProject(owningProj.id);
     }
 
-    // Orca Parity: If this worktree already has an active or existing session, activate it!
+    const prevPath = currentWorkspacePathRef.current;
+    if (prevPath === wt.path && tabsRef.current.length > 0) {
+      const existingSession =
+        sessions.find((s) => s.project_path === wt.path && s.active) ||
+        sessions.find((s) => s.project_path === wt.path);
+      if (existingSession) {
+        setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === existingSession.id })));
+      }
+      return;
+    }
+
+    // 1. Save current tabs for previous workspace before switching
+    if (prevPath && prevPath !== wt.path && tabsRef.current.length > 0) {
+      const prevState: WorkbenchState = {
+        tabs_json: JSON.stringify(tabsRef.current),
+        active_tab_id: activeTabIdRef.current,
+        updated_at: Date.now(),
+      };
+      invoke("save_workbench_persistence_for_project", { projectPath: prevPath, state: prevState }).catch(console.error);
+    }
+
+    // 2. Set active worktree
+    setActiveWorktreePath(wt.path);
+    prevProjectPathRef.current = wt.path;
+
+    // 3. Update active session if one exists for this worktree
     const existingSession =
       sessions.find((s) => s.project_path === wt.path && s.active) ||
       sessions.find((s) => s.project_path === wt.path);
-
     if (existingSession) {
       setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === existingSession.id })));
       clearUnreadWorktree(existingSession.id);
-      const existingTab = tabsRef.current.find(
-        (t) => t.sessionId === existingSession.id || t.id === `tab_${existingSession.id}`
-      );
-      if (existingTab) {
-        setActiveTabId(existingTab.id);
-      }
-      return;
     }
 
-    // Check if there is an existing tab for this worktree cwd
-    const existingTab = tabsRef.current.find((t) => t.cwd === wt.path);
-    if (existingTab) {
-      setActiveTabId(existingTab.id);
-      if (existingTab.sessionId) {
-        setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === existingTab.sessionId })));
-        clearUnreadWorktree(existingTab.sessionId);
-      }
-      return;
-    }
+    // 4. Load persisted tabs for this worktree from SQLite
+    invoke<WorkbenchState>("get_workbench_persistence_for_project", { projectPath: wt.path })
+      .then((state) => {
+        let loadedTabs: TabItem[] = [];
+        if (state && state.tabs_json && state.tabs_json !== "[]" && state.tabs_json !== "null") {
+          try {
+            const raw = JSON.parse(state.tabs_json) as TabItem[];
+            const seenSid = new Set<string>();
+            loadedTabs = raw.filter((t) => {
+              if (t.sessionId) {
+                if (seenSid.has(t.sessionId)) return false;
+                seenSid.add(t.sessionId);
+              }
+              return true;
+            });
+            const firstTab = loadedTabs[0];
+            const isDefaultBash =
+              loadedTabs.length === 1 &&
+              firstTab?.id === "tab_main" &&
+              firstTab?.title === "bash (active)" &&
+              !firstTab?.sessionId;
+            if (isDefaultBash) {
+              loadedTabs = [];
+            }
+          } catch {
+            loadedTabs = [];
+          }
+        }
 
-    // Orca Parity: If the worktree has NO existing sessions and NO existing tabs,
-    // DO NOT spawn a phantom bash session or open an unwanted terminal tab.
-    // The worktree is focused cleanly in the sidebar context.
+        if (loadedTabs.length > 0) {
+          setTabs(loadedTabs);
+          if (state.active_tab_id && loadedTabs.some((t) => t.id === state.active_tab_id)) {
+            setActiveTabId(state.active_tab_id);
+          } else {
+            setActiveTabId(loadedTabs[0].id);
+          }
+          setWorkbenchLoaded(true);
+        } else {
+          // Orca Parity: Worktree has NO existing tabs -> auto-spawn initial terminal tab!
+          const sh = resolveDefaultShell();
+          const tabId = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          const initialTab: TabItem = {
+            id: tabId,
+            title: "Terminal 1",
+            type: "terminal",
+            executable: sh,
+            cwd: wt.path,
+          };
+          setTabs([initialTab]);
+          setActiveTabId(tabId);
+          setWorkbenchLoaded(true);
+          invoke("save_workbench_persistence_for_project", {
+            projectPath: wt.path,
+            state: {
+              tabs_json: JSON.stringify([initialTab]),
+              active_tab_id: tabId,
+              updated_at: Date.now(),
+            },
+          }).catch(console.error);
+        }
+      })
+      .catch(() => {
+        // Fallback: spawn initial terminal tab
+        const sh = resolveDefaultShell();
+        const tabId = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const initialTab: TabItem = {
+          id: tabId,
+          title: "Terminal 1",
+          type: "terminal",
+          executable: sh,
+          cwd: wt.path,
+        };
+        setTabs([initialTab]);
+        setActiveTabId(tabId);
+        setWorkbenchLoaded(true);
+      });
   };
 
   const handleDeleteGitWorktree = (wt: GitWorktreeInfo, owningProj?: HydraProject) => {
@@ -1704,7 +1802,25 @@ export default function App() {
     if (selectedSession?.project_path) {
       clearUnreadWorktree(selectedSession.project_path);
       const owningProject = projects.find((p) => selectedSession.project_path === p.path || selectedSession.project_path.startsWith(p.path + "/"));
-      if (owningProject) clearUnreadProject(owningProject.id);
+      if (owningProject) {
+        if (!activeProject || activeProject.path !== owningProject.path) {
+          setActiveProject(owningProject);
+        }
+        clearUnreadProject(owningProject.id);
+      }
+      if (selectedSession.project_path !== currentWorkspacePathRef.current) {
+        const prevPath = currentWorkspacePathRef.current;
+        if (prevPath && tabsRef.current.length > 0) {
+          const prevState: WorkbenchState = {
+            tabs_json: JSON.stringify(tabsRef.current),
+            active_tab_id: activeTabIdRef.current,
+            updated_at: Date.now(),
+          };
+          invoke("save_workbench_persistence_for_project", { projectPath: prevPath, state: prevState }).catch(console.error);
+        }
+        setActiveWorktreePath(selectedSession.project_path);
+        prevProjectPathRef.current = selectedSession.project_path;
+      }
     }
     const tabId = `tab_${id}`;
     const existing = tabs.find((t) => t.id === tabId || t.sessionId === id);
@@ -1770,40 +1886,12 @@ export default function App() {
   };
 
   const handleNewTerminalTab = useCallback((shell?: string) => {
-    const sh = shell || hydraSettings.terminal_default_shell || "bash";
+    const sh = shell || resolveDefaultShell();
+    const currentCwd = activeWorktreePathRef.current ?? activeProject?.path ?? "";
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const tabId = `tab_${sessionId}`;
     const terminalCount = tabsRef.current.filter((t) => t.type === "terminal").length;
-    const title = terminalCount === 0 ? "Terminal" : `Terminal ${terminalCount + 1}`;
-    const newSession: WorktreeSession = {
-      id: sessionId,
-      project_path: activeProject?.path ?? "",
-      title: `Terminal (${sh})`,
-      branch: activeProject?.current_branch ?? "main",
-      state: "idle",
-      active: true,
-      agentName: sh,
-      executable: sh,
-      created_at: Date.now(),
-      updated_at: Date.now(),
-    };
-    invoke("save_session_record", {
-      record: {
-        id: sessionId,
-        project_path: newSession.project_path,
-        title: newSession.title,
-        branch: newSession.branch,
-        agent_name: newSession.agentName,
-        executable: newSession.executable,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      },
-    }).catch(console.error);
-
-    setSessions((prev) => [
-      ...prev.map((s) => ({ ...s, active: false })),
-      newSession,
-    ]);
+    const title = terminalCount === 0 ? "Terminal 1" : `Terminal ${terminalCount + 1}`;
     setTabs((prev) => [
       ...prev,
       {
@@ -1812,7 +1900,7 @@ export default function App() {
         type: "terminal",
         sessionId,
         executable: sh,
-        cwd: newSession.project_path,
+        cwd: currentCwd,
       },
     ]);
     setActiveTabId(tabId);
@@ -2141,9 +2229,21 @@ export default function App() {
   };
   const handleRenameTab = (tabId: string, newTitle: string) => {
     setTabs((prev) =>
-      prev.map((t) => (t.id === tabId ? { ...t, title: newTitle } : t))
+      prev.map((t) => (t.id === tabId ? { ...t, title: newTitle, customTitle: newTitle } : t))
     );
   };
+
+  // Orca parity (resolveTerminalTabTitle): a user rename wins over the live
+  // shell/process OSC title. Without a customTitle, the tab follows the title
+  // the terminal emits (zsh, vim, agent frames).
+  const handleTabTitleChange = useCallback((sessionId: string, title: string) => {
+    setTabs((prev) =>
+      prev.map((t) => {
+        if (t.customTitle || t.sessionId !== sessionId) return t;
+        return { ...t, title };
+      })
+    );
+  }, []);
 
 
   // Global Keyboard Shortcuts
@@ -3421,11 +3521,12 @@ export default function App() {
                 onReorderTabs={setTabs}
                 onTabContextMenu={handleTabContextMenu}
                 onTabBarContextMenu={handleTabBarContextMenu}
-                worktreePath={activeProject?.path}
+                worktreePath={activeWorktreePath ?? activeProject?.path}
                 recentlyClosedTabs={recentlyClosedTabs}
                 onOpenFile={handleOpenFilePath}
                 onRestoreClosedTab={handleRestoreClosedTab}
                 onRunQuickCommand={handleRunQuickCommand}
+                onOpenSettings={() => { setSettingsSectionRequested("agents"); setIsSettingsOpen(true); }}
               />
 
               <div className="flex-1 overflow-hidden relative">
@@ -3482,10 +3583,11 @@ export default function App() {
                         ) : (
                           <TerminalDrawer 
                             sessionId={sIdSingle} 
-                            executable={t.executable ?? (hydraSettings.terminal_default_shell || "bash")}
-                            cwd={t.cwd || activeProject?.path}
+                            executable={t.executable ?? resolveDefaultShell()}
+                            cwd={t.cwd || activeWorktreePath || activeProject?.path}
                             settings={hydraSettings}
                             onContextMenu={handleTerminalContextMenu}
+                            onTitleChange={(title) => handleTabTitleChange(sIdSingle, title)}
                           />
                         )}
                       </div>
@@ -3534,7 +3636,7 @@ export default function App() {
               className="flex flex-col border-l border-sidebar-border bg-sidebar shrink-0 overflow-hidden relative"
             >
               <RightSidebar
-                rootPath={activeProject?.path ?? null}
+                rootPath={activeWorktreePath ?? activeProject?.path ?? null}
                 isGit={activeProject?.is_git ?? false}
                 openInApps={hydraSettings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS}
                 activeSessionId={(() => {
@@ -3568,9 +3670,10 @@ export default function App() {
                   } catch (e) { console.error(e); }
                 }}
                 onOpenDiff={async (relPath, staged) => {
-                  if (!activeProject?.path) return;
+                  const targetRepoPath = activeWorktreePath ?? activeProject?.path;
+                  if (!targetRepoPath) return;
                   try {
-                    const diff = await invoke<string>("git_diff_cmd", { repoPath: activeProject.path, file: relPath, staged });
+                    const diff = await invoke<string>("git_diff_cmd", { repoPath: targetRepoPath, file: relPath, staged });
                     const tabId = `tab_diff_${relPath}_${staged ? "staged":"wt"}`;
                     const title = `${relPath}${staged ? " (staged)" : ""}`;
                     const payload = { original: "", modified: diff || `No diff for ${relPath}`, lang: "diff" };
@@ -3784,9 +3887,10 @@ export default function App() {
       {/* Settings Modal */}
       <SettingsModal 
         isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+        onClose={() => { setIsSettingsOpen(false); setSettingsSectionRequested(null); }} 
         onLiveChange={(live) => { const n = normalizeHydraSettings(live); setHydraSettings(n); applyDocumentTheme(n.theme); }}
         onSaved={handleSettingsSaved}
+        initialSection={settingsSectionRequested ?? undefined}
       />
     </div>
   );

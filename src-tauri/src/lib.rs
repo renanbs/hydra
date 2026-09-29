@@ -55,6 +55,9 @@ pub struct AppState {
     pub keep_awake: Arc<KeepAwakeManager>,
 }
 
+static ACTIVE_DAEMON_POLLERS: std::sync::LazyLock<parking_lot::Mutex<std::collections::HashSet<String>>> =
+    std::sync::LazyLock::new(|| parking_lot::Mutex::new(std::collections::HashSet::new()));
+
 #[tauri::command]
 fn get_system_status() -> String {
     "Hydra Core Active (Rust 1.98 / Wayland)".to_string()
@@ -546,6 +549,11 @@ async fn list_available_agents() -> Vec<AvailableAgent> {
 async fn list_available_shells() -> Vec<AvailableShell> {
     tokio::task::spawn_blocking(probe_available_shells).await.unwrap_or_default()
 }
+#[tauri::command]
+async fn get_default_system_shell() -> AvailableShell {
+    shell_detection::get_system_default_shell()
+}
+
 
 #[tauri::command]
 async fn list_persisted_sessions(
@@ -591,10 +599,22 @@ async fn start_agent_terminal(
         match daemon_client::daemon_request(&req) {
             Ok(r) if r.ok => {
                 let sid = session_id.clone();
-                let app_handle = app.clone();
-                let db_handle = state.db.clone();
-                std::thread::spawn(move || {
-                    let mut offset = 0usize;
+                let should_spawn = {
+                    let mut pollers = ACTIVE_DAEMON_POLLERS.lock();
+                    pollers.insert(sid.clone())
+                };
+                if should_spawn {
+                    let app_handle = app.clone();
+                    let db_handle = state.db.clone();
+                    std::thread::spawn(move || {
+                        struct DropGuard(String);
+                        impl Drop for DropGuard {
+                            fn drop(&mut self) {
+                                ACTIVE_DAEMON_POLLERS.lock().remove(&self.0);
+                            }
+                        }
+                        let _guard = DropGuard(sid.clone());
+                        let mut offset = 0usize;
                     // PR-6 freshness tracking (per session, poller-local — the
                     // daemon owns the PTY, so from here the reader loop does not
                     // exist and this thread IS the state authority): last state
@@ -698,7 +718,8 @@ async fn start_agent_terminal(
                             _ => break,
                         }
                     }
-                });
+                    });
+                }
                 return Ok(());
             }
             Ok(r) => return Err(r.error.unwrap_or_else(|| "daemon error".to_string())),
@@ -1363,6 +1384,7 @@ pub fn run() {
             resize_terminal,
             set_keep_awake_working_count,
             list_available_shells,
+            get_default_system_shell,
             list_terminal_sessions,
             poll_terminal_output,
             is_daemon_available,
