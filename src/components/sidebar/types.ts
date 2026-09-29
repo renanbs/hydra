@@ -119,6 +119,12 @@ export interface WorktreeSidebarProps {
   projects: HydraProject[];
   activeProject: HydraProject | null;
   activeWorktreePath?: string | null;
+  /**
+   * Reveal target identity (Orca currentSidebarWorktreeId parity): derived from the
+   * ACTIVE WORKBENCH TAB (its session project_path / cwd), not from sidebar selection.
+   * Optional — when undefined the sidebar falls back to activeWorktreePath.
+   */
+  revealTargetPath?: string | null;
   gitStatus: GitRepoStatus | null;
   gitWorktrees: GitWorktreeInfo[];
   worktreesByProject?: Record<string, GitWorktreeInfo[]>;

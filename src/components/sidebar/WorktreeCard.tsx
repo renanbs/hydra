@@ -18,6 +18,7 @@ export interface WorktreeCardProps {
   isFocused?: boolean;
   isDragged?: boolean;
   dropTarget?: { path: string; position: "top" | "bottom" } | null;
+  revealHighlight?: boolean;
   onSelect: (wt: GitWorktreeInfo) => void;
   onDelete: (wt: GitWorktreeInfo, proj: HydraProject) => void;
   onRename: (newTitle: string) => Promise<void> | void;
@@ -51,6 +52,7 @@ export function WorktreeCard({
   onDragOver,
   onDrop,
   onDragEnd,
+  revealHighlight = false,
   ports,
   review,
   metaRowChildren,
@@ -95,6 +97,8 @@ export function WorktreeCard({
         } ${
           isDragged ? "opacity-30" : ""
         } ${
+          revealHighlight ? "scroll-to-current-workspace-reveal-highlight" : ""
+        } ${
           isFocused
             ? "border-indigo-500/50 ring-1 ring-indigo-500/20 bg-worktree-sidebar-accent/30"
             : "border-transparent worktree-sidebar-card-hover text-worktree-sidebar-foreground/80 hover:text-worktree-sidebar-foreground"
@@ -127,12 +131,14 @@ export function WorktreeCard({
         </WorktreeCardMetaRow>
 
         {sessions && sessions.length > 0 && onSelectSession && (
-          <WorktreeCardAgents
-            worktreePath={worktree.path}
-            sessions={sessions}
-            onSelectSession={onSelectSession}
-            activeSessionId={activeSessionId}
-          />
+          <div className="pl-4.5">
+            <WorktreeCardAgents
+              worktreePath={worktree.path}
+              sessions={sessions}
+              onSelectSession={onSelectSession}
+              activeSessionId={activeSessionId}
+            />
+          </div>
         )}
         </div>
       </WorktreeCardDetailsHover>

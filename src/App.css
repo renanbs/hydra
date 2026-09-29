@@ -136,7 +136,7 @@
   --input: rgb(255 255 255 / 0.15);
   --ring: #737373;
   --editor-surface: #1e1e1e;
-  --terminal-pane-locate: var(--color-blue-400);
+  --terminal-pane-locate: #38bdf8;
   --ai-action-accent: var(--color-violet-400);
   --agent-question: var(--color-orange-500);
   --agent-question-text: var(--color-orange-300);
@@ -248,7 +248,7 @@
   --input: rgb(255 255 255 / 0.15);
   --ring: #737373;
   --editor-surface: #1e1e1e;
-  --terminal-pane-locate: var(--color-blue-400);
+  --terminal-pane-locate: #38bdf8;
   --ai-action-accent: var(--color-violet-400);
   --agent-question: var(--color-orange-500);
   --agent-question-text: var(--color-orange-300);
@@ -559,3 +559,50 @@ select { color-scheme: light dark; }
 .dark select { background-color: var(--background); color: var(--foreground); }
 .light select { background-color: var(--background); color: var(--foreground); }
 select option { background-color: var(--popover); color: var(--popover-foreground); }
+
+/* Scroll-to-current workspace reveal highlight — Orca parity (assets/main.css:1651) */
+.scroll-to-current-workspace-reveal-highlight {
+  position: relative !important;
+  isolation: isolate;
+  overflow: visible !important;
+}
+
+.scroll-to-current-workspace-reveal-highlight::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  border-radius: 8px;
+  border: 2px solid #38bdf8 !important;
+  box-shadow:
+    0 0 0 1px rgba(56, 189, 248, 0.5),
+    0 0 18px rgba(56, 189, 248, 0.6) !important;
+  animation: scroll-to-current-workspace-reveal-glow 1.5s ease-out forwards;
+  z-index: 50;
+}
+
+@keyframes scroll-to-current-workspace-reveal-glow {
+  0% {
+    opacity: 1;
+    transform: scale(0.985);
+  }
+  24% {
+    opacity: 1;
+    transform: scale(1.008);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-to-current-workspace-reveal-highlight::before {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

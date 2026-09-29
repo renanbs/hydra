@@ -5,6 +5,7 @@
 // rows, empty rows and status-header rows — no Orca files are imported here.
 import type { GitWorktreeInfo, HydraProject, WorktreeSession } from "../types";
 import type { SidebarProjectionInput, SidebarRow, SidebarStatusState } from "./types";
+import { isShellProcess } from "../../workbench/tab-agent";
 
 /**
  * Pure projection: displayProjects (+ sessions, worktrees, filters) → SidebarRow[].
@@ -81,10 +82,13 @@ function sessionsOfProject(input: SidebarProjectionInput, proj: HydraProject, is
   const rawProjectWorktrees = input.getWorktreesForProject(proj);
   return input.sessions.filter(
     (s) =>
-      s.project_path === proj.path ||
-      (!s.project_path && isActive) ||
-      rawProjectWorktrees.some((wt) => wt.path === s.project_path) ||
-      s.project_path.startsWith(proj.path + "/")
+      // Orca parity: pure shells (zsh/bash) should not render in the Fleet/Agents view.
+      !isShellProcess(s.agentName || s.executable) && (
+        s.project_path === proj.path ||
+        (!s.project_path && isActive) ||
+        rawProjectWorktrees.some((wt) => wt.path === s.project_path) ||
+        s.project_path.startsWith(proj.path + "/")
+      )
   );
 }
 
