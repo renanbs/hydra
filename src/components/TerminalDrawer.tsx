@@ -443,17 +443,17 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
         const buffered = queued.splice(0).join("");
         if (raw) {
           await replayIntoTerminal(raw);
+          if (buffered.startsWith(raw)) {
+            const rest = buffered.slice(raw.length);
+            if (rest) await replayIntoTerminal(rest);
+          }
+        } else if (buffered) {
+          await replayIntoTerminal(buffered);
         } else {
           // Cold parking fallback: if raw buffer is empty (e.g. after daemon reconnect or buffer drain),
           // restore formatted screen from Rust vt100 parser shadow buffer directly.
           const snap = await invoke<{ formatted?: string }>("get_terminal_snapshot", { sessionId }).catch(() => null);
           if (snap?.formatted) await replayIntoTerminal(snap.formatted);
-        }
-        if (buffered.startsWith(raw)) {
-          const rest = buffered.slice(raw.length);
-          if (rest) await replayIntoTerminal(rest);
-        } else if (buffered && !raw.endsWith(buffered)) {
-          await replayIntoTerminal(buffered);
         }
         live = true;
         const late = queued.splice(0).join("");
