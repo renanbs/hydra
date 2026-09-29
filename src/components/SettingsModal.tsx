@@ -60,11 +60,13 @@ interface SettingsModalProps {
   onClose: () => void;
   onSaved?: (settings: HydraSettings) => void;
   onLiveChange?: (settings: HydraSettings) => void;
+  // Orca parity (openSettingsPage): section the modal should land on when opened.
+  initialSection?: HydraNavId;
 }
 
 type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal";
 
-export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialSection }: SettingsModalProps) {
   const [activeId, setActiveId] = useState<HydraNavId>("general");
   const [settings, setSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   const [savedFeedback, setSavedFeedback] = useState(false);
@@ -104,6 +106,14 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange }: Settin
       document.body.style.fontFamily = settings.app_font_family;
     }
   }, [previewAppFont, settings.app_font_family]);
+
+  // Orca openSettingsPage parity: a caller that requests a specific section
+  // (e.g. "Agent settings..." in the create menu) lands there on open.
+  useEffect(() => {
+    if (isOpen && initialSection) {
+      setActiveId(initialSection);
+    }
+  }, [isOpen, initialSection]);
 
   const refreshTerminalSessions = () => {
     setTerminalSessionsLoading(true);

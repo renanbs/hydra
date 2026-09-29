@@ -264,6 +264,7 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
+  const [settingsSectionRequested, setSettingsSectionRequested] = useState<"agents" | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -3525,7 +3526,7 @@ export default function App() {
                 onOpenFile={handleOpenFilePath}
                 onRestoreClosedTab={handleRestoreClosedTab}
                 onRunQuickCommand={handleRunQuickCommand}
-                onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenSettings={() => { setSettingsSectionRequested("agents"); setIsSettingsOpen(true); }}
               />
 
               <div className="flex-1 overflow-hidden relative">
@@ -3886,9 +3887,10 @@ export default function App() {
       {/* Settings Modal */}
       <SettingsModal 
         isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+        onClose={() => { setIsSettingsOpen(false); setSettingsSectionRequested(null); }} 
         onLiveChange={(live) => { const n = normalizeHydraSettings(live); setHydraSettings(n); applyDocumentTheme(n.theme); }}
         onSaved={handleSettingsSaved}
+        initialSection={settingsSectionRequested ?? undefined}
       />
     </div>
   );
