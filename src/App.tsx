@@ -3490,7 +3490,7 @@ export default function App() {
                 onReorderTabs={setTabs}
                 onTabContextMenu={handleTabContextMenu}
                 onTabBarContextMenu={handleTabBarContextMenu}
-                worktreePath={activeProject?.path}
+                worktreePath={activeWorktreePath ?? activeProject?.path}
                 recentlyClosedTabs={recentlyClosedTabs}
                 onOpenFile={handleOpenFilePath}
                 onRestoreClosedTab={handleRestoreClosedTab}
@@ -3552,7 +3552,7 @@ export default function App() {
                           <TerminalDrawer 
                             sessionId={sIdSingle} 
                             executable={t.executable ?? (hydraSettings.terminal_default_shell || "bash")}
-                            cwd={t.cwd || activeProject?.path}
+                            cwd={t.cwd || activeWorktreePath || activeProject?.path}
                             settings={hydraSettings}
                             onContextMenu={handleTerminalContextMenu}
                           />
@@ -3603,7 +3603,7 @@ export default function App() {
               className="flex flex-col border-l border-sidebar-border bg-sidebar shrink-0 overflow-hidden relative"
             >
               <RightSidebar
-                rootPath={activeProject?.path ?? null}
+                rootPath={activeWorktreePath ?? activeProject?.path ?? null}
                 isGit={activeProject?.is_git ?? false}
                 openInApps={hydraSettings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS}
                 activeSessionId={(() => {
@@ -3637,9 +3637,10 @@ export default function App() {
                   } catch (e) { console.error(e); }
                 }}
                 onOpenDiff={async (relPath, staged) => {
-                  if (!activeProject?.path) return;
+                  const targetRepoPath = activeWorktreePath ?? activeProject?.path;
+                  if (!targetRepoPath) return;
                   try {
-                    const diff = await invoke<string>("git_diff_cmd", { repoPath: activeProject.path, file: relPath, staged });
+                    const diff = await invoke<string>("git_diff_cmd", { repoPath: targetRepoPath, file: relPath, staged });
                     const tabId = `tab_diff_${relPath}_${staged ? "staged":"wt"}`;
                     const title = `${relPath}${staged ? " (staged)" : ""}`;
                     const payload = { original: "", modified: diff || `No diff for ${relPath}`, lang: "diff" };
