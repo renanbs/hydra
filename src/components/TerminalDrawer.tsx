@@ -324,6 +324,21 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     };
 
     doFitAndSync();
+    // Race guard: the container can still be mid-layout when open() runs
+    // (portal mount, split toggle, cold-parking remount). ResizeObserver only
+    // fires on CHANGE — if the container reached its final size before we
+    // attached the observer, no callback ever comes and xterm keeps stale
+    // cols/rows that leave the right/bottom of the surface blank. Re-fit
+    // after the layout settles: two rAFs (Orca fresh-spawn-follow-reset)
+    // plus a timeout fallback for slow Wayland frames.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        doFitAndSync();
+      });
+    });
+    const fitFallbackTimer = window.setTimeout(() => {
+      doFitAndSync();
+    }, 120);
     xtermRef.current = term;
     // Orca pty-input-forward + terminal-capability-replies: answer DA1 / OSC
     // color / pixel-size queries as the parser sees them. Replaying recorded
@@ -471,6 +486,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
 
     window.addEventListener("resize", doFitAndSync);
     return () => {
+      window.clearTimeout(fitFallbackTimer);
       window.removeEventListener("resize", doFitAndSync);
       resizeObserver.disconnect();
       unlistenPromise.then((unlisten) => unlisten());
