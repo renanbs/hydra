@@ -108,6 +108,17 @@ impl TerminalManager {
         // Advertise the emulator and drop the non-interactive suppressors.
         cmd.env("TERM", "xterm-256color");
         cmd.env("COLORTERM", "truecolor");
+        // Why: $SHELL is inherited verbatim from the Hydra process, which may
+        // have been launched from bash even when the login shell is zsh/fish.
+        // Tools like fastfetch and `echo $SHELL` would then report the parent's
+        // shell, not the one actually running. Stamping the real executable
+        // makes the child's $SHELL truthful. Orca parity: platform.shell reads
+        // the login shell, so its PTY children never see a foreign $SHELL.
+        if let Ok(resolved) = which::which(executable) {
+            cmd.env("SHELL", resolved);
+        } else {
+            cmd.env("SHELL", executable);
+        }
         cmd.env_remove("NO_COLOR");
         cmd.env_remove("NODE_DISABLE_COLORS");
         cmd.env_remove("CI");
