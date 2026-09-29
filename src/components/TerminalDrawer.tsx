@@ -427,42 +427,29 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     // attributes). That query is not in the vt100 snapshot, and the first
     // terminal:output burst can fire before this listener is subscribed, so
     // replay the raw PTY backlog once — it still contains the query.
-    let live = false;
-    const queued: string[] = [];
+    let receivedLiveOutput = false;
     const unlistenPromise = listen<{ session_id: string; output: string }>("terminal:output", (event) => {
       if (event.payload.session_id !== sessionId) return;
-      if (live) writeLive(event.payload.output);
-      else queued.push(event.payload.output);
+      receivedLiveOutput = true;
+      writeLive(event.payload.output);
     });
     void (async () => {
       try {
         await unlistenPromise;
         await invoke("start_agent_terminal", { sessionId, executable, cwd: cwd || null, args: shellArgs });
-        const polled = await invoke<{ data?: string }>("poll_terminal_output", { sessionId, offset: 0 });
-        const raw = polled?.data ?? "";
-        const buffered = queued.splice(0).join("");
-        if (raw) {
-          await replayIntoTerminal(raw);
-          if (buffered.startsWith(raw)) {
-            const rest = buffered.slice(raw.length);
-            if (rest) await replayIntoTerminal(rest);
+        // Cold parking fallback: if this terminal session was ALREADY running before mounting,
+        // live output won't arrive for idle prompt, so restore formatted screen from vt100 snapshot.
+        const { promise: delayPromise, resolve: delayResolve } = Promise.withResolvers<void>();
+        setTimeout(delayResolve, 60);
+        await delayPromise;
+        if (!receivedLiveOutput) {
+          const snap = await invoke<{ formatted?: string; clean_text?: string }>("get_terminal_snapshot", { sessionId }).catch(() => null);
+          if (snap?.formatted && snap.clean_text && snap.clean_text.trim().length > 0 && !receivedLiveOutput) {
+            await replayIntoTerminal(snap.formatted);
           }
-        } else if (buffered) {
-          await replayIntoTerminal(buffered);
-        } else {
-          // Cold parking fallback: if raw buffer is empty (e.g. after daemon reconnect or buffer drain),
-          // restore formatted screen from Rust vt100 parser shadow buffer directly.
-          const snap = await invoke<{ formatted?: string }>("get_terminal_snapshot", { sessionId }).catch(() => null);
-          if (snap?.formatted) await replayIntoTerminal(snap.formatted);
         }
-        live = true;
-        const late = queued.splice(0).join("");
-        if (late) writeLive(late);
         try { term.focus(); } catch {}
       } catch (err) {
-        live = true;
-        const late = queued.splice(0).join("");
-        if (late) writeLive(late);
         console.error(err);
       }
     })();
