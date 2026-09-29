@@ -1567,37 +1567,116 @@ export default function App() {
       clearUnreadProject(owningProj.id);
     }
 
-    // Orca Parity: If this worktree already has an active or existing session, activate it!
+    const prevPath = currentWorkspacePathRef.current;
+    if (prevPath === wt.path && tabsRef.current.length > 0) {
+      const existingSession =
+        sessions.find((s) => s.project_path === wt.path && s.active) ||
+        sessions.find((s) => s.project_path === wt.path);
+      if (existingSession) {
+        setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === existingSession.id })));
+      }
+      return;
+    }
+
+    // 1. Save current tabs for previous workspace before switching
+    if (prevPath && prevPath !== wt.path && tabsRef.current.length > 0) {
+      const prevState: WorkbenchState = {
+        tabs_json: JSON.stringify(tabsRef.current),
+        active_tab_id: activeTabIdRef.current,
+        updated_at: Date.now(),
+      };
+      invoke("save_workbench_persistence_for_project", { projectPath: prevPath, state: prevState }).catch(console.error);
+    }
+
+    // 2. Set active worktree
+    setActiveWorktreePath(wt.path);
+    prevProjectPathRef.current = wt.path;
+
+    // 3. Update active session if one exists for this worktree
     const existingSession =
       sessions.find((s) => s.project_path === wt.path && s.active) ||
       sessions.find((s) => s.project_path === wt.path);
-
     if (existingSession) {
       setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === existingSession.id })));
       clearUnreadWorktree(existingSession.id);
-      const existingTab = tabsRef.current.find(
-        (t) => t.sessionId === existingSession.id || t.id === `tab_${existingSession.id}`
-      );
-      if (existingTab) {
-        setActiveTabId(existingTab.id);
-      }
-      return;
     }
 
-    // Check if there is an existing tab for this worktree cwd
-    const existingTab = tabsRef.current.find((t) => t.cwd === wt.path);
-    if (existingTab) {
-      setActiveTabId(existingTab.id);
-      if (existingTab.sessionId) {
-        setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === existingTab.sessionId })));
-        clearUnreadWorktree(existingTab.sessionId);
-      }
-      return;
-    }
+    // 4. Load persisted tabs for this worktree from SQLite
+    invoke<WorkbenchState>("get_workbench_persistence_for_project", { projectPath: wt.path })
+      .then((state) => {
+        let loadedTabs: TabItem[] = [];
+        if (state && state.tabs_json && state.tabs_json !== "[]" && state.tabs_json !== "null") {
+          try {
+            const raw = JSON.parse(state.tabs_json) as TabItem[];
+            const seenSid = new Set<string>();
+            loadedTabs = raw.filter((t) => {
+              if (t.sessionId) {
+                if (seenSid.has(t.sessionId)) return false;
+                seenSid.add(t.sessionId);
+              }
+              return true;
+            });
+            const firstTab = loadedTabs[0];
+            const isDefaultBash =
+              loadedTabs.length === 1 &&
+              firstTab?.id === "tab_main" &&
+              firstTab?.title === "bash (active)" &&
+              !firstTab?.sessionId;
+            if (isDefaultBash) {
+              loadedTabs = [];
+            }
+          } catch {
+            loadedTabs = [];
+          }
+        }
 
-    // Orca Parity: If the worktree has NO existing sessions and NO existing tabs,
-    // DO NOT spawn a phantom bash session or open an unwanted terminal tab.
-    // The worktree is focused cleanly in the sidebar context.
+        if (loadedTabs.length > 0) {
+          setTabs(loadedTabs);
+          if (state.active_tab_id && loadedTabs.some((t) => t.id === state.active_tab_id)) {
+            setActiveTabId(state.active_tab_id);
+          } else {
+            setActiveTabId(loadedTabs[0].id);
+          }
+          setWorkbenchLoaded(true);
+        } else {
+          // Orca Parity: Worktree has NO existing tabs -> auto-spawn initial terminal tab!
+          const sh = hydraSettings.terminal_default_shell || "bash";
+          const tabId = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          const initialTab: TabItem = {
+            id: tabId,
+            title: "Terminal 1",
+            type: "terminal",
+            executable: sh,
+            cwd: wt.path,
+          };
+          setTabs([initialTab]);
+          setActiveTabId(tabId);
+          setWorkbenchLoaded(true);
+          invoke("save_workbench_persistence_for_project", {
+            projectPath: wt.path,
+            state: {
+              tabs_json: JSON.stringify([initialTab]),
+              active_tab_id: tabId,
+              updated_at: Date.now(),
+            },
+          }).catch(console.error);
+        }
+      })
+      .catch(() => {
+        // Fallback: spawn initial terminal tab
+        const sh = hydraSettings.terminal_default_shell || "bash";
+        const tabId = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const initialTab: TabItem = {
+          id: tabId,
+          title: "Terminal 1",
+          type: "terminal",
+          executable: sh,
+          cwd: wt.path,
+        };
+        setTabs([initialTab]);
+        setActiveTabId(tabId);
+        setWorkbenchLoaded(true);
+      });
   };
 
   const handleDeleteGitWorktree = (wt: GitWorktreeInfo, owningProj?: HydraProject) => {
@@ -1704,7 +1783,25 @@ export default function App() {
     if (selectedSession?.project_path) {
       clearUnreadWorktree(selectedSession.project_path);
       const owningProject = projects.find((p) => selectedSession.project_path === p.path || selectedSession.project_path.startsWith(p.path + "/"));
-      if (owningProject) clearUnreadProject(owningProject.id);
+      if (owningProject) {
+        if (!activeProject || activeProject.path !== owningProject.path) {
+          setActiveProject(owningProject);
+        }
+        clearUnreadProject(owningProject.id);
+      }
+      if (selectedSession.project_path !== currentWorkspacePathRef.current) {
+        const prevPath = currentWorkspacePathRef.current;
+        if (prevPath && tabsRef.current.length > 0) {
+          const prevState: WorkbenchState = {
+            tabs_json: JSON.stringify(tabsRef.current),
+            active_tab_id: activeTabIdRef.current,
+            updated_at: Date.now(),
+          };
+          invoke("save_workbench_persistence_for_project", { projectPath: prevPath, state: prevState }).catch(console.error);
+        }
+        setActiveWorktreePath(selectedSession.project_path);
+        prevProjectPathRef.current = selectedSession.project_path;
+      }
     }
     const tabId = `tab_${id}`;
     const existing = tabs.find((t) => t.id === tabId || t.sessionId === id);
@@ -1771,39 +1868,11 @@ export default function App() {
 
   const handleNewTerminalTab = useCallback((shell?: string) => {
     const sh = shell || hydraSettings.terminal_default_shell || "bash";
+    const currentCwd = activeWorktreePathRef.current ?? activeProject?.path ?? "";
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const tabId = `tab_${sessionId}`;
     const terminalCount = tabsRef.current.filter((t) => t.type === "terminal").length;
-    const title = terminalCount === 0 ? "Terminal" : `Terminal ${terminalCount + 1}`;
-    const newSession: WorktreeSession = {
-      id: sessionId,
-      project_path: activeProject?.path ?? "",
-      title: `Terminal (${sh})`,
-      branch: activeProject?.current_branch ?? "main",
-      state: "idle",
-      active: true,
-      agentName: sh,
-      executable: sh,
-      created_at: Date.now(),
-      updated_at: Date.now(),
-    };
-    invoke("save_session_record", {
-      record: {
-        id: sessionId,
-        project_path: newSession.project_path,
-        title: newSession.title,
-        branch: newSession.branch,
-        agent_name: newSession.agentName,
-        executable: newSession.executable,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      },
-    }).catch(console.error);
-
-    setSessions((prev) => [
-      ...prev.map((s) => ({ ...s, active: false })),
-      newSession,
-    ]);
+    const title = terminalCount === 0 ? "Terminal 1" : `Terminal ${terminalCount + 1}`;
     setTabs((prev) => [
       ...prev,
       {
@@ -1812,7 +1881,7 @@ export default function App() {
         type: "terminal",
         sessionId,
         executable: sh,
-        cwd: newSession.project_path,
+        cwd: currentCwd,
       },
     ]);
     setActiveTabId(tabId);
