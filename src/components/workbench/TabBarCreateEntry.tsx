@@ -3,12 +3,11 @@
 // TabBarStaticCreateMenu + QuickLaunchAgentMenuItems composition) — Orca "+" dropdown parity:
 // search header, static tab actions with shortcuts, detected AI agents with brand icons,
 // and the Agent settings footer entry.
-import { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   Search,
   TerminalSquare,
-  Globe,
   FilePlus,
   FileText,
   Settings as SettingsIcon,
@@ -40,7 +39,7 @@ interface CreateOption {
   id: string;
   title: string;
   subtitle?: string;
-  category: "static-action" | "agent" | "file" | "history";
+  category: "static-action" | "agent" | "settings" | "file" | "history";
   icon: React.ReactNode;
   shortcut?: string;
   action: () => void;
@@ -115,14 +114,6 @@ export function TabBarCreateEntry({
       action: closeAfter(() => onNewTerminalTab?.()),
     },
     {
-      id: "new-browser-tab",
-      title: "New Browser Tab",
-      category: "static-action",
-      icon: <Globe className="size-3.5 text-muted-foreground shrink-0" />,
-      shortcut: `${CTRL}+Shift+B`,
-      action: closeAfter(() => onNewFileTab?.()),
-    },
-    {
       id: "new-markdown",
       title: "New Markdown",
       category: "static-action",
@@ -164,7 +155,7 @@ export function TabBarCreateEntry({
   const agentSettingsOption: CreateOption = {
     id: "agent-settings",
     title: "Agent settings...",
-    category: "agent",
+    category: "settings",
     icon: <SettingsIcon className="size-3.5 shrink-0" />,
     action: closeAfter(() => onOpenSettings?.()),
   };
@@ -253,29 +244,6 @@ export function TabBarCreateEntry({
     );
   };
 
-  const q = query.trim().toLowerCase();
-  const visibleStatics = staticActions.filter(
-    (opt) =>
-      !q ||
-      opt.title.toLowerCase().includes(q) ||
-      opt.category.toLowerCase().includes(q)
-  );
-  const visibleAgents = agentOptions.filter(
-    (opt) =>
-      !q ||
-      opt.title.toLowerCase().includes(q) ||
-      opt.subtitle?.toLowerCase().includes(q) ||
-      opt.category.toLowerCase().includes(q)
-  );
-  const visibleHistory = historyOptions.filter(
-    (opt) =>
-      !q ||
-      opt.title.toLowerCase().includes(q) ||
-      opt.subtitle?.toLowerCase().includes(q) ||
-      opt.category.toLowerCase().includes(q)
-  );
-  const showAgentSettings = !q || "agent settings".includes(q);
-
   return createPortal(
     <div
       ref={containerRef}
@@ -310,43 +278,27 @@ export function TabBarCreateEntry({
         )}
       </div>
 
-      {/* Core actions group — Orca TabBarStaticCreateMenu */}
-      <div className="py-0.5">{visibleStatics.map(renderOption)}</div>
-
-      {visibleAgents.length > 0 || showAgentSettings ? (
-        <div className="my-1 h-px bg-border" role="separator" />
-      ) : null}
-
-      {/* Detected AI agents group — Orca QuickLaunchAgentMenuItems */}
-      {visibleAgents.length > 0 ? (
-        <div className="py-0.5">{visibleAgents.map(renderOption)}</div>
-      ) : null}
-
-      {/* Agent settings footer — Orca QuickLaunchButton */}
-      {showAgentSettings ? (
-        <div className="py-0.5">
-          {renderOption(
-            { ...agentSettingsOption, action: closeAfter(() => onOpenSettings?.()) },
-            allOptions.findIndex((o) => o.id === "agent-settings")
-          )}
-        </div>
-      ) : null}
-
-      {/* Restored-tab history — Orca open-tab-search retention */}
-      {visibleHistory.length > 0 ? (
-        <>
-          <div className="my-1 h-px bg-border" role="separator" />
-          <div className="max-h-40 overflow-y-auto py-0.5 scrollbar-thin scrollbar-thumb-neutral-700">
-            {visibleHistory.map(renderOption)}
+      {/* Single flat list — one index domain shared by mouse hover, keyboard
+          arrows and Enter. Group separators derive from category transitions,
+          so the rendered order and filteredOptions can never drift apart. */}
+      <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
+        {filteredOptions.length === 0 ? (
+          <div className="p-3 text-center text-muted-foreground text-[11px] font-mono">
+            No matching entries found.
           </div>
-        </>
-      ) : null}
-
-      {filteredOptions.length === 0 ? (
-        <div className="p-3 text-center text-muted-foreground text-[11px] font-mono">
-          No matching entries found.
-        </div>
-      ) : null}
+        ) : (
+          filteredOptions.map((opt, idx) => {
+            const prev = idx > 0 ? filteredOptions[idx - 1] : null;
+            const showSeparator = prev !== null && opt.category !== prev.category;
+            return (
+              <React.Fragment key={opt.id}>
+                {showSeparator ? <div className="my-1 h-px bg-border" role="separator" /> : null}
+                {renderOption(opt, idx)}
+              </React.Fragment>
+            );
+          })
+        )}
+      </div>
     </div>,
     document.body
   );
