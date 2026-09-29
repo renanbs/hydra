@@ -549,6 +549,11 @@ async fn list_available_agents() -> Vec<AvailableAgent> {
 async fn list_available_shells() -> Vec<AvailableShell> {
     tokio::task::spawn_blocking(probe_available_shells).await.unwrap_or_default()
 }
+#[tauri::command]
+async fn get_default_system_shell() -> AvailableShell {
+    shell_detection::get_system_default_shell()
+}
+
 
 #[tauri::command]
 async fn list_persisted_sessions(
@@ -1379,6 +1384,7 @@ pub fn run() {
             resize_terminal,
             set_keep_awake_working_count,
             list_available_shells,
+            get_default_system_shell,
             list_terminal_sessions,
             poll_terminal_output,
             is_daemon_available,

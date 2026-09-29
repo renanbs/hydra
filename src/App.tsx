@@ -299,6 +299,16 @@ export default function App() {
   const [worktreesByProject, setWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hiddenWorktreesByProject, setHiddenWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
+  const [systemDefaultShell, setSystemDefaultShell] = useState<string>("zsh");
+  const systemDefaultShellRef = useRef<string>("zsh");
+  systemDefaultShellRef.current = systemDefaultShell;
+
+  const resolveDefaultShell = useCallback((): string => {
+    if (hydraSettings.terminal_default_shell && hydraSettings.terminal_default_shell.trim()) {
+      return hydraSettings.terminal_default_shell.trim();
+    }
+    return systemDefaultShellRef.current || "zsh";
+  }, [hydraSettings.terminal_default_shell]);
   // Bug #12: system theme must be reactive, not sampled once when hydraSettings
   // change. Kept in state + updated by the MediaQueryList change listener below.
   const [systemDark, setSystemDark] = useState<boolean>(
@@ -529,7 +539,7 @@ export default function App() {
     const tab = tabsRef.current.find((t) => t.id === activeTabIdRef.current);
     if (!tab || tab.type !== "terminal") {
       // inline new terminal tab creation to avoid TDZ dependency on handleNewTerminalTab
-      const shFallback = (hydraSettings as any).terminal_default_shell || "bash";
+      const shFallback = resolveDefaultShell();
       const sidFallback = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const tabIdFallback = `tab_${sidFallback}`;
       const terminalCountFallback = tabsRef.current.filter((t) => t.type === "terminal").length;
@@ -554,7 +564,7 @@ export default function App() {
     }
     const existingPanes = getPanesForTab(tab);
     if (existingPanes.length >= 4) return;
-    const sh = tab.executable || (hydraSettings as any).terminal_default_shell || "bash";
+    const sh = tab.executable || resolveDefaultShell();
     const cwd = tab.cwd || activeProjectRef.current?.path || "";
     const newSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const newPaneSession: WorktreeSession = {
@@ -1166,6 +1176,14 @@ export default function App() {
     invoke<AvailableAgent[]>("list_available_agents")
       .then(setAvailableAgents)
       .catch(console.error);
+    invoke<{ id: string; label: string; path: string }>("get_default_system_shell")
+      .then((shell) => {
+        if (shell?.id) {
+          setSystemDefaultShell(shell.id);
+        }
+      })
+      .catch(() => {});
+
 
     invoke<HydraSettings>("get_settings").then((s) => {
       if (s) {
@@ -1640,7 +1658,7 @@ export default function App() {
           setWorkbenchLoaded(true);
         } else {
           // Orca Parity: Worktree has NO existing tabs -> auto-spawn initial terminal tab!
-          const sh = hydraSettings.terminal_default_shell || "bash";
+          const sh = resolveDefaultShell();
           const tabId = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
           const initialTab: TabItem = {
             id: tabId,
@@ -1664,7 +1682,7 @@ export default function App() {
       })
       .catch(() => {
         // Fallback: spawn initial terminal tab
-        const sh = hydraSettings.terminal_default_shell || "bash";
+        const sh = resolveDefaultShell();
         const tabId = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
         const initialTab: TabItem = {
           id: tabId,
@@ -1867,7 +1885,7 @@ export default function App() {
   };
 
   const handleNewTerminalTab = useCallback((shell?: string) => {
-    const sh = shell || hydraSettings.terminal_default_shell || "bash";
+    const sh = shell || resolveDefaultShell();
     const currentCwd = activeWorktreePathRef.current ?? activeProject?.path ?? "";
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const tabId = `tab_${sessionId}`;
@@ -3551,7 +3569,7 @@ export default function App() {
                         ) : (
                           <TerminalDrawer 
                             sessionId={sIdSingle} 
-                            executable={t.executable ?? (hydraSettings.terminal_default_shell || "bash")}
+                            executable={t.executable ?? resolveDefaultShell()}
                             cwd={t.cwd || activeWorktreePath || activeProject?.path}
                             settings={hydraSettings}
                             onContextMenu={handleTerminalContextMenu}

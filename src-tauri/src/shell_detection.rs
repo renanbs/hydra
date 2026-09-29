@@ -20,6 +20,41 @@ fn which_shell(name: &str) -> Option<String> {
     }
     None
 }
+pub fn get_system_default_shell() -> AvailableShell {
+    if let Ok(shell_path) = std::env::var("SHELL") {
+        let p = std::path::Path::new(&shell_path);
+        if p.exists() {
+            let name = p.file_name().and_then(|s| s.to_str()).unwrap_or("bash");
+            return AvailableShell {
+                id: name.to_string(),
+                path: shell_path.clone(),
+                label: format!("{} ({})", match name {
+                    "bash" => "Bash",
+                    "zsh" => "Zsh",
+                    "fish" => "Fish",
+                    "nu" => "Nushell",
+                    "sh" => "POSIX sh",
+                    _ => name,
+                }, shell_path),
+            };
+        }
+    }
+    for name in ["zsh", "bash", "sh"] {
+        if let Some(path) = which_shell(name) {
+            return AvailableShell {
+                id: name.to_string(),
+                path: path.clone(),
+                label: format!("{} ({})", name, path),
+            };
+        }
+    }
+    AvailableShell {
+        id: "bash".to_string(),
+        path: "/bin/bash".to_string(),
+        label: "Bash (/bin/bash)".to_string(),
+    }
+}
+
 
 pub fn list_available_shells() -> Vec<AvailableShell> {
     let candidates = ["bash", "zsh", "fish", "nu", "sh", "dash", "powershell", "pwsh", "elvish", "xonsh"];
