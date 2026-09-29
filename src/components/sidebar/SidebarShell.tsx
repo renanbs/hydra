@@ -142,6 +142,7 @@ export function SidebarShell({
   projects,
   activeProject,
   activeWorktreePath,
+  revealTargetPath,
   gitStatus,
   gitWorktrees,
   worktreesByProject,
@@ -203,6 +204,22 @@ export function SidebarShell({
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
   const [focusedProjectId, setFocusedProjectId] = useState<string | null>(null);
   const [groupDropTargetId, setGroupDropTargetId] = useState<string | null>(null);
+  const [highlightedRevealPath, setHighlightedRevealPath] = useState<string | null>(null);
+  const highlightTimerRef = useRef<number | null>(null);
+
+  const flashRevealedWorktree = useCallback((path: string) => {
+    if (highlightTimerRef.current !== null) {
+      window.clearTimeout(highlightTimerRef.current);
+    }
+    setHighlightedRevealPath(null);
+    requestAnimationFrame(() => {
+      setHighlightedRevealPath(path);
+      highlightTimerRef.current = window.setTimeout(() => {
+        setHighlightedRevealPath(null);
+        highlightTimerRef.current = null;
+      }, 1500);
+    });
+  }, []);
 
   const [groupNameDialog, setGroupNameDialog] = useState<{
     open: boolean;
@@ -895,31 +912,124 @@ export function SidebarShell({
   const focusableRows = useMemo(() => getFocusableRowKeys(flatRows), [flatRows]);
 
   /**
-   * Reveal-to-current (Orca ScrollToCurrentWorkspaceToolbarButton parity): scroll the
-   * virtual viewport to the session the workbench has active. Works in every groupBy —
-   * the workspace-status projection is sessions-only, so the same lookup covers all
-   * modes. Focus follows the reveal so the next Arrow key continues from the current
-   * session instead of restarting the cycle.
+   * Reveal-to-current (Orca use-pending-reveal.ts parity): the target row is the
+   * workspace row itself (worktree or session), never the owning project-header. If
+   * the target row is absent from flatRows — including when the project/group is
+   * collapsed (its header renders but the workspace row does not) — the owner expands
+   * FIRST and the reveal is re-issued on the next flatRows render via
+   * pendingRevealPathRef. Plain terminals (Ctrl+T/+) own no WorktreeSession, so the
+   * lookup keys on the workspace path, not a `session.active` flag.
    */
+  const pendingRevealPathRef = useRef<string | null>(null);
+
+  const findWorkspaceRowIndex = useCallback(
+    (rows: SidebarRow[], path: string | null | undefined): number => {
+      if (!path) return -1;
+      const byWorktree = rows.findIndex((row) => row.type === "worktree" && row.wt.path === path);
+      if (byWorktree !== -1) return byWorktree;
+      const bySessionPath = rows.findIndex(
+        (row) => row.type === "session" && row.session.project_path === path
+      );
+      if (bySessionPath !== -1) return bySessionPath;
+      const bySubpathWorktree = rows.findIndex(
+        (row) => row.type === "worktree" && path.startsWith(row.wt.path + "/")
+      );
+      if (bySubpathWorktree !== -1) return bySubpathWorktree;
+      return rows.findIndex(
+        (row) => row.type === "project-header" && row.proj.path === path && !row.isCollapsed
+      );
+    },
+    []
+  );
+
+  const applyReveal = useCallback(
+    (rowIndex: number) => {
+      const row = flatRows[rowIndex];
+      if (!row) return;
+      if (row.type === "session") {
+        setFocusedSessionId(row.session.id);
+        setFocusedWorktreePath(null);
+        setFocusedProjectId(null);
+        flashRevealedWorktree(row.session.id);
+      } else if (row.type === "worktree") {
+        setFocusedSessionId(null);
+        setFocusedWorktreePath(row.wt.path);
+        setFocusedProjectId(null);
+        flashRevealedWorktree(row.wt.path);
+      } else if (row.type === "project-header") {
+        setFocusedSessionId(null);
+        setFocusedWorktreePath(null);
+        setFocusedProjectId(row.proj.id);
+        flashRevealedWorktree(row.proj.path);
+      }
+      listRef.current?.scrollToRow({ index: rowIndex, align: "auto", behavior: "smooth" });
+    },
+    [flatRows, listRef]
+  );
+
   const handleRevealCurrent = useCallback(() => {
-    const findActiveIndex = (matchActiveProject: boolean): number =>
+    const findActiveSessionIndex = (matchActiveProject: boolean): number =>
       flatRows.findIndex(
         (row) =>
           row.type === "session" &&
           row.session.active &&
           (!matchActiveProject || row.proj.path === activeProject?.path)
       );
-    const inActiveProject = findActiveIndex(true);
-    const rowIndex = inActiveProject !== -1 ? inActiveProject : findActiveIndex(false);
-    if (rowIndex === -1) return;
-    const row = flatRows[rowIndex];
-    if (row?.type === "session") {
-      setFocusedSessionId(row.session.id);
-      setFocusedWorktreePath(null);
-      setFocusedProjectId(null);
+
+    const targetPath = revealTargetPath ?? activeWorktreePath ?? activeProject?.path ?? null;
+    let rowIndex = findWorkspaceRowIndex(flatRows, targetPath);
+    if (rowIndex === -1) {
+      const inActiveProject = findActiveSessionIndex(true);
+      rowIndex = inActiveProject !== -1 ? inActiveProject : findActiveSessionIndex(false);
+      if (rowIndex === -1) {
+        // Row is hidden because its project/group is collapsed: expand then re-reveal
+        // once the projection materializes the row (Orca pending-reveal parity).
+        if (targetPath) {
+          const owner = projects.find(
+            (p) =>
+              targetPath === p.path ||
+              targetPath.startsWith(p.path + "/") ||
+              worktreesByProject?.[p.path]?.some((wt) => wt.path === targetPath) ||
+              (p.id === activeProject?.id && gitWorktrees.some((wt) => wt.path === targetPath))
+          );
+          const ownerGroupId = owner ? projectGroupMap?.[owner.id] : undefined;
+          const needsProjectExpand = owner ? collapsedProjects.has(owner.id) : false;
+          const needsGroupExpand = ownerGroupId ? collapsedGroups.has(ownerGroupId) : false;
+          if (needsProjectExpand || needsGroupExpand) {
+            pendingRevealPathRef.current = targetPath;
+            if (needsProjectExpand && owner) {
+              setCollapsedProjects((prev) => {
+                const next = new Set(prev);
+                next.delete(owner.id);
+                return next;
+              });
+            }
+            if (needsGroupExpand && ownerGroupId) {
+              setCollapsedGroups((prev) => {
+                const next = new Set(prev);
+                next.delete(ownerGroupId);
+                return next;
+              });
+            }
+          }
+        }
+        return;
+      }
     }
-    listRef.current?.scrollToRow({ index: rowIndex, align: "auto", behavior: "smooth" });
-  }, [flatRows, activeProject, listRef]);
+
+    applyReveal(rowIndex);
+  }, [flatRows, activeProject, activeWorktreePath, projects, collapsedProjects, collapsedGroups, projectGroupMap, findWorkspaceRowIndex, applyReveal, listRef]);
+
+  // Pending reveal: consome o path quando a projeção passa a listar a linha alvo
+  // (após expandir projeto/grupo colapsado). Clear-on-miss evita loops pendentes.
+  useEffect(() => {
+    const pending = pendingRevealPathRef.current;
+    if (!pending) return;
+    pendingRevealPathRef.current = null;
+    const rowIndex = findWorkspaceRowIndex(flatRows, pending);
+    if (rowIndex === -1) return;
+    applyReveal(rowIndex);
+  }, [flatRows, findWorkspaceRowIndex, applyReveal, listRef]);
   // Jump-to-top hard-scroll-up detector (Orca useWorktreeListScrollToTop parity):
   // Detects sustained or burst upward scroll gestures and displays a floating "Topo"
   // button that smoothly returns the virtual viewport to row 0.
@@ -1322,7 +1432,9 @@ export function SidebarShell({
               isActive
                 ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border/60 font-medium shadow-xs"
                 : "hover:bg-worktree-sidebar-accent/50 text-worktree-sidebar-foreground/80 border border-transparent"
-            } ${focusedProjectId === proj.id ? "border-indigo-500/50 ring-indigo-500/20 bg-worktree-sidebar-accent/30" : ""}`}
+            } ${focusedProjectId === proj.id ? "border-indigo-500/50 ring-indigo-500/20 bg-worktree-sidebar-accent/30" : ""} ${
+              highlightedRevealPath === proj.path ? "scroll-to-current-workspace-reveal-highlight" : ""
+            }`}
           >
             {projectDropTarget?.id === proj.id && (
               <div
@@ -1418,6 +1530,7 @@ export function SidebarShell({
             isPinned={pinnedWorktrees?.has(wt.path)}
             isUnread={unreadWorktrees?.has(wt.path)}
             isFocused={effectiveFocusedWorktreePath === wt.path}
+            revealHighlight={highlightedRevealPath === wt.path}
             isDragged={draggedWorktreePath === wt.path}
             dropTarget={worktreeDropTarget}
             ports={portsByWorktree.get(wt.path)}
@@ -1494,6 +1607,8 @@ export function SidebarShell({
                 : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
             } ${focusedSessionId === session.id ? "border-indigo-500/50 ring-indigo-500/20" : ""} ${
               selectedSessions.has(session.id) ? "bg-indigo-500/20 select-none" : ""
+            } ${
+              highlightedRevealPath === session.id || highlightedRevealPath === session.project_path ? "scroll-to-current-workspace-reveal-highlight" : ""
             }`}
           >
             {sessionDropTarget?.id === session.id && (
@@ -1674,7 +1789,15 @@ export function SidebarShell({
               rowCount={flatRows.length}
               rowHeight={getRowHeight}
               rowComponent={VirtualRow}
-              rowProps={{}}
+              rowProps={{
+                highlightedRevealPath,
+                effectiveFocusedWorktreePath,
+                focusedSessionId,
+                focusedProjectId,
+                draggedWorktreePath,
+                draggedSessionId,
+                draggedProjectId,
+              }}
               style={{ height: "100%", width: "100%" }}
               className="py-2"
               overscanCount={8}

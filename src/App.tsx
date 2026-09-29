@@ -27,6 +27,7 @@ import {
   type RunningTerminalCloseConfirmRequest,
   type CloseTerminalDialogCopyKind,
 } from "./components/RunningTerminalCloseDialog";
+import { isShellProcess } from "./components/workbench/tab-agent";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal } from "./components/SettingsModal";
@@ -2152,11 +2153,17 @@ export default function App() {
         void Promise.all(probeSessionIds.map(probeOnce))
           .then((states) => {
             if (decided) return;
-            // Unknown (probe error/timeout) is not idle: ask, so a degraded snapshot
-            // costs a click instead of a killed command.
+            // Orca parity (running-terminal-close-guard.ts): a probe that answered with no
+            // live work must fail open, closing immediately (idle tab). Only ask for real work:
+            const isShellTerminal = isShellProcess(
+              panes[0]?.executable ?? closingTab.executable ?? closingTab.agentName ?? ""
+            );
             const hasLive = states.some((s) => s === "working" || s === "blocked" || s === "waiting");
             const hasUnknown = states.some((s) => s === null || s === "unknown");
-            if (hasLive || hasUnknown) confirmClose();
+            const shouldAsk = isShellTerminal
+              ? hasLive
+              : hasLive || hasUnknown;
+            if (shouldAsk) confirmClose();
             else performImmediateClose();
           })
           .catch(() => performImmediateClose())
@@ -3447,6 +3454,15 @@ export default function App() {
                 activeProject={activeProject}
                 gitStatus={gitStatus}
                 activeWorktreePath={activeWorktreePath}
+                revealTargetPath={(() => {
+                  // Orca currentSidebarWorktreeId parity: reveal resolves the workspace
+                  // IDENTITY of the active workbench TAB (session path / cwd), never the
+                  // sidebar's own selection — clicking a terminal tab must retarget the
+                  // reveal without touching sidebar state.
+                  const cur = tabs.find((t) => t.id === activeTabId);
+                  if (!cur || cur.type !== "terminal") return activeWorktreePath;
+                  return cur.cwd ?? activeWorktreePath;
+                })()}
                 gitWorktrees={gitWorktrees}
                 worktreesByProject={worktreesByProject}
                 onSelectProject={handleSelectProject}

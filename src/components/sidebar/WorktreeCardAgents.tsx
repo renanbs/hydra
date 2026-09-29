@@ -131,7 +131,7 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
     <div
       data-worktree-card-agents=""
       onClick={(e) => e.stopPropagation()}
-      className={`mt-1 flex flex-col gap-0.5 border-t border-neutral-800/60 pt-1 ${className ?? ""}`}
+      className={`mt-0.5 flex flex-col gap-0.5 ${className ?? ""}`}
     >
       {rootRows.map((rootRow) => {
         const childRows = childrenByParentPaneKey.get(rootRow.paneKey) ?? [];
@@ -161,7 +161,7 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
 
             {/* Render indented child rows when coordinator is expanded */}
             {hasChildren && isExpanded && (
-              <div data-agent-lineage-children="" className="flex flex-col gap-0.5">
+              <div data-agent-lineage-children="" className="worktree-agent-lineage-children ml-3 pl-1.5 border-l border-neutral-700/50 flex flex-col gap-0.5">
                 {childRows.map((childRow, idx) => {
                   const isFirst = idx === 0;
                   const isLast = idx === childRows.length - 1;

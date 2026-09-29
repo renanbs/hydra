@@ -6,6 +6,7 @@ import { WorktreeSession } from "./WorktreeSidebar";
 import type { AgentsGroupBy, AgentsStatusFilter } from "./types";
 import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
 import { IDLE, resolveSessionAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
+import { isShellProcess } from "../workbench/tab-agent";
 
 // Session record → smart-attention input, field-for-field parity with the adapter in
 // SidebarShell (hasLivePty: the daemon holds the PTY for the lifetime of the session
@@ -64,7 +65,8 @@ export function SidebarAgentsList({
 
   // Filter sessions
   const filteredSessions = useMemo(() => {
-    let result = sessions;
+    // Orca parity: pure shells (zsh/bash) never render in the Aggregated Agents view.
+    let result = sessions.filter((s) => !isShellProcess(s.agentName || s.executable));
     if (filter) {
       const lowerFilter = filter.toLowerCase();
       result = result.filter(
