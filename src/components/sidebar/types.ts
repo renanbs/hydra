@@ -118,6 +118,7 @@ export interface WorktreeSidebarProps {
   availableAgents?: AvailableAgent[];
   projects: HydraProject[];
   activeProject: HydraProject | null;
+  activeWorktreePath?: string | null;
   gitStatus: GitRepoStatus | null;
   gitWorktrees: GitWorktreeInfo[];
   worktreesByProject?: Record<string, GitWorktreeInfo[]>;

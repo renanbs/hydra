@@ -288,6 +288,12 @@ export default function App() {
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [projects, setProjects] = useState<HydraProject[]>([]);
   const [activeProject, setActiveProject] = useState<HydraProject | null>(null);
+  const [activeWorktreePath, setActiveWorktreePath] = useState<string | null>(null);
+  const activeWorktreePathRef = useRef<string | null>(null);
+  activeWorktreePathRef.current = activeWorktreePath;
+  const currentWorkspacePath = activeWorktreePath || activeProject?.path || "";
+  const currentWorkspacePathRef = useRef<string>(currentWorkspacePath);
+  currentWorkspacePathRef.current = currentWorkspacePath;
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
   const [worktreesByProject, setWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
@@ -848,12 +854,12 @@ export default function App() {
       .finally(() => { workbenchCheckedRef.current = true; });
   }, []);
 
-  // Sprint 3 #14: per-project workbench tabs — load/save por worktree (Orca tabs por worktree)
+  // Sprint 3 #14: per-worktree workbench tabs — load/save por worktree (Orca tabs por worktree)
   useEffect(() => {
-    if (!activeProject) return;
+    if (!currentWorkspacePath) return;
     const prevPath = prevProjectPathRef.current;
-    // Save current tabs to previous project's state before switching
-    if (prevPath && prevPath !== activeProject.path && tabsRef.current.length > 0) {
+    // Save current tabs to previous worktree's state before switching
+    if (prevPath && prevPath !== currentWorkspacePath && tabsRef.current.length > 0) {
       const prevState: WorkbenchState = {
         tabs_json: JSON.stringify(tabsRef.current),
         active_tab_id: activeTabIdRef.current,
@@ -861,8 +867,8 @@ export default function App() {
       };
       invoke("save_workbench_persistence_for_project", { projectPath: prevPath, state: prevState }).catch(console.error);
     }
-    // Load new project's workbench state (per-project) — Orca parity: tabs por worktree, landing se vazio
-    invoke<WorkbenchState>("get_workbench_persistence_for_project", { projectPath: activeProject.path })
+    // Load new workspace's workbench state — Orca parity: tabs por worktree, landing se vazio
+    invoke<WorkbenchState>("get_workbench_persistence_for_project", { projectPath: currentWorkspacePath })
       .then((state) => {
         if (state && state.tabs_json && state.tabs_json !== "[]" && state.tabs_json !== "null") {
           try {
@@ -894,7 +900,7 @@ export default function App() {
               setTabs([]);
               setActiveTabId("");
               setWorkbenchLoaded(true);
-              invoke("save_workbench_persistence_for_project", { projectPath: activeProject.path, state: { tabs_json: "[]", active_tab_id: "", updated_at: Date.now() } }).catch(console.error);
+              invoke("save_workbench_persistence_for_project", { projectPath: currentWorkspacePath, state: { tabs_json: "[]", active_tab_id: "", updated_at: Date.now() } }).catch(console.error);
               return;
             }
             if (finalTabs.length > 0) {
@@ -922,10 +928,10 @@ export default function App() {
       })
       .catch(console.error)
       .finally(() => {
-        prevProjectPathRef.current = activeProject.path;
+        prevProjectPathRef.current = currentWorkspacePath;
         workbenchCheckedRef.current = true;
       });
-  }, [activeProject?.path]);
+  }, [currentWorkspacePath]);
 
   const updateLeftSidebar = (open: boolean) => {
     setIsLeftSidebarOpen(open);
@@ -977,13 +983,14 @@ export default function App() {
   }, [leftSidebar.isResizing, rightSidebar.width]);
 
   const saveWorkbenchPersistence = useCallback(() => {
+    const targetPath = activeWorktreePathRef.current || activeProjectRef.current?.path;
     const state: WorkbenchState = {
       tabs_json: JSON.stringify(tabs),
       active_tab_id: activeTabId,
       updated_at: Date.now(),
     };
-    if (activeProjectRef.current?.path) {
-      invoke("save_workbench_persistence_for_project", { projectPath: activeProjectRef.current.path, state }).catch(console.error);
+    if (targetPath) {
+      invoke("save_workbench_persistence_for_project", { projectPath: targetPath, state }).catch(console.error);
     } else {
       invoke("save_workbench_persistence", { state }).catch(console.error);
     }
@@ -1067,6 +1074,7 @@ export default function App() {
         setProjects(sorted);
         if (sorted.length > 0) {
           setActiveProject(sorted[0]);
+          setActiveWorktreePath(sorted[0].path);
           if (!workbenchLoaded) {
             loadAllSessions();
           }
@@ -1500,6 +1508,7 @@ export default function App() {
 
   const handleSelectProject = useCallback((proj: HydraProject) => {
     setActiveProject(proj);
+    setActiveWorktreePath(proj.path);
     if (!workbenchLoaded) {
       loadSessionsForProject(proj.path);
     }
@@ -3337,6 +3346,7 @@ export default function App() {
                 projects={projects}
                 activeProject={activeProject}
                 gitStatus={gitStatus}
+                activeWorktreePath={activeWorktreePath}
                 gitWorktrees={gitWorktrees}
                 worktreesByProject={worktreesByProject}
                 onSelectProject={handleSelectProject}
