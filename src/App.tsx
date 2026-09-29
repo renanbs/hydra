@@ -2228,9 +2228,21 @@ export default function App() {
   };
   const handleRenameTab = (tabId: string, newTitle: string) => {
     setTabs((prev) =>
-      prev.map((t) => (t.id === tabId ? { ...t, title: newTitle } : t))
+      prev.map((t) => (t.id === tabId ? { ...t, title: newTitle, customTitle: newTitle } : t))
     );
   };
+
+  // Orca parity (resolveTerminalTabTitle): a user rename wins over the live
+  // shell/process OSC title. Without a customTitle, the tab follows the title
+  // the terminal emits (zsh, vim, agent frames).
+  const handleTabTitleChange = useCallback((sessionId: string, title: string) => {
+    setTabs((prev) =>
+      prev.map((t) => {
+        if (t.customTitle || t.sessionId !== sessionId) return t;
+        return { ...t, title };
+      })
+    );
+  }, []);
 
 
   // Global Keyboard Shortcuts
@@ -3573,6 +3585,7 @@ export default function App() {
                             cwd={t.cwd || activeWorktreePath || activeProject?.path}
                             settings={hydraSettings}
                             onContextMenu={handleTerminalContextMenu}
+                            onTitleChange={(title) => handleTabTitleChange(sIdSingle, title)}
                           />
                         )}
                       </div>

@@ -67,6 +67,80 @@ function WslIcon({ size = 14 }: { size?: number }) {
     </svg>
   );
 }
+function ZshIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className="shrink-0"
+    >
+      <rect x="1.5" y="3" width="21" height="18" rx="2.5" fill="#4EAA37" />
+      <text
+        x="12"
+        y="15.4"
+        textAnchor="middle"
+        fontSize="9"
+        fontWeight="800"
+        fill="#ffffff"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontStyle="italic"
+      >
+        Z
+      </text>
+    </svg>
+  );
+}
+
+function BashIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className="shrink-0"
+    >
+      <rect x="1.5" y="3" width="21" height="18" rx="2.5" fill="#293138" />
+      <path
+        d="M11.5 7.5c-2.2 0-4 1.8-4 4s1.8 4 4 4c1 0 1.9-.4 2.6-1l-1-1c-.4.4-1 .6-1.6.6-1.4 0-2.5-1.1-2.5-2.6 0-1.4 1.1-2.6 2.5-2.6.6 0 1.2.2 1.6.6l1-1c-.7-.6-1.6-1-2.6-1z"
+        fill="#ffffff"
+      />
+      <rect x="15.5" y="7.5" width="1.3" height="8" rx="0.4" fill="#ffffff" />
+    </svg>
+  );
+}
+
+function FishIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className="shrink-0"
+    >
+      <rect x="1.5" y="3" width="21" height="18" rx="2.5" fill="#3465A4" />
+      <text
+        x="12"
+        y="15.2"
+        textAnchor="middle"
+        fontSize="7.5"
+        fontWeight="800"
+        fill="#ffffff"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontStyle="italic"
+      >
+        {">_"}
+      </text>
+    </svg>
+  );
+}
+
 
 export function ShellIcon({
   shell,
@@ -90,6 +164,15 @@ export function ShellIcon({
   }
   if (normalized === "wsl.exe" || normalized.startsWith("wsl") || normalizedName === "wsl") {
     return <WslIcon size={size} />;
+  }
+  if (normalizedName === "zsh") {
+    return <ZshIcon size={size} />;
+  }
+  if (normalizedName === "bash" || normalizedName === "bash.exe") {
+    return <BashIcon size={size} />;
+  }
+  if (normalizedName === "fish") {
+    return <FishIcon size={size} />;
   }
   return <Terminal className="text-emerald-400 shrink-0" style={{ width: size, height: size }} />;
 }

@@ -35,6 +35,7 @@ interface TerminalDrawerProps {
   cwd?: string;
   settings?: HydraSettings;
   onContextMenu?: (x: number, y: number, actions: TerminalContextActions) => void;
+  onTitleChange?: (title: string) => void;
 }
 const FALLBACK_FONTS = [
   "SF Mono", "Menlo", "Monaco", "Cascadia Mono", "Consolas",
@@ -107,6 +108,7 @@ export function TerminalDrawer({
   cwd,
   settings,
   onContextMenu,
+  onTitleChange,
 }: TerminalDrawerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const xtermRef = useRef<Terminal | null>(null);
@@ -334,6 +336,12 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
     term.onData((data) => {
       sendInput(data);
     });
+    if (onTitleChange) {
+      term.onTitleChange((title) => {
+        const trimmed = title.trim();
+        if (trimmed) onTitleChange(trimmed);
+      });
+    }
     const capabilityReplies = installTerminalCapabilityReplyHandlers({
       terminal: term,
       parser: term.parser,

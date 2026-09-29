@@ -26,6 +26,8 @@ export interface SplitLayout {
 export interface TabItem {
   id: string;
   title: string;
+  /** Orca parity (customTitle): a user rename that overrides live shell titles. */
+  customTitle?: string;
   type: "terminal" | "diff" | "editor";
   sessionId?: string;
   executable?: string;
