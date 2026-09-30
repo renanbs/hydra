@@ -1,195 +1,212 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Inline agent list rendered inside WorktreeCard showing active tools and subagent trees.
 
-import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { DashboardAgentRow } from "../dashboard/DashboardAgentRow";
-import { buildAgentRowLineageTree } from "./agent-row-lineage-model";
-import { isShellProcess } from "../workbench/tab-agent";
-import type { DashboardAgentRowData } from "./agent-status-types";
+import React, { useMemo } from "react";
+import { useAppStore, EMPTY_TABS } from "../../store/index";
+import { detectAgentStatusFromTitle, getAgentLabelFromTitle } from "../../lib/agent-title-detection";
+import { isShellProcess, normalizeAgentId } from "../workbench/tab-agent";
+import { WorktreeCompactAgentsList } from "./worktree-card-compact-agents";
+import type { AgentRow } from "./worktree-card-agent-summary";
 import type { WorktreeSession } from "./types";
 
 interface WorktreeCardAgentsProps {
   worktreePath: string;
-  sessions: WorktreeSession[];
+  sessions?: WorktreeSession[];
   onSelectSession: (id: string) => void;
   activeSessionId?: string | null;
   className?: string;
 }
 
 export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
-  worktreePath: _worktreePath,
-  sessions,
+  worktreePath,
+  sessions = [],
   onSelectSession,
   activeSessionId,
-  className,
 }: WorktreeCardAgentsProps) {
-  // Mount timer only if there are active sessions
-  const [now, setNow] = useState(() => Date.now());
-  const [expandedCoordinators, setExpandedCoordinators] = useState<Record<string, boolean>>({});
+  // Subscribe to live workbench tabs in this worktree from Zustand store
+  const tabsInWorktree = useAppStore((s) => s.tabsByWorktree[worktreePath] ?? EMPTY_TABS);
+  const agentStatusByPaneKey = useAppStore((s) => s.agentStatusByPaneKey);
 
-  useEffect(() => {
-    if (sessions.length === 0) return;
-    const interval = setInterval(() => {
-      setNow(Date.now());
-    }, 20_000);
-    return () => clearInterval(interval);
-  }, [sessions.length]);
+  // Orca parity: Agent rows are primarily bound 1:1 to the tabs open in THIS worktree!
+  const agentRows: AgentRow[] = useMemo(() => {
+    const list: AgentRow[] = [];
+    const seenTabIds = new Set<string>();
+    const seenSessionIds = new Set<string>();
 
-  const toggleCoordinator = useCallback((key: string) => {
-    setExpandedCoordinators((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  }, []);
+    // 1. Process active workbench tabs in this worktree
+    for (const tab of tabsInWorktree) {
+      if (seenTabIds.has(tab.id)) continue;
+      seenTabIds.add(tab.id);
 
-  // Convert WorktreeSession[] to DashboardAgentRowData[]
-  const agentRows: DashboardAgentRowData[] = useMemo(() => {
-    const list: DashboardAgentRowData[] = [];
+      // Match against backing session if exists
+      const backingSession = sessions.find(
+        (s) => (tab.sessionId && s.id === tab.sessionId) || s.id === tab.id
+      );
 
-    for (const session of sessions) {
-      if (isShellProcess(session.agentName || session.executable)) {
+      if (backingSession) {
+        seenSessionIds.add(backingSession.id);
+      }
+      if (tab.sessionId) {
+        seenSessionIds.add(tab.sessionId);
+      }
+
+      // Check if this tab is an agent (explicit tab agent, backing session agent, or title-derived)
+      const tabAgentName = tab.agentName || tab.agentId;
+      const sessionAgentName = backingSession?.agentName;
+      const titleAgentName = getAgentLabelFromTitle(tab.title);
+
+      const resolvedAgentType =
+        (tabAgentName && !isShellProcess(tabAgentName) ? tabAgentName : null) ||
+        (sessionAgentName && !isShellProcess(sessionAgentName) ? sessionAgentName : null) ||
+        titleAgentName;
+
+      // Plain shell terminals are NOT agents (Orca parity)
+      if (!resolvedAgentType || isShellProcess(resolvedAgentType)) {
         continue;
       }
-      const paneKey = session.id;
-      const startedAt = session.state_started_at ?? session.created_at ?? Date.now();
 
-      // Root row for session
-      const rootRow: DashboardAgentRowData = {
-        paneKey,
-        tabId: session.id,
-        activationPaneKey: session.id,
+      const canonicalAgent = normalizeAgentId(resolvedAgentType);
+      const liveStatus =
+        agentStatusByPaneKey[tab.id]?.state ||
+        (tab.sessionId ? agentStatusByPaneKey[tab.sessionId]?.state : undefined) ||
+        (backingSession ? backingSession.state : undefined) ||
+        detectAgentStatusFromTitle(tab.title) ||
+        "idle";
+
+      const prompt =
+        (tab.title && tab.title !== resolvedAgentType ? tab.title : backingSession?.title) ||
+        tab.title ||
+        resolvedAgentType;
+
+      const startedAt =
+        backingSession?.state_started_at ?? backingSession?.created_at ?? Date.now();
+
+      const activationId = tab.sessionId || tab.id;
+
+      const row: AgentRow = {
+        paneKey: activationId,
+        agentType: canonicalAgent,
+        displayAgent: resolvedAgentType,
+        status: liveStatus,
+        state: liveStatus,
         startedAt,
-        state: session.state,
-        agentType: session.agentName || session.executable,
+        prompt,
+        rowSource: backingSession ? "session" : "live",
+        entry: {
+          paneKey: activationId,
+          sessionId: activationId,
+          worktreePath,
+          state: liveStatus,
+          prompt,
+          updatedAt: backingSession?.updated_at ?? Date.now(),
+          stateStartedAt: startedAt,
+          agentType: resolvedAgentType,
+          toolName: backingSession?.tool_name,
+          toolInput: backingSession?.tool_input,
+          lastAssistantMessage: backingSession?.last_assistant_message,
+        },
+      };
+
+      if (backingSession?.subagents && backingSession.subagents.length > 0) {
+        row.childAgentCount = backingSession.subagents.length;
+      }
+
+      list.push(row);
+    }
+
+    // 2. Headless background sessions in this worktree without a UI tab
+    // (Only actively working background agents, never dead historical records)
+    for (const session of sessions) {
+      if (
+        seenSessionIds.has(session.id) ||
+        seenTabIds.has(session.id) ||
+        isShellProcess(session.agentName || session.executable)
+      ) {
+        continue;
+      }
+
+      // Only display unattached sessions if they are actively working
+      if (session.state !== "working" && session.state !== "blocked" && session.state !== "waiting") {
+        continue;
+      }
+
+      const canonicalAgent = normalizeAgentId(session.agentName || session.executable);
+      const startedAt = session.state_started_at ?? session.created_at ?? Date.now();
+      const liveStatus = agentStatusByPaneKey[session.id]?.state ?? session.state;
+
+      list.push({
+        paneKey: session.id,
+        agentType: canonicalAgent,
+        displayAgent: session.agentName || session.executable,
+        status: liveStatus,
+        state: liveStatus,
+        startedAt,
+        prompt: session.title,
         rowSource: "session",
         entry: {
-          paneKey,
+          paneKey: session.id,
           sessionId: session.id,
           worktreePath: session.project_path,
-          state: session.state,
+          state: liveStatus,
           prompt: session.title,
           updatedAt: session.updated_at ?? Date.now(),
           stateStartedAt: startedAt,
-          agentName: session.agentName,
+          agentType: session.agentName,
           toolName: session.tool_name,
           toolInput: session.tool_input,
           lastAssistantMessage: session.last_assistant_message,
-          orchestration: {
-            parentPaneKey: session.parent_pane_key,
-            coordinatorHandle: session.coordinator_handle,
-          },
-          subagents: session.subagents,
         },
-      };
-      list.push(rootRow);
+      });
+    }
 
-      // In-process subagents attached to this session
-      const subagents = session.subagents;
-      if (Array.isArray(subagents)) {
-        for (const sub of subagents) {
-          list.push({
-            paneKey: `${session.id}_${sub.id}`,
-            tabId: session.id,
-            activationPaneKey: session.id,
-            startedAt: sub.startedAt,
-            state: sub.state === "unverifiable" ? "unknown" : sub.state,
-            agentType: sub.agentType,
-            rowSource: "subagent",
-            entry: {
-              paneKey: `${session.id}_${sub.id}`,
-              sessionId: session.id,
-              worktreePath: session.project_path,
-              state: sub.state === "unverifiable" ? "unknown" : sub.state,
-              prompt: sub.description || `${sub.agentType || "Subagent"} (${sub.id})`,
-              updatedAt: Date.now(),
-              stateStartedAt: sub.startedAt,
-              agentName: sub.agentType,
-              orchestration: {
-                parentPaneKey: session.id,
-              },
-            },
-          });
+    // Orca parity: Consolidate multiple tabs of the same agent into a single representative row!
+    // Opening multiple tabs of OMP or Claude in the same worktree represents that agent once in the sidebar.
+    const consolidatedByAgent = new Map<string, AgentRow>();
+
+    for (const row of list) {
+      const agentKey = row.agentType || "unknown";
+      const existing = consolidatedByAgent.get(agentKey);
+      if (!existing) {
+        consolidatedByAgent.set(agentKey, row);
+        continue;
+      }
+
+      // Status priority: active work outranks idle
+      const priorityOrder = (st?: string) => {
+        if (st === "blocked" || st === "waiting") return 0;
+        if (st === "working") return 1;
+        if (st === "done") return 2;
+        if (st === "idle") return 3;
+        return 4;
+      };
+
+      const existingPrio = priorityOrder(existing.status);
+      const newPrio = priorityOrder(row.status);
+
+      if (newPrio < existingPrio) {
+        consolidatedByAgent.set(agentKey, row);
+      } else if (newPrio === existingPrio) {
+        const isNewDescriptive = Boolean(row.prompt && row.prompt !== row.agentType && row.prompt !== row.displayAgent);
+        const isExistingGeneric = !existing.prompt || existing.prompt === existing.agentType || existing.prompt === existing.displayAgent;
+        if (isNewDescriptive && isExistingGeneric) {
+          consolidatedByAgent.set(agentKey, row);
         }
       }
     }
 
-    return list;
-  }, [sessions]);
-
-  // Build hierarchical lineage tree
-  const lineageTree = useMemo(() => {
-    return buildAgentRowLineageTree(agentRows);
-  }, [agentRows]);
+    return Array.from(consolidatedByAgent.values());
+  }, [sessions, tabsInWorktree, agentStatusByPaneKey, worktreePath]);
 
   if (agentRows.length === 0) {
     return null;
   }
 
-  const { rootRows, childrenByParentPaneKey } = lineageTree;
-
   return (
-    <div
-      data-worktree-card-agents=""
-      onClick={(e) => e.stopPropagation()}
-      className={`mt-0.5 flex flex-col gap-0.5 ${className ?? ""}`}
-    >
-      {rootRows.map((rootRow) => {
-        const childRows = childrenByParentPaneKey.get(rootRow.paneKey) ?? [];
-        const hasChildren = childRows.length > 0;
-        const isExpanded = expandedCoordinators[rootRow.paneKey] ?? false;
-
-        const rootLineage = hasChildren
-          ? {
-              depth: 0,
-              isFirstSibling: true,
-              isLastSibling: true,
-              childCount: childRows.length,
-            }
-          : undefined;
-
-        return (
-          <React.Fragment key={rootRow.paneKey}>
-            <DashboardAgentRow
-              agent={{ ...rootRow, lineage: rootLineage }}
-              onActivate={onSelectSession}
-              now={now}
-              isFocusedPane={rootRow.entry.sessionId === activeSessionId}
-              childAgentCount={childRows.length}
-              childAgentsExpanded={isExpanded}
-              onToggleChildAgents={hasChildren ? () => toggleCoordinator(rootRow.paneKey) : undefined}
-            />
-
-            {/* Render indented child rows when coordinator is expanded */}
-            {hasChildren && isExpanded && (
-              <div data-agent-lineage-children="" className="worktree-agent-lineage-children ml-3 pl-1.5 border-l border-neutral-700/50 flex flex-col gap-0.5">
-                {childRows.map((childRow, idx) => {
-                  const isFirst = idx === 0;
-                  const isLast = idx === childRows.length - 1;
-
-                  return (
-                    <DashboardAgentRow
-                      key={childRow.paneKey}
-                      agent={{
-                        ...childRow,
-                        lineage: {
-                          depth: 1,
-                          isFirstSibling: isFirst,
-                          isLastSibling: isLast,
-                          childCount: 0,
-                        },
-                      }}
-                      onActivate={onSelectSession}
-                      now={now}
-                      isFocusedPane={childRow.entry.sessionId === activeSessionId}
-                      hideLineageConnectors={false}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
+    <WorktreeCompactAgentsList
+      worktreePath={worktreePath}
+      agents={agentRows}
+      onSelectSession={onSelectSession}
+      activeSessionId={activeSessionId}
+    />
   );
 });

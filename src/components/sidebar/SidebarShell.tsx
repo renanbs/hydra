@@ -1547,11 +1547,6 @@ export function SidebarShell({
             onDragEnd={handleWorktreeDragEnd}
             metaRowChildren={
               <>
-                {wtAgentSessions.length > 0 && (
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 shrink-0 font-mono">
-                    {wtAgentSessions.length} {wtAgentSessions.length === 1 ? "agent" : "agents"}
-                  </span>
-                )}
                 {formatAge(wt.created_at) && (
                   <span className="text-[9px] px-1 py-0.2 rounded bg-neutral-800/50 text-neutral-500 shrink-0 font-mono">
                     {formatAge(wt.created_at)}

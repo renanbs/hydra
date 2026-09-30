@@ -28,6 +28,7 @@ import {
   type CloseTerminalDialogCopyKind,
 } from "./components/RunningTerminalCloseDialog";
 import { isShellProcess } from "./components/workbench/tab-agent";
+import { useAppStore } from "./store";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal } from "./components/SettingsModal";
@@ -454,6 +455,23 @@ export default function App() {
   const [activeTabId, setActiveTabId] = useState("");
   const activeTabIdRef = useRef(activeTabId);
   activeTabIdRef.current = activeTabId;
+  // Zustand bridge: keep tabsByWorktree and activeTabIdByWorktree synchronized
+  const setStoreTabs = useAppStore((s) => s.setTabsForWorktree);
+  const setStoreActiveTabId = useAppStore((s) => s.setActiveTabIdForWorktree);
+
+  useEffect(() => {
+    const currentPath = activeWorktreePathRef.current || activeProjectRef.current?.path;
+    if (currentPath) {
+      setStoreTabs(currentPath, tabs);
+    }
+  }, [tabs, setStoreTabs]);
+
+  useEffect(() => {
+    const currentPath = activeWorktreePathRef.current || activeProjectRef.current?.path;
+    if (currentPath && activeTabId) {
+      setStoreActiveTabId(currentPath, activeTabId);
+    }
+  }, [activeTabId, setStoreActiveTabId]);
   // Sprint 2 P0: focused pane per tab (sessionId)
   const [focusedPaneMap, setFocusedPaneMap] = useState<Record<string, string>>({});
   const [mruTabIds, setMruTabIds] = useState<string[]>([]);
@@ -1909,14 +1927,15 @@ export default function App() {
   const handleNewTab = () => handleNewTerminalTab();
 
   const handleLaunchAgent = (agent: AvailableAgent) => {
+    const currentWorkspacePath = activeWorktreePathRef.current || activeProject?.path || "";
     const sessionId = `sess_${agent.id}_${Date.now().toString().slice(-4)}`;
     const tabId = `tab_${sessionId}`;
     const newSession: WorktreeSession = {
       id: sessionId,
-      project_path: activeProject?.path ?? "",
-      title: `${agent.name} (active)`,
+      project_path: currentWorkspacePath,
+      title: agent.name,
       branch: activeProject?.current_branch ?? "main",
-      state: "working",
+      state: "idle",
       active: true,
       agentName: agent.name,
       executable: agent.executable,
@@ -1946,7 +1965,7 @@ export default function App() {
       type: "terminal",
       sessionId,
       executable: agent.executable,
-      cwd: newSession.project_path,
+      cwd: currentWorkspacePath,
       agentName: agent.name,
       agentId: agent.id,
     };

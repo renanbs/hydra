@@ -44,6 +44,7 @@ const AGENT_TITLE_MATCHERS: AgentMatcher[] = [
   { id: "gemini", name: "Gemini", test: (t) => /(?<![\w./\\-])gemini(?![\w./\\-])/i.test(t) || /[✦⏲◇✋]/.test(t) },
   { id: "droid", name: "Droid", test: (t) => /(?<![\w./\\-])droid(?![\w./\\-])/i.test(t) },
   { id: "aider", name: "Aider", test: (t) => /(?<![\w./\\-])aider(?![\w./\\-])/i.test(t) },
+  { id: "antigravity", name: "Antigravity", test: (t) => /\b(?:agy|antigravity)\b/i.test(t) },
   { id: "copilot", name: "Copilot", test: (t) => /(?<![\w./\\-])copilot(?![\w./\\-])/i.test(t) },
 ];
 
@@ -54,7 +55,20 @@ export function resolveAgentFromTitle(title: string | null | undefined): string 
   }
   return null;
 }
-
+export function normalizeAgentId(agent: string | null | undefined): string {
+  if (!agent) return "unknown";
+  const lower = agent.toLowerCase().trim();
+  if (lower.includes("omp") || lower.includes("oh my pi") || lower.includes("pi")) return "omp";
+  if (lower.includes("claude")) return "claude";
+  if (lower.includes("agy") || lower.includes("antigravity")) return "antigravity";
+  if (lower.includes("codex") || lower.includes("openai") || lower.includes("chatgpt")) return "codex";
+  if (lower.includes("gemini")) return "gemini";
+  if (lower.includes("cursor")) return "cursor";
+  if (lower.includes("opencode")) return "opencode";
+  if (lower.includes("droid")) return "droid";
+  if (lower.includes("aider")) return "aider";
+  return resolveAgentFromTitle(agent) || lower;
+}
 export function resolveTabAgent(tab: TabItem, sessions?: WorktreeSession[]): string | null {
   // 1. Explicit agent on TabItem
   if (tab.agentId && !isShellProcess(tab.agentId)) return tab.agentId;
