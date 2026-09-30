@@ -110,7 +110,145 @@ impl CatalogEnvelope {
     }
 }
 
+/// Linha de `added_projects` lida para a migração one-shot.
+pub struct AddedProjectRow {
+    pub path: String,
+    pub name: String,
+    pub added_at: i64,
+    pub worktree_base_path: Option<String>,
+    pub imported_worktrees: Option<Vec<String>>,
+    pub suppressed_discovery: Option<bool>,
+}
+
+/// Migração one-shot: importa linhas de `added_projects` para o envelope.
+/// - Linha git: vira `Repo{kind:git}` com base/imports/suppress mapeados.
+/// - Linha não-git (Jev rescan): cria grupo `folder-scan` + workspace e
+///   re-scaneia filhos `.git` (mesma regra de `add_folder_to_catalog`).
+/// Idempotente: linhas cujo path já existe no envelope são puladas.
+pub fn migrate_added_projects(rows: Vec<AddedProjectRow>, envelope: &mut CatalogEnvelope) {
+    for row in rows {
+        let norm = normalize_catalog_path(&row.path);
+        let already = envelope
+            .repos
+            .iter()
+            .any(|r| normalize_catalog_path(&r.path) == norm)
+            || envelope
+                .folder_workspaces
+                .iter()
+                .any(|w| normalize_catalog_path(&w.folder_path) == norm);
+        if already {
+            continue;
+        }
+        let is_git = std::path::Path::new(&norm).join(".git").exists();
+        if is_git {
+            envelope.repos.push(CatalogRepo {
+                id: new_id(),
+                path: norm,
+                display_name: row.name,
+                added_at: row.added_at,
+                kind: Some("git".to_string()),
+                worktree_base_path: row.worktree_base_path.filter(|s| !s.trim().is_empty()),
+                project_group_id: None,
+                repo_icon: None,
+                imported_external_worktree_paths: row.imported_worktrees,
+                external_worktree_discovery_suppressed_at: row
+                    .suppressed_discovery
+                    .filter(|&v| v)
+                    .map(|_| now_ms()),
+            });
+        } else {
+            // Reaproveita o caminho de pasta: grupo + workspace + filhos com dedupe.
+            // Base/imports do pai são herdados pelos filhos via add_folder; aplica
+            // worktree_base_path do pai nos filhos criados nesta passada.
+            let before = envelope.repos.len();
+            if add_folder_to_catalog(&norm, envelope).is_ok() {
+                if let Some(base) = row.worktree_base_path.filter(|s| !s.trim().is_empty()) {
+                    for r in envelope.repos.iter_mut().skip(before) {
+                        r.worktree_base_path = Some(base.clone());
+                    }
+                }
+                if let Some(imports) = row.imported_worktrees {
+                    for r in envelope.repos.iter_mut().skip(before) {
+                        r.imported_external_worktree_paths = Some(imports.clone());
+                    }
+                }
+                if row.suppressed_discovery == Some(true) {
+                    let t = now_ms();
+                    for r in envelope.repos.iter_mut().skip(before) {
+                        r.external_worktree_discovery_suppressed_at = Some(t);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Lê `added_projects` do SQLite para a migração one-shot.
+/// Tabela mantida para rollback; após migrar, o catálogo nunca mais a lê.
+fn read_added_project_rows() -> Vec<AddedProjectRow> {
+    let mut rows = Vec::new();
+    let Ok(home) = std::env::var("HOME") else {
+        return rows;
+    };
+    let db_path =
+        std::path::PathBuf::from(home).join(".config").join("hydra").join("hydra_sessions.sqlite3");
+    let Ok(conn) = rusqlite::Connection::open(&db_path) else {
+        return rows;
+    };
+    let Ok(mut stmt) = conn.prepare(
+        "SELECT path, name, added_at, worktree_base_path, imported_worktrees, suppressed_discovery FROM added_projects ORDER BY added_at DESC",
+    ) else {
+        return rows;
+    };
+    let mapped = stmt.query_map(rusqlite::params![], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, i64>(2)?,
+            row.get::<_, Option<String>>(3)?,
+            row.get::<_, Option<String>>(4)?,
+            row.get::<_, Option<i64>>(5)?,
+        ))
+    });
+    let Ok(mapped) = mapped else { return rows; };
+    for r in mapped.flatten() {
+        // Só migra paths que ainda existem no disco.
+        if !std::path::Path::new(&r.0).exists() {
+            continue;
+        }
+        rows.push(AddedProjectRow {
+            path: r.0,
+            name: r.1,
+            added_at: r.2,
+            worktree_base_path: r.3.filter(|s| !s.trim().is_empty()),
+            imported_worktrees: r.4.and_then(|s| serde_json::from_str::<Vec<String>>(&s).ok()),
+            suppressed_discovery: r.5.map(|v| v != 0),
+        });
+    }
+    rows
+}
+
+/// Migração one-shot: se o arquivo não existe mas há linhas no SQLite,
+/// importa e grava. Chamado no início de `read_catalog`.
+fn migrate_once_if_needed() {
+    let path = match catalog_path() {
+        Ok(p) => p,
+        Err(_) => return,
+    };
+    if path.exists() {
+        return;
+    }
+    let rows = read_added_project_rows();
+    if rows.is_empty() {
+        return;
+    }
+    let mut envelope = CatalogEnvelope::empty();
+    migrate_added_projects(rows, &mut envelope);
+    let _ = write_catalog(&envelope);
+}
+
 pub fn read_catalog() -> CatalogEnvelope {
+    migrate_once_if_needed();
     let path = match catalog_path() {
         Ok(p) => p,
         Err(_) => return CatalogEnvelope::empty(),
@@ -366,6 +504,63 @@ mod tests {
         add_folder_to_catalog(base.to_str().unwrap(), &mut env).unwrap();
         assert_eq!(env.project_groups.len(), 1);
         assert_eq!(env.repos.len(), 2);
+        let _ = std::fs::remove_dir_all(&base);
+    }
+    #[test]
+    fn migrate_git_row_maps_fields() {
+        let dir = std::env::temp_dir().join("hydra-catalog-mig-repo");
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join(".git")).unwrap();
+        let mut env = CatalogEnvelope::empty();
+        migrate_added_projects(
+            vec![AddedProjectRow {
+                path: dir.to_str().unwrap().to_string(),
+                name: "repo".to_string(),
+                added_at: 7,
+                worktree_base_path: Some("/b".to_string()),
+                imported_worktrees: Some(vec!["/x".to_string()]),
+                suppressed_discovery: Some(true),
+            }],
+            &mut env,
+        );
+        assert_eq!(env.repos.len(), 1);
+        assert_eq!(env.repos[0].worktree_base_path.as_deref(), Some("/b"));
+        assert!(env.project_groups.is_empty());
+        migrate_added_projects(
+            vec![AddedProjectRow {
+                path: dir.to_str().unwrap().to_string(),
+                name: "repo".to_string(),
+                added_at: 7,
+                worktree_base_path: None,
+                imported_worktrees: None,
+                suppressed_discovery: None,
+            }],
+            &mut env,
+        );
+        assert_eq!(env.repos.len(), 1);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn migrate_folder_row_rescans_children() {
+        let base = std::env::temp_dir().join("hydra-catalog-mig-folder");
+        let _ = std::fs::remove_dir_all(&base);
+        std::fs::create_dir_all(base.join("a").join(".git")).unwrap();
+        let mut env = CatalogEnvelope::empty();
+        migrate_added_projects(
+            vec![AddedProjectRow {
+                path: base.to_str().unwrap().to_string(),
+                name: "code".to_string(),
+                added_at: 9,
+                worktree_base_path: None,
+                imported_worktrees: None,
+                suppressed_discovery: None,
+            }],
+            &mut env,
+        );
+        assert_eq!(env.project_groups.len(), 1);
+        assert_eq!(env.project_groups[0].created_from, "folder-scan");
+        assert_eq!(env.repos.len(), 1);
         let _ = std::fs::remove_dir_all(&base);
     }
 }

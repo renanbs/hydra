@@ -81,212 +81,9 @@ pub fn list_local_projects() -> Vec<HydraProject> {
             }
         }
     }
-
-    // ── Sprint 3 #2: Folder workspace expansion — Orca parity (limit 20, normalize, inherit base)
-    let mut expanded: Vec<HydraProject> = Vec::new();
-    let mut seen_paths: std::collections::HashSet<String> = projects
-        .iter()
-        .map(|p| {
-            let mut s = p.path.replace('\\', "/");
-            while s.ends_with('/') && s.len() > 1 {
-                s.pop();
-            }
-            s
-        })
-        .collect();
-    for proj in &projects {
-        expanded.push(proj.clone());
-        let p = PathBuf::from(&proj.path);
-        if !proj.is_git && p.is_dir() {
-            if let Ok(entries) = std::fs::read_dir(&p) {
-                let mut sub_repos: Vec<PathBuf> = entries
-                    .flatten()
-                    .map(|e| e.path())
-                    .filter(|sub| sub.is_dir() && sub.join(".git").exists())
-                    .collect();
-                sub_repos.sort();
-                // Limit to 20 to avoid scanning massive dirs like /home
-                for sub in sub_repos.into_iter().take(20) {
-                    let sub_str = sub.to_string_lossy().to_string().replace('\\', "/");
-                    let mut norm = sub_str.clone();
-                    while norm.ends_with('/') && norm.len() > 1 {
-                        norm.pop();
-                    }
-                    if seen_paths.contains(&norm) || seen_paths.contains(&sub_str) {
-                        continue;
-                    }
-                    seen_paths.insert(norm.clone());
-                    seen_paths.insert(sub_str.clone());
-                    let name = sub.file_name().and_then(|n| n.to_str()).unwrap_or("repo").to_string();
-                    let branch = get_branch_for_path(&sub);
-                    // id unique by path hash, not just name+parent
-                    let id_suffix = sub_str.replace('/', "_").replace('\\', "_").replace(':', "_");
-                    expanded.push(HydraProject {
-                        id: format!("proj_{id_suffix}"),
-                        name,
-                        path: sub_str,
-                        is_git: true,
-                        current_branch: branch,
-                        worktree_base_path: proj.worktree_base_path.clone(),
-                        imported_worktrees: proj.imported_worktrees.clone(),
-                        suppressed_discovery: proj.suppressed_discovery,
-                        repo_icon: None,
-                    });
-                }
-            }
-        }
-    }
-    let mut finished = if expanded.len() != projects.len() {
-        expanded
-    } else {
-        projects
-    };
-    attach_repo_icons(&mut finished);
-    finished
+    projects
 }
 
-fn normalize_project_path(path: &str) -> String {
-    let mut s = path.replace('\\', "/");
-    while s.ends_with('/') && s.len() > 1 {
-        s.pop();
-    }
-    s
-}
-
-/// Saved Orca sidebar glyphs, keyed by repo path. Custom uploads (the Hydra mark)
-/// live here. GitHub avatars are only the fallback for a repo the user added,
-/// never for a git dir discovered inside a folder workspace.
-fn orca_repo_icons_by_path() -> std::collections::HashMap<String, serde_json::Value> {
-    let mut map = std::collections::HashMap::new();
-    let Ok(home) = std::env::var("HOME") else {
-        return map;
-    };
-    let path = PathBuf::from(home)
-        .join(".config")
-        .join("orca")
-        .join("profiles")
-        .join("local-default")
-        .join("orca-data.json");
-    let Ok(text) = std::fs::read_to_string(path) else {
-        return map;
-    };
-    let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) else {
-        return map;
-    };
-    for key in ["repos", "projects"] {
-        let Some(entries) = value.get(key).and_then(|entry| entry.as_array()) else {
-            continue;
-        };
-        for entry in entries {
-            let Some(repo_path) = entry.get("path").and_then(|p| p.as_str()) else {
-                continue;
-            };
-            let Some(icon) = entry.get("repoIcon").filter(|icon| !icon.is_null()) else {
-                continue;
-            };
-            map.insert(normalize_project_path(repo_path), icon.clone());
-        }
-    }
-    map
-}
-
-fn github_slug_from_remote(url: &str) -> Option<(String, String)> {
-    let url = url.trim().trim_end_matches('/');
-    let path = if let Some(rest) = url.strip_prefix("git@github.com:") {
-        rest
-    } else if let Some(rest) = url.strip_prefix("ssh://git@github.com/") {
-        rest
-    } else if let Some(rest) = url.strip_prefix("https://github.com/") {
-        rest
-    } else if let Some(rest) = url.strip_prefix("http://github.com/") {
-        rest
-    } else {
-        return None;
-    };
-    let path = path.trim_end_matches(".git");
-    let mut parts = path.split('/');
-    let owner = parts.next()?.trim();
-    let repo = parts.next()?.trim();
-    if owner.is_empty() || repo.is_empty() {
-        return None;
-    }
-    if !owner
-        .chars()
-        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
-    {
-        return None;
-    }
-    Some((owner.to_string(), repo.to_string()))
-}
-
-fn git_remote_slug(repo_path: &str, remote: &str) -> Option<(String, String)> {
-    let output = std::process::Command::new("git")
-        .arg("-C")
-        .arg(repo_path)
-        .args(["remote", "get-url", remote])
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        return None;
-    }
-    let url = String::from_utf8(output.stdout).ok()?;
-    github_slug_from_remote(&url)
-}
-
-/// Same-name fork keeps the upstream owner. A renamed fork is its own project
-/// and keeps `origin`. No upstream remote falls back to `origin`.
-fn github_avatar_slug(repo_path: &str) -> Option<(String, String)> {
-    let origin = git_remote_slug(repo_path, "origin")?;
-    match git_remote_slug(repo_path, "upstream") {
-        Some(upstream) if upstream.1.eq_ignore_ascii_case(&origin.1) => Some(upstream),
-        _ => Some(origin),
-    }
-}
-
-fn github_avatar_icon(repo_path: &str) -> Option<serde_json::Value> {
-    let (owner, repo) = github_avatar_slug(repo_path)?;
-    Some(serde_json::json!({
-        "type": "image",
-        "src": format!("https://github.com/{owner}.png?size=64"),
-        "source": "github",
-        "label": format!("{owner}/{repo}"),
-    }))
-}
-
-/// A git repo found by scanning a folder the user added. Orca keeps the glyph
-/// on that folder, not on each child, so these rows stay on the folder mark.
-fn is_discovered_folder_child(project: &HydraProject, projects: &[HydraProject]) -> bool {
-    let key = normalize_project_path(&project.path);
-    projects.iter().any(|parent| {
-        if parent.is_git {
-            return false;
-        }
-        let root = normalize_project_path(&parent.path);
-        root != key && key.starts_with(&(root + "/"))
-    })
-}
-
-fn attach_repo_icons(projects: &mut [HydraProject]) {
-    let saved = orca_repo_icons_by_path();
-    let discovered: Vec<bool> = projects
-        .iter()
-        .map(|project| is_discovered_folder_child(project, projects))
-        .collect();
-    for (project, discovered) in projects.iter_mut().zip(discovered) {
-        if discovered {
-            project.repo_icon = None;
-            continue;
-        }
-        let key = normalize_project_path(&project.path);
-        project.repo_icon = saved.get(&key).cloned().or_else(|| {
-            if project.is_git {
-                github_avatar_icon(&project.path)
-            } else {
-                None
-            }
-        });
-    }
-}
 
 pub fn get_project_worktree_base_path(path_str: &str) -> Option<String> {
     if let Ok(home) = std::env::var("HOME") {
@@ -362,7 +159,7 @@ pub fn add_existing_project(path_str: &str) -> Result<HydraProject, String> {
         }
     }
 
-    let mut project = HydraProject {
+    let project = HydraProject {
         id: format!("proj_{name}"),
         name,
         path: path_str.to_string(),
@@ -373,7 +170,6 @@ pub fn add_existing_project(path_str: &str) -> Result<HydraProject, String> {
         suppressed_discovery: None,
         repo_icon: None,
     };
-    attach_repo_icons(std::slice::from_mut(&mut project));
     Ok(project)
 }
 pub fn import_external_worktree_for_project(project_path: &str, worktree_path: &str) -> Result<(), String> {

@@ -296,7 +296,16 @@ async fn list_projects() -> Vec<HydraProject> {
 
 #[tauri::command]
 async fn register_existing_project(path: String) -> Result<HydraProject, String> {
-    add_existing_project(&path)
+    // Dual-write durante a transição: SQLite legado + catálogo.
+    // A sidebar migrará para `catalog_get`; o legado sai no T-B1.
+    let project = add_existing_project(&path);
+    if project.is_ok() {
+        let mut envelope = read_catalog();
+        if add_folder_to_catalog(&path, &mut envelope).is_ok() {
+            let _ = write_catalog(&envelope);
+        }
+    }
+    project
 }
 
 #[tauri::command]
@@ -345,7 +354,9 @@ async fn create_project(name: String, parent_dir: String, init_git: bool) -> Res
             parent_dir,
             init_git,
         })?;
-        let _ = add_existing_project(&path);
+        let mut envelope = read_catalog();
+        let _ = add_folder_to_catalog(&path, &mut envelope);
+        let _ = write_catalog(&envelope);
         Ok(path)
     })
     .await
@@ -356,7 +367,9 @@ async fn create_project(name: String, parent_dir: String, init_git: bool) -> Res
 async fn clone_project(url: String, parent_dir: String) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
         let path = clone_git_repository(&url, &parent_dir)?;
-        let _ = add_existing_project(&path);
+        let mut envelope = read_catalog();
+        let _ = add_folder_to_catalog(&path, &mut envelope);
+        let _ = write_catalog(&envelope);
         Ok(path)
     })
     .await
