@@ -2,6 +2,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_window_state::StateFlags;
 
+pub mod catalog;
 pub mod agent_discovery;
 pub mod agent_state;
 pub mod daemon_client;
@@ -41,6 +42,7 @@ use project_manager::{
     list_local_projects, remove_added_project, set_project_worktree_base_path,
     suppress_discovery_for_project, HydraProject,
 };
+use catalog::{add_folder_to_catalog, read_catalog, write_catalog, CatalogEnvelope};
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
     clone_git_repository, create_git_worktree, create_new_project, list_git_worktrees,
@@ -251,6 +253,40 @@ async fn open_in_external_editor(path: String, command: String) -> Result<(), St
         c.spawn().map_err(|e| format!("Failed to launch '{}': {}", cmd, e))?;
         Ok(())
     }).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn catalog_get() -> CatalogEnvelope {
+    tokio::task::spawn_blocking(read_catalog)
+        .await
+        .unwrap_or_default()
+}
+
+#[tauri::command]
+async fn catalog_add_folder(path: String) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        add_folder_to_catalog(&path, &mut envelope)?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn catalog_remove_repo(path: String) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        let norm = catalog::normalize_catalog_path(&path);
+        envelope
+            .repos
+            .retain(|r| catalog::normalize_catalog_path(&r.path) != norm);
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -1337,7 +1373,9 @@ pub fn run() {
             git_rename_branch_cmd,
             open_in_file_manager,
             open_in_external_editor,
-            list_projects,
+            catalog_get,
+            catalog_add_folder,
+            catalog_remove_repo,
             register_existing_project,
             remove_project,
             get_project_worktree_base,
