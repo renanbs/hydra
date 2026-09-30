@@ -1,0 +1,34 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export type CreateHostedReviewStoreInput = any
+export type CreateStackedHostedReviewStoreInput = any
+export type HostedReviewCacheEntry = any
+export type HostedReviewFetchOptions = any
+export const callRuntimeRpc: any = null
+export type callRuntimeRpc = any
+export const findHostedReviewRepoForFetch: any = null
+export type findHostedReviewRepoForFetch = any
+export const hasNewerHostedReviewCacheEntry: any = null
+export type hasNewerHostedReviewCacheEntry = any
+export const hostedReviewOwnerIpcArgs: any = null
+export type hostedReviewOwnerIpcArgs = any
+export const isFreshHostedReview: any = null
+export type isFreshHostedReview = any
+export const isStaleMergedGitHubReviewForHead: any = null
+export type isStaleMergedGitHubReviewForHead = any
+export const linkedReviewHintKey: any = null
+export type linkedReviewHintKey = any
+export const settingsForHostedReviewActionOwner: any = null
+export type settingsForHostedReviewActionOwner = any
+export const settingsForHostedReviewRepoOwner: any = null
+export type settingsForHostedReviewRepoOwner = any
+export const shouldRefetchForLinkedHint: any = null
+export type shouldRefetchForLinkedHint = any
+export const shouldRefetchGitHubScopedResultForNoHint: any = null
+export type shouldRefetchGitHubScopedResultForNoHint = any
+export const withCreationEligibilityTimeout: any = null
+export type withCreationEligibilityTimeout = any
+export const withHostedReviewCacheEntry: any = null
+export type withHostedReviewCacheEntry = any
+export const findHostedReviewRepoByPath: any = null
+export type findHostedReviewRepoByPath = any

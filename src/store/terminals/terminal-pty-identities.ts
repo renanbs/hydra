@@ -1,0 +1,30 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export const TerminalStoreGet: any = null
+export type TerminalStoreGet = any
+export const clearDirectSshTerminalBindings: any = null
+export type clearDirectSshTerminalBindings = any
+export const collectSleepingAgentSessionRecordsForWorktree: any = null
+export type collectSleepingAgentSessionRecordsForWorktree = any
+export const getPendingActivationSpawnCount: any = null
+export type getPendingActivationSpawnCount = any
+export const isCurrentDirectSshAuthority: any = null
+export type isCurrentDirectSshAuthority = any
+export const isRemoteRuntimePtyId: any = null
+export type isRemoteRuntimePtyId = any
+export const resolveDirectSshTerminalKeys: any = null
+export type resolveDirectSshTerminalKeys = any
+export const resolvePrimaryLayoutPtyId: any = null
+export type resolvePrimaryLayoutPtyId = any
+export const sortedUniquePtyIds: any = null
+export type sortedUniquePtyIds = any
+export const uniquePtyIds: any = null
+export type uniquePtyIds = any
+export const withTerminalTabPtyId: any = null
+export type withTerminalTabPtyId = any
+export const consumePendingActivationSpawn: any = null
+export type consumePendingActivationSpawn = any
+export const equalStringSets: any = null
+export type equalStringSets = any
+export const getTabIdFromPaneKey: any = null
+export type getTabIdFromPaneKey = any

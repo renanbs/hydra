@@ -1,0 +1,30 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export type AgentProviderSessionMetadata = any
+export const AgentProviderSessionRouting: any = null
+export type AgentProviderSessionRouting = any
+export type ResumableTuiAgent = any
+export const getAgentResumeArgv: any = null
+export type getAgentResumeArgv = any
+export const getLaunchConfigForStatusMetadata: any = null
+export type getLaunchConfigForStatusMetadata = any
+export const getTabIdFromPaneKey: any = null
+export type getTabIdFromPaneKey = any
+export const launchConfigRegistryEntriesEqual: any = null
+export type launchConfigRegistryEntriesEqual = any
+export const manualSleepCaptureEntry: any = null
+export type manualSleepCaptureEntry = any
+export const markManualSleepLazyRestore: any = null
+export type markManualSleepLazyRestore = any
+export const normalizeLaunchConfigRegistrationMetadata: any = null
+export type normalizeLaunchConfigRegistrationMetadata = any
+export const normalizeSleepingAgentSessionCollectOptions: any = null
+export type normalizeSleepingAgentSessionCollectOptions = any
+export const paneKeyMatchesAnyTabPrefix: any = null
+export type paneKeyMatchesAnyTabPrefix = any
+export const registryEntryMatchesStatus: any = null
+export type registryEntryMatchesStatus = any
+export const sleepingRecordFromEntry: any = null
+export type sleepingRecordFromEntry = any
+export const getLaunchConfigForEntry: any = null
+export type getLaunchConfigForEntry = any

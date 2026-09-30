@@ -1,0 +1,22 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export const LOCAL_EXECUTION_HOST_ID: any = null
+export type LOCAL_EXECUTION_HOST_ID = any
+export const getActiveRuntimeTarget: any = null
+export type getActiveRuntimeTarget = any
+export const getAddRepoPathRouteSettings: any = null
+export type getAddRepoPathRouteSettings = any
+export const getProjectGroupHostId: any = null
+export type getProjectGroupHostId = any
+export const getRepoHostIdentityForParts: any = null
+export type getRepoHostIdentityForParts = any
+export const getRuntimeEnvironmentDisplayName: any = null
+export type getRuntimeEnvironmentDisplayName = any
+export const isRuntimeOwnedSshTargetId: any = null
+export type isRuntimeOwnedSshTargetId = any
+export const projectGroupMatchesOwnerHost: any = null
+export type projectGroupMatchesOwnerHost = any
+export const resolveProjectGroupOwnerHostId: any = null
+export type resolveProjectGroupOwnerHostId = any
+export const mergeProjectCompatibilityForHostRepoChange: any = null
+export type mergeProjectCompatibilityForHostRepoChange = any

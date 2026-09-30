@@ -1,0 +1,32 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export const prCacheKey: any = null
+export type prCacheKey = any
+export const prChecksCacheSuffix: any = null
+export type prChecksCacheSuffix = any
+export const projectViewRequestKey: any = null
+export type projectViewRequestKey = any
+export const projectViewSourceScope: any = null
+export type projectViewSourceScope = any
+export const repoCacheKeyPrefixes: any = null
+export type repoCacheKeyPrefixes = any
+export const settingsForProjectViewCacheKey: any = null
+export type settingsForProjectViewCacheKey = any
+export const sortWorkItemsByNumber: any = null
+export type sortWorkItemsByNumber = any
+export const sourceScopedRepoCacheKey: any = null
+export type sourceScopedRepoCacheKey = any
+export const workItemsInflightRequestKey: any = null
+export type workItemsInflightRequestKey = any
+export const evictRepoCacheEntries: any = null
+export type evictRepoCacheEntries = any
+export const getPRChecksCacheTtl: any = null
+export type getPRChecksCacheTtl = any
+export const issueCacheKey: any = null
+export type issueCacheKey = any
+export const prCommentsCacheSuffix: any = null
+export type prCommentsCacheSuffix = any
+export const projectViewCacheKey: any = null
+export type projectViewCacheKey = any
+export const workItemsCacheKey: any = null
+export type workItemsCacheKey = any

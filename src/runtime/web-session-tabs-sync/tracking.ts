@@ -1,0 +1,34 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export const clearWebRuntimeWakeTerminalRespawnForWorktree: any = null
+export type clearWebRuntimeWakeTerminalRespawnForWorktree = any
+export const clearWebSessionBrowserPlacementsForEnvironment: any = null
+export type clearWebSessionBrowserPlacementsForEnvironment = any
+export const isHeadlessMergeSessionTabsPublication: any = null
+export type isHeadlessMergeSessionTabsPublication = any
+export const isRetiredSessionTabsPublicationEpoch: any = null
+export type isRetiredSessionTabsPublicationEpoch = any
+export const noteSessionTabsPublicationEpoch: any = null
+export type noteSessionTabsPublicationEpoch = any
+export const recordAcceptedWebSessionTabsEnvironment: any = null
+export type recordAcceptedWebSessionTabsEnvironment = any
+export const rememberHostTerminalTabCount: any = null
+export type rememberHostTerminalTabCount = any
+export const removeWebSessionTabsEnvironment: any = null
+export type removeWebSessionTabsEnvironment = any
+export const replayableSessionTabsSnapshotByWorktree: any = null
+export type replayableSessionTabsSnapshotByWorktree = any
+export const shouldApplyRecoveredWebSessionTabsSnapshot: any = null
+export type shouldApplyRecoveredWebSessionTabsSnapshot = any
+export const trackWebSessionTabsWorktree: any = null
+export type trackWebSessionTabsWorktree = any
+export const untrackWebSessionTabsWorktree: any = null
+export type untrackWebSessionTabsWorktree = any
+export const useEffect: any = null
+export type useEffect = any
+export const useLayoutEffect: any = null
+export type useLayoutEffect = any
+export const recordReceivedWebSessionTabsSnapshot: any = null
+export type recordReceivedWebSessionTabsSnapshot = any
+export const sessionTabsFreshnessKey: any = null
+export type sessionTabsFreshnessKey = any

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./lib/shell-face.css";
 
 @font-face {
   font-family: 'Geist';
@@ -151,12 +152,13 @@
   --chart-3: var(--color-blue-600);
   --chart-4: var(--color-blue-700);
   --chart-5: var(--color-blue-800);
-  --worktree-sidebar: #121316;
+  /* Orca .dark left sidebar. The saved Hydra face overrides these under [data-shell-face="hydra"]. */
+  --worktree-sidebar: #2a2a2a;
   --worktree-sidebar-foreground: #fafafa;
-  --worktree-sidebar-accent: #1e1f24;
-  --worktree-sidebar-accent-foreground: #ffffff;
-  --worktree-sidebar-border: rgba(255, 255, 255, 0.07);
-  --worktree-sidebar-ring: #10b981;
+  --worktree-sidebar-accent: #353535;
+  --worktree-sidebar-accent-foreground: #fafafa;
+  --worktree-sidebar-border: rgb(255 255 255 / 0.07);
+  --worktree-sidebar-ring: #737373;
   --sidebar: #171717;
   --sidebar-foreground: #fafafa;
   --sidebar-primary: #1447e6;
@@ -263,12 +265,13 @@
   --chart-3: var(--color-blue-600);
   --chart-4: var(--color-blue-700);
   --chart-5: var(--color-blue-800);
-  --worktree-sidebar: #121316;
+  /* Orca .dark left sidebar. The saved Hydra face overrides these under [data-shell-face="hydra"]. */
+  --worktree-sidebar: #2a2a2a;
   --worktree-sidebar-foreground: #fafafa;
-  --worktree-sidebar-accent: #1e1f24;
-  --worktree-sidebar-accent-foreground: #ffffff;
-  --worktree-sidebar-border: rgba(255, 255, 255, 0.07);
-  --worktree-sidebar-ring: #10b981;
+  --worktree-sidebar-accent: #353535;
+  --worktree-sidebar-accent-foreground: #fafafa;
+  --worktree-sidebar-border: rgb(255 255 255 / 0.07);
+  --worktree-sidebar-ring: #737373;
   --sidebar: #171717;
   --sidebar-foreground: #fafafa;
   --sidebar-primary: #1447e6;
@@ -529,12 +532,181 @@ html.native-shell, html.native-shell body, html.native-shell #root, html.native-
 .tab-group-split-resize-handle.is-horizontal::after { left: 0; right: 0; top: 50%; height: 3px; transform: translateY(-50%); }
 .tab-group-split-resize-handle:hover::after, .tab-group-split-resize-handle.is-dragging::after { background: var(--tab-group-split-divider-strong); }
 
-/* Hydra sidebar cards — Orca worktree-sidebar-card-hover */
-.worktree-sidebar-card-hover { background: transparent; border: 1px solid transparent; transition: all 120ms ease; }
-.worktree-sidebar-card-hover:hover { background: color-mix(in srgb, var(--sidebar-foreground) 4%, transparent); border-color: color-mix(in srgb, var(--worktree-sidebar-border) 40%, transparent); }
-.dark .worktree-sidebar-card-hover:hover { background: color-mix(in srgb, var(--sidebar-accent) 40%, transparent); }
-[data-worktree-card-surface][data-worktree-card-active='primary'] { border-color: color-mix(in srgb, var(--worktree-sidebar-border) 40%, transparent); background: color-mix(in srgb, var(--worktree-sidebar-foreground) 8%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--worktree-sidebar-foreground) 4%, transparent); }
-.dark [data-worktree-card-surface][data-worktree-card-active='primary'] { border-color: color-mix(in srgb, var(--worktree-sidebar-foreground) 18%, var(--worktree-sidebar-border)); background: color-mix(in srgb, var(--worktree-sidebar-foreground) 10%, transparent); }
+/* Worktree Sidebar & Card Surfaces — Orca parity */
+.worktree-sidebar-card-hover {
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 120ms ease;
+}
+.worktree-sidebar-card-hover:hover {
+  background: color-mix(in srgb, var(--sidebar-foreground) 4%, transparent);
+  border-color: color-mix(in srgb, var(--worktree-sidebar-border) 40%, transparent);
+}
+.dark .worktree-sidebar-card-hover:hover {
+  background: color-mix(in srgb, var(--sidebar-accent) 40%, transparent);
+}
+
+[data-worktree-card-surface][data-worktree-card-active='primary'] {
+  border-color: color-mix(in srgb, var(--worktree-sidebar-border) 40%, transparent);
+  background: color-mix(in srgb, var(--worktree-sidebar-foreground) 8%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--worktree-sidebar-foreground) 4%, transparent);
+}
+.dark [data-worktree-card-surface][data-worktree-card-active='primary'] {
+  border-color: color-mix(
+    in srgb,
+    var(--worktree-sidebar-foreground) 18%,
+    var(--worktree-sidebar-border)
+  );
+  background: color-mix(in srgb, var(--worktree-sidebar-foreground) 10%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--worktree-sidebar-foreground) 3%, transparent);
+}
+
+[data-worktree-card-surface][data-worktree-card-active='secondary'] {
+  border-color: color-mix(in srgb, var(--sidebar-ring) 25%, transparent);
+  background: color-mix(in srgb, var(--sidebar-accent) 45%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--sidebar-ring) 15%, transparent);
+}
+.dark [data-worktree-card-surface][data-worktree-card-active='secondary'] {
+  border-color: color-mix(in srgb, var(--sidebar-ring) 28%, transparent);
+  background: color-mix(in srgb, var(--sidebar-accent) 34%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--sidebar-ring) 18%, transparent);
+}
+
+.worktree-agent-row-hover:hover {
+  background: color-mix(in srgb, var(--sidebar-foreground) 1.25%, transparent);
+}
+.worktree-agent-row-hover[data-focused-agent-pane='true'] {
+  background: color-mix(in srgb, var(--sidebar-foreground) 12%, var(--sidebar-accent));
+}
+.dark .worktree-agent-row-hover:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.dark .worktree-agent-row-hover[data-focused-agent-pane='true'] {
+  background: color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.worktree-sidebar-notice-card {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--worktree-sidebar-foreground) 24%, var(--worktree-sidebar-border));
+  background: color-mix(in srgb, var(--worktree-sidebar-foreground) 9%, var(--worktree-sidebar));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--worktree-sidebar-foreground) 8%, transparent),
+    0 1px 2px color-mix(in srgb, var(--worktree-sidebar-foreground) 10%, transparent);
+}
+.dark .worktree-sidebar-notice-card {
+  border-color: color-mix(in srgb, var(--worktree-sidebar-foreground) 32%, var(--worktree-sidebar-border));
+  background: color-mix(in srgb, var(--worktree-sidebar-foreground) 14%, var(--worktree-sidebar));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--worktree-sidebar-foreground) 12%, transparent),
+    0 1px 4px rgb(0 0 0 / 0.28);
+}
+
+/* Compact Agent Expansion & Trees — Orca parity */
+.compact-agent-expansion-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.compact-agent-expansion-grid-expanded {
+  grid-template-rows: 1fr;
+}
+@keyframes agent-spinner-rotate {
+  to {
+    transform: rotate(86400turn);
+  }
+}
+.agent-working-spinner {
+  animation: agent-spinner-rotate 86400s steps(1036800, end) infinite;
+}
+@keyframes compact-agent-expansion-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.compact-agent-expansion-grid-expanded .compact-agent-expansion-content {
+  animation: compact-agent-expansion-reveal 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.compact-agent-summary-panel {
+  padding: 2px;
+  border-radius: var(--radius-sm, 0.25rem);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition:
+    background 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.compact-agent-summary-panel-expanded {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px transparent;
+}
+[data-compact-agent-list='true'] {
+  margin-inline-start: -0.5rem;
+  width: calc(100% + 0.5rem);
+}
+[data-compact-agent-list='true'] .compact-agent-row.worktree-agent-lineage-parent-row,
+[data-compact-agent-list='true'] .compact-agent-row.worktree-agent-lineage-child-row {
+  background: transparent;
+  box-shadow: none;
+}
+[data-compact-agent-list='true'] .compact-agent-row.worktree-agent-lineage-child-row::before {
+  content: none;
+}
+[data-compact-agent-list='true'] .compact-agent-row.worktree-agent-lineage-parent-row.worktree-agent-row-hover:hover,
+[data-compact-agent-list='true'] .compact-agent-row.worktree-agent-lineage-child-row.worktree-agent-row-hover:hover {
+  background: color-mix(in srgb, var(--sidebar-foreground) 1.25%, transparent);
+}
+.dark [data-compact-agent-list='true'] .compact-agent-row.worktree-agent-lineage-parent-row.worktree-agent-row-hover:hover,
+.dark [data-compact-agent-list='true'] .compact-agent-row.worktree-agent-lineage-child-row.worktree-agent-row-hover:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+[data-compact-agent-list='true'] .compact-agent-row.worktree-agent-row-hover[data-focused-agent-pane='true'] {
+  background: color-mix(in srgb, var(--sidebar-foreground) 12%, var(--sidebar-accent));
+}
+.dark [data-compact-agent-list='true'] .compact-agent-row.worktree-agent-row-hover[data-focused-agent-pane='true'] {
+  background: color-mix(in srgb, var(--accent) 70%, transparent);
+}
+[data-compact-agent-list='true'] .worktree-agent-lineage-children {
+  border-left-color: color-mix(in srgb, var(--sidebar-foreground) 16%, transparent);
+}
+.dark [data-compact-agent-list='true'] .worktree-agent-lineage-children {
+  border-left-color: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Worktree Drag & Drop Preview */
+[data-worktree-sidebar-drag-preview='true'] {
+  z-index: 2147483000;
+  overflow: visible;
+  border-radius: var(--radius);
+  opacity: 0.96;
+  background: var(--worktree-sidebar);
+  box-shadow: var(--shadow-floating);
+  will-change: transform;
+}
+[data-worktree-sidebar-drag-preview='true'] * {
+  cursor: grabbing !important;
+}
+[data-worktree-sidebar-drag-count='true'] {
+  position: absolute;
+  top: -6px;
+  right: 8px;
+  display: inline-flex;
+  min-width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--sidebar-ring);
+  color: var(--sidebar);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0 4px;
+}
 
 /* Window controls — Orca titlebar */
 .window-controls { position: fixed; top: 0; right: 0; z-index: 9999; display: flex; height: 36px; -webkit-app-region: no-drag; }
@@ -605,4 +777,32 @@ select option { background-color: var(--popover); color: var(--popover-foregroun
     opacity: 1;
     transform: none;
   }
+}
+
+/* Why: mask fades avoid painting card-colored overlays that mismatch active tabs. */
+.terminal-tab-strip--fade-start.terminal-tab-strip--fade-end {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 1.5rem,
+    #000 calc(100% - 1.5rem),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 1.5rem,
+    #000 calc(100% - 1.5rem),
+    transparent
+  );
+}
+
+.terminal-tab-strip--fade-start:not(.terminal-tab-strip--fade-end) {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 1.5rem, #000 100%);
+  mask-image: linear-gradient(to right, transparent, #000 1.5rem, #000 100%);
+}
+
+.terminal-tab-strip--fade-end:not(.terminal-tab-strip--fade-start) {
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 1.5rem), transparent);
 }

@@ -50,7 +50,7 @@ export function SidebarHeader({
     <div className="mt-2 flex h-8 min-w-0 items-center justify-between gap-1.5 px-2">
       <div className="flex min-w-0 items-center gap-1">
         <span
-          className="min-w-0 truncate select-none pl-2 pr-0.5 text-[11px] font-semibold uppercase tracking-wider text-worktree-sidebar-foreground/70"
+          className="min-w-0 truncate select-none pl-2 pr-0.5 text-xs font-semibold text-muted-foreground/80"
           data-sidebar-section-title="projects"
         >
           {sidebarTitle}
@@ -147,7 +147,7 @@ export function SidebarHeader({
           >
             <div className="space-y-2.5">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="size-4 shrink-0 text-emerald-400" aria-hidden="true" />
+                <Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />
                 <h3 id={introTitleId} className="text-sm font-semibold text-worktree-sidebar-foreground">
                   Agents are easier to find
                 </h3>

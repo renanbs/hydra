@@ -284,6 +284,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
           return false;
         }
         if (key === "p" || key === "b" || key === "j" || key === "," || key === "t" || key === "n" || key === "o" || key === "d") return false;
+        if (key >= "1" && key <= "9" && !event.shiftKey && !event.altKey) return false;
       }
       return true;
     });

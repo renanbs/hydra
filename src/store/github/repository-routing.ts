@@ -1,0 +1,30 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export const capPrRefreshStates: any = null
+export type capPrRefreshStates = any
+export const deletePRRefreshStartedEntry: any = null
+export type deletePRRefreshStartedEntry = any
+export const getPRRefreshRuntimeRepoTarget: any = null
+export type getPRRefreshRuntimeRepoTarget = any
+export const getRuntimeRepoTarget: any = null
+export type getRuntimeRepoTarget = any
+export const inflightWorkItemsRequests: any = null
+export type inflightWorkItemsRequests = any
+export const isFresh: any = null
+export type isFresh = any
+export const prRefreshStartedEntryKey: any = null
+export type prRefreshStartedEntryKey = any
+export const releaseProviderRequestSlot: any = null
+export type releaseProviderRequestSlot = any
+export const shouldEnqueueLocalPRRefresh: any = null
+export type shouldEnqueueLocalPRRefresh = any
+export const sortWorkItemsByNumber: any = null
+export type sortWorkItemsByNumber = any
+export const withBoundedCacheEntry: any = null
+export type withBoundedCacheEntry = any
+export const enqueueLocalGitHubPRRefresh: any = null
+export type enqueueLocalGitHubPRRefresh = any
+export const findRepoForGitHubOwner: any = null
+export type findRepoForGitHubOwner = any
+export const getRefreshAliasExecutionHostId: any = null
+export type getRefreshAliasExecutionHostId = any

@@ -1,0 +1,34 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export const UISlice: any = null
+export type UISlice = any
+export const UISliceGet: any = null
+export type UISliceGet = any
+export const hydrateUnexpectedSignoutDismissal: any = null
+export type hydrateUnexpectedSignoutDismissal = any
+export const hydratedUIPartialMatchesState: any = null
+export type hydratedUIPartialMatchesState = any
+export const mergeContextualTourSeenIds: any = null
+export type mergeContextualTourSeenIds = any
+export const migrateStatusBarItems: any = null
+export type migrateStatusBarItems = any
+export const normalizeHydratedVisibleWorkspaceHostIds: any = null
+export type normalizeHydratedVisibleWorkspaceHostIds = any
+export const preserveStringArrayIdentity: any = null
+export type preserveStringArrayIdentity = any
+export const sanitizeHydratedActiveView: any = null
+export type sanitizeHydratedActiveView = any
+export const sanitizePersistedRepoIds: any = null
+export type sanitizePersistedRepoIds = any
+export const sanitizePersistedSidebarWidth: any = null
+export type sanitizePersistedSidebarWidth = any
+export const sanitizeShowDotfilesByWorktree: any = null
+export type sanitizeShowDotfilesByWorktree = any
+export const sanitizeTaskResumeState: any = null
+export type sanitizeTaskResumeState = any
+export const sanitizeWorkspaceCleanupDismissals: any = null
+export type sanitizeWorkspaceCleanupDismissals = any
+export const hydrateAgentReadState: any = null
+export type hydrateAgentReadState = any
+export const mergeFeatureInteractionState: any = null
+export type mergeFeatureInteractionState = any

@@ -10,6 +10,8 @@ export type OpenInApplication = {
 export type HydraSettings = {
   // Appearance — faithful to Orca GlobalSettings (snake_case for Rust compat)
   theme: "system" | "dark" | "light";
+  /** Focused runtime host. Absent means this computer. */
+  activeRuntimeEnvironmentId?: string | null;
   app_font_family: string;
   ui_zoom?: number;
   compact_worktree_cards?: boolean;
@@ -109,6 +111,8 @@ export type HydraSettings = {
   terminal_quick_commands?: unknown[];
   terminal_scope_history_by_worktree?: boolean;
   status_bar_items?: string[];
+  // Ported Orca modules read settings keys Hydra has not modeled yet.
+  [key: string]: any;
 };
 
 export const OPEN_IN_APPLICATIONS_MAX = 8;

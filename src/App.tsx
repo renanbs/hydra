@@ -35,11 +35,22 @@ import { SettingsModal } from "./components/SettingsModal";
 import type { HydraSettings } from "./shared/settings-types";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, DEFAULT_OPEN_IN_APPLICATIONS } from "./shared/settings-types";
 import { applyDocumentTheme } from "./lib/document-theme";
+import {
+  isDiscoveredFolderChild,
+  loadBundledOrcaRepoIcons,
+  repoIconForPath,
+} from "./lib/orca-repo-icons";
 import { CommandPalette } from "./components/CommandPalette";
 import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
 import { buildTerminalQuickCommandItems } from "./components/workbench/TerminalQuickCommandsSubmenu";
 import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
+import {
+  findWorktreeForShortcutIndex,
+  isWorktreeIndexJumpBlockedByTextEntry,
+  worktreeShortcutIndexFromKey,
+} from "./lib/visible-worktree-index-jump";
+import { getVisibleWorktreeShortcutTargets } from "./components/sidebar/visible-worktrees";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState } from "./components/DeleteWorktreeDialog";
@@ -290,6 +301,28 @@ export default function App() {
   const [promptInput, setPromptInput] = useState("");
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [projects, setProjects] = useState<HydraProject[]>([]);
+  const orcaRepoIcons = useMemo(() => loadBundledOrcaRepoIcons(), []);
+  useEffect(() => {
+    setProjects((prev) => {
+      let changed = false;
+      const next = prev.map((project) => {
+        // Folder scan promotes child git dirs into projects. Orca keeps the
+        // glyph on the folder the user added, so drop any avatar those children
+        // picked up from the profile or from origin.
+        if (isDiscoveredFolderChild(project.path, prev)) {
+          if (!project.repo_icon) return project;
+          changed = true;
+          return { ...project, repo_icon: null };
+        }
+        if (project.repo_icon || Object.keys(orcaRepoIcons).length === 0) return project;
+        const icon = repoIconForPath(orcaRepoIcons, project.path);
+        if (!icon) return project;
+        changed = true;
+        return { ...project, repo_icon: icon };
+      });
+      return changed ? next : prev;
+    });
+  }, [projects, orcaRepoIcons]);
   const [activeProject, setActiveProject] = useState<HydraProject | null>(null);
   const [activeWorktreePath, setActiveWorktreePath] = useState<string | null>(null);
   const activeWorktreePathRef = useRef<string | null>(null);
@@ -543,7 +576,9 @@ export default function App() {
     if (tab.splitLayout?.panes && tab.splitLayout.panes.length > 0) return tab.splitLayout.panes;
     if (tab.splitPanes && tab.splitPanes.length > 0) return tab.splitPanes;
     if (tab.splitSessionIds && tab.splitSessionIds.length > 0) {
-      return tab.splitSessionIds.map((sid) => ({ sessionId: sid, executable: tab.executable, cwd: tab.cwd }));
+      return tab.splitSessionIds
+        .filter((sid): sid is string => Boolean(sid))
+        .map((sid) => ({ sessionId: sid, executable: tab.executable, cwd: tab.cwd }));
     }
     if (tab.sessionId) return [{ sessionId: tab.sessionId, executable: tab.executable, cwd: tab.cwd }];
     return [];
@@ -2253,24 +2288,52 @@ export default function App() {
     setActiveTabId("");
     setFocusedPaneMap({});
   };
-  const handleRenameTab = (tabId: string, newTitle: string) => {
+  const handleReorderTabs = useCallback((newTabs: TabItem[]) => {
+    setTabs(newTabs);
+    const currentWorkspacePath = activeWorktreePath || activeProject?.path;
+    if (currentWorkspacePath) {
+      useAppStore.getState().setTabsForWorktree(currentWorkspacePath, newTabs);
+    }
+  }, [activeWorktreePath, activeProject]);
+
+  const handleRenameTab = useCallback((tabId: string, newTitle: string) => {
     setTabs((prev) =>
       prev.map((t) => (t.id === tabId ? { ...t, title: newTitle, customTitle: newTitle } : t))
     );
-  };
+    const currentWorkspacePath = activeWorktreePath || activeProject?.path;
+    if (currentWorkspacePath) {
+      useAppStore.getState().setTabCustomTitle(currentWorkspacePath, tabId, newTitle);
+    }
+  }, [activeWorktreePath, activeProject]);
 
   // Orca parity (resolveTerminalTabTitle): a user rename wins over the live
   // shell/process OSC title. Without a customTitle, the tab follows the title
   // the terminal emits (zsh, vim, agent frames).
   const handleTabTitleChange = useCallback((sessionId: string, title: string) => {
+    const currentWorkspacePath = activeWorktreePath || activeProject?.path;
     setTabs((prev) =>
       prev.map((t) => {
         if (t.customTitle || t.sessionId !== sessionId) return t;
+        if (currentWorkspacePath) {
+          useAppStore.getState().updateTab(currentWorkspacePath, t.id, { title });
+        }
         return { ...t, title };
       })
     );
-  }, []);
+  }, [activeWorktreePath, activeProject]);
 
+  const jumpToVisibleWorktreeByIndexRef = useRef<(index: number) => void>(() => {});
+  jumpToVisibleWorktreeByIndexRef.current = (index) => {
+    const seen = new Set<string>();
+    const worktrees: GitWorktreeInfo[] = [];
+    for (const worktree of [...Object.values(worktreesByProject).flat(), ...gitWorktrees]) {
+      if (seen.has(worktree.path)) continue;
+      seen.add(worktree.path);
+      worktrees.push(worktree);
+    }
+    const match = findWorktreeForShortcutIndex(index, getVisibleWorktreeShortcutTargets(), worktrees);
+    if (match) handleSelectGitWorktree(match);
+  };
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -2387,6 +2450,12 @@ export default function App() {
       if (isChord && !e.shiftKey && e.key.toLowerCase() === "n") {
         e.preventDefault();
         setIsNewWorkspaceOpen(true);
+        return;
+      }
+      const worktreeIndex = worktreeShortcutIndexFromKey(e);
+      if (worktreeIndex !== null && !isModalOpen && !isWorktreeIndexJumpBlockedByTextEntry(target)) {
+        e.preventDefault();
+        jumpToVisibleWorktreeByIndexRef.current(worktreeIndex);
         return;
       }
       // Guard against background tab closure or navigation when dialogs or inputs have focus
@@ -2794,7 +2863,7 @@ export default function App() {
               // persist new sessions minimally
               for (const np of newPanes) {
                 invoke("save_session_record", { record: { id: np.sessionId, project_path: np.cwd ?? "", title: `Terminal (${np.executable ?? "bash"})`, branch: activeProjectRef.current?.current_branch ?? "main", agent_name: np.executable ?? "bash", executable: np.executable ?? "bash", created_at: Date.now(), updated_at: Date.now() } }).catch(()=>{});
-                setSessions((prev) => [...prev, { id: np.sessionId, project_path: np.cwd ?? "", title: `Terminal (${np.executable ?? "bash"})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: np.executable ?? "bash", executable: np.executable ?? "bash", created_at: Date.now(), updated_at: Date.now() }]);
+                setSessions((prev) => [...prev, { id: np.sessionId ?? `sess_${Date.now()}`, project_path: np.cwd ?? "", title: `Terminal (${np.executable ?? "bash"})`, branch: activeProjectRef.current?.current_branch ?? "main", state: "idle", active: false, agentName: np.executable ?? "bash", executable: np.executable ?? "bash", created_at: Date.now(), updated_at: Date.now() }]);
               }
               const dir = getSplitDirectionForTab(tab);
               setTabs((prev) => [...prev, { ...tab, id: newId, title: `${tab.title} (copy)`, splitPanes: newPanes, splitSessionIds: newPanes.map((p)=>p.sessionId), splitDirection: dir, splitLayout: { direction: dir, panes: newPanes }, sessionId: newPanes[0].sessionId }]);
@@ -3553,10 +3622,10 @@ export default function App() {
                 onLaunchAgent={handleLaunchAgent}
                 detectedAgents={availableAgents}
                 onRenameTab={handleRenameTab}
-                onReorderTabs={setTabs}
+                onReorderTabs={handleReorderTabs}
                 onTabContextMenu={handleTabContextMenu}
                 onTabBarContextMenu={handleTabBarContextMenu}
-                worktreePath={activeWorktreePath ?? activeProject?.path}
+                worktreePath={activeWorktreePath || activeProject?.path || ""}
                 recentlyClosedTabs={recentlyClosedTabs}
                 onOpenFile={handleOpenFilePath}
                 onRestoreClosedTab={handleRestoreClosedTab}

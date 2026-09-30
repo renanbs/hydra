@@ -1,6 +1,10 @@
 import type { HydraSettings } from "../../shared/settings-types";
+import type { RepoIcon } from "../../shared/repo-icon";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { AgentSubagentSnapshot } from "./agent-status-types";
+import type { ProjectGroup } from "./worktree-list/types";
+
+export type { ProjectGroup };
 
 // ─── PR-14: sidebar prefs (SQLite sidebar_prefs, key "ui.sidebar") ──────────
 // O blob merged é um JSON plano; todos os campos são opcionais para que um blob
@@ -44,26 +48,37 @@ export interface AvailableAgent {
 export interface HydraProject {
   id: string;
   name: string;
+  displayName?: string;
   path: string;
   is_git: boolean;
   current_branch: string;
+  color?: string;
   worktree_base_path?: string | null;
   imported_worktrees?: string[];
   suppressed_discovery?: boolean;
+  repo_icon?: RepoIcon | null;
 }
 
 export interface GitWorktreeInfo {
+  id?: string;
   path: string;
   head_commit: string;
   branch: string;
   is_bare: boolean;
   is_locked: boolean;
+  is_main?: boolean;
+  isMainWorktree?: boolean;
   created_at?: number | null;
   status?: string | null;
   display_name?: string | null;
+  displayName?: string | null;
   first_agent_message_rename_error?: string | null;
+  firstAgentMessageRenameError?: string | null;
   is_sparse?: boolean;
+  isSparse?: boolean;
   sparse_directories?: string[];
+  sparseDirectories?: string[];
+  isUnread?: boolean;
 }
 
 export interface WorkspacePort {

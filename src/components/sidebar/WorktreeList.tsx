@@ -1,0 +1,512 @@
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+import React, { useMemo, useCallback, useLayoutEffect } from "react";
+import { FolderPlus, Plus } from "lucide-react";
+import { SectionHeader } from "./SectionHeader";
+import { WorktreeCard } from "./WorktreeCard";
+import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
+import {
+  setVisibleWorktreeIds,
+  setVisibleWorktreeShortcutTargets,
+  type VisibleWorktreeShortcutTarget,
+} from "./visible-worktrees";
+import type {
+  HydraProject,
+  GitWorktreeInfo,
+  WorktreeSession,
+  WorkspacePort,
+  ProjectGroup,
+} from "./types";
+import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+
+/** Cards actually painted, in sidebar order. Collapsed projects and groups are skipped;
+ * a search query forces projects open, matching `renderProjectNode`. */
+function renderedSidebarShortcutTargets(args: {
+  visibleProjects: HydraProject[];
+  projectGroups: ProjectGroup[];
+  projectGroupMap: Record<string, string>;
+  collapsedProjects: Set<string>;
+  collapsedGroups: Set<string>;
+  query: string;
+  getFilteredAndSortedWorktrees: (proj: HydraProject) => GitWorktreeInfo[];
+}): VisibleWorktreeShortcutTarget[] {
+  const {
+    visibleProjects,
+    projectGroups,
+    projectGroupMap,
+    collapsedProjects,
+    collapsedGroups,
+    query,
+    getFilteredAndSortedWorktrees,
+  } = args;
+  const targets: VisibleWorktreeShortcutTarget[] = [];
+  const seen = new Set<string>();
+  const pushProject = (proj: HydraProject) => {
+    if (!query && collapsedProjects.has(proj.id)) return;
+    for (const wt of getFilteredAndSortedWorktrees(proj)) {
+      const id = wt.id || wt.path;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      targets.push({ id });
+    }
+  };
+
+  const groupedProjectIds = new Set<string>();
+  for (const group of projectGroups) {
+    const groupProjects = visibleProjects.filter((p) => projectGroupMap[p.id] === group.id);
+    for (const p of groupProjects) groupedProjectIds.add(p.id);
+    if (collapsedGroups.has(group.id)) continue;
+    for (const p of groupProjects) pushProject(p);
+  }
+  for (const proj of visibleProjects) {
+    if (!groupedProjectIds.has(proj.id)) pushProject(proj);
+  }
+  return targets;
+}
+
+export interface WorktreeListProps {
+  projects: HydraProject[];
+  displayProjects: HydraProject[];
+  activeProject: HydraProject | null;
+  activeWorktreePath?: string | null;
+  highlightedRevealPath?: string | null;
+  sessions: WorktreeSession[];
+  gitWorktrees?: GitWorktreeInfo[];
+  worktreesByProject?: Record<string, GitWorktreeInfo[]>;
+  hiddenWorktreesByProject?: Record<string, GitWorktreeInfo[]>;
+  pinnedProjects?: ReadonlySet<string> | Set<string>;
+  unreadProjects?: ReadonlySet<string> | Set<string>;
+  pinnedWorktrees?: ReadonlySet<string> | Set<string>;
+  unreadWorktrees?: ReadonlySet<string> | Set<string>;
+  projectGroups?: ProjectGroup[];
+  projectGroupMap?: Record<string, string>;
+  collapsedProjects: Set<string>;
+  collapsedGroups: Set<string>;
+  filter?: string;
+  displayOptions: WorkspaceDisplayOptions;
+  compactCards?: boolean;
+  portsByWorktree?: Map<string, WorkspacePort[]>;
+  getFilteredAndSortedWorktrees: (proj: HydraProject) => GitWorktreeInfo[];
+  onSelectProject: (proj: HydraProject) => void;
+  onSelectGitWorktree: (wt: GitWorktreeInfo) => void;
+  onDeleteGitWorktree: (wt: GitWorktreeInfo, proj?: HydraProject) => void;
+  onSelectSession: (id: string) => void;
+  onRenameWorktreeTitle?: (worktreePath: string, newTitle: string) => Promise<void> | void;
+  onOpenNewWorkspaceModal: (proj: HydraProject) => void;
+  onOpenAddRepoDialog: () => void;
+  onClearFilter?: () => void;
+  onToggleProjectCollapse: (projectId: string) => void;
+  onToggleGroupCollapse: (groupId: string) => void;
+  onProjectContextMenu?: (e: React.MouseEvent, proj: HydraProject) => void;
+  onGroupContextMenu?: (e: React.MouseEvent, group: { id: string; name: string }) => void;
+  onWorktreeContextMenu?: (e: React.MouseEvent, wt: GitWorktreeInfo, proj?: HydraProject) => void;
+  onReviewHiddenWorktrees?: (proj: HydraProject, hiddenWorktrees: GitWorktreeInfo[]) => void;
+  onSuppressHiddenWorktrees?: (proj: HydraProject) => void;
+
+  // Drag and drop state & handlers
+  draggedWorktreePath?: string | null;
+  worktreeDropTarget?: { path: string; position: "top" | "bottom" } | null;
+  draggedProjectId?: string | null;
+  projectDropTarget?: { id: string; position: "top" | "bottom" } | null;
+  groupDropTargetId?: string | null;
+  onWorktreeDragStart?: (e: React.DragEvent, path: string) => void;
+  onWorktreeDragOver?: (e: React.DragEvent, path: string) => void;
+  onWorktreeDrop?: (e: React.DragEvent, targetPath: string, proj: HydraProject) => void;
+  onWorktreeDragEnd?: () => void;
+  onProjectDragStart?: (e: React.DragEvent, id: string) => void;
+  onProjectDragOver?: (e: React.DragEvent, id: string) => void;
+  onProjectDrop?: (e: React.DragEvent, targetId: string) => void;
+  onProjectDragEnd?: () => void;
+  onGroupDragOver?: (e: React.DragEvent, groupId: string) => void;
+  onGroupDragLeave?: (e: React.DragEvent, groupId: string) => void;
+  onGroupDrop?: (e: React.DragEvent, groupId: string) => void;
+  className?: string;
+}
+
+export function WorktreeList({
+  projects,
+  displayProjects,
+  activeProject,
+  activeWorktreePath,
+  highlightedRevealPath,
+  sessions,
+  hiddenWorktreesByProject,
+  pinnedWorktrees,
+  unreadWorktrees,
+  projectGroups = [],
+  projectGroupMap = {},
+  collapsedProjects,
+  collapsedGroups,
+  filter = "",
+  compactCards = false,
+  portsByWorktree,
+  getFilteredAndSortedWorktrees,
+  onSelectProject,
+  onSelectGitWorktree,
+  onDeleteGitWorktree,
+  onSelectSession,
+  onRenameWorktreeTitle,
+  onOpenNewWorkspaceModal,
+  onOpenAddRepoDialog,
+  onClearFilter,
+  onToggleProjectCollapse,
+  onToggleGroupCollapse,
+  onProjectContextMenu,
+  onGroupContextMenu,
+  onWorktreeContextMenu,
+  onReviewHiddenWorktrees,
+  onSuppressHiddenWorktrees,
+  worktreeDropTarget,
+  draggedProjectId,
+  projectDropTarget,
+  groupDropTargetId,
+  onWorktreeDragStart,
+  onWorktreeDragOver,
+  onWorktreeDrop,
+  onWorktreeDragEnd,
+  onProjectDragStart,
+  onProjectDragOver,
+  onProjectDrop,
+  onProjectDragEnd,
+  onGroupDragOver,
+  onGroupDragLeave,
+  onGroupDrop,
+  className = "",
+}: WorktreeListProps): React.JSX.Element {
+  const query = filter.trim().toLowerCase();
+
+  // Filter projects by search query
+  const visibleProjects = useMemo(() => {
+    if (!query) return displayProjects;
+    return displayProjects.filter((proj) => {
+      if (proj.name.toLowerCase().includes(query)) return true;
+      if (proj.displayName?.toLowerCase().includes(query)) return true;
+      if (proj.path.toLowerCase().includes(query)) return true;
+      const wts = getFilteredAndSortedWorktrees(proj);
+      return wts.length > 0;
+    });
+  }, [displayProjects, query, getFilteredAndSortedWorktrees]);
+
+  const shortcutTargets = useMemo(
+    () =>
+      renderedSidebarShortcutTargets({
+        visibleProjects,
+        projectGroups,
+        projectGroupMap,
+        collapsedProjects,
+        collapsedGroups,
+        query,
+        getFilteredAndSortedWorktrees,
+      }),
+    [
+      visibleProjects,
+      projectGroups,
+      projectGroupMap,
+      collapsedProjects,
+      collapsedGroups,
+      query,
+      getFilteredAndSortedWorktrees,
+    ]
+  );
+
+  // Same contract as Orca `use-selection`: publish before paint so Cmd+1–9 matches the
+  // cards. Null on unmount (sidebar closed) means "recompute"; [] means nothing is expanded.
+  useLayoutEffect(() => {
+    setVisibleWorktreeIds(shortcutTargets.map((target) => target.id));
+    setVisibleWorktreeShortcutTargets(shortcutTargets);
+    return () => {
+      setVisibleWorktreeIds(null);
+      setVisibleWorktreeShortcutTargets(null);
+    };
+  }, [shortcutTargets]);
+
+  // Render a single project node (SectionHeader + Inbox line + WorktreeCards)
+  const renderProjectNode = useCallback(
+    (proj: HydraProject, inGroup: boolean = false) => {
+      const isCollapsed = query ? false : collapsedProjects.has(proj.id);
+      const worktrees = getFilteredAndSortedWorktrees(proj);
+      const hiddenWorktrees = hiddenWorktreesByProject?.[proj.path] ?? [];
+      const isDropTarget = projectDropTarget?.id === proj.id;
+      const isDragged = draggedProjectId === proj.id;
+
+      return (
+        <div key={proj.id} className="group/proj-wrapper space-y-0.5">
+          <SectionHeader
+            variant="repo"
+            project={proj}
+            isCollapsed={isCollapsed}
+            isActive={activeProject?.path === proj.path}
+            count={worktrees.length}
+            inGroup={inGroup}
+            onToggleCollapse={() => onToggleProjectCollapse(proj.id)}
+            onSelectProject={onSelectProject}
+            onOpenNewWorkspace={onOpenNewWorkspaceModal}
+            onContextMenu={onProjectContextMenu}
+            isDropTarget={isDropTarget}
+            dropPosition={projectDropTarget?.position}
+            isDragged={isDragged}
+            onDragStart={
+              onProjectDragStart ? (e) => onProjectDragStart(e, proj.id) : undefined
+            }
+            onDragOver={
+              onProjectDragOver ? (e) => onProjectDragOver(e, proj.id) : undefined
+            }
+            onDrop={onProjectDrop ? (e) => onProjectDrop(e, proj.id) : undefined}
+            onDragEnd={onProjectDragEnd}
+          />
+
+          {/* Hidden worktrees inbox banner */}
+          {hiddenWorktrees.length > 0 && (
+            <NewExternalWorktreesInboxLine
+              repoDisplayName={proj.name}
+              inboxCount={hiddenWorktrees.length}
+              onReview={
+                onReviewHiddenWorktrees
+                  ? () => onReviewHiddenWorktrees(proj, hiddenWorktrees)
+                  : undefined
+              }
+              onSuppress={
+                onSuppressHiddenWorktrees
+                  ? () => onSuppressHiddenWorktrees(proj)
+                  : undefined
+              }
+            />
+          )}
+
+          {/* Expanded Worktrees List */}
+          {!isCollapsed && (
+            <div className="space-y-0.5 mt-0.5 ml-1">
+              {worktrees.length > 0 ? (
+                worktrees.map((wt) => {
+                  const wtSessions = sessions.filter(
+                    (s) =>
+                      s.project_path === wt.path ||
+                      (wt.is_main && s.project_path === proj.path)
+                  );
+                  const isFocused = (activeWorktreePath ?? null) === wt.path;
+                  const isRevealed = highlightedRevealPath === wt.path;
+
+                  return (
+                    <div
+                      key={wt.path}
+                      data-worktree-path={wt.path}
+                      className="relative"
+                    >
+                      <WorktreeCard
+                        worktree={wt}
+                        project={proj}
+                        repo={proj}
+                        isActive={activeWorktreePath === wt.path}
+                        isCurrentWorktree={activeWorktreePath === wt.path}
+                        isFocused={isFocused}
+                        revealHighlight={isRevealed}
+                        isPinned={pinnedWorktrees?.has(wt.path)}
+                        isUnread={unreadWorktrees?.has(wt.path)}
+                        compactCards={compactCards}
+                        ports={portsByWorktree?.get(wt.path) || []}
+                        sessions={wtSessions}
+                        dropTarget={worktreeDropTarget}
+                        onSelect={onSelectGitWorktree}
+                        onDelete={onDeleteGitWorktree}
+                        onRename={
+                          onRenameWorktreeTitle
+                            ? (newTitle) => onRenameWorktreeTitle(wt.path, newTitle)
+                            : undefined
+                        }
+                        onContextMenu={onWorktreeContextMenu}
+                        onSelectSession={onSelectSession}
+                        onDragStart={
+                          onWorktreeDragStart
+                            ? (e, path) => onWorktreeDragStart(e, path)
+                            : undefined
+                        }
+                        onDragOver={
+                          onWorktreeDragOver
+                            ? (e, path) => onWorktreeDragOver(e, path)
+                            : undefined
+                        }
+                        onDrop={
+                          onWorktreeDrop
+                            ? (e, path) => onWorktreeDrop(e, path, proj)
+                            : undefined
+                        }
+                        onDragEnd={onWorktreeDragEnd}
+                      />
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="px-2 py-1.5 text-[11px] text-worktree-sidebar-foreground/40 italic">
+                  No workspaces
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    },
+    [
+      query,
+      collapsedProjects,
+      getFilteredAndSortedWorktrees,
+      hiddenWorktreesByProject,
+      projectDropTarget,
+      draggedProjectId,
+      activeProject?.path,
+      onToggleProjectCollapse,
+      onSelectProject,
+      onOpenNewWorkspaceModal,
+      onProjectContextMenu,
+      onProjectDragStart,
+      onProjectDragOver,
+      onProjectDrop,
+      onProjectDragEnd,
+      onReviewHiddenWorktrees,
+      onSuppressHiddenWorktrees,
+      sessions,
+      activeWorktreePath,
+      highlightedRevealPath,
+      pinnedWorktrees,
+      unreadWorktrees,
+      compactCards,
+      portsByWorktree,
+      worktreeDropTarget,
+      onSelectGitWorktree,
+      onDeleteGitWorktree,
+      onRenameWorktreeTitle,
+      onWorktreeContextMenu,
+      onSelectSession,
+      onWorktreeDragStart,
+      onWorktreeDragOver,
+      onWorktreeDrop,
+      onWorktreeDragEnd,
+    ]
+  );
+
+  // Grouped and ungrouped project rendering
+  const content = useMemo(() => {
+    const nodes: React.JSX.Element[] = [];
+    const groupedProjectIds = new Set<string>();
+
+    if (projectGroups && projectGroups.length > 0) {
+      for (const group of projectGroups) {
+        const groupProjects = visibleProjects.filter(
+          (p) => projectGroupMap?.[p.id] === group.id
+        );
+        for (const p of groupProjects) groupedProjectIds.add(p.id);
+
+        const isGroupCollapsed = collapsedGroups.has(group.id);
+        const isGroupDropTarget = groupDropTargetId === group.id;
+
+        nodes.push(
+          <div
+            key={`group-${group.id}`}
+            className={`space-y-1 rounded-lg border border-dashed transition-colors p-1 ${
+              isGroupDropTarget
+                ? "border-emerald-500/80 bg-emerald-500/10"
+                : "border-worktree-sidebar-border/50 bg-worktree-sidebar-foreground/[0.02]"
+            }`}
+            onDragOver={
+              onGroupDragOver ? (e) => onGroupDragOver(e, group.id) : undefined
+            }
+            onDragLeave={
+              onGroupDragLeave ? (e) => onGroupDragLeave(e, group.id) : undefined
+            }
+            onDrop={onGroupDrop ? (e) => onGroupDrop(e, group.id) : undefined}
+          >
+            {/* Group Header via SectionHeader */}
+            <SectionHeader
+              variant="group"
+              group={group}
+              isCollapsed={isGroupCollapsed}
+              count={groupProjects.length}
+              onToggleCollapse={() => onToggleGroupCollapse(group.id)}
+              onContextMenu={
+                onGroupContextMenu ? (e) => onGroupContextMenu(e, group) : undefined
+              }
+              isDropTarget={isGroupDropTarget}
+            />
+
+            {/* Group Projects */}
+            {!isGroupCollapsed && (
+              <div className="space-y-1 pl-1">
+                {groupProjects.length > 0 ? (
+                  groupProjects.map((p) => renderProjectNode(p, true))
+                ) : (
+                  <div className="px-2 py-1 text-[10px] text-worktree-sidebar-foreground/40 italic">
+                    Drag projects here to group them
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      }
+    }
+
+    // Ungrouped projects
+    const ungrouped = visibleProjects.filter((p) => !groupedProjectIds.has(p.id));
+    for (const p of ungrouped) {
+      nodes.push(renderProjectNode(p, false));
+    }
+
+    return nodes;
+  }, [
+    projectGroups,
+    visibleProjects,
+    projectGroupMap,
+    collapsedGroups,
+    groupDropTargetId,
+    onGroupDragOver,
+    onGroupDragLeave,
+    onGroupDrop,
+    onToggleGroupCollapse,
+    onGroupContextMenu,
+    renderProjectNode,
+  ]);
+
+  if (projects.length === 0) {
+    return (
+      <div className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}>
+        <FolderPlus className="size-8 text-worktree-sidebar-foreground/30 mb-2" />
+        <p className="text-xs text-worktree-sidebar-foreground/60 mb-3">
+          No projects added yet
+        </p>
+        <button
+          type="button"
+          onClick={onOpenAddRepoDialog}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition cursor-pointer"
+        >
+          <Plus className="size-3.5" />
+          Add Project
+        </button>
+      </div>
+    );
+  }
+
+  if (visibleProjects.length === 0) {
+    return (
+      <div className={`flex flex-col items-center justify-center py-8 px-4 text-center ${className}`}>
+        <p className="text-xs text-worktree-sidebar-foreground/50 mb-2">
+          No workspaces matching "{filter}"
+        </p>
+        {onClearFilter && (
+          <button
+            type="button"
+            onClick={onClearFilter}
+            className="text-xs text-indigo-400 hover:text-indigo-300 transition cursor-pointer"
+          >
+            Clear filter
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`space-y-1 ${className}`}>
+      {content}
+    </div>
+  );
+}
+
+export default WorktreeList;

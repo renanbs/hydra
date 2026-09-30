@@ -77,26 +77,40 @@ function applyDisplayFiltersToWorktree(scope: ProjectFilterScope, wt: GitWorktre
   return false;
 }
 
+/** Returns effective worktrees for a project, synthesizing a root worktree if none exist. */
+function getEffectiveProjectWorktrees(input: SidebarProjectionInput, proj: HydraProject): GitWorktreeInfo[] {
+  const raw = input.getWorktreesForProject(proj);
+  if (raw.length > 0) return raw;
+  // Orca parity: if no worktrees are registered, project root acts as the primary worktree
+  return [
+    {
+      path: proj.path,
+      branch: proj.current_branch || "main",
+      head_commit: "",
+      is_bare: false,
+      is_locked: false,
+    },
+  ];
+}
+
 /** Sessions belonging to a project — same matching rule as the repo-mode projection. */
 function sessionsOfProject(input: SidebarProjectionInput, proj: HydraProject, isActive: boolean): WorktreeSession[] {
-  const rawProjectWorktrees = input.getWorktreesForProject(proj);
+  const effectiveWorktrees = getEffectiveProjectWorktrees(input, proj);
   return input.sessions.filter(
     (s) =>
       // Orca parity: pure shells (zsh/bash) should not render in the Fleet/Agents view.
       !isShellProcess(s.agentName || s.executable) && (
         s.project_path === proj.path ||
         (!s.project_path && isActive) ||
-        rawProjectWorktrees.some((wt) => wt.path === s.project_path) ||
+        effectiveWorktrees.some((wt) => wt.path === s.project_path) ||
         s.project_path.startsWith(proj.path + "/")
       )
   );
 }
 
 /**
- * Original tree projection (groupBy: "repo"): project-header → worktree → nested session,
- * orphan sessions, hidden-pill and empty rows. When persisted project groups exist
- * (PR-12), member projects nest under a group-header row; without a group map the tree
- * is byte-for-byte the pre-PR-12 projection.
+ * Original tree projection (groupBy: "repo"): project-header → worktree,
+ * hidden-pill and empty rows. All agent sessions live inside their WorktreeCard.
  * Orca reference: grouping/build-rows.ts repo path.
  */
 function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
@@ -108,9 +122,7 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
     activeProjectMenuId,
     filter,
     displayOptions,
-    getWorktreesForProject,
     sortWorktreesByOption,
-    sortSessionsByOption,
   } = input;
   if (projects.length === 0) return [];
   const rows: SidebarRow[] = [];
@@ -134,19 +146,18 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
     return false;
   };
 
-  /** One project's block: header + worktrees/sessions/pills — the original repo-map body. */
+  /** One project's block: header + worktrees/pills — the original repo-map body. */
   const emitProject = (proj: HydraProject, inGroup: boolean): void => {
     const isActive = proj.path === activeProject?.path;
     const isCollapsed = collapsedProjects.has(proj.id);
     const isMenuOpen = activeProjectMenuId === proj.id;
-    const rawProjectWorktrees = getWorktreesForProject(proj);
+    const rawProjectWorktrees = getEffectiveProjectWorktrees(input, proj);
     const projectSessions = sessionsOfProject(input, proj, isActive);
     // Apply displayOptions filtering to worktrees (pre-text filter)
     const displayFilteredWorktrees = rawProjectWorktrees.filter((wt) => !applyDisplayFiltersToWorktree(scope, wt, proj));
     const hiddenByDisplay = rawProjectWorktrees.length - displayFilteredWorktrees.length;
     // Text filter stage
     const filteredSessionsBase = lowerFilter ? projectSessions.filter(matchesFilter) : projectSessions;
-    // hideSleeping also filters idle orphan sessions
     const filteredSessions = displayOptions.hideSleeping
       ? filteredSessionsBase.filter((s) => s.state !== "idle")
       : filteredSessionsBase;
@@ -155,15 +166,14 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
       : displayFilteredWorktrees;
 
     const sortedWorktrees = sortWorktreesByOption(filteredWorktrees, proj);
-    const sortedSessions = sortSessionsByOption(filteredSessions);
+
 
     const hiddenByText = displayFilteredWorktrees.length - filteredWorktrees.length;
     const hiddenCount = hiddenByDisplay + hiddenByText;
 
-    if (!projectMatches(proj, sortedSessions, sortedWorktrees) && hiddenCount === 0) {
-      // Keep project visible if it has hidden worktrees (so pill can show) even when filter hides all
+    if (!projectMatches(proj, filteredSessions, sortedWorktrees) && hiddenCount === 0) {
       if (rawProjectWorktrees.length === 0 && projectSessions.length === 0 && !lowerFilter) {
-        // no content and no filter -> still show? We'll keep project header anyway if it has raw worktrees hidden?
+        // no content and no filter -> keep project header
       } else if (hiddenCount === 0) return;
     }
     // If project has only hidden worktrees and no visible, still show header + pill
@@ -182,25 +192,12 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
       for (const wt of sortedWorktrees) {
         rows.push({ type: "worktree", wt, proj });
       }
-      const orphanSessions = sortedSessions.filter(
-        (s) => !sortedWorktrees.some((wt) => wt.path === s.project_path) && !(!s.project_path && sortedWorktrees.some((wt) => wt.path === proj.path))
-      );
-      for (const s of orphanSessions) {
-        rows.push({ type: "session", session: s, proj, isOrphan: true, isNested: false });
-      }
       if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
     } else {
-      if (sortedSessions.length === 0) {
-        if (hiddenCount > 0) {
-          rows.push({ type: "hidden-pill", proj, hiddenCount });
-        } else {
-          rows.push({ type: "empty", proj, message: "No active worktrees in this project." });
-        }
+      if (hiddenCount > 0) {
+        rows.push({ type: "hidden-pill", proj, hiddenCount });
       } else {
-        for (const s of sortedSessions) {
-          rows.push({ type: "session", session: s, proj, isNested: false });
-        }
-        if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
+        rows.push({ type: "empty", proj, message: "No active worktrees in this project." });
       }
     }
   };
@@ -246,7 +243,7 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
       const memberIsActive = member.path === activeProject?.path;
       if (unreadProjects?.has(member.id)) hasUnread = true;
       if (unreadWorktrees && unreadWorktrees.size > 0) {
-        for (const wt of getWorktreesForProject(member)) {
+        for (const wt of getEffectiveProjectWorktrees(input, member)) {
           if (unreadWorktrees.has(wt.path)) { hasUnread = true; break; }
         }
       }
@@ -271,7 +268,7 @@ function buildRepoRows(input: SidebarProjectionInput): SidebarRow[] {
  * hidden worktrees, whose pill still needs a place to surface).
  */
 function buildFlatRows(input: SidebarProjectionInput): SidebarRow[] {
-  const { displayProjects, projects, filter, displayOptions, sortWorktreesByOption, sortSessionsByOption } = input;
+  const { displayProjects, projects, filter, displayOptions, sortWorktreesByOption } = input;
   if (projects.length === 0) return [];
   const rows: SidebarRow[] = [];
   const lowerFilter = filter.trim().toLowerCase();
@@ -289,7 +286,7 @@ function buildFlatRows(input: SidebarProjectionInput): SidebarRow[] {
 
   for (const proj of displayProjects) {
     const isActive = proj.path === input.activeProject?.path;
-    const rawProjectWorktrees = input.getWorktreesForProject(proj);
+    const rawProjectWorktrees = getEffectiveProjectWorktrees(input, proj);
     const projectSessions = sessionsOfProject(input, proj, isActive);
     const displayFilteredWorktrees = rawProjectWorktrees.filter((wt) => !applyDisplayFiltersToWorktree(scope, wt, proj));
     const hiddenByDisplay = rawProjectWorktrees.length - displayFilteredWorktrees.length;
@@ -303,7 +300,6 @@ function buildFlatRows(input: SidebarProjectionInput): SidebarRow[] {
       : displayFilteredWorktrees;
 
     const sortedWorktrees = sortWorktreesByOption(filteredWorktrees, proj);
-    const sortedSessions = sortSessionsByOption(filteredSessions);
     const hiddenByText = displayFilteredWorktrees.length - filteredWorktrees.length;
     const hiddenCount = hiddenByDisplay + hiddenByText;
 
@@ -318,19 +314,8 @@ function buildFlatRows(input: SidebarProjectionInput): SidebarRow[] {
       for (const wt of sortedWorktrees) {
         rows.push({ type: "worktree", wt, proj });
       }
-      const orphanSessions = sortedSessions.filter(
-        (s) => !sortedWorktrees.some((wt) => wt.path === s.project_path) && !(!s.project_path && sortedWorktrees.some((wt) => wt.path === proj.path))
-      );
-      for (const s of orphanSessions) {
-        rows.push({ type: "session", session: s, proj, isOrphan: true, isNested: false });
-      }
       if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
     } else {
-      // No worktrees survive: sessions still render (top level), the hidden pill still
-      // surfaces, and the repo-mode "empty" placeholder dies with the header it captioned.
-      for (const s of sortedSessions) {
-        rows.push({ type: "session", session: s, proj, isNested: false });
-      }
       if (hiddenCount > 0) rows.push({ type: "hidden-pill", proj, hiddenCount });
     }
   }

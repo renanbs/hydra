@@ -1,0 +1,32 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export const LAG_BACKOFF_MS: any = null
+export type LAG_BACKOFF_MS = any
+export const LAG_WALL_BUDGET_MS: any = null
+export type LAG_WALL_BUDGET_MS = any
+export const MAX_LAG_TRAILS: any = null
+export type MAX_LAG_TRAILS = any
+export const deleteConfirmedListSnapshot: any = null
+export type deleteConfirmedListSnapshot = any
+export const deleteLastConfirmedClientValue: any = null
+export type deleteLastConfirmedClientValue = any
+export const deleteStickyHideEntry: any = null
+export type deleteStickyHideEntry = any
+export const getConfirmedListSnapshot: any = null
+export type getConfirmedListSnapshot = any
+export const getLastConfirmedClientValue: any = null
+export type getLastConfirmedClientValue = any
+export const getStickyHideEntry: any = null
+export type getStickyHideEntry = any
+export const getTaskPageGitHubConfirmedAuthorityItemKeys: any = null
+export type getTaskPageGitHubConfirmedAuthorityItemKeys = any
+export const hasPendingTaskPageGitHubOpsForItem: any = null
+export type hasPendingTaskPageGitHubOpsForItem = any
+export const listPendingTaskPageGitHubOpsForItem: any = null
+export type listPendingTaskPageGitHubOpsForItem = any
+export const notifyTaskPageGitHubMutationRegistry: any = null
+export type notifyTaskPageGitHubMutationRegistry = any
+export const resolveItemSourceScope: any = null
+export type resolveItemSourceScope = any
+export const adoptQuietSearchFieldsForItem: any = null
+export type adoptQuietSearchFieldsForItem = any

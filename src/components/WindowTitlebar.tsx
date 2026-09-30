@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { PanelLeft, PanelRight } from "lucide-react";
+import { ACTIVE_SHELL_FACE } from "../lib/shell-face";
 
 export function WindowControls() {
   const [maximized, setMaximized] = useState(false);
@@ -122,9 +123,13 @@ export function WindowTitlebar({
             <PanelLeft className="w-3.5 h-3.5" />
           </button>
           <img src="/hydra-icon.png" alt="Hydra" className="w-4 h-4 rounded-sm object-contain pointer-events-none shrink-0" />
-          <span className="font-semibold tracking-wider pointer-events-none text-worktree-sidebar-foreground">HYDRA</span>
-          <span className="opacity-40 pointer-events-none">|</span>
-          <span className="opacity-70 font-mono text-[11px] truncate pointer-events-none max-w-[120px]">{title}</span>
+          {ACTIVE_SHELL_FACE === "hydra" ? (
+            <>
+              <span className="font-semibold tracking-wider pointer-events-none text-worktree-sidebar-foreground">HYDRA</span>
+              <span className="opacity-40 pointer-events-none">|</span>
+              <span className="opacity-70 font-mono text-[11px] truncate pointer-events-none max-w-[120px]">{title}</span>
+            </>
+          ) : null}
         </div>
       ) : null}
 
@@ -145,7 +150,9 @@ export function WindowTitlebar({
               <PanelLeft className="w-3.5 h-3.5" />
             </button>
             <img src="/hydra-icon.png" alt="Hydra" className="w-4 h-4 rounded-sm object-contain pointer-events-none shrink-0" />
-            <span className="font-semibold text-foreground tracking-wider pointer-events-none">HYDRA</span>
+            {ACTIVE_SHELL_FACE === "hydra" ? (
+              <span className="font-semibold text-foreground tracking-wider pointer-events-none">HYDRA</span>
+            ) : null}
           </div>
         )}
 
@@ -155,9 +162,11 @@ export function WindowTitlebar({
           onMouseDown={handleDragMouseDown}
           className="flex-1 h-full flex items-center justify-center cursor-default z-10"
         >
-          <span className="text-muted-foreground/60 text-[11px] tracking-wide font-medium pointer-events-none">
-            Hydra Autonomous Development Environment
-          </span>
+          {ACTIVE_SHELL_FACE === "hydra" ? (
+            <span className="text-muted-foreground/60 text-[11px] tracking-wide font-medium pointer-events-none">
+              Hydra Autonomous Development Environment
+            </span>
+          ) : null}
         </div>
 
         {/* Right Controls: Toggle Right Sidebar + Window Controls */}

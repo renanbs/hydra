@@ -2,7 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { applyDocumentTheme } from "./lib/document-theme";
+import { applyShellFace } from "./lib/shell-face";
 import "./App.css";
+
+applyShellFace();
 
 // Apply theme before first paint to avoid flash (mirrors Orca popout.tsx:35)
 try {

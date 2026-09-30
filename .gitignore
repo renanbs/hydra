@@ -9,6 +9,8 @@ lerna-debug.log*
 
 node_modules
 dist
+# Local snapshot of ~/.config/orca repo glyphs. The packaged app reads the profile from Rust.
+src/lib/orca-repo-icon-index.json
 dist-ssr
 *.local
 

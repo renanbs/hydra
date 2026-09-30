@@ -21,7 +21,7 @@ export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealC
         title="Open Settings (Ctrl+,)"
         className="flex items-center gap-1.5 hover:text-worktree-sidebar-foreground transition cursor-pointer"
       >
-        <Settings className="w-3 h-3 text-worktree-sidebar-foreground/50 hover:text-emerald-400 transition" />
+        <Settings data-hydra-settings-icon="" className="w-3 h-3 text-worktree-sidebar-foreground/50 transition" />
         <span>Settings</span>
       </button>
       <div className="flex items-center gap-2">

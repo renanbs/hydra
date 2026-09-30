@@ -1,0 +1,32 @@
+// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+
+export const WorktreeLookupIndex: any = null
+export type WorktreeLookupIndex = any
+export const capPrRefreshStates: any = null
+export type capPrRefreshStates = any
+export const deletePRRefreshStartedEntry: any = null
+export type deletePRRefreshStartedEntry = any
+export const findUniqueWorktreeById: any = null
+export type findUniqueWorktreeById = any
+export const findWorktreeById: any = null
+export type findWorktreeById = any
+export const getPRRefreshRuntimeRepoTarget: any = null
+export type getPRRefreshRuntimeRepoTarget = any
+export const getRuntimeRepoTarget: any = null
+export type getRuntimeRepoTarget = any
+export const isStaleExactLinkedPRLookup: any = null
+export type isStaleExactLinkedPRLookup = any
+export const prRefreshStartedEntryKey: any = null
+export type prRefreshStartedEntryKey = any
+export const shouldApplyBranchMismatchedLinkedPRClear: any = null
+export type shouldApplyBranchMismatchedLinkedPRClear = any
+export const shouldApplyDivergedLinkedPRClear: any = null
+export type shouldApplyDivergedLinkedPRClear = any
+export const shouldClearBranchMismatchedLinkedOpenPR: any = null
+export type shouldClearBranchMismatchedLinkedOpenPR = any
+export const shouldClearDivergedLinkedMergedPR: any = null
+export type shouldClearDivergedLinkedMergedPR = any
+export const buildPRRefreshCandidate: any = null
+export type buildPRRefreshCandidate = any
+export const buildWorktreeLookupIndex: any = null
+export type buildWorktreeLookupIndex = any

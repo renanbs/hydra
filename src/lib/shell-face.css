@@ -1,0 +1,47 @@
+/*
+ * Saved Hydra chrome. Set ACTIVE_SHELL_FACE to "hydra" in shell-face.ts to put it back.
+ * The live face is Orca: neutral sidebar, sentence-case Projects, muted repo glyphs,
+ * and no HYDRA wordmark. The Hydra icon in the titlebar is not part of this face.
+ */
+
+html[data-shell-face="hydra"],
+html[data-shell-face="hydra"].dark {
+  --worktree-sidebar: #121316;
+  --worktree-sidebar-foreground: #fafafa;
+  --worktree-sidebar-accent: #1e1f24;
+  --worktree-sidebar-accent-foreground: #ffffff;
+  --worktree-sidebar-border: rgba(255, 255, 255, 0.07);
+  --worktree-sidebar-ring: #10b981;
+}
+
+html[data-shell-face="hydra"] [data-sidebar-section-title="projects"] {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--worktree-sidebar-foreground) 70%, transparent);
+}
+
+[data-hydra-repo-icon] {
+  color: var(--muted-foreground);
+}
+
+html[data-shell-face="hydra"] [data-hydra-repo-icon="git"] {
+  color: #34d399;
+}
+
+html[data-shell-face="hydra"] [data-hydra-repo-icon="folder"] {
+  color: #fbbf24;
+}
+
+html[data-shell-face="hydra"] [data-hydra-repo-icon="group"] {
+  color: #818cf8;
+}
+
+html[data-shell-face="hydra"] [data-hydra-drop-indicator] {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.9);
+}
+
+html[data-shell-face="hydra"] [data-hydra-settings-icon]:hover {
+  color: #34d399;
+}

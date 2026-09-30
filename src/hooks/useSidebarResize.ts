@@ -1,4 +1,3 @@
-// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type UseSidebarResizeOptions = {
