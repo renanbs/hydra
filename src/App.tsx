@@ -432,6 +432,7 @@ export default function App() {
   const [unreadWorktrees, setUnreadWorktrees] = useState<Set<string>>(new Set());
   const [projectGroups, setProjectGroups] = useState<Array<{ id: string; name: string }>>([]);
   const [projectGroupMap, setProjectGroupMap] = useState<Record<string, string>>({});
+  const [folderWorkspaces, setFolderWorkspaces] = useState<Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>>([]);
   const [worktreeLineage, setWorktreeLineage] = useState<Record<string, string>>(() => {
     try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
   });
@@ -1145,6 +1146,7 @@ export default function App() {
         } catch {}
         setProjects(sorted);
         setProjectGroups(model.projectGroups);
+        setFolderWorkspaces(model.folderWorkspaces);
         setProjectGroupMap(model.projectGroupMap);
         if (sorted.length > 0) {
           setActiveProject(sorted[0]);
@@ -1177,6 +1179,7 @@ export default function App() {
         } catch {}
         setProjects(sorted);
         setProjectGroups(model.projectGroups);
+        setFolderWorkspaces(model.folderWorkspaces);
         setProjectGroupMap(model.projectGroupMap);
         refreshAllWorktrees(sorted);
       }).catch(console.error);
@@ -1631,6 +1634,7 @@ export default function App() {
           const model = catalogToSidebarModel(envelope);
           setProjects(model.projects);
           setProjectGroups(model.projectGroups);
+        setFolderWorkspaces(model.folderWorkspaces);
           setProjectGroupMap(model.projectGroupMap);
           if (activeProject?.path === proj.path) {
             if (model.projects.length > 0) {
@@ -3600,6 +3604,7 @@ export default function App() {
                 hiddenWorktreesByProject={hiddenWorktreesByProject}
                 projectGroupMap={projectGroupMap}
                 projectGroups={projectGroups}
+                folderWorkspaces={folderWorkspaces}
                 initialSidebarBody={initialSidebarPrefs?.sidebarBody}
                 initialCollapsedProjects={initialSidebarPrefs?.collapsedProjects}
                 initialCollapsedGroups={initialSidebarPrefs?.collapsedGroups}
@@ -3938,6 +3943,7 @@ export default function App() {
             const model = catalogToSidebarModel(envelope);
             setProjects(model.projects);
             setProjectGroups(model.projectGroups);
+        setFolderWorkspaces(model.folderWorkspaces);
             setProjectGroupMap(model.projectGroupMap);
             if (model.projects.length > 0) {
               handleSelectProject(model.projects[0]);

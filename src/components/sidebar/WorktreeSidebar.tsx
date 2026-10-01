@@ -81,6 +81,7 @@ export function WorktreeSidebar({
   hiddenWorktreesByProject,
   projectGroupMap = {},
   projectGroups = [],
+  folderWorkspaces = [],
   compactCards = false,
   onSelectNextSession,
   onSelectPrevSession,
@@ -686,6 +687,7 @@ export function WorktreeSidebar({
               unreadWorktrees={unreadWorktrees}
               projectGroups={projectGroups}
               projectGroupMap={projectGroupMap}
+              folderWorkspaces={folderWorkspaces}
               collapsedProjects={collapsedProjects}
               collapsedGroups={collapsedGroups}
               filter={filter}

@@ -15,6 +15,7 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
   projects: HydraProject[];
   projectGroups: Array<{ id: string; name: string }>;
   projectGroupMap: Record<string, string>;
+  folderWorkspaces: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
 } {
   const projectGroups = (envelope.projectGroups ?? []).map((g: CatalogProjectGroup) => ({
     id: g.id,
@@ -37,5 +38,11 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
       repo_icon: (r.repoIcon as HydraProject["repo_icon"]) ?? null,
     };
   });
-  return { projects, projectGroups, projectGroupMap };
+  const folderWorkspaces = (envelope.folderWorkspaces ?? []).map((w) => ({
+    id: w.id,
+    projectGroupId: w.projectGroupId,
+    name: w.name,
+    folderPath: w.folderPath,
+  }));
+  return { projects, projectGroups, projectGroupMap, folderWorkspaces };
 }

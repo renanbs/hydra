@@ -79,6 +79,7 @@ export interface WorktreeListProps {
   unreadWorktrees?: ReadonlySet<string> | Set<string>;
   projectGroups?: ProjectGroup[];
   projectGroupMap?: Record<string, string>;
+  folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
   collapsedProjects: Set<string>;
   collapsedGroups: Set<string>;
   filter?: string;
@@ -134,6 +135,7 @@ export function WorktreeList({
   unreadWorktrees,
   projectGroups = [],
   projectGroupMap = {},
+  folderWorkspaces = [],
   collapsedProjects,
   collapsedGroups,
   filter = "",
@@ -426,15 +428,28 @@ export function WorktreeList({
               isDropTarget={isGroupDropTarget}
             />
 
-            {/* Group Projects */}
+            {/* Group Projects + folder-workspace rows (Orca folder-workspace-lanes parity) */}
             {!isGroupCollapsed && (
               <div className="space-y-1 pl-1">
+                {(folderWorkspaces ?? [])
+                  .filter((w) => w.projectGroupId === group.id)
+                  .map((w) => (
+                    <div
+                      key={`folder-ws-${w.id}`}
+                      className="px-2 py-1 text-[10px] font-mono text-worktree-sidebar-foreground/50 truncate"
+                      title={w.folderPath}
+                    >
+                      {w.name}
+                    </div>
+                  ))}
                 {groupProjects.length > 0 ? (
                   groupProjects.map((p) => renderProjectNode(p, true))
                 ) : (
-                  <div className="px-2 py-1 text-[10px] text-worktree-sidebar-foreground/40 italic">
-                    Drag projects here to group them
-                  </div>
+                  (folderWorkspaces ?? []).filter((w) => w.projectGroupId === group.id).length === 0 && (
+                    <div className="px-2 py-1 text-[10px] text-worktree-sidebar-foreground/40 italic">
+                      Drag projects here to group them
+                    </div>
+                  )
                 )}
               </div>
             )}

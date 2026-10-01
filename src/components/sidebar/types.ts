@@ -167,6 +167,7 @@ export interface WorktreeSidebarProps {
   hiddenWorktreesByProject?: Record<string, GitWorktreeInfo[]>;
   projectGroupMap?: Record<string, string>;
   projectGroups?: Array<{ id: string; name: string }>;
+  folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
   compactCards?: boolean;
   onSelectNextSession?: (direction: "up" | "down") => void;
   onSelectPrevSession?: (direction: "up" | "down") => void;
