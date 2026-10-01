@@ -1,5 +1,5 @@
 import React from 'react'
-import minimaxIconUrl from '../../../../../resources/minimax-icon.svg?url'
+const minimaxIconUrl = "minimax-icon.svg";
 
 export function OpenAIIcon({ size = 14 }: { size?: number }): React.JSX.Element {
   return (

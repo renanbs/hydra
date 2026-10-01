@@ -1,6 +1,6 @@
 import type React from 'react'
 import { ClaudeIcon, DroidIcon, OpenAIIcon } from '@/components/status-bar/icons'
-import openClaudeLogoUrl from '../../../../resources/openclaude-logo.png?url'
+const openClaudeLogoUrl = "openclaude-logo.png";
 import type { TuiAgent } from '../shared/tui-agent'
 import { getTuiAgentLaunchCommand, TUI_AGENT_CONFIG } from '../shared/tui-agent-config'
 import {
