@@ -205,7 +205,7 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   terminal_default_shell: "",
   default_tui_agent: null,
   disabled_tui_agents: [],
-  agent_status_hooks_enabled: true,
+  agent_status_hooks_enabled: false,
   agent_cmd_overrides: {},
   agent_default_args: {},
   agent_default_env: {},
