@@ -21,6 +21,7 @@ pub mod worktree_ops;
 pub mod preflight;
 pub mod theme_import;
 pub mod port_scanner;
+pub mod hooks;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{detect_agent_state, detect_with_decay, fold_terminal_output, AgentState};

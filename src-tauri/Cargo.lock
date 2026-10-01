@@ -2192,8 +2192,11 @@ checksum = "6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87"
 name = "hydra"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "chrono",
  "ctrlc",
+ "form_urlencoded",
+ "hex",
  "image",
  "interprocess",
  "keepawake",
@@ -2207,6 +2210,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml",
+ "sha2",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
