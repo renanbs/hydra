@@ -43,6 +43,7 @@ import {
 import type { CatalogEnvelope } from "./lib/catalog-types";
 import { catalogToSidebarModel } from "./lib/catalog-bridge";
 import { StatusBar } from "./components/status-bar/StatusBar";
+import { TooltipProvider } from "./components/ui/tooltip";
 import { CommandPalette } from "./components/CommandPalette";
 import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
@@ -3538,6 +3539,7 @@ export default function App() {
   const currentTab = tabs.find((t) => t.id === activeTabId);
 
   return (
+    <TooltipProvider delayDuration={400}>
     <div className="flex flex-col h-screen w-screen font-sans antialiased select-none overflow-hidden" style={{ background: "var(--app-bg)", color: "var(--app-fg)" }}>
       {/* Custom Window Titlebar */}
       <WindowTitlebar 
@@ -4036,5 +4038,6 @@ export default function App() {
         initialSection={settingsSectionRequested ?? undefined}
       />
     </div>
+    </TooltipProvider>
   );
 }
