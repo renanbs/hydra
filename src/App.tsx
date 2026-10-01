@@ -55,6 +55,7 @@ import {
 } from "./lib/visible-worktree-index-jump";
 import { getVisibleWorktreeShortcutTargets } from "./components/sidebar/visible-worktrees";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
+import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState } from "./components/DeleteWorktreeDialog";
 import { PromptDialog, type PromptDialogProps } from "./components/PromptDialog";
@@ -398,6 +399,8 @@ export default function App() {
     x: number;
     y: number;
     items: ContextMenuItem[];
+    /** Item 4: "terminal-tab" mantém CustomContextMenu; sidebar usa Radix. */
+    source: "sidebar" | "terminal-tab";
   } | null>(null);
 
   // Orca parity: dedicated DeleteWorktreeDialog state (openModal('delete-worktree')).
@@ -2622,6 +2625,7 @@ export default function App() {
     const hasSelection = actions ? actions.hasSelection() : Boolean(window.getSelection()?.toString());
 
     setContextMenu({
+      source: "terminal-tab",
       x,
       y,
       items: [
@@ -2770,6 +2774,7 @@ export default function App() {
     const hasTabsToLeft = tabIdx > 0;
 
     setContextMenu({
+      source: "terminal-tab",
       x: e.clientX,
       y: e.clientY,
       items: [
@@ -2963,6 +2968,7 @@ export default function App() {
 
   const handleTabBarContextMenu = (e: React.MouseEvent) => {
     setContextMenu({
+      source: "terminal-tab",
       x: e.clientX,
       y: e.clientY,
       items: [
@@ -3060,6 +3066,7 @@ export default function App() {
     const openInChildren = getOpenInItems(proj.path);
 
     setContextMenu({
+      source: "sidebar",
       x: e.clientX,
       y: e.clientY,
       items: [
@@ -3206,6 +3213,7 @@ export default function App() {
       }
     };
     setContextMenu({
+      source: "sidebar",
       x: e.clientX,
       y: e.clientY,
       items: [
@@ -3386,6 +3394,7 @@ export default function App() {
     const openInChildren = getOpenInItems(session.project_path);
     const developerRevealed = e.altKey;
     setContextMenu({
+      source: "sidebar",
       x: e.clientX,
       y: e.clientY,
       items: [
@@ -3808,9 +3817,16 @@ export default function App() {
       </div>
       {/* Item 5: barra de status do Orca no fundo da janela (uso/atualização/SSH sem função). */}
       <StatusBar floatingTerminalOpen={false} />
-
-      {/* Custom Context Menu Overlay */}
-      {contextMenu && (
+      {/* Item 4: sidebar em Radix (submenu hover, portal); aba do terminal em CustomContextMenu. */}
+      {contextMenu && contextMenu.source === "sidebar" && (
+        <RadixContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={contextMenu.items}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+      {contextMenu && contextMenu.source === "terminal-tab" && (
         <CustomContextMenu
           x={contextMenu.x}
           y={contextMenu.y}

@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
+import {
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "./ui/dropdown-menu";
+import { RadixContextMenuItems } from "./RadixContextMenu";
 
 export interface ContextMenuItem {
   label: string;
@@ -282,56 +288,18 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
       {activeSubmenu && submenuCoords && (
         <div
           ref={submenuRef}
-          role="menu"
-          aria-orientation="vertical"
-          style={{ left: `${submenuCoords.x}px`, top: `${submenuCoords.y}px` }}
           onClick={(e) => e.stopPropagation()}
           onMouseEnter={cancelSubmenuClose}
           onMouseLeave={scheduleSubmenuClose}
-          className="fixed z-[99999] w-52 rounded-xl bg-popover border border-border p-1.5 shadow-2xl text-xs select-none backdrop-blur-md text-popover-foreground animate-in fade-in-0 zoom-in-95 duration-100"
+          style={{ position: "fixed", left: submenuCoords.x, top: submenuCoords.y, width: 0, height: 0 }}
         >
-          {activeSubmenu.map((sub, sIdx) => {
-            const isSubHighlighted = highlightedSubIndex === sIdx;
-            return (
-              <div key={sIdx}>
-                {sub.separator && <div className="h-px bg-border my-1" />}
-                {sub.isLabel ? (
-                  <div className="px-2 py-1 text-[11px] font-medium text-neutral-500">{sub.label}</div>
-                ) : (
-                  <button
-                    role="menuitem"
-                    tabIndex={-1}
-                    disabled={sub.disabled}
-                    title={sub.title}
-                    onClick={() => {
-                      if (sub.disabled) return;
-                      if (sub.children && sub.children.length > 0) return;
-                      sub.onClick();
-                      onClose();
-                    }}
-                    onMouseEnter={() => setHighlightedSubIndex(sIdx)}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
-                      sub.disabled
-                        ? "opacity-40 cursor-not-allowed text-neutral-500"
-                        : isSubHighlighted
-                        ? sub.danger
-                          ? "bg-red-500/25 text-red-300"
-                          : "bg-accent text-accent-foreground"
-                        : sub.danger
-                        ? "hover:bg-red-500/20 text-red-400 cursor-pointer"
-                        : "hover:bg-accent text-popover-foreground hover:text-foreground cursor-pointer"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      {sub.icon && <span className="text-neutral-400 shrink-0">{sub.icon}</span>}
-                      <span className="text-[11px] truncate">{sub.label}</span>
-                    </div>
-                    {sub.shortcut && <span className="text-[10px] text-neutral-500 font-mono ml-2 shrink-0">{sub.shortcut}</span>}
-                  </button>
-                )}
-              </div>
-            );
-          })}
+          {/* Item 4: submenu do terminal em Radix (hover, portal); top-level mantém Custom. */}
+          <DropdownMenuSub open>
+            <DropdownMenuSubTrigger style={{ display: "none" }} />
+            <DropdownMenuSubContent sideOffset={0} alignOffset={0}>
+              <RadixContextMenuItems items={activeSubmenu} onClose={onClose} />
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
         </div>
       )}
     </>
