@@ -704,7 +704,7 @@ async fn start_agent_terminal(
                                     }
                                     offset = next;
                                 }
-                                // T8: no snapshot scraping — terminal:output push only.
+                                // Hook-only state (T8): terminal:output push only, no scraping.
                                 }
                                 _ => break,
                             }
@@ -1118,7 +1118,7 @@ async fn create_split_terminal(
                                     }
                                     offset = next;
                                 }
-                                // T8: no snapshot scraping — terminal:output push only.
+                                // Hook-only state (T8): terminal:output push only, no scraping.
                             }
                             _ => break,
                         }

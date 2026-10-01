@@ -18,8 +18,8 @@
 //!   `insert_state_transition` — the pipeline returns a transition only when
 //!   the mapped state differs from the last emitted one.
 //! * A dead sidecar maps hook sessions to `unknown` on the next tick without
-//!   crashing (health is observed, never panics). Buffer scraping is left
-//!   untouched and coexists until T8.
+//!   crashing (health is observed, never panics). Hook state is the only
+//!   authority — buffer scraping was removed in T8.
 //!
 //! The sidecar transport is a port ([`SidecarTransport`]) so tests inject a
 //! fake; [`StdioSidecarTransport`] is the production stdio adapter speaking
@@ -739,8 +739,8 @@ fn consume_tick_transitions<T: SidecarTransport>(
 }
 
 /// Start the listener + pipeline tick thread. Gated on
-/// `agent_status_hooks_enabled`; every failure path fails open (the scraping
-/// loops keep reporting). Scraping is NOT touched here — coexistence until T8.
+/// `agent_status_hooks_enabled`; every failure path fails open (sessions stay
+/// `unknown`). Hook state is the only authority since T8.
 pub fn maybe_spawn_hook_pipeline(app: tauri::AppHandle) {
     use tauri::Manager;
     let state = app.state::<crate::AppState>();
@@ -793,8 +793,8 @@ pub fn maybe_spawn_hook_pipeline(app: tauri::AppHandle) {
             // dead (transition-only), decays stale hook states via
             // `check_stale_sessions` (same transition-only point), then
             // drains the outbox + spool dirs, all through the fenced,
-            // transition-only `ingest_*` path. Scraping loops are untouched
-            // and coexist until T8.
+            // transition-only `ingest_*` path. Hook state is the only
+            // authority since T8 (scraping removed).
             let delivered = _server.delivered_hooks();
             let spool_dirs = spool_dirs_for(&pipeline, &terminal);
             // Staleness pairs: last persisted transition per known/live
