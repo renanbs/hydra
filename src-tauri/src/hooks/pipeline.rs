@@ -277,8 +277,10 @@ pub trait SidecarTransport {
         body: serde_json::Value,
     ) -> Result<Option<ParsedStatus>, String>;
     fn alive(&mut self) -> bool;
+    /// Supervised respawn attempt. No-op while running; fakes use the
+    /// default no-op. Production overrides with backoff supervision.
+    fn try_respawn(&mut self) {}
 }
-
 /// Production stdio adapter: spawns `node dist/main.js` in `sidecar_dir`,
 /// runs the version handshake, then exchanges one JSON line per hook. A
 /// reader thread feeds result lines into a channel so `send` can time out
@@ -387,23 +389,6 @@ impl StdioSidecarTransport {
         }
     }
 
-    /// Supervised respawn when the backoff elapsed. No-op while running.
-    pub fn try_respawn(&mut self) {
-        if self.child.is_some() {
-            return;
-        }
-        let delay = RESPAWN_BACKOFF
-            .get(self.failures.min(RESPAWN_BACKOFF.len() - 1))
-            .copied()
-            .unwrap_or(Duration::from_secs(5));
-        let ready = self
-            .last_failure
-            .map(|at| at.elapsed() >= delay)
-            .unwrap_or(true);
-        if ready {
-            let _ = self.spawn_child();
-        }
-    }
 }
 
 impl SidecarTransport for StdioSidecarTransport {
@@ -446,6 +431,23 @@ impl SidecarTransport for StdioSidecarTransport {
         match child.try_wait() {
             Ok(None) => true,
             Ok(Some(_)) | Err(_) => false,
+        }
+    }
+
+    fn try_respawn(&mut self) {
+        if self.child.is_some() {
+            return;
+        }
+        let delay = RESPAWN_BACKOFF
+            .get(self.failures.min(RESPAWN_BACKOFF.len() - 1))
+            .copied()
+            .unwrap_or(Duration::from_secs(5));
+        let ready = self
+            .last_failure
+            .map(|at| at.elapsed() >= delay)
+            .unwrap_or(true);
+        if ready {
+            let _ = self.spawn_child();
         }
     }
 }
@@ -718,6 +720,24 @@ fn emit_and_persist(
     );
 }
 
+/// Consume one tick's transitions the way the pipeline thread does:
+/// supervised respawn when the sidecar is dead, then emit+persist each
+/// transition. Extracted so unit tests cover the consume step the loop
+/// must not skip (regression: the loop discarded `tick_once` output,
+/// leaving `emit_and_persist` dead and the sidecar never respawned).
+fn consume_tick_transitions<T: SidecarTransport>(
+    pipeline: &mut HookPipeline<T>,
+    transitions: &[HookTransition],
+    emit_persist: impl Fn(&HookTransition),
+) {
+    if !pipeline.transport_mut().alive() {
+        pipeline.transport_mut().try_respawn();
+    }
+    for transition in transitions {
+        emit_persist(transition);
+    }
+}
+
 /// Start the listener + pipeline tick thread. Gated on
 /// `agent_status_hooks_enabled`; every failure path fails open (the scraping
 /// loops keep reporting). Scraping is NOT touched here — coexistence until T8.
@@ -792,10 +812,13 @@ pub fn maybe_spawn_hook_pipeline(app: tauri::AppHandle) {
                     }
                 }
             }
-            let _transitions =
+            let transitions =
                 pipeline.tick_once(&delivered, &spool_dirs, &stale, |session_id| {
                     terminal.session_alive(session_id)
                 });
+            consume_tick_transitions(&mut pipeline, &transitions, |transition| {
+                emit_and_persist(&app_handle, &db, transition);
+            });
         }
     });
 }
@@ -828,6 +851,7 @@ mod tests {
     struct FakeTransport {
         alive: bool,
         calls: usize,
+        respawns: usize,
         handler:
             Box<dyn FnMut(&str, &str, &serde_json::Value) -> Result<Option<ParsedStatus>, String> + Send>,
     }
@@ -837,6 +861,7 @@ mod tests {
             Self {
                 alive: true,
                 calls: 0,
+                respawns: 0,
                 handler: Box::new(|_pane, _source, body| {
                     let event = body
                         .get("payload")
@@ -893,6 +918,11 @@ mod tests {
 
         fn alive(&mut self) -> bool {
             self.alive
+        }
+
+        fn try_respawn(&mut self) {
+            self.respawns += 1;
+            self.alive = true;
         }
     }
 
@@ -1096,6 +1126,54 @@ mod tests {
         assert_eq!(replayed[0].state, AgentState::Done);
         let _ = std::fs::remove_dir_all(&dir);
     }
+    /// Regression: the loop must consume `tick_once` output — emit+persist
+    /// every transition and attempt a supervised respawn when the sidecar
+    /// is dead. Discarding the vec leaves `emit_and_persist` dead code and
+    /// the sidecar never restarts.
+    #[test]
+    fn tick_transitions_are_consumed_with_respawn() {
+        use std::sync::{Arc, Mutex};
+        let live = live_hash("live-token");
+        let mut pipeline =
+            HookPipeline::new(FakeTransport::canned(), move |pane: &str| live.get(pane).cloned());
+        let delivered = vec![DeliveredHook {
+            source: "claude".to_string(),
+            wire: "raw-json",
+            envelope: envelope("sess-1", Some("live-token"), "UserPromptSubmit"),
+        }];
+        let transitions = pipeline.tick_once(&delivered, &[], &[], |_| true);
+        assert_eq!(transitions.len(), 1);
+        assert_eq!(transitions[0].state, AgentState::Working);
+        let db = crate::db::DatabaseManager::new_in_memory().expect("in-memory db");
+        let persisted: Arc<Mutex<Vec<HookTransition>>> = Arc::new(Mutex::new(Vec::new()));
+        let captured = Arc::clone(&persisted);
+        pipeline.transport_mut().alive = true;
+        consume_tick_transitions(&mut pipeline, &transitions, |transition| {
+            db.insert_state_transition(
+                &transition.session_id,
+                transition.state_str(),
+                transition.started_at as i64,
+            )
+            .expect("persist tick transition");
+            captured.lock().expect("capture").push(transition.clone());
+        });
+        assert_eq!(persisted.lock().expect("capture").len(), 1);
+        assert_eq!(pipeline.transport_mut().respawns, 0);
+        let history = db.get_state_history("sess-1").expect("history reads");
+        assert_eq!(history.len(), 1);
+        assert_eq!(history[0].state, "working");
+        pipeline.transport_mut().alive = true;
+        pipeline
+            .ingest_envelope(&envelope("sess-1", Some("live-token"), "Stop"), "claude")
+            .expect("stop → done");
+        pipeline.transport_mut().alive = false;
+        let dead = pipeline.tick_once(&[], &[], &[], |_| true);
+        assert!(dead.iter().any(|t| t.state == AgentState::Unknown));
+        let before = pipeline.transport_mut().respawns;
+        consume_tick_transitions(&mut pipeline, &dead, |_| {});
+        assert_eq!(pipeline.transport_mut().respawns, before + 1);
+    }
+
 
     /// A `working` session whose hook went silent past the TTL decays on the
     /// tick path (`check_stale_sessions`): PTY alive ⇒ `unknown` transition,
