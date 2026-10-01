@@ -1343,6 +1343,11 @@ pub fn run() {
                     let _ = window.set_icon(image);
                 }
             }
+            // T6 hook→agent:state pipeline: listener outbox + spool drains into
+            // the sidecar, emitting agent:state only on transition at the same
+            // insert_state_transition point. Gated + fail-open inside; the
+            // buffer-scraping loops are untouched and coexist until T8.
+            crate::hooks::pipeline::maybe_spawn_hook_pipeline(app.handle().clone());
             // Herdr-style daemon auto-spawn: if hydra.sock not live, spawn hydra-daemon
             std::thread::spawn(|| {
                 if !daemon_client::daemon_available() {
