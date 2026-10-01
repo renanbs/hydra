@@ -464,51 +464,7 @@ fn read_body(
 
 /// Fresh 256-bit bearer token as 64 lowercase hex chars.
 fn new_hook_token() -> String {
-    random_hex(32)
-}
-
-/// Lowercase hex from the OS RNG (`/dev/urandom`), falling back to a
-/// time/pid/counter xorshift when unavailable. Mirrors
-/// `endpoint::random_hex` (kept private to T4, so duplicated here to keep
-/// the T2 commit to its own paths).
-fn random_hex(nbytes: usize) -> String {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
-    let mut bytes = vec![0u8; nbytes];
-    let filled = std::fs::File::open("/dev/urandom")
-        .and_then(|mut f| {
-            use std::io::Read as _;
-            let mut got = 0;
-            while got < nbytes {
-                let n = f.read(&mut bytes[got..])?;
-                if n == 0 {
-                    break;
-                }
-                got += n;
-            }
-            Ok::<_, std::io::Error>(got)
-        })
-        .unwrap_or(0);
-    if filled < nbytes {
-        static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-        let mut state = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos() as u64)
-            .unwrap_or(0x9e3779b97f4a7c15)
-            .wrapping_add(std::process::id() as u64)
-            .wrapping_add(COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
-        for b in bytes.iter_mut().skip(filled) {
-            state ^= state << 13;
-            state ^= state >> 7;
-            state ^= state << 17;
-            *b = (state >> 56) as u8;
-        }
-    }
-    let mut out = String::with_capacity(nbytes * 2);
-    for b in &bytes {
-        out.push(HEX[(b >> 4) as usize] as char);
-        out.push(HEX[(b & 0xf) as usize] as char);
-    }
-    out
+    super::util::random_hex(32)
 }
 
 #[cfg(test)]
@@ -739,5 +695,27 @@ mod tests {
         assert_eq!(server.truncation_count(), 1);
         assert!(server.delivered_hooks().is_empty());
         server.shutdown();
+    }
+
+    /// T4/T6 contract: once the listener is up, `session_coords` serves the
+    /// published port + token (the scripts dial the listener, not a probed
+    /// port). Retried: sibling tests bind their own listeners concurrently
+    /// and last-start-wins on the global publication.
+    #[test]
+    fn session_coords_take_authoritative_listener_coords() {
+        for attempt in 0..50u32 {
+            let session = format!("t2-authoritative-{}-{attempt}", std::process::id());
+            // Pre-bind fallback first: coords exist before any listener.
+            let before = crate::hooks::endpoint::session_coords(&session);
+            assert!(!before.launch_token.is_empty());
+            let mut server = start_hook_server().expect("hook listener binds");
+            let after = crate::hooks::endpoint::session_coords(&session);
+            let matched = after.port == server.port && after.token == server.token;
+            server.shutdown();
+            if matched {
+                return;
+            }
+        }
+        panic!("session_coords never observed the live listener coords");
     }
 }

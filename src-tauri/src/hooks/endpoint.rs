@@ -14,10 +14,11 @@
 //! --max-time 1.5`); pane/tab/worktree identity mirrors Orca `spawn-env.ts`
 //! (`PANE_KEY = stablePaneKey`, `TAB_ID`/`WORKTREE_ID` per spawn).
 
-use std::collections::HashMap;
-use std::io;
-use std::path::{Path, PathBuf};
-use std::sync::{LazyLock, Mutex};
+use super::util::random_hex;
+ use std::collections::HashMap;
+ use std::io;
+ use std::path::{Path, PathBuf};
+ use std::sync::{LazyLock, Mutex};
 
 /// Hook wire version. Mirrors Orca `ORCA_HOOK_PROTOCOL_VERSION`.
 pub const HOOK_PROTOCOL_VERSION: &str = "1";
@@ -59,24 +60,51 @@ fn coords_cache() -> &'static Mutex<HashMap<String, HookSessionCoords>> {
     &COORDS_CACHE
 }
 
-/// Cached coordinates for `session_id`, generating (port, token, launch
-/// token) on first use. Same session returns identical values; distinct
-/// sessions never share a token pair.
+/// Cached coordinates for `session_id`.
+///
+/// Identity (`session_id`/`tab_id`/`worktree_id`/`launch_token`) is generated
+/// once per session and stable: the same session always returns the same
+/// launch token, and distinct sessions never share one.
+///
+/// `port`/`token` are authoritative from the loopback listener once it is
+/// up: when [`super::server::published_listener`] is present, cached and
+/// fresh coords alike take its port + token (the scripts dial the listener,
+/// so a probed port would point at nothing). Before the listener binds,
+/// coords fall back to a probed loopback port + fresh token so PTY spawn
+/// never blocks on it.
 pub fn session_coords(session_id: &str) -> HookSessionCoords {
-    let mut cache = coords_cache().lock().expect("hook coords cache poisoned");
-    if let Some(coords) = cache.get(session_id) {
-        return coords.clone();
+    // Fail-open: a poisoned cache (a previous holder panicked) still serves
+    // coords — hook stamping must never break session spawn.
+    let mut cache = coords_cache()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    if let Some(cached) = cache.get(session_id).cloned() {
+        let mut coords = cached;
+        // Takeover, not first-write-wins: coords minted pre-bind adopt the
+        // listener's port + token once published.
+        if let Some(published) = super::server::published_listener() {
+            if coords.port != published.port || coords.token != published.token {
+                coords.port = published.port;
+                coords.token = published.token.clone();
+                cache.insert(session_id.to_string(), coords.clone());
+            }
+        }
+        return coords;
     }
     // Opaque identity (D3): no tab:leaf split, paneKey is the session id.
     // TAB_ID/WORKTREE_ID track the session until real tab/worktree identity
     // exists; hook scripts only need them non-empty for the form post.
+    let (port, token) = match super::server::published_listener() {
+        Some(published) => (published.port, published.token),
+        None => (pick_loopback_port(), random_hex(16)),
+    };
     let coords = HookSessionCoords {
         session_id: session_id.to_string(),
         tab_id: session_id.to_string(),
         worktree_id: session_id.to_string(),
         launch_token: new_uuid(),
-        port: pick_loopback_port(),
-        token: random_hex(16),
+        port,
+        token,
         env: HOOK_ENV.to_string(),
         version: HOOK_PROTOCOL_VERSION.to_string(),
         transport: HOOK_TRANSPORT.to_string(),
@@ -84,7 +112,6 @@ pub fn session_coords(session_id: &str) -> HookSessionCoords {
     cache.insert(session_id.to_string(), coords.clone());
     coords
 }
-
 /// PTY child environment for `coords`. `endpoint_path` (when the session
 /// endpoint file was written) becomes `HYDRA_AGENT_HOOK_ENDPOINT`, mirroring
 /// Orca's `ORCA_AGENT_HOOK_ENDPOINT`.
@@ -238,47 +265,6 @@ fn pick_loopback_port() -> u16 {
         .unwrap_or(0)
 }
 
-/// Lowercase hex from the OS RNG (`/dev/urandom`), falling back to a
-/// time/pid/counter xorshift when unavailable.
-fn random_hex(nbytes: usize) -> String {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
-    let mut bytes = vec![0u8; nbytes];
-    let filled = std::fs::File::open("/dev/urandom")
-        .and_then(|mut f| {
-            use std::io::Read;
-            let mut got = 0;
-            while got < nbytes {
-                let n = f.read(&mut bytes[got..])?;
-                if n == 0 {
-                    break;
-                }
-                got += n;
-            }
-            Ok::<_, io::Error>(got)
-        })
-        .unwrap_or(0);
-    if filled < nbytes {
-        static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-        let mut state = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos() as u64)
-            .unwrap_or(0x9e3779b97f4a7c15)
-            .wrapping_add(std::process::id() as u64)
-            .wrapping_add(COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
-        for b in bytes.iter_mut().skip(filled) {
-            state ^= state << 13;
-            state ^= state >> 7;
-            state ^= state << 17;
-            *b = (state >> 56) as u8;
-        }
-    }
-    let mut out = String::with_capacity(nbytes * 2);
-    for b in &bytes {
-        out.push(HEX[(b >> 4) as usize] as char);
-        out.push(HEX[(b & 0xf) as usize] as char);
-    }
-    out
-}
 
 /// `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` from 16 random bytes.
 fn new_uuid() -> String {

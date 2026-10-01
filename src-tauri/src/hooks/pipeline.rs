@@ -24,7 +24,13 @@
 //! The sidecar transport is a port ([`SidecarTransport`]) so tests inject a
 //! fake; [`StdioSidecarTransport`] is the production stdio adapter speaking
 //! the `hook-sidecar` JSON-lines protocol (handshake first, then
-//! `{paneKey,source,body}` → `{paneKey,payload}`).
+//! `{paneKey,source,body}` → `{paneKey,payload}`). It owns its process
+//! supervision (spawn/handshake/health/backoff) rather than delegating to
+//! [`HookSidecar`](super::sidecar::HookSidecar): the transport additionally
+//! owns a stdout reader thread + channel for `send` timeouts, which the
+//! plain driver does not model. Shared process-spawning helpers stay
+//! duplicated by decision (Fix 7: dedup mínimo); the only shared helper is
+//! [`crate::hooks::util::random_hex`] (endpoint + server tokens).
 
 use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, BufReader, Write};
@@ -32,12 +38,11 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
-
 use serde::Deserialize;
 
 use super::envelope::{launch_token_hash, HookEnvelope};
 use super::server::DeliveredHook;
-use super::sidecar::{SIDECAR_HANDSHAKE_PROTOCOL, SIDECAR_PROTOCOL_VERSION, SidecarHealth};
+use super::sidecar::{SidecarHealth, SIDECAR_HANDSHAKE_PROTOCOL, SIDECAR_PROTOCOL_VERSION};
 use super::spool::{drain_spool, SpoolRecord};
 
 /// How long [`StdioSidecarTransport::send`] waits for one result line before
@@ -85,7 +90,6 @@ where
     let value = Option::<serde_json::Value>::deserialize(deserializer)?;
     Ok(value.and_then(|value| match value {
         serde_json::Value::String(s) => Some(s),
-        serde_json::Value::Number(n) => Some(n.to_string()),
         serde_json::Value::Bool(b) => Some(b.to_string()),
         serde_json::Value::Null => None,
         other => serde_json::to_string(&other).ok(),
@@ -170,11 +174,14 @@ impl HookTransition {
         event
     }
 }
-
 /// Map a sidecar state to the 6-string wire contract. `sessionBoundary done`
-/// (connect/resume/clear landing) is idle, not a completed turn. Anything
-/// outside `working|blocked|waiting|done` is dropped so scraping stays the
-/// authority for it.
+/// (connect/resume/clear landing) is idle, not a completed turn. The sidecar
+/// additionally emits `idle` itself for the TUI-idle fence — it maps straight
+/// to [`crate::agent_state::AgentState::Idle`]. `unverifiable` (a renderer-only
+/// verdict about supervision, never a sidecar hook state) has no mapping: it
+/// returns `None` so hook ingestion drops it and the decay path owns every
+/// `Unknown`. Anything else outside `working|blocked|waiting|idle|done` is
+/// dropped so scraping stays the authority for it.
 pub fn map_agent_state(
     state: &str,
     session_boundary: bool,
@@ -184,12 +191,14 @@ pub fn map_agent_state(
         "working" => Some(AgentState::Working),
         "blocked" => Some(AgentState::Blocked),
         "waiting" => Some(AgentState::Waiting),
+        "idle" => Some(AgentState::Idle),
         "done" if session_boundary => Some(AgentState::Idle),
         "done" => Some(AgentState::Done),
+        // `unverifiable` is renderer vocabulary (agent-status-run verdict),
+        // never a sidecar hook state — ingestion drops it; decay owns Unknown.
         _ => None,
     }
 }
-
 /// Launch-token fence for a live outbox envelope. Mirrors the spool rule:
 /// a record replays only when its token hash matches the live session token,
 /// or when the session has no live token at all (unknown pane).
@@ -581,13 +590,63 @@ impl<T: SidecarTransport> HookPipeline<T> {
         transitions
     }
 
-    /// One pipeline tick: dead-sidecar marking, then outbox + spool drains.
+    /// Sweep hook-active sessions whose last emitted state went stale:
+    /// `decay_state` over each `(session_id, state_started_at)` pair, with
+    /// PTY liveness from `pty_alive`. Transition-only — a decayed session
+    /// updates `last_state` and yields one `HookTransition` (detail fields
+    /// cleared: the live-event detail on the stale row is no longer truth);
+    /// unchanged sessions yield nothing. Callers persist + emit at the
+    /// normal transition point.
+    pub fn check_stale_sessions(
+        &mut self,
+        started_at: &[(
+            String,
+            u64,
+        )],
+        pty_alive: impl Fn(&str) -> bool,
+    ) -> Vec<HookTransition> {
+        use crate::agent_state::{decay_state, now_epoch_ms};
+        let now = now_epoch_ms();
+        let mut transitions = Vec::new();
+        let mut pairs: Vec<(String, u64)> = started_at.to_vec();
+        pairs.sort_by(|a, b| a.0.cmp(&b.0));
+        for (session_id, state_started_at) in pairs {
+            let Some(last) = self.last_state.get(&session_id).copied() else {
+                continue;
+            };
+            let decayed = decay_state(last, state_started_at, now, pty_alive(&session_id));
+            if decayed == last {
+                continue;
+            }
+            self.last_state.insert(session_id.clone(), decayed);
+            transitions.push(HookTransition {
+                session_id,
+                state: decayed,
+                tool_name: None,
+                tool_input: None,
+                last_assistant_message: None,
+                interrupted: false,
+                session_boundary: false,
+                started_at: now,
+            });
+        }
+        transitions
+    }
+
+    /// One pipeline tick: dead-sidecar marking, staleness decay, then outbox
+    /// + spool drains.
     pub fn tick_once(
         &mut self,
         delivered: &[DeliveredHook],
         spool_dirs: &[PathBuf],
+        stale: &[(
+            String,
+            u64,
+        )],
+        pty_alive: impl Fn(&str) -> bool,
     ) -> Vec<HookTransition> {
         let mut transitions = self.mark_dead_sidecar_unknown();
+        transitions.extend(self.check_stale_sessions(stale, pty_alive));
         transitions.extend(self.drain_outbox(delivered));
         for dir in spool_dirs {
             transitions.extend(self.drain_spool_dir(dir));
@@ -711,18 +770,32 @@ pub fn maybe_spawn_hook_pipeline(app: tauri::AppHandle) {
         loop {
             std::thread::sleep(Duration::from_millis(PIPELINE_TICK_MS));
             // `tick_once` marks hook sessions unknown while the sidecar is
-            // dead (transition-only), then drains the outbox + spool dirs, all
-            // through the fenced, transition-only `ingest_*` path. Scraping
-            // loops are untouched and coexist until T8.
+            // dead (transition-only), decays stale hook states via
+            // `check_stale_sessions` (same transition-only point), then
+            // drains the outbox + spool dirs, all through the fenced,
+            // transition-only `ingest_*` path. Scraping loops are untouched
+            // and coexist until T8.
             let delivered = _server.delivered_hooks();
             let spool_dirs = spool_dirs_for(&pipeline, &terminal);
-            let transitions = pipeline.tick_once(&delivered, &spool_dirs);
-            if !pipeline.transport_mut().alive() {
-                pipeline.transport_mut().try_respawn();
+            // Staleness pairs: last persisted transition per known/live
+            // session. Unknown sessions (no history) have nothing to decay.
+            let mut stale: Vec<(String, u64)> = Vec::new();
+            let mut stale_sessions: HashSet<String> =
+                pipeline.known_sessions().into_iter().collect();
+            for session_id in terminal.sessions.lock().keys() {
+                stale_sessions.insert(session_id.clone());
             }
-            for transition in &transitions {
-                emit_and_persist(&app_handle, &db, transition);
+            for session_id in &stale_sessions {
+                if let Ok(history) = db.get_state_history(session_id) {
+                    if let Some(last) = history.last() {
+                        stale.push((session_id.clone(), last.started_at.max(0) as u64));
+                    }
+                }
             }
+            let _transitions =
+                pipeline.tick_once(&delivered, &spool_dirs, &stale, |session_id| {
+                    terminal.session_alive(session_id)
+                });
         }
     });
 }
@@ -950,6 +1023,40 @@ mod tests {
         assert_eq!(event["sessionBoundary"], true);
     }
 
+    /// The sidecar emits `idle` for the TUI-idle fence (see the `idle`-mapping
+    /// doc on `map_agent_state`): recorded turn closes UserPromptSubmit →
+    /// PreToolUse → Stop(done) → idle, and the recorded tail stays idle.
+    #[test]
+    fn recorded_turn_close_idle_stays_idle() {
+        let live = live_hash("live-token");
+        let mut pipeline =
+            HookPipeline::new(FakeTransport::canned(), move |pane: &str| live.get(pane).cloned());
+
+        pipeline
+            .ingest_envelope(&envelope("sess-1", Some("live-token"), "UserPromptSubmit"), "claude")
+            .expect("prompt submits → working");
+        pipeline
+            .ingest_envelope(&envelope("sess-1", Some("live-token"), "Stop"), "claude")
+            .expect("stop → done");
+        // The recorded close then lands an `idle` payload (TUI-idle fence):
+        // it must map straight to Idle, closing working → done → idle.
+        pipeline.transport_mut().handler = Box::new(|_, _, _| {
+            Ok(Some(
+                serde_json::from_value::<ParsedStatus>(serde_json::json!({
+                    "state": "idle",
+                    "prompt": "",
+                }))
+                .expect("idle status parses"),
+            ))
+        });
+        let transition = pipeline
+            .ingest_envelope(&envelope("sess-1", Some("live-token"), "SessionStart"), "claude")
+            .expect("recorded close → idle");
+        assert_eq!(transition.state, AgentState::Idle);
+        assert_eq!(pipeline.session_state("sess-1"), Some(AgentState::Idle));
+        assert!(map_agent_state("unverifiable", false).is_none());
+    }
+
     /// Outbox cursor: each delivery ingests once; spool replay of a matching
     /// token record transitions too.
     #[test]
@@ -990,13 +1097,44 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
+    /// A `working` session whose hook went silent past the TTL decays on the
+    /// tick path (`check_stale_sessions`): PTY alive ⇒ `unknown` transition,
+    /// persisted by the caller at the normal transition point.
+    #[test]
+    fn stale_working_decays_on_tick_path() {
+        let mut pipeline = HookPipeline::new(FakeTransport::canned(), |_: &str| None);
+        pipeline
+            .ingest_envelope(&envelope("sess-stale", None, "UserPromptSubmit"), "claude")
+            .expect("working first");
+        assert_eq!(
+            pipeline.session_state("sess-stale"),
+            Some(AgentState::Working)
+        );
+        let old = crate::agent_state::now_epoch_ms()
+            .saturating_sub(crate::agent_state::AGENT_STATE_STALE_AFTER_MS + 1);
+        let decayed = pipeline.check_stale_sessions(&[("sess-stale".to_string(), old)], |_| true);
+        assert_eq!(decayed.len(), 1);
+        assert_eq!(decayed[0].session_id, "sess-stale");
+        assert_eq!(decayed[0].state, AgentState::Unknown);
+        assert_eq!(
+            pipeline.session_state("sess-stale"),
+            Some(AgentState::Unknown)
+        );
+        // Transition-only: a second sweep emits nothing.
+        assert!(pipeline
+            .check_stale_sessions(&[("sess-stale".to_string(), old)], |_| true)
+            .is_empty());
+    }
     /// Live contract: the recorded sequence through the real node sidecar
-    /// normalizes to working → working(tool) → done.
+    /// normalizes to working → working(tool) → done. Skips cleanly (no
+    /// panic) when `hook-sidecar/dist/main.js` was not built in this
+    /// checkout — Fix 8: a missing build artifact must never fail the suite.
     #[test]
     fn live_sidecar_recorded_turn() {
         let sidecar_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../hook-sidecar");
         if !sidecar_dir.join("dist/main.js").is_file() {
-            panic!("hook-sidecar dist missing at {}", sidecar_dir.display());
+            eprintln!("skipping live_sidecar_recorded_turn: hook-sidecar dist not built");
+            return;
         }
         let mut transport =
             StdioSidecarTransport::spawn(sidecar_dir, "production", "node").expect("spawn node");

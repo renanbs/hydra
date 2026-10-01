@@ -376,6 +376,14 @@ impl TerminalManager {
         }
     }
 
+    /// Live-session probe for the hook state decay path: true while the PTY
+    /// session still exists in the manager (the child may already be a
+    /// zombie — `close_session` owns reaping — but a missing entry means the
+    /// session is over and stale `working` decays to `idle`, not `unknown`).
+    pub fn session_alive(&self, session_id: &str) -> bool {
+        self.sessions.lock().contains_key(session_id)
+    }
+
     pub fn list_sessions(&self) -> Vec<String> {
         self.sessions.lock().keys().cloned().collect()
     }

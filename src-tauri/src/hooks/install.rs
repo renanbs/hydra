@@ -339,19 +339,17 @@ fn upsert_codex_trust(content: &str, owned: &[(&str, String)]) -> String {
     out
 }
 
-/// Remove only our `[hooks.state."<key>"]` blocks from config.toml text.
-fn remove_codex_trust(content: &str, script_marker: &str) -> String {
+/// Remove exactly our `[hooks.state."<key>"]` blocks from config.toml text.
+/// Ownership is by exact key: `owned` is the set of trust keys this install
+/// minted (see `codex_trust_key`). A user block whose header merely contains
+/// our hooks.json path as a substring (different key) survives.
+fn remove_codex_trust(content: &str, owned: &std::collections::HashSet<String>) -> String {
     let mut kept = Vec::new();
     let mut lines = content.lines().peekable();
     let mut removed = false;
     while let Some(line) = lines.next() {
         let trimmed = line.trim();
         if trimmed.starts_with("[hooks.state.") && trimmed.ends_with(']') {
-            // Peek the block body: ours iff a trusted_hash line follows
-            // before the next section. We tag ownership by re-deriving:
-            // drop the block only when its header key contains hooks.json
-            // AND the block has no user-only marker… simpler: collect the
-            // block, then decide by key prefix list passed via marker.
             let mut block = vec![line];
             while let Some(next) = lines.peek() {
                 if next.trim_start().starts_with('[') {
@@ -363,7 +361,14 @@ fn remove_codex_trust(content: &str, script_marker: &str) -> String {
                 .strip_prefix("[hooks.state.")
                 .and_then(|rest| rest.strip_suffix(']'))
                 .unwrap_or("");
-            if header_key.contains(script_marker) {
+            // TOML-quoted keys escape `"` and `\`; unescape before the exact
+            // set lookup so owned keys match byte-for-byte after unquoting.
+            let unquoted = header_key
+                .strip_prefix('"')
+                .and_then(|rest| rest.strip_suffix('"'))
+                .map(toml_unescape)
+                .unwrap_or_else(|| header_key.to_string());
+            if owned.contains(&unquoted) {
                 removed = true;
                 continue;
             }
@@ -380,6 +385,24 @@ fn remove_codex_trust(content: &str, script_marker: &str) -> String {
         // Collapse runs of 3+ blank lines left by block removal.
         while out.contains("\n\n\n") {
             out = out.replace("\n\n\n", "\n\n");
+        }
+    }
+    out
+}
+
+/// Unescape a TOML basic-string body (`\"` and `\\` — the only escapes
+/// `toml_escape` emits for trust keys).
+fn toml_unescape(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    let mut chars = value.chars();
+    while let Some(c) = chars.next() {
+        if c == '\\' {
+            match chars.next() {
+                Some(next) => out.push(next),
+                None => out.push('\\'),
+            }
+        } else {
+            out.push(c);
         }
     }
     out
@@ -463,8 +486,14 @@ pub fn remove(home: &Path) -> Result<(), InstallError> {
     }
     let toml_path = codex_home.join("config.toml");
     if let Ok(content) = fs::read_to_string(&toml_path) {
-        let marker = hooks_path.to_string_lossy().replace('\\', "/");
-        let updated = remove_codex_trust(&content, &marker);
+        // Exact owned keys: the trust keys this install would mint for the
+        // current hooks.json path. A relocated hooks.json leaves stale keys
+        // behind rather than risk deleting a user's substring-matching block.
+        let owned: std::collections::HashSet<String> = CODEX_EVENTS
+            .iter()
+            .map(|event| codex_trust_key(&hooks_path, codex_event_label(event)))
+            .collect();
+        let updated = remove_codex_trust(&content, &owned);
         if updated != content {
             fs::write(&toml_path, updated)?;
         }
@@ -477,6 +506,21 @@ pub fn remove(home: &Path) -> Result<(), InstallError> {
             Err(err) if err.kind() == io::ErrorKind::NotFound => {}
             Err(err) => return Err(InstallError::Io(err)),
         }
+    }
+    Ok(())
+}
+
+/// Sync managed hook files with the `agent_status_hooks_enabled` setting.
+/// `true` installs (idempotent merge, user config preserved); `false`
+/// removes only managed entries (user config byte-identical). Best-effort
+/// callers log the error and keep going — hooks must never break settings
+/// save or app boot.
+pub fn sync_enabled(home: &Path, enabled: bool) -> Result<(), InstallError> {
+    if enabled {
+        install_claude(home)?;
+        install_codex(home)?;
+    } else {
+        remove(home)?;
     }
     Ok(())
 }
@@ -568,6 +612,7 @@ mod tests {
         assert_eq!(fs::read_to_string(&settings).unwrap(), before, "idempotent");
     }
 
+    #[test]
     fn claude_remove_leaves_user_config_intact() {
         let home = temp_home("claude-rm");
         let settings = home.join(".claude").join("settings.json");
@@ -588,7 +633,6 @@ mod tests {
                 .unwrap()
                 .keys()
                 .all(|key| key == "Stop"),
-            "only the user event remains"
         );
         assert!(!script_path(&home, CLAUDE_SCRIPT_NAME).exists(), "script removed");
     }
@@ -638,6 +682,44 @@ mod tests {
         assert!(!script_path(&home, CODEX_SCRIPT_NAME).exists(), "script removed");
     }
 
+    /// A user `[hooks.state."…"]` block in the same `config.toml` survives
+    /// our remove: only exact owned keys go, never substring matches.
+    #[test]
+    fn codex_remove_keeps_user_trust_block() {
+        let home = temp_home("codex-trust-user");
+        let toml_path = home.join(".codex").join("config.toml");
+        fs::create_dir_all(toml_path.parent().unwrap()).unwrap();
+        fs::write(&toml_path, "model = \"user-model\"\n").unwrap();
+
+        install_codex(&home).expect("install");
+        // User block whose header merely *contains* our hooks.json path text
+        // as a substring (different key — e.g. a backup path suffix).
+        let hooks_path = home.join(".codex").join("hooks.json");
+        let marker = hooks_path.to_string_lossy().replace('\\', "/");
+        let user_key = format!("{marker}.bak:user_prompt_submit:0:0");
+        let mut with_user = fs::read_to_string(&toml_path).unwrap();
+        with_user.push_str(&format!(
+            "\n[hooks.state.\"{user_key}\"]\nenabled = true\ntrusted_hash = \"sha256-user\"\n"
+        ));
+        fs::write(&toml_path, &with_user).unwrap();
+
+        remove(&home).expect("remove");
+        let after = fs::read_to_string(&toml_path).unwrap();
+        assert!(after.contains("model = \"user-model\""), "user toml survives");
+        assert!(
+            after.contains(&format!("[hooks.state.\"{user_key}\"]")),
+            "user trust block survives, got:\n{after}"
+        );
+        assert!(
+            after.contains("sha256-user"),
+            "user trust hash survives, got:\n{after}"
+        );
+        assert!(
+            !after.contains("hydra-codex-hook"),
+            "managed blocks are gone, got:\n{after}"
+        );
+    }
+
     #[test]
     fn codex_trust_hash_matches_orca_shape() {
         // Spot-check the replicated algorithm: canonical key-sorted identity.
@@ -648,6 +730,60 @@ mod tests {
             hash,
             codex_trusted_hash("session_start", "/h/.hydra/agent-hooks/hydra-codex-hook.sh"),
             "label feeds the hash"
+        );
+    }
+
+    /// Fix 4: the settings toggle syncs managed entries. on → every
+    /// contracted event has a managed entry (user config preserved); off →
+    /// only the user's own config remains.
+    #[test]
+    fn toggle_on_installs_off_removes_only_managed() {
+        let home = temp_home("toggle");
+        let settings = home.join(".claude").join("settings.json");
+        fs::create_dir_all(settings.parent().unwrap()).unwrap();
+        fs::write(
+            &settings,
+            r#"{"model": "opus", "hooks": {"Stop": [{"hooks": [{"type": "command", "command": "echo user"}]}]}}"#,
+        )
+        .unwrap();
+        let codex_toml = home.join(".codex").join("config.toml");
+        fs::create_dir_all(codex_toml.parent().unwrap()).unwrap();
+        fs::write(&codex_toml, "model = \"user-model\"\n").unwrap();
+
+        // Toggle on: managed entries materialize alongside user config.
+        sync_enabled(&home, true).expect("toggle on");
+        let config = read_json(&settings);
+        for (event, _) in CLAUDE_EVENTS {
+            let defs = config["hooks"][*event]
+                .as_array()
+                .unwrap_or_else(|| panic!("event {event} installed"));
+            assert!(
+                defs.iter().any(|def| hook_entry_is_managed(def, CLAUDE_SCRIPT_NAME)),
+                "event {event} has managed entry"
+            );
+        }
+        let codex_hooks = read_json(&home.join(".codex").join("hooks.json"));
+        for event in CODEX_EVENTS {
+            let defs = codex_hooks["hooks"][*event]
+                .as_array()
+                .unwrap_or_else(|| panic!("codex event {event} installed"));
+            assert!(
+                defs.iter().any(|def| hook_entry_is_managed(def, CODEX_SCRIPT_NAME)),
+                "codex event {event} has managed entry"
+            );
+        }
+
+        // Toggle off: only the user's own config remains.
+        sync_enabled(&home, false).expect("toggle off");
+        let config = read_json(&settings);
+        assert_eq!(config["model"], "opus");
+        assert_eq!(config["hooks"]["Stop"][0]["hooks"][0]["command"], "echo user");
+        assert_eq!(config["hooks"]["Stop"].as_array().unwrap().len(), 1);
+        assert!(config["hooks"].as_object().unwrap().keys().all(|key| key == "Stop"));
+        assert_eq!(
+            fs::read_to_string(&codex_toml).unwrap(),
+            "model = \"user-model\"\n",
+            "codex trust restored to user-only"
         );
     }
 }

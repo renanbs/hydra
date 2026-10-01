@@ -778,27 +778,66 @@ async fn get_terminal_snapshot(
     state.terminal.get_snapshot(&session_id)
 }
 
+/// Last hook-emitted `agent:state` for the session with TTL decay applied.
+/// Stale active rows decay via [`agent_state::decay_state`] (live PTY ⇒
+/// `unknown`, dead PTY ⇒ `idle`); a decay persists + emits the transition at
+/// the same `insert_state_transition` point the pipeline uses, so the read
+/// path never serves — or leaves stored — a lie about a silent hook stream.
+fn resolve_agent_state(app_state: &AppState, session_id: &str) -> String {
+    let history = app_state.db.get_state_history(session_id).unwrap_or_default();
+    let Some(last) = history.last() else {
+        return "unknown".to_string();
+    };
+    let pty_alive = app_state.terminal.session_alive(session_id);
+    let current = match last.state.as_str() {
+        "working" => AgentState::Working,
+        "blocked" => AgentState::Blocked,
+        "waiting" => AgentState::Waiting,
+        "done" => AgentState::Done,
+        "idle" => AgentState::Idle,
+        _ => AgentState::Unknown,
+    };
+    let decayed = agent_state::decay_state(
+        current,
+        last.started_at.max(0) as u64,
+        agent_state::now_epoch_ms(),
+        pty_alive,
+    );
+    if decayed == current {
+        return last.state.clone();
+    }
+    let started_at = agent_state::now_epoch_ms() as i64;
+    let _ = app_state.db.insert_state_transition(
+        session_id,
+        decayed.as_str(),
+        started_at,
+    );
+    decayed.as_str().to_string()
+}
+
 /// Hook-fed state probe (T8): returns the last hook-emitted `agent:state`
 /// for the session, or neutral `unknown` when no hook has reported yet.
+/// Stale active rows decay on read (see `resolve_agent_state`).
 /// Never scrapes the buffer and never invents `working`.
 #[tauri::command]
 async fn check_agent_state(session_id: String, state: State<'_, AppState>) -> Result<String, String> {
-    let history = state.db.get_state_history(&session_id).unwrap_or_default();
-    let last = history.last().map(|record| record.state.as_str()).unwrap_or("unknown");
-    Ok(last.to_string())
+    Ok(resolve_agent_state(&state, &session_id))
 }
 
-/// Hook-fed detailed status (T8): the last hook-persisted transition feeds
-/// the detail bag; a session with no hook yet reads as neutral `unknown`
-/// with empty details — never an invented `working`.
+/// Hook-fed detailed status (T8): the decayed hook state feeds the detail
+/// bag — but hook detail (`tool_name`/`tool_input`/`last_assistant_message`)
+/// is event-live only: it rides on the `agent:state` emission and is never
+/// persisted (history rows carry `state` + `started_at` only), so a later
+/// read of the same state returns empty details rather than a stale tool
+/// snapshot. A session with no hook yet reads as neutral `unknown` with
+/// empty details — never an invented `working`.
 #[tauri::command]
 async fn check_agent_detailed_status(
     session_id: String,
     state: State<'_, AppState>,
 ) -> Result<agent_state::AgentDetailedStatus, String> {
-    let history = state.db.get_state_history(&session_id).unwrap_or_default();
-    let last = history.last().map(|record| record.state.as_str()).unwrap_or("unknown");
-    let hook_state = match last {
+    let decayed = resolve_agent_state(&state, &session_id);
+    let hook_state = match decayed.as_str() {
         "working" => AgentState::Working,
         "blocked" => AgentState::Blocked,
         "waiting" => AgentState::Waiting,
@@ -844,6 +883,64 @@ async fn get_session_state_history(
     tokio::task::spawn_blocking(move || db.get_state_history(&session_id))
         .await
         .map_err(|e| e.to_string())?
+}
+
+#[cfg(test)]
+mod hook_read_path_tests {
+    use super::*;
+
+    fn stateful_app_state(session_id: &str, state: &str, started_at: i64) -> AppState {
+        let db = Arc::new(DatabaseManager::new_in_memory().expect("in-memory db"));
+        db.insert_state_transition(session_id, state, started_at)
+            .expect("seed transition");
+        AppState {
+            terminal: Arc::new(TerminalManager::new(Arc::clone(&db))),
+            db,
+            pairing: Arc::new(PairingManager::new()),
+            keep_awake: Arc::new(KeepAwakeManager::new(false)),
+        }
+    }
+
+    fn last_state(app_state: &AppState, session_id: &str) -> String {
+        app_state
+            .db
+            .get_state_history(session_id)
+            .expect("read history")
+            .last()
+            .map(|record| record.state.clone())
+            .unwrap_or_else(|| "unknown".to_string())
+    }
+
+    /// Read path decays: a `working` row older than the TTL with a live PTY
+    /// reads back `unknown` — the read never lies about a silent hook stream.
+    #[test]
+    fn stale_working_with_live_pty_reads_unknown() {
+        let old = agent_state::now_epoch_ms().saturating_sub(
+            agent_state::AGENT_STATE_STALE_AFTER_MS + 1,
+        ) as i64;
+        let app_state = stateful_app_state("sess-decay", "working", old);
+        // Live PTY: a real headless shell owns the session entry.
+        app_state
+            .terminal
+            .start_session_headless("sess-decay", "/bin/sh", vec!["-c".into(), "sleep 30".into()], None)
+            .expect("headless session");
+        let read = resolve_agent_state(&app_state, "sess-decay");
+        assert_eq!(read, "unknown");
+        assert_eq!(last_state(&app_state, "sess-decay"), "unknown");
+        app_state.terminal.close_session("sess-decay");
+    }
+
+    /// Dead PTY + stale `working` reads back `idle` (session is over).
+    #[test]
+    fn stale_working_with_dead_pty_reads_idle() {
+        let old = agent_state::now_epoch_ms().saturating_sub(
+            agent_state::AGENT_STATE_STALE_AFTER_MS + 1,
+        ) as i64;
+        let app_state = stateful_app_state("sess-gone", "working", old);
+        let read = resolve_agent_state(&app_state, "sess-gone");
+        assert_eq!(read, "idle");
+        assert_eq!(last_state(&app_state, "sess-gone"), "idle");
+    }
 }
 
 #[tauri::command]
@@ -892,6 +989,15 @@ async fn save_settings(settings: HydraSettings, app: AppHandle, state: State<'_,
     let after = state.keep_awake.get_status();
     if before.active != after.active || before.enabled != after.enabled {
         let _ = app.emit("keep_awake:status", after.clone());
+    }
+    // Fix 4: the hooks toggle owns managed hook files. Best-effort so a
+    // hook I/O failure never breaks settings save; resolve HOME at call
+    // time so tests with a temp HOME work.
+    if let Ok(home) = std::env::var("HOME") {
+        let home = std::path::PathBuf::from(home);
+        if let Err(err) = crate::hooks::install::sync_enabled(&home, settings.agent_status_hooks_enabled) {
+            eprintln!("[agent-hooks] toggle sync failed: {err}");
+        }
     }
     Ok(())
 }
@@ -1234,6 +1340,23 @@ pub fn run() {
             // insert_state_transition point. Gated + fail-open inside; the
             // pipeline is the sole state authority (buffer scraping removed).
             crate::hooks::pipeline::maybe_spawn_hook_pipeline(app.handle().clone());
+            // Fix 4: idempotent boot migration — a persisted `agent_status_hooks_enabled`
+            // reconciles managed hook files with the setting (e.g. after a crash between
+            // save and sync, or a manual config edit). Best-effort, never blocks boot.
+            if let Ok(home) = std::env::var("HOME") {
+                let enabled = app
+                    .state::<AppState>()
+                    .db
+                    .get_settings()
+                    .map(|s| s.agent_status_hooks_enabled)
+                    .unwrap_or(false);
+                let home = std::path::PathBuf::from(home);
+                std::thread::spawn(move || {
+                    if let Err(err) = crate::hooks::install::sync_enabled(&home, enabled) {
+                        eprintln!("[agent-hooks] boot sync failed: {err}");
+                    }
+                });
+            }
             // Herdr-style daemon auto-spawn: if hydra.sock not live, spawn hydra-daemon
             std::thread::spawn(|| {
                 if !daemon_client::daemon_available() {
