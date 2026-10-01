@@ -122,6 +122,24 @@ impl TerminalManager {
         cmd.env_remove("NO_COLOR");
         cmd.env_remove("NODE_DISABLE_COLORS");
         cmd.env_remove("CI");
+        // Agent-status hook identity (T4): opaque paneKey = session_id (D3),
+        // per-session launch token + loopback coords in the HYDRA_* namespace
+        // (D2). Gated on the hooks flag; best-effort so a hook failure never
+        // breaks session spawn. Endpoint file path lets hook scripts source
+        // coords even when the env is scrubbed (mirrors Orca endpoint-file).
+        let hooks_on = self
+            .db
+            .get_settings()
+            .map(|s| s.agent_status_hooks_enabled)
+            .unwrap_or(false);
+        if hooks_on {
+            let coords = crate::hooks::endpoint::session_coords(session_id);
+            let dir = crate::hooks::endpoint::session_hooks_dir(session_id);
+            let endpoint = crate::hooks::endpoint::write_session_endpoint(&dir, &coords).ok();
+            for (key, value) in crate::hooks::endpoint::build_hook_env(&coords, endpoint.as_deref()) {
+                cmd.env(key, value);
+            }
+        }
         if let Some(c) = &cwd {
             let p = std::path::PathBuf::from(c);
             if p.exists() {
