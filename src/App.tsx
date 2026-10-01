@@ -42,6 +42,7 @@ import {
 } from "./lib/orca-repo-icons";
 import type { CatalogEnvelope } from "./lib/catalog-types";
 import { catalogToSidebarModel } from "./lib/catalog-bridge";
+import { StatusBar } from "./components/status-bar/StatusBar";
 import { CommandPalette } from "./components/CommandPalette";
 import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
@@ -3805,6 +3806,8 @@ export default function App() {
           </>
         )}
       </div>
+      {/* Item 5: barra de status do Orca no fundo da janela (uso/atualização/SSH sem função). */}
+      <StatusBar floatingTerminalOpen={false} />
 
       {/* Custom Context Menu Overlay */}
       {contextMenu && (
