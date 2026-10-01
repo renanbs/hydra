@@ -40,6 +40,8 @@ import {
   loadBundledOrcaRepoIcons,
   repoIconForPath,
 } from "./lib/orca-repo-icons";
+import type { CatalogEnvelope } from "./lib/catalog-types";
+import { catalogToSidebarModel } from "./lib/catalog-bridge";
 import { CommandPalette } from "./components/CommandPalette";
 import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
@@ -1119,14 +1121,15 @@ export default function App() {
       .then(setStatus)
       .catch(console.error);
 
-    invoke<HydraProject[]>("list_projects")
-      .then((projs) => {
-        let sorted = projs;
+    invoke<CatalogEnvelope>("catalog_get")
+      .then((envelope) => {
+        const model = catalogToSidebarModel(envelope);
+        let sorted = model.projects;
         try {
           const saved = localStorage.getItem("hydra:projects_order");
           if (saved) {
             const order: string[] = JSON.parse(saved);
-            sorted = [...projs].sort((a, b) => {
+            sorted = [...model.projects].sort((a, b) => {
               const idxA = order.indexOf(a.id);
               const idxB = order.indexOf(b.id);
               if (idxA === -1 && idxB === -1) return 0;
@@ -1137,6 +1140,8 @@ export default function App() {
           }
         } catch {}
         setProjects(sorted);
+        setProjectGroups(model.projectGroups);
+        setProjectGroupMap(model.projectGroupMap);
         if (sorted.length > 0) {
           setActiveProject(sorted[0]);
           setActiveWorktreePath(sorted[0].path);
@@ -1149,13 +1154,14 @@ export default function App() {
       .catch(console.error);
 
     const handleRefreshProjects = () => {
-      invoke<HydraProject[]>("list_projects").then((projs) => {
-        let sorted = projs;
+      invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
+        const model = catalogToSidebarModel(envelope);
+        let sorted = model.projects;
         try {
           const saved = localStorage.getItem("hydra:projects_order");
           if (saved) {
             const order: string[] = JSON.parse(saved);
-            sorted = [...projs].sort((a,b) => {
+            sorted = [...model.projects].sort((a,b) => {
               const idxA = order.indexOf(a.id);
               const idxB = order.indexOf(b.id);
               if (idxA === -1 && idxB === -1) return 0;
@@ -1166,6 +1172,8 @@ export default function App() {
           }
         } catch {}
         setProjects(sorted);
+        setProjectGroups(model.projectGroups);
+        setProjectGroupMap(model.projectGroupMap);
         refreshAllWorktrees(sorted);
       }).catch(console.error);
     };
@@ -1613,13 +1621,16 @@ export default function App() {
   }, [handleSelectProject]);
 
   const handleRemoveProject = (proj: HydraProject) => {
-    invoke("remove_project", { path: proj.path })
+    invoke("catalog_remove_repo", { path: proj.path })
       .then(() => {
-        invoke<HydraProject[]>("list_projects").then((updated) => {
-          setProjects(updated);
+        invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
+          const model = catalogToSidebarModel(envelope);
+          setProjects(model.projects);
+          setProjectGroups(model.projectGroups);
+          setProjectGroupMap(model.projectGroupMap);
           if (activeProject?.path === proj.path) {
-            if (updated.length > 0) {
-              handleSelectProject(updated[0]);
+            if (model.projects.length > 0) {
+              handleSelectProject(model.projects[0]);
             } else {
               setActiveProject(null);
               setSessions([]);
@@ -3904,17 +3915,20 @@ export default function App() {
         isOpen={isAddRepoOpen}
         onClose={() => setIsAddRepoOpen(false)}
         onProjectAdded={() => {
-          invoke<HydraProject[]>("list_projects").then((projs) => {
-            setProjects(projs);
-            if (projs.length > 0) {
-              handleSelectProject(projs[0]);
+          invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
+            const model = catalogToSidebarModel(envelope);
+            setProjects(model.projects);
+            setProjectGroups(model.projectGroups);
+            setProjectGroupMap(model.projectGroupMap);
+            if (model.projects.length > 0) {
+              handleSelectProject(model.projects[0]);
               if (tabsRef.current.length === 0) {
                 const tabId = `tab_${Date.now().toString().slice(-4)}`;
                 const initialTab: TabItem = {
                   id: tabId,
-                  title: `${projs[0].name} (main)`,
+                  title: `${model.projects[0].name} (main)`,
                   type: "terminal",
-                  cwd: projs[0].path,
+                  cwd: model.projects[0].path,
                 };
                 setTabs([initialTab]);
                 setActiveTabId(tabId);

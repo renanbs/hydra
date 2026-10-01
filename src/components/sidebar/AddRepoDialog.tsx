@@ -57,7 +57,7 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
       if (selected && typeof selected === "string") {
         setIsSubmitting(true);
         setError(null);
-        await invoke("register_existing_project", { path: selected });
+        await invoke("catalog_add_folder", { path: selected });
         setIsSubmitting(false);
         onProjectAdded();
         handleClose();
