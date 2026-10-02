@@ -1959,9 +1959,9 @@ export default function App() {
     }
   };
 
-  const handleNewTerminalTab = useCallback((shell?: string) => {
+  const handleNewTerminalTab = useCallback((shell?: string, cwdOverride?: string) => {
     const sh = shell || resolveDefaultShell();
-    const currentCwd = activeWorktreePathRef.current ?? activeProject?.path ?? "";
+    const currentCwd = cwdOverride ?? activeWorktreePathRef.current ?? activeProject?.path ?? "";
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const tabId = `tab_${sessionId}`;
     const terminalCount = tabsRef.current.filter((t) => t.type === "terminal").length;
@@ -1980,6 +1980,38 @@ export default function App() {
     setActiveTabId(tabId);
   }, [hydraSettings, activeProject]);
   const handleNewTab = () => handleNewTerminalTab();
+
+  /** Orca parity: single click on a folder workspace ACTIVATES it and guarantees a
+   * terminal (`use-worktree-card-activation-actions.ts:79-88` →
+   * `activateWorktreeFromSidebar`). No session is invented when one already exists. */
+  const handleActivateFolderWorkspace = useCallback(
+    (folderPath: string) => {
+      setActiveWorktreePath(folderPath);
+      const existing = tabsRef.current.find((t) => t.cwd === folderPath);
+      if (existing) {
+        setActiveTabId(existing.id);
+        const session = sessions.find((s) => s.project_path === folderPath);
+        if (session) {
+          setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === session.id })));
+        }
+        return;
+      }
+      handleNewTerminalTab(undefined, folderPath);
+    },
+    [handleNewTerminalTab, sessions]
+  );
+
+  /** Terminal tabs still mounted, i.e. the workspaces with a live PTY — Orca's
+   * `ptyIdsByTabId` equivalent for the folder-row status dot. */
+  const liveWorkspacePaths = useMemo(
+    () =>
+      new Set(
+        tabs
+          .filter((t) => t.type === "terminal" && Boolean(t.cwd))
+          .map((t) => t.cwd as string)
+      ),
+    [tabs]
+  );
 
   const handleLaunchAgent = (agent: AvailableAgent) => {
     const currentWorkspacePath = activeWorktreePathRef.current || activeProject?.path || "";
@@ -3607,6 +3639,8 @@ export default function App() {
                 projectGroupMap={projectGroupMap}
                 projectGroups={projectGroups}
                 folderWorkspaces={folderWorkspaces}
+                liveWorkspacePaths={liveWorkspacePaths}
+                onActivateFolderWorkspace={handleActivateFolderWorkspace}
                 initialSidebarBody={initialSidebarPrefs?.sidebarBody}
                 initialCollapsedProjects={initialSidebarPrefs?.collapsedProjects}
                 initialCollapsedGroups={initialSidebarPrefs?.collapsedGroups}

@@ -191,6 +191,14 @@ async fn rename_path_cmd(oldPath: String, newPath: String) -> Result<(), String>
 async fn delete_path_cmd(path: String) -> Result<(), String> {
     tokio::task::spawn_blocking(move || delete_path(&path)).await.map_err(|e| e.to_string())?
 }
+/// Folder-workspace path health (`FolderPathStatusIndicator` needs it): Orca asks the
+/// host whether the folder still exists; Hydra had no probe at all.
+#[tauri::command]
+async fn path_exists(path: String) -> bool {
+    tokio::task::spawn_blocking(move || std::path::Path::new(&path).is_dir())
+        .await
+        .unwrap_or(false)
+}
 #[tauri::command]
 async fn get_branch_commits_cmd(repoPath: String, baseRef: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
     tokio::task::spawn_blocking(move || get_branch_commits(&repoPath, &baseRef, limit)).await.map_err(|e| e.to_string())?
@@ -1388,6 +1396,7 @@ pub fn run() {
             create_folder_cmd,
             rename_path_cmd,
             delete_path_cmd,
+            path_exists,
             get_branch_commits_cmd,
             git_push_cmd,
             git_pull_cmd,
