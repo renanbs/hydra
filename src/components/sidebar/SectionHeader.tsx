@@ -101,7 +101,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       aria-expanded={!isCollapsed}
       aria-label={`Project Group ${group.name}`}
       className={cn(
-        "group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
+        "group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
         isDropTarget && "bg-worktree-sidebar-accent ring-1 ring-worktree-sidebar-ring/40",
         className
       )}
@@ -123,7 +123,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       <div className="flex min-w-0 flex-1 items-center gap-1.5 self-stretch">
         <div className="flex size-4 shrink-0 items-center justify-center rounded-[4px] text-foreground">
           {ACTIVE_SHELL_FACE === "hydra" ? (
-            <FolderTree data-hydra-repo-icon="group" className="size-3.5 shrink-0" />
+            <FolderTree className="size-3 shrink-0" />
           ) : (
             <FolderTree className="size-3 shrink-0" />
           )}
@@ -131,7 +131,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
 
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1.5">
-            <div className="min-w-0 truncate text-[13px] font-semibold leading-none tracking-tight">
+            <div className="min-w-0 truncate text-[13px] font-semibold leading-none">
               {group.name}
             </div>
 
@@ -142,30 +142,30 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
               />
             )}
 
-            {typeof count === "number" && count > 0 && (
-              <span className="inline-flex items-center justify-center rounded-full bg-worktree-sidebar-foreground/10 px-1.5 text-[9px] font-medium text-worktree-sidebar-foreground/60 tabular-nums">
-                {count}
-              </span>
-            )}
+            {/* Orca never paints a count badge on the group header; `count` only
+                arms the collapse chevron (SectionHeader.tsx:176-178 upstream). */}
           </div>
         </div>
       </div>
 
       <ProjectHeaderActions>
-        {/* Collapse affordance first in actions, exact Orca layout */}
-        <div
-          className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground cursor-pointer"
-          data-repo-header-collapse-affordance=""
-          aria-hidden
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleCollapse();
-          }}
-        >
-          <ChevronDown
-            className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")}
-          />
-        </div>
+        {/* Collapse affordance first in actions, exact Orca layout; Orca arms it
+            only when the header has rows (`count > 0`, SectionHeader.tsx:176-178). */}
+        {typeof count === "number" && count > 0 && (
+          <div
+            className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground cursor-pointer"
+            data-repo-header-collapse-affordance=""
+            aria-hidden
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCollapse();
+            }}
+          >
+            <ChevronDown
+              className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")}
+            />
+          </div>
+        )}
 
         {onContextMenu && (
           <button
@@ -240,7 +240,7 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
   return (
     <div
       className={cn(
-        "group relative rounded-lg transition-colors overflow-hidden",
+        "group relative transition-colors overflow-hidden",
         isDragged && "opacity-30",
         className
       )}
@@ -309,27 +309,25 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
                 {project.displayName || project.name}
               </div>
 
-              {typeof count === "number" && count > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-worktree-sidebar-foreground/10 px-1.5 py-0.2 text-[10px] font-medium text-worktree-sidebar-foreground/60 tabular-nums">
-                  {count}
-                </span>
-              )}
+              {/* No count badge on repo headers either — Orca parity. */}
             </div>
           </div>
         </div>
 
         <ProjectHeaderActions>
-          {/* Collapse affordance first in actions */}
-          <div
-            className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground cursor-pointer"
-            data-repo-header-collapse-affordance=""
-            aria-hidden
-            onClick={handleToggleOnly}
-          >
-            <ChevronDown
-              className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")}
-            />
-          </div>
+          {/* Collapse affordance first in actions; armed only with rows (Orca parity). */}
+          {typeof count === "number" && count > 0 && (
+            <div
+              className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground cursor-pointer"
+              data-repo-header-collapse-affordance=""
+              aria-hidden
+              onClick={handleToggleOnly}
+            >
+              <ChevronDown
+                className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")}
+              />
+            </div>
+          )}
 
           {onContextMenu && (
             <button
