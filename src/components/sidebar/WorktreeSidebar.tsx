@@ -176,8 +176,11 @@ export function WorktreeSidebar({
   }, []);
 
   const getWorktreesForProject = useCallback((proj: HydraProject): GitWorktreeInfo[] => {
-    if (worktreesByProject && worktreesByProject[proj.path]) {
-      return worktreesByProject[proj.path];
+    // Scan vazio ([]) não é cache-hit: cai no fallback is_git abaixo em vez de
+    // esvaziar o projeto (paridade Orca placeholderRepoIds).
+    const cached = worktreesByProject?.[proj.path];
+    if (cached && cached.length > 0) {
+      return cached;
     }
     if (proj.path === activeProject?.path && gitWorktrees && gitWorktrees.length > 0) {
       return gitWorktrees;

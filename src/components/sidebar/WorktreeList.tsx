@@ -276,7 +276,7 @@ export function WorktreeList({
 
           {/* Expanded Worktrees List */}
           {!isCollapsed && (
-            <div className="space-y-0.5 mt-0.5 ml-1">
+            <div className="space-y-0.5">
               {worktrees.length > 0 ? (
                 worktrees.map((wt) => {
                   const wtSessions = sessions.filter(
@@ -400,21 +400,7 @@ export function WorktreeList({
         const isGroupDropTarget = groupDropTargetId === group.id;
 
         nodes.push(
-          <div
-            key={`group-${group.id}`}
-            className={`space-y-1 rounded-lg border border-dashed transition-colors p-1 ${
-              isGroupDropTarget
-                ? "border-emerald-500/80 bg-emerald-500/10"
-                : "border-worktree-sidebar-border/50 bg-worktree-sidebar-foreground/[0.02]"
-            }`}
-            onDragOver={
-              onGroupDragOver ? (e) => onGroupDragOver(e, group.id) : undefined
-            }
-            onDragLeave={
-              onGroupDragLeave ? (e) => onGroupDragLeave(e, group.id) : undefined
-            }
-            onDrop={onGroupDrop ? (e) => onGroupDrop(e, group.id) : undefined}
-          >
+          <React.Fragment key={`group-${group.id}`}>
             {/* Group Header via SectionHeader */}
             <SectionHeader
               variant="group"
@@ -428,20 +414,30 @@ export function WorktreeList({
               isDropTarget={isGroupDropTarget}
             />
 
-            {/* Group Projects + folder-workspace rows (Orca folder-workspace-lanes parity) */}
+            {/* Group folder-workspace rows as WorktreeCards (Orca folder-row parity) */}
+            {!isGroupCollapsed &&
+              (folderWorkspaces ?? [])
+                .filter((w) => w.projectGroupId === group.id)
+                .map((w) => (
+                  <WorktreeCard
+                    key={`folder-ws-${w.id}`}
+                    worktree={{
+                      path: w.folderPath,
+                      head_commit: "",
+                      branch: "",
+                      display_name: w.name,
+                      is_bare: false,
+                      is_locked: false,
+                    }}
+                    isActive={activeWorktreePath === w.folderPath}
+                    isCurrentWorktree={activeWorktreePath === w.folderPath}
+                    flushSurface
+                    onSelect={() => onSelectProject({ id: `folder-${w.id}`, name: w.name, path: w.folderPath, is_git: false, current_branch: "" } as HydraProject)}
+                  />
+                ))}
+            {/* Group Projects (Orca flat: header + folder rows + repos, no wrapper) */}
             {!isGroupCollapsed && (
-              <div className="space-y-1 pl-1">
-                {(folderWorkspaces ?? [])
-                  .filter((w) => w.projectGroupId === group.id)
-                  .map((w) => (
-                    <div
-                      key={`folder-ws-${w.id}`}
-                      className="px-2 py-1 text-[10px] font-mono text-worktree-sidebar-foreground/50 truncate"
-                      title={w.folderPath}
-                    >
-                      {w.name}
-                    </div>
-                  ))}
+              <div className="space-y-1">
                 {groupProjects.length > 0 ? (
                   groupProjects.map((p) => renderProjectNode(p, true))
                 ) : (
@@ -453,7 +449,7 @@ export function WorktreeList({
                 )}
               </div>
             )}
-          </div>
+          </React.Fragment>
         );
       }
     }
