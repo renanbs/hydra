@@ -1,12 +1,13 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Reference: src/renderer/src/components/sidebar/smart-attention.ts (resolveAttention).
 //
-// Orca resolves attention per *pane*, merging fresh hook entries with a title heuristic.
-// Hydra's split is different: the Herdr engine (PR-5/PR-6) owns detection AND decay — it
+// T8 hook-fed: the hook pipeline (Rust `hooks/pipeline.rs`) owns state AND decay — it
 // pushes the final six-state string per session (`agent:state`), already aged out by
-// detect_with_decay. So the frontend resolves attention per session from the state record
-// alone, and no freshness TTL is re-applied here: the daemon is the authority, and
-// re-deriving staleness client-side would let the two clocks disagree about what is stale.
+// `decay_state` (30min hook TTL, Orca parity). So the frontend resolves attention per
+// session from the state record alone, and no freshness TTL is re-applied here: the hook
+// stream is the authority, and re-deriving staleness client-side would let the two clocks
+// disagree about what is stale. A session with no hook yet reads `unknown` (neutral) —
+// no `working` is ever invented client-side.
 
 /**
  * Ordinal class for the "agent-activity" (Orca "smart") sort. Lower = more attention-demanding.
@@ -30,7 +31,7 @@ export type SmartClass = 1 | 2 | 3 | 4 | 5
 
 /** One session's contribution to an attention resolution. Pure data. */
 export type SessionAttentionInput = {
-  /** Herdr's six-state wire string (`agent:state` contract from PR-5/PR-6). */
+  /** Hook-fed six-state wire string (`agent:state` contract). `unknown` with no hook yet is neutral. */
   state: string;
   /** Epoch ms the current state began (Rust `state_started_at`). Absent on records created before the field existed. */
   stateStartedAt?: number;

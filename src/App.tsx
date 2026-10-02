@@ -1437,7 +1437,7 @@ export default function App() {
     let cancelled = false;
     const setup = async () => {
       try {
-        const un = await listen<{ session_id?: string; sessionId?: string; state: string; state_started_at?: number }>("agent:state", (event) => {
+        const un = await listen<{ session_id?: string; sessionId?: string; state: string; state_started_at?: number; tool_name?: string; toolName?: string; tool_input?: string; toolInput?: string; interrupted?: boolean; session_boundary?: boolean; sessionBoundary?: boolean; source?: string }>("agent:state", (event) => {
           const payload = event.payload as unknown as Record<string, unknown>;
           const sid = (payload.sessionId as string) ?? (payload.session_id as string) ?? (payload.id as string);
           const state = payload.state as string;
@@ -1449,8 +1449,8 @@ export default function App() {
             const target = prev.find((s) => s.id === sid);
             if (!target) return prev;
             if (target.state === state) return prev;
-            const toolName = typeof payload.tool_name === "string" ? payload.tool_name : undefined;
-            const toolInput = typeof payload.tool_input === "string" ? payload.tool_input : undefined;
+            const toolName = typeof payload.tool_name === "string" ? payload.tool_name : typeof payload.toolName === "string" ? payload.toolName : undefined;
+            const toolInput = typeof payload.tool_input === "string" ? payload.tool_input : typeof payload.toolInput === "string" ? payload.toolInput : undefined;
             const lastMsg = typeof payload.last_assistant_message === "string" ? payload.last_assistant_message : undefined;
             const subagents = Array.isArray(payload.subagents) ? (payload.subagents as WorktreeSession["subagents"]) : undefined;
 

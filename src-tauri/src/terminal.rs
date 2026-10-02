@@ -8,8 +8,6 @@ use std::io::{Read, Write};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 
-use crate::agent_state::{detect_with_decay, now_epoch_ms, AgentState};
-
 pub struct TerminalSession {
     pub parser: Arc<Mutex<vt100::Parser>>,
     pub writer: Arc<Mutex<Box<dyn Write + Send>>>,
@@ -122,6 +120,24 @@ impl TerminalManager {
         cmd.env_remove("NO_COLOR");
         cmd.env_remove("NODE_DISABLE_COLORS");
         cmd.env_remove("CI");
+        // Agent-status hook identity (T4): opaque paneKey = session_id (D3),
+        // per-session launch token + loopback coords in the HYDRA_* namespace
+        // (D2). Gated on the hooks flag; best-effort so a hook failure never
+        // breaks session spawn. Endpoint file path lets hook scripts source
+        // coords even when the env is scrubbed (mirrors Orca endpoint-file).
+        let hooks_on = self
+            .db
+            .get_settings()
+            .map(|s| s.agent_status_hooks_enabled)
+            .unwrap_or(false);
+        if hooks_on {
+            let coords = crate::hooks::endpoint::session_coords(session_id);
+            let dir = crate::hooks::endpoint::session_hooks_dir(session_id);
+            let endpoint = crate::hooks::endpoint::write_session_endpoint(&dir, &coords).ok();
+            for (key, value) in crate::hooks::endpoint::build_hook_env(&coords, endpoint.as_deref()) {
+                cmd.env(key, value);
+            }
+        }
         if let Some(c) = &cwd {
             let p = std::path::PathBuf::from(c);
             if p.exists() {
@@ -158,12 +174,10 @@ impl TerminalManager {
         let scrollback_cap = db_settings.as_ref().map(|s| std::cmp::max(2 * 1024 * 1024, s.terminal_scrollback_rows as usize * 120)).unwrap_or(2 * 1024 * 1024);
         let reader_thread = std::thread::spawn(move || {
             let mut buf = [0u8; 4096];
-            // PR-6 freshness tracking (per session): the active state and the
-            // epoch ms it started at. state_started_at is initialized at spawn
-            // and reset on every transition, so the TTL measures how long the
-            // CURRENT state has been asserting itself without fresh evidence.
-            let mut last_state: AgentState = AgentState::Unknown;
-            let mut state_started_at = crate::agent_state::now_epoch_ms();
+            // T8 hook-fed: the reader loop owns vt100 + terminal:output push only.
+            // Agent state comes from the hook pipeline (hooks/pipeline.rs), which
+            // emits agent:state on transition — never from buffer scraping, and
+            // never invented here. A session with no hook stays neutral.
             while let Ok(n) = reader.read(&mut buf) {
                 if n == 0 {
                     break;
@@ -194,40 +208,9 @@ impl TerminalManager {
                 let do_emit_terminal = should_emit && !emit_chunk.is_empty();
                 // --- PTY shadow buffer (vt100) always processes emit_chunk when non-empty ---
                 // Zero DB queries per chunk, zero allocations beyond vt100 parser (AGENTS.md discipline).
-                // State detection runs after vt100 process and only emits on transition (push <500ms).
                 if !emit_chunk.is_empty() {
-                    let now = now_epoch_ms();
-                    let new_state = {
-                        let mut p = parser_clone.lock();
-                        p.process(emit_chunk);
-                        let contents = p.screen().contents();
-                        // PTY reader loop: state detection ONLY. No SQLite here —
-                        // persistence of transitions happens in the lib.rs poll
-                        // path (AGENTS.md discipline: zero DB in the reader loop).
-                        // pty_alive=true: this loop only runs while the PTY is open.
-                        detect_with_decay(&contents, last_state, state_started_at, now, true).state
-                    };
-                    if new_state != last_state {
-                        if let Some(app_handle) = &app {
-                            #[derive(Serialize, Clone)]
-                            struct AgentStatePayload {
-                                session_id: String,
-                                #[serde(rename = "sessionId")]
-                                session_id_camel: String,
-                                state: String,
-                                state_started_at: u64,
-                            }
-                            let payload = AgentStatePayload {
-                                session_id: s_id.clone(),
-                                session_id_camel: s_id.clone(),
-                                state: new_state.as_str().to_string(),
-                                state_started_at: now,
-                            };
-                            let _ = app_handle.emit("agent:state", payload);
-                        }
-                        last_state = new_state;
-                        state_started_at = now;
-                    }
+                    let mut p = parser_clone.lock();
+                    p.process(emit_chunk);
                 }
                 if do_emit_terminal {
                     // Keep raw output buffer for poll fallback (Orca backlogCapChars)
@@ -244,7 +227,7 @@ impl TerminalManager {
                             win.base += drain;
                         }
                     }
-                    if let Some(ref app) = app {
+                    if let Some(app) = &app {
                         #[derive(Serialize, Clone)]
                         struct OutputPayload {
                             session_id: String,
@@ -391,6 +374,14 @@ impl TerminalManager {
         } else {
             Err(format!("No active terminal session for ID '{session_id}'"))
         }
+    }
+
+    /// Live-session probe for the hook state decay path: true while the PTY
+    /// session still exists in the manager (the child may already be a
+    /// zombie — `close_session` owns reaping — but a missing entry means the
+    /// session is over and stale `working` decays to `idle`, not `unknown`).
+    pub fn session_alive(&self, session_id: &str) -> bool {
+        self.sessions.lock().contains_key(session_id)
     }
 
     pub fn list_sessions(&self) -> Vec<String> {

@@ -44,6 +44,10 @@ notify-debouncer-mini = "0.4"
 ctrlc = { version = "3", features = ["termination"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+base64 = "0.22"
+sha2 = "0.10"
+hex = "0.4"
+form_urlencoded = "1"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

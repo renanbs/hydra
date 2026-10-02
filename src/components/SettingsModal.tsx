@@ -588,7 +588,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
 
                   {/* Status Hooks */}
                   <section className="rounded-xl border bg-card p-4">
-                    <SettingsSwitchRow label="Agent Status Hooks" description="Allows Hydra to install shell hooks that report agent status for Herdr state detection (working/blocked/idle)." checked={(settings as any).agent_status_hooks_enabled !== false} onChange={()=>setSettingsLive({ ...settings, agent_status_hooks_enabled: (settings as any).agent_status_hooks_enabled === false } as any)} />
+                    <SettingsSwitchRow label="Agent Status Hooks" description="Allows Hydra to install shell hooks that report agent status for Herdr state detection (working/blocked/idle). Opt-in: off unless enabled." checked={settings.agent_status_hooks_enabled === true} onChange={()=>setSettingsLive({ ...settings, agent_status_hooks_enabled: settings.agent_status_hooks_enabled !== true })} />
                   </section>
 
                   {/* Generated Tab Titles */}

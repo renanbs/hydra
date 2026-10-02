@@ -448,7 +448,7 @@ pub struct HydraSettings {
     pub default_tui_agent: Option<String>,
     #[serde(default)]
     pub disabled_tui_agents: Vec<String>,
-    #[serde(default = "default_true")]
+    #[serde(default = "default_false")]
     pub agent_status_hooks_enabled: bool,
     #[serde(default = "default_false")]
     pub tab_auto_generate_title: bool,
@@ -573,7 +573,7 @@ impl Default for HydraSettings {
             terminal_default_shell: String::new(),
             default_tui_agent: None,
             disabled_tui_agents: vec![],
-            agent_status_hooks_enabled: true,
+            agent_status_hooks_enabled: false,
             tab_auto_generate_title: false,
             keep_computer_awake_while_agents_run: false,
             agent_permission_mode: default_agent_perm(),
