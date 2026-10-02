@@ -83,6 +83,7 @@ export interface WorktreeListProps {
   projectGroupMap?: Record<string, string>;
   folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
   liveWorkspacePaths?: ReadonlySet<string>;
+  missingFolderPaths?: ReadonlySet<string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
   collapsedProjects: Set<string>;
   collapsedGroups: Set<string>;
@@ -141,6 +142,7 @@ export function WorktreeList({
   projectGroupMap = {},
   folderWorkspaces = [],
   liveWorkspacePaths,
+  missingFolderPaths,
   onActivateFolderWorkspace,
   collapsedProjects,
   collapsedGroups,
@@ -457,6 +459,7 @@ export function WorktreeList({
                       sessions: sessions.filter((s) => s.project_path === w.folderPath),
                       hasLiveTerminal: (liveWorkspacePaths ?? new Set<string>()).has(w.folderPath),
                     })}
+                    pathMissing={(missingFolderPaths ?? new Set<string>()).has(w.folderPath)}
                     isActive={activeWorktreePath === w.folderPath}
                     onActivate={() => onActivateFolderWorkspace?.(w.folderPath)}
                   />

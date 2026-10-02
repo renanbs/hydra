@@ -170,6 +170,8 @@ export interface WorktreeSidebarProps {
   folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
   /** Workspace paths with a mounted terminal tab (Orca's live-PTY signal for the status dot). */
   liveWorkspacePaths?: ReadonlySet<string>;
+  /** Folder paths the host reports as gone; Orca badges them with FolderX. */
+  missingFolderPaths?: ReadonlySet<string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
   compactCards?: boolean;
   onSelectNextSession?: (direction: "up" | "down") => void;

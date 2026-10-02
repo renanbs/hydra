@@ -83,6 +83,7 @@ export function WorktreeSidebar({
   projectGroups = [],
   folderWorkspaces = [],
   liveWorkspacePaths,
+  missingFolderPaths,
   onActivateFolderWorkspace,
   compactCards = false,
   onSelectNextSession,
@@ -694,6 +695,7 @@ export function WorktreeSidebar({
               projectGroupMap={projectGroupMap}
               folderWorkspaces={folderWorkspaces}
               liveWorkspacePaths={liveWorkspacePaths}
+              missingFolderPaths={missingFolderPaths}
               onActivateFolderWorkspace={onActivateFolderWorkspace}
               collapsedProjects={collapsedProjects}
               collapsedGroups={collapsedGroups}

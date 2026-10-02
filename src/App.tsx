@@ -2013,6 +2013,29 @@ export default function App() {
     [tabs]
   );
 
+  /** Folder workspaces whose directory is gone: Orca badges those with FolderX
+   * (`FolderPathStatusIndicator`); the host probe is `path_exists`. */
+  const [missingFolderPaths, setMissingFolderPaths] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (folderWorkspaces.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      folderWorkspaces.map((w) =>
+        invoke<boolean>("path_exists", { path: w.folderPath })
+          .then((exists) => ({ path: w.folderPath, exists }))
+          .catch(() => ({ path: w.folderPath, exists: true }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      setMissingFolderPaths(
+        new Set(results.filter((r) => !r.exists).map((r) => r.path))
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [folderWorkspaces]);
+
   const handleLaunchAgent = (agent: AvailableAgent) => {
     const currentWorkspacePath = activeWorktreePathRef.current || activeProject?.path || "";
     const sessionId = `sess_${agent.id}_${Date.now().toString().slice(-4)}`;
@@ -3640,6 +3663,7 @@ export default function App() {
                 projectGroups={projectGroups}
                 folderWorkspaces={folderWorkspaces}
                 liveWorkspacePaths={liveWorkspacePaths}
+                missingFolderPaths={missingFolderPaths}
                 onActivateFolderWorkspace={handleActivateFolderWorkspace}
                 initialSidebarBody={initialSidebarPrefs?.sidebarBody}
                 initialCollapsedProjects={initialSidebarPrefs?.collapsedProjects}
