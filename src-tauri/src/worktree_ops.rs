@@ -574,6 +574,18 @@ fn list_git_worktrees_with_context(
                     .and_then(|vd| vd.external.as_deref())
                     .unwrap_or("hide");
 
+                // Orca parity: a worktree inside a known workspace layout (global
+                // workspaceDir / its history) is visible even when the repo also has a
+                // configured or implicit `.worktrees` base. Measuring `merged_bases`
+                // first let a stray `<repo>/.worktrees` narrow visibility and hide every
+                // worktree under workspaceDir (hydra repo: mola/needlefish/beluga).
+                let in_known = known_layouts
+                    .iter()
+                    .any(|l| relative_path_inside_root(&l.path, &wt.path).is_some());
+                if in_known {
+                    filtered.push(wt.clone());
+                    continue;
+                }
                 let has_base = !merged_bases.is_empty();
                 if has_base {
                     if merged_bases.iter().any(|b| relative_path_inside_root(b, &wt.path).is_some()) {
@@ -583,15 +595,10 @@ fn list_git_worktrees_with_context(
                     } else {
                         hidden.push(wt.clone());
                     }
+                } else if external_policy == "show" {
+                    filtered.push(wt.clone());
                 } else {
-                    let in_known = known_layouts.iter().any(|l| relative_path_inside_root(&l.path, &wt.path).is_some());
-                    if in_known {
-                        filtered.push(wt.clone());
-                    } else if external_policy == "show" {
-                        filtered.push(wt.clone());
-                    } else {
-                        hidden.push(wt.clone());
-                    }
+                    hidden.push(wt.clone());
                 }
             }
         }
@@ -1173,6 +1180,65 @@ branch refs/heads/feat/auth\n";
         let known2 = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured2);
         let cls_suppressed = classify_worktree_ownership(&wt_scratch.path, repo_path, &[repo_path.to_string()], &configured2, &known2);
         assert_eq!(cls_suppressed, WorktreeOwnership::External, "configured base should supersede scratch detection");
+    }
+
+    #[test]
+    fn workspace_dir_worktrees_stay_visible_despite_repo_worktrees_dir() {
+        // Regression: a repo that also has `<repo>/.worktrees` used to narrow visibility
+        // (has_base branch measured first), hiding every worktree that lives under the
+        // global workspaceDir — the hydra repo hid mola/needlefish/beluga that way.
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!("hydra-ws-visibility-{stamp}"));
+        let repo = root.join("repo");
+        let ws_dir = root.join("workspaces");
+        let nested = ws_dir.join("repo").join("feat-x");
+        let _ = std::fs::create_dir_all(&repo);
+        let _ = std::fs::create_dir_all(&nested);
+        // The implicit base: an empty `.worktrees` inside the repo.
+        let _ = std::fs::create_dir_all(repo.join(".worktrees"));
+        // Bare-minimum git repo with one commit so `git worktree add` works.
+        for args in [
+            vec!["init", "-q"],
+            vec!["-c", "user.email=t@t", "-c", "user.name=t", "add", "-A"],
+            vec!["-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "init"],
+        ] {
+            let _ = Command::new("git").args(&args).current_dir(&repo).output();
+        }
+        let added = Command::new("git")
+            .args(["worktree", "add", "-b", "feat-x"])
+            .arg(&nested)
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add runs");
+        assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
+
+        let (visible, hidden) = list_git_worktrees_with_context(
+            repo.to_str().unwrap(),
+            None,
+            ws_dir.to_str().unwrap(),
+            true,
+            &[],
+            &[],
+            None,
+        )
+        .expect("scan runs");
+
+        let visible_paths: Vec<&str> = visible.iter().map(|w| w.path.as_str()).collect();
+        let hidden_paths: Vec<&str> = hidden.iter().map(|w| w.path.as_str()).collect();
+        assert!(
+            visible_paths.contains(&nested.to_str().unwrap()),
+            "workspaceDir worktree must stay visible; visible={visible_paths:?} hidden={hidden_paths:?}"
+        );
+
+        let _ = Command::new("git")
+            .args(["worktree", "remove", "--force"])
+            .arg(&nested)
+            .current_dir(&repo)
+            .output();
+        let _ = std::fs::remove_dir_all(&root);
     }
 
     #[test]
