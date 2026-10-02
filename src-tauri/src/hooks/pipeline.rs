@@ -1245,4 +1245,63 @@ mod tests {
         assert_eq!(stop.tool_name.as_deref(), Some("Bash"));
         assert_eq!(stop.tool_input.as_deref(), Some("ls -la"));
     }
+    /// Live contract: real TCP listener → raw curl-equivalent POST → outbox
+    /// → pipeline → real node sidecar → working transition. This is the one
+    /// test that proves the live path end to end (the T1/T2/T5 unit tests
+    /// cover each piece in isolation). Skips cleanly when
+    /// `hook-sidecar/dist/main.js` was not built.
+    #[test]
+    fn live_listener_post_flows_to_sidecar_transition() {
+        use base64::Engine as _;
+        let sidecar_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../hook-sidecar");
+        if !sidecar_dir.join("dist/main.js").is_file() {
+            eprintln!("skipping live_listener_post_flows_to_sidecar: hook-sidecar dist not built");
+            return;
+        }
+        let mut server = super::super::server::start_hook_server().expect("listener binds");
+        let pane = "sess-live-e2e";
+        let token_plain = "tok-live-e2e";
+        let meta = base64::engine::general_purpose::STANDARD.encode(format!(
+            "{pane}\x1fTAB-live\x1f{token_plain}\x1fwt-live\x1fproduction\x1f1"
+        ));
+        let body = serde_json::json!({"hook_event_name": "UserPromptSubmit"}).to_string();
+        let head = format!(
+            "POST /hook/claude HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: {}\r\nX-Hydra-Agent-Hook-Token: {}\r\nContent-Type: application/json\r\nX-Hydra-Agent-Hook-Meta: {}\r\nConnection: close\r\n\r\n",
+            body.len(),
+            server.token.clone(),
+            meta
+        );
+        let mut stream = std::net::TcpStream::connect(("127.0.0.1", server.port)).expect("connect");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("timeout");
+        use std::io::{Read, Write};
+        stream.write_all(head.as_bytes()).expect("head");
+        stream.write_all(body.as_bytes()).expect("body");
+        stream.flush().expect("flush");
+        let mut response = Vec::new();
+        stream.read_to_end(&mut response).expect("response");
+        let text = String::from_utf8_lossy(&response);
+        assert!(text.starts_with("HTTP/1.1 204"), "listener must 204, got: {text}");
+        let delivered = server.delivered_hooks();
+        assert_eq!(delivered.len(), 1, "one live envelope in the outbox");
+        assert_eq!(delivered[0].envelope.pane_key, pane);
+        let live_hash = super::super::envelope::launch_token_hash(token_plain).expect("token hashes");
+        let mut pipeline = HookPipeline::new(
+            StdioSidecarTransport::spawn(sidecar_dir, "production", "node").expect("spawn node"),
+            move |pane_key: &str| {
+                if pane_key == pane {
+                    Some(live_hash.clone())
+                } else {
+                    None
+                }
+            },
+        );
+        let transitions = pipeline.tick_once(&delivered, &[], &[], |_| true);
+        assert_eq!(transitions.len(), 1, "live POST must become one transition");
+        assert_eq!(transitions[0].session_id, pane);
+        assert_eq!(transitions[0].state, AgentState::Working);
+        assert_eq!(transitions[0].event_json()["state"], "working");
+        server.shutdown();
+    }
 }
