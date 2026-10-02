@@ -28,6 +28,8 @@ export interface GroupSectionHeaderProps {
   depth?: number;
   onToggleCollapse: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  /** Orca renders a `+` on folder-backed groups (ProjectGroupCreateWorkspaceButton). */
+  onOpenNewWorkspace?: () => void;
   isDropTarget?: boolean;
   onDragOver?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
@@ -71,6 +73,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
   depth = 0,
   onToggleCollapse,
   onContextMenu,
+  onOpenNewWorkspace,
   isDropTarget = false,
   onDragOver,
   onDragLeave,
@@ -176,6 +179,21 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
             onClick={handleContext}
           >
             <MoreHorizontal className="size-3.5" />
+          </button>
+        )}
+
+        {onOpenNewWorkspace && (
+          <button
+            type="button"
+            title="New workspace in this group"
+            aria-label="New workspace in this group"
+            className={cn(REPO_HEADER_ACTION_BUTTON_CLASS, "cursor-pointer")}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenNewWorkspace();
+            }}
+          >
+            <Plus className="size-3.5" />
           </button>
         )}
       </ProjectHeaderActions>

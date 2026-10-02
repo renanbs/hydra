@@ -407,10 +407,34 @@ export function WorktreeList({
               variant="group"
               group={group}
               isCollapsed={isGroupCollapsed}
-              count={groupProjects.length}
+              // Orca counts the whole subtree (repos + folder workspaces + subgroups);
+              // `count` only arms the collapse chevron, but it must include the folder
+              // rows or a folder-only group loses its chevron (Parity: SectionHeader.tsx
+              // `showHeaderCollapseAffordance = row.count > 0`).
+              count={
+                groupProjects.length +
+                (folderWorkspaces ?? []).filter((w) => w.projectGroupId === group.id).length
+              }
               onToggleCollapse={() => onToggleGroupCollapse(group.id)}
               onContextMenu={
                 onGroupContextMenu ? (e) => onGroupContextMenu(e, group) : undefined
+              }
+              onOpenNewWorkspace={
+                onOpenNewWorkspaceModal
+                  ? () => {
+                      const folder = (folderWorkspaces ?? []).find(
+                        (w) => w.projectGroupId === group.id
+                      );
+                      if (!folder) return;
+                      onOpenNewWorkspaceModal({
+                        id: `folder-${folder.id}`,
+                        name: group.name,
+                        path: folder.folderPath,
+                        is_git: false,
+                        current_branch: "",
+                      });
+                    }
+                  : undefined
               }
               isDropTarget={isGroupDropTarget}
             />
