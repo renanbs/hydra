@@ -284,7 +284,15 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     nativeDragEnabled,
     newCardStyle: true,
     isFolder,
-    identityDisplay: branchName,
+    // Orca parity (`use-worktree-card-review-details.ts:37-40`): a folder workspace has
+    // no branch, so its identity line carries the FOLDER PATH instead. Without it the
+    // folder card rendered a title with no path line at all.
+    identityDisplay:
+      !isFolder && branchName.length > 0
+        ? branchName
+        : isFolder && worktree.path.trim().length > 0
+          ? worktree.path
+          : undefined,
     branch: branchName,
     detachedHeadDisplay,
     conflictOperation: '',
