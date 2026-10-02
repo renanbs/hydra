@@ -3,6 +3,7 @@ import React, { useMemo, useCallback, useLayoutEffect } from "react";
 import { FolderPlus, Plus } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
 import { WorktreeCard } from "./WorktreeCard";
+import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import {
   setVisibleWorktreeIds,
@@ -414,25 +415,25 @@ export function WorktreeList({
               isDropTarget={isGroupDropTarget}
             />
 
-            {/* Group folder-workspace rows as WorktreeCards (Orca folder-row parity) */}
+            {/* Group folder-workspace rows (Orca folder-row visual parity) */}
             {!isGroupCollapsed &&
               (folderWorkspaces ?? [])
                 .filter((w) => w.projectGroupId === group.id)
                 .map((w) => (
-                  <WorktreeCard
+                  <FolderWorkspaceRow
                     key={`folder-ws-${w.id}`}
-                    worktree={{
-                      path: w.folderPath,
-                      head_commit: "",
-                      branch: "",
-                      display_name: w.name,
-                      is_bare: false,
-                      is_locked: false,
-                    }}
+                    name={w.name}
+                    folderPath={w.folderPath}
                     isActive={activeWorktreePath === w.folderPath}
-                    isCurrentWorktree={activeWorktreePath === w.folderPath}
-                    flushSurface
-                    onSelect={() => onSelectProject({ id: `folder-${w.id}`, name: w.name, path: w.folderPath, is_git: false, current_branch: "" } as HydraProject)}
+                    onSelect={() =>
+                      onSelectProject({
+                        id: `folder-${w.id}`,
+                        name: w.name,
+                        path: w.folderPath,
+                        is_git: false,
+                        current_branch: "",
+                      })
+                    }
                   />
                 ))}
             {/* Group Projects (Orca flat: header + folder rows + repos, no wrapper) */}
