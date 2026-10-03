@@ -277,13 +277,12 @@ export function WorktreeList({
             onDragEnd={onProjectDragEnd}
           />
 
-          {/* Hidden worktrees inbox banner. The line owns the gate (prompt dismissed,
-              not suppressed) and the baseline subtraction; it renders null when closed. */}
+          {/* Hidden worktrees inbox banner. The line owns the gate (suppressed) and
+              the baseline subtraction; it renders null when closed. */}
           <NewExternalWorktreesInboxLine
             repoDisplayName={proj.name}
             hiddenWorktrees={hiddenWorktrees}
             baselinePaths={proj.externalWorktreeInboxBaselinePaths}
-            promptDismissedAt={proj.externalWorktreeVisibilityPromptDismissedAt}
             suppressed={proj.suppressed_discovery === true}
             onShow={
               onShowHiddenWorktree

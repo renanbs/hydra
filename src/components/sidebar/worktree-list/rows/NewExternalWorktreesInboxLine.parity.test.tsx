@@ -1,9 +1,12 @@
 // Parity guard for the discovered-worktree inbox. Orca's rule
 // (`ImportedWorktreesVisibilityLine.tsx` + `shared/external-worktree-inbox.ts:84-120`):
-//   shouldOfferNewExternalWorktreeInbox = !suppressed && promptDismissedAt is a number
 //   inbox rows = hidden externals MINUS `externalWorktreeInboxBaselinePaths`
 // The line is collapsed by default; expanding groups rows by parent path, each group
 // carrying its own count, and the footer offers Keep hidden (baseline) / Show (import).
+// Gate: every hidden worktree shows unless the repo opted out (`suppressed`). Orca also
+// requires `externalWorktreeVisibilityPromptDismissedAt`, but Hydra has no initial-prompt
+// surface yet, so gating on it would hide worktrees with no path back in the sidebar —
+// the timestamp is stamped by the first inbox action instead.
 import type { ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
@@ -17,7 +20,6 @@ import {
   groupWorktreesByParentPath,
   mergeExternalWorktreeInboxPaths,
   selectInboxWorktrees,
-  shouldOfferExternalWorktreeInbox,
 } from "./NewExternalWorktreesInboxLine";
 
 function worktree(path: string, branch: string): GitWorktreeInfo {
@@ -37,7 +39,6 @@ function renderLine(
       <NewExternalWorktreesInboxLine
         repoDisplayName="repo"
         hiddenWorktrees={HIDDEN}
-        promptDismissedAt={1_700_000_000_000}
         onSuppress={vi.fn()}
         {...props}
       />
@@ -111,10 +112,7 @@ describe("NewExternalWorktreesInboxLine (Orca parity)", () => {
     expect(onSuppress).toHaveBeenCalledTimes(1);
   });
 
-  it("stays closed until the visibility prompt was dismissed", () => {
-    const numberless = renderLine({ promptDismissedAt: null });
-    expect(numberless.container).toBeEmptyDOMElement();
-
+  it("stays closed only when the repo opted out or nothing is hidden", () => {
     const suppressed = renderLine({ suppressed: true });
     expect(suppressed.container).toBeEmptyDOMElement();
 
@@ -125,6 +123,14 @@ describe("NewExternalWorktreesInboxLine (Orca parity)", () => {
 
     const noneHidden = renderLine({ hiddenWorktrees: [] });
     expect(noneHidden.container).toBeEmptyDOMElement();
+
+    // No prompt timestamp yet (Hydra has no initial-prompt surface): the worktrees
+    // are still discoverable, otherwise they would be unreachable from the sidebar.
+    const unprompted = renderLine({
+      baselinePaths: [REPO_WT_A.path],
+    });
+    expect(unprompted.container).not.toBeEmptyDOMElement();
+    expect(screen.getByText("Hiding 2 discovered worktrees")).toBeInTheDocument();
   });
 
   it("subtracts the baseline so acknowledged paths are not offered again", () => {
@@ -141,13 +147,6 @@ describe("NewExternalWorktreesInboxLine (Orca parity)", () => {
 });
 
 describe("discovered-worktree inbox helpers (Orca parity)", () => {
-  it("gates the inbox exactly like shouldOfferNewExternalWorktreeInbox", () => {
-    expect(shouldOfferExternalWorktreeInbox({ promptDismissedAt: 123, suppressed: false })).toBe(true);
-    expect(shouldOfferExternalWorktreeInbox({ promptDismissedAt: 123, suppressed: true })).toBe(false);
-    expect(shouldOfferExternalWorktreeInbox({ promptDismissedAt: null })).toBe(false);
-    expect(shouldOfferExternalWorktreeInbox({})).toBe(false);
-  });
-
   it("groups by parent path, keeping insertion order", () => {
     const groups = groupWorktreesByParentPath([OTHER_WT_C, REPO_WT_A, REPO_WT_B]);
     expect(groups.map((group) => group.path)).toEqual(["/home/me/src/other", "/home/me/src/repo"]);

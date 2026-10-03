@@ -4,6 +4,12 @@
 // worktrees` + count badge + suppress `×`), a body grouped by parent path with a
 // per-group count and one bullet per worktree, and the `Change this later from the
 // project menu.` footer offering `Keep hidden` / `Show in worktree list`.
+//
+// Gate: the line shows every hidden discovered worktree unless the repo opted out
+// (`suppressed`), minus the baseline paths the user already acknowledged. Orca's
+// extra `externalWorktreeVisibilityPromptDismissedAt` precondition is not used here
+// because Hydra has no initial-prompt surface — gating on it would hide worktrees
+// with no sidebar path back; the first inbox action stamps that timestamp instead.
 import React, { useState } from "react";
 import { ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,10 +29,8 @@ export interface NewExternalWorktreesInboxLineProps {
   /** Paths the user already acknowledged with `Keep hidden`; never offered again
    *  (Orca `externalWorktreeInboxBaselinePaths`). */
   baselinePaths?: readonly string[];
-  /** Gate (Orca `hasCompletedInitialExternalWorktreeImportPrompt`): the inbox only
-   *  opens once the repo logged the visibility prompt as dismissed. */
-  promptDismissedAt?: number | null;
-  /** Gate (Orca `isExternalWorktreeDiscoverySuppressed`): the `×` opt-out. */
+  /** The `×` opt-out (`externalWorktreeDiscoverySuppressedAt`): closes the line
+   *  permanently for the repo, so it must not come back on its own. */
   suppressed?: boolean;
   pending?: boolean;
   error?: string | null;
@@ -86,15 +90,6 @@ export function groupWorktreesByParentPath(
   return groups;
 }
 
-/** Orca `shouldOfferNewExternalWorktreeInbox` (external-worktree-inbox.ts:84). */
-export function shouldOfferExternalWorktreeInbox(args: {
-  promptDismissedAt?: number | null;
-  suppressed?: boolean;
-}): boolean {
-  if (args.suppressed) return false;
-  return typeof args.promptDismissedAt === "number";
-}
-
 /** Orca `getNewExternalWorktreeInboxWorktrees` baseline subtraction. */
 export function selectInboxWorktrees(
   hiddenWorktrees: readonly GitWorktreeInfo[],
@@ -127,7 +122,6 @@ export function NewExternalWorktreesInboxLine({
   repoDisplayName,
   hiddenWorktrees,
   baselinePaths,
-  promptDismissedAt,
   suppressed = false,
   pending = false,
   error = null,
@@ -140,7 +134,7 @@ export function NewExternalWorktreesInboxLine({
 
   const inboxWorktrees = selectInboxWorktrees(hiddenWorktrees, baselinePaths);
   const inboxCount = inboxWorktrees.length;
-  if (!shouldOfferExternalWorktreeInbox({ promptDismissedAt, suppressed }) || inboxCount === 0) {
+  if (suppressed || inboxCount === 0) {
     return null;
   }
 

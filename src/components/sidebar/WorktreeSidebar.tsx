@@ -168,6 +168,22 @@ export function WorktreeSidebar({
 
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
 
+  // Repos whose external-worktree visibility prompt phase was already stamped this
+  // session. Orca writes `Date.now()` the first time the user acts on the inbox
+  // (`imported-worktrees-card-actions.ts:73-78`); Hydra keeps the same meaning and
+  // never rewrites an existing timestamp.
+  const visibilityPromptStampedReposRef = useRef<Set<string>>(new Set());
+  const stampVisibilityPromptPhase = async (proj: HydraProject) => {
+    if (visibilityPromptStampedReposRef.current.has(proj.path)) return;
+    visibilityPromptStampedReposRef.current.add(proj.path);
+    if (typeof proj.externalWorktreeVisibilityPromptDismissedAt === "number") return;
+    await invoke("catalog_set_worktree_visibility", {
+      repoPath: proj.path,
+      baselinePaths: proj.externalWorktreeInboxBaselinePaths ?? [],
+      promptDismissedAt: Date.now(),
+    });
+  };
+
   // Drag and Drop state
   const [draggedWorktreePath, setDraggedWorktreePath] = useState<string | null>(null);
   const [worktreeDropTarget, setWorktreeDropTarget] = useState<{ path: string; position: "top" | "bottom" } | null>(null);
@@ -741,6 +757,7 @@ export function WorktreeSidebar({
                     projectPath: proj.path,
                     worktreePath,
                   });
+                  await stampVisibilityPromptPhase(proj);
                   window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
                 } catch (err) {
                   console.error(err);
@@ -754,8 +771,12 @@ export function WorktreeSidebar({
                       proj.externalWorktreeInboxBaselinePaths,
                       worktreePaths
                     ),
-                    promptDismissedAt: Date.now(),
+                    promptDismissedAt:
+                      typeof proj.externalWorktreeVisibilityPromptDismissedAt === "number"
+                        ? proj.externalWorktreeVisibilityPromptDismissedAt
+                        : Date.now(),
                   });
+                  visibilityPromptStampedReposRef.current.add(proj.path);
                   window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
                 } catch (err) {
                   console.error(err);
