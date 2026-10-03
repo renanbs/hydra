@@ -274,7 +274,7 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
-  const [settingsSectionRequested, setSettingsSectionRequested] = useState<"agents" | null>(null);
+  const [settingsSectionRequested, setSettingsSectionRequested] = useState<"agents" | "general" | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -3659,6 +3659,10 @@ export default function App() {
                 onNewSessionWithAgent={() => {}}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenGlobalSettings={() => {
+                  setSettingsSectionRequested("general");
+                  setIsSettingsOpen(true);
+                }}
                 onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
                 onOpenNewWorkspaceModal={(proj) => {
                   if (proj) handleSelectProject(proj);

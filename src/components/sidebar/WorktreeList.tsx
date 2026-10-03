@@ -11,6 +11,7 @@ import {
   getWorktreeCardSurfaceInset,
 } from "./worktree-list/rows/indentation";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
+import { ImportedWorktreesVisibilityLine } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import {
   setVisibleWorktreeIds,
   setVisibleWorktreeShortcutTargets,
@@ -117,6 +118,8 @@ export interface WorktreeListProps {
   onShowHiddenWorktree?: (proj: HydraProject, worktreePath: string) => void;
   /** Acknowledge the listed discovered worktrees into the repo's inbox baseline. */
   onKeepHiddenWorktrees?: (proj: HydraProject, worktreePaths: string[]) => void;
+  /** Open the `Non-Hydra worktrees` modal from the compact pill. */
+  onReviewHiddenWorktrees?: (proj: HydraProject) => void;
 
   // Drag and drop state & handlers
   draggedWorktreePath?: string | null;
@@ -178,6 +181,7 @@ export function WorktreeList({
   onSuppressHiddenWorktrees,
   onShowHiddenWorktree,
   onKeepHiddenWorktrees,
+  onReviewHiddenWorktrees,
   worktreeDropTarget,
   draggedProjectId,
   projectDropTarget,
@@ -277,13 +281,15 @@ export function WorktreeList({
             onDragEnd={onProjectDragEnd}
           />
 
-          {/* Hidden worktrees inbox banner. The line owns the gate (suppressed) and
-              the baseline subtraction; it renders null when closed. */}
-          <NewExternalWorktreesInboxLine
+          {/* Discovered-worktree inbox, two Orca phases: the expandable notice until the
+              repo's prompt completes, then the compact pill that opens the visibility
+              dialog. Each surface owns its half of the phase gate and nulls itself out. */}
+          <ImportedWorktreesVisibilityLine
             repoDisplayName={proj.name}
             hiddenWorktrees={hiddenWorktrees}
             baselinePaths={proj.externalWorktreeInboxBaselinePaths}
             suppressed={proj.suppressed_discovery === true}
+            promptDismissedAt={proj.externalWorktreeVisibilityPromptDismissedAt ?? null}
             onShow={
               onShowHiddenWorktree
                 ? (worktreePath) => onShowHiddenWorktree(proj, worktreePath)
@@ -292,6 +298,23 @@ export function WorktreeList({
             onKeepHidden={
               onKeepHiddenWorktrees
                 ? (worktreePaths) => onKeepHiddenWorktrees(proj, worktreePaths)
+                : undefined
+            }
+            onSuppress={
+              onSuppressHiddenWorktrees
+                ? () => onSuppressHiddenWorktrees(proj)
+                : undefined
+            }
+          />
+          <NewExternalWorktreesInboxLine
+            repoDisplayName={proj.name}
+            hiddenWorktrees={hiddenWorktrees}
+            baselinePaths={proj.externalWorktreeInboxBaselinePaths}
+            suppressed={proj.suppressed_discovery === true}
+            promptDismissedAt={proj.externalWorktreeVisibilityPromptDismissedAt ?? null}
+            onReview={
+              onReviewHiddenWorktrees
+                ? () => onReviewHiddenWorktrees(proj)
                 : undefined
             }
             onSuppress={

@@ -17,7 +17,7 @@ import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
 import { SidebarAgentsList } from "./SidebarAgentsList";
 import { WorktreeList } from "./WorktreeList";
-import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
+import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
@@ -67,6 +67,7 @@ export function WorktreeSidebar({
   onRenameWorktreeTitle,
   onDeleteSession,
   onOpenSettings,
+  onOpenGlobalSettings,
   onOpenAddRepoDialog,
   onOpenNewWorkspaceModal,
   onSessionContextMenu: _onSessionContextMenu,
@@ -796,6 +797,13 @@ export function WorktreeSidebar({
                   console.error(err);
                 }
               }}
+              onReviewHiddenWorktrees={(proj) => {
+                setVisibilityDialog({
+                  open: true,
+                  project: proj,
+                  hiddenWorktrees: hiddenWorktreesByProject?.[proj.path] ?? [],
+                });
+              }}
               draggedWorktreePath={draggedWorktreePath}
               worktreeDropTarget={worktreeDropTarget}
               draggedProjectId={draggedProjectId}
@@ -1135,10 +1143,12 @@ export function WorktreeSidebar({
         open={visibilityDialog.open}
         project={visibilityDialog.project}
         hiddenWorktrees={visibilityDialog.hiddenWorktrees}
+        visibilityDefaults={settings?.worktree_visibility_defaults}
         onOpenChange={(open) => setVisibilityDialog((prev) => ({ ...prev, open }))}
         onImported={() => {
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
+        onOpenGlobalSettings={() => onOpenGlobalSettings?.()}
       />
 
       {promptDialog && (

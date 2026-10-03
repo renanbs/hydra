@@ -45,6 +45,20 @@ export interface CatalogRepo {
   /** Epoch ms the initial external-worktree visibility prompt completed; the
    *  discovered-worktree inbox only opens once this is a number. */
   externalWorktreeVisibilityPromptDismissedAt?: number | null;
+  /** Project-level override for "other locations" (Orca `externalWorktreeVisibility`). */
+  externalWorktreeVisibility?: "show" | "hide" | null;
+  /** Legacy repos keep the pre-rollout "show" default (Orca
+   *  `externalWorktreeVisibilityLegacy`). */
+  externalWorktreeVisibilityLegacy?: boolean | null;
+  /** Extra worktree roots the project recognizes (Orca
+   *  `customWorktreeVisibilitySources`). */
+  customWorktreeVisibilitySources?: Array<{ id: string; rootPath: string }> | null;
+  /** Per-source Show/Hide pinned on the project (Orca
+   *  `worktreeVisibilitySourcePreferences`). */
+  worktreeVisibilitySourcePreferences?: {
+    builtIn?: Partial<Record<"claude" | "gsd", "show" | "hide">>;
+    custom?: Record<string, "show" | "hide">;
+  } | null;
 }
 
 export interface CatalogEnvelope {

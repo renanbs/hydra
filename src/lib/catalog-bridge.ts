@@ -38,6 +38,10 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
       externalWorktreeInboxBaselinePaths: r.externalWorktreeInboxBaselinePaths,
       externalWorktreeVisibilityPromptDismissedAt:
         r.externalWorktreeVisibilityPromptDismissedAt ?? null,
+      externalWorktreeVisibility: r.externalWorktreeVisibility ?? null,
+      externalWorktreeVisibilityLegacy: r.externalWorktreeVisibilityLegacy ?? null,
+      customWorktreeVisibilitySources: r.customWorktreeVisibilitySources ?? null,
+      worktreeVisibilitySourcePreferences: r.worktreeVisibilitySourcePreferences ?? null,
       repo_icon: (r.repoIcon as HydraProject["repo_icon"]) ?? null,
     };
   });
