@@ -70,6 +70,9 @@ export interface HydraProject {
   /** Legacy repos keep the pre-rollout "show" default (Orca
    *  `externalWorktreeVisibilityLegacy`). */
   externalWorktreeVisibilityLegacy?: boolean | null;
+  /** Epoch ms the repo opted out of discovery; `null`/absent = not suppressed
+   *  (Orca `externalWorktreeDiscoverySuppressedAt`). */
+  externalWorktreeDiscoverySuppressedAt?: number | null;
   /** Extra worktree roots the project recognizes (Orca
    *  `customWorktreeVisibilitySources`). */
   customWorktreeVisibilitySources?: CustomWorktreeVisibilitySource[] | null;

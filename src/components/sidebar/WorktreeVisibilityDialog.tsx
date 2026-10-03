@@ -48,6 +48,7 @@ function repoVisibilityConfig(project: HydraProject): WorktreeVisibilityRepoConf
   return {
     externalWorktreeVisibility: project.externalWorktreeVisibility ?? null,
     externalWorktreeVisibilityLegacy: project.externalWorktreeVisibilityLegacy ?? null,
+    externalWorktreeDiscoverySuppressedAt: project.externalWorktreeDiscoverySuppressedAt ?? null,
     customWorktreeVisibilitySources: project.customWorktreeVisibilitySources ?? null,
     worktreeVisibilitySourcePreferences: project.worktreeVisibilitySourcePreferences ?? null,
   };
@@ -169,6 +170,8 @@ export function WorktreeVisibilityDialog({
         sourcePreferences: nextConfig.worktreeVisibilitySourcePreferences ?? null,
         externalWorktreeVisibilityLegacy: nextConfig.externalWorktreeVisibilityLegacy ?? null,
         externalWorktreeVisibility: nextConfig.externalWorktreeVisibility ?? null,
+        externalWorktreeDiscoverySuppressedAt:
+          nextConfig.externalWorktreeDiscoverySuppressedAt ?? null,
       });
       setDraftConfig(nextConfig);
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
@@ -185,7 +188,14 @@ export function WorktreeVisibilityDialog({
     visibility: ExternalWorktreeVisibility
   ) => {
     if (row.kind === "other") {
-      await persistSources({ ...config, externalWorktreeVisibility: visibility });
+      await persistSources({
+        ...config,
+        externalWorktreeVisibility: visibility,
+        // Orca clears the discovery suppression when "Other locations" is shown again, so
+        // the inbox/ pill can surface the newly-visible worktrees.
+        externalWorktreeDiscoverySuppressedAt:
+          visibility === "show" ? null : (config.externalWorktreeDiscoverySuppressedAt ?? null),
+      });
       return;
     }
     const match =

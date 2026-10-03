@@ -31,6 +31,8 @@ export interface WorktreeVisibilityDefaults {
 export interface WorktreeVisibilityRepoConfig {
   externalWorktreeVisibility?: ExternalWorktreeVisibility | null;
   externalWorktreeVisibilityLegacy?: boolean | null;
+  /** Epoch ms the repo opted out of discovery; `null` means not suppressed. */
+  externalWorktreeDiscoverySuppressedAt?: number | null;
   customWorktreeVisibilitySources?: CustomWorktreeVisibilitySource[] | null;
   worktreeVisibilitySourcePreferences?: WorktreeVisibilitySourcePreferences | null;
 }

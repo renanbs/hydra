@@ -103,6 +103,7 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
       sourcePreferences: { builtIn: { claude: "show" } },
       externalWorktreeVisibilityLegacy: false,
       externalWorktreeVisibility: null,
+      externalWorktreeDiscoverySuppressedAt: null,
     });
   });
 
@@ -118,7 +119,41 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
       sourcePreferences: null,
       externalWorktreeVisibilityLegacy: false,
       externalWorktreeVisibility: "show",
+      externalWorktreeDiscoverySuppressedAt: null,
     });
+  });
+
+  it("clears the discovery suppression when Other locations is shown", () => {
+    renderDialog({
+      project: { ...PROJECT, externalWorktreeDiscoverySuppressedAt: 1_700_000_000_000 },
+    });
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    fireEvent.click(sourceToggle(sources, "Other locations", "Show"));
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      "catalog_set_worktree_visibility_sources",
+      expect.objectContaining({
+        externalWorktreeVisibility: "show",
+        externalWorktreeDiscoverySuppressedAt: null,
+      })
+    );
+  });
+
+  it("preserves an existing suppression timestamp on unrelated source writes", () => {
+    renderDialog({
+      project: { ...PROJECT, externalWorktreeDiscoverySuppressedAt: 1_700_000_000_000 },
+    });
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    fireEvent.click(sourceToggle(sources, "Claude Code", "Show"));
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      "catalog_set_worktree_visibility_sources",
+      expect.objectContaining({
+        externalWorktreeDiscoverySuppressedAt: 1_700_000_000_000,
+      })
+    );
   });
 
   it("reads the global default when the project has no override", () => {
