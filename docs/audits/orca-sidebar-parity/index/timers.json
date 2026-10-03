@@ -1,0 +1,397 @@
+[
+ {
+  "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+  "line": 46,
+  "text": "const queryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+  "line": 88,
+  "text": "queryTimer.current = setTimeout(() => onQueryChange(value), 200)"
+ },
+ {
+  "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 85,
+  "text": "copiedResetTimerRef.current = window.setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "line": 43,
+  "text": "const fileHintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "line": 44,
+  "text": "const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "line": 163,
+  "text": "fileHintTimerRef.current = setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "line": 186,
+  "text": "clickTimerRef.current = setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/SidebarAgentsList.tsx",
+  "line": 60,
+  "text": "requestAnimationFrame(() => activityFilterInputRef.current?.focus())"
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 66,
+  "text": "const frame = requestAnimationFrame(() => inputRef.current?.focus())"
+ },
+ {
+  "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+  "line": 96,
+  "text": "await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.tsx",
+  "line": 61,
+  "text": "const timeoutId = window.setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+  "line": 178,
+  "text": "vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+  "line": 150,
+  "text": "vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+  "line": 158,
+  "text": "frameId = window.requestAnimationFrame(renderNextLane)"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+  "line": 162,
+  "text": "frameId = window.requestAnimationFrame(renderNextLane)"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+  "line": 92,
+  "text": "const timer = window.setTimeout("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.tsx",
+  "line": 219,
+  "text": "const handle = requestAnimationFrame(() => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 195,
+  "text": "const timerId = window.setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+  "line": 108,
+  "text": "await act(async () => new Promise((resolve) => setTimeout(resolve, 0)))"
+ },
+ {
+  "file": "components/sidebar/header-drag-click-swallow.ts",
+  "line": 9,
+  "text": "export function swallowNextClickOnDragHandle(handleEl: HTMLElement): ReturnType<typeof setTimeout> {"
+ },
+ {
+  "file": "components/sidebar/header-drag-click-swallow.ts",
+  "line": 19,
+  "text": "return setTimeout(() => window.removeEventListener('click', swallow, true), 0)"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 136,
+  "text": "deferredComputeFrameRef.current = window.requestAnimationFrame(() => {"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 46,
+  "text": "const clickSwallowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 169,
+  "text": "autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 179,
+  "text": "autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 57,
+  "text": "const clickSwallowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 182,
+  "text": "autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 192,
+  "text": "autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)"
+ },
+ {
+  "file": "components/sidebar/prompt-cache-countdown-clock.ts",
+  "line": 7,
+  "text": "let timer: ReturnType<typeof setInterval> | null = null"
+ },
+ {
+  "file": "components/sidebar/prompt-cache-countdown-clock.ts",
+  "line": 30,
+  "text": "timer = setInterval(publishTick, 1000)"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.test.ts",
+  "line": 62,
+  "text": "requestAnimationFrame: vi.fn()"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.test.ts",
+  "line": 124,
+  "text": "const requestAnimationFrame = vi.fn(() => 1)"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.test.ts",
+  "line": 144,
+  "text": "vi.stubGlobal('window', { requestAnimationFrame })"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.test.ts",
+  "line": 149,
+  "text": "expect(requestAnimationFrame).toHaveBeenCalledTimes(1)"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.test.ts",
+  "line": 153,
+  "text": "const requestAnimationFrame = vi.fn(() => 1)"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.test.ts",
+  "line": 185,
+  "text": "vi.stubGlobal('window', { requestAnimationFrame })"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.ts",
+  "line": 85,
+  "text": "window.requestAnimationFrame(restore)"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.ts",
+  "line": 106,
+  "text": "window.requestAnimationFrame(restore)"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.ts",
+  "line": 109,
+  "text": "window.requestAnimationFrame(restore)"
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+  "line": 60,
+  "text": "const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+  "line": 62,
+  "text": "const pasteResolveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+  "line": 165,
+  "text": "debounceTimerRef.current = setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+  "line": 185,
+  "text": "pasteResolveTimerRef.current = setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "line": 147,
+  "text": "state.frameId = window.requestAnimationFrame(flushAreaSelectionDrag)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "line": 179,
+  "text": "state.scrollFrameId = window.requestAnimationFrame(runAreaSelectionAutoScroll)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "line": 187,
+  "text": "state.scrollFrameId = window.requestAnimationFrame(runAreaSelectionAutoScroll)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+  "line": 202,
+  "text": "state.frameId = window.requestAnimationFrame(flushPointerDragFrame)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 59,
+  "text": "frameRef.current = window.requestAnimationFrame(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-drawer-lingering.ts",
+  "line": 12,
+  "text": "const timer = window.setTimeout(() => setLingering(false), WORKSPACE_BOARD_CLOSE_LINGER_MS)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+  "line": 18,
+  "text": "const frameId = window.requestAnimationFrame(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-context-menu-commands.ts",
+  "line": 137,
+  "text": "window.setTimeout(() => void runSleepWorktrees(worktreeIds), 50)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+  "line": 257,
+  "text": "const timer = window.setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+  "line": 348,
+  "text": "window.setTimeout(openPendingParentPicker, 0)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-issue-link.ts",
+  "line": 23,
+  "text": "let timer: ReturnType<typeof setTimeout> | undefined"
+ },
+ {
+  "file": "components/sidebar/use-worktree-issue-link.ts",
+  "line": 28,
+  "text": "timer = setTimeout(() => resolve(null), OPEN_ISSUE_TIMEOUT_MS)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-parent-picker-transition.ts",
+  "line": 42,
+  "text": "args.unmountTimerRef.current = window.setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-parent-picker-transition.ts",
+  "line": 58,
+  "text": "args.fallbackTimerRef.current = window.setTimeout(openPendingParentPicker, 50)"
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+  "line": 59,
+  "text": "return new Promise((resolve) => setTimeout(resolve, 0))"
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.ts",
+  "line": 26,
+  "text": "let timeout: ReturnType<typeof setTimeout> | null = null"
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.ts",
+  "line": 28,
+  "text": "timeout = setTimeout(() => reject(new Error('Timed out')), timeoutMs)"
+ },
+ {
+  "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+  "line": 120,
+  "text": "vi.stubGlobal('window', { setTimeout })"
+ },
+ {
+  "file": "components/sidebar/worktree-context-menu-delete-intent.ts",
+  "line": 74,
+  "text": "defer: (callback: () => void) => void = (callback) => window.setTimeout(callback, 0)"
+ },
+ {
+  "file": "components/sidebar/worktree-context-menu-policy.ts",
+  "line": 221,
+  "text": "window.requestAnimationFrame(restore)"
+ },
+ {
+  "file": "components/sidebar/worktree-delete-position-scaling.test.ts",
+  "line": 63,
+  "text": "vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(0)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+  "line": 28,
+  "text": "vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+  "line": 157,
+  "text": "const frames = vi.mocked(window.requestAnimationFrame).mock.calls.length"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+  "line": 159,
+  "text": "expect(vi.mocked(window.requestAnimationFrame).mock.calls).toHaveLength(frames)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/pointer-flush.ts",
+  "line": 205,
+  "text": "drag.frameId = window.requestAnimationFrame(() => flushWorktreePointerDragFrame(args))"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-native-autoscroll.ts",
+  "line": 85,
+  "text": "nativeAutoscrollFrameIdRef.current = window.requestAnimationFrame(runFrame)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-native-autoscroll.ts",
+  "line": 106,
+  "text": "nativeAutoscrollFrameIdRef.current = window.requestAnimationFrame(runFrame)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts",
+  "line": 57,
+  "text": "pointerAutoscrollFrameIdRef.current = window.requestAnimationFrame(runFrame)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts",
+  "line": 77,
+  "text": "pointerAutoscrollFrameIdRef.current = window.requestAnimationFrame(runFrame)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-drag.ts",
+  "line": 97,
+  "text": "drag.frameId = window.requestAnimationFrame(flushWorktreePointerDrag)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+  "line": 75,
+  "text": "const timer = setTimeout(() => setDebouncedSortEpoch(sortEpoch), SORT_SETTLE_MS)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts",
+  "line": 19,
+  "text": "const frameId = window.requestAnimationFrame((time) => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts",
+  "line": 43,
+  "text": "revealHighlightFrameIdRef.current = window.requestAnimationFrame(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts",
+  "line": 46,
+  "text": "revealHighlightTimeoutRef.current = window.setTimeout(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-row-measurement.ts",
+  "line": 97,
+  "text": "const frameId = window.requestAnimationFrame(measureMountedRows)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+  "line": 77,
+  "text": "idleTimerRef.current = window.setTimeout(() => {"
+ }
+]

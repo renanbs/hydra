@@ -1,0 +1,18 @@
+{
+ "domain": "D02b-hosts-ssh-remote",
+ "status": "ok",
+ "rows": 30,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 64,
+  "files": "26/26",
+  "symbols": "74/74",
+  "tests": "128/128",
+  "labels": "48/48",
+  "hotkeys": "4/4",
+  "prefs": "0/0",
+  "timers": "10/10",
+  "subscriptions": "3/3",
+  "preload": "11/11"
+ }
+}

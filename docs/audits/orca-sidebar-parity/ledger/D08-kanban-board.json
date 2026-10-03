@@ -1,0 +1,18 @@
+{
+ "domain": "D08-kanban-board",
+ "status": "ok",
+ "rows": 45,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "42/42",
+  "symbols": "116/116",
+  "tests": "213/213",
+  "labels": "53/53",
+  "hotkeys": "15/15",
+  "prefs": "0/0",
+  "timers": "12/12",
+  "subscriptions": "37/37",
+  "preload": "0/0"
+ }
+}

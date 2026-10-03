@@ -1,0 +1,67 @@
+{
+ "domain": "D15-misc-a",
+ "prod": [
+  {
+   "name": "comment-mermaid-fence.tsx",
+   "kind": "prod",
+   "loc": 28
+  },
+  {
+   "name": "project-header-color.ts",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "project-order-manual-default-notice-visibility.ts",
+   "kind": "prod",
+   "loc": 15
+  },
+  {
+   "name": "use-sidebar-host-scope-options.ts",
+   "kind": "prod",
+   "loc": 50
+  }
+ ],
+ "test": [
+  {
+   "name": "host-section-folder-workspace-counts.test.ts",
+   "kind": "test",
+   "loc": 127
+  },
+  {
+   "name": "project-group-header-dom.test.ts",
+   "kind": "test",
+   "loc": 63
+  },
+  {
+   "name": "project-header-action-selector-lockstep.test.ts",
+   "kind": "test",
+   "loc": 25
+  },
+  {
+   "name": "project-header-color.test.ts",
+   "kind": "test",
+   "loc": 81
+  },
+  {
+   "name": "project-order-manual-default-notice-visibility.test.ts",
+   "kind": "test",
+   "loc": 87
+  },
+  {
+   "name": "sidebar-resize-handle.test.ts",
+   "kind": "test",
+   "loc": 26
+  },
+  {
+   "name": "sleep-worktree-activation-race.test.ts",
+   "kind": "test",
+   "loc": 112
+  },
+  {
+   "name": "use-visible-workspace-kanban-worktree-ids.test.tsx",
+   "kind": "test",
+   "loc": 41
+  }
+ ]
+}

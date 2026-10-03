@@ -1,0 +1,18 @@
+{
+ "domain": "D09-filters-sort",
+ "status": "ok",
+ "rows": 31,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "11/11",
+  "symbols": "34/34",
+  "tests": "150/150",
+  "labels": "13/13",
+  "hotkeys": "18/18",
+  "prefs": "0/0",
+  "timers": "2/2",
+  "subscriptions": "1/1",
+  "preload": "0/0"
+ }
+}

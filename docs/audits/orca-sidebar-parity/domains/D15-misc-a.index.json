@@ -1,0 +1,265 @@
+{
+ "exports": {
+  "components/sidebar/comment-mermaid-fence.tsx": [
+   "isMermaidFence",
+   "renderMermaidFence",
+   "isMermaidPre"
+  ],
+  "components/sidebar/project-header-color.ts": [
+   "resolveRepoHeaderColor",
+   "resolveProjectGroupHeaderColor"
+  ],
+  "components/sidebar/project-order-manual-default-notice-visibility.ts": [
+   "shouldShowProjectOrderManualDefaultNotice"
+  ],
+  "components/sidebar/use-sidebar-host-scope-options.ts": [
+   "useSidebarHostScopeOptions"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+   "line": 37,
+   "text": "{ id: 'local', kind: 'local', label: 'Local', detail: 'This computer', health: 'local' },"
+  },
+  {
+   "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+   "line": 38,
+   "text": "{ id: 'ssh:builder', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+   "line": 115,
+   "text": "label: 'In progress',"
+  }
+ ],
+ "shortcuts": [],
+ "prefs": [],
+ "timers": [],
+ "subscriptions": [],
+ "preload": [],
+ "tests": [
+  {
+   "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "folder workspace host counts"
+  },
+  {
+   "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "counts an expanded folder workspace row"
+  },
+  {
+   "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+   "line": 111,
+   "kind": "plain",
+   "name": "counts a collapsed folder-only lane from its header"
+  },
+  {
+   "file": "components/sidebar/project-group-header-dom.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "Project Group header drag DOM source"
+  },
+  {
+   "file": "components/sidebar/project-group-header-dom.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "renders concrete Project Group header drag attributes separately from repo headers"
+  },
+  {
+   "file": "components/sidebar/project-group-header-dom.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "commits Project Group manual sorting through updateProjectGroup tabOrder"
+  },
+  {
+   "file": "components/sidebar/project-group-header-dom.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "keeps grab cursor on the title surface and dual handle attrs on row + surface"
+  },
+  {
+   "file": "components/sidebar/project-header-action-selector-lockstep.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "project header action selectors"
+  },
+  {
+   "file": "components/sidebar/project-header-action-selector-lockstep.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "includes the actions overlay for both repo and group helpers"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 5,
+   "kind": "plain",
+   "name": "resolveRepoHeaderColor"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 6,
+   "kind": "plain",
+   "name": "returns a canonical palette color"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "keeps the default repo badge color gray"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 14,
+   "kind": "each",
+   "name": "falls back for missing or empty input: %s"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 18,
+   "kind": "plain",
+   "name": "normalizes whitespace and casing to the canonical palette value"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "returns normalized custom hex colors"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 26,
+   "kind": "plain",
+   "name": "falls back for invalid colors"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 31,
+   "kind": "plain",
+   "name": "resolveProjectGroupHeaderColor"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "returns the repo color for project group headers"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "returns the repo color for provider-backed project headers"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 52,
+   "kind": "plain",
+   "name": "falls back to gray for unknown project group headers"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "does not color pinned headers while grouped by repo"
+  },
+  {
+   "file": "components/sidebar/project-header-color.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "does not color repo-looking keys in other grouping modes"
+  },
+  {
+   "file": "components/sidebar/project-order-manual-default-notice-visibility.test.ts",
+   "line": 5,
+   "kind": "plain",
+   "name": "resolveProjectOrderManualDefaultNoticeDismissed"
+  },
+  {
+   "file": "components/sidebar/project-order-manual-default-notice-visibility.test.ts",
+   "line": 6,
+   "kind": "plain",
+   "name": "keeps an explicit dismissal"
+  },
+  {
+   "file": "components/sidebar/project-order-manual-default-notice-visibility.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "hides the notice for brand-new profiles"
+  },
+  {
+   "file": "components/sidebar/project-order-manual-default-notice-visibility.test.ts",
+   "line": 26,
+   "kind": "plain",
+   "name": "hides the notice when recent ordering was already explicit"
+  },
+  {
+   "file": "components/sidebar/project-order-manual-default-notice-visibility.test.ts",
+   "line": 36,
+   "kind": "plain",
+   "name": "shows the notice for upgraded profiles without an explicit project order"
+  },
+  {
+   "file": "components/sidebar/project-order-manual-default-notice-visibility.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "shouldShowProjectOrderManualDefaultNotice"
+  },
+  {
+   "file": "components/sidebar/project-order-manual-default-notice-visibility.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "shows only when project grouping is active and repos exist"
+  },
+  {
+   "file": "components/sidebar/sidebar-resize-handle.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "worktree sidebar resize handle"
+  },
+  {
+   "file": "components/sidebar/sidebar-resize-handle.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "keeps a wide hit target that straddles the sidebar seam"
+  },
+  {
+   "file": "components/sidebar/sidebar-resize-handle.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "keeps card content clear of the resize target"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-activation-race.test.ts",
+   "line": 46,
+   "kind": "plain",
+   "name": "sleep flow vs slept-workspace activation"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-activation-race.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "does not leave behind a delayed parent activation after sleeping children"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-activation-race.test.ts",
+   "line": 99,
+   "kind": "plain",
+   "name": "keeps the slept worktree selected when VM resume fails"
+  },
+  {
+   "file": "components/sidebar/use-visible-workspace-kanban-worktree-ids.test.tsx",
+   "line": 12,
+   "kind": "plain",
+   "name": "useVisibleWorkspaceKanbanWorktreeIds"
+  },
+  {
+   "file": "components/sidebar/use-visible-workspace-kanban-worktree-ids.test.tsx",
+   "line": 22,
+   "kind": "plain",
+   "name": "keeps a single-host filter host-qualified when workspace ids collide"
+  }
+ ]
+}

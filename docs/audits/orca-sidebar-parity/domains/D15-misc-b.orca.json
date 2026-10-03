@@ -1,0 +1,460 @@
+{
+  "domain": "D15-misc-b",
+  "rows": [
+    {
+      "id": "D15b-001",
+      "capability": "Cálculo reativo do conjunto de worktrees visíveis no quadro Kanban com sincronização dos filtros do sidebar e desativação de injeção de ancestrais",
+      "surface": "drawer/sheet do quadro Kanban de workspaces",
+      "trigger": "renderização do hook useVisibleWorkspaceKanbanWorktreeIds e alterações no store de filtros ou lista de worktrees",
+      "behaviors": [
+        "Recebe allWorktrees e repoMap, mapeando os IDs ordenados das worktrees.",
+        "Lê filtros do sidebar do useAppStore: worktreesByRepo, filterRepoIds, hideDefaultBranchWorkspace, hideAutomationGeneratedWorkspaces, hideCliCreatedWorkspaces, hideDetachedHeadWorkspaces, hideWorkspacesFromOtherDevices, alwaysShowDefaultBranchWorkspace, workspaceHostScope, visibleWorkspaceHostIds, settings.",
+        "Executa computeVisibleWorktrees passando todos os critérios de filtragem do sidebar para manter paridade visual estrita entre a lista e o quadro Kanban.",
+        "Desativa forçadamente a injeção de ancestrais de linhagem (injectLineageAncestors: false, worktreeLineageById: {}) para evitar que workspaces pais filtrados surjam indevidamente como cards soltos no Kanban.",
+        "Converte os worktrees visíveis resultantes em identidades qualificadas por host via getWorktreeHostIdentity e retorna um ReadonlySet<string>."
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreesByRepo",
+        "useAppStore.filterRepoIds",
+        "useAppStore.hideDefaultBranchWorkspace",
+        "useAppStore.hideAutomationGeneratedWorkspaces",
+        "useAppStore.hideCliCreatedWorkspaces",
+        "useAppStore.hideDetachedHeadWorkspaces",
+        "useAppStore.hideWorkspacesFromOtherDevices",
+        "useAppStore.runtimeEnvironments",
+        "useAppStore.runtimeStatusByEnvironmentId",
+        "useAppStore.alwaysShowDefaultBranchWorkspace",
+        "useAppStore.workspaceHostScope",
+        "useAppStore.visibleWorkspaceHostIds",
+        "useAppStore.settings",
+        "useAppStore.ptyIdsByTabId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:25-48",
+        "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:73-126"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-002",
+      "capability": "Amostragem otimizada por epoch clock de agentes ativos e isolamento em modo sleeping workspaces no Kanban",
+      "surface": "drawer/sheet do quadro Kanban de workspaces e cálculo de visibilidade",
+      "trigger": "mudança no agentStatusEpoch do store ou toggle da preferência showSleepingWorkspaces",
+      "behaviors": [
+        "Quando showSleepingWorkspaces está desativado, subscreve a tabsByWorktree, ptyIdsByTabId, browserTabsByWorktree e agentStatusEpoch, calculando agentStatusNow via getAgentStatusEpochNow(agentStatusEpoch).",
+        "Obtém worktreeIdsWithLiveAgent inspecionando agentStatusByPaneKey e tabsByWorktree para a época atual.",
+        "Quando showSleepingWorkspaces está ativado, ignora o clock de época (agentStatusNow = 0, tabs/pty/browserTabs = null) e define worktreeIdsWithLiveAgent como conjunto vazio, impedindo que o drawer em background descarte a amostra compartilhada pelos quadros ativos.",
+        "Utiliza agentStatusEpoch nas dependências do useMemo para garantir re-keying mesmo quando dois ticks ocorrem no mesmo milissegundo."
+      ],
+      "background_activity": "amostragem de atividade de agentes acionada pelo tick de agentStatusEpoch no store",
+      "state_inputs": [
+        "useAppStore.showSleepingWorkspaces",
+        "useAppStore.tabsByWorktree",
+        "useAppStore.ptyIdsByTabId",
+        "useAppStore.browserTabsByWorktree",
+        "useAppStore.agentStatusEpoch",
+        "useAppStore.agentStatusByPaneKey"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:49-71"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-003",
+      "capability": "Redirecionamento automático e repasse síncrono de requisições de reveal/renomeação de workspace ao alternar da visualização de Agentes para Spaces",
+      "surface": "sidebar global ao transicionar entre a aba Agents e Spaces",
+      "trigger": "disparo do evento de janela SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT enquanto a visualização de Agentes está ativa",
+      "behaviors": [
+        "Quando agentsBodyShowing é verdadeiro, registra listener para o evento customizado SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT.",
+        "Ao receber o evento, captura o payload detail em pendingDetailRef e altera o corpo do sidebar para 'workspaces' via setSidebarBody('workspaces').",
+        "Quando agentsBodyShowing se torna falso e existe uma requisição pendente em pendingDetailRef, dispara imediatamente e de forma síncrona o evento SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT com o detail original.",
+        "A reprodução síncrona permite que o componente de lista de worktrees recém-montado receba e execute a revelação ou início de renomeação.",
+        "Não intercepta requisições quando a aba Spaces já está visível (agentsBodyShowing === false), permitindo tratamento direto pela lista de worktrees."
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.setSidebarBody"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-reveal-body-redirect.ts:10-43"
+      ],
+      "tests": [
+        "components/sidebar/use-workspace-reveal-body-redirect.test.tsx:38 :: useWorkspaceRevealBodyRedirect",
+        "components/sidebar/use-workspace-reveal-body-redirect.test.tsx:39 :: switches the body to Spaces and replays the request once the list is mounted",
+        "components/sidebar/use-workspace-reveal-body-redirect.test.tsx:68 :: does not intercept requests while Spaces is already showing"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-004",
+      "capability": "Despacho de operações de drop de worktrees em lote ou individuais para alteração de status ou fixação (pin)",
+      "surface": "colunas de status do quadro Kanban e alvos de fixação de workspace",
+      "trigger": "chamada de commitWorkspaceStatusDocumentDrop após soltura (drop) de um ou múltiplos workspaces",
+      "behaviors": [
+        "Se isPinDrop for verdadeiro, verifica se onPinWorktrees em lote foi fornecido e o invoca com o array worktreeIds.",
+        "Se onPinWorktrees não existir em isPinDrop, itera por cada worktreeId invocando onPinWorktree individualmente.",
+        "Se não for pin e status for nulo, encerra sem realizar operação.",
+        "Se status for fornecido, verifica se onMoveWorktreesToStatus em lote foi fornecido e o invoca com worktreeIds e o status de destino.",
+        "Se onMoveWorktreesToStatus não existir, itera por cada worktreeId invocando onMoveWorktreeToStatus individualmente com o status."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-status-drop.ts:19-61"
+      ],
+      "tests": [
+        "components/sidebar/use-workspace-status-drop.test.ts:4 :: workspace status document drop",
+        "components/sidebar/use-workspace-status-drop.test.ts:5 :: commits multi-worktree status drops through the batched callback once",
+        "components/sidebar/use-workspace-status-drop.test.ts:25 :: commits multi-worktree pin drops through the batched callback once"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-005",
+      "capability": "Captura em nível de documento de eventos de arrasto e soltura (drag-and-drop) de workspaces com bypass de interceptação do Electron e encerramento de preview",
+      "surface": "container DOM do quadro Kanban e áreas de drop de status/pin",
+      "trigger": "eventos nativos de drag and drop ('drop' e 'dragend') disparados no document",
+      "behaviors": [
+        "Registra event listeners de captura (capture phase) no document para 'drop' e 'dragend' quando enabled for true.",
+        "Verifica se dataTransfer possui dados válidos de workspace via hasWorkspaceDragData.",
+        "Invoca onDragFinish() para resetar estados visuais de arrasto.",
+        "Valida se o evento ocorreu dentro do container referenciado por containerRef.",
+        "Identifica alvos de drop através dos seletores [data-workspace-pin-drop-target] e [data-workspace-status-drop-target].",
+        "Extrai os IDs dos worktrees arrastados usando readWorkspaceDragDataIds.",
+        "Aplica preventDefault() e stopPropagation() na fase de captura para evitar que a ponte de preload do Electron cancele drops nativos antes do React.",
+        "Extrai data-workspace-status do elemento alvo e despacha para commitWorkspaceStatusDocumentDrop.",
+        "Remove os listeners do document na desmontagem do hook ou desativação."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-status-drop.ts:63-143"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-006",
+      "capability": "Resolução de identidade e dados de workspace com suporte a repositório proprietário, múltiplos hosts e folder workspaces para o diálogo de metadados",
+      "surface": "diálogo de edição de metadados de worktree (WorktreeMetaDialog)",
+      "trigger": "abertura do diálogo de metadados com worktreeId, ownerRepoId e executionHostId",
+      "behaviors": [
+        "Analisa a chave do workspace via parseWorkspaceKey(worktreeId) para identificar o tipo (ex.: 'folder').",
+        "Busca a worktree dentro de worktreesByRepo[ownerRepoId] filtrando por worktreeId e executionHostId para evitar ambiguidades em ambientes multi-host.",
+        "Caso não encontre pelo repositório direto, recorre ao índice de proprietários findIndexedWorktreeOwner.",
+        "Para workspaces baseados em diretório (folder workspaces), busca o registro estável em folderWorkspaces e converte para estrutura Worktree via folderWorkspaceToWorktree fora do selector para evitar re-renderizações contínuas do diálogo.",
+        "Retorna o objeto worktree consolidado e a flag booleana isFolderWorkspace."
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreesByRepo",
+        "useAppStore.folderWorkspaces"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-meta-workspace.ts:14-62",
+        "components/sidebar/use-worktree-meta-workspace.ts:104"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-007",
+      "capability": "Resolução de provedor de issue (GitHub/Linear) e mapeamento de vínculos ao vivo para prevenção de sobreposição em metadados",
+      "surface": "campos de vínculo de issue e alerta de deslocamento no diálogo de metadados",
+      "trigger": "resolução do hook useWorktreeMetaWorkspace a partir da worktree selecionada",
+      "behaviors": [
+        "Inspeciona linkedIssue e linkedLinearIssue da worktree.",
+        "Determina currentProvider como 'github' se linkedIssue for número, 'linear' se linkedLinearIssue estiver definido, ou fallback para 'github'.",
+        "Formata currentIssue como string numérica para GitHub ou identificador para Linear.",
+        "Gera objeto liveLinks com referências a linkedPR, linkedIssue, linkedLinearIssue, linkedLinearIssueOrganizationUrlKey e linkedWorkItem.",
+        "O objeto liveLinks reflete o estado atual no store para que o aviso de deslocamento no salvamento compare contra o estado em tempo real (ex.: links criados via CLI durante a edição)."
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreesByRepo",
+        "useAppStore.folderWorkspaces"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-meta-workspace.ts:63-106"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-008",
+      "capability": "Abertura do seletor de worktree pai (parent picker) com captura de elemento âncora e fallback por timer",
+      "surface": "menu de contexto de card de worktree e popover do parent picker",
+      "trigger": "acionamento da ação 'Change Parent...' ou similar no menu de contexto",
+      "behaviors": [
+        "handleOpenParentPicker previne o comportamento padrão do evento.",
+        "Localiza o elemento âncora DOM correspondente ao card da worktree via getWorktreeParentPickerAnchor(scopeRef.current, worktreeId).",
+        "Armazena o estado pendente { childWorktreeId, anchorElement } em pendingRef.",
+        "Fecha o menu de contexto chamando setMenuOpenState(false).",
+        "Agenda um timer de fallback de 50ms (fallbackTimerRef) para invocar openPendingParentPicker caso o fechamento do menu não o execute de imediato.",
+        "openPendingParentPicker consome pendingRef, cancela timers pendentes e atualiza o estado com setParentPicker(pending) e setParentPickerOpen(true)."
+      ],
+      "background_activity": "timer de fallback de 50ms para abertura do picker pós-fechamento de menu",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-parent-picker-transition.ts:19-35",
+        "components/sidebar/use-worktree-parent-picker-transition.ts:49-61"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-009",
+      "capability": "Fechamento temporizado do parent picker com retenção para execução de animação de saída (unmount delay)",
+      "surface": "popover do parent picker e card de worktree",
+      "trigger": "mudança de visibilidade do picker (handleParentPickerOpenChange(false))",
+      "behaviors": [
+        "Ao receber open === false, atualiza o estado de abertura com setParentPickerOpen(false).",
+        "Inicia um timer de desmontagem (unmountTimerRef) com a duração PARENT_PICKER_EXIT_ANIMATION_MS.",
+        "Após o tempo de animação de saída expirar, limpa o estado do picker chamando setParentPicker(null).",
+        "Cancela timers de unmount ativos caso uma nova abertura ocorra antes da conclusão da animação."
+      ],
+      "background_activity": "timer com delay PARENT_PICKER_EXIT_ANIMATION_MS para desmontagem pós-animação",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-parent-picker-transition.ts:29-32",
+        "components/sidebar/use-worktree-parent-picker-transition.ts:36-48"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-010",
+      "capability": "Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento",
+      "surface": "área de prompt de script de setup no sidebar / card de repositório",
+      "trigger": "renderização do hook useRenderedSetupScriptPromptState com alterações em promptState, activeRepoId ou activeRepoHostIdentity",
+      "behaviors": [
+        "Se promptTargetHidden for false e houver activeRepoId e activeRepoHostIdentity válidos, calcula renderedPromptState via getRenderedSetupScriptPromptState utilizando lastVisiblePromptRef.current.",
+        "Retém o estado do prompt em lastVisiblePromptRef quando status for 'ok', hasEffectiveSetup for falso e o repoHostIdentity corresponder ao host ativo.",
+        "Limpa a referência lastVisiblePromptRef quando o prompt é ocultado (promptTargetHidden === true), se o status for 'forbidden', ou se a configuração de setup já estiver efetivada (hasEffectiveSetup === true).",
+        "Garante que um prompt visível para um host não vaze ou seja exibido incorretamente ao alternar para outro host do mesmo repositório."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useRenderedSetupScriptPromptState.ts:8-45"
+      ],
+      "tests": [
+        "components/sidebar/useRenderedSetupScriptPromptState.test.ts:20 :: useRenderedSetupScriptPromptState",
+        "components/sidebar/useRenderedSetupScriptPromptState.test.ts:21 :: preserves a committed same-host prompt without leaking it to another host"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-011",
+      "capability": "Definição de métricas de reserva de layout para o chrome superior da janela e barra de status em painéis portalizados de workspace",
+      "surface": "painéis e sheets complementares de workspace renderizados via portal em document.body",
+      "trigger": "importação e uso das constantes de métrica de layout",
+      "behaviors": [
+        "Define WORKSPACE_TOP_CHROME_HEIGHT = 36 (px) para compensar a altura do chrome superior da janela do Orca.",
+        "Define STATUS_BAR_RESERVE_HEIGHT = 24 (px) para compensar a barra de status inferior.",
+        "Permite que sheets e boards renderizados via portal no document.body reservem as margens adequadas sem depender de herança do container pai."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-chrome-metrics.ts:1-4"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-012",
+      "capability": "Cálculo de índice de inserção e posição visual do indicador de drop para reordenação de cabeçalhos de repositório e seção no sidebar",
+      "surface": "cabeçalhos de repositório e seções de worktree no sidebar durante arrasto",
+      "trigger": "chamada de computeWorktreeSidebarHeaderDropPreview durante drag and drop de cabeçalhos",
+      "behaviors": [
+        "Retorna null imediatamente se rects estiver vazio ou headerCount for 0.",
+        "Calcula localY = pointerY - containerTop + scrollTop.",
+        "Verifica se localY excede contentBottom (altura medida do conteúdo) e retorna null para não criar slots abaixo do final da lista.",
+        "Delega para getWorktreeSidebarBoundaryDrop para tratar arrastos fora dos limites (outside) ou nas bordas extremas da lista.",
+        "Se o cursor estiver sobre um retângulo de cabeçalho, calcula o ponto médio mid = (top + bottom) / 2.",
+        "Se localY < mid, seleciona dropIndex = hoveredRect.headerIndex e posiciona a linha indicadora em nextRect.top - 4px.",
+        "Se localY >= mid, seleciona dropIndex = hoveredRect.headerIndex + 1 e posiciona a linha indicadora abaixo do cabeçalho ou seção (bottom + 4px).",
+        "Garante que dropIndicatorY nunca seja menor que args.scrollTop."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-header-drop-preview.ts:17-86"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-013",
+      "capability": "Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos",
+      "surface": "corpo de seção de worktrees e intervalos intermediários entre cabeçalhos no sidebar",
+      "trigger": "arrasto de cabeçalho posicionado fora das faixas de cabeçalho (em área de itens ou gaps)",
+      "behaviors": [
+        "Ao detectar que localY não está diretamente sobre uma faixa de cabeçalho, invoca pickNearestHeaderBoundarySlot(rects, localY).",
+        "Identifica o cabeçalho anterior (prevRect) e o próximo (nextRect) em relação a localY.",
+        "Calcula a distância para o limite inferior do anterior (afterPrev) e limite superior do próximo (beforeNext).",
+        "Em caso de empate na distância (ponto médio exato), resolve preferencialmente para o limite do próximo cabeçalho.",
+        "Retorna o dropIndex e a posição dropIndicatorY correspondentes, prevenindo que o drop se torne um no-op silencioso."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D15b-014",
+      "capability": "Cálculo de rolagem para revelação de card de workspace ativo nos limites visíveis do viewport do sidebar",
+      "surface": "botão/ação de rolagem para workspace atual na lista de worktrees",
+      "trigger": "chamada de getScrollTopToRevealBounds para centralizar ou revelar card de workspace",
+      "behaviors": [
+        "Calcula os limites do viewport considerando a compensação superior (topInset / WORKTREE_SIDEBAR_REVEAL_TOP_INSET).",
+        "Se bounds.start estiver acima do topo visível do viewport (bounds.start < viewportTop), calcula e retorna o novo scrollTop para rolar para cima alinhando ao topo com o inset.",
+        "Se bounds.end estiver abaixo da base visível do viewport (bounds.end > viewportBottom), calcula e retorna o novo scrollTop para rolar para baixo posicionando o card na visualização.",
+        "Se o card já estiver completamente visível dentro dos limites do viewport, retorna null indicando que nenhuma rolagem é necessária."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-reveal.ts:21-36"
+      ],
+      "tests": [
+        "components/sidebar/worktree-scroll-to-current-button.test.ts:4 :: getScrollTopToRevealBounds",
+        "components/sidebar/worktree-scroll-to-current-button.test.ts:11 :: scrolls upward to reveal a mounted current workspace card above the viewport",
+        "components/sidebar/worktree-scroll-to-current-button.test.ts:15 :: scrolls downward to reveal a mounted current workspace card below the viewport",
+        "components/sidebar/worktree-scroll-to-current-button.test.ts:19 :: does not scroll when the current workspace card is already fully visible"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "use-visible-workspace-kanban-worktree-ids.ts": [
+        "D15b-001",
+        "D15b-002"
+      ],
+      "use-workspace-reveal-body-redirect.ts": [
+        "D15b-003"
+      ],
+      "use-workspace-status-drop.ts": [
+        "D15b-004",
+        "D15b-005"
+      ],
+      "use-worktree-meta-workspace.ts": [
+        "D15b-006",
+        "D15b-007"
+      ],
+      "use-worktree-parent-picker-transition.ts": [
+        "D15b-008",
+        "D15b-009"
+      ],
+      "useRenderedSetupScriptPromptState.ts": [
+        "D15b-010"
+      ],
+      "workspace-chrome-metrics.ts": [
+        "D15b-011"
+      ],
+      "worktree-sidebar-header-drop-preview.ts": [
+        "D15b-012",
+        "D15b-013"
+      ]
+    },
+    "symbols": {
+      "useVisibleWorkspaceKanbanWorktreeIds": [
+        "D15b-001",
+        "D15b-002"
+      ],
+      "useWorkspaceRevealBodyRedirect": [
+        "D15b-003"
+      ],
+      "commitWorkspaceStatusDocumentDrop": [
+        "D15b-004"
+      ],
+      "useWorkspaceStatusDocumentDrop": [
+        "D15b-005"
+      ],
+      "useWorktreeMetaWorkspace": [
+        "D15b-006",
+        "D15b-007"
+      ],
+      "useWorktreeParentPickerTransition": [
+        "D15b-008",
+        "D15b-009"
+      ],
+      "useRenderedSetupScriptPromptState": [
+        "D15b-010"
+      ],
+      "WORKSPACE_TOP_CHROME_HEIGHT": [
+        "D15b-011"
+      ],
+      "STATUS_BAR_RESERVE_HEIGHT": [
+        "D15b-011"
+      ],
+      "WorktreeSidebarHeaderDragRect": [
+        "D15b-012"
+      ],
+      "WorktreeSidebarHeaderDropPreview": [
+        "D15b-012"
+      ],
+      "computeWorktreeSidebarHeaderDropPreview": [
+        "D15b-012",
+        "D15b-013"
+      ]
+    },
+    "labels": {},
+    "hotkeys": {
+      "components/sidebar/use-workspace-reveal-body-redirect.ts:6 :: * Reveal requests (rename shortcut, reveal-active-workspace button) are handled inside the": "D15b-003"
+    },
+    "prefs": {},
+    "timers": {
+      "components/sidebar/use-worktree-parent-picker-transition.ts:42 :: args.unmountTimerRef.current = window.setTimeout(() => {": "D15b-009",
+      "components/sidebar/use-worktree-parent-picker-transition.ts:58 :: args.fallbackTimerRef.current = window.setTimeout(openPendingParentPicker, 50)": "D15b-008"
+    },
+    "subscriptions": {
+      "components/sidebar/use-workspace-reveal-body-redirect.test.tsx:59 :: window.addEventListener(SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT, listener)": "INFRA: test event listener helper for redirect verification",
+      "components/sidebar/use-workspace-reveal-body-redirect.ts:14 :: useEffect(() => {": "D15b-003",
+      "components/sidebar/use-workspace-reveal-body-redirect.ts:22 :: window.addEventListener(SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT, onRequest)": "D15b-003",
+      "components/sidebar/use-workspace-reveal-body-redirect.ts:28 :: useEffect(() => {": "D15b-003",
+      "components/sidebar/use-workspace-status-drop.ts:73 :: useEffect(() => {": "D15b-005",
+      "components/sidebar/use-workspace-status-drop.ts:128 :: document.addEventListener('drop', handleDrop, true)": "D15b-005",
+      "components/sidebar/use-workspace-status-drop.ts:129 :: document.addEventListener('dragend', handleDragFinish, true)": "D15b-005",
+      "components/sidebar/useRenderedSetupScriptPromptState.ts:26 :: useEffect(() => {": "D15b-010"
+    },
+    "preload": {},
+    "tests": {
+      "components/sidebar/use-workspace-reveal-body-redirect.test.tsx:38 :: useWorkspaceRevealBodyRedirect": "INFRA: describe suite header for useWorkspaceRevealBodyRedirect",
+      "components/sidebar/use-workspace-reveal-body-redirect.test.tsx:39 :: switches the body to Spaces and replays the request once the list is mounted": "D15b-003",
+      "components/sidebar/use-workspace-reveal-body-redirect.test.tsx:68 :: does not intercept requests while Spaces is already showing": "D15b-003",
+      "components/sidebar/use-workspace-status-drop.test.ts:4 :: workspace status document drop": "INFRA: describe suite header for workspace status document drop",
+      "components/sidebar/use-workspace-status-drop.test.ts:5 :: commits multi-worktree status drops through the batched callback once": "D15b-004",
+      "components/sidebar/use-workspace-status-drop.test.ts:25 :: commits multi-worktree pin drops through the batched callback once": "D15b-004",
+      "components/sidebar/useRenderedSetupScriptPromptState.test.ts:20 :: useRenderedSetupScriptPromptState": "INFRA: describe suite header for useRenderedSetupScriptPromptState",
+      "components/sidebar/useRenderedSetupScriptPromptState.test.ts:21 :: preserves a committed same-host prompt without leaking it to another host": "D15b-010",
+      "components/sidebar/worktree-scroll-to-current-button.test.ts:4 :: getScrollTopToRevealBounds": "INFRA: describe suite header for getScrollTopToRevealBounds",
+      "components/sidebar/worktree-scroll-to-current-button.test.ts:11 :: scrolls upward to reveal a mounted current workspace card above the viewport": "D15b-014",
+      "components/sidebar/worktree-scroll-to-current-button.test.ts:15 :: scrolls downward to reveal a mounted current workspace card below the viewport": "D15b-014",
+      "components/sidebar/worktree-scroll-to-current-button.test.ts:19 :: does not scroll when the current workspace card is already fully visible": "D15b-014"
+    }
+  }
+}

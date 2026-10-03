@@ -1,0 +1,922 @@
+[
+ {
+  "path": "components/AgentQuestionIcon.tsx",
+  "loc": 22
+ },
+ {
+  "path": "components/AgentStateDot.tsx",
+  "loc": 170
+ },
+ {
+  "path": "components/AgentWorkingSpinner.tsx",
+  "loc": 49
+ },
+ {
+  "path": "components/DetachedHeadBadge.tsx",
+  "loc": 49
+ },
+ {
+  "path": "components/HostedReviewUnlinkMenuItem.tsx",
+  "loc": 43
+ },
+ {
+  "path": "components/SelectedTextCopyMenu.tsx",
+  "loc": 128
+ },
+ {
+  "path": "components/ShortcutKeyCombo.tsx",
+  "loc": 63
+ },
+ {
+  "path": "components/StateIndicatorTooltip.tsx",
+  "loc": 28
+ },
+ {
+  "path": "components/activity/activity-thread-actions.ts",
+  "loc": 150
+ },
+ {
+  "path": "components/activity/activity-thread-collapse-context.ts",
+  "loc": 13
+ },
+ {
+  "path": "components/activity/activity-thread-controls.tsx",
+  "loc": 160
+ },
+ {
+  "path": "components/activity/activity-thread-list-pane.tsx",
+  "loc": 394
+ },
+ {
+  "path": "components/activity/activity-thread-types.ts",
+  "loc": 80
+ },
+ {
+  "path": "components/activity/use-activity-thread-action-bindings.ts",
+  "loc": 71
+ },
+ {
+  "path": "components/activity/use-agent-pane-threads.ts",
+  "loc": 266
+ },
+ {
+  "path": "components/automations/automation-host-client.ts",
+  "loc": 184
+ },
+ {
+  "path": "components/confirmation-dialog-context.ts",
+  "loc": 32
+ },
+ {
+  "path": "components/confirmation-dialog.tsx",
+  "loc": 175
+ },
+ {
+  "path": "components/contextual-tours/use-contextual-tour.ts",
+  "loc": 264
+ },
+ {
+  "path": "components/contextual-tours/workspace-creation-tour-handoff.ts",
+  "loc": 43
+ },
+ {
+  "path": "components/dashboard/AgentDashboardDrawer.tsx",
+  "loc": 230
+ },
+ {
+  "path": "components/dashboard/DashboardAgentRow.tsx",
+  "loc": 314
+ },
+ {
+  "path": "components/dashboard/agent-finished-timestamp.ts",
+  "loc": 35
+ },
+ {
+  "path": "components/dashboard/agent-row-lineage-model.ts",
+  "loc": 127
+ },
+ {
+  "path": "components/dashboard/agent-row-lineage.ts",
+  "loc": 81
+ },
+ {
+  "path": "components/dashboard/use-agent-row-conversation-name.ts",
+  "loc": 70
+ },
+ {
+  "path": "components/dashboard/useAgentBucketCounts.ts",
+  "loc": 107
+ },
+ {
+  "path": "components/dashboard/useDashboardData.ts",
+  "loc": 28
+ },
+ {
+  "path": "components/editor/MermaidBlock.tsx",
+  "loc": 116
+ },
+ {
+  "path": "components/feature-wall/feature-wall-setup-progress.ts",
+  "loc": 74
+ },
+ {
+  "path": "components/github/review-state-presentation.ts",
+  "loc": 41
+ },
+ {
+  "path": "components/host-row-icon.tsx",
+  "loc": 16
+ },
+ {
+  "path": "components/icons/JiraIcon.tsx",
+  "loc": 16
+ },
+ {
+  "path": "components/icons/LinearIcon.tsx",
+  "loc": 13
+ },
+ {
+  "path": "components/integration-status-pill.tsx",
+  "loc": 38
+ },
+ {
+  "path": "components/mobile/paired-mobile-devices.ts",
+  "loc": 219
+ },
+ {
+  "path": "components/native-chat/NativeChatCodeBlock.tsx",
+  "loc": 68
+ },
+ {
+  "path": "components/new-workspace/SmartWorkspaceNameField.tsx",
+  "loc": 18
+ },
+ {
+  "path": "components/onboarding/show-onboarding-event.ts",
+  "loc": 25
+ },
+ {
+  "path": "components/repo/NestedRepoChecklist.tsx",
+  "loc": 129
+ },
+ {
+  "path": "components/repo/NestedRepoScanLimitNotice.tsx",
+  "loc": 77
+ },
+ {
+  "path": "components/repo/RepoBadgeLabel.tsx",
+  "loc": 33
+ },
+ {
+  "path": "components/repo/repo-fork-indicator.tsx",
+  "loc": 37
+ },
+ {
+  "path": "components/repo/repo-icon.tsx",
+  "loc": 186
+ },
+ {
+  "path": "components/right-sidebar/parent-pr-checks-row-types.ts",
+  "loc": 148
+ },
+ {
+  "path": "components/right-sidebar/parent-pr-checks-rows.ts",
+  "loc": 306
+ },
+ {
+  "path": "components/settings/AgentSkillSetupPanel.tsx",
+  "loc": 413
+ },
+ {
+  "path": "components/settings/CliSkillRuntimeSetup.tsx",
+  "loc": 374
+ },
+ {
+  "path": "components/settings/SettingsFormControls.tsx",
+  "loc": 399
+ },
+ {
+  "path": "components/settings/SshHostAdvancedFields.tsx",
+  "loc": 180
+ },
+ {
+  "path": "components/settings/keep-local-main-up-to-date-setting.ts",
+  "loc": 13
+ },
+ {
+  "path": "components/settings/repository-settings-targets.ts",
+  "loc": 20
+ },
+ {
+  "path": "components/settings/ssh-target-draft.ts",
+  "loc": 310
+ },
+ {
+  "path": "components/settings/ssh-target-remove.ts",
+  "loc": 37
+ },
+ {
+  "path": "components/setup-guide/SetupGuideProgressRing.tsx",
+  "loc": 76
+ },
+ {
+  "path": "components/setup-guide/use-setup-guide-progress.ts",
+  "loc": 320
+ },
+ {
+  "path": "components/tab-bar/lucide-icon-stub-fixture.ts",
+  "loc": 11
+ },
+ {
+  "path": "components/terminal-pane/stale-agent-row.ts",
+  "loc": 31
+ },
+ {
+  "path": "components/terminal-pane/use-system-prefers-dark.ts",
+  "loc": 80
+ },
+ {
+  "path": "components/ui/badge.tsx",
+  "loc": 51
+ },
+ {
+  "path": "components/ui/button.tsx",
+  "loc": 63
+ },
+ {
+  "path": "components/ui/checkbox.tsx",
+  "loc": 38
+ },
+ {
+  "path": "components/ui/command.tsx",
+  "loc": 250
+ },
+ {
+  "path": "components/ui/context-menu.tsx",
+  "loc": 201
+ },
+ {
+  "path": "components/ui/dialog.tsx",
+  "loc": 162
+ },
+ {
+  "path": "components/ui/dropdown-menu.tsx",
+  "loc": 241
+ },
+ {
+  "path": "components/ui/hover-card.tsx",
+  "loc": 43
+ },
+ {
+  "path": "components/ui/input.tsx",
+  "loc": 26
+ },
+ {
+  "path": "components/ui/label.tsx",
+  "loc": 21
+ },
+ {
+  "path": "components/ui/popover.tsx",
+  "loc": 207
+ },
+ {
+  "path": "components/ui/scroll-area.tsx",
+  "loc": 70
+ },
+ {
+  "path": "components/ui/sheet.tsx",
+  "loc": 155
+ },
+ {
+  "path": "components/ui/switch.tsx",
+  "loc": 67
+ },
+ {
+  "path": "components/ui/toggle-group.tsx",
+  "loc": 82
+ },
+ {
+  "path": "components/ui/tooltip.tsx",
+  "loc": 60
+ },
+ {
+  "path": "components/workspace-emoji/WorkspaceEmojiSuggestionPopover.tsx",
+  "loc": 112
+ },
+ {
+  "path": "components/workspace-emoji/useWorkspaceEmojiShortcodeInput.ts",
+  "loc": 158
+ },
+ {
+  "path": "components/worktree-jump-palette-test-fixtures.ts",
+  "loc": 199
+ },
+ {
+  "path": "constants/marine-creatures.ts",
+  "loc": 4
+ },
+ {
+  "path": "hooks/use-now.ts",
+  "loc": 103
+ },
+ {
+  "path": "hooks/useInstalledAgentSkills.ts",
+  "loc": 343
+ },
+ {
+  "path": "hooks/useMountedRef.ts",
+  "loc": 14
+ },
+ {
+  "path": "hooks/useShortcutLabel.ts",
+  "loc": 139
+ },
+ {
+  "path": "hooks/useSidebarResize.ts",
+  "loc": 218
+ },
+ {
+  "path": "hooks/useVirtualizedScrollAnchor.ts",
+  "loc": 327
+ },
+ {
+  "path": "i18n/i18n.ts",
+  "loc": 141
+ },
+ {
+  "path": "i18n/localized-catalog.ts",
+  "loc": 16
+ },
+ {
+  "path": "i18n/pseudo-localization.ts",
+  "loc": 5
+ },
+ {
+  "path": "lib/activate-tab-and-focus-pane.ts",
+  "loc": 50
+ },
+ {
+  "path": "lib/agent-catalog.tsx",
+  "loc": 399
+ },
+ {
+  "path": "lib/agent-feature-install-commands.ts",
+  "loc": 22
+ },
+ {
+  "path": "lib/agent-launch-prompt-delivery.ts",
+  "loc": 81
+ },
+ {
+  "path": "lib/agent-row-decay-state.ts",
+  "loc": 56
+ },
+ {
+  "path": "lib/agent-row-dot-state.ts",
+  "loc": 24
+ },
+ {
+  "path": "lib/agent-row-primary-text.ts",
+  "loc": 127
+ },
+ {
+  "path": "lib/agent-row-tool-preview.ts",
+  "loc": 30
+ },
+ {
+  "path": "lib/agent-session-launch-plan.ts",
+  "loc": 140
+ },
+ {
+  "path": "lib/agent-skill-cli-prerequisite.ts",
+  "loc": 150
+ },
+ {
+  "path": "lib/agent-status-epoch-clock.ts",
+  "loc": 46
+ },
+ {
+  "path": "lib/agent-status-worktree-attribution.ts",
+  "loc": 53
+ },
+ {
+  "path": "lib/agent-status.ts",
+  "loc": 234
+ },
+ {
+  "path": "lib/agent-trust-preflight.ts",
+  "loc": 28
+ },
+ {
+  "path": "lib/browser-uuid.ts",
+  "loc": 28
+ },
+ {
+  "path": "lib/client-environment-info.ts",
+  "loc": 50
+ },
+ {
+  "path": "lib/connection-context.ts",
+  "loc": 46
+ },
+ {
+  "path": "lib/crash-diagnostics.ts",
+  "loc": 89
+ },
+ {
+  "path": "lib/desktop-window-chrome.ts",
+  "loc": 23
+ },
+ {
+  "path": "lib/editable-target.ts",
+  "loc": 37
+ },
+ {
+  "path": "lib/external-editor-open-capability.ts",
+  "loc": 21
+ },
+ {
+  "path": "lib/feedback-image-attachments.ts",
+  "loc": 194
+ },
+ {
+  "path": "lib/file-type-icons.ts",
+  "loc": 59
+ },
+ {
+  "path": "lib/folder-workspace-path-status-cache-expiry.ts",
+  "loc": 32
+ },
+ {
+  "path": "lib/folder-workspace-path-status.ts",
+  "loc": 168
+ },
+ {
+  "path": "lib/git-utils.ts",
+  "loc": 4
+ },
+ {
+  "path": "lib/github-links.ts",
+  "loc": 1
+ },
+ {
+  "path": "lib/ime-composition-keyboard-event.ts",
+  "loc": 141
+ },
+ {
+  "path": "lib/ipc-error.ts",
+  "loc": 38
+ },
+ {
+  "path": "lib/lazy-with-retry.ts",
+  "loc": 258
+ },
+ {
+  "path": "lib/left-sidebar-appearance.ts",
+  "loc": 131
+ },
+ {
+  "path": "lib/linear-agent-skill-update-command.ts",
+  "loc": 40
+ },
+ {
+  "path": "lib/linked-work-item-context.ts",
+  "loc": 239
+ },
+ {
+  "path": "lib/local-file-manager-label.ts",
+  "loc": 11
+ },
+ {
+  "path": "lib/local-path-open-guard.ts",
+  "loc": 21
+ },
+ {
+  "path": "lib/local-preflight-context.ts",
+  "loc": 328
+ },
+ {
+  "path": "lib/manual-terminal-worktree-parking.ts",
+  "loc": 29
+ },
+ {
+  "path": "lib/migration-unsupported-agent-entry.ts",
+  "loc": 39
+ },
+ {
+  "path": "lib/native-chat-initial-view-mode.ts",
+  "loc": 73
+ },
+ {
+  "path": "lib/native-chat-transcript-readability.ts",
+  "loc": 8
+ },
+ {
+  "path": "lib/nested-repo-selected-paths.ts",
+  "loc": 8
+ },
+ {
+  "path": "lib/new-workspace-project-options.ts",
+  "loc": 269
+ },
+ {
+  "path": "lib/new-workspace-ssh-gate.ts",
+  "loc": 46
+ },
+ {
+  "path": "lib/new-workspace.ts",
+  "loc": 328
+ },
+ {
+  "path": "lib/onboarding-folder-agent-launch.ts",
+  "loc": 84
+ },
+ {
+  "path": "lib/onboarding-project-checklist.ts",
+  "loc": 30
+ },
+ {
+  "path": "lib/open-in-app-catalog.tsx",
+  "loc": 77
+ },
+ {
+  "path": "lib/open-in-application-selection.ts",
+  "loc": 3
+ },
+ {
+  "path": "lib/orca-hook-trust.ts",
+  "loc": 28
+ },
+ {
+  "path": "lib/palette-match/palette-document.ts",
+  "loc": 211
+ },
+ {
+  "path": "lib/pane-agent-evidence.ts",
+  "loc": 129
+ },
+ {
+  "path": "lib/passive-macos-app-data-access.ts",
+  "loc": 56
+ },
+ {
+  "path": "lib/path.ts",
+  "loc": 82
+ },
+ {
+  "path": "lib/pending-worktree-creation.ts",
+  "loc": 183
+ },
+ {
+  "path": "lib/preserved-branch-cleanup.ts",
+  "loc": 5
+ },
+ {
+  "path": "lib/project-skill-runtime.ts",
+  "loc": 93
+ },
+ {
+  "path": "lib/remote-pairing-copy.ts",
+  "loc": 91
+ },
+ {
+  "path": "lib/repo-display-labels.ts",
+  "loc": 72
+ },
+ {
+  "path": "lib/repo-search.ts",
+  "loc": 61
+ },
+ {
+  "path": "lib/right-sidebar-visibility.ts",
+  "loc": 52
+ },
+ {
+  "path": "lib/running-agent-targets.ts",
+  "loc": 132
+ },
+ {
+  "path": "lib/runtime-pane-title-leaf-id.ts",
+  "loc": 123
+ },
+ {
+  "path": "lib/screen-submit-shortcut.ts",
+  "loc": 36
+ },
+ {
+  "path": "lib/script-textarea-rows.ts",
+  "loc": 33
+ },
+ {
+  "path": "lib/scroll-to-current-workspace-status.ts",
+  "loc": 34
+ },
+ {
+  "path": "lib/settings-navigation-types.ts",
+  "loc": 111
+ },
+ {
+  "path": "lib/setup-script-prompt.ts",
+  "loc": 220
+ },
+ {
+  "path": "lib/short-time-ago.ts",
+  "loc": 16
+ },
+ {
+  "path": "lib/shortcut-platform.ts",
+  "loc": 6
+ },
+ {
+  "path": "lib/sidebar-worktree-activation.ts",
+  "loc": 51
+ },
+ {
+  "path": "lib/structured-agent-session-provisional-tab.ts",
+  "loc": 93
+ },
+ {
+  "path": "lib/structured-agent-session-tab-activation.ts",
+  "loc": 43
+ },
+ {
+  "path": "lib/tab-has-live-pty.ts",
+  "loc": 13
+ },
+ {
+  "path": "lib/telemetry.ts",
+  "loc": 78
+ },
+ {
+  "path": "lib/terminal-links.ts",
+  "loc": 355
+ },
+ {
+  "path": "lib/text-control-paste.ts",
+  "loc": 280
+ },
+ {
+  "path": "lib/tui-agent-startup.ts",
+  "loc": 14
+ },
+ {
+  "path": "lib/update-check-click-options.ts",
+  "loc": 28
+ },
+ {
+  "path": "lib/utils.ts",
+  "loc": 6
+ },
+ {
+  "path": "lib/web-client-location.ts",
+  "loc": 14
+ },
+ {
+  "path": "lib/window-visibility-interval.ts",
+  "loc": 92
+ },
+ {
+  "path": "lib/work-item-lookup-text.ts",
+  "loc": 1
+ },
+ {
+  "path": "lib/workspace-browser-tab-open.ts",
+  "loc": 311
+ },
+ {
+  "path": "lib/workspace-port-actions.ts",
+  "loc": 334
+ },
+ {
+  "path": "lib/workspace-port-groups.ts",
+  "loc": 101
+ },
+ {
+  "path": "lib/workspace-port-localhost-label-selector.ts",
+  "loc": 52
+ },
+ {
+  "path": "lib/workspace-port-urls.ts",
+  "loc": 118
+ },
+ {
+  "path": "lib/worktree-activation.ts",
+  "loc": 342
+ },
+ {
+  "path": "lib/worktree-activity-state.ts",
+  "loc": 103
+ },
+ {
+  "path": "lib/worktree-display-name-order.ts",
+  "loc": 7
+ },
+ {
+  "path": "lib/worktree-git-identity-display.ts",
+  "loc": 43
+ },
+ {
+  "path": "lib/worktree-palette-document.ts",
+  "loc": 211
+ },
+ {
+  "path": "lib/worktree-palette-query-bounds.ts",
+  "loc": 10
+ },
+ {
+  "path": "lib/worktree-palette-search.ts",
+  "loc": 270
+ },
+ {
+  "path": "lib/worktree-runtime-owner-index.ts",
+  "loc": 320
+ },
+ {
+  "path": "lib/worktree-runtime-owner.ts",
+  "loc": 248
+ },
+ {
+  "path": "lib/worktree-sleep-intent.ts",
+  "loc": 69
+ },
+ {
+  "path": "lib/worktree-sort-order-persistence.ts",
+  "loc": 35
+ },
+ {
+  "path": "lib/worktree-startup-payload.ts",
+  "loc": 56
+ },
+ {
+  "path": "lib/worktree-status.ts",
+  "loc": 222
+ },
+ {
+  "path": "lib/worktree-tab-bucket-projection.ts",
+  "loc": 66
+ },
+ {
+  "path": "lib/worktree-visit-recency.ts",
+  "loc": 103
+ },
+ {
+  "path": "runtime/runtime-environment-ssh-state.ts",
+  "loc": 317
+ },
+ {
+  "path": "runtime/runtime-git-client.ts",
+  "loc": 91
+ },
+ {
+  "path": "runtime/runtime-hooks-client.ts",
+  "loc": 102
+ },
+ {
+  "path": "runtime/runtime-host-connection-state.ts",
+  "loc": 154
+ },
+ {
+  "path": "runtime/runtime-linear-client.ts",
+  "loc": 240
+ },
+ {
+  "path": "runtime/runtime-linear-issue-mutations.ts",
+  "loc": 113
+ },
+ {
+  "path": "runtime/runtime-linear-project-client.ts",
+  "loc": 266
+ },
+ {
+  "path": "runtime/runtime-rpc-client.ts",
+  "loc": 337
+ },
+ {
+  "path": "runtime/runtime-server-directory-browser.ts",
+  "loc": 22
+ },
+ {
+  "path": "runtime/use-worktree-runtime-target.ts",
+  "loc": 16
+ },
+ {
+  "path": "ssh/ssh-connect-in-flight.ts",
+  "loc": 90
+ },
+ {
+  "path": "ssh/ssh-connect-ui-timeout.ts",
+  "loc": 40
+ },
+ {
+  "path": "ssh/ssh-connect-verb.ts",
+  "loc": 27
+ },
+ {
+  "path": "ssh/ssh-connection-recoverability.ts",
+  "loc": 36
+ },
+ {
+  "path": "store/github/cache-identity.ts",
+  "loc": 227
+ },
+ {
+  "path": "store/index.ts",
+  "loc": 158
+ },
+ {
+  "path": "store/project-host-setup-selector.ts",
+  "loc": 228
+ },
+ {
+  "path": "store/repos/repo-state.ts",
+  "loc": 264
+ },
+ {
+  "path": "store/selectors.ts",
+  "loc": 323
+ },
+ {
+  "path": "store/slices/agent-status.ts",
+  "loc": 108
+ },
+ {
+  "path": "store/slices/github-cache-key.ts",
+  "loc": 89
+ },
+ {
+  "path": "store/slices/hosted-review-cache-identity.ts",
+  "loc": 66
+ },
+ {
+  "path": "store/slices/project-group-owner-routing.ts",
+  "loc": 94
+ },
+ {
+  "path": "store/slices/project-group-removal-targets.ts",
+  "loc": 51
+ },
+ {
+  "path": "store/slices/renderer-remove-worktree-result.ts",
+  "loc": 15
+ },
+ {
+  "path": "store/slices/repo-host-identity.ts",
+  "loc": 54
+ },
+ {
+  "path": "store/slices/runtime-environment-ssh.ts",
+  "loc": 286
+ },
+ {
+  "path": "store/slices/store-test-helpers.ts",
+  "loc": 213
+ },
+ {
+  "path": "store/slices/ui.ts",
+  "loc": 43
+ },
+ {
+  "path": "store/slices/worktree-helpers.ts",
+  "loc": 384
+ },
+ {
+  "path": "store/slices/worktree-removal-host-collision-fixture.ts",
+  "loc": 89
+ },
+ {
+  "path": "store/slices/worktree-removal-options.ts",
+  "loc": 20
+ },
+ {
+  "path": "store/slices/worktrees-detected-listing-fixtures.ts",
+  "loc": 52
+ },
+ {
+  "path": "store/slices/worktrees-slice-test-fixtures.ts",
+  "loc": 100
+ },
+ {
+  "path": "store/slices/worktrees-slice-test-harness.ts",
+  "loc": 225
+ },
+ {
+  "path": "store/store-listener-census.ts",
+  "loc": 52
+ },
+ {
+  "path": "store/types.ts",
+  "loc": 89
+ },
+ {
+  "path": "store/worktree-record-selector-cache.ts",
+  "loc": 71
+ },
+ {
+  "path": "store/worktree-repo-index.ts",
+  "loc": 108
+ },
+ {
+  "path": "store/worktree-visibility-defaults-by-host.ts",
+  "loc": 19
+ }
+]

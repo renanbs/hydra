@@ -1,0 +1,18 @@
+{
+ "domain": "D05-agents-rows",
+ "status": "ok",
+ "rows": 23,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "15/15",
+  "symbols": "45/45",
+  "tests": "129/129",
+  "labels": "5/5",
+  "hotkeys": "1/1",
+  "prefs": "0/0",
+  "timers": "1/1",
+  "subscriptions": "1/1",
+  "preload": "2/2"
+ }
+}

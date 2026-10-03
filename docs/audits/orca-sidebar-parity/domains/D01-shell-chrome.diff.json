@@ -1,0 +1,1259 @@
+{
+ "domain": "D01-shell-chrome",
+ "rows": [
+  {
+   "id": "D01-001",
+   "capability": "Renderização e controle de dimensão da casca do sidebar com persistência de largura e limites de redimensionamento",
+   "orca_evidence": [
+    "components/Sidebar.tsx:1",
+    "components/sidebar/index.tsx:33-35",
+    "components/sidebar/index.tsx:51-53",
+    "components/sidebar/index.tsx:112-114",
+    "components/sidebar/index.tsx:242"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:3631-3637",
+     "src/App.tsx:287",
+     "src/App.tsx:737-745",
+     "src/App.tsx:1024-1041",
+     "src/hooks/useSidebarResize.ts:82-96",
+     "src/store/slices/ui/ui-slice-agent-actions.ts:45-49"
+    ],
+    "backend": [
+     "invoke('get_layout_persistence') -> src-tauri/src/lib.rs:626 (chamado em src/App.tsx:756; registrado lib.rs:1512)",
+     "invoke('save_layout_persistence') -> src-tauri/src/lib.rs:631 (chamado em src/App.tsx:997, :1009 e :1029; registrado lib.rs:1513)"
+    ],
+    "missing_behaviors": [
+     "container raiz com data-sidebar (o <aside> do Hydra não tem atributo)",
+     "largura padrão 320px (Hydra: 280 em src/App.tsx:287)",
+     "limites 220/500 (Hydra: min 180 / max 480, src/App.tsx:739-740)",
+     "variável CSS --workspace-sidebar-live-width durante o drag (Hydra escreve style.width inline, src/hooks/useSidebarResize.ts:82-96)",
+     "largura/open a partir de useAppStore.sidebarOpen/sidebarWidth/setSidebarWidth (o shell usa estado local do App; os campos do store existem mas não são lidos)"
+    ],
+    "notes": "Casca existe e é persistida (get/save_layout_persistence), com clamp no load (App.tsx:763-766) e gravação no mouseup (App.tsx:1024-1041). Divergem atributo, default, limites e o canal de live-width."
+   }
+  },
+  {
+   "id": "D01-002",
+   "capability": "Customização temática visual do sidebar com adaptação ao terminal e suporte a tema claro/escuro",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:18-19",
+    "components/sidebar/index.tsx:93-96",
+    "components/sidebar/index.tsx:243"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/lib/left-sidebar-appearance.ts:45-70",
+     "src/App.tsx:376-381",
+     "src/App.tsx:3624",
+     "src/components/sidebar/WorktreeSidebar.tsx:610-620",
+     "src/components/sidebar/WorktreeSidebar.tsx:623",
+     "src/App.css:156-161"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "aplicação das variáveis match-terminal (--worktree-sidebar* + override de tokens) na superfície do sidebar — resolveLeftSidebarStyleVariables é consumido só pelo WindowTitlebar (src/App.tsx:3624)",
+     "propagação de leftSidebarStyle para gavetas acopladas (Kanban Drawer e Agent Dashboard Drawer não existem no Hydra)",
+     "reação do corpo do sidebar à troca dark/light do sistema (só o caminho 'tinted' pinta inline; App.tsx:379 recalcula mas para o titlebar)"
+    ],
+    "notes": "resolveLeftSidebarStyleVariables (src/lib/left-sidebar-appearance.ts:45-70) porta os modos default/match-terminal/tinted; apenas o branch 'tinted' chega ao sidebar (WorktreeSidebar.tsx:610-620 + style em :623)."
+   }
+  },
+  {
+   "id": "D01-003",
+   "capability": "Alça de redimensionamento horizontal do sidebar com feedback de hover/active e cursor dedicado",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:4",
+    "components/sidebar/index.tsx:37-40",
+    "components/sidebar/index.tsx:245"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:3702-3713",
+     "src/hooks/useSidebarResize.ts:186-217",
+     "src/hooks/useSidebarResize.ts:118-133",
+     "src/App.tsx:737-745"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "reset para a largura padrão no duplo clique (não há handler dblclick em useSidebarResize nem no handle)",
+     "captura de pointer (Hydra usa mousemove/mouseup no window + overlay full-viewport de z-index máximo, src/hooks/useSidebarResize.ts:203-217)",
+     "alça absoluta sobreposta à junção com o terminal (Hydra usa um irmão flex de 2.5px entre o aside e o <main>)"
+    ],
+    "notes": "Alça existe e funciona: cursor col-resize no body (useSidebarResize.ts:198-200), feedback hover/active emerald (App.tsx:3707-3712), commit no mouseup."
+   }
+  },
+  {
+   "id": "D01-004",
+   "capability": "Drop de diretórios nativos sobre a superfície do sidebar para adição direta de projeto",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:13",
+    "components/sidebar/index.tsx:15",
+    "components/sidebar/index.tsx:97",
+    "components/sidebar/index.tsx:250-258"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "captura de drag nativo do SO sobre a casca (useSidebarProjectDrop)",
+     "overlay 'Drop folder to add project' com borda tracejada e FolderPlus",
+     "importação/criação do projeto ao soltar a pasta"
+    ],
+    "notes": "Busca em 5 passos: (1) useSidebarProjectDrop -> 0 ocorrências em src; (2) strings 'Drop folder to add project' -> 0; (3) onDragOver/onDrop na casca -> só DnD interno de cards/projetos (src/components/sidebar/WorktreeList.tsx:277-280 e :394-399), nenhum listener de drop de SO; (4) comandos Tauri de add-folder por drop -> inexistentes; (5) src/App.tsx sem dragenter/dragover/onDrop. Candidato fora de escopo: nenhum."
+   },
+   "par": [
+    "PAR-13"
+   ]
+  },
+  {
+   "id": "D01-005",
+   "capability": "Comutação de corpo principal do sidebar entre Workspaces e Activity de Agentes",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:24",
+    "components/sidebar/index.tsx:57",
+    "components/sidebar/index.tsx:65-88",
+    "components/sidebar/index.tsx:262-273",
+    "components/sidebar/SidebarHeader.tsx:23-27,83"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:105",
+     "src/components/sidebar/WorktreeSidebar.tsx:346-350",
+     "src/components/sidebar/WorktreeSidebar.tsx:635-636",
+     "src/components/sidebar/WorktreeSidebar.tsx:646-660",
+     "src/components/sidebar/WorktreeSidebar.tsx:663-703",
+     "src/components/sidebar/WorktreeSidebar.tsx:18",
+     "src/components/sidebar/SidebarHeader.tsx:59-77"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "carregamento sob demanda (lazy chunk) do SidebarAgentsList — import estático em src/components/sidebar/WorktreeSidebar.tsx:18",
+     "preservação da posição de rolagem da lista de agentes (agentsScrollTopRef) durante a troca de abas"
+    ],
+    "notes": "WorktreeList <-> SidebarAgentsList alternam por sidebarBody (WorktreeSidebar.tsx:105, :346-350, :646/:663) e o colapso de grupos sobrevive (estado do shell, WorktreeSidebar.tsx:106-109). Sem reset durante hidratação: o corpo vem de estado local semeado uma vez por initialSidebarBody (WorktreeSidebar.tsx:105, App.tsx:3689)."
+   }
+  },
+  {
+   "id": "D01-006",
+   "capability": "Gating de inicialização para varredura de repositórios e proteção contra oscilação de status de runtime",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:54-55",
+    "components/sidebar/index.tsx:89",
+    "components/sidebar/index.tsx:116-125"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/worktree-helpers.ts:164",
+     "src/components/terminal/background-terminal-worktree-mount.ts:156-159",
+     "src/store/slices/worktrees/listing/fetch-all-worktrees.ts:3",
+     "src/store/slices/worktrees.ts:81"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "bloqueio de fetchAllWorktrees enquanto startupWorktreeRefreshCompleted === false",
+     "varredura total só quando a quantidade de repositórios muda após a inicialização",
+     "guarda contra disparos repetidos na oscilação de runtimeStatusByEnvironmentId"
+    ],
+    "notes": "Busca em 5 passos: (1) o sidebar do Hydra não orquestra varredura (recebe dados por props, src/components/sidebar/WorktreeSidebar.tsx:57-102); (2) startupWorktreeRefreshCompleted existe apenas como campo declarado (worktree-helpers.ts:164) e lido por background-terminal-worktree-mount.ts:159, sem nenhum writer; (3) fetchAllWorktrees é auto-stub (store/slices/worktrees/listing/fetch-all-worktrees.ts:3 = null; ligado em store/slices/worktrees.ts:81); (4) não há guard de oscilação de runtime; (5) sem equivalente em src/App.tsx."
+   }
+  },
+  {
+   "id": "D01-007",
+   "capability": "Exibição do título localizado da seção no cabeçalho conforme modo de agrupamento",
+   "orca_evidence": [
+    "components/sidebar/SidebarHeader.tsx:2-4",
+    "components/sidebar/SidebarHeader.tsx:22",
+    "components/sidebar/SidebarHeader.tsx:24",
+    "components/sidebar/SidebarHeader.tsx:39-42",
+    "components/sidebar/SidebarHeader.tsx:50-59"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarHeader.tsx:47",
+     "src/components/sidebar/SidebarHeader.tsx:51-57"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "título 'Workspaces' quando o agrupamento não é por repositório (Hydra fixa 'Projects')",
+     "consumo de useAppStore.groupBy para escolher o título",
+     "i18n (dashboard.sidebar.projects / dashboard.sidebar.workspaces) — string literal",
+     "data-sidebar-section-title variável ('projects' | 'workspaces') — Hydra emite sempre 'projects'"
+    ],
+    "notes": "PAR-03. 'Projects' + truncate + data-sidebar-section-title existem (SidebarHeader.tsx:47-57), mas são estáticos. Ver PAR-03 na spec (70-Specs/hydra/Spec - Paridade Terminal e Left Sidebar Orca.md:309-312)."
+   },
+   "par": [
+    "PAR-03"
+   ]
+  },
+  {
+   "id": "D01-008",
+   "capability": "Botão de alternância da visualização de atividades com indicação de estado e tooltip dinâmico",
+   "orca_evidence": [
+    "components/sidebar/SidebarHeader.tsx:9",
+    "components/sidebar/SidebarHeader.tsx:27",
+    "components/sidebar/SidebarHeader.tsx:43-46",
+    "components/sidebar/SidebarHeader.tsx:73-93"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/SidebarHeader.tsx:46",
+     "src/components/sidebar/SidebarHeader.tsx:59-77",
+     "src/components/sidebar/WorktreeSidebar.tsx:635-636"
+    ],
+    "backend": [],
+    "notes": "Botão Bell funcional: label dinâmico 'View activity'/'Turn off activity view' (SidebarHeader.tsx:46) aplicado em aria-label e title (:72-74), aria-pressed={agentsViewActive} (:71) e alternância de sidebarBody via handleSetSidebarBody (WorktreeSidebar.tsx:346-350). A 2ª face do rótulo é consistente com o census (runtime/census-v3.json static_sidebar: 'View activity', data-slot=popover-anchor). Deltas não-funcionais: destaque usa tokens --worktree-sidebar-accent (Orca: bg-primary/15) e tooltip é o atributo title nativo (Orca: componente Tooltip)."
+   }
+  },
+  {
+   "id": "D01-009",
+   "capability": "Popover introdutório para usuários migrados da visualização experimental de Agents",
+   "orca_evidence": [
+    "components/sidebar/SidebarHeader.tsx:7",
+    "components/sidebar/SidebarHeader.tsx:9",
+    "components/sidebar/SidebarHeader.tsx:28-38",
+    "components/sidebar/SidebarHeader.tsx:61-68",
+    "components/sidebar/SidebarHeader.tsx:94-124"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarHeader.tsx:25-44",
+     "src/components/sidebar/SidebarHeader.tsx:141-170"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "gate em settings.agentsSidebarMigratedFromExperimental === true (o Hydra mostra para qualquer usuário que entre na aba agents)",
+     "persistência em settings.agentsSidebarIntroShown (Hydra usa localStorage 'hydra:agents_sidebar_intro_shown', SidebarHeader.tsx:34/:41)",
+     "popover ancorado ao botão de sino e sem auto-focus agressivo (Hydra usa div absoluta, sem onOpenAutoFocus)",
+     "fechar pelo 'X'/outside (Hydra só tem o botão 'Got it')"
+    ],
+    "notes": "Título 'Agents are easier to find' + Sparkles + 'Got it' portados e funcionais (SidebarHeader.tsx:141-170)."
+   }
+  },
+  {
+   "id": "D01-010",
+   "capability": "Alvo de teletransporte (Portal Target) para controles da visualização de atividades de agentes",
+   "orca_evidence": [
+    "components/sidebar/SidebarHeader.tsx:14",
+    "components/sidebar/SidebarHeader.tsx:19",
+    "components/sidebar/SidebarHeader.tsx:125-127"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "container com ref activityOptionsTarget ao lado dos botões de ação do cabeçalho",
+     "injeção dos filtros de agentes (SidebarAgentsList) dentro do cabeçalho",
+     "desmontagem do alvo no modo workspaces"
+    ],
+    "notes": "Busca em 5 passos: (1) createPortal/Portal em src/components/sidebar -> 0 ocorrências; (2) nenhum div-alvo no SidebarHeader (src/components/sidebar/SidebarHeader.tsx:51-170); (3) os filtros de agentes renderizam dentro da própria lista (src/components/sidebar/SidebarAgentsList.tsx:52, :66-90); (4) nenhum hook de portal; (5) src/App.tsx sem alvo de header."
+   }
+  },
+  {
+   "id": "D01-011",
+   "capability": "Botão 'Add project' com abertura de modal e preservação do Workspace Board",
+   "orca_evidence": [
+    "components/sidebar/sidebar-header-actions.tsx:2",
+    "components/sidebar/sidebar-header-actions.tsx:11-39",
+    "components/sidebar/sidebar-header-actions.tsx:98"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarHeader.tsx:104-117",
+     "src/components/sidebar/SidebarHeader.tsx:78-117",
+     "src/components/sidebar/WorktreeSidebar.tsx:637",
+     "src/App.tsx:3666",
+     "src/App.tsx:4026"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "data-workspace-board-preserve-open no botão do cabeçalho (o atributo só existe no botão do card, src/components/sidebar/worktree-card-header.tsx:190)",
+     "abertura via useAppStore.openModal('add-repo') — Hydra usa prop onOpenAddRepoDialog -> setIsAddRepoOpen (src/App.tsx:3666) e monta <AddRepoDialog> em App.tsx:4026",
+     "preservação da gaveta do Workspace Board (o board não existe no Hydra)"
+    ],
+    "notes": "Botão FolderPlus com title/aria-label 'Add project (Folder / Clone)' e ocultação na aba agents (bloco agentsViewActive, SidebarHeader.tsx:78-117). O único consumidor do atributo data-workspace-board-preserve-open, src/components/sidebar/worktree-list/pointer-drag-dom.ts:18, é órfão (hydra_unreachable.json)."
+   }
+  },
+  {
+   "id": "D01-012",
+   "capability": "Botão 'New workspace' com atalho primário de teclado e integração com tour contextual",
+   "orca_evidence": [
+    "components/sidebar/sidebar-header-actions.tsx:2",
+    "components/sidebar/sidebar-header-actions.tsx:6",
+    "components/sidebar/sidebar-header-actions.tsx:8",
+    "components/sidebar/sidebar-header-actions.tsx:41-80",
+    "components/sidebar/sidebar-header-actions.tsx:101"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarHeader.tsx:119-138",
+     "src/components/sidebar/WorktreeSidebar.tsx:638",
+     "src/App.tsx:3667"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "label do atalho primário a partir de keybindings (formatOptionalPrimaryShortcutLabel('workspace.create')) — Hydra tem 'Mod+N' hardcoded (SidebarHeader.tsx:129)",
+     "data-contextual-tour-target='workspace-create-control'",
+     "openWorkspaceCreationComposerWithTourHandoff()"
+    ],
+    "notes": "Botão Plus wired: abre o composer via onOpenNewWorkspaceModal e permanece clicável com zero projetos (fallback projects[0] / sem argumento, SidebarHeader.tsx:122-127); <NewWorkspaceComposer> montado em App.tsx:4055. O atalho real (Mod+N) existe no caminho de teclado do app, não via keybinding store do sidebar."
+   }
+  },
+  {
+   "id": "D01-013",
+   "capability": "Layout e agrupamento de ações do cabeçalho com acomodação de larguras compactas",
+   "orca_evidence": [
+    "components/sidebar/sidebar-header-actions.tsx:82-104"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/SidebarHeader.tsx:51",
+     "src/components/sidebar/SidebarHeader.tsx:57",
+     "src/components/sidebar/SidebarHeader.tsx:78-138"
+    ],
+    "backend": [],
+    "notes": "Cluster shrink-0 com Workspace options + Add project + New workspace (SidebarHeader.tsx:57-138) dentro de uma linha única (flex default nowrap, título com min-w-0 truncate em :51-57); options e add-project somem na aba agents (guarda agentsViewActive, :78-117). Cobre o census: os 4 controles ('View activity', 'Workspace options', 'Add project', 'New workspace') ficam na mesma linha em runtime/census-v3.json static_sidebar (y=192)."
+   }
+  },
+  {
+   "id": "D01-014",
+   "capability": "Overlay flutuante de ações de cabeçalho de projeto com supressão de cursor drag",
+   "orca_evidence": [
+    "components/sidebar/ProjectHeaderActions.tsx:9-30"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/ProjectHeaderActions.tsx:10-17",
+     "src/components/sidebar/ProjectHeaderActions.tsx:28-34",
+     "src/components/sidebar/SectionHeader.tsx:15-16",
+     "src/components/sidebar/SectionHeader.tsx:154",
+     "src/components/sidebar/SectionHeader.tsx:335"
+    ],
+    "backend": [],
+    "notes": "PROJECT_HEADER_ACTIONS_CLASS_NAME portado quase literalmente: absoluto em can-hover, pointer-events/opacity só em group-hover, has-[:focus-visible] e has-[button[data-state=open]], com cursor-pointer + self-stretch (ProjectHeaderActions.tsx:10-17). Renderizado nos dois cabeçalhos (repo e grupo) em SectionHeader.tsx:154 e :335, alcançável por WorktreeList -> WorktreeSidebar -> App.tsx:3636."
+   }
+  },
+  {
+   "id": "D01-015",
+   "capability": "Classes de animação e revelação de largura zero para botões de cabeçalho de repositório",
+   "orca_evidence": [
+    "components/sidebar/repo-header-action-button-class.ts:1-4"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/repo-header-action-button-class.ts:2-5",
+     "src/components/sidebar/SectionHeader.tsx:16",
+     "src/components/sidebar/SectionHeader.tsx:178",
+     "src/components/sidebar/SectionHeader.tsx:190",
+     "src/components/sidebar/SectionHeader.tsx:355",
+     "src/components/sidebar/SectionHeader.tsx:367"
+    ],
+    "backend": [],
+    "notes": "REPO_HEADER_ACTION_REVEAL_CLASS (max-w-0/opacity-0 -> focus/group-hover/data-[state=open]:max-w-5/opacity-100) e REPO_HEADER_ACTION_BUTTON_CLASS idênticos ao Orca, aplicados nos botões 'Group options' e 'New workspace in this group'."
+   }
+  },
+  {
+   "id": "D01-016",
+   "capability": "Botão de busca de worktrees e abas no SidebarNav com revelação de atalho em hover/foco",
+   "orca_evidence": [
+    "components/sidebar/SidebarNav.tsx:2",
+    "components/sidebar/SidebarNav.tsx:6-7",
+    "components/sidebar/SidebarNav.tsx:57",
+    "components/sidebar/SidebarNav.tsx:90-121"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarNav.tsx:8-21",
+     "src/components/sidebar/WorktreeSidebar.tsx:626-630",
+     "src/App.tsx:1228-1229",
+     "src/App.tsx:3995-4003"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "abrir o modal 'worktree-palette' — o botão dispara 'hydra:open-command-palette' e o App abre o <CommandPalette> (App.tsx:1228-1229, :3995), não o <WorktreeJumpPalette> (App.tsx:4005, preso ao Cmd+J)",
+     "chips de atalho derivados de keybindings e revelados em hover OU focus-within — Hydra tem '⌘P' literal e apenas group-hover (SidebarNav.tsx:19)",
+     "i18n do rótulo/label (strings literais)"
+    ],
+    "notes": "Botão Search com aria-label 'Search worktrees and browser tabs' (idêntico ao census) e data-contextual-tour-target='sidebar-navigation' (SidebarNav.tsx:8) presentes e alcançáveis (WorktreeSidebar.tsx:626)."
+   }
+  },
+  {
+   "id": "D01-017",
+   "capability": "Entrada do checklist de Onboarding (Setup Guide) com anel de progresso e persistência",
+   "orca_evidence": [
+    "components/sidebar/SetupGuideSidebarEntry.tsx:20-124",
+    "components/sidebar/SidebarNav.tsx:12",
+    "components/sidebar/SidebarNav.tsx:19",
+    "components/sidebar/SidebarNav.tsx:122"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "resolução de visibilidade (shouldShowSetupGuideEntry / getSetupGuideSidebarEntryReady)",
+     "anel de progresso SetupGuideProgressRing com contagem de etapas",
+     "abertura do modal 'setup-guide' com telemetrySource='sidebar'",
+     "ocultação via menu de contexto persistindo setupGuideSidebarDismissed",
+     "montagem estável durante sondagens transitórias (lastVisibleProgressRef)",
+     "data-contextual-tour-target='setup-guide-entry'"
+    ],
+    "notes": "Busca em 5 passos: (1-2) 'SetupGuideSidebarEntry', 'shouldShowSetupGuideEntry', 'getSetupGuideSidebarEntryReady' e 'setup-guide-entry' -> 0 ocorrências em src; (3) SidebarNav do Hydra tem apenas o botão Search (SidebarNav.tsx:1-23); (4) nenhum comando Tauri associado; (5) restam só o estado de trust (src/store/slices/ui/ui-slice-trust-actions.ts:59-66 grava setupGuideSidebarDismissed) e entradas de busca/telemetria (shared/feature-education-telemetry.ts) — store sem UI."
+   }
+  },
+  {
+   "id": "D01-018",
+   "capability": "Botão de navegação para Tarefas com prefetch antecipado e tolerância a estado vazio",
+   "orca_evidence": [
+    "components/sidebar/SidebarTaskNavButton.tsx:25-34",
+    "components/sidebar/SidebarTaskNavButton.tsx:57-78",
+    "components/sidebar/SidebarTaskNavButton.tsx:122-186",
+    "components/sidebar/SidebarTaskNavButton.tsx:233-236",
+    "components/sidebar/SidebarNav.tsx:13",
+    "components/sidebar/SidebarNav.tsx:123"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/ui/ui-slice-task-actions.ts:35"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "botão 'Tasks' com ícone List e target data-contextual-tour-target='sidebar-tasks'",
+     "prefetch de work items em pointerEnter/focus",
+     "openTaskPage() ao clicar",
+     "habilitado com zero repositórios",
+     "ocultar via menu de contexto (settings.showTasksButton = false)"
+    ],
+    "notes": "Busca em 5 passos: (1) 'SidebarTaskNavButton' -> 0 ocorrências em src; (2) labels 'Tasks'/'Open GitHub tasks'/'Open Jira tasks' -> 0 em src/components/sidebar (existem no census-v3 static_sidebar); (3) o store porta openTaskPage (src/store/slices/ui/ui-slice-task-actions.ts:35) e o registry de work items (shared/work-items.ts:2), mas nenhum componente .tsx chama openTaskPage; (4) sem comando Tauri (sem ponte gh/linear/jira); (5) SidebarNav do Hydra não tem a entrada (SidebarNav.tsx:1-23). Escapes: 'Open GitHub tasks'/'Open Jira tasks' do census = mesma capability."
+   }
+  },
+  {
+   "id": "D01-019",
+   "capability": "Atalhos diretos para provedores de tarefas (GitHub, GitLab, Linear, Jira) revelados em hover",
+   "orca_evidence": [
+    "components/sidebar/SidebarTaskNavButton.tsx:2-4",
+    "components/sidebar/SidebarTaskNavButton.tsx:36-55",
+    "components/sidebar/SidebarTaskNavButton.tsx:186-231"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "botões TaskProviderShortcut para provedores visíveis (Github/Gitlab/Linear/Jira)",
+     "abertura da página de tarefas filtrada por taskSource",
+     "posicionamento fora do button pai com tabIndex 0"
+    ],
+    "notes": "Busca em 5 passos: (1) 'TaskProviderShortcut' -> 0; (2) ícones/labels Github/Gitlab/Linear/Jira em src/components/sidebar -> 0; (3) nenhuma função de provider no sidebar; (4) sem comandos Tauri de provider; (5) census-v3 static_sidebar confirma 'Open GitHub tasks'/'Open Jira tasks' no runtime do Orca, ausentes no Hydra. Escape do runtime coberto por esta linha."
+   }
+  },
+  {
+   "id": "D01-020",
+   "capability": "Detecção de disponibilidade de provedores de tarefas via preflight e status Linear",
+   "orca_evidence": [
+    "components/sidebar/SidebarTaskNavButton.tsx:11-12",
+    "components/sidebar/SidebarTaskNavButton.tsx:20-23",
+    "components/sidebar/SidebarTaskNavButton.tsx:79-120"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "refreshPreflightStatus() na montagem do botão de tarefas",
+     "checkLinearConnection() e normalização de visibleTaskProviders",
+     "restauração do provedor default considerando o CLI glab e a conexão Linear",
+     "resolveVisibleTaskProvider"
+    ],
+    "notes": "Busca em 5 passos: (1-2) sem SidebarTaskNavButton; (3) existem os slices src/store/slices/preflight.ts e src/store/slices/linear/** e o comando check_preflight_tools_cmd (src-tauri/src/lib.rs:76), porém nenhum caminho do sidebar os consome (o único consumidor de check_preflight_tools_cmd é src/components/Landing.tsx:236); (4) sem checkLinearConnection no renderer; (5) SidebarNav sem provedores."
+   }
+  },
+  {
+   "id": "D01-021",
+   "capability": "Botão de navegação para Artifacts com destaque ativo e menu de contexto",
+   "orca_evidence": [
+    "components/sidebar/SidebarNav.tsx:2",
+    "components/sidebar/SidebarNav.tsx:33-37",
+    "components/sidebar/SidebarNav.tsx:60",
+    "components/sidebar/SidebarNav.tsx:68",
+    "components/sidebar/SidebarNav.tsx:72",
+    "components/sidebar/SidebarNav.tsx:81-83",
+    "components/sidebar/SidebarNav.tsx:124-152"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/ui/ui-slice-view-actions.ts:82"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "botão Files/'Artifacts' condicionado a settings.showArtifactsButton",
+     "estilo ativo + aria-current='page' quando activeView === 'artifacts'",
+     "openArtifactsPage() ao clicar",
+     "ocultar via updateSettings({ showArtifactsButton: false })"
+    ],
+    "notes": "Busca em 5 passos: (1-2) sem componente e sem label 'Artifacts' em src/components/sidebar; (3) o store porta openArtifactsPage (ui-slice-view-actions.ts:82) mas nenhum .tsx o chama e não existe página de artifacts montada; (4) sem comando Tauri; (5) SidebarNav do Hydra só tem Search (SidebarNav.tsx:1-23)."
+   }
+  },
+  {
+   "id": "D01-022",
+   "capability": "Botão de navegação para Skills com destaque ativo e menu de contexto",
+   "orca_evidence": [
+    "components/sidebar/SidebarNav.tsx:2",
+    "components/sidebar/SidebarNav.tsx:39-43",
+    "components/sidebar/SidebarNav.tsx:61",
+    "components/sidebar/SidebarNav.tsx:69",
+    "components/sidebar/SidebarNav.tsx:73",
+    "components/sidebar/SidebarNav.tsx:84-86",
+    "components/sidebar/SidebarNav.tsx:153-181"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/ui/ui-slice-view-actions.ts:49"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "botão BookOpen/'Skills' condicionado a settings.showSkillsButton",
+     "estilo ativo + aria-current='page' quando activeView === 'skills'",
+     "openSkillsPage() ao clicar",
+     "ocultar via updateSettings({ showSkillsButton: false })"
+    ],
+    "notes": "Busca em 5 passos: (1-2) sem componente/label 'Skills' no sidebar; (3) openSkillsPage existe no store (ui-slice-view-actions.ts:49) sem consumidor .tsx e sem página montada (existe só src/components/skills/skill-update-run-store.ts); (4) sem comando Tauri associado ao botão; (5) SidebarNav sem a entrada."
+   }
+  },
+  {
+   "id": "D01-023",
+   "capability": "Botão de navegação para Automations com destaque ativo e menu de contexto",
+   "orca_evidence": [
+    "components/sidebar/SidebarNav.tsx:2",
+    "components/sidebar/SidebarNav.tsx:27-31",
+    "components/sidebar/SidebarNav.tsx:58",
+    "components/sidebar/SidebarNav.tsx:66",
+    "components/sidebar/SidebarNav.tsx:70",
+    "components/sidebar/SidebarNav.tsx:75-77",
+    "components/sidebar/SidebarNav.tsx:182-210"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/settings/appearance-sidebar-search.ts:146-150"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "botão CalendarClock/'Automations' condicionado a settings.showAutomationsButton",
+     "estilo ativo + aria-current='page' quando activeView === 'automations'",
+     "openAutomationsPage() ao clicar",
+     "ocultar via updateSettings({ showAutomationsButton: false })"
+    ],
+    "notes": "Busca em 5 passos: (1) 'SidebarAutomations'/'openAutomationsPage' em src/components/sidebar -> 0; (2) label 'Automations' no sidebar -> 0 (só entradas de busca de settings dizendo 'Show Automations Button at the top of the left sidebar', appearance-sidebar-search.ts:146-150); (3) sem ação de view para automations; (4) sem comando Tauri; (5) census-v3 static_sidebar tem 'Automations' + data-state=closed (context-menu-trigger) no Orca, ausente no Hydra. Escape do runtime coberto por esta linha."
+   }
+  },
+  {
+   "id": "D01-024",
+   "capability": "Botão de navegação para Orca Mobile com badge onboarding e controle rápido de ocultação",
+   "orca_evidence": [
+    "components/sidebar/SidebarNav.tsx:2",
+    "components/sidebar/SidebarNav.tsx:8",
+    "components/sidebar/SidebarNav.tsx:21-25",
+    "components/sidebar/SidebarNav.tsx:59",
+    "components/sidebar/SidebarNav.tsx:67",
+    "components/sidebar/SidebarNav.tsx:71",
+    "components/sidebar/SidebarNav.tsx:74",
+    "components/sidebar/SidebarNav.tsx:78-80",
+    "components/sidebar/SidebarNav.tsx:216-288",
+    "components/sidebar/mobile-sidebar-onboarding-badge.ts:1-55"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/ui/ui-slice-view-actions.ts:95",
+     "src/components/settings/mobile-settings-search.ts:52-56"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "botão Smartphone/'Orca Mobile' condicionado a settings.showMobileButton",
+     "badge 'New' até a primeira visualização (useMobileSidebarOnboardingBadge)",
+     "botão inline EyeOff 'Hide from sidebar' após pareamento",
+     "dismiss do badge + openMobilePage()",
+     "ocultar via updateSettings({ showMobileButton: false })"
+    ],
+    "notes": "Busca em 5 passos: (1) 'mobile-sidebar-onboarding-badge.ts' -> inexistente em src (0 hits); (2) label 'Orca Mobile' -> só strings de settings search (mobile-settings-search.ts:52-56); (3) openMobilePage existe em ui-slice-view-actions.ts:95 mas nenhum .tsx consome; (4) há pareamento (src/components/PairingModal.tsx + comando get_pairing_qr em src-tauri/src/lib.rs) sem entrada de sidebar; (5) census-v3 static_sidebar: 'Orca MobileNew' [8,145,264,32] no Orca. Escape do runtime coberto por esta linha."
+   }
+  },
+  {
+   "id": "D01-025",
+   "capability": "Menu de contexto reutilizável para ocultação de entradas do sidebar",
+   "orca_evidence": [
+    "components/sidebar/sidebar-nav-controls.tsx:1-15"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "ContextMenuContent + ContextMenuItem com ícone EyeOff",
+     "texto localizado 'Hide from sidebar'",
+     "callback onHide ao selecionar"
+    ],
+    "notes": "Busca em 5 passos: (1) 'sidebar-nav-controls' -> 0 ocorrências em src; (2) string 'Hide from sidebar' -> 0; (3) nenhum menu de contexto de itens de nav (os únicos context menus do sidebar são de projeto/worktree, WorktreeSidebar.tsx:865+); (4) sem backend; (5) SidebarNav do Hydra não tem itens ocultáveis (SidebarNav.tsx:1-23)."
+   }
+  },
+  {
+   "id": "D01-026",
+   "capability": "Atualização reativa de internacionalização e pseudo-localização na barra de navegação",
+   "orca_evidence": [
+    "components/sidebar/SidebarNav.tsx:3",
+    "components/sidebar/SidebarNav.tsx:15",
+    "components/sidebar/SidebarNav.tsx:54-56"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "assinatura de useTranslation() no SidebarNav",
+     "atualização dos textos de navegação sem remontagem"
+    ],
+    "notes": "Busca em 5 passos: (1) SidebarNav.tsx:1-23 não importa i18n; (2) strings 'Search'/'⌘P' literais; (3) o Hydra tem infra de i18n (src/i18n/i18n.ts, translate() usado em sidebar-host-options.ts:107 e workspace-status.ts:61) mas nenhum consumidor na nav; (4) n/a; (5) sem pseudo-localização ligada ao sidebar. Pseudo-localização existe no app (src/i18n/pseudo-localization.ts) — o gap é a nav do sidebar não reagir."
+   }
+  },
+  {
+   "id": "D01-027",
+   "capability": "Entrada do Agent Dashboard com contadores agregados por bucket de estado",
+   "orca_evidence": [
+    "components/sidebar/AgentDashboardSidebarEntry.tsx:1-60,91-94",
+    "components/sidebar/SidebarNav.tsx:45-49,51,65,211-215"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "botão LayoutDashboard/'Agent Dashboard' condicionado a experimentalAgentDashboardPopout",
+     "contadores por bucket (attention/working/done/idle) via useAgentBucketCounts",
+     "data-contextual-tour-target='agents-sidebar'"
+    ],
+    "notes": "Busca em 5 passos: (1) 'AgentDashboardSidebarEntry' -> 0 ocorrências em src; (2) 'Agent Dashboard' -> só entradas de busca de settings (src/components/settings/experimental-search.ts:52-89); (3) src/components/dashboard/** existe (DashboardAgentRow etc.) mas nenhum arquivo o importa (só um comentário em agent-finished-timestamp.ts:2) — código órfão; (4) sem comando Tauri; (5) App.tsx não monta dashboard algum. A visão de agentes do Hydra é a aba do próprio sidebar (SidebarAgentsList), sem os contadores por bucket do entry."
+   }
+  },
+  {
+   "id": "D01-028",
+   "capability": "Abertura do Agent Dashboard em janela destacada (Popout) ou gaveta lateral",
+   "orca_evidence": [
+    "components/sidebar/AgentDashboardSidebarEntry.tsx:64-78"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "window.api.dashboard.openPopout() no modo popout",
+     "alternância de agentDashboardDrawerOpen(_setAgentDashboardDrawerOpen) no modo gaveta"
+    ],
+    "notes": "Busca em 5 passos: (1) ponto de entrada inexistente (ver D01-027); (2) 0 ocorrências de dashboardDrawer/openPopout em src; (3) nenhuma ação de store equivalente; (4) o contrato window.api.dashboard é ponte Electron inexistente no Hydra (src/types/window-api.d.ts); não há comando Tauri de popout; (5) o Workspace Board também não existe, logo a exclusividade mútua (D01-029) é inaplicável na prática. Registro: se a entrada existisse, o modo 'popout' seria not-applicable por multi-window popout; como a capability inteira está ausente, veredito missing."
+   }
+  },
+  {
+   "id": "D01-029",
+   "capability": "Coordenação de visibilidade do Agent Dashboard Host e exclusividade mútua com Kanban",
+   "orca_evidence": [
+    "components/sidebar/AgentDashboardSidebarHost.tsx:1-43"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "fechar a gaveta do dashboard quando sidebarOpen vira false",
+     "fechar o Workspace Board quando a gaveta abre (e vice-versa)",
+     "renderizar AgentDashboardDrawer acoplado ao sidebar apenas com sidebarOpen === true"
+    ],
+    "notes": "Busca em 5 passos: (1) 'AgentDashboardSidebarHost' -> 0; (2) 0 strings; (3) sem workspaceBoardOpen/agentDashboardDrawerOpen no store (grep 0 em src/store); (4) sem backend; (5) o sidebar do Hydra fecha por desmontagem (App.tsx:3631 `{isLeftSidebarOpen && ...}`) e não há gaveta acoplada — Kanban e Agent Dashboard Drawer não existem."
+   }
+  },
+  {
+   "id": "D01-030",
+   "capability": "Container da barra de ferramentas inferior do sidebar com subscrição individual de i18n",
+   "orca_evidence": [
+    "components/sidebar/SidebarToolbar.tsx:1-31",
+    "components/sidebar/SidebarToolbar.tsx:72-126"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarFooter.tsx:19-21",
+     "src/components/sidebar/SidebarFooter.tsx:22-31",
+     "src/components/sidebar/SidebarFooter.tsx:33-44",
+     "src/components/sidebar/WorktreeSidebar.tsx:857-862"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "subscrição de useTranslation() no container do rodapé (strings 'Settings'/'Reveal active workspace' e title 'Open Settings (Ctrl+,)' são literais)",
+     "agrupamento de SidebarSettingsHelpMenu à esquerda (Hydra só tem o botão Settings, sem o menu Help)",
+     "WorkspaceBoardButton à direita",
+     "ESCAPES de runtime sem linha no inventário: 'Refresh rate limits' (census-v3 static_sidebar box [12,1181,15,15]), 'Notifications alt+T' (box [0,1200,1920,0]) e 'Keep computer awake' — o Hydra só tem o keep-awake na StatusBar (src/components/status-bar/CaffeinateStatusSegment.tsx:26 + invoke('sync_keep_awake') -> src-tauri/src/lib.rs:1256), fora do sidebar"
+    ],
+    "notes": "Rodapé existe e é alcançável (SidebarFooter montado em WorktreeSidebar.tsx:857-862), com borda superior e os controles Settings (esquerda) e Reveal active workspace (direita). Os controles 'Refresh rate limits', 'Notifications' e 'Keep computer awake' do runtime do Orca NÃO têm linha no inventário D01 nem em outro domínio (grep em domains/*.orca.json = 0) — registrados aqui como escape (ver gaps.md §Escapes)."
+   }
+  },
+  {
+   "id": "D01-031",
+   "capability": "Botão de revelação e foco no workspace ativo da lista",
+   "orca_evidence": [
+    "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx:1-34"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/SidebarFooter.tsx:33-44",
+     "src/components/sidebar/WorktreeSidebar.tsx:382-427",
+     "src/components/sidebar/WorktreeSidebar.tsx:861"
+    ],
+    "backend": [],
+    "notes": "Botão Crosshair com title/aria-label 'Reveal active workspace' (idêntico ao census-v3) que chama handleRevealCurrent: expande projeto e grupo colapsados, faz flashRevealedWorktree e scrollIntoView({behavior:'smooth', block:'nearest'}) (WorktreeSidebar.tsx:382-427). Fica oculto fora do corpo workspaces (:861). Backend: nenhum."
+   }
+  },
+  {
+   "id": "D01-032",
+   "capability": "Botão de alternância e pré-visualização por drag do Workspace Board (Kanban)",
+   "orca_evidence": [
+    "components/sidebar/SidebarToolbar.tsx:2",
+    "components/sidebar/SidebarToolbar.tsx:16-19",
+    "components/sidebar/SidebarToolbar.tsx:67-70",
+    "components/sidebar/SidebarToolbar.tsx:80-120"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "botão Kanban com aria-label 'Workspace board'",
+     "tooltip 'Workspace board'/'Close workspace board'",
+     "data-workspace-board-trigger e data-workspace-board-preview",
+     "variante secondary quando aberto ou em drag preview",
+     "onWorkspaceBoardToggle()"
+    ],
+    "notes": "Busca em 5 passos: (1) 'sidebar-toolbar'/'SidebarToolbar' -> 0 em src; (2) labels 'Workspace board' -> 0 em src/components/sidebar (o census-v3 static_sidebar registra o botão em [248,1146,24,24] com data-workspace-board-trigger); (3) sem workspaceBoardOpen no store (grep 0); (4) sem comando Tauri; (5) não existe componente de board (src/components/ não tem kanban/board). PAR-14 (Alvo: SidebarFooter.tsx) é o item de spec desta linha."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D01-033",
+   "capability": "Tooltip temporário de aviso de realocação do Workspace Board para usuários antigos",
+   "orca_evidence": [
+    "components/sidebar/SidebarToolbar.tsx:10",
+    "components/sidebar/SidebarToolbar.tsx:12-13",
+    "components/sidebar/SidebarToolbar.tsx:32-65",
+    "components/sidebar/SidebarToolbar.tsx:80",
+    "components/sidebar/SidebarToolbar.tsx:104-108"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "gate hasFeatureInteraction(featureInteractions, 'workspace-board')",
+     "tooltip 'Workspace board moved to the bottom bar' com auto-show pós-hidratação",
+     "persistência orca.workspaceBoardMovedHintSeen.v1 em localStorage",
+     "auto-dismiss em 12s (WORKSPACE_BOARD_MOVED_HINT_DURATION_MS) e fechamento no clique do botão"
+    ],
+    "notes": "Busca em 5 passos: (1-2) string 'Workspace board moved to the bottom bar' -> 0 em src (presente no census-v3 static_sidebar como span); (3) sem featureInteractions 'workspace-board' (o store tem hasFeatureInteraction/recordFeatureInteraction mas sem esse gate); (4) sem backend; (5) sem botão Kanban para ancorar a dica. Prefs/timer do Orca mapeados (inventory D01-033, coverage.prefs/timers)."
+   }
+  },
+  {
+   "id": "D01-034",
+   "capability": "Botão de Configurações no rodapé com indicador de atalho de teclado",
+   "orca_evidence": [
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:14",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:29-30",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:102",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:107",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:196-224"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarFooter.tsx:22-31",
+     "src/components/sidebar/WorktreeSidebar.tsx:860",
+     "src/App.tsx:3661",
+     "src/App.tsx:3698"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "tooltip com ShortcutKeyCombo alimentado por keybindings (useShortcutKeyDetails('app.settings')) — Hydra usa title 'Open Settings (Ctrl+,)' literal",
+     "botão icon-only ghost com aria-label='Settings' (Hydra usa ícone + texto 'Settings' e sem aria-label, apenas data-hydra-settings-icon)",
+     "abertura via useAppStore.openSettingsPage() (Hydra usa prop onOpenSettings -> setIsSettingsOpen)"
+    ],
+    "notes": "Controle existe e abre as configurações (SidebarFooter.tsx:22-31 -> WorktreeSidebar.tsx:859 -> App.tsx:3647). Census-v3 static_sidebar confirma o 'Settings' do Orca em [8,1146,24,24]."
+   }
+  },
+  {
+   "id": "D01-035",
+   "capability": "Menu Dropdown de Ajuda e Recursos com pré-carregamento de chunk de Feedback",
+   "orca_evidence": [
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:4",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:42-48",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:108",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:121-129",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:225-247"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "botão CircleHelp com tooltip 'Help' e aria-expanded",
+     "DropdownMenu side='top' align='start'",
+     "preload assíncrono do módulo SidebarFeedbackDialog em onOpenChange(true)"
+    ],
+    "notes": "Busca em 5 passos: (1) 'SidebarSettingsHelpMenu' -> 0 em src; (2) label 'Help' -> 0 no sidebar (census-v3 static_sidebar: 'Help' [36,1146,24,24]); (3) nenhum import() dinâmico de feedback; (4) n/a; (5) o rodapé do Hydra tem apenas Settings e Reveal (SidebarFooter.tsx:19-44)."
+   }
+  },
+  {
+   "id": "D01-036",
+   "capability": "Itens de navegação interna do menu de ajuda: Atalhos, Feedback, Marcos e Onboarding",
+   "orca_evidence": [
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:7",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:9",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:12",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:17",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:31-33",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:101-105",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:118-120",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:131-143",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:169-172",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:189-191",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:248-293"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "'Keyboard Shortcuts' -> openSettingsTarget({pane:'shortcuts'}) + openSettingsPage()",
+     "'Send Feedback' -> modal SidebarFeedbackDialog",
+     "'Milestones' com SetupGuideProgressRing quando coreDoneCount < coreTotal",
+     "'Onboarding' -> showOnboardingFromRenderer() com throttle de 500ms"
+    ],
+    "notes": "Busca em 5 passos: (1) 0 ocorrências de SidebarSettingsHelpMenu; (2) labels 'Keyboard Shortcuts'/'Send Feedback'/'Milestones' -> 0 no sidebar; (3) existem settings navigation (src/hooks/settings-navigation-capability-sections.ts, src/lib/settings-navigation-types.ts) e tours contextuais (src/components/contextual-tours/**, shared/contextual-tours.ts), mas nenhum item de menu de ajuda os aciona; (4) sem backend; (5) o Hydra abre settings pelo botão do rodapé, sem menu Help."
+   }
+  },
+  {
+   "id": "D01-037",
+   "capability": "Links externos de documentação e comunidade no menu de ajuda",
+   "orca_evidence": [
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:3",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:5-6",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:13",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:50-54",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:62-64",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:66-98",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:294-328"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [
+     "EXISTE o comando equivalente: invoke('open_external_url_cmd') -> src-tauri/src/lib.rs:97 (registrado lib.rs e usado em src/components/Landing.tsx:141) — mas nenhum item do sidebar o chama"
+    ],
+    "missing_behaviors": [
+     "links Docs/Changelog/GitHub/Discord/X com ícone ExternalLink",
+     "abertura via broadcast externo (Hydra: open_external_url_cmd, já existente)"
+    ],
+    "notes": "Busca em 5 passos: (1-2) labels Docs/Changelog/Discord/X -> 0 em src/components/sidebar; (3) o único consumidor de open_external_url_cmd é Landing.tsx:71/:141; (4) backend já disponível (lib.rs:97), falta a UI; (5) rodapé do Hydra sem menu Help."
+   }
+  },
+  {
+   "id": "D01-038",
+   "capability": "Verificação de atualizações com suporte a canais RC e Performance via modificadores",
+   "orca_evidence": [
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:8",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:10",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:37",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:55-60",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:104",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:114",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:116",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:174-187",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:330-345"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/status-bar/UpdateStatusSegment.tsx:8-15"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "item 'Check for Updates' com captura de Shift/Cmd no pointerdown",
+     "getUpdateCheckClickOptions (stable / includePrerelease / includePerfPrerelease)",
+     "window.api.updater.check()",
+     "spinner Loader2 e disable durante checking/downloading"
+    ],
+    "notes": "Busca em 5 passos: (1-2) label 'Check for Updates' -> 0 em src/components/sidebar; (3) nenhum updater no renderer — o UpdateStatusSegment do status bar é um stub que retorna null (src/components/status-bar/UpdateStatusSegment.tsx:8-15); (4) BACKEND AUSENTE: não há tauri-plugin-updater em src-tauri/Cargo.toml:21-41 nem comando de update em src-tauri/src/lib.rs; (5) sem menu Help. Contrato Tauri necessário: ver gaps.md."
+   }
+  },
+  {
+   "id": "D01-039",
+   "capability": "Reinicialização da aplicação (Restart Orca) com feedback visual de toast",
+   "orca_evidence": [
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:11",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:16",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:112",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:145-167",
+    "components/sidebar/SidebarSettingsHelpMenu.tsx:347-353"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "item 'Restart Orca' com toast 'Restarting Orca…'",
+     "window.api.app.restart() (relaunch + exit)",
+     "toast de erro \"Couldn't restart Orca.\" e disable durante o restart"
+    ],
+    "notes": "Busca em 5 passos: (1-2) 'Restart Orca'/'restart_app' -> 0 em src (há apenas 'Restart daemon' em src/components/shared/useDaemonActions.tsx, outro alvo); (3) nenhuma ação de relaunch no renderer; (4) BACKEND AUSENTE: sem comando de relaunch/exit em src-tauri/src/lib.rs e sem plugin process/shell em Cargo.toml; (5) sem menu Help. Contrato Tauri necessário: ver gaps.md."
+   }
+  },
+  {
+   "id": "D01-040",
+   "capability": "Diálogo modal de feedback com preenchimento automático de ambiente e validação de texto",
+   "orca_evidence": [
+    "components/sidebar/SidebarFeedbackDialog.tsx:22",
+    "components/sidebar/SidebarFeedbackDialog.tsx:24",
+    "components/sidebar/SidebarFeedbackDialog.tsx:27-30",
+    "components/sidebar/SidebarFeedbackDialog.tsx:41-43",
+    "components/sidebar/SidebarFeedbackDialog.tsx:59-64",
+    "components/sidebar/SidebarFeedbackDialog.tsx:69",
+    "components/sidebar/SidebarFeedbackDialog.tsx:83-89",
+    "components/sidebar/SidebarFeedbackDialog.tsx:201-294",
+    "components/sidebar/SidebarFeedbackDialog.tsx:295-305",
+    "components/sidebar/SidebarFeedbackDialog.tsx:357-374"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "modal 'Send Feedback' com atalhos para GitHub Issues/Discord/X",
+     "preenchimento assíncrono de rodapé técnico (versão, OS, arch, shell)",
+     "preservação do texto digitado antes do load",
+     "validação via stripClientEnvironmentFooter para habilitar Send",
+     "scroll com max-h-[calc(100vh-3rem)]"
+    ],
+    "notes": "Busca em 5 passos: (1) 'SidebarFeedbackDialog' -> 0 em src; (2) label 'Send Feedback' -> 0; (3) existe src/components/settings/general-support-search.ts (busca de settings) mas nenhum diálogo de feedback; (4) BACKEND AUSENTE: sem comando de submit; (5) o app tem toast (sonner) e a versão via get_app_version (src-tauri/src/lib.rs:72), mas nenhum consumidor de UI de feedback. Contrato Tauri necessário: ver gaps.md."
+   }
+  },
+  {
+   "id": "D01-041",
+   "capability": "Resolução de identidade do GitHub e opção de submissão anônima no feedback",
+   "orca_evidence": [
+    "components/sidebar/SidebarFeedbackDialog.tsx:16",
+    "components/sidebar/SidebarFeedbackDialog.tsx:31-34",
+    "components/sidebar/SidebarFeedbackDialog.tsx:45-57",
+    "components/sidebar/SidebarFeedbackDialog.tsx:65-67",
+    "components/sidebar/SidebarFeedbackDialog.tsx:91-120",
+    "components/sidebar/SidebarFeedbackDialog.tsx:140",
+    "components/sidebar/SidebarFeedbackDialog.tsx:315-356"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "window.api.gh.viewer() para login/email",
+     "checkbox 'Submit anonymously' e omissão de login/email no payload",
+     "estado de carregamento / instruções de conexão do gh"
+    ],
+    "notes": "Busca em 5 passos: (1-2) 0 ocorrências no sidebar; (3) nenhum caminho gh viewer no renderer (existe host de review GitHub em src/store/github/**, sem viewer identity exposto ao renderer); (4) BACKEND AUSENTE: sem comando tipo gh_viewer; (5) sem modal de feedback. Contrato Tauri necessário: ver gaps.md."
+   }
+  },
+  {
+   "id": "D01-042",
+   "capability": "Anexo de capturas de tela e imagens no diálogo de feedback via arquivo, drag ou clipboard",
+   "orca_evidence": [
+    "components/sidebar/SidebarFeedbackDialog.tsx:18-21",
+    "components/sidebar/SidebarFeedbackDialog.tsx:23",
+    "components/sidebar/SidebarFeedbackDialog.tsx:25",
+    "components/sidebar/SidebarFeedbackDialog.tsx:70-81",
+    "components/sidebar/SidebarFeedbackDialog.tsx:210-227",
+    "components/sidebar/SidebarFeedbackDialog.tsx:307-313",
+    "components/sidebar/SidebarFeedbackImageAttachments.tsx:1-107"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "limite de 5 imagens (MAX_FEEDBACK_IMAGE_COUNT)",
+     "onPaste no diálogo sem consumir texto não-imagem",
+     "miniaturas com tamanho em bytes + remoção individual",
+     "revogação de object URLs ao desmontar",
+     "aguardar leituras em voo antes de habilitar Send",
+     "rejeitar novas imagens após iniciar a submissão"
+    ],
+    "notes": "Busca em 5 passos: (1) 'SidebarFeedbackImageAttachments' -> 0; (2) sem strings de anexo no sidebar; (3) existe infra de imagem no repo (src-tauri Cargo.toml depende de image 0.25, drag nativo em shared/native-file-drop.ts) mas nenhum hook useSidebarFeedbackImages; (4) o blob de imagem para o backend de feedback não existe; (5) sem modal de feedback. Contrato Tauri necessário: ver gaps.md."
+   }
+  },
+  {
+   "id": "D01-043",
+   "capability": "Submissão de feedback via IPC e tratamento de confirmação de entrega de imagens",
+   "orca_evidence": [
+    "components/sidebar/SidebarFeedbackDialog.tsx:4",
+    "components/sidebar/SidebarFeedbackDialog.tsx:122-199",
+    "components/sidebar/SidebarFeedbackDialog.tsx:358-373"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "window.api.feedback.submit (evita CORS no Electron)",
+     "toast de aviso quando imagesDelivered === false",
+     "toast de sucesso + reset + close",
+     "toast de erro de rede/IPC"
+    ],
+    "notes": "Busca em 5 passos: (1-2) 'feedback.submit' -> 0; (3) nenhuma ação de submissão; (4) BACKEND AUSENTE: sem comando de feedback em src-tauri/src/lib.rs; (5) toasts disponíveis (sonner) sem produtor. Contrato Tauri necessário: ver gaps.md."
+   }
+  },
+  {
+   "id": "D01-044",
+   "capability": "Construção do registro de hosts de execução com rastreamento de saúde e compatibilidade",
+   "orca_evidence": [
+    "components/sidebar/sidebar-host-options.ts:1-95"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/sidebar-host-options.ts:39-88",
+     "src/components/sidebar/sidebar-host-options.ts:44-58",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:96-105",
+     "src/App.tsx:2456"
+    ],
+    "backend": [],
+    "notes": "buildSidebarHostOptions combina local, SSH (targetLabels + connectionStates), runtimes (runtimeEnvironments + runtimeStatusByEnvironmentId) e repos (connectionId/executionHostId), classifica presence local/configured/project/active (:60-88), propaga health, compatibility (RuntimeCompatVerdict) e connectionStatus como campos de primeira classe do SidebarHostOption (:18-30), com hostLabelOverrides aplicado no registry. Alcançável do mount: chamado em rendered-sidebar-worktree-order.ts:96 dentro de computeRenderedSidebarWorktrees, consumido por App.tsx:2456 (Cmd+1–9). Nota: o Hydra não expõe superfície de UI para hosts (ver D01-045/047)."
+   }
+  },
+  {
+   "id": "D01-045",
+   "capability": "Submenu de escopo e visibilidade multi-host com garantia de seleção mínima",
+   "orca_evidence": [
+    "components/sidebar/SidebarHostScopeMenuSection.tsx:1-151",
+    "components/sidebar/sidebar-host-options.ts:97-154"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/sidebar-host-options.ts:97-154",
+     "src/store/slices/ui/ui-slice-preference-actions.ts:68-80"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "trigger com resumo de visibilidade (getSidebarHostVisibilityLabel)",
+     "alternância entre 'All hosts' e seleção múltipla (setWorkspaceHostScope/setVisibleWorkspaceHostIds)",
+     "metadados de presença/saúde por host (getSidebarHostHealthLabel)",
+     "disabled ao tentar desmarcar o último host",
+     "data-workspace-board-preserve-open"
+    ],
+    "notes": "Busca em 5 passos: (1) 'SidebarHostScopeMenuSection' -> 0 em src; (2) nenhum submenu de hosts no WorkspaceOptionsMenu (só submenus sort/projectOrder/cardDisplay/show→Projects, src/components/sidebar/WorkspaceOptionsMenu.tsx:41, :143-262); (3) buildSidebarHostScopeOptions/getSidebarHostVisibilityLabel/getSidebarHostHealthLabel/shouldShowHostScopeControls existem mas têm ZERO consumidores (grep em src = só a própria definição); setWorkspaceHostScope/setVisibleWorkspaceHostIds existem no store (ui-slice-preference-actions.ts:68, :77) sem chamada de componente; (4) sem backend; (5) não há UI de escopo — o filtro de host só é aplicado no pipeline de dados (host-filtering via rendered-sidebar-worktree-order.ts)."
+   }
+  },
+  {
+   "id": "D01-046",
+   "capability": "Ordenação de seções de hosts respeitando preferências do usuário e anexando novos hosts",
+   "orca_evidence": [
+    "components/sidebar/host-section-order.ts:1-32"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/host-section-order.ts:4-30",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:91-95",
+     "src/App.tsx:2456"
+    ],
+    "backend": [],
+    "notes": "orderHostSectionOptions aplica a ordem persistida (workspaceHostOrder) skipando ids obsoletos/duplicados (:15-25) e anexa hosts novos ao final (:26-31), exatamente como a linha do Orca; wired em rendered-sidebar-worktree-order.ts:92 (hostOptions = buildSidebarHostOptions + orderHostSectionOptions) e alcançável do mount via App.tsx:2456. Sem backend (ordem vem do estado de UI)."
+   }
+  },
+  {
+   "id": "D01-047",
+   "capability": "Agrupamento hierárquico e injeção de cabeçalhos de host na lista de workspaces",
+   "orca_evidence": [
+    "components/sidebar/host-section-rows.ts:1-308"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/host-section-rows.ts:166-201",
+     "src/components/sidebar/host-section-rows.ts:202-252",
+     "src/components/sidebar/host-section-rows.ts:274-306",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:88-110",
+     "src/App.tsx:2456",
+     "src/components/sidebar/WorktreeList.tsx:517-560"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "renderização das linhas type:'host-header' na WorktreeList (o pipeline extrai só worktrees em getRenderedWorktreesInSidebarOrder, descartando os cabeçalhos; WorktreeList.tsx:517-560 não trata esse tipo)",
+     "UI de colapso por host (existe o modelo collapsedHostKeys 'host:<id>' + forceCollapseHosts, mas sem cabeçalho clicável)",
+     "exibição de detail/health/compatibility/connectionStatus do cabeçalho (o modelo já os carrega, host-section-rows.ts:288-300)"
+    ],
+    "notes": "O construtor está completo e wired: suprime cabeçalhos com preferProjectGrouping em escopo global (:191-197) e com <=1 host (:252-255), duplica cabeçalhos globais por seção (:202-242), calcula count por host (:300) e lê collapsedHostKeys. É exercitado em runtime quando há filtro de host (needsHostSections, rendered-sidebar-worktree-order.ts:88-90). O gap é de superfície: os HostHeaderRow nunca são pintados."
+   }
+  },
+  {
+   "id": "D01-048",
+   "capability": "Indicador visual de estado e status do agente/workspace com tooltip informativo",
+   "orca_evidence": [
+    "components/sidebar/StatusIndicator.tsx:1-107"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeStatusIndicator.tsx:40-87",
+     "src/components/sidebar/FolderWorkspaceRow.tsx:9",
+     "src/components/sidebar/FolderWorkspaceRow.tsx:48",
+     "src/components/sidebar/WorktreeList.tsx:517-533",
+     "src/components/AgentStateDot.tsx:43-52"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "tooltip localizado via StateIndicatorTooltip (Hydra usa title/aria-label com rótulos hardcoded em STATUS_LABEL, WorktreeStatusIndicator.tsx:17-24)",
+     "glifo do estado permission igual ao do Orca (Hydra usa MessageCircleQuestion lucide em vez do AgentQuestionIcon)",
+     "consumo pelo lane do card — WorktreeCardStatusLane.tsx:72 usa o indicador, mas o componente só é importado por testes (órfão; o lane real vem de WorktreeCard/worktree-card-meta-row)"
+    ],
+    "notes": "Escada de estados portada e wired pelo caminho real (WorktreeCard -> worktree-card-surface -> ... -> worktree-card-meta-row e FolderWorkspaceRow em WorktreeList.tsx:517): spinner amarelo (working), Activity estática (monitoring, :63-67), ponto vermelho (interrupted, :69-72), question (permission, :74-78), verde para done/active e cinza para inactive (:80-86), com showLabel equivalente ao showTooltip do Orca."
+   }
+  },
+  {
+   "id": "D01-049",
+   "capability": "Contagem regressiva de cache de prompt (Prompt Cache Timer) com alerta de expiração",
+   "orca_evidence": [
+    "components/sidebar/CacheTimer.tsx:1-112"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/CacheTimer.tsx:14-41",
+     "src/components/sidebar/worktree-card-meta-row.tsx:5",
+     "src/components/sidebar/worktree-card-meta-row.tsx:99",
+     "src/components/sidebar/use-worktree-card-controller.ts:305-306",
+     "src/components/sidebar/worktree-card-parent-content.tsx:5"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "fonte de dados do countdown — cacheStartedAt é hardcoded null no controller (use-worktree-card-controller.ts:305), logo o componente nunca renderiza",
+     "TTL vindo de settings (promptCacheTimerEnabled / promptCacheTtlMs) — Hydra fixa 300_000 no default do componente (:42) e no controller (:306)",
+     "estado vermelho quando expirado (Hydra retorna null ao expirar, :31-33)",
+     "amarelo de alerta quando restam <=60s",
+     "tooltip detalhado (tempo restante vs 'próxima mensagem re-envia contexto não-cacheado')",
+     "hooks usePromptCacheCountdownStartedAt / usePromptCacheCountdownForPane e o store cacheTimerByKey (sem equivalente; só existe setCacheTimerStartedAt em src/store/terminals/terminal-ephemeral-state.ts:24)"
+    ],
+    "notes": "PAR-60. O componente existe e está no caminho alcançável (worktree-card-meta-row.tsx:99, dentro de WorktreeCard -> WorktreeList -> WorktreeSidebar), formata M:SS e atualiza por setInterval de 1s, mas fica permanentemente inerte porque o controller nunca fornece startedAt."
+   },
+   "par": [
+    "PAR-60"
+   ]
+  },
+  {
+   "id": "D01-050",
+   "capability": "Badge numérico de contagem em pílula sobreposta absoluta para superfícies de largura fixa",
+   "orca_evidence": [
+    "components/sidebar/sidebar-count-badge.tsx:1-24"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/SectionHeader.tsx:141-147",
+     "src/components/sidebar/SidebarAgentsList.tsx:219"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "componente SidebarCountBadge (não existe: 'sidebar-count-badge' -> 0 ocorrências em src)",
+     "pílula absoluta (-top-0.5 -right-0.5) sem afetar o fluxo do layout",
+     "valor exato até 9 e '9+' acima disso",
+     "uso no cabeçalho de projeto colapsado e no ícone de atividade"
+    ],
+    "notes": "PAR-38. Busca em 5 passos: (1) 'SidebarCountBadge'/'sidebar-count-badge' -> 0; (2) nenhum badge com '9+' (grep '9+' -> 0); (3) o cabeçalho de grupo pinta um ponto estático de não-lido e um comentário explícito de que o Orca não pinta badge no header do grupo (SectionHeader.tsx:141-147); existem pílulas numéricas locais em SidebarAgentsList.tsx:219 e NewExternalWorktreesInboxLine.tsx:74 (contagens de bucket/inbox), não o badge compartilhado do Orca; (4) sem backend; (5) census-v3 static_sidebar confirma os ícones de atividade do Orca como superfícies do badge."
+   },
+   "par": [
+    "PAR-38"
+   ]
+  },
+  {
+   "id": "D01-051",
+   "capability": "Gate de estado vazio para proteção de contas baseadas em pastas sob filtros ativos",
+   "orca_evidence": [
+    "components/sidebar/sidebar-empty-state-gate.ts:1-24"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:588-605",
+     "src/components/sidebar/sidebar-filter-actions.ts:14-65",
+     "src/components/sidebar/visible-worktrees.ts:12-13"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "função shouldFiltersHideAllRows considerando visibleWorktreeCount, visibleFolderWorkspaceCount, placeholderRepoCount e importedWorktreeCardCount",
+     "supressão do 'Clear Filters' quando a conta só tem workspaces de pasta e os filtros não são a causa da lista vazia"
+    ],
+    "notes": "PAR-80. Busca em 5 passos: (1) 'sidebar-empty-state-gate' -> 0 ocorrências em src; (2) nenhuma string de gate; (3) o vazio é decidido só por visibleProjects.length === 0 (WorktreeList.tsx:588-605: 'No workspaces matching \"{filter}\"' + botão 'Clear filter'); sidebarHasActiveFilters/computeClearFilterActions existem (sidebar-filter-actions.ts:14-65) mas são apenas re-exportados por visible-worktrees.ts:12-13, sem NENHUM consumidor — o gate está desligado; (4) sem backend; (5) sem equivalente em src/App.tsx."
+   },
+   "par": [
+    "PAR-80"
+   ]
+  },
+  {
+   "id": "D01-052",
+   "capability": "Alternância do sidebar esquerdo por comando/atalho global (sidebar.left.toggle, Cmd+B)",
+   "orca_evidence": [
+    "app-shell/app-command-handlers.ts:168",
+    "store/slices/ui/ui-slice-agent-actions.ts:46",
+    "app-shell/TitlebarLeftControls.tsx:31"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:2545-2552",
+     "src/App.tsx:3623",
+     "src/components/WindowTitlebar.tsx:118-120",
+     "src/components/WindowTitlebar.tsx:145",
+     "src/shared/keybindings/definitions-core-1.ts:181-187"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "comando de primeira classe 'sidebar.left.toggle' despachado pelo command registry com claim('sidebar.left.toggle', actions.toggleSidebar()) — o Hydra tem a definicao do keybinding (definitions-core-1.ts:181, Mod+B) mas ela e orfa: o atalho e tratado por keydown raw em src/App.tsx:2545 e nao aparece no allowlist de plugin-command-actions",
+     "rotulo do atalho derivado do registry (Orca TitlebarLeftControls.tsx:31 via useShortcutLabel) — o Hydra usa title estatico 'Toggle Left Sidebar (Ctrl+B)' em src/components/WindowTitlebar.tsx:119"
+    ],
+    "notes": "PAR-E3. Linha nasceu da falsificacao E3. Orca: command 'sidebar.left.toggle' (app-command-handlers.ts:168) + toggleSidebar (ui-slice-agent-actions.ts:46) + atalho Mod+B (window-shortcut-policy.ts:217, definitions-core-1.ts:181) + label na titlebar (TitlebarLeftControls.tsx:31). Hydra: keybinding definido (definitions-core-1.ts:181) e toggle funcional por keydown raw (App.tsx:2545-2552), botao na titlebar (WindowTitlebar.tsx:118,145) e toggleSidebar no store (ui-slice-agent-actions.ts:47). Comportamento observavel (Mod+B alterna o sidebar) presente; falta a camada de command registry."
+   }
+  }
+ ],
+ "summary": {
+  "parity": 7,
+  "partial": 15,
+  "missing": 30,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
+}

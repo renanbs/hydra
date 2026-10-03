@@ -1,0 +1,1424 @@
+{
+ "exports": {
+  "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx": [
+   "DeleteWorktreeDirtyChangeHint"
+  ],
+  "components/sidebar/DeleteWorktreeLineageNotice.tsx": [
+   "DeleteWorktreeLineageNotice"
+  ],
+  "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx": [
+   "DeleteWorktreeSkipConfirmOption"
+  ],
+  "components/sidebar/DeleteWorktreeWarningPanels.tsx": [
+   "DeleteWorktreeWarningPanels"
+  ],
+  "components/sidebar/SidebarWorkspaceOptionsMenu.tsx": [
+   "default"
+  ],
+  "components/sidebar/WorkspaceSleepMenuItems.tsx": [
+   "WorkspaceSleepMenuItems"
+  ],
+  "components/sidebar/WorkspaceStatusAppearancePopover.tsx": [
+   "WorkspaceStatusAppearancePopover",
+   "default"
+  ],
+  "components/sidebar/delete-worktree-dialog-copy.ts": [
+   "isFolderWorkspaceDelete",
+   "countFolderWorkspaceDeletes",
+   "getDeleteWorktreeDialogCopy",
+   "getDeleteWorktreeLineageDialogCopy"
+  ],
+  "components/sidebar/delete-worktree-dialog-force-delete.ts": [
+   "runDialogForceDelete"
+  ],
+  "components/sidebar/delete-worktree-dirty-change-counts.ts": [
+   "orderDeleteWorktreeStatusHydrationTargets",
+   "getDeleteWorktreeDirtyChangeCounts"
+  ],
+  "components/sidebar/delete-worktree-failure-toast.tsx": [
+   "showDeleteWorktreeFailureToast"
+  ],
+  "components/sidebar/delete-worktree-flow.ts": [
+   "runWorktreeDelete",
+   "runWorktreeBatchDelete"
+  ],
+  "components/sidebar/delete-worktree-lineage-delete-all.ts": [
+   "runLineageDeleteAll"
+  ],
+  "components/sidebar/delete-worktree-preference-toast.ts": [
+   "persistDeleteWorktreeConfirmSkipPreference"
+  ],
+  "components/sidebar/delete-worktree-toast.ts": [
+   "DeleteWorktreeToastCopy",
+   "getDeleteWorktreeToastCopy"
+  ],
+  "components/sidebar/hovered-workspace-delete.ts": [
+   "HoveredWorkspaceDeleteTarget",
+   "getHoveredWorkspaceIdentity",
+   "resolveHoveredWorkspaceDeleteTarget",
+   "deleteHoveredWorkspaceImmediately"
+  ],
+  "components/sidebar/sidebar-workspace-option-items.ts": [
+   "GROUP_BY_OPTIONS",
+   "CARD_LAYOUT_OPTIONS",
+   "AGENT_ACTIVITY_DISPLAY_OPTIONS",
+   "WorktreeCardPropertyOption",
+   "getWorktreeCardPropertyOptions",
+   "WORKTREE_CARD_PROPERTY_OPTIONS",
+   "SORT_OPTIONS",
+   "PROJECT_ORDER_OPTIONS"
+  ],
+  "components/sidebar/sleep-worktree-flow.ts": [
+   "runSleepWorktree",
+   "runSleepWorktrees"
+  ],
+  "components/sidebar/use-worktree-context-menu-commands.ts": [
+   "useWorktreeContextMenuCommands"
+  ],
+  "components/sidebar/use-worktree-context-menu-model.tsx": [
+   "WorktreeContextMenuProps",
+   "useWorktreeContextMenuModel",
+   "WorktreeContextMenuModel"
+  ],
+  "components/sidebar/use-worktree-context-menu-secondary-actions.ts": [
+   "useWorktreeContextMenuSecondaryActions"
+  ],
+  "components/sidebar/workspace-delete-lineage.ts": [
+   "getWorkspaceDeleteLineage"
+  ],
+  "components/sidebar/workspace-delete-quick-action.ts": [
+   "useWorkspaceDeleteModifierPressed",
+   "canShowWorkspaceDeleteQuickAction"
+  ],
+  "components/sidebar/workspace-lineage-menu-actions.ts": [
+   "WorkspaceLineageMenuActions",
+   "hasSleepableWorkspaceActivity",
+   "getWorkspaceLineageMenuActions",
+   "useWorkspaceLineageMenuActions"
+  ],
+  "components/sidebar/workspace-options-menu-items.tsx": [
+   "useWorkspaceOptionsFilterBadge",
+   "WorkspaceOptionsMenuItems"
+  ],
+  "components/sidebar/workspace-status-icon-options.ts": [
+   "WorkspaceStatusIconOption",
+   "getWorkspaceStatusIconOptions"
+  ],
+  "components/sidebar/workspace-status-icons.tsx": [
+   "ConductorDoneIcon",
+   "ConductorReviewIcon",
+   "ConductorProgressIcon"
+  ],
+  "components/sidebar/workspace-status.ts": [
+   "getWorkspaceStatusColorOptions",
+   "getWorkspaceStatusVisualMeta"
+  ],
+  "components/sidebar/worktree-context-menu-delete-intent.ts": [
+   "WorktreeContextMenuDeleteIntent",
+   "createWorktreeContextMenuDeleteIntent",
+   "runWorktreeContextMenuDeleteIntent",
+   "deferWorktreeContextMenuDeleteIntent"
+  ],
+  "components/sidebar/worktree-context-menu-policy.ts": [
+   "CLOSE_ALL_CONTEXT_MENUS_EVENT",
+   "WORKTREE_CONTEXT_MENU_SCOPE_ATTR",
+   "WORKTREE_NATIVE_CONTEXT_MENU_ATTR",
+   "PARENT_PICKER_EXIT_ANIMATION_MS",
+   "EMPTY_TABS_BY_WORKTREE",
+   "EMPTY_PTY_IDS_BY_TAB_ID",
+   "EMPTY_BROWSER_TABS_BY_WORKTREE",
+   "EMPTY_DELETE_STATE_BY_WORKTREE_ID",
+   "EMPTY_WORKTREE_LINEAGE_BY_ID",
+   "EMPTY_WORKSPACE_LINEAGE_BY_CHILD_KEY",
+   "EMPTY_CYCLIC_LINEAGE_IDS",
+   "selectMenuScopedMap",
+   "shouldRevealWorktreeDeveloperMenu",
+   "hasWorktreeParentLink",
+   "shouldUseNativeContextMenu",
+   "shouldIgnoreNestedWorktreeContextMenuScope",
+   "shouldSuppressContextMenuFollowUpClick",
+   "getWorktreeParentPickerLabel",
+   "isWorktreeParentPickerDisabled",
+   "getWorktreeParentPickerAnchor",
+   "shouldRemoveProjectFromContextMenu",
+   "isContextWorktreeDeletable",
+   "shouldContinueDeleteSiblingPositionRestore",
+   "preserveDeleteSiblingPosition",
+   "WorkspaceStatusAssignmentPlan",
+   "planWorkspaceStatusAssignment"
+  ],
+  "components/sidebar/worktree-delete-execution.ts": [
+   "runWorktreeDeletesInParallel"
+  ],
+  "components/sidebar/worktree-delete-request.ts": [
+   "WorktreeBatchDeleteOptions",
+   "WorktreeDeleteIdentity",
+   "WorktreeDeleteOptions",
+   "WorktreeDeleteWithToastOptions",
+   "toWorktreeDeleteIdentities",
+   "WorktreeDeleteTargetLookup",
+   "resolveWorktreeBatchDeleteTargets",
+   "readWorktreeDeleteIdentities"
+  ],
+  "components/sidebar/worktree-delete-state-host-match.ts": [
+   "getDeleteStateForWorktreeHost"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx",
+   "line": 3,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceOptionsMenu.tsx",
+   "line": 9,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceOptionsMenu.tsx",
+   "line": 46,
+   "text": "aria-label={"
+  },
+  {
+   "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+   "line": 3,
+   "text": "import { DropdownMenuItem } from '@/components/ui/dropdown-menu'"
+  },
+  {
+   "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+   "line": 4,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+   "line": 30,
+   "text": "<DropdownMenuItem onSelect={onSleep} disabled={sleepDisabled}>"
+  },
+  {
+   "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+   "line": 33,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+   "line": 50,
+   "text": "<DropdownMenuItem onSelect={onSleepSubtree} disabled={subtreeSleepDisabled}>"
+  },
+  {
+   "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+   "line": 57,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+   "line": 4,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+   "line": 37,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+   "line": 81,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+   "line": 110,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+   "line": 32,
+   "text": "function clickButton(container: HTMLElement, label: string): void {"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-preference-toast.ts",
+   "line": 35,
+   "text": "label: translate("
+  },
+  {
+   "file": "components/sidebar/sidebar-workspace-option-items.ts",
+   "line": 52,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/sidebar-workspace-option-items.ts",
+   "line": 74,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/workspace-options-menu-items.tsx",
+   "line": 12,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 24,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 32,
+   "text": "label: translate('auto.components.sidebar.workspace.status.b4a7101fe1', 'Circle'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 37,
+   "text": "label: translate('auto.components.sidebar.workspace.status.a702bc08d4', 'Dot'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 42,
+   "text": "label: translate('auto.components.sidebar.workspace.status.226d1e7773', 'Progress'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 47,
+   "text": "label: translate('auto.components.sidebar.workspace.status.821d156f54', 'Dashed'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 52,
+   "text": "label: translate('auto.components.sidebar.workspace.status.5f9ca31a84', 'Waiting'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 57,
+   "text": "label: translate('auto.components.sidebar.workspace.status.409528031f', 'Review'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 62,
+   "text": "label: translate('auto.components.sidebar.workspace.status.251c817bdd', 'Timer'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 67,
+   "text": "label: translate('auto.components.sidebar.workspace.status.6380517b10', 'Flag'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 72,
+   "text": "label: translate('auto.components.sidebar.workspace.status.642da473f2', 'Alert'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 77,
+   "text": "label: translate('auto.components.sidebar.workspace.status.111db162bf', 'Paused'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 82,
+   "text": "label: translate('auto.components.sidebar.workspace.status.2c19d1db33', 'Play'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 87,
+   "text": "label: translate('auto.components.sidebar.workspace.status.6b8285b8dd', 'Done'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 92,
+   "text": "label: translate('auto.components.sidebar.workspace.status.93ac840dcb', 'Blocked'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 97,
+   "text": "label: translate('auto.components.sidebar.workspace.status.6b8285b8dd', 'Done'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 102,
+   "text": "label: translate('auto.components.sidebar.workspace.status.6c1efa2cf8', 'In review'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status-icon-options.ts",
+   "line": 107,
+   "text": "label: translate('auto.components.sidebar.workspace.status.cb387159f6', 'In progress'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 51,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 61,
+   "text": "label: translate('auto.components.sidebar.workspace.status.52e3c6e2a4', 'Neutral'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 69,
+   "text": "label: translate('auto.components.sidebar.workspace.status.fc3b92756c', 'Blue'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 77,
+   "text": "label: translate('auto.components.sidebar.workspace.status.6437a8c253', 'Sky'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 85,
+   "text": "label: translate('auto.components.sidebar.workspace.status.1b81da243a', 'Violet'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 93,
+   "text": "label: translate('auto.components.sidebar.workspace.status.7cebab6d4a', 'Amber'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 101,
+   "text": "label: translate('auto.components.sidebar.workspace.status.ddf25b6262', 'Emerald'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 109,
+   "text": "label: translate('auto.components.sidebar.workspace.status.7adb43ecf0', 'Rose'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 117,
+   "text": "label: translate('auto.components.sidebar.workspace.status.caabd5ca85', 'Zinc'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 125,
+   "text": "label: translate('auto.components.sidebar.workspace.status.895f381714', 'Conductor Done'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 133,
+   "text": "label: translate('auto.components.sidebar.workspace.status.caebe3c10f', 'Conductor Review'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 141,
+   "text": "label: translate('auto.components.sidebar.workspace.status.1a9383112b', 'Conductor Progress'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 153,
+   "text": "label: translate('auto.components.sidebar.workspace.status.52e3c6e2a4', 'Neutral'),"
+  },
+  {
+   "file": "components/sidebar/workspace-status.ts",
+   "line": 166,
+   "text": "label: translate('auto.components.sidebar.workspace.status.a702bc08d4', 'Dot'),"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 535,
+   "text": "// Why: the delete-current-workspace shortcut (useIpcEvents) forwards whatever workspace is"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-quick-action.ts",
+   "line": 21,
+   "text": "function onKeyDown(event: KeyboardEvent): void {"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-quick-action.ts",
+   "line": 22,
+   "text": "if (event.altKey || event.key === 'Alt') {"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-quick-action.ts",
+   "line": 27,
+   "text": "function onKeyUp(event: KeyboardEvent): void {"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-quick-action.ts",
+   "line": 28,
+   "text": "if (event.key === 'Alt' || !event.altKey) {"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 5,
+   "text": "* Both the delete-confirmation dialog and the batch shortcut funnel through"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 62,
+   "text": "requestAnimationFrame: vi.fn()"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 124,
+   "text": "const requestAnimationFrame = vi.fn(() => 1)"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 144,
+   "text": "vi.stubGlobal('window', { requestAnimationFrame })"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 149,
+   "text": "expect(requestAnimationFrame).toHaveBeenCalledTimes(1)"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 153,
+   "text": "const requestAnimationFrame = vi.fn(() => 1)"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 185,
+   "text": "vi.stubGlobal('window', { requestAnimationFrame })"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.ts",
+   "line": 85,
+   "text": "window.requestAnimationFrame(restore)"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.ts",
+   "line": 106,
+   "text": "window.requestAnimationFrame(restore)"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.ts",
+   "line": 109,
+   "text": "window.requestAnimationFrame(restore)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-context-menu-commands.ts",
+   "line": 137,
+   "text": "window.setTimeout(() => void runSleepWorktrees(worktreeIds), 50)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+   "line": 257,
+   "text": "const timer = window.setTimeout(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+   "line": 348,
+   "text": "window.setTimeout(openPendingParentPicker, 0)"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 120,
+   "text": "vi.stubGlobal('window', { setTimeout })"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.ts",
+   "line": 74,
+   "text": "defer: (callback: () => void) => void = (callback) => window.setTimeout(callback, 0)"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-policy.ts",
+   "line": 221,
+   "text": "window.requestAnimationFrame(restore)"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-position-scaling.test.ts",
+   "line": 63,
+   "text": "vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(0)"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+   "line": 240,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+   "line": 267,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+   "line": 269,
+   "text": "window.addEventListener(CLOSE_ALL_CONTEXT_MENUS_EVENT, closeMenu)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+   "line": 273,
+   "text": "useEffect("
+  },
+  {
+   "file": "components/sidebar/workspace-delete-quick-action.ts",
+   "line": 44,
+   "text": "window.addEventListener('keydown', onKeyDown, { capture: true })"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-quick-action.ts",
+   "line": 45,
+   "text": "window.addEventListener('keyup', onKeyUp, { capture: true })"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-quick-action.ts",
+   "line": 46,
+   "text": "window.addEventListener('blur', clearDeleteModifierPressed)"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-quick-action.ts",
+   "line": 48,
+   "text": "document.addEventListener('visibilitychange', clearDeleteModifierPressed)"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/sleep-worktree-flow.ts",
+   "line": 191,
+   "text": "if (typeof window !== 'undefined' && window.api?.ephemeralVm?.suspendWorkspace) {"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.ts",
+   "line": 192,
+   "text": "await window.api.ephemeralVm.suspendWorkspace({ workspaceId: worktreeId })"
+  },
+  {
+   "file": "components/sidebar/use-worktree-context-menu-commands.ts",
+   "line": 42,
+   "text": "window.api.ui.writeClipboardText(args.worktree.path)"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/delete-worktree-dirty-change-counts.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "delete-worktree status hydration ordering"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-dirty-change-counts.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "orders the active target first, visible targets next, and descendants last"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+   "line": 50,
+   "kind": "plain",
+   "name": "showDeleteWorktreeFailureToast"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+   "line": 51,
+   "kind": "plain",
+   "name": "uses a persistent in-body action footer when force delete is available"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+   "line": 93,
+   "kind": "plain",
+   "name": "keeps non-forceable failures destructive without a force action"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+   "line": 127,
+   "kind": "plain",
+   "name": "offers Delete Anyway when the archive hook refused the removal"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+   "line": 157,
+   "kind": "plain",
+   "name": "does not offer Delete Anyway for an ordinary failure"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+   "line": 172,
+   "kind": "plain",
+   "name": "offers neither force delete nor View for a locked workspace"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+   "line": 196,
+   "kind": "plain",
+   "name": "keeps View for a locked workspace when changed files are known"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "delete worktree flow"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 142,
+   "kind": "plain",
+   "name": "filters main worktrees and opens a batch confirmation for eligible targets"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 161,
+   "kind": "plain",
+   "name": "opens the single-delete confirmation when only one target is eligible"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 173,
+   "kind": "plain",
+   "name": "treats duplicate selected ids as one delete target"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 186,
+   "kind": "plain",
+   "name": "rejects the whole batch when a selected path belongs to a different instance"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 209,
+   "kind": "plain",
+   "name": "opens batch confirmation when every selected instance is still current"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 232,
+   "kind": "plain",
+   "name": "revalidates each queued instance immediately before execution"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 275,
+   "kind": "plain",
+   "name": "keeps batch deletes behind confirmation when confirmation is skipped"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 298,
+   "kind": "plain",
+   "name": "runs a single eligible delete immediately when confirmation is skipped"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 316,
+   "kind": "plain",
+   "name": "notifies onDeleted after a skip-confirm force delete succeeds"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 354,
+   "kind": "plain",
+   "name": "opens the diff without re-seeding a shell when View changes is clicked"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 375,
+   "kind": "plain",
+   "name": "does not offer force delete for a locked worktree"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 404,
+   "kind": "plain",
+   "name": "does not offer force from another host"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 424,
+   "kind": "plain",
+   "name": "keeps parent worktree deletes behind confirmation even when confirmation is skipped"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 458,
+   "kind": "plain",
+   "name": "keeps context-menu parent deletes behind confirmation even when confirmation is skipped"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 489,
+   "kind": "plain",
+   "name": "reports a stale list instead of silently dropping a delete whose row vanished"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 506,
+   "kind": "plain",
+   "name": "rejects a delayed delete when the path now belongs to a different instance"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 522,
+   "kind": "plain",
+   "name": "runs a delayed delete when the captured instance is still current"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 537,
+   "kind": "plain",
+   "name": "stays silent for a folder workspace, which this funnel does not route"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 547,
+   "kind": "plain",
+   "name": "does not report a stale list when the workspace is still present"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 560,
+   "kind": "plain",
+   "name": "opens project removal confirmation for a primary workspace"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 583,
+   "kind": "plain",
+   "name": "routes primary workspace removal to its exact SSH host"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 608,
+   "kind": "plain",
+   "name": "can force confirmation for a single eligible delete"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 625,
+   "kind": "plain",
+   "name": "reports when no selected worktrees are eligible"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-flow.test.ts",
+   "line": 640,
+   "kind": "plain",
+   "name": "reports a Delete Anyway success to the caller like a force retry"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 87,
+   "kind": "plain",
+   "name": "runWorktreeDeletesInParallel"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 105,
+   "kind": "plain",
+   "name": "uses one snapshot prune batch for a 100-workspace delete"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "starts every selected delete before waiting for earlier deletes to finish"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 180,
+   "kind": "plain",
+   "name": "marks every same-repo target deleting before serialized deletes finish"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 226,
+   "kind": "plain",
+   "name": "deletes nested workspaces before their parent within the same repo"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 250,
+   "kind": "plain",
+   "name": "passes confirmed force to each delete"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 277,
+   "kind": "plain",
+   "name": "deletes a duplicated target identity only once"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 301,
+   "kind": "plain",
+   "name": "deletes both host-qualified targets when they share a worktree id"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 341,
+   "kind": "plain",
+   "name": "clears a pending ancestor when a nested descendant delete fails"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 373,
+   "kind": "plain",
+   "name": "does not let a failed child on one host block an ancestor on another host"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+   "line": 407,
+   "kind": "plain",
+   "name": "replaces per-workspace branch warnings with one batch result"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "getDeleteWorktreeToastCopy"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "uses direct guidance when force delete is available"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "uses terminal-teardown guidance when a PTY stop could not be proven"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "names the running terminals when verification proved they are still live"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "offers force delete when an agent session could not be confirmed closed"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "names the running agent sessions when the close left them attached"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "offers force delete when the teardown sweep itself timed out"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "offers force delete when the sweep failed rather than timed out"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "uses orphaned-directory guidance when Git tracking is already gone"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "uses stale-row guidance when Git already removed the worktree directory"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 147,
+   "kind": "plain",
+   "name": "preserves the raw error when force delete is unavailable"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 155,
+   "kind": "plain",
+   "name": "uses lock-specific guidance"
+  },
+  {
+   "file": "components/sidebar/delete-worktree-toast.test.ts",
+   "line": 164,
+   "kind": "plain",
+   "name": "includes the structured Git lock reason in localized recovery copy"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 53,
+   "kind": "plain",
+   "name": "hovered workspace delete"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 54,
+   "kind": "plain",
+   "name": "uses the deepest hovered worktree row"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 65,
+   "kind": "plain",
+   "name": "resolves the exact hovered host instead of the active workspace"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "retains the hovered host when resolving a folder workspace"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "rejects primary worktrees, stale rows, and missing hover"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 113,
+   "kind": "plain",
+   "name": "rejects worktrees that are already deleting"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "rejects hovered rows while an editable control has focus"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 154,
+   "kind": "plain",
+   "name": "routes the hovered worktree through the host-qualified safety flow"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 175,
+   "kind": "plain",
+   "name": "removes a hovered folder workspace from Orca without deleting its directory"
+  },
+  {
+   "file": "components/sidebar/hovered-workspace-delete.test.ts",
+   "line": 199,
+   "kind": "plain",
+   "name": "rejects a duplicate folder delete while the first request is pending"
+  },
+  {
+   "file": "components/sidebar/sidebar-workspace-option-items.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "worktree card property options"
+  },
+  {
+   "file": "components/sidebar/sidebar-workspace-option-items.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "keeps the combined Tasks option by default"
+  },
+  {
+   "file": "components/sidebar/sidebar-workspace-option-items.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "splits issue providers only when new card style is on"
+  },
+  {
+   "file": "components/sidebar/sidebar-workspace-option-items.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "uses branch-only copy by default and without project groups"
+  },
+  {
+   "file": "components/sidebar/sidebar-workspace-option-items.test.ts",
+   "line": 53,
+   "kind": "plain",
+   "name": "keeps branch-only copy for legacy cards even with project groups"
+  },
+  {
+   "file": "components/sidebar/sidebar-workspace-option-items.test.ts",
+   "line": 59,
+   "kind": "plain",
+   "name": "mentions folder paths only for new card style with project groups"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 53,
+   "kind": "plain",
+   "name": "runSleepWorktree"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "tears down browsers before terminals on the sleep path"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 99,
+   "kind": "plain",
+   "name": "clears activeWorktreeId before teardown when the slept worktree is active"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 110,
+   "kind": "plain",
+   "name": "marks sleep intent before clearing the active slept worktree and keeps it after teardown"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "preserves active row position through section-scoped sidebar row ids"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 152,
+   "kind": "plain",
+   "name": "anchors sleep restoration to the natural duplicate row when no primary row is marked"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 194,
+   "kind": "plain",
+   "name": "leaves activeWorktreeId alone and marks a background worktree slept"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 205,
+   "kind": "plain",
+   "name": "leaves a worktree the user activated mid-batch awake"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 225,
+   "kind": "plain",
+   "name": "marks each worktree only when its own teardown starts"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 246,
+   "kind": "plain",
+   "name": "surfaces a toast and skips terminals when browsers throws"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 267,
+   "kind": "plain",
+   "name": "restores the active workspace when terminal convergence fails"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 286,
+   "kind": "plain",
+   "name": "continues sleeping later worktrees when one selected worktree fails"
+  },
+  {
+   "file": "components/sidebar/sleep-worktree-flow.test.ts",
+   "line": 313,
+   "kind": "plain",
+   "name": "sleeps multiple worktrees and clears active only once when included"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "getWorkspaceDeleteLineage"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "returns valid descendants for parent delete copy and child-first delete-all targets"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "ignores stale instance links"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 82,
+   "kind": "plain",
+   "name": "orders an exact inline-only legacy descendant before its parent"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 93,
+   "kind": "plain",
+   "name": "keeps a stale side-map child authoritative over valid inline lineage"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 109,
+   "kind": "plain",
+   "name": "rejects cross-repo, cross-host, and cross-project descendants"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "does not traverse cyclic projected lineage"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 149,
+   "kind": "plain",
+   "name": "resolves a colliding child id to the parent host"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 167,
+   "kind": "plain",
+   "name": "keeps the parent host preference stable regardless of row order"
+  },
+  {
+   "file": "components/sidebar/workspace-delete-lineage.test.ts",
+   "line": 185,
+   "kind": "plain",
+   "name": "uses the confirmed host inline lineage when the bare projection belongs to the other host"
+  },
+  {
+   "file": "components/sidebar/workspace-lineage-menu-actions.test.ts",
+   "line": 44,
+   "kind": "plain",
+   "name": "workspace lineage menu actions"
+  },
+  {
+   "file": "components/sidebar/workspace-lineage-menu-actions.test.ts",
+   "line": 45,
+   "kind": "plain",
+   "name": "collects recursive descendants and only targets workspaces with active panels for sleep"
+  },
+  {
+   "file": "components/sidebar/workspace-lineage-menu-actions.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "does not expose stale descendants through the recursive action scope"
+  },
+  {
+   "file": "components/sidebar/workspace-lineage-menu-actions.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "hasSleepableWorkspaceActivity"
+  },
+  {
+   "file": "components/sidebar/workspace-lineage-menu-actions.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "treats preserved empty PTY arrays as slept, not live"
+  },
+  {
+   "file": "components/sidebar/workspace-lineage-menu-actions.test.ts",
+   "line": 114,
+   "kind": "plain",
+   "name": "detects live terminal and browser activity"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "workspace status drag data"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 31,
+   "kind": "plain",
+   "name": "keeps the legacy single worktree payload when writing a selected batch"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "round-trips selected worktree ids for board batch drops"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 52,
+   "kind": "plain",
+   "name": "falls back to the single worktree payload for older drag sources"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "ignores invalid decoded worktree ids while preserving valid batch ids"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 70,
+   "kind": "plain",
+   "name": "ignores oversized plain-text workspace drag fallbacks"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 80,
+   "kind": "plain",
+   "name": "ignores multibyte oversized workspace drag fallbacks"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "does not fall back to plain text when the typed id batch is oversized"
+  },
+  {
+   "file": "components/sidebar/workspace-status.test.ts",
+   "line": 100,
+   "kind": "plain",
+   "name": "rejects oversized selected worktree id batches"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "createWorktreeContextMenuDeleteIntent"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 18,
+   "kind": "plain",
+   "name": "routes a same-id row through the host that owns the context menu"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "keeps every selected host in a colliding batch"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 51,
+   "kind": "plain",
+   "name": "preserves the folder owner host in a context-menu delete intent"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 71,
+   "kind": "plain",
+   "name": "deferWorktreeContextMenuDeleteIntent"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "dispatches the selected workspace identity after the menu event completes"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "preserves every selected workspace identity for batch validation"
+  },
+  {
+   "file": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "dispatches on the next macrotask by default"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-host-qualification.test.ts",
+   "line": 129,
+   "kind": "plain",
+   "name": "STA-4343 sidebar delete: the confirmed row decides the host"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-host-qualification.test.ts",
+   "line": 130,
+   "kind": "plain",
+   "name": "deletes the SSH row and leaves the ACTIVE local checkout on disk"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-host-qualification.test.ts",
+   "line": 161,
+   "kind": "plain",
+   "name": "routes the batch delete path to the confirmed host too"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-host-qualification.test.ts",
+   "line": 187,
+   "kind": "plain",
+   "name": "tears down shared renderer state after both same-id host rows finish deleting"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-host-qualification.test.ts",
+   "line": 218,
+   "kind": "plain",
+   "name": "still deletes the local checkout for real when the local row is the one deleted"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-host-qualification.test.ts",
+   "line": 239,
+   "kind": "plain",
+   "name": "still deletes an ordinary single-host SSH workspace for real"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-position-scaling.test.ts",
+   "line": 36,
+   "kind": "plain",
+   "name": "measures each mounted sidebar row once when choosing a delete-position anchor"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-position-scaling.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "anchors on the same row the pre-hoist comparator sort would have chosen"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 44,
+   "kind": "plain",
+   "name": "resolveWorktreeBatchDeleteTargets"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "reaches the second host row even though the local row is listed first"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 57,
+   "kind": "plain",
+   "name": "resolves the local row when that is the one confirmed"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 66,
+   "kind": "plain",
+   "name": "keeps both hosts when both rows are confirmed in one batch"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "refuses when the confirmed host no longer has a row"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 85,
+   "kind": "plain",
+   "name": "refuses when the row on the confirmed host was replaced"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "keeps first-wins for a bare id request that names no host"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "skips a main worktree without failing the batch"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 114,
+   "kind": "plain",
+   "name": "readWorktreeDeleteIdentities"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 115,
+   "kind": "plain",
+   "name": "carries the host through the modal data round trip"
+  },
+  {
+   "file": "components/sidebar/worktree-delete-request.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "drops a host that is not a valid execution host id"
+  }
+ ]
+}

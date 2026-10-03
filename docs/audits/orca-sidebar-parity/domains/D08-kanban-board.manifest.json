@@ -1,0 +1,332 @@
+{
+ "domain": "D08-kanban-board",
+ "prod": [
+  {
+   "name": "WorkspaceKanbanAreaSelectionOverlay.tsx",
+   "kind": "prod",
+   "loc": 19
+  },
+  {
+   "name": "WorkspaceKanbanCard.tsx",
+   "kind": "prod",
+   "loc": 81
+  },
+  {
+   "name": "WorkspaceKanbanDrawer.tsx",
+   "kind": "prod",
+   "loc": 303
+  },
+  {
+   "name": "WorkspaceKanbanDrawerHeader.tsx",
+   "kind": "prod",
+   "loc": 128
+  },
+  {
+   "name": "WorkspaceKanbanDrawerView.tsx",
+   "kind": "prod",
+   "loc": 70
+  },
+  {
+   "name": "WorkspaceKanbanLaneCardList.tsx",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "WorkspaceKanbanLaneGrid.tsx",
+   "kind": "prod",
+   "loc": 231
+  },
+  {
+   "name": "WorkspaceKanbanPinDropTarget.tsx",
+   "kind": "prod",
+   "loc": 40
+  },
+  {
+   "name": "WorkspaceKanbanSearchField.tsx",
+   "kind": "prod",
+   "loc": 175
+  },
+  {
+   "name": "WorkspaceKanbanSettingsMenu.tsx",
+   "kind": "prod",
+   "loc": 210
+  },
+  {
+   "name": "WorkspaceKanbanSheet.tsx",
+   "kind": "prod",
+   "loc": 100
+  },
+  {
+   "name": "WorkspaceKanbanStatusLane.tsx",
+   "kind": "prod",
+   "loc": 236
+  },
+  {
+   "name": "use-workspace-board-task-status-sync.ts",
+   "kind": "prod",
+   "loc": 161
+  },
+  {
+   "name": "use-workspace-kanban-area-selection.ts",
+   "kind": "prod",
+   "loc": 333
+  },
+  {
+   "name": "use-workspace-kanban-board-projection.ts",
+   "kind": "prod",
+   "loc": 106
+  },
+  {
+   "name": "use-workspace-kanban-card-pointer-drag.ts",
+   "kind": "prod",
+   "loc": 321
+  },
+  {
+   "name": "use-workspace-kanban-column-resize.ts",
+   "kind": "prod",
+   "loc": 157
+  },
+  {
+   "name": "use-workspace-kanban-create-worktree.ts",
+   "kind": "prod",
+   "loc": 21
+  },
+  {
+   "name": "use-workspace-kanban-drawer-lingering.ts",
+   "kind": "prod",
+   "loc": 16
+  },
+  {
+   "name": "use-workspace-kanban-native-drag.ts",
+   "kind": "prod",
+   "loc": 68
+  },
+  {
+   "name": "use-workspace-kanban-outside-dismiss.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "use-workspace-kanban-render-lifecycle.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "use-workspace-kanban-search.ts",
+   "kind": "prod",
+   "loc": 102
+  },
+  {
+   "name": "use-workspace-kanban-selection.ts",
+   "kind": "prod",
+   "loc": 150
+  },
+  {
+   "name": "use-workspace-kanban-shift-wheel-scroll.ts",
+   "kind": "prod",
+   "loc": 112
+  },
+  {
+   "name": "use-workspace-kanban-status-actions.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "use-workspace-kanban-worktree-actions.ts",
+   "kind": "prod",
+   "loc": 223
+  },
+  {
+   "name": "useWorkspaceBoardPanel.ts",
+   "kind": "prod",
+   "loc": 179
+  },
+  {
+   "name": "workspace-board-task-status-sync.ts",
+   "kind": "prod",
+   "loc": 267
+  },
+  {
+   "name": "workspace-kanban-area-selection-card-rects.ts",
+   "kind": "prod",
+   "loc": 99
+  },
+  {
+   "name": "workspace-kanban-area-selection-dom.ts",
+   "kind": "prod",
+   "loc": 256
+  },
+  {
+   "name": "workspace-kanban-area-selection-state.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "workspace-kanban-card-drag-preview-dom.ts",
+   "kind": "prod",
+   "loc": 103
+  },
+  {
+   "name": "workspace-kanban-card-pointer-drag-dom.ts",
+   "kind": "prod",
+   "loc": 312
+  },
+  {
+   "name": "workspace-kanban-card-pointer-drag-start.ts",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "workspace-kanban-filtered-drop-index.ts",
+   "kind": "prod",
+   "loc": 87
+  },
+  {
+   "name": "workspace-kanban-lane-range.ts",
+   "kind": "prod",
+   "loc": 17
+  },
+  {
+   "name": "workspace-kanban-pointer-drag-selection.ts",
+   "kind": "prod",
+   "loc": 45
+  },
+  {
+   "name": "workspace-kanban-search.ts",
+   "kind": "prod",
+   "loc": 90
+  },
+  {
+   "name": "workspace-kanban-sidebar-drop.ts",
+   "kind": "prod",
+   "loc": 286
+  },
+  {
+   "name": "workspace-kanban-virtual-lane-layout.ts",
+   "kind": "prod",
+   "loc": 173
+  },
+  {
+   "name": "workspace-kanban-worktree-groups.ts",
+   "kind": "prod",
+   "loc": 48
+  }
+ ],
+ "test": [
+  {
+   "name": "WorkspaceKanbanCard.host-identity.test.tsx",
+   "kind": "test",
+   "loc": 53
+  },
+  {
+   "name": "WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "kind": "test",
+   "loc": 269
+  },
+  {
+   "name": "WorkspaceKanbanDrawer.search.test.tsx",
+   "kind": "test",
+   "loc": 425
+  },
+  {
+   "name": "WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "kind": "test",
+   "loc": 474
+  },
+  {
+   "name": "WorkspaceKanbanDrawerHeader.test.tsx",
+   "kind": "test",
+   "loc": 142
+  },
+  {
+   "name": "WorkspaceKanbanLaneCardList.test.tsx",
+   "kind": "test",
+   "loc": 193
+  },
+  {
+   "name": "WorkspaceKanbanLaneGrid.test.tsx",
+   "kind": "test",
+   "loc": 241
+  },
+  {
+   "name": "WorkspaceKanbanSearchField.test.tsx",
+   "kind": "test",
+   "loc": 221
+  },
+  {
+   "name": "WorkspaceKanbanSettingsMenu.test.tsx",
+   "kind": "test",
+   "loc": 104
+  },
+  {
+   "name": "WorkspaceKanbanStatusLane.test.tsx",
+   "kind": "test",
+   "loc": 173
+  },
+  {
+   "name": "use-workspace-kanban-card-pointer-drag.test.ts",
+   "kind": "test",
+   "loc": 72
+  },
+  {
+   "name": "use-workspace-kanban-drawer-lingering.test.tsx",
+   "kind": "test",
+   "loc": 35
+  },
+  {
+   "name": "use-workspace-kanban-outside-dismiss.test.ts",
+   "kind": "test",
+   "loc": 61
+  },
+  {
+   "name": "use-workspace-kanban-selection.test.tsx",
+   "kind": "test",
+   "loc": 191
+  },
+  {
+   "name": "useWorkspaceBoardPanel.test.tsx",
+   "kind": "test",
+   "loc": 248
+  },
+  {
+   "name": "workspace-board-task-status-sync.test.ts",
+   "kind": "test",
+   "loc": 428
+  },
+  {
+   "name": "workspace-kanban-area-selection.test.ts",
+   "kind": "test",
+   "loc": 219
+  },
+  {
+   "name": "workspace-kanban-card-pointer-drag-dom.test.ts",
+   "kind": "test",
+   "loc": 133
+  },
+  {
+   "name": "workspace-kanban-filtered-drop-index.test.ts",
+   "kind": "test",
+   "loc": 148
+  },
+  {
+   "name": "workspace-kanban-search.test.ts",
+   "kind": "test",
+   "loc": 171
+  },
+  {
+   "name": "workspace-kanban-sidebar-drop.test.ts",
+   "kind": "test",
+   "loc": 679
+  },
+  {
+   "name": "workspace-kanban-virtual-lane-layout.test.ts",
+   "kind": "test",
+   "loc": 173
+  },
+  {
+   "name": "workspace-kanban-worktree-groups.test.ts",
+   "kind": "test",
+   "loc": 172
+  }
+ ]
+}

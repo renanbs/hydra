@@ -1,0 +1,212 @@
+{
+ "domain": "D01-shell-chrome",
+ "prod": [
+  {
+   "name": "components/Sidebar.tsx",
+   "kind": "prod",
+   "loc": 1
+  },
+  {
+   "name": "AgentDashboardSidebarEntry.tsx",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "AgentDashboardSidebarHost.tsx",
+   "kind": "prod",
+   "loc": 43
+  },
+  {
+   "name": "CacheTimer.tsx",
+   "kind": "prod",
+   "loc": 112
+  },
+  {
+   "name": "ProjectHeaderActions.tsx",
+   "kind": "prod",
+   "loc": 30
+  },
+  {
+   "name": "ScrollToCurrentWorkspaceToolbarButton.tsx",
+   "kind": "prod",
+   "loc": 34
+  },
+  {
+   "name": "SetupGuideSidebarEntry.tsx",
+   "kind": "prod",
+   "loc": 124
+  },
+  {
+   "name": "SidebarFeedbackDialog.tsx",
+   "kind": "prod",
+   "loc": 377
+  },
+  {
+   "name": "SidebarFeedbackImageAttachments.tsx",
+   "kind": "prod",
+   "loc": 107
+  },
+  {
+   "name": "SidebarHeader.tsx",
+   "kind": "prod",
+   "loc": 137
+  },
+  {
+   "name": "SidebarHostScopeMenuSection.tsx",
+   "kind": "prod",
+   "loc": 151
+  },
+  {
+   "name": "SidebarNav.tsx",
+   "kind": "prod",
+   "loc": 293
+  },
+  {
+   "name": "SidebarSettingsHelpMenu.tsx",
+   "kind": "prod",
+   "loc": 364
+  },
+  {
+   "name": "SidebarTaskNavButton.tsx",
+   "kind": "prod",
+   "loc": 237
+  },
+  {
+   "name": "SidebarToolbar.tsx",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "StatusIndicator.tsx",
+   "kind": "prod",
+   "loc": 107
+  },
+  {
+   "name": "host-section-order.ts",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "host-section-rows.ts",
+   "kind": "prod",
+   "loc": 308
+  },
+  {
+   "name": "mobile-sidebar-onboarding-badge.ts",
+   "kind": "prod",
+   "loc": 55
+  },
+  {
+   "name": "repo-header-action-button-class.ts",
+   "kind": "prod",
+   "loc": 4
+  },
+  {
+   "name": "sidebar-count-badge.tsx",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "sidebar-empty-state-gate.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "sidebar-header-actions.tsx",
+   "kind": "prod",
+   "loc": 104
+  },
+  {
+   "name": "sidebar-host-options.ts",
+   "kind": "prod",
+   "loc": 154
+  },
+  {
+   "name": "sidebar-nav-controls.tsx",
+   "kind": "prod",
+   "loc": 15
+  }
+ ],
+ "test": [
+  {
+   "name": "AgentDashboardSidebarHost.test.tsx",
+   "kind": "test",
+   "loc": 75
+  },
+  {
+   "name": "CacheTimer.test.tsx",
+   "kind": "test",
+   "loc": 90
+  },
+  {
+   "name": "ProjectHeaderActions.test.tsx",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "SetupGuideSidebarEntry.test.tsx",
+   "kind": "test",
+   "loc": 200
+  },
+  {
+   "name": "Sidebar.test.tsx",
+   "kind": "test",
+   "loc": 246
+  },
+  {
+   "name": "SidebarFeedbackDialog.test.tsx",
+   "kind": "test",
+   "loc": 349
+  },
+  {
+   "name": "SidebarHeader.test.tsx",
+   "kind": "test",
+   "loc": 351
+  },
+  {
+   "name": "SidebarNav.test.tsx",
+   "kind": "test",
+   "loc": 508
+  },
+  {
+   "name": "SidebarSettingsHelpMenu.test.tsx",
+   "kind": "test",
+   "loc": 349
+  },
+  {
+   "name": "SidebarToolbar.test.tsx",
+   "kind": "test",
+   "loc": 157
+  },
+  {
+   "name": "StatusIndicator.test.ts",
+   "kind": "test",
+   "loc": 119
+  },
+  {
+   "name": "host-section-order.test.ts",
+   "kind": "test",
+   "loc": 31
+  },
+  {
+   "name": "host-section-rows.test.ts",
+   "kind": "test",
+   "loc": 857
+  },
+  {
+   "name": "mobile-sidebar-onboarding-badge.test.ts",
+   "kind": "test",
+   "loc": 113
+  },
+  {
+   "name": "sidebar-empty-state-gate.test.ts",
+   "kind": "test",
+   "loc": 60
+  },
+  {
+   "name": "sidebar-host-options.test.ts",
+   "kind": "test",
+   "loc": 216
+  }
+ ]
+}

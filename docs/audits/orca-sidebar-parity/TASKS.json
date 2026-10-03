@@ -1,0 +1,2427 @@
+[
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "A régua de navegação inteira do Orca não existe — D01-017 (Setup Guide), D01-018 (Tasks),",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D01-017",
+   "D01-018",
+   "D01-019",
+   "D01-020",
+   "D01-021",
+   "D01-022",
+   "D01-023",
+   "D01-024",
+   "D01-025",
+   "D01-026",
+   "D01-027",
+   "D01-035"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:36"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "Menu de Ajuda + Feedback inteiros — D01-035 (dropdown Help), D01-036 (Atalhos/Feedback/Milestones/",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D01-032",
+   "D01-033",
+   "D01-035",
+   "D01-036",
+   "D01-037",
+   "D01-038",
+   "D01-039",
+   "D01-040",
+   "D01-041",
+   "D01-042",
+   "D01-043",
+   "D01-045"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:45"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "Workspace Board (Kanban) sem botão e sem dica de realocação — D01-032 (toggle + preview de drag) e",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D01-032",
+   "D01-033",
+   "D01-045"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:50"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "Submenu de escopo multi-host sem UI — D01-045 missing: buildSidebarHostScopeOptions,",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D01-001",
+   "D01-045"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:54"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "Escapes do census sem linha no inventário — Refresh rate limits, Notifications alt+T e",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D01-001",
+   "D01-004",
+   "D01-050"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:59"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "Casca sem data-sidebar, com limites/default divergentes e sem canal de live-width — D01-001",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D01-001",
+   "D01-004",
+   "D01-049",
+   "D01-050"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:61"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "Drop nativo de pastas do SO — D01-004 missing (PAR-13). Nenhum dragenter/dragover/onDrop de SO",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D01-004",
+   "D01-007",
+   "D01-047",
+   "D01-049",
+   "D01-050"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:64"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "SidebarCountBadge (1…9+) — D01-050 missing (PAR-38). O cabeçalho de grupo pinta um ponto",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D01-007",
+   "D01-047",
+   "D01-049",
+   "D01-050"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:66"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "CacheTimer inerte — D01-049 partial (PAR-60): cacheStartedAt é hardcoded null",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D01-007",
+   "D01-047",
+   "D01-049"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:69"
+ },
+ {
+  "domain": "D01-shell-chrome",
+  "group": null,
+  "title": "Título do cabeçalho estático + galeria de overlays — D01-007 partial (PAR-03: \"Projects\" fixo,",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D01-007",
+   "D01-047",
+   "D01-052"
+  ],
+  "id_spans": [],
+  "evidence": "D01-shell-chrome.gaps.md:72"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Seleção de host (Local/SSH/Runtime) ausente no wizard — D02a-003, D02a-004 missing;",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-003",
+   "D02a-004",
+   "D02a-005",
+   "D02a-009",
+   "D02a-010",
+   "D02a-022",
+   "D02a-028"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:23"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Fluxo de adição SSH remota inteiro inaplicável — D02a-005/019/020/021 not-applicable",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-005",
+   "D02a-009",
+   "D02a-010",
+   "D02a-022",
+   "D02a-028",
+   "D02a-034"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:25"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Etapa de server-path de runtime + RemoteFileBrowser — D02a-010/011 not-applicable (runtime server remoto)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-009",
+   "D02a-010",
+   "D02a-013",
+   "D02a-022",
+   "D02a-026",
+   "D02a-027",
+   "D02a-028",
+   "D02a-034"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:27"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Escaneamento de repositórios aninhados + revisão/import em grupo — D02a-022/023/024/025 missing;",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-009",
+   "D02a-013",
+   "D02a-022",
+   "D02a-026",
+   "D02a-027",
+   "D02a-028",
+   "D02a-034"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:28"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Add em lote de múltiplas pastas locais — D02a-009 missing (picker usa multiple:false, AddRepoDialog.tsx:53)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-009",
+   "D02a-013",
+   "D02a-026",
+   "D02a-027",
+   "D02a-028",
+   "D02a-031",
+   "D02a-034"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:30"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Handoff de checkout padrão completo (main worktree, reveal, telemetria) — D02a-028 partial: o Hydra só",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-013",
+   "D02a-026",
+   "D02a-027",
+   "D02a-028",
+   "D02a-031",
+   "D02a-034"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:31"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Composer de workspace de pasta (submit, agente, path-status gate) — D02a-034/035/037 missing (sem UI;",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-013",
+   "D02a-026",
+   "D02a-027",
+   "D02a-031",
+   "D02a-034",
+   "D02a-039"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:33"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Diálogos de compatibilidade de import — D02a-026 (confirm-from-folder) e D02a-027 (project-added) missing",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-001",
+   "D02a-013",
+   "D02a-026",
+   "D02a-027",
+   "D02a-031",
+   "D02a-039"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:35"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Defaults derivados (clone/create) e links/SSH — D02a-013/017 missing: caminhos literais",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-001",
+   "D02a-013",
+   "D02a-031",
+   "D02a-039"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:36"
+ },
+ {
+  "domain": "D02a-repo-add-wizard",
+  "group": null,
+  "title": "Telemetria de adição de projeto — D02a-031 out-of-scope (sem sink; src/lib/telemetry.ts:26 chama bridge ausente)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02a-001",
+   "D02a-006",
+   "D02a-031",
+   "D02a-039"
+  ],
+  "id_spans": [],
+  "evidence": "D02a-repo-add-wizard.gaps.md:38"
+ },
+ {
+  "domain": "D02b-hosts-ssh-remote",
+  "group": "G1",
+  "title": "Estado do subsistema SSH/remote no Hydra — a ausência é de implementação, não de plataforma",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D02b-hosts-ssh-remote.gaps.md:11"
+ },
+ {
+  "domain": "D02b-hosts-ssh-remote",
+  "group": "G2",
+  "title": "Por que not-applicable foi avaliado e rejeitado",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02b-001",
+   "D02b-010",
+   "D02b-021"
+  ],
+  "id_spans": [],
+  "evidence": "D02b-hosts-ssh-remote.gaps.md:31"
+ },
+ {
+  "domain": "D02b-hosts-ssh-remote",
+  "group": "G3",
+  "title": "Veredito por linha",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02b-001",
+   "D02b-002",
+   "D02b-003",
+   "D02b-004",
+   "D02b-005",
+   "D02b-006"
+  ],
+  "id_spans": [],
+  "evidence": "D02b-hosts-ssh-remote.gaps.md:44"
+ },
+ {
+  "domain": "D02b-hosts-ssh-remote",
+  "group": "G4",
+  "title": "Obrigações de cobertura (entrada → id do veredito)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02b-001",
+   "D02b-003",
+   "D02b-004",
+   "D02b-005",
+   "D02b-007",
+   "D02b-009",
+   "D02b-010"
+  ],
+  "id_spans": [],
+  "evidence": "D02b-hosts-ssh-remote.gaps.md:79"
+ },
+ {
+  "domain": "D02b-hosts-ssh-remote",
+  "group": "G5",
+  "title": "Justificativas INFRA:/N/A:/DUP",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D02b-hosts-ssh-remote.gaps.md:431"
+ },
+ {
+  "domain": "D02b-hosts-ssh-remote",
+  "group": "G6",
+  "title": "Log de busca negativo (Hydra)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D02b-hosts-ssh-remote.gaps.md:437"
+ },
+ {
+  "domain": "D02b-hosts-ssh-remote",
+  "group": "G7",
+  "title": "Cross-walk PAR",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D02b-hosts-ssh-remote.gaps.md:480"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G1",
+  "title": "Sistema de drag por ponteiro (P0 · alto impacto · alto esforço)",
+  "severity": "critico",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:19"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G2",
+  "title": "Viewport virtualizado, sticky headers e scroll-to-top (P0 · alto impacto · alto esforço)",
+  "severity": "critico",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:36"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G3",
+  "title": "Modos de agrupamento não renderizam as lanes (P1 · alto impacto · baixo esforço)",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:50"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G4",
+  "title": "Seleção múltipla e navegação por teclado (P1 · alto impacto · médio esforço)",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:66"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G5",
+  "title": "Infra de reveal (P1 · alto impacto · médio/alto esforço)",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D03a-064"
+  ],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:82"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G6",
+  "title": "Pinned section e host sections (P1 · médio impacto · médio esforço)",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D03a-030",
+   "D03a-036",
+   "D03a-074"
+  ],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:96"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G7",
+  "title": "Persistência de drop (ordem/status) (P2 · médio impacto · baixo esforço)",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D03a-009",
+   "D03a-010",
+   "D03a-021"
+  ],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:106"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G8",
+  "title": "PR lanes e refresh de PR/CI por rows visíveis (P2 · médio impacto · médio esforço)",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D03a-029",
+   "D03a-100",
+   "D03a-104"
+  ],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:116"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G9",
+  "title": "Folder path status fresco + indicador (P2 · médio impacto · baixo esforço)",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D03a-057",
+   "D03a-073"
+  ],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:127"
+ },
+ {
+  "domain": "D03a-worktree-list-module",
+  "group": "G10",
+  "title": "Notices/virtual rows e detalhes de header (P2/P3 · baixo impacto · baixo/médio esforço)",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D03a-035",
+   "D03a-042",
+   "D03a-043",
+   "D03a-075",
+   "D03a-086",
+   "D03a-087"
+  ],
+  "id_spans": [],
+  "evidence": "D03a-worktree-list-module.gaps.md:138"
+ },
+ {
+  "domain": "D03b-sidebar-list-orchestration",
+  "group": "G1",
+  "title": "Mapa de alcance (o que está realmente ligado ao mount)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D03b-sidebar-list-orchestration.gaps.md:11"
+ },
+ {
+  "domain": "D03b-sidebar-list-orchestration",
+  "group": "G2",
+  "title": "Paridade real (2 linhas)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D03b-038",
+   "D03b-050"
+  ],
+  "id_spans": [],
+  "evidence": "D03b-sidebar-list-orchestration.gaps.md:26"
+ },
+ {
+  "domain": "D03b-sidebar-list-orchestration",
+  "group": "G3",
+  "title": "Gaps por linha",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D03b-001",
+   "D03b-002",
+   "D03b-004",
+   "D03b-006"
+  ],
+  "id_spans": [],
+  "evidence": "D03b-sidebar-list-orchestration.gaps.md:39"
+ },
+ {
+  "domain": "D03b-sidebar-list-orchestration",
+  "group": "G3",
+  "title": "1 partial (17)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D03b-001",
+   "D03b-002",
+   "D03b-004",
+   "D03b-006",
+   "D03b-010",
+   "D03b-011"
+  ],
+  "id_spans": [],
+  "evidence": "D03b-sidebar-list-orchestration.gaps.md:41"
+ },
+ {
+  "domain": "D03b-sidebar-list-orchestration",
+  "group": "G3",
+  "title": "2 missing (31)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D03b-003",
+   "D03b-005",
+   "D03b-007",
+   "D03b-008",
+   "D03b-009",
+   "D03b-012"
+  ],
+  "id_spans": [],
+  "evidence": "D03b-sidebar-list-orchestration.gaps.md:63"
+ },
+ {
+  "domain": "D03b-sidebar-list-orchestration",
+  "group": "G4",
+  "title": "Cross-walk PAR-* proposto (merge manual em _par-crosswalk.json)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D03b-007",
+   "D03b-008",
+   "D03b-009",
+   "D03b-015"
+  ],
+  "id_spans": [],
+  "evidence": "D03b-sidebar-list-orchestration.gaps.md:99"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G1",
+  "title": "SSH host control e fluxo de conexão não existem",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D04a-012",
+   "D04a-013",
+   "D04a-014",
+   "D04a-108"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:36"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G2",
+  "title": "Diálogo de metadados (issue/review/notas/nome) ausente",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D04a-093",
+   "D04a-099"
+  ],
+  "id_spans": [
+   "D04a-093…D04a-099"
+  ],
+  "evidence": "D04a-worktree-card-surface.gaps.md:47"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G3",
+  "title": "Fileira de badges de metadados e badges de estado ausentes",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D04a-025",
+   "D04a-033",
+   "D04a-051",
+   "D04a-052",
+   "D04a-053",
+   "D04a-060",
+   "D04a-061",
+   "D04a-062",
+   "D04a-069"
+  ],
+  "id_spans": [
+   "D04a-025…D04a-033"
+  ],
+  "evidence": "D04a-worktree-card-surface.gaps.md:57"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G4",
+  "title": "Menu de contexto do card incompleto",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-051",
+   "D04a-052",
+   "D04a-053",
+   "D04a-060",
+   "D04a-061",
+   "D04a-062",
+   "D04a-069"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:66"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G5",
+  "title": "Estado de exclusão in-place preso",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-003",
+   "D04a-069",
+   "D04b-004"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:78"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G6",
+  "title": "Hover de detalhes reduzido e com bug de propagação",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D04a-021",
+   "D04a-022",
+   "D04a-023",
+   "D04a-037",
+   "D04a-038",
+   "D04a-039",
+   "D04a-040",
+   "D04a-041",
+   "D04a-042",
+   "D04a-043",
+   "D04a-044",
+   "D04a-045"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:90"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G7",
+  "title": "UX de não-lido incompleta",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D04a-002",
+   "D04a-015",
+   "D04a-021",
+   "D04a-022",
+   "D04a-023",
+   "D04a-052",
+   "D04a-065",
+   "D04a-069"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:98"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G8",
+  "title": "Multi-seleção inexistente (D04a-002, D04a-052, D04a-065 — PAR-08)",
+  "severity": "baixo",
+  "effort": "n/d",
+  "ids": [
+   "D04a-002",
+   "D04a-015",
+   "D04a-052",
+   "D04a-065",
+   "D04a-069"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:103"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G9",
+  "title": "Caminho de atalho do rename e dispatcher de keybindings mortos",
+  "severity": "baixo",
+  "effort": "n/d",
+  "ids": [
+   "D04a-015",
+   "D04a-069",
+   "D04a-079",
+   "D04a-080",
+   "D04a-084",
+   "D04a-085",
+   "D04a-086",
+   "D04a-088",
+   "D04a-089",
+   "D04a-090",
+   "D04a-091"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:107"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G10",
+  "title": "Lista de agentes sem modo completo, subagentes, envio e estados de leitura",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D04a-054",
+   "D04a-079",
+   "D04a-080",
+   "D04a-084",
+   "D04a-085",
+   "D04a-086",
+   "D04a-088",
+   "D04a-089",
+   "D04a-090",
+   "D04a-091"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:114"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G11",
+  "title": "Status do workspace: lista fixa × statuses configurados",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-032",
+   "D04a-033",
+   "D04a-054",
+   "D04a-101",
+   "D04a-103"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:121"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G12",
+  "title": "Review/PR: sonda única github, sem supressão/fallback/checks (D04a-032, D04a-033, D04a-101, D04a-103 — PAR-87)",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-011",
+   "D04a-018",
+   "D04a-032",
+   "D04a-033",
+   "D04a-073",
+   "D04a-076",
+   "D04a-101",
+   "D04a-103"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:126"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G13",
+  "title": "Tooltips nativos em vez de tooltip do design system (D04a-011, D04a-018, D04a-073, D04a-076 — PAR-34)",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-011",
+   "D04a-018",
+   "D04a-073",
+   "D04a-076",
+   "D04a-109",
+   "D04a-110"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:135"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G14",
+  "title": "Menu de exibição sem propriedades do card",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-034",
+   "D04a-036",
+   "D04a-109",
+   "D04a-110"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:140"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G15",
+  "title": "Ações de porta incompletas",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-034",
+   "D04a-036",
+   "D04a-067"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:146"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G16",
+  "title": "Sleep cosmético (D04a-067 — PAR-21)",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-004",
+   "D04a-005",
+   "D04a-008",
+   "D04a-010",
+   "D04a-020",
+   "D04a-067"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:153"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G17",
+  "title": "Linhas secundárias do card ausentes (D04a-020 — PAR-19, D04a-004, D04a-005, D04a-008, D04a-010)",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D04a-004",
+   "D04a-005",
+   "D04a-008",
+   "D04a-010",
+   "D04a-020",
+   "D04a-047",
+   "D04a-073",
+   "D04a-104",
+   "D04a-106",
+   "D04a-108"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:158"
+ },
+ {
+  "domain": "D04a-worktree-card-surface",
+  "group": "G18",
+  "title": "Componentes/props dormentes que precisam de produtor",
+  "severity": "baixo",
+  "effort": "n/d",
+  "ids": [
+   "D04a-008",
+   "D04a-010",
+   "D04a-047",
+   "D04a-073",
+   "D04a-104",
+   "D04a-106",
+   "D04a-108"
+  ],
+  "id_spans": [],
+  "evidence": "D04a-worktree-card-surface.gaps.md:163"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-001 — Foco do sucessor pós-delete: inexistente. App.tsx:1789 só faz refreshGitWorktrees + evento; setActiveWorktreePath nunca é tocado após delet",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-001",
+   "D04b-002",
+   "D04b-004",
+   "D04b-010",
+   "D04b-012",
+   "D04b-013",
+   "D04b-014",
+   "D04b-018",
+   "D04b-019",
+   "D04b-023"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:26"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-004/006 — Deleção sem toasts interativos nem waivers. DeleteWorktreeDialog.tsx:177 mostra erro inline; não há View changes, Delete Anyway (allowF",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-002",
+   "D04b-004",
+   "D04b-010",
+   "D04b-012",
+   "D04b-013",
+   "D04b-014",
+   "D04b-018",
+   "D04b-019",
+   "D04b-023"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:27"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-013/015/016 — Nenhum polling nem cache de review/issue no card. HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS (worktree-card-model.ts:116) tem zero cons",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-002",
+   "D04b-010",
+   "D04b-012",
+   "D04b-013",
+   "D04b-014",
+   "D04b-018",
+   "D04b-019",
+   "D04b-023"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:28"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-010/022 — Edição de metadados do card ausente/desligada. Não existe diálogo edit-meta; duplo-clique abre renomeação inline (use-worktree-card-con",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-002",
+   "D04b-010",
+   "D04b-012",
+   "D04b-014",
+   "D04b-018",
+   "D04b-019",
+   "D04b-023"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:29"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-014 — Badges de issue (Linear/Jira/GitHub) e título composto não existem. A meta row (worktree-card-meta-row.tsx) renderiza repo/identidade/detac",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-002",
+   "D04b-005",
+   "D04b-012",
+   "D04b-014",
+   "D04b-018",
+   "D04b-019",
+   "D04b-023"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:30"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-002 — Destaque do row de agente focado é dormente. worktree-card-compact-agents.tsx:221 usa activeSessionId, mas WorktreeSidebar/WorktreeList nun",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-002",
+   "D04b-005",
+   "D04b-007",
+   "D04b-012",
+   "D04b-018",
+   "D04b-019",
+   "D04b-023"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:31"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-018 — Abrir link de issue não existe. Nenhum campo edit-meta de issue, nenhum OPEN_ISSUE_TIMEOUT_MS/openRequestRef; window.api.shell.openUrl exis",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-005",
+   "D04b-007",
+   "D04b-008",
+   "D04b-012",
+   "D04b-018",
+   "D04b-019",
+   "D04b-023"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:32"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-023 — Sugestão de nome de criatura é stub. MARINE_CREATURES: any = null (shared/marine-creatures.ts:3); CREATURE_POOL_NAMES (retired-name-registr",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-005",
+   "D04b-007",
+   "D04b-008",
+   "D04b-012",
+   "D04b-017",
+   "D04b-019",
+   "D04b-023"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:33"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-012 — Runtime/SSH do card hardcoded. conflictOperation: '' (:304), isRuntimeDisconnected: false (:318), isQueuedForDeletion: false (:319), remote",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-005",
+   "D04b-007",
+   "D04b-008",
+   "D04b-012",
+   "D04b-015",
+   "D04b-017",
+   "D04b-019"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:34"
+ },
+ {
+  "domain": "D04b-worktree-card-controllers",
+  "group": null,
+  "title": "D04b-019/020/021 — Projeções de performance ausentes. Sem selectAcknowledgedAgentTimes por card, sem CommentMarkdown/markdown no sidebar, sem selectSe",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D04b-005",
+   "D04b-007",
+   "D04b-008",
+   "D04b-015",
+   "D04b-017",
+   "D04b-019"
+  ],
+  "id_spans": [],
+  "evidence": "D04b-worktree-card-controllers.gaps.md:35"
+ },
+ {
+  "domain": "D05-agents-rows",
+  "group": "G1",
+  "title": "Lacuna central: o pipeline de linhas de agente do Orca não foi portado",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D05-agents-rows.gaps.md:19"
+ },
+ {
+  "domain": "D05-agents-rows",
+  "group": "G2",
+  "title": "Heurísticas de status/frescor: Orca vs motor Herdr (src-tauri/src/agent_state.rs)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D05-agents-rows.gaps.md:47"
+ },
+ {
+  "domain": "D05-agents-rows",
+  "group": "G3",
+  "title": "Módulos \"auto-stub\" que sustentam a aparência de port",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D05-agents-rows.gaps.md:78"
+ },
+ {
+  "domain": "D05-agents-rows",
+  "group": "G4",
+  "title": "Helpers reais porém mortos (semântica do Orca presente, efeito ausente)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D05-agents-rows.gaps.md:100"
+ },
+ {
+  "domain": "D05-agents-rows",
+  "group": "G5",
+  "title": "Preferências persistidas sem consumidor",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D05-agents-rows.gaps.md:113"
+ },
+ {
+  "domain": "D05-agents-rows",
+  "group": "G6",
+  "title": "Cross-walk PAR",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D05-006",
+   "D05-010"
+  ],
+  "id_spans": [],
+  "evidence": "D05-agents-rows.gaps.md:121"
+ },
+ {
+  "domain": "D05-agents-rows",
+  "group": "G7",
+  "title": "Método de busca (5 passos, aplicado por linha)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D05-agents-rows.gaps.md:128"
+ },
+ {
+  "domain": "D05-agents-rows",
+  "group": "G8",
+  "title": "Lacuna E1 — ações por-linha da lista de Agentes (nascida da falsificação)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D05-021"
+  ],
+  "id_spans": [],
+  "evidence": "D05-agents-rows.gaps.md:139"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G1",
+  "title": "Deleção de worktree: sem linhagem child-first, sem force explícito, backend sempre --force — CRÍTICO",
+  "severity": "critico",
+  "effort": "n/d",
+  "ids": [
+   "D07-026",
+   "D07-028",
+   "D07-029",
+   "D07-030",
+   "D07-039",
+   "D07-040",
+   "D07-043",
+   "D07-044"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:39"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G2",
+  "title": "Sleep é cosmético: não libera memória/CPU nem faz teardown real — ALTO (PAR-21)",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D07-001",
+   "D07-002",
+   "D07-003",
+   "D07-004",
+   "D07-005"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:67"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G3",
+  "title": "Multi-seleção de worktrees não existe (bloqueia ações em massa) — ALTO (PAR-08)",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D07-002",
+   "D07-016",
+   "D07-022"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:90"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G4",
+  "title": "Deleção sem toasts e sem tradução de erro (recuperação manual) — ALTO",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D07-029",
+   "D07-038",
+   "D07-039",
+   "D07-041",
+   "D07-042"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:104"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G5",
+  "title": "Aparência de status (cor/ícone) não é editável no sidebar — MÉDIO-ALTO (esforço baixo)",
+  "severity": "medio-alto",
+  "effort": "baixo",
+  "ids": [
+   "D07-006",
+   "D07-007",
+   "D07-008"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:118"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G6",
+  "title": "Menu de opções incompleto (badge, host scope, PR, Project/Manual, card properties) — MÉDIO",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D07-010",
+   "D07-011",
+   "D07-012",
+   "D07-013",
+   "D07-014",
+   "D07-015"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:138"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G7",
+  "title": "Pin e Mark Unread não persistem — MÉDIO",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D07-020"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:156"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G8",
+  "title": "Linhagem: persistência em localStorage, picker modal e sem guarda de deleção — MÉDIO",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D07-023",
+   "D07-043",
+   "D07-045"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:171"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G9",
+  "title": "Política/performance do menu: sentinelas, supressão de clique e âncora de scroll — MÉDIO-BAIXO",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D07-017",
+   "D07-019",
+   "D07-027"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:187"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G10",
+  "title": "Diálogo de exclusão: copy, dirty hints e skip-confirm condicionais — BAIXO-MÉDIO",
+  "severity": "baixo-medio",
+  "effort": "n/d",
+  "ids": [
+   "D07-031",
+   "D07-032",
+   "D07-033",
+   "D07-034",
+   "D07-035",
+   "D07-036",
+   "D07-037"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:199"
+ },
+ {
+  "domain": "D07-menus-actions",
+  "group": "G11",
+  "title": "Delete rápido no hover: sem gate de Alt nem atalho por linha — BAIXO",
+  "severity": "baixo",
+  "effort": "n/d",
+  "ids": [
+   "D07-024",
+   "D07-025"
+  ],
+  "id_spans": [],
+  "evidence": "D07-menus-actions.gaps.md:213"
+ },
+ {
+  "domain": "D08-kanban-board",
+  "group": "D08-010",
+  "title": "Campo de busca de workspaces (partial)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D08-010",
+   "D08-011"
+  ],
+  "id_spans": [],
+  "evidence": "D08-kanban-board.gaps.md:137"
+ },
+ {
+  "domain": "D08-kanban-board",
+  "group": "D08-011",
+  "title": "Escape no campo de busca (partial)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D08-011",
+   "D08-013"
+  ],
+  "id_spans": [],
+  "evidence": "D08-kanban-board.gaps.md:144"
+ },
+ {
+  "domain": "D08-kanban-board",
+  "group": "D08-013",
+  "title": "Matching da busca (partial)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D08-013",
+   "D08-029"
+  ],
+  "id_spans": [],
+  "evidence": "D08-kanban-board.gaps.md:149"
+ },
+ {
+  "domain": "D08-kanban-board",
+  "group": "D08-029",
+  "title": "Projeção/agrupamento/ordenação (partial)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D08-029",
+   "D08-042"
+  ],
+  "id_spans": [],
+  "evidence": "D08-kanban-board.gaps.md:157"
+ },
+ {
+  "domain": "D08-kanban-board",
+  "group": "D08-042",
+  "title": "Reordenar/mover/fixar (partial)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D08-042"
+  ],
+  "id_spans": [],
+  "evidence": "D08-kanban-board.gaps.md:166"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "FilterToggleRow + SidebarFilter não existem (D09-001/002/003/004/010): não há componente de linha",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-001",
+   "D09-005",
+   "D09-022",
+   "D09-026"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:54"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Filtros que não filtram (D09-005/007/017): Hide sleeping, Hide automation-created e",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-005",
+   "D09-015",
+   "D09-022",
+   "D09-026"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:57"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Smart sort inoperante (D09-026/031): buildAttentionByWorktree/hasFreshAttributedAgentStatus são",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-015",
+   "D09-018",
+   "D09-022",
+   "D09-026"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:60"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Ordem de classes divergente (D09-022): Hydra ranqueia Working acima de Done (classes 2/3",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-015",
+   "D09-018",
+   "D09-019",
+   "D09-022"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:62"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Nada de teclado no filtro de projetos (D09-015): sem Backspace/Enter/ArrowLeft, sem navegação por",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-006",
+   "D09-012",
+   "D09-015",
+   "D09-018",
+   "D09-019"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:65"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Auto-revelação desconectada (D09-018): revealRepoInProjectFilter é port fiel, mas muta",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-006",
+   "D09-012",
+   "D09-018",
+   "D09-019"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:67"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Regras puras órfãs (D09-019/020): sidebarHasActiveFilters e computeClearFilterActions são port",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-006",
+   "D09-012",
+   "D09-019",
+   "D09-028"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:70"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Sub-filtro de exceção ausente (D09-006): não existe a linha condicional \"Except default branch\" nem",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-006",
+   "D09-012",
+   "D09-028"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:72"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Timers/atalhos: o port do foco por requestAnimationFrame (D09-012) virou autoFocus, sem",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-012",
+   "D09-028"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:74"
+ },
+ {
+  "domain": "D09-filters-sort",
+  "group": null,
+  "title": "Ordenações ricas fora do render (D09-028/029/030): CREATE_GRACE_MS/effectiveRecentActivity,",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D09-001",
+   "D09-002",
+   "D09-028"
+  ],
+  "id_spans": [],
+  "evidence": "D09-filters-sort.gaps.md:77"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G1",
+  "title": "Atribuição de host nas linhas de notice (glyph + qualificação de rótulos)",
+  "severity": "critico",
+  "effort": "n/d",
+  "ids": [
+   "D10-027",
+   "D10-032",
+   "D10-035",
+   "D10-036",
+   "D10-037"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:13"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G2",
+  "title": "Escopo de host + fence de mutação no WorktreeVisibilityDialog",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D10-039",
+   "D10-040",
+   "D10-042",
+   "D10-043",
+   "D10-083",
+   "D10-084",
+   "D10-085",
+   "D10-086"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:30"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G3",
+  "title": "Validação de instância no delete + toast de lista obsoleta",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D10-005",
+   "D10-013",
+   "D10-014",
+   "D10-017",
+   "D10-077"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:42"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G4",
+  "title": "Delete de lineage (pai + descendentes)",
+  "severity": "medio-alto",
+  "effort": "n/d",
+  "ids": [
+   "D10-006",
+   "D10-008",
+   "D10-011",
+   "D10-015",
+   "D10-018",
+   "D10-019"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:55"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G5",
+  "title": "Output completo do auto-rename",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D10-001"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:68"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G6",
+  "title": "Relógio compartilhado e seleção de countdown de prompt-cache",
+  "severity": "medio-alto",
+  "effort": "n/d",
+  "ids": [
+   "D10-072",
+   "D10-073",
+   "D10-074",
+   "D10-075",
+   "D10-076"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:77"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G7",
+  "title": "Superfície de feedback do sidebar (hooks completos)",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D10-078",
+   "D10-082"
+  ],
+  "id_spans": [
+   "D10-078…D10-082"
+  ],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:88"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G8",
+  "title": "Card de \"Imported worktrees\" (candidatos + ação show com rollback)",
+  "severity": "alto",
+  "effort": "n/d",
+  "ids": [
+   "D10-063",
+   "D10-064",
+   "D10-066",
+   "D10-067",
+   "D10-068",
+   "D10-069",
+   "D10-070"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:98"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G9",
+  "title": "Aceitação de writes de visibilidade por source",
+  "severity": "medio-alto",
+  "effort": "n/d",
+  "ids": [
+   "D10-043",
+   "D10-044",
+   "D10-046",
+   "D10-047",
+   "D10-087",
+   "D10-088",
+   "D10-089",
+   "D10-090"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:110"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G10",
+  "title": "Help popover e aviso de override no dialog de visibilidade",
+  "severity": "baixo",
+  "effort": "n/d",
+  "ids": [
+   "D10-007",
+   "D10-020",
+   "D10-021",
+   "D10-022",
+   "D10-023",
+   "D10-052",
+   "D10-061"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:126"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G11",
+  "title": "Preview de alvo do delete com host/collision e erros por linha",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D10-007",
+   "D10-020",
+   "D10-021",
+   "D10-022",
+   "D10-023",
+   "D10-048",
+   "D10-049",
+   "D10-050",
+   "D10-054",
+   "D10-057",
+   "D10-058",
+   "D10-060"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:132"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G12",
+  "title": "Dialog de visibilidade: cópia/aria e form inline fiéis",
+  "severity": "baixo-medio",
+  "effort": "n/d",
+  "ids": [
+   "D10-048",
+   "D10-049",
+   "D10-050",
+   "D10-054",
+   "D10-057",
+   "D10-058",
+   "D10-060"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:139"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G13",
+  "title": "Fidelidade de contêiner do output do auto-rename",
+  "severity": "baixo",
+  "effort": "n/d",
+  "ids": [
+   "D10-004",
+   "D10-006",
+   "D10-011",
+   "D10-016",
+   "D10-019"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:148"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G14",
+  "title": "Delete: copy/hidratação/limpeza de estado",
+  "severity": "medio",
+  "effort": "n/d",
+  "ids": [
+   "D10-006",
+   "D10-011",
+   "D10-016",
+   "D10-019",
+   "D10-024"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:154"
+ },
+ {
+  "domain": "D10-visibility-inbox-notices",
+  "group": "G15",
+  "title": "Linha compacta de descoberta: placement/host",
+  "severity": "baixo",
+  "effort": "n/d",
+  "ids": [
+   "D10-024"
+  ],
+  "id_spans": [],
+  "evidence": "D10-visibility-inbox-notices.gaps.md:161"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": "G1",
+  "title": "Regra de veredito aplicada",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:6"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": "G2",
+  "title": "Achado sistêmico (afeta 12 das 17 linhas)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:23"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Não existe árvore de worktrees aninhada no sidebar pintado (D11-014/D11-013/D11-015): indentação",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-003",
+   "D11-007",
+   "D11-009",
+   "D11-010",
+   "D11-012",
+   "D11-013",
+   "D11-014",
+   "D11-015"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:86"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Sem seção global Pinned no topo (D11-003, PAR-35): emitPinnedGroup existe no modelo sombra,",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-003",
+   "D11-007",
+   "D11-009",
+   "D11-010",
+   "D11-012"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:89"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Filtros do menu de opções não afetam a lista pintada (D11-010/D11-009/D11-007/D11-012)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-007",
+   "D11-009",
+   "D11-010",
+   "D11-012"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:91"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Flags do store do pipeline Orca nunca são elevados: showSleepingWorkspaces,",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-003",
+   "D11-014"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:94"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Estado de linhagem duplicado e divergente (D11-014/D11-003): App.worktreeLineage",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-002",
+   "D11-003",
+   "D11-004",
+   "D11-013",
+   "D11-014",
+   "D11-017"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:101"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "repo-header-create-state ausente (D11-004): o botão \"+\" do header não deriva",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-002",
+   "D11-004",
+   "D11-006",
+   "D11-013",
+   "D11-017"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:104"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Módulos órfãos do domínio: natural-worktree-ids.ts (D11-002),",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-002",
+   "D11-006",
+   "D11-013",
+   "D11-016",
+   "D11-017"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:107"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Projeção memoizada de atividade de abas ausente (D11-006): sem isolamento de baldes por",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-005",
+   "D11-006",
+   "D11-016"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:112"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Índice de ids inequívocos ausente (D11-016): resoluções por id nu seguem \"FIRST wins\"",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-001",
+   "D11-005",
+   "D11-016"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:115"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": null,
+  "title": "Resolução de defaults de visibilidade por proprietário do repo ausente (D11-005): sem",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-001",
+   "D11-005",
+   "D11-008"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:117"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": "G5",
+  "title": "Paridades notáveis",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-001",
+   "D11-008",
+   "D11-011"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:121"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": "G6",
+  "title": "Traceabilidade de cobertura (100% das entradas do .orca.json)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-001",
+   "D11-002",
+   "D11-003",
+   "D11-004",
+   "D11-005",
+   "D11-006",
+   "D11-007",
+   "D11-008",
+   "D11-009",
+   "D11-010",
+   "D11-011",
+   "D11-012"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:138"
+ },
+ {
+  "domain": "D11-lineage-grouping-model",
+  "group": "G7",
+  "title": "Cross-walk PAR (pendente de agregação em domains/_par-crosswalk.json)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D11-003",
+   "D11-013"
+  ],
+  "id_spans": [],
+  "evidence": "D11-lineage-grouping-model.gaps.md:170"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-001",
+  "title": "Detecção/desempacotamento de fenced block Mermaid — missing",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-001",
+   "D15a-002"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:42"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-002",
+  "title": "Renderização de Mermaid em comentários — missing",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-002",
+   "D15a-003"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:51"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-003",
+  "title": "Cor de badge de repositório — missing",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-003",
+   "D15a-004"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:55"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-004",
+  "title": "Cor contextual de Project Group/Provider — missing",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-004",
+   "D15a-005"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:63"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-005",
+  "title": "Aviso de ordenação manual de projetos — missing",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-005",
+   "D15a-006"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:69"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-006",
+  "title": "Opções/escopos de hosts (derive) — partial",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-006"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:78"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-007",
+  "title": "Contagem de folder-workspaces por seção de host — partial",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-007"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:91"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-008",
+  "title": "Drag DOM + ordenação persistida de Project Groups — missing",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-008"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:102"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-009",
+  "title": "Isolamento de clique das ações de cabeçalho — partial",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-009"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:113"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-010",
+  "title": "Área de toque da alça de resize — partial",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-010",
+   "D15a-011"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:125"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-011",
+  "title": "Sleep de worktree + resume de VM (concorrência) — missing",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-011",
+   "D15a-012"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:134"
+ },
+ {
+  "domain": "D15-misc-a",
+  "group": "D15a-012",
+  "title": "Seleção host-qualified de worktrees no Kanban — partial",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15a-012"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-a.gaps.md:143"
+ },
+ {
+  "domain": "D15-misc-b",
+  "group": "G1",
+  "title": "Gaveta/quadro Kanban de workspaces inexistente (D15b-001, D15b-002; arrasta D15b-004, D15b-005)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15b-001",
+   "D15b-002",
+   "D15b-004",
+   "D15b-005"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-b.gaps.md:38"
+ },
+ {
+  "domain": "D15-misc-b",
+  "group": "G2",
+  "title": "Redirect de reveal Agents→Spaces ausente",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15b-003",
+   "D15b-006",
+   "D15b-007"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-b.gaps.md:58"
+ },
+ {
+  "domain": "D15-misc-b",
+  "group": "G3",
+  "title": "Diálogo de metadados de worktree ausente",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15b-006",
+   "D15b-007",
+   "D15b-008",
+   "D15b-009"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-b.gaps.md:65"
+ },
+ {
+  "domain": "D15-misc-b",
+  "group": "G4",
+  "title": "Parent picker sem âncora/timer",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15b-008",
+   "D15b-009",
+   "D15b-010"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-b.gaps.md:74"
+ },
+ {
+  "domain": "D15-misc-b",
+  "group": "G5",
+  "title": "Prompt de setup script não renderizado na sidebar",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15b-010",
+   "D15b-011"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-b.gaps.md:82"
+ },
+ {
+  "domain": "D15-misc-b",
+  "group": "G6",
+  "title": "Métricas de chrome para portais",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15b-011",
+   "D15b-012",
+   "D15b-013"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-b.gaps.md:88"
+ },
+ {
+  "domain": "D15-misc-b",
+  "group": "G7",
+  "title": "Drop preview de cabeçalhos: cálculo portado mas morto",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15b-012",
+   "D15b-013"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-b.gaps.md:94"
+ },
+ {
+  "domain": "D15-misc-b",
+  "group": "G8",
+  "title": "Reveal sem matemática de bounds",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D15b-014"
+  ],
+  "id_spans": [],
+  "evidence": "D15-misc-b.gaps.md:105"
+ },
+ {
+  "domain": "D02c-project-groups-scripts",
+  "group": null,
+  "title": "Fechar as lacunas do domínio (22 capabilities em missing/partial)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D02c-002",
+   "D02c-003",
+   "D02c-004",
+   "D02c-005",
+   "D02c-006",
+   "D02c-007",
+   "D02c-008",
+   "D02c-009",
+   "D02c-010",
+   "D02c-011",
+   "D02c-012",
+   "D02c-013",
+   "D02c-014",
+   "D02c-018",
+   "D02c-019",
+   "D02c-020",
+   "D02c-021",
+   "D02c-022",
+   "D02c-023",
+   "D02c-024"
+  ],
+  "id_spans": [],
+  "evidence": "D02c-project-groups-scripts.gaps.md"
+ },
+ {
+  "domain": "D06-drag-order-keyboard",
+  "group": null,
+  "title": "Fechar as lacunas do domínio (22 capabilities em missing/partial)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D06-002",
+   "D06-003",
+   "D06-004",
+   "D06-005",
+   "D06-006",
+   "D06-007",
+   "D06-008",
+   "D06-009",
+   "D06-010",
+   "D06-011",
+   "D06-012",
+   "D06-013",
+   "D06-014",
+   "D06-015",
+   "D06-016",
+   "D06-018",
+   "D06-020",
+   "D06-021",
+   "D06-022",
+   "D06-023"
+  ],
+  "id_spans": [],
+  "evidence": "D06-drag-order-keyboard.gaps.md"
+ },
+ {
+  "domain": "D12-markdown-inline-render",
+  "group": null,
+  "title": "Fechar as lacunas do domínio (14 capabilities em missing/partial)",
+  "severity": "indefinido",
+  "effort": "n/d",
+  "ids": [
+   "D12-001",
+   "D12-002",
+   "D12-003",
+   "D12-004",
+   "D12-005",
+   "D12-006",
+   "D12-007",
+   "D12-008",
+   "D12-009",
+   "D12-010",
+   "D12-011",
+   "D12-012",
+   "D12-013",
+   "D12-014"
+  ],
+  "id_spans": [],
+  "evidence": "D12-markdown-inline-render.gaps.md"
+ }
+]

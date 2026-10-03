@@ -1,0 +1,2900 @@
+{
+ "domain": "D10-visibility-inbox-notices",
+ "rows": [
+  {
+   "id": "D10-001",
+   "capability": "Ver o output completo do CLI que falhou no auto-rename, com fallback para o excerto persistido",
+   "surface": "dialog modal \"Branch auto-name failed\"",
+   "trigger": "abrir o dialog (open) ou mudar worktreeId/error",
+   "behaviors": [
+    "busca window.api.worktrees.getBranchRenameFailureOutput({worktreeId}) ao abrir; enquanto nao resolve detailText cai em error",
+    "resposta null -> mantem o excerto persistido error",
+    "rejeicao do IPC -> mantem o excerto persistido (catch silencioso)",
+    "guard de staleness: flag `stale` no cleanup evita setState de fetch obsoleto",
+    "refetch quando error/open/worktreeId mudam (retry que gera novo erro recarrega o output)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "useAppStore/props: open, worktreeId, worktreeName, error"
+   ],
+   "backend_contract": [
+    "window.api.worktrees.getBranchRenameFailureOutput -> preload:src/preload/api/worktrees-bridge.ts:68 / main:src/main/ipc/worktrees/metadata/register-worktree-metadata-handlers.ts:107"
+   ],
+   "orca_evidence": [
+    "components/sidebar/AutoRenameFailedDialog.tsx:31",
+    "components/sidebar/AutoRenameFailedDialog.tsx:50",
+    "components/sidebar/AutoRenameFailedDialog.tsx:56",
+    "components/sidebar/AutoRenameFailedDialog.tsx:73",
+    "components/sidebar/AutoRenameFailedDialog.tsx:147"
+   ],
+   "tests": [
+    "components/sidebar/AutoRenameFailedDialog.test.tsx:50 :: AutoRenameFailedDialog full output",
+    "components/sidebar/AutoRenameFailedDialog.test.tsx:51 :: shows the full CLI output fetched from main when available",
+    "components/sidebar/AutoRenameFailedDialog.test.tsx:61 :: falls back to the persisted excerpt when main holds no capture",
+    "components/sidebar/AutoRenameFailedDialog.test.tsx:67 :: falls back to the persisted excerpt when the fetch rejects",
+    "components/sidebar/AutoRenameFailedDialog.test.tsx:73 :: refetches full output when a retry changes the persisted error"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-002",
+   "capability": "Copiar os detalhes do erro de auto-rename para o clipboard com confirmacao inline",
+   "surface": "\"Error details\" no dialog",
+   "trigger": "clicar o botao de copia",
+   "behaviors": [
+    "chama window.api.ui.writeClipboardText(detailText) (sempre o texto exibido, full ou excerto)",
+    "sucesso -> estado copied=true, icone Copy vira Check e aria-label vira 'Copied'",
+    "reset automatico apos 1500ms (setTimeout) e clearTimeout no unmount",
+    "falha do IPC e best-effort: catch vazio, sem toast nem erro na UI"
+   ],
+   "background_activity": "setTimeout de 1500ms por copia (AutoRenameFailedDialog.tsx:85)",
+   "state_inputs": [
+    "props: error/open"
+   ],
+   "backend_contract": [
+    "window.api.ui.writeClipboardText -> preload:src/preload/api/ui-bridge-clipboard-and-window-controls.ts:99 / main:src/main/window/clipboard-ipc-handlers.ts:180"
+   ],
+   "orca_evidence": [
+    "components/sidebar/AutoRenameFailedDialog.tsx:80",
+    "components/sidebar/AutoRenameFailedDialog.tsx:85",
+    "components/sidebar/AutoRenameFailedDialog.tsx:132",
+    "components/sidebar/AutoRenameFailedDialog.tsx:133"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-003",
+   "capability": "Titulo, narrativa e botao Close do dialog de falha de auto-rename",
+   "surface": "dialog modal",
+   "trigger": "renderizacao / clique em Close",
+   "behaviors": [
+    "titulo com icone AlertCircle e texto 'Branch auto-name failed'",
+    "frase \"Orca couldn't generate a branch name for <worktreeName> from the first agent message.\"",
+    "botao Close outline fecha via onOpenChange(false)",
+    "fechar pelo Close ou overlay dispara onOpenChange(false)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [],
+   "backend_contract": [
+    "window.api.worktrees.getBranchRenameFailureOutput -> preload:src/preload/api/worktrees-bridge.ts:68 / main:src/main/ipc/worktrees/metadata/register-worktree-metadata-handlers.ts:107"
+   ],
+   "orca_evidence": [
+    "components/sidebar/AutoRenameFailedDialog.tsx:94",
+    "components/sidebar/AutoRenameFailedDialog.tsx:95",
+    "components/sidebar/AutoRenameFailedDialog.tsx:100",
+    "components/sidebar/AutoRenameFailedDialog.tsx:107",
+    "components/sidebar/AutoRenameFailedDialog.tsx:155"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-004",
+   "capability": "Conter output multi-linha/token gigante sem quebrar o grid do dialog",
+   "surface": "\"Error details\" scroll region",
+   "trigger": "renderizar output longo ou com token sem espaco",
+   "behaviors": [
+    "pre com max-h-[40vh] overflow-auto whitespace-pre-wrap [overflow-wrap:anywhere] (nao break-words)",
+    "container com min-w-0 para o filho do DialogContent (grid) poder encolher abaixo do min-content",
+    "padding-right reserva espaco para o botao de copia flutuante"
+   ],
+   "background_activity": "none",
+   "state_inputs": [],
+   "backend_contract": [
+    "window.api.worktrees.getBranchRenameFailureOutput -> preload:src/preload/api/worktrees-bridge.ts:68 / main:src/main/ipc/worktrees/metadata/register-worktree-metadata-handlers.ts:107",
+    "window.api.ui.writeClipboardText -> preload:src/preload/api/ui-bridge-clipboard-and-window-controls.ts:99 / main:src/main/window/clipboard-ipc-handlers.ts:180"
+   ],
+   "orca_evidence": [
+    "components/sidebar/AutoRenameFailedDialog.tsx:147",
+    "components/sidebar/AutoRenameFailedDialog.tsx:122"
+   ],
+   "tests": [
+    "components/sidebar/AutoRenameFailedDialog.test.tsx:89 :: AutoRenameFailedDialog unbroken output containment",
+    "components/sidebar/AutoRenameFailedDialog.test.tsx:90 :: keeps the output surface shrinkable and breakable mid-token"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-005",
+   "capability": "Abrir/fechar o dialog de confirmacao de delete de workspace com resolucao de alvos por id+host",
+   "surface": "modal de confirmacao destrutiva do sidebar",
+   "trigger": "activeModal === 'delete-worktree' (menu de contexto do card)",
+   "behaviors": [
+    "deriva worktreeIds de modalData.worktreeIds ou worktreeId unico; isBatchDelete = >1",
+    "resolve worktree pelo par id+hostId (identidades escopadas) para nao casar o irmao errado",
+    "useEffect: se aberto, ha ids selecionados e nenhum worktree resolvivel e nao esta deletando -> limpa delete state de cada alvo e closeModal()",
+    "handleOpenChange: ao fechar limpa delete state de cada alvo ainda nao deletando (batch) ou do alvo unico, depois closeModal()"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "useAppStore.activeModal",
+    "useAppStore.modalData",
+    "useAllWorktrees",
+    "repos",
+    "worktreeLineageById",
+    "deleteStateByWorktreeId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:40",
+    "components/sidebar/DeleteWorktreeDialog.tsx:58",
+    "components/sidebar/DeleteWorktreeDialog.tsx:88",
+    "components/sidebar/DeleteWorktreeDialog.tsx:201",
+    "components/sidebar/DeleteWorktreeDialog.tsx:219"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-006",
+   "capability": "Titulo e frase destrutiva do dialog (workspace unico, batch e lineage)",
+   "surface": "header do dialog",
+   "trigger": "abrir o dialog",
+   "behaviors": [
+    "titulo 'Delete Workspace' (unico) ou 'Delete Workspaces' (batch)",
+    "copy de delete unico/batch/folder vem de getDeleteWorktreeDialogCopy (targetLabel/descriptionSuffix)",
+    "com filhos, descriptionSuffix de lineage e childTargetLabel substituem a copy normal",
+    "folder workspace: copy nao-destrutiva de disco ('the project folder on disk will not be deleted')",
+    "manter espaco entre o verbo 'Remove' e o nome do workspace"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repos",
+    "worktree",
+    "deleteCopy (delete-worktree-dialog-copy)"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:353",
+    "components/sidebar/DeleteWorktreeDialog.tsx:355",
+    "components/sidebar/DeleteWorktreeDialog.tsx:365"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:166 :: DeleteWorktreeDialog lineage copy",
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:300 :: uses non-destructive disk copy for folder workspace deletes"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-007",
+   "capability": "Preview do alvo do delete (unico ou lista batch) com labels de host em colisao",
+   "surface": "corpo do dialog",
+   "trigger": "abrir o dialog",
+   "behaviors": [
+    "renderiza DeleteWorktreeTargetPreview com worktree unico, worktrees do batch, todos os worktrees (colisoes), hostLabelById e dirtyChangeCountsByWorktreeId"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "allWorktrees",
+    "hostLabelById",
+    "deleteStateByWorktreeId",
+    "dirtyChangeCountsByWorktreeId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:378"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-008",
+   "capability": "Aviso de lineage com descendentes que serao deletados junto",
+   "surface": "corpo do dialog, quando o workspace tem filhos",
+   "trigger": "workspace com descendants > 0",
+   "behaviors": [
+    "hasLineageChildren abre DeleteWorktreeLineageNotice com descendants e dirtyChangeCountsByWorktreeId",
+    "sem filhos -> aviso ausente; header troca para copy de kill de filhos",
+    "no batch/lineage o footer vira 'Delete N Workspaces' e a acao 'Delete Parent Only' nao existe"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "worktreeLineageById",
+    "allWorktrees",
+    "dirtyChangeCountsByWorktreeId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:140",
+    "components/sidebar/DeleteWorktreeDialog.tsx:388"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:238 :: shows child-delete copy and only a delete-all action when the workspace has children",
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:280 :: keeps long child workspace paths constrained inside the lineage notice"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-009",
+   "capability": "Painel de bloqueio do main worktree e painel de erro do delete",
+   "surface": "corpo do dialog",
+   "trigger": "worktree.isMainWorktree ou deleteState.error",
+   "behaviors": [
+    "main worktree nunca e deletavel: botao destrutivo nao aparece (footer so Cancel/Close) e o painel mostra mainWorktreeBlocker",
+    "erro de delete (lock do git, dirty) exibido em DeleteWorktreeWarningPanels; nunca oferece override de lock"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "worktree.isMainWorktree",
+    "deleteState.error",
+    "deleteCopy.mainWorktreeBlocker"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:139",
+    "components/sidebar/DeleteWorktreeDialog.tsx:395"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:358 :: shows locked and known dirty details without offering a lock override"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-010",
+   "capability": "Checkbox 'Don't ask again' com persistencia de preferencia e reset ao fechar",
+   "surface": "rodape do corpo do dialog",
+   "trigger": "toggle do checkbox",
+   "behaviors": [
+    "so aparece quando !isMainWorktree && allowSkipConfirm && !canForceDelete (nao em batch e nao com filhos)",
+    "marcado + confirmacao primaria (nao force) -> persistDeleteWorktreeConfirmSkipPreference(updateSettings/openSettingsPage/openSettingsTarget)",
+    "force delete nunca persiste a preferencia (evita confundir a recuperacao com opt-in amplo)",
+    "fechar o dialog com a flag marcada reseta dontAskAgain para nao vazar intencao cancelada"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "modalData.allowSkipConfirm",
+    "updateSettings",
+    "openSettingsTarget",
+    "openSettingsPage"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:153",
+    "components/sidebar/DeleteWorktreeDialog.tsx:155",
+    "components/sidebar/DeleteWorktreeDialog.tsx:243",
+    "components/sidebar/DeleteWorktreeDialog.tsx:401"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-011",
+   "capability": "Botoes do rodape: Cancel/Close, Delete/Force Delete e Delete N Workspaces",
+   "surface": "footer do dialog",
+   "trigger": "clique",
+   "behaviors": [
+    "Cancel (ou Close quando main worktree) fecha sem deletar",
+    "botao destrutivo alterna entre 'Delete Workspace', 'Delete N Workspaces', 'Delete {count} Workspaces' (batch/lineage) e 'Force Delete' quando canForceDelete",
+    "enquanto isDeleting: label vira 'Deleting...'/'Force Deleting...' com LoaderCircle girando e botoes disabled",
+    "ref confirmButtonRef no botao destrutivo para autofocus"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "isDeleting",
+    "canForceDelete",
+    "isBatchDelete",
+    "worktreeCount",
+    "lineageDeleteTargetCount"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:26",
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:45",
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:54",
+    "components/sidebar/DeleteWorktreeDialog.tsx:408"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-012",
+   "capability": "Focar o botao de confirmacao ao abrir (fluxo 'Delete, Enter')",
+   "surface": "DialogContent do delete",
+   "trigger": "onOpenAutoFocus",
+   "behaviors": [
+    "exceto main worktree, preventDefault do foco padrao do Radix e foca confirmButtonRef"
+   ],
+   "background_activity": "none",
+   "state_inputs": [],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:340",
+    "components/sidebar/DeleteWorktreeDialog.tsx:350"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-013",
+   "capability": "Confirmar delete: valida instancias, dispara deletes paralelos e avisa caller",
+   "surface": "footer do dialog",
+   "trigger": "clique em Delete/Force com alvos resolvidos",
+   "behaviors": [
+    "resolveConfirmedTargets valida instanceId/hostId das identidades originais",
+    "instancia mudou -> showWorkspaceListChangedToast + closeModal, sem deletar",
+    "caso normal: closeModal imediato e runWorktreeDeletesInParallel(currentWorktrees,{force:forceOnConfirm,onForceDeleted})",
+    "ao terminar, onDeleted(deletedTargets) quando houve delecao"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "modalData.worktreeDeleteIdentities",
+    "modalData.onDeleted",
+    "modalData.forceOnConfirm",
+    "removeWorktree"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:258",
+    "components/sidebar/DeleteWorktreeDialog.tsx:265"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:216 :: keeps Space safety-checked confirmation non-force",
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:415 :: rejects confirmation when the workspace instance changed after the dialog opened"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-014",
+   "capability": "Force delete de recuperacao a partir de toast/erro (sem persistir preferencia)",
+   "surface": "dialog/footer",
+   "trigger": "canForceDelete (Primeira tentativa falhou e pode forcar)",
+   "behaviors": [
+    "runDialogForceDelete({worktreeId,currentWorktrees,removeWorktree,closeModal,onDeleted})",
+    "callback onForceDeleted repassa o alvo removido para onDeleted"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "removeWorktree",
+    "deleteState.canForceDelete"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:251",
+    "components/sidebar/DeleteWorktreeDialog.tsx:283"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:384 :: notifies the dialog caller after a toast force delete succeeds"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-015",
+   "capability": "Deletar workspace pai + descendentes em um clique (delete-all lineage)",
+   "surface": "footer, botao 'Delete N Workspaces'",
+   "trigger": "canDeleteAllLineage (lineageDeleteTargets.length > 1)",
+   "behaviors": [
+    "runLineageDeleteAll com deleteAllTargetCount, lineageDeleteIdentities, resolveConfirmedTargets, forceOnConfirm e onDeleted",
+    "descendente com instancia trocada tambem rejeita a confirmacao (toast 'Workspace list changed')"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "lineageDelete.deleteAllTargets",
+    "modalData.lineageDeleteIdentities",
+    "forceOnConfirm"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:142",
+    "components/sidebar/DeleteWorktreeDialog.tsx:316"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:439 :: rejects lineage confirmation when a descendant instance changed"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-016",
+   "capability": "Pre-hidratar git status a partir do host dono de cada alvo e calcular contagem de mudancas",
+   "surface": "background do dialog aberto",
+   "trigger": "isOpen && deleteTargets",
+   "behaviors": [
+    "useDeleteWorktreeStatusHydration carrega status do host de cada target (nao do host focado) e nao reinicia requests pendentes quando um target hidrata (AbortController/signal)",
+    "getDeleteWorktreeDirtyChangeCounts alimenta os hints de dirty por worktree"
+   ],
+   "background_activity": "hidratacao de status por alvo ao abrir o dialog, cancelada com AbortController no cleanup",
+   "state_inputs": [
+    "gitStatusByWorktree",
+    "gitStatusByWorktreeIdentity",
+    "deleteStateByWorktreeId",
+    "repoMap"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:188",
+    "components/sidebar/DeleteWorktreeDialog.tsx:198",
+    "components/sidebar/DeleteWorktreeDialog.tsx:378"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts:15 :: DeleteWorktreeDialog host-context boundaries",
+    "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts:16 :: preloads git status from the selected worktree owner instead of the focused host",
+    "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts:25 :: does not restart pending status requests when one target hydrates"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-017",
+   "capability": "Limpar estado de delete por alvo ao fechar (preservando alvos em andamento)",
+   "surface": "fechamento do dialog",
+   "trigger": "overlay/Escape/Cancel",
+   "behaviors": [
+    "batch: limpa state de cada alvo que nao esta isDeleting",
+    "unico: limpa state do worktree se nao estiver isDeleting",
+    "sempre closeModal()"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "deleteStateByWorktreeId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:219"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-018",
+   "capability": "Compor a frase de descricao com alvo e alvo-filho",
+   "surface": "DialogDescription do delete",
+   "trigger": "renderizacao",
+   "behaviors": [
+    "'Remove <target>' + ('and <childTarget>' quando canDeleteAllLineage) + descriptionSuffix",
+    "targetLabel em span com classe de destaque; sem espaco colado entre verbo e nome"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "deleteCopy.targetLabel",
+    "deleteCopy.targetClassName",
+    "lineageDeleteCopy.childTargetLabel"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialogDescription.tsx:19",
+    "components/sidebar/DeleteWorktreeDialogDescription.tsx:24"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:325 :: keeps a space between remove copy and the workspace name"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-019",
+   "capability": "Matriz de rotulos do rodape e variante destrutiva",
+   "surface": "DeleteWorktreeDialogFooter",
+   "trigger": "renderizacao / clique",
+   "behaviors": [
+    "label calculado pela combinacao isDeleting/canForceDelete/isBatchDelete/canDeleteAllLineage",
+    "botao destrutivo chama onForceDelete quando canForceDelete, senao onDelete; some no main worktree"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "isMainWorktree",
+    "isDeleting",
+    "canForceDelete",
+    "isBatchDelete",
+    "worktreeCount",
+    "lineageDeleteTargetCount"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:27",
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:50"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-020",
+   "capability": "Lista batch de alvos com nomes acessiveis nome/path(/host) e estado por linha",
+   "surface": "DeleteWorktreeTargetPreview em modo batch",
+   "trigger": "isBatchDelete",
+   "behaviors": [
+    "ScrollArea com role=list e um role=listitem por worktree; aria-labelledby monta name+path(+host)",
+    "cada linha: displayName, path, hint de dirty, erro inline e spinner de delete",
+    "bounding box max-h-48 com scroll"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "worktrees",
+    "deleteStateByWorktreeId",
+    "dirtyChangeCountsByWorktreeId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:60",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:73",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:74"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:66 :: DeleteWorktreeTargetPreview host labels",
+    "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:116 :: omits host metadata from every ordinary batch row"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-021",
+   "capability": "Distinguir linhas de batch com ids colididos pelo label de host",
+   "surface": "DeleteWorktreeTargetPreview batch/unico",
+   "trigger": "dois worktrees com o mesmo id em hosts diferentes",
+   "behaviors": [
+    "getCollisionIds detecta ids repetidos; so linhas colididas mostram host",
+    "getTargetHostLabel usa hostLabelById (overrides de display label) com fallback getExecutionHostLabel ou 'Unknown host'",
+    "alvo colidido sem host fica distinto de local mostrando 'Unknown host'"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "collisionWorktrees",
+    "hostLabelById"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:16",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:31",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:69"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:67 :: binds saved SSH and runtime host names to their colliding batch rows",
+    "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:85 :: uses configured display-label overrides for colliding hosts",
+    "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:106 :: keeps an unqualified colliding target distinct from local"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-022",
+   "capability": "Hint de mudancas locais/untracked por alvo, erro inline e spinner",
+   "surface": "linha do preview",
+   "trigger": "dirtyChangeCountsByWorktreeId / deleteState.error / isDeleting",
+   "behaviors": [
+    "DeleteWorktreeDirtyChangeHint com contagem 1..N ('N uncommitted or untracked change(s)')",
+    "erro do alvo renderizado em text-destructive com break-all",
+    "spinner LoaderCircle enquanto o alvo esta isDeleting"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "dirtyChangeCountsByWorktreeId",
+    "deleteStateByWorktreeId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:96",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:107",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:112"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:339 :: shows an inline warning when the workspace has uncommitted or untracked changes"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-023",
+   "capability": "Preview de alvo unico como regiao rotulada",
+   "surface": "DeleteWorktreeTargetPreview modo unico",
+   "trigger": "!isBatchDelete e worktree resolvido",
+   "behaviors": [
+    "role=region com aria-labelledby name+path(+host quando colidido); retorna null sem worktree",
+    "mostra displayName, path, host e hint de dirty"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "worktree",
+    "collisionWorktrees",
+    "hostLabelById",
+    "dirtyChangeCountsByWorktreeId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:120",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:124"
+   ],
+   "tests": [
+    "components/sidebar/DeleteWorktreeDialog.test.tsx:185 :: labels the confirmed single-host target when workspace ids collide",
+    "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:130 :: includes the host in a colliding single target region and its accessible name",
+    "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:146 :: omits the host from an ordinary single target region"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-024",
+   "capability": "Linha compacta 'Hiding N discovered worktrees' com copia por placement e host",
+   "surface": "grupo de repo / fallback pinado na sidebar",
+   "trigger": "renderizacao com hiddenWorktrees > 0",
+   "behaviors": [
+    "hiddenCount 0 -> retorna null",
+    "placement 'repo-group': 'Hiding N discovered worktrees'; 'pinned-fallback': 'Hiding N discovered worktrees in <repo>'",
+    "singular/plural de 'worktree(s)' e repoScopeLabel '<repo> on <host>' quando ha multi-host",
+    "aria-busy=pending na section"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repoDisplayName",
+    "hostContextLabel",
+    "hiddenWorktrees",
+    "placement",
+    "pending"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:108",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:132"
+   ],
+   "tests": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:56 :: ImportedWorktreesVisibilityLine",
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:57 :: renders the compact repo-group line with expand and dismiss actions",
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:86 :: folds the host into pinned fallback copy, which already names the repo",
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:96 :: scopes pinned fallback copy to the repo name without a dismiss action"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-025",
+   "capability": "Botao expand/collapse da lista de worktrees ocultos",
+   "surface": "linha compacta",
+   "trigger": "clique no chevron",
+   "behaviors": [
+    "aria-expanded reflete isExpanded; aria-label 'Expand|Collapse N hidden worktrees for <repoScope>'",
+    "icone ChevronRight rotaciona 90 graus quando expandido; desabilitado enquanto pending"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "onShow",
+    "onKeepHidden",
+    "pending"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:144",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:150"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-026",
+   "capability": "Dispensar ('Keep hidden') a linha de worktrees descobertos",
+   "surface": "linha compacta (hover/tooltip)",
+   "trigger": "onKeepHidden presente",
+   "behaviors": [
+    "botao X com aria-label 'Keep N discovered worktrees hidden for <repoScope>; recover from the project menu'",
+    "tooltip 'Keep hidden - recover from the project menu'; disabled enquanto pending"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "onKeepHidden",
+    "pending"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:181",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:182"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-027",
+   "capability": "Atribuir host a linha quando o projeto tem mais de um checkout",
+   "surface": "linha compacta",
+   "trigger": "hostContextLabel definido e placement != pinned-fallback",
+   "behaviors": [
+    "NoticeHostGlyph keyboardFocusable + label de host truncado a direita do texto",
+    "sem hostContextHostId renderiza apenas o texto do host"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "hostContextLabel",
+    "hostContextHostId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:156"
+   ],
+   "tests": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:76 :: names the host when the project is checked out on more than one"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-028",
+   "capability": "Detalhe expandido: grupos por pasta pai, preview limitado e 'Show more/fewer'",
+   "surface": "area expandida da linha",
+   "trigger": "isExpanded",
+   "behaviors": [
+    "agrupa por parent path (GROUP_LIMIT 5 grupos visiveis; restante vira '+ N more locations')",
+    "cada grupo: path em tooltip focavel, badge com contagem e lista de ate 3 nomes (PREVIEW_LIMIT)",
+    "botao 'Show N more'/'Show fewer' expande por chave de path normalizada",
+    "aviso 'Change this later from the project menu.'"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "hiddenWorktrees",
+    "expandedGroupPathKeys"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:198",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:225",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:255",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:277"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-029",
+   "capability": "Acoes do detalhe expandido e estados de pending/erro",
+   "surface": "area expandida",
+   "trigger": "clique em 'Keep hidden' / 'Show in worktree list'",
+   "behaviors": [
+    "ambos os botoes outline (xs) desabilitados enquanto pending",
+    "renderiza apenas os handlers presentes (onKeepHidden/onShow opcionais)",
+    "erro da acao em <p role=alert> abaixo da secao"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "onShow",
+    "onKeepHidden",
+    "pending",
+    "error"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:297",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:312",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:327"
+   ],
+   "tests": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:151 :: disables actions while pending and renders inline errors"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-030",
+   "capability": "Normalizar parent paths ao agrupar (Windows/UNC) e exportar o agrupador",
+   "surface": "helper exportado groupWorktreesByParentPath",
+   "trigger": "chamada pura",
+   "behaviors": [
+    "getExternalWorktreeParentPath por worktree; agrupa preservando ordem de primeira aparicao",
+    "Barras invertidas do Windows normalizadas; drive root (C:/) e UNC (//server/share) preservados como label",
+    "chave ausente cai em fallback `${prefix}-${displayName}-${index}`"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "hiddenWorktrees[].path"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:76",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:86"
+   ],
+   "tests": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:104 :: normalizes Windows parent path separators in preview groups",
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:117 :: keeps Windows drive roots as parent path labels",
+    "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:129 :: keeps UNC share roots as parent path labels"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-031",
+   "capability": "Linha de inbox 'N hidden worktrees' com botao unico de review",
+   "surface": "grupo de repo na sidebar (inbox de worktrees externos)",
+   "trigger": "inboxCount > 0",
+   "behaviors": [
+    "inboxCount 0 -> retorna null",
+    "botao card-wide com aria-label 'Review N hidden worktree(s) in <repoScope>'; badge com o numero; texto nunca enumera paths/nomes",
+    "desabilitado quando pending ou sem onReview"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repoDisplayName",
+    "inboxCount",
+    "pending",
+    "onReview"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:75",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:89",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:90"
+   ],
+   "tests": [
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:55 :: NewExternalWorktreesInboxLine",
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:68 :: states the count without naming any worktree",
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:78 :: opens review from a single card-wide button",
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:92 :: uses the singular noun for one worktree",
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:167 :: renders nothing when the inbox is empty"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-032",
+   "capability": "Qualificar com host os rotulos de review e de suppress",
+   "surface": "linha de inbox",
+   "trigger": "hostContextLabel definido",
+   "behaviors": [
+    "repoScopeLabel '<repo> on <host>'; review singular/plural e suppress usam esse escopo",
+    "sem host, labels ficam so com o nome do repo",
+    "glyph de host (nao focavel) + texto ao lado quando ha hostContextHostId"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "hostContextLabel",
+    "hostContextHostId",
+    "inboxCount"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:42",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:49",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:89",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:135"
+   ],
+   "tests": [
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:102 :: names the host so two checkouts of one project are distinguishable",
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:116 :: host-qualifies the suppress control, which writes to that host alone",
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:126 :: stays unqualified when the project has a single checkout"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-033",
+   "capability": "Botao suppress revelado no hover, sem disparar o review",
+   "surface": "linha de inbox",
+   "trigger": "hover/focus-within no grupo",
+   "behaviors": [
+    "botao X posicionado absoluto, opacidade 0 e pointer-events-none; revelado em group-hover/group-focus-within (classe can-hover)",
+    "aria-label 'Hide external worktrees permanently for <repoScope>'; tooltip \"Don't show again\"",
+    "nao aninhado no botao de review (evita clique ambiguo); desabilitado enquanto pending"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "onSuppress",
+    "pending",
+    "hostContextLabel"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:122",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:136",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:137"
+   ],
+   "tests": [
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:134 :: keeps suppress as a hover-revealed control that does not trigger review",
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:155 :: disables both actions while a mutation is pending"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-034",
+   "capability": "Erro da acao de inbox como alerta",
+   "surface": "linha de inbox",
+   "trigger": "error != null",
+   "behaviors": [
+    "<p role=alert> com a mensagem de erro da acao abaixo da linha"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "error"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:150"
+   ],
+   "tests": [
+    "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:173 :: surfaces the action error as an alert"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-035",
+   "capability": "Glyph de host da linha de notice com vocabulario unico (monitor local / server remoto) e tooltip",
+   "surface": "linha de notice (inbox/imported worktrees)",
+   "trigger": "renderizacao da linha",
+   "behaviors": [
+    "parseExecutionHostId; host invalido -> null",
+    "tooltip: SSH 'Project on SSH host <name>'; local 'Project on this host'; runtime 'Project on <name>'; runtime desconectado '<name> disconnected'",
+    "desconectado pinta o icone text-destructive, normal text-muted-foreground",
+    "HostRowIcon compartilhado (lucide-monitor local / lucide-server remoto), size-3",
+    "data-notice-host-kind exposto para testes/estilo"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "useAppStore.runtimeStatusByEnvironmentId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/NoticeHostGlyph.tsx:31",
+    "components/sidebar/NoticeHostGlyph.tsx:48",
+    "components/sidebar/NoticeHostGlyph.tsx:61",
+    "components/sidebar/NoticeHostGlyph.tsx:77",
+    "components/sidebar/NoticeHostGlyph.tsx:90"
+   ],
+   "tests": [
+    "components/sidebar/NoticeHostGlyph.test.tsx:56 :: NoticeHostGlyph",
+    "components/sidebar/NoticeHostGlyph.test.tsx:67 :: names the SSH host it would act on",
+    "components/sidebar/NoticeHostGlyph.test.tsx:76 :: names the paired runtime separately from the SSH host of the same name",
+    "components/sidebar/NoticeHostGlyph.test.tsx:95 :: does not call a host disconnected before its first probe answers",
+    "components/sidebar/NoticeHostGlyph.test.tsx:124 :: does not add a nested tab stop when the glyph is inside a button",
+    "components/sidebar/NoticeHostGlyph.test.tsx:132 :: draws one glyph vocabulary: a monitor for local, a server for remote",
+    "components/sidebar/NoticeHostGlyph.test.tsx:147 :: keeps its copy in the English catalog"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-036",
+   "capability": "Acessibilidade do glyph: foco por teclado so quando passivo",
+   "surface": "linha de notice",
+   "trigger": "prop keyboardFocusable",
+   "behaviors": [
+    "keyboardFocusable -> role=img, tabIndex=0 e aria-label com o tooltip",
+    "dentro de botao (keyboardFocusable=false) -> sem tabIndex/role/aria-label, evitando tab stop aninhado"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "keyboardFocusable"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/NoticeHostGlyph.tsx:75",
+    "components/sidebar/NoticeHostGlyph.tsx:78",
+    "components/sidebar/NoticeHostGlyph.tsx:79"
+   ],
+   "tests": [
+    "components/sidebar/NoticeHostGlyph.test.tsx:106 :: gives the local host the monitor glyph the run-target rows use",
+    "components/sidebar/NoticeHostGlyph.test.tsx:115 :: makes a passive row glyph keyboard reachable with an accessible name"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-037",
+   "capability": "Derivar 'desconectado' do estado de runtime sem confundir 'nunca sondado'",
+   "surface": "glyph de host runtime",
+   "trigger": "runtimeStatusByEnvironmentId muda",
+   "behaviors": [
+    "apenas host.kind === 'runtime' considera estado de conexao",
+    "entrada ausente = nao sondado (nao desconectado); estado unreachable via runtimeHostConnectionStateForEntry/isDisconnectedRuntimeHostState"
+   ],
+   "background_activity": "evento de store (runtimeStatusByEnvironmentId) por probe de runtime",
+   "state_inputs": [
+    "useAppStore.runtimeStatusByEnvironmentId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/NoticeHostGlyph.tsx:41",
+    "components/sidebar/NoticeHostGlyph.tsx:44"
+   ],
+   "tests": [
+    "components/sidebar/NoticeHostGlyph.test.tsx:86 :: marks a paired runtime a probe found unreachable as disconnected"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-038",
+   "capability": "Abrir o dialog 'Non-Orca worktrees' com alvo resolvido por repo+host",
+   "surface": "modal de visibilidade de worktrees",
+   "trigger": "activeModal === 'worktree-visibility' (menu do projeto)",
+   "behaviors": [
+    "retorna null se !isOpen || !repo || !isGitRepoKind(repo)",
+    "titulo 'Non-Orca worktrees', help popover ao lado e DialogDescription com repo.displayName",
+    "resolveWorktreeVisibilityHostTarget devolve detected/repo/requestedHostId/scope (host do modalData.hostId)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "useAppStore.activeModal",
+    "modalData.repoId",
+    "modalData.hostId",
+    "repos",
+    "settings",
+    "detectedWorktreesByRepo"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:60",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:76",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:337",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:347"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:246 :: WorktreeVisibilityDialog"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-039",
+   "capability": "Executar fetch/update de visibilidade no host do alvo, nao no host focado",
+   "surface": "acoes do dialog",
+   "trigger": "handlers de refresh/update",
+   "behaviors": [
+    "useWorktreeVisibilityHostActions injeta executionHostId nas chamadas fetchWorktrees/updateRepo",
+    "useLayoutEffect mantem currentMutationScopeRef sincronizado com o scope atual"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "fetchWorktrees",
+    "updateRepo",
+    "requestedHostId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:94",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:98",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:104"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-040",
+   "capability": "Scan autoritativo ao abrir o dialog com estados checking/ready/failed",
+   "surface": "corpo do dialog",
+   "trigger": "isOpen && repoId",
+   "behaviors": [
+    "pula o scan se ja existe mutacao ativa no scope (reabrir durante um write)",
+    "setListState('checking') e refreshTargetRepo(repoId,{requireAuthoritative:true}); resolve -> ready, senao failed",
+    "guard de cancelamento no cleanup; nunca confia em snapshot fallback/vazio para dizer que nada esta oculto (#10324)",
+    "enquanto 'checking' as linhas ficam visiveis mas acoes desabilitadas"
+   ],
+   "background_activity": "refresh autoritativo por abertura de dialog (e por mutacao concluida)",
+   "state_inputs": [
+    "detectedWorktreesByRepo",
+    "repos",
+    "settings"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:117",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:126",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:371"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:348 :: says it is checking instead of claiming nothing is hidden on a fallback snapshot",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:384 :: keeps rows visible but not actionable until the open-time scan settles",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:395 :: locks the repo-wide toggle until the open-time scan settles",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:403 :: reports a failed refresh even while an older trusted snapshot is on screen"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-041",
+   "capability": "Retry do scan quando a lista nao pode ser lida",
+   "surface": "WorktreeVisibilityScanStatus (failed)",
+   "trigger": "clique em 'Try again'",
+   "behaviors": [
+    "setListState('checking') e novo refresh autoritativo; atualiza ready/failed so se o scope nao mudou"
+   ],
+   "background_activity": "refresh autoritativo sob demanda",
+   "state_inputs": [
+    "repoId",
+    "mutationScope"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:137",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:141"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:362 :: offers a retry instead of a dead end when the list cannot be read"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-042",
+   "capability": "Recuperar um worktree oculto individualmente (Show por path)",
+   "surface": "HiddenWorktreeRecoveryList embutida no dialog",
+   "trigger": "clique em Show de uma linha",
+   "behaviors": [
+    "abre mutacao de fence {kind:'row',path}; importNewExternalWorktreeInboxPaths com [worktreePath] e update/fetch do host alvo",
+    "aprisiona a ref de scope: callbacks so aplicam estado se o scope nao mudou",
+    "sucesso (state null) promove listState para 'ready', limpando falha anterior; finally finaliza a mutacao"
+   ],
+   "background_activity": "mutacao de linha em voo (fence)",
+   "state_inputs": [
+    "repo",
+    "detected",
+    "busyPath"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:148",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:377"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:324 :: recovers a hidden worktree per path through the existing import exception",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:415 :: locks retry while a row import is in flight, so it cannot race the write",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:427 :: locks the repo-wide toggle while a row import is in flight",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:448 :: clears a stale failure once a row import refreshes the list successfully"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-043",
+   "capability": "Alternar a visibilidade de uma source (Show/Hide) com validacao de aceitacao e refresh",
+   "surface": "WorktreeVisibilitySourceList dentro do dialog",
+   "trigger": "clique no segmento Show/Hide",
+   "behaviors": [
+    "mutation toggle no fence; updateTargetRepo(repoId,updates) e checagem isAccepted contra o repo mais recente no scope",
+    "rejeitado/sem repo -> worktreeVisibilityUpdateError(updated, prefs retornadas, prefs pedidas) em actionState.error",
+    "aceito -> refresh autoritativo (ready/failed); finally finaliza mutacao e libera isToggling"
+   ],
+   "background_activity": "mutacao de toggle em voo (fence)",
+   "state_inputs": [
+    "repo",
+    "updateRepo",
+    "fetchWorktrees",
+    "repos"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:186",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:240"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:437 :: locks row actions and retry while the repo-wide toggle is in flight",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:459 :: does not leak an old repo action failure into a newly opened repo",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:571 :: reports a failed persistent visibility update without starting a refresh",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:598 :: reports a failed authoritative refresh after updating persistent visibility",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:612 :: toggles built-in sources independently"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-044",
+   "capability": "Reverter a override do projeto quando o valor escolhido e o global ('Use global')",
+   "surface": "linha de source no dialog",
+   "trigger": "clique em 'Use global' ou re-escolher o valor global",
+   "behaviors": [
+    "createWorktreeVisibilityUseGlobalMutation monta updates que removem a preferencia (builtIn/custom/other) e a limpa agentWorktreeVisibility quando aplicavel",
+    "commitSourceUpdate aplica com a mesma validacao de aceitacao"
+   ],
+   "background_activity": "mutacao de toggle em voo (fence)",
+   "state_inputs": [
+    "repo",
+    "visibilityDefaults",
+    "settings.worktreeVisibilityDefaults"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:229",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:240"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:682 :: materializes the remaining legacy source override when one source reverts to global",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:928 :: resets global custom and Other locations without changing their global defaults"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-045",
+   "capability": "Rotear o toggle para reverte quando o valor coincide com o global",
+   "surface": "linha de source no dialog",
+   "trigger": "toggle",
+   "behaviors": [
+    "shouldUseGlobalWorktreeVisibility true -> handleUseDefault em vez de gravar override duplicado",
+    "senao createWorktreeVisibilitySourceMutation (outra source ou preferencia builtin/custom)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo",
+    "visibilityDefaults",
+    "removableSourceIds"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:240",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:250"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-046",
+   "capability": "Adicionar location custom com validacao (limite/invalido/duplicado/save)",
+   "surface": "WorktreeVisibilitySourceAddForm no dialog",
+   "trigger": "submit do form",
+   "behaviors": [
+    "limite MAX_CUSTOM_WORKTREE_VISIBILITY_SOURCES -> 'limit'; normalize falhou -> 'invalid-path'; isDuplicate -> 'duplicate-path'",
+    "gera id via crypto.randomUUID sem hifens; adiciona com preferencia 'hide' por padrao",
+    "aceitacao exige source presente E effective visibility 'hide' no repo mais recente (host antigo que descarta additive prefs vira 'save-failed')"
+   ],
+   "background_activity": "mutacao de toggle em voo (fence)",
+   "state_inputs": [
+    "repo",
+    "customWorktreeVisibilitySources",
+    "visibilityDefaults"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:269",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:276"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:732 :: adds custom locations disabled by default"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-047",
+   "capability": "Remover location custom sem tocar nas outras preferencias de source",
+   "surface": "linha custom do dialog",
+   "trigger": "clique no lixo da linha",
+   "behaviors": [
+    "remove da lista custom + removeCustomWorktreeSourcePreference(repo,id)",
+    "aceitacao exige source ausente E preferencia custom removida (host antigo que deixa a pref para tras -> erro)"
+   ],
+   "background_activity": "mutacao de toggle em voo (fence)",
+   "state_inputs": [
+    "repo.customWorktreeVisibilitySources",
+    "worktreeVisibilitySourcePreferences"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:312"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:842 :: removes custom locations without changing other source preferences",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:870 :: rejects removal success when an older host leaves the custom preference behind"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-048",
+   "capability": "Lista de recuperacao de worktrees ocultos embutida (busca, lista virtualizada, acao por path)",
+   "surface": "corpo do dialog, secao 'Hidden worktrees (N)'",
+   "trigger": "renderizacao",
+   "behaviors": [
+    "recebe repo/detected/listState/busyPath/toggling e onShow=handleShowWorktree (arquivo HiddenWorktreeRecoveryList, fora do manifest D10)",
+    "com nada recuperavel mostra 'No non-Orca worktrees found'; com N>0 lista paths repo-relativos e busca 'Search hidden worktrees'",
+    "botoes Show tem nome acessivel distinto 'Show <nome> at <path>'"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "detected",
+    "listState",
+    "busyPath",
+    "toggling",
+    "repo"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:377"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:263 :: lists a hidden agent worktree with a repo-relative path",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:276 :: bounds rendered rows for repositories with many hidden worktrees",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:306 :: gives each hidden worktree action a distinct accessible name",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:340 :: omits the hidden list when nothing is recoverable"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-049",
+   "capability": "Gating de disabled do dialog e erro de acao",
+   "surface": "corpo do dialog",
+   "trigger": "busyPath/toggling/checking",
+   "behaviors": [
+    "WorktreeVisibilitySourceList.disabled = busy path || toggling || checking; scan status retryDisabled = busy || toggling",
+    "actionState.error vira <p role=alert> no fim do corpo",
+    "link 'Manage in Global Settings' renderizado abaixo da lista de sources"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "busyPath",
+    "isToggling",
+    "listState",
+    "actionState"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:357",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:369",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:387"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-050",
+   "capability": "Abrir Global Settings na secao de visibilidade de worktrees",
+   "surface": "link 'Manage in Global Settings' dentro do dialog",
+   "trigger": "clique",
+   "behaviors": [
+    "openGlobalWorktreeVisibilitySettings: closeModal + openSettingsTarget({pane:'general',repoId:null,sectionId:GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID}) + openSettingsPage()"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "useAppStore.getState().closeModal",
+    "openSettingsTarget",
+    "openSettingsPage"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:22",
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:36",
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:39"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:247 :: links directly to the global visibility defaults"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-051",
+   "capability": "Listar as sources herdadas do global com o valor global de cada uma",
+   "surface": "cartao dentro do dialog",
+   "trigger": "repo tem sources com setting global",
+   "behaviors": [
+    "sem sources herdadas -> so o botao de Global Settings",
+    "com sources: intro 'These sources have a global setting you can override here:' e lista label do source + worktreeVisibilityValueLabel(globalVisibility)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo",
+    "visibilityDefaults"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:48",
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:62"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:641 :: lists what each inheritable source is set to in global settings"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-052",
+   "capability": "Ajuda 'Which worktrees are hidden by default?' com hover, click, Escape e click-outside",
+   "surface": "botao de ajuda (CircleHelp) no header do dialog",
+   "trigger": "pointerenter/pointerleave, clique, Escape, clique fora",
+   "behaviors": [
+    "abre no pointerenter e fecha no pointerleave do wrapper; aria-expanded reflete o estado",
+    "clique abre sem mover foco (onOpenAutoFocus preventDefault); Escape fecha mantendo o foco no trigger; clique fora fecha",
+    "conteudo com 3 bullets: Orca-created nunca oculto, outros comecam ocultos, habilitar source para todos ou mostrar individuais"
+   ],
+   "background_activity": "none",
+   "state_inputs": [],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:8",
+    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:17",
+    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:29",
+    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:35"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:48 :: WorktreeVisibilityHelpPopover",
+    "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:49 :: stays closed when the trigger receives initial dialog focus",
+    "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:58 :: opens on pointer hover and closes when the pointer leaves",
+    "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:86 :: opens without moving focus and dismisses with Escape",
+    "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:104 :: dismisses when the user clicks outside"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-053",
+   "capability": "Status do scan: 'Checking…' aria-live, falha com alerta e 'Try again'",
+   "surface": "WorktreeVisibilityScanStatus no dialog",
+   "trigger": "listState muda",
+   "behaviors": [
+    "checking -> <p aria-live=polite> 'Checking…'",
+    "failed -> div role=alert com \"Could not list this repo's worktrees.\" e botao 'Try again' (disabled por retryDisabled)",
+    "ready -> null"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "listState",
+    "retryDisabled"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityScanStatus.tsx:18",
+    "components/sidebar/WorktreeVisibilityScanStatus.tsx:27",
+    "components/sidebar/WorktreeVisibilityScanStatus.tsx:34"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-054",
+   "capability": "Form inline 'Add location' com erros de validacao e reset no sucesso",
+   "surface": "WorktreeVisibilitySourceAddForm embutido na lista de sources",
+   "trigger": "submit",
+   "behaviors": [
+    "input#custom-worktree-root mono, aria-invalid + aria-describedby help quando ha erro",
+    "Add desabilitado com input vazio ou disabled; texto de ajuda 'Orca will recognize worktrees beneath this folder.'",
+    "resultado: 'added' limpa o input; 'save-failed' fica silencioso (erro aparece no dialog); outros mapeiam 'limit'/'duplicate-path'/'invalid-path'",
+    "digitar limpa o erro anterior; mensagem de erro vira <p role=alert>"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "onAdd",
+    "disabled"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:19",
+    "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:36",
+    "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:56",
+    "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:83"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:766 :: keeps source matching stable while typing in the inline form",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:784 :: distinguishes invalid, duplicate, limit, and save failures when adding a source"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-055",
+   "capability": "Modelo de linhas de source: Claude Code, GSD, custom e 'Other locations'",
+   "surface": "WorktreeVisibilitySourceList (dialog; reutilizavel)",
+   "trigger": "renderizacao",
+   "behaviors": [
+    "ordem fixa: built-in claude, built-in gsd, customs resolvidos, 'Other locations'",
+    "rotulos: 'Claude Code', 'GSD', 'Other locations' e basename do rootPath (fallback 'Custom location')",
+    "paths exibidos: .claude/worktrees/*, .gsd-workspaces/*, '<rootPath>/*', 'Outside listed sources'"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo",
+    "customSources",
+    "visibilityDefaults"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:65",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:86",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:167"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:909 :: shows inherited global locations without repository removal controls",
+    "components/sidebar/WorktreeVisibilitySourceList.test.tsx:31 :: WorktreeVisibilitySourceList"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-056",
+   "capability": "Resolver a visibilidade efetiva de cada linha (builtin/custom/other) e migrar legacy",
+   "surface": "linha de source",
+   "trigger": "renderizacao",
+   "behaviors": [
+    "built-in: effectiveBuiltInWorktreeSourceVisibility (repo) ou default global",
+    "custom: preferencia explicita > 'hide' se consta em customWorktreeVisibilitySources > default global do custom",
+    "other: effectiveExternalWorktreeVisibility com isLegacyRepoForExternalWorktreeVisibility"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo",
+    "visibilityDefaults",
+    "customWorktreeVisibilitySources",
+    "worktreeVisibilitySourcePreferences"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:100"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:628 :: shows when source visibility is inherited from the global default",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:695 :: migrates legacy Always show to both built-in source rows",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:718 :: keeps ordinary non-Orca visibility on its own source row"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-057",
+   "capability": "Contador 'N found' por source, ignorando checkouts selecionados e Orca-managed",
+   "surface": "linha de source",
+   "trigger": "showCounts",
+   "behaviors": [
+    "sourceCounts classifica cada worktree por visibilitySource ou matcher; pula selectedCheckout e ownership orca-managed",
+    "linha mostra '<N> found'; base configurada de built-in conta como 'other'"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "worktrees",
+    "repo",
+    "customSources"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:193",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:250"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilitySourceList.test.tsx:32 :: counts a configured built-in base as another external location"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-058",
+   "capability": "Remover location custom pela linha (aria-label com o path completo)",
+   "surface": "linha custom",
+   "trigger": "clique no Trash2",
+   "behaviors": [
+    "aria-label 'Remove <rootPath>' (path completo, distingue basenames iguais); tooltip 'Remove custom location'",
+    "aparece so para kind custom e quando removableSourceIds permite; disabled com sourceDisabled",
+    "chama onRemove(source.source)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "removableSourceIds",
+    "onRemove",
+    "sourceDisabled"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:268",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:276"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-059",
+   "capability": "Botao 'Use global' para reverter override que ja e igual ao global",
+   "surface": "linha de source",
+   "trigger": "provenance = project-override && globalVisibility === visibility",
+   "behaviors": [
+    "link 'Use global' com aria-label 'Use global for <label acessivel>' chama onUseDefault(source)",
+    "por design nao mostra o aviso 'Overriding global setting' nesse caso"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "onUseDefault",
+    "sourceDisabled"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:292",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:301"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilitySourceList.test.tsx:69 :: offers a reset when a project override already matches the global value"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-060",
+   "capability": "Segmentos Show/Hide por source (ToggleGroup) com nome acessivel por path",
+   "surface": "linha de source",
+   "trigger": "clique no segmento",
+   "behaviors": [
+    "ToggleGroup single outline sm com value=visibility atual e aria-label 'Visibility for <label acessivel>'",
+    "label acessivel usa rootPath completo para custom (basenames iguais nao colidem), senao o rotulo",
+    "re-selecionar o mesmo segmento e ignorado (Radix limpa o value); so 'show'/'hide' chamam onToggle(source, next==='show')"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "visibility",
+    "onToggle",
+    "sourceDisabled"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:141",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:320",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:337"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:891 :: uses full paths to distinguish custom source controls with the same basename"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-061",
+   "capability": "Aviso 'Overriding global setting: <valor>' por linha",
+   "surface": "linha de source",
+   "trigger": "override diverge do valor global",
+   "behaviors": [
+    "overrideNotice renderizado em role=status com icone Info (nome do valor global ignorado)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "getWorktreeVisibilityOverrideNotice(provenance,visibility)"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:342",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:346"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:657 :: names the global value an override is ignoring and reverts on the same control"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-062",
+   "capability": "Cabecalho da secao Sources e gating do form embutido",
+   "surface": "secao do dialog",
+   "trigger": "renderizacao",
+   "behaviors": [
+    "h3 'Sources' + descricao 'Shown sources include current and future worktrees in the sidebar.'",
+    "form de adicionar recebe disabled = disabled || sourceDefaultsDisabled"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "disabled",
+    "sourceDefaultsDisabled",
+    "showCounts"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:209",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:212",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:353"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-063",
+   "capability": "Mostrar worktrees descobertos a partir do card do projeto (com rollback)",
+   "surface": "card 'Imported worktrees' do projeto",
+   "trigger": "clique em Show no card",
+   "behaviors": [
+    "estado pending preservando forceVisible; updateRepo(externalWorktreeVisibility:'show')",
+    "falha do update -> erro IMPORTED_WORKTREES_SHOW_ERROR (mantendo forceVisible se aplicavel)",
+    "sucesso -> fetchWorktrees(requireAuthoritative); falha do refresh -> rollback para 'hide' e erro; se o rollback tambem falhar mantem forceVisible=true no card",
+    "sucesso completo -> setCardState(projectId,null)"
+   ],
+   "background_activity": "persistencia otimista + refresh autoritativo sob demanda",
+   "state_inputs": [
+    "repo.externalWorktreeVisibility",
+    "fetchWorktrees"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/imported-worktrees-card-actions.ts:33",
+    "components/sidebar/imported-worktrees-card-actions.ts:37",
+    "components/sidebar/imported-worktrees-card-actions.ts:47"
+   ],
+   "tests": [
+    "components/sidebar/imported-worktrees-card-actions.test.ts:13 :: imported worktrees card actions",
+    "components/sidebar/imported-worktrees-card-actions.test.ts:25 :: shows discovered worktrees after visibility update and refresh succeed",
+    "components/sidebar/imported-worktrees-card-actions.test.ts:37 :: rolls visibility back when refresh fails after showing",
+    "components/sidebar/imported-worktrees-card-actions.test.ts:50 :: preserves force-visible state during a retry after rollback failure",
+    "components/sidebar/imported-worktrees-card-actions.test.ts:74 :: keeps the card force-visible when rollback fails after a refresh failure"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-064",
+   "capability": "Manter worktrees descobertos ocultos e dispensar o card",
+   "surface": "card do projeto",
+   "trigger": "clique em Keep hidden",
+   "behaviors": [
+    "grava externalWorktreeVisibilityPromptDismissedAt=Date.now() e funde externalWorktreeInboxBaselinePaths com hiddenWorktreePaths",
+    "falha -> IMPORTED_WORKTREES_KEEP_HIDDEN_ERROR; sucesso -> card some (state null)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo.externalWorktreeInboxBaselinePaths",
+    "updateRepo"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/imported-worktrees-card-actions.ts:34",
+    "components/sidebar/imported-worktrees-card-actions.ts:69"
+   ],
+   "tests": [
+    "components/sidebar/imported-worktrees-card-actions.test.ts:89 :: dismisses the card when keep-hidden update succeeds",
+    "components/sidebar/imported-worktrees-card-actions.test.ts:105 :: leaves the card visible when keep-hidden update fails"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-065",
+   "capability": "Listar apenas worktrees externos ocultos de resultados autoritativos",
+   "surface": "helper getHiddenImportedWorktrees",
+   "trigger": "computed no render do sidebar",
+   "behaviors": [
+    "delega getHiddenExternalWorktrees; resultado nao autoritativo -> lista vazia"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "detectedWorktreesByRepo[repoId]"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/imported-worktrees-card-candidates.ts:17",
+    "components/sidebar/imported-worktrees-card-candidates.ts:20"
+   ],
+   "tests": [
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:70 :: getHiddenImportedWorktrees",
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:71 :: returns only authoritative hidden external worktrees",
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:90 :: suppresses non-authoritative results"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-066",
+   "capability": "Decidir quais repos mostram o card de imported worktrees",
+   "surface": "sidebar (candidatos do card)",
+   "trigger": "recalculo por repos/worktrees detectados",
+   "behaviors": [
+    "exclui: fora de filterRepoIds, repo sem worktree visivel, kind folder, prompt ja dispensado (externalWorktreeVisibilityPromptDismissedAt numerico)",
+    "so inclui quando visibility efetiva 'hide' OU repo em forceVisibleRepoIds",
+    "inclui o repo quando ha worktrees ocultos, mesmo com filtros de linha escondendo todos os visiveis (agent-scratch nao conta)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repos",
+    "visibleWorktrees",
+    "detectedWorktreesByRepo",
+    "filterRepoIds",
+    "forceVisibleRepoIds",
+    "settings.worktreeVisibilityDefaults",
+    "visibilityDefaultsByHost"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/imported-worktrees-card-candidates.ts:23",
+    "components/sidebar/imported-worktrees-card-candidates.ts:37",
+    "components/sidebar/imported-worktrees-card-candidates.ts:48"
+   ],
+   "tests": [
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:97 :: buildImportedWorktreesCardCandidates",
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:98 :: builds a candidate for hidden imported worktrees in a visible repo",
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:111 :: builds no candidate when the only hidden worktrees are agent scratch",
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:129 :: suppresses candidates after show, dismissal, folder repos, or repo filters exclude the repo",
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:162 :: keeps candidates visible after a rollback failure forces a shown repo to render the card",
+    "components/sidebar/imported-worktrees-card-candidates.test.ts:176 :: builds candidates even when workspace-row filters hide every visible worktree"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-067",
+   "capability": "Importar worktrees do inbox para a allowlist do sidebar (com rollback explicito)",
+   "surface": "linha de inbox -> review/import",
+   "trigger": "clique em Review/import",
+   "behaviors": [
+    "funde importedExternalWorktreePaths e externalWorktreeInboxBaselinePaths com os paths",
+    "refreshAfterRepoInboxUpdate: pending -> updateRepo -> fetchWorktrees(requireAuthoritative); falha do refresh -> rollback com arrays explicitos ([]) e erro de import",
+    "sucesso -> state null"
+   ],
+   "background_activity": "persistencia + refresh autoritativo sob demanda",
+   "state_inputs": [
+    "repo.importedExternalWorktreePaths",
+    "repo.externalWorktreeInboxBaselinePaths"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:56",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:104"
+   ],
+   "tests": [
+    "components/sidebar/new-external-worktrees-inbox-actions.test.ts:16 :: new external worktree inbox actions",
+    "components/sidebar/new-external-worktrees-inbox-actions.test.ts:17 :: imports inbox worktrees into the sidebar allowlist",
+    "components/sidebar/new-external-worktrees-inbox-actions.test.ts:39 :: rolls import path lists back with explicit empty arrays when refresh fails"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-068",
+   "capability": "Manter o inbox oculto estendendo a baseline (sem refresh)",
+   "surface": "linha de inbox",
+   "trigger": "Keep hidden",
+   "behaviors": [
+    "funde a baseline com os paths e grava; falha -> 'Could not keep external worktrees hidden. Try again.'; sucesso -> state null"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo.externalWorktreeInboxBaselinePaths"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:83",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:91"
+   ],
+   "tests": [
+    "components/sidebar/new-external-worktrees-inbox-actions.test.ts:63 :: extends the inbox baseline when keeping a batch hidden"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-069",
+   "capability": "Suprimir permanentemente a descoberta de worktrees externos",
+   "surface": "linha de inbox",
+   "trigger": "X suppress",
+   "behaviors": [
+    "grava externalWorktreeDiscoverySuppressedAt=Date.now() + baseline fundida; retorna boolean; falha -> 'Could not hide external worktrees permanently. Try again.'"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo.externalWorktreeInboxBaselinePaths"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:127",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:131"
+   ],
+   "tests": [
+    "components/sidebar/new-external-worktrees-inbox-actions.test.ts:83 :: permanently suppresses the inbox and baselines the current batch"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-070",
+   "capability": "Catalogo de mensagens de erro das acoes de inbox",
+   "surface": "feedback inline do inbox",
+   "trigger": "falhas de update/refresh/suppress",
+   "behaviors": [
+    "'Could not keep external worktrees hidden. Try again.' / 'Could not import external worktrees. Try again.' / 'Could not hide external worktrees permanently. Try again.'"
+   ],
+   "background_activity": "none",
+   "state_inputs": [],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:31",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:38",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:45"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-071",
+   "capability": "Decidir quais repos mostram a linha de inbox de worktrees externos",
+   "surface": "sidebar (candidatos do inbox)",
+   "trigger": "recalculo por repos/detectados",
+   "behaviors": [
+    "exclui fora de filterRepoIds, repo sem worktree visivel, kind != git",
+    "getNewExternalWorktreeInboxWorktrees considera baseline, prompt dispensado e suppressedAt",
+    "so cria candidato com inboxWorktrees.length > 0; 'show' e descoberta suprimida zeram"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repos",
+    "visibleWorktrees",
+    "detectedWorktreesByRepo",
+    "filterRepoIds",
+    "settings.worktreeVisibilityDefaults",
+    "visibilityDefaultsByHost"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-candidates.ts:13",
+    "components/sidebar/new-external-worktrees-inbox-candidates.ts:26"
+   ],
+   "tests": [
+    "components/sidebar/new-external-worktrees-inbox-candidates.test.ts:65 :: buildNewExternalWorktreesInboxCandidates",
+    "components/sidebar/new-external-worktrees-inbox-candidates.test.ts:66 :: builds inbox candidates only after the initial prompt is dismissed",
+    "components/sidebar/new-external-worktrees-inbox-candidates.test.ts:91 :: suppresses inbox candidates when discovery is permanently hidden or visibility is show"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-072",
+   "capability": "Relogio compartilhado de 1s para countdowns de prompt-cache (um intervalo para todos)",
+   "surface": "contador de cache no card/tab do sidebar",
+   "trigger": "subscribe/unsubscribe de listeners",
+   "behaviors": [
+    "listeners em Set; startClock so uma vez; um unico setInterval(publishTick,1000) para todos os assinantes",
+    "subscribe publica currentNow=Date.now() imediatamente e garante o relogio",
+    "ultimo unsubscribe -> stopClock (clearInterval + remove visibility listener)"
+   ],
+   "background_activity": "setInterval de 1000ms enquanto houver assinante e a janela estiver visivel",
+   "state_inputs": [
+    "listeners",
+    "isWindowVisible()"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-countdown-clock.ts:7",
+    "components/sidebar/prompt-cache-countdown-clock.ts:30",
+    "components/sidebar/prompt-cache-countdown-clock.ts:63"
+   ],
+   "tests": [
+    "components/sidebar/prompt-cache-countdown-clock.test.ts:4 :: subscribePromptCacheCountdownClock",
+    "components/sidebar/prompt-cache-countdown-clock.test.ts:17 :: uses one interval for all prompt-cache countdown subscribers"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-073",
+   "capability": "Pausar o relogio com o documento oculto e reconciliar na volta",
+   "surface": "background do relogio de countdown",
+   "trigger": "visibilitychange / isWindowVisible()",
+   "behaviors": [
+    "janela oculta -> stopTimer (nao publica ticks)",
+    "volta a visivel -> publishTick imediato + startTimer",
+    "listener de visibilitychange removido no stopClock"
+   ],
+   "background_activity": "visibilitychange do document + isWindowVisible()",
+   "state_inputs": [
+    "document.visibilityState"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-countdown-clock.ts:33",
+    "components/sidebar/prompt-cache-countdown-clock.ts:48"
+   ],
+   "tests": [
+    "components/sidebar/prompt-cache-countdown-clock.test.ts:41 :: pauses the interval while the document is hidden"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-074",
+   "capability": "Hook usePromptCacheCountdownNow(active) via useSyncExternalStore",
+   "surface": "contadores de cache",
+   "trigger": "active muda",
+   "behaviors": [
+    "active -> assina o relogio real com getSnapshot=currentNow; inativo -> subscribe no-op e snapshot 0 (sem interval)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "active"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-countdown-clock.ts:91"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-075",
+   "capability": "Escolher o timer de cache mais antigo entre as tabs do worktree",
+   "surface": "linha/tab do sidebar",
+   "trigger": "cacheTimerByKey / tabs mudam",
+   "behaviors": [
+    "sem tabs -> null; considera so chaves cujo prefixo antes de ':' e exatamente um tab id (nao casa tab-10 com tab-1)",
+    "ignora valores null e chaves malformadas; devolve o startedAt mais antigo"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "tabs",
+    "cacheTimerByKey"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-timer-selection.ts:9",
+    "components/sidebar/prompt-cache-timer-selection.ts:14",
+    "components/sidebar/prompt-cache-timer-selection.ts:21"
+   ],
+   "tests": [
+    "components/sidebar/prompt-cache-timer-selection.test.ts:11 :: getMostUrgentPromptCacheStartedAt",
+    "components/sidebar/prompt-cache-timer-selection.test.ts:12 :: selects the oldest non-null timer for the worktree tabs in one cache pass",
+    "components/sidebar/prompt-cache-timer-selection.test.ts:23 :: does not match tab id prefixes or malformed keys"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-076",
+   "capability": "Selecionar o countdown exato do pane (ttl positivo, chave valida)",
+   "surface": "linha do pane",
+   "trigger": "getPromptCacheCountdownForPane",
+   "behaviors": [
+    "ttl<=0 ou paneKey invalido -> null; timer exato do pane (sem fallback para 'seed')",
+    "valor null -> null; devolve {startedAt,ttlMs}"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "paneKey",
+    "cacheTimerByKey",
+    "ttlMs"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-timer-selection.ts:38",
+    "components/sidebar/prompt-cache-timer-selection.ts:46"
+   ],
+   "tests": [
+    "components/sidebar/prompt-cache-timer-selection.test.ts:34 :: getPromptCacheCountdownForPane",
+    "components/sidebar/prompt-cache-timer-selection.test.ts:35 :: selects the exact pane timer with the ttl used for gating",
+    "components/sidebar/prompt-cache-timer-selection.test.ts:51 :: does not fall back to seed timers for per-pane row ownership",
+    "components/sidebar/prompt-cache-timer-selection.test.ts:57 :: rejects malformed pane keys and null timer values",
+    "components/sidebar/prompt-cache-timer-selection.test.ts:64 :: requires a positive ttl"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-077",
+   "capability": "Toasts de lista de workspaces obsoleta",
+   "surface": "toast sonner disparado pelo fluxo de delete",
+   "trigger": "delete cujo alvo mudou/sumiu ou selecao sem alvo deletavel",
+   "behaviors": [
+    "showWorkspaceListChangedToast: toast.info 'Workspace list changed' + descricao 'Refresh Space and try again if the workspace list looks stale.'",
+    "showNoDeletableWorkspacesToast: toast.info 'No deletable workspaces selected' com a mesma descricao"
+   ],
+   "background_activity": "none",
+   "state_inputs": [],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/stale-workspace-list-toast.ts:7",
+    "components/sidebar/stale-workspace-list-toast.ts:18",
+    "components/sidebar/stale-workspace-list-toast.ts:28"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-078",
+   "capability": "Highlight de drag e aceite do dragover no dialog de feedback",
+   "surface": "dialog de feedback do sidebar (drop zone)",
+   "trigger": "dragenter/dragover/dragleave com tipos de arquivo nativo",
+   "behaviors": [
+    "highlight so com hasNativeFileDragTypes; contador de profundidade evita piscar e ignora drags internas",
+    "dragover: preventDefault + dropEffect='copy' (necessario no cliente web sem preload)",
+    "dragleave decrementa espelhando o guard do enter"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "open",
+    "onAddFiles"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/use-feedback-image-drop.ts:22",
+    "components/sidebar/use-feedback-image-drop.ts:37",
+    "components/sidebar/use-feedback-image-drop.ts:47",
+    "components/sidebar/use-feedback-image-drop.ts:55"
+   ],
+   "tests": [
+    "components/sidebar/use-feedback-image-drop.test.tsx:147 :: accepts the drag on dragover so the drop can fire without preload",
+    "components/sidebar/use-feedback-image-drop.test.tsx:159 :: leaves in-app drags alone on dragover",
+    "components/sidebar/use-feedback-image-drop.test.tsx:170 :: highlights from the advertised drag types, which is all a dragenter exposes"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-079",
+   "capability": "Reivindicar drops de imagem no dialog antes da lane nativa do preload",
+   "surface": "window (capture) enquanto o dialog esta aberto",
+   "trigger": "drop em elemento dentro do dialog",
+   "behaviors": [
+    "listeners em capture no window: 'drop' e 'dragend' (reset), so com open",
+    "drop dentro do dialog com imagem: preventDefault + stopPropagation + onAddFiles(images) (preload nao ve o gesto)",
+    "drop fora do dialog ou sem imagem: nao adiciona arquivos, mas drop aceito por dragover e feito preventDefault para nao navegar; propagacao segue para o preload",
+    "cleanup remove listeners e reseta o highlight (fechar no meio do drag)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "open",
+    "contentRef",
+    "onAddFiles"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/use-feedback-image-drop.ts:67",
+    "components/sidebar/use-feedback-image-drop.ts:80",
+    "components/sidebar/use-feedback-image-drop.ts:87",
+    "components/sidebar/use-feedback-image-drop.ts:90"
+   ],
+   "tests": [
+    "components/sidebar/use-feedback-image-drop.test.tsx:86 :: useFeedbackImageDrop",
+    "components/sidebar/use-feedback-image-drop.test.tsx:87 :: claims an image dropped on the dialog before preload can route it away",
+    "components/sidebar/use-feedback-image-drop.test.tsx:102 :: leaves drops outside the dialog to the existing native lane",
+    "components/sidebar/use-feedback-image-drop.test.tsx:116 :: ignores non-image drops so they keep their existing behavior",
+    "components/sidebar/use-feedback-image-drop.test.tsx:132 :: stops listening once the dialog is closed"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-080",
+   "capability": "Prefill do rodape de ambiente (versao/OS) no feedback sem roubar o caret",
+   "surface": "textarea do dialog de feedback do sidebar",
+   "trigger": "open muda",
+   "behaviors": [
+    "resolveClientEnvironmentInfo() e insere o footer na mensagem; vazio vira '\\n\\n'+footer",
+    "se o textarea esta focado, guarda selecao pendente e o useLayoutEffect restaura setSelectionRange apos o setFeedback",
+    "guard de cancelamento e mountedRef antes de aplicar; nao aplica se o texto mudou entre o snapshot e o efeito"
+   ],
+   "background_activity": "resolucao assincrona de info do cliente por abertura do dialog",
+   "state_inputs": [
+    "open",
+    "feedback",
+    "setFeedback",
+    "textareaRef",
+    "mountedRef"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/use-sidebar-feedback-environment-prefill.ts:15",
+    "components/sidebar/use-sidebar-feedback-environment-prefill.ts:27",
+    "components/sidebar/use-sidebar-feedback-environment-prefill.ts:53"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-081",
+   "capability": "Anexar imagens ao feedback com reserva de capacidade e avisos",
+   "surface": "dialog de feedback do sidebar (colar/anexar/drop)",
+   "trigger": "handleAddFiles",
+   "behaviors": [
+    "isSubmitting -> toast.warning 'Wait for the current feedback to finish sending before attaching more images.' e ignora",
+    "reserva slots contando reads pendentes (pendingImageReadsRef) para dois pastes rapidos nao estourarem o limite",
+    "leitura assincrona: imagens adicionadas ao estado vivo; erros por arquivo viram toast.warning; rejeicao vira toast.error 'Could not read the attached images...'",
+    "unmount libera drafts (releaseFeedbackImageDraft) e mountedRef descarta resultado tardio"
+   ],
+   "background_activity": "leitura assincrona de arquivos por anexo (readFeedbackImageFiles)",
+   "state_inputs": [
+    "open",
+    "isSubmitting",
+    "mountedRef"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/use-sidebar-feedback-images.ts:11",
+    "components/sidebar/use-sidebar-feedback-images.ts:51",
+    "components/sidebar/use-sidebar-feedback-images.ts:57",
+    "components/sidebar/use-sidebar-feedback-images.ts:90"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-082",
+   "capability": "Remover/limpar imagens liberando object URLs",
+   "surface": "thumbnails do dialog de feedback",
+   "trigger": "handleRemoveImage / clearImages / unmount",
+   "behaviors": [
+    "remove libera o draft e filtra do estado vivo",
+    "clear libera todos os drafts vivos e zera images",
+    "unmount libera todos os drafts restantes (evita leak de object URL)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "images",
+    "liveImageDraftsRef"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/use-sidebar-feedback-images.ts:36",
+    "components/sidebar/use-sidebar-feedback-images.ts:43",
+    "components/sidebar/use-sidebar-feedback-images.ts:103"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-083",
+   "capability": "Resolver repo/alvo do dialog de visibilidade no host pedido",
+   "surface": "abertura do dialog de visibilidade",
+   "trigger": "repoId + modalData.hostId",
+   "behaviors": [
+    "parse do hostId; findRepoForHost com hostId+settings",
+    "filtra detected worktrees pelo host quando ha requestedHostId",
+    "scope = getRepoHostIdentity(repo) ou '<host>\\0<repoId>' (fence nao vaza entre repos de mesmo id em hosts diferentes)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repos",
+    "settings",
+    "detectedWorktreesByRepo",
+    "modalData.hostId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-host-target.ts:10",
+    "components/sidebar/worktree-visibility-host-target.ts:22",
+    "components/sidebar/worktree-visibility-host-target.ts:31"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:520 :: does not carry a mutation fence across same-id repos on different hosts"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-084",
+   "capability": "Encapsular fetch/update escopados ao host alvo",
+   "surface": "handlers do dialog",
+   "trigger": "refreshTargetRepo/updateTargetRepo chamados",
+   "behaviors": [
+    "refresh injeta executionHostId nas options; update passa {hostId} como terceiro argumento quando ha host pedido"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "fetchWorktrees",
+    "updateRepo",
+    "requestedHostId"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-host-target.ts:35",
+    "components/sidebar/worktree-visibility-host-target.ts:48"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-085",
+   "capability": "Fence de mutacoes de visibilidade que sobrevive ao unmount do dialog",
+   "surface": "modulo singleton consumido pelo dialog",
+   "trigger": "start/finish/subscribe por scope",
+   "behaviors": [
+    "activeMutations/mutationListeners por scope (ex.: 'local\\0repo-1')",
+    "start grava a mutacao; finish so remove se for a mesma instancia e notifica listeners",
+    "subscribe devolve unsubscribe e limpa o Set quando vazio; getActiveVisibilityMutation consulta o estado atual"
+   ],
+   "background_activity": "registro em memoria (global) vivo entre montagens do modal",
+   "state_inputs": [
+    "scope"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-mutation-fence.ts:3",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:14",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:18",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:30"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-086",
+   "capability": "Rehidratar o estado busy no remount e refrescar quando a mutacao antiga termina",
+   "surface": "hook useVisibilityMutationFence dentro do dialog",
+   "trigger": "montagem do dialog com mutacao ativa no scope",
+   "behaviors": [
+    "ao montar, aplica busyP ath/toggling a partir da mutacao ativa e zera actionState",
+    "se havia mutacao, assina finish -> refresh autoritativo -> ready/failed e libera busy (so se o scope atual nao mudou)",
+    "cleanup cancela e desassina (evita setState apos unmount)"
+   ],
+   "background_activity": "assinatura de conclusao de mutacao (por scope)",
+   "state_inputs": [
+    "scope",
+    "repoId",
+    "currentScopeRef",
+    "refresh"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-mutation-fence.ts:38",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:58",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:68"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:476 :: keeps a remounted repo locked until its earlier row action settles",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:498 :: keeps a remounted repo locked until its earlier toggle settles"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-087",
+   "capability": "Helpers de sources do repo para o dialog: repo atual por scope, ids custom e deteccao de duplicata",
+   "surface": "helpers do dialog de visibilidade",
+   "trigger": "chamados nos handlers",
+   "behaviors": [
+    "getLatestRepoForVisibilityScope busca em useAppStore.getState().repos por getRepoHostIdentity === scope",
+    "getRepoCustomWorktreeVisibilitySourceIds normaliza customWorktreeVisibilitySources",
+    "isDuplicateWorktreeVisibilitySource: adicionar o candidato nao aumenta a lista normalizada em 1"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "useAppStore.repos",
+    "repo.customWorktreeVisibilitySources",
+    "defaults"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-repo-sources.ts:10",
+    "components/sidebar/worktree-visibility-repo-sources.ts:14",
+    "components/sidebar/worktree-visibility-repo-sources.ts:22"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-088",
+   "capability": "Construir a mutacao de visibilidade por source com predicado de aceitacao",
+   "surface": "handlers de toggle do dialog",
+   "trigger": "createWorktreeVisibilitySourceMutation",
+   "behaviors": [
+    "kind 'other': updates externalWorktreeVisibility (e limpa externalWorktreeDiscoverySuppressedAt quando 'show'); aceitacao compara visibilidade efetiva",
+    "built-in/custom: updates worktreeVisibilitySourcePreferences via buildWorktreeSourcePreferenceUpdate; aceitacao compara a visibilidade efetiva do source no repo mais recente (host antigo que descarta prefs e rejeitado)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo",
+    "source",
+    "visibility",
+    "visibilityDefaults"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-source-mutation.ts:21",
+    "components/sidebar/worktree-visibility-source-mutation.ts:42",
+    "components/sidebar/worktree-visibility-source-mutation.ts:46"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-089",
+   "capability": "Mapear falha de update de visibilidade para mensagem certa (host antigo vs erro generico)",
+   "surface": "action error do dialog",
+   "trigger": "commitSourceUpdate rejeitado",
+   "behaviors": [
+    "updateSucceeded && returnedPreferences===undefined && requestedPreferences!==undefined -> 'This host doesn't support source-specific worktree visibility. Update Orca on the host to change this setting.'",
+    "caso contrario -> 'Could not update worktree visibility. Try again.'"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "updated",
+    "latestRepo.worktreeVisibilitySourcePreferences",
+    "updates.worktreeVisibilitySourcePreferences"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-update-error.ts:9",
+    "components/sidebar/worktree-visibility-update-error.ts:15"
+   ],
+   "tests": [
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:584 :: does not report success when an older host strips additive source settings (STA-4092)",
+    "components/sidebar/WorktreeVisibilityDialog.test.tsx:824 :: reports only unsupported-host copy when an older host strips an added source"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-090",
+   "capability": "Detectar revert para o global e montar a mutacao correspondente",
+   "surface": "handler de toggle/Use global",
+   "trigger": "shouldUseGlobalWorktreeVisibility / createWorktreeVisibilityUseGlobalMutation",
+   "behaviors": [
+    "shouldUseGlobal: provenance 'project-override' && valor global do source === valor escolhido",
+    "other -> externalWorktreeVisibility:null; built-in -> agentWorktreeVisibility:null + remove pref builtin; custom -> remove pref custom",
+    "aceitacao exige campo ausente E visibilidade efetiva igual ao default global (prefs removidas de fato)"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "repo",
+    "source",
+    "visibilityDefaults",
+    "repoCustomSourceIds"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-use-global.ts:27",
+    "components/sidebar/worktree-visibility-use-global.ts:40",
+    "components/sidebar/worktree-visibility-use-global.ts:46"
+   ],
+   "tests": [],
+   "confidence": "verified"
+  },
+  {
+   "id": "D10-091",
+   "capability": "Contrato do sidebar: manter workspace do branch default visivel sob 'Hide sleeping' (opt-in 'always show default branch')",
+   "surface": "filtro de visibilidade do sidebar (linha do projeto)",
+   "trigger": "toggle 'Hide sleeping' + opcao de exibir default branch",
+   "behaviors": [
+    "computeVisibleWorktreeIds com showSleepingWorkspaces=false mantem o default-branch/main worktree quando a opcao de exibir default branch esta ligada",
+    "opcao desligada -> re-oculta; 'Hide default branch' explicito vence a isencao; 'Hide detached HEAD' vence para main detached",
+    "isencao vale para todo entry point de projeto (nao so o primeiro), para folder workspace e detached-HEAD main, e nao pisca com SSH host offline",
+    "workspaces nao-main continuam sendo varridos pelo 'Hide sleeping'",
+    "implementacao vive em visible-worktrees.ts / default-branch-workspace.ts (fora do manifest prod D10); esta linha fixa o contrato observado pelo teste"
+   ],
+   "background_activity": "none",
+   "state_inputs": [
+    "SidebarFilterState.alwaysShowDefaultBranchWorkspace",
+    "hideDefaultBranchWorkspace",
+    "hideDetachedHeadWorkspaces",
+    "showSleepingWorkspaces",
+    "worktreeLineageById",
+    "workspaceHostScope"
+   ],
+   "backend_contract": [],
+   "orca_evidence": [
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:69",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:88",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:113",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:145",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:196"
+   ],
+   "tests": [
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:69 :: #8873 default-branch workspace under ",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:70 :: is genuinely the default-branch row the ",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:74 :: stays in the sidebar when it is sleeping and ",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:88 :: exposes an opt-in that keeps the default branch visible under ",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:113 :: the ",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:122 :: re-hides the sleeping default branch when the user opts out",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:128 :: keeps the sleeping default branch when the option is explicitly on",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:134 :: lets an explicit ",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:145 :: still sweeps sleeping non-main workspaces",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:156 :: keeps a sleeping folder workspace, which has no sibling row to fall back to",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:170 :: keeps a sleeping detached-HEAD main worktree",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:178 :: lets ",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:189 :: keeps every project’s entry point, not just the first",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:196 :: does not flicker out while an SSH host is offline"
+   ],
+   "confidence": "verified"
+  }
+ ],
+ "coverage": {
+  "files": {
+   "AutoRenameFailedDialog.tsx": [
+    "D10-001",
+    "D10-002",
+    "D10-003",
+    "D10-004"
+   ],
+   "DeleteWorktreeDialog.tsx": [
+    "D10-005",
+    "D10-006",
+    "D10-007",
+    "D10-008",
+    "D10-009",
+    "D10-010",
+    "D10-011",
+    "D10-012",
+    "D10-013",
+    "D10-014",
+    "D10-015",
+    "D10-016",
+    "D10-017"
+   ],
+   "DeleteWorktreeDialogDescription.tsx": [
+    "D10-018"
+   ],
+   "DeleteWorktreeDialogFooter.tsx": [
+    "D10-011",
+    "D10-019"
+   ],
+   "DeleteWorktreeTargetPreview.tsx": [
+    "D10-020",
+    "D10-021",
+    "D10-022",
+    "D10-023"
+   ],
+   "ImportedWorktreesVisibilityLine.tsx": [
+    "D10-024",
+    "D10-025",
+    "D10-026",
+    "D10-027",
+    "D10-028",
+    "D10-029",
+    "D10-030"
+   ],
+   "NewExternalWorktreesInboxLine.tsx": [
+    "D10-031",
+    "D10-032",
+    "D10-033",
+    "D10-034"
+   ],
+   "NoticeHostGlyph.tsx": [
+    "D10-035",
+    "D10-036",
+    "D10-037"
+   ],
+   "WorktreeVisibilityDialog.tsx": [
+    "D10-038",
+    "D10-039",
+    "D10-040",
+    "D10-041",
+    "D10-042",
+    "D10-043",
+    "D10-044",
+    "D10-045",
+    "D10-046",
+    "D10-047",
+    "D10-048",
+    "D10-049"
+   ],
+   "WorktreeVisibilityGlobalSettingsLink.tsx": [
+    "D10-050",
+    "D10-051"
+   ],
+   "WorktreeVisibilityHelpPopover.tsx": [
+    "D10-052"
+   ],
+   "WorktreeVisibilityScanStatus.tsx": [
+    "D10-053"
+   ],
+   "WorktreeVisibilitySourceAddForm.tsx": [
+    "D10-054"
+   ],
+   "WorktreeVisibilitySourceList.tsx": [
+    "D10-055",
+    "D10-056",
+    "D10-057",
+    "D10-058",
+    "D10-059",
+    "D10-060",
+    "D10-061",
+    "D10-062"
+   ],
+   "imported-worktrees-card-actions.ts": [
+    "D10-063",
+    "D10-064"
+   ],
+   "imported-worktrees-card-candidates.ts": [
+    "D10-065",
+    "D10-066"
+   ],
+   "new-external-worktrees-inbox-actions.ts": [
+    "D10-067",
+    "D10-068",
+    "D10-069",
+    "D10-070"
+   ],
+   "new-external-worktrees-inbox-candidates.ts": [
+    "D10-071"
+   ],
+   "prompt-cache-countdown-clock.ts": [
+    "D10-072",
+    "D10-073",
+    "D10-074"
+   ],
+   "prompt-cache-timer-selection.ts": [
+    "D10-075",
+    "D10-076"
+   ],
+   "stale-workspace-list-toast.ts": [
+    "D10-077"
+   ],
+   "use-feedback-image-drop.ts": [
+    "D10-078",
+    "D10-079"
+   ],
+   "use-sidebar-feedback-environment-prefill.ts": [
+    "D10-080"
+   ],
+   "use-sidebar-feedback-images.ts": [
+    "D10-081",
+    "D10-082"
+   ],
+   "worktree-visibility-host-target.ts": [
+    "D10-083",
+    "D10-084"
+   ],
+   "worktree-visibility-mutation-fence.ts": [
+    "D10-085",
+    "D10-086"
+   ],
+   "worktree-visibility-repo-sources.ts": [
+    "D10-087"
+   ],
+   "worktree-visibility-source-mutation.ts": [
+    "D10-088"
+   ],
+   "worktree-visibility-update-error.ts": [
+    "D10-089"
+   ],
+   "worktree-visibility-use-global.ts": [
+    "D10-090"
+   ]
+  },
+  "symbols": {
+   "DeleteWorktreeDialog.tsx:default": "D10-005",
+   "ImportedWorktreesVisibilityLine.tsx:default": "D10-024",
+   "NewExternalWorktreesInboxLine.tsx:default": "D10-031",
+   "NoticeHostGlyph.tsx:default": "D10-035",
+   "WorktreeVisibilityDialog.tsx:default": "D10-038",
+   "WorktreeVisibilityHelpPopover.tsx:default": "D10-052",
+   "WorktreeVisibilitySourceList.tsx:default": "D10-055",
+   "AutoRenameFailedDialog": "D10-001",
+   "DeleteWorktreeDialogDescription": "D10-018",
+   "DeleteWorktreeDialogFooter": "D10-019",
+   "DeleteWorktreeTargetPreview": "D10-020",
+   "ImportedWorktreesVisibilityPlacement": "D10-024",
+   "ImportedWorktreeVisibilityPreview": "D10-024",
+   "groupWorktreesByParentPath": "D10-030",
+   "ImportedWorktreesVisibilityLine": "D10-024",
+   "NewExternalWorktreesInboxLine": "D10-031",
+   "NoticeHostGlyph": "D10-035",
+   "WorktreeVisibilityDialog": "D10-038",
+   "WorktreeVisibilityGlobalSettingsLink": "D10-050",
+   "WorktreeVisibilityHelpPopover": "D10-052",
+   "WorktreeVisibilityScanStatus": "D10-053",
+   "WorktreeVisibilitySourceAddResult": "D10-054",
+   "WorktreeVisibilitySourceAddForm": "D10-054",
+   "WorktreeVisibilitySourceRow": "D10-055",
+   "getWorktreeVisibilitySourceLabel": "D10-055",
+   "worktreeVisibilitySourceRowKey": "D10-055",
+   "WorktreeVisibilitySourceList": "D10-055",
+   "ImportedWorktreeCardActionState": "D10-063",
+   "IMPORTED_WORKTREES_SHOW_ERROR": "D10-063",
+   "IMPORTED_WORKTREES_KEEP_HIDDEN_ERROR": "D10-064",
+   "showImportedWorktreesCard": "D10-063",
+   "keepImportedWorktreesHiddenCard": "D10-064",
+   "getHiddenImportedWorktrees": "D10-065",
+   "buildImportedWorktreesCardCandidates": "D10-066",
+   "NewExternalWorktreesInboxActionState": "D10-067",
+   "keepNewExternalWorktreeInboxHidden": "D10-068",
+   "importNewExternalWorktreeInboxPaths": "D10-067",
+   "suppressNewExternalWorktreeInbox": "D10-069",
+   "buildNewExternalWorktreesInboxCandidates": "D10-071",
+   "subscribePromptCacheCountdownClock": "D10-072",
+   "usePromptCacheCountdownNow": "D10-074",
+   "PromptCacheCountdownSelection": "D10-076",
+   "getMostUrgentPromptCacheStartedAt": "D10-075",
+   "getPromptCacheCountdownForPane": "D10-076",
+   "showWorkspaceListChangedToast": "D10-077",
+   "showNoDeletableWorkspacesToast": "D10-077",
+   "FeedbackImageDrop": "D10-078",
+   "useFeedbackImageDrop": "D10-078",
+   "useSidebarFeedbackEnvironmentPrefill": "D10-080",
+   "useSidebarFeedbackImages": "D10-081",
+   "resolveWorktreeVisibilityHostTarget": "D10-083",
+   "useWorktreeVisibilityHostActions": "D10-084",
+   "ActiveVisibilityMutation": "D10-085",
+   "getActiveVisibilityMutation": "D10-085",
+   "startVisibilityMutation": "D10-085",
+   "subscribeToVisibilityMutation": "D10-085",
+   "finishVisibilityMutation": "D10-085",
+   "useVisibilityMutationFence": "D10-086",
+   "getLatestRepoForVisibilityScope": "D10-087",
+   "getRepoCustomWorktreeVisibilitySourceIds": "D10-087",
+   "isDuplicateWorktreeVisibilitySource": "D10-087",
+   "WorktreeVisibilitySourceMutation": "D10-088",
+   "createWorktreeVisibilitySourceMutation": "D10-088",
+   "worktreeVisibilityUpdateError": "D10-089",
+   "shouldUseGlobalWorktreeVisibility": "D10-090",
+   "createWorktreeVisibilityUseGlobalMutation": "D10-090"
+  },
+  "tests": {
+   "components/sidebar/AutoRenameFailedDialog.test.tsx:50 :: AutoRenameFailedDialog full output": "D10-001",
+   "components/sidebar/AutoRenameFailedDialog.test.tsx:51 :: shows the full CLI output fetched from main when available": "D10-001",
+   "components/sidebar/AutoRenameFailedDialog.test.tsx:61 :: falls back to the persisted excerpt when main holds no capture": "D10-001",
+   "components/sidebar/AutoRenameFailedDialog.test.tsx:67 :: falls back to the persisted excerpt when the fetch rejects": "D10-001",
+   "components/sidebar/AutoRenameFailedDialog.test.tsx:73 :: refetches full output when a retry changes the persisted error": "D10-001",
+   "components/sidebar/AutoRenameFailedDialog.test.tsx:89 :: AutoRenameFailedDialog unbroken output containment": "D10-004",
+   "components/sidebar/AutoRenameFailedDialog.test.tsx:90 :: keeps the output surface shrinkable and breakable mid-token": "D10-004",
+   "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts:15 :: DeleteWorktreeDialog host-context boundaries": "D10-016",
+   "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts:16 :: preloads git status from the selected worktree owner instead of the focused host": "D10-016",
+   "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts:25 :: does not restart pending status requests when one target hydrates": "D10-016",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:166 :: DeleteWorktreeDialog lineage copy": "D10-006",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:185 :: labels the confirmed single-host target when workspace ids collide": "D10-023",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:216 :: keeps Space safety-checked confirmation non-force": "D10-013",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:238 :: shows child-delete copy and only a delete-all action when the workspace has children": "D10-008",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:280 :: keeps long child workspace paths constrained inside the lineage notice": "D10-008",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:300 :: uses non-destructive disk copy for folder workspace deletes": "D10-006",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:325 :: keeps a space between remove copy and the workspace name": "D10-018",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:339 :: shows an inline warning when the workspace has uncommitted or untracked changes": "D10-022",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:358 :: shows locked and known dirty details without offering a lock override": "D10-009",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:384 :: notifies the dialog caller after a toast force delete succeeds": "D10-014",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:415 :: rejects confirmation when the workspace instance changed after the dialog opened": "D10-013",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:439 :: rejects lineage confirmation when a descendant instance changed": "D10-015",
+   "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:66 :: DeleteWorktreeTargetPreview host labels": "D10-020",
+   "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:67 :: binds saved SSH and runtime host names to their colliding batch rows": "D10-021",
+   "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:85 :: uses configured display-label overrides for colliding hosts": "D10-021",
+   "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:106 :: keeps an unqualified colliding target distinct from local": "D10-021",
+   "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:116 :: omits host metadata from every ordinary batch row": "D10-020",
+   "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:130 :: includes the host in a colliding single target region and its accessible name": "D10-023",
+   "components/sidebar/DeleteWorktreeTargetPreview.test.tsx:146 :: omits the host from an ordinary single target region": "D10-023",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:56 :: ImportedWorktreesVisibilityLine": "D10-024",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:57 :: renders the compact repo-group line with expand and dismiss actions": "D10-024",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:76 :: names the host when the project is checked out on more than one": "D10-027",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:86 :: folds the host into pinned fallback copy, which already names the repo": "D10-024",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:96 :: scopes pinned fallback copy to the repo name without a dismiss action": "D10-024",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:104 :: normalizes Windows parent path separators in preview groups": "D10-030",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:117 :: keeps Windows drive roots as parent path labels": "D10-030",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:129 :: keeps UNC share roots as parent path labels": "D10-030",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:151 :: disables actions while pending and renders inline errors": "D10-029",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:55 :: NewExternalWorktreesInboxLine": "D10-031",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:68 :: states the count without naming any worktree": "D10-031",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:78 :: opens review from a single card-wide button": "D10-031",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:92 :: uses the singular noun for one worktree": "D10-031",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:102 :: names the host so two checkouts of one project are distinguishable": "D10-032",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:116 :: host-qualifies the suppress control, which writes to that host alone": "D10-032",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:126 :: stays unqualified when the project has a single checkout": "D10-032",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:134 :: keeps suppress as a hover-revealed control that does not trigger review": "D10-033",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:155 :: disables both actions while a mutation is pending": "D10-033",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:167 :: renders nothing when the inbox is empty": "D10-031",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:173 :: surfaces the action error as an alert": "D10-034",
+   "components/sidebar/NoticeHostGlyph.test.tsx:56 :: NoticeHostGlyph": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:67 :: names the SSH host it would act on": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:76 :: names the paired runtime separately from the SSH host of the same name": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:86 :: marks a paired runtime a probe found unreachable as disconnected": "D10-037",
+   "components/sidebar/NoticeHostGlyph.test.tsx:95 :: does not call a host disconnected before its first probe answers": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:106 :: gives the local host the monitor glyph the run-target rows use": "D10-036",
+   "components/sidebar/NoticeHostGlyph.test.tsx:115 :: makes a passive row glyph keyboard reachable with an accessible name": "D10-036",
+   "components/sidebar/NoticeHostGlyph.test.tsx:124 :: does not add a nested tab stop when the glyph is inside a button": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:132 :: draws one glyph vocabulary: a monitor for local, a server for remote": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:147 :: keeps its copy in the English catalog": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:159 :: keeps its copy in the %s catalog": "D10-035",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:246 :: WorktreeVisibilityDialog": "D10-038",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:247 :: links directly to the global visibility defaults": "D10-050",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:263 :: lists a hidden agent worktree with a repo-relative path": "D10-048",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:276 :: bounds rendered rows for repositories with many hidden worktrees": "D10-048",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:306 :: gives each hidden worktree action a distinct accessible name": "D10-048",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:324 :: recovers a hidden worktree per path through the existing import exception": "D10-042",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:340 :: omits the hidden list when nothing is recoverable": "D10-048",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:348 :: says it is checking instead of claiming nothing is hidden on a fallback snapshot": "D10-040",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:362 :: offers a retry instead of a dead end when the list cannot be read": "D10-041",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:384 :: keeps rows visible but not actionable until the open-time scan settles": "D10-040",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:395 :: locks the repo-wide toggle until the open-time scan settles": "D10-040",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:403 :: reports a failed refresh even while an older trusted snapshot is on screen": "D10-040",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:415 :: locks retry while a row import is in flight, so it cannot race the write": "D10-042",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:427 :: locks the repo-wide toggle while a row import is in flight": "D10-042",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:437 :: locks row actions and retry while the repo-wide toggle is in flight": "D10-043",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:448 :: clears a stale failure once a row import refreshes the list successfully": "D10-042",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:459 :: does not leak an old repo action failure into a newly opened repo": "D10-043",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:476 :: keeps a remounted repo locked until its earlier row action settles": "D10-086",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:498 :: keeps a remounted repo locked until its earlier toggle settles": "D10-086",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:520 :: does not carry a mutation fence across same-id repos on different hosts": "D10-083",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:571 :: reports a failed persistent visibility update without starting a refresh": "D10-043",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:584 :: does not report success when an older host strips additive source settings (STA-4092)": "D10-089",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:598 :: reports a failed authoritative refresh after updating persistent visibility": "D10-043",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:612 :: toggles built-in sources independently": "D10-043",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:628 :: shows when source visibility is inherited from the global default": "D10-056",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:641 :: lists what each inheritable source is set to in global settings": "D10-051",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:657 :: names the global value an override is ignoring and reverts on the same control": "D10-061",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:682 :: materializes the remaining legacy source override when one source reverts to global": "D10-044",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:695 :: migrates legacy Always show to both built-in source rows": "D10-056",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:718 :: keeps ordinary non-Orca visibility on its own source row": "D10-056",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:732 :: adds custom locations disabled by default": "D10-046",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:766 :: keeps source matching stable while typing in the inline form": "D10-054",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:784 :: distinguishes invalid, duplicate, limit, and save failures when adding a source": "D10-054",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:824 :: reports only unsupported-host copy when an older host strips an added source": "D10-089",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:842 :: removes custom locations without changing other source preferences": "D10-047",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:870 :: rejects removal success when an older host leaves the custom preference behind": "D10-047",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:891 :: uses full paths to distinguish custom source controls with the same basename": "D10-060",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:909 :: shows inherited global locations without repository removal controls": "D10-055",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:928 :: resets global custom and Other locations without changing their global defaults": "D10-044",
+   "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:48 :: WorktreeVisibilityHelpPopover": "D10-052",
+   "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:49 :: stays closed when the trigger receives initial dialog focus": "D10-052",
+   "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:58 :: opens on pointer hover and closes when the pointer leaves": "D10-052",
+   "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:86 :: opens without moving focus and dismisses with Escape": "D10-052",
+   "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:104 :: dismisses when the user clicks outside": "D10-052",
+   "components/sidebar/WorktreeVisibilitySourceList.test.tsx:31 :: WorktreeVisibilitySourceList": "D10-055",
+   "components/sidebar/WorktreeVisibilitySourceList.test.tsx:32 :: counts a configured built-in base as another external location": "D10-057",
+   "components/sidebar/WorktreeVisibilitySourceList.test.tsx:69 :: offers a reset when a project override already matches the global value": "D10-059",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:69 :: #8873 default-branch workspace under ": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:70 :: is genuinely the default-branch row the ": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:74 :: stays in the sidebar when it is sleeping and ": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:88 :: exposes an opt-in that keeps the default branch visible under ": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:113 :: the ": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:122 :: re-hides the sleeping default branch when the user opts out": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:128 :: keeps the sleeping default branch when the option is explicitly on": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:134 :: lets an explicit ": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:145 :: still sweeps sleeping non-main workspaces": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:156 :: keeps a sleeping folder workspace, which has no sibling row to fall back to": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:170 :: keeps a sleeping detached-HEAD main worktree": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:178 :: lets ": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:189 :: keeps every project’s entry point, not just the first": "D10-091",
+   "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:196 :: does not flicker out while an SSH host is offline": "D10-091",
+   "components/sidebar/imported-worktrees-card-actions.test.ts:13 :: imported worktrees card actions": "D10-063",
+   "components/sidebar/imported-worktrees-card-actions.test.ts:25 :: shows discovered worktrees after visibility update and refresh succeed": "D10-063",
+   "components/sidebar/imported-worktrees-card-actions.test.ts:37 :: rolls visibility back when refresh fails after showing": "D10-063",
+   "components/sidebar/imported-worktrees-card-actions.test.ts:50 :: preserves force-visible state during a retry after rollback failure": "D10-063",
+   "components/sidebar/imported-worktrees-card-actions.test.ts:74 :: keeps the card force-visible when rollback fails after a refresh failure": "D10-063",
+   "components/sidebar/imported-worktrees-card-actions.test.ts:89 :: dismisses the card when keep-hidden update succeeds": "D10-064",
+   "components/sidebar/imported-worktrees-card-actions.test.ts:105 :: leaves the card visible when keep-hidden update fails": "D10-064",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:70 :: getHiddenImportedWorktrees": "D10-065",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:71 :: returns only authoritative hidden external worktrees": "D10-065",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:90 :: suppresses non-authoritative results": "D10-065",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:97 :: buildImportedWorktreesCardCandidates": "D10-066",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:98 :: builds a candidate for hidden imported worktrees in a visible repo": "D10-066",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:111 :: builds no candidate when the only hidden worktrees are agent scratch": "D10-066",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:129 :: suppresses candidates after show, dismissal, folder repos, or repo filters exclude the repo": "D10-066",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:162 :: keeps candidates visible after a rollback failure forces a shown repo to render the card": "D10-066",
+   "components/sidebar/imported-worktrees-card-candidates.test.ts:176 :: builds candidates even when workspace-row filters hide every visible worktree": "D10-066",
+   "components/sidebar/new-external-worktrees-inbox-actions.test.ts:16 :: new external worktree inbox actions": "D10-067",
+   "components/sidebar/new-external-worktrees-inbox-actions.test.ts:17 :: imports inbox worktrees into the sidebar allowlist": "D10-067",
+   "components/sidebar/new-external-worktrees-inbox-actions.test.ts:39 :: rolls import path lists back with explicit empty arrays when refresh fails": "D10-067",
+   "components/sidebar/new-external-worktrees-inbox-actions.test.ts:63 :: extends the inbox baseline when keeping a batch hidden": "D10-068",
+   "components/sidebar/new-external-worktrees-inbox-actions.test.ts:83 :: permanently suppresses the inbox and baselines the current batch": "D10-069",
+   "components/sidebar/new-external-worktrees-inbox-candidates.test.ts:65 :: buildNewExternalWorktreesInboxCandidates": "D10-071",
+   "components/sidebar/new-external-worktrees-inbox-candidates.test.ts:66 :: builds inbox candidates only after the initial prompt is dismissed": "D10-071",
+   "components/sidebar/new-external-worktrees-inbox-candidates.test.ts:91 :: suppresses inbox candidates when discovery is permanently hidden or visibility is show": "D10-071",
+   "components/sidebar/prompt-cache-countdown-clock.test.ts:4 :: subscribePromptCacheCountdownClock": "D10-072",
+   "components/sidebar/prompt-cache-countdown-clock.test.ts:17 :: uses one interval for all prompt-cache countdown subscribers": "D10-072",
+   "components/sidebar/prompt-cache-countdown-clock.test.ts:41 :: pauses the interval while the document is hidden": "D10-073",
+   "components/sidebar/prompt-cache-timer-selection.test.ts:11 :: getMostUrgentPromptCacheStartedAt": "D10-075",
+   "components/sidebar/prompt-cache-timer-selection.test.ts:12 :: selects the oldest non-null timer for the worktree tabs in one cache pass": "D10-075",
+   "components/sidebar/prompt-cache-timer-selection.test.ts:23 :: does not match tab id prefixes or malformed keys": "D10-075",
+   "components/sidebar/prompt-cache-timer-selection.test.ts:34 :: getPromptCacheCountdownForPane": "D10-076",
+   "components/sidebar/prompt-cache-timer-selection.test.ts:35 :: selects the exact pane timer with the ttl used for gating": "D10-076",
+   "components/sidebar/prompt-cache-timer-selection.test.ts:51 :: does not fall back to seed timers for per-pane row ownership": "D10-076",
+   "components/sidebar/prompt-cache-timer-selection.test.ts:57 :: rejects malformed pane keys and null timer values": "D10-076",
+   "components/sidebar/prompt-cache-timer-selection.test.ts:64 :: requires a positive ttl": "D10-076",
+   "components/sidebar/use-feedback-image-drop.test.tsx:86 :: useFeedbackImageDrop": "D10-079",
+   "components/sidebar/use-feedback-image-drop.test.tsx:87 :: claims an image dropped on the dialog before preload can route it away": "D10-079",
+   "components/sidebar/use-feedback-image-drop.test.tsx:102 :: leaves drops outside the dialog to the existing native lane": "D10-079",
+   "components/sidebar/use-feedback-image-drop.test.tsx:116 :: ignores non-image drops so they keep their existing behavior": "D10-079",
+   "components/sidebar/use-feedback-image-drop.test.tsx:132 :: stops listening once the dialog is closed": "D10-079",
+   "components/sidebar/use-feedback-image-drop.test.tsx:147 :: accepts the drag on dragover so the drop can fire without preload": "D10-078",
+   "components/sidebar/use-feedback-image-drop.test.tsx:159 :: leaves in-app drags alone on dragover": "D10-078",
+   "components/sidebar/use-feedback-image-drop.test.tsx:170 :: highlights from the advertised drag types, which is all a dragenter exposes": "D10-078"
+  },
+  "labels": {
+   "components/sidebar/AutoRenameFailedDialog.tsx:28": "INFRA: linha de comentario de doc capturada pelo regex (nao e label)",
+   "components/sidebar/AutoRenameFailedDialog.tsx:133": "D10-002",
+   "components/sidebar/DeleteWorktreeDialog.test.tsx:95": "INFRA: mock do Tooltip no teste (nao e label de produto)",
+   "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx:8": "INFRA: import de TooltipProvider no teste",
+   "components/sidebar/ImportedWorktreesVisibilityLine.tsx:5": "INFRA: import de Tooltip/TooltipContent/TooltipTrigger",
+   "components/sidebar/ImportedWorktreesVisibilityLine.tsx:145": "D10-025",
+   "components/sidebar/ImportedWorktreesVisibilityLine.tsx:181": "D10-026",
+   "components/sidebar/ImportedWorktreesVisibilityLine.tsx:198": "D10-028",
+   "components/sidebar/ImportedWorktreesVisibilityLine.tsx:225": "D10-028",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:9": "INFRA: mock do Tooltip no teste",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:13": "INFRA: fixture de tooltip-content do teste",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:121": "D10-032",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:140": "D10-032",
+   "components/sidebar/NewExternalWorktreesInboxLine.test.tsx:161": "D10-032",
+   "components/sidebar/NewExternalWorktreesInboxLine.tsx:5": "INFRA: import de Tooltip/TooltipContent/TooltipTrigger",
+   "components/sidebar/NewExternalWorktreesInboxLine.tsx:89": "D10-031",
+   "components/sidebar/NewExternalWorktreesInboxLine.tsx:135": "D10-032",
+   "components/sidebar/NoticeHostGlyph.test.tsx:5": "INFRA: comentario de cabecalho do teste",
+   "components/sidebar/NoticeHostGlyph.test.tsx:24": "INFRA: mock do Tooltip no teste",
+   "components/sidebar/NoticeHostGlyph.test.tsx:27": "INFRA: helper de mock (cloneElement) do teste",
+   "components/sidebar/NoticeHostGlyph.test.tsx:29": "INFRA: fixture tooltip do teste",
+   "components/sidebar/NoticeHostGlyph.test.tsx:71": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:81": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:90": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:100": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:110": "D10-035",
+   "components/sidebar/NoticeHostGlyph.test.tsx:117": "D10-036",
+   "components/sidebar/NoticeHostGlyph.test.tsx:128": "D10-036",
+   "components/sidebar/NoticeHostGlyph.tsx:3": "INFRA: import de Tooltip/TooltipContent/TooltipTrigger",
+   "components/sidebar/NoticeHostGlyph.tsx:24": "INFRA: comentario de doc capturado pelo regex",
+   "components/sidebar/NoticeHostGlyph.tsx:48": "D10-035",
+   "components/sidebar/NoticeHostGlyph.tsx:75": "D10-036",
+   "components/sidebar/NoticeHostGlyph.tsx:90": "D10-035",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:49": "INFRA: mock do Tooltip no teste",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:200": "INFRA: helper sourceSegment do teste",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:202": "D10-060",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:213": "INFRA: helper sourceRow do teste",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:272": "D10-052",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:291": "N/A: aria-label de HiddenWorktreeRecoveryList (arquivo produtivo fora do manifest D10); comportamento coberto por D10-048",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:317": "N/A: aria-label de HiddenWorktreeRecoveryList (fora do manifest D10); coberto por D10-048",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:320": "N/A: aria-label de HiddenWorktreeRecoveryList (fora do manifest D10); coberto por D10-048",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:853": "D10-058",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:883": "D10-058",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:905": "D10-058",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:906": "D10-058",
+   "components/sidebar/WorktreeVisibilityDialog.test.tsx:921": "D10-058",
+   "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx:32": "D10-052",
+   "components/sidebar/WorktreeVisibilityHelpPopover.tsx:27": "D10-052",
+   "components/sidebar/WorktreeVisibilityHelpPopover.tsx:35": "D10-052",
+   "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:56": "D10-054",
+   "components/sidebar/WorktreeVisibilitySourceList.test.tsx:11": "INFRA: mock do Tooltip no teste",
+   "components/sidebar/WorktreeVisibilitySourceList.test.tsx:97": "D10-059",
+   "components/sidebar/WorktreeVisibilitySourceList.tsx:5": "INFRA: import de Tooltip/TooltipContent/TooltipTrigger",
+   "components/sidebar/WorktreeVisibilitySourceList.tsx:141": "D10-060",
+   "components/sidebar/WorktreeVisibilitySourceList.tsx:276": "D10-058",
+   "components/sidebar/WorktreeVisibilitySourceList.tsx:301": "D10-059",
+   "components/sidebar/WorktreeVisibilitySourceList.tsx:320": "D10-060"
+  },
+  "hotkeys": {
+   "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })": "D10-052"
+  },
+  "prefs": {},
+  "timers": {
+   "copiedResetTimerRef.current = window.setTimeout(() => {": "D10-002",
+   "await act(async () => new Promise((resolve) => setTimeout(resolve, 0)))": "INFRA: awaiter de act() no teste, nao e timer de produto",
+   "let timer: ReturnType<typeof setInterval> | null = null": "D10-072",
+   "timer = setInterval(publishTick, 1000)": "D10-072"
+  },
+  "subscriptions": {
+   "components/sidebar/AutoRenameFailedDialog.tsx:42": "D10-002",
+   "components/sidebar/AutoRenameFailedDialog.tsx:50": "D10-001",
+   "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts:26": "D10-016",
+   "components/sidebar/DeleteWorktreeDialog.tsx:201": "D10-005",
+   "components/sidebar/WorktreeVisibilityDialog.tsx:117": "D10-040",
+   "components/sidebar/prompt-cache-countdown-clock.ts:48": "D10-073",
+   "components/sidebar/use-feedback-image-drop.test.tsx:32": "D10-079",
+   "components/sidebar/use-feedback-image-drop.ts:67": "D10-079",
+   "components/sidebar/use-feedback-image-drop.ts:90": "D10-079",
+   "components/sidebar/use-feedback-image-drop.ts:91": "D10-079",
+   "components/sidebar/use-sidebar-feedback-environment-prefill.ts:53": "D10-080",
+   "components/sidebar/use-sidebar-feedback-images.ts:43": "D10-082",
+   "components/sidebar/worktree-visibility-mutation-fence.ts:58": "D10-086"
+  },
+  "preload": {
+   "window.api.worktrees": "D10-001",
+   "await window.api.ui.writeClipboardText(detailText)": "D10-002"
+  }
+ }
+}

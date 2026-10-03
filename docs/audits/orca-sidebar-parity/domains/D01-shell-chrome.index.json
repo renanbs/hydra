@@ -1,0 +1,2420 @@
+{
+ "exports": {
+  "components/sidebar/AgentDashboardSidebarEntry.tsx": [
+   "AgentDashboardSidebarEntry",
+   "default"
+  ],
+  "components/sidebar/AgentDashboardSidebarHost.tsx": [
+   "AgentDashboardSidebarHost",
+   "default"
+  ],
+  "components/sidebar/CacheTimer.tsx": [
+   "usePromptCacheCountdownStartedAt",
+   "usePromptCacheCountdownForPane",
+   "CacheTimer",
+   "default"
+  ],
+  "components/sidebar/ProjectHeaderActions.tsx": [
+   "PROJECT_HEADER_ACTIONS_CLASS_NAME",
+   "ProjectHeaderActions"
+  ],
+  "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx": [
+   "ScrollToCurrentWorkspaceToolbarButton"
+  ],
+  "components/sidebar/SetupGuideSidebarEntry.tsx": [
+   "SetupGuideEntryVisibilityInput",
+   "shouldShowSetupGuideEntry",
+   "getSetupGuideSidebarEntryReady",
+   "SetupGuideSidebarEntry"
+  ],
+  "components/sidebar/SidebarFeedbackDialog.tsx": [
+   "SidebarFeedbackDialog"
+  ],
+  "components/sidebar/SidebarFeedbackImageAttachments.tsx": [
+   "SidebarFeedbackImageAttachments"
+  ],
+  "components/sidebar/SidebarHeader.tsx": [
+   "default"
+  ],
+  "components/sidebar/SidebarHostScopeMenuSection.tsx": [
+   "SidebarHostScopeMenuSection"
+  ],
+  "components/sidebar/SidebarNav.tsx": [
+   "shouldShowMobileButton",
+   "shouldShowAutomationsButton",
+   "shouldShowArtifactsButton",
+   "shouldShowSkillsButton",
+   "shouldShowAgentDashboardButton",
+   "default"
+  ],
+  "components/sidebar/SidebarSettingsHelpMenu.tsx": [
+   "SidebarSettingsHelpMenu"
+  ],
+  "components/sidebar/SidebarTaskNavButton.tsx": [
+   "SidebarTaskNavButton"
+  ],
+  "components/sidebar/SidebarToolbar.tsx": [
+   "default"
+  ],
+  "components/sidebar/StatusIndicator.tsx": [
+   "Status",
+   "default"
+  ],
+  "components/sidebar/host-section-order.ts": [
+   "orderHostSectionOptions"
+  ],
+  "components/sidebar/host-section-rows.ts": [
+   "HostHeaderRow",
+   "HostSectionRow",
+   "HostSectionOption",
+   "addHostSectionRows"
+  ],
+  "components/sidebar/mobile-sidebar-onboarding-badge.ts": [
+   "shouldShowMobileSidebarOnboardingBadge",
+   "useMobileSidebarOnboardingBadge"
+  ],
+  "components/sidebar/repo-header-action-button-class.ts": [
+   "REPO_HEADER_ACTION_REVEAL_CLASS",
+   "REPO_HEADER_ACTION_BUTTON_CLASS"
+  ],
+  "components/sidebar/sidebar-count-badge.tsx": [
+   "SidebarCountBadge"
+  ],
+  "components/sidebar/sidebar-empty-state-gate.ts": [
+   "shouldFiltersHideAllRows"
+  ],
+  "components/sidebar/sidebar-header-actions.tsx": [
+   "SidebarHeaderActions"
+  ],
+  "components/sidebar/sidebar-host-options.ts": [
+   "SidebarHostOption",
+   "SidebarHostScopeOption",
+   "buildSidebarHostOptions",
+   "shouldShowHostScopeControls",
+   "buildSidebarHostScopeOptions",
+   "getSidebarHostVisibilityLabel",
+   "getSidebarHostHealthLabel"
+  ],
+  "components/sidebar/sidebar-nav-controls.tsx": [
+   "HideSidebarMenu"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/AgentDashboardSidebarEntry.tsx",
+   "line": 46,
+   "text": "aria-label={`${dashboardBucketLabel(bucket)}: ${counts[bucket]}`}"
+  },
+  {
+   "file": "components/sidebar/CacheTimer.tsx",
+   "line": 4,
+   "text": "import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/CacheTimer.tsx",
+   "line": 88,
+   "text": "const tooltipText = expired"
+  },
+  {
+   "file": "components/sidebar/CacheTimer.tsx",
+   "line": 108,
+   "text": "<span>{tooltipText}</span>"
+  },
+  {
+   "file": "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx",
+   "line": 4,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx",
+   "line": 16,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 39,
+   "text": "ContextMenuItem: ({ children }: { children: ReactNode }) => <>{children}</>,"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.tsx",
+   "line": 8,
+   "text": "ContextMenuItem,"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.tsx",
+   "line": 114,
+   "text": "<ContextMenuItem onSelect={handleHideSetupGuide}>"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.tsx",
+   "line": 120,
+   "text": "</ContextMenuItem>"
+  },
+  {
+   "file": "components/sidebar/Sidebar.test.tsx",
+   "line": 34,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+   "line": 299,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackImageAttachments.tsx",
+   "line": 87,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 51,
+   "text": "default: () => <button aria-label=\"Workspace options\" type=\"button\" />"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 68,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 96,
+   "text": "function headerButton(label: string): HTMLButtonElement {"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 97,
+   "text": "const button = container.querySelector<HTMLButtonElement>(`[aria-label=\"${label}\"]`)"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 190,
+   "text": "it('advertises the workspace shortcut on the create tooltip, and omits it when unassigned', () => {"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 209,
+   "text": "'[aria-label=\"View activity\"]'"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 244,
+   "text": "'[aria-label=\"Turn off activity view\"]'"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 260,
+   "text": "expect(container.querySelector('[data-sidebar-section-title=\"projects\"]')?.textContent).toBe("
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 268,
+   "text": "expect(container.querySelector('[data-sidebar-section-title=\"workspaces\"]')?.textContent).toBe("
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 279,
+   "text": "expect(container.querySelector('[aria-label=\"Turn off activity view\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 280,
+   "text": "expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 281,
+   "text": "expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 282,
+   "text": "expect(container.querySelector('[aria-label=\"Add project\"]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 294,
+   "text": "expect(container.querySelector('[aria-label=\"View activity\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 295,
+   "text": "expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 296,
+   "text": "expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 305,
+   "text": "expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 306,
+   "text": "expect(container.querySelector('[aria-label=\"View activity\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 307,
+   "text": "expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 308,
+   "text": "expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 309,
+   "text": "expect(container.querySelector('[aria-label=\"More workspace actions\"]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 334,
+   "text": "expect(container.querySelector('[aria-label=\"Open full Agents view\"]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 345,
+   "text": "expect(container.querySelector('[aria-label=\"More workspace actions\"]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 346,
+   "text": "expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 347,
+   "text": "expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 348,
+   "text": "expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeTruthy()"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.tsx",
+   "line": 8,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.tsx",
+   "line": 55,
+   "text": "data-sidebar-section-title={groupBy === 'repo' ? 'projects' : 'workspaces'}"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.tsx",
+   "line": 81,
+   "text": "aria-label={activityLabel}"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 7,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 83,
+   "text": "ContextMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 253,
+   "text": "expect(container.querySelector('[aria-label=\"Needs You: 2\"]')).not.toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 255,
+   "text": "const attention = container.querySelector('[aria-label=\"Needs You: 2\"]')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 256,
+   "text": "const working = container.querySelector('[aria-label=\"Working: 3\"]')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 257,
+   "text": "const done = container.querySelector('[aria-label=\"Done: 1\"]')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 258,
+   "text": "const idle = container.querySelector('[aria-label=\"Idle: 4\"]')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 336,
+   "text": "expect(beforePairing.querySelector('button[aria-label=\"Hide from sidebar\"]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 341,
+   "text": "'button[aria-label=\"Hide from sidebar\"]'"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 406,
+   "text": "'button[aria-label=\"Search worktrees and browser tabs\"]'"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 423,
+   "text": "'button[aria-label=\"Search worktrees and browser tabs\"]'"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 442,
+   "text": "'button[aria-label=\"Open GitHub tasks\"]'"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 475,
+   "text": "tasksButton.parentElement?.querySelector('button[aria-label=\"Open GitHub tasks\"]')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.tsx",
+   "line": 11,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.tsx",
+   "line": 96,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/SidebarNav.tsx",
+   "line": 268,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 74,
+   "text": "DropdownMenuItem: ({"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 92,
+   "text": "title={title}"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 101,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 117,
+   "text": "<button data-testid=\"trigger-button\" aria-label={ariaLabel} onClick={onClick}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 164,
+   "text": "function findMenuItem(container: HTMLElement, label: string): HTMLButtonElement {"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 201,
+   "text": "expect(html).toContain('aria-label=\"Settings\"')"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 344,
+   "text": "it('renders shortcut keys in the settings tooltip', () => {"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 20,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 24,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 87,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 92,
+   "text": "<DropdownMenuItem onSelect={() => openExternalUrl(url)}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 96,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 202,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 233,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 248,
+   "text": "<DropdownMenuItem onSelect={openShortcutsSettings}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 254,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 256,
+   "text": "<DropdownMenuItem onSelect={handleOpenFeedback}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 262,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 264,
+   "text": "<DropdownMenuItem onSelect={openMilestones}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 281,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 283,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 293,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 319,
+   "text": "<DropdownMenuItem onSelect={() => openExternalUrl(DISCORD_URL)}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 323,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 324,
+   "text": "<DropdownMenuItem onSelect={() => openExternalUrl(X_URL)}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 328,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 330,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 334,
+   "text": "title={updateCheckHint}"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 345,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 347,
+   "text": "<DropdownMenuItem onSelect={handleRestartOrca} disabled={isRestartingOrca}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 353,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 8,
+   "text": "ContextMenuItem,"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 28,
+   "text": "<ContextMenuItem onSelect={onHide}>"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 31,
+   "text": "</ContextMenuItem>"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 41,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 50,
+   "text": "aria-label={label}"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 23,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 104,
+   "text": "'button[aria-label=\"Workspace board\"]'"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 137,
+   "text": "expect(container.querySelector('button[aria-label=\"Workspace board\"]')).not.toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 148,
+   "text": "expect(container.querySelector(`button[aria-label=\"${localized}\"]`)).not.toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.tsx",
+   "line": 90,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 13,
+   "text": "label: string | null"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 18,
+   "text": ": createElement('span', { 'data-state-indicator-tooltip': label }, children)"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 53,
+   "text": "expect(markup).toContain('data-state-indicator-tooltip=\"Monitoring background tasks\"')"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 54,
+   "text": "expect(markup).not.toContain(' title=')"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 97,
+   "text": "expect(markup).toContain(`data-state-indicator-tooltip=\"${label}\"`)"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 98,
+   "text": "expect(markup).not.toContain(' title=')"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 106,
+   "text": "expect(markup).not.toContain('data-state-indicator-tooltip')"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 107,
+   "text": "expect(markup).not.toContain(' title=')"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 111,
+   "text": "it('lets an enclosing action own the tooltip', () => {"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 116,
+   "text": "expect(markup).not.toContain('data-state-indicator-tooltip')"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.tsx",
+   "line": 21,
+   "text": "tooltipSide?: StateIndicatorTooltipSide"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.tsx",
+   "line": 36,
+   "text": "tooltipSide,"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.tsx",
+   "line": 39,
+   "text": "const tooltipLabel ="
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.tsx",
+   "line": 101,
+   "text": "<StateIndicatorTooltip label={tooltipLabel} side={tooltipSide}>"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 154,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 158,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 179,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 201,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 205,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 220,
+   "text": "{ label: 'Local Mac', count: 1 },"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 221,
+   "text": "{ label: 'Builder', count: 1 }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 236,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 240,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 261,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 265,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 294,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 298,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 337,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 341,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 360,
+   "text": "{ label: 'Local Mac', count: 2 },"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 361,
+   "text": "{ label: 'Builder', count: 2 }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 389,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 393,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 427,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 431,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 468,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 472,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 504,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 508,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 546,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 553,
+   "text": "label: 'env-1',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 560,
+   "text": "label: 'env-2',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 589,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 593,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 619,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 626,
+   "text": "label: 'Builder',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 661,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 668,
+   "text": "label: 'env-1',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 681,
+   "text": "label: 'env-1'"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 701,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 708,
+   "text": "label: 'env-1',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 743,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 747,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'disconnected' },"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 751,
+   "text": "label: 'env-1',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 776,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 780,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 805,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 809,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 839,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 843,
+   "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.ts",
+   "line": 23,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.ts",
+   "line": 39,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.ts",
+   "line": 78,
+   "text": "label: isLocal ? getLocalExecutionHostLabel() : hostId,"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.ts",
+   "line": 294,
+   "text": "label: host.label,"
+  },
+  {
+   "file": "components/sidebar/sidebar-header-actions.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/sidebar-header-actions.tsx",
+   "line": 27,
+   "text": "aria-label={label}"
+  },
+  {
+   "file": "components/sidebar/sidebar-header-actions.tsx",
+   "line": 48,
+   "text": "// every alias in a one-line tooltip reads as noise rather than help."
+  },
+  {
+   "file": "components/sidebar/sidebar-header-actions.tsx",
+   "line": 66,
+   "text": "aria-label={label}"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 24,
+   "text": "label: LOCAL_HOST_LABEL,"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 67,
+   "text": "label: 'Builder',"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 101,
+   "text": "label: 'dev box',"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 180,
+   "text": "{ id: 'all', label: 'All hosts', detail: `${LOCAL_HOST_LABEL}, Builder`, health: 'mixed' },"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 181,
+   "text": "{ id: 'local', label: LOCAL_HOST_LABEL, health: 'local' },"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 182,
+   "text": "{ id: 'ssh:ssh-1', label: 'Builder', health: 'disconnected' }"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.ts",
+   "line": 21,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.ts",
+   "line": 34,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.ts",
+   "line": 107,
+   "text": "label: translate('auto.components.sidebar.sidebarHostOptions.3e102f111c', 'All hosts'),"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.ts",
+   "line": 113,
+   "text": "label: host.label,"
+  },
+  {
+   "file": "components/sidebar/sidebar-nav-controls.tsx",
+   "line": 3,
+   "text": "import { ContextMenuContent, ContextMenuItem } from '@/components/ui/context-menu'"
+  },
+  {
+   "file": "components/sidebar/sidebar-nav-controls.tsx",
+   "line": 9,
+   "text": "<ContextMenuItem onSelect={onHide}>"
+  },
+  {
+   "file": "components/sidebar/sidebar-nav-controls.tsx",
+   "line": 12,
+   "text": "</ContextMenuItem>"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 12,
+   "text": "const shortcutLabel: { current: string | null } = { current: '\u2318N' }"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 17,
+   "text": "shortcutLabel,"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 63,
+   "text": "vi.mock('@/hooks/useShortcutLabel', () => ({"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 64,
+   "text": "useShortcutLabel: () => '\u2318N',"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 65,
+   "text": "formatOptionalPrimaryShortcutLabel: () => mocks.shortcutLabel.current"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 111,
+   "text": "mocks.shortcutLabel.current = '\u2318N'"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 190,
+   "text": "it('advertises the workspace shortcut on the create tooltip, and omits it when unassigned', () => {"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 196,
+   "text": "mocks.shortcutLabel.current = null"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 54,
+   "text": "vi.mock('@/hooks/useShortcutLabel', () => ({"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 55,
+   "text": "useShortcutKeyComboDetails: () => [{ keys: ['\u2318', 'J'], doubleTap: false }]"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 419,
+   "text": "it('hides the worktree palette shortcut until the search field is hovered or focused', async () => {"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 428,
+   "text": "const shortcuts = searchButton?.querySelector('span.hidden')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 429,
+   "text": "expect(shortcuts?.className).toContain('hidden')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 430,
+   "text": "expect(shortcuts?.className).toContain('group-hover:flex')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 431,
+   "text": "expect(shortcuts?.className).toContain('group-focus-within:flex')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 432,
+   "text": "expect(shortcuts?.textContent).toContain('\u2318')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 433,
+   "text": "expect(shortcuts?.textContent).toContain('J')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 437,
+   "text": "it('keeps task source shortcuts keyboard-reachable and revealed on Tasks row hover or focus', async () => {"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 441,
+   "text": "const githubShortcut = tasksButton.parentElement?.querySelector<HTMLButtonElement>("
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 444,
+   "text": "expect(githubShortcut).not.toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 445,
+   "text": "expect(githubShortcut?.tabIndex).toBe(0)"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 446,
+   "text": "expect(tasksButton.contains(githubShortcut ?? null)).toBe(false)"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 448,
+   "text": "const shortcuts = githubShortcut?.parentElement"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 449,
+   "text": "expect(shortcuts?.className).toContain('can-hover:opacity-0')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 450,
+   "text": "expect(shortcuts?.className).toContain('can-hover:group-hover:opacity-100')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 451,
+   "text": "expect(shortcuts?.className).toContain('can-hover:group-focus-within:opacity-100')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.tsx",
+   "line": 6,
+   "text": "import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.tsx",
+   "line": 7,
+   "text": "import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.tsx",
+   "line": 57,
+   "text": "const worktreePaletteShortcutCombos = useShortcutKeyComboDetails('worktree.palette')"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.tsx",
+   "line": 110,
+   "text": "{worktreePaletteShortcutCombos.map((combo) => ("
+  },
+  {
+   "file": "components/sidebar/SidebarNav.tsx",
+   "line": 111,
+   "text": "<ShortcutKeyCombo"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 16,
+   "text": "useShortcutKeyDetails: vi.fn(),"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 40,
+   "text": "vi.mock('@/hooks/useShortcutLabel', () => ({"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 41,
+   "text": "useShortcutKeyDetails: mocks.useShortcutKeyDetails"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 177,
+   "text": "mocks.useShortcutKeyDetails.mockReturnValue({ keys: ['\u2318', ','], doubleTap: false })"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 217,
+   "text": "it('renders Keyboard Shortcuts menu item', () => {"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 219,
+   "text": "expect(html).toContain('Keyboard Shortcuts')"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 344,
+   "text": "it('renders shortcut keys in the settings tooltip', () => {"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 29,
+   "text": "import { useShortcutKeyDetails } from '@/hooks/useShortcutLabel'"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 30,
+   "text": "import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 107,
+   "text": "const settingsShortcut = useShortcutKeyDetails('app.settings')"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 169,
+   "text": "const openShortcutsSettings = (): void => {"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 170,
+   "text": "openSettingsTarget({ pane: 'shortcuts', repoId: null })"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 214,
+   "text": "{settingsShortcut.keys.length > 0 ? ("
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 215,
+   "text": "<ShortcutKeyCombo"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 216,
+   "text": "keys={settingsShortcut.keys}"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 217,
+   "text": "doubleTap={settingsShortcut.doubleTap}"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 248,
+   "text": "<DropdownMenuItem onSelect={openShortcutsSettings}>"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 252,
+   "text": "'Keyboard Shortcuts'"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 36,
+   "text": "function TaskProviderShortcut({"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 159,
+   "text": "{/* Why: shortcuts sit beside the Tasks button, not inside it, so each stays keyboard-reachable. */}"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 188,
+   "text": "<TaskProviderShortcut"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 196,
+   "text": "</TaskProviderShortcut>"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 199,
+   "text": "<TaskProviderShortcut"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 207,
+   "text": "</TaskProviderShortcut>"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 210,
+   "text": "<TaskProviderShortcut"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 218,
+   "text": "</TaskProviderShortcut>"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 221,
+   "text": "<TaskProviderShortcut"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 229,
+   "text": "</TaskProviderShortcut>"
+  },
+  {
+   "file": "components/sidebar/sidebar-header-actions.tsx",
+   "line": 6,
+   "text": "import { formatOptionalPrimaryShortcutLabel } from '@/hooks/useShortcutLabel'"
+  },
+  {
+   "file": "components/sidebar/sidebar-header-actions.tsx",
+   "line": 49,
+   "text": "const shortcutLabel = formatOptionalPrimaryShortcutLabel('workspace.create', keybindings)"
+  },
+  {
+   "file": "components/sidebar/sidebar-header-actions.tsx",
+   "line": 76,
+   "text": "{shortcutLabel ? <span className=\"ml-1.5 text-background/60\">{shortcutLabel}</span> : null}"
+  }
+ ],
+ "prefs": [
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 114,
+   "text": "expect(window.localStorage.getItem('orca.workspaceBoardMovedHintSeen.v1')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 128,
+   "text": "expect(window.localStorage.getItem('orca.workspaceBoardMovedHintSeen.v1')).toBe('true')"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.tsx",
+   "line": 12,
+   "text": "const WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY = 'orca.workspaceBoardMovedHintSeen.v1'"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.tsx",
+   "line": 52,
+   "text": "if (window.localStorage.getItem(WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY) === 'true') {"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.tsx",
+   "line": 55,
+   "text": "window.localStorage.setItem(WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY, 'true')"
+  },
+  {
+   "file": "components/sidebar/mobile-sidebar-onboarding-badge.ts",
+   "line": 8,
+   "text": "return window.localStorage.getItem(DISMISS_KEY) === '1'"
+  },
+  {
+   "file": "components/sidebar/mobile-sidebar-onboarding-badge.ts",
+   "line": 37,
+   "text": "window.localStorage.setItem(DISMISS_KEY, '1')"
+  }
+ ],
+ "timers": [
+  {
+   "file": "components/sidebar/SidebarToolbar.tsx",
+   "line": 61,
+   "text": "const timeoutId = window.setTimeout(() => {"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/AgentDashboardSidebarHost.tsx",
+   "line": 24,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/AgentDashboardSidebarHost.tsx",
+   "line": 29,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/AgentDashboardSidebarHost.tsx",
+   "line": 34,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+   "line": 91,
+   "text": "React.useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/SidebarTaskNavButton.tsx",
+   "line": 107,
+   "text": "React.useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.tsx",
+   "line": 39,
+   "text": "React.useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/AgentDashboardSidebarEntry.tsx",
+   "line": 74,
+   "text": "void window.api.dashboard.openPopout()"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+   "line": 42,
+   "text": "void window.api.shell.openUrl(url)"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+   "line": 98,
+   "text": "void window.api.gh"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+   "line": 146,
+   "text": "const result = await window.api.feedback.submit({"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 63,
+   "text": "void window.api.shell.openUrl(url)"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 153,
+   "text": "void window.api.app.restart().catch((error) => {"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+   "line": 186,
+   "text": "void window.api.updater.check(getUpdateCheckClickOptions(modifiers))"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/AgentDashboardSidebarHost.test.tsx",
+   "line": 23,
+   "kind": "plain",
+   "name": "AgentDashboardSidebarHost"
+  },
+  {
+   "file": "components/sidebar/AgentDashboardSidebarHost.test.tsx",
+   "line": 24,
+   "kind": "plain",
+   "name": "closes the dashboard when the workspace board opens"
+  },
+  {
+   "file": "components/sidebar/AgentDashboardSidebarHost.test.tsx",
+   "line": 38,
+   "kind": "plain",
+   "name": "closes the workspace board when the dashboard opens"
+  },
+  {
+   "file": "components/sidebar/AgentDashboardSidebarHost.test.tsx",
+   "line": 62,
+   "kind": "plain",
+   "name": "clears an open dashboard when the sidebar closes"
+  },
+  {
+   "file": "components/sidebar/CacheTimer.test.tsx",
+   "line": 34,
+   "kind": "plain",
+   "name": "usePromptCacheCountdownStartedAt"
+  },
+  {
+   "file": "components/sidebar/CacheTimer.test.tsx",
+   "line": 49,
+   "kind": "plain",
+   "name": "does not scan aggregate cache timers while inactive"
+  },
+  {
+   "file": "components/sidebar/CacheTimer.test.tsx",
+   "line": 56,
+   "kind": "plain",
+   "name": "does not scan aggregate cache timers while disabled"
+  },
+  {
+   "file": "components/sidebar/CacheTimer.test.tsx",
+   "line": 68,
+   "kind": "plain",
+   "name": "does not scan aggregate cache timers when ttl is zero"
+  },
+  {
+   "file": "components/sidebar/CacheTimer.test.tsx",
+   "line": 80,
+   "kind": "plain",
+   "name": "scans aggregate cache timers only when the timer can render"
+  },
+  {
+   "file": "components/sidebar/ProjectHeaderActions.test.tsx",
+   "line": 9,
+   "kind": "plain",
+   "name": "ProjectHeaderActions"
+  },
+  {
+   "file": "components/sidebar/ProjectHeaderActions.test.tsx",
+   "line": 22,
+   "kind": "plain",
+   "name": "overlays hover-only controls instead of reserving project title width"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 116,
+   "kind": "plain",
+   "name": "SetupGuideSidebarEntry"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 135,
+   "kind": "plain",
+   "name": "does not render before persisted UI hydration is ready"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 141,
+   "kind": "plain",
+   "name": "does not render before setup progress readiness settles"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 147,
+   "kind": "plain",
+   "name": "does not flash when agent capability completion is still unresolved"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 162,
+   "kind": "plain",
+   "name": "does not render after setup is complete and progress is ready"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 168,
+   "kind": "plain",
+   "name": "renders for fresh active users when only the browser step is incomplete"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 174,
+   "kind": "plain",
+   "name": "does not render when the sidebar entry was dismissed with only browser incomplete"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 181,
+   "kind": "plain",
+   "name": "renders after persisted UI and setup progress are ready when setup is incomplete"
+  },
+  {
+   "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+   "line": 185,
+   "kind": "plain",
+   "name": "keeps the visible entry mounted during transient setup progress refreshes"
+  },
+  {
+   "file": "components/sidebar/Sidebar.test.tsx",
+   "line": 143,
+   "kind": "plain",
+   "name": "Sidebar"
+  },
+  {
+   "file": "components/sidebar/Sidebar.test.tsx",
+   "line": 144,
+   "kind": "plain",
+   "name": "anchors the setup script popup to the bottom toolbar"
+  },
+  {
+   "file": "components/sidebar/Sidebar.test.tsx",
+   "line": 155,
+   "kind": "plain",
+   "name": "applies left sidebar appearance variables to the workspace sidebar surface"
+  },
+  {
+   "file": "components/sidebar/Sidebar.test.tsx",
+   "line": 173,
+   "kind": "plain",
+   "name": "passes status bar visibility into the workspace board drawer"
+  },
+  {
+   "file": "components/sidebar/Sidebar.test.tsx",
+   "line": 182,
+   "kind": "plain",
+   "name": "does not start a full worktree scan while the startup session is hydrating"
+  },
+  {
+   "file": "components/sidebar/Sidebar.test.tsx",
+   "line": 206,
+   "kind": "plain",
+   "name": "does not scan all hosts when runtime connection status flaps"
+  },
+  {
+   "file": "components/sidebar/Sidebar.test.tsx",
+   "line": 230,
+   "kind": "plain",
+   "name": "closes the dashboard drawer when the dashboard experiment is disabled"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 92,
+   "kind": "plain",
+   "name": "SidebarFeedbackDialog environment prefill"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 93,
+   "kind": "plain",
+   "name": "pre-inserts Orca version and OS info when the dialog opens"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 105,
+   "kind": "plain",
+   "name": "keeps version info when the user types above the prefilled block"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 121,
+   "kind": "plain",
+   "name": "preserves early typing and appends the footer after version loading finishes"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 141,
+   "kind": "plain",
+   "name": "enables Send when the user types below the prefilled footer"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 153,
+   "kind": "plain",
+   "name": "keeps Send disabled for an edited footer with no user text"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 165,
+   "kind": "plain",
+   "name": "allows a real report after the prefilled footer is deleted"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 177,
+   "kind": "plain",
+   "name": "still prefills best-effort details when preload lookups fail"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 192,
+   "kind": "plain",
+   "name": "SidebarFeedbackDialog image submission"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 193,
+   "kind": "plain",
+   "name": "keeps the dialog scrollable within short windows"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 201,
+   "kind": "plain",
+   "name": "waits for in-flight image reads before enabling Send"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 249,
+   "kind": "plain",
+   "name": "warns when the server cannot confirm image delivery"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 285,
+   "kind": "plain",
+   "name": "releases image previews when the sidebar unmounts the dialog"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 311,
+   "kind": "plain",
+   "name": "does not consume text when the pasted image cannot be attached"
+  },
+  {
+   "file": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+   "line": 331,
+   "kind": "plain",
+   "name": "rejects images added after submission starts instead of clearing them unsent"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 133,
+   "kind": "plain",
+   "name": "SidebarHeader"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 134,
+   "kind": "plain",
+   "name": "keeps New workspace clickable with zero projects, since the composer adds the first one"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 148,
+   "kind": "plain",
+   "name": "opens the composer the same way once projects exist"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 162,
+   "kind": "plain",
+   "name": "reaches Add project and New workspace in one click each, with no menu"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 179,
+   "kind": "plain",
+   "name": "keeps the create button rightmost so the frequent action stays where it was"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 190,
+   "kind": "plain",
+   "name": "advertises the workspace shortcut on the create tooltip, and omits it when unassigned"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 203,
+   "kind": "plain",
+   "name": "opens agent activity from the bell button"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 220,
+   "kind": "plain",
+   "name": "shows the Agents introduction only for migrated users and never offers a hide action"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 237,
+   "kind": "plain",
+   "name": "turns off agent activity from the active bell button"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 255,
+   "kind": "plain",
+   "name": "uses the legacy title based on workspace grouping"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 273,
+   "kind": "plain",
+   "name": "drops both project actions in the agents view, which lists activity, not projects"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 285,
+   "kind": "plain",
+   "name": "keeps the activity bell and actions on one row at the default sidebar width"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 299,
+   "kind": "plain",
+   "name": "keeps the same actions on one row at compact width"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 317,
+   "kind": "plain",
+   "name": "does not reset a persisted agents body before settings hydrate"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 327,
+   "kind": "plain",
+   "name": "does not expose the deprecated full Agents view in agents mode"
+  },
+  {
+   "file": "components/sidebar/SidebarHeader.test.tsx",
+   "line": 339,
+   "kind": "plain",
+   "name": "renders the same actions on both sides of the old wide-layout breakpoint"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 203,
+   "kind": "plain",
+   "name": "SidebarNav"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 221,
+   "kind": "plain",
+   "name": "keeps the Agent Dashboard row unmounted while its experiment is off"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 228,
+   "kind": "plain",
+   "name": "mounts the Agent Dashboard row only when its experiment is enabled"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 241,
+   "kind": "plain",
+   "name": "uses a question glyph only for the Needs You count"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 268,
+   "kind": "plain",
+   "name": "shows the Mobile entry by default for older settings"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 273,
+   "kind": "plain",
+   "name": "hides the Artifacts entry by default for older settings"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 280,
+   "kind": "plain",
+   "name": "opens Artifacts from the sidebar"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 291,
+   "kind": "plain",
+   "name": "hides Artifacts from its context menu"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 304,
+   "kind": "plain",
+   "name": "hides the Mobile entry when the sidebar setting is off"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 308,
+   "kind": "plain",
+   "name": "updates localized labels when the language changes after mount"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 322,
+   "kind": "plain",
+   "name": "updates labels when pseudo-localization is enabled after mount"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 333,
+   "kind": "plain",
+   "name": "shows the inline hide control only once a device is paired"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 354,
+   "kind": "plain",
+   "name": "shows the Automations entry by default for older settings"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 359,
+   "kind": "plain",
+   "name": "hides the Automations entry when the sidebar setting is off"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 363,
+   "kind": "plain",
+   "name": "omits the Automations row when the sidebar setting is off"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 376,
+   "kind": "plain",
+   "name": "hides Automations from its sidebar context menu"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 389,
+   "kind": "plain",
+   "name": "hides Mobile from its sidebar context menu"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 402,
+   "kind": "plain",
+   "name": "places the worktree palette search above the sidebar nav rows"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 419,
+   "kind": "plain",
+   "name": "hides the worktree palette shortcut until the search field is hovered or focused"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 437,
+   "kind": "plain",
+   "name": "keeps task source shortcuts keyboard-reachable and revealed on Tasks row hover or focus"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 454,
+   "kind": "plain",
+   "name": "hides available Tasks from its sidebar context menu"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 466,
+   "kind": "plain",
+   "name": "keeps Tasks enabled with no git repos so the page can explain the empty state"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 488,
+   "kind": "plain",
+   "name": "shows the setup guide entry only after readiness, before completion, and before explicit hide"
+  },
+  {
+   "file": "components/sidebar/SidebarNav.test.tsx",
+   "line": 503,
+   "kind": "plain",
+   "name": "requires both persisted UI and setup progress readiness before showing setup guide entry"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 172,
+   "kind": "plain",
+   "name": "SidebarSettingsHelpMenu"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 194,
+   "kind": "plain",
+   "name": "renders the help button with correct aria-label"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 199,
+   "kind": "plain",
+   "name": "renders the settings button with correct aria-label"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 204,
+   "kind": "plain",
+   "name": "renders the settings button before the help button"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 212,
+   "kind": "plain",
+   "name": "renders Send Feedback menu item"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 217,
+   "kind": "plain",
+   "name": "renders Keyboard Shortcuts menu item"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 222,
+   "kind": "plain",
+   "name": "renders Milestones with progress when setup is incomplete"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 228,
+   "kind": "plain",
+   "name": "hides Milestones when setup is complete"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 239,
+   "kind": "plain",
+   "name": "renders the Onboarding menu item by default"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 244,
+   "kind": "plain",
+   "name": "renders Restart Orca by default"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 249,
+   "kind": "plain",
+   "name": "renders Docs link"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 254,
+   "kind": "plain",
+   "name": "renders Changelog link"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 259,
+   "kind": "plain",
+   "name": "renders GitHub link"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 264,
+   "kind": "plain",
+   "name": "renders Discord link"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 271,
+   "kind": "plain",
+   "name": "opens Discord invite through the shell bridge"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 282,
+   "kind": "plain",
+   "name": "renders X link"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 287,
+   "kind": "plain",
+   "name": "renders Check for Updates menu item"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 294,
+   "kind": "plain",
+   "name": "passes update-check modifier options through the updater bridge"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 331,
+   "kind": "plain",
+   "name": "warms the feedback chunk when the menu opens, before Send Feedback is selected"
+  },
+  {
+   "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+   "line": 344,
+   "kind": "plain",
+   "name": "renders shortcut keys in the settings tooltip"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 68,
+   "kind": "plain",
+   "name": "SidebarToolbar moved workspace board hint"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 90,
+   "kind": "plain",
+   "name": "does not show the moved hint to brand-new users after their first board click"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 117,
+   "kind": "plain",
+   "name": "shows the moved hint once to users who had already used the workspace board"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 135,
+   "kind": "plain",
+   "name": "relabels itself when the UI language changes after mount"
+  },
+  {
+   "file": "components/sidebar/SidebarToolbar.test.tsx",
+   "line": 151,
+   "kind": "plain",
+   "name": "keeps account controls out of the sidebar footer"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "StatusIndicator"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 36,
+   "kind": "plain",
+   "name": "renders working as a yellow spinner ring"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "renders monitoring as a static heartbeat glyph"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "renders permission as the shared question glyph"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 69,
+   "kind": "plain",
+   "name": "renders active as full emerald dot"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "renders done as an emerald dot"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "renders interrupted distinctly from done"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 94,
+   "kind": "each",
+   "name": "labels the agent-derived %s workspace state"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 102,
+   "kind": "each",
+   "name": "does not label the passive %s workspace state"
+  },
+  {
+   "file": "components/sidebar/StatusIndicator.test.ts",
+   "line": 111,
+   "kind": "plain",
+   "name": "lets an enclosing action own the tooltip"
+  },
+  {
+   "file": "components/sidebar/host-section-order.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "orderHostSectionOptions"
+  },
+  {
+   "file": "components/sidebar/host-section-order.test.ts",
+   "line": 14,
+   "kind": "plain",
+   "name": "applies persisted host order and appends newly discovered hosts"
+  },
+  {
+   "file": "components/sidebar/host-section-order.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "ignores stale host ids in the persisted order"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 143,
+   "kind": "plain",
+   "name": "addHostSectionRows"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 144,
+   "kind": "plain",
+   "name": "does not add host headers for a specific host scope"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 168,
+   "kind": "plain",
+   "name": "does not add host headers when only the local host exists"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 190,
+   "kind": "plain",
+   "name": "groups rows under host headers in all-host scope"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 225,
+   "kind": "plain",
+   "name": "keeps project grouping outermost in the default Projects view"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 250,
+   "kind": "plain",
+   "name": "keeps host headers for a custom multi-host visibility filter"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 283,
+   "kind": "plain",
+   "name": "keeps non-repo group headers with the following host-owned rows"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 314,
+   "kind": "plain",
+   "name": "copies global pinned and all headers into each mixed-host section without duplicating pins"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 373,
+   "kind": "plain",
+   "name": "keeps collapsed pinned rows attributable to their owning hosts"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 410,
+   "kind": "plain",
+   "name": "keeps a pinned row with its explicit worktree host"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 451,
+   "kind": "plain",
+   "name": "does not double-count a collapsed pinned header and its natural duplicate row"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 483,
+   "kind": "plain",
+   "name": "localizes collapsed natural headers even when the hidden rows are owned by one host"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 530,
+   "kind": "plain",
+   "name": "groups explicitly runtime-owned repos under their owner host, not the focused host"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 579,
+   "kind": "plain",
+   "name": "groups SSH folder workspace rows under their connection host"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 608,
+   "kind": "plain",
+   "name": "carries the SSH connection status through to the host header row"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 645,
+   "kind": "plain",
+   "name": "uses the focused runtime as the owner for non-SSH repos"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 685,
+   "kind": "plain",
+   "name": "passes host kind and blocked compatibility through to the header row"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 733,
+   "kind": "plain",
+   "name": "suppresses host headers when only one host has visible workspaces"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 763,
+   "kind": "plain",
+   "name": "counts a collapsed repo group via its header count instead of zero"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 794,
+   "kind": "plain",
+   "name": "keeps a collapsed host header but hides its rows"
+  },
+  {
+   "file": "components/sidebar/host-section-rows.test.ts",
+   "line": 828,
+   "kind": "plain",
+   "name": "can temporarily collapse every host without mutating persisted collapse keys"
+  },
+  {
+   "file": "components/sidebar/mobile-sidebar-onboarding-badge.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "mobile sidebar onboarding badge"
+  },
+  {
+   "file": "components/sidebar/mobile-sidebar-onboarding-badge.test.ts",
+   "line": 64,
+   "kind": "plain",
+   "name": "does not show when the sidebar button is hidden"
+  },
+  {
+   "file": "components/sidebar/mobile-sidebar-onboarding-badge.test.ts",
+   "line": 68,
+   "kind": "plain",
+   "name": "shows only while enabled and undismissed"
+  },
+  {
+   "file": "components/sidebar/mobile-sidebar-onboarding-badge.test.ts",
+   "line": 73,
+   "kind": "plain",
+   "name": "marks a paired device after shared mobile devices load"
+  },
+  {
+   "file": "components/sidebar/mobile-sidebar-onboarding-badge.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "shows the badge after shared mobile devices load empty"
+  },
+  {
+   "file": "components/sidebar/mobile-sidebar-onboarding-badge.test.ts",
+   "line": 93,
+   "kind": "plain",
+   "name": "does not show the badge on a failed load and recovers on window focus"
+  },
+  {
+   "file": "components/sidebar/sidebar-empty-state-gate.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "Clear Filters empty state"
+  },
+  {
+   "file": "components/sidebar/sidebar-empty-state-gate.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "does not replace a folder-only sidebar when a filter is active"
+  },
+  {
+   "file": "components/sidebar/sidebar-empty-state-gate.test.ts",
+   "line": 24,
+   "kind": "plain",
+   "name": "still wins when filters hid every row kind"
+  },
+  {
+   "file": "components/sidebar/sidebar-empty-state-gate.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "never wins without active filters"
+  },
+  {
+   "file": "components/sidebar/sidebar-empty-state-gate.test.ts",
+   "line": 44,
+   "kind": "plain",
+   "name": "defers to worktrees, placeholders and imported cards as before"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "sidebar host options"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 14,
+   "kind": "plain",
+   "name": "hides host controls for local-only workspaces"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "includes SSH hosts from labels and repos"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "includes SSH health in options"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "includes the focused runtime compatibility host"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 87,
+   "kind": "plain",
+   "name": "uses saved runtime environment names for runtime host labels"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 106,
+   "kind": "plain",
+   "name": "marks a runtime host blocked when its live status fails compat"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 142,
+   "kind": "plain",
+   "name": "leaves a runtime host available when its live status is compatible"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 172,
+   "kind": "plain",
+   "name": "builds all-host plus focused-host scope options"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 186,
+   "kind": "plain",
+   "name": "labels visible host selections for the workspace options menu"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 198,
+   "kind": "plain",
+   "name": "carries host kind so the header menu can pick lifecycle actions"
+  },
+  {
+   "file": "components/sidebar/sidebar-host-options.test.ts",
+   "line": 210,
+   "kind": "plain",
+   "name": "labels host health for compact sidebar UI"
+  }
+ ]
+}

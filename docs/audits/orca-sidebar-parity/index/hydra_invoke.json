@@ -1,0 +1,77 @@
+[
+ {
+  "file": "src/components/sidebar/AddRepoDialog.tsx",
+  "line": 60,
+  "text": "await invoke(\"catalog_add_folder\", { path: selected });"
+ },
+ {
+  "file": "src/components/sidebar/AddRepoDialog.tsx",
+  "line": 77,
+  "text": "invoke<string>(\"clone_project\", {"
+ },
+ {
+  "file": "src/components/sidebar/AddRepoDialog.tsx",
+  "line": 98,
+  "text": "invoke<string>(\"create_project\", {"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 349,
+  "text": "invoke(\"save_session_record\", {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "line": 114,
+  "text": "await invoke(\"kill_port_process\", { pid, worktreePath: worktree.path });"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 181,
+  "text": "await invoke(\"catalog_set_worktree_visibility\", {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 197,
+  "text": "invoke<string>(\"get_app_version\").then(setAppVersion).catch(() => {});"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 239,
+  "text": "const ports = await invoke<WorkspacePort[]>(\"scan_workspace_ports\", {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 763,
+  "text": "await invoke(\"import_worktree\", {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 775,
+  "text": "await invoke(\"catalog_set_worktree_visibility\", {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 794,
+  "text": "await invoke(\"suppress_worktree_inbox\", { projectPath: proj.path });"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 912,
+  "text": "await invoke(\"set_project_worktree_base\", {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 112,
+  "text": "const scan = await invoke<{ hidden?: GitWorktreeInfo[] }>(\"scan_worktrees\", {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 204,
+  "text": "await invoke(\"catalog_set_worktree_visibility_sources\", {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 317,
+  "text": "await invoke(\"import_worktree\", {"
+ }
+]

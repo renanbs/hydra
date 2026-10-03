@@ -1,0 +1,986 @@
+{
+ "domain": "D03b-sidebar-list-orchestration",
+ "rows": [
+  {
+   "id": "D03b-001",
+   "capability": "Redimensionamento da largura do sidebar esquerdo com cursor interativo, limites mínimo/máximo e atualização de variável CSS em tempo real",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:33-40",
+    "components/sidebar/index.tsx:112-114",
+    "components/sidebar/index.tsx:139-147",
+    "components/sidebar/index.tsx:226-240"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:737",
+     "src/App.tsx:3704",
+     "src/hooks/useSidebarResize.ts:53",
+     "src/hooks/useSidebarResize.ts:102",
+     "src/hooks/useSidebarResize.ts:112",
+     "src/hooks/useSidebarResize.ts:70"
+    ],
+    "backend": [
+     "invoke('save_layout_persistence') -> src/App.tsx:1029"
+    ],
+    "missing_behaviors": [
+     "Limites 220–500px (Hydra usa 180–480: src/App.tsx:741-742)",
+     "Variável CSS live --workspace-sidebar-live-width (Hydra escreve container.style.width: src/hooks/useSidebarResize.ts:70-85)"
+    ],
+    "notes": "Efeito de resize ao vivo (rAF no draft) + commit no mouseup + persistência existem; handle vive no App.tsx:3702 fora do componente do sidebar e usa eventos de mouse (não pointer)."
+   }
+  },
+  {
+   "id": "D03b-002",
+   "capability": "Alternância de modo do corpo do sidebar entre Workspaces e Agents com preservação de estado de colapso e scroll",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:22-24",
+    "components/sidebar/index.tsx:57-88",
+    "components/sidebar/index.tsx:168-182"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:105",
+     "src/components/sidebar/WorktreeSidebar.tsx:646",
+     "src/components/sidebar/SidebarAgentsList.tsx:49"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "lazy + fallback de carregamento do SidebarAgentsList (montagem síncrona direta)",
+     "ActivityThreadCollapseContext / agentsCollapsedGroupKeys preservados fora do mount",
+     "preservação de scroll dos agentes (agentsScrollTopRef): filter/focusedSessionId/selectedSessions internos (SidebarAgentsList.tsx:49-52) são perdidos no unmount"
+    ],
+    "notes": "agentsReadFilter/agentsGroupBy vivem no WorktreeSidebar (105-118) e sobrevivem ao toggle; corpo alterna em 646."
+   }
+  },
+  {
+   "id": "D03b-003",
+   "capability": "Redirecionamento automático do modo de corpo do sidebar de Agents para Workspaces ao receber solicitação de reveal de worktree",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:17",
+    "components/sidebar/index.tsx:149"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por useWorkspaceRevealBodyRedirect, setSidebarBody e reveal (WorktreeSidebar.tsx:105,355,382-424): handleRevealCurrent não altera sidebarBody e SidebarFooter só recebe onRevealCurrent quando sidebarBody==='workspaces' (WorktreeSidebar.tsx:861)."
+   }
+  },
+  {
+   "id": "D03b-004",
+   "capability": "Resolução dinâmica de variáveis de estilo e tema do sidebar esquerdo com base em preferências do sistema e configurações",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:18-19",
+    "components/sidebar/index.tsx:92-96",
+    "components/sidebar/index.tsx:157"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:350",
+     "src/App.tsx:370",
+     "src/App.tsx:379",
+     "src/lib/left-sidebar-appearance.ts:45",
+     "src/components/sidebar/WorktreeSidebar.tsx:610",
+     "src/components/sidebar/WorktreeSidebar.tsx:623"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "estilos resolvidos aplicados no container do sidebar: resolveLeftSidebarStyleVariables é calculado em App.tsx:379 mas aplicado só no titlebar (comentário App.tsx:367, uso 3621); o container aplica somente sidebarTintStyle (color-mix), cobrindo 'tinted' e não 'match-terminal'"
+    ],
+    "notes": "Equivalente de useSystemPrefersDark = systemDark reativo (App.tsx:350,370-375)."
+   }
+  },
+  {
+   "id": "D03b-005",
+   "capability": "Sincronização automática do catálogo de worktrees após alteração na contagem de repositórios",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:54-55",
+    "components/sidebar/index.tsx:89",
+    "components/sidebar/index.tsx:116-125"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: nenhum watcher de repoCount no sidebar/App (buscas: 'projects.length', 'fetchAllWorktrees', 'refreshGitWorktrees', deps de useEffect em WorktreeSidebar.tsx). Worktrees carregam sob demanda por refreshGitWorktrees(repoPath) (App.tsx:1775-1791)."
+   }
+  },
+  {
+   "id": "D03b-006",
+   "capability": "Hospedagem e carregamento preguiçoso de caixas de diálogo modais fora da hierarquia do sidebar",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:26-31",
+    "components/sidebar/index.tsx:90",
+    "components/sidebar/index.tsx:243-251",
+    "components/sidebar/index.tsx:263-273"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:1115",
+     "src/components/sidebar/WorktreeSidebar.tsx:1125",
+     "src/components/sidebar/WorktreeSidebar.tsx:1142",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:338"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "lazyWithRetry + portal fora da árvore DOM do sidebar (diálogos renderizam dentro do root do WorktreeSidebar, sem createPortal)",
+     "modais edit-meta, confirm-remove-folder, confirm-orca-yaml-hooks, forget-ssh-workspace",
+     "AgentDashboardSidebarHost"
+    ],
+    "notes": "WorktreeVisibilityDialog montado (WorktreeSidebar.tsx:1142) mais ProjectGroupNameDialog/ProjectGroupDeleteDialog/PromptDialog (1115-1165) e AutoRenameFailedDialog pelo card (worktree-card-surface.tsx:135)."
+   }
+  },
+  {
+   "id": "D03b-007",
+   "capability": "Integração do painel lateral Kanban de Workspaces com o ciclo de vida do sidebar e pré-visualização de arrasto",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:10",
+    "components/sidebar/index.tsx:98-110",
+    "components/sidebar/index.tsx:127-131",
+    "components/sidebar/index.tsx:252-262"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por useWorkspaceBoardPanel, WorkspaceKanbanDrawer, workspaceBoardDragPreviewOpen, 'KanbanBoard' (grep src/): Kanban aparece só como ícone do submenu Status (App.tsx:96,3409)."
+   }
+  },
+  {
+   "id": "D03b-008",
+   "capability": "Exibição de affordance visual e rastreamento de profundidade durante arrasto de pastas do sistema operacional para o sidebar",
+   "orca_evidence": [
+    "components/sidebar/sidebar-project-drop.ts:9-12",
+    "components/sidebar/sidebar-project-drop.ts:32-80",
+    "components/sidebar/useSidebarProjectDrop.ts:22-47",
+    "components/sidebar/useSidebarProjectDrop.ts:127-165",
+    "components/sidebar/index.tsx:97",
+    "components/sidebar/index.tsx:155",
+    "components/sidebar/index.tsx:207-224"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/shared/native-file-drop.ts:13"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "listener/overlay de drop nativo com alvo projectSidebar"
+    ],
+    "notes": "O alvo NATIVE_FILE_DROP_TARGET.projectSidebar é definido (shared/native-file-drop.ts:13,132) mas nenhum handler o consome: useGlobalFileDrop.ts:66 retorna cedo para target !== 'editor'. Sem overlay de drag (nenhum onDragEnter/onDragOver nativo no sidebar)."
+   }
+  },
+  {
+   "id": "D03b-009",
+   "capability": "Validação e roteamento de pastas soltas no sidebar para o assistente de adição de projetos",
+   "orca_evidence": [
+    "components/sidebar/sidebar-project-drop.ts:4-8",
+    "components/sidebar/sidebar-project-drop.ts:13-30",
+    "components/sidebar/useSidebarProjectDrop.ts:49-125"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por resolveSidebarProjectDropPath, authorizeExternalPath/stat chamados a partir do sidebar e onFileDrop projectSidebar: useGlobalFileDrop.ts:59 só trata 'editor'; nenhuma referência a projectSidebar fora de shared/native-file-drop.ts."
+   }
+  },
+  {
+   "id": "D03b-010",
+   "capability": "Orquestração central de seletores granulares e memoização de insumos de cache de revisão para a lista de worktrees",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:50-105"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:38",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:45",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:47",
+     "src/components/sidebar/WorktreeList.tsx:202",
+     "src/components/sidebar/WorktreeCard.tsx:11"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "seletores/memoização de insumos de review no componente da lista montada: WorktreeList recebe props (WorktreeList.tsx:104-190) e o review chega por prByPath (WorktreeSidebar.tsx:724); selectWorktreeListReviewCacheInputs só roda no pipeline de atalhos (rendered-sidebar-worktree-order.ts:45), sem useShallow"
+    ],
+    "notes": "pinnedDisplayPolicy/defaultHost/repo+worktree maps são resolvidos no pipeline (rendered-sidebar-worktree-order.ts:39-54); memoização de card existe (WorktreeCard.tsx:11)."
+   }
+  },
+  {
+   "id": "D03b-011",
+   "capability": "Integração do pipeline de ordenação, catálogo de ordem manual e derivação de worktrees visíveis",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:106-122"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:533",
+     "src/components/sidebar/WorktreeSidebar.tsx:576",
+     "src/App.tsx:1922",
+     "src/components/sidebar/WorktreeList.tsx:202"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "catálogo de ordem manual (buildWorktreeManualOrderCatalog) e useSidebarWorktreeSortOrder/useVisibleSidebarWorktrees: Hydra ordena por sortBy name|recent|agent-activity (WorktreeSidebar.tsx:576-605)",
+     "persistência efetiva da ordem manual de worktrees: App.tsx:1928-1938 grava hydra:worktrees_order em localStorage mas nunca o lê de volta",
+     "modos Smart/status e derivação de visíveis com linhagem/host padrão"
+    ],
+    "notes": "Filtro de texto e ordenação básica funcionam na lista montada."
+   }
+  },
+  {
+   "id": "D03b-012",
+   "capability": "Expansão automática de grupos colapsados para alvos de envio de agente e insumos de revisão",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:106",
+    "components/sidebar/WorktreeList.tsx:123-139"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por useEffectiveCollapsedGroups, agentSendTarget e uso de linhagem na expansão: grupos colapsados são passados crus (WorktreeList.tsx:470) e lineageChildren nunca é fornecido (ver D03b-048)."
+   }
+  },
+  {
+   "id": "D03b-013",
+   "capability": "Filtragem de escopo de visibilidade por host e integração de cartões de worktrees externos/importados",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:140-153"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:287",
+     "src/components/sidebar/WorktreeList.tsx:304",
+     "src/components/sidebar/WorktreeSidebar.tsx:761",
+     "src/components/sidebar/WorktreeSidebar.tsx:773",
+     "src/components/sidebar/WorktreeSidebar.tsx:792"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "escopo de host na lista montada (useSidebarHostVisibleScope): getVisibleSidebarHostIdSet/filterProjectGroupsForVisibleHosts só são usados no pipeline de atalhos (rendered-sidebar-worktree-order.ts:41,63)"
+    ],
+    "notes": "Linhas de inbox (notice + pill) e supressão/keep por repo estão montadas e chamam import_worktree / catalog_set_worktree_visibility / suppress_worktree_inbox (preload equivalente)."
+   }
+  },
+  {
+   "id": "D03b-014",
+   "capability": "Geração do modelo de linhas de seção do sidebar com ordenação de projetos e políticas de fixação",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:154-177"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:44",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:56",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:101"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "modelo de linhas consumido pela lista montada (só o caminho de sidebar fechado usa buildRows)",
+     "handleReorderHostSections/setHostDragActive"
+    ],
+    "notes": "buildRows recebe projectOrderBy, pinnedDisplayPolicy, projectGroups e folderWorkspaces (rendered-sidebar-worktree-order.ts:56-84); seções de host via addHostSectionRows/orderHostSectionOptions (101-124)."
+   }
+  },
+  {
+   "id": "D03b-015",
+   "capability": "Gerenciamento de seleção múltipla e mutações de status/pino/ordem de worktrees na lista",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:178-187",
+    "components/sidebar/WorktreeList.tsx:325-329",
+    "components/sidebar/WorktreeList.tsx:343-356"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:428",
+     "src/components/sidebar/WorktreeSidebar.tsx:442",
+     "src/App.tsx:1922",
+     "src/App.tsx:3135",
+     "src/App.tsx:3301"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "seleção múltipla de worktrees (useSidebarWorktreeSelection)",
+     "moveWorktreeToStatus/moveWorktreesToStatus/moveWorktreesToStatusAtIndex",
+     "pinWorktree/pinWorktrees em lote (Hydra só pin/unread por item: App.tsx:3135,3406)",
+     "dropWorktreesOnWorkspaceBoard (sem Kanban)",
+     "carregamento automático da linhagem ao mover pai entre raias"
+    ],
+    "notes": "Reordenação manual por HTML5 DnD existe (WorktreeSidebar.tsx:428-467) e atribuição de status por item no menu de contexto (App.tsx:3301,3406-3430)."
+   }
+  },
+  {
+   "id": "D03b-016",
+   "capability": "Ativação visual imediata no DOM do card de worktree ao clique para eliminar latência perceptível",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:23",
+    "components/sidebar/WorktreeList.tsx:190-193",
+    "components/sidebar/WorktreeList.tsx:328"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-card-surface.tsx:83",
+     "src/components/sidebar/use-worktree-card-controller.ts:172",
+     "src/components/sidebar/WorktreeList.tsx:349"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "markSidebarWorktreeActiveImmediately (mutação direta de data-worktree-card-active antes da reconciliação do store): o atributo deriva de isActiveSurface (React) e o caminho onImmediateActivate (controller:172) não é fornecido por nenhum caller; WorktreeList passa onSelect"
+    ],
+    "notes": "data-worktree-card-active existe como superfície de estilo (worktree-card-surface.tsx:83)."
+   }
+  },
+  {
+   "id": "D03b-017",
+   "capability": "Abertura de caixas de diálogo modais e configurações a partir de ações de repositório e grupos no sidebar",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:195-235",
+    "components/sidebar/WorktreeList.tsx:298-316"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:261",
+     "src/components/sidebar/WorktreeList.tsx:481",
+     "src/components/sidebar/WorktreeSidebar.tsx:1142",
+     "src/components/sidebar/WorktreeSidebar.tsx:955",
+     "src/App.tsx:1612"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181"
+    ],
+    "missing_behaviors": [
+     "handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings)",
+     "confirmação 'confirm-remove-folder': App.tsx:1612 remove direto",
+     "handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500)"
+    ],
+    "notes": "'+'/menu de cabeçalho e 'Manage Worktree Visibility...' abrem diálogos existentes (WorktreeSidebar.tsx:940-965,1142)."
+   }
+  },
+  {
+   "id": "D03b-018",
+   "capability": "Processamento de requisições de reveal para rolagem e destaque de worktrees na lista virtualizada",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:31",
+    "components/sidebar/WorktreeList.tsx:237-249",
+    "components/sidebar/WorktreeList.tsx:318-321"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:382",
+     "src/components/sidebar/WorktreeSidebar.tsx:395",
+     "src/components/sidebar/WorktreeSidebar.tsx:367"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "ajuste de filtros ativos para tornar a worktree visível",
+     "fila de requisição pendente no store (pendingRevealWorktree/pendingRevealSidebarRow + clear*)"
+    ],
+    "notes": "Reveal expande projeto/grupo colapsado e rola via scrollIntoView + highlight temporário (367-424)."
+   }
+  },
+  {
+   "id": "D03b-019",
+   "capability": "Priorização do estado vazio 'Clear Filters' sobre cabeçalhos de grupos quando todos os itens são filtrados",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:38",
+    "components/sidebar/WorktreeList.tsx:251-261"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:588",
+     "src/components/sidebar/WorktreeList.tsx:601"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "shouldFiltersHideAllRows: a decisão usa apenas visibleProjects (WorktreeList.tsx:588) e ignora contagens de placeholders/inbox, então um projeto vazio excluído por filtro de repo não preserva o cabeçalho antes do estado vazio"
+    ],
+    "notes": "Botão 'Clear filter' chama onClearFilter → setFilter('') (WorktreeSidebar.tsx:740)."
+   }
+  },
+  {
+   "id": "D03b-020",
+   "capability": "Renderização do viewport virtualizado da lista de worktrees e integração de caixas de diálogo de grupos de projetos",
+   "orca_evidence": [
+    "components/sidebar/WorktreeList.tsx:20-22",
+    "components/sidebar/WorktreeList.tsx:263-360"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Sem virtualização na lista (nenhum VirtualizedWorktreeViewport/@tanstack virtual no sidebar; a lista é um div simples: WorktreeList.tsx:609) e sem SidebarWorktreeListDialogs (criar/renomear/mover grupo ficam em menus de contexto: WorktreeSidebar.tsx:1085-1115). Os atributos data-worktree-virtual-row* só têm leitores em código de drag órfão (project-header-drop.ts:113,148)."
+   }
+  },
+  {
+   "id": "D03b-021",
+   "capability": "Exibição de linha inline de criação de worktree em andamento com indicador de progresso e roteamento para o terminal",
+   "orca_evidence": [
+    "components/sidebar/PendingWorktreeRow.tsx:11-16",
+    "components/sidebar/PendingWorktreeRow.tsx:23-76"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:34",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:72"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "O store mantém pendingWorktreeCreations (store/slices/worktree-helpers.ts:111) e buildRows sabe construí-las (grouping/row-builders.ts:buildPendingCreationRow), mas o único consumidor wired passa EMPTY_PENDING_CREATIONS e a lista montada (WorktreeList.tsx) não renderiza linha pendente."
+   }
+  },
+  {
+   "id": "D03b-022",
+   "capability": "Tratamento visual de erro e cancelamento de criação de worktree inline",
+   "orca_evidence": [
+    "components/sidebar/PendingWorktreeRow.tsx:34",
+    "components/sidebar/PendingWorktreeRow.tsx:57-61",
+    "components/sidebar/PendingWorktreeRow.tsx:77-92"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por PendingWorktreeRow, 'Cancel worktree creation', removePendingWorktreeCreation no sidebar: nenhum componente de linha pendente existe em src/components/sidebar/."
+   }
+  },
+  {
+   "id": "D03b-023",
+   "capability": "Botão flutuante para rolagem rápida ao topo da lista de worktrees com tooltip e animação de fade",
+   "orca_evidence": [
+    "components/sidebar/WorktreeListScrollToTopButton.tsx:8-50"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por WorktreeListScrollToTopButton, 'Jump to top', ChevronsUp e scrollToTop em src/: nenhum resultado no sidebar."
+   }
+  },
+  {
+   "id": "D03b-024",
+   "capability": "Renderização da linha indicadora de soltura (drop indicator) personalizada para o sidebar",
+   "orca_evidence": [
+    "components/sidebar/WorktreeSidebarDropIndicator.tsx:10-28"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por WorktreeSidebarDropIndicator: inexistente; components/workbench/drop-indicator.ts serve apenas a tab bar."
+   }
+  },
+  {
+   "id": "D03b-025",
+   "capability": "Iniciação e qualificação de sessão de arrasto para cabeçalhos de projeto/repositório",
+   "orca_evidence": [
+    "components/sidebar/project-header-drag-contract.ts:46-78",
+    "components/sidebar/project-header-drag-start.ts:15-61",
+    "components/sidebar/project-header-drag.ts:299-315"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/project-header-drop.ts:25",
+     "src/components/sidebar/project-header-drop.ts:31",
+     "src/components/sidebar/SectionHeader.tsx:265"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "sessão de arrasto por ponteiro (createProjectHeaderDragSession/isProjectHeaderDragHandleTarget/isRepoHeaderActionTarget/[data-repo-header-drag-handle]/limiar 4px)",
+     "as funções de bucket (project-header-drop.ts:25,31) não são invocadas: o único import de project-header-drop é getLogicalRepoOrderRankById (rendered-sidebar-worktree-order.ts:47)"
+    ],
+    "notes": "Não localizado após busca por useRepoHeaderDrag, project-header-drag, REPO_HEADER_ACTION_SELECTOR, data-repo-header-drag-handle. Existe reordenação por HTML5 DnD do cabeçalho (SectionHeader.tsx:265 → WorktreeSidebar.tsx:470-500)."
+   }
+  },
+  {
+   "id": "D03b-026",
+   "capability": "Controle de ponteiro, autoscroll, cancelamento por teclado e supressão de clique no arrasto de cabeçalhos de projeto",
+   "orca_evidence": [
+    "components/sidebar/header-drag-click-swallow.ts:9-20",
+    "components/sidebar/header-drag-pointer-release.ts:12-14",
+    "components/sidebar/project-header-drag.ts:59-68",
+    "components/sidebar/project-header-drag.ts:106-193",
+    "components/sidebar/project-header-drag.ts:195-282",
+    "components/sidebar/project-header-drag.ts:284-297"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:53",
+     "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:93"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "hook de arrasto com limiar 4px, setPointerCapture, supressão de clique pós-arrasto e cancelamento por Escape/blur",
+     "getWorktreeSidebarDragAutoscroll/getWorktreeSidebarBoundaryDrop nunca são invocados (importados só por worktree-sidebar-drag-geometry.ts, órfão)"
+    ],
+    "notes": "Não localizado: header-drag-click-swallow.ts / header-drag-pointer-release.ts / project-header-drag.ts não existem em src/components/sidebar/."
+   }
+  },
+  {
+   "id": "D03b-027",
+   "capability": "Medição de retângulos e cálculo de pré-visualização de soltura para cabeçalhos de projeto",
+   "orca_evidence": [
+    "components/sidebar/project-header-drop.ts:9-45",
+    "components/sidebar/project-header-drop.ts:109-165",
+    "components/sidebar/project-header-drop.ts:185-203",
+    "components/sidebar/project-header-drag.ts:70-87"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/project-header-drop.ts:130",
+     "src/components/sidebar/project-header-drop.ts:185"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "medição/pré-visualização de soltura na lista montada: measureProjectHeaderDragRects e computeProjectHeaderDropPreview não têm callers",
+     "produtores de data-repo-header-id/-bucket/-index/-section-end (só existem leitores: project-header-drop.ts:136-160)"
+    ],
+    "notes": "project-header-drop.ts é alcançável apenas para getLogicalRepoOrderRankById."
+   }
+  },
+  {
+   "id": "D03b-028",
+   "capability": "Comprometimento de reordenação de cabeçalho de projeto no modo de ordenação por grupos de projetos",
+   "orca_evidence": [
+    "components/sidebar/project-header-drop.ts:61-107",
+    "components/sidebar/project-header-drag-commit.ts:37-64"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: getProjectGroupOrderForSidebarDrop/mapSidebarProjectHeaderDropIndexToSiblingInsertIndex/commitProjectHeaderDragDrop sem callers; Hydra reordena projetos como lista plana (WorktreeSidebar.tsx:484-500 → App.tsx:1910) sem ranks fracionários por grupo."
+   }
+  },
+  {
+   "id": "D03b-029",
+   "capability": "Comprometimento de reordenação de cabeçalho de projeto no modo de ordenação global de repositórios com preservação de blocos multi-host",
+   "orca_evidence": [
+    "components/sidebar/project-header-drop.ts:47-59",
+    "components/sidebar/project-header-drop.ts:167-183",
+    "components/sidebar/project-header-drop.ts:205-226",
+    "components/sidebar/project-header-drag-commit.ts:66-76"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SectionHeader.tsx:265",
+     "src/components/sidebar/WorktreeSidebar.tsx:484",
+     "src/App.tsx:1915",
+     "src/App.tsx:1918"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "mapSidebarRepoDropIndexToAllRepoInsertAt/applyAllRepoInsertAt: mover todas as ocorrências do repo lógico (pares de host) como bloco único; App.tsx:1915 reordena um array plano de projetos",
+     "persistência além do localStorage (App.tsx:1918)"
+    ],
+    "notes": "Reordenação observável de cabeçalhos de projeto existe via HTML5 DnD."
+   }
+  },
+  {
+   "id": "D03b-030",
+   "capability": "Iniciação e qualificação de sessão de arrasto para cabeçalhos de grupos de projetos",
+   "orca_evidence": [
+    "components/sidebar/project-group-header-drag-contract.ts:50-78",
+    "components/sidebar/project-group-header-drag-start.ts:15-64",
+    "components/sidebar/project-group-header-drop.ts:27-50"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por project-group-header-drag, createProjectGroupHeaderDragSession, data-project-group-header-drag-handle, getProjectGroupHeaderDragBucketKey em src/: inexistentes. Cabeçalho de grupo só aceita drop de projetos (SectionHeader.tsx:122; WorktreeSidebar.tsx:820-840)."
+   }
+  },
+  {
+   "id": "D03b-031",
+   "capability": "Rastreamento, autoscroll e cancelamento por teclado no arrasto de cabeçalhos de grupos de projetos",
+   "orca_evidence": [
+    "components/sidebar/project-group-header-drag.ts:48-57",
+    "components/sidebar/project-group-header-drag.ts:142-269",
+    "components/sidebar/project-group-header-drag.ts:270-283"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: sem useProjectGroupHeaderDrag, autoscroll/threshold de grupo ou swallow de clique para grupo (project-group-header-drag.ts inexistente)."
+   }
+  },
+  {
+   "id": "D03b-032",
+   "capability": "Medição de retângulos e cálculo de pré-visualização de soltura para grupos de projetos",
+   "orca_evidence": [
+    "components/sidebar/project-group-header-drop.ts:123-199",
+    "components/sidebar/project-group-header-drag.ts:59-77"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: project-group-header-drop.ts, measureProjectGroupHeaderDragRects e computeProjectGroupHeaderDropPreview inexistentes em src/."
+   }
+  },
+  {
+   "id": "D03b-033",
+   "capability": "Comprometimento de reordenação de grupos de projetos gerando atualizações discretas de tabOrder para irmãos",
+   "orca_evidence": [
+    "components/sidebar/project-group-header-drop.ts:68-121",
+    "components/sidebar/project-group-header-drag-commit.ts:5-20"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: sem commitProjectGroupHeaderDragDrop/getProjectGroupTabOrderUpdatesForSidebarDrop e sem reordenação persistida de grupos de projeto (App.tsx só cria/move/renomeia/deleta grupos: 1178-1210)."
+   }
+  },
+  {
+   "id": "D03b-034",
+   "capability": "Iniciação e qualificação de sessão de arrasto para cabeçalhos de seção de host de execução",
+   "orca_evidence": [
+    "components/sidebar/host-header-drag-dom.ts:9-41",
+    "components/sidebar/host-header-drag.ts:273-299"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por useHostHeaderDrag, host-header-drag, readHostHeaderRects, isHostHeaderActionTarget em src/: inexistentes. host-section-rows.ts/host-section-order.ts existem mas só alimentam o pipeline de atalhos (rendered-sidebar-worktree-order.ts:101-124), sem UI nem arrasto."
+   }
+  },
+  {
+   "id": "D03b-035",
+   "capability": "Geração de pré-visualização flutuante de arrasto e estilos de cursor para cabeçalhos de host",
+   "orca_evidence": [
+    "components/sidebar/host-header-drag.ts:9-13",
+    "components/sidebar/host-header-drag.ts:205-232",
+    "components/sidebar/host-header-drag.ts:159-163"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: sem createSidebarDragPreview/updateSidebarDragPreviewPosition/setSidebarPointerDragDocumentStyles fora de worktree-list/pointer-drag-dom.ts, que é órfão (hydra_unreachable) e sem callers."
+   }
+  },
+  {
+   "id": "D03b-036",
+   "capability": "Cálculo de pré-visualização de soltura com ponto médio e agendamento diferido por frame para seções de host",
+   "orca_evidence": [
+    "components/sidebar/host-header-drag.ts:77-143"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: sem cálculo de ponto médio/indicador de seções de host nem deferredComputeFrameRef no sidebar (host-header-drag.ts inexistente)."
+   }
+  },
+  {
+   "id": "D03b-037",
+   "capability": "Comprometimento de nova ordem de hosts de execução com splicing do array de identificadores",
+   "orca_evidence": [
+    "components/sidebar/host-header-drag.ts:145-189"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: sem commit de ordem de hosts por arrasto; ordenação de hosts só existe como orderHostSectionOptions() no pipeline de atalhos (rendered-sidebar-worktree-order.ts:105)."
+   }
+  },
+  {
+   "id": "D03b-038",
+   "capability": "Reconstrução da ordem renderizada de worktrees para atalhos de teclado Cmd+1 a Cmd+9 com o sidebar fechado",
+   "orca_evidence": [
+    "components/sidebar/rendered-sidebar-worktree-order.ts:29-117"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:38",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:56",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:86",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:119",
+     "src/components/sidebar/visible-worktrees.ts:326",
+     "src/components/sidebar/visible-worktrees.ts:380",
+     "src/App.tsx:2456",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:72",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:193"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "computeRenderedSidebarWorktrees reencena buildRows com groupBy/projectOrderBy/pinnedDisplayPolicy/collapsedGroups/lineage (rendered-sidebar-worktree-order.ts:56-84); orderMainWorktreeFirst aplicado por group-sections.ts:193; atalhos publicados/recomputados em visible-worktrees.ts:326,380 e consumidos em App.tsx:2456. O override de colapso por agent-send não existe no Hydra, portanto não perturba a numeração."
+   }
+  },
+  {
+   "id": "D03b-039",
+   "capability": "Derivação da sequência única de IDs de worktrees renderizadas com suporte a separação de colisões de host",
+   "orca_evidence": [
+    "components/sidebar/rendered-sidebar-worktree-order.ts:119-126"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:119",
+     "src/components/sidebar/WorktreeList.tsx:216",
+     "src/components/sidebar/WorktreeList.tsx:55"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "posições separadas para hosts com o mesmo id: computeRenderedSidebarWorktreeOrder deduplica por worktree.id com new Set (rendered-sidebar-worktree-order.ts:120-124) e renderedSidebarShortcutTargets deduplica por id (WorktreeList.tsx:55-57)"
+    ],
+    "notes": "Não reconstrói hosts filtrados (filtro por host aplicado antes: visible-worktrees.ts:352-360)."
+   }
+  },
+  {
+   "id": "D03b-040",
+   "capability": "Cálculo indexado O(1) de limites verticais de seção para cabeçalhos de repositório",
+   "orca_evidence": [
+    "components/sidebar/worktree-header-section-boundaries.ts:5-53",
+    "components/sidebar/worktree-header-section-boundaries.ts:88-115"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por worktree-header-section-boundaries, getRepoHeaderSectionEndByRepoId, getEstimatedRenderRowStarts em src/: arquivo inexistente. O atributo data-repo-header-section-end é lido (project-header-drop.ts:160) mas não tem produtor."
+   }
+  },
+  {
+   "id": "D03b-041",
+   "capability": "Cálculo indexado O(1) de limites verticais de seção para grupos de projetos aninhados",
+   "orca_evidence": [
+    "components/sidebar/worktree-header-section-boundaries.ts:64-86",
+    "components/sidebar/worktree-header-section-boundaries.ts:117-154"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: sem getProjectGroupHeaderSectionEndByGroupId nem cálculo de profundidade de aninhamento de grupos para limites de seção (worktree-header-section-boundaries.ts inexistente)."
+   }
+  },
+  {
+   "id": "D03b-042",
+   "capability": "Agrupamento de retângulos de linhagem em unidades de arrasto coesas para cálculo de pré-visualização",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drop-preview.ts:38-74",
+    "components/sidebar/worktree-sidebar-drop-preview.ts:189-195"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-drag-units.ts:18",
+     "src/components/sidebar/worktree-drag-units.ts:70"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getWorktreeSidebarDragUnitRects (agrupar pai+filhos de linhagem numa unidade de arrasto) e o wiring: getWorktreeDragUnitGroups/getFullDropIndexForWorktreeDragUnit não têm callers, e o sidebar montado nem renderiza linhagem"
+    ],
+    "notes": "worktree-drag-units.ts é órfão (importado apenas por worktree-sidebar-drag-autoscroll.ts, que também nunca é invocado)."
+   }
+  },
+  {
+   "id": "D03b-043",
+   "capability": "Resolução geométrica de pré-visualização de soltura de worktree por centro mais próximo e limites de grupo",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drop-preview.ts:136-171",
+    "components/sidebar/worktree-sidebar-drop-preview.ts:173-250"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-sidebar-drag-geometry.ts:28",
+     "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:93"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getWorktreeSidebarClosestCenterDropIndex (centro mais próximo) e buildWorktreeDragPreviewOffsets",
+     "wiring: getWorktreeSidebarDragReferenceY/getWorktreeSidebarBoundaryDrop/âncora nunca são invocados (worktree-sidebar-drag-geometry.ts é órfão; computeProjectHeaderDropPreview não tem caller)"
+    ],
+    "notes": "Port parcial existe (grab/anchors em drag-geometry.ts:28,76,101)."
+   }
+  },
+  {
+   "id": "D03b-044",
+   "capability": "Posicionamento do indicador de soltura alinhado ao espaço reservado (placeholder) calculado",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drop-preview.ts:113-134",
+    "components/sidebar/worktree-sidebar-drop-preview.ts:251-260"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado: sem posicionamento de indicador ancorado a placeholder (placeholderTop-3px) nem função equivalente em src/components/sidebar/worktree-sidebar-drop-preview.ts (arquivo inexistente)."
+   }
+  },
+  {
+   "id": "D03b-045",
+   "capability": "Resolução de alvo de commit de status de worktree com tolerância de raio de 6px",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drop-preview.ts:24-36",
+    "components/sidebar/worktree-sidebar-drop-preview.ts:76-103"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por resolveWorktreeSidebarStatusDropCommitTarget, hasWorktreeSidebarStatusDropTarget, STATUS_DROP_TARGET_FALLBACK_TOLERANCE_PX: inexistentes. Atribuição de status existe apenas por menu de contexto (App.tsx:3301), sem hit-test de drop com tolerância de 6px."
+   }
+  },
+  {
+   "id": "D03b-046",
+   "capability": "Coordenação de lote de expurgo de snapshots de workspace via IPC durante remoção múltipla",
+   "orca_evidence": [
+    "components/sidebar/worktree-snapshot-prune-batch.ts:6-24"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não localizado após busca por beginWorktreeSnapshotPruneBatch/finishRemovalSnapshotPruneBatch/recordRemovalSnapshotPrune e 'workspaceCleanup' em src/ e src-tauri/: nenhuma API equivalente (window.api expõe fs/ui, não workspaceCleanup)."
+   }
+  },
+  {
+   "id": "D03b-047",
+   "capability": "Renderização e indentação de linhas de workspace de pasta sob grupos de projetos de pastas",
+   "orca_evidence": [
+    "components/sidebar/worktree-list-card-markup-queries.ts:22-34",
+    "components/sidebar/worktree-list-lineage-store-state.ts:37-64"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:517",
+     "src/components/sidebar/FolderWorkspaceRow.tsx:35",
+     "src/components/sidebar/FolderWorkspaceRow.tsx:43",
+     "src/components/sidebar/worktree-list/rows/indentation.ts:1"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "aria-activedescendant apontando para a linha ativa de folder workspace (Hydra usa aria-current: FolderWorkspaceRow.tsx:35)",
+     "indentação manual preservada fora de grupos escaneados e geometria 'new card' equivalente (a linha tem padding fixo pl-6/ml-1: FolderWorkspaceRow.tsx:43)"
+    ],
+    "notes": "Linhas de folder workspace renderizadas sob o grupo dono, um passo compacto abaixo do cabeçalho (WorktreeList.tsx:515-530)."
+   }
+  },
+  {
+   "id": "D03b-048",
+   "capability": "Renderização recursiva de linhagem e aninhamento de cards filhos e netos através de WorktreeCard",
+   "orca_evidence": [
+    "components/sidebar/worktree-list-card-markup-queries.ts:3-20",
+    "components/sidebar/worktree-list-card-markup-queries.ts:44-56",
+    "components/sidebar/worktree-list-lineage-card-test-harness.ts:86-180",
+    "components/sidebar/worktree-list-lineage-store-state.ts:14-24"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-card-surface.tsx:115"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "renderização recursiva de filhos/netos via WorktreeCard",
+     "fornecimento de lineageChildren/lineageChildrenStyle: WorktreeCard aceita as props (worktree-card-model.ts:39-42) e a superfície as renderiza (worktree-card-surface.tsx:115-121), mas nenhum caller as passa — WorktreeList montado não injeta linhagem"
+    ],
+    "notes": "Não localizado: sem WorktreeList.lineage-child-card*, worktree-list-lineage-* no Hydra (arquivos de teste/fixtures inexistentes)."
+   }
+  },
+  {
+   "id": "D03b-049",
+   "capability": "Consolidação de cabeçalhos de projeto multi-host, desambiguação de nomes de seção e etiquetagem de contexto de host",
+   "orca_evidence": [
+    "components/sidebar/worktree-list-groups-test-fixtures.ts:6-89",
+    "components/sidebar/worktree-list-pinned-store-state.ts:10-82"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:83",
+     "src/components/sidebar/worktree-list/grouping/project-grouping.ts:117",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:94",
+     "src/components/sidebar/WorktreeHostContextBadge.tsx:14",
+     "src/components/sidebar/worktree-card-meta-row.tsx:62",
+     "src/components/sidebar/WorktreeList.tsx:349"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "exibição dos labels consolidados/multi-host no sidebar montado: hostContextLabel nunca é passado pela lista (WorktreeList.tsx:330-380), então WorktreeHostContextBadge não renderiza",
+     "desambiguação de nomes de seção por caminho no sidebar montado (withRepoSectionDisplayLabels só roda em buildRows do pipeline de atalhos)",
+     "labels distintos para notices/pinned em multi-host na UI"
+    ],
+    "notes": "Cálculo de labels existe e é exercitado no caminho de atalhos; colisões de id entre hosts geram linhas separáveis com chaves distintas (WorktreeList.tsx:349 key={wt.path})."
+   }
+  },
+  {
+   "id": "D03b-050",
+   "capability": "Ciclo de vida e renderização de cabeçalhos de grupos de projetos com suporte a colapso e grupos vazios",
+   "orca_evidence": [
+    "components/sidebar/worktree-list-lineage-store-state.ts:37-64"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:476",
+     "src/components/sidebar/WorktreeList.tsx:517",
+     "src/components/sidebar/SectionHeader.tsx:168",
+     "src/components/sidebar/SectionHeader.tsx:340",
+     "src/components/sidebar/WorktreeList.tsx:498"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Cabeçalhos de grupo renderizam a partir de projectGroups mesmo sem worktrees carregados; chevron armado só com count>0 (SectionHeader.tsx:168,340); grupo vazio mantém o header com placeholder 'Drag projects here to group them' (WorktreeList.tsx:498); membros nunca são removidos por filtro de inatividade/sleep no sidebar montado (hideSleeping não é aplicado em WorktreeSidebar.tsx:533-605 — gap de D09, não desta linha)."
+   }
+  }
+ ],
+ "summary": {
+  "parity": 2,
+  "partial": 17,
+  "missing": 31,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
+}

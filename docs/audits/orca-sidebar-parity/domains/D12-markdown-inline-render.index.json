@@ -1,0 +1,416 @@
+{
+ "exports": {
+  "components/sidebar/CommentMarkdown.tsx": [
+   "remarkGitHubReferences",
+   "default"
+  ],
+  "components/sidebar/CommentMermaidBlock.tsx": [
+   "CommentMermaidBlock",
+   "default"
+  ],
+  "components/sidebar/MarkdownImageLightbox.tsx": [
+   "ExpandableMarkdownImage"
+  ],
+  "components/sidebar/comment-markdown-element-renderers.tsx": [
+   "CommentMarkdownLinkClickHandler",
+   "DocumentCodeBlockRenderer",
+   "isTrustedCompactImageSrc",
+   "createCompactCommentMarkdownComponents",
+   "createDocumentCommentMarkdownComponents",
+   "compactCommentMarkdownComponents",
+   "documentCommentMarkdownComponents"
+  ],
+  "components/sidebar/comment-markdown-github-attachment-media.tsx": [
+   "isGitHubUserAttachmentUrl",
+   "isGitHubUserAttachmentVideoLink",
+   "GitHubUserAttachmentVideo",
+   "GitHubUserAttachmentImage"
+  ],
+  "components/sidebar/comment-markdown-lazy.tsx": [
+   "preloadCommentMarkdown",
+   "CommentMarkdownAsync"
+  ],
+  "components/sidebar/comment-markdown-native-chat-file-links.ts": [
+   "remarkNativeChatFileLinks"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 104,
+   "text": "expect(markup).toContain('aria-label=\"Expand image\"')"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 113,
+   "text": "expect(markup).toContain('aria-label=\"Expand image\"')"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 237,
+   "text": "expect(markup).toContain('aria-label=\"Copy code\"')"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 251,
+   "text": "expect(markup).toContain('aria-label=\"Copy code\"')"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.tsx",
+   "line": 81,
+   "text": "label: string,"
+  },
+  {
+   "file": "components/sidebar/MarkdownImageLightbox.tsx",
+   "line": 49,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/MarkdownImageLightbox.tsx",
+   "line": 70,
+   "text": "aria-label={translate('auto.components.sidebar.MarkdownImageLightbox.close', 'Close')}"
+  },
+  {
+   "file": "components/sidebar/comment-markdown-lazy.tsx",
+   "line": 40,
+   "text": "title={props.title}"
+  }
+ ],
+ "shortcuts": [],
+ "prefs": [],
+ "timers": [],
+ "subscriptions": [],
+ "preload": [],
+ "tests": [
+  {
+   "file": "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx",
+   "line": 24,
+   "kind": "plain",
+   "name": "CommentMarkdown GitHub attachment images"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx",
+   "line": 38,
+   "kind": "plain",
+   "name": "renders GitHub user attachment document images as openable links"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx",
+   "line": 50,
+   "kind": "plain",
+   "name": "falls back to a text link when a GitHub user attachment image cannot load"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 12,
+   "kind": "plain",
+   "name": "CommentMarkdown link click handler"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 25,
+   "kind": "plain",
+   "name": "lets callers intercept rendered document links"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 55,
+   "kind": "plain",
+   "name": "intercepts auxiliary clicks on generated native file links"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 89,
+   "kind": "plain",
+   "name": "does not activate generated native file links on right-click"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 121,
+   "kind": "plain",
+   "name": "sanitizes file URI links unless the caller opts in"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 137,
+   "kind": "plain",
+   "name": "sanitizes raw HTML file URI links unless the caller opts in"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 156,
+   "kind": "plain",
+   "name": "lets opted-in callers intercept rendered file URI links"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 190,
+   "kind": "plain",
+   "name": "lets callers intercept rendered document images"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 220,
+   "kind": "plain",
+   "name": "linkifies bare POSIX and Windows document paths without an extension allowlist"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 248,
+   "kind": "plain",
+   "name": "makes an inline-code file path clickable while preserving code styling"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 280,
+   "kind": "plain",
+   "name": "leaves prose-shaped slash tokens and numeric versions unlinked"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 311,
+   "kind": "plain",
+   "name": "links each relative path separately when prose joins them"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 332,
+   "kind": "plain",
+   "name": "links quoted spaced-first-segment paths around apostrophes"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 364,
+   "kind": "plain",
+   "name": "links a spaced-first-segment relative path when inline code disambiguates it"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 389,
+   "kind": "plain",
+   "name": "requires path shape before a spaced line suffix can make a link"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 410,
+   "kind": "plain",
+   "name": "preserves line suffixes on valid spaced path shapes"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 441,
+   "kind": "plain",
+   "name": "links complete Unicode paths and extensions that begin with a digit"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 462,
+   "kind": "plain",
+   "name": "never links an ASCII suffix inside a path containing an unsupported character"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 482,
+   "kind": "plain",
+   "name": "links paths before common sentence punctuation"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 503,
+   "kind": "plain",
+   "name": "links paths after CLI assignment and before Unicode sentence punctuation"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 524,
+   "kind": "plain",
+   "name": "does not link partial paths across unsupported punctuation"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 543,
+   "kind": "plain",
+   "name": "prevents the default action for an unresolved internal file href"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+   "line": 572,
+   "kind": "plain",
+   "name": "normalizes Windows markdown hrefs but leaves fenced paths as source text"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 6,
+   "kind": "plain",
+   "name": "CommentMarkdown"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 7,
+   "kind": "plain",
+   "name": "marks compact headings so a parent can opt into block flow"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 20,
+   "kind": "plain",
+   "name": "marks adjacent compact paragraphs inside disclosure content"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 34,
+   "kind": "plain",
+   "name": "autolinks same-repo GitHub issue references when repo context is provided"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 47,
+   "kind": "plain",
+   "name": "autolinks cross-repo GitHub issue references"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 59,
+   "kind": "plain",
+   "name": "does not autolink GitHub issue references inside existing links or code"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 73,
+   "kind": "plain",
+   "name": "keeps remote compact markdown images as links"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 83,
+   "kind": "plain",
+   "name": "renders trusted compact markdown images inline"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 93,
+   "kind": "plain",
+   "name": "renders document markdown images with an expand control for the lightbox"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 108,
+   "kind": "plain",
+   "name": "adds an expand control to compact images only when requested"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 117,
+   "kind": "plain",
+   "name": "renders bare GitHub user attachment links as document videos"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 127,
+   "kind": "plain",
+   "name": "keeps non-attachment document links as links"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 135,
+   "kind": "plain",
+   "name": "autolinks very large generated GitHub reference comments"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 162,
+   "kind": "plain",
+   "name": "strips single-line and multi-line HTML comments"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 176,
+   "kind": "plain",
+   "name": "renders <details>/<summary> as a disclosure section"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 189,
+   "kind": "plain",
+   "name": "renders markdown blockquotes"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 198,
+   "kind": "plain",
+   "name": "renders raw HTML blockquotes"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 207,
+   "kind": "plain",
+   "name": "renders GFM tables"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 217,
+   "kind": "plain",
+   "name": "renders mermaid code fences as a mermaid container instead of a pre block"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 228,
+   "kind": "plain",
+   "name": "uses the supplied code-block renderer for fenced document markdown"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 242,
+   "kind": "plain",
+   "name": "does not invent a language label for a bare code fence"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 255,
+   "kind": "plain",
+   "name": "keeps compact mermaid fences as bounded source blocks"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 266,
+   "kind": "plain",
+   "name": "renders headings as block elements with hierarchy in the document variant"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 275,
+   "kind": "plain",
+   "name": "flattens headings to inline text in the compact variant"
+  },
+  {
+   "file": "components/sidebar/CommentMarkdown.test.tsx",
+   "line": 284,
+   "kind": "plain",
+   "name": "contains long PR body markdown inside its available width"
+  },
+  {
+   "file": "components/sidebar/MarkdownImageLightbox.test.tsx",
+   "line": 12,
+   "kind": "plain",
+   "name": "ExpandableMarkdownImage"
+  },
+  {
+   "file": "components/sidebar/MarkdownImageLightbox.test.tsx",
+   "line": 13,
+   "kind": "plain",
+   "name": "opens an accessible dialog, traps focus, and restores focus after Escape"
+  },
+  {
+   "file": "components/sidebar/MarkdownImageLightbox.test.tsx",
+   "line": 38,
+   "kind": "plain",
+   "name": "closes from the dialog close button"
+  },
+  {
+   "file": "components/sidebar/MarkdownImageLightbox.test.tsx",
+   "line": 46,
+   "kind": "plain",
+   "name": "keeps the parent issue drawer open after Escape and close-button dismissal"
+  }
+ ]
+}

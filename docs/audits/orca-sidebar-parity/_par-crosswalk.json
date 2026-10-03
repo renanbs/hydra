@@ -1,0 +1,778 @@
+{
+ "PAR-13": [
+  {
+   "id": "D01-004",
+   "status": "missing"
+  },
+  {
+   "id": "D02a-001",
+   "status": "partial"
+  }
+ ],
+ "PAR-03": [
+  {
+   "id": "D01-007",
+   "status": "partial"
+  }
+ ],
+ "PAR-14": [
+  {
+   "id": "D01-032",
+   "status": "missing"
+  },
+  {
+   "id": "D08-001",
+   "status": "missing"
+  },
+  {
+   "id": "D08-002",
+   "status": "missing"
+  },
+  {
+   "id": "D08-003",
+   "status": "missing"
+  },
+  {
+   "id": "D08-004",
+   "status": "missing"
+  },
+  {
+   "id": "D08-005",
+   "status": "missing"
+  },
+  {
+   "id": "D08-006",
+   "status": "missing"
+  },
+  {
+   "id": "D08-007",
+   "status": "missing"
+  },
+  {
+   "id": "D08-008",
+   "status": "missing"
+  },
+  {
+   "id": "D08-009",
+   "status": "missing"
+  },
+  {
+   "id": "D08-010",
+   "status": "partial"
+  },
+  {
+   "id": "D08-011",
+   "status": "partial"
+  },
+  {
+   "id": "D08-012",
+   "status": "missing"
+  },
+  {
+   "id": "D08-013",
+   "status": "partial"
+  },
+  {
+   "id": "D08-014",
+   "status": "missing"
+  },
+  {
+   "id": "D08-015",
+   "status": "missing"
+  },
+  {
+   "id": "D08-016",
+   "status": "missing"
+  },
+  {
+   "id": "D08-017",
+   "status": "missing"
+  },
+  {
+   "id": "D08-018",
+   "status": "missing"
+  },
+  {
+   "id": "D08-019",
+   "status": "missing"
+  },
+  {
+   "id": "D08-020",
+   "status": "missing"
+  },
+  {
+   "id": "D08-021",
+   "status": "missing"
+  },
+  {
+   "id": "D08-022",
+   "status": "missing"
+  },
+  {
+   "id": "D08-023",
+   "status": "missing"
+  },
+  {
+   "id": "D08-024",
+   "status": "missing"
+  },
+  {
+   "id": "D08-025",
+   "status": "missing"
+  },
+  {
+   "id": "D08-026",
+   "status": "missing"
+  },
+  {
+   "id": "D08-027",
+   "status": "missing"
+  },
+  {
+   "id": "D08-028",
+   "status": "missing"
+  },
+  {
+   "id": "D08-029",
+   "status": "partial"
+  },
+  {
+   "id": "D08-030",
+   "status": "missing"
+  },
+  {
+   "id": "D08-031",
+   "status": "missing"
+  },
+  {
+   "id": "D08-032",
+   "status": "missing"
+  },
+  {
+   "id": "D08-033",
+   "status": "missing"
+  },
+  {
+   "id": "D08-034",
+   "status": "missing"
+  },
+  {
+   "id": "D08-035",
+   "status": "missing"
+  },
+  {
+   "id": "D08-036",
+   "status": "missing"
+  },
+  {
+   "id": "D08-037",
+   "status": "missing"
+  },
+  {
+   "id": "D08-038",
+   "status": "missing"
+  },
+  {
+   "id": "D08-039",
+   "status": "missing"
+  },
+  {
+   "id": "D08-040",
+   "status": "missing"
+  },
+  {
+   "id": "D08-041",
+   "status": "missing"
+  },
+  {
+   "id": "D08-042",
+   "status": "partial"
+  },
+  {
+   "id": "D08-043",
+   "status": "missing"
+  },
+  {
+   "id": "D08-044",
+   "status": "missing"
+  },
+  {
+   "id": "D08-045",
+   "status": "missing"
+  },
+  {
+   "id": "D15a-012",
+   "status": "partial"
+  }
+ ],
+ "PAR-60": [
+  {
+   "id": "D01-049",
+   "status": "partial"
+  },
+  {
+   "id": "D04a-010",
+   "status": "partial"
+  },
+  {
+   "id": "D10-072",
+   "status": "partial"
+  },
+  {
+   "id": "D10-073",
+   "status": "missing"
+  },
+  {
+   "id": "D10-074",
+   "status": "missing"
+  },
+  {
+   "id": "D10-075",
+   "status": "missing"
+  },
+  {
+   "id": "D10-076",
+   "status": "missing"
+  }
+ ],
+ "PAR-38": [
+  {
+   "id": "D01-050",
+   "status": "missing"
+  }
+ ],
+ "PAR-80": [
+  {
+   "id": "D01-051",
+   "status": "missing"
+  },
+  {
+   "id": "D03a-042",
+   "status": "partial"
+  }
+ ],
+ "PAR-41": [
+  {
+   "id": "D02a-020",
+   "status": "not-applicable"
+  },
+  {
+   "id": "D02a-026",
+   "status": "missing"
+  }
+ ],
+ "PAR-44": [
+  {
+   "id": "D02a-030",
+   "status": "missing"
+  },
+  {
+   "id": "D03a-044",
+   "status": "missing"
+  },
+  {
+   "id": "D03a-065",
+   "status": "partial"
+  }
+ ],
+ "PAR-08": [
+  {
+   "id": "D03a-002",
+   "status": "missing"
+  },
+  {
+   "id": "D03a-060",
+   "status": "missing"
+  },
+  {
+   "id": "D04a-002",
+   "status": "partial"
+  },
+  {
+   "id": "D04a-052",
+   "status": "partial"
+  },
+  {
+   "id": "D04a-065",
+   "status": "missing"
+  },
+  {
+   "id": "D06-021",
+   "status": "missing"
+  },
+  {
+   "id": "D06-022",
+   "status": "missing"
+  },
+  {
+   "id": "D06-023",
+   "status": "missing"
+  },
+  {
+   "id": "D07-002",
+   "status": "missing"
+  },
+  {
+   "id": "D07-016",
+   "status": "partial"
+  },
+  {
+   "id": "D11-017",
+   "status": "missing"
+  }
+ ],
+ "PAR-43": [
+  {
+   "id": "D03a-005",
+   "status": "missing"
+  },
+  {
+   "id": "D03a-006",
+   "status": "missing"
+  },
+  {
+   "id": "D03a-007",
+   "status": "missing"
+  },
+  {
+   "id": "D03a-008",
+   "status": "missing"
+  },
+  {
+   "id": "D06-003",
+   "status": "missing"
+  },
+  {
+   "id": "D06-004",
+   "status": "missing"
+  },
+  {
+   "id": "D06-005",
+   "status": "missing"
+  },
+  {
+   "id": "D06-006",
+   "status": "missing"
+  },
+  {
+   "id": "D06-024",
+   "status": "partial"
+  },
+  {
+   "id": "D06-030",
+   "status": "partial"
+  },
+  {
+   "id": "D07-023",
+   "status": "partial"
+  },
+  {
+   "id": "D11-013",
+   "status": "missing"
+  }
+ ],
+ "PAR-88": [
+  {
+   "id": "D03a-011",
+   "status": "missing"
+  },
+  {
+   "id": "D03a-015",
+   "status": "partial"
+  },
+  {
+   "id": "D06-001",
+   "status": "partial"
+  },
+  {
+   "id": "D06-002",
+   "status": "missing"
+  },
+  {
+   "id": "D06-019",
+   "status": "partial"
+  },
+  {
+   "id": "D08-002",
+   "status": "missing"
+  },
+  {
+   "id": "D08-040",
+   "status": "missing"
+  },
+  {
+   "id": "D08-041",
+   "status": "missing"
+  }
+ ],
+ "PAR-35": [
+  {
+   "id": "D03a-030",
+   "status": "partial"
+  },
+  {
+   "id": "D11-003",
+   "status": "partial"
+  }
+ ],
+ "PAR-82": [
+  {
+   "id": "D03a-032",
+   "status": "partial"
+  },
+  {
+   "id": "D03a-093",
+   "status": "missing"
+  },
+  {
+   "id": "D11-014",
+   "status": "partial"
+  },
+  {
+   "id": "D11-015",
+   "status": "missing"
+  }
+ ],
+ "PAR-26": [
+  {
+   "id": "D03a-043",
+   "status": "partial"
+  },
+  {
+   "id": "D07-011",
+   "status": "partial"
+  }
+ ],
+ "PAR-22": [
+  {
+   "id": "D03a-058",
+   "status": "partial"
+  }
+ ],
+ "PAR-52": [
+  {
+   "id": "D03a-097",
+   "status": "missing"
+  }
+ ],
+ "PAR-05": [
+  {
+   "id": "D04a-003",
+   "status": "parity"
+  },
+  {
+   "id": "D07-026",
+   "status": "partial"
+  }
+ ],
+ "PAR-51": [
+  {
+   "id": "D04a-010",
+   "status": "partial"
+  },
+  {
+   "id": "D11-009",
+   "status": "partial"
+  }
+ ],
+ "PAR-57": [
+  {
+   "id": "D04a-010",
+   "status": "partial"
+  }
+ ],
+ "PAR-67": [
+  {
+   "id": "D04a-019",
+   "status": "partial"
+  }
+ ],
+ "PAR-19": [
+  {
+   "id": "D04a-020",
+   "status": "missing"
+  }
+ ],
+ "PAR-74": [
+  {
+   "id": "D04a-023",
+   "status": "missing"
+  },
+  {
+   "id": "D07-020",
+   "status": "partial"
+  }
+ ],
+ "PAR-62": [
+  {
+   "id": "D04a-025",
+   "status": "missing"
+  },
+  {
+   "id": "D04a-030",
+   "status": "missing"
+  },
+  {
+   "id": "D04a-031",
+   "status": "missing"
+  },
+  {
+   "id": "D04a-042",
+   "status": "missing"
+  },
+  {
+   "id": "D04a-043",
+   "status": "missing"
+  },
+  {
+   "id": "D04a-102",
+   "status": "missing"
+  }
+ ],
+ "PAR-87": [
+  {
+   "id": "D04a-041",
+   "status": "partial"
+  },
+  {
+   "id": "D04a-101",
+   "status": "partial"
+  }
+ ],
+ "PAR-39": [
+  {
+   "id": "D04a-044",
+   "status": "missing"
+  },
+  {
+   "id": "D12-001",
+   "status": "missing"
+  },
+  {
+   "id": "D12-002",
+   "status": "missing"
+  },
+  {
+   "id": "D12-003",
+   "status": "missing"
+  },
+  {
+   "id": "D12-004",
+   "status": "missing"
+  },
+  {
+   "id": "D12-005",
+   "status": "missing"
+  },
+  {
+   "id": "D12-006",
+   "status": "missing"
+  },
+  {
+   "id": "D12-007",
+   "status": "missing"
+  },
+  {
+   "id": "D12-008",
+   "status": "missing"
+  },
+  {
+   "id": "D12-009",
+   "status": "missing"
+  },
+  {
+   "id": "D12-010",
+   "status": "missing"
+  },
+  {
+   "id": "D12-011",
+   "status": "missing"
+  },
+  {
+   "id": "D12-012",
+   "status": "missing"
+  },
+  {
+   "id": "D12-013",
+   "status": "missing"
+  },
+  {
+   "id": "D12-014",
+   "status": "missing"
+  },
+  {
+   "id": "D15a-001",
+   "status": "missing"
+  },
+  {
+   "id": "D15a-002",
+   "status": "missing"
+  }
+ ],
+ "PAR-27": [
+  {
+   "id": "D04a-051",
+   "status": "partial"
+  }
+ ],
+ "PAR-21": [
+  {
+   "id": "D04a-067",
+   "status": "partial"
+  },
+  {
+   "id": "D07-001",
+   "status": "partial"
+  },
+  {
+   "id": "D07-002",
+   "status": "missing"
+  },
+  {
+   "id": "D07-003",
+   "status": "partial"
+  },
+  {
+   "id": "D07-004",
+   "status": "partial"
+  },
+  {
+   "id": "D15a-011",
+   "status": "missing"
+  }
+ ],
+ "PAR-86": [
+  {
+   "id": "D04a-069",
+   "status": "partial"
+  },
+  {
+   "id": "D07-041",
+   "status": "missing"
+  },
+  {
+   "id": "D10-014",
+   "status": "partial"
+  },
+  {
+   "id": "D10-077",
+   "status": "missing"
+  }
+ ],
+ "PAR-34": [
+  {
+   "id": "D04a-073",
+   "status": "partial"
+  },
+  {
+   "id": "D04a-076",
+   "status": "partial"
+  }
+ ],
+ "PAR-66": [
+  {
+   "id": "D04a-079",
+   "status": "missing"
+  },
+  {
+   "id": "D04a-080",
+   "status": "partial"
+  },
+  {
+   "id": "D05-010",
+   "status": "missing"
+  }
+ ],
+ "PAR-73": [
+  {
+   "id": "D04a-093",
+   "status": "missing"
+  },
+  {
+   "id": "D07-020",
+   "status": "partial"
+  }
+ ],
+ "PAR-56": [
+  {
+   "id": "D07-033",
+   "status": "partial"
+  },
+  {
+   "id": "D10-005",
+   "status": "partial"
+  },
+  {
+   "id": "D10-006",
+   "status": "partial"
+  },
+  {
+   "id": "D10-007",
+   "status": "partial"
+  },
+  {
+   "id": "D10-008",
+   "status": "missing"
+  },
+  {
+   "id": "D10-009",
+   "status": "parity"
+  },
+  {
+   "id": "D10-010",
+   "status": "parity"
+  },
+  {
+   "id": "D10-011",
+   "status": "partial"
+  },
+  {
+   "id": "D10-012",
+   "status": "parity"
+  },
+  {
+   "id": "D10-013",
+   "status": "partial"
+  },
+  {
+   "id": "D10-014",
+   "status": "partial"
+  },
+  {
+   "id": "D10-015",
+   "status": "missing"
+  },
+  {
+   "id": "D10-016",
+   "status": "partial"
+  },
+  {
+   "id": "D10-017",
+   "status": "partial"
+  },
+  {
+   "id": "D10-018",
+   "status": "partial"
+  },
+  {
+   "id": "D10-019",
+   "status": "partial"
+  },
+  {
+   "id": "D10-020",
+   "status": "partial"
+  },
+  {
+   "id": "D10-021",
+   "status": "missing"
+  },
+  {
+   "id": "D10-022",
+   "status": "partial"
+  },
+  {
+   "id": "D10-023",
+   "status": "partial"
+  }
+ ]
+}

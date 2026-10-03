@@ -1,0 +1,332 @@
+{
+ "domain": "D03b-sidebar-list-orchestration",
+ "prod": [
+  {
+   "name": "PendingWorktreeRow.tsx",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "WorktreeList.tsx",
+   "kind": "prod",
+   "loc": 364
+  },
+  {
+   "name": "WorktreeListScrollToTopButton.tsx",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "WorktreeSidebarDropIndicator.tsx",
+   "kind": "prod",
+   "loc": 28
+  },
+  {
+   "name": "header-drag-click-swallow.ts",
+   "kind": "prod",
+   "loc": 20
+  },
+  {
+   "name": "header-drag-pointer-release.ts",
+   "kind": "prod",
+   "loc": 14
+  },
+  {
+   "name": "host-header-drag-dom.ts",
+   "kind": "prod",
+   "loc": 42
+  },
+  {
+   "name": "host-header-drag.ts",
+   "kind": "prod",
+   "loc": 310
+  },
+  {
+   "name": "index.tsx",
+   "kind": "prod",
+   "loc": 278
+  },
+  {
+   "name": "project-group-header-drag-commit.ts",
+   "kind": "prod",
+   "loc": 20
+  },
+  {
+   "name": "project-group-header-drag-contract.ts",
+   "kind": "prod",
+   "loc": 78
+  },
+  {
+   "name": "project-group-header-drag-start.ts",
+   "kind": "prod",
+   "loc": 64
+  },
+  {
+   "name": "project-group-header-drag.ts",
+   "kind": "prod",
+   "loc": 309
+  },
+  {
+   "name": "project-group-header-drop.ts",
+   "kind": "prod",
+   "loc": 199
+  },
+  {
+   "name": "project-header-drag-commit.ts",
+   "kind": "prod",
+   "loc": 76
+  },
+  {
+   "name": "project-header-drag-contract.ts",
+   "kind": "prod",
+   "loc": 78
+  },
+  {
+   "name": "project-header-drag-start.ts",
+   "kind": "prod",
+   "loc": 61
+  },
+  {
+   "name": "project-header-drag.ts",
+   "kind": "prod",
+   "loc": 323
+  },
+  {
+   "name": "project-header-drop.ts",
+   "kind": "prod",
+   "loc": 226
+  },
+  {
+   "name": "rendered-sidebar-worktree-order.ts",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "sidebar-project-drop.ts",
+   "kind": "prod",
+   "loc": 80
+  },
+  {
+   "name": "useSidebarProjectDrop.ts",
+   "kind": "prod",
+   "loc": 166
+  },
+  {
+   "name": "worktree-header-section-boundaries.ts",
+   "kind": "prod",
+   "loc": 154
+  },
+  {
+   "name": "worktree-list-card-markup-queries.ts",
+   "kind": "prod",
+   "loc": 57
+  },
+  {
+   "name": "worktree-list-groups-test-fixtures.ts",
+   "kind": "prod",
+   "loc": 102
+  },
+  {
+   "name": "worktree-list-lineage-card-test-fixtures.ts",
+   "kind": "prod",
+   "loc": 62
+  },
+  {
+   "name": "worktree-list-lineage-card-test-harness.ts",
+   "kind": "prod",
+   "loc": 253
+  },
+  {
+   "name": "worktree-list-lineage-store-state.ts",
+   "kind": "prod",
+   "loc": 160
+  },
+  {
+   "name": "worktree-list-pinned-store-state.ts",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "worktree-sidebar-drop-preview.ts",
+   "kind": "prod",
+   "loc": 261
+  },
+  {
+   "name": "worktree-snapshot-prune-batch.ts",
+   "kind": "prod",
+   "loc": 24
+  }
+ ],
+ "test": [
+  {
+   "name": "WorktreeList.card-memo-stability.test.tsx",
+   "kind": "test",
+   "loc": 386
+  },
+  {
+   "name": "WorktreeList.empty-project-rows.test.ts",
+   "kind": "test",
+   "loc": 126
+  },
+  {
+   "name": "WorktreeList.folder-workspace-rows.test.ts",
+   "kind": "test",
+   "loc": 243
+  },
+  {
+   "name": "WorktreeList.group-headers.test.ts",
+   "kind": "test",
+   "loc": 242
+  },
+  {
+   "name": "WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "kind": "test",
+   "loc": 580
+  },
+  {
+   "name": "WorktreeList.lineage-child-card.test.ts",
+   "kind": "test",
+   "loc": 265
+  },
+  {
+   "name": "WorktreeList.lineage-child-real-card.test.tsx",
+   "kind": "test",
+   "loc": 502
+  },
+  {
+   "name": "WorktreeList.status-lane-lineage-drop.test.tsx",
+   "kind": "test",
+   "loc": 442
+  },
+  {
+   "name": "host-header-drag.test.tsx",
+   "kind": "test",
+   "loc": 92
+  },
+  {
+   "name": "project-group-header-drag-commit.test.ts",
+   "kind": "test",
+   "loc": 118
+  },
+  {
+   "name": "project-group-header-drag-start.test.ts",
+   "kind": "test",
+   "loc": 225
+  },
+  {
+   "name": "project-group-header-drag.test.ts",
+   "kind": "test",
+   "loc": 54
+  },
+  {
+   "name": "project-group-header-drop.test.ts",
+   "kind": "test",
+   "loc": 287
+  },
+  {
+   "name": "project-header-drag-commit.test.ts",
+   "kind": "test",
+   "loc": 113
+  },
+  {
+   "name": "project-header-drag-start.test.ts",
+   "kind": "test",
+   "loc": 208
+  },
+  {
+   "name": "project-header-drag.test.ts",
+   "kind": "test",
+   "loc": 60
+  },
+  {
+   "name": "project-header-drop.test.ts",
+   "kind": "test",
+   "loc": 409
+  },
+  {
+   "name": "rendered-sidebar-worktree-order.test.ts",
+   "kind": "test",
+   "loc": 300
+  },
+  {
+   "name": "sidebar-project-drop.test.ts",
+   "kind": "test",
+   "loc": 69
+  },
+  {
+   "name": "worktree-header-section-boundaries.test.ts",
+   "kind": "test",
+   "loc": 95
+  },
+  {
+   "name": "worktree-list-groups-host-collision.test.ts",
+   "kind": "test",
+   "loc": 103
+  },
+  {
+   "name": "worktree-list-groups-host-labels.test.ts",
+   "kind": "test",
+   "loc": 343
+  },
+  {
+   "name": "worktree-list-groups-imported-worktrees.test.ts",
+   "kind": "test",
+   "loc": 659
+  },
+  {
+   "name": "worktree-list-groups-lineage-nesting.test.ts",
+   "kind": "test",
+   "loc": 657
+  },
+  {
+   "name": "worktree-list-groups-nested-project-groups.test.ts",
+   "kind": "test",
+   "loc": 420
+  },
+  {
+   "name": "worktree-list-groups-notice-host-labels.test.ts",
+   "kind": "test",
+   "loc": 220
+  },
+  {
+   "name": "worktree-list-groups-pending-creations.test.ts",
+   "kind": "test",
+   "loc": 117
+  },
+  {
+   "name": "worktree-list-groups-pinned-host-labels.test.ts",
+   "kind": "test",
+   "loc": 119
+  },
+  {
+   "name": "worktree-list-groups-project-groups.test.ts",
+   "kind": "test",
+   "loc": 464
+  },
+  {
+   "name": "worktree-list-groups-project-host-setups.test.ts",
+   "kind": "test",
+   "loc": 791
+  },
+  {
+   "name": "worktree-list-groups-project-order.test.ts",
+   "kind": "test",
+   "loc": 522
+  },
+  {
+   "name": "worktree-list-groups-section-label-disambiguation.test.ts",
+   "kind": "test",
+   "loc": 93
+  },
+  {
+   "name": "worktree-sidebar-drop-preview.test.ts",
+   "kind": "test",
+   "loc": 340
+  },
+  {
+   "name": "worktree-sort-label-ordering.test.ts",
+   "kind": "test",
+   "loc": 151
+  }
+ ]
+}

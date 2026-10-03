@@ -1,0 +1,197 @@
+{
+ "domain": "D06-drag-order-keyboard",
+ "prod": [
+  {
+   "name": "WorktreeParentPickerPopover.tsx",
+   "kind": "prod",
+   "loc": 413
+  },
+  {
+   "name": "WorktreeParentPickerRow.tsx",
+   "kind": "prod",
+   "loc": 53
+  },
+  {
+   "name": "workspace-status-drag-data.ts",
+   "kind": "prod",
+   "loc": 112
+  },
+  {
+   "name": "worktree-drag-preview-offsets.ts",
+   "kind": "prod",
+   "loc": 205
+  },
+  {
+   "name": "worktree-drag-units.ts",
+   "kind": "prod",
+   "loc": 85
+  },
+  {
+   "name": "worktree-keyboard-cycle.ts",
+   "kind": "prod",
+   "loc": 97
+  },
+  {
+   "name": "worktree-manual-order-catalog.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "worktree-manual-order-ranks.ts",
+   "kind": "prod",
+   "loc": 141
+  },
+  {
+   "name": "worktree-manual-order.ts",
+   "kind": "prod",
+   "loc": 252
+  },
+  {
+   "name": "worktree-multi-selection.ts",
+   "kind": "prod",
+   "loc": 124
+  },
+  {
+   "name": "worktree-parent-candidates.ts",
+   "kind": "prod",
+   "loc": 77
+  },
+  {
+   "name": "worktree-parent-eligibility.ts",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "worktree-parent-picker-filtering.ts",
+   "kind": "prod",
+   "loc": 35
+  },
+  {
+   "name": "worktree-parent-picker-placement.ts",
+   "kind": "prod",
+   "loc": 34
+  },
+  {
+   "name": "worktree-sidebar-drag-autoscroll.ts",
+   "kind": "prod",
+   "loc": 228
+  },
+  {
+   "name": "worktree-sidebar-drag-geometry.ts",
+   "kind": "prod",
+   "loc": 112
+  },
+  {
+   "name": "worktree-sidebar-pointer-drag-dom.ts",
+   "kind": "prod",
+   "loc": 109
+  },
+  {
+   "name": "worktree-sidebar-reveal-scroll-settle.ts",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "worktree-sidebar-reveal.ts",
+   "kind": "prod",
+   "loc": 69
+  },
+  {
+   "name": "worktree-sidebar-row-preference.ts",
+   "kind": "prod",
+   "loc": 65
+  },
+  {
+   "name": "worktree-unnest.ts",
+   "kind": "prod",
+   "loc": 31
+  },
+  {
+   "name": "worktree-visibility-source-provenance.ts",
+   "kind": "prod",
+   "loc": 126
+  }
+ ],
+ "test": [
+  {
+   "name": "WorktreeParentPickerPopover.test.ts",
+   "kind": "test",
+   "loc": 237
+  },
+  {
+   "name": "worktree-drag-units.test.ts",
+   "kind": "test",
+   "loc": 131
+  },
+  {
+   "name": "worktree-keyboard-cycle.test.ts",
+   "kind": "test",
+   "loc": 177
+  },
+  {
+   "name": "worktree-manual-order-catalog.test.ts",
+   "kind": "test",
+   "loc": 62
+  },
+  {
+   "name": "worktree-manual-order-store-write.test.ts",
+   "kind": "test",
+   "loc": 115
+  },
+  {
+   "name": "worktree-manual-order.test.ts",
+   "kind": "test",
+   "loc": 565
+  },
+  {
+   "name": "worktree-multi-selection.test.ts",
+   "kind": "test",
+   "loc": 134
+  },
+  {
+   "name": "worktree-parent-eligibility.test.ts",
+   "kind": "test",
+   "loc": 258
+  },
+  {
+   "name": "worktree-sidebar-drag-autoscroll.test.ts",
+   "kind": "test",
+   "loc": 291
+  },
+  {
+   "name": "worktree-sidebar-drag-geometry.test.ts",
+   "kind": "test",
+   "loc": 263
+  },
+  {
+   "name": "worktree-sidebar-pointer-drag-dom.test.ts",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "worktree-sidebar-reveal-scroll-settle.test.ts",
+   "kind": "test",
+   "loc": 34
+  },
+  {
+   "name": "worktree-sidebar-reveal.test.ts",
+   "kind": "test",
+   "loc": 55
+  },
+  {
+   "name": "worktree-sidebar-row-preference.test.ts",
+   "kind": "test",
+   "loc": 105
+  },
+  {
+   "name": "worktree-unnest.test.ts",
+   "kind": "test",
+   "loc": 54
+  },
+  {
+   "name": "worktree-visibility-source-provenance.test.ts",
+   "kind": "test",
+   "loc": 129
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+{
+ "domain": "D11-lineage-grouping-model",
+ "status": "ok",
+ "rows": 17,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "15/15",
+  "symbols": "47/47",
+  "tests": "115/115",
+  "labels": "13/13",
+  "hotkeys": "10/10",
+  "prefs": "0/0",
+  "timers": "0/0",
+  "subscriptions": "0/0",
+  "preload": "0/0"
+ }
+}

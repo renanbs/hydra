@@ -1,0 +1,170 @@
+{
+ "exports": {
+  "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts": [
+   "useVisibleWorkspaceKanbanWorktreeIds"
+  ],
+  "components/sidebar/use-workspace-reveal-body-redirect.ts": [
+   "useWorkspaceRevealBodyRedirect"
+  ],
+  "components/sidebar/use-workspace-status-drop.ts": [
+   "commitWorkspaceStatusDocumentDrop",
+   "useWorkspaceStatusDocumentDrop"
+  ],
+  "components/sidebar/use-worktree-meta-workspace.ts": [
+   "useWorktreeMetaWorkspace"
+  ],
+  "components/sidebar/use-worktree-parent-picker-transition.ts": [
+   "useWorktreeParentPickerTransition"
+  ],
+  "components/sidebar/useRenderedSetupScriptPromptState.ts": [
+   "useRenderedSetupScriptPromptState"
+  ],
+  "components/sidebar/workspace-chrome-metrics.ts": [
+   "WORKSPACE_TOP_CHROME_HEIGHT",
+   "STATUS_BAR_RESERVE_HEIGHT"
+  ],
+  "components/sidebar/worktree-sidebar-header-drop-preview.ts": [
+   "WorktreeSidebarHeaderDragRect",
+   "WorktreeSidebarHeaderDropPreview",
+   "computeWorktreeSidebarHeaderDropPreview"
+  ]
+ },
+ "menu_labels": [],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+   "line": 6,
+   "text": "* Reveal requests (rename shortcut, reveal-active-workspace button) are handled inside the"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/use-worktree-parent-picker-transition.ts",
+   "line": 42,
+   "text": "args.unmountTimerRef.current = window.setTimeout(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-parent-picker-transition.ts",
+   "line": 58,
+   "text": "args.fallbackTimerRef.current = window.setTimeout(openPendingParentPicker, 50)"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/use-workspace-reveal-body-redirect.test.tsx",
+   "line": 59,
+   "text": "window.addEventListener(SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT, listener)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+   "line": 14,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+   "line": 22,
+   "text": "window.addEventListener(SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT, onRequest)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+   "line": 28,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-status-drop.ts",
+   "line": 73,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-status-drop.ts",
+   "line": 128,
+   "text": "document.addEventListener('drop', handleDrop, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-status-drop.ts",
+   "line": 129,
+   "text": "document.addEventListener('dragend', handleDragFinish, true)"
+  },
+  {
+   "file": "components/sidebar/useRenderedSetupScriptPromptState.ts",
+   "line": 26,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [],
+ "tests": [
+  {
+   "file": "components/sidebar/use-workspace-reveal-body-redirect.test.tsx",
+   "line": 38,
+   "kind": "plain",
+   "name": "useWorkspaceRevealBodyRedirect"
+  },
+  {
+   "file": "components/sidebar/use-workspace-reveal-body-redirect.test.tsx",
+   "line": 39,
+   "kind": "plain",
+   "name": "switches the body to Spaces and replays the request once the list is mounted"
+  },
+  {
+   "file": "components/sidebar/use-workspace-reveal-body-redirect.test.tsx",
+   "line": 68,
+   "kind": "plain",
+   "name": "does not intercept requests while Spaces is already showing"
+  },
+  {
+   "file": "components/sidebar/use-workspace-status-drop.test.ts",
+   "line": 4,
+   "kind": "plain",
+   "name": "workspace status document drop"
+  },
+  {
+   "file": "components/sidebar/use-workspace-status-drop.test.ts",
+   "line": 5,
+   "kind": "plain",
+   "name": "commits multi-worktree status drops through the batched callback once"
+  },
+  {
+   "file": "components/sidebar/use-workspace-status-drop.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "commits multi-worktree pin drops through the batched callback once"
+  },
+  {
+   "file": "components/sidebar/useRenderedSetupScriptPromptState.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "useRenderedSetupScriptPromptState"
+  },
+  {
+   "file": "components/sidebar/useRenderedSetupScriptPromptState.test.ts",
+   "line": 21,
+   "kind": "plain",
+   "name": "preserves a committed same-host prompt without leaking it to another host"
+  },
+  {
+   "file": "components/sidebar/worktree-scroll-to-current-button.test.ts",
+   "line": 4,
+   "kind": "plain",
+   "name": "getScrollTopToRevealBounds"
+  },
+  {
+   "file": "components/sidebar/worktree-scroll-to-current-button.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "scrolls upward to reveal a mounted current workspace card above the viewport"
+  },
+  {
+   "file": "components/sidebar/worktree-scroll-to-current-button.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "scrolls downward to reveal a mounted current workspace card below the viewport"
+  },
+  {
+   "file": "components/sidebar/worktree-scroll-to-current-button.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "does not scroll when the current workspace card is already fully visible"
+  }
+ ]
+}
