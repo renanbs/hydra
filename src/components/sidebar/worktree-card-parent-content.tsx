@@ -106,14 +106,18 @@ export function WorktreeCardParentContent({
         {identityContentWithHover}
 
         {onSelectSession && sessions && sessions.length > 0 && (
-          <div className="pl-4.5">
-            <WorktreeCardAgents
-              worktreePath={worktree.path}
-              sessions={sessions}
-              onSelectSession={onSelectSession}
-              activeSessionId={activeSessionId}
-            />
-          </div>
+          // Orca parity (`worktree-card-secondary-rows.tsx:66-73`): the agents block is a
+          // direct child of the content column — no indent wrapper — and only trades the
+          // card stack gap (-mt-1) for mt-0 when a meta row already separates it from the
+          // title. The former `pl-4.5` wrapper double-indented it once the status lane
+          // moved into this column.
+          <WorktreeCardAgents
+            worktreePath={worktree.path}
+            sessions={sessions}
+            onSelectSession={onSelectSession}
+            activeSessionId={activeSessionId}
+            className={presentation.hasMetaRow ? 'mt-0' : '-mt-1'}
+          />
         )}
       </div>
     </div>

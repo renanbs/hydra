@@ -45,4 +45,37 @@ describe("worktree card status lane placement (Orca parity)", () => {
       expect(lane!.compareDocumentPosition(metaRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
   });
+
+  it("keeps the agents block in the content column without an indent wrapper", () => {
+    const sessions = [
+      {
+        id: "s1",
+        project_path: worktree.path,
+        title: "Claude Code",
+        branch: "main",
+        state: "idle",
+        active: true,
+        agentName: "Claude Code",
+        executable: "claude",
+      },
+    ];
+    const { container } = render(
+      <WorktreeCard
+        worktree={worktree}
+        project={project}
+        repo={project}
+        status="active"
+        branch="main"
+        sessions={sessions as never}
+        onSelectSession={() => {}}
+      />
+    );
+
+    // Orca renders WorktreeCardAgents as a direct child of the content column and only
+    // adjusts the top margin; a wrapper with left padding double-indents the rows.
+    const indentWrappers = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-worktree-card-parent-content] div")
+    ).filter((el) => /(^|\s)pl-\S+/.test(el.className));
+    expect(indentWrappers.map((el) => el.className)).toEqual([]);
+  });
 });
