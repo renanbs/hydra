@@ -397,12 +397,18 @@ async fn clone_project(url: String, parent_dir: String) -> Result<String, String
     .map_err(|e| e.to_string())?
 }
 #[tauri::command]
-async fn create_worktree(repo_path: String, branch_name: String, new_branch: bool) -> Result<String, String> {
+async fn create_worktree(
+    repo_path: String,
+    branch_name: String,
+    new_branch: bool,
+    created_with_agent: Option<String>,
+) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
         create_git_worktree(CreateWorktreeParams {
             repo_path,
             branch_name,
             new_branch,
+            created_with_agent,
         })
     })
     .await

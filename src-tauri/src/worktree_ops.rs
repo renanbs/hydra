@@ -28,6 +28,10 @@ pub struct CreateWorktreeParams {
     pub repo_path: String,
     pub branch_name: String,
     pub new_branch: bool,
+    /// Agent that requested the creation, when the caller knows it. Persisted as
+    /// Orca's `createdWithAgent`; `None` still records `created_at`.
+    #[serde(default)]
+    pub created_with_agent: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -246,15 +250,44 @@ enum WorktreeOwnership {
     AgentScratch,
     External,
     UnknownLegacy,
+    /// Provenance proves Hydra/Orca created it (Orca `orca-managed`). Always
+    /// visible, regardless of the `external` visibility policy.
+    OrcaManaged,
+}
+
+/// The subset of Orca's `WorktreeMeta` that decides ownership up front:
+/// `createdAt` / `createdWithAgent` (Orca `hasStrongOrcaMetadata`,
+/// `shared/worktree/ownership.ts:227`).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct WorktreeProvenance {
+    pub created_at: Option<i64>,
+    pub created_with_agent: Option<String>,
+}
+
+impl WorktreeProvenance {
+    /// Truthiness mirrors Orca: an epoch-zero `createdAt` or a blank agent name
+    /// does not count as metadata.
+    pub fn is_strong_orca_metadata(&self) -> bool {
+        self.created_at.is_some_and(|v| v != 0)
+            || self
+                .created_with_agent
+                .as_deref()
+                .is_some_and(|agent| !agent.trim().is_empty())
+    }
 }
 
 fn classify_worktree_ownership(
     worktree_path: &str,
+    provenance: Option<&WorktreeProvenance>,
     _repo_path: &str,
     checkout_paths: &[String],
     configured_bases: &[String],
     known_layouts: &[OrcaWorkspaceLayout],
 ) -> WorktreeOwnership {
+    // Orca checks metadata before every layout heuristic (ownership.ts:124).
+    if provenance.is_some_and(WorktreeProvenance::is_strong_orca_metadata) {
+        return WorktreeOwnership::OrcaManaged;
+    }
     if is_agent_scratch_worktree_path(checkout_paths, configured_bases, worktree_path) {
         return WorktreeOwnership::AgentScratch;
     }
@@ -291,6 +324,7 @@ pub fn list_git_worktrees(repo_path: &str) -> Result<Vec<GitWorktreeInfo>, Strin
 
 pub fn scan_project_worktrees(repo_path: &str) -> Result<ProjectWorktreeScanResult, String> {
     let (workspace_dir, nest_workspaces, workspace_dir_history, worktree_base_path, imported_worktrees, is_suppressed, visibility_defaults) = load_hydra_workspace_context(repo_path);
+    let provenance = load_worktree_provenance_map();
     let (mut visible, mut hidden) = list_git_worktrees_with_context(
         repo_path,
         worktree_base_path.as_deref(),
@@ -299,6 +333,7 @@ pub fn scan_project_worktrees(repo_path: &str) -> Result<ProjectWorktreeScanResu
         &workspace_dir_history,
         &imported_worktrees,
         visibility_defaults.as_ref(),
+        &provenance,
     )?;
     fill_worktree_metadata(&mut visible);
     fill_worktree_metadata(&mut hidden);
@@ -394,6 +429,7 @@ fn list_git_worktrees_with_context(
     workspace_dir_history: &[OrcaWorkspaceLayout],
     imported_worktrees: &[String],
     visibility_defaults: Option<&crate::db::WorktreeVisibilityDefaults>,
+    provenance: &HashMap<String, WorktreeProvenance>,
 ) -> Result<(Vec<GitWorktreeInfo>, Vec<GitWorktreeInfo>), String> {
     let repo = PathBuf::from(repo_path);
     if !repo.exists() {
@@ -533,8 +569,19 @@ fn list_git_worktrees_with_context(
         }
 
         let checkout_paths = vec![checkout_path.clone()];
-        let ownership = classify_worktree_ownership(&wt.path, checkout_path, &checkout_paths, &merged_bases, &known_layouts);
+        let ownership = classify_worktree_ownership(
+            &wt.path,
+            provenance_lookup(provenance, &wt.path),
+            checkout_path,
+            &checkout_paths,
+            &merged_bases,
+            &known_layouts,
+        );
         match ownership {
+            // Provenance wins over every layout/base policy (Orca ownership.ts:124).
+            WorktreeOwnership::OrcaManaged => {
+                filtered.push(wt.clone());
+            }
             WorktreeOwnership::AgentScratch => {
                 let norm = normalize_runtime_path_for_comparison(&wt.path);
                 let is_claude = norm.contains("/.claude/worktrees");
@@ -714,7 +761,16 @@ fn get_worktree_created_at(path: &str) -> Option<i64> {
     None
 }
 
-fn load_all_persisted_worktree_metadata() -> HashMap<String, (Option<String>, Option<String>, Option<String>)> {
+/// Persisted `worktree_metadata` row, as far as the worktree scan needs it.
+#[derive(Clone, Debug, Default)]
+struct PersistedWorktreeMetadata {
+    display_name: Option<String>,
+    first_agent_message_rename_error: Option<String>,
+    status: Option<String>,
+    provenance: WorktreeProvenance,
+}
+
+fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMetadata> {
     let mut map = HashMap::new();
     if let Ok(db_path) = crate::db::DatabaseManager::get_db_path() {
         if let Ok(conn) = rusqlite::Connection::open(&db_path) {
@@ -724,28 +780,55 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, (Option<String>, Op
                     display_name TEXT,
                     first_agent_message_rename_error TEXT,
                     status TEXT,
+                    created_at INTEGER,
+                    created_with_agent TEXT,
                     updated_at INTEGER NOT NULL
                 )",
                 rusqlite::params![],
             );
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", rusqlite::params![]);
-            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status FROM worktree_metadata") {
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", rusqlite::params![]);
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", rusqlite::params![]);
+            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent FROM worktree_metadata") {
                 if let Ok(rows) = stmt.query_map(rusqlite::params![], |row| {
                     Ok((
                         row.get::<_, String>(0)?,
-                        row.get::<_, Option<String>>(1)?,
-                        row.get::<_, Option<String>>(2)?,
-                        row.get::<_, Option<String>>(3)?,
+                        PersistedWorktreeMetadata {
+                            display_name: row.get(1)?,
+                            first_agent_message_rename_error: row.get(2)?,
+                            status: row.get(3)?,
+                            provenance: WorktreeProvenance {
+                                created_at: row.get(4)?,
+                                created_with_agent: row.get(5)?,
+                            },
+                        },
                     ))
                 }) {
                     for r in rows.flatten() {
-                        map.insert(r.0, (r.1, r.2, r.3));
+                        map.insert(r.0, r.1);
                     }
                 }
             }
         }
     }
     map
+}
+
+/// Provenance keyed by normalized path, matching how the scan compares paths.
+fn load_worktree_provenance_map() -> HashMap<String, WorktreeProvenance> {
+    load_all_persisted_worktree_metadata()
+        .into_iter()
+        .map(|(path, meta)| (normalize_runtime_path_for_comparison(&path), meta.provenance))
+        .collect()
+}
+
+fn provenance_lookup<'a>(
+    provenance: &'a HashMap<String, WorktreeProvenance>,
+    worktree_path: &str,
+) -> Option<&'a WorktreeProvenance> {
+    provenance
+        .get(&normalize_runtime_path_for_comparison(worktree_path))
+        .filter(|p| p.is_strong_orca_metadata())
 }
 
 fn check_sparse_checkout(wt: &mut GitWorktreeInfo) {
@@ -793,15 +876,15 @@ fn fill_worktree_metadata(worktrees: &mut [GitWorktreeInfo]) {
         if wt.created_at.is_none() {
             wt.created_at = get_worktree_created_at(&wt.path);
         }
-        if let Some((d_name, err, status)) = metadata_map.get(&wt.path) {
+        if let Some(record) = metadata_map.get(&wt.path) {
             if wt.display_name.is_none() {
-                wt.display_name = d_name.clone();
+                wt.display_name = record.display_name.clone();
             }
             if wt.first_agent_message_rename_error.is_none() {
-                wt.first_agent_message_rename_error = err.clone();
+                wt.first_agent_message_rename_error = record.first_agent_message_rename_error.clone();
             }
             if wt.status.is_none() {
-                wt.status = status.clone();
+                wt.status = record.status.clone();
             }
         }
         check_sparse_checkout(wt);
@@ -865,10 +948,27 @@ pub fn create_git_worktree(params: CreateWorktreeParams) -> Result<String, Strin
 
     let out = cmd.output().map_err(|e| format!("Failed to execute git worktree: {e}"))?;
     if out.status.success() {
-        Ok(worktree_dir.to_string_lossy().to_string())
+        let path = worktree_dir.to_string_lossy().to_string();
+        // Provenance (Orca WorktreeMeta.createdAt/createdWithAgent): a worktree
+        // Hydra created is Hydra-managed, so it stays visible even when the
+        // `external` policy hides plain `git worktree add` targets. Best-effort:
+        // the worktree exists on disk either way, so a metadata write failure
+        // must not turn a successful creation into an error.
+        let created_at = chrono::Utc::now().timestamp_millis();
+        let _ = persist_worktree_creation(&path, created_at, params.created_with_agent.as_deref());
+        Ok(path)
     } else {
         Err(String::from_utf8_lossy(&out.stderr).to_string())
     }
+}
+
+fn persist_worktree_creation(
+    worktree_path: &str,
+    created_at: i64,
+    created_with_agent: Option<&str>,
+) -> Result<(), String> {
+    let db = crate::db::DatabaseManager::new()?;
+    db.set_worktree_provenance(worktree_path, created_at, created_with_agent)
 }
 
 pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), String> {
@@ -1145,7 +1245,7 @@ branch refs/heads/feat/auth\n";
         // Create a workspace_dir that contains the child repo's worktree path would not exist yet, so filtering would hide it.
         // To keep test passing, we use an empty workspace_dir (no filtering) via direct raw parse test.
         // Instead we test the raw parsing + that folder scanning still discovers at least the main checkout via the unfiltered helper.
-        let (list, _) = list_git_worktrees_with_context(tmp.to_str().unwrap(), None, "", true, &[], &[], None)
+        let (list, _) = list_git_worktrees_with_context(tmp.to_str().unwrap(), None, "", true, &[], &[], None, &HashMap::new())
             .expect("list worktrees on folder workspace");
         // With empty workspace_dir, only the main checkout should be visible (filtered result includes main)
         assert!(!list.is_empty(), "Folder workspace should discover sub-repo worktrees (main at least)");
@@ -1168,9 +1268,9 @@ branch refs/heads/feat/auth\n";
 
         let configured: Vec<String> = vec![];
         let known = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured);
-        let cls_nested = classify_worktree_ownership(&wt_nested.path, repo_path, &[repo_path.to_string()], &configured, &known);
-        let cls_scratch = classify_worktree_ownership(&wt_scratch.path, repo_path, &[repo_path.to_string()], &configured, &known);
-        let cls_outside = classify_worktree_ownership(&wt_outside.path, repo_path, &[repo_path.to_string()], &configured, &known);
+        let cls_nested = classify_worktree_ownership(&wt_nested.path, None, repo_path, &[repo_path.to_string()], &configured, &known);
+        let cls_scratch = classify_worktree_ownership(&wt_scratch.path, None, repo_path, &[repo_path.to_string()], &configured, &known);
+        let cls_outside = classify_worktree_ownership(&wt_outside.path, None, repo_path, &[repo_path.to_string()], &configured, &known);
         assert_eq!(cls_nested, WorktreeOwnership::External);
         assert_eq!(cls_scratch, WorktreeOwnership::AgentScratch);
         assert_eq!(cls_outside, WorktreeOwnership::External);
@@ -1178,7 +1278,7 @@ branch refs/heads/feat/auth\n";
         // Configured base suppresses scratch classification
         let configured2 = vec!["/home/user/src/my-repo/.claude/worktrees".to_string()];
         let known2 = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured2);
-        let cls_suppressed = classify_worktree_ownership(&wt_scratch.path, repo_path, &[repo_path.to_string()], &configured2, &known2);
+        let cls_suppressed = classify_worktree_ownership(&wt_scratch.path, None, repo_path, &[repo_path.to_string()], &configured2, &known2);
         assert_eq!(cls_suppressed, WorktreeOwnership::External, "configured base should supersede scratch detection");
     }
 
@@ -1223,6 +1323,7 @@ branch refs/heads/feat/auth\n";
             &[],
             &[],
             None,
+            &HashMap::new(),
         )
         .expect("scan runs");
 
@@ -1295,5 +1396,157 @@ branch refs/heads/feat/auth\n";
         assert!(!stdout.contains("workspace-1754"), "worktree must be unregistered in git");
 
         let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    // ── Provenance decides visibility (Orca ownership.ts:124) ──────────────
+
+    /// Redirects `DatabaseManager::get_db_path()` to a temp file for this test
+    /// thread, so `create_git_worktree` never touches the real user database.
+    struct DbPathGuard;
+
+    impl DbPathGuard {
+        fn new(path: &Path) -> Self {
+            crate::db::TEST_DB_PATH_OVERRIDE.with(|p| *p.borrow_mut() = Some(path.to_path_buf()));
+            Self
+        }
+    }
+
+    impl Drop for DbPathGuard {
+        fn drop(&mut self) {
+            crate::db::TEST_DB_PATH_OVERRIDE.with(|p| *p.borrow_mut() = None);
+        }
+    }
+
+    fn unique_root(tag: &str) -> PathBuf {
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!("hydra-{tag}-{stamp}"))
+    }
+
+    fn init_bare_repo(repo: &Path) {
+        let _ = std::fs::create_dir_all(repo);
+        for args in [
+            vec!["init", "-q", "-b", "main"],
+            vec!["-c", "user.email=t@t", "-c", "user.name=t", "add", "-A"],
+            vec!["-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "init"],
+        ] {
+            let _ = Command::new("git").args(&args).current_dir(repo).output();
+        }
+    }
+
+    fn provenance_for(
+        path: &str,
+        created_at: Option<i64>,
+        created_with_agent: Option<&str>,
+    ) -> HashMap<String, WorktreeProvenance> {
+        let mut map = HashMap::new();
+        map.insert(
+            normalize_runtime_path_for_comparison(path),
+            WorktreeProvenance {
+                created_at,
+                created_with_agent: created_with_agent.map(str::to_string),
+            },
+        );
+        map
+    }
+
+    fn scan_external(repo: &Path, provenance: &HashMap<String, WorktreeProvenance>) -> (Vec<String>, Vec<String>) {
+        let (visible, hidden) =
+            list_git_worktrees_with_context(repo.to_str().unwrap(), None, "", true, &[], &[], None, provenance)
+                .expect("scan runs");
+        (
+            visible.into_iter().map(|w| w.path).collect(),
+            hidden.into_iter().map(|w| w.path).collect(),
+        )
+    }
+
+    #[test]
+    fn external_worktree_without_metadata_stays_hidden() {
+        let root = unique_root("prov-hidden");
+        let repo = root.join("repo");
+        let wt = root.join("repo-feat-prov");
+        init_bare_repo(&repo);
+        let added = Command::new("git")
+            .args(["worktree", "add", "-b", "feat-prov"])
+            .arg(&wt)
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add runs");
+        assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
+
+        let (visible, hidden) = scan_external(&repo, &HashMap::new());
+        assert!(!visible.contains(&wt.to_string_lossy().to_string()), "external worktree must stay hidden; visible={visible:?}");
+        assert!(hidden.contains(&wt.to_string_lossy().to_string()), "external worktree must be reported hidden; hidden={hidden:?}");
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn external_worktree_with_metadata_is_visible() {
+        let root = unique_root("prov-visible");
+        let repo = root.join("repo");
+        let wt = root.join("repo-feat-prov");
+        let wt_str = wt.to_string_lossy().to_string();
+        init_bare_repo(&repo);
+        let added = Command::new("git")
+            .args(["worktree", "add", "-b", "feat-prov"])
+            .arg(&wt)
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add runs");
+        assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
+
+        // `created_at` alone is strong metadata.
+        let (visible, _) = scan_external(&repo, &provenance_for(&wt_str, Some(1_700_000_000_000), None));
+        assert!(visible.contains(&wt_str), "created_at must force visibility; visible={visible:?}");
+
+        // `created_with_agent` alone is strong metadata too.
+        let (visible, _) = scan_external(&repo, &provenance_for(&wt_str, None, Some("claude")));
+        assert!(visible.contains(&wt_str), "created_with_agent must force visibility; visible={visible:?}");
+
+        // A blank agent (or epoch-zero created_at) is not metadata (Orca truthiness).
+        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, None, Some("   ")));
+        assert!(!visible.contains(&wt_str), "blank agent must not count as metadata");
+        assert!(hidden.contains(&wt_str));
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn create_git_worktree_persists_provenance_and_stays_visible() {
+        let root = unique_root("prov-create");
+        let repo = root.join("repo");
+        init_bare_repo(&repo);
+        let _db_guard = DbPathGuard::new(&root.join("hydra_test.sqlite3"));
+
+        let path = create_git_worktree(CreateWorktreeParams {
+            repo_path: repo.to_string_lossy().to_string(),
+            branch_name: "feat/prov".to_string(),
+            new_branch: true,
+            created_with_agent: Some("claude".to_string()),
+        })
+        .expect("create_git_worktree succeeds");
+        assert!(Path::new(&path).exists(), "worktree must exist on disk");
+
+        let persisted = load_all_persisted_worktree_metadata();
+        let record = persisted.get(&path).expect("metadata row must be persisted");
+        assert!(
+            record.provenance.created_at.is_some_and(|v| v > 0),
+            "created_at must be stamped"
+        );
+        assert_eq!(record.provenance.created_with_agent.as_deref(), Some("claude"));
+
+        // The persisted provenance is what makes the freshly created worktree visible
+        // under the default `external: hide` policy.
+        let provenance = load_worktree_provenance_map();
+        let (visible, _) = scan_external(&repo, &provenance);
+        assert!(visible.contains(&path), "created worktree must be visible; visible={visible:?}");
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&path).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
     }
 }

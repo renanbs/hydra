@@ -3,6 +3,15 @@ use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+#[cfg(test)]
+thread_local! {
+    /// Test-only override for [`DatabaseManager::get_db_path`]: lets tests
+    /// redirect metadata writes to a temp SQLite file. Thread-local so parallel
+    /// tests never share the override.
+    pub(crate) static TEST_DB_PATH_OVERRIDE: std::cell::RefCell<Option<PathBuf>> =
+        const { std::cell::RefCell::new(None) };
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ChatMessage {
     pub id: i64,
@@ -51,6 +60,12 @@ pub struct WorktreeMetadataRecord {
     pub display_name: Option<String>,
     pub first_agent_message_rename_error: Option<String>,
     pub status: Option<String>,
+    /// Provenance (Orca `WorktreeMeta.createdAt`): ms epoch the worktree was
+    /// created through Hydra. Its presence makes the worktree Orca-managed.
+    pub created_at: Option<i64>,
+    /// Provenance (Orca `WorktreeMeta.createdWithAgent`): agent that requested
+    /// the creation, when the caller informed one.
+    pub created_with_agent: Option<String>,
     pub updated_at: i64,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -673,12 +688,16 @@ impl DatabaseManager {
                  display_name TEXT,
                  first_agent_message_rename_error TEXT,
                  status TEXT,
+                 created_at INTEGER,
+                 created_with_agent TEXT,
                  updated_at INTEGER NOT NULL
              );",
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
 
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN project_path TEXT NOT NULL DEFAULT ''", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN branch TEXT NOT NULL DEFAULT 'main'", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN agent_name TEXT NOT NULL DEFAULT 'bash'", params![]);
@@ -690,6 +709,13 @@ impl DatabaseManager {
     }
 
     pub fn get_db_path() -> Result<PathBuf, String> {
+        // Test seam: `create_git_worktree` round-trip tests point the metadata
+        // writes at a temp SQLite file instead of the developer's real
+        // `~/.config/hydra` database. Thread-local so parallel tests stay isolated.
+        #[cfg(test)]
+        if let Some(path) = TEST_DB_PATH_OVERRIDE.with(|p| p.borrow().clone()) {
+            return Ok(path);
+        }
         let home = std::env::var("HOME").map_err(|_| "HOME not found".to_string())?;
         let dir = PathBuf::from(home).join(".config").join("hydra");
         std::fs::create_dir_all(&dir).map_err(|e| format!("Failed to create ~/.config/hydra: {e}"))?;
@@ -1106,7 +1132,7 @@ impl DatabaseManager {
     pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, updated_at FROM worktree_metadata WHERE worktree_path = ?1")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, updated_at FROM worktree_metadata WHERE worktree_path = ?1")
             .map_err(|e| format!("Error preparing worktree_metadata select: {e}"))?;
         let mut rows = stmt.query(params![worktree_path]).map_err(|e| e.to_string())?;
         if let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -1115,7 +1141,9 @@ impl DatabaseManager {
                 display_name: row.get(1).ok().flatten(),
                 first_agent_message_rename_error: row.get(2).ok().flatten(),
                 status: row.get(3).ok().flatten(),
-                updated_at: row.get(4).unwrap_or(0),
+                created_at: row.get(4).ok().flatten(),
+                created_with_agent: row.get(5).ok().flatten(),
+                updated_at: row.get(6).unwrap_or(0),
             }))
         } else {
             Ok(None)
@@ -1125,7 +1153,7 @@ impl DatabaseManager {
     pub fn get_all_worktree_metadata(&self) -> Result<std::collections::HashMap<String, WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, updated_at FROM worktree_metadata")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, updated_at FROM worktree_metadata")
             .map_err(|e| format!("Error preparing worktree_metadata select all: {e}"))?;
         let rows = stmt
             .query_map(params![], |row| {
@@ -1134,7 +1162,9 @@ impl DatabaseManager {
                     display_name: row.get(1).ok().flatten(),
                     first_agent_message_rename_error: row.get(2).ok().flatten(),
                     status: row.get(3).ok().flatten(),
-                    updated_at: row.get(4).unwrap_or(0),
+                    created_at: row.get(4).ok().flatten(),
+                    created_with_agent: row.get(5).ok().flatten(),
+                    updated_at: row.get(6).unwrap_or(0),
                 })
             })
             .map_err(|e| format!("Query error: {e}"))?;
@@ -1181,6 +1211,35 @@ impl DatabaseManager {
             params![worktree_path, status, now],
         )
         .map_err(|e| format!("Error setting worktree status: {e}"))?;
+        Ok(())
+    }
+
+    /// Records how a worktree came to exist (Orca `WorktreeMeta.createdAt` /
+    /// `createdWithAgent`). Both fields are strong Orca metadata: once present,
+    /// the worktree is `orca-managed` and therefore visible regardless of the
+    /// `external` visibility policy (Orca `ownership.ts:124`).
+    ///
+    /// `created_at` is always stamped by the creator; `created_with_agent` is
+    /// only overwritten when the caller informs one, so a later call cannot
+    /// erase a previously recorded agent.
+    pub fn set_worktree_provenance(
+        &self,
+        worktree_path: &str,
+        created_at: i64,
+        created_with_agent: Option<&str>,
+    ) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO worktree_metadata (worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, updated_at)
+             VALUES (?1, NULL, NULL, NULL, ?2, ?3, ?4)
+             ON CONFLICT(worktree_path) DO UPDATE SET
+                created_at = excluded.created_at,
+                created_with_agent = COALESCE(excluded.created_with_agent, worktree_metadata.created_with_agent),
+                updated_at = excluded.updated_at",
+            params![worktree_path, created_at, created_with_agent, now],
+        )
+        .map_err(|e| format!("Error setting worktree provenance: {e}"))?;
         Ok(())
     }
     #[cfg(test)]
@@ -1234,11 +1293,15 @@ impl DatabaseManager {
                  display_name TEXT,
                  first_agent_message_rename_error TEXT,
                  status TEXT,
+                 created_at INTEGER,
+                 created_with_agent TEXT,
                  updated_at INTEGER NOT NULL
              );"
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", params![]);
 
         Ok(Self {
             conn: Mutex::new(conn),
