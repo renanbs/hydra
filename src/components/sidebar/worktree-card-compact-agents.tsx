@@ -20,7 +20,11 @@ function stopActivationKeyPropagation(e: React.KeyboardEvent): void {
   }
 }
 
-/** Collapsible wrapper used when a card renders agents inside itself. Exposes its own container plus chevron toggle. */
+/** Collapsible wrapper used when a card renders agents inside itself.
+ * Orca parity (`worktree-card-compact-agents.tsx:39-78`): the grid lives in CSS
+ * (`compact-agent-expansion-grid[-expanded]`), the content keeps an inner
+ * `min-h-0 overflow-hidden` box plus `pt-0.5`, and the children stay mounted after
+ * the first expansion so the collapse animates. */
 export function CompactAgentExpansion({
   expanded,
   contentClassName,
@@ -30,12 +34,27 @@ export function CompactAgentExpansion({
   contentClassName?: string
   children: React.ReactNode
 }): React.JSX.Element {
+  const hasRenderedChildrenRef = React.useRef(expanded)
+  if (expanded) {
+    hasRenderedChildrenRef.current = true
+  }
+  const shouldRenderChildren = expanded || hasRenderedChildrenRef.current
+
   return (
     <div
-      className={`worktree-compact-agent-expansion grid transition-[grid-template-rows] duration-150 ease-in-out ${contentClassName ?? ''}`}
-      style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
+      className={`compact-agent-expansion-grid${expanded ? ' compact-agent-expansion-grid-expanded' : ''}`}
+      aria-hidden={!expanded}
+      inert={!expanded}
     >
-      <div className="overflow-hidden">{children}</div>
+      <div className="min-h-0 overflow-hidden">
+        {shouldRenderChildren && (
+          <div
+            className={`compact-agent-expansion-content flex flex-col gap-0.5 pt-0.5 ${contentClassName ?? ''}`}
+          >
+            {children}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -159,11 +178,13 @@ export function WorktreeCompactAgentsList({
   agents,
   onSelectSession,
   activeSessionId,
+  className,
 }: {
   worktreePath: string
   agents: AgentRow[]
   onSelectSession: (id: string) => void
   activeSessionId?: string | null
+  className?: string
 }): React.JSX.Element | null {
   const rows = useMemo(() => agents, [agents])
   const expanded = useAppStore((s) => s.compactRootListExpandedByWorktree[worktreePath] ?? false)
@@ -178,13 +199,20 @@ export function WorktreeCompactAgentsList({
   const anyRootHasChildren = rows.some((r) => (r.childAgentCount ?? 0) > 0)
 
   return (
-    <div data-worktree-card-agents="" onClick={(e) => e.stopPropagation()} className="mt-0.5 flex flex-col gap-0.5">
+    // Orca parity (`WorktreeCardAgents.tsx:370-379`): the root is
+    // `cn('flex flex-col mt-1 gap-0.5', className)` — the caller's margin
+    // (mt-0 with a meta row, -mt-1 without) is what merges over mt-1, so a
+    // hardcoded mt-0.5 here offsets the whole block from the upstream spacing.
+    <div
+      data-compact-agent-list="true"
+      onClick={(e) => e.stopPropagation()}
+      className={`flex flex-col mt-1 gap-0.5 ${className ?? ""}`}
+    >
       <div className="compact-agent-summary-panel">
         <CompactAgentSummaryButton agents={rows} worktreePath={worktreePath} subjectLabel={subjectLabel} />
 
         <CompactAgentExpansion expanded={expanded}>
-          <div className="flex flex-col gap-0.5 mt-0.5">
-            {rows.map((r) => (
+          {rows.map((r) => (
               <CompactAgentRow
                 key={r.paneKey}
                 agent={r}
@@ -195,9 +223,8 @@ export function WorktreeCompactAgentsList({
                 childAgentsExpanded={r.childAgentsExpanded}
                 onToggleChildAgents={r.onToggleChildAgents}
                 reserveDisclosureGutter={anyRootHasChildren && (r.childAgentCount ?? 0) === 0}
-              />
-            ))}
-          </div>
+            />
+          ))}
         </CompactAgentExpansion>
       </div>
     </div>
