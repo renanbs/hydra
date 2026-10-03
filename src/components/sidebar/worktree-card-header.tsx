@@ -4,7 +4,6 @@ import { AlertCircle, Star, Trash2 } from 'lucide-react'
 
 import { cn } from '../../lib/utils'
 import { RepoIconGlyph } from '../repo/repo-icon'
-import { WorktreeCardStatusLane } from './WorktreeCardStatusLane'
 import type { HydraProject } from './types'
 import { formatSparseDirectoryPreview, shouldBeginWorktreeRename } from './worktree-card-model'
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
@@ -61,10 +60,6 @@ export function WorktreeCardHeader({
     titleRenaming,
     handleOpenRenameErrorDialog,
     isFolder,
-    showStatus,
-    status,
-    prDisplay,
-    branch,
     handleDelete,
     handleWorkspaceQuickAction = handleDelete
   } = card
@@ -95,15 +90,6 @@ export function WorktreeCardHeader({
   return (
     <div className="flex min-w-0 items-center justify-between gap-2">
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {/* Orca status lane: review glyph > branch glyph > status dot (WorktreeCardStatusSlot). */}
-        {showStatus && (
-          <WorktreeCardStatusLane
-            status={status}
-            branch={branch}
-            prDisplay={prDisplay}
-          />
-        )}
-
         {showPinnedRepoIcon && repo && (
           <RepoIdentityChip repo={repo}>
             <RepoIconGlyph
