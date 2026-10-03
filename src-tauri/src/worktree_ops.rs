@@ -1,3 +1,5 @@
+use crate::catalog::{self, CatalogRepo};
+use crate::db::{CustomWorktreeSource, SourcePreferences, WorktreeVisibilityDefaults};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -28,6 +30,10 @@ pub struct CreateWorktreeParams {
     pub repo_path: String,
     pub branch_name: String,
     pub new_branch: bool,
+    /// Agent that requested the creation, when the caller knows it. Persisted as
+    /// Orca's `createdWithAgent`; `None` still records `created_at`.
+    #[serde(default)]
+    pub created_with_agent: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -175,15 +181,22 @@ fn can_classify_as_external(worktree_path: &str, known_layouts: &[OrcaWorkspaceL
     false
 }
 
-// ── Built-in scratch detection (shared/agent-scratch-worktrees.ts + worktree/visibility-sources.ts) ──
+// ── Built-in scratch/source detection (shared/agent-scratch-worktrees.ts + worktree/visibility-sources.ts) ──
 
-const BUILT_IN_SCRATCH_PREFIXES: &[&[&str]] = &[&[".claude", "worktrees"], &[".gsd-workspaces"]];
+/// Orca `BUILT_IN_WORKTREE_VISIBILITY_SOURCES`, in matcher order: the id plus the
+/// path segments that must appear under a checkout for the source to match.
+const BUILT_IN_VISIBILITY_SOURCES: &[(&str, &[&str])] =
+    &[("claude", &[".claude", "worktrees"]), ("gsd", &[".gsd-workspaces"])];
 
-fn is_agent_scratch_worktree_path(
+/// Orca `createWorktreeVisibilitySourceMatcher` built-in half: a worktree under
+/// `<checkout>/.claude/worktrees/…` (or `.gsd-workspaces/…`) for one of the
+/// scanned checkouts matches, unless a configured base points at or inside the
+/// source root (Orca #15232).
+fn built_in_source_match<'a>(
     checkout_paths: &[String],
     configured_bases: &[String],
     worktree_path: &str,
-) -> bool {
+) -> Option<&'a str> {
     let normalized_candidate = normalize_runtime_path_for_comparison(worktree_path);
     let segments: Vec<&str> = normalized_candidate.split('/').collect();
     let checkout_keys: std::collections::HashSet<String> = checkout_paths
@@ -200,7 +213,7 @@ fn is_agent_scratch_worktree_path(
         })
         .collect();
 
-    for prefix in BUILT_IN_SCRATCH_PREFIXES {
+    for (id, prefix) in BUILT_IN_VISIBILITY_SOURCES {
         for idx in 0..segments.len() {
             if idx + prefix.len() >= segments.len() {
                 continue;
@@ -235,10 +248,58 @@ fn is_agent_scratch_worktree_path(
             if superseded {
                 continue;
             }
-            return true;
+            return Some(*id);
         }
     }
-    false
+    None
+}
+
+fn is_agent_scratch_worktree_path(
+    checkout_paths: &[String],
+    configured_bases: &[String],
+    worktree_path: &str,
+) -> bool {
+    built_in_source_match(checkout_paths, configured_bases, worktree_path).is_some()
+}
+
+/// Which visibility source a worktree belongs to (Orca
+/// `WorktreeVisibilitySourceMatch`). Built-ins are checked first, then custom
+/// roots, exactly like `createWorktreeVisibilitySourceMatcher`.
+#[derive(PartialEq, Eq, Debug, Clone)]
+enum WorktreeVisibilitySource {
+    BuiltIn(&'static str),
+    Custom(String),
+}
+
+/// Orca `createDescendantMatcher`: strictly below the root (the root itself is
+/// not a source member).
+fn custom_source_match(
+    custom_sources: &[CustomWorktreeSource],
+    worktree_path: &str,
+) -> Option<String> {
+    let normalized_candidate = normalize_runtime_path_for_comparison(worktree_path);
+    for source in custom_sources {
+        let root = normalize_runtime_path_for_comparison(&source.root_path);
+        if root.is_empty() || normalized_candidate == root {
+            continue;
+        }
+        if relative_path_inside_root(&root, &normalized_candidate).is_some() {
+            return Some(source.id.clone());
+        }
+    }
+    None
+}
+
+fn match_worktree_visibility_source(
+    checkout_paths: &[String],
+    configured_bases: &[String],
+    custom_sources: &[CustomWorktreeSource],
+    worktree_path: &str,
+) -> Option<WorktreeVisibilitySource> {
+    if let Some(id) = built_in_source_match(checkout_paths, configured_bases, worktree_path) {
+        return Some(WorktreeVisibilitySource::BuiltIn(id));
+    }
+    custom_source_match(custom_sources, worktree_path).map(WorktreeVisibilitySource::Custom)
 }
 
 #[derive(PartialEq, Eq, Debug)]
@@ -246,15 +307,51 @@ enum WorktreeOwnership {
     AgentScratch,
     External,
     UnknownLegacy,
+    /// Strong provenance proves Hydra/Orca created it (Orca `orca-managed`).
+    /// Always visible, regardless of the `external` visibility policy.
+    OrcaManaged,
+}
+
+/// The subset of Orca's `WorktreeMeta` that decides ownership up front:
+/// `createdAt` / `createdWithAgent` (Orca `hasStrongOrcaMetadata`,
+/// `shared/worktree/ownership.ts:227`). Hydra has no equivalent for the other
+/// strong fields, so these two are the whole predicate.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct WorktreeProvenance {
+    pub created_at: Option<i64>,
+    pub created_with_agent: Option<String>,
+}
+
+impl WorktreeProvenance {
+    /// Truthiness mirrors Orca: an epoch-zero `createdAt` (treated as absent) or
+    /// a blank agent name does not count as metadata. A `worktree_metadata` row
+    /// carrying only non-strong fields (e.g. `updated_at`) does NOT make the
+    /// worktree visible.
+    pub fn is_strong_orca_metadata(&self) -> bool {
+        self.created_at.is_some_and(|v| v != 0)
+            || self
+                .created_with_agent
+                .as_deref()
+                .is_some_and(|agent| !agent.trim().is_empty())
+    }
 }
 
 fn classify_worktree_ownership(
     worktree_path: &str,
+    provenance: Option<&WorktreeProvenance>,
     _repo_path: &str,
     checkout_paths: &[String],
     configured_bases: &[String],
     known_layouts: &[OrcaWorkspaceLayout],
 ) -> WorktreeOwnership {
+    // Strong provenance is checked before every layout/scratch heuristic
+    // (Orca ownership.ts:124); a row with only weak fields does not qualify.
+    if provenance.is_some_and(WorktreeProvenance::is_strong_orca_metadata) {
+        return WorktreeOwnership::OrcaManaged;
+    }
+    // Agent scratch (`.claude/worktrees`, `.gsd-workspaces`) keeps its own
+    // policy (Orca ownership.ts:132). A configured base still supersedes scratch
+    // detection inside the matcher.
     if is_agent_scratch_worktree_path(checkout_paths, configured_bases, worktree_path) {
         return WorktreeOwnership::AgentScratch;
     }
@@ -273,8 +370,194 @@ fn classify_worktree_ownership(
     WorktreeOwnership::External
 }
 
-/// Executa `git worktree list --porcelain` no repositório ativo ou varre sub-repositórios em folder workspaces
-/// Aplica filtragem Orca-faithful: apenas worktrees sob configured bases / nested workspace layouts são visíveis.
+/// Per-repo visibility inputs, read from the catalog (`CatalogRepo`) plus the
+/// legacy `added_projects` imports. Pure data so the scan and the unit tests
+/// share one decision path.
+#[derive(Clone, Debug, Default)]
+pub struct RepoVisibilityPolicy {
+    /// Orca `Repo.externalWorktreeVisibility` (`show`|`hide`), the per-repo
+    /// override of the external policy. `None` = no override.
+    pub external_worktree_visibility: Option<String>,
+    /// Orca `Repo.externalWorktreeVisibilityLegacy`. `None` = unset, which
+    /// resolves to the old rule for that repo.
+    pub external_worktree_visibility_legacy: Option<bool>,
+    /// Orca `Repo.agentWorktreeVisibility` (`show`|`hide`). `None` = no override:
+    /// the built-in "Claude Code" source falls back to the global preference, and
+    /// scratch without a source match stays hidden.
+    pub agent_worktree_visibility: Option<String>,
+    /// Orca `Repo.customWorktreeVisibilitySources`. `Some([])` is an explicit
+    /// empty list that supersedes the global list.
+    pub custom_sources: Option<Vec<CustomWorktreeSource>>,
+    /// Orca `Repo.worktreeVisibilitySourcePreferences`, scoped to this repo.
+    pub source_preferences: Option<SourcePreferences>,
+    /// Paths recovered one by one through the inbox (catalog
+    /// `importedExternalWorktreePaths` plus the legacy SQLite list). Always visible.
+    pub imported_paths: Vec<String>,
+}
+
+impl RepoVisibilityPolicy {
+    fn from_catalog(repo: &CatalogRepo) -> Self {
+        Self {
+            external_worktree_visibility: repo.external_worktree_visibility.clone(),
+            external_worktree_visibility_legacy: repo.external_worktree_visibility_legacy,
+            agent_worktree_visibility: repo.agent_worktree_visibility.clone(),
+            custom_sources: repo.custom_worktree_visibility_sources.clone(),
+            source_preferences: repo.worktree_visibility_source_preferences.clone(),
+            imported_paths: repo
+                .imported_external_worktree_paths
+                .clone()
+                .unwrap_or_default(),
+        }
+    }
+
+    /// Orca `isLegacyRepoForExternalWorktreeVisibility`: an explicit flag wins;
+    /// otherwise no per-repo `externalWorktreeVisibility` means "old repo" and
+    /// the old rule applied.
+    fn is_legacy_repo(&self) -> bool {
+        match self.external_worktree_visibility_legacy {
+            Some(legacy) => legacy,
+            None => self.external_worktree_visibility.is_none(),
+        }
+    }
+
+    /// Orca `resolveCustomWorktreeVisibilitySources`: the repo's own list wins
+    /// when it exists (`Some([])` included); otherwise the global list is the
+    /// fallback. Both go through Orca's normalizer.
+    fn resolved_custom_sources(
+        &self,
+        defaults: Option<&WorktreeVisibilityDefaults>,
+    ) -> Vec<CustomWorktreeSource> {
+        match self.custom_sources.as_deref() {
+            Some(sources) => catalog::normalize_worktree_visibility_sources(sources),
+            None => catalog::normalize_worktree_visibility_sources(
+                defaults
+                    .and_then(|d| d.custom_sources.as_deref())
+                    .unwrap_or(&[]),
+            ),
+        }
+    }
+
+    /// Orca `effectiveExternalWorktreeVisibility`: repo override → global
+    /// `external` → legacy rule (`show` for an old repo).
+    fn effective_external_visibility(
+        &self,
+        defaults: Option<&WorktreeVisibilityDefaults>,
+    ) -> bool {
+        visibility_pref(self.external_worktree_visibility.as_deref())
+            .or_else(|| visibility_pref(defaults.and_then(|d| d.external.as_deref())))
+            .unwrap_or_else(|| self.is_legacy_repo())
+    }
+
+    /// Orca `effectiveBuiltInWorktreeSourceVisibility`: repo override → the
+    /// per-repo `agentWorktreeVisibility` (the built-in "Claude Code" project
+    /// override) → global preference → `hide`.
+    fn built_in_source_is_visible(
+        &self,
+        id: &str,
+        defaults: Option<&WorktreeVisibilityDefaults>,
+    ) -> bool {
+        source_pref(self.source_preferences.as_ref(), true, id)
+            .or_else(|| visibility_pref(self.agent_worktree_visibility.as_deref()))
+            .or_else(|| {
+                source_pref(
+                    defaults.and_then(|d| d.source_preferences.as_ref()),
+                    true,
+                    id,
+                )
+            })
+            .unwrap_or(false)
+    }
+
+    /// Orca `effectiveCustomWorktreeSourceVisibility`: repo preference → a source
+    /// this repo owns is hidden by default → global preference → `hide`.
+    fn custom_source_is_visible(
+        &self,
+        id: &str,
+        defaults: Option<&WorktreeVisibilityDefaults>,
+    ) -> bool {
+        if let Some(visible) = source_pref(self.source_preferences.as_ref(), false, id) {
+            return visible;
+        }
+        let repo_owns_source = self
+            .custom_sources
+            .as_deref()
+            .is_some_and(|sources| sources.iter().any(|source| source.id == id));
+        if repo_owns_source {
+            return false;
+        }
+        source_pref(
+            defaults.and_then(|d| d.source_preferences.as_ref()),
+            false,
+            id,
+        )
+        .unwrap_or(false)
+    }
+
+    fn source_is_visible(
+        &self,
+        source: &WorktreeVisibilitySource,
+        defaults: Option<&WorktreeVisibilityDefaults>,
+    ) -> bool {
+        match source {
+            WorktreeVisibilitySource::BuiltIn(id) => {
+                self.built_in_source_is_visible(id, defaults)
+            }
+            WorktreeVisibilitySource::Custom(id) => self.custom_source_is_visible(id, defaults),
+        }
+    }
+}
+
+fn visibility_pref(value: Option<&str>) -> Option<bool> {
+    match value {
+        Some("show") => Some(true),
+        Some("hide") => Some(false),
+        _ => None,
+    }
+}
+
+fn source_pref(prefs: Option<&SourcePreferences>, built_in: bool, id: &str) -> Option<bool> {
+    let prefs = prefs?;
+    let map = if built_in {
+        prefs.built_in.as_ref()?
+    } else {
+        prefs.custom.as_ref()?
+    };
+    visibility_pref(map.get(id).map(String::as_str))
+}
+
+/// Orca `shouldShowWorktree` (`worktree-visibility-resolution.ts:14-52`), in
+/// Orca's order. The main checkout is decided by the caller, before this runs.
+///
+/// A worktree inside a known workspace layout is NOT visible on that evidence
+/// alone: layouts only classify ownership, they never grant visibility.
+fn should_show_worktree(
+    ownership: &WorktreeOwnership,
+    is_imported: bool,
+    source: Option<&WorktreeVisibilitySource>,
+    repo: &RepoVisibilityPolicy,
+    defaults: Option<&WorktreeVisibilityDefaults>,
+) -> bool {
+    if *ownership == WorktreeOwnership::OrcaManaged {
+        return true;
+    }
+    if is_imported {
+        return true;
+    }
+    if let Some(source) = source {
+        return repo.source_is_visible(source, defaults);
+    }
+    if *ownership == WorktreeOwnership::AgentScratch {
+        // Orca `effectiveAgentWorktreeVisibility`: only an explicit per-repo
+        // `show` makes scratch visible; the default is hide, including legacy.
+        return visibility_pref(repo.agent_worktree_visibility.as_deref()) == Some(true);
+    }
+    repo.effective_external_visibility(defaults)
+}
+
+
+/// Executa `git worktree list --porcelain` no repositório ativo ou varre sub-repositórios em folder workspaces.
+/// Aplica filtragem Orca-faithful: a visibilidade final vem de `should_show_worktree`
+/// (Orca `shouldShowWorktree`), nunca do layout por si só.
 /// Mirrors `shared/worktree/ownership.ts:111 classifyWorktreeOwnership` + `worktree-visibility-resolution.ts`
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -290,34 +573,67 @@ pub fn list_git_worktrees(repo_path: &str) -> Result<Vec<GitWorktreeInfo>, Strin
 }
 
 pub fn scan_project_worktrees(repo_path: &str) -> Result<ProjectWorktreeScanResult, String> {
-    let (workspace_dir, nest_workspaces, workspace_dir_history, worktree_base_path, imported_worktrees, is_suppressed, visibility_defaults) = load_hydra_workspace_context(repo_path);
+    let context = load_hydra_workspace_context(repo_path);
+    let provenance = load_worktree_provenance_map();
     let (mut visible, mut hidden) = list_git_worktrees_with_context(
         repo_path,
-        worktree_base_path.as_deref(),
-        &workspace_dir,
-        nest_workspaces,
-        &workspace_dir_history,
-        &imported_worktrees,
-        visibility_defaults.as_ref(),
+        context.worktree_base_path.as_deref(),
+        &context.workspace_dir,
+        context.nest_workspaces,
+        &context.workspace_dir_history,
+        &context.repo_policy,
+        context.visibility_defaults.as_ref(),
+        &provenance,
     )?;
     fill_worktree_metadata(&mut visible);
     fill_worktree_metadata(&mut hidden);
     Ok(ProjectWorktreeScanResult {
         visible,
         hidden,
-        is_suppressed,
+        is_suppressed: context.is_suppressed,
     })
 }
 
-fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorkspaceLayout>, Option<String>, Vec<String>, bool, Option<crate::db::WorktreeVisibilityDefaults>) {
+/// Everything the scan needs from persisted state: global settings (SQLite),
+/// the per-project base + legacy imports (`added_projects`) and the per-repo
+/// visibility config (catalog).
+struct HydraWorkspaceContext {
+    workspace_dir: String,
+    nest_workspaces: bool,
+    workspace_dir_history: Vec<OrcaWorkspaceLayout>,
+    worktree_base_path: Option<String>,
+    is_suppressed: bool,
+    visibility_defaults: Option<WorktreeVisibilityDefaults>,
+    repo_policy: RepoVisibilityPolicy,
+}
+
+/// Per-repo visibility config from the catalog — the single source of truth.
+/// A repo missing from the catalog (or an unreadable catalog) falls back to the
+/// default policy: no overrides, so the old rule applies.
+fn load_repo_visibility_policy(repo_path: &str) -> RepoVisibilityPolicy {
+    let normalized = catalog::normalize_catalog_path(repo_path);
+    catalog::read_catalog()
+        .repos
+        .iter()
+        .find(|repo| catalog::normalize_catalog_path(&repo.path) == normalized)
+        .map(RepoVisibilityPolicy::from_catalog)
+        .unwrap_or_default()
+}
+
+fn load_hydra_workspace_context(repo_path: &str) -> HydraWorkspaceContext {
     // Try load from SQLite; fallback to defaults (Orca defaults: workspaceDir ~/src, nestWorkspaces true)
     // Bug #14: resolve the home dir properly instead of a hardcoded "/home/renan".
     let home = crate::db::user_home_dir();
     let default_dir = home.join("src").to_string_lossy().to_string();
-    let mut workspace_dir = default_dir.clone();
-    let mut nest_workspaces = true;
-    let mut history: Vec<OrcaWorkspaceLayout> = vec![];
-    let mut visibility_defaults: Option<crate::db::WorktreeVisibilityDefaults> = None;
+    let mut context = HydraWorkspaceContext {
+        workspace_dir: default_dir,
+        nest_workspaces: true,
+        workspace_dir_history: vec![],
+        worktree_base_path: None,
+        is_suppressed: false,
+        visibility_defaults: None,
+        repo_policy: load_repo_visibility_policy(repo_path),
+    };
     if let Ok(db_path) = std::path::Path::new(&home).join(".config/hydra/hydra_sessions.sqlite3").canonicalize().or_else(|_| Ok::<_, String>(PathBuf::from(&home).join(".config/hydra/hydra_sessions.sqlite3")) ) {
         if let Ok(conn) = rusqlite::Connection::open(&db_path) {
             if let Ok(mut stmt) = conn.prepare("SELECT value FROM settings WHERE key = 'global_settings'") {
@@ -326,34 +642,34 @@ fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorks
                         if let Ok(json_str) = row.get::<_, String>(0) {
                             if let Ok(v) = serde_json::from_str::<serde_json::Value>(&json_str) {
                                 if let Some(wvd) = v.get("worktree_visibility_defaults").or_else(|| v.get("worktreeVisibilityDefaults")) {
-                                    if let Ok(d) = serde_json::from_value::<crate::db::WorktreeVisibilityDefaults>(wvd.clone()) {
-                                        visibility_defaults = Some(d);
+                                    if let Ok(d) = serde_json::from_value::<WorktreeVisibilityDefaults>(wvd.clone()) {
+                                        context.visibility_defaults = Some(d);
                                     }
                                 }
                                 if let Some(wd) = v.get("workspace_dir").and_then(|x| x.as_str()) {
-                                    workspace_dir = wd.to_string();
+                                    context.workspace_dir = wd.to_string();
                                 } else if let Some(wd) = v.get("workspaceDir").and_then(|x| x.as_str()) {
-                                    workspace_dir = wd.to_string();
+                                    context.workspace_dir = wd.to_string();
                                 }
                                 if let Some(nw) = v.get("nest_workspaces").and_then(|x| x.as_bool()) {
-                                    nest_workspaces = nw;
+                                    context.nest_workspaces = nw;
                                 } else if let Some(nw) = v.get("nestWorkspaces").and_then(|x| x.as_bool()) {
-                                    nest_workspaces = nw;
+                                    context.nest_workspaces = nw;
                                 }
                                 if let Some(arr) = v.get("workspace_dir_history").and_then(|x| x.as_array()) {
                                     for item in arr {
                                         if let Some(p) = item.get("path").and_then(|x| x.as_str()) {
                                             let nw = item.get("nest_workspaces").and_then(|x| x.as_bool())
                                                 .or_else(|| item.get("nestWorkspaces").and_then(|x| x.as_bool()))
-                                                .unwrap_or(nest_workspaces);
-                                            history.push(OrcaWorkspaceLayout { path: p.to_string(), nest_workspaces: nw });
+                                                .unwrap_or(context.nest_workspaces);
+                                            context.workspace_dir_history.push(OrcaWorkspaceLayout { path: p.to_string(), nest_workspaces: nw });
                                         }
                                     }
                                 } else if let Some(arr) = v.get("workspaceDirHistory").and_then(|x| x.as_array()) {
                                     for item in arr {
                                         if let Some(p) = item.get("path").and_then(|x| x.as_str()) {
-                                            let nw = item.get("nestWorkspaces").and_then(|x| x.as_bool()).unwrap_or(nest_workspaces);
-                                            history.push(OrcaWorkspaceLayout { path: p.to_string(), nest_workspaces: nw });
+                                            let nw = item.get("nestWorkspaces").and_then(|x| x.as_bool()).unwrap_or(context.nest_workspaces);
+                                            context.workspace_dir_history.push(OrcaWorkspaceLayout { path: p.to_string(), nest_workspaces: nw });
                                         }
                                     }
                                 }
@@ -376,14 +692,27 @@ fn load_hydra_workspace_context(repo_path: &str) -> (String, bool, Vec<OrcaWorks
                         let imported = imported_raw
                             .and_then(|s| serde_json::from_str::<Vec<String>>(&s).ok())
                             .unwrap_or_default();
-                        let is_suppressed = suppressed_raw.map(|v| v != 0).unwrap_or(false);
-                        return (workspace_dir, nest_workspaces, history, base.filter(|s| !s.trim().is_empty()), imported, is_suppressed, visibility_defaults);
+                        // Legacy `added_projects` imports stay visible alongside the
+                        // catalog's `importedExternalWorktreePaths` (both are the
+                        // user's per-path recovery).
+                        for path in imported {
+                            let already_known = context.repo_policy.imported_paths.iter().any(|known| {
+                                normalize_runtime_path_for_comparison(known)
+                                    == normalize_runtime_path_for_comparison(&path)
+                            });
+                            if !already_known {
+                                context.repo_policy.imported_paths.push(path);
+                            }
+                        }
+                        context.worktree_base_path = base.filter(|s| !s.trim().is_empty());
+                        context.is_suppressed = suppressed_raw.map(|v| v != 0).unwrap_or(false);
+                        return context;
                     }
                 }
             }
         }
     }
-    (workspace_dir, nest_workspaces, history, None, vec![], false, visibility_defaults)
+    context
 }
 
 fn list_git_worktrees_with_context(
@@ -392,8 +721,9 @@ fn list_git_worktrees_with_context(
     workspace_dir: &str,
     nest_workspaces: bool,
     workspace_dir_history: &[OrcaWorkspaceLayout],
-    imported_worktrees: &[String],
-    visibility_defaults: Option<&crate::db::WorktreeVisibilityDefaults>,
+    repo_policy: &RepoVisibilityPolicy,
+    visibility_defaults: Option<&WorktreeVisibilityDefaults>,
+    provenance: &HashMap<String, WorktreeProvenance>,
 ) -> Result<(Vec<GitWorktreeInfo>, Vec<GitWorktreeInfo>), String> {
     let repo = PathBuf::from(repo_path);
     if !repo.exists() {
@@ -461,6 +791,9 @@ fn list_git_worktrees_with_context(
     // For direct git repos, filtering is per-repo. For folder workspaces, filtering is per-child checkout.
     let mut filtered = Vec::new();
     let mut hidden = Vec::new();
+    // Custom sources do not depend on the checkout being scanned (they are
+    // absolute roots), so resolve them once per scan.
+    let custom_sources = repo_policy.resolved_custom_sources(visibility_defaults);
     for (wt, checkout_path) in &all_raw {
         let is_main = normalize_runtime_path_for_comparison(&wt.path) == normalize_runtime_path_for_comparison(&checkout_path)
             || (is_direct_git && normalize_runtime_path_for_comparison(&wt.path) == normalize_runtime_path_for_comparison(repo_path) && checkout_path == repo_path);
@@ -499,27 +832,13 @@ fn list_git_worktrees_with_context(
             }
         }
 
-        let mut known_layouts = build_known_orca_workspace_layouts(
+        let known_layouts = build_known_orca_workspace_layouts(
             workspace_dir,
             nest_workspaces,
             workspace_dir_history,
             &checkout_path,
             &merged_bases,
         );
-        if let Some(vd) = visibility_defaults {
-            if let Some(cs) = vd.custom_sources.as_ref() {
-                for src in cs {
-                    if src.root_path.trim().is_empty() {
-                        continue;
-                    }
-                    let rp = resolve_workspace_layout_path(&checkout_path, &src.root_path);
-                    known_layouts.push(OrcaWorkspaceLayout {
-                        path: rp,
-                        nest_workspaces: true,
-                    });
-                }
-            }
-        }
 
         // Folder workspace: hide child mains (wt.path == checkout_path but checkout != root).
         // Only the root's own main checkout is kept as "default". Child mains are the repos themselves,
@@ -533,74 +852,35 @@ fn list_git_worktrees_with_context(
         }
 
         let checkout_paths = vec![checkout_path.clone()];
-        let ownership = classify_worktree_ownership(&wt.path, checkout_path, &checkout_paths, &merged_bases, &known_layouts);
-        match ownership {
-            WorktreeOwnership::AgentScratch => {
-                let norm = normalize_runtime_path_for_comparison(&wt.path);
-                let is_claude = norm.contains("/.claude/worktrees");
-                let is_gsd = norm.contains("/.gsd-workspaces");
-                let show_scratch = if is_claude {
-                    visibility_defaults
-                        .and_then(|vd| vd.source_preferences.as_ref())
-                        .and_then(|sp| sp.built_in.as_ref())
-                        .and_then(|b| b.get("claude"))
-                        .map(|v| v == "show")
-                        .unwrap_or(false)
-                } else if is_gsd {
-                    visibility_defaults
-                        .and_then(|vd| vd.source_preferences.as_ref())
-                        .and_then(|sp| sp.built_in.as_ref())
-                        .and_then(|b| b.get("gsd"))
-                        .map(|v| v == "show")
-                        .unwrap_or(false)
-                } else {
-                    false
-                };
-                if show_scratch {
-                    filtered.push(wt.clone());
-                } else {
-                    continue;
-                }
-            }
-            WorktreeOwnership::UnknownLegacy | WorktreeOwnership::External => {
-                let is_imported = imported_worktrees.iter().any(|imp| {
-                    normalize_runtime_path_for_comparison(imp) == normalize_runtime_path_for_comparison(&wt.path)
-                });
-                if is_imported {
-                    filtered.push(wt.clone());
-                    continue;
-                }
-                let external_policy = visibility_defaults
-                    .and_then(|vd| vd.external.as_deref())
-                    .unwrap_or("hide");
-
-                // Orca parity: a worktree inside a known workspace layout (global
-                // workspaceDir / its history) is visible even when the repo also has a
-                // configured or implicit `.worktrees` base. Measuring `merged_bases`
-                // first let a stray `<repo>/.worktrees` narrow visibility and hide every
-                // worktree under workspaceDir (hydra repo: mola/needlefish/beluga).
-                let in_known = known_layouts
-                    .iter()
-                    .any(|l| relative_path_inside_root(&l.path, &wt.path).is_some());
-                if in_known {
-                    filtered.push(wt.clone());
-                    continue;
-                }
-                let has_base = !merged_bases.is_empty();
-                if has_base {
-                    if merged_bases.iter().any(|b| relative_path_inside_root(b, &wt.path).is_some()) {
-                        filtered.push(wt.clone());
-                    } else if external_policy == "show" {
-                        filtered.push(wt.clone());
-                    } else {
-                        hidden.push(wt.clone());
-                    }
-                } else if external_policy == "show" {
-                    filtered.push(wt.clone());
-                } else {
-                    hidden.push(wt.clone());
-                }
-            }
+        let ownership = classify_worktree_ownership(
+            &wt.path,
+            provenance_lookup(provenance, &wt.path),
+            checkout_path,
+            &checkout_paths,
+            &merged_bases,
+            &known_layouts,
+        );
+        let source = match_worktree_visibility_source(
+            &checkout_paths,
+            &merged_bases,
+            &custom_sources,
+            &wt.path,
+        );
+        let is_imported = repo_policy.imported_paths.iter().any(|imp| {
+            normalize_runtime_path_for_comparison(imp) == normalize_runtime_path_for_comparison(&wt.path)
+        });
+        // Single decision point (Orca `shouldShowWorktree`). Layout membership and
+        // configured/implicit bases only classify ownership (`known_layouts`) — they
+        // never make a worktree visible on their own.
+        if should_show_worktree(&ownership, is_imported, source.as_ref(), repo_policy, visibility_defaults)
+        {
+            filtered.push(wt.clone());
+        } else if ownership == WorktreeOwnership::AgentScratch {
+            // Agent plumbing stays out of the discovery inbox (Orca
+            // `isUserFacingExternalWorktree`), hidden or not.
+            continue;
+        } else {
+            hidden.push(wt.clone());
         }
     }
 
@@ -714,7 +994,16 @@ fn get_worktree_created_at(path: &str) -> Option<i64> {
     None
 }
 
-fn load_all_persisted_worktree_metadata() -> HashMap<String, (Option<String>, Option<String>, Option<String>)> {
+/// Persisted `worktree_metadata` row, as far as the worktree scan needs it.
+#[derive(Clone, Debug, Default)]
+struct PersistedWorktreeMetadata {
+    display_name: Option<String>,
+    first_agent_message_rename_error: Option<String>,
+    status: Option<String>,
+    provenance: WorktreeProvenance,
+}
+
+fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMetadata> {
     let mut map = HashMap::new();
     if let Ok(db_path) = crate::db::DatabaseManager::get_db_path() {
         if let Ok(conn) = rusqlite::Connection::open(&db_path) {
@@ -724,28 +1013,56 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, (Option<String>, Op
                     display_name TEXT,
                     first_agent_message_rename_error TEXT,
                     status TEXT,
+                    created_at INTEGER,
+                    created_with_agent TEXT,
                     updated_at INTEGER NOT NULL
                 )",
                 rusqlite::params![],
             );
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", rusqlite::params![]);
-            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status FROM worktree_metadata") {
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", rusqlite::params![]);
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", rusqlite::params![]);
+            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent FROM worktree_metadata") {
                 if let Ok(rows) = stmt.query_map(rusqlite::params![], |row| {
                     Ok((
                         row.get::<_, String>(0)?,
-                        row.get::<_, Option<String>>(1)?,
-                        row.get::<_, Option<String>>(2)?,
-                        row.get::<_, Option<String>>(3)?,
+                        PersistedWorktreeMetadata {
+                            display_name: row.get(1)?,
+                            first_agent_message_rename_error: row.get(2)?,
+                            status: row.get(3)?,
+                            provenance: WorktreeProvenance {
+                                created_at: row.get(4)?,
+                                created_with_agent: row.get(5)?,
+                            },
+                        },
                     ))
                 }) {
                     for r in rows.flatten() {
-                        map.insert(r.0, (r.1, r.2, r.3));
+                        map.insert(r.0, r.1);
                     }
                 }
             }
         }
     }
     map
+}
+
+/// Provenance keyed by normalized path, matching how the scan compares paths.
+fn load_worktree_provenance_map() -> HashMap<String, WorktreeProvenance> {
+    load_all_persisted_worktree_metadata()
+        .into_iter()
+        .map(|(path, meta)| (normalize_runtime_path_for_comparison(&path), meta.provenance))
+        .collect()
+}
+
+/// Provenance for a worktree, keyed by normalized path (Orca
+/// `areRuntimePathsEqual`). Whether a hit counts as strong metadata is decided
+/// by `WorktreeProvenance::is_strong_orca_metadata`.
+fn provenance_lookup<'a>(
+    provenance: &'a HashMap<String, WorktreeProvenance>,
+    worktree_path: &str,
+) -> Option<&'a WorktreeProvenance> {
+    provenance.get(&normalize_runtime_path_for_comparison(worktree_path))
 }
 
 fn check_sparse_checkout(wt: &mut GitWorktreeInfo) {
@@ -793,15 +1110,15 @@ fn fill_worktree_metadata(worktrees: &mut [GitWorktreeInfo]) {
         if wt.created_at.is_none() {
             wt.created_at = get_worktree_created_at(&wt.path);
         }
-        if let Some((d_name, err, status)) = metadata_map.get(&wt.path) {
+        if let Some(record) = metadata_map.get(&wt.path) {
             if wt.display_name.is_none() {
-                wt.display_name = d_name.clone();
+                wt.display_name = record.display_name.clone();
             }
             if wt.first_agent_message_rename_error.is_none() {
-                wt.first_agent_message_rename_error = err.clone();
+                wt.first_agent_message_rename_error = record.first_agent_message_rename_error.clone();
             }
             if wt.status.is_none() {
-                wt.status = status.clone();
+                wt.status = record.status.clone();
             }
         }
         check_sparse_checkout(wt);
@@ -816,7 +1133,7 @@ pub fn create_git_worktree(params: CreateWorktreeParams) -> Result<String, Strin
     }
 
     // Carrega base configurada para decidir onde criar o worktree (Orca worktree-create-base.ts)
-    let (_, _, _, worktree_base_opt, _, _, _) = load_hydra_workspace_context(&params.repo_path);
+    let worktree_base_opt = load_hydra_workspace_context(&params.repo_path).worktree_base_path;
     let target_repo = if repo.join(".git").exists() {
         repo.clone()
     } else {
@@ -865,10 +1182,27 @@ pub fn create_git_worktree(params: CreateWorktreeParams) -> Result<String, Strin
 
     let out = cmd.output().map_err(|e| format!("Failed to execute git worktree: {e}"))?;
     if out.status.success() {
-        Ok(worktree_dir.to_string_lossy().to_string())
+        let path = worktree_dir.to_string_lossy().to_string();
+        // Provenance (Orca WorktreeMeta.createdAt/createdWithAgent): a worktree
+        // Hydra created is Hydra-managed, so it stays visible even when the
+        // `external` policy hides plain `git worktree add` targets. Best-effort:
+        // the worktree exists on disk either way, so a metadata write failure
+        // must not turn a successful creation into an error.
+        let created_at = chrono::Utc::now().timestamp_millis();
+        let _ = persist_worktree_creation(&path, created_at, params.created_with_agent.as_deref());
+        Ok(path)
     } else {
         Err(String::from_utf8_lossy(&out.stderr).to_string())
     }
+}
+
+fn persist_worktree_creation(
+    worktree_path: &str,
+    created_at: i64,
+    created_with_agent: Option<&str>,
+) -> Result<(), String> {
+    let db = crate::db::DatabaseManager::new()?;
+    db.set_worktree_provenance(worktree_path, created_at, created_with_agent)
 }
 
 pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), String> {
@@ -1145,8 +1479,17 @@ branch refs/heads/feat/auth\n";
         // Create a workspace_dir that contains the child repo's worktree path would not exist yet, so filtering would hide it.
         // To keep test passing, we use an empty workspace_dir (no filtering) via direct raw parse test.
         // Instead we test the raw parsing + that folder scanning still discovers at least the main checkout via the unfiltered helper.
-        let (list, _) = list_git_worktrees_with_context(tmp.to_str().unwrap(), None, "", true, &[], &[], None)
-            .expect("list worktrees on folder workspace");
+        let (list, _) = list_git_worktrees_with_context(
+            tmp.to_str().unwrap(),
+            None,
+            "",
+            true,
+            &[],
+            &RepoVisibilityPolicy::default(),
+            None,
+            &HashMap::new(),
+        )
+        .expect("list worktrees on folder workspace");
         // With empty workspace_dir, only the main checkout should be visible (filtered result includes main)
         assert!(!list.is_empty(), "Folder workspace should discover sub-repo worktrees (main at least)");
         assert!(list[0].branch.contains("sub-repo-a: main") || list[0].branch.contains("main"));
@@ -1168,9 +1511,9 @@ branch refs/heads/feat/auth\n";
 
         let configured: Vec<String> = vec![];
         let known = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured);
-        let cls_nested = classify_worktree_ownership(&wt_nested.path, repo_path, &[repo_path.to_string()], &configured, &known);
-        let cls_scratch = classify_worktree_ownership(&wt_scratch.path, repo_path, &[repo_path.to_string()], &configured, &known);
-        let cls_outside = classify_worktree_ownership(&wt_outside.path, repo_path, &[repo_path.to_string()], &configured, &known);
+        let cls_nested = classify_worktree_ownership(&wt_nested.path, None, repo_path, &[repo_path.to_string()], &configured, &known);
+        let cls_scratch = classify_worktree_ownership(&wt_scratch.path, None, repo_path, &[repo_path.to_string()], &configured, &known);
+        let cls_outside = classify_worktree_ownership(&wt_outside.path, None, repo_path, &[repo_path.to_string()], &configured, &known);
         assert_eq!(cls_nested, WorktreeOwnership::External);
         assert_eq!(cls_scratch, WorktreeOwnership::AgentScratch);
         assert_eq!(cls_outside, WorktreeOwnership::External);
@@ -1178,7 +1521,7 @@ branch refs/heads/feat/auth\n";
         // Configured base suppresses scratch classification
         let configured2 = vec!["/home/user/src/my-repo/.claude/worktrees".to_string()];
         let known2 = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured2);
-        let cls_suppressed = classify_worktree_ownership(&wt_scratch.path, repo_path, &[repo_path.to_string()], &configured2, &known2);
+        let cls_suppressed = classify_worktree_ownership(&wt_scratch.path, None, repo_path, &[repo_path.to_string()], &configured2, &known2);
         assert_eq!(cls_suppressed, WorktreeOwnership::External, "configured base should supersede scratch detection");
     }
 
@@ -1215,22 +1558,49 @@ branch refs/heads/feat/auth\n";
             .expect("git worktree add runs");
         assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
 
-        let (visible, hidden) = list_git_worktrees_with_context(
-            repo.to_str().unwrap(),
-            None,
+        // (a) Orca policy: layout membership alone never shows a worktree. With the
+        // explicit `external: hide` Hydra persists, it is hidden (and offered in the
+        // inbox).
+        let (visible, hidden) = scan_with(
+            &repo,
             ws_dir.to_str().unwrap(),
-            true,
-            &[],
-            &[],
-            None,
-        )
-        .expect("scan runs");
-
-        let visible_paths: Vec<&str> = visible.iter().map(|w| w.path.as_str()).collect();
-        let hidden_paths: Vec<&str> = hidden.iter().map(|w| w.path.as_str()).collect();
+            &RepoVisibilityPolicy::default(),
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
         assert!(
-            visible_paths.contains(&nested.to_str().unwrap()),
-            "workspaceDir worktree must stay visible; visible={visible_paths:?} hidden={hidden_paths:?}"
+            hidden.contains(&nested.to_str().unwrap().to_string()),
+            "workspaceDir worktree must be hidden under the hide policy; visible={visible:?} hidden={hidden:?}"
+        );
+        assert!(!visible.contains(&nested.to_str().unwrap().to_string()));
+
+        // (b) An old repo with no persisted `external` default keeps the old rule:
+        // the same worktree stays visible.
+        let (visible, hidden) = scan_with(
+            &repo,
+            ws_dir.to_str().unwrap(),
+            &RepoVisibilityPolicy::default(),
+            None,
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&nested.to_str().unwrap().to_string()),
+            "legacy repo without an explicit default keeps it visible; visible={visible:?} hidden={hidden:?}"
+        );
+
+        // (c) Strong provenance (Hydra created it) wins over the hide policy.
+        let nested_str = nested.to_string_lossy().to_string();
+        let provenance = provenance_for(&nested_str, Some(1_700_000_000_000), None);
+        let (visible, _) = scan_with(
+            &repo,
+            ws_dir.to_str().unwrap(),
+            &RepoVisibilityPolicy::default(),
+            Some(&visibility_defaults_hide()),
+            &provenance,
+        );
+        assert!(
+            visible.contains(&nested_str),
+            "created worktree must stay visible; visible={visible:?}"
         );
 
         let _ = Command::new("git")
@@ -1295,5 +1665,774 @@ branch refs/heads/feat/auth\n";
         assert!(!stdout.contains("workspace-1754"), "worktree must be unregistered in git");
 
         let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    // ── Provenance decides visibility (Orca ownership.ts:124) ──────────────
+
+    /// Redirects `DatabaseManager::get_db_path()` to a temp file for this test
+    /// thread, so `create_git_worktree` never touches the real user database.
+    struct DbPathGuard;
+
+    impl DbPathGuard {
+        fn new(path: &Path) -> Self {
+            crate::db::TEST_DB_PATH_OVERRIDE.with(|p| *p.borrow_mut() = Some(path.to_path_buf()));
+            Self
+        }
+    }
+
+    impl Drop for DbPathGuard {
+        fn drop(&mut self) {
+            crate::db::TEST_DB_PATH_OVERRIDE.with(|p| *p.borrow_mut() = None);
+        }
+    }
+
+    fn unique_root(tag: &str) -> PathBuf {
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!("hydra-{tag}-{stamp}"))
+    }
+
+    fn init_bare_repo(repo: &Path) {
+        let _ = std::fs::create_dir_all(repo);
+        for args in [
+            vec!["init", "-q", "-b", "main"],
+            vec!["-c", "user.email=t@t", "-c", "user.name=t", "add", "-A"],
+            vec!["-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "init"],
+        ] {
+            let _ = Command::new("git").args(&args).current_dir(repo).output();
+        }
+    }
+
+    fn provenance_for(
+        path: &str,
+        created_at: Option<i64>,
+        created_with_agent: Option<&str>,
+    ) -> HashMap<String, WorktreeProvenance> {
+        let mut map = HashMap::new();
+        map.insert(
+            normalize_runtime_path_for_comparison(path),
+            WorktreeProvenance {
+                created_at,
+                created_with_agent: created_with_agent.map(str::to_string),
+            },
+        );
+        map
+    }
+
+    /// `worktree_visibility_defaults` as Hydra persists it: external hidden.
+    fn visibility_defaults_hide() -> WorktreeVisibilityDefaults {
+        WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: None,
+            source_preferences: None,
+        }
+    }
+
+    fn visibility_defaults_show() -> WorktreeVisibilityDefaults {
+        WorktreeVisibilityDefaults {
+            external: Some("show".to_string()),
+            custom_sources: None,
+            source_preferences: None,
+        }
+    }
+
+    fn scan_with(
+        repo: &Path,
+        workspace_dir: &str,
+        repo_policy: &RepoVisibilityPolicy,
+        defaults: Option<&WorktreeVisibilityDefaults>,
+        provenance: &HashMap<String, WorktreeProvenance>,
+    ) -> (Vec<String>, Vec<String>) {
+        let (visible, hidden) = list_git_worktrees_with_context(
+            repo.to_str().unwrap(),
+            None,
+            workspace_dir,
+            true,
+            &[],
+            repo_policy,
+            defaults,
+            provenance,
+        )
+        .expect("scan runs");
+        (
+            visible.into_iter().map(|w| w.path).collect(),
+            hidden.into_iter().map(|w| w.path).collect(),
+        )
+    }
+
+    /// The production shape: a plain checkout with `external: hide` persisted.
+    fn scan_external(repo: &Path, provenance: &HashMap<String, WorktreeProvenance>) -> (Vec<String>, Vec<String>) {
+        scan_with(
+            repo,
+            "",
+            &RepoVisibilityPolicy::default(),
+            Some(&visibility_defaults_hide()),
+            provenance,
+        )
+    }
+
+    fn add_worktree(repo: &Path, worktree: &Path, branch: &str) {
+        if let Some(parent) = worktree.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        let out = Command::new("git")
+            .args(["worktree", "add", "-b", branch])
+            .arg(worktree)
+            .current_dir(repo)
+            .output()
+            .expect("git worktree add runs");
+        assert!(
+            out.status.success(),
+            "worktree add failed: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+
+    #[test]
+    fn external_worktree_without_metadata_stays_hidden() {
+        let root = unique_root("prov-hidden");
+        let repo = root.join("repo");
+        let wt = root.join("repo-feat-prov");
+        init_bare_repo(&repo);
+        let added = Command::new("git")
+            .args(["worktree", "add", "-b", "feat-prov"])
+            .arg(&wt)
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add runs");
+        assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
+
+        let (visible, hidden) = scan_external(&repo, &HashMap::new());
+        assert!(!visible.contains(&wt.to_string_lossy().to_string()), "external worktree must stay hidden; visible={visible:?}");
+        assert!(hidden.contains(&wt.to_string_lossy().to_string()), "external worktree must be reported hidden; hidden={hidden:?}");
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn external_worktree_visibility_requires_strong_provenance() {
+        let root = unique_root("prov-visible");
+        let repo = root.join("repo");
+        let wt = root.join("repo-feat-prov");
+        let wt_str = wt.to_string_lossy().to_string();
+        init_bare_repo(&repo);
+        let added = Command::new("git")
+            .args(["worktree", "add", "-b", "feat-prov"])
+            .arg(&wt)
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add runs");
+        assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
+
+        // (a) A row carrying only weak fields (here: `updated_at`, none of the
+        // strong ones Hydra mirrors) does not prove provenance — Orca
+        // `hasStrongOrcaMetadata` (ownership.ts:227). Regression of f07e0ed.
+        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, None, None));
+        assert!(!visible.contains(&wt_str), "weak metadata must not force visibility; visible={visible:?}");
+        assert!(hidden.contains(&wt_str), "weak metadata must stay hidden; hidden={hidden:?}");
+
+        // (b) `created_at > 0` is strong metadata.
+        let (visible, _) = scan_external(&repo, &provenance_for(&wt_str, Some(1_700_000_000_000), None));
+        assert!(visible.contains(&wt_str), "created_at > 0 must force visibility; visible={visible:?}");
+
+        // (c) `created_with_agent` is strong metadata.
+        let (visible, _) = scan_external(&repo, &provenance_for(&wt_str, None, Some("claude")));
+        assert!(visible.contains(&wt_str), "created_with_agent must force visibility; visible={visible:?}");
+
+        // (d) `created_at = 0` is treated as absent (Orca truthiness).
+        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, Some(0), None));
+        assert!(!visible.contains(&wt_str), "created_at = 0 must not count as metadata; visible={visible:?}");
+        assert!(hidden.contains(&wt_str), "created_at = 0 must stay hidden; hidden={hidden:?}");
+
+        // A blank agent name is likewise not metadata.
+        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, None, Some("   ")));
+        assert!(!visible.contains(&wt_str), "blank agent must not count as metadata; visible={visible:?}");
+        assert!(hidden.contains(&wt_str));
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn agent_scratch_worktree_with_weak_metadata_keeps_its_policy() {
+        // Agent scratch (`.claude/worktrees`) keeps its own policy: a weak
+        // metadata row (no strong provenance) does not force visibility and the
+        // path is dropped from both lists when the scratch policy hides it.
+        let root = unique_root("prov-scratch");
+        let repo = root.join("repo");
+        let wt = repo.join(".claude").join("worktrees").join("feat-prov");
+        let wt_str = wt.to_string_lossy().to_string();
+        init_bare_repo(&repo);
+        let _ = std::fs::create_dir_all(wt.parent().unwrap());
+        let added = Command::new("git")
+            .args(["worktree", "add", "-b", "feat-prov"])
+            .arg(&wt)
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add runs");
+        assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
+
+        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, None, None));
+        assert!(!visible.contains(&wt_str), "agent-scratch must not be forced visible; visible={visible:?}");
+        assert!(!hidden.contains(&wt_str), "agent-scratch is dropped, not listed as hidden");
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn create_git_worktree_persists_provenance_and_stays_visible() {
+        let root = unique_root("prov-create");
+        let repo = root.join("repo");
+        init_bare_repo(&repo);
+        let _db_guard = DbPathGuard::new(&root.join("hydra_test.sqlite3"));
+
+        let path = create_git_worktree(CreateWorktreeParams {
+            repo_path: repo.to_string_lossy().to_string(),
+            branch_name: "feat/prov".to_string(),
+            new_branch: true,
+            created_with_agent: Some("claude".to_string()),
+        })
+        .expect("create_git_worktree succeeds");
+        assert!(Path::new(&path).exists(), "worktree must exist on disk");
+
+        let persisted = load_all_persisted_worktree_metadata();
+        let record = persisted.get(&path).expect("metadata row must be persisted");
+        assert!(
+            record.provenance.created_at.is_some_and(|v| v > 0),
+            "created_at must be stamped"
+        );
+        assert_eq!(record.provenance.created_with_agent.as_deref(), Some("claude"));
+
+        // The persisted provenance is what makes the freshly created worktree visible
+        // under the default `external: hide` policy.
+        let provenance = load_worktree_provenance_map();
+        let (visible, _) = scan_external(&repo, &provenance);
+        assert!(visible.contains(&path), "created worktree must be visible; visible={visible:?}");
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&path).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    // ── Visibility matrix (Orca shouldShowWorktree) ─────────────────────────
+
+    fn source_prefs(built_in: &[(&str, &str)], custom: &[(&str, &str)]) -> SourcePreferences {
+        SourcePreferences {
+            built_in: Some(
+                built_in
+                    .iter()
+                    .map(|(id, v)| (id.to_string(), v.to_string()))
+                    .collect(),
+            ),
+            custom: Some(
+                custom
+                    .iter()
+                    .map(|(id, v)| (id.to_string(), v.to_string()))
+                    .collect(),
+            ),
+        }
+    }
+
+    fn custom_source(id: &str, root_path: &Path) -> CustomWorktreeSource {
+        CustomWorktreeSource {
+            id: id.to_string(),
+            root_path: root_path.to_string_lossy().to_string(),
+        }
+    }
+
+    #[test]
+    fn layout_only_worktree_follows_legacy_and_external_policy() {
+        // A worktree under the global workspaceDir (nested layout → `external`
+        // ownership). Orca: the layout classifies ownership, it never shows the row.
+        let root = unique_root("vis-layout");
+        let repo = root.join("repo");
+        let ws_dir = root.join("workspaces");
+        let wt = ws_dir.join("feat-layout");
+        init_bare_repo(&repo);
+        add_worktree(&repo, &wt, "feat-layout");
+        let wt_str = wt.to_string_lossy().to_string();
+        let ws_str = ws_dir.to_string_lossy().to_string();
+
+        let not_legacy = RepoVisibilityPolicy {
+            external_worktree_visibility_legacy: Some(false),
+            ..Default::default()
+        };
+
+        // New repo + the `external: hide` Hydra persists → hidden, offered in the inbox.
+        let (visible, hidden) = scan_with(
+            &repo,
+            &ws_str,
+            &not_legacy,
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(
+            hidden.contains(&wt_str) && !visible.contains(&wt_str),
+            "layout-only must be hidden for a non-legacy repo; visible={visible:?} hidden={hidden:?}"
+        );
+
+        // New repo with no persisted default → still hidden (no legacy rescue).
+        let (visible, hidden) = scan_with(&repo, &ws_str, &not_legacy, None, &HashMap::new());
+        assert!(
+            !visible.contains(&wt_str) && hidden.contains(&wt_str),
+            "non-legacy repo must stay hidden without defaults; visible={visible:?} hidden={hidden:?}"
+        );
+
+        // Old repo (legacy unset) with no persisted default → the old rule applied.
+        let (visible, _) = scan_with(
+            &repo,
+            &ws_str,
+            &RepoVisibilityPolicy::default(),
+            None,
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&wt_str),
+            "legacy repo must keep the old rule; visible={visible:?}"
+        );
+
+        // Global `external: show` beats the non-legacy default.
+        let (visible, _) = scan_with(
+            &repo,
+            &ws_str,
+            &not_legacy,
+            Some(&visibility_defaults_show()),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&wt_str),
+            "external: show must show it; visible={visible:?}"
+        );
+
+        // The per-repo override wins over the global default.
+        let repo_show = RepoVisibilityPolicy {
+            external_worktree_visibility: Some("show".to_string()),
+            ..Default::default()
+        };
+        let (visible, _) = scan_with(
+            &repo,
+            &ws_str,
+            &repo_show,
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&wt_str),
+            "repo override must win over the global default; visible={visible:?}"
+        );
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn imported_worktree_stays_visible_under_the_hide_policy() {
+        let root = unique_root("vis-imported");
+        let repo = root.join("repo");
+        let ws_dir = root.join("workspaces");
+        let wt = ws_dir.join("feat-imported");
+        init_bare_repo(&repo);
+        add_worktree(&repo, &wt, "feat-imported");
+        let wt_str = wt.to_string_lossy().to_string();
+        let ws_str = ws_dir.to_string_lossy().to_string();
+
+        let policy = RepoVisibilityPolicy {
+            external_worktree_visibility_legacy: Some(false),
+            imported_paths: vec![wt_str.clone()],
+            ..Default::default()
+        };
+        let (visible, hidden) = scan_with(
+            &repo,
+            &ws_str,
+            &policy,
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&wt_str) && !hidden.contains(&wt_str),
+            "imported path must be visible; visible={visible:?} hidden={hidden:?}"
+        );
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn custom_source_preferences_control_visibility() {
+        let root = unique_root("vis-source");
+        let repo = root.join("repo");
+        let custom_root = root.join("custom-src");
+        let wt = custom_root.join("feat-custom");
+        init_bare_repo(&repo);
+        add_worktree(&repo, &wt, "feat-custom");
+        let wt_str = wt.to_string_lossy().to_string();
+
+        let with_source = |preferences: Option<SourcePreferences>| RepoVisibilityPolicy {
+            custom_sources: Some(vec![custom_source("s1", &custom_root)]),
+            source_preferences: preferences,
+            ..Default::default()
+        };
+
+        // `show` preference on the source → visible, even with `external: hide`.
+        let (visible, _) = scan_with(
+            &repo,
+            "",
+            &with_source(Some(source_prefs(&[], &[("s1", "show")]))),
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&wt_str),
+            "custom source with `show` must be visible; visible={visible:?}"
+        );
+
+        // `hide` preference → hidden (and offered in the inbox).
+        let (visible, hidden) = scan_with(
+            &repo,
+            "",
+            &with_source(Some(source_prefs(&[], &[("s1", "hide")]))),
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(
+            !visible.contains(&wt_str) && hidden.contains(&wt_str),
+            "custom source with `hide` must be hidden; visible={visible:?} hidden={hidden:?}"
+        );
+
+        // No repo preference but the repo owns the source → Orca defaults it hidden.
+        let (visible, hidden) = scan_with(
+            &repo,
+            "",
+            &with_source(None),
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(
+            !visible.contains(&wt_str) && hidden.contains(&wt_str),
+            "repo-owned source without a preference defaults hidden; visible={visible:?} hidden={hidden:?}"
+        );
+
+        // A global source (not owned by the repo) follows the global preference.
+        let defaults = WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: Some(vec![custom_source("s1", &custom_root)]),
+            source_preferences: Some(source_prefs(&[], &[("s1", "show")])),
+        };
+        let (visible, _) = scan_with(
+            &repo,
+            "",
+            &RepoVisibilityPolicy::default(),
+            Some(&defaults),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&wt_str),
+            "global custom source `show` must be visible; visible={visible:?}"
+        );
+
+        // An explicit empty repo list supersedes the global list entirely.
+        let empty_list = RepoVisibilityPolicy {
+            custom_sources: Some(vec![]),
+            ..Default::default()
+        };
+        let (visible, hidden) = scan_with(
+            &repo,
+            "",
+            &empty_list,
+            Some(&defaults),
+            &HashMap::new(),
+        );
+        assert!(
+            !visible.contains(&wt_str) && hidden.contains(&wt_str),
+            "an explicit empty repo list supersedes the global list; visible={visible:?} hidden={hidden:?}"
+        );
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn built_in_source_preferences_keep_scratch_out_of_the_inbox() {
+        let root = unique_root("vis-scratch-source");
+        let repo = root.join("repo");
+        let claude_wt = repo.join(".claude").join("worktrees").join("feat-claude");
+        let gsd_wt = repo.join(".gsd-workspaces").join("feat-gsd");
+        init_bare_repo(&repo);
+        add_worktree(&repo, &claude_wt, "feat-claude");
+        add_worktree(&repo, &gsd_wt, "feat-gsd");
+        let claude_str = claude_wt.to_string_lossy().to_string();
+        let gsd_str = gsd_wt.to_string_lossy().to_string();
+
+        let hide_claude = WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: None,
+            source_preferences: Some(source_prefs(&[("claude", "hide")], &[])),
+        };
+
+        // Hidden scratch is dropped from BOTH lists: agent plumbing never enters
+        // the discovery inbox (Orca `isUserFacingExternalWorktree`).
+        let (visible, hidden) = scan_with(
+            &repo,
+            "",
+            &RepoVisibilityPolicy::default(),
+            Some(&hide_claude),
+            &HashMap::new(),
+        );
+        assert!(
+            !visible.contains(&claude_str) && !hidden.contains(&claude_str),
+            "hidden claude scratch must stay out of the inbox; visible={visible:?} hidden={hidden:?}"
+        );
+
+        // The repo-level preference `show` beats the global `hide`.
+        let repo_show = RepoVisibilityPolicy {
+            source_preferences: Some(source_prefs(&[("claude", "show")], &[])),
+            ..Default::default()
+        };
+        let (visible, _) = scan_with(
+            &repo,
+            "",
+            &repo_show,
+            Some(&hide_claude),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&claude_str),
+            "repo-level `claude: show` must win; visible={visible:?}"
+        );
+
+        // `gsd` carries its own key: hidden here while claude is shown.
+        let gsd_shown = WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: None,
+            source_preferences: Some(source_prefs(&[("claude", "show"), ("gsd", "show")], &[])),
+        };
+        let (visible, hidden) = scan_with(
+            &repo,
+            "",
+            &RepoVisibilityPolicy::default(),
+            Some(&gsd_shown),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&claude_str) && visible.contains(&gsd_str),
+            "both built-in sources shown; visible={visible:?} hidden={hidden:?}"
+        );
+
+        let gsd_only = WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: None,
+            source_preferences: Some(source_prefs(&[("gsd", "show")], &[])),
+        };
+        let (visible, hidden) = scan_with(
+            &repo,
+            "",
+            &RepoVisibilityPolicy::default(),
+            Some(&gsd_only),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&gsd_str) && !visible.contains(&claude_str) && !hidden.contains(&claude_str),
+            "gsd has its own key; visible={visible:?} hidden={hidden:?}"
+        );
+
+        for wt in [&claude_wt, &gsd_wt] {
+            let _ = Command::new("git")
+                .args(["worktree", "remove", "--force"])
+                .arg(wt)
+                .current_dir(&repo)
+                .output();
+        }
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn agent_scratch_built_in_preference_from_repo_policy_precedence() {
+        // Pure policy check: repo preference > global preference > hide, and the
+        // built-in ids are the only keys with a preference.
+        let repo = RepoVisibilityPolicy {
+            source_preferences: Some(source_prefs(&[("claude", "show")], &[])),
+            ..Default::default()
+        };
+        let defaults = visibility_defaults_hide();
+        assert!(repo.built_in_source_is_visible("claude", Some(&defaults)));
+        assert!(!repo.built_in_source_is_visible("gsd", Some(&defaults)));
+        // No repo preference and no global default → hidden.
+        assert!(!RepoVisibilityPolicy::default().built_in_source_is_visible("claude", None));
+
+        let global_show = WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: None,
+            source_preferences: Some(source_prefs(&[("claude", "show")], &[])),
+        };
+        let no_repo_prefs = RepoVisibilityPolicy::default();
+        assert!(no_repo_prefs.built_in_source_is_visible("claude", Some(&global_show)));
+        assert!(!no_repo_prefs.built_in_source_is_visible("gsd", Some(&global_show)));
+
+        // Unset legacy resolves to true; an explicit flag wins.
+        assert!(RepoVisibilityPolicy::default().is_legacy_repo());
+        assert!(!RepoVisibilityPolicy {
+            external_worktree_visibility_legacy: Some(false),
+            ..Default::default()
+        }
+        .is_legacy_repo());
+        // A repo-level external override also ends the legacy fallback.
+        assert!(!RepoVisibilityPolicy {
+            external_worktree_visibility: Some("show".to_string()),
+            ..Default::default()
+        }
+        .is_legacy_repo());
+    }
+
+    #[test]
+    fn agent_worktree_visibility_overrides_built_in_source_and_scratch() {
+        // Orca `effectiveBuiltInWorktreeSourceVisibility`: the per-repo
+        // `agentWorktreeVisibility` is the built-in source override — below an
+        // explicit source preference, above the global preference.
+        let defaults_hide = visibility_defaults_hide();
+        let defaults_show_claude = WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: None,
+            source_preferences: Some(source_prefs(&[("claude", "show")], &[])),
+        };
+
+        // repo `show`, no preference, global hide → the built-in source shows,
+        // for every built-in id (like Orca).
+        let repo_show = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("show".to_string()),
+            ..Default::default()
+        };
+        assert!(repo_show.built_in_source_is_visible("claude", Some(&defaults_hide)));
+        assert!(repo_show.built_in_source_is_visible("gsd", Some(&defaults_hide)));
+
+        // repo `hide` / absent → hidden even when the global default shows.
+        let repo_hide = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("hide".to_string()),
+            ..Default::default()
+        };
+        assert!(!repo_hide.built_in_source_is_visible("claude", Some(&defaults_show_claude)));
+        assert!(!RepoVisibilityPolicy::default()
+            .built_in_source_is_visible("claude", Some(&defaults_hide)));
+
+        // An explicit source preference beats the repo field.
+        let pref_beats = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("show".to_string()),
+            source_preferences: Some(source_prefs(&[("claude", "hide")], &[])),
+            ..Default::default()
+        };
+        assert!(!pref_beats.built_in_source_is_visible("claude", Some(&defaults_hide)));
+        let pref_show = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("hide".to_string()),
+            source_preferences: Some(source_prefs(&[("claude", "show")], &[])),
+            ..Default::default()
+        };
+        assert!(pref_show.built_in_source_is_visible("claude", Some(&defaults_hide)));
+
+        // The no-source agent-scratch branch: only an explicit repo `show` shows.
+        assert!(should_show_worktree(
+            &WorktreeOwnership::AgentScratch,
+            false,
+            None,
+            &repo_show,
+            None
+        ));
+        assert!(!should_show_worktree(
+            &WorktreeOwnership::AgentScratch,
+            false,
+            None,
+            &repo_hide,
+            None
+        ));
+        assert!(!should_show_worktree(
+            &WorktreeOwnership::AgentScratch,
+            false,
+            None,
+            &RepoVisibilityPolicy::default(),
+            Some(&defaults_show_claude)
+        ));
+
+        // Catalog → policy wiring reads the wire key.
+        let catalog_repo: CatalogRepo = serde_json::from_value(serde_json::json!({
+            "id": "r1",
+            "path": "/x/repo",
+            "displayName": "repo",
+            "addedAt": 1,
+            "agentWorktreeVisibility": "show"
+        }))
+        .expect("catalog repo parses");
+        let wired = RepoVisibilityPolicy::from_catalog(&catalog_repo);
+        assert!(wired.built_in_source_is_visible("claude", Some(&defaults_hide)));
+    }
+
+    #[test]
+    fn agent_worktree_visibility_surfaces_hidden_scratch_worktrees() {
+        let root = unique_root("agent-vis-scan");
+        let repo = root.join("repo");
+        let wt = repo.join(".claude").join("worktrees").join("feat-agent-vis");
+        let wt_str = wt.to_string_lossy().to_string();
+        init_bare_repo(&repo);
+        add_worktree(&repo, &wt, "feat-agent-vis");
+
+        // repo `agentWorktreeVisibility: show` overrides the global `external: hide`
+        // for the built-in Claude source matching `.claude/worktrees`.
+        let show = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("show".to_string()),
+            ..Default::default()
+        };
+        let (visible, _) = scan_with(
+            &repo,
+            "",
+            &show,
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&wt_str),
+            "repo `show` must surface scratch; visible={visible:?}"
+        );
+
+        // `hide` and absent stay hidden (default hide, including legacy), and
+        // agent plumbing never enters the discovery inbox.
+        for policy in [
+            RepoVisibilityPolicy {
+                agent_worktree_visibility: Some("hide".to_string()),
+                ..Default::default()
+            },
+            RepoVisibilityPolicy::default(),
+        ] {
+            let (visible, hidden) = scan_with(
+                &repo,
+                "",
+                &policy,
+                Some(&visibility_defaults_hide()),
+                &HashMap::new(),
+            );
+            assert!(!visible.contains(&wt_str), "scratch must stay hidden; visible={visible:?}");
+            assert!(!hidden.contains(&wt_str), "agent plumbing stays out of the inbox");
+        }
+
+        // An explicit source preference beats the repo field.
+        let pref_hide = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("show".to_string()),
+            source_preferences: Some(source_prefs(&[("claude", "hide")], &[])),
+            ..Default::default()
+        };
+        let (visible, _) = scan_with(
+            &repo,
+            "",
+            &pref_hide,
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(!visible.contains(&wt_str), "source preference wins; visible={visible:?}");
+
+        let _ = Command::new("git")
+            .args(["worktree", "remove", "--force"])
+            .arg(&wt)
+            .current_dir(&repo)
+            .output();
+        let _ = std::fs::remove_dir_all(&root);
     }
 }

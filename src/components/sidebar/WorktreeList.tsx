@@ -3,7 +3,15 @@ import React, { useMemo, useCallback, useLayoutEffect } from "react";
 import { FolderPlus, Plus } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
 import { WorktreeCard } from "./WorktreeCard";
+import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
+import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
+import type { PrDisplay } from "./pr-display";
+import {
+  getWorktreeCardContentIndent,
+  getWorktreeCardSurfaceInset,
+} from "./worktree-list/rows/indentation";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
+import { ImportedWorktreesVisibilityLine } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import {
   setVisibleWorktreeIds,
   setVisibleWorktreeShortcutTargets,
@@ -80,6 +88,11 @@ export interface WorktreeListProps {
   projectGroups?: ProjectGroup[];
   projectGroupMap?: Record<string, string>;
   folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
+  liveWorkspacePaths?: ReadonlySet<string>;
+  missingFolderPaths?: ReadonlySet<string>;
+  onActivateFolderWorkspace?: (folderPath: string) => void;
+  /** Review display per worktree path (populated by the host PR lookup). */
+  prByPath?: Record<string, PrDisplay>;
   collapsedProjects: Set<string>;
   collapsedGroups: Set<string>;
   filter?: string;
@@ -100,8 +113,13 @@ export interface WorktreeListProps {
   onProjectContextMenu?: (e: React.MouseEvent, proj: HydraProject) => void;
   onGroupContextMenu?: (e: React.MouseEvent, group: { id: string; name: string }) => void;
   onWorktreeContextMenu?: (e: React.MouseEvent, wt: GitWorktreeInfo, proj?: HydraProject) => void;
-  onReviewHiddenWorktrees?: (proj: HydraProject, hiddenWorktrees: GitWorktreeInfo[]) => void;
   onSuppressHiddenWorktrees?: (proj: HydraProject) => void;
+  /** Recover one discovered worktree into the list (`import_worktree` per path). */
+  onShowHiddenWorktree?: (proj: HydraProject, worktreePath: string) => void;
+  /** Acknowledge the listed discovered worktrees into the repo's inbox baseline. */
+  onKeepHiddenWorktrees?: (proj: HydraProject, worktreePaths: string[]) => void;
+  /** Open the `Non-Hydra worktrees` modal from the compact pill. */
+  onReviewHiddenWorktrees?: (proj: HydraProject) => void;
 
   // Drag and drop state & handlers
   draggedWorktreePath?: string | null;
@@ -136,9 +154,14 @@ export function WorktreeList({
   projectGroups = [],
   projectGroupMap = {},
   folderWorkspaces = [],
+  liveWorkspacePaths,
+  missingFolderPaths,
+  onActivateFolderWorkspace,
+  prByPath,
   collapsedProjects,
   collapsedGroups,
   filter = "",
+  displayOptions,
   compactCards = false,
   portsByWorktree,
   getFilteredAndSortedWorktrees,
@@ -155,8 +178,10 @@ export function WorktreeList({
   onProjectContextMenu,
   onGroupContextMenu,
   onWorktreeContextMenu,
-  onReviewHiddenWorktrees,
   onSuppressHiddenWorktrees,
+  onShowHiddenWorktree,
+  onKeepHiddenWorktrees,
+  onReviewHiddenWorktrees,
   worktreeDropTarget,
   draggedProjectId,
   projectDropTarget,
@@ -256,23 +281,43 @@ export function WorktreeList({
             onDragEnd={onProjectDragEnd}
           />
 
-          {/* Hidden worktrees inbox banner */}
-          {hiddenWorktrees.length > 0 && (
-            <NewExternalWorktreesInboxLine
-              repoDisplayName={proj.name}
-              inboxCount={hiddenWorktrees.length}
-              onReview={
-                onReviewHiddenWorktrees
-                  ? () => onReviewHiddenWorktrees(proj, hiddenWorktrees)
-                  : undefined
-              }
-              onSuppress={
-                onSuppressHiddenWorktrees
-                  ? () => onSuppressHiddenWorktrees(proj)
-                  : undefined
-              }
-            />
-          )}
+          {/* Discovered-worktree inbox, two Orca phases: the expandable notice until the
+              repo's prompt completes, then the compact pill that opens the visibility
+              dialog. Each surface owns its half of the phase gate and nulls itself out. */}
+          <ImportedWorktreesVisibilityLine
+            repoDisplayName={proj.name}
+            hiddenWorktrees={hiddenWorktrees}
+            baselinePaths={proj.externalWorktreeInboxBaselinePaths}
+            suppressed={proj.suppressed_discovery === true}
+            promptDismissedAt={proj.externalWorktreeVisibilityPromptDismissedAt ?? null}
+            onShow={
+              onShowHiddenWorktree
+                ? (worktreePath) => onShowHiddenWorktree(proj, worktreePath)
+                : undefined
+            }
+            onKeepHidden={
+              onKeepHiddenWorktrees
+                ? (worktreePaths) => onKeepHiddenWorktrees(proj, worktreePaths)
+                : undefined
+            }
+          />
+          <NewExternalWorktreesInboxLine
+            repoDisplayName={proj.name}
+            hiddenWorktrees={hiddenWorktrees}
+            baselinePaths={proj.externalWorktreeInboxBaselinePaths}
+            suppressed={proj.suppressed_discovery === true}
+            promptDismissedAt={proj.externalWorktreeVisibilityPromptDismissedAt ?? null}
+            onReview={
+              onReviewHiddenWorktrees
+                ? () => onReviewHiddenWorktrees(proj)
+                : undefined
+            }
+            onSuppress={
+              onSuppressHiddenWorktrees
+                ? () => onSuppressHiddenWorktrees(proj)
+                : undefined
+            }
+          />
 
           {/* Expanded Worktrees List */}
           {!isCollapsed && (
@@ -286,17 +331,42 @@ export function WorktreeList({
                   );
                   const isFocused = (activeWorktreePath ?? null) === wt.path;
                   const isRevealed = highlightedRevealPath === wt.path;
+                  // Orca geometry (worktree-list/rows/item-row.tsx:183-205): the row
+                  // applies `surfaceInset` as padding and hands the card the content
+                  // indent, both derived from group depth — without it every card sits
+                  // flush with its project header.
+                  const isGrouped = displayOptions.groupBy !== "none";
+                  const groupDepth = inGroup ? 1 : 0;
+                  const surfaceInset = getWorktreeCardSurfaceInset({ isGrouped, groupDepth });
+                  const cardContentIndent = Math.max(
+                    0,
+                    getWorktreeCardContentIndent({ isGrouped, groupDepth, lineageDepth: 0 }) -
+                      surfaceInset
+                  );
 
                   return (
                     <div
                       key={wt.path}
                       data-worktree-path={wt.path}
                       className="relative"
+                      style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
                     >
                       <WorktreeCard
                         worktree={wt}
+                        // Lane signals: agent sessions + a mounted terminal decide the
+                        // dot; the PR display (when the host reports one) outranks it.
+                        status={workspaceStatusFrom({
+                          sessions: wtSessions,
+                          hasLiveTerminal: (liveWorkspacePaths ?? new Set<string>()).has(wt.path),
+                        })}
+                        prDisplay={prByPath?.[wt.path] ?? null}
                         project={proj}
                         repo={proj}
+                        // Why Orca hides it here: inside a repo group the avatar is already
+                        // on the header, so the card lane belongs to status/branch (item-row.tsx:213).
+                        hideRepoBadge={isGrouped}
+                        contentIndent={cardContentIndent}
+                        flushSurface
                         isActive={activeWorktreePath === wt.path}
                         isCurrentWorktree={activeWorktreePath === wt.path}
                         isFocused={isFocused}
@@ -362,8 +432,9 @@ export function WorktreeList({
       onProjectDragOver,
       onProjectDrop,
       onProjectDragEnd,
-      onReviewHiddenWorktrees,
       onSuppressHiddenWorktrees,
+      onShowHiddenWorktree,
+      onKeepHiddenWorktrees,
       sessions,
       activeWorktreePath,
       highlightedRevealPath,
@@ -406,33 +477,54 @@ export function WorktreeList({
               variant="group"
               group={group}
               isCollapsed={isGroupCollapsed}
-              count={groupProjects.length}
+              // Orca counts the whole subtree (repos + folder workspaces + subgroups);
+              // `count` only arms the collapse chevron, but it must include the folder
+              // rows or a folder-only group loses its chevron (Parity: SectionHeader.tsx
+              // `showHeaderCollapseAffordance = row.count > 0`).
+              count={
+                groupProjects.length +
+                (folderWorkspaces ?? []).filter((w) => w.projectGroupId === group.id).length
+              }
               onToggleCollapse={() => onToggleGroupCollapse(group.id)}
               onContextMenu={
                 onGroupContextMenu ? (e) => onGroupContextMenu(e, group) : undefined
               }
+              onOpenNewWorkspace={
+                onOpenNewWorkspaceModal
+                  ? () => {
+                      const folder = (folderWorkspaces ?? []).find(
+                        (w) => w.projectGroupId === group.id
+                      );
+                      if (!folder) return;
+                      onOpenNewWorkspaceModal({
+                        id: `folder-${folder.id}`,
+                        name: group.name,
+                        path: folder.folderPath,
+                        is_git: false,
+                        current_branch: "",
+                      });
+                    }
+                  : undefined
+              }
               isDropTarget={isGroupDropTarget}
             />
 
-            {/* Group folder-workspace rows as WorktreeCards (Orca folder-row parity) */}
+            {/* Group folder-workspace rows (Orca folder-row visual parity) */}
             {!isGroupCollapsed &&
               (folderWorkspaces ?? [])
                 .filter((w) => w.projectGroupId === group.id)
                 .map((w) => (
-                  <WorktreeCard
+                  <FolderWorkspaceRow
                     key={`folder-ws-${w.id}`}
-                    worktree={{
-                      path: w.folderPath,
-                      head_commit: "",
-                      branch: "",
-                      display_name: w.name,
-                      is_bare: false,
-                      is_locked: false,
-                    }}
+                    name={w.name}
+                    folderPath={w.folderPath}
+                    status={workspaceStatusFrom({
+                      sessions: sessions.filter((s) => s.project_path === w.folderPath),
+                      hasLiveTerminal: (liveWorkspacePaths ?? new Set<string>()).has(w.folderPath),
+                    })}
+                    pathMissing={(missingFolderPaths ?? new Set<string>()).has(w.folderPath)}
                     isActive={activeWorktreePath === w.folderPath}
-                    isCurrentWorktree={activeWorktreePath === w.folderPath}
-                    flushSurface
-                    onSelect={() => onSelectProject({ id: `folder-${w.id}`, name: w.name, path: w.folderPath, is_git: false, current_branch: "" } as HydraProject)}
+                    onActivate={() => onActivateFolderWorkspace?.(w.folderPath)}
                   />
                 ))}
             {/* Group Projects (Orca flat: header + folder rows + repos, no wrapper) */}

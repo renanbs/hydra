@@ -12,6 +12,7 @@ pub mod git_status;
 pub mod ipc;
 pub mod keep_awake;
 pub mod pairing;
+pub mod pr_status;
 pub mod project_manager;
 pub mod server;
 pub mod shell_detection;
@@ -36,6 +37,7 @@ use git_status::{
 };
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
+use pr_status::{fetch_pr_status, PrStatus};
 use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
 use preflight::{check_github_starred, check_preflight_tools, open_external_url, star_github_repo, PreflightStatus};
 use project_manager::{
@@ -191,6 +193,14 @@ async fn rename_path_cmd(oldPath: String, newPath: String) -> Result<(), String>
 async fn delete_path_cmd(path: String) -> Result<(), String> {
     tokio::task::spawn_blocking(move || delete_path(&path)).await.map_err(|e| e.to_string())?
 }
+/// Folder-workspace path health (`FolderPathStatusIndicator` needs it): Orca asks the
+/// host whether the folder still exists; Hydra had no probe at all.
+#[tauri::command]
+async fn path_exists(path: String) -> bool {
+    tokio::task::spawn_blocking(move || std::path::Path::new(&path).is_dir())
+        .await
+        .unwrap_or(false)
+}
 #[tauri::command]
 async fn get_branch_commits_cmd(repoPath: String, baseRef: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
     tokio::task::spawn_blocking(move || get_branch_commits(&repoPath, &baseRef, limit)).await.map_err(|e| e.to_string())?
@@ -291,6 +301,63 @@ async fn catalog_remove_repo(path: String) -> Result<CatalogEnvelope, String> {
 }
 
 #[tauri::command]
+async fn catalog_set_worktree_visibility(
+    repo_path: String,
+    baseline_paths: Option<Vec<String>>,
+    prompt_dismissed_at: Option<i64>,
+) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        catalog::set_external_worktree_visibility(
+            &mut envelope,
+            &repo_path,
+            baseline_paths,
+            prompt_dismissed_at,
+        )?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Per-repo worktree-visibility config written by the visibility dialog.
+/// Full replace: each argument is the desired state, `None` clears that field
+/// (`externalWorktreeVisibilityLegacy: null` = "unset" = the old rule applied;
+/// `agentWorktreeVisibility: null` = no override, so the built-in "Claude Code"
+/// source inherits the global preference and scratch stays hidden;
+/// `externalWorktreeDiscoverySuppressedAt: null` = un-suppressed, so the inbox
+/// reopens).
+#[tauri::command]
+async fn catalog_set_worktree_visibility_sources(
+    repo_path: String,
+    custom_sources: Option<Vec<db::CustomWorktreeSource>>,
+    source_preferences: Option<db::SourcePreferences>,
+    external_worktree_visibility: Option<String>,
+    external_worktree_visibility_legacy: Option<bool>,
+    agent_worktree_visibility: Option<String>,
+    external_worktree_discovery_suppressed_at: Option<i64>,
+) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        catalog::set_worktree_visibility_sources(
+            &mut envelope,
+            &repo_path,
+            custom_sources,
+            source_preferences,
+            external_worktree_visibility,
+            external_worktree_visibility_legacy,
+            agent_worktree_visibility,
+            external_worktree_discovery_suppressed_at,
+        )?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn list_projects() -> Vec<HydraProject> {
     list_local_projects()
 }
@@ -337,6 +404,16 @@ async fn scan_worktrees(repo_path: String) -> Result<ProjectWorktreeScanResult, 
     .map_err(|e| e.to_string())?
 }
 
+/// PR status for `branch` in `repo_path`, via the optional `gh` CLI.
+/// Fail-open: `None` when there is no PR or no `gh` — never an error.
+#[tauri::command]
+async fn pr_status(repo_path: String, branch: String) -> Option<PrStatus> {
+    tokio::task::spawn_blocking(move || fetch_pr_status(&repo_path, &branch))
+        .await
+        .ok()
+        .flatten()
+}
+
 #[tauri::command]
 async fn import_worktree(project_path: String, worktree_path: String) -> Result<(), String> {
     import_external_worktree_for_project(&project_path, &worktree_path)
@@ -377,12 +454,18 @@ async fn clone_project(url: String, parent_dir: String) -> Result<String, String
     .map_err(|e| e.to_string())?
 }
 #[tauri::command]
-async fn create_worktree(repo_path: String, branch_name: String, new_branch: bool) -> Result<String, String> {
+async fn create_worktree(
+    repo_path: String,
+    branch_name: String,
+    new_branch: bool,
+    created_with_agent: Option<String>,
+) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
         create_git_worktree(CreateWorktreeParams {
             repo_path,
             branch_name,
             new_branch,
+            created_with_agent,
         })
     })
     .await
@@ -1388,6 +1471,7 @@ pub fn run() {
             create_folder_cmd,
             rename_path_cmd,
             delete_path_cmd,
+            path_exists,
             get_branch_commits_cmd,
             git_push_cmd,
             git_pull_cmd,
@@ -1404,12 +1488,15 @@ pub fn run() {
             catalog_get,
             catalog_add_folder,
             catalog_remove_repo,
+            catalog_set_worktree_visibility,
+            catalog_set_worktree_visibility_sources,
             register_existing_project,
             remove_project,
             get_project_worktree_base,
             set_project_worktree_base,
             list_worktrees,
             scan_worktrees,
+            pr_status,
             import_worktree,
             suppress_worktree_inbox,
             create_project,

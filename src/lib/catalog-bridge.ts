@@ -35,6 +35,15 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
       imported_worktrees: r.importedExternalWorktreePaths,
       suppressed_discovery:
         r.externalWorktreeDiscoverySuppressedAt != null ? true : undefined,
+      externalWorktreeInboxBaselinePaths: r.externalWorktreeInboxBaselinePaths,
+      externalWorktreeVisibilityPromptDismissedAt:
+        r.externalWorktreeVisibilityPromptDismissedAt ?? null,
+      externalWorktreeVisibility: r.externalWorktreeVisibility ?? null,
+      externalWorktreeVisibilityLegacy: r.externalWorktreeVisibilityLegacy ?? null,
+      agentWorktreeVisibility: r.agentWorktreeVisibility ?? null,
+      externalWorktreeDiscoverySuppressedAt: r.externalWorktreeDiscoverySuppressedAt ?? null,
+      customWorktreeVisibilitySources: r.customWorktreeVisibilitySources ?? null,
+      worktreeVisibilitySourcePreferences: r.worktreeVisibilitySourcePreferences ?? null,
       repo_icon: (r.repoIcon as HydraProject["repo_icon"]) ?? null,
     };
   });

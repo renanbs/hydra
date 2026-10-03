@@ -5,6 +5,7 @@ import { WorktreeCardHeader } from './worktree-card-header'
 import { WorktreeCardMetaRow } from './worktree-card-meta-row'
 import { WorktreeCardDetailsHover } from './WorktreeCardDetailsHover'
 import { WorktreeCardAgents } from './WorktreeCardAgents'
+import { WorktreeCardStatusLane } from './WorktreeCardStatusLane'
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
@@ -30,9 +31,13 @@ export function WorktreeCardParentContent({
     titleRenaming,
     newCardStyle,
     lineageChildren,
+    affiliateListMode = false,
+    status,
+    prDisplay,
+    branch,
     showInlineAgentList
   } = card
-  const { titleOnlyCard, parentContentMarginLeft } = presentation
+  const { titleOnlyCard, parentContentMarginLeft, showCombinedStatusSlot } = presentation
 
   const identityContent = (
     <div
@@ -72,6 +77,22 @@ export function WorktreeCardParentContent({
       }
       data-worktree-card-parent-content=""
     >
+      {/* Orca renders the status lane here, as a sibling of the title AND the meta row
+          (`worktree-card-parent-content.tsx:129-141`), so the branch line starts in the
+          same column as the title. Mounting it inside the header indented only the title. */}
+      {showCombinedStatusSlot && (
+        <div
+          className={cn(
+            'flex shrink-0 justify-center',
+            newCardStyle ? 'mr-1 w-5 items-center' : 'items-start pt-[2px]',
+            affiliateListMode && 'px-1'
+          )}
+          data-worktree-card-status-slot=""
+        >
+          <WorktreeCardStatusLane status={status} branch={branch} prDisplay={prDisplay} />
+        </div>
+      )}
+
       {/* Content area */}
       <div
         className={cn(
@@ -85,14 +106,18 @@ export function WorktreeCardParentContent({
         {identityContentWithHover}
 
         {onSelectSession && sessions && sessions.length > 0 && (
-          <div className="pl-4.5">
-            <WorktreeCardAgents
-              worktreePath={worktree.path}
-              sessions={sessions}
-              onSelectSession={onSelectSession}
-              activeSessionId={activeSessionId}
-            />
-          </div>
+          // Orca parity (`worktree-card-secondary-rows.tsx:66-73`): the agents block is a
+          // direct child of the content column — no indent wrapper — and only trades the
+          // card stack gap (-mt-1) for mt-0 when a meta row already separates it from the
+          // title. The former `pl-4.5` wrapper double-indented it once the status lane
+          // moved into this column.
+          <WorktreeCardAgents
+            worktreePath={worktree.path}
+            sessions={sessions}
+            onSelectSession={onSelectSession}
+            activeSessionId={activeSessionId}
+            className={presentation.hasMetaRow ? 'mt-0' : '-mt-1'}
+          />
         )}
       </div>
     </div>

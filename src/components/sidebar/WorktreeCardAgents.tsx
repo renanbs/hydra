@@ -22,6 +22,7 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
   sessions = [],
   onSelectSession,
   activeSessionId,
+  className,
 }: WorktreeCardAgentsProps) {
   // Subscribe to live workbench tabs in this worktree from Zustand store
   const tabsInWorktree = useAppStore((s) => s.tabsByWorktree[worktreePath] ?? EMPTY_TABS);
@@ -207,6 +208,7 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
       agents={agentRows}
       onSelectSession={onSelectSession}
       activeSessionId={activeSessionId}
+      className={className}
     />
   );
 });

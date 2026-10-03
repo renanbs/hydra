@@ -1,0 +1,50 @@
+[
+  {
+    "number": 24651,
+    "state": "CLOSED",
+    "isDraft": false,
+    "url": "https://github.com/stablyai/orca/pull/24651",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-02T08:49:38Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/36985030335/job/110767994709",
+        "name": "detect changes and check repository guards",
+        "startedAt": "2026-10-02T08:36:48Z",
+        "status": "COMPLETED",
+        "workflowName": "PR Checks"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-02T09:10:00Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/36987002950/job/110774202124",
+        "name": "clean",
+        "startedAt": "2026-10-02T09:09:56Z",
+        "status": "COMPLETED",
+        "workflowName": "Clean closed PR caches"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-02T08:47:33Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/36985029903/job/110767992771",
+        "name": "changes",
+        "startedAt": "2026-10-02T08:47:02Z",
+        "status": "COMPLETED",
+        "workflowName": "Headless Node server"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-02T09:00:56Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/36986253952/job/110771856545",
+        "name": "changes",
+        "startedAt": "2026-10-02T09:00:16Z",
+        "status": "COMPLETED",
+        "workflowName": "Headless Node server"
+      }
+    ]
+  }
+]

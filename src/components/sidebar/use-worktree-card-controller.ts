@@ -1,6 +1,8 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 import React, { useCallback, useState } from 'react'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus, WorktreeSession } from './types'
+import type { WorktreeStatus } from '../../lib/worktree-status'
+import type { PrDisplay } from './pr-display'
 import type { ResolvedWorktreeCardProps, WorktreeCardProps } from './worktree-card-model'
 
 export interface WorktreeCardController extends ResolvedWorktreeCardProps {
@@ -37,6 +39,8 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   hasDetails: boolean
   hasPorts: boolean
   showStatus: boolean
+  status: WorktreeStatus
+  prDisplay: PrDisplay | null
   showInlineAgentList: boolean
   showLineageChildChip: boolean
   remoteBranchConflict: boolean
@@ -119,7 +123,9 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     metaRowChildren,
     sessions = [],
     onSelectSession,
-    activeSessionId
+    activeSessionId,
+    status,
+    prDisplay,
   } = props
 
   const [titleRenaming, setTitleRenaming] = useState(false)
@@ -284,7 +290,15 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     nativeDragEnabled,
     newCardStyle: true,
     isFolder,
-    identityDisplay: branchName,
+    // Orca parity (`use-worktree-card-review-details.ts:37-40`): a folder workspace has
+    // no branch, so its identity line carries the FOLDER PATH instead. Without it the
+    // folder card rendered a title with no path line at all.
+    identityDisplay:
+      !isFolder && branchName.length > 0
+        ? branchName
+        : isFolder && worktree.path.trim().length > 0
+          ? worktree.path
+          : undefined,
     branch: branchName,
     detachedHeadDisplay,
     conflictOperation: '',
@@ -293,6 +307,8 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     hasDetails: Boolean(review || (ports && ports.length > 0) || metaRowChildren),
     hasPorts: Boolean(ports && ports.length > 0),
     showStatus: true,
+    status: status ?? 'inactive',
+    prDisplay: prDisplay ?? null,
     showInlineAgentList: Boolean(onSelectSession || (sessions && sessions.length > 0)),
     showLineageChildChip: false,
     remoteBranchConflict: false,

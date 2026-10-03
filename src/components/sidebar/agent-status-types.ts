@@ -1,6 +1,8 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Shared agent status types for inline agent rows, lineage trees, and dashboard views.
 
+import type { AgentStateHistoryEntry } from '../../shared/agent-status-types'
+
 export const AGENT_STATUS_STATES = [
   "working",
   "blocked",
@@ -55,6 +57,12 @@ export interface AgentStatusEntry {
   toolInput?: string;
   lastAssistantMessage?: string;
   interrupted?: boolean;
+  /** Rolling log of previous states, used to resolve the real completion behind a session-boundary `done`. */
+  stateHistory?: AgentStateHistoryEntry[];
+  /** True when this `done` is a session boundary, not a completed turn. */
+  sessionBoundary?: boolean;
+  /** Timestamp (ms) the reported evidence was first observed; falls back to `updatedAt` when absent. */
+  evidenceObservedAt?: number;
   orchestration?: AgentStatusOrchestrationContext;
   subagents?: AgentSubagentSnapshot[];
 }

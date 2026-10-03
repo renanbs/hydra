@@ -1,5 +1,10 @@
 import type { HydraSettings } from "../../shared/settings-types";
 import type { RepoIcon } from "../../shared/repo-icon";
+import type {
+  CustomWorktreeVisibilitySource,
+  ExternalWorktreeVisibility,
+  WorktreeVisibilitySourcePreferences,
+} from "../../lib/worktree-visibility-sources";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { AgentSubagentSnapshot } from "./agent-status-types";
 import type { ProjectGroup } from "./worktree-list/types";
@@ -56,6 +61,27 @@ export interface HydraProject {
   worktree_base_path?: string | null;
   imported_worktrees?: string[];
   suppressed_discovery?: boolean;
+  /** Inbox `Keep hidden` baseline (Orca `externalWorktreeInboxBaselinePaths`). */
+  externalWorktreeInboxBaselinePaths?: string[];
+  /** Gate for the discovered-worktree inbox (Orca prompt-dismissed timestamp). */
+  externalWorktreeVisibilityPromptDismissedAt?: number | null;
+  /** Project-level override for "other locations" (Orca `externalWorktreeVisibility`). */
+  externalWorktreeVisibility?: ExternalWorktreeVisibility | null;
+  /** Legacy repos keep the pre-rollout "show" default (Orca
+   *  `externalWorktreeVisibilityLegacy`). */
+  externalWorktreeVisibilityLegacy?: boolean | null;
+  /** Opt-in repo policy for coding-agent scratch worktrees; overrides the
+   *  built-in source rows (Orca `agentWorktreeVisibility`). */
+  agentWorktreeVisibility?: ExternalWorktreeVisibility | null;
+  /** Epoch ms the repo opted out of discovery; `null`/absent = not suppressed
+   *  (Orca `externalWorktreeDiscoverySuppressedAt`). */
+  externalWorktreeDiscoverySuppressedAt?: number | null;
+  /** Extra worktree roots the project recognizes (Orca
+   *  `customWorktreeVisibilitySources`). */
+  customWorktreeVisibilitySources?: CustomWorktreeVisibilitySource[] | null;
+  /** Per-source Show/Hide pinned on the project (Orca
+   *  `worktreeVisibilitySourcePreferences`). */
+  worktreeVisibilitySourcePreferences?: WorktreeVisibilitySourcePreferences | null;
   repo_icon?: RepoIcon | null;
 }
 
@@ -152,6 +178,8 @@ export interface WorktreeSidebarProps {
   onRenameWorktreeTitle?: (worktreePath: string, newTitle: string) => Promise<void> | void;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;
+  /** Opens Global Settings on the worktree-visibility section (dialog override note). */
+  onOpenGlobalSettings?: () => void;
   onOpenAddRepoDialog: () => void;
   onOpenNewWorkspaceModal: (proj?: HydraProject) => void;
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
@@ -168,6 +196,13 @@ export interface WorktreeSidebarProps {
   projectGroupMap?: Record<string, string>;
   projectGroups?: Array<{ id: string; name: string }>;
   folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
+  /** Workspace paths with a mounted terminal tab (Orca's live-PTY signal for the status dot). */
+  liveWorkspacePaths?: ReadonlySet<string>;
+  /** Folder paths the host reports as gone; Orca badges them with FolderX. */
+  missingFolderPaths?: ReadonlySet<string>;
+  onActivateFolderWorkspace?: (folderPath: string) => void;
+  /** Review display per worktree path, from the host `pr_status` probe. */
+  prByPath?: Record<string, import("./pr-display").PrDisplay>;
   compactCards?: boolean;
   onSelectNextSession?: (direction: "up" | "down") => void;
   onSelectPrevSession?: (direction: "up" | "down") => void;

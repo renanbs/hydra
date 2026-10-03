@@ -42,6 +42,7 @@ import {
 } from "./lib/orca-repo-icons";
 import type { CatalogEnvelope } from "./lib/catalog-types";
 import { catalogToSidebarModel } from "./lib/catalog-bridge";
+import type { PrDisplay } from "./components/sidebar/pr-display";
 import { StatusBar } from "./components/status-bar/StatusBar";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { CommandPalette } from "./components/CommandPalette";
@@ -96,15 +97,6 @@ import {
 } from "lucide-react";
 import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
-
-const MOCK_ORIGINAL = `fn main() {
-    println!("Hello from Hydra Core");
-}`;
-
-const MOCK_MODIFIED = `fn main() {
-    // High-performance Herdr shadow buffer with zero UI leakage
-    println!("Hello from Hydra ADE (Autonomous Development Environment)");
-}`;
 
 interface DbSessionRecord {
   id: string;
@@ -282,7 +274,7 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
-  const [settingsSectionRequested, setSettingsSectionRequested] = useState<"agents" | null>(null);
+  const [settingsSectionRequested, setSettingsSectionRequested] = useState<"agents" | "general" | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -299,11 +291,8 @@ export default function App() {
     rightSidebarOpenRef.current = isRightSidebarOpen;
     leftSidebarWidthRef.current = leftSidebarWidth;
   }, [isLeftSidebarOpen, isRightSidebarOpen, leftSidebarWidth]);
-  const [diffOriginal, setDiffOriginal] = useState(MOCK_ORIGINAL);
-  const [diffModified, setDiffModified] = useState(MOCK_MODIFIED);
   const [previewLanguage, setPreviewLanguage] = useState("rust");
   const [fileTabContents, setFileTabContents] = useState<Record<string, { original: string; modified: string; lang: string }>>({});
-  const [promptInput, setPromptInput] = useState("");
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [projects, setProjects] = useState<HydraProject[]>([]);
   const orcaRepoIcons = useMemo(() => loadBundledOrcaRepoIcons(), []);
@@ -338,6 +327,11 @@ export default function App() {
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
   const [worktreesByProject, setWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
+  // Orca paints a PR glyph (merged = purple) on the card lane. The host probe is
+  // `pr_status` (gh-backed); a missing gh yields null and the lane falls back to the
+  // branch glyph, exactly like Orca without provider state.
+  const [prByPath, setPrByPath] = useState<Record<string, PrDisplay>>({});
+  const prLookupRef = useRef<Set<string>>(new Set());
   const [hiddenWorktreesByProject, setHiddenWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   const [systemDefaultShell, setSystemDefaultShell] = useState<string>("zsh");
@@ -730,14 +724,6 @@ export default function App() {
   }, [getPanesForTab, getSplitDirectionForTab]);
 
 
-
-  const [_messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
-    {
-      id: 1,
-      role: "agent",
-      content: "Hydra ADE initialized. Workspace switcher, Command Palette and live PTY active."
-    }
-  ]);
 
   // Orca parity: left panel resizes via useSidebarResize — rAF drag drafts go
   // straight to the DOM (containerRef), state commits only on mouseup.
@@ -1598,18 +1584,13 @@ export default function App() {
   const handleSelectProject = useCallback((proj: HydraProject) => {
     setActiveProject(proj);
     setActiveWorktreePath(proj.path);
+    prevProjectPathRef.current = proj.path;
     if (!workbenchLoaded) {
       loadSessionsForProject(proj.path);
     }
     refreshGitWorktrees(proj.path);
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        role: "agent",
-        content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
-      }
-    ]);
+    // Orca has no "switched workspace" chat message; the activation itself is the
+    // feedback. Terminal activation lives in `handleActivateProject` (sidebar click).
   }, [workbenchLoaded, loadSessionsForProject, refreshGitWorktrees]);
 
   const handleNavigateWorkspace = useCallback((direction: "up" | "down") => {
@@ -1959,9 +1940,9 @@ export default function App() {
     }
   };
 
-  const handleNewTerminalTab = useCallback((shell?: string) => {
+  const handleNewTerminalTab = useCallback((shell?: string, cwdOverride?: string) => {
     const sh = shell || resolveDefaultShell();
-    const currentCwd = activeWorktreePathRef.current ?? activeProject?.path ?? "";
+    const currentCwd = cwdOverride ?? activeWorktreePathRef.current ?? activeProject?.path ?? "";
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const tabId = `tab_${sessionId}`;
     const terminalCount = tabsRef.current.filter((t) => t.type === "terminal").length;
@@ -1980,6 +1961,127 @@ export default function App() {
     setActiveTabId(tabId);
   }, [hydraSettings, activeProject]);
   const handleNewTab = () => handleNewTerminalTab();
+
+  /** Orca parity: activating a workspace focuses its terminal tab, creating one when
+   * the workspace has none (`activateWorktreeFromSidebar`). Shared by the project
+   * headers and the folder-workspace rows so every sidebar click behaves alike. */
+  const ensureWorkspaceTerminal = useCallback(
+    (workspacePath: string) => {
+      const existing = tabsRef.current.find((t) => t.cwd === workspacePath);
+      if (existing) {
+        setActiveTabId(existing.id);
+        const session = sessions.find((s) => s.project_path === workspacePath);
+        if (session) {
+          setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === session.id })));
+        }
+        return;
+      }
+      handleNewTerminalTab(undefined, workspacePath);
+    },
+    [handleNewTerminalTab, sessions]
+  );
+
+  /** Sidebar click on a project header: select + guarantee the terminal. */
+  const handleActivateProject = useCallback(
+    (proj: HydraProject) => {
+      handleSelectProject(proj);
+      ensureWorkspaceTerminal(proj.path);
+    },
+    [handleSelectProject, ensureWorkspaceTerminal]
+  );
+
+  /** Orca parity: single click on a folder workspace ACTIVATES it and guarantees a
+   * terminal (`use-worktree-card-activation-actions.ts:79-88` →
+   * `activateWorktreeFromSidebar`). No session is invented when one already exists. */
+  const handleActivateFolderWorkspace = useCallback(
+    (folderPath: string) => {
+      setActiveWorktreePath(folderPath);
+      prevProjectPathRef.current = folderPath;
+      ensureWorkspaceTerminal(folderPath);
+    },
+    [ensureWorkspaceTerminal]
+  );
+
+  /** Review display per worktree: one `pr_status` probe per repo/branch, cached for
+   * the session so a re-render never re-shells out to `gh`. */
+  useEffect(() => {
+    const pending: Array<{ path: string; repoPath: string; branch: string }> = [];
+    for (const [repoPath, list] of Object.entries(worktreesByProject)) {
+      for (const wt of list) {
+        const branch = (wt.branch ?? "").trim();
+        if (!branch || branch === "HEAD") continue;
+        const key = `${repoPath}::${branch}`;
+        if (prLookupRef.current.has(key)) continue;
+        prLookupRef.current.add(key);
+        pending.push({ path: wt.path, repoPath, branch });
+      }
+    }
+    if (pending.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      pending.map((item) =>
+        invoke<{ number: number; state: string; checks?: string | null } | null>("pr_status", {
+          repoPath: item.repoPath,
+          branch: item.branch,
+        })
+          .then((status) => ({ item, status }))
+          .catch(() => ({ item, status: null }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      setPrByPath((prev) => {
+        const next = { ...prev };
+        for (const { item, status } of results) {
+          if (!status) continue;
+          next[item.path] = {
+            number: status.number,
+            state: status.state as PrDisplay["state"],
+            status: (status.checks ?? null) as PrDisplay["status"],
+            provider: "github",
+          };
+        }
+        return next;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [worktreesByProject]);
+
+  /** Terminal tabs still mounted, i.e. the workspaces with a live PTY — Orca's
+   * `ptyIdsByTabId` equivalent for the folder-row status dot. */
+  const liveWorkspacePaths = useMemo(
+    () =>
+      new Set(
+        tabs
+          .filter((t) => t.type === "terminal" && Boolean(t.cwd))
+          .map((t) => t.cwd as string)
+      ),
+    [tabs]
+  );
+
+  /** Folder workspaces whose directory is gone: Orca badges those with FolderX
+   * (`FolderPathStatusIndicator`); the host probe is `path_exists`. */
+  const [missingFolderPaths, setMissingFolderPaths] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (folderWorkspaces.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      folderWorkspaces.map((w) =>
+        invoke<boolean>("path_exists", { path: w.folderPath })
+          .then((exists) => ({ path: w.folderPath, exists }))
+          .catch(() => ({ path: w.folderPath, exists: true }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      setMissingFolderPaths(
+        new Set(results.filter((r) => !r.exists).map((r) => r.path))
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [folderWorkspaces]);
 
   const handleLaunchAgent = (agent: AvailableAgent) => {
     const currentWorkspacePath = activeWorktreePathRef.current || activeProject?.path || "";
@@ -3497,43 +3599,12 @@ export default function App() {
     });
   };
 
-  // kept for future prompt bar; suppress unused until agent tab returns
-  void promptInput;
-  const handleSendMessage = () => {
-    if (!promptInput.trim()) return;
-    const text = promptInput;
-    setPromptInput("");
-
-    const currentActive = sessions.find((s) => s.active);
-    const sId = currentActive?.id ?? "sess_main";
-
-    invoke<number>("save_chat_message", {
-      sessionId: sId,
-      role: "user",
-      content: text
-    }).catch(console.error);
-
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now(), role: "user", content: text },
-      { id: Date.now() + 1, role: "agent", content: `Command saved to SQLite: "${text}". Monitored by Herdr state engine.` }
-    ]);
-  };
-  void handleSendMessage;
-
   const handleSettingsSaved = (newSettings: HydraSettings) => {
     const n = normalizeHydraSettings(newSettings);
     setHydraSettings(n);
     applyDocumentTheme(n.theme);
     try { localStorage.setItem("hydra:theme", n.theme); } catch {}
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        role: "agent",
-        content: `Settings updated: theme ${n.theme} · terminal ${n.terminal_theme_dark} / ${n.terminal_theme_light} · font ${n.terminal_font_size}px · auto-approve reads: ${n.auto_approve_reads ? "on" : "off"}.`
-      }
-    ]);
+    // Orca writes settings and repaints; it has no "Settings updated: …" feed entry.
   };
 
   const currentTab = tabs.find((t) => t.id === activeTabId);
@@ -3580,7 +3651,7 @@ export default function App() {
                 })()}
                 gitWorktrees={gitWorktrees}
                 worktreesByProject={worktreesByProject}
-                onSelectProject={handleSelectProject}
+                onSelectProject={handleActivateProject}
                 onRemoveProject={handleRemoveProject}
                 onSelectSession={handleSelectSession}
                 onSelectGitWorktree={handleSelectGitWorktree}
@@ -3588,6 +3659,10 @@ export default function App() {
                 onNewSessionWithAgent={() => {}}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenGlobalSettings={() => {
+                  setSettingsSectionRequested("general");
+                  setIsSettingsOpen(true);
+                }}
                 onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
                 onOpenNewWorkspaceModal={(proj) => {
                   if (proj) handleSelectProject(proj);
@@ -3607,6 +3682,10 @@ export default function App() {
                 projectGroupMap={projectGroupMap}
                 projectGroups={projectGroups}
                 folderWorkspaces={folderWorkspaces}
+                liveWorkspacePaths={liveWorkspacePaths}
+                missingFolderPaths={missingFolderPaths}
+                onActivateFolderWorkspace={handleActivateFolderWorkspace}
+                prByPath={prByPath}
                 initialSidebarBody={initialSidebarPrefs?.sidebarBody}
                 initialCollapsedProjects={initialSidebarPrefs?.collapsedProjects}
                 initialCollapsedGroups={initialSidebarPrefs?.collapsedGroups}
@@ -3663,7 +3742,16 @@ export default function App() {
 
               <div className="flex-1 overflow-hidden relative">
                 {currentTab?.type === "diff" ? (() => {
-                  const c = fileTabContents[activeTabId] ?? { original: diffOriginal, modified: diffModified, lang: previewLanguage };
+                  const c = fileTabContents[activeTabId];
+                  // Orca never fabricates source: a diff tab whose contents did not
+                  // load (e.g. restored from persistence) shows an empty state.
+                  if (!c) {
+                    return (
+                      <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                        No changes to display
+                      </div>
+                    );
+                  }
                   return (
                     <CodeDiffViewer 
                       original={c.original} 
@@ -3808,11 +3896,9 @@ export default function App() {
                     const diff = await invoke<string>("git_diff_cmd", { repoPath: targetRepoPath, file: relPath, staged });
                     const tabId = `tab_diff_${relPath}_${staged ? "staged":"wt"}`;
                     const title = `${relPath}${staged ? " (staged)" : ""}`;
-                    const payload = { original: "", modified: diff || `No diff for ${relPath}`, lang: "diff" };
-                    setFileTabContents(prev => ({ ...prev, [tabId]: payload }));
-                    setDiffOriginal(payload.original);
-                    setDiffModified(payload.modified);
-                    setPreviewLanguage("diff");
+                    // Real diff only — Orca never renders placeholder source; an empty
+                    // diff shows the pane's empty state.
+                    setFileTabContents(prev => ({ ...prev, [tabId]: { original: "", modified: diff, lang: "diff" } }));
                     setTabs(prev => prev.find(t=>t.id===tabId) ? prev : [...prev, { id: tabId, title, type:"diff" }]);
                     setActiveTabId(tabId);
                   } catch (e) { console.error(e); }

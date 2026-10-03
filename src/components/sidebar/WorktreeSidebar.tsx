@@ -17,6 +17,7 @@ import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
 import { SidebarAgentsList } from "./SidebarAgentsList";
 import { WorktreeList } from "./WorktreeList";
+import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
@@ -66,6 +67,7 @@ export function WorktreeSidebar({
   onRenameWorktreeTitle,
   onDeleteSession,
   onOpenSettings,
+  onOpenGlobalSettings,
   onOpenAddRepoDialog,
   onOpenNewWorkspaceModal,
   onSessionContextMenu: _onSessionContextMenu,
@@ -82,6 +84,10 @@ export function WorktreeSidebar({
   projectGroupMap = {},
   projectGroups = [],
   folderWorkspaces = [],
+  liveWorkspacePaths,
+  missingFolderPaths,
+  prByPath,
+  onActivateFolderWorkspace,
   compactCards = false,
   onSelectNextSession,
   onSelectPrevSession,
@@ -162,6 +168,22 @@ export function WorktreeSidebar({
   });
 
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
+
+  // Repos whose external-worktree visibility prompt phase was already stamped this
+  // session. Orca writes `Date.now()` the first time the user acts on the inbox
+  // (`imported-worktrees-card-actions.ts:73-78`); Hydra keeps the same meaning and
+  // never rewrites an existing timestamp.
+  const visibilityPromptStampedReposRef = useRef<Set<string>>(new Set());
+  const stampVisibilityPromptPhase = async (proj: HydraProject) => {
+    if (visibilityPromptStampedReposRef.current.has(proj.path)) return;
+    visibilityPromptStampedReposRef.current.add(proj.path);
+    if (typeof proj.externalWorktreeVisibilityPromptDismissedAt === "number") return;
+    await invoke("catalog_set_worktree_visibility", {
+      repoPath: proj.path,
+      baselinePaths: proj.externalWorktreeInboxBaselinePaths ?? [],
+      promptDismissedAt: Date.now(),
+    });
+  };
 
   // Drag and Drop state
   const [draggedWorktreePath, setDraggedWorktreePath] = useState<string | null>(null);
@@ -673,7 +695,13 @@ export function WorktreeSidebar({
           </div>
 
           {/* Workspaces Project List */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 min-h-0">
+          {/* Orca parity (`VirtualizedWorktreeViewport.tsx:352`): the scroll container
+              carries only a 1px left/small top inset plus the sleek scrollbar; every
+              horizontal inset comes from the row geometry, so the card's hit box reaches
+              the container edge instead of dying in its padding. */}
+          <div
+            className="flex-1 overflow-y-auto overflow-x-hidden pl-1 pr-3 pt-px min-h-0 scrollbar-sleek"
+          >
             <WorktreeList
               projects={projects}
               displayProjects={displayProjects}
@@ -691,6 +719,10 @@ export function WorktreeSidebar({
               projectGroups={projectGroups}
               projectGroupMap={projectGroupMap}
               folderWorkspaces={folderWorkspaces}
+              liveWorkspacePaths={liveWorkspacePaths}
+              missingFolderPaths={missingFolderPaths}
+              prByPath={prByPath}
+              onActivateFolderWorkspace={onActivateFolderWorkspace}
               collapsedProjects={collapsedProjects}
               collapsedGroups={collapsedGroups}
               filter={filter}
@@ -726,12 +758,36 @@ export function WorktreeSidebar({
                   onWorktreeContextMenu?.(e, wt, targetProject);
                 }
               }}
-              onReviewHiddenWorktrees={(proj, hidden) => {
-                setVisibilityDialog({
-                  open: true,
-                  project: proj,
-                  hiddenWorktrees: hidden,
-                });
+              onShowHiddenWorktree={async (proj, worktreePath) => {
+                try {
+                  await invoke("import_worktree", {
+                    projectPath: proj.path,
+                    worktreePath,
+                  });
+                  await stampVisibilityPromptPhase(proj);
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+              onKeepHiddenWorktrees={async (proj, worktreePaths) => {
+                try {
+                  await invoke("catalog_set_worktree_visibility", {
+                    repoPath: proj.path,
+                    baselinePaths: mergeExternalWorktreeInboxPaths(
+                      proj.externalWorktreeInboxBaselinePaths,
+                      worktreePaths
+                    ),
+                    promptDismissedAt:
+                      typeof proj.externalWorktreeVisibilityPromptDismissedAt === "number"
+                        ? proj.externalWorktreeVisibilityPromptDismissedAt
+                        : Date.now(),
+                  });
+                  visibilityPromptStampedReposRef.current.add(proj.path);
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (err) {
+                  console.error(err);
+                }
               }}
               onSuppressHiddenWorktrees={async (proj) => {
                 try {
@@ -740,6 +796,13 @@ export function WorktreeSidebar({
                 } catch (err) {
                   console.error(err);
                 }
+              }}
+              onReviewHiddenWorktrees={(proj) => {
+                setVisibilityDialog({
+                  open: true,
+                  project: proj,
+                  hiddenWorktrees: hiddenWorktreesByProject?.[proj.path] ?? [],
+                });
               }}
               draggedWorktreePath={draggedWorktreePath}
               worktreeDropTarget={worktreeDropTarget}
@@ -1080,10 +1143,12 @@ export function WorktreeSidebar({
         open={visibilityDialog.open}
         project={visibilityDialog.project}
         hiddenWorktrees={visibilityDialog.hiddenWorktrees}
+        visibilityDefaults={settings?.worktree_visibility_defaults}
         onOpenChange={(open) => setVisibilityDialog((prev) => ({ ...prev, open }))}
         onImported={() => {
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
+        onOpenGlobalSettings={() => onOpenGlobalSettings?.()}
       />
 
       {promptDialog && (

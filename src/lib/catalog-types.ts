@@ -40,6 +40,28 @@ export interface CatalogRepo {
   repoIcon?: unknown | null;
   importedExternalWorktreePaths?: string[];
   externalWorktreeDiscoverySuppressedAt?: number | null;
+  /** Paths acknowledged with the inbox `Keep hidden` action (no longer offered). */
+  externalWorktreeInboxBaselinePaths?: string[];
+  /** Epoch ms the initial external-worktree visibility prompt completed; the
+   *  discovered-worktree inbox only opens once this is a number. */
+  externalWorktreeVisibilityPromptDismissedAt?: number | null;
+  /** Project-level override for "other locations" (Orca `externalWorktreeVisibility`). */
+  externalWorktreeVisibility?: "show" | "hide" | null;
+  /** Legacy repos keep the pre-rollout "show" default (Orca
+   *  `externalWorktreeVisibilityLegacy`). */
+  externalWorktreeVisibilityLegacy?: boolean | null;
+  /** Opt-in repo policy for coding-agent scratch worktrees; overrides the
+   *  built-in source rows (Orca `agentWorktreeVisibility`). */
+  agentWorktreeVisibility?: "show" | "hide" | null;
+  /** Extra worktree roots the project recognizes (Orca
+   *  `customWorktreeVisibilitySources`). */
+  customWorktreeVisibilitySources?: Array<{ id: string; rootPath: string }> | null;
+  /** Per-source Show/Hide pinned on the project (Orca
+   *  `worktreeVisibilitySourcePreferences`). */
+  worktreeVisibilitySourcePreferences?: {
+    builtIn?: Partial<Record<"claude" | "gsd", "show" | "hide">>;
+    custom?: Record<string, "show" | "hide">;
+  } | null;
 }
 
 export interface CatalogEnvelope {
