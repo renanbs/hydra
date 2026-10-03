@@ -321,6 +321,34 @@ async fn catalog_set_worktree_visibility(
     .map_err(|e| e.to_string())?
 }
 
+/// Per-repo worktree-visibility config written by the visibility dialog.
+/// Full replace: each argument is the desired state, `None` clears that field
+/// (`externalWorktreeVisibilityLegacy: null` = "unset" = the old rule applied).
+#[tauri::command]
+async fn catalog_set_worktree_visibility_sources(
+    repo_path: String,
+    custom_sources: Option<Vec<db::CustomWorktreeSource>>,
+    source_preferences: Option<db::SourcePreferences>,
+    external_worktree_visibility: Option<String>,
+    external_worktree_visibility_legacy: Option<bool>,
+) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        catalog::set_worktree_visibility_sources(
+            &mut envelope,
+            &repo_path,
+            custom_sources,
+            source_preferences,
+            external_worktree_visibility,
+            external_worktree_visibility_legacy,
+        )?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 #[tauri::command]
 async fn list_projects() -> Vec<HydraProject> {
     list_local_projects()
@@ -1453,6 +1481,7 @@ pub fn run() {
             catalog_add_folder,
             catalog_remove_repo,
             catalog_set_worktree_visibility,
+            catalog_set_worktree_visibility_sources,
             register_existing_project,
             remove_project,
             get_project_worktree_base,

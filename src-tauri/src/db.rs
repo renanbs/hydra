@@ -200,7 +200,7 @@ pub struct OrcaWorkspaceLayout {
     pub nest_workspaces: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
 pub struct CustomWorktreeSource {
     #[serde(default)]
     pub id: String,
@@ -211,12 +211,14 @@ pub struct CustomWorktreeSource {
     pub root_path: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
 pub struct SourcePreferences {
+    // BTreeMap, not HashMap: this struct is persisted by the single Rust writer
+    // (catalog + settings), and stable key order keeps the JSON diff-free.
     #[serde(default, rename = "builtIn", alias = "built_in")]
-    pub built_in: Option<std::collections::HashMap<String, String>>,
+    pub built_in: Option<std::collections::BTreeMap<String, String>>,
     #[serde(default)]
-    pub custom: Option<std::collections::HashMap<String, String>>,
+    pub custom: Option<std::collections::BTreeMap<String, String>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -583,7 +585,7 @@ impl Default for HydraSettings {
             worktree_visibility_defaults: Some(WorktreeVisibilityDefaults {
                 external: Some("hide".to_string()),
                 custom_sources: Some(vec![]),
-                source_preferences: Some(SourcePreferences { built_in: Some(std::collections::HashMap::new()), custom: Some(std::collections::HashMap::new()) }),
+                source_preferences: Some(SourcePreferences { built_in: Some(std::collections::BTreeMap::new()), custom: Some(std::collections::BTreeMap::new()) }),
             }),
             terminal_default_shell: String::new(),
             default_tui_agent: None,
@@ -1391,7 +1393,7 @@ mod tests {
     fn test_worktree_visibility_defaults_single_canonical_keys() {
         // Bug #8: serialization must emit exactly ONE key per logical field
         // (canonical camelCase wire) — never both spellings.
-        let mut built_in = std::collections::HashMap::new();
+        let mut built_in = std::collections::BTreeMap::new();
         built_in.insert("claude".to_string(), "show".to_string());
         let wvd = WorktreeVisibilityDefaults {
             external: Some("hide".to_string()),
@@ -1401,7 +1403,7 @@ mod tests {
             }]),
             source_preferences: Some(SourcePreferences {
                 built_in: Some(built_in),
-                custom: Some(std::collections::HashMap::new()),
+                custom: Some(std::collections::BTreeMap::new()),
             }),
         };
 
