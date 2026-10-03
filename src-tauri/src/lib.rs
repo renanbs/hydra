@@ -12,6 +12,7 @@ pub mod git_status;
 pub mod ipc;
 pub mod keep_awake;
 pub mod pairing;
+pub mod pr_status;
 pub mod project_manager;
 pub mod server;
 pub mod shell_detection;
@@ -36,6 +37,7 @@ use git_status::{
 };
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
+use pr_status::{fetch_pr_status, PrStatus};
 use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
 use preflight::{check_github_starred, check_preflight_tools, open_external_url, star_github_repo, PreflightStatus};
 use project_manager::{
@@ -343,6 +345,16 @@ async fn scan_worktrees(repo_path: String) -> Result<ProjectWorktreeScanResult, 
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+/// PR status for `branch` in `repo_path`, via the optional `gh` CLI.
+/// Fail-open: `None` when there is no PR or no `gh` — never an error.
+#[tauri::command]
+async fn pr_status(repo_path: String, branch: String) -> Option<PrStatus> {
+    tokio::task::spawn_blocking(move || fetch_pr_status(&repo_path, &branch))
+        .await
+        .ok()
+        .flatten()
 }
 
 #[tauri::command]
@@ -1419,6 +1431,7 @@ pub fn run() {
             set_project_worktree_base,
             list_worktrees,
             scan_worktrees,
+            pr_status,
             import_worktree,
             suppress_worktree_inbox,
             create_project,

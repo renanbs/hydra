@@ -1,0 +1,50 @@
+[
+  {
+    "number": 24924,
+    "state": "OPEN",
+    "isDraft": false,
+    "url": "https://github.com/stablyai/orca/pull/24924",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "0001-01-01T00:00:00Z",
+        "conclusion": "",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/37085620722/job/111095181757",
+        "name": "test vs non-test LoC",
+        "startedAt": "2026-10-03T01:19:03Z",
+        "status": "QUEUED",
+        "workflowName": "PR test LoC"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "0001-01-01T00:00:00Z",
+        "conclusion": "",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/37085620715/job/111095181608",
+        "name": "changes",
+        "startedAt": "2026-10-03T01:21:01Z",
+        "status": "IN_PROGRESS",
+        "workflowName": "Headless Node server"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-03T01:19:18Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/37085620853/job/111095182330",
+        "name": "detect changes and check repository guards",
+        "startedAt": "2026-10-03T01:19:08Z",
+        "status": "COMPLETED",
+        "workflowName": "PR Checks"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "0001-01-01T00:00:00Z",
+        "conclusion": "",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/37085620853/job/111095230644",
+        "name": "static analysis",
+        "startedAt": "2026-10-03T01:19:52Z",
+        "status": "IN_PROGRESS",
+        "workflowName": "PR Checks"
+      }
+    ]
+  }
+]

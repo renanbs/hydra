@@ -1,0 +1,50 @@
+[
+  {
+    "number": 24919,
+    "state": "MERGED",
+    "isDraft": false,
+    "url": "https://github.com/stablyai/orca/pull/24919",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-03T01:09:57Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/37085007563/job/111093337856",
+        "name": "clean",
+        "startedAt": "2026-10-03T01:09:49Z",
+        "status": "COMPLETED",
+        "workflowName": "Clean closed PR caches"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-03T00:47:34Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/37083510120/job/111088908939",
+        "name": "changes",
+        "startedAt": "2026-10-03T00:47:17Z",
+        "status": "COMPLETED",
+        "workflowName": "Headless Node server"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-03T00:52:04Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/37083510121/job/111088909258",
+        "name": "verify",
+        "startedAt": "2026-10-03T00:47:30Z",
+        "status": "COMPLETED",
+        "workflowName": "Mobile Checks"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-03T00:47:26Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/stablyai/orca/actions/runs/37083510287/job/111088910184",
+        "name": "detect changes and check repository guards",
+        "startedAt": "2026-10-03T00:47:18Z",
+        "status": "COMPLETED",
+        "workflowName": "PR Checks"
+      }
+    ]
+  }
+]
