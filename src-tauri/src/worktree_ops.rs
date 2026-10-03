@@ -381,6 +381,10 @@ pub struct RepoVisibilityPolicy {
     /// Orca `Repo.externalWorktreeVisibilityLegacy`. `None` = unset, which
     /// resolves to the old rule for that repo.
     pub external_worktree_visibility_legacy: Option<bool>,
+    /// Orca `Repo.agentWorktreeVisibility` (`show`|`hide`). `None` = no override:
+    /// the built-in "Claude Code" source falls back to the global preference, and
+    /// scratch without a source match stays hidden.
+    pub agent_worktree_visibility: Option<String>,
     /// Orca `Repo.customWorktreeVisibilitySources`. `Some([])` is an explicit
     /// empty list that supersedes the global list.
     pub custom_sources: Option<Vec<CustomWorktreeSource>>,
@@ -396,6 +400,7 @@ impl RepoVisibilityPolicy {
         Self {
             external_worktree_visibility: repo.external_worktree_visibility.clone(),
             external_worktree_visibility_legacy: repo.external_worktree_visibility_legacy,
+            agent_worktree_visibility: repo.agent_worktree_visibility.clone(),
             custom_sources: repo.custom_worktree_visibility_sources.clone(),
             source_preferences: repo.worktree_visibility_source_preferences.clone(),
             imported_paths: repo
@@ -443,14 +448,16 @@ impl RepoVisibilityPolicy {
             .unwrap_or_else(|| self.is_legacy_repo())
     }
 
-    /// Orca `effectiveBuiltInWorktreeSourceVisibility`: repo override → global
-    /// preference → `hide`.
+    /// Orca `effectiveBuiltInWorktreeSourceVisibility`: repo override → the
+    /// per-repo `agentWorktreeVisibility` (the built-in "Claude Code" project
+    /// override) → global preference → `hide`.
     fn built_in_source_is_visible(
         &self,
         id: &str,
         defaults: Option<&WorktreeVisibilityDefaults>,
     ) -> bool {
         source_pref(self.source_preferences.as_ref(), true, id)
+            .or_else(|| visibility_pref(self.agent_worktree_visibility.as_deref()))
             .or_else(|| {
                 source_pref(
                     defaults.and_then(|d| d.source_preferences.as_ref()),
@@ -540,9 +547,9 @@ fn should_show_worktree(
         return repo.source_is_visible(source, defaults);
     }
     if *ownership == WorktreeOwnership::AgentScratch {
-        // Orca `effectiveAgentWorktreeVisibility`; Hydra has no per-repo field, so
-        // scratch without a source match is never shown.
-        return false;
+        // Orca `effectiveAgentWorktreeVisibility`: only an explicit per-repo
+        // `show` makes scratch visible; the default is hide, including legacy.
+        return visibility_pref(repo.agent_worktree_visibility.as_deref()) == Some(true);
     }
     repo.effective_external_visibility(defaults)
 }
@@ -2277,5 +2284,155 @@ branch refs/heads/feat/auth\n";
             ..Default::default()
         }
         .is_legacy_repo());
+    }
+
+    #[test]
+    fn agent_worktree_visibility_overrides_built_in_source_and_scratch() {
+        // Orca `effectiveBuiltInWorktreeSourceVisibility`: the per-repo
+        // `agentWorktreeVisibility` is the built-in source override — below an
+        // explicit source preference, above the global preference.
+        let defaults_hide = visibility_defaults_hide();
+        let defaults_show_claude = WorktreeVisibilityDefaults {
+            external: Some("hide".to_string()),
+            custom_sources: None,
+            source_preferences: Some(source_prefs(&[("claude", "show")], &[])),
+        };
+
+        // repo `show`, no preference, global hide → the built-in source shows,
+        // for every built-in id (like Orca).
+        let repo_show = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("show".to_string()),
+            ..Default::default()
+        };
+        assert!(repo_show.built_in_source_is_visible("claude", Some(&defaults_hide)));
+        assert!(repo_show.built_in_source_is_visible("gsd", Some(&defaults_hide)));
+
+        // repo `hide` / absent → hidden even when the global default shows.
+        let repo_hide = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("hide".to_string()),
+            ..Default::default()
+        };
+        assert!(!repo_hide.built_in_source_is_visible("claude", Some(&defaults_show_claude)));
+        assert!(!RepoVisibilityPolicy::default()
+            .built_in_source_is_visible("claude", Some(&defaults_hide)));
+
+        // An explicit source preference beats the repo field.
+        let pref_beats = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("show".to_string()),
+            source_preferences: Some(source_prefs(&[("claude", "hide")], &[])),
+            ..Default::default()
+        };
+        assert!(!pref_beats.built_in_source_is_visible("claude", Some(&defaults_hide)));
+        let pref_show = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("hide".to_string()),
+            source_preferences: Some(source_prefs(&[("claude", "show")], &[])),
+            ..Default::default()
+        };
+        assert!(pref_show.built_in_source_is_visible("claude", Some(&defaults_hide)));
+
+        // The no-source agent-scratch branch: only an explicit repo `show` shows.
+        assert!(should_show_worktree(
+            &WorktreeOwnership::AgentScratch,
+            false,
+            None,
+            &repo_show,
+            None
+        ));
+        assert!(!should_show_worktree(
+            &WorktreeOwnership::AgentScratch,
+            false,
+            None,
+            &repo_hide,
+            None
+        ));
+        assert!(!should_show_worktree(
+            &WorktreeOwnership::AgentScratch,
+            false,
+            None,
+            &RepoVisibilityPolicy::default(),
+            Some(&defaults_show_claude)
+        ));
+
+        // Catalog → policy wiring reads the wire key.
+        let catalog_repo: CatalogRepo = serde_json::from_value(serde_json::json!({
+            "id": "r1",
+            "path": "/x/repo",
+            "displayName": "repo",
+            "addedAt": 1,
+            "agentWorktreeVisibility": "show"
+        }))
+        .expect("catalog repo parses");
+        let wired = RepoVisibilityPolicy::from_catalog(&catalog_repo);
+        assert!(wired.built_in_source_is_visible("claude", Some(&defaults_hide)));
+    }
+
+    #[test]
+    fn agent_worktree_visibility_surfaces_hidden_scratch_worktrees() {
+        let root = unique_root("agent-vis-scan");
+        let repo = root.join("repo");
+        let wt = repo.join(".claude").join("worktrees").join("feat-agent-vis");
+        let wt_str = wt.to_string_lossy().to_string();
+        init_bare_repo(&repo);
+        add_worktree(&repo, &wt, "feat-agent-vis");
+
+        // repo `agentWorktreeVisibility: show` overrides the global `external: hide`
+        // for the built-in Claude source matching `.claude/worktrees`.
+        let show = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("show".to_string()),
+            ..Default::default()
+        };
+        let (visible, _) = scan_with(
+            &repo,
+            "",
+            &show,
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(
+            visible.contains(&wt_str),
+            "repo `show` must surface scratch; visible={visible:?}"
+        );
+
+        // `hide` and absent stay hidden (default hide, including legacy), and
+        // agent plumbing never enters the discovery inbox.
+        for policy in [
+            RepoVisibilityPolicy {
+                agent_worktree_visibility: Some("hide".to_string()),
+                ..Default::default()
+            },
+            RepoVisibilityPolicy::default(),
+        ] {
+            let (visible, hidden) = scan_with(
+                &repo,
+                "",
+                &policy,
+                Some(&visibility_defaults_hide()),
+                &HashMap::new(),
+            );
+            assert!(!visible.contains(&wt_str), "scratch must stay hidden; visible={visible:?}");
+            assert!(!hidden.contains(&wt_str), "agent plumbing stays out of the inbox");
+        }
+
+        // An explicit source preference beats the repo field.
+        let pref_hide = RepoVisibilityPolicy {
+            agent_worktree_visibility: Some("show".to_string()),
+            source_preferences: Some(source_prefs(&[("claude", "hide")], &[])),
+            ..Default::default()
+        };
+        let (visible, _) = scan_with(
+            &repo,
+            "",
+            &pref_hide,
+            Some(&visibility_defaults_hide()),
+            &HashMap::new(),
+        );
+        assert!(!visible.contains(&wt_str), "source preference wins; visible={visible:?}");
+
+        let _ = Command::new("git")
+            .args(["worktree", "remove", "--force"])
+            .arg(&wt)
+            .current_dir(&repo)
+            .output();
+        let _ = std::fs::remove_dir_all(&root);
     }
 }

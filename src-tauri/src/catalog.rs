@@ -113,6 +113,13 @@ pub struct CatalogRepo {
     /// so the frontend can tell "unset" from an explicit `false`.
     #[serde(default)]
     pub external_worktree_visibility_legacy: Option<bool>,
+    /// Orca `agentWorktreeVisibility`: per-repo override (`show`|`hide`) of the
+    /// built-in "Claude Code" source and of the agent-scratch policy when no
+    /// source matched. `None` (absent/`null`) means "no override" — the built-in
+    /// source then falls back to the global `sourcePreferences`, and scratch
+    /// worktrees stay hidden. Serialized even when `null`, like the fields above.
+    #[serde(default)]
+    pub agent_worktree_visibility: Option<String>,
     /// Orca `customWorktreeVisibilitySources`: absolute roots this repo treats as
     /// worktree sources. `None` = the repo has no own list, so the global
     /// `worktree_visibility_defaults.customSources` is the fallback; `Some([])` is
@@ -204,6 +211,7 @@ pub fn migrate_added_projects(rows: Vec<AddedProjectRow>, envelope: &mut Catalog
                 // Legacy rows carry no visibility config: the old rule applied.
                 external_worktree_visibility: None,
                 external_worktree_visibility_legacy: None,
+                agent_worktree_visibility: None,
                 custom_worktree_visibility_sources: None,
                 worktree_visibility_source_preferences: None,
             });
@@ -395,6 +403,7 @@ pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Resu
             external_worktree_visibility_prompt_dismissed_at: None,
             external_worktree_visibility: None,
             external_worktree_visibility_legacy: None,
+            agent_worktree_visibility: None,
             custom_worktree_visibility_sources: None,
             worktree_visibility_source_preferences: None,
         });
@@ -469,6 +478,7 @@ pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Resu
             external_worktree_visibility_prompt_dismissed_at: None,
             external_worktree_visibility: None,
             external_worktree_visibility_legacy: None,
+            agent_worktree_visibility: None,
             custom_worktree_visibility_sources: None,
             worktree_visibility_source_preferences: None,
         });
@@ -627,6 +637,7 @@ pub fn set_worktree_visibility_sources(
     source_preferences: Option<SourcePreferences>,
     external_worktree_visibility: Option<String>,
     external_worktree_visibility_legacy: Option<bool>,
+    agent_worktree_visibility: Option<String>,
     external_worktree_discovery_suppressed_at: Option<i64>,
 ) -> Result<(), String> {
     let norm = normalize_catalog_path(repo_path);
@@ -642,6 +653,11 @@ pub fn set_worktree_visibility_sources(
         .as_deref()
         .and_then(normalize_visibility);
     repo.external_worktree_visibility_legacy = external_worktree_visibility_legacy;
+    // Orca `agentWorktreeVisibility`: an invalid value is dropped (`None`), so a
+    // typo can never persist a policy the resolver would ignore anyway.
+    repo.agent_worktree_visibility = agent_worktree_visibility
+        .as_deref()
+        .and_then(normalize_visibility);
     // Orca un-suppresses discovery when the user chooses Show outside the listed
     // sources: `None` clears the stamp (writes `null`), `Some(ts)` writes it.
     repo.external_worktree_discovery_suppressed_at = external_worktree_discovery_suppressed_at;
@@ -706,6 +722,7 @@ mod tests {
             external_worktree_visibility_prompt_dismissed_at: None,
             external_worktree_visibility: None,
             external_worktree_visibility_legacy: None,
+            agent_worktree_visibility: None,
             custom_worktree_visibility_sources: None,
             worktree_visibility_source_preferences: None,
         });
@@ -821,6 +838,7 @@ mod tests {
             external_worktree_visibility_prompt_dismissed_at: None,
             external_worktree_visibility: None,
             external_worktree_visibility_legacy: None,
+            agent_worktree_visibility: None,
             custom_worktree_visibility_sources: None,
             worktree_visibility_source_preferences: None,
         }
@@ -916,6 +934,7 @@ mod tests {
             )),
             Some("show".to_string()),
             Some(false),
+            Some("hide".to_string()),
             Some(1_700_000_000_000),
         )
         .expect("known repo updates");
@@ -946,6 +965,7 @@ mod tests {
 
         assert_eq!(repo.external_worktree_visibility.as_deref(), Some("show"));
         assert_eq!(repo.external_worktree_visibility_legacy, Some(false));
+        assert_eq!(repo.agent_worktree_visibility.as_deref(), Some("hide"));
         assert_eq!(repo.external_worktree_discovery_suppressed_at, Some(1_700_000_000_000));
 
         // Frontend reads these exact keys.
@@ -955,6 +975,7 @@ mod tests {
         assert!(raw.contains("\"builtIn\""));
         assert!(raw.contains("\"externalWorktreeVisibility\":\"show\""));
         assert!(raw.contains("\"externalWorktreeVisibilityLegacy\":false"));
+        assert!(raw.contains("\"agentWorktreeVisibility\":\"hide\""));
     }
 
     #[test]
@@ -968,19 +989,28 @@ mod tests {
             Some(prefs(&[("claude", "show")], &[])),
             Some("show".to_string()),
             Some(false),
+            Some("show".to_string()),
             Some(1_700_000_000_000),
         )
         .expect("first write");
+        assert_eq!(env.repos[0].agent_worktree_visibility.as_deref(), Some("show"));
 
         // Full replace: `None` clears each field (legacy back to "unset").
-        set_worktree_visibility_sources(&mut env, "/x/repo", None, None, None, None, None)
-            .expect("clear write");
+        set_worktree_visibility_sources(
+            &mut env, "/x/repo", None, None, None, None, None, None,
+        )
+        .expect("clear write");
         let repo = &env.repos[0];
         assert!(repo.custom_worktree_visibility_sources.is_none());
         assert!(repo.worktree_visibility_source_preferences.is_none());
         assert!(repo.external_worktree_visibility.is_none());
         assert!(repo.external_worktree_visibility_legacy.is_none());
+        assert!(repo.agent_worktree_visibility.is_none());
         assert!(repo.external_worktree_discovery_suppressed_at.is_none());
+        // The cleared field is still emitted as `null` (frontend distinguishes
+        // "unset" from "no key").
+        let raw = serde_json::to_string(&env).expect("serialize");
+        assert!(raw.contains("\"agentWorktreeVisibility\":null"), "{raw}");
 
         // An invalid policy value is dropped instead of persisted verbatim.
         set_worktree_visibility_sources(
@@ -991,12 +1021,28 @@ mod tests {
             Some("maybe".to_string()),
             None,
             None,
+            None,
         )
         .expect("invalid value write");
         assert!(env.repos[0].external_worktree_visibility.is_none());
+        // An invalid `agentWorktreeVisibility` is dropped too.
+        set_worktree_visibility_sources(
+            &mut env,
+            "/x/repo",
+            None,
+            None,
+            None,
+            None,
+            Some("maybe".to_string()),
+            None,
+        )
+        .expect("invalid agent value write");
+        assert!(env.repos[0].agent_worktree_visibility.is_none());
         // An explicit empty source list is kept (it supersedes the global list).
-        set_worktree_visibility_sources(&mut env, "/x/repo", Some(vec![]), None, None, None, None)
-            .expect("empty list write");
+        set_worktree_visibility_sources(
+            &mut env, "/x/repo", Some(vec![]), None, None, None, None, None,
+        )
+        .expect("empty list write");
         assert_eq!(env.repos[0].custom_worktree_visibility_sources, Some(vec![]));
     }
 
@@ -1009,8 +1055,10 @@ mod tests {
         env.repos.push(repo_at("/x/repo"));
         env.repos[0].external_worktree_discovery_suppressed_at = Some(1_600_000_000_000);
 
-        set_worktree_visibility_sources(&mut env, "/x/repo", None, None, None, None, None)
-            .expect("un-suppress write");
+        set_worktree_visibility_sources(
+            &mut env, "/x/repo", None, None, None, None, None, None,
+        )
+        .expect("un-suppress write");
         let raw = serde_json::to_string(&env).expect("serialize");
         let back: CatalogEnvelope = serde_json::from_str(&raw).expect("deserialize");
         assert!(back.repos[0].external_worktree_discovery_suppressed_at.is_none());
@@ -1022,6 +1070,7 @@ mod tests {
         set_worktree_visibility_sources(
             &mut env,
             "/x/repo",
+            None,
             None,
             None,
             None,
@@ -1043,7 +1092,7 @@ mod tests {
         let mut env = CatalogEnvelope::empty();
         env.repos.push(repo_at("/x/repo"));
         let err =
-            set_worktree_visibility_sources(&mut env, "/x/nope", None, None, None, None, None)
+            set_worktree_visibility_sources(&mut env, "/x/nope", None, None, None, None, None, None)
                 .expect_err("unknown path must error");
         assert!(err.contains("/x/nope"), "error must name the unknown path: {err}");
         assert!(err.contains("not found"), "error must be explicit: {err}");
@@ -1060,6 +1109,7 @@ mod tests {
         let repo = &env.repos[0];
         assert!(repo.external_worktree_visibility.is_none());
         assert!(repo.external_worktree_visibility_legacy.is_none());
+        assert!(repo.agent_worktree_visibility.is_none());
         assert!(repo.custom_worktree_visibility_sources.is_none());
         assert!(repo.worktree_visibility_source_preferences.is_none());
     }
