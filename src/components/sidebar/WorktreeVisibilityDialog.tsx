@@ -1,9 +1,11 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Parity with Orca `components/sidebar/WorktreeVisibilityDialog.tsx`: the `Non-Hydra
-// worktrees` modal carries four blocks — Source rows (built-in Claude Code/GSD, custom
-// roots, `Other locations`) with Show/Hide toggles, a `Worktree root` add form, the
-// global-settings override note, and the `Hidden worktrees (N)` recovery list.
-import React, { useEffect, useState, useMemo } from "react";
+// worktrees` modal stacks Sources (built-in Claude Code/GSD, custom roots, `Other
+// locations`) with Show/Hide toggles + a per-source `Use global` link that drops a repo
+// override matching Global Settings, the `Worktree root` add form, the global-settings
+// override note, the scan-status/`Try again` line (Orca `WorktreeVisibilityScanStatus`),
+// and the `Hidden worktrees (N)` recovery list.
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { Search, FolderGit2, X, Eye, Plus, Trash2, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import type { GitWorktreeInfo, HydraProject } from "./types";
@@ -17,7 +19,9 @@ import {
   countWorktreesByVisibilitySource,
   effectiveBuiltInWorktreeSourceVisibility,
   effectiveExternalWorktreeVisibility,
+  getWorktreeVisibilitySourceProvenance,
   normalizeCustomWorktreeVisibilitySources,
+  removeBuiltInWorktreeSourcePreference,
   removeCustomWorktreeSourcePreference,
   removeCustomWorktreeVisibilitySource,
   resolveCustomWorktreeVisibilitySources,
@@ -93,6 +97,34 @@ export function WorktreeVisibilityDialog({
   // Local mirror of the project's visibility config: the sidebar hands the dialog a
   // snapshot, so writes need a local echo until the next `catalog_get` lands.
   const [draftConfig, setDraftConfig] = useState<WorktreeVisibilityRepoConfig | null>(null);
+  // Orca `WorktreeVisibilityScanStatus` state: the dialog re-scans the repo on open and on
+  // `Try again`, so the recovery list reflects disk rather than the sidebar's last snapshot.
+  const [scanState, setScanState] = useState<"checking" | "ready" | "error">("ready");
+  const [scannedHidden, setScannedHidden] = useState<GitWorktreeInfo[] | null>(null);
+
+  const refreshWorktreeScan = useCallback(async () => {
+    const repoPath = project?.path;
+    if (!repoPath) return;
+    setScanState("checking");
+    try {
+      const scan = await invoke<{ hidden?: GitWorktreeInfo[] }>("scan_worktrees", {
+        repoPath,
+      });
+      if (Array.isArray(scan?.hidden)) {
+        setScannedHidden(scan.hidden);
+      }
+      setScanState("ready");
+    } catch (err) {
+      console.error("Failed to scan worktrees:", err);
+      setScanState("error");
+    }
+  }, [project?.path]);
+
+  useEffect(() => {
+    if (!open) return;
+    setScannedHidden(null);
+    void refreshWorktreeScan();
+  }, [open, refreshWorktreeScan]);
 
   useEffect(() => {
     if (open) {
@@ -132,6 +164,9 @@ export function WorktreeVisibilityDialog({
     [customSources]
   );
 
+  // Until a scan lands, the sidebar's snapshot is the best list the dialog has.
+  const recoveredWorktrees = scannedHidden ?? hiddenWorktrees;
+
   // Orca shows `Remove` only for roots the project itself owns; global roots are
   // overridden, not removed.
   const repoSourceIds = useMemo(
@@ -145,17 +180,17 @@ export function WorktreeVisibilityDialog({
   );
 
   const sourceCounts = useMemo(
-    () => countWorktreesByVisibilitySource(hiddenWorktrees, project?.path, customSources),
-    [customSources, hiddenWorktrees, project?.path]
+    () => countWorktreesByVisibilitySource(recoveredWorktrees, project?.path, customSources),
+    [customSources, recoveredWorktrees, project?.path]
   );
 
   const filteredWorktrees = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return hiddenWorktrees;
-    return hiddenWorktrees.filter(
+    if (!q) return recoveredWorktrees;
+    return recoveredWorktrees.filter(
       (wt) => wt.branch.toLowerCase().includes(q) || wt.path.toLowerCase().includes(q)
     );
-  }, [hiddenWorktrees, query]);
+  }, [recoveredWorktrees, query]);
 
   const persistSources = async (nextConfig: WorktreeVisibilityRepoConfig) => {
     if (!project || savingSource) return;
@@ -175,6 +210,9 @@ export function WorktreeVisibilityDialog({
       });
       setDraftConfig(nextConfig);
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      // Orca re-reads the repo after a source write, so worktrees that just became shown
+      // or hidden move between the sidebar and the recovery list in the same interaction.
+      void refreshWorktreeScan();
     } catch (err) {
       console.error("Failed to save worktree visibility sources:", err);
       setSourceError("Could not save worktree visibility. Try again.");
@@ -208,6 +246,30 @@ export function WorktreeVisibilityDialog({
         config,
         match,
         visibility
+      ),
+    });
+  };
+
+  // Orca `handleUseDefault`: picking the value Global Settings already holds drops this
+  // repo's override for that key instead of pinning a duplicate of it.
+  const handleUseGlobal = async (row: WorktreeVisibilitySourceRow) => {
+    if (!project || savingSource) return;
+    if (row.kind === "other") {
+      await persistSources({ ...config, externalWorktreeVisibility: null });
+      return;
+    }
+    if (row.kind === "built-in") {
+      await persistSources({
+        ...config,
+        worktreeVisibilitySourcePreferences: removeBuiltInWorktreeSourcePreference(config, row.id),
+      });
+      return;
+    }
+    await persistSources({
+      ...config,
+      worktreeVisibilitySourcePreferences: removeCustomWorktreeSourcePreference(
+        config,
+        row.source.id
       ),
     });
   };
@@ -249,7 +311,11 @@ export function WorktreeVisibilityDialog({
         worktreePath: wtPath,
       });
       onImported?.(wtPath);
+      // The sidebar hands the dialog a frozen snapshot, so drop the row locally before the
+      // authoritative re-scan lands; Orca refetches the repo here too.
+      setScannedHidden((prev) => (prev ?? recoveredWorktrees).filter((wt) => wt.path !== wtPath));
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      void refreshWorktreeScan();
     } catch (err) {
       console.error("Failed to import worktree:", err);
     } finally {
@@ -300,6 +366,19 @@ export function WorktreeVisibilityDialog({
               {sourceRows.map((row, index) => {
                 const visibility = worktreeVisibilitySourceRowVisibility(config, row, visibilityDefaults);
                 const count = sourceCounts.get(worktreeVisibilitySourceRowKey(row)) ?? 0;
+                const accessibleLabel =
+                  row.kind === "custom" ? row.source.rootPath : sourceRowLabel(row);
+                const provenance = getWorktreeVisibilitySourceProvenance(
+                  config,
+                  row,
+                  visibilityDefaults,
+                  repoSourceIds
+                );
+                // Orca shows `Use global` only when the override merely matches Global
+                // Settings; re-picking that value should revert to inheriting it.
+                const matchingOverride =
+                  provenance?.kind === "project-override" &&
+                  provenance.globalVisibility === visibility;
                 return (
                   <div
                     key={worktreeVisibilitySourceRowKey(row)}
@@ -328,6 +407,17 @@ export function WorktreeVisibilityDialog({
                           className="p-1 rounded-md text-neutral-500 hover:text-destructive hover:bg-neutral-800 transition cursor-pointer disabled:opacity-50"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {matchingOverride && (
+                        <button
+                          type="button"
+                          disabled={savingSource}
+                          aria-label={`Use global for ${accessibleLabel}`}
+                          onClick={() => void handleUseGlobal(row)}
+                          className="px-1 text-[11px] font-medium text-indigo-300 hover:text-indigo-200 transition cursor-pointer disabled:opacity-50"
+                        >
+                          Use global
                         </button>
                       )}
                       <div
@@ -431,25 +521,50 @@ export function WorktreeVisibilityDialog({
             </button>
           </section>
 
+          {/* c2) Scan status + `Try again` (Orca `WorktreeVisibilityScanStatus`) */}
+          {scanState !== "ready" && (
+            <section aria-label="Worktree scan status" className="space-y-2">
+              {scanState === "checking" ? (
+                <p aria-live="polite" className="text-[11px] text-neutral-400">
+                  Checking…
+                </p>
+              ) : (
+                <div role="alert" className="flex items-center gap-2">
+                  <p className="min-w-0 flex-1 text-[11px] text-destructive">
+                    Could not list this repo&apos;s worktrees.
+                  </p>
+                  <button
+                    type="button"
+                    disabled={savingSource || busyPath !== null}
+                    onClick={() => void refreshWorktreeScan()}
+                    className="shrink-0 px-2.5 py-1 rounded-lg border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-[11px] font-medium transition cursor-pointer disabled:opacity-50"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
+
           {/* d) Hidden worktrees (N) */}
           <section aria-labelledby="wv-hidden-heading" className="space-y-2">
             <div>
               <h3 id="wv-hidden-heading" className="text-[13px] font-semibold text-neutral-100">
-                Hidden worktrees ({hiddenWorktrees.length})
+                Hidden worktrees ({recoveredWorktrees.length})
               </h3>
               <p className="text-[11px] text-neutral-500">
                 Show one without enabling its source.
               </p>
             </div>
 
-            {hiddenWorktrees.length > 5 && (
+            {recoveredWorktrees.length > 5 && (
               <div className="relative shrink-0">
                 <Search className="pointer-events-none absolute left-2.5 top-2.5 size-3.5 text-neutral-500" />
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`Search ${hiddenWorktrees.length} hidden worktrees...`}
+                  placeholder={`Search ${recoveredWorktrees.length} hidden worktrees...`}
                   className="w-full h-8 pl-8 pr-3 rounded-lg bg-neutral-950 border border-neutral-800 text-neutral-100 text-xs placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/30 transition"
                 />
               </div>
@@ -508,8 +623,8 @@ export function WorktreeVisibilityDialog({
 
         <div className="flex items-center justify-between pt-2 border-t border-neutral-800 shrink-0 text-[11px] text-neutral-500">
           <span>
-            {hiddenWorktrees.length} total hidden worktree
-            {hiddenWorktrees.length === 1 ? "" : "s"}
+            {recoveredWorktrees.length} total hidden worktree
+            {recoveredWorktrees.length === 1 ? "" : "s"}
           </span>
           <button
             type="button"

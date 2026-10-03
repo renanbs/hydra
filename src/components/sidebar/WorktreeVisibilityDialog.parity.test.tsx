@@ -1,9 +1,11 @@
 // Parity guard for the `Non-Hydra worktrees` modal — Orca's
-// `components/sidebar/WorktreeVisibilityDialog.tsx` carries four blocks: the `Sources`
-// rows (Claude Code / GSD / Other locations) with Show/Hide toggles, a `Worktree root`
-// add form, the global-settings override note, and the `Hidden worktrees (N)` recovery
-// list. Source writes go through `catalog_set_worktree_visibility_sources` as a FULL
-// REPLACE; per-item recovery goes through `import_worktree`.
+// `components/sidebar/WorktreeVisibilityDialog.tsx` stacks the `Sources` rows (Claude
+// Code / GSD / Other locations) with Show/Hide toggles, the `Worktree root` add form, the
+// global-settings override note, the scan-status/`Try again` line between that note and
+// the `Hidden worktrees (N)` recovery list. A source whose repo override merely matches
+// Global Settings exposes `Use global`, which drops that override. Source writes go
+// through `catalog_set_worktree_visibility_sources` as a FULL REPLACE; the scan and
+// per-item recovery go through `scan_worktrees` and `import_worktree`.
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -217,5 +219,110 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Manage in Global Settings/ }));
     expect(onOpenGlobalSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers Use global only for the override that matches the global value, and clears it", () => {
+    renderDialog({
+      project: {
+        ...PROJECT,
+        worktreeVisibilitySourcePreferences: { builtIn: { claude: "show" } },
+      },
+      visibilityDefaults: { external: "hide", sourcePreferences: { builtIn: { claude: "show" } } },
+    });
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    // GSD and Other locations inherit the global value, so only Claude Code is revertible.
+    expect(
+      within(sources).queryByRole("button", { name: "Use global for GSD" })
+    ).not.toBeInTheDocument();
+    expect(
+      within(sources).queryByRole("button", { name: "Use global for Other locations" })
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(within(sources).getByRole("button", { name: "Use global for Claude Code" }));
+
+    expect(invokeMock).toHaveBeenCalledWith("catalog_set_worktree_visibility_sources", {
+      repoPath: PROJECT.path,
+      customSources: PROJECT.customWorktreeVisibilitySources,
+      sourcePreferences: {},
+      externalWorktreeVisibilityLegacy: false,
+      externalWorktreeVisibility: null,
+      externalWorktreeDiscoverySuppressedAt: null,
+    });
+  });
+
+  it("clears the Other locations override when Use global is picked", () => {
+    renderDialog({
+      project: { ...PROJECT, externalWorktreeVisibility: "show" },
+      visibilityDefaults: { external: "show" },
+    });
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    expect(
+      within(sources).queryByRole("button", { name: "Use global for Claude Code" })
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(
+      within(sources).getByRole("button", { name: "Use global for Other locations" })
+    );
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      "catalog_set_worktree_visibility_sources",
+      expect.objectContaining({
+        repoPath: PROJECT.path,
+        sourcePreferences: null,
+        externalWorktreeVisibility: null,
+      })
+    );
+  });
+
+  it("re-runs the repo scan once on Try again and shows the scan state", async () => {
+    let scanCalls = 0;
+    let failNext = true;
+    const retryScan = Promise.withResolvers<unknown>();
+    invokeMock.mockImplementation((cmd: string) => {
+      if (cmd !== "scan_worktrees") return Promise.resolve({});
+      scanCalls += 1;
+      if (failNext) {
+        failNext = false;
+        return Promise.reject(new Error("scan failed"));
+      }
+      return retryScan.promise;
+    });
+
+    renderDialog();
+
+    expect(await screen.findByRole("button", { name: "Try again" })).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Could not list this repo's worktrees."
+    );
+
+    const callsBeforeRetry = scanCalls;
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+
+    expect(await screen.findByText("Checking…")).toBeInTheDocument();
+    expect(scanCalls).toBe(callsBeforeRetry + 1);
+
+    retryScan.resolve({ visible: [], hidden: [], isSuppressed: false });
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+  });
+
+  it("keeps the Orca block order: Sources → Global Settings → Scan status → Hidden worktrees", async () => {
+    invokeMock.mockImplementation((cmd: string) =>
+      cmd === "scan_worktrees" ? Promise.reject(new Error("scan failed")) : Promise.resolve({})
+    );
+
+    renderDialog();
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    const note = screen.getByText("These sources have a global setting you can override here:");
+    const scanStatus = await screen.findByRole("region", { name: "Worktree scan status" });
+    const hidden = screen.getByRole("region", { name: "Hidden worktrees (4)" });
+
+    const precedes = (first: Element, second: Element) =>
+      Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(precedes(sources, note)).toBe(true);
+    expect(precedes(note, scanStatus)).toBe(true);
+    expect(precedes(scanStatus, hidden)).toBe(true);
   });
 });
