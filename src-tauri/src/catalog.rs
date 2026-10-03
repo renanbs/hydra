@@ -86,7 +86,11 @@ pub struct CatalogRepo {
     pub repo_icon: Option<serde_json::Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub imported_external_worktree_paths: Option<Vec<String>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Epoch-ms when the user suppressed discovered-worktree discovery for this
+    /// repo (Orca `externalWorktreeDiscoverySuppressedAt`). Serialized even when
+    /// `null`, so clearing the stamp (Show outside the listed sources) is
+    /// distinguishable in the file and the inbox gate can reopen.
+    #[serde(default)]
     pub external_worktree_discovery_suppressed_at: Option<i64>,
     /// Paths the user confirmed as intentionally hidden (Orca
     /// `externalWorktreeInboxBaselinePaths`). Serialized even when `null` so the
@@ -623,6 +627,7 @@ pub fn set_worktree_visibility_sources(
     source_preferences: Option<SourcePreferences>,
     external_worktree_visibility: Option<String>,
     external_worktree_visibility_legacy: Option<bool>,
+    external_worktree_discovery_suppressed_at: Option<i64>,
 ) -> Result<(), String> {
     let norm = normalize_catalog_path(repo_path);
     if norm.is_empty() {
@@ -637,6 +642,9 @@ pub fn set_worktree_visibility_sources(
         .as_deref()
         .and_then(normalize_visibility);
     repo.external_worktree_visibility_legacy = external_worktree_visibility_legacy;
+    // Orca un-suppresses discovery when the user chooses Show outside the listed
+    // sources: `None` clears the stamp (writes `null`), `Some(ts)` writes it.
+    repo.external_worktree_discovery_suppressed_at = external_worktree_discovery_suppressed_at;
     Ok(())
 }
 
@@ -908,6 +916,7 @@ mod tests {
             )),
             Some("show".to_string()),
             Some(false),
+            Some(1_700_000_000_000),
         )
         .expect("known repo updates");
 
@@ -937,6 +946,7 @@ mod tests {
 
         assert_eq!(repo.external_worktree_visibility.as_deref(), Some("show"));
         assert_eq!(repo.external_worktree_visibility_legacy, Some(false));
+        assert_eq!(repo.external_worktree_discovery_suppressed_at, Some(1_700_000_000_000));
 
         // Frontend reads these exact keys.
         assert!(raw.contains("\"customWorktreeVisibilitySources\""));
@@ -958,17 +968,19 @@ mod tests {
             Some(prefs(&[("claude", "show")], &[])),
             Some("show".to_string()),
             Some(false),
+            Some(1_700_000_000_000),
         )
         .expect("first write");
 
         // Full replace: `None` clears each field (legacy back to "unset").
-        set_worktree_visibility_sources(&mut env, "/x/repo", None, None, None, None)
+        set_worktree_visibility_sources(&mut env, "/x/repo", None, None, None, None, None)
             .expect("clear write");
         let repo = &env.repos[0];
         assert!(repo.custom_worktree_visibility_sources.is_none());
         assert!(repo.worktree_visibility_source_preferences.is_none());
         assert!(repo.external_worktree_visibility.is_none());
         assert!(repo.external_worktree_visibility_legacy.is_none());
+        assert!(repo.external_worktree_discovery_suppressed_at.is_none());
 
         // An invalid policy value is dropped instead of persisted verbatim.
         set_worktree_visibility_sources(
@@ -978,21 +990,61 @@ mod tests {
             None,
             Some("maybe".to_string()),
             None,
+            None,
         )
         .expect("invalid value write");
         assert!(env.repos[0].external_worktree_visibility.is_none());
         // An explicit empty source list is kept (it supersedes the global list).
-        set_worktree_visibility_sources(&mut env, "/x/repo", Some(vec![]), None, None, None)
+        set_worktree_visibility_sources(&mut env, "/x/repo", Some(vec![]), None, None, None, None)
             .expect("empty list write");
         assert_eq!(env.repos[0].custom_worktree_visibility_sources, Some(vec![]));
+    }
+
+    #[test]
+    fn set_worktree_visibility_sources_writes_and_clears_discovery_suppression() {
+        // Orca un-suppresses discovery when the user chooses Show outside the
+        // listed sources: `None` must clear the stamp, `Some(ts)` must write it,
+        // and `null` must survive the file roundtrip so the inbox reopens.
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(repo_at("/x/repo"));
+        env.repos[0].external_worktree_discovery_suppressed_at = Some(1_600_000_000_000);
+
+        set_worktree_visibility_sources(&mut env, "/x/repo", None, None, None, None, None)
+            .expect("un-suppress write");
+        let raw = serde_json::to_string(&env).expect("serialize");
+        let back: CatalogEnvelope = serde_json::from_str(&raw).expect("deserialize");
+        assert!(back.repos[0].external_worktree_discovery_suppressed_at.is_none());
+        assert!(
+            raw.contains("\"externalWorktreeDiscoverySuppressedAt\":null"),
+            "cleared stamp must serialize as null: {raw}"
+        );
+
+        set_worktree_visibility_sources(
+            &mut env,
+            "/x/repo",
+            None,
+            None,
+            None,
+            None,
+            Some(1_700_000_000_000),
+        )
+        .expect("re-suppress write");
+        let raw = serde_json::to_string(&env).expect("serialize");
+        let back: CatalogEnvelope = serde_json::from_str(&raw).expect("deserialize");
+        assert_eq!(
+            back.repos[0].external_worktree_discovery_suppressed_at,
+            Some(1_700_000_000_000)
+        );
+        assert!(raw.contains("\"externalWorktreeDiscoverySuppressedAt\":1700000000000"), "{raw}");
     }
 
     #[test]
     fn set_worktree_visibility_sources_unknown_path_errors() {
         let mut env = CatalogEnvelope::empty();
         env.repos.push(repo_at("/x/repo"));
-        let err = set_worktree_visibility_sources(&mut env, "/x/nope", None, None, None, None)
-            .expect_err("unknown path must error");
+        let err =
+            set_worktree_visibility_sources(&mut env, "/x/nope", None, None, None, None, None)
+                .expect_err("unknown path must error");
         assert!(err.contains("/x/nope"), "error must name the unknown path: {err}");
         assert!(err.contains("not found"), "error must be explicit: {err}");
     }

@@ -323,7 +323,9 @@ async fn catalog_set_worktree_visibility(
 
 /// Per-repo worktree-visibility config written by the visibility dialog.
 /// Full replace: each argument is the desired state, `None` clears that field
-/// (`externalWorktreeVisibilityLegacy: null` = "unset" = the old rule applied).
+/// (`externalWorktreeVisibilityLegacy: null` = "unset" = the old rule applied;
+/// `externalWorktreeDiscoverySuppressedAt: null` = un-suppressed, so the inbox
+/// reopens).
 #[tauri::command]
 async fn catalog_set_worktree_visibility_sources(
     repo_path: String,
@@ -331,6 +333,7 @@ async fn catalog_set_worktree_visibility_sources(
     source_preferences: Option<db::SourcePreferences>,
     external_worktree_visibility: Option<String>,
     external_worktree_visibility_legacy: Option<bool>,
+    external_worktree_discovery_suppressed_at: Option<i64>,
 ) -> Result<CatalogEnvelope, String> {
     tokio::task::spawn_blocking(move || {
         let mut envelope = read_catalog();
@@ -341,6 +344,7 @@ async fn catalog_set_worktree_visibility_sources(
             source_preferences,
             external_worktree_visibility,
             external_worktree_visibility_legacy,
+            external_worktree_discovery_suppressed_at,
         )?;
         write_catalog(&envelope)?;
         Ok(envelope)
