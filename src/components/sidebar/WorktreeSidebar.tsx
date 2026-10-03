@@ -698,7 +698,9 @@ export function WorktreeSidebar({
               carries only a 1px left/small top inset plus the sleek scrollbar; every
               horizontal inset comes from the row geometry, so the card's hit box reaches
               the container edge instead of dying in its padding. */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden pl-1 pt-px min-h-0 scrollbar-sleek">
+          <div
+            className="flex-1 overflow-y-auto overflow-x-hidden pl-1 pr-3 pt-px min-h-0 scrollbar-sleek"
+          >
             <WorktreeList
               projects={projects}
               displayProjects={displayProjects}
