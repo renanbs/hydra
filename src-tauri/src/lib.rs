@@ -301,6 +301,27 @@ async fn catalog_remove_repo(path: String) -> Result<CatalogEnvelope, String> {
 }
 
 #[tauri::command]
+async fn catalog_set_worktree_visibility(
+    repo_path: String,
+    baseline_paths: Option<Vec<String>>,
+    prompt_dismissed_at: Option<i64>,
+) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        catalog::set_external_worktree_visibility(
+            &mut envelope,
+            &repo_path,
+            baseline_paths,
+            prompt_dismissed_at,
+        )?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn list_projects() -> Vec<HydraProject> {
     list_local_projects()
 }
@@ -1431,6 +1452,7 @@ pub fn run() {
             catalog_get,
             catalog_add_folder,
             catalog_remove_repo,
+            catalog_set_worktree_visibility,
             register_existing_project,
             remove_project,
             get_project_worktree_base,

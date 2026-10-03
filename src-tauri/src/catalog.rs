@@ -79,6 +79,15 @@ pub struct CatalogRepo {
     pub imported_external_worktree_paths: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub external_worktree_discovery_suppressed_at: Option<i64>,
+    /// Paths the user confirmed as intentionally hidden (Orca
+    /// `externalWorktreeInboxBaselinePaths`). Serialized even when `null` so the
+    /// frontend can distinguish "unset" from "cleared".
+    #[serde(default)]
+    pub external_worktree_inbox_baseline_paths: Option<Vec<String>>,
+    /// Epoch-ms when the user dismissed the discovered-worktree prompt (Orca
+    /// `externalWorktreeVisibilityPromptDismissedAt`). Serialized even when `null`.
+    #[serde(default)]
+    pub external_worktree_visibility_prompt_dismissed_at: Option<i64>,
 }
 
 /// Envelope do arquivo. Só as três listas têm função.
@@ -155,6 +164,8 @@ pub fn migrate_added_projects(rows: Vec<AddedProjectRow>, envelope: &mut Catalog
                     .suppressed_discovery
                     .filter(|&v| v)
                     .map(|_| now_ms()),
+                external_worktree_inbox_baseline_paths: None,
+                external_worktree_visibility_prompt_dismissed_at: None,
             });
         } else {
             // Reaproveita o caminho de pasta: grupo + workspace + filhos com dedupe.
@@ -340,6 +351,8 @@ pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Resu
             repo_icon: None,
             imported_external_worktree_paths: None,
             external_worktree_discovery_suppressed_at: None,
+            external_worktree_inbox_baseline_paths: None,
+            external_worktree_visibility_prompt_dismissed_at: None,
         });
         return Ok(());
     }
@@ -408,8 +421,33 @@ pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Resu
             repo_icon: None,
             imported_external_worktree_paths: None,
             external_worktree_discovery_suppressed_at: None,
+            external_worktree_inbox_baseline_paths: None,
+            external_worktree_visibility_prompt_dismissed_at: None,
         });
     }
+    Ok(())
+}
+
+/// Applies the external-worktree inbox state to the repo at `repo_path`
+/// (normalized). An unknown path is an error instead of a silent no-op, so a
+/// caller can never believe it persisted state that went nowhere.
+pub fn set_external_worktree_visibility(
+    envelope: &mut CatalogEnvelope,
+    repo_path: &str,
+    baseline_paths: Option<Vec<String>>,
+    prompt_dismissed_at: Option<i64>,
+) -> Result<(), String> {
+    let norm = normalize_catalog_path(repo_path);
+    if norm.is_empty() {
+        return Err("Empty path".to_string());
+    }
+    let repo = envelope
+        .repos
+        .iter_mut()
+        .find(|r| normalize_catalog_path(&r.path) == norm)
+        .ok_or_else(|| format!("Repo not found in catalog: {repo_path}"))?;
+    repo.external_worktree_inbox_baseline_paths = baseline_paths;
+    repo.external_worktree_visibility_prompt_dismissed_at = prompt_dismissed_at;
     Ok(())
 }
 
@@ -467,6 +505,8 @@ mod tests {
             repo_icon: None,
             imported_external_worktree_paths: None,
             external_worktree_discovery_suppressed_at: None,
+            external_worktree_inbox_baseline_paths: None,
+            external_worktree_visibility_prompt_dismissed_at: None,
         });
         add_folder_to_catalog("/x/repo/", &mut env).unwrap();
         assert_eq!(env.repos.len(), 1);
@@ -562,5 +602,63 @@ mod tests {
         assert_eq!(env.project_groups[0].created_from, "folder-scan");
         assert_eq!(env.repos.len(), 1);
         let _ = std::fs::remove_dir_all(&base);
+    }
+
+    fn repo_at(path: &str) -> CatalogRepo {
+        CatalogRepo {
+            id: "r1".to_string(),
+            path: path.to_string(),
+            display_name: "repo".to_string(),
+            added_at: 1,
+            kind: Some("git".to_string()),
+            worktree_base_path: None,
+            project_group_id: None,
+            repo_icon: None,
+            imported_external_worktree_paths: None,
+            external_worktree_discovery_suppressed_at: None,
+            external_worktree_inbox_baseline_paths: None,
+            external_worktree_visibility_prompt_dismissed_at: None,
+        }
+    }
+
+    #[test]
+    fn set_external_worktree_visibility_roundtrips_fields() {
+        let mut env = CatalogEnvelope::empty();
+        // The caller passes an un-normalized path (trailing slash) — the setter
+        // must match the normalized repo.
+        env.repos.push(repo_at("/x/repo"));
+
+        set_external_worktree_visibility(
+            &mut env,
+            "/x/repo/",
+            Some(vec!["/x/repo-a".to_string(), "/x/repo-b".to_string()]),
+            Some(1_700_000_000_000),
+        )
+        .expect("known repo updates");
+
+        // Persist and read back through the same serde layer the catalog file uses.
+        let raw = serde_json::to_string(&env).expect("serialize");
+        let back: CatalogEnvelope = serde_json::from_str(&raw).expect("deserialize");
+        let repo = &back.repos[0];
+        assert_eq!(
+            repo.external_worktree_inbox_baseline_paths.as_ref(),
+            Some(&vec!["/x/repo-a".to_string(), "/x/repo-b".to_string()])
+        );
+        assert_eq!(repo.external_worktree_visibility_prompt_dismissed_at, Some(1_700_000_000_000));
+        // Frontend reads these exact keys, present even when `null`.
+        assert!(raw.contains("\"externalWorktreeInboxBaselinePaths\""));
+        assert!(raw.contains("\"externalWorktreeVisibilityPromptDismissedAt\""));
+    }
+
+    #[test]
+    fn set_external_worktree_visibility_unknown_path_errors() {
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(repo_at("/x/repo"));
+        let err = set_external_worktree_visibility(&mut env, "/x/nope", None, None)
+            .expect_err("unknown path must error");
+        assert!(err.contains("/x/nope"), "error must name the unknown path: {err}");
+        assert!(err.contains("not found"), "error must be explicit: {err}");
+        // The known repo is untouched.
+        assert!(env.repos[0].external_worktree_inbox_baseline_paths.is_none());
     }
 }
