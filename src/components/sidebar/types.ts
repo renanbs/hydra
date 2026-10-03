@@ -56,6 +56,10 @@ export interface HydraProject {
   worktree_base_path?: string | null;
   imported_worktrees?: string[];
   suppressed_discovery?: boolean;
+  /** Inbox `Keep hidden` baseline (Orca `externalWorktreeInboxBaselinePaths`). */
+  externalWorktreeInboxBaselinePaths?: string[];
+  /** Gate for the discovered-worktree inbox (Orca prompt-dismissed timestamp). */
+  externalWorktreeVisibilityPromptDismissedAt?: number | null;
   repo_icon?: RepoIcon | null;
 }
 

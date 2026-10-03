@@ -112,8 +112,11 @@ export interface WorktreeListProps {
   onProjectContextMenu?: (e: React.MouseEvent, proj: HydraProject) => void;
   onGroupContextMenu?: (e: React.MouseEvent, group: { id: string; name: string }) => void;
   onWorktreeContextMenu?: (e: React.MouseEvent, wt: GitWorktreeInfo, proj?: HydraProject) => void;
-  onReviewHiddenWorktrees?: (proj: HydraProject, hiddenWorktrees: GitWorktreeInfo[]) => void;
   onSuppressHiddenWorktrees?: (proj: HydraProject) => void;
+  /** Recover one discovered worktree into the list (`import_worktree` per path). */
+  onShowHiddenWorktree?: (proj: HydraProject, worktreePath: string) => void;
+  /** Acknowledge the listed discovered worktrees into the repo's inbox baseline. */
+  onKeepHiddenWorktrees?: (proj: HydraProject, worktreePaths: string[]) => void;
 
   // Drag and drop state & handlers
   draggedWorktreePath?: string | null;
@@ -172,8 +175,9 @@ export function WorktreeList({
   onProjectContextMenu,
   onGroupContextMenu,
   onWorktreeContextMenu,
-  onReviewHiddenWorktrees,
   onSuppressHiddenWorktrees,
+  onShowHiddenWorktree,
+  onKeepHiddenWorktrees,
   worktreeDropTarget,
   draggedProjectId,
   projectDropTarget,
@@ -273,23 +277,30 @@ export function WorktreeList({
             onDragEnd={onProjectDragEnd}
           />
 
-          {/* Hidden worktrees inbox banner */}
-          {hiddenWorktrees.length > 0 && (
-            <NewExternalWorktreesInboxLine
-              repoDisplayName={proj.name}
-              inboxCount={hiddenWorktrees.length}
-              onReview={
-                onReviewHiddenWorktrees
-                  ? () => onReviewHiddenWorktrees(proj, hiddenWorktrees)
-                  : undefined
-              }
-              onSuppress={
-                onSuppressHiddenWorktrees
-                  ? () => onSuppressHiddenWorktrees(proj)
-                  : undefined
-              }
-            />
-          )}
+          {/* Hidden worktrees inbox banner. The line owns the gate (prompt dismissed,
+              not suppressed) and the baseline subtraction; it renders null when closed. */}
+          <NewExternalWorktreesInboxLine
+            repoDisplayName={proj.name}
+            hiddenWorktrees={hiddenWorktrees}
+            baselinePaths={proj.externalWorktreeInboxBaselinePaths}
+            promptDismissedAt={proj.externalWorktreeVisibilityPromptDismissedAt}
+            suppressed={proj.suppressed_discovery === true}
+            onShow={
+              onShowHiddenWorktree
+                ? (worktreePath) => onShowHiddenWorktree(proj, worktreePath)
+                : undefined
+            }
+            onKeepHidden={
+              onKeepHiddenWorktrees
+                ? (worktreePaths) => onKeepHiddenWorktrees(proj, worktreePaths)
+                : undefined
+            }
+            onSuppress={
+              onSuppressHiddenWorktrees
+                ? () => onSuppressHiddenWorktrees(proj)
+                : undefined
+            }
+          />
 
           {/* Expanded Worktrees List */}
           {!isCollapsed && (
@@ -404,8 +415,9 @@ export function WorktreeList({
       onProjectDragOver,
       onProjectDrop,
       onProjectDragEnd,
-      onReviewHiddenWorktrees,
       onSuppressHiddenWorktrees,
+      onShowHiddenWorktree,
+      onKeepHiddenWorktrees,
       sessions,
       activeWorktreePath,
       highlightedRevealPath,

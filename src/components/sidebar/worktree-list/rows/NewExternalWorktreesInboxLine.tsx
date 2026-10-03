@@ -1,64 +1,183 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-// Parity with Orca `components/sidebar/NewExternalWorktreesInboxLine.tsx`: ring-2 focus,
-// `size-3` chevron, `right-1` ghost suppress button behind a Tooltip, hover/focus handoff.
-import React from "react";
+// Parity with Orca `components/sidebar/ImportedWorktreesVisibilityLine.tsx` — the
+// expandable discovered-worktree inbox: collapsible header (`Hiding N discovered
+// worktrees` + count badge + suppress `×`), a body grouped by parent path with a
+// per-group count and one bullet per worktree, and the `Change this later from the
+// project menu.` footer offering `Keep hidden` / `Show in worktree list`.
+import React, { useState } from "react";
 import { ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  normalizeRuntimePathForComparison,
+  normalizeRuntimePathSeparators,
+} from "@/shared/cross-platform-path";
+import type { GitWorktreeInfo } from "../../types";
+
+export const UNKNOWN_EXTERNAL_WORKTREE_PARENT_PATH = "Unknown location";
 
 export interface NewExternalWorktreesInboxLineProps {
   repoDisplayName: string;
-  inboxCount: number;
+  /** Raw `scan_worktrees.hidden` for this repo; the line owns gate + baseline filtering. */
+  hiddenWorktrees: readonly GitWorktreeInfo[];
+  /** Paths the user already acknowledged with `Keep hidden`; never offered again
+   *  (Orca `externalWorktreeInboxBaselinePaths`). */
+  baselinePaths?: readonly string[];
+  /** Gate (Orca `hasCompletedInitialExternalWorktreeImportPrompt`): the inbox only
+   *  opens once the repo logged the visibility prompt as dismissed. */
+  promptDismissedAt?: number | null;
+  /** Gate (Orca `isExternalWorktreeDiscoverySuppressed`): the `×` opt-out. */
+  suppressed?: boolean;
   pending?: boolean;
   error?: string | null;
-  onReview?: () => void;
+  /** Per-path recovery: one `import_worktree` per hidden worktree. */
+  onShow?: (worktreePath: string) => void;
+  /** Acknowledge the listed paths into the repo's inbox baseline. */
+  onKeepHidden?: (worktreePaths: string[]) => void;
   onSuppress?: () => void;
   className?: string;
 }
 
+export interface ExternalWorktreePathGroup {
+  path: string;
+  worktrees: GitWorktreeInfo[];
+}
+
+/** Orca `getExternalWorktreeParentPath` (external-worktree-visibility.ts:19). */
+export function getExternalWorktreeParentPath(worktreePath: string | undefined): string {
+  if (!worktreePath) return UNKNOWN_EXTERNAL_WORKTREE_PARENT_PATH;
+  const separated = normalizeRuntimePathSeparators(worktreePath);
+  const normalized =
+    separated === "/" || /^[A-Za-z]:\/$/.test(separated)
+      ? separated
+      : separated.replace(/\/+$/, "");
+  if (!normalized) return UNKNOWN_EXTERNAL_WORKTREE_PARENT_PATH;
+  if (normalized.startsWith("//")) {
+    const parts = normalized.slice(2).split("/").filter(Boolean);
+    if (parts.length < 2) return UNKNOWN_EXTERNAL_WORKTREE_PARENT_PATH;
+    if (parts.length === 2) return `//${parts[0]}/${parts[1]}`;
+    return `//${parts.slice(0, -1).join("/")}`;
+  }
+  const lastSeparatorIndex = normalized.lastIndexOf("/");
+  if (lastSeparatorIndex === -1) return UNKNOWN_EXTERNAL_WORKTREE_PARENT_PATH;
+  if (lastSeparatorIndex === 0) return "/";
+  if (/^[A-Za-z]:\/$/.test(normalized)) return normalized;
+  if (/^[A-Za-z]:\/[^/]+$/.test(normalized)) return `${normalized.slice(0, 2)}/`;
+  return normalized.slice(0, lastSeparatorIndex);
+}
+
+/** Orca `groupWorktreesByParentPath`, insertion-ordered so the list stays stable. */
+export function groupWorktreesByParentPath(
+  worktrees: readonly GitWorktreeInfo[]
+): ExternalWorktreePathGroup[] {
+  const groups: ExternalWorktreePathGroup[] = [];
+  const groupByPath = new Map<string, ExternalWorktreePathGroup>();
+  for (const worktree of worktrees) {
+    const path = getExternalWorktreeParentPath(worktree.path);
+    const existing = groupByPath.get(path);
+    if (existing) {
+      existing.worktrees.push(worktree);
+      continue;
+    }
+    const group = { path, worktrees: [worktree] };
+    groupByPath.set(path, group);
+    groups.push(group);
+  }
+  return groups;
+}
+
+/** Orca `shouldOfferNewExternalWorktreeInbox` (external-worktree-inbox.ts:84). */
+export function shouldOfferExternalWorktreeInbox(args: {
+  promptDismissedAt?: number | null;
+  suppressed?: boolean;
+}): boolean {
+  if (args.suppressed) return false;
+  return typeof args.promptDismissedAt === "number";
+}
+
+/** Orca `getNewExternalWorktreeInboxWorktrees` baseline subtraction. */
+export function selectInboxWorktrees(
+  hiddenWorktrees: readonly GitWorktreeInfo[],
+  baselinePaths?: readonly string[]
+): GitWorktreeInfo[] {
+  if (!baselinePaths || baselinePaths.length === 0) return [...hiddenWorktrees];
+  const baseline = new Set(baselinePaths.map(normalizeRuntimePathForComparison));
+  return hiddenWorktrees.filter(
+    (worktree) => !baseline.has(normalizeRuntimePathForComparison(worktree.path))
+  );
+}
+
+/** Orca `mergeExternalWorktreeInboxPaths`: normalize-compare, keep the caller's spelling. */
+export function mergeExternalWorktreeInboxPaths(
+  existing: readonly string[] | undefined,
+  additions: readonly string[]
+): string[] {
+  const merged: string[] = [];
+  const seen = new Set<string>();
+  for (const path of [...(existing ?? []), ...additions]) {
+    const normalized = normalizeRuntimePathForComparison(path);
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    merged.push(path);
+  }
+  return merged;
+}
+
 export function NewExternalWorktreesInboxLine({
   repoDisplayName,
-  inboxCount,
+  hiddenWorktrees,
+  baselinePaths,
+  promptDismissedAt,
+  suppressed = false,
   pending = false,
   error = null,
-  onReview,
+  onShow,
+  onKeepHidden,
   onSuppress,
   className = "",
 }: NewExternalWorktreesInboxLineProps): React.JSX.Element | null {
-  if (inboxCount <= 0) return null;
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const inboxWorktrees = selectInboxWorktrees(hiddenWorktrees, baselinePaths);
+  const inboxCount = inboxWorktrees.length;
+  if (!shouldOfferExternalWorktreeInbox({ promptDismissedAt, suppressed }) || inboxCount === 0) {
+    return null;
+  }
 
   const isSingular = inboxCount === 1;
-  const countLabel = isSingular ? "hidden worktree" : "hidden worktrees";
-  const reviewAriaLabel = `Review ${inboxCount} ${countLabel} in ${repoDisplayName}`;
+  const countLabel = isSingular ? "discovered worktree" : "discovered worktrees";
+  const expandAriaLabel = `${isExpanded ? "Collapse" : "Expand"} ${inboxCount} hidden worktrees for ${repoDisplayName}`;
   const suppressAriaLabel = `Hide external worktrees permanently for ${repoDisplayName}`;
+  const inboxPaths = inboxWorktrees.map((worktree) => worktree.path);
+  const worktreeGroups = groupWorktreesByParentPath(inboxWorktrees);
 
   return (
     <section
       aria-busy={pending}
       className={`mx-1 my-0.5 ml-3 text-worktree-sidebar-foreground ${className}`}
     >
-      <div className="group relative">
-        <button
+      <div className="flex min-h-7 min-w-0 items-center gap-1.5 rounded-md px-1.5 text-[11px] leading-none text-muted-foreground transition-colors hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-accent-foreground">
+        <Button
           type="button"
-          disabled={pending || !onReview}
-          aria-label={reviewAriaLabel}
-          onClick={onReview}
-          className="flex min-h-8 w-full min-w-0 items-center gap-2 rounded-md border border-worktree-sidebar-border px-2 py-1.5 text-[11px] leading-none text-muted-foreground transition-colors hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-worktree-sidebar-ring disabled:pointer-events-none disabled:opacity-60 cursor-pointer"
+          variant="ghost"
+          size="icon-xs"
+          disabled={pending}
+          aria-expanded={isExpanded}
+          aria-label={expandAriaLabel}
+          onClick={() => setIsExpanded((value) => !value)}
+          className="shrink-0 rounded-[4px] text-muted-foreground hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-accent-foreground cursor-pointer"
         >
-          <span className="inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full border border-border px-1.5 text-[10px] font-medium leading-none tabular-nums">
-            {inboxCount}
-          </span>
-          <span className="min-w-0 flex-1 truncate text-left">{countLabel}</span>
           <ChevronRight
+            className={`size-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
             aria-hidden="true"
-            className={`size-3 shrink-0 ${
-              onSuppress
-                ? "can-hover:group-hover:opacity-0 can-hover:group-focus-within:opacity-0 [@media(hover:none)]:opacity-0"
-                : ""
-            }`}
           />
-        </button>
-
+        </Button>
+        <span className="min-w-0 flex-1 truncate text-left">
+          Hiding {inboxCount} {countLabel}
+        </span>
+        <span className="inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full border border-border px-1.5 text-[10px] font-medium leading-none tabular-nums">
+          {inboxCount}
+        </span>
         {onSuppress && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -68,11 +187,8 @@ export function NewExternalWorktreesInboxLine({
                 size="icon-xs"
                 disabled={pending}
                 aria-label={suppressAriaLabel}
-                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  e.stopPropagation();
-                  onSuppress();
-                }}
-                className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-accent-foreground can-hover:pointer-events-none can-hover:opacity-0 can-hover:group-hover:pointer-events-auto can-hover:group-hover:opacity-100 can-hover:group-focus-within:pointer-events-auto can-hover:group-focus-within:opacity-100"
+                onClick={onSuppress}
+                className="shrink-0 rounded-md text-muted-foreground hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-accent-foreground cursor-pointer"
               >
                 <X className="size-3" aria-hidden="true" />
               </Button>
@@ -83,6 +199,85 @@ export function NewExternalWorktreesInboxLine({
           </Tooltip>
         )}
       </div>
+
+      {isExpanded && (
+        <div
+          className="ml-4 mt-0.5 grid gap-1 border-l border-worktree-sidebar-border pb-1 pl-2"
+          aria-label="Hidden worktree groups"
+        >
+          {worktreeGroups.map((group) => (
+            <div key={group.path} className="grid min-w-0 gap-0.5 rounded-md px-1.5 py-1">
+              <div className="flex min-h-7 min-w-0 items-center gap-1.5">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      tabIndex={0}
+                      className="block min-w-0 flex-1 truncate font-mono text-[10px] leading-4 text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-worktree-sidebar-ring"
+                    >
+                      {group.path}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={4}>
+                    {group.path}
+                  </TooltipContent>
+                </Tooltip>
+                <span className="shrink-0 rounded-full border border-worktree-sidebar-border px-1.5 py-0.5 text-[10px] leading-none text-muted-foreground">
+                  {group.worktrees.length}
+                </span>
+              </div>
+              <ul
+                className="list-disc space-y-0.5 py-0 pl-5 pr-2 text-xs text-muted-foreground marker:text-muted-foreground"
+                aria-label={`${group.path} preview`}
+              >
+                {group.worktrees.map((worktree, index) => (
+                  <li
+                    key={worktree.id ?? worktree.path ?? `${group.path}-${index}`}
+                    className="min-h-6 min-w-0 py-0.5 pl-0"
+                  >
+                    <span className="block min-w-0 truncate font-medium">
+                      {worktree.branch?.trim() ||
+                        worktree.displayName ||
+                        worktree.display_name ||
+                        worktree.path}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div className="grid gap-1 px-1.5 pb-1 pt-1">
+            <p className="rounded-md bg-worktree-sidebar-accent px-2 py-1 text-[10px] font-medium leading-4 text-worktree-sidebar-accent-foreground">
+              Change this later from the project menu.
+            </p>
+            <div className="flex min-w-0 items-center gap-1.5">
+              {onKeepHidden && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  disabled={pending}
+                  onClick={() => onKeepHidden(inboxPaths)}
+                  className="h-6 px-2 text-[11px] font-medium cursor-pointer"
+                >
+                  Keep hidden
+                </Button>
+              )}
+              {onShow && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  disabled={pending}
+                  onClick={() => inboxPaths.forEach((worktreePath) => onShow(worktreePath))}
+                  className="h-6 px-2 text-[11px] font-medium cursor-pointer"
+                >
+                  Show in worktree list
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <p className="px-1.5 pb-1 pt-0.5 text-[11px] leading-4 text-destructive" role="alert">

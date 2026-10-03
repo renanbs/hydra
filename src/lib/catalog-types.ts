@@ -40,6 +40,11 @@ export interface CatalogRepo {
   repoIcon?: unknown | null;
   importedExternalWorktreePaths?: string[];
   externalWorktreeDiscoverySuppressedAt?: number | null;
+  /** Paths acknowledged with the inbox `Keep hidden` action (no longer offered). */
+  externalWorktreeInboxBaselinePaths?: string[];
+  /** Epoch ms the initial external-worktree visibility prompt completed; the
+   *  discovered-worktree inbox only opens once this is a number. */
+  externalWorktreeVisibilityPromptDismissedAt?: number | null;
 }
 
 export interface CatalogEnvelope {

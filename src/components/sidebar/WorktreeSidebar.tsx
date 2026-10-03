@@ -17,6 +17,7 @@ import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
 import { SidebarAgentsList } from "./SidebarAgentsList";
 import { WorktreeList } from "./WorktreeList";
+import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
@@ -734,12 +735,31 @@ export function WorktreeSidebar({
                   onWorktreeContextMenu?.(e, wt, targetProject);
                 }
               }}
-              onReviewHiddenWorktrees={(proj, hidden) => {
-                setVisibilityDialog({
-                  open: true,
-                  project: proj,
-                  hiddenWorktrees: hidden,
-                });
+              onShowHiddenWorktree={async (proj, worktreePath) => {
+                try {
+                  await invoke("import_worktree", {
+                    projectPath: proj.path,
+                    worktreePath,
+                  });
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+              onKeepHiddenWorktrees={async (proj, worktreePaths) => {
+                try {
+                  await invoke("catalog_set_worktree_visibility", {
+                    repoPath: proj.path,
+                    baselinePaths: mergeExternalWorktreeInboxPaths(
+                      proj.externalWorktreeInboxBaselinePaths,
+                      worktreePaths
+                    ),
+                    promptDismissedAt: Date.now(),
+                  });
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (err) {
+                  console.error(err);
+                }
               }}
               onSuppressHiddenWorktrees={async (proj) => {
                 try {
