@@ -307,6 +307,53 @@ export function removeCustomWorktreeSourcePreference(
   } as WorktreeVisibilitySourcePreferences;
 }
 
+/** Orca `removeBuiltInWorktreeSourcePreference`: drop the repo override for one built-in source. */
+export function removeBuiltInWorktreeSourcePreference(
+  repo: WorktreeVisibilityRepoConfig | null | undefined,
+  sourceId: BuiltInWorktreeVisibilitySourceId
+): WorktreeVisibilitySourcePreferences {
+  const current = repoPreferences(repo);
+  const builtIn = { ...current?.builtIn };
+  delete builtIn[sourceId];
+  return {
+    ...(Object.keys(builtIn).length > 0 ? { builtIn } : {}),
+    ...(current?.custom && Object.keys(current.custom).length > 0 ? { custom: current.custom } : {}),
+  } as WorktreeVisibilitySourcePreferences;
+}
+
+// ─── Provenance ─────────────────────────────────────────────────────────────
+
+export type WorktreeVisibilitySourceProvenance = {
+  kind: "global" | "project-override" | "project-source";
+  globalVisibility: ExternalWorktreeVisibility;
+};
+
+/**
+ * Orca `getWorktreeVisibilitySourceProvenance`, minus the legacy `agentWorktreeVisibility`
+ * read (Hydra's catalog does not carry that field). `project-source` means the repo added
+ * the custom root itself, so there is no global value behind it to fall back to.
+ */
+export function getWorktreeVisibilitySourceProvenance(
+  repo: WorktreeVisibilityRepoConfig | null | undefined,
+  row: WorktreeVisibilitySourceRow,
+  defaults?: WorktreeVisibilityDefaults,
+  repoCustomSourceIds: ReadonlySet<string> = new Set()
+): WorktreeVisibilitySourceProvenance | null {
+  if (!repo) return null;
+  const globalVisibility = globalWorktreeVisibilitySourceValue(row, defaults);
+  if (row.kind === "custom" && repoCustomSourceIds.has(row.source.id)) {
+    return { kind: "project-source", globalVisibility };
+  }
+  const preferences = repoPreferences(repo);
+  const overridden =
+    row.kind === "built-in"
+      ? preferences?.builtIn?.[row.id] !== undefined
+      : row.kind === "custom"
+        ? preferences?.custom?.[row.source.id] !== undefined
+        : repo.externalWorktreeVisibility != null;
+  return { kind: overridden ? "project-override" : "global", globalVisibility };
+}
+
 // ─── Source classification + counts ─────────────────────────────────────────
 
 /** Orca `createWorktreeVisibilitySourceMatcher`, local-repo only (no worktree base paths). */
