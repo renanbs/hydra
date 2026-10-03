@@ -2,7 +2,10 @@
 // (`ImportedWorktreesVisibilityLine.tsx` + `shared/external-worktree-inbox.ts:84-120`):
 //   inbox rows = hidden externals MINUS `externalWorktreeInboxBaselinePaths`
 // The line is collapsed by default; expanding groups rows by parent path, each group
-// carrying its own count, and the footer offers Keep hidden (baseline) / Show (import).
+// carrying its own count and previewing `PREVIEW_LIMIT` bullets (`Show N more` past
+// that), at most `GROUP_LIMIT` groups (`+ N more locations` past that). The header `×`
+// keeps the listed paths hidden (`KEEP_HIDDEN_LABEL`) and the footer offers Keep hidden
+// (baseline) / Show (import).
 // Gate: this is the first phase — it renders while the repo's initial visibility prompt
 // is pending (`externalWorktreeVisibilityPromptDismissedAt == null`) and hands the row
 // over to the compact pill (`NewExternalWorktreesInboxLine`) once it is stamped.
@@ -38,7 +41,8 @@ function renderLine(
       <ImportedWorktreesVisibilityLine
         repoDisplayName="repo"
         hiddenWorktrees={HIDDEN}
-        onSuppress={vi.fn()}
+        onKeepHidden={vi.fn()}
+        onShow={vi.fn()}
         {...props}
       />
     </TooltipProvider>
@@ -46,13 +50,18 @@ function renderLine(
 }
 
 describe("ImportedWorktreesVisibilityLine (Orca parity)", () => {
-  it("states the discovered count, keeps the body collapsed, and offers suppress", () => {
+  it("states the discovered count, keeps the body collapsed, and offers the keep-hidden ×", () => {
     renderLine();
 
     expect(screen.getByText("Hiding 3 discovered worktrees")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Expand 3 hidden worktrees for repo" })).toBeInTheDocument();
+    // Orca drops the count badge: the text already carries the count, so the header
+    // renders no second "3" alongside it.
+    expect(screen.queryAllByText("3")).toHaveLength(0);
     expect(
-      screen.getByRole("button", { name: "Hide external worktrees permanently for repo" })
+      screen.getByRole("button", {
+        name: "Keep 3 discovered worktrees hidden for repo; recover from the project menu",
+      })
     ).toBeInTheDocument();
     // Collapsed by default: only the header exists until the chevron is pressed.
     expect(screen.queryByText("Change this later from the project menu.")).toBeNull();
@@ -101,14 +110,64 @@ describe("ImportedWorktreesVisibilityLine (Orca parity)", () => {
     ]);
   });
 
-  it("suppresses through the header × without expanding", () => {
-    const onSuppress = vi.fn();
-    renderLine({ onSuppress });
+  it("keeps every listed path hidden through the header × without expanding", () => {
+    const onKeepHidden = vi.fn();
+    renderLine({ onKeepHidden });
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Hide external worktrees permanently for repo" })
+      screen.getByRole("button", {
+        name: "Keep 3 discovered worktrees hidden for repo; recover from the project menu",
+      })
     );
-    expect(onSuppress).toHaveBeenCalledTimes(1);
+    expect(onKeepHidden).toHaveBeenCalledTimes(1);
+    expect(onKeepHidden).toHaveBeenCalledWith([
+      REPO_WT_A.path,
+      REPO_WT_B.path,
+      OTHER_WT_C.path,
+    ]);
+    // The × only acknowledges: it never expands the grouped body.
+    expect(screen.queryByText("Change this later from the project menu.")).toBeNull();
+  });
+
+  it("previews PREVIEW_LIMIT bullets per group behind Show N more / Show fewer", () => {
+    const GROUP = [
+      worktree("/home/me/src/repo/wt-1", "feature/1"),
+      worktree("/home/me/src/repo/wt-2", "feature/2"),
+      worktree("/home/me/src/repo/wt-3", "feature/3"),
+      worktree("/home/me/src/repo/wt-4", "feature/4"),
+    ];
+    renderLine({ hiddenWorktrees: GROUP });
+
+    fireEvent.click(screen.getByRole("button", { name: "Expand 4 hidden worktrees for repo" }));
+
+    // Only the first three bullets render; the fourth is behind the toggle.
+    expect(screen.getByText("feature/1")).toBeInTheDocument();
+    expect(screen.getByText("feature/2")).toBeInTheDocument();
+    expect(screen.getByText("feature/3")).toBeInTheDocument();
+    expect(screen.queryByText("feature/4")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show 1 more" }));
+    expect(screen.getByText("feature/4")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show fewer" }));
+    expect(screen.queryByText("feature/4")).toBeNull();
+    expect(screen.getByText("feature/3")).toBeInTheDocument();
+  });
+
+  it("caps the rail at GROUP_LIMIT groups and summarizes the rest", () => {
+    const MANY = Array.from({ length: 7 }, (_, index) =>
+      worktree(`/home/me/src/g${index}/wt`, `feature/g${index}`)
+    );
+    renderLine({ hiddenWorktrees: MANY });
+
+    fireEvent.click(screen.getByRole("button", { name: "Expand 7 hidden worktrees for repo" }));
+
+    // Seven groups exist but only the first five get a rail entry.
+    expect(screen.getByText("/home/me/src/g0")).toBeInTheDocument();
+    expect(screen.getByText("/home/me/src/g4")).toBeInTheDocument();
+    expect(screen.queryByText("/home/me/src/g5")).toBeNull();
+    expect(screen.queryByText("/home/me/src/g6")).toBeNull();
+    expect(screen.getByText("+ 2 more locations")).toBeInTheDocument();
   });
 
   it("stays closed when the repo opted out, nothing is hidden, or the prompt phase ended", () => {
