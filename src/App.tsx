@@ -59,7 +59,13 @@ import { getVisibleWorktreeShortcutTargets } from "./components/sidebar/visible-
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
-import { DeleteWorktreeDialog, type DeleteWorktreeDialogState } from "./components/DeleteWorktreeDialog";
+import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
+import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
+import type { ExecutionHostId } from "./shared/execution-host";
+import { getRepoExecutionHostId } from "./shared/execution-host";
+import type { Repo } from "./shared/repo-types";
+import { getWorktreeHostIdentity } from "./shared/worktree/host-qualified-identity";
+import { Toaster, toast } from "sonner";
 import { PromptDialog, type PromptDialogProps } from "./components/PromptDialog";
 import { ParentPickerModal, type ParentCandidate } from "./components/sidebar/ParentPickerModal";
 import { 
@@ -265,6 +271,21 @@ function readLegacySidebarPrefsRaw(): Record<string, unknown> {
   return raw;
 }
 
+/**
+ * Host that owns a repo's execution, by the repo's own path.
+ *
+ * Same rule as the sidebar's catalog→pipeline bridge: a repo that names no host
+ * stays unqualified (treated as local) instead of being pinned to `local`, so a
+ * single-host list never grows a phantom host column.
+ */
+function getExecutionHostIdForRepoPath(
+  repos: readonly Repo[],
+  repoPath: string
+): ExecutionHostId | undefined {
+  const repo = repos.find((candidate) => candidate.path === repoPath);
+  return repo && (repo.connectionId || repo.executionHostId) ? getRepoExecutionHostId(repo) : undefined;
+}
+
 export default function App() {
   const [status, setStatus] = useState("Initializing...");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
@@ -399,13 +420,43 @@ export default function App() {
   } | null>(null);
 
   // Orca parity: dedicated DeleteWorktreeDialog state (openModal('delete-worktree')).
+  // STA-4343: the modal carries the confirmed IDENTITY (id + host), not just the
+  // path, so confirming can never land on the same path's sibling workspace.
   const [deleteWorktreeModal, setDeleteWorktreeModal] = useState<{
     repoPath: string;
     worktrees: GitWorktreeInfo[];
+    deleteTargets: WorktreeDeleteIdentity[];
     error: string | null;
   } | null>(null);
   const [deleteStateByWorktreeId, setDeleteStateByWorktreeId] = useState<DeleteWorktreeDialogState>({});
   const [dirtyChangeCountsByWorktreeId, setDirtyChangeCountsByWorktreeId] = useState<Record<string, number | null>>({});
+  // Orca parity: the store's host-aware catalog is the one source that can name a
+  // repo's execution host on the render path (`WorktreeList` reads the same slice).
+  const storeRepos = useAppStore((s) => s.repos);
+  /** Live workspace rows the delete confirmation revalidates its targets against. */
+  const deleteLiveTargets = useMemo<WorktreeDeleteLiveTarget[]>(() => {
+    const rows: WorktreeDeleteLiveTarget[] = [];
+    for (const [repoPath, list] of Object.entries(worktreesByProject)) {
+      const hostId = getExecutionHostIdForRepoPath(storeRepos, repoPath);
+      for (const wt of list) {
+        rows.push({
+          id: wt.id ?? `${repoPath}::${wt.path}`,
+          ...(hostId ? { hostId } : {}),
+          isMainWorktree: wt.is_main ?? wt.isMainWorktree ?? false,
+          path: wt.path,
+          repoPath,
+        });
+      }
+    }
+    return rows;
+  }, [storeRepos, worktreesByProject]);
+  // Orca `showWorkspaceListChangedToast`: the confirmed row changed or vanished
+  // between opening and confirming, so the delete stops instead of guessing.
+  const showStaleDeleteNotice = useCallback(() => {
+    toast.info("Workspace list changed", {
+      description: "Refresh Space and try again if the workspace list looks stale.",
+    });
+  }, []);
   // Non-blocking prompt & picker dialogs (replaces window.prompt to prevent WebKitGTK / Wayland freezes)
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
   const [parentPickerModal, setParentPickerModal] = useState<{
@@ -1771,9 +1822,32 @@ export default function App() {
     }
     if (!repoPath) return;
 
+    const targetHostId = getExecutionHostIdForRepoPath(storeRepos, repoPath);
+    const deleteTarget: WorktreeDeleteIdentity = {
+      id: wt.id ?? `${repoPath}::${wt.path}`,
+      ...(targetHostId ? { hostId: targetHostId } : {}),
+    };
+
     if (hydraSettings.skip_delete_worktree_confirm) {
       setDeleteWorktreeModal(null);
-      invoke("delete_worktree", { repoPath, worktreePath: wt.path })
+      // STA-4343: even with the confirmation skipped, the delete runs against the
+      // LIVE row the identity resolves to — a vanished or recreated workspace
+      // yields a stale-list notice instead of removing a namesake.
+      const liveTarget = deleteLiveTargets.find(
+        (row) =>
+          row.id === deleteTarget.id &&
+          row.hostId === deleteTarget.hostId &&
+          row.instanceId === deleteTarget.instanceId
+      );
+      if (!liveTarget) {
+        showStaleDeleteNotice();
+        return;
+      }
+      invoke("delete_worktree", {
+        repoPath: liveTarget.repoPath ?? repoPath,
+        worktreePath: liveTarget.path,
+        ...(liveTarget.hostId ? { hostId: liveTarget.hostId } : {}),
+      })
         .then(() => {
           refreshGitWorktrees(repoPath);
           if (activeProject && activeProject.path !== repoPath) {
@@ -1783,11 +1857,11 @@ export default function App() {
         })
         .catch((err) => {
           console.error("delete_worktree failed:", err);
-          setDeleteWorktreeModal({ repoPath, worktrees: [wt], error: String(err) });
+          setDeleteWorktreeModal({ repoPath, worktrees: [wt], deleteTargets: [deleteTarget], error: String(err) });
         });
       return;
     }
-    setDeleteWorktreeModal({ repoPath, worktrees: [wt], error: null });
+    setDeleteWorktreeModal({ repoPath, worktrees: [wt], deleteTargets: [deleteTarget], error: null });
   };
 
   // Orca parity (useDeleteWorktreeStatusHydration): hydrate dirty-change counts
@@ -4080,6 +4154,9 @@ export default function App() {
         open={deleteWorktreeModal != null}
         worktrees={deleteWorktreeModal?.worktrees ?? []}
         isMainWorktree={deleteWorktreeModal?.worktrees.some((w) => w.path === deleteWorktreeModal?.repoPath) ?? false}
+        deleteTargets={deleteWorktreeModal?.deleteTargets ?? []}
+        liveWorktrees={deleteLiveTargets}
+        onStaleTargets={showStaleDeleteNotice}
         deleteStateByWorktreeId={deleteStateByWorktreeId}
         dirtyChangeCountsByWorktreeId={dirtyChangeCountsByWorktreeId}
         onPersistSkipConfirmPreference={() => {
@@ -4098,7 +4175,13 @@ export default function App() {
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
           setDeleteStateByWorktreeId((prev) => {
             const next = { ...prev };
-            for (const p of deletedPaths) delete next[p];
+            // Delete state is keyed by host-qualified identity (STA-4343); the
+            // bare path key is cleared too so legacy entries cannot linger.
+            deletedPaths.forEach((path) => {
+              const index = deleteWorktreeModal?.worktrees.findIndex((w) => w.path === path) ?? -1;
+              const target = index >= 0 ? deleteWorktreeModal?.deleteTargets[index] : undefined;
+              delete next[target ? getWorktreeHostIdentity(target) : path];
+            });
             return next;
           });
         }}
@@ -4124,6 +4207,10 @@ export default function App() {
         initialSection={settingsSectionRequested ?? undefined}
       />
     </div>
+    {/* Orca parity: sonner is the project's toast surface; without a mounted
+        Toaster every `toast()` call (delete stale-list notice included) renders
+        nowhere. */}
+    <Toaster position="bottom-right" />
     </TooltipProvider>
   );
 }

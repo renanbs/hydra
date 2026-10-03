@@ -5,17 +5,39 @@
 // dirty-change counts, "Don't ask again" (persisted only on the primary
 // confirm, never on force), Cancel + destructive Delete footer with autofocus
 // on the confirm button for the expected "Delete, Enter" keyboard flow.
-import { useEffect, useMemo, useRef, useState } from "react";
+//
+// STA-4343: the confirmed row is an IDENTITY (id + host + instance), not a path.
+// The dialog revalidates it against the live list both while rendering (the
+// destructive button disables once the target is gone) and once more at confirm,
+// because the workspace list can change between opening and confirming. A target
+// that vanished or was recreated aborts with a "Workspace list changed" notice
+// instead of deleting whichever checkout shares the path.
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LoaderCircle, Trash2, Check } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import type { GitWorktreeInfo } from "./sidebar/types";
+import type { ExecutionHostId } from "../shared/execution-host";
+import type { WorktreeDeleteState } from "../store/slices/worktree-delete-state-types";
+import { getDeleteStateForWorktreeHost } from "./sidebar/worktree-delete-state-host-match";
+import {
+  resolveWorktreeBatchDeleteTargets,
+  type WorktreeDeleteIdentity,
+  type WorktreeDeleteResolvableTarget,
+} from "./sidebar/worktree-delete-request";
 
-export interface DeleteWorktreeDialogState {
-  /** id-keyed progress per worktree (Orca: deleteStateByWorktreeId) */
-  [worktreePath: string]: { isDeleting: boolean; error: string | null };
-}
+export type DeleteWorktreeDialogState = Record<string, WorktreeDeleteState | undefined>;
 
-interface DeleteWorktreeDialogProps {
+/**
+ * A live row the confirmation revalidates against. The identity fields decide
+ * WHICH workspace was confirmed; `path`/`repoPath` build the destructive payload
+ * once that exact row is still present.
+ */
+export type WorktreeDeleteLiveTarget = WorktreeDeleteResolvableTarget & {
+  path: string;
+  repoPath?: string;
+};
+
+export interface DeleteWorktreeDialogProps {
   open: boolean;
   worktrees: GitWorktreeInfo[];
   isMainWorktree: boolean;
@@ -27,6 +49,19 @@ interface DeleteWorktreeDialogProps {
   onDeleted: (deletedPaths: string[]) => void;
   onForceDeleted: (deletedPath: string) => void;
   repoPath: string;
+  /**
+   * Identity snapshot captured when the dialog opened (Orca
+   * `modalData.worktreeDeleteIdentities`). Omitted by legacy callers that only
+   * know the path; the identities are then derived from `worktrees`.
+   */
+  deleteTargets?: readonly WorktreeDeleteIdentity[];
+  /**
+   * Live workspace rows (Orca `getWorktreeOnHostFromState`). When provided, the
+   * confirmed identity is resolved against them on render and again at confirm.
+   */
+  liveWorktrees?: readonly WorktreeDeleteLiveTarget[];
+  /** Fired when a confirmed target no longer matches the live list. */
+  onStaleTargets?: () => void;
 }
 
 export function DeleteWorktreeDialog({
@@ -40,6 +75,9 @@ export function DeleteWorktreeDialog({
   onDeleted,
   onForceDeleted,
   repoPath,
+  deleteTargets,
+  liveWorktrees,
+  onStaleTargets,
 }: DeleteWorktreeDialogProps) {
   const [dontAskAgain, setDontAskAgain] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -47,9 +85,36 @@ export function DeleteWorktreeDialog({
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   const isBatchDelete = worktrees.length > 1;
+
+  // Why: the id is `repoId::path`; the fallback keeps a legacy caller whose
+  // payload predates `id` on the same identity the live list uses.
+  const identities = useMemo<WorktreeDeleteIdentity[]>(
+    () =>
+      deleteTargets && deleteTargets.length > 0
+        ? deleteTargets.map((target) => ({ ...target }))
+        : worktrees.map((wt) => ({ id: wt.id ?? `${repoPath}::${wt.path}` })),
+    [deleteTargets, repoPath, worktrees]
+  );
+
+  const lookupLiveTarget = useCallback(
+    (worktreeId: string, hostId: ExecutionHostId | undefined): WorktreeDeleteLiveTarget | undefined => {
+      if (!liveWorktrees) return undefined;
+      return hostId
+        ? liveWorktrees.find((row) => row.id === worktreeId && row.hostId === hostId)
+        : liveWorktrees.find((row) => row.id === worktreeId);
+    },
+    [liveWorktrees]
+  );
+
+  const validationEnabled = liveWorktrees != null;
+  const missingTargets =
+    validationEnabled &&
+    identities.some((identity) => lookupLiveTarget(identity.id, identity.hostId) === undefined);
+
   const deleteStates = useMemo(
-    () => worktrees.map((wt) => deleteStateByWorktreeId[wt.path] ?? null),
-    [deleteStateByWorktreeId, worktrees]
+    () =>
+      identities.map((identity) => getDeleteStateForWorktreeHost(identity, deleteStateByWorktreeId) ?? null),
+    [deleteStateByWorktreeId, identities]
   );
   const isDeleting = isDeletingLocal || deleteStates.some((s) => s?.isDeleting);
   const firstError = !isBatchDelete ? (deleteStates[0]?.error ?? null) : null;
@@ -86,6 +151,15 @@ export function DeleteWorktreeDialog({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, isDeleting, onClose]);
+  // Why (Orca DeleteWorktreeDialog.tsx:206-213): a target that vanished before
+  // the user could confirm must not leave a destructive affordance armed. Close
+  // with the stale-list notice instead of deleting a namesake.
+  useEffect(() => {
+    if (!open || !validationEnabled || isDeleting) return;
+    if (identities.length === 0 || !missingTargets) return;
+    onStaleTargets?.();
+    onClose();
+  }, [identities.length, isDeleting, missingTargets, onClose, onStaleTargets, open, validationEnabled]);
 
   if (!open) return null;
 
@@ -95,21 +169,51 @@ export function DeleteWorktreeDialog({
 
   const handleDelete = (force = false) => {
     if (worktrees.length === 0) return;
+    // Why: re-read the live list at the confirm step. The render-time check only
+    // guards what is painted; this is the only check that sees a list that
+    // changed between opening and this click.
+    const confirmedTargets = validationEnabled
+      ? resolveWorktreeBatchDeleteTargets(identities, lookupLiveTarget)
+      : null;
+    if (validationEnabled && (!confirmedTargets || confirmedTargets.length !== identities.length)) {
+      onStaleTargets?.();
+      onClose();
+      return;
+    }
     if (dontAskAgain && allowSkipConfirm && !force) onPersistSkipConfirmPreference();
     setIsDeletingLocal(true);
     setLocalError(null);
 
+    const payloads = confirmedTargets
+      ? confirmedTargets.map((target) => ({
+          path: target.path,
+          repoPath: target.repoPath ?? repoPath,
+          hostId: target.hostId,
+        }))
+      : worktrees.map((wt) => ({
+          path: wt.path,
+          repoPath,
+          hostId: undefined as ExecutionHostId | undefined,
+        }));
+
     const deletedPaths: string[] = [];
     const failures: { path: string; error: string }[] = [];
-    let pending = worktrees.length;
-    for (const wt of worktrees) {
-      invoke("delete_worktree", { repoPath, worktreePath: wt.path })
+    let pending = payloads.length;
+    for (const payload of payloads) {
+      // Why: `hostId` rides along so the backend can route a destructive removal
+      // to the host the user confirmed (STA-4343); the payload stays path-complete
+      // for the current command signature.
+      invoke("delete_worktree", {
+        repoPath: payload.repoPath,
+        worktreePath: payload.path,
+        ...(payload.hostId ? { hostId: payload.hostId } : {}),
+      })
         .then(() => {
-          deletedPaths.push(wt.path);
-          if (force && deletedPaths.length === 1) onForceDeleted(wt.path);
+          deletedPaths.push(payload.path);
+          if (force && deletedPaths.length === 1) onForceDeleted(payload.path);
         })
         .catch((err) => {
-          failures.push({ path: wt.path, error: String(err) });
+          failures.push({ path: payload.path, error: String(err) });
         })
         .finally(() => {
           pending -= 1;
@@ -149,9 +253,9 @@ export function DeleteWorktreeDialog({
 
         {/* Orca DeleteWorktreeTargetPreview parity: path + dirty-change count */}
         <div className="mt-3 space-y-1">
-          {worktrees.map((wt) => {
+          {worktrees.map((wt, index) => {
             const dirty = dirtyChangeCountsByWorktreeId[wt.path] ?? null;
-            const state = deleteStateByWorktreeId[wt.path];
+            const state = deleteStates[index] ?? null;
             return (
               <div key={wt.path} className="flex items-center justify-between gap-3 p-2 rounded bg-neutral-950 border border-neutral-800">
                 <div className="flex items-center gap-2 min-w-0">
@@ -215,7 +319,7 @@ export function DeleteWorktreeDialog({
               ref={confirmButtonRef}
               type="button"
               onClick={() => handleDelete(canForceDelete)}
-              disabled={isDeleting}
+              disabled={isDeleting || missingTargets}
               className="px-4 py-1.5 rounded bg-red-600 hover:bg-red-500 text-white font-medium transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
             >
               {isDeleting ? <LoaderCircle className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}

@@ -6,9 +6,10 @@
 // Global Settings exposes `Use global`, which drops that override. Source writes go
 // through `catalog_set_worktree_visibility_sources` as a FULL REPLACE; the scan and
 // per-item recovery go through `scan_worktrees` and `import_worktree`.
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { useAppStore } from "@/store";
 import type { GitWorktreeInfo, HydraProject } from "../types";
 
 const { invokeMock } = vi.hoisted(() => ({ invokeMock: vi.fn() }));
@@ -379,5 +380,142 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     expect(precedes(sources, note)).toBe(true);
     expect(precedes(note, scanStatus)).toBe(true);
     expect(precedes(scanStatus, hidden)).toBe(true);
+  });
+});
+
+// Orca scopes every visibility write to the modal's target host and fences the mutation so a
+// dismissed modal cannot lose it. Hydra's sidebar can hold the same repo id/path on two hosts,
+// so the write must name the host and only count once the host's row confirms it.
+describe("WorktreeVisibilityDialog host scope + mutation fence (Orca parity)", () => {
+  const TWO_HOST_REPOS = [
+    { id: PROJECT.id, path: PROJECT.path, connectionId: null, executionHostId: "local" },
+    { id: PROJECT.id, path: PROJECT.path, connectionId: "srv", executionHostId: "ssh:srv" },
+  ];
+
+  function catalogEnvelope(repo: Record<string, unknown>) {
+    return { schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [repo] };
+  }
+
+  beforeEach(() => {
+    invokeMock.mockReset();
+    invokeMock.mockResolvedValue({});
+  });
+
+  afterEach(() => {
+    useAppStore.setState({ repos: [] });
+  });
+
+  it("sends the write to the target host when two hosts share id/path", async () => {
+    useAppStore.setState({ repos: TWO_HOST_REPOS });
+    invokeMock.mockImplementation((cmd: string) =>
+      cmd === "catalog_set_worktree_visibility_sources"
+        ? Promise.resolve(
+            catalogEnvelope({
+              id: "1",
+              path: PROJECT.path,
+              displayName: "repo",
+              addedAt: 0,
+              worktreeVisibilitySourcePreferences: { builtIn: { claude: "show" } },
+            })
+          )
+        : Promise.resolve({})
+    );
+
+    renderDialog({ hostId: "ssh:srv" });
+    const sources = screen.getByRole("region", { name: "Sources" });
+    fireEvent.click(sourceToggle(sources, "Claude Code", "Show"));
+
+    expect(invokeMock).toHaveBeenCalledWith("catalog_set_worktree_visibility_sources", {
+      repoPath: PROJECT.path,
+      customSources: PROJECT.customWorktreeVisibilitySources,
+      sourcePreferences: { builtIn: { claude: "show" } },
+      externalWorktreeVisibilityLegacy: false,
+      externalWorktreeVisibility: null,
+      agentWorktreeVisibility: null,
+      externalWorktreeDiscoverySuppressedAt: null,
+      executionHostId: "ssh:srv",
+    });
+
+    // The accepted echo moves the row: the write landed on the host that confirmed it.
+    await waitFor(() =>
+      expect(sourceToggle(sources, "Claude Code", "Show")).toHaveAttribute("aria-pressed", "true")
+    );
+  });
+
+  it("rejects the write when the target host drops the additive source preferences", async () => {
+    useAppStore.setState({
+      repos: [{ id: PROJECT.id, path: PROJECT.path, connectionId: "old", executionHostId: "ssh:old" }],
+    });
+    invokeMock.mockImplementation((cmd: string) =>
+      cmd === "catalog_set_worktree_visibility_sources"
+        ? // Stale host: the row it writes back carries no source preferences at all.
+          Promise.resolve(
+            catalogEnvelope({ id: "1", path: PROJECT.path, displayName: "repo", addedAt: 0 })
+          )
+        : Promise.resolve({})
+    );
+
+    renderDialog({ hostId: "ssh:old" });
+    const sources = screen.getByRole("region", { name: "Sources" });
+    fireEvent.click(sourceToggle(sources, "Claude Code", "Show"));
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      "catalog_set_worktree_visibility_sources",
+      expect.objectContaining({
+        sourcePreferences: { builtIn: { claude: "show" } },
+        executionHostId: "ssh:old",
+      })
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "This host doesn't support source-specific worktree visibility."
+    );
+    // No false success: the row stays on the host's real state and unlocks again.
+    expect(sourceToggle(sources, "Claude Code", "Show")).toHaveAttribute("aria-pressed", "false");
+    expect(sourceToggle(sources, "Claude Code", "Hide")).toHaveAttribute("aria-pressed", "true");
+    await waitFor(() =>
+      expect(sourceToggle(sources, "Claude Code", "Show")).not.toBeDisabled()
+    );
+  });
+
+  it("rehydrates the in-flight toggle after unmount/remount", async () => {
+    useAppStore.setState({ repos: TWO_HOST_REPOS });
+    const write = Promise.withResolvers<unknown>();
+    invokeMock.mockImplementation((cmd: string) =>
+      cmd === "catalog_set_worktree_visibility_sources" ? write.promise : Promise.resolve({})
+    );
+
+    const first = renderDialog({ hostId: "ssh:srv" });
+    fireEvent.click(sourceToggle(screen.getByRole("region", { name: "Sources" }), "Claude Code", "Show"));
+    await waitFor(() =>
+      expect(
+        sourceToggle(screen.getByRole("region", { name: "Sources" }), "Claude Code", "Show")
+      ).toBeDisabled()
+    );
+
+    // Dismiss mid-write; the request outlives the modal.
+    first.unmount();
+
+    renderDialog({ hostId: "ssh:srv" });
+    const remounted = screen.getByRole("region", { name: "Sources" });
+    // The reopened modal rehydrates the fence: the rows stay locked until the write settles.
+    expect(sourceToggle(remounted, "Claude Code", "Show")).toBeDisabled();
+
+    await act(async () => {
+      write.resolve(
+        catalogEnvelope({
+          id: "1",
+          path: PROJECT.path,
+          displayName: "repo",
+          addedAt: 0,
+          worktreeVisibilitySourcePreferences: { builtIn: { claude: "show" } },
+        })
+      );
+      await write.promise;
+    });
+
+    await waitFor(() =>
+      expect(sourceToggle(remounted, "Claude Code", "Show")).not.toBeDisabled()
+    );
   });
 });
