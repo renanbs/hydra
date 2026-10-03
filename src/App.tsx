@@ -97,15 +97,6 @@ import {
 import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
 
-const MOCK_ORIGINAL = `fn main() {
-    println!("Hello from Hydra Core");
-}`;
-
-const MOCK_MODIFIED = `fn main() {
-    // High-performance Herdr shadow buffer with zero UI leakage
-    println!("Hello from Hydra ADE (Autonomous Development Environment)");
-}`;
-
 interface DbSessionRecord {
   id: string;
   project_path: string;
@@ -299,11 +290,8 @@ export default function App() {
     rightSidebarOpenRef.current = isRightSidebarOpen;
     leftSidebarWidthRef.current = leftSidebarWidth;
   }, [isLeftSidebarOpen, isRightSidebarOpen, leftSidebarWidth]);
-  const [diffOriginal, setDiffOriginal] = useState(MOCK_ORIGINAL);
-  const [diffModified, setDiffModified] = useState(MOCK_MODIFIED);
   const [previewLanguage, setPreviewLanguage] = useState("rust");
   const [fileTabContents, setFileTabContents] = useState<Record<string, { original: string; modified: string; lang: string }>>({});
-  const [promptInput, setPromptInput] = useState("");
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [projects, setProjects] = useState<HydraProject[]>([]);
   const orcaRepoIcons = useMemo(() => loadBundledOrcaRepoIcons(), []);
@@ -730,14 +718,6 @@ export default function App() {
   }, [getPanesForTab, getSplitDirectionForTab]);
 
 
-
-  const [_messages, setMessages] = useState<Array<{ id: number; role: string; content: string }>>([
-    {
-      id: 1,
-      role: "agent",
-      content: "Hydra ADE initialized. Workspace switcher, Command Palette and live PTY active."
-    }
-  ]);
 
   // Orca parity: left panel resizes via useSidebarResize — rAF drag drafts go
   // straight to the DOM (containerRef), state commits only on mouseup.
@@ -3567,43 +3547,12 @@ export default function App() {
     });
   };
 
-  // kept for future prompt bar; suppress unused until agent tab returns
-  void promptInput;
-  const handleSendMessage = () => {
-    if (!promptInput.trim()) return;
-    const text = promptInput;
-    setPromptInput("");
-
-    const currentActive = sessions.find((s) => s.active);
-    const sId = currentActive?.id ?? "sess_main";
-
-    invoke<number>("save_chat_message", {
-      sessionId: sId,
-      role: "user",
-      content: text
-    }).catch(console.error);
-
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now(), role: "user", content: text },
-      { id: Date.now() + 1, role: "agent", content: `Command saved to SQLite: "${text}". Monitored by Herdr state engine.` }
-    ]);
-  };
-  void handleSendMessage;
-
   const handleSettingsSaved = (newSettings: HydraSettings) => {
     const n = normalizeHydraSettings(newSettings);
     setHydraSettings(n);
     applyDocumentTheme(n.theme);
     try { localStorage.setItem("hydra:theme", n.theme); } catch {}
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        role: "agent",
-        content: `Settings updated: theme ${n.theme} · terminal ${n.terminal_theme_dark} / ${n.terminal_theme_light} · font ${n.terminal_font_size}px · auto-approve reads: ${n.auto_approve_reads ? "on" : "off"}.`
-      }
-    ]);
+    // Orca writes settings and repaints; it has no "Settings updated: …" feed entry.
   };
 
   const currentTab = tabs.find((t) => t.id === activeTabId);
@@ -3736,7 +3685,16 @@ export default function App() {
 
               <div className="flex-1 overflow-hidden relative">
                 {currentTab?.type === "diff" ? (() => {
-                  const c = fileTabContents[activeTabId] ?? { original: diffOriginal, modified: diffModified, lang: previewLanguage };
+                  const c = fileTabContents[activeTabId];
+                  // Orca never fabricates source: a diff tab whose contents did not
+                  // load (e.g. restored from persistence) shows an empty state.
+                  if (!c) {
+                    return (
+                      <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                        No changes to display
+                      </div>
+                    );
+                  }
                   return (
                     <CodeDiffViewer 
                       original={c.original} 
@@ -3881,11 +3839,9 @@ export default function App() {
                     const diff = await invoke<string>("git_diff_cmd", { repoPath: targetRepoPath, file: relPath, staged });
                     const tabId = `tab_diff_${relPath}_${staged ? "staged":"wt"}`;
                     const title = `${relPath}${staged ? " (staged)" : ""}`;
-                    const payload = { original: "", modified: diff || `No diff for ${relPath}`, lang: "diff" };
-                    setFileTabContents(prev => ({ ...prev, [tabId]: payload }));
-                    setDiffOriginal(payload.original);
-                    setDiffModified(payload.modified);
-                    setPreviewLanguage("diff");
+                    // Real diff only — Orca never renders placeholder source; an empty
+                    // diff shows the pane's empty state.
+                    setFileTabContents(prev => ({ ...prev, [tabId]: { original: "", modified: diff, lang: "diff" } }));
                     setTabs(prev => prev.find(t=>t.id===tabId) ? prev : [...prev, { id: tabId, title, type:"diff" }]);
                     setActiveTabId(tabId);
                   } catch (e) { console.error(e); }
