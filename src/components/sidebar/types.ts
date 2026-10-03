@@ -173,6 +173,8 @@ export interface WorktreeSidebarProps {
   /** Folder paths the host reports as gone; Orca badges them with FolderX. */
   missingFolderPaths?: ReadonlySet<string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
+  /** Review display per worktree path, from the host `pr_status` probe. */
+  prByPath?: Record<string, import("./pr-display").PrDisplay>;
   compactCards?: boolean;
   onSelectNextSession?: (direction: "up" | "down") => void;
   onSelectPrevSession?: (direction: "up" | "down") => void;

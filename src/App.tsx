@@ -42,6 +42,7 @@ import {
 } from "./lib/orca-repo-icons";
 import type { CatalogEnvelope } from "./lib/catalog-types";
 import { catalogToSidebarModel } from "./lib/catalog-bridge";
+import type { PrDisplay } from "./components/sidebar/pr-display";
 import { StatusBar } from "./components/status-bar/StatusBar";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { CommandPalette } from "./components/CommandPalette";
@@ -326,6 +327,11 @@ export default function App() {
   const [gitStatus, setGitStatus] = useState<GitRepoStatus | null>(null);
   const [gitWorktrees, setGitWorktrees] = useState<GitWorktreeInfo[]>([]);
   const [worktreesByProject, setWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
+  // Orca paints a PR glyph (merged = purple) on the card lane. The host probe is
+  // `pr_status` (gh-backed); a missing gh yields null and the lane falls back to the
+  // branch glyph, exactly like Orca without provider state.
+  const [prByPath, setPrByPath] = useState<Record<string, PrDisplay>>({});
+  const prLookupRef = useRef<Set<string>>(new Set());
   const [hiddenWorktreesByProject, setHiddenWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   const [systemDefaultShell, setSystemDefaultShell] = useState<string>("zsh");
@@ -1996,6 +2002,52 @@ export default function App() {
     [ensureWorkspaceTerminal]
   );
 
+  /** Review display per worktree: one `pr_status` probe per repo/branch, cached for
+   * the session so a re-render never re-shells out to `gh`. */
+  useEffect(() => {
+    const pending: Array<{ path: string; repoPath: string; branch: string }> = [];
+    for (const [repoPath, list] of Object.entries(worktreesByProject)) {
+      for (const wt of list) {
+        const branch = (wt.branch ?? "").trim();
+        if (!branch || branch === "HEAD") continue;
+        const key = `${repoPath}::${branch}`;
+        if (prLookupRef.current.has(key)) continue;
+        prLookupRef.current.add(key);
+        pending.push({ path: wt.path, repoPath, branch });
+      }
+    }
+    if (pending.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      pending.map((item) =>
+        invoke<{ number: number; state: string; checks?: string | null } | null>("pr_status", {
+          repoPath: item.repoPath,
+          branch: item.branch,
+        })
+          .then((status) => ({ item, status }))
+          .catch(() => ({ item, status: null }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      setPrByPath((prev) => {
+        const next = { ...prev };
+        for (const { item, status } of results) {
+          if (!status) continue;
+          next[item.path] = {
+            number: status.number,
+            state: status.state as PrDisplay["state"],
+            status: (status.checks ?? null) as PrDisplay["status"],
+            provider: "github",
+          };
+        }
+        return next;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [worktreesByProject]);
+
   /** Terminal tabs still mounted, i.e. the workspaces with a live PTY — Orca's
    * `ptyIdsByTabId` equivalent for the folder-row status dot. */
   const liveWorkspacePaths = useMemo(
@@ -3629,6 +3681,7 @@ export default function App() {
                 liveWorkspacePaths={liveWorkspacePaths}
                 missingFolderPaths={missingFolderPaths}
                 onActivateFolderWorkspace={handleActivateFolderWorkspace}
+                prByPath={prByPath}
                 initialSidebarBody={initialSidebarPrefs?.sidebarBody}
                 initialCollapsedProjects={initialSidebarPrefs?.collapsedProjects}
                 initialCollapsedGroups={initialSidebarPrefs?.collapsedGroups}
