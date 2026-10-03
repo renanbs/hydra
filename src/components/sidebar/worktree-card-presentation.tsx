@@ -3,6 +3,7 @@ import React from 'react'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 import { WorktreeCardPortsTrigger } from './WorktreeCardPortsTrigger'
 import { WorktreeCardReviewBadge } from './WorktreeCardReviewBadge'
+import { getFlushWorktreeCardPaddingLeft } from './worktree-list/rows/indentation'
 
 export interface WorktreeCardPresentation {
   showPinnedRepoIcon: boolean
@@ -130,8 +131,13 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController): Wor
   const hasHoverIdentity = Boolean(hoverWorkspaceTitle || hoverBranchName)
   const hasHoverDetails = Boolean(review || (ports && ports.length > 0) || hasHoverIdentity)
 
+  // Orca parity (`worktree-card-presentation.tsx:193-199`): a flush card pulls its
+  // content back toward the surface edge — `max(minInset, contentIndent - pullback)`,
+  // with an extra pullback while the status lane owns the left column. Using the raw
+  // contentIndent here pushed both the text and the clickable band to the right.
+  const applyNewCardStyleStatusLaneOffset = newCardStyle && showCombinedStatusSlot
   const cardPaddingLeft = flushSurface
-    ? (contentIndent > 0 ? `${contentIndent}px` : undefined)
+    ? getFlushWorktreeCardPaddingLeft(contentIndent, applyNewCardStyleStatusLaneOffset)
     : contentIndent > 0
       ? `calc(0.125rem + ${contentIndent}px)`
       : undefined

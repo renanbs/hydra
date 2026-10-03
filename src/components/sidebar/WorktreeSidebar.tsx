@@ -694,7 +694,11 @@ export function WorktreeSidebar({
           </div>
 
           {/* Workspaces Project List */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 min-h-0">
+          {/* Orca parity (`VirtualizedWorktreeViewport.tsx:352`): the scroll container
+              carries only a 1px left/small top inset plus the sleek scrollbar; every
+              horizontal inset comes from the row geometry, so the card's hit box reaches
+              the container edge instead of dying in its padding. */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden pl-1 pt-px min-h-0 scrollbar-sleek">
             <WorktreeList
               projects={projects}
               displayProjects={displayProjects}
