@@ -300,11 +300,6 @@ export function WorktreeList({
                 ? (worktreePaths) => onKeepHiddenWorktrees(proj, worktreePaths)
                 : undefined
             }
-            onSuppress={
-              onSuppressHiddenWorktrees
-                ? () => onSuppressHiddenWorktrees(proj)
-                : undefined
-            }
           />
           <NewExternalWorktreesInboxLine
             repoDisplayName={proj.name}

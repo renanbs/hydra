@@ -1,9 +1,10 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Parity with Orca `components/sidebar/ImportedWorktreesVisibilityLine.tsx` — the
 // expandable discovered-worktree inbox: collapsible header (`Hiding N discovered
-// worktrees` + count badge + suppress `×`), a body grouped by parent path with a
-// per-group count and one bullet per worktree, and the `Change this later from the
-// project menu.` footer offering `Keep hidden` / `Show in worktree list`.
+// worktrees` + keep-hidden `×`), a body grouped by parent path with a per-group count
+// and one bullet per worktree (previewed at `PREVIEW_LIMIT`, groups capped at
+// `GROUP_LIMIT`), and the `Change this later from the project menu.` footer offering
+// `Keep hidden` / `Show in worktree list`.
 //
 // Gate: this is the *first* phase of Orca's two-phase inbox. It renders every hidden
 // discovered worktree until the repo's initial visibility prompt completes
@@ -42,7 +43,6 @@ export interface ImportedWorktreesVisibilityLineProps {
   onShow?: (worktreePath: string) => void;
   /** Acknowledge the listed paths into the repo's inbox baseline. */
   onKeepHidden?: (worktreePaths: string[]) => void;
-  onSuppress?: () => void;
   className?: string;
 }
 
@@ -50,6 +50,11 @@ export interface ExternalWorktreePathGroup {
   path: string;
   worktrees: GitWorktreeInfo[];
 }
+
+// Orca parity constants (`ImportedWorktreesVisibilityLine.tsx`).
+const PREVIEW_LIMIT = 3;
+const GROUP_LIMIT = 5;
+const KEEP_HIDDEN_LABEL = "Keep hidden - recover from the project menu";
 
 /** Orca `getExternalWorktreeParentPath` (external-worktree-visibility.ts:19). */
 export function getExternalWorktreeParentPath(worktreePath: string | undefined): string {
@@ -132,10 +137,10 @@ export function ImportedWorktreesVisibilityLine({
   error = null,
   onShow,
   onKeepHidden,
-  onSuppress,
   className = "",
 }: ImportedWorktreesVisibilityLineProps): React.JSX.Element | null {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedGroupPathKeys, setExpandedGroupPathKeys] = useState<Set<string>>(new Set());
 
   const inboxWorktrees = selectInboxWorktrees(hiddenWorktrees, baselinePaths);
   const inboxCount = inboxWorktrees.length;
@@ -147,9 +152,24 @@ export function ImportedWorktreesVisibilityLine({
   const isSingular = inboxCount === 1;
   const countLabel = isSingular ? "discovered worktree" : "discovered worktrees";
   const expandAriaLabel = `${isExpanded ? "Collapse" : "Expand"} ${inboxCount} hidden worktrees for ${repoDisplayName}`;
-  const suppressAriaLabel = `Hide external worktrees permanently for ${repoDisplayName}`;
+  const keepHiddenAriaLabel = `Keep ${inboxCount} ${countLabel} hidden for ${repoDisplayName}; recover from the project menu`;
   const inboxPaths = inboxWorktrees.map((worktree) => worktree.path);
   const worktreeGroups = groupWorktreesByParentPath(inboxWorktrees);
+  const visibleWorktreeGroups = worktreeGroups.slice(0, GROUP_LIMIT);
+  const remainingGroupCount = Math.max(0, worktreeGroups.length - visibleWorktreeGroups.length);
+
+  const toggleGroupExpanded = (path: string): void => {
+    const key = normalizeRuntimePathForComparison(path);
+    setExpandedGroupPathKeys((previous) => {
+      const next = new Set(previous);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
 
   return (
     <section
@@ -175,10 +195,7 @@ export function ImportedWorktreesVisibilityLine({
         <span className="min-w-0 flex-1 truncate text-left">
           Hiding {inboxCount} {countLabel}
         </span>
-        <span className="inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full border border-border px-1.5 text-[10px] font-medium leading-none tabular-nums">
-          {inboxCount}
-        </span>
-        {onSuppress && (
+        {onKeepHidden && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -186,15 +203,15 @@ export function ImportedWorktreesVisibilityLine({
                 variant="ghost"
                 size="icon-xs"
                 disabled={pending}
-                aria-label={suppressAriaLabel}
-                onClick={onSuppress}
+                aria-label={keepHiddenAriaLabel}
+                onClick={() => onKeepHidden(inboxPaths)}
                 className="shrink-0 rounded-md text-muted-foreground hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-accent-foreground cursor-pointer"
               >
                 <X className="size-3" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" sideOffset={4}>
-              Don&apos;t show again
+              {KEEP_HIDDEN_LABEL}
             </TooltipContent>
           </Tooltip>
         )}
@@ -205,7 +222,7 @@ export function ImportedWorktreesVisibilityLine({
           className="ml-4 mt-0.5 grid gap-1 border-l border-worktree-sidebar-border pb-1 pl-2"
           aria-label="Hidden worktree groups"
         >
-          {worktreeGroups.map((group) => (
+          {visibleWorktreeGroups.map((group) => (
             <div key={group.path} className="grid min-w-0 gap-0.5 rounded-md px-1.5 py-1">
               <div className="flex min-h-7 min-w-0 items-center gap-1.5">
                 <Tooltip>
@@ -229,22 +246,50 @@ export function ImportedWorktreesVisibilityLine({
                 className="list-disc space-y-0.5 py-0 pl-5 pr-2 text-xs text-muted-foreground marker:text-muted-foreground"
                 aria-label={`${group.path} preview`}
               >
-                {group.worktrees.map((worktree, index) => (
-                  <li
-                    key={worktree.id ?? worktree.path ?? `${group.path}-${index}`}
-                    className="min-h-6 min-w-0 py-0.5 pl-0"
-                  >
-                    <span className="block min-w-0 truncate font-medium">
-                      {worktree.branch?.trim() ||
-                        worktree.displayName ||
-                        worktree.display_name ||
-                        worktree.path}
-                    </span>
+                {group.worktrees
+                  .slice(
+                    0,
+                    expandedGroupPathKeys.has(normalizeRuntimePathForComparison(group.path))
+                      ? group.worktrees.length
+                      : PREVIEW_LIMIT
+                  )
+                  .map((worktree, index) => (
+                    <li
+                      key={worktree.id ?? worktree.path ?? `${group.path}-${index}`}
+                      className="min-h-6 min-w-0 py-0.5 pl-0"
+                    >
+                      <span className="block min-w-0 truncate font-medium">
+                        {worktree.branch?.trim() ||
+                          worktree.displayName ||
+                          worktree.display_name ||
+                          worktree.path}
+                      </span>
+                    </li>
+                  ))}
+                {group.worktrees.length > PREVIEW_LIMIT && (
+                  <li className="list-none">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="xs"
+                      disabled={pending}
+                      onClick={() => toggleGroupExpanded(group.path)}
+                      className="h-6 justify-start px-0 text-[11px] font-normal text-muted-foreground hover:text-worktree-sidebar-accent-foreground cursor-pointer"
+                    >
+                      {expandedGroupPathKeys.has(normalizeRuntimePathForComparison(group.path))
+                        ? "Show fewer"
+                        : `Show ${group.worktrees.length - PREVIEW_LIMIT} more`}
+                    </Button>
                   </li>
-                ))}
+                )}
               </ul>
             </div>
           ))}
+          {remainingGroupCount > 0 && (
+            <div className="py-1 pl-7 pr-2 text-[11px] leading-4 text-muted-foreground">
+              + {remainingGroupCount} more locations
+            </div>
+          )}
           <div className="grid gap-1 px-1.5 pb-1 pt-1">
             <p className="rounded-md bg-worktree-sidebar-accent px-2 py-1 text-[10px] font-medium leading-4 text-worktree-sidebar-accent-foreground">
               Change this later from the project menu.
