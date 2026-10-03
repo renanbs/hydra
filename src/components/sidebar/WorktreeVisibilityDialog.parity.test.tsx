@@ -105,6 +105,7 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
       sourcePreferences: { builtIn: { claude: "show" } },
       externalWorktreeVisibilityLegacy: false,
       externalWorktreeVisibility: null,
+      agentWorktreeVisibility: null,
       externalWorktreeDiscoverySuppressedAt: null,
     });
   });
@@ -121,6 +122,7 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
       sourcePreferences: null,
       externalWorktreeVisibilityLegacy: false,
       externalWorktreeVisibility: "show",
+      agentWorktreeVisibility: null,
       externalWorktreeDiscoverySuppressedAt: null,
     });
   });
@@ -247,8 +249,61 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
       sourcePreferences: {},
       externalWorktreeVisibilityLegacy: false,
       externalWorktreeVisibility: null,
+      agentWorktreeVisibility: null,
       externalWorktreeDiscoverySuppressedAt: null,
     });
+  });
+
+  it("treats a repo-level agentWorktreeVisibility alone as a built-in override", () => {
+    renderDialog({
+      project: { ...PROJECT, agentWorktreeVisibility: "show" },
+      visibilityDefaults: { external: "hide", sourcePreferences: { builtIn: { claude: "show" } } },
+    });
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    // The policy drives the row even without a per-source preference…
+    const claude = within(sources).getByRole("group", { name: "Visibility for Claude Code" });
+    expect(within(claude).getByRole("button", { name: "Show" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    // …and because it matches Global Settings, Claude Code is revertible; GSD is not.
+    expect(
+      within(sources).queryByRole("button", { name: "Use global for GSD" })
+    ).not.toBeInTheDocument();
+    expect(
+      within(sources).getByRole("button", { name: "Use global for Claude Code" })
+    ).toBeInTheDocument();
+
+    fireEvent.click(within(sources).getByRole("button", { name: "Use global for Claude Code" }));
+
+    expect(invokeMock).toHaveBeenCalledWith("catalog_set_worktree_visibility_sources", {
+      repoPath: PROJECT.path,
+      customSources: PROJECT.customWorktreeVisibilitySources,
+      sourcePreferences: {},
+      externalWorktreeVisibilityLegacy: false,
+      externalWorktreeVisibility: null,
+      agentWorktreeVisibility: null,
+      externalWorktreeDiscoverySuppressedAt: null,
+    });
+  });
+
+  it("keeps Use global hidden when agentWorktreeVisibility disagrees with Global Settings", () => {
+    renderDialog({
+      project: { ...PROJECT, agentWorktreeVisibility: "hide" },
+      visibilityDefaults: { external: "hide", sourcePreferences: { builtIn: { claude: "show" } } },
+    });
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    const claude = within(sources).getByRole("group", { name: "Visibility for Claude Code" });
+    // The agent policy wins over the global Show, so there is no matching override to drop.
+    expect(within(claude).getByRole("button", { name: "Hide" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(
+      within(sources).queryByRole("button", { name: "Use global for Claude Code" })
+    ).not.toBeInTheDocument();
   });
 
   it("clears the Other locations override when Use global is picked", () => {

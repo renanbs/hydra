@@ -2,7 +2,8 @@
 // Parity with Orca `components/sidebar/WorktreeVisibilityDialog.tsx`: the `Non-Hydra
 // worktrees` modal stacks Sources (built-in Claude Code/GSD, custom roots, `Other
 // locations`) with Show/Hide toggles + a per-source `Use global` link that drops a repo
-// override matching Global Settings, the `Worktree root` add form, the global-settings
+// override matching Global Settings (for built-ins it also clears the repo's
+// `agentWorktreeVisibility` agent-scratch policy), the `Worktree root` add form, the global-settings
 // override note, the scan-status/`Try again` line (Orca `WorktreeVisibilityScanStatus`),
 // and the `Hidden worktrees (N)` recovery list.
 import React, { useCallback, useEffect, useState, useMemo } from "react";
@@ -52,6 +53,7 @@ function repoVisibilityConfig(project: HydraProject): WorktreeVisibilityRepoConf
   return {
     externalWorktreeVisibility: project.externalWorktreeVisibility ?? null,
     externalWorktreeVisibilityLegacy: project.externalWorktreeVisibilityLegacy ?? null,
+    agentWorktreeVisibility: project.agentWorktreeVisibility ?? null,
     externalWorktreeDiscoverySuppressedAt: project.externalWorktreeDiscoverySuppressedAt ?? null,
     customWorktreeVisibilitySources: project.customWorktreeVisibilitySources ?? null,
     worktreeVisibilitySourcePreferences: project.worktreeVisibilitySourcePreferences ?? null,
@@ -205,6 +207,9 @@ export function WorktreeVisibilityDialog({
         sourcePreferences: nextConfig.worktreeVisibilitySourcePreferences ?? null,
         externalWorktreeVisibilityLegacy: nextConfig.externalWorktreeVisibilityLegacy ?? null,
         externalWorktreeVisibility: nextConfig.externalWorktreeVisibility ?? null,
+        // Orca's built-in `Use global` clears the agent-scratch policy alongside the
+        // preference; every other write preserves whatever the repo already had.
+        agentWorktreeVisibility: nextConfig.agentWorktreeVisibility ?? null,
         externalWorktreeDiscoverySuppressedAt:
           nextConfig.externalWorktreeDiscoverySuppressedAt ?? null,
       });
@@ -259,8 +264,11 @@ export function WorktreeVisibilityDialog({
       return;
     }
     if (row.kind === "built-in") {
+      // Orca `createWorktreeVisibilityUseGlobalMutation`: the built-in row's revert drops
+      // BOTH the per-source preference and the repo's agent-scratch policy.
       await persistSources({
         ...config,
+        agentWorktreeVisibility: null,
         worktreeVisibilitySourcePreferences: removeBuiltInWorktreeSourcePreference(config, row.id),
       });
       return;

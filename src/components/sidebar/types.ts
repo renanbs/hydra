@@ -70,6 +70,9 @@ export interface HydraProject {
   /** Legacy repos keep the pre-rollout "show" default (Orca
    *  `externalWorktreeVisibilityLegacy`). */
   externalWorktreeVisibilityLegacy?: boolean | null;
+  /** Opt-in repo policy for coding-agent scratch worktrees; overrides the
+   *  built-in source rows (Orca `agentWorktreeVisibility`). */
+  agentWorktreeVisibility?: ExternalWorktreeVisibility | null;
   /** Epoch ms the repo opted out of discovery; `null`/absent = not suppressed
    *  (Orca `externalWorktreeDiscoverySuppressedAt`). */
   externalWorktreeDiscoverySuppressedAt?: number | null;

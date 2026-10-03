@@ -31,6 +31,10 @@ export interface WorktreeVisibilityDefaults {
 export interface WorktreeVisibilityRepoConfig {
   externalWorktreeVisibility?: ExternalWorktreeVisibility | null;
   externalWorktreeVisibilityLegacy?: boolean | null;
+  /** Opt-in repo policy for coding-agent scratch worktrees (Orca
+   *  `agentWorktreeVisibility`); absent/`null` means the built-in source rows
+   *  fall through to the global default. */
+  agentWorktreeVisibility?: ExternalWorktreeVisibility | null;
   /** Epoch ms the repo opted out of discovery; `null` means not suppressed. */
   externalWorktreeDiscoverySuppressedAt?: number | null;
   customWorktreeVisibilitySources?: CustomWorktreeVisibilitySource[] | null;
@@ -188,7 +192,10 @@ export function effectiveExternalWorktreeVisibility(
   return isLegacyRepoForExternalWorktreeVisibility(repo) ? "show" : "hide";
 }
 
-/** Orca `effectiveBuiltInWorktreeSourceVisibility`: repo override → global pref → hide. */
+/**
+ * Orca `effectiveBuiltInWorktreeSourceVisibility`: per-source preference →
+ * repo `agentWorktreeVisibility` → global pref → hide.
+ */
 export function effectiveBuiltInWorktreeSourceVisibility(
   repo: WorktreeVisibilityRepoConfig | null | undefined,
   id: BuiltInWorktreeVisibilitySourceId,
@@ -196,6 +203,7 @@ export function effectiveBuiltInWorktreeSourceVisibility(
 ): ExternalWorktreeVisibility {
   const explicit = repoPreferences(repo)?.builtIn?.[id];
   if (explicit) return explicit;
+  if (repo?.agentWorktreeVisibility) return repo.agentWorktreeVisibility;
   return normalizeWorktreeVisibilitySourcePreferences(defaults?.sourcePreferences)?.builtIn?.[id] ?? "hide";
 }
 
@@ -329,9 +337,10 @@ export type WorktreeVisibilitySourceProvenance = {
 };
 
 /**
- * Orca `getWorktreeVisibilitySourceProvenance`, minus the legacy `agentWorktreeVisibility`
- * read (Hydra's catalog does not carry that field). `project-source` means the repo added
- * the custom root itself, so there is no global value behind it to fall back to.
+ * Orca `getWorktreeVisibilitySourceProvenance`. `project-source` means the repo added the
+ * custom root itself, so there is no global value behind it to fall back to. A built-in
+ * row is `project-override` when the repo pins a per-source preference **or** sets
+ * `agentWorktreeVisibility` (the agent-scratch policy the built-ins inherit).
  */
 export function getWorktreeVisibilitySourceProvenance(
   repo: WorktreeVisibilityRepoConfig | null | undefined,
@@ -347,7 +356,10 @@ export function getWorktreeVisibilitySourceProvenance(
   const preferences = repoPreferences(repo);
   const overridden =
     row.kind === "built-in"
-      ? preferences?.builtIn?.[row.id] !== undefined
+      ? preferences?.builtIn?.[row.id] !== undefined ||
+        // Orca uses `!== undefined`; Hydra's catalog serializes the unset field as
+        // `null`, so treat both as "no override".
+        repo.agentWorktreeVisibility != null
       : row.kind === "custom"
         ? preferences?.custom?.[row.source.id] !== undefined
         : repo.externalWorktreeVisibility != null;

@@ -50,6 +50,9 @@ export interface CatalogRepo {
   /** Legacy repos keep the pre-rollout "show" default (Orca
    *  `externalWorktreeVisibilityLegacy`). */
   externalWorktreeVisibilityLegacy?: boolean | null;
+  /** Opt-in repo policy for coding-agent scratch worktrees; overrides the
+   *  built-in source rows (Orca `agentWorktreeVisibility`). */
+  agentWorktreeVisibility?: "show" | "hide" | null;
   /** Extra worktree roots the project recognizes (Orca
    *  `customWorktreeVisibilitySources`). */
   customWorktreeVisibilitySources?: Array<{ id: string; rootPath: string }> | null;

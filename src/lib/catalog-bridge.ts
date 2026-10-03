@@ -40,6 +40,7 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
         r.externalWorktreeVisibilityPromptDismissedAt ?? null,
       externalWorktreeVisibility: r.externalWorktreeVisibility ?? null,
       externalWorktreeVisibilityLegacy: r.externalWorktreeVisibilityLegacy ?? null,
+      agentWorktreeVisibility: r.agentWorktreeVisibility ?? null,
       externalWorktreeDiscoverySuppressedAt: r.externalWorktreeDiscoverySuppressedAt ?? null,
       customWorktreeVisibilitySources: r.customWorktreeVisibilitySources ?? null,
       worktreeVisibilitySourcePreferences: r.worktreeVisibilitySourcePreferences ?? null,
