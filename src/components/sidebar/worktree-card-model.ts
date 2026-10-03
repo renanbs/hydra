@@ -1,6 +1,8 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 import type React from 'react'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus, WorktreeSession } from './types'
+import type { WorktreeStatus } from '../../lib/worktree-status'
+import type { PrDisplay } from './pr-display'
 
 export type WorktreeRenameRequest = {
   worktreeId: string
@@ -71,6 +73,10 @@ export interface WorktreeCardProps {
   sessions?: WorktreeSession[]
   onSelectSession?: (id: string) => void
   activeSessionId?: string | null
+  /** Workspace status for the card lane (Orca `useWorktreeActivityStatus`). */
+  status?: WorktreeStatus
+  /** Review display for the card lane; merged renders purple (Orca `WorktreeCardStatusSlot`). */
+  prDisplay?: PrDisplay | null
 }
 
 type DefaultedWorktreeCardProp =

@@ -1,7 +1,6 @@
-// Orca parity (`renderer/src/components/sidebar/worktree-list/rows/folder-row.tsx`):
-// the folder row's left lane carries the WORKSPACE STATUS dot — `done`/`active`
-// green, `inactive` grey, `working` spinner — not the folder's path health, which
-// Orca renders separately as a FolderX badge on a missing path.
+// Orca parity: the workspace status dot shown on folder rows AND worktree cards —
+// `done`/`active` green, `inactive` grey, `working` spinner (`StatusIndicator.tsx`).
+// Path health is a separate cue (the FolderX badge), never the dot.
 import type { WorktreeSession } from "../components/sidebar/types";
 import type { WorktreeStatus } from "./worktree-status";
 
@@ -12,7 +11,7 @@ import type { WorktreeStatus } from "./worktree-status";
  * closing the last terminal drops the workspace to `inactive` (grey), exactly the
  * transition Orca shows.
  */
-export function folderWorkspaceStatus(args: {
+export function workspaceStatusFrom(args: {
   sessions: readonly WorktreeSession[];
   hasLiveTerminal: boolean;
 }): WorktreeStatus {

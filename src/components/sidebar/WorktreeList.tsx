@@ -4,7 +4,12 @@ import { FolderPlus, Plus } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
 import { WorktreeCard } from "./WorktreeCard";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
-import { folderWorkspaceStatus } from "../../lib/folder-workspace-row-status";
+import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
+import type { PrDisplay } from "./pr-display";
+import {
+  getWorktreeCardContentIndent,
+  getWorktreeCardSurfaceInset,
+} from "./worktree-list/rows/indentation";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import {
   setVisibleWorktreeIds,
@@ -85,6 +90,8 @@ export interface WorktreeListProps {
   liveWorkspacePaths?: ReadonlySet<string>;
   missingFolderPaths?: ReadonlySet<string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
+  /** Review display per worktree path (populated by the host PR lookup). */
+  prByPath?: Record<string, PrDisplay>;
   collapsedProjects: Set<string>;
   collapsedGroups: Set<string>;
   filter?: string;
@@ -144,9 +151,11 @@ export function WorktreeList({
   liveWorkspacePaths,
   missingFolderPaths,
   onActivateFolderWorkspace,
+  prByPath,
   collapsedProjects,
   collapsedGroups,
   filter = "",
+  displayOptions,
   compactCards = false,
   portsByWorktree,
   getFilteredAndSortedWorktrees,
@@ -294,17 +303,42 @@ export function WorktreeList({
                   );
                   const isFocused = (activeWorktreePath ?? null) === wt.path;
                   const isRevealed = highlightedRevealPath === wt.path;
+                  // Orca geometry (worktree-list/rows/item-row.tsx:183-205): the row
+                  // applies `surfaceInset` as padding and hands the card the content
+                  // indent, both derived from group depth — without it every card sits
+                  // flush with its project header.
+                  const isGrouped = displayOptions.groupBy !== "none";
+                  const groupDepth = inGroup ? 1 : 0;
+                  const surfaceInset = getWorktreeCardSurfaceInset({ isGrouped, groupDepth });
+                  const cardContentIndent = Math.max(
+                    0,
+                    getWorktreeCardContentIndent({ isGrouped, groupDepth, lineageDepth: 0 }) -
+                      surfaceInset
+                  );
 
                   return (
                     <div
                       key={wt.path}
                       data-worktree-path={wt.path}
                       className="relative"
+                      style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
                     >
                       <WorktreeCard
                         worktree={wt}
+                        // Lane signals: agent sessions + a mounted terminal decide the
+                        // dot; the PR display (when the host reports one) outranks it.
+                        status={workspaceStatusFrom({
+                          sessions: wtSessions,
+                          hasLiveTerminal: (liveWorkspacePaths ?? new Set<string>()).has(wt.path),
+                        })}
+                        prDisplay={prByPath?.[wt.path] ?? null}
                         project={proj}
                         repo={proj}
+                        // Why Orca hides it here: inside a repo group the avatar is already
+                        // on the header, so the card lane belongs to status/branch (item-row.tsx:213).
+                        hideRepoBadge={isGrouped}
+                        contentIndent={cardContentIndent}
+                        flushSurface
                         isActive={activeWorktreePath === wt.path}
                         isCurrentWorktree={activeWorktreePath === wt.path}
                         isFocused={isFocused}
@@ -455,7 +489,7 @@ export function WorktreeList({
                     key={`folder-ws-${w.id}`}
                     name={w.name}
                     folderPath={w.folderPath}
-                    status={folderWorkspaceStatus({
+                    status={workspaceStatusFrom({
                       sessions: sessions.filter((s) => s.project_path === w.folderPath),
                       hasLiveTerminal: (liveWorkspacePaths ?? new Set<string>()).has(w.folderPath),
                     })}

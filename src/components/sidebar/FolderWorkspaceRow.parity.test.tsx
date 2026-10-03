@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
-import { folderWorkspaceStatus } from "../../lib/folder-workspace-row-status";
+import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
 
 const FOLDER_PATH = "/home/renan/src/clubedepontos/malhaclub/code";
 
@@ -81,31 +81,31 @@ describe("FolderWorkspaceRow (Orca parity)", () => {
   });
 });
 
-describe("folderWorkspaceStatus (Orca parity)", () => {
+describe("workspaceStatusFrom (Orca parity)", () => {
   const session = (state: "working" | "blocked" | "waiting" | "done" | "idle" | "unknown") =>
     ({ state }) as never;
 
   it("is inactive without a live terminal and without sessions", () => {
-    expect(folderWorkspaceStatus({ sessions: [], hasLiveTerminal: false })).toBe("inactive");
+    expect(workspaceStatusFrom({ sessions: [], hasLiveTerminal: false })).toBe("inactive");
   });
 
   it("is active when a terminal is mounted", () => {
     expect(
-      folderWorkspaceStatus({ sessions: [session("idle")], hasLiveTerminal: true })
+      workspaceStatusFrom({ sessions: [session("idle")], hasLiveTerminal: true })
     ).toBe("active");
   });
 
   it("maps agent states onto the dot ladder", () => {
-    expect(folderWorkspaceStatus({ sessions: [session("working")], hasLiveTerminal: true })).toBe(
+    expect(workspaceStatusFrom({ sessions: [session("working")], hasLiveTerminal: true })).toBe(
       "working"
     );
-    expect(folderWorkspaceStatus({ sessions: [session("blocked")], hasLiveTerminal: true })).toBe(
+    expect(workspaceStatusFrom({ sessions: [session("blocked")], hasLiveTerminal: true })).toBe(
       "permission"
     );
-    expect(folderWorkspaceStatus({ sessions: [session("waiting")], hasLiveTerminal: true })).toBe(
+    expect(workspaceStatusFrom({ sessions: [session("waiting")], hasLiveTerminal: true })).toBe(
       "permission"
     );
-    expect(folderWorkspaceStatus({ sessions: [session("done")], hasLiveTerminal: false })).toBe(
+    expect(workspaceStatusFrom({ sessions: [session("done")], hasLiveTerminal: false })).toBe(
       "done"
     );
   });
