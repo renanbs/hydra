@@ -1598,18 +1598,13 @@ export default function App() {
   const handleSelectProject = useCallback((proj: HydraProject) => {
     setActiveProject(proj);
     setActiveWorktreePath(proj.path);
+    prevProjectPathRef.current = proj.path;
     if (!workbenchLoaded) {
       loadSessionsForProject(proj.path);
     }
     refreshGitWorktrees(proj.path);
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        role: "agent",
-        content: `Switched active workspace to "${proj.name}" (${proj.path}) on branch "${proj.current_branch}".`
-      }
-    ]);
+    // Orca has no "switched workspace" chat message; the activation itself is the
+    // feedback. Terminal activation lives in `handleActivateProject` (sidebar click).
   }, [workbenchLoaded, loadSessionsForProject, refreshGitWorktrees]);
 
   const handleNavigateWorkspace = useCallback((direction: "up" | "down") => {
@@ -1981,24 +1976,44 @@ export default function App() {
   }, [hydraSettings, activeProject]);
   const handleNewTab = () => handleNewTerminalTab();
 
+  /** Orca parity: activating a workspace focuses its terminal tab, creating one when
+   * the workspace has none (`activateWorktreeFromSidebar`). Shared by the project
+   * headers and the folder-workspace rows so every sidebar click behaves alike. */
+  const ensureWorkspaceTerminal = useCallback(
+    (workspacePath: string) => {
+      const existing = tabsRef.current.find((t) => t.cwd === workspacePath);
+      if (existing) {
+        setActiveTabId(existing.id);
+        const session = sessions.find((s) => s.project_path === workspacePath);
+        if (session) {
+          setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === session.id })));
+        }
+        return;
+      }
+      handleNewTerminalTab(undefined, workspacePath);
+    },
+    [handleNewTerminalTab, sessions]
+  );
+
+  /** Sidebar click on a project header: select + guarantee the terminal. */
+  const handleActivateProject = useCallback(
+    (proj: HydraProject) => {
+      handleSelectProject(proj);
+      ensureWorkspaceTerminal(proj.path);
+    },
+    [handleSelectProject, ensureWorkspaceTerminal]
+  );
+
   /** Orca parity: single click on a folder workspace ACTIVATES it and guarantees a
    * terminal (`use-worktree-card-activation-actions.ts:79-88` →
    * `activateWorktreeFromSidebar`). No session is invented when one already exists. */
   const handleActivateFolderWorkspace = useCallback(
     (folderPath: string) => {
       setActiveWorktreePath(folderPath);
-      const existing = tabsRef.current.find((t) => t.cwd === folderPath);
-      if (existing) {
-        setActiveTabId(existing.id);
-        const session = sessions.find((s) => s.project_path === folderPath);
-        if (session) {
-          setSessions((prev) => prev.map((s) => ({ ...s, active: s.id === session.id })));
-        }
-        return;
-      }
-      handleNewTerminalTab(undefined, folderPath);
+      prevProjectPathRef.current = folderPath;
+      ensureWorkspaceTerminal(folderPath);
     },
-    [handleNewTerminalTab, sessions]
+    [ensureWorkspaceTerminal]
   );
 
   /** Terminal tabs still mounted, i.e. the workspaces with a live PTY — Orca's
@@ -3635,7 +3650,7 @@ export default function App() {
                 })()}
                 gitWorktrees={gitWorktrees}
                 worktreesByProject={worktreesByProject}
-                onSelectProject={handleSelectProject}
+                onSelectProject={handleActivateProject}
                 onRemoveProject={handleRemoveProject}
                 onSelectSession={handleSelectSession}
                 onSelectGitWorktree={handleSelectGitWorktree}
