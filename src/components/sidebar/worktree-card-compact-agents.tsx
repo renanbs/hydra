@@ -5,6 +5,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 import { useAppStore } from '../../store'
+import { useNow } from '../../hooks/use-now'
 import { CompactAgentRow } from './CompactAgentRow'
 import { AgentBrandIcon } from '../AgentIcon'
 import { AgentStateDot } from '../AgentStateDot'
@@ -166,10 +167,15 @@ export function WorktreeCompactAgentsList({
 }): React.JSX.Element | null {
   const rows = useMemo(() => agents, [agents])
   const expanded = useAppStore((s) => s.compactRootListExpandedByWorktree[worktreePath] ?? false)
+  // Why: one 30s tick per non-empty list (Orca's WorktreeCardAgentsBody owns the same cadence);
+  // a zero-agent list pays no timer cost because `enabled` is false.
+  const now = useNow(30_000, rows.length > 0)
 
   if (rows.length === 0) return null
 
   const subjectLabel = summariezCountLabel(rows.length)
+  // Why: keep leaf rows aligned with parents that own a chevron.
+  const anyRootHasChildren = rows.some((r) => (r.childAgentCount ?? 0) > 0)
 
   return (
     <div data-worktree-card-agents="" onClick={(e) => e.stopPropagation()} className="mt-0.5 flex flex-col gap-0.5">
@@ -182,11 +188,13 @@ export function WorktreeCompactAgentsList({
               <CompactAgentRow
                 key={r.paneKey}
                 agent={r}
+                now={now}
                 onActivate={onSelectSession}
                 isFocusedPane={r.entry.sessionId === activeSessionId}
                 childAgentCount={r.childAgentCount}
                 childAgentsExpanded={r.childAgentsExpanded}
                 onToggleChildAgents={r.onToggleChildAgents}
+                reserveDisclosureGutter={anyRootHasChildren && (r.childAgentCount ?? 0) === 0}
               />
             ))}
           </div>
