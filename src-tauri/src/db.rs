@@ -1215,10 +1215,10 @@ impl DatabaseManager {
     }
 
     /// Records how a worktree came to exist (Orca `WorktreeMeta.createdAt` /
-    /// `createdWithAgent`). The *presence of any `worktree_metadata` row* is what
-    /// makes a worktree Hydra-managed and therefore visible regardless of the
-    /// `external` visibility policy (Orca `applyMetadataFallbackVisibility`,
-    /// `ownership.ts:209`); these fields are recorded for labeling only.
+    /// `createdWithAgent`). Either field makes the worktree `orca-managed` and
+    /// therefore visible regardless of the `external` visibility policy (Orca
+    /// `hasStrongOrcaMetadata`, `ownership.ts:227`); a row without them does not
+    /// prove provenance.
     ///
     /// `created_at` is always stamped by the creator; `created_with_agent` is
     /// only overwritten when the caller informs one, so a later call cannot

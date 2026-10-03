@@ -250,20 +250,33 @@ enum WorktreeOwnership {
     AgentScratch,
     External,
     UnknownLegacy,
-    /// A `worktree_metadata` row exists for this path, so Hydra/Orca manages it
-    /// (Orca `applyMetadataFallbackVisibility`). Always visible, regardless of
-    /// the `external` visibility policy.
+    /// Strong provenance proves Hydra/Orca created it (Orca `orca-managed`).
+    /// Always visible, regardless of the `external` visibility policy.
     OrcaManaged,
 }
 
-/// The provenance Hydra persists for a worktree (Orca `WorktreeMeta`). The
-/// *presence* of a row — not any particular field — is what proves Hydra/Orca
-/// manages the worktree; `created_at`/`created_with_agent` are recorded for
-/// labeling and never gate visibility.
+/// The subset of Orca's `WorktreeMeta` that decides ownership up front:
+/// `createdAt` / `createdWithAgent` (Orca `hasStrongOrcaMetadata`,
+/// `shared/worktree/ownership.ts:227`). Hydra has no equivalent for the other
+/// strong fields, so these two are the whole predicate.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct WorktreeProvenance {
     pub created_at: Option<i64>,
     pub created_with_agent: Option<String>,
+}
+
+impl WorktreeProvenance {
+    /// Truthiness mirrors Orca: an epoch-zero `createdAt` (treated as absent) or
+    /// a blank agent name does not count as metadata. A `worktree_metadata` row
+    /// carrying only non-strong fields (e.g. `updated_at`) does NOT make the
+    /// worktree visible.
+    pub fn is_strong_orca_metadata(&self) -> bool {
+        self.created_at.is_some_and(|v| v != 0)
+            || self
+                .created_with_agent
+                .as_deref()
+                .is_some_and(|agent| !agent.trim().is_empty())
+    }
 }
 
 fn classify_worktree_ownership(
@@ -274,18 +287,16 @@ fn classify_worktree_ownership(
     configured_bases: &[String],
     known_layouts: &[OrcaWorkspaceLayout],
 ) -> WorktreeOwnership {
+    // Strong provenance is checked before every layout/scratch heuristic
+    // (Orca ownership.ts:124); a row with only weak fields does not qualify.
+    if provenance.is_some_and(WorktreeProvenance::is_strong_orca_metadata) {
+        return WorktreeOwnership::OrcaManaged;
+    }
     // Agent scratch (`.claude/worktrees`, `.gsd-workspaces`) keeps its own
-    // policy even when a metadata row exists — mirrors Orca
-    // `applyMetadataFallbackVisibility` returning early for `agent-scratch`
-    // (`shared/worktree/ownership.ts:209`). A configured base still supersedes
-    // scratch detection inside the matcher.
+    // policy (Orca ownership.ts:132). A configured base still supersedes scratch
+    // detection inside the matcher.
     if is_agent_scratch_worktree_path(checkout_paths, configured_bases, worktree_path) {
         return WorktreeOwnership::AgentScratch;
-    }
-    // Any persisted metadata row makes the worktree Hydra-managed and visible,
-    // ignoring the `external: hide` policy (Orca ownership.ts:209-219).
-    if provenance.is_some() {
-        return WorktreeOwnership::OrcaManaged;
     }
     if configured_bases
         .iter()
@@ -574,8 +585,7 @@ fn list_git_worktrees_with_context(
             &known_layouts,
         );
         match ownership {
-            // A metadata row makes it Hydra-managed → visible, ahead of every
-            // base/layout policy (Orca applyMetadataFallbackVisibility, ownership.ts:209).
+            // Strong provenance wins over every layout/base policy (Orca ownership.ts:124).
             WorktreeOwnership::OrcaManaged => {
                 filtered.push(wt.clone());
             }
@@ -820,8 +830,8 @@ fn load_worktree_provenance_map() -> HashMap<String, WorktreeProvenance> {
 }
 
 /// Provenance for a worktree, keyed by normalized path (Orca
-/// `areRuntimePathsEqual`). A hit means "there is a `worktree_metadata` row",
-/// which is all the visibility rule needs.
+/// `areRuntimePathsEqual`). Whether a hit counts as strong metadata is decided
+/// by `WorktreeProvenance::is_strong_orca_metadata`.
 fn provenance_lookup<'a>(
     provenance: &'a HashMap<String, WorktreeProvenance>,
     worktree_path: &str,
@@ -1483,7 +1493,7 @@ branch refs/heads/feat/auth\n";
     }
 
     #[test]
-    fn external_worktree_with_any_metadata_row_is_visible() {
+    fn external_worktree_visibility_requires_strong_provenance() {
         let root = unique_root("prov-visible");
         let repo = root.join("repo");
         let wt = root.join("repo-feat-prov");
@@ -1497,31 +1507,40 @@ branch refs/heads/feat/auth\n";
             .expect("git worktree add runs");
         assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
 
-        // A row carrying only `updated_at` (no created_at, no agent) already proves
-        // provenance — Orca `applyMetadataFallbackVisibility` (ownership.ts:209).
+        // (a) A row carrying only weak fields (here: `updated_at`, none of the
+        // strong ones Hydra mirrors) does not prove provenance — Orca
+        // `hasStrongOrcaMetadata` (ownership.ts:227). Regression of f07e0ed.
         let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, None, None));
-        assert!(visible.contains(&wt_str), "any metadata row must force visibility; visible={visible:?}");
-        assert!(!hidden.contains(&wt_str), "visible worktree must not also be reported hidden");
+        assert!(!visible.contains(&wt_str), "weak metadata must not force visibility; visible={visible:?}");
+        assert!(hidden.contains(&wt_str), "weak metadata must stay hidden; hidden={hidden:?}");
 
-        // The recorded provenance fields do not change the outcome.
-        for provenance in [
-            provenance_for(&wt_str, Some(1_700_000_000_000), None),
-            provenance_for(&wt_str, None, Some("claude")),
-            provenance_for(&wt_str, Some(1_700_000_000_000), Some("   ")),
-        ] {
-            let (visible, _) = scan_external(&repo, &provenance);
-            assert!(visible.contains(&wt_str), "row presence must force visibility; visible={visible:?}");
-        }
+        // (b) `created_at > 0` is strong metadata.
+        let (visible, _) = scan_external(&repo, &provenance_for(&wt_str, Some(1_700_000_000_000), None));
+        assert!(visible.contains(&wt_str), "created_at > 0 must force visibility; visible={visible:?}");
+
+        // (c) `created_with_agent` is strong metadata.
+        let (visible, _) = scan_external(&repo, &provenance_for(&wt_str, None, Some("claude")));
+        assert!(visible.contains(&wt_str), "created_with_agent must force visibility; visible={visible:?}");
+
+        // (d) `created_at = 0` is treated as absent (Orca truthiness).
+        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, Some(0), None));
+        assert!(!visible.contains(&wt_str), "created_at = 0 must not count as metadata; visible={visible:?}");
+        assert!(hidden.contains(&wt_str), "created_at = 0 must stay hidden; hidden={hidden:?}");
+
+        // A blank agent name is likewise not metadata.
+        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, None, Some("   ")));
+        assert!(!visible.contains(&wt_str), "blank agent must not count as metadata; visible={visible:?}");
+        assert!(hidden.contains(&wt_str));
 
         let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&wt).current_dir(&repo).output();
         let _ = std::fs::remove_dir_all(&root);
     }
 
     #[test]
-    fn agent_scratch_worktree_with_metadata_row_keeps_its_policy() {
-        // Mirrors Orca `applyMetadataFallbackVisibility`: the early return for
-        // `agent-scratch` wins, so a `.claude/worktrees` path with a metadata row
-        // stays subject to the scratch visibility policy (hidden by default).
+    fn agent_scratch_worktree_with_weak_metadata_keeps_its_policy() {
+        // Agent scratch (`.claude/worktrees`) keeps its own policy: a weak
+        // metadata row (no strong provenance) does not force visibility and the
+        // path is dropped from both lists when the scratch policy hides it.
         let root = unique_root("prov-scratch");
         let repo = root.join("repo");
         let wt = repo.join(".claude").join("worktrees").join("feat-prov");
@@ -1536,7 +1555,7 @@ branch refs/heads/feat/auth\n";
             .expect("git worktree add runs");
         assert!(added.status.success(), "worktree add failed: {}", String::from_utf8_lossy(&added.stderr));
 
-        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, Some(1), Some("claude")));
+        let (visible, hidden) = scan_external(&repo, &provenance_for(&wt_str, None, None));
         assert!(!visible.contains(&wt_str), "agent-scratch must not be forced visible; visible={visible:?}");
         assert!(!hidden.contains(&wt_str), "agent-scratch is dropped, not listed as hidden");
 
