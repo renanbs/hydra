@@ -22,6 +22,8 @@ import {
 export interface GroupSectionHeaderProps {
   variant: "group";
   group: ProjectGroup | { id: string; name: string };
+  /** Pipeline row key (`project-group:<id>`), so the painted header is addressable. */
+  sectionKey?: string;
   isCollapsed: boolean;
   count?: number;
   hasUnread?: boolean;
@@ -67,6 +69,7 @@ export type SectionHeaderProps = GroupSectionHeaderProps | RepoSectionHeaderProp
  */
 export const GroupSectionHeader = React.memo(function GroupSectionHeader({
   group,
+  sectionKey,
   isCollapsed,
   count,
   hasUnread = false,
@@ -103,6 +106,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       tabIndex={0}
       aria-expanded={!isCollapsed}
       aria-label={`Project Group ${group.name}`}
+      data-section-header-id={sectionKey}
       className={cn(
         "group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
         isDropTarget && "bg-worktree-sidebar-accent ring-1 ring-worktree-sidebar-ring/40",
@@ -284,6 +288,7 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
         tabIndex={0}
         aria-expanded={!isCollapsed}
         aria-label={`Project ${project.displayName || project.name}`}
+        data-repo-header-id={project.id}
         className="flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
         style={{
           paddingLeft: inGroup

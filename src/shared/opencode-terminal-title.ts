@@ -1,12 +1,15 @@
-// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Reference: src/shared/opencode-terminal-title.ts
 
-export const AGY_AGENT_NAME_RE: any = null
-export type AGY_AGENT_NAME_RE = any
-export const DROID_AGENT_NAME_RE: any = null
-export type DROID_AGENT_NAME_RE = any
-export const HERMES_AGENT_NAME_RE: any = null
-export type HERMES_AGENT_NAME_RE = any
-export const isMeaningfulOpenCodeTerminalTitle: any = null
-export type isMeaningfulOpenCodeTerminalTitle = any
-export const isOpenCodeNativeTitle: any = null
-export type isOpenCodeNativeTitle = any
+// Why: wrappers may prepend an SSH/tmux label, and OpenCode may prepend one
+// status glyph. A spinner-led task from another agent must not become a wrapper.
+const OPENCODE_NATIVE_TITLE_RE =
+  /^\s*(?:(?![▣\u2800-\u28ff])[^|]+? \| )?(?:[▣\u2800-\u28ff] )?OC \|[ \t]+\S/u
+
+export function isOpenCodeNativeTitle(title: string | null | undefined): boolean {
+  return title ? OPENCODE_NATIVE_TITLE_RE.test(title) : false
+}
+
+export function isMeaningfulOpenCodeTerminalTitle(title: string | null | undefined): boolean {
+  return isOpenCodeNativeTitle(title)
+}

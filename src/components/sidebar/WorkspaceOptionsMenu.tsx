@@ -1,4 +1,4 @@
-import { useRef, useEffect, useLayoutEffect, useState } from "react";
+import { useRef, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { 
   ChevronRight, 
   Moon, 
@@ -9,9 +9,60 @@ import {
   Search,
   X
 } from "lucide-react";
+import { useAppStore } from "@/store";
+import { ALL_EXECUTION_HOSTS_SCOPE, type ExecutionHostId } from "../../shared/execution-host";
+import type { WorkspaceHostScope } from "../../shared/ui-chrome-types";
+import {
+  buildSidebarHostOptions,
+  buildSidebarHostScopeOptions,
+  getSidebarHostHealthLabel,
+  getSidebarHostVisibilityLabel,
+  shouldShowHostScopeControls,
+  type SidebarHostOption,
+  type SidebarHostScopeOption,
+} from "./sidebar-host-options";
+import { toHostSourceMap } from "./rendered-sidebar-worktree-order";
 import type { HydraProject } from "./WorktreeSidebar";
 
-export type GroupByMode = "none" | "workspace-status" | "repo";
+export type GroupByMode = "none" | "workspace-status" | "pr-status" | "repo";
+
+/**
+ * The Orca UI-slice actions that own host scope. `AppState` does not declare them
+ * (the slice is not composed into the live store yet), so the menu looks them up
+ * structurally and only offers the control when they are actually present.
+ */
+interface HostScopeStoreActions {
+  setWorkspaceHostScope: (scope: WorkspaceHostScope) => void;
+  setVisibleWorkspaceHostIds: (ids: readonly ExecutionHostId[] | null) => void;
+}
+
+/**
+ * Orca `SidebarHostScopeMenuSection.toggleHost`: toggling the last visible host
+ * off is refused — a sidebar scoped to zero hosts renders nothing and leaves no
+ * affordance to recover, so one host must always stay visible.
+ */
+export function toggleWorkspaceHostVisibility(args: {
+  visibleWorkspaceHostIds: readonly ExecutionHostId[] | null;
+  hostIds: readonly ExecutionHostId[];
+  hostId: ExecutionHostId;
+}): { visibleWorkspaceHostIds: readonly ExecutionHostId[] | null; changed: boolean } {
+  if (args.visibleWorkspaceHostIds === null) {
+    return { visibleWorkspaceHostIds: [args.hostId], changed: true };
+  }
+  const next = new Set(args.visibleWorkspaceHostIds);
+  if (next.has(args.hostId)) {
+    if (next.size <= 1) {
+      return { visibleWorkspaceHostIds: args.visibleWorkspaceHostIds, changed: false };
+    }
+    next.delete(args.hostId);
+  } else {
+    next.add(args.hostId);
+  }
+  return {
+    visibleWorkspaceHostIds: next.size === args.hostIds.length ? null : [...next],
+    changed: true,
+  };
+}
 
 export interface WorkspaceDisplayOptions {
   groupBy: GroupByMode;
@@ -44,8 +95,44 @@ export function WorkspaceOptionsMenu({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const projectSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
-  const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | null>(null);
+  const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | "hosts" | null>(null);
   const [projectSearch, setProjectSearch] = useState("");
+
+  // ─── Host scope (Orca SidebarHostScopeMenuSection) ────────────────────────
+  const storeRepos = useAppStore((s) => s.repos);
+  const storeSshTargetLabels = useAppStore((s) => s.sshTargetLabels);
+  const storeSshConnectionStates = useAppStore((s) => s.sshConnectionStates);
+  const storeRuntimeEnvironments = useAppStore((s) => s.runtimeEnvironments);
+  const storeSettings = useAppStore((s) => s.settings);
+  const visibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
+  const hostScopeActions = useAppStore((s) => s as Partial<HostScopeStoreActions>);
+
+  const hostOptions = useMemo<SidebarHostOption[]>(
+    () =>
+      buildSidebarHostOptions({
+        repos: storeRepos,
+        sshTargetLabels: toHostSourceMap<string>(storeSshTargetLabels) ?? new Map<string, string>(),
+        sshConnectionStates: toHostSourceMap(storeSshConnectionStates),
+        settings: storeSettings,
+        runtimeEnvironments: Array.isArray(storeRuntimeEnvironments)
+          ? storeRuntimeEnvironments
+          : undefined,
+      }),
+    [
+      storeRepos,
+      storeSshTargetLabels,
+      storeSshConnectionStates,
+      storeSettings,
+      storeRuntimeEnvironments,
+    ]
+  );
+  const hostScopeOptions = useMemo(() => buildSidebarHostScopeOptions(hostOptions), [hostOptions]);
+  // Why the action guard: the Orca UI slice that owns setWorkspaceHostScope /
+  // setVisibleWorkspaceHostIds is not composed into the live store yet; offering
+  // the row without the actions would render a control that throws on click.
+  const hostScopeActionsAvailable =
+    typeof hostScopeActions.setWorkspaceHostScope === "function" &&
+    typeof hostScopeActions.setVisibleWorkspaceHostIds === "function";
   useEffect(() => {
     if (!isOpen) {
       setOpenSubmenu(null);
@@ -124,6 +211,39 @@ export function WorkspaceOptionsMenu({
       : selectedFilterProjects.length === 1
         ? selectedFilterProjects[0].name
         : `${selectedFilterProjects.length} projects`;
+
+  // ─── Host scope handlers (Orca SidebarHostScopeMenuSection) ───────────────
+  const showHostScopeControls =
+    hostScopeActionsAvailable && shouldShowHostScopeControls(hostOptions);
+  const allHostsVisible = visibleWorkspaceHostIds == null;
+  const visibleHostIdSet = new Set<ExecutionHostId>(visibleWorkspaceHostIds ?? []);
+  const hostVisibilityLabel = getSidebarHostVisibilityLabel(
+    visibleWorkspaceHostIds,
+    hostOptions
+  );
+  // `SidebarHostScopeOption.id` spans `'all'`; the per-host rows exclude it.
+  const hostScopes = hostScopeOptions.filter(
+    (scope): scope is SidebarHostScopeOption & { id: ExecutionHostId } =>
+      scope.id !== ALL_EXECUTION_HOSTS_SCOPE
+  );
+
+  const toggleAllHosts = () => {
+    if (!allHostsVisible) {
+      hostScopeActions.setWorkspaceHostScope?.(ALL_EXECUTION_HOSTS_SCOPE);
+      return;
+    }
+    const firstHost = hostOptions[0];
+    if (firstHost) hostScopeActions.setVisibleWorkspaceHostIds?.([firstHost.id]);
+  };
+
+  const toggleHost = (hostId: ExecutionHostId) => {
+    const result = toggleWorkspaceHostVisibility({
+      visibleWorkspaceHostIds,
+      hostIds: hostOptions.map((host) => host.id),
+      hostId,
+    });
+    if (result.changed) hostScopeActions.setVisibleWorkspaceHostIds?.(result.visibleWorkspaceHostIds);
+  };
 
   return (
     <div
@@ -271,6 +391,73 @@ export function WorkspaceOptionsMenu({
             </div>
           )}
         </div>
+
+        {/* Hosts — Orca SidebarHostScopeMenuSection: single row, multi-select panel */}
+        {showHostScopeControls && (
+          <div className="relative">
+            <div
+              onClick={() => setOpenSubmenu(openSubmenu === "hosts" ? null : "hosts")}
+              className={`flex items-center justify-between px-2 py-1 text-[11px] text-popover-foreground hover:bg-accent rounded cursor-pointer transition-colors ${openSubmenu === "hosts" ? "bg-accent" : ""}`}
+            >
+              <span>Hosts</span>
+              <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
+                <span className="max-w-[7rem] truncate">{hostVisibilityLabel}</span>
+                <ChevronRight className="w-3 h-3 text-muted-foreground" />
+              </span>
+            </div>
+            {openSubmenu === "hosts" && (
+              <div className="absolute left-full top-0 ml-1 w-56 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
+                <button
+                  type="button"
+                  role="menuitemcheckbox"
+                  aria-checked={allHostsVisible}
+                  data-host-scope-option="all"
+                  onClick={toggleAllHosts}
+                  className={`w-full flex items-start gap-2 px-2 py-1.5 rounded text-[11px] text-left transition cursor-pointer ${
+                    allHostsVisible ? "bg-accent text-foreground font-medium" : "text-popover-foreground hover:bg-accent"
+                  }`}
+                >
+                  <span className={`mt-1 size-2 shrink-0 rounded-full ${allHostsVisible ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className="truncate">All hosts</span>
+                    <span className="truncate text-[10px] font-normal text-muted-foreground">
+                      Show every host
+                    </span>
+                  </span>
+                </button>
+                {hostScopes
+                  .map((scope) => {
+                    const isVisible = visibleHostIdSet.has(scope.id);
+                    // Orca refuses to hide the last visible host.
+                    const isLastVisibleHost = !allHostsVisible && isVisible && visibleHostIdSet.size <= 1;
+                    return (
+                      <button
+                        key={scope.id}
+                        type="button"
+                        role="menuitemcheckbox"
+                        aria-checked={isVisible}
+                        aria-disabled={isLastVisibleHost}
+                        disabled={isLastVisibleHost}
+                        data-host-scope-option={scope.id}
+                        onClick={() => toggleHost(scope.id)}
+                        className={`w-full flex items-start gap-2 px-2 py-1.5 rounded text-[11px] text-left transition cursor-pointer ${
+                          isVisible ? "bg-accent text-foreground font-medium" : "text-popover-foreground hover:bg-accent"
+                        } ${isLastVisibleHost ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        <span className={`mt-1 size-2 shrink-0 rounded-full ${isVisible ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
+                        <span className="flex min-w-0 flex-col gap-0.5">
+                          <span className="truncate">{scope.label}</span>
+                          <span className="truncate text-[10px] font-normal text-muted-foreground">
+                            {scope.detail} · {getSidebarHostHealthLabel(scope.health)}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="h-px bg-border" />
@@ -280,10 +467,11 @@ export function WorkspaceOptionsMenu({
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Group by
         </div>
-        <div className="grid grid-cols-3 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
+        <div className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
           {[
             { id: "none", label: "None" },
             { id: "workspace-status", label: "Status" },
+            { id: "pr-status", label: "PR" },
             { id: "repo", label: "Project" },
           ].map((item) => {
             const isSelected = options.groupBy === item.id;

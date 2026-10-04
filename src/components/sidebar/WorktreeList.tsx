@@ -1,15 +1,42 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 import React, { useMemo, useCallback, useLayoutEffect } from "react";
-import { FolderPlus, Plus } from "lucide-react";
+import { useAppStore } from "@/store";
+import { ChevronDown, FolderPlus, Plus } from "lucide-react";
+import { cn } from "../../lib/utils";
 import { SectionHeader } from "./SectionHeader";
 import { WorktreeCard } from "./WorktreeCard";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
-import type { PrDisplay } from "./pr-display";
+import type { WorktreeStatus } from "../../lib/worktree-status";
+import { isInactiveWorkspace } from "../../lib/worktree-activity-state";
 import {
+  isAutomationGeneratedWorkspace,
+  isCliCreatedWorkspace,
+  isSleepingSweepExemptWorkspace,
+} from "./visible-worktree-kinds";
+import { getGitHubPRCacheKey } from "@/store/slices/github-cache-key";
+import {
+  getRepoExecutionHostId,
+  normalizeExecutionHostScope,
+  normalizeVisibleExecutionHostIds,
+  type ExecutionHostId,
+} from "../../shared/execution-host";
+import type { Repo } from "../../shared/repo-types";
+import type { FolderWorkspace } from "../../shared/folder-workspace-types";
+import type { ProjectGroup as SharedProjectGroup } from "../../shared/project-group-types";
+import type { Worktree } from "../../shared/worktree/types";
+import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
+import type {
+  FolderWorkspaceRow as FolderWorkspaceRowModel,
+  GroupHeaderRow,
+  WorktreeRow,
+} from "./worktree-list/grouping/row-types";
+import {
+  WORKTREE_SECTION_HEADER_PADDING_LEFT,
   getWorktreeCardContentIndent,
   getWorktreeCardSurfaceInset,
 } from "./worktree-list/rows/indentation";
+import { computeSidebarRows, type SidebarRowsState } from "./rendered-sidebar-worktree-order";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import { ImportedWorktreesVisibilityLine } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import {
@@ -17,6 +44,7 @@ import {
   setVisibleWorktreeShortcutTargets,
   type VisibleWorktreeShortcutTarget,
 } from "./visible-worktrees";
+import type { PrDisplay } from "./pr-display";
 import type {
   HydraProject,
   GitWorktreeInfo,
@@ -26,49 +54,198 @@ import type {
 } from "./types";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 
-/** Cards actually painted, in sidebar order. Collapsed projects and groups are skipped;
- * a search query forces projects open, matching `renderProjectNode`. */
-function renderedSidebarShortcutTargets(args: {
-  visibleProjects: HydraProject[];
-  projectGroups: ProjectGroup[];
-  projectGroupMap: Record<string, string>;
-  collapsedProjects: Set<string>;
-  collapsedGroups: Set<string>;
-  query: string;
-  getFilteredAndSortedWorktrees: (proj: HydraProject) => GitWorktreeInfo[];
-}): VisibleWorktreeShortcutTarget[] {
-  const {
-    visibleProjects,
-    projectGroups,
-    projectGroupMap,
-    collapsedProjects,
-    collapsedGroups,
-    query,
-    getFilteredAndSortedWorktrees,
-  } = args;
-  const targets: VisibleWorktreeShortcutTarget[] = [];
-  const seen = new Set<string>();
-  const pushProject = (proj: HydraProject) => {
-    if (!query && collapsedProjects.has(proj.id)) return;
-    for (const wt of getFilteredAndSortedWorktrees(proj)) {
-      const id = wt.id || wt.path;
-      if (!id || seen.has(id)) continue;
-      seen.add(id);
-      targets.push({ id });
-    }
-  };
+// ─── Hydra props → Orca row-pipeline projection ──────────────────────────────
+//
+// The sidebar's painted model is Hydra's `HydraProject`/`GitWorktreeInfo`; the
+// ported row pipeline speaks Orca's `Repo`/`Worktree`. These adapters are the
+// ONE place that bridge is made — grouping, pinning, lane order and section
+// elision all stay in the pipeline (`computeSidebarRows`).
 
-  const groupedProjectIds = new Set<string>();
-  for (const group of projectGroups) {
-    const groupProjects = visibleProjects.filter((p) => projectGroupMap[p.id] === group.id);
-    for (const p of groupProjects) groupedProjectIds.add(p.id);
-    if (collapsedGroups.has(group.id)) continue;
-    for (const p of groupProjects) pushProject(p);
+/** Collapsed-state keys the pipeline reads, derived from the sidebar's two sets. */
+function pipelineCollapsedKeys(
+  collapsedProjects: Set<string>,
+  collapsedGroups: Set<string>
+): Set<string> {
+  const keys = new Set<string>();
+  // Project headers collapse by `repo:<id>`; Hydra persists the bare project id.
+  for (const id of collapsedProjects) keys.add(`repo:${id}`);
+  // Group headers collapse by `project-group:<id>`; Hydra persists the bare group id.
+  // Keys already carrying their prefix (`all`, `pinned`, `host:…`) pass through.
+  for (const id of collapsedGroups) keys.add(id.includes(":") ? id : `project-group:${id}`);
+  return keys;
+}
+
+/**
+ * Host ownership per repo. The catalog→sidebar bridge drops host fields, so the
+ * only host-aware source on the render path is the store's Orca-compat catalog;
+ * when it is empty every repo stays local (exactly today's single-host list).
+ */
+function buildHostIdByRepoId(repos: readonly Repo[]): Map<string, ExecutionHostId> {
+  const byRepoId = new Map<string, ExecutionHostId>();
+  for (const repo of repos) {
+    if (!repo?.id) continue;
+    if (repo.connectionId || repo.executionHostId) {
+      byRepoId.set(repo.id, getRepoExecutionHostId(repo));
+    }
   }
-  for (const proj of visibleProjects) {
-    if (!groupedProjectIds.has(proj.id)) pushProject(proj);
+  return byRepoId;
+}
+
+function toPipelineRepo(args: {
+  project: HydraProject;
+  projectGroupId: string | null;
+  hostId: ExecutionHostId | undefined;
+}): Repo {
+  const { project, projectGroupId, hostId } = args;
+  return {
+    id: project.id,
+    path: project.path,
+    displayName: project.displayName ?? project.name,
+    badgeColor: project.color ?? "#64748b",
+    addedAt: 0,
+    projectGroupId,
+    ...(hostId ? { executionHostId: hostId } : {}),
+  };
+}
+
+function toPipelineProjectGroup(
+  group: ProjectGroup,
+  folderWorkspacePath: string | undefined
+): SharedProjectGroup {
+  return {
+    id: group.id,
+    name: group.name,
+    // Why the folder path: the pipeline gates folder-workspace rows on a
+    // folder-backed group (`projectGroup.parentPath`), and Hydra's sidebar group
+    // carries no root — only its folder workspaces prove the group is folder-backed.
+    parentPath: folderWorkspacePath ?? null,
+    parentGroupId: null,
+    createdFrom: "manual",
+    tabOrder: 0,
+    isCollapsed: group.isCollapsed ?? false,
+    color: null,
+    createdAt: 0,
+    updatedAt: 0,
+  };
+}
+
+function toPipelineFolderWorkspace(workspace: {
+  id: string;
+  projectGroupId: string;
+  name: string;
+  folderPath: string;
+}): FolderWorkspace {
+  return {
+    id: workspace.id,
+    projectGroupId: workspace.projectGroupId,
+    name: workspace.name,
+    folderPath: workspace.folderPath,
+    linkedTask: null,
+    comment: "",
+    isArchived: false,
+    isUnread: false,
+    isPinned: false,
+    sortOrder: 0,
+    lastActivityAt: 0,
+    createdAt: 0,
+    updatedAt: 0,
+  };
+}
+
+/** Live-activity index the ported sleep sweep reads, built from Hydra's sessions. */
+function buildLiveActivityIndex(
+  sessions: readonly WorktreeSession[],
+  liveWorkspacePaths: ReadonlySet<string>
+): {
+  tabsByWorktree: Record<string, { id: string }[]>;
+  ptyIdsByTabId: Record<string, string[]>;
+  worktreeIdsWithLiveAgent: Set<string>;
+} {
+  const tabsByWorktree: Record<string, { id: string }[]> = {};
+  const ptyIdsByTabId: Record<string, string[]> = {};
+  const worktreeIdsWithLiveAgent = new Set<string>();
+  for (const session of sessions) {
+    const path = session.project_path;
+    if (!path) continue;
+    // Why: a closed terminal drops the tab (Orca's tabHasLivePty), so only paths
+    // with a mounted terminal get a tab entry — otherwise nothing ever sleeps.
+    if (liveWorkspacePaths.has(path)) {
+      tabsByWorktree[path] = [...(tabsByWorktree[path] ?? []), { id: session.id }];
+      ptyIdsByTabId[session.id] = ["live"];
+    }
+    if (session.state === "working" || session.state === "blocked" || session.state === "waiting") {
+      worktreeIdsWithLiveAgent.add(path);
+    }
   }
-  return targets;
+  return { tabsByWorktree, ptyIdsByTabId, worktreeIdsWithLiveAgent };
+}
+
+function toPipelineWorktree(args: {
+  worktree: GitWorktreeInfo;
+  project: HydraProject;
+  hostId: ExecutionHostId | undefined;
+  isPinned: boolean;
+  isUnread: boolean;
+  status: WorktreeStatus;
+}): Worktree {
+  const { worktree, project, hostId, isPinned, isUnread, status } = args;
+  return {
+    id: worktree.id ?? `${project.id}::${worktree.path}`,
+    repoId: project.id,
+    projectId: project.id,
+    displayName: worktree.displayName ?? worktree.display_name ?? worktree.branch,
+    comment: "",
+    linkedIssue: null,
+    linkedPR: null,
+    linkedLinearIssue: null,
+    isArchived: false,
+    isUnread,
+    isPinned,
+    sortOrder: 0,
+    lastActivityAt: worktree.created_at ?? 0,
+    workspaceStatus: status,
+    createdAt: worktree.created_at ?? undefined,
+    path: worktree.path,
+    head: worktree.head_commit,
+    branch: worktree.branch,
+    isBare: worktree.is_bare,
+    isMainWorktree: worktree.is_main ?? worktree.isMainWorktree ?? false,
+    ...(hostId ? { hostId } : {}),
+  };
+}
+
+/** `prByPath` (Hydra's review display) → the Orca `prCache` shape PR lanes read. */
+function buildPRCache(args: {
+  worktrees: readonly { project: HydraProject; worktree: GitWorktreeInfo }[];
+  repos: readonly Repo[];
+  prByPath: Record<string, PrDisplay> | undefined;
+}): Record<string, unknown> {
+  const cache: Record<string, unknown> = {};
+  if (!args.prByPath) return cache;
+  const repoById = new Map(args.repos.map((repo) => [repo.id, repo]));
+  for (const { project, worktree } of args.worktrees) {
+    const display = args.prByPath[worktree.path];
+    const repo = repoById.get(project.id);
+    if (!display || !repo || !worktree.branch) continue;
+    const key = getGitHubPRCacheKey(
+      repo.path,
+      repo.id,
+      worktree.branch,
+      undefined,
+      repo.connectionId,
+      repo.executionHostId,
+      true
+    );
+    cache[key] = { data: { number: display.number, state: display.state } };
+  }
+  return cache;
+}
+
+interface SidebarRowModel {
+  rows: HostSectionRow[];
+  /** Projection worktree path → the Hydra prop the card and its callbacks expect. */
+  propWorktreeByPath: Map<string, GitWorktreeInfo>;
+  propProjectById: Map<string, HydraProject>;
 }
 
 export interface WorktreeListProps {
@@ -129,7 +306,7 @@ export interface WorktreeListProps {
   groupDropTargetId?: string | null;
   onWorktreeDragStart?: (e: React.DragEvent, path: string) => void;
   onWorktreeDragOver?: (e: React.DragEvent, path: string) => void;
-  onWorktreeDrop?: (e: React.DragEvent, targetPath: string, proj: HydraProject) => void;
+  onWorktreeDrop?: (e: React.DragEvent, path: string, proj: HydraProject) => void;
   onWorktreeDragEnd?: () => void;
   onProjectDragStart?: (e: React.DragEvent, id: string) => void;
   onProjectDragOver?: (e: React.DragEvent, id: string) => void;
@@ -140,6 +317,91 @@ export interface WorktreeListProps {
   onGroupDrop?: (e: React.DragEvent, groupId: string) => void;
   className?: string;
 }
+
+/** Lane header for the pipeline's non-repo sections (All / Pinned / status / PR). */
+const LaneSectionHeader = React.memo(function LaneSectionHeader({
+  row,
+  isCollapsed,
+  onToggleCollapse,
+}: {
+  row: GroupHeaderRow;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+}): React.JSX.Element {
+  const Icon = row.icon;
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-expanded={!isCollapsed}
+      aria-label={row.label}
+      data-section-header-id={row.key}
+      className="group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
+      style={{ paddingLeft: WORKTREE_SECTION_HEADER_PADDING_LEFT }}
+      onClick={onToggleCollapse}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggleCollapse();
+        }
+      }}
+    >
+      {Icon ? <Icon className={cn("size-3.5 shrink-0", row.tone)} /> : null}
+      <div className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-none">
+        {row.label}
+      </div>
+      {row.count > 0 ? (
+        <span className="text-[10px] tabular-nums text-muted-foreground">{row.count}</span>
+      ) : null}
+      <ChevronDown
+        className={cn("size-3.5 shrink-0 text-muted-foreground transition-transform", isCollapsed && "-rotate-90")}
+        aria-hidden
+      />
+    </div>
+  );
+});
+
+/** Host section header (Orca `rows/HostSectionHeader.tsx`): the multi-host grouping tier. */
+const HostSectionHeader = React.memo(function HostSectionHeader({
+  row,
+  isCollapsed,
+  onToggleCollapse,
+}: {
+  row: HostHeaderRow;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+}): React.JSX.Element {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-expanded={!isCollapsed}
+      aria-label={row.label}
+      data-host-header-id={row.hostId}
+      className="group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
+      style={{ paddingLeft: WORKTREE_SECTION_HEADER_PADDING_LEFT }}
+      onClick={onToggleCollapse}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggleCollapse();
+        }
+      }}
+    >
+      <div className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-none">
+        {row.label}
+      </div>
+      <span className="min-w-0 truncate text-[10px] text-muted-foreground">{row.detail}</span>
+      {row.count > 0 ? (
+        <span className="text-[10px] tabular-nums text-muted-foreground">{row.count}</span>
+      ) : null}
+      <ChevronDown
+        className={cn("size-3.5 shrink-0 text-muted-foreground transition-transform", isCollapsed && "-rotate-90")}
+        aria-hidden
+      />
+    </div>
+  );
+});
 
 export function WorktreeList({
   projects,
@@ -200,8 +462,29 @@ export function WorktreeList({
   className = "",
 }: WorktreeListProps): React.JSX.Element {
   const query = filter.trim().toLowerCase();
+  const livePaths = liveWorkspacePaths ?? new Set<string>();
+  const missingPaths = missingFolderPaths ?? new Set<string>();
+  const pinnedSet = pinnedWorktrees ?? new Set<string>();
+  const unreadSet = unreadWorktrees ?? new Set<string>();
 
-  // Filter projects by search query
+  // Host ownership + host-section inputs come from the Orca-compat catalog: the
+  // catalog→sidebar bridge drops host fields, so this is the only host source on
+  // the render path (empty in a single-host install → no host tier, as today).
+  const storeRepos = useAppStore((s) => s.repos);
+  const storeSshTargetLabels = useAppStore((s) => s.sshTargetLabels);
+  const storeSshConnectionStates = useAppStore((s) => s.sshConnectionStates);
+  const storeRuntimeEnvironments = useAppStore((s) => s.runtimeEnvironments);
+  const storeRuntimeStatusByEnvironmentId = useAppStore((s) => s.runtimeStatusByEnvironmentId);
+  const storeSettings = useAppStore((s) => s.settings);
+  const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
+  const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
+  const storeWorktreeLineageById = useAppStore((s) => s.worktreeLineageById);
+  // Why normalize: the store seeds `visibleWorkspaceHostIds: []` before the UI
+  // slice hydrates, and `[]` means "no host visible" — it would blank the list.
+  const pipelineHostScope = normalizeExecutionHostScope(storeWorkspaceHostScope);
+  const pipelineVisibleHostIds = normalizeVisibleExecutionHostIds(storeVisibleWorkspaceHostIds);
+
+  // Filter projects by search query (project identity or a matching workspace).
   const visibleProjects = useMemo(() => {
     if (!query) return displayProjects;
     return displayProjects.filter((proj) => {
@@ -213,30 +496,149 @@ export function WorktreeList({
     });
   }, [displayProjects, query, getFilteredAndSortedWorktrees]);
 
-  const shortcutTargets = useMemo(
-    () =>
-      renderedSidebarShortcutTargets({
-        visibleProjects,
-        projectGroups,
-        projectGroupMap,
-        collapsedProjects,
-        collapsedGroups,
-        query,
-        getFilteredAndSortedWorktrees,
-      }),
-    [
-      visibleProjects,
-      projectGroups,
-      projectGroupMap,
-      collapsedProjects,
-      collapsedGroups,
-      query,
-      getFilteredAndSortedWorktrees,
-    ]
-  );
+  const rowModel = useMemo<SidebarRowModel>(() => {
+    const hostIdByRepoId = buildHostIdByRepoId(storeRepos as Repo[]);
+    const pipelineRepos = visibleProjects.map((project) =>
+      toPipelineRepo({
+        project,
+        projectGroupId: projectGroupMap?.[project.id] ?? null,
+        hostId: hostIdByRepoId.get(project.id),
+      })
+    );
+    const pipelineGroups = projectGroups.map((group) =>
+      toPipelineProjectGroup(
+        group,
+        folderWorkspaces.find((workspace) => workspace.projectGroupId === group.id)?.folderPath
+      )
+    );
+    const pipelineFolderWorkspaces = folderWorkspaces.map(toPipelineFolderWorkspace);
 
-  // Same contract as Orca `use-selection`: publish before paint so Cmd+1–9 matches the
-  // cards. Null on unmount (sidebar closed) means "recompute"; [] means nothing is expanded.
+    const { tabsByWorktree, ptyIdsByTabId, worktreeIdsWithLiveAgent } = buildLiveActivityIndex(
+      sessions,
+      livePaths
+    );
+
+    const propWorktreeByPath = new Map<string, GitWorktreeInfo>();
+    const propProjectById = new Map<string, HydraProject>();
+    const worktreesByRepo: Record<string, Worktree[]> = {};
+    const candidates: { project: HydraProject; worktree: GitWorktreeInfo }[] = [];
+    for (const project of visibleProjects) {
+      propProjectById.set(project.id, project);
+      const hostId = hostIdByRepoId.get(project.id);
+      const projectedForRepo: Worktree[] = [];
+      for (const worktree of getFilteredAndSortedWorktrees(project)) {
+        const worktreeSessions = sessions.filter(
+          (s) => s.project_path === worktree.path || (worktree.is_main && s.project_path === project.path)
+        );
+        const status = workspaceStatusFrom({
+          sessions: worktreeSessions,
+          hasLiveTerminal: livePaths.has(worktree.path),
+        });
+        const projected = toPipelineWorktree({
+          worktree,
+          project,
+          hostId,
+          isPinned: pinnedSet.has(worktree.path),
+          isUnread: unreadSet.has(worktree.path),
+          status,
+        });
+        // Menu filters (Orca's ported predicates, never a re-derived rule).
+        if (displayOptions.hideAutomationCreated && isAutomationGeneratedWorkspace(projected)) continue;
+        if (displayOptions.hideCliCreated && isCliCreatedWorkspace(projected)) continue;
+        if (
+          displayOptions.hideSleeping &&
+          !isSleepingSweepExemptWorkspace(projected, true) &&
+          isInactiveWorkspace(
+            projected.id,
+            tabsByWorktree,
+            ptyIdsByTabId,
+            {},
+            worktreeIdsWithLiveAgent
+          )
+        ) {
+          continue;
+        }
+        propWorktreeByPath.set(worktree.path, worktree);
+        candidates.push({ project, worktree });
+        projectedForRepo.push(projected);
+      }
+      if (projectedForRepo.length > 0) worktreesByRepo[project.id] = projectedForRepo;
+    }
+
+    const pipelineState: SidebarRowsState = {
+      settings: storeSettings,
+      visibleWorkspaceHostIds: pipelineVisibleHostIds,
+      workspaceHostScope: pipelineHostScope,
+      projectGroups: pipelineGroups,
+      groupBy: displayOptions.groupBy,
+      worktreeCardProperties: [],
+      repos: pipelineRepos,
+      worktreesByRepo,
+      collapsedGroups: pipelineCollapsedKeys(collapsedProjects, collapsedGroups),
+      worktreeLineageById: storeWorktreeLineageById,
+      folderWorkspaces: pipelineFolderWorkspaces,
+      sshTargetLabels: storeSshTargetLabels,
+      sshConnectionStates: storeSshConnectionStates,
+      runtimeEnvironments: storeRuntimeEnvironments,
+      runtimeStatusByEnvironmentId: storeRuntimeStatusByEnvironmentId,
+      prCache: buildPRCache({ worktrees: candidates, repos: pipelineRepos, prByPath }),
+      hostedReviewCache: null,
+    };
+
+    return {
+      rows: computeSidebarRows(pipelineState, Object.values(worktreesByRepo).flat()),
+      propWorktreeByPath,
+      propProjectById,
+    };
+  }, [
+    visibleProjects,
+    projectGroups,
+    folderWorkspaces,
+    projectGroupMap,
+    sessions,
+    livePaths,
+    pinnedSet,
+    unreadSet,
+    displayOptions.groupBy,
+    displayOptions.hideAutomationCreated,
+    displayOptions.hideCliCreated,
+    displayOptions.hideSleeping,
+    getFilteredAndSortedWorktrees,
+    prByPath,
+    collapsedProjects,
+    collapsedGroups,
+    storeRepos,
+    storeSettings,
+    pipelineHostScope,
+    pipelineVisibleHostIds,
+    storeWorktreeLineageById,
+    storeSshTargetLabels,
+    storeSshConnectionStates,
+    storeRuntimeEnvironments,
+    storeRuntimeStatusByEnvironmentId,
+  ]);
+
+  const { rows } = rowModel;
+
+  // Same contract as Orca `use-selection`: publish before paint so Cmd+1–9 matches
+  // the painted cards. Null on unmount (sidebar closed) means "recompute".
+  const shortcutTargets = useMemo(() => {
+    const targets: VisibleWorktreeShortcutTarget[] = [];
+    const seen = new Set<string>();
+    for (const row of rows) {
+      if (row.type !== "item") continue;
+      const prop = rowModel.propWorktreeByPath.get(row.worktree.path);
+      const id = prop?.id || prop?.path || row.worktree.path;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      targets.push({
+        id,
+        ...(row.worktree.hostId ? { executionHostId: row.worktree.hostId } : {}),
+      });
+    }
+    return targets;
+  }, [rows, rowModel]);
+
   useLayoutEffect(() => {
     setVisibleWorktreeIds(shortcutTargets.map((target) => target.id));
     setVisibleWorktreeShortcutTargets(shortcutTargets);
@@ -246,200 +648,92 @@ export function WorktreeList({
     };
   }, [shortcutTargets]);
 
-  // Render a single project node (SectionHeader + Inbox line + WorktreeCards)
-  const renderProjectNode = useCallback(
-    (proj: HydraProject, inGroup: boolean = false) => {
-      const isCollapsed = query ? false : collapsedProjects.has(proj.id);
-      const worktrees = getFilteredAndSortedWorktrees(proj);
-      const hiddenWorktrees = hiddenWorktreesByProject?.[proj.path] ?? [];
-      const isDropTarget = projectDropTarget?.id === proj.id;
-      const isDragged = draggedProjectId === proj.id;
+  const isCollapsedKey = useCallback(
+    (key: string) => collapsedGroups.has(key) || collapsedProjects.has(key),
+    [collapsedGroups, collapsedProjects]
+  );
+
+  const renderWorktreeRow = useCallback(
+    (row: WorktreeRow): React.JSX.Element | null => {
+      const wt = rowModel.propWorktreeByPath.get(row.worktree.path);
+      const proj = rowModel.propProjectById.get(row.worktree.repoId);
+      if (!wt || !proj) return null;
+      const wtSessions = sessions.filter(
+        (s) => s.project_path === wt.path || (wt.is_main && s.project_path === proj.path)
+      );
+      const isFocused = (activeWorktreePath ?? null) === wt.path;
+      const isRevealed = highlightedRevealPath === wt.path;
+      // Orca geometry (worktree-list/rows/item-row.tsx): the row applies the
+      // surface inset as padding and hands the card the content indent, both
+      // derived from the row's group depth.
+      const isGrouped = displayOptions.groupBy !== "none";
+      const surfaceInset = getWorktreeCardSurfaceInset({
+        isGrouped,
+        groupDepth: row.depth,
+      });
+      const cardContentIndent = Math.max(
+        0,
+        getWorktreeCardContentIndent({
+          isGrouped,
+          groupDepth: row.depth,
+          lineageDepth: 0,
+        }) - surfaceInset
+      );
 
       return (
-        <div key={proj.id} className="group/proj-wrapper space-y-0.5">
-          <SectionHeader
-            variant="repo"
+        <div
+          key={row.rowKey}
+          data-worktree-path={wt.path}
+          className="relative"
+          style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
+        >
+          <WorktreeCard
+            worktree={wt}
+            status={workspaceStatusFrom({
+              sessions: wtSessions,
+              hasLiveTerminal: livePaths.has(wt.path),
+            })}
+            prDisplay={prByPath?.[wt.path] ?? null}
             project={proj}
-            isCollapsed={isCollapsed}
-            isActive={activeProject?.path === proj.path}
-            count={worktrees.length}
-            inGroup={inGroup}
-            onToggleCollapse={() => onToggleProjectCollapse(proj.id)}
-            onSelectProject={onSelectProject}
-            onOpenNewWorkspace={onOpenNewWorkspaceModal}
-            onContextMenu={onProjectContextMenu}
-            isDropTarget={isDropTarget}
-            dropPosition={projectDropTarget?.position}
-            isDragged={isDragged}
-            onDragStart={
-              onProjectDragStart ? (e) => onProjectDragStart(e, proj.id) : undefined
+            repo={proj}
+            hideRepoBadge={isGrouped}
+            contentIndent={cardContentIndent}
+            flushSurface
+            isActive={activeWorktreePath === wt.path}
+            isCurrentWorktree={activeWorktreePath === wt.path}
+            isFocused={isFocused}
+            revealHighlight={isRevealed}
+            isPinned={pinnedSet.has(wt.path)}
+            isUnread={unreadSet.has(wt.path)}
+            compactCards={compactCards}
+            ports={portsByWorktree?.get(wt.path) || []}
+            sessions={wtSessions}
+            dropTarget={worktreeDropTarget}
+            onSelect={onSelectGitWorktree}
+            onDelete={onDeleteGitWorktree}
+            onRename={
+              onRenameWorktreeTitle ? (newTitle) => onRenameWorktreeTitle(wt.path, newTitle) : undefined
             }
-            onDragOver={
-              onProjectDragOver ? (e) => onProjectDragOver(e, proj.id) : undefined
-            }
-            onDrop={onProjectDrop ? (e) => onProjectDrop(e, proj.id) : undefined}
-            onDragEnd={onProjectDragEnd}
+            onContextMenu={onWorktreeContextMenu}
+            onSelectSession={onSelectSession}
+            onDragStart={onWorktreeDragStart ? (e, path) => onWorktreeDragStart(e, path) : undefined}
+            onDragOver={onWorktreeDragOver ? (e, path) => onWorktreeDragOver(e, path) : undefined}
+            onDrop={onWorktreeDrop ? (e, path) => onWorktreeDrop(e, path, proj) : undefined}
+            onDragEnd={onWorktreeDragEnd}
           />
-
-          {/* Discovered-worktree inbox, two Orca phases: the expandable notice until the
-              repo's prompt completes, then the compact pill that opens the visibility
-              dialog. Each surface owns its half of the phase gate and nulls itself out. */}
-          <ImportedWorktreesVisibilityLine
-            repoDisplayName={proj.name}
-            hiddenWorktrees={hiddenWorktrees}
-            baselinePaths={proj.externalWorktreeInboxBaselinePaths}
-            suppressed={proj.suppressed_discovery === true}
-            promptDismissedAt={proj.externalWorktreeVisibilityPromptDismissedAt ?? null}
-            onShow={
-              onShowHiddenWorktree
-                ? (worktreePath) => onShowHiddenWorktree(proj, worktreePath)
-                : undefined
-            }
-            onKeepHidden={
-              onKeepHiddenWorktrees
-                ? (worktreePaths) => onKeepHiddenWorktrees(proj, worktreePaths)
-                : undefined
-            }
-          />
-          <NewExternalWorktreesInboxLine
-            repoDisplayName={proj.name}
-            hiddenWorktrees={hiddenWorktrees}
-            baselinePaths={proj.externalWorktreeInboxBaselinePaths}
-            suppressed={proj.suppressed_discovery === true}
-            promptDismissedAt={proj.externalWorktreeVisibilityPromptDismissedAt ?? null}
-            onReview={
-              onReviewHiddenWorktrees
-                ? () => onReviewHiddenWorktrees(proj)
-                : undefined
-            }
-            onSuppress={
-              onSuppressHiddenWorktrees
-                ? () => onSuppressHiddenWorktrees(proj)
-                : undefined
-            }
-          />
-
-          {/* Expanded Worktrees List */}
-          {!isCollapsed && (
-            <div className="space-y-0.5">
-              {worktrees.length > 0 ? (
-                worktrees.map((wt) => {
-                  const wtSessions = sessions.filter(
-                    (s) =>
-                      s.project_path === wt.path ||
-                      (wt.is_main && s.project_path === proj.path)
-                  );
-                  const isFocused = (activeWorktreePath ?? null) === wt.path;
-                  const isRevealed = highlightedRevealPath === wt.path;
-                  // Orca geometry (worktree-list/rows/item-row.tsx:183-205): the row
-                  // applies `surfaceInset` as padding and hands the card the content
-                  // indent, both derived from group depth — without it every card sits
-                  // flush with its project header.
-                  const isGrouped = displayOptions.groupBy !== "none";
-                  const groupDepth = inGroup ? 1 : 0;
-                  const surfaceInset = getWorktreeCardSurfaceInset({ isGrouped, groupDepth });
-                  const cardContentIndent = Math.max(
-                    0,
-                    getWorktreeCardContentIndent({ isGrouped, groupDepth, lineageDepth: 0 }) -
-                      surfaceInset
-                  );
-
-                  return (
-                    <div
-                      key={wt.path}
-                      data-worktree-path={wt.path}
-                      className="relative"
-                      style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
-                    >
-                      <WorktreeCard
-                        worktree={wt}
-                        // Lane signals: agent sessions + a mounted terminal decide the
-                        // dot; the PR display (when the host reports one) outranks it.
-                        status={workspaceStatusFrom({
-                          sessions: wtSessions,
-                          hasLiveTerminal: (liveWorkspacePaths ?? new Set<string>()).has(wt.path),
-                        })}
-                        prDisplay={prByPath?.[wt.path] ?? null}
-                        project={proj}
-                        repo={proj}
-                        // Why Orca hides it here: inside a repo group the avatar is already
-                        // on the header, so the card lane belongs to status/branch (item-row.tsx:213).
-                        hideRepoBadge={isGrouped}
-                        contentIndent={cardContentIndent}
-                        flushSurface
-                        isActive={activeWorktreePath === wt.path}
-                        isCurrentWorktree={activeWorktreePath === wt.path}
-                        isFocused={isFocused}
-                        revealHighlight={isRevealed}
-                        isPinned={pinnedWorktrees?.has(wt.path)}
-                        isUnread={unreadWorktrees?.has(wt.path)}
-                        compactCards={compactCards}
-                        ports={portsByWorktree?.get(wt.path) || []}
-                        sessions={wtSessions}
-                        dropTarget={worktreeDropTarget}
-                        onSelect={onSelectGitWorktree}
-                        onDelete={onDeleteGitWorktree}
-                        onRename={
-                          onRenameWorktreeTitle
-                            ? (newTitle) => onRenameWorktreeTitle(wt.path, newTitle)
-                            : undefined
-                        }
-                        onContextMenu={onWorktreeContextMenu}
-                        onSelectSession={onSelectSession}
-                        onDragStart={
-                          onWorktreeDragStart
-                            ? (e, path) => onWorktreeDragStart(e, path)
-                            : undefined
-                        }
-                        onDragOver={
-                          onWorktreeDragOver
-                            ? (e, path) => onWorktreeDragOver(e, path)
-                            : undefined
-                        }
-                        onDrop={
-                          onWorktreeDrop
-                            ? (e, path) => onWorktreeDrop(e, path, proj)
-                            : undefined
-                        }
-                        onDragEnd={onWorktreeDragEnd}
-                      />
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="px-2 py-1.5 text-[11px] text-worktree-sidebar-foreground/40 italic">
-                  No workspaces
-                </div>
-              )}
-            </div>
-          )}
         </div>
       );
     },
     [
-      query,
-      collapsedProjects,
-      getFilteredAndSortedWorktrees,
-      hiddenWorktreesByProject,
-      projectDropTarget,
-      draggedProjectId,
-      activeProject?.path,
-      onToggleProjectCollapse,
-      onSelectProject,
-      onOpenNewWorkspaceModal,
-      onProjectContextMenu,
-      onProjectDragStart,
-      onProjectDragOver,
-      onProjectDrop,
-      onProjectDragEnd,
-      onSuppressHiddenWorktrees,
-      onShowHiddenWorktree,
-      onKeepHiddenWorktrees,
+      rowModel,
       sessions,
+      livePaths,
       activeWorktreePath,
       highlightedRevealPath,
-      pinnedWorktrees,
-      unreadWorktrees,
+      displayOptions.groupBy,
+      prByPath,
+      pinnedSet,
+      unreadSet,
       compactCards,
       portsByWorktree,
       worktreeDropTarget,
@@ -455,116 +749,229 @@ export function WorktreeList({
     ]
   );
 
-  // Grouped and ungrouped project rendering
-  const content = useMemo(() => {
-    const nodes: React.JSX.Element[] = [];
-    const groupedProjectIds = new Set<string>();
+  const renderRepoHeader = useCallback(
+    (row: GroupHeaderRow): React.JSX.Element | null => {
+      const proj = row.repo ? rowModel.propProjectById.get(row.repo.id) : undefined;
+      if (!proj) return null;
+      const isDropTarget = projectDropTarget?.id === proj.id;
+      return (
+        <SectionHeader
+          key={row.key}
+          variant="repo"
+          project={proj}
+          isCollapsed={isCollapsedKey(row.key) || collapsedProjects.has(proj.id)}
+          isActive={activeProject?.path === proj.path}
+          count={row.count}
+          inGroup={(row.projectGroupDepth ?? 0) > 0}
+          onToggleCollapse={() => onToggleProjectCollapse(proj.id)}
+          onSelectProject={onSelectProject}
+          onOpenNewWorkspace={onOpenNewWorkspaceModal}
+          onContextMenu={onProjectContextMenu}
+          isDropTarget={isDropTarget}
+          dropPosition={projectDropTarget?.position}
+          isDragged={draggedProjectId === proj.id}
+          onDragStart={onProjectDragStart ? (e) => onProjectDragStart(e, proj.id) : undefined}
+          onDragOver={onProjectDragOver ? (e) => onProjectDragOver(e, proj.id) : undefined}
+          onDrop={onProjectDrop ? (e) => onProjectDrop(e, proj.id) : undefined}
+          onDragEnd={onProjectDragEnd}
+        />
+      );
+    },
+    [
+      rowModel,
+      activeProject?.path,
+      collapsedProjects,
+      isCollapsedKey,
+      onToggleProjectCollapse,
+      onSelectProject,
+      onOpenNewWorkspaceModal,
+      onProjectContextMenu,
+      projectDropTarget,
+      draggedProjectId,
+      onProjectDragStart,
+      onProjectDragOver,
+      onProjectDrop,
+      onProjectDragEnd,
+    ]
+  );
 
-    if (projectGroups && projectGroups.length > 0) {
-      for (const group of projectGroups) {
-        const groupProjects = visibleProjects.filter(
-          (p) => projectGroupMap?.[p.id] === group.id
-        );
-        for (const p of groupProjects) groupedProjectIds.add(p.id);
+  const renderGroupHeader = useCallback(
+    (row: GroupHeaderRow): React.JSX.Element | null => {
+      const group = row.projectGroup;
+      if (!group || typeof group.id !== "string") return null;
+      return (
+        <SectionHeader
+          key={row.key}
+          variant="group"
+          group={group}
+          sectionKey={row.key}
+          isCollapsed={isCollapsedKey(row.key)}
+          count={row.count}
+          depth={row.projectGroupDepth ?? 0}
+          onToggleCollapse={() => onToggleGroupCollapse(group.id as string)}
+          onContextMenu={
+            onGroupContextMenu
+              ? (e) => onGroupContextMenu(e, { id: group.id as string, name: group.name })
+              : undefined
+          }
+          isDropTarget={groupDropTargetId === group.id}
+          onDragOver={onGroupDragOver ? (e) => onGroupDragOver(e, group.id as string) : undefined}
+          onDragLeave={
+            onGroupDragLeave ? (e) => onGroupDragLeave(e, group.id as string) : undefined
+          }
+          onDrop={onGroupDrop ? (e) => onGroupDrop(e, group.id as string) : undefined}
+        />
+      );
+    },
+    [
+      isCollapsedKey,
+      onToggleGroupCollapse,
+      onGroupContextMenu,
+      groupDropTargetId,
+      onGroupDragOver,
+      onGroupDragLeave,
+      onGroupDrop,
+    ]
+  );
 
-        const isGroupCollapsed = collapsedGroups.has(group.id);
-        const isGroupDropTarget = groupDropTargetId === group.id;
+  const renderFolderRow = useCallback(
+    (row: FolderWorkspaceRowModel): React.JSX.Element => {
+      const folderPath = row.folderWorkspace.folderPath;
+      const folderSessions = sessions.filter((s) => s.project_path === folderPath);
+      return (
+        <FolderWorkspaceRow
+          key={row.key}
+          name={row.folderWorkspace.name}
+          folderPath={folderPath}
+          status={workspaceStatusFrom({
+            sessions: folderSessions,
+            hasLiveTerminal: livePaths.has(folderPath),
+          })}
+          pathMissing={missingPaths.has(folderPath)}
+          isActive={activeWorktreePath === folderPath}
+          onActivate={() => onActivateFolderWorkspace?.(folderPath)}
+        />
+      );
+    },
+    [sessions, livePaths, missingPaths, activeWorktreePath, onActivateFolderWorkspace]
+  );
 
-        nodes.push(
-          <React.Fragment key={`group-${group.id}`}>
-            {/* Group Header via SectionHeader */}
-            <SectionHeader
-              variant="group"
-              group={group}
-              isCollapsed={isGroupCollapsed}
-              // Orca counts the whole subtree (repos + folder workspaces + subgroups);
-              // `count` only arms the collapse chevron, but it must include the folder
-              // rows or a folder-only group loses its chevron (Parity: SectionHeader.tsx
-              // `showHeaderCollapseAffordance = row.count > 0`).
-              count={
-                groupProjects.length +
-                (folderWorkspaces ?? []).filter((w) => w.projectGroupId === group.id).length
-              }
-              onToggleCollapse={() => onToggleGroupCollapse(group.id)}
-              onContextMenu={
-                onGroupContextMenu ? (e) => onGroupContextMenu(e, group) : undefined
-              }
-              onOpenNewWorkspace={
-                onOpenNewWorkspaceModal
-                  ? () => {
-                      const folder = (folderWorkspaces ?? []).find(
-                        (w) => w.projectGroupId === group.id
-                      );
-                      if (!folder) return;
-                      onOpenNewWorkspaceModal({
-                        id: `folder-${folder.id}`,
-                        name: group.name,
-                        path: folder.folderPath,
-                        is_git: false,
-                        current_branch: "",
-                      });
-                    }
-                  : undefined
-              }
-              isDropTarget={isGroupDropTarget}
-            />
-
-            {/* Group folder-workspace rows (Orca folder-row visual parity) */}
-            {!isGroupCollapsed &&
-              (folderWorkspaces ?? [])
-                .filter((w) => w.projectGroupId === group.id)
-                .map((w) => (
-                  <FolderWorkspaceRow
-                    key={`folder-ws-${w.id}`}
-                    name={w.name}
-                    folderPath={w.folderPath}
-                    status={workspaceStatusFrom({
-                      sessions: sessions.filter((s) => s.project_path === w.folderPath),
-                      hasLiveTerminal: (liveWorkspacePaths ?? new Set<string>()).has(w.folderPath),
-                    })}
-                    pathMissing={(missingFolderPaths ?? new Set<string>()).has(w.folderPath)}
-                    isActive={activeWorktreePath === w.folderPath}
-                    onActivate={() => onActivateFolderWorkspace?.(w.folderPath)}
-                  />
-                ))}
-            {/* Group Projects (Orca flat: header + folder rows + repos, no wrapper) */}
-            {!isGroupCollapsed && (
-              <div className="space-y-1">
-                {groupProjects.length > 0 ? (
-                  groupProjects.map((p) => renderProjectNode(p, true))
-                ) : (
-                  (folderWorkspaces ?? []).filter((w) => w.projectGroupId === group.id).length === 0 && (
-                    <div className="px-2 py-1 text-[10px] text-worktree-sidebar-foreground/40 italic">
-                      Drag projects here to group them
-                    </div>
-                  )
-                )}
-              </div>
-            )}
-          </React.Fragment>
+  /** Notices read the live props; the row only decides placement in the stream. */
+  const renderNoticeRow = useCallback(
+    (row: HostSectionRow): React.JSX.Element | null => {
+      if (row.type !== "imported-worktrees-card" && row.type !== "new-external-worktrees-inbox") {
+        return null;
+      }
+      const proj = rowModel.propProjectById.get(row.repo.id);
+      if (!proj) return null;
+      const hiddenWorktrees = hiddenWorktreesByProject?.[proj.path] ?? [];
+      const noticeProps = {
+        repoDisplayName: proj.name,
+        hiddenWorktrees,
+        baselinePaths: proj.externalWorktreeInboxBaselinePaths,
+        suppressed: proj.suppressed_discovery === true,
+        promptDismissedAt: proj.externalWorktreeVisibilityPromptDismissedAt ?? null,
+      };
+      if (row.type === "imported-worktrees-card") {
+        return (
+          <ImportedWorktreesVisibilityLine
+            key={row.key}
+            {...noticeProps}
+            onShow={
+              onShowHiddenWorktree
+                ? (worktreePath) => onShowHiddenWorktree(proj, worktreePath)
+                : undefined
+            }
+            onKeepHidden={
+              onKeepHiddenWorktrees
+                ? (worktreePaths) => onKeepHiddenWorktrees(proj, worktreePaths)
+                : undefined
+            }
+          />
         );
       }
-    }
+      return (
+        <NewExternalWorktreesInboxLine
+          key={row.key}
+          {...noticeProps}
+          onReview={onReviewHiddenWorktrees ? () => onReviewHiddenWorktrees(proj) : undefined}
+          onSuppress={onSuppressHiddenWorktrees ? () => onSuppressHiddenWorktrees(proj) : undefined}
+        />
+      );
+    },
+    [
+      rowModel,
+      hiddenWorktreesByProject,
+      onShowHiddenWorktree,
+      onKeepHiddenWorktrees,
+      onReviewHiddenWorktrees,
+      onSuppressHiddenWorktrees,
+    ]
+  );
 
-    // Ungrouped projects
-    const ungrouped = visibleProjects.filter((p) => !groupedProjectIds.has(p.id));
-    for (const p of ungrouped) {
-      nodes.push(renderProjectNode(p, false));
+  const content = useMemo(() => {
+    const nodes: React.JSX.Element[] = [];
+    for (const row of rows) {
+      switch (row.type) {
+        case "host-header":
+          nodes.push(
+            <HostSectionHeader
+              key={row.key}
+              row={row}
+              isCollapsed={collapsedGroups.has(row.key)}
+              onToggleCollapse={() => onToggleGroupCollapse(row.key)}
+            />
+          );
+          break;
+        case "header": {
+          if (row.repo) {
+            const header = renderRepoHeader(row);
+            if (header) nodes.push(header);
+          } else if (row.projectGroup && typeof row.projectGroup.id === "string") {
+            const header = renderGroupHeader(row);
+            if (header) nodes.push(header);
+          } else {
+            nodes.push(
+              <LaneSectionHeader
+                key={row.key}
+                row={row}
+                isCollapsed={isCollapsedKey(row.key)}
+                onToggleCollapse={() => onToggleGroupCollapse(row.key)}
+              />
+            );
+          }
+          break;
+        }
+        case "item": {
+          const node = renderWorktreeRow(row);
+          if (node) nodes.push(node);
+          break;
+        }
+        case "folder-workspace":
+          nodes.push(renderFolderRow(row));
+          break;
+        case "imported-worktrees-card":
+        case "new-external-worktrees-inbox": {
+          const node = renderNoticeRow(row);
+          if (node) nodes.push(node);
+          break;
+        }
+        case "pending-creation":
+          // Hydra has no in-flight create rows on this path (Orca D03a-035).
+          break;
+      }
     }
-
     return nodes;
   }, [
-    projectGroups,
-    visibleProjects,
-    projectGroupMap,
+    rows,
     collapsedGroups,
-    groupDropTargetId,
-    onGroupDragOver,
-    onGroupDragLeave,
-    onGroupDrop,
+    isCollapsedKey,
     onToggleGroupCollapse,
-    onGroupContextMenu,
-    renderProjectNode,
+    renderRepoHeader,
+    renderGroupHeader,
+    renderWorktreeRow,
+    renderFolderRow,
+    renderNoticeRow,
   ]);
 
   if (projects.length === 0) {

@@ -14,6 +14,6 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test-setup.ts"],
-    include: ["src/**/*.parity.test.tsx"],
+    include: ["src/**/*.parity.test.tsx", "src/**/*.parity.test.ts"],
   },
 });
