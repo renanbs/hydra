@@ -248,6 +248,83 @@ describe("WorktreeList row model (Orca parity)", () => {
     expect(hidden.container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(1);
   });
 
+  // Provenance-driven menu filters. The scan ships only a KIND
+  // (`automationProvenanceKind` / `cliProvenanceKind`); toPipelineWorktree projects
+  // it into the pipeline `Worktree` the ported predicates read. Before that
+  // projection both toggles were inert no matter what the backend stored.
+  describe("provenance-driven menu filters", () => {
+    const AUTOMATION: GitWorktreeInfo = {
+      ...worktree("/repo/hydra-auto", "feat/auto"),
+      automationProvenanceKind: "created-by-automation",
+    };
+    const CLI: GitWorktreeInfo = {
+      ...worktree("/repo/hydra-cli", "feat/cli"),
+      cliProvenanceKind: "created-by-cli",
+    };
+    const PLAIN = worktree("/repo/hydra-plain", "feat/plain");
+
+    it("hides an automation-created worktree only when Hide automation-created is on", () => {
+      const worktreesByProject = { [PROJECT_A.path]: [AUTOMATION, PLAIN] };
+
+      const shown = renderList({ projects: [PROJECT_A], worktreesByProject });
+      expect(shown.container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(2);
+
+      const hidden = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject,
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, hideAutomationCreated: true },
+      });
+      expect(hidden.container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(1);
+      expect(hidden.container.querySelector(`[data-worktree-path="${AUTOMATION.path}"]`)).toBeNull();
+      expect(hidden.container.querySelector(`[data-worktree-path="${PLAIN.path}"]`)).not.toBeNull();
+    });
+
+    it("hides a CLI-created worktree only when Hide CLI-created is on", () => {
+      const worktreesByProject = { [PROJECT_A.path]: [CLI, PLAIN] };
+
+      const shown = renderList({ projects: [PROJECT_A], worktreesByProject });
+      expect(shown.container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(2);
+
+      const hidden = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject,
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, hideCliCreated: true },
+      });
+      expect(hidden.container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(1);
+      expect(hidden.container.querySelector(`[data-worktree-path="${CLI.path}"]`)).toBeNull();
+      expect(hidden.container.querySelector(`[data-worktree-path="${PLAIN.path}"]`)).not.toBeNull();
+    });
+
+    it("never filters a worktree that carries no provenance", () => {
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [PLAIN] },
+        displayOptions: {
+          ...BASE_DISPLAY_OPTIONS,
+          hideAutomationCreated: true,
+          hideCliCreated: true,
+        },
+      });
+      expect(container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(1);
+      expect(container.querySelector(`[data-worktree-path="${PLAIN.path}"]`)).not.toBeNull();
+    });
+
+    it("respects the exact kind, not just a truthy provenance field", () => {
+      // A mismatched kind (e.g. CLI provenance under the automation field) must not
+      // trip the automation filter — the projection matches the frozen strings.
+      const mismatched: GitWorktreeInfo = {
+        ...worktree("/repo/hydra-mismatch", "feat/mismatch"),
+        automationProvenanceKind: "created-by-cli",
+      };
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [mismatched] },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, hideAutomationCreated: true },
+      });
+      expect(container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(1);
+    });
+  });
+
   it("renders project groups with their folder-workspace rows", () => {
     const { container } = renderList({
       projects: [PROJECT_A],
