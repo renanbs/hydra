@@ -66,6 +66,12 @@ pub struct WorktreeMetadataRecord {
     /// Provenance (Orca `WorktreeMeta.createdWithAgent`): agent that requested
     /// the creation, when the caller informed one.
     pub created_with_agent: Option<String>,
+    /// D07: pin persistido (Orca `WorktreeMeta.isPinned`). `None` = nunca gravado
+    /// (coluna NULL) — a UI trata ausência e `false` da mesma forma.
+    pub is_pinned: Option<bool>,
+    /// D07: não-lido persistido (Orca `WorktreeMeta.isUnread`). `None` = nunca
+    /// gravado (coluna NULL).
+    pub is_unread: Option<bool>,
     pub updated_at: i64,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -692,6 +698,8 @@ impl DatabaseManager {
                  status TEXT,
                  created_at INTEGER,
                  created_with_agent TEXT,
+                 is_pinned INTEGER,
+                 is_unread INTEGER,
                  updated_at INTEGER NOT NULL
              );",
         )
@@ -700,6 +708,8 @@ impl DatabaseManager {
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN project_path TEXT NOT NULL DEFAULT ''", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN branch TEXT NOT NULL DEFAULT 'main'", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN agent_name TEXT NOT NULL DEFAULT 'bash'", params![]);
@@ -1134,7 +1144,7 @@ impl DatabaseManager {
     pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, updated_at FROM worktree_metadata WHERE worktree_path = ?1")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at FROM worktree_metadata WHERE worktree_path = ?1")
             .map_err(|e| format!("Error preparing worktree_metadata select: {e}"))?;
         let mut rows = stmt.query(params![worktree_path]).map_err(|e| e.to_string())?;
         if let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -1145,7 +1155,9 @@ impl DatabaseManager {
                 status: row.get(3).ok().flatten(),
                 created_at: row.get(4).ok().flatten(),
                 created_with_agent: row.get(5).ok().flatten(),
-                updated_at: row.get(6).unwrap_or(0),
+                is_pinned: row.get(6).ok().flatten(),
+                is_unread: row.get(7).ok().flatten(),
+                updated_at: row.get(8).unwrap_or(0),
             }))
         } else {
             Ok(None)
@@ -1155,7 +1167,7 @@ impl DatabaseManager {
     pub fn get_all_worktree_metadata(&self) -> Result<std::collections::HashMap<String, WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, updated_at FROM worktree_metadata")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at FROM worktree_metadata")
             .map_err(|e| format!("Error preparing worktree_metadata select all: {e}"))?;
         let rows = stmt
             .query_map(params![], |row| {
@@ -1166,7 +1178,9 @@ impl DatabaseManager {
                     status: row.get(3).ok().flatten(),
                     created_at: row.get(4).ok().flatten(),
                     created_with_agent: row.get(5).ok().flatten(),
-                    updated_at: row.get(6).unwrap_or(0),
+                    is_pinned: row.get(6).ok().flatten(),
+                    is_unread: row.get(7).ok().flatten(),
+                    updated_at: row.get(8).unwrap_or(0),
                 })
             })
             .map_err(|e| format!("Query error: {e}"))?;
@@ -1213,6 +1227,34 @@ impl DatabaseManager {
             params![worktree_path, status, now],
         )
         .map_err(|e| format!("Error setting worktree status: {e}"))?;
+        Ok(())
+    }
+
+    /// Persiste as flags de sidebar de um worktree (D07 G7): `is_pinned`
+    /// (Orca `WorktreeMeta.isPinned`) e `is_unread` (`WorktreeMeta.isUnread`).
+    ///
+    /// Upsert parcial: os demais campos da linha (`display_name`, `status`,
+    /// `created_at`, `created_with_agent`) ficam intactos. Para cada flag,
+    /// `None` mantém o valor atual numa linha existente (e grava NULL ao criar a
+    /// linha) — `Some(v)` grava `v`. `updated_at` é sempre renovado.
+    pub fn set_worktree_flags(
+        &self,
+        worktree_path: &str,
+        is_pinned: Option<bool>,
+        is_unread: Option<bool>,
+    ) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO worktree_metadata (worktree_path, display_name, first_agent_message_rename_error, is_pinned, is_unread, updated_at)
+             VALUES (?1, NULL, NULL, ?2, ?3, ?4)
+             ON CONFLICT(worktree_path) DO UPDATE SET
+                is_pinned = COALESCE(excluded.is_pinned, worktree_metadata.is_pinned),
+                is_unread = COALESCE(excluded.is_unread, worktree_metadata.is_unread),
+                updated_at = excluded.updated_at",
+            params![worktree_path, is_pinned, is_unread, now],
+        )
+        .map_err(|e| format!("Error setting worktree flags: {e}"))?;
         Ok(())
     }
 
@@ -1298,6 +1340,8 @@ impl DatabaseManager {
                  status TEXT,
                  created_at INTEGER,
                  created_with_agent TEXT,
+                 is_pinned INTEGER,
+                 is_unread INTEGER,
                  updated_at INTEGER NOT NULL
              );"
         )
@@ -1305,6 +1349,8 @@ impl DatabaseManager {
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", params![]);
 
         Ok(Self {
             conn: Mutex::new(conn),
@@ -1631,6 +1677,50 @@ mod tests {
         db.set_worktree_status(wt_path, None).expect("clear worktree status");
         let record_status_cleared = db.get_worktree_metadata(wt_path).expect("query after status clear").expect("record exists");
         assert!(record_status_cleared.status.is_none());
+    }
+
+    #[test]
+    fn test_worktree_flags_persistence() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let wt_path = "/home/renan/src/hydra/.worktrees/flags-test";
+
+        // No prior row: the upsert creates one with NULL defaults for the flags
+        // it was not given, and no display name.
+        db.set_worktree_flags(wt_path, Some(true), None).expect("create with pin");
+        let created = db.get_worktree_metadata(wt_path).expect("query created").expect("record exists");
+        assert_eq!(created.is_pinned, Some(true));
+        assert_eq!(created.is_unread, None);
+        assert!(created.display_name.is_none());
+
+        // A later call with `None` preserves the previously written flag while
+        // setting the other one.
+        db.set_worktree_flags(wt_path, None, Some(true)).expect("set unread");
+        let both = db.get_worktree_metadata(wt_path).expect("query both").expect("record exists");
+        assert_eq!(both.is_pinned, Some(true), "None must preserve is_pinned");
+        assert_eq!(both.is_unread, Some(true));
+
+        // Upsert preserves unrelated metadata (display name written by another
+        // setter, and provenance) across a flags write.
+        db.set_worktree_display_name(wt_path, Some("Flags Feature")).expect("set display name");
+        db.set_worktree_provenance(wt_path, 1_700_000_000_000, Some("claude")).expect("set provenance");
+        db.set_worktree_flags(wt_path, Some(false), None).expect("unpin");
+        let record = db.get_worktree_metadata(wt_path).expect("query after unpin").expect("record exists");
+        assert_eq!(record.display_name.as_deref(), Some("Flags Feature"));
+        assert_eq!(record.created_at, Some(1_700_000_000_000));
+        assert_eq!(record.created_with_agent.as_deref(), Some("claude"));
+        assert_eq!(record.is_pinned, Some(false));
+        assert_eq!(record.is_unread, Some(true), "None must preserve is_unread");
+
+        // Explicit `Some(false)` survives the read path (INTEGER 0 -> false).
+        db.set_worktree_flags(wt_path, None, Some(false)).expect("mark read");
+        let cleared = db.get_worktree_metadata(wt_path).expect("query read").expect("record exists");
+        assert_eq!(cleared.is_unread, Some(false));
+
+        // The map listing carries the same flags.
+        let all = db.get_all_worktree_metadata().expect("query all");
+        let listed = all.get(wt_path).expect("row present in map");
+        assert_eq!(listed.is_pinned, Some(false));
+        assert_eq!(listed.is_unread, Some(false));
     }
 }
 

@@ -1,10 +1,17 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-import React, { useMemo, useCallback, useLayoutEffect } from "react";
+import React, { useMemo, useCallback, useLayoutEffect, useEffect, useState } from "react";
 import { useAppStore } from "@/store";
 import { ChevronDown, FolderPlus, Plus } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { getShortcutPlatform } from "../../lib/shortcut-platform";
+import { keybindingMatchesAction } from "../../shared/keybindings";
+import type { KeybindingOverrides } from "../../shared/keybindings";
 import { SectionHeader } from "./SectionHeader";
 import { WorktreeCard } from "./WorktreeCard";
+import { invoke } from "@tauri-apps/api/core";
+import type { WorktreeRenameRequest } from "./worktree-card-model";
+import { getDeleteStateForWorktreeHost } from "./worktree-delete-state-host-match";
+import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
 import type { WorktreeStatus } from "../../lib/worktree-status";
@@ -93,6 +100,62 @@ function buildHostIdByRepoId(repos: readonly Repo[]): Map<string, ExecutionHostI
     }
   }
   return byRepoId;
+}
+
+/** Stable empty map: the store seeds no delete state, and a fresh `{}` would thrash memos. */
+const EMPTY_DELETE_STATE: Record<string, WorktreeDeleteState | undefined> = {};
+
+export type WorkspaceSidebarShortcutAction = "workspace.rename" | "workspace.delete";
+
+const WORKSPACE_SIDEBAR_SHORTCUT_ACTIONS: readonly WorkspaceSidebarShortcutAction[] = [
+  "workspace.rename",
+  "workspace.delete",
+];
+
+/**
+ * Resolves which sidebar workspace shortcut a keydown fires, if any (D04a G9).
+ * The event doubles as the matcher's `KeybindingInput` — it carries `key`/`code`
+ * and the physical modifier state — so the store's overrides and the platform
+ * decide the result exactly as the shortcuts settings screen shows it.
+ *
+ * Why the editable guard: a shortcut typed into a field belongs to the field, not
+ * the sidebar — the inline rename editor, the filter box and modal inputs are all
+ * editable targets.
+ */
+export function matchWorkspaceSidebarShortcut(
+  event: KeyboardEvent,
+  keybindings: KeybindingOverrides | undefined,
+  platform: NodeJS.Platform = getShortcutPlatform()
+): WorkspaceSidebarShortcutAction | null {
+  const target = event.target;
+  const editableTarget =
+    target instanceof Element &&
+    target.closest('input, textarea, select, [contenteditable="true"]') !== null;
+  if (event.defaultPrevented || editableTarget) return null;
+  for (const actionId of WORKSPACE_SIDEBAR_SHORTCUT_ACTIONS) {
+    if (keybindingMatchesAction(actionId, event, platform, keybindings)) {
+      return actionId;
+    }
+  }
+  return null;
+}
+
+/**
+ * The workspace a sidebar shortcut acts on: the active one. Orca resolves the
+ * hovered row, but Hydra's rows publish no hover identity, and `workspace.delete`
+ * is documented as acting on the current workspace.
+ */
+export function resolveWorkspaceShortcutTarget(
+  activeWorktreePath: string | null | undefined,
+  projects: readonly HydraProject[],
+  getWorktreesForProject: (project: HydraProject) => GitWorktreeInfo[]
+): { worktree: GitWorktreeInfo; project: HydraProject } | null {
+  if (!activeWorktreePath) return null;
+  for (const project of projects) {
+    const worktree = getWorktreesForProject(project).find((wt) => wt.path === activeWorktreePath);
+    if (worktree) return { worktree, project };
+  }
+  return null;
 }
 
 function toPipelineRepo(args: {
@@ -299,6 +362,12 @@ export interface WorktreeListProps {
   onDeleteGitWorktree: (wt: GitWorktreeInfo, proj?: HydraProject) => void;
   onSelectSession: (id: string) => void;
   onRenameWorktreeTitle?: (worktreePath: string, newTitle: string) => Promise<void> | void;
+  /**
+   * Published delete state per host-qualified workspace identity (D04a G5). The
+   * card paints its in-place delete overlay from the entry that names it, so a
+   * cancelled/failed confirmation releases the card instead of latching.
+   */
+  deleteStateByWorktreeId?: Record<string, WorktreeDeleteState | undefined>;
   onOpenNewWorkspaceModal: (proj: HydraProject) => void;
   onOpenAddRepoDialog: () => void;
   onClearFilter?: () => void;
@@ -449,6 +518,7 @@ export function WorktreeList({
   onDeleteGitWorktree,
   onSelectSession,
   onRenameWorktreeTitle,
+  deleteStateByWorktreeId = EMPTY_DELETE_STATE,
   onOpenNewWorkspaceModal,
   onOpenAddRepoDialog,
   onClearFilter,
@@ -496,6 +566,10 @@ export function WorktreeList({
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
   const storeWorktreeLineageById = useAppStore((s) => s.worktreeLineageById);
+  const storeKeybindings = useAppStore((s) => s.keybindings);
+  // Why (D04a G9): the sidebar keyboard path owns the inline-rename request for
+  // `workspace.rename`; the card it names consumes and clears it.
+  const [renameRequest, setRenameRequest] = useState<WorktreeRenameRequest | null>(null);
   // Why normalize: the store seeds `visibleWorkspaceHostIds: []` before the UI
   // slice hydrates, and `[]` means "no host visible" — it would blank the list.
   const pipelineHostScope = normalizeExecutionHostScope(storeWorkspaceHostScope);
@@ -513,8 +587,11 @@ export function WorktreeList({
     });
   }, [displayProjects, query, getFilteredAndSortedWorktrees]);
 
+  // Host ownership per repo, shared by the row pipeline and the delete-state
+  // resolution below: a card's delete state is keyed by host-qualified identity.
+  const hostIdByRepoId = useMemo(() => buildHostIdByRepoId(storeRepos as Repo[]), [storeRepos]);
+
   const rowModel = useMemo<SidebarRowModel>(() => {
-    const hostIdByRepoId = buildHostIdByRepoId(storeRepos as Repo[]);
     const pipelineRepos = visibleProjects.map((project) =>
       toPipelineRepo({
         project,
@@ -632,6 +709,7 @@ export function WorktreeList({
     prByPath,
     collapsedProjects,
     collapsedGroups,
+    hostIdByRepoId,
     storeRepos,
     storeSettings,
     pipelineHostScope,
@@ -672,6 +750,54 @@ export function WorktreeList({
       setVisibleWorktreeShortcutTargets(null);
     };
   }, [shortcutTargets]);
+
+  // Why (D04a G9): `workspace.rename` / `workspace.delete` were label-only — the
+  // matcher had no call-site outside the keybinding module. The sidebar owns the
+  // keyboard path: rename publishes the row's inline-rename request through the
+  // store (the card clears it when the editor opens, Orca's contract) and delete
+  // funnels into the same confirmation flow the card's trash affordance uses.
+  const workspaceShortcutTarget = useMemo(
+    () =>
+      resolveWorkspaceShortcutTarget(
+        activeWorktreePath,
+        visibleProjects,
+        getFilteredAndSortedWorktrees
+      ),
+    [activeWorktreePath, visibleProjects, getFilteredAndSortedWorktrees]
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const action = matchWorkspaceSidebarShortcut(event, storeKeybindings);
+      if (!action || !workspaceShortcutTarget) return;
+      event.preventDefault();
+      if (action === "workspace.rename") {
+        setRenameRequest({
+          worktreeId: workspaceShortcutTarget.worktree.id || workspaceShortcutTarget.worktree.path,
+        });
+        return;
+      }
+      onDeleteGitWorktree(workspaceShortcutTarget.worktree, workspaceShortcutTarget.project);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onDeleteGitWorktree, storeKeybindings, workspaceShortcutTarget]);
+
+  // Why (D04b-010/022): the card's inline rename commit had no handler on the
+  // mount, so it was a no-op. When the host provides one it wins (it owns the
+  // optimistic list update); otherwise persist through the same
+  // `set_worktree_display_name` command the context menu uses and refresh.
+  const persistWorktreeDisplayName = useCallback(
+    async (worktreePath: string, newTitle: string) => {
+      if (onRenameWorktreeTitle) {
+        await onRenameWorktreeTitle(worktreePath, newTitle);
+        return;
+      }
+      await invoke("set_worktree_display_name", { worktreePath, displayName: newTitle });
+      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    },
+    [onRenameWorktreeTitle]
+  );
 
   const isCollapsedKey = useCallback(
     (key: string) => collapsedGroups.has(key) || collapsedProjects.has(key),
@@ -736,9 +862,15 @@ export function WorktreeList({
             dropTarget={worktreeDropTarget}
             onSelect={onSelectGitWorktree}
             onDelete={onDeleteGitWorktree}
-            onRename={
-              onRenameWorktreeTitle ? (newTitle) => onRenameWorktreeTitle(wt.path, newTitle) : undefined
+            onRename={(newTitle) => persistWorktreeDisplayName(wt.path, newTitle)}
+            deleteState={
+              getDeleteStateForWorktreeHost(
+                { id: wt.id ?? `${proj.path}::${wt.path}`, hostId: hostIdByRepoId.get(proj.id) },
+                deleteStateByWorktreeId
+              ) ?? null
             }
+            renameRequest={renameRequest}
+            onRenameRequestConsumed={() => setRenameRequest(null)}
             onContextMenu={onWorktreeContextMenu}
             onSelectSession={onSelectSession}
             onDragStart={onWorktreeDragStart ? (e, path) => onWorktreeDragStart(e, path) : undefined}
@@ -764,7 +896,10 @@ export function WorktreeList({
       worktreeDropTarget,
       onSelectGitWorktree,
       onDeleteGitWorktree,
-      onRenameWorktreeTitle,
+      persistWorktreeDisplayName,
+      hostIdByRepoId,
+      deleteStateByWorktreeId,
+      renameRequest,
       onWorktreeContextMenu,
       onSelectSession,
       onWorktreeDragStart,
