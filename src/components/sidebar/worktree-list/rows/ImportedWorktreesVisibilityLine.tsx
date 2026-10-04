@@ -19,12 +19,21 @@ import {
   normalizeRuntimePathForComparison,
   normalizeRuntimePathSeparators,
 } from "@/shared/cross-platform-path";
+import type { ExecutionHostId } from "@/shared/execution-host";
+import NoticeHostGlyph from "../../NoticeHostGlyph";
 import type { GitWorktreeInfo } from "../../types";
 
 export const UNKNOWN_EXTERNAL_WORKTREE_PARENT_PATH = "Unknown location";
 
 export interface ImportedWorktreesVisibilityLineProps {
   repoDisplayName: string;
+  /** Host this checkout lives on. Set only when the project is checked out on more
+   *  than one host, where the count alone cannot identify the row. */
+  hostContextLabel?: string;
+  hostContextHostId?: ExecutionHostId;
+  /** Where the row landed. The pinned fallback renders outside the project's own
+   *  section, where a host label would name a host the user isn't looking at. */
+  placement?: "repo-group" | "pinned-fallback";
   /** Raw `scan_worktrees.hidden` for this repo; the line owns gate + baseline filtering. */
   hiddenWorktrees: readonly GitWorktreeInfo[];
   /** Paths the user already acknowledged with `Keep hidden`; never offered again
@@ -129,6 +138,9 @@ export function mergeExternalWorktreeInboxPaths(
 
 export function ImportedWorktreesVisibilityLine({
   repoDisplayName,
+  hostContextLabel,
+  hostContextHostId,
+  placement,
   hiddenWorktrees,
   baselinePaths,
   suppressed = false,
@@ -151,8 +163,13 @@ export function ImportedWorktreesVisibilityLine({
 
   const isSingular = inboxCount === 1;
   const countLabel = isSingular ? "discovered worktree" : "discovered worktrees";
-  const expandAriaLabel = `${isExpanded ? "Collapse" : "Expand"} ${inboxCount} hidden worktrees for ${repoDisplayName}`;
-  const keepHiddenAriaLabel = `Keep ${inboxCount} ${countLabel} hidden for ${repoDisplayName}; recover from the project menu`;
+  // Why: the same project on two hosts renders two identical rows, so every accessible
+  // name has to name the host as well as the project (Orca `repoScopeLabel`).
+  const repoScopeLabel = hostContextLabel
+    ? `${repoDisplayName} on ${hostContextLabel}`
+    : repoDisplayName;
+  const expandAriaLabel = `${isExpanded ? "Collapse" : "Expand"} ${inboxCount} hidden worktrees for ${repoScopeLabel}`;
+  const keepHiddenAriaLabel = `Keep ${inboxCount} ${countLabel} hidden for ${repoScopeLabel}; recover from the project menu`;
   const inboxPaths = inboxWorktrees.map((worktree) => worktree.path);
   const worktreeGroups = groupWorktreesByParentPath(inboxWorktrees);
   const visibleWorktreeGroups = worktreeGroups.slice(0, GROUP_LIMIT);
@@ -195,6 +212,20 @@ export function ImportedWorktreesVisibilityLine({
         <span className="min-w-0 flex-1 truncate text-left">
           Hiding {inboxCount} {countLabel}
         </span>
+        {hostContextLabel && placement !== "pinned-fallback" ? (
+          <span className="inline-flex min-w-0 shrink items-center gap-1">
+            {hostContextHostId ? (
+              <NoticeHostGlyph
+                hostId={hostContextHostId}
+                hostLabel={hostContextLabel}
+                keyboardFocusable
+              />
+            ) : null}
+            <span className="min-w-0 truncate text-[10px] leading-none text-muted-foreground">
+              {hostContextLabel}
+            </span>
+          </span>
+        ) : null}
         {onKeepHidden && (
           <Tooltip>
             <TooltipTrigger asChild>

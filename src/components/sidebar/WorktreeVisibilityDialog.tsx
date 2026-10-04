@@ -6,22 +6,39 @@
 // `agentWorktreeVisibility` agent-scratch policy), the `Worktree root` add form, the global-settings
 // override note, the scan-status/`Try again` line (Orca `WorktreeVisibilityScanStatus`),
 // and the `Hidden worktrees (N)` recovery list.
-import React, { useCallback, useEffect, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useState, useMemo, useRef } from "react";
 import { Search, FolderGit2, X, Eye, Plus, Trash2, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { useAppStore } from "@/store";
+import type { CatalogEnvelope, CatalogRepo } from "@/lib/catalog-types";
 import type { GitWorktreeInfo, HydraProject } from "./types";
+import {
+  resolveWorktreeVisibilityHostTarget,
+  useWorktreeVisibilityHostActions,
+  type WorktreeVisibilityFetchOptions,
+  type WorktreeVisibilityUpdateOptions,
+} from "./worktree-visibility-host-target";
+import {
+  finishVisibilityMutation,
+  getActiveVisibilityMutation,
+  startVisibilityMutation,
+  useVisibilityMutationFence,
+  type ActiveVisibilityMutation,
+} from "./worktree-visibility-mutation-fence";
+import { getRepoCustomWorktreeVisibilitySourceIds } from "./worktree-visibility-repo-sources";
+import { createWorktreeVisibilitySourceMutation } from "./worktree-visibility-source-mutation";
 import {
   BUILT_IN_WORKTREE_VISIBILITY_SOURCES,
   OTHER_LOCATIONS_SOURCE_LABEL,
   OTHER_LOCATIONS_SOURCE_PATH,
   addCustomWorktreeVisibilitySource,
-  buildWorktreeSourcePreferenceUpdate,
   buildWorktreeVisibilitySourceRows,
   countWorktreesByVisibilitySource,
   effectiveBuiltInWorktreeSourceVisibility,
   effectiveExternalWorktreeVisibility,
   getWorktreeVisibilitySourceProvenance,
   normalizeCustomWorktreeVisibilitySources,
+  normalizeWorktreeVisibilitySourcePreferences,
   removeBuiltInWorktreeSourcePreference,
   removeCustomWorktreeSourcePreference,
   removeCustomWorktreeVisibilitySource,
@@ -38,6 +55,11 @@ import {
 export interface WorktreeVisibilityDialogProps {
   open: boolean;
   project: HydraProject | null;
+  /**
+   * Execution host the modal is mutating (Orca `modalData.hostId`). Two hosts can share the
+   * same repo id/path, so the write scope must name the target host or a stale host answers.
+   */
+  hostId?: string | null;
   hiddenWorktrees: GitWorktreeInfo[];
   /** Global `worktree_visibility_defaults`; rows without a project override read these. */
   visibilityDefaults?: WorktreeVisibilityDefaults;
@@ -49,15 +71,24 @@ export interface WorktreeVisibilityDialogProps {
 
 const EMPTY_DEFAULTS: WorktreeVisibilityDefaults = {};
 
-function repoVisibilityConfig(project: HydraProject): WorktreeVisibilityRepoConfig {
+function repoVisibilityConfig(source: HydraProject | CatalogRepo): WorktreeVisibilityRepoConfig {
   return {
-    externalWorktreeVisibility: project.externalWorktreeVisibility ?? null,
-    externalWorktreeVisibilityLegacy: project.externalWorktreeVisibilityLegacy ?? null,
-    agentWorktreeVisibility: project.agentWorktreeVisibility ?? null,
-    externalWorktreeDiscoverySuppressedAt: project.externalWorktreeDiscoverySuppressedAt ?? null,
-    customWorktreeVisibilitySources: project.customWorktreeVisibilitySources ?? null,
-    worktreeVisibilitySourcePreferences: project.worktreeVisibilitySourcePreferences ?? null,
+    externalWorktreeVisibility: source.externalWorktreeVisibility ?? null,
+    externalWorktreeVisibilityLegacy: source.externalWorktreeVisibilityLegacy ?? null,
+    agentWorktreeVisibility: source.agentWorktreeVisibility ?? null,
+    externalWorktreeDiscoverySuppressedAt: source.externalWorktreeDiscoverySuppressedAt ?? null,
+    customWorktreeVisibilitySources: source.customWorktreeVisibilitySources ?? null,
+    worktreeVisibilitySourcePreferences: source.worktreeVisibilitySourcePreferences ?? null,
   };
+}
+
+/** The target host's row as the write returned it — Orca reads the same fields off `updateRepo`'s store row. */
+function findCatalogRepoVisibilityConfig(
+  envelope: CatalogEnvelope | null | undefined,
+  repoPath: string
+): WorktreeVisibilityRepoConfig | null {
+  const repo = envelope?.repos?.find((candidate) => candidate.path === repoPath);
+  return repo ? repoVisibilityConfig(repo) : null;
 }
 
 function sourceRowLabel(row: WorktreeVisibilitySourceRow): string {
@@ -85,6 +116,7 @@ function sourceRowPath(row: WorktreeVisibilitySourceRow): string {
 export function WorktreeVisibilityDialog({
   open,
   project,
+  hostId,
   hiddenWorktrees,
   visibilityDefaults = EMPTY_DEFAULTS,
   onOpenChange,
@@ -93,7 +125,7 @@ export function WorktreeVisibilityDialog({
 }: WorktreeVisibilityDialogProps): React.JSX.Element | null {
   const [query, setQuery] = useState("");
   const [busyPath, setBusyPath] = useState<string | null>(null);
-  const [savingSource, setSavingSource] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const [sourceError, setSourceError] = useState<string | null>(null);
   const [rootDraft, setRootDraft] = useState("");
   // Local mirror of the project's visibility config: the sidebar hands the dialog a
@@ -101,38 +133,124 @@ export function WorktreeVisibilityDialog({
   const [draftConfig, setDraftConfig] = useState<WorktreeVisibilityRepoConfig | null>(null);
   // Orca `WorktreeVisibilityScanStatus` state: the dialog re-scans the repo on open and on
   // `Try again`, so the recovery list reflects disk rather than the sidebar's last snapshot.
-  const [scanState, setScanState] = useState<"checking" | "ready" | "error">("ready");
+  const [scanState, setScanState] = useState<"checking" | "ready" | "failed">("ready");
   const [scannedHidden, setScannedHidden] = useState<GitWorktreeInfo[] | null>(null);
 
-  const refreshWorktreeScan = useCallback(async () => {
-    const repoPath = project?.path;
-    if (!repoPath) return;
-    setScanState("checking");
-    try {
-      const scan = await invoke<{ hidden?: GitWorktreeInfo[] }>("scan_worktrees", {
-        repoPath,
-      });
-      if (Array.isArray(scan?.hidden)) {
-        setScannedHidden(scan.hidden);
+  // Orca resolves the target repo + host from the store (`modalData.hostId`); Hydra's modal is
+  // props-driven, so the host arrives as `hostId` and the repo row comes from the sidebar's
+  // `repos` slice. The scope key is host+repo, keeping two hosts that share id/path distinct.
+  const storeRepos = useAppStore((s) => s.repos);
+  const storeSettings = useAppStore((s) => s.settings);
+  const storeDetectedWorktrees = useAppStore((s) => s.detectedWorktreesByRepo);
+  const repoId = project?.id ?? "";
+  const {
+    repo: targetRepo,
+    requestedHostId,
+    scope: mutationScope,
+  } = useMemo(
+    () =>
+      resolveWorktreeVisibilityHostTarget(
+        {
+          repos: storeRepos,
+          settings: storeSettings,
+          detectedWorktreesByRepo: storeDetectedWorktrees,
+        },
+        repoId,
+        hostId
+      ),
+    [storeRepos, storeSettings, storeDetectedWorktrees, repoId, hostId]
+  );
+  const currentScopeRef = useRef(mutationScope);
+  useLayoutEffect(() => {
+    currentScopeRef.current = mutationScope;
+  }, [mutationScope]);
+
+  const fetchTargetWorktrees = useCallback(
+    async (_repoId: string, options?: WorktreeVisibilityFetchOptions): Promise<boolean> => {
+      const repoPath = project?.path;
+      if (!repoPath) return false;
+      setScanState("checking");
+      try {
+        const scan = await invoke<{ hidden?: GitWorktreeInfo[] }>("scan_worktrees", {
+          repoPath,
+          ...(options?.executionHostId ? { executionHostId: options.executionHostId } : {}),
+        });
+        if (Array.isArray(scan?.hidden)) {
+          setScannedHidden(scan.hidden);
+        }
+        setScanState("ready");
+        return true;
+      } catch (err) {
+        console.error("Failed to scan worktrees:", err);
+        setScanState("failed");
+        return false;
       }
-      setScanState("ready");
-    } catch (err) {
-      console.error("Failed to scan worktrees:", err);
-      setScanState("error");
-    }
-  }, [project?.path]);
+    },
+    [project?.path]
+  );
+
+  // FULL REPLACE, as the Rust command expects: every field is sent so an omitted one would
+  // clear it in the catalog. `executionHostId` names the target host when one was resolved.
+  const writeTargetRepo = useCallback(
+    async (
+      _repoId: string,
+      nextConfig: WorktreeVisibilityRepoConfig,
+      options?: WorktreeVisibilityUpdateOptions
+    ) => {
+      const repoPath = project?.path;
+      if (!repoPath) return null;
+      const envelope = await invoke<CatalogEnvelope | null>(
+        "catalog_set_worktree_visibility_sources",
+        {
+          repoPath,
+          customSources: nextConfig.customWorktreeVisibilitySources ?? null,
+          sourcePreferences: nextConfig.worktreeVisibilitySourcePreferences ?? null,
+          externalWorktreeVisibilityLegacy: nextConfig.externalWorktreeVisibilityLegacy ?? null,
+          externalWorktreeVisibility: nextConfig.externalWorktreeVisibility ?? null,
+          agentWorktreeVisibility: nextConfig.agentWorktreeVisibility ?? null,
+          externalWorktreeDiscoverySuppressedAt:
+            nextConfig.externalWorktreeDiscoverySuppressedAt ?? null,
+          ...(options?.hostId ? { executionHostId: options.hostId } : {}),
+        }
+      );
+      return { repo: findCatalogRepoVisibilityConfig(envelope, repoPath) };
+    },
+    [project?.path]
+  );
+
+  const { refreshTargetRepo, updateTargetRepo } = useWorktreeVisibilityHostActions<
+    WorktreeVisibilityRepoConfig,
+    { repo: WorktreeVisibilityRepoConfig | null } | null
+  >(fetchTargetWorktrees, writeTargetRepo, requestedHostId);
+
+  useVisibilityMutationFence({
+    scope: mutationScope,
+    repoId,
+    currentScopeRef,
+    refresh: refreshTargetRepo,
+    setActionState: setSourceError,
+    setBusyPath,
+    setIsToggling,
+    setListState: setScanState,
+  });
+
+  const refreshWorktreeScan = useCallback(
+    () => refreshTargetRepo(repoId, { requireAuthoritative: true }),
+    [refreshTargetRepo, repoId]
+  );
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !repoId) return;
+    // Why: reopening mid-write must not start a scan that can absorb the mutation's
+    // confirmation refresh (Orca's open-time `getActiveVisibilityMutation` guard).
+    if (getActiveVisibilityMutation(mutationScope)) return;
     setScannedHidden(null);
-    void refreshWorktreeScan();
-  }, [open, refreshWorktreeScan]);
+    void refreshTargetRepo(repoId, { requireAuthoritative: true });
+  }, [open, mutationScope, refreshTargetRepo, repoId]);
 
   useEffect(() => {
     if (open) {
       setQuery("");
-      setBusyPath(null);
-      setSavingSource(false);
       setSourceError(null);
       setRootDraft("");
       setDraftConfig(null);
@@ -170,15 +288,18 @@ export function WorktreeVisibilityDialog({
   const recoveredWorktrees = scannedHidden ?? hiddenWorktrees;
 
   // Orca shows `Remove` only for roots the project itself owns; global roots are
-  // overridden, not removed.
+  // overridden, not removed. When the store resolved the target row we read its sources,
+  // so a sibling host's roots never expose a remove action on this host.
   const repoSourceIds = useMemo(
     () =>
-      new Set(
-        normalizeCustomWorktreeVisibilitySources(project?.customWorktreeVisibilitySources)?.map(
-          (source) => source.id
-        ) ?? []
-      ),
-    [project?.customWorktreeVisibilitySources]
+      targetRepo
+        ? getRepoCustomWorktreeVisibilitySourceIds(targetRepo)
+        : new Set(
+            normalizeCustomWorktreeVisibilitySources(project?.customWorktreeVisibilitySources)?.map(
+              (source) => source.id
+            ) ?? []
+          ),
+    [targetRepo, project?.customWorktreeVisibilitySources]
   );
 
   const sourceCounts = useMemo(
@@ -194,97 +315,121 @@ export function WorktreeVisibilityDialog({
     );
   }, [recoveredWorktrees, query]);
 
-  const persistSources = async (nextConfig: WorktreeVisibilityRepoConfig) => {
-    if (!project || savingSource) return;
-    setSavingSource(true);
-    setSourceError(null);
-    try {
-      // FULL REPLACE: every call carries the complete desired state, so omitting a field
-      // would clear it in the catalog.
-      await invoke("catalog_set_worktree_visibility_sources", {
-        repoPath: project.path,
-        customSources: nextConfig.customWorktreeVisibilitySources ?? null,
-        sourcePreferences: nextConfig.worktreeVisibilitySourcePreferences ?? null,
-        externalWorktreeVisibilityLegacy: nextConfig.externalWorktreeVisibilityLegacy ?? null,
-        externalWorktreeVisibility: nextConfig.externalWorktreeVisibility ?? null,
-        // Orca's built-in `Use global` clears the agent-scratch policy alongside the
-        // preference; every other write preserves whatever the repo already had.
-        agentWorktreeVisibility: nextConfig.agentWorktreeVisibility ?? null,
-        externalWorktreeDiscoverySuppressedAt:
-          nextConfig.externalWorktreeDiscoverySuppressedAt ?? null,
-      });
-      setDraftConfig(nextConfig);
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-      // Orca re-reads the repo after a source write, so worktrees that just became shown
-      // or hidden move between the sidebar and the recovery list in the same interaction.
-      void refreshWorktreeScan();
-    } catch (err) {
-      console.error("Failed to save worktree visibility sources:", err);
-      setSourceError("Could not save worktree visibility. Try again.");
-    } finally {
-      setSavingSource(false);
-    }
-  };
+  /**
+   * Orca `commitSourceUpdate`: the write only counts when the target host returned a row
+   * that satisfies the mutation's predicate. A host that silently drops the additive
+   * `worktreeVisibilitySourcePreferences` fails it, so the dialog never echoes a false
+   * success and the rows stay on the host's real state.
+   */
+  const commitSourceUpdate = useCallback(
+    async (
+      nextConfig: WorktreeVisibilityRepoConfig,
+      isAccepted: (latestRepo: WorktreeVisibilityRepoConfig) => boolean
+    ): Promise<boolean> => {
+      if (!project || !repoId) return false;
+      const mutation: ActiveVisibilityMutation = { kind: "toggle" };
+      startVisibilityMutation(mutationScope, mutation);
+      setSourceError(null);
+      setIsToggling(true);
+      try {
+        const result = await updateTargetRepo(repoId, nextConfig);
+        const latestRepo = result?.repo ?? null;
+        if (!result || !latestRepo || !isAccepted(latestRepo)) {
+          if (currentScopeRef.current === mutationScope) {
+            const requestedPreferences = nextConfig.worktreeVisibilitySourcePreferences ?? undefined;
+            setSourceError(
+              result &&
+                latestRepo &&
+                latestRepo.worktreeVisibilitySourcePreferences == null &&
+                requestedPreferences != null
+                ? "This host doesn't support source-specific worktree visibility. Update Hydra on the host to change this setting."
+                : "Could not update worktree visibility. Try again."
+            );
+          }
+          return false;
+        }
+        setDraftConfig(nextConfig);
+        window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+        // Orca re-reads the repo after a source write, so worktrees that just became shown
+        // or hidden move between the sidebar and the recovery list in the same interaction.
+        await refreshTargetRepo(repoId, { requireAuthoritative: true });
+        return true;
+      } catch (err) {
+        console.error("Failed to save worktree visibility sources:", err);
+        if (currentScopeRef.current === mutationScope) {
+          setSourceError("Could not update worktree visibility. Try again.");
+        }
+        return false;
+      } finally {
+        finishVisibilityMutation(mutationScope, mutation);
+        if (currentScopeRef.current === mutationScope) {
+          setIsToggling(false);
+        }
+      }
+    },
+    [mutationScope, project, refreshTargetRepo, repoId, updateTargetRepo]
+  );
 
   const handleToggleSource = async (
     row: WorktreeVisibilitySourceRow,
     visibility: ExternalWorktreeVisibility
   ) => {
-    if (row.kind === "other") {
-      await persistSources({
-        ...config,
-        externalWorktreeVisibility: visibility,
-        // Orca clears the discovery suppression when "Other locations" is shown again, so
-        // the inbox/ pill can surface the newly-visible worktrees.
-        externalWorktreeDiscoverySuppressedAt:
-          visibility === "show" ? null : (config.externalWorktreeDiscoverySuppressedAt ?? null),
-      });
-      return;
-    }
-    const match =
-      row.kind === "built-in"
-        ? ({ kind: "built-in", id: row.id } as const)
-        : ({ kind: "custom", id: row.source.id } as const);
-    await persistSources({
-      ...config,
-      worktreeVisibilitySourcePreferences: buildWorktreeSourcePreferenceUpdate(
-        config,
-        match,
-        visibility
-      ),
-    });
+    // Orca `createWorktreeVisibilitySourceMutation`: the update and its acceptance
+    // predicate ship together, so the row only moves once the host confirmed it.
+    const mutation = createWorktreeVisibilitySourceMutation(
+      config,
+      row,
+      visibility,
+      visibilityDefaults
+    );
+    await commitSourceUpdate({ ...config, ...mutation.updates }, mutation.isAccepted);
   };
 
   // Orca `handleUseDefault`: picking the value Global Settings already holds drops this
   // repo's override for that key instead of pinning a duplicate of it.
   const handleUseGlobal = async (row: WorktreeVisibilitySourceRow) => {
-    if (!project || savingSource) return;
+    if (!project || isToggling) return;
     if (row.kind === "other") {
-      await persistSources({ ...config, externalWorktreeVisibility: null });
+      await commitSourceUpdate(
+        { ...config, externalWorktreeVisibility: null },
+        (latestRepo) => latestRepo.externalWorktreeVisibility == null
+      );
       return;
     }
     if (row.kind === "built-in") {
       // Orca `createWorktreeVisibilityUseGlobalMutation`: the built-in row's revert drops
       // BOTH the per-source preference and the repo's agent-scratch policy.
-      await persistSources({
-        ...config,
-        agentWorktreeVisibility: null,
-        worktreeVisibilitySourcePreferences: removeBuiltInWorktreeSourcePreference(config, row.id),
-      });
+      await commitSourceUpdate(
+        {
+          ...config,
+          agentWorktreeVisibility: null,
+          worktreeVisibilitySourcePreferences: removeBuiltInWorktreeSourcePreference(config, row.id),
+        },
+        (latestRepo) =>
+          normalizeWorktreeVisibilitySourcePreferences(
+            latestRepo.worktreeVisibilitySourcePreferences
+          )?.builtIn?.[row.id] === undefined
+      );
       return;
     }
-    await persistSources({
-      ...config,
-      worktreeVisibilitySourcePreferences: removeCustomWorktreeSourcePreference(
-        config,
-        row.source.id
-      ),
-    });
+    await commitSourceUpdate(
+      {
+        ...config,
+        worktreeVisibilitySourcePreferences: removeCustomWorktreeSourcePreference(
+          config,
+          row.source.id
+        ),
+      },
+      (latestRepo) =>
+        normalizeWorktreeVisibilitySourcePreferences(
+          latestRepo.worktreeVisibilitySourcePreferences
+        )?.custom?.[row.source.id] === undefined
+    );
   };
 
   const handleAddSource = async () => {
     const rootPath = rootDraft.trim();
-    if (!rootPath || !project || savingSource) return;
+    if (!rootPath || !project || isToggling) return;
     const id = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`).replaceAll("-", "");
     const added = addCustomWorktreeVisibilitySource(config, visibilityDefaults, id, rootPath);
     if (!added.ok) {
@@ -298,36 +443,58 @@ export function WorktreeVisibilityDialog({
       return;
     }
     setRootDraft("");
-    await persistSources({ ...config, customWorktreeVisibilitySources: added.sources });
+    await commitSourceUpdate(
+      { ...config, customWorktreeVisibilitySources: added.sources },
+      (latestRepo) =>
+        normalizeCustomWorktreeVisibilitySources(
+          latestRepo.customWorktreeVisibilitySources
+        )?.some((source) => source.rootPath === rootPath) === true
+    );
   };
 
   const handleRemoveSource = async (source: CustomWorktreeVisibilitySource) => {
-    if (!project || savingSource) return;
-    await persistSources({
-      ...config,
-      customWorktreeVisibilitySources: removeCustomWorktreeVisibilitySource(customSources, source.id),
-      worktreeVisibilitySourcePreferences: removeCustomWorktreeSourcePreference(config, source.id),
-    });
+    if (!project || isToggling) return;
+    await commitSourceUpdate(
+      {
+        ...config,
+        customWorktreeVisibilitySources: removeCustomWorktreeVisibilitySource(customSources, source.id),
+        worktreeVisibilitySourcePreferences: removeCustomWorktreeSourcePreference(config, source.id),
+      },
+      (latestRepo) =>
+        !normalizeCustomWorktreeVisibilitySources(
+          latestRepo.customWorktreeVisibilitySources
+        )?.some((candidate) => candidate.id === source.id) &&
+        normalizeWorktreeVisibilitySourcePreferences(
+          latestRepo.worktreeVisibilitySourcePreferences
+        )?.custom?.[source.id] === undefined
+    );
   };
 
   const handleShow = async (wtPath: string) => {
     if (!project || busyPath) return;
+    // The row mutation is fenced like a toggle: dismissing the modal must not drop its state.
+    const mutation: ActiveVisibilityMutation = { kind: "row", path: wtPath };
+    startVisibilityMutation(mutationScope, mutation);
     setBusyPath(wtPath);
     try {
       await invoke("import_worktree", {
         projectPath: project.path,
         worktreePath: wtPath,
+        ...(requestedHostId ? { executionHostId: requestedHostId } : {}),
       });
       onImported?.(wtPath);
       // The sidebar hands the dialog a frozen snapshot, so drop the row locally before the
       // authoritative re-scan lands; Orca refetches the repo here too.
       setScannedHidden((prev) => (prev ?? recoveredWorktrees).filter((wt) => wt.path !== wtPath));
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-      void refreshWorktreeScan();
+      await refreshWorktreeScan();
     } catch (err) {
       console.error("Failed to import worktree:", err);
     } finally {
-      setBusyPath(null);
+      finishVisibilityMutation(mutationScope, mutation);
+      if (currentScopeRef.current === mutationScope) {
+        setBusyPath(null);
+      }
     }
   };
 
@@ -409,7 +576,7 @@ export function WorktreeVisibilityDialog({
                       {row.kind === "custom" && repoSourceIds.has(row.source.id) && (
                         <button
                           type="button"
-                          disabled={savingSource}
+                          disabled={isToggling}
                           aria-label={`Remove ${sourceRowLabel(row)}`}
                           onClick={() => void handleRemoveSource(row.source)}
                           className="p-1 rounded-md text-neutral-500 hover:text-destructive hover:bg-neutral-800 transition cursor-pointer disabled:opacity-50"
@@ -420,7 +587,7 @@ export function WorktreeVisibilityDialog({
                       {matchingOverride && (
                         <button
                           type="button"
-                          disabled={savingSource}
+                          disabled={isToggling}
                           aria-label={`Use global for ${accessibleLabel}`}
                           onClick={() => void handleUseGlobal(row)}
                           className="px-1 text-[11px] font-medium text-indigo-300 hover:text-indigo-200 transition cursor-pointer disabled:opacity-50"
@@ -437,7 +604,7 @@ export function WorktreeVisibilityDialog({
                           <button
                             key={option}
                             type="button"
-                            disabled={savingSource}
+                            disabled={isToggling}
                             aria-pressed={visibility === option}
                             onClick={() => void handleToggleSource(row, option)}
                             className={`min-w-11 rounded px-2 py-1 text-[11px] font-medium transition cursor-pointer disabled:opacity-50 ${
@@ -475,7 +642,7 @@ export function WorktreeVisibilityDialog({
               />
               <button
                 type="button"
-                disabled={savingSource || !rootDraft.trim()}
+                disabled={isToggling || !rootDraft.trim()}
                 onClick={() => void handleAddSource()}
                 className="inline-flex shrink-0 items-center gap-1 px-3 h-8 rounded-lg border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 font-medium transition cursor-pointer disabled:opacity-50"
               >
@@ -543,7 +710,7 @@ export function WorktreeVisibilityDialog({
                   </p>
                   <button
                     type="button"
-                    disabled={savingSource || busyPath !== null}
+                    disabled={isToggling || busyPath !== null}
                     onClick={() => void refreshWorktreeScan()}
                     className="shrink-0 px-2.5 py-1 rounded-lg border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-[11px] font-medium transition cursor-pointer disabled:opacity-50"
                   >

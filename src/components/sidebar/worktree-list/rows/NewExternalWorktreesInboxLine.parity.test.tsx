@@ -103,4 +103,23 @@ describe("NewExternalWorktreesInboxLine (Orca parity)", () => {
       screen.getByRole("button", { name: "Review 2 hidden worktrees in repo" })
     ).toBeInTheDocument();
   });
+
+  it("qualifies the review and suppress labels with the host when the project spans hosts", () => {
+    const { container } = renderLine({
+      hostContextLabel: "openclaw",
+      hostContextHostId: "ssh:openclaw",
+    });
+
+    // The same project on two hosts would otherwise render two identical rows.
+    expect(
+      screen.getByRole("button", { name: "Review 3 hidden worktrees in repo on openclaw" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Hide external worktrees permanently for repo on openclaw",
+      })
+    ).toBeInTheDocument();
+    expect(container.querySelector('[data-notice-host-kind="ssh"]')).not.toBeNull();
+    expect(screen.getByText("openclaw")).toBeInTheDocument();
+  });
 });
