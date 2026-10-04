@@ -34,7 +34,7 @@ import {
   type CloseTerminalDialogCopyKind,
 } from "./components/RunningTerminalCloseDialog";
 import { isShellProcess } from "./components/workbench/tab-agent";
-import { useAppStore } from "./store";
+import { hydrateWorkspaceHostScopePreference, useAppStore } from "./store";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal } from "./components/SettingsModal";
@@ -70,7 +70,11 @@ import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delet
 import { getDeleteStateKeyForWorktreeHost } from "./components/sidebar/worktree-delete-state-host-match";
 import type { WorktreeDeleteState } from "./store/slices/worktree-delete-state-types";
 import type { ExecutionHostId } from "./shared/execution-host";
-import { getRepoExecutionHostId } from "./shared/execution-host";
+import {
+  getRepoExecutionHostId,
+  normalizeExecutionHostScope,
+  normalizeVisibleExecutionHostIds,
+} from "./shared/execution-host";
 import type { Repo } from "./shared/repo-types";
 import { Toaster, toast } from "sonner";
 import { PromptDialog, type PromptDialogProps } from "./components/PromptDialog";
@@ -237,6 +241,16 @@ function sanitizeSidebarPrefsSnapshot(input: unknown): SidebarPrefsSnapshot {
     out.agentsReadFilter = src.agentsReadFilter;
   }
   if (src.agentsGroupBy === "state" || src.agentsGroupBy === "project") out.agentsGroupBy = src.agentsGroupBy;
+  // Host scope: same normalizers the store setters use, so a malformed value
+  // degrades to the default ('all' / all hosts) instead of blanking the sidebar.
+  out.workspaceHostScope = normalizeExecutionHostScope(
+    typeof src.workspaceHostScope === "string" ? src.workspaceHostScope : null
+  );
+  out.visibleWorkspaceHostIds = normalizeVisibleExecutionHostIds(
+    Array.isArray(src.visibleWorkspaceHostIds)
+      ? (src.visibleWorkspaceHostIds as string[])
+      : null
+  );
   return out;
 }
 
@@ -573,6 +587,17 @@ export default function App() {
     snap.agentsGroupBy = prefs.agentsGroupBy;
     scheduleSidebarPrefsSave();
   }, [scheduleSidebarPrefsSave]);
+
+  // Fatia do store (host scope) → merge no blob + save debounced. Os setters do
+  // store só mexem em estado; a persistência sobe por este efeito.
+  const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
+  const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
+  useEffect(() => {
+    const snap = sidebarPrefsRef.current;
+    snap.workspaceHostScope = storeWorkspaceHostScope;
+    snap.visibleWorkspaceHostIds = storeVisibleWorkspaceHostIds;
+    scheduleSidebarPrefsSave();
+  }, [storeWorkspaceHostScope, storeVisibleWorkspaceHostIds, scheduleSidebarPrefsSave]);
 
   // Agent Fleet Sessions
   const [sessions, setSessions] = useState<WorktreeSession[]>([]);
@@ -927,6 +952,9 @@ export default function App() {
         setProjectGroupMap(merged.projectGroupMap ?? {});
         // Fatia Shell-owned desce como props one-shot (initialSidebarBody etc.).
         setInitialSidebarPrefs(merged);
+        // Host scope vive no store; hidrata pelo mesmo blob (chaves ausentes →
+        // defaults 'all'/null, preservando a migração legada).
+        hydrateWorkspaceHostScopePreference(merged);
         // Flush direto (sem debounce): grava o blob merged — cobre a primeira
         // escrita da migração e normaliza blobs parciais legados do próprio SQLite.
         invoke("save_sidebar_pref", { key: SIDEBAR_PREFS_KEY, json: JSON.stringify(merged) })
