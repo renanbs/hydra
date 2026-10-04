@@ -36,6 +36,8 @@ const TWO_HOST_REPOS = [
 ];
 
 function seedStore(overrides: Record<string, unknown> = {}) {
+  // The live store now owns the real setters (no `window.api` bridge), so the
+  // submenu renders without an action guard and mutates the store directly.
   useAppStore.setState({
     repos: TWO_HOST_REPOS,
     sshTargetLabels: new Map([["srv", "Build server"]]),
@@ -44,8 +46,6 @@ function seedStore(overrides: Record<string, unknown> = {}) {
     settings: null,
     visibleWorkspaceHostIds: null,
     workspaceHostScope: "all",
-    setWorkspaceHostScope: vi.fn(),
-    setVisibleWorkspaceHostIds: vi.fn(),
     ...overrides,
   });
 }
@@ -66,11 +66,7 @@ function renderMenu() {
 describe("WorkspaceOptionsMenu host scope (Orca parity)", () => {
   beforeEach(() => seedStore());
   afterEach(() => {
-    useAppStore.setState({
-      setWorkspaceHostScope: undefined,
-      setVisibleWorkspaceHostIds: undefined,
-      visibleWorkspaceHostIds: null,
-    });
+    useAppStore.setState({ visibleWorkspaceHostIds: null, workspaceHostScope: "all" });
   });
 
   it("refuses to uncheck the last visible host", () => {
@@ -127,16 +123,27 @@ describe("WorkspaceOptionsMenu host scope (Orca parity)", () => {
     expect(localOption).toBeDisabled();
 
     fireEvent.click(localOption!);
-    expect(useAppStore.getState().setVisibleWorkspaceHostIds).not.toHaveBeenCalled();
+    expect(useAppStore.getState().visibleWorkspaceHostIds).toEqual(["local"]);
   });
 
-  it("adds a host through setVisibleWorkspaceHostIds", () => {
+  it("narrows to a single host through the real store setter", () => {
+    const { container } = renderMenu();
+
+    fireEvent.click(screen.getByText("Hosts"));
+    fireEvent.click(container.querySelector('[data-host-scope-option="ssh:srv"]')!);
+
+    expect(useAppStore.getState().visibleWorkspaceHostIds).toEqual(["ssh:srv"]);
+    expect(useAppStore.getState().workspaceHostScope).toBe("ssh:srv");
+  });
+
+  it("expands a single host back to all hosts", () => {
     seedStore({ visibleWorkspaceHostIds: ["local"] });
     const { container } = renderMenu();
 
     fireEvent.click(screen.getByText("Hosts"));
     fireEvent.click(container.querySelector('[data-host-scope-option="ssh:srv"]')!);
 
-    expect(useAppStore.getState().setVisibleWorkspaceHostIds).toHaveBeenCalledWith(null);
+    expect(useAppStore.getState().visibleWorkspaceHostIds).toBeNull();
+    expect(useAppStore.getState().workspaceHostScope).toBe("all");
   });
 });
