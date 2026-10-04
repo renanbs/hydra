@@ -1,8 +1,12 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import { invoke } from '@tauri-apps/api/core'
 
 import type { Repo } from '../shared/repo-types'
 import type { Worktree } from '../shared/worktree/types'
+import { toWorktreeRow } from '../shared/worktree/worktree-row'
+import type { CreateWorktreeCallOptions } from './slices/worktrees/create/worktree-create-payload'
+import type { GitWorktreeInfo } from '../components/sidebar/types'
 import type { TabItem } from '../components/workbench/WorkbenchTabBar'
 import type { AgentStatusEntry } from './agent-status-types'
 import type { ProjectHostSetupProjection } from '../shared/project-host-setup-projection'
@@ -265,7 +269,8 @@ export interface AppState {
   createBrowserTab: (...args: any[]) => any
   createTab: (...args: any[]) => any
   createUnifiedTab: (...args: any[]) => any
-  createWorktree: (...args: any[]) => any
+  /** Local-path create; positional contract follows WorktreeSlice['createWorktree']. */
+  createWorktree: (...args: unknown[]) => Promise<{ worktree: Worktree }>
   closeBrowserTab: (...args: any[]) => any
   closeFile: (...args: any[]) => any
   closeTab: (...args: any[]) => any
@@ -314,6 +319,14 @@ export interface AppState {
   getAgentLaunchConfigForStatusMetadata: (...args: any[]) => any
   getFreshFolderWorkspacePathStatus: (...args: any[]) => any
   getKnownWorktreeById: (...args: any[]) => any
+}
+
+/**
+ * Narrows the trailing `createWorktree` bag without an unchecked cast: only an
+ * object (not the branch/name positional slots) can carry call options.
+ */
+function isCreateWorktreeCallOptions(value: unknown): value is CreateWorktreeCallOptions {
+  return value !== null && typeof value === 'object'
 }
 
 export const useAppStore = create<AppState>()(
@@ -503,7 +516,61 @@ export const useAppStore = create<AppState>()(
     createBrowserTab: () => {},
     createTab: () => {},
     createUnifiedTab: () => {},
-    createWorktree: () => {},
+    createWorktree: async (...args: unknown[]) => {
+      // Local-only path. Runtime/SSH targets, conflict-retry policy, base-ref
+      // toasts and the created_with_agent fallback tab are out of scope.
+      // Positional contract mirrors WorktreeSlice['createWorktree']
+      // (src/store/slices/worktree-helpers.ts): [0] repoId, [1] name,
+      // [10] createdWithAgent, last arg = CreateWorktreeCallOptions.
+      const repoId = args[0]
+      const name = args[1]
+      if (typeof repoId !== 'string' || typeof name !== 'string') {
+        throw new Error('createWorktree: repoId and name are required')
+      }
+      const createdWithAgentArg = args[10]
+      const createdWithAgent =
+        typeof createdWithAgentArg === 'string' ? createdWithAgentArg : undefined
+      const lastArg = args[args.length - 1]
+      const options = isCreateWorktreeCallOptions(lastArg) ? lastArg : undefined
+      const provenanceKind = options?.automationProvenanceRequest
+        ? 'created-by-automation'
+        : undefined
+
+      const repo = get().repos.find((candidate) => candidate.id === repoId)
+      if (!repo) {
+        throw new Error(`createWorktree: unknown repo id "${repoId}"`)
+      }
+
+      const worktreePath = await invoke<string>('create_worktree', {
+        repoPath: repo.path,
+        branchName: name,
+        newBranch: true,
+        createdWithAgent,
+        provenanceKind,
+      })
+
+      // Re-read the repo through the same scan the sidebar hydrates from so the
+      // persisted provenance kind is projected into the store rows; `hidden`
+      // rows stay out of `worktreesByRepo` exactly like the sidebar scan.
+      const scan = await invoke<{ visible: GitWorktreeInfo[] }>('scan_worktrees', {
+        repoPath: repo.path,
+      })
+      const rows = scan.visible.map((row) =>
+        toWorktreeRow(row, {
+          repoId,
+          ...(repo.executionHostId ? { hostId: repo.executionHostId } : {}),
+        })
+      )
+      set((s) => ({ worktreesByRepo: { ...s.worktreesByRepo, [repoId]: rows } }))
+
+      const worktree = rows.find((candidate) => candidate.path === worktreePath)
+      if (!worktree) {
+        throw new Error(
+          `createWorktree: created worktree "${worktreePath}" missing from scan_worktrees`
+        )
+      }
+      return { worktree }
+    },
     closeBrowserTab: () => {},
     closeFile: () => {},
     closeTab: () => {},
