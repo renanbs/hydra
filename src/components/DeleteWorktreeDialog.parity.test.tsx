@@ -140,3 +140,54 @@ describe("DeleteWorktreeDialog target validation", () => {
     expect(onStaleTargets).toHaveBeenCalled();
   });
 });
+
+// Orca `markWorktreesDeleting` / `clearWorktreeDeleteState`: the confirmation is
+// the trigger that publishes the sidebar card's overlay, and the settle that
+// releases it. A refused removal must release it too, or the card stays inert.
+describe("DeleteWorktreeDialog delete-state publication", () => {
+  it("publishes the confirmed identities before dispatching the removal", async () => {
+    const onDeleteStart = vi.fn();
+    const onDeleteSettled = vi.fn();
+    renderDialog({ onDeleteStart, onDeleteSettled });
+
+    fireEvent.click(confirmButton());
+
+    expect(onDeleteStart).toHaveBeenCalledWith([CONFIRMED_SSH]);
+    // The card is already busy when the first command leaves the renderer.
+    expect(onDeleteStart.mock.invocationCallOrder[0]).toBeLessThan(
+      invokeMock.mock.invocationCallOrder[0]
+    );
+    await waitFor(() => expect(onDeleteSettled).toHaveBeenCalledWith([CONFIRMED_SSH]));
+  });
+
+  it("releases the identities when the backend refuses the removal", async () => {
+    invokeMock.mockRejectedValueOnce("worktree has uncommitted changes");
+    const onDeleteStart = vi.fn();
+    const onDeleteSettled = vi.fn();
+    const onClose = vi.fn();
+    renderDialog({ onDeleteStart, onDeleteSettled, onClose });
+
+    fireEvent.click(confirmButton());
+
+    expect(onDeleteStart).toHaveBeenCalledWith([CONFIRMED_SSH]);
+    await waitFor(() => expect(onDeleteSettled).toHaveBeenCalledWith([CONFIRMED_SSH]));
+    // The refusal keeps the confirmation on screen with its error, and the card
+    // answers again — the stuck-overlay regression.
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByText(/uncommitted changes/)).toBeInTheDocument();
+  });
+
+  it("never publishes a state when the confirmation aborts on a stale target", () => {
+    const onDeleteStart = vi.fn();
+    renderDialog({
+      liveWorktrees: [liveRow("ssh:build-box", "instance-recreated", "/work-ssh")],
+      onDeleteStart,
+      onStaleTargets: vi.fn(),
+    });
+
+    fireEvent.click(confirmButton());
+
+    expect(invokeMock).not.toHaveBeenCalled();
+    expect(onDeleteStart).not.toHaveBeenCalled();
+  });
+});

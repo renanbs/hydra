@@ -19,6 +19,13 @@ pub struct GitWorktreeInfo {
     pub display_name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub first_agent_message_rename_error: Option<String>,
+    /// D07: sidebar pin persisted in `worktree_metadata.is_pinned`. `None` = no
+    /// value stored (or no row at all), so the field is omitted from the payload.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_pinned: Option<bool>,
+    /// D07: sidebar unread flag persisted in `worktree_metadata.is_unread`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_unread: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub is_sparse: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -926,6 +933,8 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
                     status: if is_prunable { Some("prunable".to_string()) } else { None },
                     display_name: None,
                     first_agent_message_rename_error: None,
+                    is_pinned: None,
+                    is_unread: None,
                     is_sparse: None,
                     sparse_directories: None,
                 });
@@ -961,6 +970,8 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
             status: if is_prunable { Some("prunable".to_string()) } else { None },
             display_name: None,
             first_agent_message_rename_error: None,
+            is_pinned: None,
+            is_unread: None,
             is_sparse: None,
             sparse_directories: None,
         });
@@ -1000,6 +1011,8 @@ struct PersistedWorktreeMetadata {
     display_name: Option<String>,
     first_agent_message_rename_error: Option<String>,
     status: Option<String>,
+    is_pinned: Option<bool>,
+    is_unread: Option<bool>,
     provenance: WorktreeProvenance,
 }
 
@@ -1015,6 +1028,8 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
                     status TEXT,
                     created_at INTEGER,
                     created_with_agent TEXT,
+                    is_pinned INTEGER,
+                    is_unread INTEGER,
                     updated_at INTEGER NOT NULL
                 )",
                 rusqlite::params![],
@@ -1022,7 +1037,9 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", rusqlite::params![]);
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", rusqlite::params![]);
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", rusqlite::params![]);
-            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent FROM worktree_metadata") {
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", rusqlite::params![]);
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", rusqlite::params![]);
+            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread FROM worktree_metadata") {
                 if let Ok(rows) = stmt.query_map(rusqlite::params![], |row| {
                     Ok((
                         row.get::<_, String>(0)?,
@@ -1030,6 +1047,8 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
                             display_name: row.get(1)?,
                             first_agent_message_rename_error: row.get(2)?,
                             status: row.get(3)?,
+                            is_pinned: row.get(6)?,
+                            is_unread: row.get(7)?,
                             provenance: WorktreeProvenance {
                                 created_at: row.get(4)?,
                                 created_with_agent: row.get(5)?,
@@ -1120,6 +1139,10 @@ fn fill_worktree_metadata(worktrees: &mut [GitWorktreeInfo]) {
             if wt.status.is_none() {
                 wt.status = record.status.clone();
             }
+            // The metadata table is the only source for the D07 sidebar flags, so
+            // the persisted value wins for both set and unset.
+            wt.is_pinned = record.is_pinned;
+            wt.is_unread = record.is_unread;
         }
         check_sparse_checkout(wt);
     }
@@ -1503,11 +1526,11 @@ branch refs/heads/feat/auth\n";
         let repo_path = "/home/user/src/my-repo";
         let history: Vec<OrcaWorkspaceLayout> = vec![];
         // Worktree inside nested workspaceDir should be External → visible
-        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_sparse: None, sparse_directories: None };
+        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None };
         // Worktree inside .claude/worktrees without configured base should be AgentScratch → hidden
-        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_sparse: None, sparse_directories: None };
+        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None };
         // Worktree outside any layout → UnknownLegacy → hidden
-        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_sparse: None, sparse_directories: None };
+        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None };
 
         let configured: Vec<String> = vec![];
         let known = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured);
@@ -1912,6 +1935,50 @@ branch refs/heads/feat/auth\n";
         let provenance = load_worktree_provenance_map();
         let (visible, _) = scan_external(&repo, &provenance);
         assert!(visible.contains(&path), "created worktree must be visible; visible={visible:?}");
+
+        let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&path).current_dir(&repo).output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn scan_payload_carries_persisted_pin_and_unread_flags() {
+        // D07 G7: the sidebar flags persisted in `worktree_metadata` must reach
+        // the scan payload. An unset flag is absent from the wire (never `false`).
+        let root = unique_root("flags-scan");
+        let repo = root.join("repo");
+        init_bare_repo(&repo);
+        let _db_guard = DbPathGuard::new(&root.join("hydra_test.sqlite3"));
+
+        let path = create_git_worktree(CreateWorktreeParams {
+            repo_path: repo.to_string_lossy().to_string(),
+            branch_name: "feat/flags".to_string(),
+            new_branch: true,
+            created_with_agent: None,
+        })
+        .expect("create_git_worktree succeeds");
+
+        let db = crate::db::DatabaseManager::new().expect("db");
+        db.set_worktree_display_name(&path, Some("Flags")).expect("display name");
+
+        let repo_str = repo.to_string_lossy().to_string();
+        let before = list_git_worktrees(&repo_str).expect("scan before flags");
+        let entry = before.iter().find(|w| w.path == path).expect("worktree in scan");
+        assert_eq!(entry.is_pinned, None, "no stored flag must map to None");
+        assert_eq!(entry.is_unread, None);
+        let wire = serde_json::to_string(entry).expect("serialize");
+        assert!(!wire.contains("is_pinned"), "unset pin must be omitted: {wire}");
+        assert!(!wire.contains("is_unread"), "unset unread must be omitted: {wire}");
+
+        // Persist both flags; the next scan paints them onto the same worktree.
+        db.set_worktree_flags(&path, Some(true), Some(false)).expect("set flags");
+        let after = list_git_worktrees(&repo_str).expect("scan after flags");
+        let entry = after.iter().find(|w| w.path == path).expect("worktree in scan");
+        assert_eq!(entry.is_pinned, Some(true));
+        assert_eq!(entry.is_unread, Some(false));
+        let wire = serde_json::to_string(entry).expect("serialize");
+        assert!(wire.contains("\"is_pinned\":true"), "pin must reach the wire: {wire}");
+        assert!(wire.contains("\"is_unread\":false"), "unread must reach the wire: {wire}");
+        assert_eq!(entry.display_name.as_deref(), Some("Flags"), "unrelated metadata survives");
 
         let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&path).current_dir(&repo).output();
         let _ = std::fs::remove_dir_all(&root);

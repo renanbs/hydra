@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus, WorktreeSession } from './types'
 import type { WorktreeStatus } from '../../lib/worktree-status'
 import type { PrDisplay } from './pr-display'
-import type { ResolvedWorktreeCardProps, WorktreeCardProps } from './worktree-card-model'
+import type { ResolvedWorktreeCardProps, WorktreeCardProps, WorktreeRenameRequest } from './worktree-card-model'
 
 export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   repo: HydraProject | undefined
@@ -53,6 +53,7 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   titleRenaming: boolean
   setTitleRenaming: (val: boolean) => void
   renamingWorktreeId: string | null
+  renameRequest: WorktreeRenameRequest | null
   setRenamingWorktreeId: (id: string | null) => void
   showRenameErrorDialog: boolean
   setShowRenameErrorDialog: (val: boolean) => void
@@ -115,6 +116,9 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     onDragEnd,
     onDelete,
     onRename,
+    deleteState = null,
+    renameRequest = null,
+    onRenameRequestConsumed,
     nativeDragEnabled = true,
     affiliateListMode = false,
     statusPrDisplay = null,
@@ -129,9 +133,28 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
   } = props
 
   const [titleRenaming, setTitleRenaming] = useState(false)
-  const [renamingWorktreeId, setRenamingWorktreeId] = useState<string | null>(null)
   const [showRenameErrorDialog, setShowRenameErrorDialog] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Why (D04a G5 / D04b-012): the in-place delete overlay is derived from the
+  // row's published delete state instead of a local flag latched when the
+  // confirmation dialog opens. A cancelled, failed or dismissed dialog clears
+  // that state, and the card is interactive again — `handleClick`,
+  // `handleDoubleClick` and drag all read this derived value.
+  const isDeleting = deleteState?.isDeleting ?? false
+  const isQueuedForDeletion = deleteState?.phase === 'queued'
+  const deleteLabel = isQueuedForDeletion ? 'Queued for deletion' : 'Deleting workspace...'
+
+  // Why (D04a G9): the sidebar keyboard path (`workspace.rename`) hands the card
+  // the request it should consume, exactly as Orca's card reads it from the store.
+  const renamingWorktreeId = renameRequest?.worktreeId ?? null
+  const setRenamingWorktreeId = useCallback(
+    (id: string | null) => {
+      if (id === null) {
+        onRenameRequestConsumed?.()
+      }
+    },
+    [onRenameRequestConsumed]
+  )
 
   const effectiveRepo = repo || project
 
@@ -238,7 +261,8 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
 
   const handleDelete = useCallback(() => {
     if (onDelete && effectiveRepo) {
-      setIsDeleting(true)
+      // Why (D04a G5): opening the confirmation dialog publishes no delete state
+      // — only the confirmed removal does — so the card must not mark itself.
       onDelete(worktree, effectiveRepo)
     }
   }, [onDelete, effectiveRepo, worktree])
@@ -316,11 +340,12 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     workspacePorts: ports,
     isDeleting,
     isRuntimeDisconnected: false,
-    isQueuedForDeletion: false,
-    deleteLabel: 'Deleting workspace...',
+    isQueuedForDeletion,
+    deleteLabel,
     titleRenaming,
     setTitleRenaming,
     renamingWorktreeId,
+    renameRequest,
     setRenamingWorktreeId,
     showRenameErrorDialog,
     setShowRenameErrorDialog,

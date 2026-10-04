@@ -8,6 +8,7 @@ import type {
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { AgentSubagentSnapshot } from "./agent-status-types";
 import type { ProjectGroup } from "./worktree-list/types";
+import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 
 export type { ProjectGroup };
 
@@ -105,6 +106,10 @@ export interface GitWorktreeInfo {
   sparse_directories?: string[];
   sparseDirectories?: string[];
   isUnread?: boolean;
+  /** D07 G7: pin persistido em `worktree_metadata.is_pinned`; ausente/null = nunca gravado. */
+  is_pinned?: boolean | null;
+  /** D07 G7: não-lido persistido em `worktree_metadata.is_unread`; ausente/null = nunca gravado. */
+  is_unread?: boolean | null;
 }
 
 export interface WorkspacePort {
@@ -176,6 +181,12 @@ export interface WorktreeSidebarProps {
   onDeleteGitWorktree: (wt: GitWorktreeInfo, proj?: HydraProject) => void;
   onNewSessionWithAgent?: (agent: AvailableAgent) => void;
   onRenameWorktreeTitle?: (worktreePath: string, newTitle: string) => Promise<void> | void;
+  /**
+   * Published delete state per host-qualified workspace identity (D04a G5). The
+   * sidebar hands the row's entry to its card, so cancelling or failing the
+   * delete confirmation releases the card instead of leaving it inert.
+   */
+  deleteStateByWorktreeId?: Record<string, WorktreeDeleteState | undefined>;
   onDeleteSession: (id: string) => void;
   onOpenSettings: () => void;
   /** Opens Global Settings on the worktree-visibility section (dialog override note). */

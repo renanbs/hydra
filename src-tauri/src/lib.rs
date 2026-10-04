@@ -529,6 +529,16 @@ async fn set_worktree_status(
 }
 
 #[tauri::command]
+async fn set_worktree_flags(
+    worktree_path: String,
+    is_pinned: Option<bool>,
+    is_unread: Option<bool>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state.db.set_worktree_flags(&worktree_path, is_pinned, is_unread)
+}
+
+#[tauri::command]
 async fn auto_rename_worktree(
     worktree_path: String,
     prompt: String,
@@ -1506,6 +1516,7 @@ pub fn run() {
             set_worktree_display_name,
             set_worktree_rename_error,
             set_worktree_status,
+            set_worktree_flags,
             auto_rename_worktree,
             scan_workspace_ports,
             kill_port_process,

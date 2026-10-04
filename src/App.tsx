@@ -20,6 +20,12 @@ import {
   type SidebarShellPrefs
 } from "./components/sidebar/WorktreeSidebar";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
+import {
+  createWorktreeFlagApplier,
+  reconcileProjectFlagSet,
+  reconcileWorktreeFlagSet,
+  type ProjectFlagTarget,
+} from "./components/sidebar/worktree-flags";
 import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
 import { WorkbenchTabBar, type TabItem, type SplitPane, RUNNING_CLOSE_PROBE_TIMEOUT_MS, SHELL_EXECUTABLES, TAB_COLORS } from "./components/workbench/WorkbenchTabBar";
 import {
@@ -61,10 +67,11 @@ import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
+import { getDeleteStateKeyForWorktreeHost } from "./components/sidebar/worktree-delete-state-host-match";
+import type { WorktreeDeleteState } from "./store/slices/worktree-delete-state-types";
 import type { ExecutionHostId } from "./shared/execution-host";
 import { getRepoExecutionHostId } from "./shared/execution-host";
 import type { Repo } from "./shared/repo-types";
-import { getWorktreeHostIdentity } from "./shared/worktree/host-qualified-identity";
 import { Toaster, toast } from "sonner";
 import { PromptDialog, type PromptDialogProps } from "./components/PromptDialog";
 import { ParentPickerModal, type ParentCandidate } from "./components/sidebar/ParentPickerModal";
@@ -286,6 +293,19 @@ function getExecutionHostIdForRepoPath(
   return repo && (repo.connectionId || repo.executionHostId) ? getRepoExecutionHostId(repo) : undefined;
 }
 
+/**
+ * Orca `markWorktreesDeleting`: the entry the sidebar card paints its overlay
+ * from while a removal runs. `phase: 'deleting'` — Hydra dispatches the command
+ * in the same tick the user confirms, so the row never sits in a queue.
+ */
+const WORKTREE_DELETE_IN_PROGRESS: WorktreeDeleteState = {
+  isDeleting: true,
+  phase: "deleting",
+  error: null,
+  canForceDelete: false,
+  forceDeleteReason: null,
+};
+
 export default function App() {
   const [status, setStatus] = useState("Initializing...");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
@@ -457,6 +477,33 @@ export default function App() {
       description: "Refresh Space and try again if the workspace list looks stale.",
     });
   }, []);
+  /**
+   * Publishes (or clears) the sidebar's per-row delete state. Both delete paths
+   * funnel through here so the card overlay turns on when a removal is dispatched
+   * and off the moment it settles — cancelling or a backend refusal must leave the
+   * row interactive (Orca `markWorktreesDeleting` / `clearWorktreeDeleteState`).
+   */
+  const publishDeleteStateForTargets = useCallback(
+    (targets: readonly WorktreeDeleteIdentity[], state: WorktreeDeleteState | null) => {
+      if (targets.length === 0) return;
+      setDeleteStateByWorktreeId((prev) => {
+        const next = { ...prev };
+        for (const target of targets) {
+          const key = getDeleteStateKeyForWorktreeHost(target);
+          if (state) {
+            next[key] = {
+              ...state,
+              ...(target.hostId ? { executionHostId: target.hostId } : {}),
+            };
+          } else {
+            delete next[key];
+          }
+        }
+        return next;
+      });
+    },
+    []
+  );
   // Non-blocking prompt & picker dialogs (replaces window.prompt to prevent WebKitGTK / Wayland freezes)
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
   const [parentPickerModal, setParentPickerModal] = useState<{
@@ -1112,17 +1159,26 @@ export default function App() {
   }, [saveWorkbenchPersistence]);
 
   const refreshGitWorktrees = (repoPath: string) => {
+    // D07 G7: o MESMO payload do scan que hidrata os metadados do worktree
+    // (display_name/status) traz is_pinned/is_unread — sem fetch novo.
+    const hydrateWorktreeFlags = (visible: GitWorktreeInfo[], hidden: GitWorktreeInfo[]) => {
+      const payload = [...visible, ...hidden];
+      setPinnedWorktrees((prev) => reconcileWorktreeFlagSet(prev, payload, "is_pinned"));
+      setUnreadWorktrees((prev) => reconcileWorktreeFlagSet(prev, payload, "is_unread"));
+    };
     invoke<{ visible: GitWorktreeInfo[]; hidden: GitWorktreeInfo[]; isSuppressed: boolean }>("scan_worktrees", { repoPath })
       .then((scan) => {
         setGitWorktrees(scan.visible);
         setWorktreesByProject((prev) => ({ ...prev, [repoPath]: scan.visible }));
         setHiddenWorktreesByProject((prev) => ({ ...prev, [repoPath]: scan.hidden }));
+        hydrateWorktreeFlags(scan.visible, scan.hidden);
       })
       .catch(() => {
         invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath })
           .then((wts) => {
             setGitWorktrees(wts);
             setWorktreesByProject((prev) => ({ ...prev, [repoPath]: wts }));
+            hydrateWorktreeFlags(wts, []);
           })
           .catch(console.error);
       });
@@ -1149,6 +1205,22 @@ export default function App() {
       }
       setWorktreesByProject(map);
       setHiddenWorktreesByProject(hiddenMap);
+      // D07 G7: hidrata pin/unread do banco a partir do MESMO payload do scan que
+      // já trouxe display_name/status. O payload é keyed por path; a main worktree
+      // (path === project.path) é o elo com os Sets por id de projeto.
+      const flagPayload = results.flatMap((r) => [...r.wts, ...r.hidden]);
+      const projectTargets: ProjectFlagTarget[] = projs.map((proj) => ({
+        id: proj.id,
+        path: proj.path,
+      }));
+      setPinnedWorktrees((prev) => reconcileWorktreeFlagSet(prev, flagPayload, "is_pinned"));
+      setUnreadWorktrees((prev) => reconcileWorktreeFlagSet(prev, flagPayload, "is_unread"));
+      setPinnedProjects((prev) =>
+        reconcileProjectFlagSet(prev, flagPayload, projectTargets, "is_pinned")
+      );
+      setUnreadProjects((prev) =>
+        reconcileProjectFlagSet(prev, flagPayload, projectTargets, "is_unread")
+      );
       if (activeProjectRef.current) {
         const activeWts = map[activeProjectRef.current.path];
         if (activeWts) setGitWorktrees(activeWts);
@@ -1843,6 +1915,7 @@ export default function App() {
         showStaleDeleteNotice();
         return;
       }
+      publishDeleteStateForTargets([deleteTarget], WORKTREE_DELETE_IN_PROGRESS);
       invoke("delete_worktree", {
         repoPath: liveTarget.repoPath ?? repoPath,
         worktreePath: liveTarget.path,
@@ -1858,6 +1931,11 @@ export default function App() {
         .catch((err) => {
           console.error("delete_worktree failed:", err);
           setDeleteWorktreeModal({ repoPath, worktrees: [wt], deleteTargets: [deleteTarget], error: String(err) });
+        })
+        .finally(() => {
+          // A refusal reopens the confirmation with the error, so the card must
+          // stop looking busy the moment the invoke settles.
+          publishDeleteStateForTargets([deleteTarget], null);
         });
       return;
     }
@@ -3206,11 +3284,35 @@ export default function App() {
   const toggleUnreadProject = (id: string) => {
     setUnreadProjects((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
+  // D07 G7: pin/unread persistem no SQLite via `set_worktree_flags`. O applier
+  // aplica o novo membership já no primeiro paint, grava e reverte se falhar.
+  const applyPinnedWorktreeFlag = useMemo(
+    () =>
+      createWorktreeFlagApplier({
+        field: "is_pinned",
+        setWorktreeFlagged: setPinnedWorktrees,
+        setProjectFlagged: setPinnedProjects,
+        findProjectIdByPath: (path) => projects.find((p) => p.path === path)?.id,
+        invoke,
+      }),
+    [projects]
+  );
+  const applyUnreadWorktreeFlag = useMemo(
+    () =>
+      createWorktreeFlagApplier({
+        field: "is_unread",
+        setWorktreeFlagged: setUnreadWorktrees,
+        setProjectFlagged: setUnreadProjects,
+        findProjectIdByPath: (path) => projects.find((p) => p.path === path)?.id,
+        invoke,
+      }),
+    [projects]
+  );
   const togglePinWorktree = (path: string) => {
-    setPinnedWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); return next; });
+    void applyPinnedWorktreeFlag(path, pinnedWorktrees.has(path));
   };
   const toggleUnreadWorktree = (path: string) => {
-    setUnreadWorktrees((prev) => { const next = new Set(prev); if (next.has(path)) next.delete(path); else next.add(path); return next; });
+    void applyUnreadWorktreeFlag(path, unreadWorktrees.has(path));
   };
 
   // PR-15: conditional unread drives from agent:state events (not toggle).
@@ -3725,6 +3827,7 @@ export default function App() {
                 })()}
                 gitWorktrees={gitWorktrees}
                 worktreesByProject={worktreesByProject}
+                deleteStateByWorktreeId={deleteStateByWorktreeId}
                 onSelectProject={handleActivateProject}
                 onRemoveProject={handleRemoveProject}
                 onSelectSession={handleSelectSession}
@@ -4157,6 +4260,8 @@ export default function App() {
         deleteTargets={deleteWorktreeModal?.deleteTargets ?? []}
         liveWorktrees={deleteLiveTargets}
         onStaleTargets={showStaleDeleteNotice}
+        onDeleteStart={(targets) => publishDeleteStateForTargets(targets, WORKTREE_DELETE_IN_PROGRESS)}
+        onDeleteSettled={(targets) => publishDeleteStateForTargets(targets, null)}
         deleteStateByWorktreeId={deleteStateByWorktreeId}
         dirtyChangeCountsByWorktreeId={dirtyChangeCountsByWorktreeId}
         onPersistSkipConfirmPreference={() => {
@@ -4164,7 +4269,14 @@ export default function App() {
           setHydraSettings(next);
           invoke("save_settings", { settings: next }).catch(console.error);
         }}
-        onClose={() => setDeleteWorktreeModal(null)}
+        onClose={() => {
+          // Orca `handleOpenChange`: dismissing the confirmation releases any
+          // entry it published, so a cancel can never leave a card inert.
+          if (deleteWorktreeModal) {
+            publishDeleteStateForTargets(deleteWorktreeModal.deleteTargets, null);
+          }
+          setDeleteWorktreeModal(null);
+        }}
         onDeleted={(deletedPaths) => {
           if (deleteWorktreeModal) {
             refreshGitWorktrees(deleteWorktreeModal.repoPath);
@@ -4180,7 +4292,8 @@ export default function App() {
             deletedPaths.forEach((path) => {
               const index = deleteWorktreeModal?.worktrees.findIndex((w) => w.path === path) ?? -1;
               const target = index >= 0 ? deleteWorktreeModal?.deleteTargets[index] : undefined;
-              delete next[target ? getWorktreeHostIdentity(target) : path];
+              if (target) delete next[getDeleteStateKeyForWorktreeHost(target)];
+              delete next[path];
             });
             return next;
           });
