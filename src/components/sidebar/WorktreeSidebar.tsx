@@ -711,14 +711,11 @@ export function WorktreeSidebar({
           </div>
 
           {/* Workspaces Project List */}
-          {/* Orca parity (`VirtualizedWorktreeViewport.tsx:352`): the scroll container
-              carries only a 1px left/small top inset plus the sleek scrollbar; every
-              horizontal inset comes from the row geometry, so the card's hit box reaches
-              the container edge instead of dying in its padding. */}
-          <div
-            ref={worktreeScrollRef}
-            className="flex-1 overflow-y-auto overflow-x-hidden pl-1 pr-3 pt-px min-h-0 scrollbar-sleek"
-          >
+          {/* The list viewport owns the scroll container (`VirtualizedWorktreeViewport`): it
+              attaches `worktreeScrollRef` to the element that actually scrolls, so the drag
+              geometry, the scroll anchor and the sleek-scrollbar insets all live in one place
+              instead of being split between this wrapper and the list. */}
+          <div className="flex-1 min-h-0">
             <WorktreeList
               projects={projects}
               displayProjects={displayProjects}

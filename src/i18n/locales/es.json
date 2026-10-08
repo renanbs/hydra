@@ -4839,6 +4839,9 @@
           "openGlobalSettings": "Gestionar en Ajustes globales",
           "globalSettingsSources": "Estas fuentes tienen una configuración global que puedes anular aquí:"
         },
+        "WorktreeListScrollToTopButton": {
+          "jumpToTop": "Ir arriba"
+        },
         "WorktreeVisibilitySourceList": {
           "claude": "Claude Code",
           "gsd": "GSD",

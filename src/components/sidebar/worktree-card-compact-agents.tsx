@@ -11,6 +11,7 @@ import { AgentBrandIcon } from '../AgentIcon'
 import { AgentStateDot } from '../AgentStateDot'
 import type { AgentRow } from './worktree-card-agent-summary'
 import { buildSummaryAgentGroups, selectSummaryGroupIconAgents, summarizeAgents } from './worktree-card-agent-summary'
+import { SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT } from './worktree-list/viewport/use-scroll-suppression'
 
 function stopActivationKeyPropagation(e: React.KeyboardEvent): void {
   // Why: the surrounding worktree list handles Enter/Space as row activation.
@@ -59,6 +60,11 @@ export function CompactAgentExpansion({
   )
 }
 
+/** Tells the workspaces viewport a card is opening in place, so it must not correct scrollTop. */
+function dispatchSuppressWorktreeListScrollAdjustment(): void {
+  window.dispatchEvent(new CustomEvent(SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT))
+}
+
 /** Root control row that toggles the agents tree and shows a compact dot + agent-chip summary when collapsed. */
 export function CompactAgentSummaryButton({
   agents,
@@ -90,6 +96,9 @@ export function CompactAgentSummaryButton({
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
       e.stopPropagation()
+      // Why: the panel grows in place; without this the virtualizer compensates scrollTop
+      // mid-animation and the card the user just opened slides away from the pointer.
+      dispatchSuppressWorktreeListScrollAdjustment()
       if (onToggle) {
         onToggle()
       } else {

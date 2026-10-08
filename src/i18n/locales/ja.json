@@ -4820,6 +4820,9 @@
           "openGlobalSettings": "グローバル設定で管理",
           "globalSettingsSources": "これらのソースにはグローバル設定があり、ここで上書きできます:"
         },
+        "WorktreeListScrollToTopButton": {
+          "jumpToTop": "トップに戻る"
+        },
         "WorktreeVisibilitySourceList": {
           "claude": "Claude Code",
           "gsd": "GSD",
