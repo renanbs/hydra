@@ -1306,6 +1306,7 @@ export function WorktreeList({
       <VirtualizedWorktreeViewport
         rows={rows}
         activeRowKey={activeRowKey}
+        groupBy={displayOptions.groupBy}
         pinnedDisplayPolicy={pinnedDisplayPolicy}
         revealPath={highlightedRevealPath ?? null}
         renderRow={renderRow}
