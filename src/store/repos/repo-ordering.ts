@@ -6,6 +6,7 @@ import { splitRepoReorderByHost } from '../slices/repo-reorder-host-split'
 import { callRuntimeRpc } from '../../runtime/runtime-rpc-client'
 import { parseExecutionHostId } from '../../shared/execution-host'
 import type { RepoSlice } from './repo-state'
+import { uiPrefsBridge } from '../ui-prefs-bridge'
 
 export function createRepoOrderingActions(
   set: Parameters<StateCreator<AppState>>[0],
@@ -72,7 +73,7 @@ export function createRepoOrderingActions(
             })
           ),
           // Why: servers only persist local permutations; the desktop profile owns cross-host order after a cold load.
-          window.api.ui.set({ manualRepoOrder })
+          uiPrefsBridge.set({ manualRepoOrder })
         ])
         if (results.some((result) => result.status === 'rejected')) {
           await get().fetchReposForAllHosts()

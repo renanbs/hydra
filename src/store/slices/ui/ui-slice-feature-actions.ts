@@ -5,6 +5,7 @@ import {
 } from './ui-slice-hydration-values'
 import { getContextualTourProgressionForFeatureInteraction } from './ui-slice-contextual-tour-progression'
 import type { FeatureInteractionState } from '../../../shared/feature-interactions'
+import { uiPrefsBridge } from '../../ui-prefs-bridge'
 
 export function createUiFeatureActions(set: UISliceSet, get: UISliceGet): Partial<UISlice> {
   return {
@@ -26,7 +27,7 @@ export function createUiFeatureActions(set: UISliceSet, get: UISliceGet): Partia
           return s
         }
         const next = [...current]
-        window.api.ui.set({ featureTipsSeenIds: next }).catch(console.error)
+        uiPrefsBridge.set({ featureTipsSeenIds: next }).catch(console.error)
         return { featureTipsSeenIds: next }
       }),
     featureInteractions: {},
@@ -48,7 +49,7 @@ export function createUiFeatureActions(set: UISliceSet, get: UISliceGet): Partia
           }
         }
         if (typeof window !== 'undefined') {
-          const recordInteraction = window.api.ui.recordFeatureInteraction
+          const recordInteraction = uiPrefsBridge.recordFeatureInteraction
           const persist = recordInteraction
             ? recordInteraction(id).then((ui: any) => {
                 set((current: any) => ({
@@ -62,7 +63,7 @@ export function createUiFeatureActions(set: UISliceSet, get: UISliceGet): Partia
                   )
                 }))
               })
-            : window.api.ui.set({ featureInteractions: next })
+            : uiPrefsBridge.set({ featureInteractions: next })
           persistPromise = persist.catch(console.error)
         }
         if (tourProgression === 'reveal-sidebar-and-advance') {
