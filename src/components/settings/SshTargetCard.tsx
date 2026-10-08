@@ -1,3 +1,11 @@
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Parity with Orca `components/settings/SshTargetCard.tsx`, with the connection half made
+// optional: Hydra has no SSH connection subsystem yet, so `state` and the
+// connect/disconnect/test/terminate/reset callbacks may be absent. When they are, the
+// card paints none of those controls — and no status pill, since "Disconnected" would
+// claim a lifecycle the build cannot have — instead of a control with nothing behind it.
+// The registry metadata Hydra does have (config alias, source, generation) rides its own
+// line; the endpoint/identity/relay line and the action buttons keep Orca's layout.
 import { useCallback, useRef, useState } from 'react'
 import {
   CircleStop,
@@ -81,14 +89,19 @@ function formatTerminalPersistence(target: SshTarget): string {
 
 type SshTargetCardProps = {
   target: SshTarget
-  state: SshConnectionState | undefined
-  testing: boolean
+  /**
+   * Live connection state. Absent when this build has no SSH connection
+   * subsystem: the card then paints no status pill and no connect/disconnect/
+   * test/relay controls, because none of them could do anything.
+   */
+  state?: SshConnectionState | undefined
+  testing?: boolean
   busyAction?: SshTargetBusyAction
-  onConnect: (targetId: string) => void | Promise<void>
-  onDisconnect: (targetId: string) => void | Promise<void>
-  onTerminateSessions: (targetId: string) => void | Promise<void>
-  onResetRelay: (targetId: string) => void | Promise<void>
-  onTest: (targetId: string) => void | Promise<void>
+  onConnect?: (targetId: string) => void | Promise<void>
+  onDisconnect?: (targetId: string) => void | Promise<void>
+  onTerminateSessions?: (targetId: string) => void | Promise<void>
+  onResetRelay?: (targetId: string) => void | Promise<void>
+  onTest?: (targetId: string) => void | Promise<void>
   onEdit: (target: SshTarget) => void
   onRemove: (targetId: string) => void
 }
@@ -137,7 +150,7 @@ export function SshTargetCard({
       return
     }
     setActionInFlight('connect')
-    void Promise.resolve(onConnect(target.id)).finally(clearActionInFlight)
+    void Promise.resolve(onConnect?.(target.id)).finally(clearActionInFlight)
   }
 
   const handleDisconnect = (): void => {
@@ -145,7 +158,7 @@ export function SshTargetCard({
       return
     }
     setActionInFlight('disconnect')
-    void Promise.resolve(onDisconnect(target.id)).finally(clearActionInFlight)
+    void Promise.resolve(onDisconnect?.(target.id)).finally(clearActionInFlight)
   }
 
   const handleTerminateSessions = (): void => {
@@ -153,7 +166,7 @@ export function SshTargetCard({
       return
     }
     setActionInFlight('terminate')
-    void Promise.resolve(onTerminateSessions(target.id)).finally(clearActionInFlight)
+    void Promise.resolve(onTerminateSessions?.(target.id)).finally(clearActionInFlight)
   }
 
   const handleResetRelay = (): void => {
@@ -161,7 +174,7 @@ export function SshTargetCard({
       return
     }
     setActionInFlight('reset')
-    void Promise.resolve(onResetRelay(target.id)).finally(clearActionInFlight)
+    void Promise.resolve(onResetRelay?.(target.id)).finally(clearActionInFlight)
   }
 
   const renderEndRemoteTerminalsButton = (): React.JSX.Element => (
@@ -231,8 +244,8 @@ export function SshTargetCard({
 
   const renderSecondaryIconActions = (includeEndRemoteTerminals: boolean): React.JSX.Element => (
     <div className="flex items-center gap-1">
-      {includeEndRemoteTerminals ? renderEndRemoteTerminalsButton() : null}
-      {isSshTargetConnecting(status) ? null : renderResetRelayButton()}
+      {includeEndRemoteTerminals && onTerminateSessions ? renderEndRemoteTerminalsButton() : null}
+      {onResetRelay && !isSshTargetConnecting(status) ? renderResetRelayButton() : null}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -293,13 +306,48 @@ export function SshTargetCard({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-medium">{target.label}</span>
-          <span className={`size-2 shrink-0 rounded-full ${statusColor(status)}`} />
-          <span className="text-[11px] text-muted-foreground">{STATUS_LABELS[status]}</span>
+          {/* Why: the status pill is connection state. Without one there is nothing to
+              report — "Disconnected" would claim a connection subsystem Hydra lacks. */}
+          {state ? (
+            <>
+              <span className={`size-2 shrink-0 rounded-full ${statusColor(status)}`} />
+              <span className="text-[11px] text-muted-foreground">{STATUS_LABELS[status]}</span>
+            </>
+          ) : null}
         </div>
         <p className="truncate text-xs text-muted-foreground">
           {endpoint}
           {target.identityFile ? ` \u2022 ${target.identityFile}` : ''}
           {` \u2022 ${terminalPersistence}`}
+        </p>
+        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+          {target.configHost ? (
+            <span>
+              {translate('auto.components.settings.SshTargetCard.configAlias', 'alias {{value0}}', {
+                value0: target.configHost
+              })}
+            </span>
+          ) : null}
+          <span>
+            {target.source === 'ssh-config'
+              ? translate(
+                  'auto.components.settings.SshTargetCard.presenceFromSshConfig',
+                  'From ~/.ssh/config'
+                )
+              : translate(
+                  'auto.components.settings.SshTargetCard.presenceLocal',
+                  'Added on this computer'
+                )}
+          </span>
+          {target.generation !== undefined ? (
+            <span className="font-mono">
+              {translate(
+                'auto.components.settings.SshTargetCard.generation',
+                'generation {{value0}}',
+                { value0: target.generation }
+              )}
+            </span>
+          ) : null}
         </p>
         {/* Why not truncate: host key failures put the remedy (`ssh-keygen -R <host>`) at the end,
             and a one-line clamp with no tooltip made it unreachable even on hover. */}
@@ -312,16 +360,18 @@ export function SshTargetCard({
         {status === 'connected' ? (
           <>
             {renderSecondaryIconActions(true)}
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={handleDisconnect}
-              className="gap-1.5"
-              disabled={hasActionInFlight}
-            >
-              <ServerOff className="size-3" />
-              {translate('auto.components.settings.SshTargetCard.4c86f30877', 'Disconnect')}
-            </Button>
+            {onDisconnect ? (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={handleDisconnect}
+                className="gap-1.5"
+                disabled={hasActionInFlight}
+              >
+                <ServerOff className="size-3" />
+                {translate('auto.components.settings.SshTargetCard.4c86f30877', 'Disconnect')}
+              </Button>
+            ) : null}
           </>
         ) : isSshTargetConnecting(status) ? (
           <>
@@ -334,34 +384,38 @@ export function SshTargetCard({
         ) : (
           <>
             {renderSecondaryIconActions(true)}
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={() => onTest(target.id)}
-              disabled={testing || hasActionInFlight}
-              className="gap-1.5"
-            >
-              {testing ? (
-                <Loader2 className="size-3 animate-spin" />
-              ) : (
-                <MonitorSmartphone className="size-3" />
-              )}
-              {translate('auto.components.settings.SshTargetCard.0e53e9f8e8', 'Test')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={handleConnect}
-              className="gap-1.5"
-              disabled={hasActionInFlight}
-            >
-              {actionInFlight === 'connect' ? (
-                <Loader2 className="size-3 animate-spin" />
-              ) : (
-                <Server className="size-3" />
-              )}
-              {translate('auto.components.settings.SshTargetCard.ec6543cee9', 'Connect')}
-            </Button>
+            {onTest ? (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={() => onTest(target.id)}
+                disabled={testing || hasActionInFlight}
+                className="gap-1.5"
+              >
+                {testing ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <MonitorSmartphone className="size-3" />
+                )}
+                {translate('auto.components.settings.SshTargetCard.0e53e9f8e8', 'Test')}
+              </Button>
+            ) : null}
+            {onConnect ? (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={handleConnect}
+                className="gap-1.5"
+                disabled={hasActionInFlight}
+              >
+                {actionInFlight === 'connect' ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <Server className="size-3" />
+                )}
+                {translate('auto.components.settings.SshTargetCard.ec6543cee9', 'Connect')}
+              </Button>
+            ) : null}
           </>
         )}
       </div>

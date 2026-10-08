@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
 import {
-  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Trash2, Info, ChevronDown, RotateCcw
+  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Trash2, Info, ChevronDown, RotateCcw, Server
 } from "lucide-react";
 import { getOpenInAppPresets, isOpenInAppPresetAdded, OpenInApplicationIcon } from "../lib/open-in-app-catalog";
 import type { OpenInApplication } from "../shared/settings-types";
@@ -13,6 +13,7 @@ import { resolveEffectiveTerminalAppearance } from "../lib/terminal-theme";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, type HydraSettings } from "../shared/settings-types";
 import { normalizeTerminalCustomThemes } from "../shared/terminal-custom-themes";
 import { AppearancePane } from "./settings/AppearancePane";
+import { SshPane } from "./settings/SshPane";
 
 export type { HydraSettings };
 
@@ -64,7 +65,7 @@ interface SettingsModalProps {
   initialSection?: HydraNavId;
 }
 
-type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal";
+export type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal" | "ssh";
 
 export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialSection }: SettingsModalProps) {
   const [activeId, setActiveId] = useState<HydraNavId>("general");
@@ -262,6 +263,9 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
       { id: "git", label: "Workspace & Git", icon: FolderGit2 },
       { id: "terminal", label: "Terminal", icon: TerminalSquare },
     ]},
+    { id: "remote", title: "Remote", items: [
+      { id: "ssh", label: "SSH Hosts", icon: Server },
+    ]},
     { id: "capabilities", title: "AI Capabilities", items: [
       { id: "agents", label: "Agents", icon: Bot },
     ]},
@@ -333,6 +337,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
               {activeId==="security" && <><Shield className="size-4 text-red-500" /> Security & Gate</>}
               {activeId==="git" && <><FolderGit2 className="size-4" /> Workspace & Git</>}
               {activeId==="terminal" && <><TerminalSquare className="size-4 text-emerald-500" /> Terminal</>}
+              {activeId==="ssh" && <><Server className="size-4 text-emerald-500" /> SSH Hosts</>}
             </h2>
             <button onClick={onClose} className="rounded-md p-1.5 hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
           </div>
@@ -1086,6 +1091,15 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                       ))}
                     </div>
                   </div>
+                </div>
+              )}
+              {activeId==="ssh" && (
+                <div className="space-y-6">
+                  <div className="space-y-1">
+                    <h3 className="text-[20px] font-semibold tracking-tight">SSH Hosts</h3>
+                    <p className="text-[13px] text-muted-foreground">Machines Hydra can reach over SSH, from ~/.ssh/config or added by hand.</p>
+                  </div>
+                  <SshPane />
                 </div>
               )}
             </div>

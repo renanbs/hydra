@@ -7317,7 +7317,11 @@
           "f0871e6bfb": "连接",
           "47e94bd6ba": "已连接",
           "a883f5a00f": "终端超时：{{value0}}",
-          "8ce71262f4": "终端保持运行直到重置"
+          "8ce71262f4": "终端保持运行直到重置",
+          "configAlias": "别名 {{value0}}",
+          "presenceFromSshConfig": "来自 ~/.ssh/config",
+          "presenceLocal": "已在这台电脑上添加",
+          "generation": "第 {{value0}} 代"
         },
         "SshTargetDestructiveActions": {
           "7e66942808": "这将停止此 SSH 目标上的活动终端会话。重新连接不会恢复它们。",

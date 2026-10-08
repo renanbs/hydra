@@ -7266,7 +7266,11 @@
           "f0871e6bfb": "conectar",
           "47e94bd6ba": "conectado",
           "a883f5a00f": "tiempo de espera del terminal: {{value0}}",
-          "8ce71262f4": "terminales hasta el reinicio"
+          "8ce71262f4": "terminales hasta el reinicio",
+          "configAlias": "alias {{value0}}",
+          "presenceFromSshConfig": "Desde ~/.ssh/config",
+          "presenceLocal": "Añadido en este equipo",
+          "generation": "generación {{value0}}"
         },
         "SshTargetDestructiveActions": {
           "7e66942808": "Esto detendrá las sesiones de terminal activas en este destino SSH. Volver a conectarse no las restaurará.",
