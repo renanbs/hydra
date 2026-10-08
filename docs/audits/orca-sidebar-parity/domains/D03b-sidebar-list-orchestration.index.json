@@ -1,0 +1,2701 @@
+{
+ "exports": {
+  "components/sidebar/PendingWorktreeRow.tsx": [
+   "PendingWorktreeRow"
+  ],
+  "components/sidebar/WorktreeList.tsx": [
+   "default"
+  ],
+  "components/sidebar/WorktreeListScrollToTopButton.tsx": [
+   "WorktreeListScrollToTopButton"
+  ],
+  "components/sidebar/WorktreeSidebarDropIndicator.tsx": [
+   "WorktreeSidebarDropIndicator"
+  ],
+  "components/sidebar/header-drag-click-swallow.ts": [
+   "swallowNextClickOnDragHandle"
+  ],
+  "components/sidebar/header-drag-pointer-release.ts": [
+   "hasPointerBeenReleased"
+  ],
+  "components/sidebar/host-header-drag-dom.ts": [
+   "HostHeaderRect",
+   "isHostHeaderActionTarget",
+   "readHostHeaderRects"
+  ],
+  "components/sidebar/host-header-drag.ts": [
+   "HostDragState",
+   "UseHostHeaderDragArgs",
+   "HostHeaderDragController",
+   "useHostHeaderDrag"
+  ],
+  "components/sidebar/index.tsx": [
+   "WORKTREE_SIDEBAR_RESIZE_HANDLE_CLASS_NAME",
+   "WORKTREE_SIDEBAR_RESIZE_HANDLE_LINE_CLASS_NAME",
+   "default"
+  ],
+  "components/sidebar/project-group-header-drag-commit.ts": [
+   "commitProjectGroupHeaderDragDrop"
+  ],
+  "components/sidebar/project-group-header-drag-contract.ts": [
+   "ProjectGroupDragState",
+   "INITIAL_PROJECT_GROUP_DRAG_STATE",
+   "UseProjectGroupHeaderDragArgs",
+   "ProjectGroupHeaderDragController",
+   "ProjectGroupHeaderDragSession",
+   "PROJECT_GROUP_HEADER_DRAG_THRESHOLD_PX",
+   "isProjectGroupHeaderDragHandleTarget",
+   "isProjectGroupHeaderActionTarget"
+  ],
+  "components/sidebar/project-group-header-drag-start.ts": [
+   "createProjectGroupHeaderDragSession"
+  ],
+  "components/sidebar/project-group-header-drag.ts": [
+   "useProjectGroupHeaderDrag"
+  ],
+  "components/sidebar/project-group-header-drop.ts": [
+   "ProjectGroupHeaderDragBucketKey",
+   "ProjectGroupHeaderDragRect",
+   "ProjectGroupHeaderDropPreview",
+   "ProjectGroupTabOrderUpdate",
+   "getProjectGroupHeaderDragBucketKey",
+   "getSidebarOrderedProjectGroupHeaderIdsByBucket",
+   "mapSidebarProjectGroupDropIndexToSiblingInsertIndex",
+   "getProjectGroupTabOrderUpdatesForSidebarDrop",
+   "measureProjectGroupHeaderDragRects",
+   "computeProjectGroupHeaderDropPreview"
+  ],
+  "components/sidebar/project-header-drag-commit.ts": [
+   "commitProjectHeaderDragDrop"
+  ],
+  "components/sidebar/project-header-drag-contract.ts": [
+   "RepoDragState",
+   "INITIAL_REPO_DRAG_STATE",
+   "UseRepoHeaderDragArgs",
+   "RepoHeaderDragController",
+   "ProjectHeaderDragSession",
+   "PROJECT_HEADER_DRAG_THRESHOLD_PX",
+   "REPO_HEADER_ACTION_SELECTOR",
+   "isProjectHeaderDragHandleTarget",
+   "isRepoHeaderActionTarget"
+  ],
+  "components/sidebar/project-header-drag-start.ts": [
+   "createProjectHeaderDragSession"
+  ],
+  "components/sidebar/project-header-drag.ts": [
+   "useRepoHeaderDrag"
+  ],
+  "components/sidebar/project-header-drop.ts": [
+   "ProjectHeaderDragBucketKey",
+   "ProjectHeaderDragRect",
+   "ProjectHeaderDropPreview",
+   "getProjectHeaderDragBucketKey",
+   "getSidebarOrderedRepoHeaderIdsByBucket",
+   "getLogicalRepoOrderRankById",
+   "getProjectGroupOrderForSidebarDrop",
+   "mapSidebarProjectHeaderDropIndexToSiblingInsertIndex",
+   "measureProjectHeaderDragRects",
+   "mapSidebarRepoDropIndexToAllRepoInsertAt",
+   "computeProjectHeaderDropPreview",
+   "applyAllRepoInsertAt"
+  ],
+  "components/sidebar/rendered-sidebar-worktree-order.ts": [
+   "computeRenderedSidebarWorktrees",
+   "computeRenderedSidebarWorktreeOrder"
+  ],
+  "components/sidebar/sidebar-project-drop.ts": [
+   "SidebarProjectDropPathResolution",
+   "SidebarProjectDropAffordance",
+   "resolveSidebarProjectDropPath",
+   "isRemoteRuntimeActive",
+   "getSidebarProjectDropAffordance"
+  ],
+  "components/sidebar/useSidebarProjectDrop.ts": [
+   "useSidebarProjectDrop"
+  ],
+  "components/sidebar/worktree-header-section-boundaries.ts": [
+   "getRepoHeaderSectionEndByRepoId",
+   "getProjectGroupHeaderSectionEndByGroupId"
+  ],
+  "components/sidebar/worktree-list-card-markup-queries.ts": [
+   "getCardOpeningTag",
+   "getOptionOpeningTag",
+   "getFolderWorkspaceSurfaceOpeningTag",
+   "getDataNumber",
+   "getPaddingLeft",
+   "getFlushCardContentStart"
+  ],
+  "components/sidebar/worktree-list-groups-host-collision.test.ts": [
+   "SSH_REPO_FIXTURE"
+  ],
+  "components/sidebar/worktree-list-groups-test-fixtures.ts": [
+   "LOCAL_HOST_LABEL",
+   "repo",
+   "worktree",
+   "repoMap",
+   "remoteRepo",
+   "remoteWorktree",
+   "project",
+   "projectHostSetups",
+   "makeDetectedWorktree"
+  ],
+  "components/sidebar/worktree-list-lineage-card-test-fixtures.ts": [
+   "makeFolderWorkspacePathStatusMockState",
+   "makeRepo",
+   "makeWorktree",
+   "makeFolderWorkspacePathStatusState"
+  ],
+  "components/sidebar/worktree-list-lineage-card-test-harness.ts": [
+   "mockStore",
+   "WorktreeListComponent",
+   "loadWorktreeList",
+   "renderWorktreeListMarkup",
+   "createAppStoreModuleMock",
+   "createReactVirtualModuleMock",
+   "createVirtualizedScrollAnchorModuleMock",
+   "createProjectHeaderDragModuleMock",
+   "createWorktreeCardModuleMock",
+   "createWorktreeCardAgentsModuleMock",
+   "createWorktreeTitleInlineRenameModuleMock",
+   "createWorktreeContextMenuModuleMock",
+   "createTooltipModuleMock",
+   "createDropdownMenuModuleMock"
+  ],
+  "components/sidebar/worktree-list-lineage-store-state.ts": [
+   "setLineageFixtureState"
+  ],
+  "components/sidebar/worktree-list-pinned-store-state.ts": [
+   "setPinnedFixtureState"
+  ],
+  "components/sidebar/worktree-sidebar-drop-preview.ts": [
+   "WorktreeSidebarDropPreview",
+   "WorktreeSidebarStatusDropTarget",
+   "WorktreeSidebarTrackedStatusDropTarget",
+   "resolveWorktreeSidebarStatusDropCommitTarget",
+   "computeWorktreeSidebarDropPreview"
+  ],
+  "components/sidebar/worktree-snapshot-prune-batch.ts": [
+   "WorktreeSnapshotPruneBatch",
+   "beginWorktreeSnapshotPruneBatch"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/PendingWorktreeRow.tsx",
+   "line": 79,
+   "text": "title={translate('auto.components.sidebar.PendingWorktreeRow.188f6922a0', 'Cancel')}"
+  },
+  {
+   "file": "components/sidebar/PendingWorktreeRow.tsx",
+   "line": 80,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+   "line": 84,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+   "line": 93,
+   "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+  },
+  {
+   "file": "components/sidebar/WorktreeList.empty-project-rows.test.ts",
+   "line": 32,
+   "text": "vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+   "line": 40,
+   "text": "vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 37,
+   "text": "vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "line": 109,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "line": 118,
+   "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 36,
+   "text": "vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 110,
+   "text": "expect(childMarkup).toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 111,
+   "text": "expect(childMarkup).not.toContain('aria-label=\"Mark as unread\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+   "line": 103,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+   "line": 112,
+   "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+  },
+  {
+   "file": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+   "line": 104,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+   "line": 113,
+   "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+  },
+  {
+   "file": "components/sidebar/WorktreeListScrollToTopButton.tsx",
+   "line": 4,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeListScrollToTopButton.tsx",
+   "line": 33,
+   "text": "aria-label={label}"
+  },
+  {
+   "file": "components/sidebar/index.tsx",
+   "line": 3,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 69,
+   "text": "label: 'A',"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 74,
+   "text": "{ type: 'header', key: 'repo:repo-a', label: 'repo', count: 0, tone: '', repo },"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 78,
+   "text": "label: 'A child',"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 86,
+   "text": "label: 'B',"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 33,
+   "text": "label: 'A',"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 41,
+   "text": "label: 'B',"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.ts",
+   "line": 11,
+   "text": "| { visible: true; tone: 'ready' | 'blocked' | 'busy'; label: string; description: string }"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.ts",
+   "line": 44,
+   "text": "label: translate("
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.ts",
+   "line": 58,
+   "text": "label: translate("
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.ts",
+   "line": 71,
+   "text": "label: translate("
+  },
+  {
+   "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+   "line": 10,
+   "text": "({ type: 'header', key: `repo:${id}`, label: id, count: 1, tone: '', repo: { id } }) as RenderRow"
+  },
+  {
+   "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+   "line": 15,
+   "text": "label: id,"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 93,
+   "text": "label: 'Orca',"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 152,
+   "text": "{ type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 298,
+   "text": "{ type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 116,
+   "text": "{ type: 'header', key: 'repo:repo-1', label: 'orca' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 26,
+   "text": "/** Both twins display the same label: the reporting account's shape. */"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 129,
+   "text": "): { repoId: string; label: string | undefined; hostId: string | undefined; count: number }[] {"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 132,
+   "text": "label: row.hostContextLabel,"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 160,
+   "text": "{ repoId: sshTwin.id, label: 'openclaw', hostId: SSH_HOST_ID, count: 61 },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 161,
+   "text": "{ repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 169,
+   "text": "{ repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 177,
+   "text": "{ repoId: sshTwin.id, label: 'openclaw', hostId: SSH_HOST_ID, count: 61 }"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 180,
+   "text": "{ repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pending-creations.test.ts",
+   "line": 89,
+   "text": "{ type: 'header', key: `repo:${repo.id}`, label: 'Unknown' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 43,
+   "text": "label: 'Platform',"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 126,
+   "text": "expect(rows[0]).toMatchObject({ label: 'Platform' })"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 49,
+   "text": "{ type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 102,
+   "text": "{ key: 'project:github:stablyai/orca', label: 'Orca' }"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 105,
+   "text": "{ key: 'project:github:stablyai/orca', label: 'Orca' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 106,
+   "text": "{ key: 'repo:repo-other', label: 'design-assets' }"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 201,
+   "text": "label: 'sample-app',"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 428,
+   "text": "label: 'orca'"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 432,
+   "text": "label: 'orca-2'"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 691,
+   "text": "label: 'Orca',"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 787,
+   "text": "label: 'Orca',"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 72,
+   "text": "{ key: 'project:github:acme/api', label: 'work/api' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 73,
+   "text": "{ key: 'project:gitlab:me/api', label: 'oss/api' }"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 84,
+   "text": ").toMatchObject([{ key: 'project:github:acme/api', label: 'api' }])"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 89,
+   "text": "{ key: 'repo:repo-work', label: 'work/api' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 90,
+   "text": "{ key: 'repo:repo-oss', label: 'oss/api' }"
+  },
+  {
+   "file": "components/sidebar/worktree-list-lineage-card-test-harness.ts",
+   "line": 239,
+   "text": "DropdownMenuItem: ({ children }: { children: React.ReactNode }) =>"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 252,
+   "text": "const onKeyDown = (e: KeyboardEvent): void => {"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 236,
+   "text": "const onKeyDown = (event: KeyboardEvent): void => {"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 237,
+   "text": "if (event.key === 'Escape') {"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 250,
+   "text": "const onKeyDown = (e: KeyboardEvent): void => {"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 5,
+   "text": "getVisibleWorktreeShortcutTargets,"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 7,
+   "text": "setVisibleWorktreeShortcutTargets"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 112,
+   "text": "setVisibleWorktreeShortcutTargets(null)"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 118,
+   "text": "setVisibleWorktreeShortcutTargets(null)"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 273,
+   "text": "it('keeps same-id hosts as separate closed-sidebar shortcut positions', () => {"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 280,
+   "text": "expect(getVisibleWorktreeShortcutTargets()).toEqual(["
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 286,
+   "text": "it('does not reconstruct a filtered same-id host in closed-sidebar shortcuts', () => {"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 296,
+   "text": "expect(getVisibleWorktreeShortcutTargets()).toEqual(["
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.ts",
+   "line": 34,
+   "text": "* hoisting and collapse elision, so the shortcut numbered the wrong card."
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/header-drag-click-swallow.ts",
+   "line": 9,
+   "text": "export function swallowNextClickOnDragHandle(handleEl: HTMLElement): ReturnType<typeof setTimeout> {"
+  },
+  {
+   "file": "components/sidebar/header-drag-click-swallow.ts",
+   "line": 19,
+   "text": "return setTimeout(() => window.removeEventListener('click', swallow, true), 0)"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 136,
+   "text": "deferredComputeFrameRef.current = window.requestAnimationFrame(() => {"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 46,
+   "text": "const clickSwallowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 169,
+   "text": "autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 179,
+   "text": "autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 57,
+   "text": "const clickSwallowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 182,
+   "text": "autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 192,
+   "text": "autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/header-drag-click-swallow.ts",
+   "line": 18,
+   "text": "window.addEventListener('click', swallow, true)"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 192,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 259,
+   "text": "window.addEventListener('pointermove', onPointerMove)"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 260,
+   "text": "window.addEventListener('pointerup', onPointerUp)"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 261,
+   "text": "window.addEventListener('pointercancel', onPointerCancel)"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 262,
+   "text": "window.addEventListener('keydown', onKeyDown)"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 263,
+   "text": "window.addEventListener('blur', onBlur)"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.ts",
+   "line": 301,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/index.tsx",
+   "line": 118,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/index.tsx",
+   "line": 127,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/index.tsx",
+   "line": 133,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 182,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 243,
+   "text": "window.addEventListener('pointermove', onPointerMove)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 244,
+   "text": "window.addEventListener('pointerup', onPointerUp)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 245,
+   "text": "window.addEventListener('pointercancel', onPointerCancel)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 246,
+   "text": "window.addEventListener('keydown', onKeyDown)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 247,
+   "text": "window.addEventListener('blur', onBlur)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.ts",
+   "line": 270,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 195,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 257,
+   "text": "window.addEventListener('pointermove', onPointerMove)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 258,
+   "text": "window.addEventListener('pointerup', onPointerUp)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 259,
+   "text": "window.addEventListener('pointercancel', onPointerCancel)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 260,
+   "text": "window.addEventListener('keydown', onKeyDown)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 261,
+   "text": "window.addEventListener('blur', onBlur)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.ts",
+   "line": 284,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useSidebarProjectDrop.ts",
+   "line": 40,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useSidebarProjectDrop.ts",
+   "line": 41,
+   "text": "document.addEventListener('drop', clearDragState, true)"
+  },
+  {
+   "file": "components/sidebar/useSidebarProjectDrop.ts",
+   "line": 42,
+   "text": "document.addEventListener('dragend', clearDragState, true)"
+  },
+  {
+   "file": "components/sidebar/useSidebarProjectDrop.ts",
+   "line": 118,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/useSidebarProjectDrop.ts",
+   "line": 82,
+   "text": "await window.api.fs.authorizeExternalPath({ targetPath: pathResolution.path })"
+  },
+  {
+   "file": "components/sidebar/useSidebarProjectDrop.ts",
+   "line": 83,
+   "text": "const stat = await window.api.fs.stat({ filePath: pathResolution.path })"
+  },
+  {
+   "file": "components/sidebar/useSidebarProjectDrop.ts",
+   "line": 119,
+   "text": "return window.api.ui.onFileDrop((data) => {"
+  },
+  {
+   "file": "components/sidebar/worktree-snapshot-prune-batch.ts",
+   "line": 10,
+   "text": "const api = window.api.workspaceCleanup"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+   "line": 268,
+   "kind": "plain",
+   "name": "WorktreeCard memo bail-out across epoch bumps"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+   "line": 287,
+   "kind": "plain",
+   "name": "does not re-render cards on an order-preserving sortEpoch bump"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+   "line": 310,
+   "kind": "plain",
+   "name": "re-renders a card when its own worktree data changes"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+   "line": 334,
+   "kind": "plain",
+   "name": "tracks Smart attention changes that preserve the displayed order"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.empty-project-rows.test.ts",
+   "line": 98,
+   "kind": "plain",
+   "name": "WorktreeList lineage child card renderer"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.empty-project-rows.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "does not render the collapse affordance on empty ungrouped projects"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.empty-project-rows.test.ts",
+   "line": 110,
+   "kind": "plain",
+   "name": "renders an empty ungrouped project instead of the empty workspace state"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.empty-project-rows.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "shows Clear Filters when repo filters exclude an empty ungrouped project"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+   "line": 158,
+   "kind": "plain",
+   "name": "WorktreeList lineage child card renderer"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+   "line": 163,
+   "kind": "plain",
+   "name": "points aria-activedescendant at the active folder workspace row"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+   "line": 172,
+   "kind": "plain",
+   "name": "keeps folder workspace cards one compact step under their group header"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+   "line": 190,
+   "kind": "plain",
+   "name": "uses comparable new-card worktree geometry for experimental folder workspace rows"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+   "line": 209,
+   "kind": "plain",
+   "name": "preserves manual folder workspace indentation outside folder-scanned groups"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+   "line": 226,
+   "kind": "plain",
+   "name": "caps nested folder workspace surfaces to keep compact final anchors"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "WorktreeList lineage child card renderer"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "renders project group headers when repos import before worktree rows load"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 131,
+   "kind": "plain",
+   "name": "renders a collapse chevron on project group headers with children"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "renders collapsed project group header affordance state"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 148,
+   "kind": "plain",
+   "name": "does not render the project collapse affordance on flat section headers"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 155,
+   "kind": "plain",
+   "name": "uncollapses pinned reveal for a descendant that only lives under a pinned parent"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 173,
+   "kind": "plain",
+   "name": "uncollapses pinned reveal through the pinned section after host expansion"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 191,
+   "kind": "plain",
+   "name": "renders a collapse chevron on status group headers with worktrees"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 201,
+   "kind": "plain",
+   "name": "renders a collapse chevron on the pinned section header with worktrees"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 211,
+   "kind": "plain",
+   "name": "renders collapsed pinned section header affordance state"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 225,
+   "kind": "plain",
+   "name": "renders a collapse chevron on grouped repo headers with worktrees"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+   "line": 234,
+   "kind": "plain",
+   "name": "shows Clear Filters when filters exclude pre-worktree project groups"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "line": 449,
+   "kind": "plain",
+   "name": "WorktreeCard agent-list <-> child-worktrees expansion coupling"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "line": 471,
+   "kind": "plain",
+   "name": "[full mode] both toggles render independently at mount"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "line": 491,
+   "kind": "plain",
+   "name": "[full mode] toggling AGENTS does NOT change the child-worktrees chip (agents -> children uncoupled)"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "line": 511,
+   "kind": "plain",
+   "name": "[full mode] toggling CHILD WORKTREES still remounts the card but PRESERVES agent expansion (regression)"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "line": 540,
+   "kind": "plain",
+   "name": "[full mode] CONTROL: a re-render that does NOT change collapsedGroups preserves agent state (isolates the remount)"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "line": 557,
+   "kind": "plain",
+   "name": "[compact mode] toggling CHILD WORKTREES preserves the compact agent summary expansion (regression)"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 40,
+   "kind": "plain",
+   "name": "WorktreeList lineage child card renderer"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 45,
+   "kind": "plain",
+   "name": "renders recursive lineage descendants through WorktreeCard once"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "passes child review details through the shared WorktreeCard path"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 74,
+   "kind": "plain",
+   "name": "uses shared nested-row indentation for child and grandchild cards"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 86,
+   "kind": "plain",
+   "name": "shows deleting feedback on nested lineage child cards"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 100,
+   "kind": "plain",
+   "name": "shows the unread bell action on unread nested lineage child cards"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 114,
+   "kind": "plain",
+   "name": "lets WorktreeCard own the reconnect dialog for an active disconnected lineage child"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 131,
+   "kind": "plain",
+   "name": "points aria-activedescendant at the active lineage child row"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "points aria-activedescendant at the pinned row for active pinned workspaces"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 148,
+   "kind": "plain",
+   "name": "points aria-activedescendant at the natural duplicate when enabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 158,
+   "kind": "plain",
+   "name": "opens inline rename only for the row-scoped lineage child request"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 175,
+   "kind": "plain",
+   "name": "does not add group indentation when grouping is disabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 185,
+   "kind": "plain",
+   "name": "passes one group indentation step into the card when grouped by project"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 196,
+   "kind": "plain",
+   "name": "keeps nested card inner padding aligned with grouped parent cards"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 205,
+   "kind": "plain",
+   "name": "keeps nested card inner padding aligned inside project groups"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 214,
+   "kind": "plain",
+   "name": "adds project group depth to workspace card content indentation"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 225,
+   "kind": "plain",
+   "name": "keeps repo worktrees shallower inside folder-scanned project groups"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+   "line": 244,
+   "kind": "plain",
+   "name": "caps deeply nested folder-scanned repo worktree surfaces at the compact anchor"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+   "line": 384,
+   "kind": "plain",
+   "name": "WorktreeList real child WorktreeCard integration"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+   "line": 403,
+   "kind": "plain",
+   "name": "renders GitLab MR metadata from a child through the real WorktreeCard path"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+   "line": 412,
+   "kind": "plain",
+   "name": "keeps expanded child cards in the parent title column"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+   "line": 422,
+   "kind": "plain",
+   "name": "keeps three-level experimental lineage children on the immediate-parent step"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+   "line": 462,
+   "kind": "plain",
+   "name": "double-clicking a nested child opens edit metadata for the child only"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+   "line": 488,
+   "kind": "plain",
+   "name": "does not activate a nested child while it is deleting"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+   "line": 386,
+   "kind": "plain",
+   "name": "WorktreeList status-lane drop carries visible lineage children (#9083)"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+   "line": 405,
+   "kind": "plain",
+   "name": "moves a dragged parent and its visible lineage child to the dropped lane"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+   "line": 417,
+   "kind": "plain",
+   "name": "leaves worktrees in other lanes untouched"
+  },
+  {
+   "file": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+   "line": 428,
+   "kind": "plain",
+   "name": "commits only itself when a childless worktree is dropped onto another lane"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.test.tsx",
+   "line": 40,
+   "kind": "plain",
+   "name": "useHostHeaderDrag"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.test.tsx",
+   "line": 41,
+   "kind": "plain",
+   "name": "does not start a drag when the pointer is released before the window listeners attach"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.test.tsx",
+   "line": 59,
+   "kind": "plain",
+   "name": "clears a session whose pointerup was missed so a later drag still works"
+  },
+  {
+   "file": "components/sidebar/host-header-drag.test.tsx",
+   "line": 80,
+   "kind": "plain",
+   "name": "still promotes a drag while the pointer stays down"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-commit.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "commitProjectGroupHeaderDragDrop"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-commit.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "commits dense tabOrder updates for the affected Project Group siblings"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-commit.test.ts",
+   "line": 66,
+   "kind": "plain",
+   "name": "computes order only from the captured sibling bucket"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-commit.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "does not commit when the drop keeps the group in the same slot"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-commit.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "does not commit when a stale session no longer contains the dragged group"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-start.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "createProjectGroupHeaderDragSession"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-start.test.ts",
+   "line": 24,
+   "kind": "plain",
+   "name": "arms a drag session from plain header text when the row is the drag handle"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-start.test.ts",
+   "line": 58,
+   "kind": "plain",
+   "name": "does not arm from nested Project Group header actions"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-start.test.ts",
+   "line": 91,
+   "kind": "plain",
+   "name": "arms from the group icon svg (SVGElement target)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-start.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "does not arm when pressing an svg icon inside an action button"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag-start.test.ts",
+   "line": 159,
+   "kind": "plain",
+   "name": "does not arm from the actions overlay even if the row is the drag handle"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.test.ts",
+   "line": 14,
+   "kind": "plain",
+   "name": "project group header action targets"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "ignores explicit project action wrappers"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "ignores the project header actions overlay (including gaps between icons)"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "ignores the hover collapse affordance"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drag.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "does not ignore plain header text or the header itself"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 31,
+   "kind": "plain",
+   "name": "getProjectGroupHeaderDragBucketKey"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "uses root for top-level groups"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 36,
+   "kind": "plain",
+   "name": "scopes child groups to their parent bucket"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "falls back to root when persisted parent metadata is missing"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 54,
+   "kind": "plain",
+   "name": "getSidebarOrderedProjectGroupHeaderIdsByBucket"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "groups Project Group headers by effective parent bucket"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "mapSidebarProjectGroupDropIndexToSiblingInsertIndex"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "keeps upward drops at the same target index after removing the source"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 113,
+   "kind": "plain",
+   "name": "shifts downward drops because the source header is removed first"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 124,
+   "kind": "plain",
+   "name": "computeProjectGroupHeaderDropPreview"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "uses row-model header indices instead of mounted subset order"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 141,
+   "kind": "plain",
+   "name": "snaps a drop inside the last expanded Project Group section to its bottom boundary"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 165,
+   "kind": "plain",
+   "name": "rejects a drop below the measured content when the estimated section overshoots"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 188,
+   "kind": "plain",
+   "name": "rejects an edge-zone final drop below measured content when the estimate overshoots"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 211,
+   "kind": "plain",
+   "name": "snaps a within-content drop even when the estimated section overshoots"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 233,
+   "kind": "plain",
+   "name": "uses the whole Project Group section for the final boundary slot"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 255,
+   "kind": "plain",
+   "name": "getProjectGroupTabOrderUpdatesForSidebarDrop"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 256,
+   "kind": "plain",
+   "name": "reindexes sibling groups so duplicate legacy tabOrder values can move between siblings"
+  },
+  {
+   "file": "components/sidebar/project-group-header-drop.test.ts",
+   "line": 274,
+   "kind": "plain",
+   "name": "returns no updates when the drop keeps the group in the same slot"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-commit.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "commitProjectHeaderDragDrop"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-commit.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "commits whole-repo reordering when project groups are absent"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-commit.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "moves a merged paired-host header upward as one stable block"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-commit.test.ts",
+   "line": 74,
+   "kind": "plain",
+   "name": "does not reorder host occurrences when a merged header stays in place"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-commit.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "commits projectGroupOrder when project groups are present"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-start.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "createProjectHeaderDragSession"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-start.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "does not capture the pointer when arming a drag session"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-start.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "arms a drag session from plain project header text when the row is the drag handle"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-start.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "arms a drag session when pressing the project icon svg (SVGElement target)"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-start.test.ts",
+   "line": 109,
+   "kind": "plain",
+   "name": "does not arm a drag session when pressing an svg icon inside an action button"
+  },
+  {
+   "file": "components/sidebar/project-header-drag-start.test.ts",
+   "line": 143,
+   "kind": "plain",
+   "name": "does not arm a drag session when pressing the actions overlay even if the row is the drag handle"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.test.ts",
+   "line": 14,
+   "kind": "plain",
+   "name": "repo header action targets"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "ignores explicit project action wrappers"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "ignores native nested controls"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.test.ts",
+   "line": 31,
+   "kind": "plain",
+   "name": "does not ignore plain header text or the header itself"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "ignores the hover collapse affordance"
+  },
+  {
+   "file": "components/sidebar/project-header-drag.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "ignores the project header actions overlay (including gaps between icons)"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "getProjectHeaderDragBucketKey"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 18,
+   "kind": "plain",
+   "name": "uses ungrouped for repos without a project group"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "scopes grouped repos to their project group bucket"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 27,
+   "kind": "plain",
+   "name": "getSidebarOrderedRepoHeaderIdsByBucket"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "groups repo headers by project group membership"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 57,
+   "kind": "plain",
+   "name": "getLogicalRepoOrderRankById"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 58,
+   "kind": "plain",
+   "name": "anchors a merged paired-host header to its first persisted occurrence"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 71,
+   "kind": "plain",
+   "name": "mapSidebarRepoDropIndexToAllRepoInsertAt"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 74,
+   "kind": "plain",
+   "name": "maps sidebar start drops onto the first visible repo in the full list"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "maps sidebar end drops onto the slot after the last visible repo"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 82,
+   "kind": "plain",
+   "name": "maps middle sidebar drops onto the target repo id in the full list"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 87,
+   "kind": "plain",
+   "name": "mapSidebarProjectHeaderDropIndexToSiblingInsertIndex"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "keeps upward drops at the same target index after removing the source"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 98,
+   "kind": "plain",
+   "name": "shifts downward drops because the source header is removed first"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 108,
+   "kind": "plain",
+   "name": "maps a drop immediately after the source back to the original slot"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 119,
+   "kind": "plain",
+   "name": "computeProjectHeaderDropPreview"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 120,
+   "kind": "plain",
+   "name": "uses row-model header indices instead of mounted subset order"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 136,
+   "kind": "plain",
+   "name": "supports boundary drops at the end of the full sidebar list"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 157,
+   "kind": "plain",
+   "name": "snaps a drop inside the last expanded project section to its bottom boundary"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 181,
+   "kind": "plain",
+   "name": "snaps a drop between sibling project headers to the nearer boundary"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 206,
+   "kind": "plain",
+   "name": "nearest-boundary choice across an interior gap"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 237,
+   "kind": "plain",
+   "name": "snaps to the previous section bottom when the pointer is nearer to it"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 249,
+   "kind": "plain",
+   "name": "snaps to the next header top when the pointer is nearer to it"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 261,
+   "kind": "plain",
+   "name": "breaks the midpoint tie toward the next header boundary"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 274,
+   "kind": "plain",
+   "name": "content bound for the last section"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 297,
+   "kind": "plain",
+   "name": "rejects a drop below the measured content when the estimate overshoots"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 303,
+   "kind": "plain",
+   "name": "rejects an edge-zone final drop below measured content when the estimate overshoots"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 309,
+   "kind": "plain",
+   "name": "still snaps within the measured content when the estimate overshoots"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 317,
+   "kind": "plain",
+   "name": "snaps within the measured content when actual content undershoots the estimate"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 328,
+   "kind": "plain",
+   "name": "applyAllRepoInsertAt"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 329,
+   "kind": "plain",
+   "name": "reorders repos using a full-list insertion index"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 338,
+   "kind": "plain",
+   "name": "moves duplicate host occurrences as one stable logical-project block"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 347,
+   "kind": "plain",
+   "name": "returns null for no-op reorders"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 352,
+   "kind": "plain",
+   "name": "getProjectGroupOrderForSidebarDrop"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 363,
+   "kind": "plain",
+   "name": "uses a midpoint between sibling orders when there is room"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 372,
+   "kind": "plain",
+   "name": "uses manual repo rank as the fallback for missing sibling orders"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 386,
+   "kind": "plain",
+   "name": "keeps a deterministic finite anchor when sibling orders collide"
+  },
+  {
+   "file": "components/sidebar/project-header-drop.test.ts",
+   "line": 395,
+   "kind": "plain",
+   "name": "assigns an order that sorts before siblings ranked by repo order"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 115,
+   "kind": "plain",
+   "name": "closed-sidebar Cmd+1-9 ordering (#9497)"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 122,
+   "kind": "plain",
+   "name": "hoists the repo main worktree first, matching the rendered sidebar"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 136,
+   "kind": "plain",
+   "name": "ignores the agent-send collapse override, which only applies to a mounted list"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 156,
+   "kind": "plain",
+   "name": "places a pinned workspace per the pinned section under both display policies"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 175,
+   "kind": "plain",
+   "name": "elides members of a collapsed group, which render no card to number"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 183,
+   "kind": "plain",
+   "name": "numbers folder workspaces, which the flat fallback omitted entirely"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 194,
+   "kind": "plain",
+   "name": "numbers a workspace created while nothing was published"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 204,
+   "kind": "plain",
+   "name": "treats a published order as authoritative, including an explicitly empty one"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 218,
+   "kind": "plain",
+   "name": "honors an explicit host filter and keeps the all-hosts default unfiltered"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 261,
+   "kind": "plain",
+   "name": "keeps the sort layer intact for smart and comparator sort modes"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 273,
+   "kind": "plain",
+   "name": "keeps same-id hosts as separate closed-sidebar shortcut positions"
+  },
+  {
+   "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+   "line": 286,
+   "kind": "plain",
+   "name": "does not reconstruct a filtered same-id host in closed-sidebar shortcuts"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "resolveSidebarProjectDropPath"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "accepts exactly one dropped path"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "rejects empty and multi-path drops before routing"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "isRemoteRuntimeActive"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.test.ts",
+   "line": 26,
+   "kind": "plain",
+   "name": "distinguishes local runtime from active server runtime"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.test.ts",
+   "line": 33,
+   "kind": "plain",
+   "name": "getSidebarProjectDropAffordance"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "hides when the sidebar is not in a drop interaction"
+  },
+  {
+   "file": "components/sidebar/sidebar-project-drop.test.ts",
+   "line": 44,
+   "kind": "plain",
+   "name": "shows ready, busy, and blocked states"
+  },
+  {
+   "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "getRepoHeaderSectionEndByRepoId"
+  },
+  {
+   "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "ends a section at the successor from the header\u2019s own bucket"
+  },
+  {
+   "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "falls back to the next header when a bucket has no successor"
+  },
+  {
+   "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "resolves a header id that renders twice to its first row, matching findIndex"
+  },
+  {
+   "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "getProjectGroupHeaderSectionEndByGroupId"
+  },
+  {
+   "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "ends a section at the successor from the group\u2019s own bucket"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-collision.test.ts",
+   "line": 59,
+   "kind": "plain",
+   "name": "sidebar rows for a workspace id owned by two hosts"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-collision.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "renders one selectable row per host"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-collision.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "gives each row its own React key so neither replaces the other"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-collision.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "labels each row with the host it lives on"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-collision.test.ts",
+   "line": 83,
+   "kind": "plain",
+   "name": "counts the two hosts separately in the group header"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-collision.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "keeps an unpinned host row visible when its same-id peer is pinned"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "buildRows with pinned worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 18,
+   "kind": "plain",
+   "name": "groups Windows host and WSL setups on the same runtime host"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 99,
+   "kind": "plain",
+   "name": "uses saved host labels for mixed-host sidebar card badges"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 158,
+   "kind": "plain",
+   "name": "uses the registered SSH target label for openclaw rows"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 205,
+   "kind": "plain",
+   "name": "shows distinct Orca server names when status grouping mixes runtime hosts"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 264,
+   "kind": "plain",
+   "name": "omits host context labels when a project group only has one host"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 309,
+   "kind": "plain",
+   "name": "keeps same-named repos separate without project setup identity"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+   "line": 327,
+   "kind": "plain",
+   "name": "returns project group keys for worktree reveal when project setup identity exists"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 7,
+   "kind": "plain",
+   "name": "buildRows with pinned worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "emits an imported worktrees card at the top of repo-group rows"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 45,
+   "kind": "plain",
+   "name": "suppresses the repo-group imported worktrees card when the repo group is collapsed"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "emits a repo header and imported worktrees card when no visible worktree rows remain"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "emits an empty ungrouped repo placeholder before imported cards are merged"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "skips stale empty placeholder repo ids that are absent from repoMap"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 146,
+   "kind": "plain",
+   "name": "does not emit unpinned imported worktree cards outside repo grouping"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 168,
+   "kind": "plain",
+   "name": "places non-repo imported fallbacks after each repo last pinned row when expanded"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 232,
+   "kind": "plain",
+   "name": "places collapsed non-repo imported fallbacks after Pinned in pinned repo order"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 285,
+   "kind": "plain",
+   "name": "emits a new external worktrees inbox row before repo worktree rows"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 321,
+   "kind": "plain",
+   "name": "suppresses the new external worktrees inbox row when the repo group is collapsed"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 344,
+   "kind": "plain",
+   "name": "emits a repo header and inbox row when no visible worktree rows remain"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 373,
+   "kind": "plain",
+   "name": "keeps the inbox group when the repo only has a pinned worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 418,
+   "kind": "plain",
+   "name": "does not emit new external worktrees inbox rows outside repo grouping"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 441,
+   "kind": "plain",
+   "name": "emits imported worktree cards in repo groups when visible rows are pinned"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 520,
+   "kind": "plain",
+   "name": "duplicates pinned worktrees into repo groups when the policy allows it"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 556,
+   "kind": "plain",
+   "name": "suppresses duplicate-mode imported fallback only when a natural anchor renders"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 602,
+   "kind": "plain",
+   "name": "suppresses pinned imported worktree fallback when the repo has visible unpinned rows"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+   "line": 630,
+   "kind": "plain",
+   "name": "keeps repo imported worktree cards visible when Pinned is collapsed"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "buildRows workspace lineage nesting"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 53,
+   "kind": "plain",
+   "name": "keeps lineage flat when nesting is off"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 79,
+   "kind": "plain",
+   "name": "places children directly under their parent when nesting is on"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 106,
+   "kind": "plain",
+   "name": "keeps same-id parent and child lineages partitioned by host"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 153,
+   "kind": "plain",
+   "name": "nests stable-update resolved legacy lineage when generalized lineage is absent"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 222,
+   "kind": "plain",
+   "name": "rejects stale resolved lineage after a parent instance is replaced"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 247,
+   "kind": "plain",
+   "name": "keeps mixed cyclic lineage participants visible as roots"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 282,
+   "kind": "plain",
+   "name": "resolves inline-only ancestor chains for reveal and temporary picker expansion"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 301,
+   "kind": "plain",
+   "name": "keeps a resolved child at the root when its parent is missing"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 324,
+   "kind": "each",
+   "name": "does not nest resolved lineage across a known %s boundary"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 359,
+   "kind": "plain",
+   "name": "keeps the hydrated lineage side-map authoritative when inline metadata disagrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 402,
+   "kind": "plain",
+   "name": "supports nested lineage chains beyond one level"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 443,
+   "kind": "plain",
+   "name": "collapses descendants under lineage parents"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 472,
+   "kind": "plain",
+   "name": "does not create a parent group for stale instance links"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 499,
+   "kind": "plain",
+   "name": "marks stale instance links as missing for shared context-menu validation"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 514,
+   "kind": "plain",
+   "name": "nests unpinned children under a pinned parent in Pinned"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 542,
+   "kind": "plain",
+   "name": "nests grandchildren under a pinned ancestor in Pinned"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 571,
+   "kind": "plain",
+   "name": "duplicates a pinned parent tree into All when the policy allows it"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 603,
+   "kind": "plain",
+   "name": "nests a pinned child under its pinned parent in Pinned"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+   "line": 631,
+   "kind": "plain",
+   "name": "keeps pinned children in Pinned without a parent badge"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "project groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "renders nested Project Groups before repos assigned to their leaf group"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "renders folder workspaces under their owning folder-backed Project Group"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 141,
+   "kind": "plain",
+   "name": "preserves nested Project Group depth for folder workspace rows"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 223,
+   "kind": "plain",
+   "name": "does not render folder workspaces under non-folder Project Groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 284,
+   "kind": "plain",
+   "name": "renders imported repos under nested Project Groups before worktree rows load"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 361,
+   "kind": "plain",
+   "name": "returns both parent Project Group and repo keys for grouped repo reveals"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 389,
+   "kind": "plain",
+   "name": "returns only the repo key for missing Project Group metadata reveals"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+   "line": 417,
+   "kind": "plain",
+   "name": "returns only the repo key for ungrouped repo reveals"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 140,
+   "kind": "plain",
+   "name": "discovery notice rows on a multi-host project"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 141,
+   "kind": "plain",
+   "name": "labels both rows when two distinct hosts share one label"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 165,
+   "kind": "plain",
+   "name": "labels a lone eligible row on a project that spans hosts"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 173,
+   "kind": "plain",
+   "name": "keeps each row its own label and count under either host filter"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 184,
+   "kind": "plain",
+   "name": "returns labels for exactly the eligible records, never the filtered-out ones"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+   "line": 201,
+   "kind": "plain",
+   "name": "leaves a single-host project unlabelled even with several records on it"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pending-creations.test.ts",
+   "line": 6,
+   "kind": "plain",
+   "name": "buildRows pending creations"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pending-creations.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "nests a pending creation under its repo, above the repo worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pending-creations.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "creates a repo group for a pending creation in a repo with no worktrees yet"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pending-creations.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "keeps a pending creation visible when its repo metadata is temporarily missing"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pending-creations.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "surfaces pending creations at the top for non-repo groupings"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts",
+   "line": 69,
+   "kind": "plain",
+   "name": "pinned rows on a multi-host sidebar"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts",
+   "line": 71,
+   "kind": "each",
+   "name": "labels a pinned remote worktree in the Pinned section (%s grouping)"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "labels pinned rows when the only other host is itself pinned"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts",
+   "line": 99,
+   "kind": "plain",
+   "name": "labels both copies when pinned worktrees also show in their groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts",
+   "line": 109,
+   "kind": "plain",
+   "name": "draws no badge on a single-host sidebar even with a pinned row"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "project groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "keeps empty project groups visible in project grouping mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "renders grouped repos before their visible worktrees are loaded"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "does not resurrect filtered repos as empty Project Group headers"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 129,
+   "kind": "plain",
+   "name": "keeps sleep-filtered Project Group members as empty project headers"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 196,
+   "kind": "plain",
+   "name": "renders ungrouped repos as top-level repo rows when Project Groups exist"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 232,
+   "kind": "plain",
+   "name": "renders repos whose Project Group metadata is missing as top-level repo rows"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 272,
+   "kind": "plain",
+   "name": "does not render collapsed child-group repos as missing metadata fallbacks"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 315,
+   "kind": "plain",
+   "name": "disambiguates duplicate top-level repo basenames without renaming repos"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+   "line": 387,
+   "kind": "plain",
+   "name": "disambiguates duplicate repo basenames inside each Project Group scope"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "buildRows with pinned worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "groups multiple host setups for the same project under one project header"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "keeps the cross-host project header label when another project section renders"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 110,
+   "kind": "plain",
+   "name": "renders same-project records with git remote identity as one mixed-host project header"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 210,
+   "kind": "plain",
+   "name": "keeps mixed-host project item order while inserting inbox rows before worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 299,
+   "kind": "plain",
+   "name": "orders project identity headers by the manual repo order anchor"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 376,
+   "kind": "plain",
+   "name": "splits same-host checkouts of one project into separate per-setup groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 438,
+   "kind": "plain",
+   "name": "splits only the surface with duplicate checkouts"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 499,
+   "kind": "plain",
+   "name": "counts projection twins for one directory as one checkout"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 562,
+   "kind": "plain",
+   "name": "keeps Git hosts grouped when folder setups share the project identity"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 632,
+   "kind": "plain",
+   "name": "keeps a provisioned runtime copy under the project header alongside a same-host checkout"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+   "line": 696,
+   "kind": "plain",
+   "name": "splits duplicate user checkouts while a provisioned copy nests, on one host"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "buildRows project grouping order"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "orders repo headers by explicit repoOrder, not first-encounter"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "places unknown repo ids last and sorts them by label"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 68,
+   "kind": "plain",
+   "name": "orders repo headers by max(lastActivityAt) per repo in Recent mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 91,
+   "kind": "plain",
+   "name": "uses each repo"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "keeps the main workspace first inside its project group in Recent mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 151,
+   "kind": "plain",
+   "name": "orders repo headers by repoOrder in Manual mode (default), ignoring activity"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 162,
+   "kind": "plain",
+   "name": "builds rows for a very large repo-group list"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 179,
+   "kind": "plain",
+   "name": "buildRows Recent project order fallbacks"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 195,
+   "kind": "plain",
+   "name": "sorts placeholder projects after projects with activity"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 219,
+   "kind": "plain",
+   "name": "project groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 220,
+   "kind": "plain",
+   "name": "orders repos inside a Project Group by projectGroupOrder in manual mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 281,
+   "kind": "plain",
+   "name": "falls back to repoOrder for grouped repos missing projectGroupOrder in manual mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 336,
+   "kind": "plain",
+   "name": "sorts a dragged project between repo-order fallbacks inside a group"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 397,
+   "kind": "plain",
+   "name": "orders repos inside a Project Group by activity in recent mode, keeping tabOrder"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-project-order.test.ts",
+   "line": 462,
+   "kind": "plain",
+   "name": "orders Project Group siblings by tabOrder within each parent bucket"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "sidebar section headers with colliding display names"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 64,
+   "kind": "plain",
+   "name": "path-disambiguates two project headers that share a display name"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "leaves a lone project header un-suffixed"
+  },
+  {
+   "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+   "line": 87,
+   "kind": "plain",
+   "name": "path-disambiguates untracked repo headers that share a display name"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "computeWorktreeSidebarDropPreview"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "computes an insertion line for a target group"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "returns null outside the group boundary"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "collapses lineage child rects into the parent drag unit for preview offsets"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "uses one card-height placeholder for multi-select reorder previews"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 97,
+   "kind": "plain",
+   "name": "uses the grabbed selected card as the multi-select preview placeholder"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 121,
+   "kind": "plain",
+   "name": "marks the gap the row previews open, not the displaced card top"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 153,
+   "kind": "plain",
+   "name": "resolves the same slot wherever a tall card is grabbed"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 178,
+   "kind": "plain",
+   "name": "keeps a downward end drop stable when leading rows are virtualized"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 216,
+   "kind": "plain",
+   "name": "uses the full group index when the dragged row is outside the mounted window"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 235,
+   "kind": "plain",
+   "name": "preserves the virtual row gap when only one row remains mounted"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 253,
+   "kind": "plain",
+   "name": "resolveWorktreeSidebarStatusDropCommitTarget"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 261,
+   "kind": "plain",
+   "name": "uses the current status target when pointerup hit-testing succeeds"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 281,
+   "kind": "plain",
+   "name": "reuses the latest status target when pointerup hit-testing blanks at the same point"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 301,
+   "kind": "plain",
+   "name": "reuses the latest lineage target when pointerup hit-testing blanks at the same point"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+   "line": 321,
+   "kind": "plain",
+   "name": "does not reuse a stale status target after the pointer has moved away"
+  },
+  {
+   "file": "components/sidebar/worktree-sort-label-ordering.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "worktree sort label ordering"
+  },
+  {
+   "file": "components/sidebar/worktree-sort-label-ordering.test.ts",
+   "line": 108,
+   "kind": "plain",
+   "name": "matches the pre-precompute comparator on every pair"
+  },
+  {
+   "file": "components/sidebar/worktree-sort-label-ordering.test.ts",
+   "line": 119,
+   "kind": "plain",
+   "name": "produces byte-for-byte identical sort output in every mode"
+  },
+  {
+   "file": "components/sidebar/worktree-sort-label-ordering.test.ts",
+   "line": 132,
+   "kind": "plain",
+   "name": "falls back to deriving labels for rows missing from the precomputed map"
+  },
+  {
+   "file": "components/sidebar/worktree-sort-label-ordering.test.ts",
+   "line": 140,
+   "kind": "plain",
+   "name": "keys labels by row so a two-host id collision keeps each row its own label"
+  }
+ ]
+}

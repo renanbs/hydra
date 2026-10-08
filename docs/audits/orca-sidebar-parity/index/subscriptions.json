@@ -1,0 +1,967 @@
+[
+ {
+  "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+  "line": 47,
+  "text": "useEffect("
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+  "line": 49,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 119,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.tsx",
+  "line": 118,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/AgentDashboardSidebarHost.tsx",
+  "line": 24,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/AgentDashboardSidebarHost.tsx",
+  "line": 29,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/AgentDashboardSidebarHost.tsx",
+  "line": 34,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 42,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 50,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts",
+  "line": 26,
+  "text": "const effect = sourceBetween(SOURCE, 'useEffect(() => {', '}, [')"
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeDialog.tsx",
+  "line": 201,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/HostRenameDialog.tsx",
+  "line": 39,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+  "line": 185,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+  "line": 205,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/ProjectAddedDialog.tsx",
+  "line": 33,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "line": 138,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/SetupScriptPromptCard.tsx",
+  "line": 63,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/SetupScriptPromptCard.tsx",
+  "line": 126,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/SidebarAgentsList.tsx",
+  "line": 74,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+  "line": 91,
+  "text": "React.useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 65,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 107,
+  "text": "React.useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.tsx",
+  "line": 39,
+  "text": "React.useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+  "line": 62,
+  "text": "React.useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+  "line": 64,
+  "text": "const unsubscribe = useAppStore.subscribe(() => contentProbe.storeNotifications())"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+  "line": 131,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+  "line": 83,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAutomationDetailSection.tsx",
+  "line": 37,
+  "text": "React.useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 179,
+  "text": "window.addEventListener('resize', updateAnchorRect)"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 180,
+  "text": "window.addEventListener('scroll', updateAnchorRect, true)"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 187,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 298,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+  "line": 15,
+  "text": "useEffect(effect: () => void | (() => void)) {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 111,
+  "text": "window.addEventListener('resize', updateTitleTruncated)"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 173,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 117,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/folder-workspace-composer-path-status.ts",
+  "line": 74,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/header-drag-click-swallow.ts",
+  "line": 18,
+  "text": "window.addEventListener('click', swallow, true)"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 192,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 259,
+  "text": "window.addEventListener('pointermove', onPointerMove)"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 260,
+  "text": "window.addEventListener('pointerup', onPointerUp)"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 261,
+  "text": "window.addEventListener('pointercancel', onPointerCancel)"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 262,
+  "text": "window.addEventListener('keydown', onKeyDown)"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 263,
+  "text": "window.addEventListener('blur', onBlur)"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 301,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/index.tsx",
+  "line": 118,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/index.tsx",
+  "line": 127,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/index.tsx",
+  "line": 133,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+  "line": 71,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+  "line": 85,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+  "line": 134,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+  "line": 140,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 182,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 243,
+  "text": "window.addEventListener('pointermove', onPointerMove)"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 244,
+  "text": "window.addEventListener('pointerup', onPointerUp)"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 245,
+  "text": "window.addEventListener('pointercancel', onPointerCancel)"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 246,
+  "text": "window.addEventListener('keydown', onKeyDown)"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 247,
+  "text": "window.addEventListener('blur', onBlur)"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 270,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 195,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 257,
+  "text": "window.addEventListener('pointermove', onPointerMove)"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 258,
+  "text": "window.addEventListener('pointerup', onPointerUp)"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 259,
+  "text": "window.addEventListener('pointercancel', onPointerCancel)"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 260,
+  "text": "window.addEventListener('keydown', onKeyDown)"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 261,
+  "text": "window.addEventListener('blur', onBlur)"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 284,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/prompt-cache-countdown-clock.ts",
+  "line": 48,
+  "text": "document.addEventListener('visibilitychange', reconcileVisibility)"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 52,
+  "text": "window.addEventListener('resize', updateTruncated)"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-change-reset.ts",
+  "line": 16,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-change-reset.ts",
+  "line": 23,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-selection.ts",
+  "line": 82,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-delete-worktree-status-hydration.ts",
+  "line": 38,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+  "line": 32,
+  "text": "document.addEventListener('drop', preloadDropListener, true)"
+ },
+ {
+  "file": "components/sidebar/use-feedback-image-drop.ts",
+  "line": 67,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-feedback-image-drop.ts",
+  "line": 90,
+  "text": "window.addEventListener('drop', handleDrop, true)"
+ },
+ {
+  "file": "components/sidebar/use-feedback-image-drop.ts",
+  "line": 91,
+  "text": "window.addEventListener('dragend', reset, true)"
+ },
+ {
+  "file": "components/sidebar/use-sidebar-feedback-environment-prefill.ts",
+  "line": 53,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-sidebar-feedback-images.ts",
+  "line": 43,
+  "text": "useEffect("
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "line": 268,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "line": 311,
+  "text": "document.addEventListener('pointermove', handlePointerMove, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "line": 312,
+  "text": "document.addEventListener('pointerup', handlePointerUp, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "line": 313,
+  "text": "document.addEventListener('pointercancel', handlePointerUp, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "line": 314,
+  "text": "document.addEventListener('scroll', handleScroll, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+  "line": 207,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+  "line": 255,
+  "text": "document.addEventListener('pointermove', handlePointerMove, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+  "line": 256,
+  "text": "document.addEventListener('pointerup', handlePointerUp, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+  "line": 257,
+  "text": "document.addEventListener('pointercancel', handlePointerUp, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+  "line": 258,
+  "text": "document.addEventListener('click', handleClick, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+  "line": 259,
+  "text": "window.addEventListener('blur', handleBlur)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 98,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 99,
+  "text": "window.addEventListener('pointermove', handlePointerMove)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 100,
+  "text": "window.addEventListener('pointerup', stopResize)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 101,
+  "text": "window.addEventListener('pointercancel', stopResize)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 102,
+  "text": "window.addEventListener('blur', stopResize)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-drawer-lingering.ts",
+  "line": 7,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-outside-dismiss.ts",
+  "line": 38,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-outside-dismiss.ts",
+  "line": 60,
+  "text": "document.addEventListener('pointerdown', handlePointerDown, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+  "line": 12,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+  "line": 30,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+  "line": 45,
+  "text": "document.addEventListener('pointerdown', clearSelectionOutsideBoard, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+  "line": 46,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+  "line": 95,
+  "text": "document.addEventListener('dragstart', handleDragStart, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+  "line": 96,
+  "text": "document.addEventListener('dragover', handleDragOver, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+  "line": 97,
+  "text": "document.addEventListener('drop', stopTrackingDrag, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+  "line": 98,
+  "text": "document.addEventListener('dragend', stopTrackingDrag, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+  "line": 99,
+  "text": "window.addEventListener('blur', stopTrackingDrag)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+  "line": 102,
+  "text": "document.addEventListener('wheel', handleWheel, { capture: true, passive: false })"
+ },
+ {
+  "file": "components/sidebar/use-workspace-reveal-body-redirect.test.tsx",
+  "line": 59,
+  "text": "window.addEventListener(SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT, listener)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+  "line": 14,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+  "line": 22,
+  "text": "window.addEventListener(SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT, onRequest)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+  "line": 28,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-status-drop.ts",
+  "line": 73,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-status-drop.ts",
+  "line": 128,
+  "text": "document.addEventListener('drop', handleDrop, true)"
+ },
+ {
+  "file": "components/sidebar/use-workspace-status-drop.ts",
+  "line": 129,
+  "text": "document.addEventListener('dragend', handleDragFinish, true)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-foundation.ts",
+  "line": 153,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "line": 59,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "line": 113,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "line": 161,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "line": 183,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "line": 208,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "line": 220,
+  "text": "window.addEventListener('focus', refreshLinearIssueIfVisible)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "line": 221,
+  "text": "document.addEventListener('visibilitychange', refreshLinearIssueIfVisible)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "line": 228,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+  "line": 240,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+  "line": 267,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+  "line": 269,
+  "text": "window.addEventListener(CLOSE_ALL_CONTEXT_MENUS_EVENT, closeMenu)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-context-menu-model.tsx",
+  "line": 273,
+  "text": "useEffect("
+ },
+ {
+  "file": "components/sidebar/useAddRepoCloneFlow.ts",
+  "line": 65,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useAddRepoLocalFolderFlow.ts",
+  "line": 283,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.ts",
+  "line": 130,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.ts",
+  "line": 187,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.ts",
+  "line": 256,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useRenderedSetupScriptPromptState.ts",
+  "line": 26,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useSetupScriptPromptRevalidation.ts",
+  "line": 48,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useSetupScriptPromptRevalidation.ts",
+  "line": 58,
+  "text": "window.addEventListener('focus', requestRevalidation)"
+ },
+ {
+  "file": "components/sidebar/useSetupScriptPromptRevalidation.ts",
+  "line": 76,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useSidebarProjectDrop.ts",
+  "line": 40,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useSidebarProjectDrop.ts",
+  "line": 41,
+  "text": "document.addEventListener('drop', clearDragState, true)"
+ },
+ {
+  "file": "components/sidebar/useSidebarProjectDrop.ts",
+  "line": 42,
+  "text": "document.addEventListener('dragend', clearDragState, true)"
+ },
+ {
+  "file": "components/sidebar/useSidebarProjectDrop.ts",
+  "line": 118,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+  "line": 130,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+  "line": 156,
+  "text": "document.addEventListener('keydown', handleKeyDown, true)"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+  "line": 160,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+  "line": 161,
+  "text": "window.addEventListener(TOGGLE_WORKSPACE_BOARD_EVENT, toggleWorkspaceBoard)"
+ },
+ {
+  "file": "components/sidebar/workspace-delete-quick-action.ts",
+  "line": 44,
+  "text": "window.addEventListener('keydown', onKeyDown, { capture: true })"
+ },
+ {
+  "file": "components/sidebar/workspace-delete-quick-action.ts",
+  "line": 45,
+  "text": "window.addEventListener('keyup', onKeyUp, { capture: true })"
+ },
+ {
+  "file": "components/sidebar/workspace-delete-quick-action.ts",
+  "line": 46,
+  "text": "window.addEventListener('blur', clearDeleteModifierPressed)"
+ },
+ {
+  "file": "components/sidebar/workspace-delete-quick-action.ts",
+  "line": 48,
+  "text": "document.addEventListener('visibilitychange', clearDeleteModifierPressed)"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 130,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+  "line": 18,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+  "line": 90,
+  "text": "document.addEventListener('drop', handleDocumentDrop, true)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+  "line": 94,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+  "line": 101,
+  "text": "document.addEventListener('dragend', handleDocumentDragEnd, true)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+  "line": 105,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+  "line": 112,
+  "text": "document.addEventListener('visibilitychange', handleVisibilityChange)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-header-drag.ts",
+  "line": 123,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-header-drag.ts",
+  "line": 126,
+  "text": "useEffect(() => () => onHostDragActiveChange(false), [onHostDragActiveChange])"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-drag.ts",
+  "line": 247,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-drag.ts",
+  "line": 257,
+  "text": "document.addEventListener('click', handleClick, true)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+  "line": 31,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+  "line": 90,
+  "text": "window.addEventListener('keydown', handleKeyDown, { capture: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+  "line": 91,
+  "text": "window.addEventListener('pointermove', handlePointerMove, { capture: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+  "line": 92,
+  "text": "window.addEventListener('pointerup', handlePointerUp, { capture: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+  "line": 93,
+  "text": "window.addEventListener('pointercancel', handlePointerCancel, { capture: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-folder-path-statuses.ts",
+  "line": 76,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-reused-array-identity.ts",
+  "line": 9,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+  "line": 61,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+  "line": 167,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+  "line": 178,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+  "line": 201,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+  "line": 216,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+  "line": 225,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+  "line": 114,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+  "line": 139,
+  "text": "window.addEventListener('keydown', handleKeyDown, { capture: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-pending-reveal.ts",
+  "line": 59,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-pending-reveal.ts",
+  "line": 190,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.ts",
+  "line": 69,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.ts",
+  "line": 206,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.ts",
+  "line": 207,
+  "text": "window.addEventListener("
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "line": 79,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "line": 94,
+  "text": "document.addEventListener('pointerdown', clearSelectionOutsideSidebar, { capture: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-suppression.ts",
+  "line": 69,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-suppression.ts",
+  "line": 75,
+  "text": "window.addEventListener(SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT, handleSuppress)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+  "line": 122,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+  "line": 198,
+  "text": "scrollElement.addEventListener('wheel', onWheel, { passive: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+  "line": 199,
+  "text": "scrollElement.addEventListener('scroll', onScroll, { passive: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+  "line": 200,
+  "text": "scrollElement.addEventListener('pointerdown', onPointerDown, { passive: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+  "line": 201,
+  "text": "window.addEventListener('pointerup', onPointerEnd, { passive: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+  "line": 202,
+  "text": "window.addEventListener('pointercancel', onPointerEnd, { passive: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts",
+  "line": 12,
+  "text": "document.addEventListener('visibilitychange', onChange)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts",
+  "line": 49,
+  "text": "useEffect("
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts",
+  "line": 62,
+  "text": "useEffect(() => {"
+ },
+ {
+  "file": "components/sidebar/worktree-visibility-mutation-fence.ts",
+  "line": 58,
+  "text": "useEffect(() => {"
+ }
+]

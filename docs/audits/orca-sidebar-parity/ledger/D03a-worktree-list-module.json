@@ -1,0 +1,18 @@
+{
+ "domain": "D03a-worktree-list-module",
+ "status": "ok",
+ "rows": 104,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 142,
+  "files": "88/88",
+  "symbols": "279/279",
+  "tests": "254/254",
+  "labels": "95/95",
+  "hotkeys": "25/25",
+  "prefs": "0/0",
+  "timers": "15/15",
+  "subscriptions": "43/43",
+  "preload": "1/1"
+ }
+}

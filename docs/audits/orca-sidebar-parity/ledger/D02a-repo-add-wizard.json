@@ -1,0 +1,18 @@
+{
+ "domain": "D02a-repo-add-wizard",
+ "status": "ok",
+ "rows": 42,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "46/46",
+  "symbols": "77/77",
+  "tests": "242/242",
+  "labels": "66/66",
+  "hotkeys": "8/8",
+  "prefs": "0/0",
+  "timers": "3/3",
+  "subscriptions": "13/13",
+  "preload": "23/23"
+ }
+}

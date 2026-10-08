@@ -1,0 +1,67 @@
+{
+ "domain": "D15-misc-b",
+ "prod": [
+  {
+   "name": "use-visible-workspace-kanban-worktree-ids.ts",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "use-workspace-reveal-body-redirect.ts",
+   "kind": "prod",
+   "loc": 43
+  },
+  {
+   "name": "use-workspace-status-drop.ts",
+   "kind": "prod",
+   "loc": 143
+  },
+  {
+   "name": "use-worktree-meta-workspace.ts",
+   "kind": "prod",
+   "loc": 107
+  },
+  {
+   "name": "use-worktree-parent-picker-transition.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "useRenderedSetupScriptPromptState.ts",
+   "kind": "prod",
+   "loc": 45
+  },
+  {
+   "name": "workspace-chrome-metrics.ts",
+   "kind": "prod",
+   "loc": 4
+  },
+  {
+   "name": "worktree-sidebar-header-drop-preview.ts",
+   "kind": "prod",
+   "loc": 142
+  }
+ ],
+ "test": [
+  {
+   "name": "use-workspace-reveal-body-redirect.test.tsx",
+   "kind": "test",
+   "loc": 77
+  },
+  {
+   "name": "use-workspace-status-drop.test.ts",
+   "kind": "test",
+   "loc": 44
+  },
+  {
+   "name": "useRenderedSetupScriptPromptState.test.ts",
+   "kind": "test",
+   "loc": 48
+  },
+  {
+   "name": "worktree-scroll-to-current-button.test.ts",
+   "kind": "test",
+   "loc": 22
+  }
+ ]
+}

@@ -1,0 +1,4072 @@
+{
+ "D01-shell-chrome": [
+  {
+   "name": "components/Sidebar.tsx",
+   "kind": "prod",
+   "loc": 1
+  },
+  {
+   "name": "AgentDashboardSidebarEntry.tsx",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "AgentDashboardSidebarHost.test.tsx",
+   "kind": "test",
+   "loc": 75
+  },
+  {
+   "name": "AgentDashboardSidebarHost.tsx",
+   "kind": "prod",
+   "loc": 43
+  },
+  {
+   "name": "CacheTimer.test.tsx",
+   "kind": "test",
+   "loc": 90
+  },
+  {
+   "name": "CacheTimer.tsx",
+   "kind": "prod",
+   "loc": 112
+  },
+  {
+   "name": "ProjectHeaderActions.test.tsx",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "ProjectHeaderActions.tsx",
+   "kind": "prod",
+   "loc": 30
+  },
+  {
+   "name": "ScrollToCurrentWorkspaceToolbarButton.tsx",
+   "kind": "prod",
+   "loc": 34
+  },
+  {
+   "name": "SetupGuideSidebarEntry.test.tsx",
+   "kind": "test",
+   "loc": 200
+  },
+  {
+   "name": "SetupGuideSidebarEntry.tsx",
+   "kind": "prod",
+   "loc": 124
+  },
+  {
+   "name": "Sidebar.test.tsx",
+   "kind": "test",
+   "loc": 246
+  },
+  {
+   "name": "SidebarFeedbackDialog.test.tsx",
+   "kind": "test",
+   "loc": 349
+  },
+  {
+   "name": "SidebarFeedbackDialog.tsx",
+   "kind": "prod",
+   "loc": 377
+  },
+  {
+   "name": "SidebarFeedbackImageAttachments.tsx",
+   "kind": "prod",
+   "loc": 107
+  },
+  {
+   "name": "SidebarHeader.test.tsx",
+   "kind": "test",
+   "loc": 351
+  },
+  {
+   "name": "SidebarHeader.tsx",
+   "kind": "prod",
+   "loc": 137
+  },
+  {
+   "name": "SidebarHostScopeMenuSection.tsx",
+   "kind": "prod",
+   "loc": 151
+  },
+  {
+   "name": "SidebarNav.test.tsx",
+   "kind": "test",
+   "loc": 508
+  },
+  {
+   "name": "SidebarNav.tsx",
+   "kind": "prod",
+   "loc": 293
+  },
+  {
+   "name": "SidebarSettingsHelpMenu.test.tsx",
+   "kind": "test",
+   "loc": 349
+  },
+  {
+   "name": "SidebarSettingsHelpMenu.tsx",
+   "kind": "prod",
+   "loc": 364
+  },
+  {
+   "name": "SidebarTaskNavButton.tsx",
+   "kind": "prod",
+   "loc": 237
+  },
+  {
+   "name": "SidebarToolbar.test.tsx",
+   "kind": "test",
+   "loc": 157
+  },
+  {
+   "name": "SidebarToolbar.tsx",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "host-section-order.test.ts",
+   "kind": "test",
+   "loc": 31
+  },
+  {
+   "name": "host-section-order.ts",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "host-section-rows.test.ts",
+   "kind": "test",
+   "loc": 857
+  },
+  {
+   "name": "host-section-rows.ts",
+   "kind": "prod",
+   "loc": 308
+  },
+  {
+   "name": "repo-header-action-button-class.ts",
+   "kind": "prod",
+   "loc": 4
+  },
+  {
+   "name": "sidebar-host-options.test.ts",
+   "kind": "test",
+   "loc": 216
+  },
+  {
+   "name": "sidebar-host-options.ts",
+   "kind": "prod",
+   "loc": 154
+  }
+ ],
+ "D02-repo-project-host-mgmt": [
+  {
+   "name": "AddProjectFromFolderDialog.test.tsx",
+   "kind": "test",
+   "loc": 328
+  },
+  {
+   "name": "AddProjectFromFolderDialog.tsx",
+   "kind": "prod",
+   "loc": 220
+  },
+  {
+   "name": "AddRemoteHostDialog.config-picker.test.tsx",
+   "kind": "test",
+   "loc": 211
+  },
+  {
+   "name": "AddRemoteHostDialog.tsx",
+   "kind": "prod",
+   "loc": 374
+  },
+  {
+   "name": "AddRemoteHostFields.test.tsx",
+   "kind": "test",
+   "loc": 38
+  },
+  {
+   "name": "AddRemoteHostFields.tsx",
+   "kind": "prod",
+   "loc": 271
+  },
+  {
+   "name": "AddRemoteHostServerFormPanel.tsx",
+   "kind": "prod",
+   "loc": 76
+  },
+  {
+   "name": "AddRemoteHostSshConfigPicker.tsx",
+   "kind": "prod",
+   "loc": 276
+  },
+  {
+   "name": "AddRemoteHostSshFormPanel.tsx",
+   "kind": "prod",
+   "loc": 75
+  },
+  {
+   "name": "AddRepoCloneStep.tsx",
+   "kind": "prod",
+   "loc": 219
+  },
+  {
+   "name": "AddRepoCreateStep.test.tsx",
+   "kind": "test",
+   "loc": 74
+  },
+  {
+   "name": "AddRepoCreateStep.tsx",
+   "kind": "prod",
+   "loc": 271
+  },
+  {
+   "name": "AddRepoDialog.default-checkout.test.ts",
+   "kind": "test",
+   "loc": 27
+  },
+  {
+   "name": "AddRepoDialog.tsx",
+   "kind": "prod",
+   "loc": 406
+  },
+  {
+   "name": "AddRepoDialogChrome.tsx",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "AddRepoDialogStepContent.test.tsx",
+   "kind": "test",
+   "loc": 296
+  },
+  {
+   "name": "AddRepoDialogStepContent.tsx",
+   "kind": "prod",
+   "loc": 274
+  },
+  {
+   "name": "AddRepoHostSelector.test.tsx",
+   "kind": "test",
+   "loc": 137
+  },
+  {
+   "name": "AddRepoHostSelector.tsx",
+   "kind": "prod",
+   "loc": 235
+  },
+  {
+   "name": "AddRepoHostSelectorSlot.tsx",
+   "kind": "prod",
+   "loc": 28
+  },
+  {
+   "name": "AddRepoNestedImportStep.test.tsx",
+   "kind": "test",
+   "loc": 227
+  },
+  {
+   "name": "AddRepoNestedImportStep.tsx",
+   "kind": "prod",
+   "loc": 234
+  },
+  {
+   "name": "AddRepoRemoteStep.tsx",
+   "kind": "prod",
+   "loc": 226
+  },
+  {
+   "name": "AddRepoServerStartStep.tsx",
+   "kind": "prod",
+   "loc": 306
+  },
+  {
+   "name": "AddRepoStartSteps.test.tsx",
+   "kind": "test",
+   "loc": 397
+  },
+  {
+   "name": "AddRepoStartSteps.tsx",
+   "kind": "prod",
+   "loc": 343
+  },
+  {
+   "name": "AddRepoStepIndicator.tsx",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "AddRepoSteps.default-checkout.test.ts",
+   "kind": "test",
+   "loc": 229
+  },
+  {
+   "name": "AddRepoSteps.tsx",
+   "kind": "prod",
+   "loc": 265
+  },
+  {
+   "name": "CreateProjectLocationField.tsx",
+   "kind": "prod",
+   "loc": 168
+  },
+  {
+   "name": "ForgetSshWorkspaceDialog.tsx",
+   "kind": "prod",
+   "loc": 204
+  },
+  {
+   "name": "HiddenWorktreeRecoveryList.tsx",
+   "kind": "prod",
+   "loc": 201
+  },
+  {
+   "name": "HostRemoveDialog.tsx",
+   "kind": "prod",
+   "loc": 299
+  },
+  {
+   "name": "HostRenameDialog.tsx",
+   "kind": "prod",
+   "loc": 104
+  },
+  {
+   "name": "HostSectionHeaderMenu.tsx",
+   "kind": "prod",
+   "loc": 296
+  },
+  {
+   "name": "LinearAgentSkillSetupDialog.tsx",
+   "kind": "prod",
+   "loc": 198
+  },
+  {
+   "name": "LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "kind": "test",
+   "loc": 360
+  },
+  {
+   "name": "LinearAgentSkillSetupPrompt.test.tsx",
+   "kind": "test",
+   "loc": 932
+  },
+  {
+   "name": "LinearAgentSkillSetupPrompt.tsx",
+   "kind": "prod",
+   "loc": 413
+  },
+  {
+   "name": "LinearAgentSkillSetupPrompt.update-command.test.tsx",
+   "kind": "test",
+   "loc": 182
+  },
+  {
+   "name": "NonGitFolderDialog.test.tsx",
+   "kind": "test",
+   "loc": 257
+  },
+  {
+   "name": "NonGitFolderDialog.tsx",
+   "kind": "prod",
+   "loc": 170
+  },
+  {
+   "name": "OrcaYamlTrustDialog.test.tsx",
+   "kind": "test",
+   "loc": 98
+  },
+  {
+   "name": "OrcaYamlTrustDialog.tsx",
+   "kind": "prod",
+   "loc": 214
+  },
+  {
+   "name": "PreservedBranchBatchReviewDialog.tsx",
+   "kind": "prod",
+   "loc": 188
+  },
+  {
+   "name": "PreservedBranchBatchReviewModal.tsx",
+   "kind": "prod",
+   "loc": 52
+  },
+  {
+   "name": "ProjectAddedDialog.test.tsx",
+   "kind": "test",
+   "loc": 195
+  },
+  {
+   "name": "ProjectAddedDialog.tsx",
+   "kind": "prod",
+   "loc": 123
+  },
+  {
+   "name": "ProjectGroupDeleteDialog.test.tsx",
+   "kind": "test",
+   "loc": 132
+  },
+  {
+   "name": "ProjectGroupDeleteDialog.tsx",
+   "kind": "prod",
+   "loc": 218
+  },
+  {
+   "name": "ProjectGroupNameDialog.tsx",
+   "kind": "prod",
+   "loc": 136
+  },
+  {
+   "name": "RemoteFileBrowser.paste.test.tsx",
+   "kind": "test",
+   "loc": 165
+  },
+  {
+   "name": "RemoteFileBrowser.tsx",
+   "kind": "prod",
+   "loc": 325
+  },
+  {
+   "name": "RemoteFileBrowserBreadcrumbs.tsx",
+   "kind": "prod",
+   "loc": 93
+  },
+  {
+   "name": "RemoteFileBrowserEntryList.tsx",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "RemoveFolderDialog.test.tsx",
+   "kind": "test",
+   "loc": 94
+  },
+  {
+   "name": "RemoveFolderDialog.tsx",
+   "kind": "prod",
+   "loc": 122
+  },
+  {
+   "name": "SetupScriptPromptCard.test.ts",
+   "kind": "test",
+   "loc": 169
+  },
+  {
+   "name": "SetupScriptPromptCard.tsx",
+   "kind": "prod",
+   "loc": 410
+  },
+  {
+   "name": "SetupScriptPromptCardShell.test.tsx",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "SetupScriptPromptCardShell.tsx",
+   "kind": "prod",
+   "loc": 106
+  },
+  {
+   "name": "SetupScriptPromptCardViews.tsx",
+   "kind": "prod",
+   "loc": 299
+  },
+  {
+   "name": "SetupScriptPromptToast.tsx",
+   "kind": "prod",
+   "loc": 38
+  },
+  {
+   "name": "SshTargetRow.tsx",
+   "kind": "prod",
+   "loc": 103
+  },
+  {
+   "name": "SuppressExternalWorktreeInboxDialog.tsx",
+   "kind": "prod",
+   "loc": 88
+  },
+  {
+   "name": "add-remote-host-ssh-actions.test.ts",
+   "kind": "test",
+   "loc": 211
+  },
+  {
+   "name": "add-remote-host-ssh-actions.ts",
+   "kind": "prod",
+   "loc": 267
+  },
+  {
+   "name": "add-repo-browse-authority.test.ts",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "add-repo-browse-authority.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "add-repo-dialog-types.ts",
+   "kind": "prod",
+   "loc": 14
+  },
+  {
+   "name": "add-repo-existing-workspaces-telemetry.test.ts",
+   "kind": "test",
+   "loc": 137
+  },
+  {
+   "name": "add-repo-existing-workspaces-telemetry.ts",
+   "kind": "prod",
+   "loc": 93
+  },
+  {
+   "name": "add-repo-host-availability.ts",
+   "kind": "prod",
+   "loc": 12
+  },
+  {
+   "name": "add-repo-local-start-actions.ts",
+   "kind": "prod",
+   "loc": 121
+  },
+  {
+   "name": "add-repo-runtime-owner.ts",
+   "kind": "prod",
+   "loc": 35
+  },
+  {
+   "name": "add-repo-skip-finalization.test.ts",
+   "kind": "test",
+   "loc": 155
+  },
+  {
+   "name": "add-repo-skip-finalization.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "add-repo-store-upsert.ts",
+   "kind": "prod",
+   "loc": 54
+  },
+  {
+   "name": "empty-project-placeholder-repos.test.ts",
+   "kind": "test",
+   "loc": 203
+  },
+  {
+   "name": "empty-project-placeholder-repos.ts",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "folder-workspace-agent-startup.ts",
+   "kind": "prod",
+   "loc": 92
+  },
+  {
+   "name": "folder-workspace-card-pr-display.test.ts",
+   "kind": "test",
+   "loc": 371
+  },
+  {
+   "name": "folder-workspace-card-pr-display.ts",
+   "kind": "prod",
+   "loc": 137
+  },
+  {
+   "name": "folder-workspace-composer-helpers.test.ts",
+   "kind": "test",
+   "loc": 92
+  },
+  {
+   "name": "folder-workspace-composer-helpers.ts",
+   "kind": "prod",
+   "loc": 107
+  },
+  {
+   "name": "folder-workspace-composer-path-status.test.tsx",
+   "kind": "test",
+   "loc": 292
+  },
+  {
+   "name": "folder-workspace-composer-path-status.ts",
+   "kind": "prod",
+   "loc": 138
+  },
+  {
+   "name": "folder-workspace-composer-submit.test.ts",
+   "kind": "test",
+   "loc": 872
+  },
+  {
+   "name": "folder-workspace-composer-submit.ts",
+   "kind": "prod",
+   "loc": 267
+  },
+  {
+   "name": "folder-workspace-host-id.ts",
+   "kind": "prod",
+   "loc": 21
+  },
+  {
+   "name": "folder-workspace-linked-startup-plan.test.ts",
+   "kind": "test",
+   "loc": 26
+  },
+  {
+   "name": "linear-agent-skill-runtime.shell-override.test.ts",
+   "kind": "test",
+   "loc": 33
+  },
+  {
+   "name": "linear-agent-skill-runtime.ts",
+   "kind": "prod",
+   "loc": 147
+  },
+  {
+   "name": "linear-agent-skill-setup-copy.ts",
+   "kind": "prod",
+   "loc": 114
+  },
+  {
+   "name": "linear-agent-skill-setup-reminder-toast.ts",
+   "kind": "prod",
+   "loc": 148
+  },
+  {
+   "name": "linear-agent-skill-setup-reminders.test.ts",
+   "kind": "test",
+   "loc": 89
+  },
+  {
+   "name": "linear-agent-skill-setup-reminders.ts",
+   "kind": "prod",
+   "loc": 79
+  },
+  {
+   "name": "preserved-branch-batch-toast.test.tsx",
+   "kind": "test",
+   "loc": 208
+  },
+  {
+   "name": "preserved-branch-batch-toast.tsx",
+   "kind": "prod",
+   "loc": 190
+  },
+  {
+   "name": "preserved-branch-toast.test.tsx",
+   "kind": "test",
+   "loc": 105
+  },
+  {
+   "name": "preserved-branch-toast.tsx",
+   "kind": "prod",
+   "loc": 119
+  },
+  {
+   "name": "project-added-default-checkout.test.ts",
+   "kind": "test",
+   "loc": 535
+  },
+  {
+   "name": "project-added-default-checkout.ts",
+   "kind": "prod",
+   "loc": 274
+  },
+  {
+   "name": "remote-file-browser-drive-paths.test.ts",
+   "kind": "test",
+   "loc": 86
+  },
+  {
+   "name": "remote-file-browser-drive-paths.ts",
+   "kind": "prod",
+   "loc": 62
+  },
+  {
+   "name": "remote-file-browser-helpers.test.ts",
+   "kind": "test",
+   "loc": 407
+  },
+  {
+   "name": "remote-file-browser-helpers.ts",
+   "kind": "prod",
+   "loc": 296
+  },
+  {
+   "name": "remote-file-browser-path-preview-resolver.ts",
+   "kind": "prod",
+   "loc": 164
+  },
+  {
+   "name": "use-add-repo-host-change-reset.ts",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "use-add-repo-host-selection.test.ts",
+   "kind": "test",
+   "loc": 313
+  },
+  {
+   "name": "use-add-repo-host-selection.ts",
+   "kind": "prod",
+   "loc": 188
+  },
+  {
+   "name": "use-add-repo-hosted-controller.test.ts",
+   "kind": "test",
+   "loc": 113
+  },
+  {
+   "name": "use-add-repo-hosted-controller.ts",
+   "kind": "prod",
+   "loc": 72
+  },
+  {
+   "name": "use-add-repo-remote-nested-scan.ts",
+   "kind": "prod",
+   "loc": 62
+  },
+  {
+   "name": "use-remote-file-browser-filter-key-commands.ts",
+   "kind": "prod",
+   "loc": 120
+  },
+  {
+   "name": "use-remote-file-browser-listing.ts",
+   "kind": "prod",
+   "loc": 58
+  },
+  {
+   "name": "use-remote-file-browser-path-preview.ts",
+   "kind": "prod",
+   "loc": 208
+  },
+  {
+   "name": "useAddRepoCloneFlow.test.ts",
+   "kind": "test",
+   "loc": 237
+  },
+  {
+   "name": "useAddRepoCloneFlow.ts",
+   "kind": "prod",
+   "loc": 209
+  },
+  {
+   "name": "useAddRepoLocalFolderFlow.test.ts",
+   "kind": "test",
+   "loc": 242
+  },
+  {
+   "name": "useAddRepoLocalFolderFlow.ts",
+   "kind": "prod",
+   "loc": 314
+  },
+  {
+   "name": "useAddRepoNestedImportFlow.test.ts",
+   "kind": "test",
+   "loc": 249
+  },
+  {
+   "name": "useAddRepoNestedImportFlow.ts",
+   "kind": "prod",
+   "loc": 298
+  },
+  {
+   "name": "useAddRepoNestedReviewController.ts",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "useAddRepoNestedReviewState.ts",
+   "kind": "prod",
+   "loc": 151
+  },
+  {
+   "name": "useAddRepoServerPathFlow.test.ts",
+   "kind": "test",
+   "loc": 141
+  },
+  {
+   "name": "useAddRepoServerPathFlow.ts",
+   "kind": "prod",
+   "loc": 208
+  },
+  {
+   "name": "useCreateProjectDefaults.test.ts",
+   "kind": "test",
+   "loc": 266
+  },
+  {
+   "name": "useCreateProjectDefaults.ts",
+   "kind": "prod",
+   "loc": 304
+  },
+  {
+   "name": "useCreateRepo.default-checkout.test.ts",
+   "kind": "test",
+   "loc": 287
+  },
+  {
+   "name": "useCreateRepo.ts",
+   "kind": "prod",
+   "loc": 268
+  },
+  {
+   "name": "useSetupScriptPromptRevalidation.test.tsx",
+   "kind": "test",
+   "loc": 296
+  },
+  {
+   "name": "useSetupScriptPromptRevalidation.ts",
+   "kind": "prod",
+   "loc": 114
+  }
+ ],
+ "D10-visibility-inbox-notices": [
+  {
+   "name": "AutoRenameFailedDialog.test.tsx",
+   "kind": "test",
+   "loc": 110
+  },
+  {
+   "name": "AutoRenameFailedDialog.tsx",
+   "kind": "prod",
+   "loc": 162
+  },
+  {
+   "name": "DeleteWorktreeDialog.host-context-boundary.test.ts",
+   "kind": "test",
+   "loc": 34
+  },
+  {
+   "name": "DeleteWorktreeDialog.test.tsx",
+   "kind": "test",
+   "loc": 467
+  },
+  {
+   "name": "DeleteWorktreeDialog.tsx",
+   "kind": "prod",
+   "loc": 427
+  },
+  {
+   "name": "DeleteWorktreeDialogDescription.tsx",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "DeleteWorktreeDialogFooter.tsx",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "DeleteWorktreeTargetPreview.test.tsx",
+   "kind": "test",
+   "loc": 154
+  },
+  {
+   "name": "DeleteWorktreeTargetPreview.tsx",
+   "kind": "prod",
+   "loc": 146
+  },
+  {
+   "name": "ImportedWorktreesVisibilityLine.test.tsx",
+   "kind": "test",
+   "loc": 159
+  },
+  {
+   "name": "ImportedWorktreesVisibilityLine.tsx",
+   "kind": "prod",
+   "loc": 335
+  },
+  {
+   "name": "NewExternalWorktreesInboxLine.test.tsx",
+   "kind": "test",
+   "loc": 179
+  },
+  {
+   "name": "NewExternalWorktreesInboxLine.tsx",
+   "kind": "prod",
+   "loc": 156
+  },
+  {
+   "name": "NoticeHostGlyph.test.tsx",
+   "kind": "test",
+   "loc": 169
+  },
+  {
+   "name": "NoticeHostGlyph.tsx",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "WorktreeVisibilityDialog.test.tsx",
+   "kind": "test",
+   "loc": 956
+  },
+  {
+   "name": "WorktreeVisibilityDialog.tsx",
+   "kind": "prod",
+   "loc": 394
+  },
+  {
+   "name": "WorktreeVisibilityGlobalSettingsLink.tsx",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "WorktreeVisibilityHelpPopover.test.tsx",
+   "kind": "test",
+   "loc": 122
+  },
+  {
+   "name": "WorktreeVisibilityHelpPopover.tsx",
+   "kind": "prod",
+   "loc": 67
+  },
+  {
+   "name": "WorktreeVisibilityScanStatus.tsx",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "WorktreeVisibilitySourceAddForm.tsx",
+   "kind": "prod",
+   "loc": 100
+  },
+  {
+   "name": "WorktreeVisibilitySourceList.test.tsx",
+   "kind": "test",
+   "loc": 108
+  },
+  {
+   "name": "WorktreeVisibilitySourceList.tsx",
+   "kind": "prod",
+   "loc": 364
+  },
+  {
+   "name": "default-branch-visible-under-hide-sleeping.test.ts",
+   "kind": "test",
+   "loc": 206
+  },
+  {
+   "name": "imported-worktrees-card-candidates.test.ts",
+   "kind": "test",
+   "loc": 184
+  },
+  {
+   "name": "imported-worktrees-card-candidates.ts",
+   "kind": "prod",
+   "loc": 68
+  },
+  {
+   "name": "new-external-worktrees-inbox-actions.test.ts",
+   "kind": "test",
+   "loc": 102
+  },
+  {
+   "name": "new-external-worktrees-inbox-actions.ts",
+   "kind": "prod",
+   "loc": 148
+  },
+  {
+   "name": "new-external-worktrees-inbox-candidates.test.ts",
+   "kind": "test",
+   "loc": 107
+  },
+  {
+   "name": "new-external-worktrees-inbox-candidates.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "worktree-visibility-host-target.ts",
+   "kind": "prod",
+   "loc": 56
+  },
+  {
+   "name": "worktree-visibility-mutation-fence.ts",
+   "kind": "prod",
+   "loc": 92
+  },
+  {
+   "name": "worktree-visibility-repo-sources.ts",
+   "kind": "prod",
+   "loc": 31
+  },
+  {
+   "name": "worktree-visibility-source-mutation.ts",
+   "kind": "prod",
+   "loc": 64
+  },
+  {
+   "name": "worktree-visibility-source-provenance.test.ts",
+   "kind": "test",
+   "loc": 129
+  },
+  {
+   "name": "worktree-visibility-source-provenance.ts",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "worktree-visibility-update-error.ts",
+   "kind": "prod",
+   "loc": 19
+  },
+  {
+   "name": "worktree-visibility-use-global.ts",
+   "kind": "prod",
+   "loc": 90
+  }
+ ],
+ "D12-markdown-pr-render": [
+  {
+   "name": "CommentMarkdown.github-attachment-image.test.tsx",
+   "kind": "test",
+   "loc": 64
+  },
+  {
+   "name": "CommentMarkdown.link-click.test.tsx",
+   "kind": "test",
+   "loc": 603
+  },
+  {
+   "name": "CommentMarkdown.test.tsx",
+   "kind": "test",
+   "loc": 303
+  },
+  {
+   "name": "CommentMarkdown.tsx",
+   "kind": "prod",
+   "loc": 263
+  },
+  {
+   "name": "CommentMermaidBlock.tsx",
+   "kind": "prod",
+   "loc": 28
+  },
+  {
+   "name": "MarkdownImageLightbox.test.tsx",
+   "kind": "test",
+   "loc": 68
+  },
+  {
+   "name": "MarkdownImageLightbox.tsx",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "comment-markdown-element-renderers.tsx",
+   "kind": "prod",
+   "loc": 355
+  },
+  {
+   "name": "comment-markdown-github-attachment-media.tsx",
+   "kind": "prod",
+   "loc": 116
+  },
+  {
+   "name": "comment-markdown-lazy.tsx",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "comment-markdown-native-chat-file-links.ts",
+   "kind": "prod",
+   "loc": 243
+  },
+  {
+   "name": "use-feedback-image-drop.test.tsx",
+   "kind": "test",
+   "loc": 185
+  },
+  {
+   "name": "use-feedback-image-drop.ts",
+   "kind": "prod",
+   "loc": 101
+  }
+ ],
+ "D05-agents-rows": [
+  {
+   "name": "SidebarAgentsList.test.tsx",
+   "kind": "test",
+   "loc": 65
+  },
+  {
+   "name": "SidebarAgentsList.tsx",
+   "kind": "prod",
+   "loc": 192
+  },
+  {
+   "name": "stale-agent-row-unverifiable.test.ts",
+   "kind": "test",
+   "loc": 158
+  },
+  {
+   "name": "use-worktree-activity-status.test.tsx",
+   "kind": "test",
+   "loc": 352
+  },
+  {
+   "name": "use-worktree-activity-status.ts",
+   "kind": "prod",
+   "loc": 72
+  },
+  {
+   "name": "use-worktree-activity-statuses.test.ts",
+   "kind": "test",
+   "loc": 46
+  },
+  {
+   "name": "use-worktree-activity-statuses.ts",
+   "kind": "prod",
+   "loc": 75
+  },
+  {
+   "name": "useWorktreeAgentRows.test.ts",
+   "kind": "test",
+   "loc": 817
+  },
+  {
+   "name": "useWorktreeAgentRows.ts",
+   "kind": "prod",
+   "loc": 150
+  },
+  {
+   "name": "worktree-agent-activity-summary.test.ts",
+   "kind": "test",
+   "loc": 506
+  },
+  {
+   "name": "worktree-agent-activity-summary.ts",
+   "kind": "prod",
+   "loc": 307
+  },
+  {
+   "name": "worktree-agent-freshness-selector.test.ts",
+   "kind": "test",
+   "loc": 105
+  },
+  {
+   "name": "worktree-agent-freshness-selector.ts",
+   "kind": "prod",
+   "loc": 53
+  },
+  {
+   "name": "worktree-agent-live-index-patch.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "worktree-agent-orchestration-batch.test.ts",
+   "kind": "test",
+   "loc": 715
+  },
+  {
+   "name": "worktree-agent-orchestration-batch.ts",
+   "kind": "prod",
+   "loc": 42
+  },
+  {
+   "name": "worktree-agent-orchestration-index.test.ts",
+   "kind": "test",
+   "loc": 522
+  },
+  {
+   "name": "worktree-agent-orchestration-index.ts",
+   "kind": "prod",
+   "loc": 314
+  },
+  {
+   "name": "worktree-agent-row-fallback-tab.ts",
+   "kind": "prod",
+   "loc": 29
+  },
+  {
+   "name": "worktree-agent-row-orchestration.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "worktree-agent-row-order.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "worktree-agent-row-selectors.test.ts",
+   "kind": "test",
+   "loc": 528
+  },
+  {
+   "name": "worktree-agent-row-selectors.ts",
+   "kind": "prod",
+   "loc": 309
+  },
+  {
+   "name": "worktree-agent-row-type.ts",
+   "kind": "prod",
+   "loc": 30
+  },
+  {
+   "name": "worktree-agent-rows.ts",
+   "kind": "prod",
+   "loc": 275
+  },
+  {
+   "name": "worktree-subagent-child-rows.test.ts",
+   "kind": "test",
+   "loc": 55
+  },
+  {
+   "name": "worktree-subagent-child-rows.ts",
+   "kind": "prod",
+   "loc": 72
+  },
+  {
+   "name": "worktree-title-derived-agent-rows.test.ts",
+   "kind": "test",
+   "loc": 404
+  },
+  {
+   "name": "worktree-title-derived-agent-rows.ts",
+   "kind": "prod",
+   "loc": 330
+  }
+ ],
+ "D09-filters-sort-visibility": [
+  {
+   "name": "SidebarFilter.tsx",
+   "kind": "prod",
+   "loc": 407
+  },
+  {
+   "name": "SidebarGroupByToggle.test.tsx",
+   "kind": "test",
+   "loc": 54
+  },
+  {
+   "name": "SidebarGroupByToggle.tsx",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "SidebarProjectFilterPanel.tsx",
+   "kind": "prod",
+   "loc": 245
+  },
+  {
+   "name": "SidebarRepositoryFilterSection.test.tsx",
+   "kind": "test",
+   "loc": 209
+  },
+  {
+   "name": "SidebarRepositoryFilterSection.tsx",
+   "kind": "prod",
+   "loc": 140
+  },
+  {
+   "name": "SidebarWorkspaceFilterSection.test.tsx",
+   "kind": "test",
+   "loc": 120
+  },
+  {
+   "name": "SidebarWorkspaceFilterSection.tsx",
+   "kind": "prod",
+   "loc": 129
+  },
+  {
+   "name": "project-filter-reveal.test.ts",
+   "kind": "test",
+   "loc": 32
+  },
+  {
+   "name": "project-filter-reveal.ts",
+   "kind": "prod",
+   "loc": 12
+  },
+  {
+   "name": "sidebar-filter-actions.ts",
+   "kind": "prod",
+   "loc": 78
+  },
+  {
+   "name": "sidebar-filter-state.test.ts",
+   "kind": "test",
+   "loc": 289
+  },
+  {
+   "name": "smart-attention.test.ts",
+   "kind": "test",
+   "loc": 785
+  },
+  {
+   "name": "smart-attention.ts",
+   "kind": "prod",
+   "loc": 416
+  },
+  {
+   "name": "smart-sort.test.ts",
+   "kind": "test",
+   "loc": 878
+  },
+  {
+   "name": "smart-sort.ts",
+   "kind": "prod",
+   "loc": 219
+  },
+  {
+   "name": "worktree-filter-visibility.test.ts",
+   "kind": "test",
+   "loc": 79
+  },
+  {
+   "name": "worktree-filter-visibility.ts",
+   "kind": "prod",
+   "loc": 43
+  }
+ ],
+ "D07-menus-actions": [
+  {
+   "name": "SidebarWorkspaceOptionsMenu.tsx",
+   "kind": "prod",
+   "loc": 100
+  },
+  {
+   "name": "WorkspaceSleepMenuItems.tsx",
+   "kind": "prod",
+   "loc": 69
+  },
+  {
+   "name": "WorkspaceStatusAppearancePopover.tsx",
+   "kind": "prod",
+   "loc": 128
+  },
+  {
+   "name": "delete-worktree-dialog-copy.ts",
+   "kind": "prod",
+   "loc": 91
+  },
+  {
+   "name": "delete-worktree-dialog-force-delete.ts",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "delete-worktree-dirty-change-counts.test.ts",
+   "kind": "test",
+   "loc": 47
+  },
+  {
+   "name": "delete-worktree-dirty-change-counts.ts",
+   "kind": "prod",
+   "loc": 69
+  },
+  {
+   "name": "delete-worktree-failure-toast.test.tsx",
+   "kind": "test",
+   "loc": 214
+  },
+  {
+   "name": "delete-worktree-failure-toast.tsx",
+   "kind": "prod",
+   "loc": 132
+  },
+  {
+   "name": "delete-worktree-flow.test.ts",
+   "kind": "test",
+   "loc": 675
+  },
+  {
+   "name": "delete-worktree-flow.ts",
+   "kind": "prod",
+   "loc": 200
+  },
+  {
+   "name": "delete-worktree-lineage-delete-all.ts",
+   "kind": "prod",
+   "loc": 43
+  },
+  {
+   "name": "delete-worktree-parallel-flow.test.ts",
+   "kind": "test",
+   "loc": 434
+  },
+  {
+   "name": "delete-worktree-preference-toast.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "delete-worktree-toast.test.ts",
+   "kind": "test",
+   "loc": 179
+  },
+  {
+   "name": "delete-worktree-toast.ts",
+   "kind": "prod",
+   "loc": 142
+  },
+  {
+   "name": "hovered-workspace-delete.test.ts",
+   "kind": "test",
+   "loc": 223
+  },
+  {
+   "name": "hovered-workspace-delete.ts",
+   "kind": "prod",
+   "loc": 133
+  },
+  {
+   "name": "run-worktree-delete-with-toast.ts",
+   "kind": "prod",
+   "loc": 178
+  },
+  {
+   "name": "sidebar-workspace-option-items.test.ts",
+   "kind": "test",
+   "loc": 67
+  },
+  {
+   "name": "sidebar-workspace-option-items.ts",
+   "kind": "prod",
+   "loc": 294
+  },
+  {
+   "name": "sleep-worktree-flow.test.ts",
+   "kind": "test",
+   "loc": 331
+  },
+  {
+   "name": "sleep-worktree-flow.ts",
+   "kind": "prod",
+   "loc": 234
+  },
+  {
+   "name": "use-worktree-context-menu-commands.ts",
+   "kind": "prod",
+   "loc": 182
+  },
+  {
+   "name": "use-worktree-context-menu-model.tsx",
+   "kind": "prod",
+   "loc": 426
+  },
+  {
+   "name": "use-worktree-context-menu-secondary-actions.ts",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "workspace-delete-lineage.test.ts",
+   "kind": "test",
+   "loc": 219
+  },
+  {
+   "name": "workspace-delete-lineage.ts",
+   "kind": "prod",
+   "loc": 75
+  },
+  {
+   "name": "workspace-delete-quick-action.ts",
+   "kind": "prod",
+   "loc": 99
+  },
+  {
+   "name": "workspace-lineage-menu-actions.test.ts",
+   "kind": "test",
+   "loc": 130
+  },
+  {
+   "name": "workspace-lineage-menu-actions.ts",
+   "kind": "prod",
+   "loc": 70
+  },
+  {
+   "name": "workspace-options-menu-items.tsx",
+   "kind": "prod",
+   "loc": 240
+  },
+  {
+   "name": "workspace-status-icon-options.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "workspace-status-icons.tsx",
+   "kind": "prod",
+   "loc": 74
+  },
+  {
+   "name": "workspace-status.test.ts",
+   "kind": "test",
+   "loc": 119
+  },
+  {
+   "name": "workspace-status.ts",
+   "kind": "prod",
+   "loc": 227
+  },
+  {
+   "name": "worktree-context-menu-delete-intent.test.ts",
+   "kind": "test",
+   "loc": 134
+  },
+  {
+   "name": "worktree-context-menu-delete-intent.ts",
+   "kind": "prod",
+   "loc": 80
+  },
+  {
+   "name": "worktree-context-menu-policy.ts",
+   "kind": "prod",
+   "loc": 249
+  },
+  {
+   "name": "worktree-delete-execution.ts",
+   "kind": "prod",
+   "loc": 205
+  },
+  {
+   "name": "worktree-delete-host-qualification.test.ts",
+   "kind": "test",
+   "loc": 274
+  },
+  {
+   "name": "worktree-delete-position-scaling.test.ts",
+   "kind": "test",
+   "loc": 68
+  },
+  {
+   "name": "worktree-delete-request.test.ts",
+   "kind": "test",
+   "loc": 130
+  },
+  {
+   "name": "worktree-delete-request.ts",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "worktree-delete-state-host-match.ts",
+   "kind": "prod",
+   "loc": 19
+  }
+ ],
+ "D08-kanban-board": [
+  {
+   "name": "WorkspaceKanbanAreaSelectionOverlay.tsx",
+   "kind": "prod",
+   "loc": 19
+  },
+  {
+   "name": "WorkspaceKanbanCard.host-identity.test.tsx",
+   "kind": "test",
+   "loc": 53
+  },
+  {
+   "name": "WorkspaceKanbanCard.tsx",
+   "kind": "prod",
+   "loc": 81
+  },
+  {
+   "name": "WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "kind": "test",
+   "loc": 269
+  },
+  {
+   "name": "WorkspaceKanbanDrawer.search.test.tsx",
+   "kind": "test",
+   "loc": 425
+  },
+  {
+   "name": "WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "kind": "test",
+   "loc": 474
+  },
+  {
+   "name": "WorkspaceKanbanDrawer.tsx",
+   "kind": "prod",
+   "loc": 303
+  },
+  {
+   "name": "WorkspaceKanbanDrawerHeader.test.tsx",
+   "kind": "test",
+   "loc": 142
+  },
+  {
+   "name": "WorkspaceKanbanDrawerHeader.tsx",
+   "kind": "prod",
+   "loc": 128
+  },
+  {
+   "name": "WorkspaceKanbanDrawerView.tsx",
+   "kind": "prod",
+   "loc": 70
+  },
+  {
+   "name": "WorkspaceKanbanLaneCardList.test.tsx",
+   "kind": "test",
+   "loc": 193
+  },
+  {
+   "name": "WorkspaceKanbanLaneCardList.tsx",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "WorkspaceKanbanLaneGrid.test.tsx",
+   "kind": "test",
+   "loc": 241
+  },
+  {
+   "name": "WorkspaceKanbanLaneGrid.tsx",
+   "kind": "prod",
+   "loc": 231
+  },
+  {
+   "name": "WorkspaceKanbanPinDropTarget.tsx",
+   "kind": "prod",
+   "loc": 40
+  },
+  {
+   "name": "WorkspaceKanbanSearchField.test.tsx",
+   "kind": "test",
+   "loc": 221
+  },
+  {
+   "name": "WorkspaceKanbanSearchField.tsx",
+   "kind": "prod",
+   "loc": 175
+  },
+  {
+   "name": "WorkspaceKanbanSettingsMenu.test.tsx",
+   "kind": "test",
+   "loc": 104
+  },
+  {
+   "name": "WorkspaceKanbanSettingsMenu.tsx",
+   "kind": "prod",
+   "loc": 210
+  },
+  {
+   "name": "WorkspaceKanbanSheet.tsx",
+   "kind": "prod",
+   "loc": 100
+  },
+  {
+   "name": "WorkspaceKanbanStatusLane.test.tsx",
+   "kind": "test",
+   "loc": 173
+  },
+  {
+   "name": "WorkspaceKanbanStatusLane.tsx",
+   "kind": "prod",
+   "loc": 236
+  },
+  {
+   "name": "use-workspace-board-task-status-sync.ts",
+   "kind": "prod",
+   "loc": 161
+  },
+  {
+   "name": "use-workspace-kanban-area-selection.ts",
+   "kind": "prod",
+   "loc": 333
+  },
+  {
+   "name": "use-workspace-kanban-board-projection.ts",
+   "kind": "prod",
+   "loc": 106
+  },
+  {
+   "name": "use-workspace-kanban-card-pointer-drag.test.ts",
+   "kind": "test",
+   "loc": 72
+  },
+  {
+   "name": "use-workspace-kanban-card-pointer-drag.ts",
+   "kind": "prod",
+   "loc": 321
+  },
+  {
+   "name": "use-workspace-kanban-column-resize.ts",
+   "kind": "prod",
+   "loc": 157
+  },
+  {
+   "name": "use-workspace-kanban-create-worktree.ts",
+   "kind": "prod",
+   "loc": 21
+  },
+  {
+   "name": "use-workspace-kanban-drawer-lingering.test.tsx",
+   "kind": "test",
+   "loc": 35
+  },
+  {
+   "name": "use-workspace-kanban-drawer-lingering.ts",
+   "kind": "prod",
+   "loc": 16
+  },
+  {
+   "name": "use-workspace-kanban-native-drag.ts",
+   "kind": "prod",
+   "loc": 68
+  },
+  {
+   "name": "use-workspace-kanban-outside-dismiss.test.ts",
+   "kind": "test",
+   "loc": 61
+  },
+  {
+   "name": "use-workspace-kanban-outside-dismiss.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "use-workspace-kanban-render-lifecycle.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "use-workspace-kanban-search.ts",
+   "kind": "prod",
+   "loc": 102
+  },
+  {
+   "name": "use-workspace-kanban-selection.test.tsx",
+   "kind": "test",
+   "loc": 191
+  },
+  {
+   "name": "use-workspace-kanban-selection.ts",
+   "kind": "prod",
+   "loc": 150
+  },
+  {
+   "name": "use-workspace-kanban-shift-wheel-scroll.ts",
+   "kind": "prod",
+   "loc": 112
+  },
+  {
+   "name": "use-workspace-kanban-status-actions.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "use-workspace-kanban-worktree-actions.ts",
+   "kind": "prod",
+   "loc": 223
+  },
+  {
+   "name": "useWorkspaceBoardPanel.test.tsx",
+   "kind": "test",
+   "loc": 248
+  },
+  {
+   "name": "useWorkspaceBoardPanel.ts",
+   "kind": "prod",
+   "loc": 179
+  },
+  {
+   "name": "workspace-board-task-status-sync.test.ts",
+   "kind": "test",
+   "loc": 428
+  },
+  {
+   "name": "workspace-board-task-status-sync.ts",
+   "kind": "prod",
+   "loc": 267
+  },
+  {
+   "name": "workspace-kanban-area-selection-card-rects.ts",
+   "kind": "prod",
+   "loc": 99
+  },
+  {
+   "name": "workspace-kanban-area-selection-dom.ts",
+   "kind": "prod",
+   "loc": 256
+  },
+  {
+   "name": "workspace-kanban-area-selection-state.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "workspace-kanban-area-selection.test.ts",
+   "kind": "test",
+   "loc": 219
+  },
+  {
+   "name": "workspace-kanban-card-drag-preview-dom.ts",
+   "kind": "prod",
+   "loc": 103
+  },
+  {
+   "name": "workspace-kanban-card-pointer-drag-dom.test.ts",
+   "kind": "test",
+   "loc": 133
+  },
+  {
+   "name": "workspace-kanban-card-pointer-drag-dom.ts",
+   "kind": "prod",
+   "loc": 312
+  },
+  {
+   "name": "workspace-kanban-card-pointer-drag-start.ts",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "workspace-kanban-filtered-drop-index.test.ts",
+   "kind": "test",
+   "loc": 148
+  },
+  {
+   "name": "workspace-kanban-filtered-drop-index.ts",
+   "kind": "prod",
+   "loc": 87
+  },
+  {
+   "name": "workspace-kanban-lane-range.ts",
+   "kind": "prod",
+   "loc": 17
+  },
+  {
+   "name": "workspace-kanban-pointer-drag-selection.ts",
+   "kind": "prod",
+   "loc": 45
+  },
+  {
+   "name": "workspace-kanban-search.test.ts",
+   "kind": "test",
+   "loc": 171
+  },
+  {
+   "name": "workspace-kanban-search.ts",
+   "kind": "prod",
+   "loc": 90
+  },
+  {
+   "name": "workspace-kanban-sidebar-drop.test.ts",
+   "kind": "test",
+   "loc": 679
+  },
+  {
+   "name": "workspace-kanban-sidebar-drop.ts",
+   "kind": "prod",
+   "loc": 286
+  },
+  {
+   "name": "workspace-kanban-virtual-lane-layout.test.ts",
+   "kind": "test",
+   "loc": 173
+  },
+  {
+   "name": "workspace-kanban-virtual-lane-layout.ts",
+   "kind": "prod",
+   "loc": 173
+  },
+  {
+   "name": "workspace-kanban-worktree-groups.test.ts",
+   "kind": "test",
+   "loc": 172
+  },
+  {
+   "name": "workspace-kanban-worktree-groups.ts",
+   "kind": "prod",
+   "loc": 48
+  }
+ ],
+ "D04-worktree-card": [
+  {
+   "name": "WorktreeCard.affiliate-list-mode.test.tsx",
+   "kind": "test",
+   "loc": 231
+  },
+  {
+   "name": "WorktreeCard.compact-hover.test.tsx",
+   "kind": "test",
+   "loc": 838
+  },
+  {
+   "name": "WorktreeCard.compact-ports-hover-independence.test.tsx",
+   "kind": "test",
+   "loc": 256
+  },
+  {
+   "name": "WorktreeCard.hosted-review-refresh.test.tsx",
+   "kind": "test",
+   "loc": 172
+  },
+  {
+   "name": "WorktreeCard.lineage.test.tsx",
+   "kind": "test",
+   "loc": 144
+  },
+  {
+   "name": "WorktreeCard.merged-pr-display.test.tsx",
+   "kind": "test",
+   "loc": 249
+  },
+  {
+   "name": "WorktreeCard.pinned-repo-icon.test.tsx",
+   "kind": "test",
+   "loc": 176
+  },
+  {
+   "name": "WorktreeCard.pr-display.test.tsx",
+   "kind": "test",
+   "loc": 886
+  },
+  {
+   "name": "WorktreeCard.quick-actions.test.tsx",
+   "kind": "test",
+   "loc": 540
+  },
+  {
+   "name": "WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "kind": "test",
+   "loc": 304
+  },
+  {
+   "name": "WorktreeCard.test.ts",
+   "kind": "test",
+   "loc": 72
+  },
+  {
+   "name": "WorktreeCard.tsx",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "WorktreeCardAgents.activation.test.tsx",
+   "kind": "test",
+   "loc": 463
+  },
+  {
+   "name": "WorktreeCardAgents.expansion-remount.test.tsx",
+   "kind": "test",
+   "loc": 223
+  },
+  {
+   "name": "WorktreeCardAgents.send-target.test.tsx",
+   "kind": "test",
+   "loc": 238
+  },
+  {
+   "name": "WorktreeCardAgents.test.tsx",
+   "kind": "test",
+   "loc": 900
+  },
+  {
+   "name": "WorktreeCardAgents.tsx",
+   "kind": "prod",
+   "loc": 426
+  },
+  {
+   "name": "WorktreeCardAutomationDetailSection.test.tsx",
+   "kind": "test",
+   "loc": 126
+  },
+  {
+   "name": "WorktreeCardAutomationDetailSection.tsx",
+   "kind": "prod",
+   "loc": 153
+  },
+  {
+   "name": "WorktreeCardCliDetailSection.tsx",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "WorktreeCardDetailSection.tsx",
+   "kind": "prod",
+   "loc": 23
+  },
+  {
+   "name": "WorktreeCardDisplayMenuSection.test.tsx",
+   "kind": "test",
+   "loc": 180
+  },
+  {
+   "name": "WorktreeCardDisplayMenuSection.tsx",
+   "kind": "prod",
+   "loc": 200
+  },
+  {
+   "name": "WorktreeCardHelpers.tsx",
+   "kind": "prod",
+   "loc": 60
+  },
+  {
+   "name": "WorktreeCardHoverIdentityHeader.tsx",
+   "kind": "prod",
+   "loc": 77
+  },
+  {
+   "name": "WorktreeCardIssueDetailSection.tsx",
+   "kind": "prod",
+   "loc": 164
+  },
+  {
+   "name": "WorktreeCardMeta.interaction.test.tsx",
+   "kind": "test",
+   "loc": 399
+  },
+  {
+   "name": "WorktreeCardMeta.test.tsx",
+   "kind": "test",
+   "loc": 383
+  },
+  {
+   "name": "WorktreeCardMeta.tsx",
+   "kind": "prod",
+   "loc": 381
+  },
+  {
+   "name": "WorktreeCardMetaBadges.tsx",
+   "kind": "prod",
+   "loc": 157
+  },
+  {
+   "name": "WorktreeCardMetadataControls.tsx",
+   "kind": "prod",
+   "loc": 86
+  },
+  {
+   "name": "WorktreeCardMetadataStatusBadges.tsx",
+   "kind": "prod",
+   "loc": 197
+  },
+  {
+   "name": "WorktreeCardPorts.test.tsx",
+   "kind": "test",
+   "loc": 56
+  },
+  {
+   "name": "WorktreeCardPorts.tsx",
+   "kind": "prod",
+   "loc": 314
+  },
+  {
+   "name": "WorktreeCardReviewDetailSection.tsx",
+   "kind": "prod",
+   "loc": 182
+  },
+  {
+   "name": "WorktreeCardSshHostControl.test.tsx",
+   "kind": "test",
+   "loc": 377
+  },
+  {
+   "name": "WorktreeCardSshHostControl.tsx",
+   "kind": "prod",
+   "loc": 283
+  },
+  {
+   "name": "WorktreeCardStatusSlot.test.tsx",
+   "kind": "test",
+   "loc": 478
+  },
+  {
+   "name": "WorktreeCardStatusSlot.tsx",
+   "kind": "prod",
+   "loc": 234
+  },
+  {
+   "name": "WorktreeContextMenu.delete-shortcut.test.tsx",
+   "kind": "test",
+   "loc": 244
+  },
+  {
+   "name": "WorktreeContextMenu.react185-bystander.test.tsx",
+   "kind": "test",
+   "loc": 234
+  },
+  {
+   "name": "WorktreeContextMenu.test.ts",
+   "kind": "test",
+   "loc": 316
+  },
+  {
+   "name": "WorktreeContextMenu.tsx",
+   "kind": "prod",
+   "loc": 34
+  },
+  {
+   "name": "WorktreeContextMenuOverlays.tsx",
+   "kind": "prod",
+   "loc": 34
+  },
+  {
+   "name": "WorktreeContextMenuView.tsx",
+   "kind": "prod",
+   "loc": 386
+  },
+  {
+   "name": "WorktreeHostContextBadge.tsx",
+   "kind": "prod",
+   "loc": 29
+  },
+  {
+   "name": "WorktreeIssueLinkField.tsx",
+   "kind": "prod",
+   "loc": 260
+  },
+  {
+   "name": "WorktreeMetaDialog.test.tsx",
+   "kind": "test",
+   "loc": 636
+  },
+  {
+   "name": "WorktreeMetaDialog.tsx",
+   "kind": "prod",
+   "loc": 441
+  },
+  {
+   "name": "WorktreeOpenInMenu.test.tsx",
+   "kind": "test",
+   "loc": 310
+  },
+  {
+   "name": "WorktreeOpenInMenu.tsx",
+   "kind": "prod",
+   "loc": 382
+  },
+  {
+   "name": "WorktreeTitleInlineRename.begin-editing.test.tsx",
+   "kind": "test",
+   "loc": 227
+  },
+  {
+   "name": "WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "kind": "test",
+   "loc": 200
+  },
+  {
+   "name": "WorktreeTitleInlineRename.test.tsx",
+   "kind": "test",
+   "loc": 80
+  },
+  {
+   "name": "WorktreeTitleInlineRename.tsx",
+   "kind": "prod",
+   "loc": 385
+  },
+  {
+   "name": "active-worktree-focus-after-delete.test.ts",
+   "kind": "test",
+   "loc": 249
+  },
+  {
+   "name": "active-worktree-focus-after-delete.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "focused-agent-row-highlight.test.ts",
+   "kind": "test",
+   "loc": 154
+  },
+  {
+   "name": "focused-agent-row-highlight.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "local-base-ref-suggestion-toast.test.tsx",
+   "kind": "test",
+   "loc": 154
+  },
+  {
+   "name": "local-base-ref-suggestion-toast.tsx",
+   "kind": "prod",
+   "loc": 164
+  },
+  {
+   "name": "truncated-sidebar-label.test.tsx",
+   "kind": "test",
+   "loc": 144
+  },
+  {
+   "name": "truncated-sidebar-label.tsx",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "use-worktree-card-activation-actions.ts",
+   "kind": "prod",
+   "loc": 164
+  },
+  {
+   "name": "use-worktree-card-controller.ts",
+   "kind": "prod",
+   "loc": 165
+  },
+  {
+   "name": "use-worktree-card-foundation.ts",
+   "kind": "prod",
+   "loc": 243
+  },
+  {
+   "name": "use-worktree-card-lifecycle-effects.ts",
+   "kind": "prod",
+   "loc": 240
+  },
+  {
+   "name": "use-worktree-card-linked-details.ts",
+   "kind": "prod",
+   "loc": 138
+  },
+  {
+   "name": "use-worktree-card-review-details.ts",
+   "kind": "prod",
+   "loc": 199
+  },
+  {
+   "name": "use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+   "kind": "test",
+   "loc": 224
+  },
+  {
+   "name": "use-worktree-card-secondary-details.ts",
+   "kind": "prod",
+   "loc": 275
+  },
+  {
+   "name": "use-worktree-card-workspace-actions.ts",
+   "kind": "prod",
+   "loc": 181
+  },
+  {
+   "name": "use-worktree-issue-link.ts",
+   "kind": "prod",
+   "loc": 280
+  },
+  {
+   "name": "worktree-card-agent-ack-inputs.test.tsx",
+   "kind": "test",
+   "loc": 99
+  },
+  {
+   "name": "worktree-card-agent-ack-inputs.ts",
+   "kind": "prod",
+   "loc": 12
+  },
+  {
+   "name": "worktree-card-agent-summary.test.ts",
+   "kind": "test",
+   "loc": 105
+  },
+  {
+   "name": "worktree-card-agent-summary.ts",
+   "kind": "prod",
+   "loc": 130
+  },
+  {
+   "name": "worktree-card-agents-expansion-state.ts",
+   "kind": "prod",
+   "loc": 130
+  },
+  {
+   "name": "worktree-card-compact-agent-row.stable-message.test.tsx",
+   "kind": "test",
+   "loc": 112
+  },
+  {
+   "name": "worktree-card-compact-agent-row.tsx",
+   "kind": "prod",
+   "loc": 310
+  },
+  {
+   "name": "worktree-card-compact-agents.tsx",
+   "kind": "prod",
+   "loc": 191
+  },
+  {
+   "name": "worktree-card-details-hover-state.test.tsx",
+   "kind": "test",
+   "loc": 108
+  },
+  {
+   "name": "worktree-card-details-hover-state.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "worktree-card-display-property-options.ts",
+   "kind": "prod",
+   "loc": 71
+  },
+  {
+   "name": "worktree-card-dom-events.test.ts",
+   "kind": "test",
+   "loc": 29
+  },
+  {
+   "name": "worktree-card-dom-events.ts",
+   "kind": "prod",
+   "loc": 9
+  },
+  {
+   "name": "worktree-card-header.tsx",
+   "kind": "prod",
+   "loc": 321
+  },
+  {
+   "name": "worktree-card-jira-issue-display.test.ts",
+   "kind": "test",
+   "loc": 60
+  },
+  {
+   "name": "worktree-card-jira-issue-display.ts",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "worktree-card-markdown-isolation.test.ts",
+   "kind": "test",
+   "loc": 103
+  },
+  {
+   "name": "worktree-card-meta-row.tsx",
+   "kind": "prod",
+   "loc": 108
+  },
+  {
+   "name": "worktree-card-meta-types.ts",
+   "kind": "prod",
+   "loc": 68
+  },
+  {
+   "name": "worktree-card-model.ts",
+   "kind": "prod",
+   "loc": 117
+  },
+  {
+   "name": "worktree-card-parent-content.tsx",
+   "kind": "prod",
+   "loc": 171
+  },
+  {
+   "name": "worktree-card-pr-display.test.ts",
+   "kind": "test",
+   "loc": 211
+  },
+  {
+   "name": "worktree-card-pr-display.ts",
+   "kind": "prod",
+   "loc": 163
+  },
+  {
+   "name": "worktree-card-presentation.tsx",
+   "kind": "prod",
+   "loc": 293
+  },
+  {
+   "name": "worktree-card-secondary-rows.tsx",
+   "kind": "prod",
+   "loc": 122
+  },
+  {
+   "name": "worktree-card-send-target-inputs.test.ts",
+   "kind": "test",
+   "loc": 131
+  },
+  {
+   "name": "worktree-card-send-target-inputs.ts",
+   "kind": "prod",
+   "loc": 75
+  },
+  {
+   "name": "worktree-card-status-inputs.test.ts",
+   "kind": "test",
+   "loc": 222
+  },
+  {
+   "name": "worktree-card-status-inputs.ts",
+   "kind": "prod",
+   "loc": 87
+  },
+  {
+   "name": "worktree-card-surface.tsx",
+   "kind": "prod",
+   "loc": 138
+  },
+  {
+   "name": "worktree-card-title-display.test.ts",
+   "kind": "test",
+   "loc": 132
+  },
+  {
+   "name": "worktree-card-title-display.ts",
+   "kind": "prod",
+   "loc": 71
+  },
+  {
+   "name": "worktree-issue-displacement.ts",
+   "kind": "prod",
+   "loc": 48
+  },
+  {
+   "name": "worktree-meta-updates.test.ts",
+   "kind": "test",
+   "loc": 413
+  },
+  {
+   "name": "worktree-meta-updates.ts",
+   "kind": "prod",
+   "loc": 309
+  },
+  {
+   "name": "worktree-name-suggestions.test.ts",
+   "kind": "test",
+   "loc": 165
+  },
+  {
+   "name": "worktree-name-suggestions.ts",
+   "kind": "prod",
+   "loc": 56
+  },
+  {
+   "name": "worktree-review-helpers.test.tsx",
+   "kind": "test",
+   "loc": 128
+  },
+  {
+   "name": "worktree-review-helpers.tsx",
+   "kind": "prod",
+   "loc": 80
+  }
+ ],
+ "D03-worktree-list-module": [
+  {
+   "name": "WorktreeList.card-memo-stability.test.tsx",
+   "kind": "test",
+   "loc": 386
+  },
+  {
+   "name": "WorktreeList.empty-project-rows.test.ts",
+   "kind": "test",
+   "loc": 126
+  },
+  {
+   "name": "WorktreeList.folder-workspace-rows.test.ts",
+   "kind": "test",
+   "loc": 243
+  },
+  {
+   "name": "WorktreeList.group-headers.test.ts",
+   "kind": "test",
+   "loc": 242
+  },
+  {
+   "name": "WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+   "kind": "test",
+   "loc": 580
+  },
+  {
+   "name": "WorktreeList.lineage-child-card.test.ts",
+   "kind": "test",
+   "loc": 265
+  },
+  {
+   "name": "WorktreeList.lineage-child-real-card.test.tsx",
+   "kind": "test",
+   "loc": 502
+  },
+  {
+   "name": "WorktreeList.status-lane-lineage-drop.test.tsx",
+   "kind": "test",
+   "loc": 442
+  },
+  {
+   "name": "WorktreeList.tsx",
+   "kind": "prod",
+   "loc": 364
+  },
+  {
+   "name": "WorktreeListScrollToTopButton.tsx",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "index.tsx",
+   "kind": "prod",
+   "loc": 278
+  },
+  {
+   "name": "rendered-sidebar-worktree-order.test.ts",
+   "kind": "test",
+   "loc": 300
+  },
+  {
+   "name": "rendered-sidebar-worktree-order.ts",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "worktree-header-section-boundaries.test.ts",
+   "kind": "test",
+   "loc": 95
+  },
+  {
+   "name": "worktree-header-section-boundaries.ts",
+   "kind": "prod",
+   "loc": 154
+  },
+  {
+   "name": "worktree-list/drag/drop-commit-context.ts",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "worktree-list/drag/groups.ts",
+   "kind": "prod",
+   "loc": 64
+  },
+  {
+   "name": "worktree-list/drag/pointer-commit.ts",
+   "kind": "prod",
+   "loc": 155
+  },
+  {
+   "name": "worktree-list/drag/pointer-flush.test.ts",
+   "kind": "test",
+   "loc": 259
+  },
+  {
+   "name": "worktree-list/drag/pointer-flush.ts",
+   "kind": "prod",
+   "loc": 215
+  },
+  {
+   "name": "worktree-list/drag/row-state.test.ts",
+   "kind": "test",
+   "loc": 59
+  },
+  {
+   "name": "worktree-list/drag/row-state.ts",
+   "kind": "prod",
+   "loc": 165
+  },
+  {
+   "name": "worktree-list/drag/status-target.ts",
+   "kind": "prod",
+   "loc": 53
+  },
+  {
+   "name": "worktree-list/drag/use-document-drop.ts",
+   "kind": "prod",
+   "loc": 115
+  },
+  {
+   "name": "worktree-list/drag/use-drop-commit-context.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "worktree-list/drag/use-header-drag.ts",
+   "kind": "prod",
+   "loc": 235
+  },
+  {
+   "name": "worktree-list/drag/use-lineage-drop-commit.ts",
+   "kind": "prod",
+   "loc": 118
+  },
+  {
+   "name": "worktree-list/drag/use-native-autoscroll.ts",
+   "kind": "prod",
+   "loc": 108
+  },
+  {
+   "name": "worktree-list/drag/use-native-drag.ts",
+   "kind": "prod",
+   "loc": 232
+  },
+  {
+   "name": "worktree-list/drag/use-pointer-autoscroll.ts",
+   "kind": "prod",
+   "loc": 79
+  },
+  {
+   "name": "worktree-list/drag/use-pointer-drag.ts",
+   "kind": "prod",
+   "loc": 262
+  },
+  {
+   "name": "worktree-list/drag/use-pointer-window-events.ts",
+   "kind": "prod",
+   "loc": 109
+  },
+  {
+   "name": "worktree-list/drag/use-runtime.ts",
+   "kind": "prod",
+   "loc": 123
+  },
+  {
+   "name": "worktree-list/drag/use-session.ts",
+   "kind": "prod",
+   "loc": 237
+  },
+  {
+   "name": "worktree-list/drag/use-status-mutations.ts",
+   "kind": "prod",
+   "loc": 211
+  },
+  {
+   "name": "worktree-list/drag/use-status-row-drag.ts",
+   "kind": "prod",
+   "loc": 148
+  },
+  {
+   "name": "worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "kind": "test",
+   "loc": 246
+  },
+  {
+   "name": "worktree-list/grouping/build-rows.test.ts",
+   "kind": "test",
+   "loc": 421
+  },
+  {
+   "name": "worktree-list/grouping/build-rows.ts",
+   "kind": "prod",
+   "loc": 252
+  },
+  {
+   "name": "worktree-list/grouping/folder-workspace-lanes.ts",
+   "kind": "prod",
+   "loc": 77
+  },
+  {
+   "name": "worktree-list/grouping/group-keys.ts",
+   "kind": "prod",
+   "loc": 174
+  },
+  {
+   "name": "worktree-list/grouping/group-sections.ts",
+   "kind": "prod",
+   "loc": 218
+  },
+  {
+   "name": "worktree-list/grouping/host-labels.test.ts",
+   "kind": "test",
+   "loc": 62
+  },
+  {
+   "name": "worktree-list/grouping/host-labels.ts",
+   "kind": "prod",
+   "loc": 246
+  },
+  {
+   "name": "worktree-list/grouping/imported-rows.test.ts",
+   "kind": "test",
+   "loc": 134
+  },
+  {
+   "name": "worktree-list/grouping/pinned-group-rows.ts",
+   "kind": "prod",
+   "loc": 115
+  },
+  {
+   "name": "worktree-list/grouping/project-group-sections.ts",
+   "kind": "prod",
+   "loc": 140
+  },
+  {
+   "name": "worktree-list/grouping/project-grouping.ts",
+   "kind": "prod",
+   "loc": 169
+  },
+  {
+   "name": "worktree-list/grouping/row-builders.ts",
+   "kind": "prod",
+   "loc": 269
+  },
+  {
+   "name": "worktree-list/grouping/row-types.ts",
+   "kind": "prod",
+   "loc": 108
+  },
+  {
+   "name": "worktree-list/grouping/section-order.ts",
+   "kind": "prod",
+   "loc": 214
+  },
+  {
+   "name": "worktree-list/grouping/worktree-group-keys.ts",
+   "kind": "prod",
+   "loc": 80
+  },
+  {
+   "name": "worktree-list/grouping/worktree-grouping.ts",
+   "kind": "prod",
+   "loc": 244
+  },
+  {
+   "name": "worktree-list/listing/EmptyState.tsx",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "worktree-list/listing/host-filtering.test.ts",
+   "kind": "test",
+   "loc": 129
+  },
+  {
+   "name": "worktree-list/listing/host-filtering.ts",
+   "kind": "prod",
+   "loc": 146
+  },
+  {
+   "name": "worktree-list/listing/pending-worktree-creation-keys.test.ts",
+   "kind": "test",
+   "loc": 53
+  },
+  {
+   "name": "worktree-list/listing/pending-worktree-creation-keys.ts",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "worktree-list/listing/render-row.ts",
+   "kind": "prod",
+   "loc": 31
+  },
+  {
+   "name": "worktree-list/listing/renderable-rows.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "worktree-list/listing/review-cache-inputs.test.ts",
+   "kind": "test",
+   "loc": 86
+  },
+  {
+   "name": "worktree-list/listing/review-cache-inputs.ts",
+   "kind": "prod",
+   "loc": 44
+  },
+  {
+   "name": "worktree-list/listing/use-agent-send-target.ts",
+   "kind": "prod",
+   "loc": 64
+  },
+  {
+   "name": "worktree-list/listing/use-collapsed-groups.ts",
+   "kind": "prod",
+   "loc": 121
+  },
+  {
+   "name": "worktree-list/listing/use-external-worktree-cards.ts",
+   "kind": "prod",
+   "loc": 206
+  },
+  {
+   "name": "worktree-list/listing/use-filters.ts",
+   "kind": "prod",
+   "loc": 220
+  },
+  {
+   "name": "worktree-list/listing/use-folder-path-statuses.ts",
+   "kind": "prod",
+   "loc": 128
+  },
+  {
+   "name": "worktree-list/listing/use-host-visible-scope.ts",
+   "kind": "prod",
+   "loc": 72
+  },
+  {
+   "name": "worktree-list/listing/use-reused-array-identity.ts",
+   "kind": "prod",
+   "loc": 13
+  },
+  {
+   "name": "worktree-list/listing/use-section-rows.ts",
+   "kind": "prod",
+   "loc": 255
+  },
+  {
+   "name": "worktree-list/listing/use-sort-order.ts",
+   "kind": "prod",
+   "loc": 234
+  },
+  {
+   "name": "worktree-list/listing/use-visible-worktrees.test.tsx",
+   "kind": "test",
+   "loc": 162
+  },
+  {
+   "name": "worktree-list/listing/use-visible-worktrees.ts",
+   "kind": "prod",
+   "loc": 138
+  },
+  {
+   "name": "worktree-list/navigation/active-descendant-option.test.ts",
+   "kind": "test",
+   "loc": 37
+  },
+  {
+   "name": "worktree-list/navigation/active-descendant-option.ts",
+   "kind": "prod",
+   "loc": 103
+  },
+  {
+   "name": "worktree-list/navigation/folder-reveal.test.ts",
+   "kind": "test",
+   "loc": 157
+  },
+  {
+   "name": "worktree-list/navigation/folder-reveal.ts",
+   "kind": "prod",
+   "loc": 108
+  },
+  {
+   "name": "worktree-list/navigation/mounted-row-reveal.ts",
+   "kind": "prod",
+   "loc": 35
+  },
+  {
+   "name": "worktree-list/navigation/pending-reveal-inputs.ts",
+   "kind": "prod",
+   "loc": 155
+  },
+  {
+   "name": "worktree-list/navigation/render-row-lookup.folder-workspace.test.ts",
+   "kind": "test",
+   "loc": 82
+  },
+  {
+   "name": "worktree-list/navigation/render-row-lookup.ts",
+   "kind": "prod",
+   "loc": 135
+  },
+  {
+   "name": "worktree-list/navigation/reveal-ancestors.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "worktree-list/navigation/use-active-row.ts",
+   "kind": "prod",
+   "loc": 101
+  },
+  {
+   "name": "worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "kind": "test",
+   "loc": 122
+  },
+  {
+   "name": "worktree-list/navigation/use-keyboard.ts",
+   "kind": "prod",
+   "loc": 168
+  },
+  {
+   "name": "worktree-list/navigation/use-pending-reveal.ts",
+   "kind": "prod",
+   "loc": 305
+  },
+  {
+   "name": "worktree-list/navigation/use-reveal-highlight.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "worktree-list/navigation/use-reveal-requests.test.tsx",
+   "kind": "test",
+   "loc": 240
+  },
+  {
+   "name": "worktree-list/navigation/use-reveal-requests.ts",
+   "kind": "prod",
+   "loc": 218
+  },
+  {
+   "name": "worktree-list/navigation/use-selection-host-collision.test.tsx",
+   "kind": "test",
+   "loc": 81
+  },
+  {
+   "name": "worktree-list/navigation/use-selection.ts",
+   "kind": "prod",
+   "loc": 156
+  },
+  {
+   "name": "worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "kind": "test",
+   "loc": 65
+  },
+  {
+   "name": "worktree-list/rows/FolderPathStatusIndicator.tsx",
+   "kind": "prod",
+   "loc": 47
+  },
+  {
+   "name": "worktree-list/rows/HostSectionHeader.tsx",
+   "kind": "prod",
+   "loc": 161
+  },
+  {
+   "name": "worktree-list/rows/ProjectGroupDialogs.tsx",
+   "kind": "prod",
+   "loc": 118
+  },
+  {
+   "name": "worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+   "kind": "test",
+   "loc": 102
+  },
+  {
+   "name": "worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+   "kind": "prod",
+   "loc": 153
+  },
+  {
+   "name": "worktree-list/rows/SectionHeader.tsx",
+   "kind": "prod",
+   "loc": 403
+  },
+  {
+   "name": "worktree-list/rows/folder-row.tsx",
+   "kind": "prod",
+   "loc": 132
+  },
+  {
+   "name": "worktree-list/rows/header-event-guards.ts",
+   "kind": "prod",
+   "loc": 31
+  },
+  {
+   "name": "worktree-list/rows/indentation.test.ts",
+   "kind": "test",
+   "loc": 299
+  },
+  {
+   "name": "worktree-list/rows/indentation.ts",
+   "kind": "prod",
+   "loc": 243
+  },
+  {
+   "name": "worktree-list/rows/item-row.tsx",
+   "kind": "prod",
+   "loc": 262
+  },
+  {
+   "name": "worktree-list/rows/notice-rows.tsx",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "worktree-list/rows/option-dom-host-collision.test.ts",
+   "kind": "test",
+   "loc": 29
+  },
+  {
+   "name": "worktree-list/rows/option-dom.ts",
+   "kind": "prod",
+   "loc": 67
+  },
+  {
+   "name": "worktree-list/rows/project-group-header-actions.tsx",
+   "kind": "prod",
+   "loc": 136
+  },
+  {
+   "name": "worktree-list/rows/repo-header-project-actions.tsx",
+   "kind": "prod",
+   "loc": 246
+  },
+  {
+   "name": "worktree-list/rows/use-project-group-dialogs-owner-host.test.tsx",
+   "kind": "test",
+   "loc": 136
+  },
+  {
+   "name": "worktree-list/rows/use-project-group-dialogs.ts",
+   "kind": "prod",
+   "loc": 206
+  },
+  {
+   "name": "worktree-list/rows/virtual-row-dispatch.tsx",
+   "kind": "prod",
+   "loc": 258
+  },
+  {
+   "name": "worktree-list/viewport/VirtualizedWorktreeViewport.tsx",
+   "kind": "prod",
+   "loc": 373
+  },
+  {
+   "name": "worktree-list/viewport/drop-indicators.tsx",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "worktree-list/viewport/hard-scroll-up.test.ts",
+   "kind": "test",
+   "loc": 262
+  },
+  {
+   "name": "worktree-list/viewport/hard-scroll-up.ts",
+   "kind": "prod",
+   "loc": 338
+  },
+  {
+   "name": "worktree-list/viewport/scroll-adjustment.test.ts",
+   "kind": "test",
+   "loc": 252
+  },
+  {
+   "name": "worktree-list/viewport/sticky-headers.test.ts",
+   "kind": "test",
+   "loc": 138
+  },
+  {
+   "name": "worktree-list/viewport/use-group-toggle.ts",
+   "kind": "prod",
+   "loc": 30
+  },
+  {
+   "name": "worktree-list/viewport/use-row-measurement.ts",
+   "kind": "prod",
+   "loc": 124
+  },
+  {
+   "name": "worktree-list/viewport/use-row-removal-animation.test.ts",
+   "kind": "test",
+   "loc": 99
+  },
+  {
+   "name": "worktree-list/viewport/use-row-removal-animation.ts",
+   "kind": "prod",
+   "loc": 121
+  },
+  {
+   "name": "worktree-list/viewport/use-scroll-suppression.ts",
+   "kind": "prod",
+   "loc": 90
+  },
+  {
+   "name": "worktree-list/viewport/use-scroll-to-top.test.ts",
+   "kind": "test",
+   "loc": 175
+  },
+  {
+   "name": "worktree-list/viewport/use-scroll-to-top.test.tsx",
+   "kind": "test",
+   "loc": 102
+  },
+  {
+   "name": "worktree-list/viewport/use-scroll-to-top.ts",
+   "kind": "prod",
+   "loc": 231
+  },
+  {
+   "name": "worktree-list/viewport/use-virtualizer.ts",
+   "kind": "prod",
+   "loc": 157
+  },
+  {
+   "name": "worktree-list/viewport/use-visible-review-refresh.ts",
+   "kind": "prod",
+   "loc": 134
+  },
+  {
+   "name": "worktree-list/viewport/viewport-props.ts",
+   "kind": "prod",
+   "loc": 106
+  },
+  {
+   "name": "worktree-list/viewport/virtual-row-context.ts",
+   "kind": "prod",
+   "loc": 158
+  },
+  {
+   "name": "worktree-list/viewport/virtual-rows.test.ts",
+   "kind": "test",
+   "loc": 345
+  },
+  {
+   "name": "worktree-list/viewport/virtual-rows.ts",
+   "kind": "prod",
+   "loc": 334
+  },
+  {
+   "name": "worktree-list/viewport/visible-refresh.test.ts",
+   "kind": "test",
+   "loc": 32
+  },
+  {
+   "name": "worktree-list-card-markup-queries.ts",
+   "kind": "prod",
+   "loc": 57
+  },
+  {
+   "name": "worktree-list-groups-host-collision.test.ts",
+   "kind": "test",
+   "loc": 103
+  },
+  {
+   "name": "worktree-list-groups-host-labels.test.ts",
+   "kind": "test",
+   "loc": 343
+  },
+  {
+   "name": "worktree-list-groups-imported-worktrees.test.ts",
+   "kind": "test",
+   "loc": 659
+  },
+  {
+   "name": "worktree-list-groups-lineage-nesting.test.ts",
+   "kind": "test",
+   "loc": 657
+  },
+  {
+   "name": "worktree-list-groups-nested-project-groups.test.ts",
+   "kind": "test",
+   "loc": 420
+  },
+  {
+   "name": "worktree-list-groups-notice-host-labels.test.ts",
+   "kind": "test",
+   "loc": 220
+  },
+  {
+   "name": "worktree-list-groups-pending-creations.test.ts",
+   "kind": "test",
+   "loc": 117
+  },
+  {
+   "name": "worktree-list-groups-pinned-host-labels.test.ts",
+   "kind": "test",
+   "loc": 119
+  },
+  {
+   "name": "worktree-list-groups-project-groups.test.ts",
+   "kind": "test",
+   "loc": 464
+  },
+  {
+   "name": "worktree-list-groups-project-host-setups.test.ts",
+   "kind": "test",
+   "loc": 791
+  },
+  {
+   "name": "worktree-list-groups-project-order.test.ts",
+   "kind": "test",
+   "loc": 522
+  },
+  {
+   "name": "worktree-list-groups-section-label-disambiguation.test.ts",
+   "kind": "test",
+   "loc": 93
+  },
+  {
+   "name": "worktree-list-groups-test-fixtures.ts",
+   "kind": "prod",
+   "loc": 102
+  },
+  {
+   "name": "worktree-list-lineage-card-test-fixtures.ts",
+   "kind": "prod",
+   "loc": 62
+  },
+  {
+   "name": "worktree-list-lineage-card-test-harness.ts",
+   "kind": "prod",
+   "loc": 253
+  },
+  {
+   "name": "worktree-list-lineage-store-state.ts",
+   "kind": "prod",
+   "loc": 160
+  },
+  {
+   "name": "worktree-list-pinned-store-state.ts",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "worktree-sidebar-drop-preview.test.ts",
+   "kind": "test",
+   "loc": 340
+  },
+  {
+   "name": "worktree-sidebar-drop-preview.ts",
+   "kind": "prod",
+   "loc": 261
+  },
+  {
+   "name": "worktree-snapshot-prune-batch.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "worktree-sort-label-ordering.test.ts",
+   "kind": "test",
+   "loc": 151
+  }
+ ],
+ "D06-drag-order-keyboard": [
+  {
+   "name": "WorktreeParentPickerPopover.test.ts",
+   "kind": "test",
+   "loc": 237
+  },
+  {
+   "name": "WorktreeParentPickerPopover.tsx",
+   "kind": "prod",
+   "loc": 413
+  },
+  {
+   "name": "host-header-drag-dom.ts",
+   "kind": "prod",
+   "loc": 42
+  },
+  {
+   "name": "host-header-drag.test.tsx",
+   "kind": "test",
+   "loc": 92
+  },
+  {
+   "name": "host-header-drag.ts",
+   "kind": "prod",
+   "loc": 310
+  },
+  {
+   "name": "project-group-header-drag-commit.test.ts",
+   "kind": "test",
+   "loc": 118
+  },
+  {
+   "name": "project-group-header-drag-commit.ts",
+   "kind": "prod",
+   "loc": 20
+  },
+  {
+   "name": "project-group-header-drag-contract.ts",
+   "kind": "prod",
+   "loc": 78
+  },
+  {
+   "name": "project-group-header-drag-start.test.ts",
+   "kind": "test",
+   "loc": 225
+  },
+  {
+   "name": "project-group-header-drag-start.ts",
+   "kind": "prod",
+   "loc": 64
+  },
+  {
+   "name": "project-group-header-drag.test.ts",
+   "kind": "test",
+   "loc": 54
+  },
+  {
+   "name": "project-group-header-drag.ts",
+   "kind": "prod",
+   "loc": 309
+  },
+  {
+   "name": "project-group-header-drop.test.ts",
+   "kind": "test",
+   "loc": 287
+  },
+  {
+   "name": "project-group-header-drop.ts",
+   "kind": "prod",
+   "loc": 199
+  },
+  {
+   "name": "project-header-drag-commit.test.ts",
+   "kind": "test",
+   "loc": 113
+  },
+  {
+   "name": "project-header-drag-commit.ts",
+   "kind": "prod",
+   "loc": 76
+  },
+  {
+   "name": "project-header-drag-contract.ts",
+   "kind": "prod",
+   "loc": 78
+  },
+  {
+   "name": "project-header-drag-start.test.ts",
+   "kind": "test",
+   "loc": 208
+  },
+  {
+   "name": "project-header-drag-start.ts",
+   "kind": "prod",
+   "loc": 61
+  },
+  {
+   "name": "project-header-drag.test.ts",
+   "kind": "test",
+   "loc": 60
+  },
+  {
+   "name": "project-header-drag.ts",
+   "kind": "prod",
+   "loc": 323
+  },
+  {
+   "name": "project-header-drop.test.ts",
+   "kind": "test",
+   "loc": 409
+  },
+  {
+   "name": "project-header-drop.ts",
+   "kind": "prod",
+   "loc": 226
+  },
+  {
+   "name": "useSidebarProjectDrop.ts",
+   "kind": "prod",
+   "loc": 166
+  },
+  {
+   "name": "workspace-status-drag-data.ts",
+   "kind": "prod",
+   "loc": 112
+  },
+  {
+   "name": "worktree-drag-preview-offsets.ts",
+   "kind": "prod",
+   "loc": 205
+  },
+  {
+   "name": "worktree-drag-units.test.ts",
+   "kind": "test",
+   "loc": 131
+  },
+  {
+   "name": "worktree-drag-units.ts",
+   "kind": "prod",
+   "loc": 85
+  },
+  {
+   "name": "worktree-keyboard-cycle.test.ts",
+   "kind": "test",
+   "loc": 177
+  },
+  {
+   "name": "worktree-keyboard-cycle.ts",
+   "kind": "prod",
+   "loc": 97
+  },
+  {
+   "name": "worktree-manual-order-catalog.test.ts",
+   "kind": "test",
+   "loc": 62
+  },
+  {
+   "name": "worktree-manual-order-catalog.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "worktree-manual-order-ranks.ts",
+   "kind": "prod",
+   "loc": 141
+  },
+  {
+   "name": "worktree-manual-order-store-write.test.ts",
+   "kind": "test",
+   "loc": 115
+  },
+  {
+   "name": "worktree-manual-order.test.ts",
+   "kind": "test",
+   "loc": 565
+  },
+  {
+   "name": "worktree-manual-order.ts",
+   "kind": "prod",
+   "loc": 252
+  },
+  {
+   "name": "worktree-multi-selection.test.ts",
+   "kind": "test",
+   "loc": 134
+  },
+  {
+   "name": "worktree-multi-selection.ts",
+   "kind": "prod",
+   "loc": 124
+  },
+  {
+   "name": "worktree-parent-candidates.ts",
+   "kind": "prod",
+   "loc": 77
+  },
+  {
+   "name": "worktree-parent-eligibility.test.ts",
+   "kind": "test",
+   "loc": 258
+  },
+  {
+   "name": "worktree-parent-eligibility.ts",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "worktree-parent-picker-filtering.ts",
+   "kind": "prod",
+   "loc": 35
+  },
+  {
+   "name": "worktree-parent-picker-placement.ts",
+   "kind": "prod",
+   "loc": 34
+  },
+  {
+   "name": "worktree-sidebar-drag-autoscroll.test.ts",
+   "kind": "test",
+   "loc": 291
+  },
+  {
+   "name": "worktree-sidebar-drag-autoscroll.ts",
+   "kind": "prod",
+   "loc": 228
+  },
+  {
+   "name": "worktree-sidebar-drag-geometry.test.ts",
+   "kind": "test",
+   "loc": 263
+  },
+  {
+   "name": "worktree-sidebar-drag-geometry.ts",
+   "kind": "prod",
+   "loc": 112
+  },
+  {
+   "name": "worktree-sidebar-pointer-drag-dom.test.ts",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "worktree-sidebar-pointer-drag-dom.ts",
+   "kind": "prod",
+   "loc": 109
+  },
+  {
+   "name": "worktree-sidebar-reveal-scroll-settle.test.ts",
+   "kind": "test",
+   "loc": 34
+  },
+  {
+   "name": "worktree-sidebar-reveal-scroll-settle.ts",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "worktree-sidebar-reveal.test.ts",
+   "kind": "test",
+   "loc": 55
+  },
+  {
+   "name": "worktree-sidebar-reveal.ts",
+   "kind": "prod",
+   "loc": 69
+  },
+  {
+   "name": "worktree-sidebar-row-preference.test.ts",
+   "kind": "test",
+   "loc": 105
+  },
+  {
+   "name": "worktree-sidebar-row-preference.ts",
+   "kind": "prod",
+   "loc": 65
+  },
+  {
+   "name": "worktree-unnest.test.ts",
+   "kind": "test",
+   "loc": 54
+  },
+  {
+   "name": "worktree-unnest.ts",
+   "kind": "prod",
+   "loc": 31
+  }
+ ],
+ "D11-lineage-grouping-model": [
+  {
+   "name": "default-branch-workspace.ts",
+   "kind": "prod",
+   "loc": 10
+  },
+  {
+   "name": "natural-worktree-ids.test.ts",
+   "kind": "test",
+   "loc": 45
+  },
+  {
+   "name": "natural-worktree-ids.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "pinned-section-worktrees.test.ts",
+   "kind": "test",
+   "loc": 189
+  },
+  {
+   "name": "pinned-section-worktrees.ts",
+   "kind": "prod",
+   "loc": 56
+  },
+  {
+   "name": "visible-worktree-activity-inputs.test.ts",
+   "kind": "test",
+   "loc": 161
+  },
+  {
+   "name": "visible-worktree-activity-inputs.ts",
+   "kind": "prod",
+   "loc": 35
+  },
+  {
+   "name": "visible-worktree-host-scope.ts",
+   "kind": "prod",
+   "loc": 42
+  },
+  {
+   "name": "visible-worktree-indexes.test.ts",
+   "kind": "test",
+   "loc": 180
+  },
+  {
+   "name": "visible-worktree-indexes.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "visible-worktree-kinds.ts",
+   "kind": "prod",
+   "loc": 74
+  },
+  {
+   "name": "visible-worktrees.test.ts",
+   "kind": "test",
+   "loc": 911
+  },
+  {
+   "name": "visible-worktrees.ts",
+   "kind": "prod",
+   "loc": 380
+  },
+  {
+   "name": "workspace-creator-visibility.test.ts",
+   "kind": "test",
+   "loc": 48
+  },
+  {
+   "name": "workspace-creator-visibility.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "worktree-lineage-drag-drop.test.ts",
+   "kind": "test",
+   "loc": 285
+  },
+  {
+   "name": "worktree-lineage-drag-drop.ts",
+   "kind": "prod",
+   "loc": 86
+  },
+  {
+   "name": "worktree-lineage-expansion.performance.test.ts",
+   "kind": "test",
+   "loc": 88
+  },
+  {
+   "name": "worktree-lineage-projection.test.ts",
+   "kind": "test",
+   "loc": 126
+  },
+  {
+   "name": "worktree-lineage-projection.ts",
+   "kind": "prod",
+   "loc": 147
+  },
+  {
+   "name": "worktree-lineage-toggle-handler-cache.test.ts",
+   "kind": "test",
+   "loc": 48
+  },
+  {
+   "name": "worktree-lineage-toggle-handler-cache.ts",
+   "kind": "prod",
+   "loc": 26
+  },
+  {
+   "name": "worktree-unambiguous-id-index.test.ts",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "worktree-unambiguous-id-index.ts",
+   "kind": "prod",
+   "loc": 17
+  }
+ ],
+ "D14-card-controllers-toasts": [
+  {
+   "name": "use-worktree-meta-workspace.ts",
+   "kind": "prod",
+   "loc": 107
+  },
+  {
+   "name": "use-worktree-parent-picker-transition.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "worktree-sidebar-header-drop-preview.ts",
+   "kind": "prod",
+   "loc": 142
+  }
+ ],
+ "D15-misc-a": [
+  {
+   "name": "DeleteWorktreeDirtyChangeHint.tsx",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "DeleteWorktreeLineageNotice.tsx",
+   "kind": "prod",
+   "loc": 73
+  },
+  {
+   "name": "DeleteWorktreeSkipConfirmOption.tsx",
+   "kind": "prod",
+   "loc": 41
+  },
+  {
+   "name": "DeleteWorktreeWarningPanels.tsx",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "FilterToggleRow.test.tsx",
+   "kind": "test",
+   "loc": 61
+  },
+  {
+   "name": "FilterToggleRow.tsx",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "PendingWorktreeRow.tsx",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "StatusIndicator.test.ts",
+   "kind": "test",
+   "loc": 119
+  },
+  {
+   "name": "StatusIndicator.tsx",
+   "kind": "prod",
+   "loc": 107
+  },
+  {
+   "name": "WorktreeDeveloperMenu.test.tsx",
+   "kind": "test",
+   "loc": 58
+  },
+  {
+   "name": "WorktreeDeveloperMenu.tsx",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "WorktreeDeveloperMenuReveal.test.tsx",
+   "kind": "test",
+   "loc": 140
+  },
+  {
+   "name": "WorktreeDisplayNameField.tsx",
+   "kind": "prod",
+   "loc": 79
+  },
+  {
+   "name": "WorktreeParentPickerRow.tsx",
+   "kind": "prod",
+   "loc": 53
+  },
+  {
+   "name": "WorktreeReviewLinkField.tsx",
+   "kind": "prod",
+   "loc": 60
+  },
+  {
+   "name": "WorktreeSidebarDropIndicator.tsx",
+   "kind": "prod",
+   "loc": 28
+  },
+  {
+   "name": "WorktreeStatusMenuItems.tsx",
+   "kind": "prod",
+   "loc": 48
+  },
+  {
+   "name": "clone-defaults.test.ts",
+   "kind": "test",
+   "loc": 120
+  },
+  {
+   "name": "clone-defaults.ts",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "comment-mermaid-fence.tsx",
+   "kind": "prod",
+   "loc": 28
+  },
+  {
+   "name": "complete-nested-folder-open.ts",
+   "kind": "prod",
+   "loc": 55
+  },
+  {
+   "name": "create-project-defaults.test.ts",
+   "kind": "test",
+   "loc": 137
+  },
+  {
+   "name": "create-project-defaults.ts",
+   "kind": "prod",
+   "loc": 103
+  },
+  {
+   "name": "header-drag-click-swallow.ts",
+   "kind": "prod",
+   "loc": 20
+  },
+  {
+   "name": "header-drag-pointer-release.ts",
+   "kind": "prod",
+   "loc": 14
+  },
+  {
+   "name": "host-header-menu-items.test.ts",
+   "kind": "test",
+   "loc": 92
+  },
+  {
+   "name": "host-header-menu-items.ts",
+   "kind": "prod",
+   "loc": 73
+  },
+  {
+   "name": "host-rename-remove.test.ts",
+   "kind": "test",
+   "loc": 54
+  },
+  {
+   "name": "host-rename-remove.ts",
+   "kind": "prod",
+   "loc": 57
+  },
+  {
+   "name": "host-section-folder-workspace-counts.test.ts",
+   "kind": "test",
+   "loc": 127
+  },
+  {
+   "name": "imported-worktrees-card-actions.test.ts",
+   "kind": "test",
+   "loc": 115
+  },
+  {
+   "name": "imported-worktrees-card-actions.ts",
+   "kind": "prod",
+   "loc": 92
+  },
+  {
+   "name": "mobile-sidebar-onboarding-badge.test.ts",
+   "kind": "test",
+   "loc": 113
+  },
+  {
+   "name": "mobile-sidebar-onboarding-badge.ts",
+   "kind": "prod",
+   "loc": 55
+  },
+  {
+   "name": "open-setup-script-settings.ts",
+   "kind": "prod",
+   "loc": 27
+  },
+  {
+   "name": "project-group-header-dom.test.ts",
+   "kind": "test",
+   "loc": 63
+  },
+  {
+   "name": "project-header-action-selector-lockstep.test.ts",
+   "kind": "test",
+   "loc": 25
+  },
+  {
+   "name": "project-header-color.test.ts",
+   "kind": "test",
+   "loc": 81
+  },
+  {
+   "name": "project-header-color.ts",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "project-order-manual-default-notice-visibility.test.ts",
+   "kind": "test",
+   "loc": 87
+  },
+  {
+   "name": "project-order-manual-default-notice-visibility.ts",
+   "kind": "prod",
+   "loc": 15
+  },
+  {
+   "name": "prompt-cache-countdown-clock.test.ts",
+   "kind": "test",
+   "loc": 81
+  }
+ ],
+ "D15-misc-b": [
+  {
+   "name": "prompt-cache-countdown-clock.ts",
+   "kind": "prod",
+   "loc": 97
+  },
+  {
+   "name": "prompt-cache-timer-selection.test.ts",
+   "kind": "test",
+   "loc": 69
+  },
+  {
+   "name": "prompt-cache-timer-selection.ts",
+   "kind": "prod",
+   "loc": 48
+  },
+  {
+   "name": "repo-header-create-state.test.ts",
+   "kind": "test",
+   "loc": 84
+  },
+  {
+   "name": "repo-header-create-state.ts",
+   "kind": "prod",
+   "loc": 70
+  },
+  {
+   "name": "setup-script-prompt-exposure-telemetry.ts",
+   "kind": "prod",
+   "loc": 41
+  },
+  {
+   "name": "setup-script-prompt-render-state.ts",
+   "kind": "prod",
+   "loc": 65
+  },
+  {
+   "name": "sidebar-count-badge.tsx",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "sidebar-empty-state-gate.test.ts",
+   "kind": "test",
+   "loc": 60
+  },
+  {
+   "name": "sidebar-empty-state-gate.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "sidebar-header-actions.tsx",
+   "kind": "prod",
+   "loc": 104
+  },
+  {
+   "name": "sidebar-nav-controls.tsx",
+   "kind": "prod",
+   "loc": 15
+  },
+  {
+   "name": "sidebar-project-drop.test.ts",
+   "kind": "test",
+   "loc": 69
+  },
+  {
+   "name": "sidebar-project-drop.ts",
+   "kind": "prod",
+   "loc": 80
+  },
+  {
+   "name": "sidebar-resize-handle.test.ts",
+   "kind": "test",
+   "loc": 26
+  },
+  {
+   "name": "sleep-worktree-activation-race.test.ts",
+   "kind": "test",
+   "loc": 112
+  },
+  {
+   "name": "ssh-host-remove-resolution.test.ts",
+   "kind": "test",
+   "loc": 90
+  },
+  {
+   "name": "ssh-host-remove-resolution.ts",
+   "kind": "prod",
+   "loc": 56
+  },
+  {
+   "name": "ssh-host-remove-workspaces.ts",
+   "kind": "prod",
+   "loc": 73
+  },
+  {
+   "name": "ssh-target-duplicate.test.ts",
+   "kind": "test",
+   "loc": 61
+  },
+  {
+   "name": "ssh-target-duplicate.ts",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "ssh-workspace-forget-resolution.test.ts",
+   "kind": "test",
+   "loc": 70
+  },
+  {
+   "name": "ssh-workspace-forget-resolution.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "stale-workspace-list-toast.ts",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "track-nested-folder-open.ts",
+   "kind": "prod",
+   "loc": 30
+  },
+  {
+   "name": "use-complete-git-repo-add.ts",
+   "kind": "prod",
+   "loc": 81
+  },
+  {
+   "name": "use-confirmed-worktree-delete-targets.ts",
+   "kind": "prod",
+   "loc": 45
+  },
+  {
+   "name": "use-delete-worktree-status-hydration.ts",
+   "kind": "prod",
+   "loc": 101
+  },
+  {
+   "name": "use-repo-owner-visibility-defaults.ts",
+   "kind": "prod",
+   "loc": 12
+  },
+  {
+   "name": "use-sidebar-feedback-environment-prefill.ts",
+   "kind": "prod",
+   "loc": 84
+  },
+  {
+   "name": "use-sidebar-feedback-images.ts",
+   "kind": "prod",
+   "loc": 129
+  },
+  {
+   "name": "use-sidebar-host-scope-options.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "use-visible-workspace-kanban-worktree-ids.test.tsx",
+   "kind": "test",
+   "loc": 41
+  },
+  {
+   "name": "use-visible-workspace-kanban-worktree-ids.ts",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "use-workspace-reveal-body-redirect.test.tsx",
+   "kind": "test",
+   "loc": 77
+  },
+  {
+   "name": "use-workspace-reveal-body-redirect.ts",
+   "kind": "prod",
+   "loc": 43
+  },
+  {
+   "name": "use-workspace-status-drop.test.ts",
+   "kind": "test",
+   "loc": 44
+  },
+  {
+   "name": "use-workspace-status-drop.ts",
+   "kind": "prod",
+   "loc": 143
+  },
+  {
+   "name": "useRenderedSetupScriptPromptState.test.ts",
+   "kind": "test",
+   "loc": 48
+  },
+  {
+   "name": "useRenderedSetupScriptPromptState.ts",
+   "kind": "prod",
+   "loc": 45
+  },
+  {
+   "name": "workspace-chrome-metrics.ts",
+   "kind": "prod",
+   "loc": 4
+  },
+  {
+   "name": "worktree-scroll-to-current-button.test.ts",
+   "kind": "test",
+   "loc": 22
+  }
+ ]
+}

@@ -1,0 +1,1209 @@
+{
+ "exports": {
+  "components/sidebar/HiddenWorktreeRecoveryList.tsx": [
+   "HiddenWorktreeRecoveryList",
+   "default"
+  ],
+  "components/sidebar/LinearAgentSkillSetupDialog.tsx": [
+   "LinearAgentSkillSetupDialog",
+   "default"
+  ],
+  "components/sidebar/LinearAgentSkillSetupPrompt.tsx": [
+   "_linearAgentSkillSetupPromptInternalsForTests",
+   "LinearAgentSkillSetupPrompt"
+  ],
+  "components/sidebar/NonGitFolderDialog.tsx": [
+   "default"
+  ],
+  "components/sidebar/OrcaYamlTrustDialog.tsx": [
+   "default"
+  ],
+  "components/sidebar/PreservedBranchBatchReviewDialog.tsx": [
+   "PreservedBranchBatchReviewDialog"
+  ],
+  "components/sidebar/PreservedBranchBatchReviewModal.tsx": [
+   "PreservedBranchBatchReviewModal",
+   "default"
+  ],
+  "components/sidebar/ProjectGroupDeleteDialog.tsx": [
+   "ProjectGroupDeleteDialog"
+  ],
+  "components/sidebar/ProjectGroupNameDialog.tsx": [
+   "ProjectGroupNameDialog"
+  ],
+  "components/sidebar/RemoveFolderDialog.tsx": [
+   "default"
+  ],
+  "components/sidebar/SetupScriptPromptCard.tsx": [
+   "default"
+  ],
+  "components/sidebar/SetupScriptPromptCardShell.tsx": [
+   "SetupScriptPromptCardShell"
+  ],
+  "components/sidebar/SetupScriptPromptCardViews.tsx": [
+   "DetectedSetupPreviewProps",
+   "DetectedSetupPreview",
+   "PackageManagerActionsProps",
+   "PackageManagerActions",
+   "SetupScriptPromptBodyProps",
+   "SetupScriptPromptBody",
+   "InspectionErrorActionsProps",
+   "InspectionErrorActions",
+   "ConfigureOnlyActionProps",
+   "ConfigureOnlyAction",
+   "SaveLocalSetupActionProps",
+   "SaveLocalSetupAction"
+  ],
+  "components/sidebar/SetupScriptPromptToast.tsx": [
+   "showSavedInProjectSettingsToast"
+  ],
+  "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx": [
+   "SuppressExternalWorktreeInboxDialog",
+   "default"
+  ],
+  "components/sidebar/complete-nested-folder-open.ts": [
+   "completeNestedFolderOpen"
+  ],
+  "components/sidebar/empty-project-placeholder-repos.ts": [
+   "getEmptyProjectPlaceholderRepoIds"
+  ],
+  "components/sidebar/linear-agent-skill-runtime.ts": [
+   "LinearAgentSkillPromptSettings",
+   "getCurrentPlatform",
+   "getLinearPromptAgentRuntime",
+   "getLinearPromptTerminalShellOverride",
+   "getLinearPromptSetupCheckIdentity",
+   "getLinearPromptSkillDiscoveryTarget",
+   "getLocalDismissStorageKey",
+   "readLocalDismissed"
+  ],
+  "components/sidebar/linear-agent-skill-setup-copy.ts": [
+   "getLinearAgentSkillSetupMissingLabel",
+   "getLinearAgentSkillSetupToastTitle",
+   "getLinearAgentSkillSetupToastDescription",
+   "getLinearAgentSkillSetupInlineRuntimeCopy"
+  ],
+  "components/sidebar/linear-agent-skill-setup-reminder-toast.ts": [
+   "resetLinearAgentSkillSetupReminderToastState",
+   "snoozeLinearAgentSkillSetupReminderToast",
+   "dismissLinearAgentSkillSetupReminderToast",
+   "resetLinearAgentSkillSetupReminderToastForRuntime",
+   "useLinearAgentSkillSetupReminderToast"
+  ],
+  "components/sidebar/linear-agent-skill-setup-reminders.ts": [
+   "LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT",
+   "MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS",
+   "createLinearAgentSkillSetupActivationId",
+   "getLinearAgentSkillSetupReminderState",
+   "getExistingLinearAgentSkillSetupReminderState",
+   "resetLinearAgentSkillSetupReminderState",
+   "getLinearAgentSkillSetupReminderStateCountForTests",
+   "hasLinearAgentSkillSetupReminderStateForTests"
+  ],
+  "components/sidebar/open-setup-script-settings.ts": [
+   "openSetupScriptSettings"
+  ],
+  "components/sidebar/preserved-branch-batch-toast.tsx": [
+   "ActionablePreservedBranch",
+   "showPreservedBranchBatchToast",
+   "forceDeletePreservedBranchBatch"
+  ],
+  "components/sidebar/preserved-branch-toast.tsx": [
+   "showPreservedBranchToast"
+  ],
+  "components/sidebar/setup-script-prompt-exposure-telemetry.ts": [
+   "trackSetupScriptPromptExposure"
+  ],
+  "components/sidebar/setup-script-prompt-render-state.ts": [
+   "SetupScriptPromptState",
+   "LastVisibleSetupScriptPrompt",
+   "findSetupScriptPromptRepo",
+   "markSetupScriptPromptSaved",
+   "getRenderedSetupScriptPromptState"
+  ],
+  "components/sidebar/track-nested-folder-open.ts": [
+   "trackNestedFolderOpen"
+  ],
+  "components/sidebar/useSetupScriptPromptRevalidation.ts": [
+   "useSetupScriptPromptRevalidation"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/HiddenWorktreeRecoveryList.tsx",
+   "line": 83,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/HiddenWorktreeRecoveryList.tsx",
+   "line": 87,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/HiddenWorktreeRecoveryList.tsx",
+   "line": 135,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupDialog.tsx",
+   "line": 6,
+   "text": "import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupDialog.tsx",
+   "line": 124,
+   "text": "title={translate("
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupDialog.tsx",
+   "line": 171,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 137,
+   "text": "function findBodyButton(label: string): HTMLButtonElement | undefined {"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 227,
+   "text": "label: 'Set up',"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 351,
+   "text": ".querySelector<HTMLButtonElement>('button[aria-label=\"Don\\'t show again\"]')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 174,
+   "text": "function findBodyButton(label: string): HTMLButtonElement | undefined {"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 268,
+   "text": ".querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 303,
+   "text": ".querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 386,
+   "text": ".querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 921,
+   "text": "'button[aria-label=\"Don\\'t show again\"]'"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+   "line": 383,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+   "line": 8,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+   "line": 76,
+   "text": "mocks.buttons.push({ label: textContent(children), onClick })"
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+   "line": 44,
+   "text": "function findButton(label: string): HTMLButtonElement {"
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.tsx",
+   "line": 133,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.tsx",
+   "line": 139,
+   "text": "<li key={`${projectName}:${index}`} className=\"truncate\" title={projectName}>"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCardShell.test.tsx",
+   "line": 5,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCardViews.tsx",
+   "line": 4,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCardViews.tsx",
+   "line": 21,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCardViews.tsx",
+   "line": 60,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts",
+   "line": 4,
+   "text": "const hostRuntime = { runtime: 'host', label: 'Windows' } as const"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 36,
+   "text": "label: currentPlatform === 'win32' ? 'Windows' : 'This device'"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 49,
+   "text": "label: selectedDistro"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 56,
+   "text": "label: currentPlatform === 'win32' ? 'Windows' : 'This device'"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 77,
+   "text": "label: currentPlatform === 'win32' ? 'Windows' : 'This device'"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 85,
+   "text": "label: distro"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+   "line": 120,
+   "text": "label: translate('auto.components.sidebar.LinearAgentSkillSetupPrompt.setup', 'Set up'),"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+   "line": 69,
+   "text": "async function clickButton(container: HTMLElement, label: string): Promise<void> {"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-toast.test.tsx",
+   "line": 32,
+   "text": "function clickButton(container: HTMLElement, label: string): void {"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 558,
+   "text": "document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"
+  }
+ ],
+ "prefs": [
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 19,
+   "text": "const HOST_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.host'"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 317,
+   "text": "getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)?.activeToastId"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 323,
+   "text": "dismissLinearAgentSkillSetupReminderToast(HOST_DISMISS_STORAGE_KEY)"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 325,
+   "text": "expect(getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)).toBeUndefined()"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 332,
+   "text": "resetLinearAgentSkillSetupReminderToastForRuntime(HOST_DISMISS_STORAGE_KEY)"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 334,
+   "text": "expect(getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)).toBeUndefined()"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 355,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 14,
+   "text": "const HOST_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.host'"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 15,
+   "text": "const FEDORA_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.wsl.Fedora'"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 272,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 307,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 390,
+   "text": "expect(window.localStorage.getItem(FEDORA_DISMISS_STORAGE_KEY)).toBe('1')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 391,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 479,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 505,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 533,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 562,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 577,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 927,
+   "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+   "line": 225,
+   "text": "localStorage.setItem(localDismissStorageKey, '1')"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 8,
+   "text": "const LOCAL_DISMISS_STORAGE_KEY_PREFIX = 'orca.linearTicketsSkill.setupDismissed'"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 126,
+   "text": "return `${LOCAL_DISMISS_STORAGE_KEY_PREFIX}.host`"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 128,
+   "text": "return `${LOCAL_DISMISS_STORAGE_KEY_PREFIX}.wsl.${runtime.wslDistro?.trim() || 'default'}`"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 131,
+   "text": "export function readLocalDismissed(storageKey: string): boolean {"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.ts",
+   "line": 135,
+   "text": "return localStorage.getItem(storageKey) === '1'"
+  }
+ ],
+ "timers": [],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+   "line": 185,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+   "line": 205,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.tsx",
+   "line": 63,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.tsx",
+   "line": 126,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+   "line": 71,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+   "line": 85,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+   "line": 134,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+   "line": 140,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.ts",
+   "line": 48,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.ts",
+   "line": 58,
+   "text": "window.addEventListener('focus', requestRevalidation)"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.ts",
+   "line": 76,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+   "line": 175,
+   "text": "? window.api.cli.getWslInstallStatus(getWslCliDistroRequest(agentRuntime))"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+   "line": 176,
+   "text": ": window.api.cli.getInstallStatus())"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+   "line": 301,
+   "text": "? () => window.api.cli.getWslInstallStatus(getWslCliDistroRequest(agentRuntime))"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.tsx",
+   "line": 61,
+   "text": "const result = await window.api.repos.addRemote({"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.tsx",
+   "line": 88,
+   "text": "const onboarding = await window.api.onboarding.get().catch(() => null)"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 165,
+   "kind": "plain",
+   "name": "LinearAgentSkillSetupPrompt reminder toast"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 209,
+   "kind": "plain",
+   "name": "shows a warning toast on a later modal-only activation after a casual close"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 234,
+   "kind": "plain",
+   "name": "does not repeat the Orca CLI in CLI-only reminder toast copy"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 247,
+   "kind": "plain",
+   "name": "keeps remote setup nuance in reminder toast copy"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 260,
+   "kind": "plain",
+   "name": "keeps WSL target nuance in reminder toast copy"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 285,
+   "kind": "plain",
+   "name": "opens the setup dialog from the reminder toast action"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 306,
+   "kind": "each",
+   "name": "clears active reminder state after %s"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 322,
+   "kind": "plain",
+   "name": "does not recreate missing reminder state during toast cleanup"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 331,
+   "kind": "plain",
+   "name": "does not create missing reminder state when resetting a runtime"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "line": 337,
+   "kind": "plain",
+   "name": "dismisses an active reminder toast on permanent dismissal"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 200,
+   "kind": "plain",
+   "name": "LinearAgentSkillSetupPrompt"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 238,
+   "kind": "plain",
+   "name": "shows a compact setup prompt when a linked Linear worktree is missing CLI or skill setup"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 250,
+   "kind": "plain",
+   "name": "hides when the prompt is not linked or both prerequisites are ready"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 263,
+   "kind": "plain",
+   "name": "persists host dismissal forever for the host setup target"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 276,
+   "kind": "plain",
+   "name": "persists remote dismissal and uses remote-safe copy"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 311,
+   "kind": "plain",
+   "name": "uses WSL discovery, status, command, and prerequisite setup together"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 371,
+   "kind": "plain",
+   "name": "persists WSL dismissal by selected distro"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 395,
+   "kind": "plain",
+   "name": "omits the WSL CLI distro request for default WSL setup"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 410,
+   "kind": "plain",
+   "name": "keeps stale terminal WSL settings on host when project runtime is absent"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 425,
+   "kind": "plain",
+   "name": "keeps the prompt usable and loads the lazy setup dialog only when requested"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 453,
+   "kind": "plain",
+   "name": "auto-opens as a modal-only prompt and treats the \u00d7 close as a casual snooze"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 485,
+   "kind": "plain",
+   "name": "keeps the modal open with success copy after a modal Re-check succeeds"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 498,
+   "kind": "plain",
+   "name": "closes success with Done without permanent dismissal or session snooze"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 526,
+   "kind": "plain",
+   "name": "closes success with the dialog close button without permanent dismissal or session snooze"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 554,
+   "kind": "plain",
+   "name": "closes success with Escape without permanent dismissal or session snooze"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 566,
+   "kind": "plain",
+   "name": "closes success with outside click without permanent dismissal or session snooze"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 581,
+   "kind": "plain",
+   "name": "still removes the inline prompt after an inline Re-check succeeds"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 600,
+   "kind": "plain",
+   "name": "keeps the missing setup modal visible after a partial Re-check"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 617,
+   "kind": "plain",
+   "name": "keeps the modal mounted and the Re-check action loading during a slow modal check"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 648,
+   "kind": "plain",
+   "name": "ignores stale CLI success after the runtime context changes during Re-check"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 700,
+   "kind": "plain",
+   "name": "ignores stale prerequisite CLI status callbacks after the runtime context changes"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 743,
+   "kind": "plain",
+   "name": "accepts same-context prerequisite CLI status callbacks after a newer Re-check"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 782,
+   "kind": "plain",
+   "name": "ignores older same-context CLI refreshes that finish after a newer Re-check"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 812,
+   "kind": "plain",
+   "name": "uses WSL-specific success copy for a selected WSL runtime"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 841,
+   "kind": "plain",
+   "name": "uses project host runtime for skill discovery when legacy settings still point at WSL"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 865,
+   "kind": "plain",
+   "name": "uses selected project WSL runtime for skill discovery and CLI status"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 898,
+   "kind": "plain",
+   "name": "uses remote-safe success copy for remote workspaces"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+   "line": 916,
+   "kind": "plain",
+   "name": "permanently dismisses the modal-only prompt when requested"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx",
+   "line": 113,
+   "kind": "plain",
+   "name": "LinearAgentSkillSetupPrompt update command"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx",
+   "line": 153,
+   "kind": "plain",
+   "name": "uses the canonical update command when the canonical Linear skill is installed"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx",
+   "line": 163,
+   "kind": "plain",
+   "name": "uses the legacy update command when only the legacy Linear skill is installed"
+  },
+  {
+   "file": "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx",
+   "line": 173,
+   "kind": "plain",
+   "name": "prefers the canonical update command when both Linear skill names are installed"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+   "line": 116,
+   "kind": "plain",
+   "name": "NonGitFolderDialog"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+   "line": 140,
+   "kind": "plain",
+   "name": "shows the checked host in the folder confirmation"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+   "line": 147,
+   "kind": "plain",
+   "name": "confirms runtime folder imports on the checked host"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+   "line": 159,
+   "kind": "plain",
+   "name": "names the runtime folder project after the requested display name"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+   "line": 176,
+   "kind": "plain",
+   "name": "names the SSH folder project after the requested display name"
+  },
+  {
+   "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+   "line": 208,
+   "kind": "plain",
+   "name": "activates only the selected SSH folder when repo IDs collide"
+  },
+  {
+   "file": "components/sidebar/OrcaYamlTrustDialog.test.tsx",
+   "line": 58,
+   "kind": "plain",
+   "name": "OrcaYamlTrustDialog"
+  },
+  {
+   "file": "components/sidebar/OrcaYamlTrustDialog.test.tsx",
+   "line": 72,
+   "kind": "plain",
+   "name": "keeps spaces around orca.yaml and the repo name in the first-run copy"
+  },
+  {
+   "file": "components/sidebar/OrcaYamlTrustDialog.test.tsx",
+   "line": 85,
+   "kind": "plain",
+   "name": "keeps spaces around orca.yaml when the script changed since last approval"
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+   "line": 62,
+   "kind": "plain",
+   "name": "ProjectGroupDeleteDialog"
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+   "line": 63,
+   "kind": "plain",
+   "name": "omits the contained project panel for empty groups"
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+   "line": 70,
+   "kind": "plain",
+   "name": "renders compact contained project handling and reports remove intent"
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+   "line": 91,
+   "kind": "plain",
+   "name": "focuses the delete group action when opened"
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+   "line": 97,
+   "kind": "plain",
+   "name": "keeps the panel copy and destructive action label stable when project removal is selected"
+  },
+  {
+   "file": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+   "line": 109,
+   "kind": "plain",
+   "name": "disables project choices, cancel, and delete actions while deleting"
+  },
+  {
+   "file": "components/sidebar/RemoveFolderDialog.test.tsx",
+   "line": 63,
+   "kind": "plain",
+   "name": "RemoveFolderDialog"
+  },
+  {
+   "file": "components/sidebar/RemoveFolderDialog.test.tsx",
+   "line": 75,
+   "kind": "plain",
+   "name": "warns that VM recipe cleanup controls file deletion"
+  },
+  {
+   "file": "components/sidebar/RemoveFolderDialog.test.tsx",
+   "line": 86,
+   "kind": "plain",
+   "name": "keeps the file-preservation promise for ordinary SSH projects"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "findSetupScriptPromptRepo"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "uses the active direct-SSH worktree host when repo ids collide"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "uses the runtime owner for a relayed SSH worktree"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 87,
+   "kind": "plain",
+   "name": "getRenderedSetupScriptPromptState"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "uses the current inspection when it belongs to the active repo and host"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "keeps the previous visible prompt during same-host inspection refresh"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "does not keep a stale prompt when switching hosts in the same project"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 129,
+   "kind": "plain",
+   "name": "does not reuse a matching repo id from a different host"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 140,
+   "kind": "plain",
+   "name": "does not keep a stale prompt when switching to a different project"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 154,
+   "kind": "plain",
+   "name": "markSetupScriptPromptSaved"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 155,
+   "kind": "plain",
+   "name": "does not apply a completed save to the same repo id on another host"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCard.test.ts",
+   "line": 161,
+   "kind": "plain",
+   "name": "marks the prompt for the saved host effective"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCardShell.test.tsx",
+   "line": 8,
+   "kind": "plain",
+   "name": "SetupScriptPromptCardShell"
+  },
+  {
+   "file": "components/sidebar/SetupScriptPromptCardShell.test.tsx",
+   "line": 9,
+   "kind": "plain",
+   "name": "floats above its anchor without reserving a sidebar background panel"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "getEmptyProjectPlaceholderRepoIds"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "returns empty repo placeholders in repo grouping without project groups"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "treats missing worktreesByRepo keys as empty for the current render"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "applies repo filters to empty placeholder candidates"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 80,
+   "kind": "plain",
+   "name": "does not create placeholders outside repo grouping"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "does not treat non-empty repos as empty when workspace filters hide their rows"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "keeps grouped repos visible when workspace filters hide all of their rows"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 121,
+   "kind": "plain",
+   "name": "does not create a grouped repo placeholder when one of its workspaces is visible"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 136,
+   "kind": "plain",
+   "name": "still respects explicit project filters for sleep-filtered grouped members"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 160,
+   "kind": "plain",
+   "name": "placeholders only the fully-filtered members of a multi-project group"
+  },
+  {
+   "file": "components/sidebar/empty-project-placeholder-repos.test.ts",
+   "line": 182,
+   "kind": "plain",
+   "name": "does not placeholder ungrouped neighbors of a filtered grouped member"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts",
+   "line": 6,
+   "kind": "plain",
+   "name": "getLinearPromptTerminalShellOverride"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "forces PowerShell for POSIX-family Windows shells"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "leaves cmd and PowerShell shells alone, and never overrides off Windows"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminders.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "linear agent skill setup reminders"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminders.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "bounds runtime reminder state through prolonged key churn"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminders.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "retains recently reused keys while trimming"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminders.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "keeps active toast state ahead of inactive stale entries when trimming"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminders.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "retains a new key when every existing entry has an active toast"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminders.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "does not create reminder state when peeking at a missing key"
+  },
+  {
+   "file": "components/sidebar/linear-agent-skill-setup-reminders.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "resets activation ids with reminder state for tests"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+   "line": 107,
+   "kind": "plain",
+   "name": "showPreservedBranchBatchToast"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+   "line": 108,
+   "kind": "plain",
+   "name": "explains disk cleanup and opens one review dialog for the batch"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+   "line": 130,
+   "kind": "plain",
+   "name": "force-deletes only the branches selected in review"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+   "line": 158,
+   "kind": "plain",
+   "name": "keeps older-server branches visible without offering an unsafe delete"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+   "line": 169,
+   "kind": "plain",
+   "name": "serializes branch deletion within one repository"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+   "line": 190,
+   "kind": "plain",
+   "name": "shows an unavailable branch without blocking review of actionable branches"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-toast.test.tsx",
+   "line": 50,
+   "kind": "plain",
+   "name": "showPreservedBranchToast"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-toast.test.tsx",
+   "line": 51,
+   "kind": "plain",
+   "name": "renders the branch recovery action below the long description"
+  },
+  {
+   "file": "components/sidebar/preserved-branch-toast.test.tsx",
+   "line": 89,
+   "kind": "plain",
+   "name": "does not show the force-delete action without the preserved head"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 96,
+   "kind": "plain",
+   "name": "useSetupScriptPromptRevalidation"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 109,
+   "kind": "plain",
+   "name": "re-inspects on window focus while the prompt shows no effective setup"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 124,
+   "kind": "plain",
+   "name": "does not re-inspect on window focus once setup is effective"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 139,
+   "kind": "plain",
+   "name": "does not listen for focus while the sidebar is closed"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 154,
+   "kind": "plain",
+   "name": "does not re-inspect when prompt state belongs to another host with the same repo id"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 170,
+   "kind": "plain",
+   "name": "re-inspects when a worktree activates while the prompt shows no effective setup"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 195,
+   "kind": "plain",
+   "name": "does not re-inspect on worktree activation once setup is effective"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 217,
+   "kind": "plain",
+   "name": "re-inspects on window focus after a failed inspection"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 232,
+   "kind": "plain",
+   "name": "replays a worktree activation that landed while the prompt state was unsettled"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 264,
+   "kind": "plain",
+   "name": "re-inspects when the repo runtime reconnects"
+  },
+  {
+   "file": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+   "line": 281,
+   "kind": "plain",
+   "name": "ignores a reconnect of a runtime that does not own the repo"
+  }
+ ]
+}

@@ -1,0 +1,177 @@
+{
+ "domain": "D04b-worktree-card-controllers",
+ "prod": [
+  {
+   "name": "active-worktree-focus-after-delete.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "focused-agent-row-highlight.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "local-base-ref-suggestion-toast.tsx",
+   "kind": "prod",
+   "loc": 164
+  },
+  {
+   "name": "run-worktree-delete-with-toast.ts",
+   "kind": "prod",
+   "loc": 178
+  },
+  {
+   "name": "truncated-sidebar-label.tsx",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "use-confirmed-worktree-delete-targets.ts",
+   "kind": "prod",
+   "loc": 45
+  },
+  {
+   "name": "use-delete-worktree-status-hydration.ts",
+   "kind": "prod",
+   "loc": 101
+  },
+  {
+   "name": "use-worktree-activity-status.ts",
+   "kind": "prod",
+   "loc": 72
+  },
+  {
+   "name": "use-worktree-activity-statuses.ts",
+   "kind": "prod",
+   "loc": 75
+  },
+  {
+   "name": "use-worktree-card-activation-actions.ts",
+   "kind": "prod",
+   "loc": 164
+  },
+  {
+   "name": "use-worktree-card-controller.ts",
+   "kind": "prod",
+   "loc": 165
+  },
+  {
+   "name": "use-worktree-card-foundation.ts",
+   "kind": "prod",
+   "loc": 243
+  },
+  {
+   "name": "use-worktree-card-lifecycle-effects.ts",
+   "kind": "prod",
+   "loc": 240
+  },
+  {
+   "name": "use-worktree-card-linked-details.ts",
+   "kind": "prod",
+   "loc": 138
+  },
+  {
+   "name": "use-worktree-card-review-details.ts",
+   "kind": "prod",
+   "loc": 199
+  },
+  {
+   "name": "use-worktree-card-secondary-details.ts",
+   "kind": "prod",
+   "loc": 275
+  },
+  {
+   "name": "use-worktree-card-workspace-actions.ts",
+   "kind": "prod",
+   "loc": 181
+  },
+  {
+   "name": "use-worktree-issue-link.ts",
+   "kind": "prod",
+   "loc": 280
+  },
+  {
+   "name": "worktree-card-agent-ack-inputs.ts",
+   "kind": "prod",
+   "loc": 12
+  },
+  {
+   "name": "worktree-card-send-target-inputs.ts",
+   "kind": "prod",
+   "loc": 75
+  },
+  {
+   "name": "worktree-meta-updates.ts",
+   "kind": "prod",
+   "loc": 309
+  },
+  {
+   "name": "worktree-name-suggestions.ts",
+   "kind": "prod",
+   "loc": 56
+  }
+ ],
+ "test": [
+  {
+   "name": "active-worktree-focus-after-delete.test.ts",
+   "kind": "test",
+   "loc": 249
+  },
+  {
+   "name": "focused-agent-row-highlight.test.ts",
+   "kind": "test",
+   "loc": 154
+  },
+  {
+   "name": "local-base-ref-suggestion-toast.test.tsx",
+   "kind": "test",
+   "loc": 154
+  },
+  {
+   "name": "truncated-sidebar-label.test.tsx",
+   "kind": "test",
+   "loc": 144
+  },
+  {
+   "name": "use-worktree-activity-status.test.tsx",
+   "kind": "test",
+   "loc": 352
+  },
+  {
+   "name": "use-worktree-activity-statuses.test.ts",
+   "kind": "test",
+   "loc": 46
+  },
+  {
+   "name": "use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+   "kind": "test",
+   "loc": 224
+  },
+  {
+   "name": "worktree-card-agent-ack-inputs.test.tsx",
+   "kind": "test",
+   "loc": 99
+  },
+  {
+   "name": "worktree-card-markdown-isolation.test.ts",
+   "kind": "test",
+   "loc": 103
+  },
+  {
+   "name": "worktree-card-send-target-inputs.test.ts",
+   "kind": "test",
+   "loc": 131
+  },
+  {
+   "name": "worktree-meta-updates.test.ts",
+   "kind": "test",
+   "loc": 413
+  },
+  {
+   "name": "worktree-name-suggestions.test.ts",
+   "kind": "test",
+   "loc": 165
+  }
+ ]
+}

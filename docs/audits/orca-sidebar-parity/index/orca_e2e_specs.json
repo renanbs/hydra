@@ -1,0 +1,5996 @@
+[
+ {
+  "file": "tests/e2e/active-view-restart-restore.spec.ts",
+  "line": 32,
+  "kind": "test",
+  "title": "restores the active top-level view (Tasks) after an app restart"
+ },
+ {
+  "file": "tests/e2e/activity-agent-pane-isolation.spec.ts",
+  "line": 215,
+  "kind": "test.describe",
+  "title": "Activity Agent Pane Isolation"
+ },
+ {
+  "file": "tests/e2e/activity-agent-pane-isolation.spec.ts",
+  "line": 231,
+  "kind": "test",
+  "title": "selecting agent rows focuses the matching split pane by stable leaf id"
+ },
+ {
+  "file": "tests/e2e/activity-agent-pane-isolation.spec.ts",
+  "line": 269,
+  "kind": "test",
+  "title": "workspace card agent rows focus the matching terminal split pane"
+ },
+ {
+  "file": "tests/e2e/activity-agent-pane-isolation.spec.ts",
+  "line": 300,
+  "kind": "test",
+  "title": "workspace card agent rows reveal terminal logs from a non-terminal surface"
+ },
+ {
+  "file": "tests/e2e/activity-agent-pane-isolation.spec.ts",
+  "line": 336,
+  "kind": "test",
+  "title": "workspace card agent rows focus the matching split-group terminal pane"
+ },
+ {
+  "file": "tests/e2e/add-project-default-checkout.spec.ts",
+  "line": 83,
+  "kind": "test.describe",
+  "title": "Add project default checkout"
+ },
+ {
+  "file": "tests/e2e/add-project-default-checkout.spec.ts",
+  "line": 84,
+  "kind": "test",
+  "title": "clones a repo and opens the default checkout without the setup-choice modal"
+ },
+ {
+  "file": "tests/e2e/add-project-default-checkout.spec.ts",
+  "line": 139,
+  "kind": "test",
+  "title": "reveals sibling git worktrees before opening the default checkout"
+ },
+ {
+  "file": "tests/e2e/agent-dashboard-status-burst.spec.ts",
+  "line": 21,
+  "kind": "test",
+  "title": "keeps the visible Agent Dashboard interactive during a 100-pane status replay"
+ },
+ {
+  "file": "tests/e2e/agent-descendant-process-kill.spec.ts",
+  "line": 22,
+  "kind": "test",
+  "title": "killing an agent PTY terminates its detached-pgid descendants"
+ },
+ {
+  "file": "tests/e2e/agent-session-live-force-exit-resume.spec.ts",
+  "line": 152,
+  "kind": "test",
+  "title": "resumes a live agent record after force-exit restart when pane PTY ownership is gone"
+ },
+ {
+  "file": "tests/e2e/agent-session-log-tail-stability.spec.ts",
+  "line": 28,
+  "kind": "test.describe",
+  "title": "Agent Session History live log"
+ },
+ {
+  "file": "tests/e2e/agent-session-log-tail-stability.spec.ts",
+  "line": 33,
+  "kind": "test",
+  "title": "keeps a long View Log viewport stable while the transcript grows"
+ },
+ {
+  "file": "tests/e2e/agent-session-quit-resume.spec.ts",
+  "line": 67,
+  "kind": "test",
+  "title": "resumes an agent session after quit when its daemon PTY died while the app was closed"
+ },
+ {
+  "file": "tests/e2e/ai-vault-panel-search.spec.ts",
+  "line": 5,
+  "kind": "test",
+  "title": "panel consent enables real local transcript search; clearing restores history"
+ },
+ {
+  "file": "tests/e2e/ai-vault-panel-search.spec.ts",
+  "line": 117,
+  "kind": "test",
+  "title": "panel renders transport failure and unavailable reasons without a local fallback"
+ },
+ {
+  "file": "tests/e2e/ai-vault-session-delete.spec.ts",
+  "line": 50,
+  "kind": "test.describe",
+  "title": "AI Vault session delete"
+ },
+ {
+  "file": "tests/e2e/ai-vault-session-delete.spec.ts",
+  "line": 51,
+  "kind": "test",
+  "title": "trashes a single-file session and removes it from the list"
+ },
+ {
+  "file": "tests/e2e/ai-vault-session-delete.spec.ts",
+  "line": 80,
+  "kind": "test",
+  "title": "trashes a claude directory session and its companions but keeps file-history"
+ },
+ {
+  "file": "tests/e2e/app-menu-paste-ownership.spec.ts",
+  "line": 83,
+  "kind": "test.describe",
+  "title": "app menu paste ownership"
+ },
+ {
+  "file": "tests/e2e/app-menu-paste-ownership.spec.ts",
+  "line": 92,
+  "kind": "test",
+  "title": "Edit > Paste sends clipboard text to the focused terminal exactly once"
+ },
+ {
+  "file": "tests/e2e/app-menu-paste-ownership.spec.ts",
+  "line": 127,
+  "kind": "test",
+  "title": "Edit > Paste into a rename textbox does not also write to the active terminal"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 507,
+  "kind": "test.describe",
+  "title": "Artificial OpenCode terminal load"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 510,
+  "kind": "test",
+  "title": "measures baseline typing responsiveness with one active terminal"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 547,
+  "kind": "test",
+  "title": "keeps typing responsive while same-workspace panes redraw simultaneously"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 593,
+  "kind": "test",
+  "title": "keeps active typing responsive while background PTYs are ACK-backpressured"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 606,
+  "kind": "test",
+  "title": "keeps renderer backpressure bounded across worktree revisit"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 631,
+  "kind": "test",
+  "title": "keeps active interactions responsive at ${paneCount} ACK-backpressured OpenCode PTYs"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 646,
+  "kind": "test",
+  "title": "keeps typing responsive at ${paneCount} same-workspace OpenCode panes"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 693,
+  "kind": "test",
+  "title": "keeps typing responsive while another workspace streams OpenCode-style output"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 770,
+  "kind": "test",
+  "title": "keeps hidden restore responsive with ${paneCount} ACK-backpressured real PTYs"
+ },
+ {
+  "file": "tests/e2e/artificial-opencode-terminal-load.spec.ts",
+  "line": 785,
+  "kind": "test",
+  "title": "keeps typing responsive with ${paneCount} hidden cross-workspace OpenCode panes"
+ },
+ {
+  "file": "tests/e2e/audit-sidebar-census.spec.ts",
+  "line": 94,
+  "kind": "test.describe",
+  "title": "AUDIT sidebar affordance census"
+ },
+ {
+  "file": "tests/e2e/audit-sidebar-census.spec.ts",
+  "line": 95,
+  "kind": "test",
+  "title": "census"
+ },
+ {
+  "file": "tests/e2e/automation-hidden-terminal-first-mount.spec.ts",
+  "line": 59,
+  "kind": "test.describe",
+  "title": "Automation hidden terminal first mount"
+ },
+ {
+  "file": "tests/e2e/automation-hidden-terminal-first-mount.spec.ts",
+  "line": 60,
+  "kind": "test",
+  "title": "background-mounted hidden worktree replays startup output on the first visible mount"
+ },
+ {
+  "file": "tests/e2e/automation-prompt-disclosure.spec.ts",
+  "line": 10,
+  "kind": "test",
+  "title": "automation detail keeps short prompts readable and reveals a very long prompt at narrow width"
+ },
+ {
+  "file": "tests/e2e/automation-runs-dashboard.spec.ts",
+  "line": 12,
+  "kind": "test",
+  "title": "opens the runs dashboard and returns to automations"
+ },
+ {
+  "file": "tests/e2e/browser-address-bar-narrow-toolbar.spec.ts",
+  "line": 131,
+  "kind": "test.describe",
+  "title": "Browser address bar in a narrow toolbar"
+ },
+ {
+  "file": "tests/e2e/browser-address-bar-narrow-toolbar.spec.ts",
+  "line": 138,
+  "kind": "test",
+  "title": "focusing the squeezed address bar expands a typable field that navigates"
+ },
+ {
+  "file": "tests/e2e/browser-embedded-owner-routing.spec.ts",
+  "line": 163,
+  "kind": "test",
+  "title": "stale helper cannot take goto or eval away from the real embedded webview"
+ },
+ {
+  "file": "tests/e2e/browser-fedcm-fallback.spec.ts",
+  "line": 63,
+  "kind": "test",
+  "title": "embedded browser omits unusable FedCM and reaches the popup fallback"
+ },
+ {
+  "file": "tests/e2e/browser-guest-attachment-validation.spec.ts",
+  "line": 73,
+  "kind": "test",
+  "title": "resume validation waits for an attaching guest without replacing it"
+ },
+ {
+  "file": "tests/e2e/browser-guest-crash-recovery.spec.ts",
+  "line": 83,
+  "kind": "test",
+  "title": "browser chrome recovers a live registered file guest after renderer loss"
+ },
+ {
+  "file": "tests/e2e/browser-guest-crash-recovery.spec.ts",
+  "line": 224,
+  "kind": "test",
+  "title": "dom-ready ID loss waits for validation without reloading the guest"
+ },
+ {
+  "file": "tests/e2e/browser-guest-crash-recovery.spec.ts",
+  "line": 296,
+  "kind": "test",
+  "title": "explicit navigation repairs a recovery error without dom-ready churn"
+ },
+ {
+  "file": "tests/e2e/browser-guest-crash-recovery.spec.ts",
+  "line": 553,
+  "kind": "test",
+  "title": "recovery error stays visible until toolbar retry repairs registration"
+ },
+ {
+  "file": "tests/e2e/browser-guest-crash-recovery.spec.ts",
+  "line": 624,
+  "kind": "test",
+  "title": "attachment keeps recovery error until document readiness"
+ },
+ {
+  "file": "tests/e2e/browser-guest-crash-recovery.spec.ts",
+  "line": 713,
+  "kind": "test",
+  "title": "minimized browser guest stays painted and registered after restore @headful"
+ },
+ {
+  "file": "tests/e2e/browser-loading-surface.spec.ts",
+  "line": 6,
+  "kind": "test",
+  "title": "browser host follows the theme before content and preserves the webpage canvas"
+ },
+ {
+  "file": "tests/e2e/browser-local-https-certificate-trust.spec.ts",
+  "line": 127,
+  "kind": "test.describe",
+  "title": "local HTTPS certificate trust"
+ },
+ {
+  "file": "tests/e2e/browser-local-https-certificate-trust.spec.ts",
+  "line": 134,
+  "kind": "test",
+  "title": "approves one exact local certificate endpoint without trusting sibling tabs or ports"
+ },
+ {
+  "file": "tests/e2e/browser-pointer-input-dispatch.spec.ts",
+  "line": 181,
+  "kind": "test",
+  "title": "dispatches coordinate pointer input fast enough for real gestures"
+ },
+ {
+  "file": "tests/e2e/browser-reload-feedback.spec.ts",
+  "line": 17,
+  "kind": "test",
+  "title": "shows Stop and a spinner during a held reload, then returns to Reload"
+ },
+ {
+  "file": "tests/e2e/browser-settings-preview.spec.ts",
+  "line": 14,
+  "kind": "test",
+  "title": "shows the remote browsing settings section and holds for review"
+ },
+ {
+  "file": "tests/e2e/browser-split-shortcuts.spec.ts",
+  "line": 241,
+  "kind": "test.describe",
+  "title": "browser split shortcuts"
+ },
+ {
+  "file": "tests/e2e/browser-split-shortcuts.spec.ts",
+  "line": 248,
+  "kind": "test",
+  "title": "routes repeated Find shortcuts to the focused terminal or browser split"
+ },
+ {
+  "file": "tests/e2e/browser-split-shortcuts.spec.ts",
+  "line": 292,
+  "kind": "test",
+  "title": "opens Find only in the browser split whose guest owns the shortcut"
+ },
+ {
+  "file": "tests/e2e/browser-split-shortcuts.spec.ts",
+  "line": 318,
+  "kind": "test",
+  "title": "keeps browser Find available when split focus state is temporarily missing"
+ },
+ {
+  "file": "tests/e2e/browser-split-shortcuts.spec.ts",
+  "line": 345,
+  "kind": "test",
+  "title": "keeps browser Find available when the focused split ID is stale"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 366,
+  "kind": "test.describe",
+  "title": "Browser Tab"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 377,
+  "kind": "test",
+  "title": "creating a browser tab adds it and activates browser view"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 396,
+  "kind": "test",
+  "title": "browser tab is created and active in the store"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 418,
+  "kind": "test",
+  "title": "browser tab retains state when switching to terminal and back"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 444,
+  "kind": "test",
+  "title": "browser webview form state survives switching between browser tabs"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 484,
+  "kind": "test",
+  "title": "browser page reload restores the configured 100% zoom"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 528,
+  "kind": "test",
+  "title": "Cmd/Ctrl+0 resets a zoomed browser page to 100%"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 577,
+  "kind": "test",
+  "title": "reloading one browser tab does not adopt another tab zoom"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 638,
+  "kind": "test",
+  "title": "new-tab link gestures follow Chrome foreground and background behavior"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 722,
+  "kind": "test",
+  "title": "blocked window.close in a link-created tab does not break tab switching"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 763,
+  "kind": "test",
+  "title": "directly created browser tabs block window.close and remain usable"
+ },
+ {
+  "file": "tests/e2e/browser-tab.spec.ts",
+  "line": 813,
+  "kind": "test",
+  "title": "browser tab retains state when switching worktrees and back"
+ },
+ {
+  "file": "tests/e2e/chinese-ime-chat-input-repro.spec.ts",
+  "line": 515,
+  "kind": "test.describe",
+  "title": "Chinese IME terminal chat input repro"
+ },
+ {
+  "file": "tests/e2e/chinese-ime-chat-input-repro.spec.ts",
+  "line": 516,
+  "kind": "test",
+  "title": "keeps composed Chinese text, cursor movement, and Backspace stable in the agent input surface"
+ },
+ {
+  "file": "tests/e2e/chinese-ime-chat-input-repro.spec.ts",
+  "line": 598,
+  "kind": "test",
+  "title": "commits the active Pinyin preedit when Shift toggles the Windows IME"
+ },
+ {
+  "file": "tests/e2e/chinese-ime-chat-input-repro.spec.ts",
+  "line": 643,
+  "kind": "test",
+  "title": "keeps Sogou-style candidate selection keys out of the PTY while committing Chinese text"
+ },
+ {
+  "file": "tests/e2e/chinese-ime-chat-input-repro.spec.ts",
+  "line": 776,
+  "kind": "test",
+  "title": "keeps composed Chinese text stable in the real Codex TUI input @real-codex-ime"
+ },
+ {
+  "file": "tests/e2e/client-hosted-browser-tooltip-preview.spec.ts",
+  "line": 63,
+  "kind": "test",
+  "title": "shows the client-hosted browser intro tooltip and holds for review"
+ },
+ {
+  "file": "tests/e2e/combined-diff-invalidation-freeze-repro.spec.ts",
+  "line": 59,
+  "kind": "test.describe",
+  "title": "Combined diff invalidation freeze repro (STA-3420)"
+ },
+ {
+  "file": "tests/e2e/combined-diff-invalidation-freeze-repro.spec.ts",
+  "line": 63,
+  "kind": "test",
+  "title": "committing under an open Staged Changes diff keeps the renderer responsive"
+ },
+ {
+  "file": "tests/e2e/combined-diff-invalidation-freeze-repro.spec.ts",
+  "line": 172,
+  "kind": "test",
+  "title": "a rebase-style burst of external file changes keeps the diff responsive and loaded"
+ },
+ {
+  "file": "tests/e2e/combined-diff-scroll-restore.spec.ts",
+  "line": 406,
+  "kind": "test.describe",
+  "title": "Combined diff scroll restore"
+ },
+ {
+  "file": "tests/e2e/combined-diff-scroll-restore.spec.ts",
+  "line": 410,
+  "kind": "test",
+  "title": "keeps the visible section anchored after switching tabs"
+ },
+ {
+  "file": "tests/e2e/completed-worker-retirement-resume.spec.ts",
+  "line": 39,
+  "kind": "test",
+  "title": "completed background worker ${closeMode} retires resume authority before first activation"
+ },
+ {
+  "file": "tests/e2e/daemon-generation-legacy-close-safety.spec.ts",
+  "line": 331,
+  "kind": "test",
+  "title": "close-intent negotiation preserves legacy behavior while protecting capable viewers across daemon generations"
+ },
+ {
+  "file": "tests/e2e/daemon-generation-reconnect-safety.spec.ts",
+  "line": 280,
+  "kind": "test",
+  "title": "native Windows reconnect cannot turn stale mirror exits into cross-generation kills"
+ },
+ {
+  "file": "tests/e2e/daemon-generation-reconnect-safety.spec.ts",
+  "line": 395,
+  "kind": "test",
+  "title": "shutdown disposal failure drops authority within a bounded window"
+ },
+ {
+  "file": "tests/e2e/daemon-lifecycle-retirement.spec.ts",
+  "line": 158,
+  "kind": "test",
+  "title": "v22 stays reattachable while v24 retires after its last empty client disconnects"
+ },
+ {
+  "file": "tests/e2e/daemon-live-session-preservation.spec.ts",
+  "line": 56,
+  "kind": "test",
+  "title": "preserves a live daemon PTY when the daemon launch identity is stale"
+ },
+ {
+  "file": "tests/e2e/daemon-slow-health-check-preservation.spec.ts",
+  "line": 38,
+  "kind": "test",
+  "title": "preserves a live daemon PTY when the daemon is too slow for the startup health check"
+ },
+ {
+  "file": "tests/e2e/daemon-slow-init-pty-gate.spec.ts",
+  "line": 39,
+  "kind": "test",
+  "title": "reattaches daemon PTYs when daemon init outlasts the first-window timeout"
+ },
+ {
+  "file": "tests/e2e/dead-terminal-repro.spec.ts",
+  "line": 33,
+  "kind": "test.describe",
+  "title": "Dead Terminal Reproduction @headful"
+ },
+ {
+  "file": "tests/e2e/dead-terminal-repro.spec.ts",
+  "line": 57,
+  "kind": "test",
+  "title": "@headful setup-split flow does not produce dead terminals"
+ },
+ {
+  "file": "tests/e2e/dead-terminal-repro.spec.ts",
+  "line": 84,
+  "kind": "test",
+  "title": "@headful setup-split then switch-back does not leave panes dead"
+ },
+ {
+  "file": "tests/e2e/dead-terminal-repro.spec.ts",
+  "line": 125,
+  "kind": "test",
+  "title": "@headful rapid switching between many setup-split worktrees"
+ },
+ {
+  "file": "tests/e2e/dead-terminal-stress.spec.ts",
+  "line": 28,
+  "kind": "test.describe",
+  "title": "Dead Terminal Stress @headful"
+ },
+ {
+  "file": "tests/e2e/dead-terminal-stress.spec.ts",
+  "line": 58,
+  "kind": "test",
+  "title": "@headful setup-split with forced WebGL context loss recovers"
+ },
+ {
+  "file": "tests/e2e/dead-terminal-stress.spec.ts",
+  "line": 110,
+  "kind": "test",
+  "title": "@headful rapid worktree switching during setup-split lifecycle"
+ },
+ {
+  "file": "tests/e2e/default-branch-visibility.spec.ts",
+  "line": 93,
+  "kind": "test.describe",
+  "title": "Default branch visibility"
+ },
+ {
+  "file": "tests/e2e/default-branch-visibility.spec.ts",
+  "line": 99,
+  "kind": "test",
+  "title": "keeps the default branch visible when sleeping workspaces are hidden"
+ },
+ {
+  "file": "tests/e2e/desktop-published-split-orientation-legacy-leaf.spec.ts",
+  "line": 101,
+  "kind": "test",
+  "title": "publishes an unmounted split with its real orientation when a legacy leaf lingers in the saved tree"
+ },
+ {
+  "file": "tests/e2e/dictation-indicator.spec.ts",
+  "line": 41,
+  "kind": "test",
+  "title": "dictation grapes react across the visible recording lifecycle"
+ },
+ {
+  "file": "tests/e2e/diff-note-delete.spec.ts",
+  "line": 23,
+  "kind": "test.describe",
+  "title": "Diff note delete"
+ },
+ {
+  "file": "tests/e2e/diff-note-delete.spec.ts",
+  "line": 29,
+  "kind": "test",
+  "title": "clicking the trash button removes the saved note"
+ },
+ {
+  "file": "tests/e2e/diff-note-edit.spec.ts",
+  "line": 4,
+  "kind": "test.describe",
+  "title": "Diff note edit"
+ },
+ {
+  "file": "tests/e2e/diff-note-edit.spec.ts",
+  "line": 10,
+  "kind": "test",
+  "title": "editing a saved inline note updates the open diff card"
+ },
+ {
+  "file": "tests/e2e/diff-note-layout.spec.ts",
+  "line": 44,
+  "kind": "test.describe",
+  "title": "Diff note layout"
+ },
+ {
+  "file": "tests/e2e/diff-note-layout.spec.ts",
+  "line": 50,
+  "kind": "test",
+  "title": "saved notes reserve their rendered height in both diff layouts"
+ },
+ {
+  "file": "tests/e2e/droid-notification.spec.ts",
+  "line": 159,
+  "kind": "test.describe",
+  "title": "Droid notifications"
+ },
+ {
+  "file": "tests/e2e/droid-notification.spec.ts",
+  "line": 160,
+  "kind": "test",
+  "title": "Codex hook completion dispatches while its worktree is inactive"
+ },
+ {
+  "file": "tests/e2e/droid-notification.spec.ts",
+  "line": 259,
+  "kind": "test",
+  "title": "Grok routine permission prompt hooks stay working and do not notify"
+ },
+ {
+  "file": "tests/e2e/droid-notification.spec.ts",
+  "line": 359,
+  "kind": "test",
+  "title": "recognized agent title completion dispatches one task-complete notification"
+ },
+ {
+  "file": "tests/e2e/droid-notification.spec.ts",
+  "line": 409,
+  "kind": "test",
+  "title": "Factory Droid needs-input native title does not dispatch a task-complete notification"
+ },
+ {
+  "file": "tests/e2e/editable-context-paste-ownership.spec.ts",
+  "line": 62,
+  "kind": "test.describe",
+  "title": "editable context paste ownership"
+ },
+ {
+  "file": "tests/e2e/editable-context-paste-ownership.spec.ts",
+  "line": 63,
+  "kind": "test",
+  "title": "context-menu paste into a rename textbox does not also write to the active terminal"
+ },
+ {
+  "file": "tests/e2e/editor-tab-selection-restore.spec.ts",
+  "line": 9,
+  "kind": "test",
+  "title": "preserves highlighted editor text across worktree tab switches"
+ },
+ {
+  "file": "tests/e2e/electron-home-isolation.spec.ts",
+  "line": 25,
+  "kind": "test",
+  "title": "isolates Electron and Codex from the developer home by default"
+ },
+ {
+  "file": "tests/e2e/ephemeral-vm-cleanup-retry.spec.ts",
+  "line": 10,
+  "kind": "test",
+  "title": "shows interrupted hidden SSH cleanup as retryable"
+ },
+ {
+  "file": "tests/e2e/ephemeral-vm-cleanup-retry.spec.ts",
+  "line": 63,
+  "kind": "test",
+  "title": "stops long-running cleanup and keeps it retryable"
+ },
+ {
+  "file": "tests/e2e/ephemeral-vm-provisioned-root.spec.ts",
+  "line": 20,
+  "kind": "test",
+  "title": "adopts a recipe-provisioned SSH root without creating a linked worktree"
+ },
+ {
+  "file": "tests/e2e/feature-wall.spec.ts",
+  "line": 26,
+  "kind": "test.describe",
+  "title": "Feature tour modal"
+ },
+ {
+  "file": "tests/e2e/feature-wall.spec.ts",
+  "line": 31,
+  "kind": "test",
+  "title": "opens from the Help menu and renders the workflow rail"
+ },
+ {
+  "file": "tests/e2e/feature-wall.spec.ts",
+  "line": 77,
+  "kind": "test",
+  "title": "shows unified task copy without leaving the walkthrough"
+ },
+ {
+  "file": "tests/e2e/feature-wall.spec.ts",
+  "line": 127,
+  "kind": "test",
+  "title": "continue advances through workflow substeps before the next workflow"
+ },
+ {
+  "file": "tests/e2e/feature-wall.spec.ts",
+  "line": 181,
+  "kind": "test",
+  "title": "does not pre-check configured workflows until the user visits them"
+ },
+ {
+  "file": "tests/e2e/feature-wall.spec.ts",
+  "line": 251,
+  "kind": "test",
+  "title": "keeps persisted completed setup-backed substeps checked when reopened"
+ },
+ {
+  "file": "tests/e2e/file-explorer-watch-refresh.spec.ts",
+  "line": 7,
+  "kind": "test",
+  "title": "refreshes the visible tree after external Windows file changes"
+ },
+ {
+  "file": "tests/e2e/file-open.spec.ts",
+  "line": 57,
+  "kind": "test.describe",
+  "title": "File Open & Markdown Preview"
+ },
+ {
+  "file": "tests/e2e/file-open.spec.ts",
+  "line": 68,
+  "kind": "test",
+  "title": "opening the right sidebar shows file explorer"
+ },
+ {
+  "file": "tests/e2e/file-open.spec.ts",
+  "line": 83,
+  "kind": "test",
+  "title": "clicking a file in the file explorer opens it in an editor tab"
+ },
+ {
+  "file": "tests/e2e/file-open.spec.ts",
+  "line": 125,
+  "kind": "test",
+  "title": "opening a .md file shows markdown content"
+ },
+ {
+  "file": "tests/e2e/file-open.spec.ts",
+  "line": 160,
+  "kind": "test",
+  "title": "editor tab retains state when switching to terminal and back"
+ },
+ {
+  "file": "tests/e2e/finished-agent-ghost-resume.spec.ts",
+  "line": 82,
+  "kind": "test",
+  "title": "does not respawn an agent whose turn already finished"
+ },
+ {
+  "file": "tests/e2e/floating-mobile-emulator-tab.spec.ts",
+  "line": 93,
+  "kind": "test",
+  "title": "floating Mobile Emulator tab renders content and closes from the tab strip"
+ },
+ {
+  "file": "tests/e2e/floating-tab-rename-filesystem-alias.spec.ts",
+  "line": 4,
+  "kind": "test.describe",
+  "title": "floating Markdown filesystem aliases"
+ },
+ {
+  "file": "tests/e2e/floating-tab-rename-filesystem-alias.spec.ts",
+  "line": 7,
+  "kind": "test",
+  "title": "renames one APFS entry through its Unicode alias"
+ },
+ {
+  "file": "tests/e2e/floating-tab-rename-filesystem-alias.spec.ts",
+  "line": 41,
+  "kind": "test",
+  "title": "keeps dotless and ASCII I destinations distinct through IPC"
+ },
+ {
+  "file": "tests/e2e/floating-tab-rename.spec.ts",
+  "line": 95,
+  "kind": "test",
+  "title": "concurrent floating Markdown renames do not clobber the destination"
+ },
+ {
+  "file": "tests/e2e/floating-tab-rename.spec.ts",
+  "line": 144,
+  "kind": "test",
+  "title": "Enter commits a floating Markdown rename only once"
+ },
+ {
+  "file": "tests/e2e/floating-tab-rename.spec.ts",
+  "line": 175,
+  "kind": "test",
+  "title": "Electron serializes native Unicode rename aliases"
+ },
+ {
+  "file": "tests/e2e/floating-tab-rename.spec.ts",
+  "line": 218,
+  "kind": "test",
+  "title": "floating workspace Markdown renames survive an app restart"
+ },
+ {
+  "file": "tests/e2e/floating-workspace-reopen-webgl-recovery.spec.ts",
+  "line": 367,
+  "kind": "test.describe",
+  "title": "floating workspace reopen WebGL recovery @headful"
+ },
+ {
+  "file": "tests/e2e/floating-workspace-reopen-webgl-recovery.spec.ts",
+  "line": 368,
+  "kind": "test",
+  "title": "reopening the floating workspace recovers a corrupted glyph atlas"
+ },
+ {
+  "file": "tests/e2e/floating-workspace-reopen-webgl-recovery.spec.ts",
+  "line": 423,
+  "kind": "test",
+  "title": "system resume recovers the corrupted atlas (harness control)"
+ },
+ {
+  "file": "tests/e2e/floating-workspace-shared-glyph-atlas.spec.ts",
+  "line": 345,
+  "kind": "test.describe",
+  "title": "floating workspace shared glyph atlas @headful"
+ },
+ {
+  "file": "tests/e2e/floating-workspace-shared-glyph-atlas.spec.ts",
+  "line": 346,
+  "kind": "test",
+  "title": "switching floating workspace tabs keeps workspace terminal glyphs intact"
+ },
+ {
+  "file": "tests/e2e/floating-workspace-shared-glyph-atlas.spec.ts",
+  "line": 386,
+  "kind": "test",
+  "title": "a sibling terminal clearing the shared atlas leaves workspace glyphs intact"
+ },
+ {
+  "file": "tests/e2e/floating-workspace-shared-glyph-atlas.spec.ts",
+  "line": 424,
+  "kind": "test",
+  "title": "reopening the floating workspace keeps workspace terminal glyphs intact"
+ },
+ {
+  "file": "tests/e2e/folder-setup-shallow-priority.spec.ts",
+  "line": 162,
+  "kind": "test",
+  "title": "prioritizes shallow sibling repositories in a bounded nested scan"
+ },
+ {
+  "file": "tests/e2e/folder-setup-shallow-priority.spec.ts",
+  "line": 237,
+  "kind": "test",
+  "title": "can stop a nested repo scan and import repositories found so far"
+ },
+ {
+  "file": "tests/e2e/folder-setup.spec.ts",
+  "line": 117,
+  "kind": "test.describe",
+  "title": "Folder setup"
+ },
+ {
+  "file": "tests/e2e/folder-setup.spec.ts",
+  "line": 118,
+  "kind": "test",
+  "title": "imports nested repositories from the add-project dialog as a project group"
+ },
+ {
+  "file": "tests/e2e/folder-setup.spec.ts",
+  "line": 183,
+  "kind": "test",
+  "title": "imports a small selection from a large nested folder without modal overflow"
+ },
+ {
+  "file": "tests/e2e/git-history-tooltip-wrap.spec.ts",
+  "line": 51,
+  "kind": "test",
+  "title": "keeps conventional commit-message lines intact in the history tooltip"
+ },
+ {
+  "file": "tests/e2e/git-no-upstream-polling-churn.spec.ts",
+  "line": 213,
+  "kind": "test.describe",
+  "title": "Git no-upstream polling churn repro"
+ },
+ {
+  "file": "tests/e2e/git-no-upstream-polling-churn.spec.ts",
+  "line": 214,
+  "kind": "test",
+  "title": "active worktree polling does not repeatedly retry stable no-upstream probes"
+ },
+ {
+  "file": "tests/e2e/github-cli-stall-repro.spec.ts",
+  "line": 88,
+  "kind": "test",
+  "title": "GitHub Tasks drawer recovers when gh stalls on issue details"
+ },
+ {
+  "file": "tests/e2e/github-created-issue-start-prefill.spec.ts",
+  "line": 130,
+  "kind": "test",
+  "title": "starting a just-created GitHub issue launches Claude with its URL prefilled"
+ },
+ {
+  "file": "tests/e2e/github-url-smart-input-transition.spec.ts",
+  "line": 270,
+  "kind": "test",
+  "title": "a pasted GitHub URL never selects a stale cached issue"
+ },
+ {
+  "file": "tests/e2e/github-url-smart-input-transition.spec.ts",
+  "line": 316,
+  "kind": "test",
+  "title": "a pasted GitLab URL never selects a stale cached merge request"
+ },
+ {
+  "file": "tests/e2e/golden-agent-tui-launch.spec.ts",
+  "line": 12,
+  "kind": "test",
+  "title": "launches an agent TUI with a live multiline composer"
+ },
+ {
+  "file": "tests/e2e/golden-core-flows.spec.ts",
+  "line": 405,
+  "kind": "test.describe",
+  "title": "Existing-user golden core flow"
+ },
+ {
+  "file": "tests/e2e/golden-core-flows.spec.ts",
+  "line": 406,
+  "kind": "test",
+  "title": "adds project, creates workspace, opens a terminal tab, and splits a pane"
+ },
+ {
+  "file": "tests/e2e/golden-core-flows.spec.ts",
+  "line": 427,
+  "kind": "test.describe",
+  "title": "New-user golden core flow"
+ },
+ {
+  "file": "tests/e2e/golden-core-flows.spec.ts",
+  "line": 430,
+  "kind": "test",
+  "title": "completes onboarding, adds a project, and follows the workspace tour handoff"
+ },
+ {
+  "file": "tests/e2e/golden-file-open-edit-save.spec.ts",
+  "line": 13,
+  "kind": "test",
+  "title": "@golden opens, edits, saves, and reopens a tracked file"
+ },
+ {
+  "file": "tests/e2e/golden-fresh-profile-terminal.spec.ts",
+  "line": 55,
+  "kind": "test",
+  "title": "fresh profile opens a live project terminal @golden"
+ },
+ {
+  "file": "tests/e2e/golden-posix-fresh-startup.spec.ts",
+  "line": 5,
+  "kind": "test.describe",
+  "title": "POSIX fresh startup golden"
+ },
+ {
+  "file": "tests/e2e/golden-posix-fresh-startup.spec.ts",
+  "line": 8,
+  "kind": "test",
+  "title": "fresh profile reaches onboarding normally @posix-profile-index-golden"
+ },
+ {
+  "file": "tests/e2e/golden-posix-profile-index-fsync.spec.ts",
+  "line": 8,
+  "kind": "test",
+  "title": "recreates a fresh profile index on disk with a restrictive umask @posix-profile-index-golden"
+ },
+ {
+  "file": "tests/e2e/golden-quit-relaunch-session.spec.ts",
+  "line": 29,
+  "kind": "test",
+  "title": "restores the exact file and live extra terminal after quit and relaunch @golden"
+ },
+ {
+  "file": "tests/e2e/golden-shell-after-agent-exit.spec.ts",
+  "line": 29,
+  "kind": "test",
+  "title": "opens a clean live shell after an agent exits"
+ },
+ {
+  "file": "tests/e2e/golden-shell-command.spec.ts",
+  "line": 22,
+  "kind": "test",
+  "title": "seeded project terminal runs a typed shell command @golden"
+ },
+ {
+  "file": "tests/e2e/golden-source-control-commit.spec.ts",
+  "line": 17,
+  "kind": "test",
+  "title": "@golden stages and commits a file through Source Control"
+ },
+ {
+  "file": "tests/e2e/golden-source-control-open-diff.spec.ts",
+  "line": 15,
+  "kind": "test",
+  "title": "@golden opens an unstaged file diff from Source Control"
+ },
+ {
+  "file": "tests/e2e/golden-tab-bar-agent-launch.spec.ts",
+  "line": 37,
+  "kind": "test",
+  "title": "tab-bar + menu launches ${id} into a live TUI @tab-bar-agent-launch-golden"
+ },
+ {
+  "file": "tests/e2e/golden-tab-bar-agent-launch.spec.ts",
+  "line": 52,
+  "kind": "test.describe",
+  "title": "Windows runtimes"
+ },
+ {
+  "file": "tests/e2e/golden-tab-bar-agent-launch.spec.ts",
+  "line": 56,
+  "kind": "test",
+  "title": "tab-bar + menu launches an agent under ${shell} @tab-bar-agent-launch-golden"
+ },
+ {
+  "file": "tests/e2e/golden-tab-bar-agent-launch.spec.ts",
+  "line": 68,
+  "kind": "test",
+  "title": "tab-bar + menu launches an agent inside WSL @tab-bar-agent-launch-golden"
+ },
+ {
+  "file": "tests/e2e/golden-terminal-file-link.spec.ts",
+  "line": 105,
+  "kind": "test",
+  "title": "opens a terminal file link and observes an external edit @golden"
+ },
+ {
+  "file": "tests/e2e/golden-terminal-file-link.spec.ts",
+  "line": 205,
+  "kind": "test",
+  "title": "reuses a terminal file link already open in a sibling workspace @golden"
+ },
+ {
+  "file": "tests/e2e/golden-windows-fresh-startup.spec.ts",
+  "line": 6,
+  "kind": "test",
+  "title": "fresh Windows profile reaches onboarding @windows-fresh-startup-golden"
+ },
+ {
+  "file": "tests/e2e/golden-worktree-create-switch.spec.ts",
+  "line": 30,
+  "kind": "test",
+  "title": "creates a worktree, keeps its terminal isolated, and switches back @golden"
+ },
+ {
+  "file": "tests/e2e/grok-hook-session-cleanup.spec.ts",
+  "line": 31,
+  "kind": "test",
+  "title": "removes the managed Grok hook config on quit"
+ },
+ {
+  "file": "tests/e2e/grok-hook-session-cleanup.spec.ts",
+  "line": 54,
+  "kind": "test",
+  "title": "preserves a user-cleared Grok config through quit and relaunch"
+ },
+ {
+  "file": "tests/e2e/headless-paired-remote-terminal-retention-memory.spec.ts",
+  "line": 7,
+  "kind": "test",
+  "title": "ordinary-parks paired terminals against an isolated headless Orca host"
+ },
+ {
+  "file": "tests/e2e/headless-paired-remote-terminal-retention-memory.spec.ts",
+  "line": 43,
+  "kind": "test",
+  "title": "cold-activates only visible paired terminals against an isolated headless host"
+ },
+ {
+  "file": "tests/e2e/headless-paired-remote-terminal-stall-recovery.spec.ts",
+  "line": 67,
+  "kind": "test",
+  "title": "recovers an ACK-starved stream from an isolated headless Orca host @headful"
+ },
+ {
+  "file": "tests/e2e/headless-serve-cli-terminal-retention-parity.spec.ts",
+  "line": 85,
+  "kind": "test",
+  "title": "keeps every host-created CLI terminal on a windowless serve host"
+ },
+ {
+  "file": "tests/e2e/headless-serve-desktop-activation.spec.ts",
+  "line": 120,
+  "kind": "test",
+  "title": "promotes the headless owner without replacing its daemon terminal"
+ },
+ {
+  "file": "tests/e2e/headless-serve-focused-terminal-create.spec.ts",
+  "line": 8,
+  "kind": "test",
+  "title": "creates a focus-requested terminal against a headless serve host"
+ },
+ {
+  "file": "tests/e2e/host-parked-pane-remote-viewer.spec.ts",
+  "line": 149,
+  "kind": "test",
+  "title": "a cold-parked host pane keeps serving its paired remote viewer"
+ },
+ {
+  "file": "tests/e2e/issue-12656-terminal-link-tooltip.spec.ts",
+  "line": 114,
+  "kind": "test.describe",
+  "title": "Issue #12656 terminal link tooltip"
+ },
+ {
+  "file": "tests/e2e/issue-12656-terminal-link-tooltip.spec.ts",
+  "line": 115,
+  "kind": "test",
+  "title": "clears hover state without permanently shrinking the terminal"
+ },
+ {
+  "file": "tests/e2e/korean-ime-terminal-shift-enter-commit.spec.ts",
+  "line": 474,
+  "kind": "test.describe",
+  "title": "Korean IME terminal committing Enter chords"
+ },
+ {
+  "file": "tests/e2e/korean-ime-terminal-shift-enter-commit.spec.ts",
+  "line": 479,
+  "kind": "test",
+  "title": "${chord.name} sends once with ${order}"
+ },
+ {
+  "file": "tests/e2e/landing-preflight-runtime-routing.spec.ts",
+  "line": 181,
+  "kind": "test",
+  "title": "routes landing preflight across runtime switch and reconnect"
+ },
+ {
+  "file": "tests/e2e/landing-preflight-runtime-routing.spec.ts",
+  "line": 186,
+  "kind": "test",
+  "title": "routes landing preflight across runtime switch and reconnect @headful"
+ },
+ {
+  "file": "tests/e2e/large-diff-freeze-repro.spec.ts",
+  "line": 71,
+  "kind": "test.describe",
+  "title": "Large diff freeze repro"
+ },
+ {
+  "file": "tests/e2e/large-diff-freeze-repro.spec.ts",
+  "line": 74,
+  "kind": "test",
+  "title": "defers a large combined diff until the user loads it"
+ },
+ {
+  "file": "tests/e2e/large-diff-freeze-repro.spec.ts",
+  "line": 129,
+  "kind": "test",
+  "title": "opening a large single-file diff keeps the renderer responsive"
+ },
+ {
+  "file": "tests/e2e/large-diff-freeze-repro.spec.ts",
+  "line": 219,
+  "kind": "test",
+  "title": "opening stale unstaged combined diffs after staging keeps the renderer responsive"
+ },
+ {
+  "file": "tests/e2e/linear-filter-chip-labels.spec.ts",
+  "line": 79,
+  "kind": "test",
+  "title": "Linear filter chips keep readable names after the dropdown closes"
+ },
+ {
+  "file": "tests/e2e/linear-issue-view-persistence.spec.ts",
+  "line": 394,
+  "kind": "test.describe",
+  "title": "Linear issue view persistence"
+ },
+ {
+  "file": "tests/e2e/linear-issue-view-persistence.spec.ts",
+  "line": 395,
+  "kind": "test",
+  "title": "preserves view mode, grouping, ordering, and filters across a tasks remount"
+ },
+ {
+  "file": "tests/e2e/linear-issue-view-persistence.spec.ts",
+  "line": 442,
+  "kind": "test",
+  "title": "keeps attribute filters scoped per Linear workspace"
+ },
+ {
+  "file": "tests/e2e/linear-issue-view-persistence.spec.ts",
+  "line": 492,
+  "kind": "test",
+  "title": "restores Linear view preferences after an app restart"
+ },
+ {
+  "file": "tests/e2e/linear-url-workspace-entry.spec.ts",
+  "line": 123,
+  "kind": "test.describe",
+  "title": "Linear URL workspace entry"
+ },
+ {
+  "file": "tests/e2e/linear-url-workspace-entry.spec.ts",
+  "line": 130,
+  "kind": "test",
+  "title": "pasting into the composer selects the Linear issue without ArrowDown"
+ },
+ {
+  "file": "tests/e2e/linear-url-workspace-entry.spec.ts",
+  "line": 178,
+  "kind": "test",
+  "title": "a Linear URL lookup miss falls back to an arbitrary workspace name"
+ },
+ {
+  "file": "tests/e2e/linear-url-workspace-entry.spec.ts",
+  "line": 206,
+  "kind": "test",
+  "title": "pasting into Cmd+J previews the Linear issue and opens the linked composer"
+ },
+ {
+  "file": "tests/e2e/live-background-terminal-mount-authority.spec.ts",
+  "line": 522,
+  "kind": "test",
+  "title": "adopts runtime-owned agent and Setup PTYs on first mount"
+ },
+ {
+  "file": "tests/e2e/local-cli-terminal-retention.spec.ts",
+  "line": 79,
+  "kind": "test",
+  "title": "keeps a locally created CLI terminal, and never resumes it as a ghost"
+ },
+ {
+  "file": "tests/e2e/local-ssh-browser-routing.spec.ts",
+  "line": 272,
+  "kind": "test",
+  "title": "routes SSH-workspace browsing through the SSH host, fail-closed across a real drop"
+ },
+ {
+  "file": "tests/e2e/local-ssh-browser-routing.spec.ts",
+  "line": 552,
+  "kind": "test",
+  "title": "holds the mount and offers a working local escape hatch when the SSH host is unavailable"
+ },
+ {
+  "file": "tests/e2e/local-ssh-browser-routing.spec.ts",
+  "line": 685,
+  "kind": "test",
+  "title": "classifies a real AllowTcpForwarding no refusal and keeps Try anyway routed"
+ },
+ {
+  "file": "tests/e2e/local-worktree-visibility-runtime-active.spec.ts",
+  "line": 19,
+  "kind": "test.describe",
+  "title": "worktree visibility with a remote runtime active"
+ },
+ {
+  "file": "tests/e2e/local-worktree-visibility-runtime-active.spec.ts",
+  "line": 20,
+  "kind": "test",
+  "title": "a CLI-created worktree appears in the sidebar while a remote runtime is active"
+ },
+ {
+  "file": "tests/e2e/macos-press-and-hold-startup.spec.ts",
+  "line": 59,
+  "kind": "test.describe",
+  "title": "macOS press-and-hold default"
+ },
+ {
+  "file": "tests/e2e/macos-press-and-hold-startup.spec.ts",
+  "line": 62,
+  "kind": "test",
+  "title": "records a decision for the bundle it is actually running from"
+ },
+ {
+  "file": "tests/e2e/macos-press-and-hold-startup.spec.ts",
+  "line": 88,
+  "kind": "test.describe",
+  "title": "off macOS"
+ },
+ {
+  "file": "tests/e2e/macos-press-and-hold-startup.spec.ts",
+  "line": 91,
+  "kind": "test",
+  "title": "writes nothing at all"
+ },
+ {
+  "file": "tests/e2e/manual-worktree-order-persistence.spec.ts",
+  "line": 36,
+  "kind": "test",
+  "title": "manual drag survives activity and persisted-profile reload"
+ },
+ {
+  "file": "tests/e2e/markdown-add-review-note-shortcut.spec.ts",
+  "line": 11,
+  "kind": "test.describe",
+  "title": "Markdown add-review-note shortcut"
+ },
+ {
+  "file": "tests/e2e/markdown-add-review-note-shortcut.spec.ts",
+  "line": 17,
+  "kind": "test",
+  "title": "opens the review-note composer for the current selection in the rich editor"
+ },
+ {
+  "file": "tests/e2e/markdown-add-review-note-shortcut.spec.ts",
+  "line": 45,
+  "kind": "test",
+  "title": "opens the composer for the current selection in the Monaco source editor"
+ },
+ {
+  "file": "tests/e2e/markdown-add-review-note-shortcut.spec.ts",
+  "line": 89,
+  "kind": "test",
+  "title": "opens the inline composer for the selected block in the markdown preview"
+ },
+ {
+  "file": "tests/e2e/markdown-add-review-note-shortcut.spec.ts",
+  "line": 162,
+  "kind": "test",
+  "title": "does not open the composer without a text selection"
+ },
+ {
+  "file": "tests/e2e/markdown-explorer-find-focus.spec.ts",
+  "line": 6,
+  "kind": "test",
+  "title": "Explorer-opened Markdown accepts the find shortcut without a document click"
+ },
+ {
+  "file": "tests/e2e/markdown-literal-save-reopen.spec.ts",
+  "line": 25,
+  "kind": "test",
+  "title": "preserves literal Markdown and formatted links when saving in ${workspace}"
+ },
+ {
+  "file": "tests/e2e/markdown-nested-toggle.spec.ts",
+  "line": 23,
+  "kind": "test.describe",
+  "title": "Markdown nested toggle regression"
+ },
+ {
+  "file": "tests/e2e/markdown-nested-toggle.spec.ts",
+  "line": 29,
+  "kind": "test",
+  "title": "a nested toggle on disk reopens as editable toggles"
+ },
+ {
+  "file": "tests/e2e/markdown-nested-toggle.spec.ts",
+  "line": 50,
+  "kind": "test",
+  "title": "editing a nested toggle survives save and reopen"
+ },
+ {
+  "file": "tests/e2e/markdown-nested-toggle.spec.ts",
+  "line": 91,
+  "kind": "test",
+  "title": "a nested toggle that cannot be represented stays raw passthrough"
+ },
+ {
+  "file": "tests/e2e/markdown-ordered-list-exit.spec.ts",
+  "line": 62,
+  "kind": "test.describe",
+  "title": "Markdown ordered-list exit regression"
+ },
+ {
+  "file": "tests/e2e/markdown-prose-reflow.spec.ts",
+  "line": 154,
+  "kind": "test.describe",
+  "title": "Markdown prose reflow"
+ },
+ {
+  "file": "tests/e2e/markdown-prose-reflow.spec.ts",
+  "line": 161,
+  "kind": "test",
+  "title": "hard-wrapped prose reflows as one document paragraph"
+ },
+ {
+  "file": "tests/e2e/markdown-prose-reflow.spec.ts",
+  "line": 177,
+  "kind": "test",
+  "title": "deleting an inserted empty paragraph keeps hard-wrapped prose reflowing"
+ },
+ {
+  "file": "tests/e2e/markdown-prose-reflow.spec.ts",
+  "line": 200,
+  "kind": "test",
+  "title": "deleting slash text then the empty paragraph keeps hard-wrapped prose reflowing"
+ },
+ {
+  "file": "tests/e2e/markdown-prose-reflow.spec.ts",
+  "line": 225,
+  "kind": "test",
+  "title": "deleting the block boundary before a heading keeps hard-wrapped prose reflowing"
+ },
+ {
+  "file": "tests/e2e/markdown-source-bash-highlighting.spec.ts",
+  "line": 44,
+  "kind": "test",
+  "title": "highlights bash and sh fences in Markdown Source mode"
+ },
+ {
+  "file": "tests/e2e/markdown-tab-scroll-restore.spec.ts",
+  "line": 13,
+  "kind": "test",
+  "title": "restores the Markdown viewport when an image gains height after a tab switch"
+ },
+ {
+  "file": "tests/e2e/markdown-table-row-backspace.spec.ts",
+  "line": 55,
+  "kind": "test.describe",
+  "title": "Markdown table keyboard"
+ },
+ {
+  "file": "tests/e2e/markdown-table-row-backspace.spec.ts",
+  "line": 61,
+  "kind": "test",
+  "title": "Tab/Shift-Tab move between cells and empty-row Backspace deletes the row"
+ },
+ {
+  "file": "tests/e2e/mobile-banner.spec.ts",
+  "line": 30,
+  "kind": "test",
+  "title": "mobile subscribe mounts overlay; collapse → chip; Take back dismisses"
+ },
+ {
+  "file": "tests/e2e/mobile-banner.spec.ts",
+  "line": 92,
+  "kind": "test",
+  "title": "held phone-fit state mounts restore overlay without collapse"
+ },
+ {
+  "file": "tests/e2e/mobile-banner.spec.ts",
+  "line": 129,
+  "kind": "test",
+  "title": "restore this terminal refits the active restored pane"
+ },
+ {
+  "file": "tests/e2e/mobile-banner.spec.ts",
+  "line": 159,
+  "kind": "test",
+  "title": "restore all refits non-focused restored terminal panes"
+ },
+ {
+  "file": "tests/e2e/mobile-banner.spec.ts",
+  "line": 201,
+  "kind": "test",
+  "title": "restore all recovers a hidden workspace held at narrow terminal geometry"
+ },
+ {
+  "file": "tests/e2e/multi-client-navigation-isolation.spec.ts",
+  "line": 131,
+  "kind": "test",
+  "title": "keeps two paired browser clients and the host on independent worktrees"
+ },
+ {
+  "file": "tests/e2e/multi-client-navigation-isolation.spec.ts",
+  "line": 183,
+  "kind": "test",
+  "title": "keeps a paired client workspace create-with-agent off the other client and the host"
+ },
+ {
+  "file": "tests/e2e/multi-client-navigation-isolation.spec.ts",
+  "line": 278,
+  "kind": "test",
+  "title": "shows only provider-backed creation actions in paired web"
+ },
+ {
+  "file": "tests/e2e/multi-client-navigation-isolation.spec.ts",
+  "line": 327,
+  "kind": "test",
+  "title": "routes Add Project folder browsing through the paired host"
+ },
+ {
+  "file": "tests/e2e/native-chat-ask-user-question-card.spec.ts",
+  "line": 104,
+  "kind": "test.describe",
+  "title": "Desktop chat AskUserQuestion card (#11761)"
+ },
+ {
+  "file": "tests/e2e/native-chat-ask-user-question-card.spec.ts",
+  "line": 105,
+  "kind": "test",
+  "title": "renders the answerable question card from the transcript when live status carries no ask"
+ },
+ {
+  "file": "tests/e2e/native-chat-first-flush-race.spec.ts",
+  "line": 95,
+  "kind": "test.describe",
+  "title": "Native chat first-flush transcript race (#8401)"
+ },
+ {
+  "file": "tests/e2e/native-chat-first-flush-race.spec.ts",
+  "line": 96,
+  "kind": "test",
+  "title": "stays in loading (never errors) until a not-yet-flushed transcript appears, then hydrates live"
+ },
+ {
+  "file": "tests/e2e/native-chat-history-prepend-anchor.spec.ts",
+  "line": 119,
+  "kind": "test.describe",
+  "title": "Native chat transcript anchoring"
+ },
+ {
+  "file": "tests/e2e/native-chat-history-prepend-anchor.spec.ts",
+  "line": 120,
+  "kind": "test",
+  "title": "keeps the visible transcript row at the same viewport offset"
+ },
+ {
+  "file": "tests/e2e/native-chat-history-prepend-anchor.spec.ts",
+  "line": 244,
+  "kind": "test",
+  "title": "keeps a detached transcript in place across a hidden update"
+ },
+ {
+  "file": "tests/e2e/native-chat-message-rail.spec.ts",
+  "line": 86,
+  "kind": "test.describe",
+  "title": "Native chat message rail"
+ },
+ {
+  "file": "tests/e2e/native-chat-message-rail.spec.ts",
+  "line": 87,
+  "kind": "test",
+  "title": "previews prompts and jumps without following later output"
+ },
+ {
+  "file": "tests/e2e/nested-runtime-ssh-lifecycle.spec.ts",
+  "line": 158,
+  "kind": "test",
+  "title": "isolates nested SSH worktrees across two HUB runtimes"
+ },
+ {
+  "file": "tests/e2e/nested-runtime-ssh-lifecycle.spec.ts",
+  "line": 368,
+  "kind": "test",
+  "title": "routes nested SSH through a HUB without shared-control capability"
+ },
+ {
+  "file": "tests/e2e/nested-runtime-ssh-lifecycle.spec.ts",
+  "line": 421,
+  "kind": "test",
+  "title": "quarantines an old terminal stream after same-ID HUB re-pair"
+ },
+ {
+  "file": "tests/e2e/nested-runtime-ssh-lifecycle.spec.ts",
+  "line": 669,
+  "kind": "test",
+  "title": "restores a paired nested SSH route after the HUB restarts"
+ },
+ {
+  "file": "tests/e2e/nested-runtime-ssh-routing.spec.ts",
+  "line": 503,
+  "kind": "test",
+  "title": "routes HUB desktop, web, and two paired desktops through HUB-owned SSH"
+ },
+ {
+  "file": "tests/e2e/network-proxy-bypass-rules.spec.ts",
+  "line": 4,
+  "kind": "test.describe",
+  "title": "network proxy bypass rules"
+ },
+ {
+  "file": "tests/e2e/network-proxy-bypass-rules.spec.ts",
+  "line": 5,
+  "kind": "test",
+  "title": "preserves newline-separated hosts and canonicalizes them on blur"
+ },
+ {
+  "file": "tests/e2e/new-workspace-create-more.spec.ts",
+  "line": 9,
+  "kind": "test",
+  "title": "Create more clears the GitHub PR source before the next worktree"
+ },
+ {
+  "file": "tests/e2e/new-workspace-cross-project-dialog.spec.ts",
+  "line": 27,
+  "kind": "test",
+  "title": "keeps long repository names inside the cross-project confirmation dialog"
+ },
+ {
+  "file": "tests/e2e/new-workspace-linked-item-project-switch.spec.ts",
+  "line": 112,
+  "kind": "test.describe",
+  "title": "New workspace composer linked item across project switches"
+ },
+ {
+  "file": "tests/e2e/new-workspace-linked-item-project-switch.spec.ts",
+  "line": 129,
+  "kind": "test",
+  "title": "keeps a Jira issue linked when the project changes"
+ },
+ {
+  "file": "tests/e2e/new-workspace-linked-item-project-switch.spec.ts",
+  "line": 155,
+  "kind": "test",
+  "title": "clears a repo-scoped GitHub issue when the project changes"
+ },
+ {
+  "file": "tests/e2e/notification-settings.spec.ts",
+  "line": 31,
+  "kind": "test.describe",
+  "title": "Notification settings"
+ },
+ {
+  "file": "tests/e2e/notification-settings.spec.ts",
+  "line": 36,
+  "kind": "test",
+  "title": "can be toggled from settings and disables child controls"
+ },
+ {
+  "file": "tests/e2e/omp-title-marker.spec.ts",
+  "line": 12,
+  "kind": "test",
+  "title": "OMP spaced-colon title renders working and clears on idle"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 150,
+  "kind": "test.describe",
+  "title": "Onboarding flow"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 163,
+  "kind": "test",
+  "title": "renders on first launch with the agent step active"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 185,
+  "kind": "test",
+  "title": "Continue advances steps, persists progress, and applies user-visible settings"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 322,
+  "kind": "test",
+  "title": "Cmd/Ctrl+Enter advances steps like Continue"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 345,
+  "kind": "test",
+  "title": "Skip opens Add Project, saves the selected agent, and completes onboarding"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 390,
+  "kind": "test",
+  "title": "Skip from theme restores the entry theme choice"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 422,
+  "kind": "test",
+  "title": "Skip preserves runtime server project setup UI"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 551,
+  "kind": "test",
+  "title": "Skip from notifications does not request permission"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 581,
+  "kind": "test",
+  "title": "selected agent button reports aria-pressed=true"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 601,
+  "kind": "test",
+  "title": "notification sound choice persists on Continue"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 627,
+  "kind": "test",
+  "title": "typing in the clone-url input does not hijack Enter as a global shortcut"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 654,
+  "kind": "test",
+  "title": "Back returns to the previous step without losing progress"
+ },
+ {
+  "file": "tests/e2e/onboarding.spec.ts",
+  "line": 683,
+  "kind": "test",
+  "title": "final notification step can be dismissed via Escape or click-off"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 277,
+  "kind": "test.describe",
+  "title": "orchestration push-on-idle mail delivery"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 278,
+  "kind": "test",
+  "title": "delivers mail that arrives while the agent is already idle"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 302,
+  "kind": "test",
+  "title": "holds mail while the agent is working and releases it on the idle frame"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 331,
+  "kind": "test",
+  "title": "delivers mail queued before a fresh agent has reported any status"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 356,
+  "kind": "test",
+  "title": "keeps unbound direct mail durable without pointing to an unsafe check"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 384,
+  "kind": "test",
+  "title": "leaves the mail to a live waiter instead of pushing it into the pane"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 435,
+  "kind": "test",
+  "title": "pushes to the pane when the only waiter filters this message type out"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 469,
+  "kind": "test",
+  "title": "worker completion points and wakes its idle Run coordinator without consuming mail"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 552,
+  "kind": "test",
+  "title": "never points direct Run A mail after the pane binds Run B"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 613,
+  "kind": "test",
+  "title": "writes and submits the pointer for the active coordinator pane"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 630,
+  "kind": "test",
+  "title": "writes the pointer but never Enter for a Cursor agent pane"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 652,
+  "kind": "test.describe",
+  "title": "orchestration delivery to a cold-parked agent"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 664,
+  "kind": "test",
+  "title": "keeps one pointer and one idempotent prompt on the same parked PTY"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-delivery.spec.ts",
+  "line": 792,
+  "kind": "test",
+  "title": "does not submit a parked pointer after the agent starts working"
+ },
+ {
+  "file": "tests/e2e/orchestration-idle-mail-restore.spec.ts",
+  "line": 76,
+  "kind": "test",
+  "title": "keeps mail pending across a restart and delivers it when the agent reports live"
+ },
+ {
+  "file": "tests/e2e/orchestration-legacy-worker-missing-terminal-recovery.spec.ts",
+  "line": 199,
+  "kind": "test",
+  "title": "a missing legacy worker cannot spawn a replacement during restart recovery"
+ },
+ {
+  "file": "tests/e2e/orchestration-legacy-worker-restart-recovery.spec.ts",
+  "line": 414,
+  "kind": "test",
+  "title": "adopts one live ${contractLabel} worker after restart without replaying resume"
+ },
+ {
+  "file": "tests/e2e/orchestration-low-level-dispatch-release.spec.ts",
+  "line": 11,
+  "kind": "test",
+  "title": "low-level Dispatches can be abandoned and stopped without closing their pane"
+ },
+ {
+  "file": "tests/e2e/orchestration-worker-settlement-release-cli.spec.ts",
+  "line": 140,
+  "kind": "test",
+  "title": "compiled CLI rejects false completion then reconciles the dead retained worker"
+ },
+ {
+  "file": "tests/e2e/orchestration-worker-terminal-visibility.spec.ts",
+  "line": 115,
+  "kind": "test",
+  "title": "worker-start preserves one live inactive worker across workspace re-entry"
+ },
+ {
+  "file": "tests/e2e/orchestration-worker-transcript-providers.spec.ts",
+  "line": 213,
+  "kind": "test",
+  "title": "worker-read uses provider transcripts across supported orchestration agents"
+ },
+ {
+  "file": "tests/e2e/packaged-mixed-version-browser-placement.spec.ts",
+  "line": 388,
+  "kind": "test.describe",
+  "title": "packaged mixed-version browser placement"
+ },
+ {
+  "file": "tests/e2e/packaged-mixed-version-browser-placement.spec.ts",
+  "line": 394,
+  "kind": "test",
+  "title": "keeps an old packaged client on the current server-hosted path"
+ },
+ {
+  "file": "tests/e2e/packaged-mixed-version-browser-placement.spec.ts",
+  "line": 432,
+  "kind": "test",
+  "title": "keeps a current client on an old packaged server-hosted path"
+ },
+ {
+  "file": "tests/e2e/paired-browser-create-navigation-deadline.spec.ts",
+  "line": 213,
+  "kind": "test",
+  "title": "returns a headed host page identity before owner-pinned navigation can time out @headful"
+ },
+ {
+  "file": "tests/e2e/paired-browser-create-navigation-deadline.spec.ts",
+  "line": 304,
+  "kind": "test",
+  "title": "opens the held URL through the owner-pinned remote-pane link route @headful"
+ },
+ {
+  "file": "tests/e2e/paired-browser-creation-reconciliation-failure.spec.ts",
+  "line": 305,
+  "kind": "test",
+  "title": "rolls back a headed-host browser when client reconciliation times out @headful"
+ },
+ {
+  "file": "tests/e2e/paired-browser-creation-reconciliation-failure.spec.ts",
+  "line": 328,
+  "kind": "test",
+  "title": "cleans up a headed-host browser when capability rejects before create @headful"
+ },
+ {
+  "file": "tests/e2e/paired-browser-creation-reconciliation-failure.spec.ts",
+  "line": 351,
+  "kind": "test",
+  "title": "keeps browser failure cleanup on a headless host"
+ },
+ {
+  "file": "tests/e2e/paired-cli-terminal-graph-sync-tab-retention.spec.ts",
+  "line": 297,
+  "kind": "test",
+  "title": "keeps a host-created CLI terminal when an earlier host-created terminal exists"
+ },
+ {
+  "file": "tests/e2e/paired-cli-terminal-graph-sync-tab-retention.spec.ts",
+  "line": 310,
+  "kind": "test",
+  "title": "keeps a host-created CLI terminal that is the first one on the host"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser-cookie-survival.spec.ts",
+  "line": 294,
+  "kind": "test",
+  "title": "keeps client-hosted browser cookies across a paired runtime restart"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser-double-restart.spec.ts",
+  "line": 42,
+  "kind": "test",
+  "title": "keeps a client-hosted browser tab when the client and the runtime both restart"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser-ghost-close.spec.ts",
+  "line": 109,
+  "kind": "test",
+  "title": "closes a restored client-hosted row whose runtime has no record of it"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser-host-strip.spec.ts",
+  "line": 135,
+  "kind": "test",
+  "title": "shows a client-hosted page in the host tab strip and closes it from there"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser-quit-survival.spec.ts",
+  "line": 293,
+  "kind": "test",
+  "title": "keeps a client-hosted browser tab across a client quit and relaunch"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser-quit-survival.spec.ts",
+  "line": 424,
+  "kind": "test",
+  "title": "closes a retained client-hosted tab while its host is gone"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser-restart-survival.spec.ts",
+  "line": 45,
+  "kind": "test",
+  "title": "keeps a client-hosted browser tab across a paired runtime restart"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser-title-hold.spec.ts",
+  "line": 328,
+  "kind": "test",
+  "title": "holds the guest title through host republishes of a client-hosted page"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser.spec.ts",
+  "line": 317,
+  "kind": "test",
+  "title": "hosts a paired browser on the viewing desktop and keeps the kill switch new-page-only"
+ },
+ {
+  "file": "tests/e2e/paired-client-hosted-browser.spec.ts",
+  "line": 336,
+  "kind": "test",
+  "title": "hosts a paired browser from a headless server and preserves server fallback"
+ },
+ {
+  "file": "tests/e2e/paired-cmd-j-host-qualified-tabs.spec.ts",
+  "line": 15,
+  "kind": "test",
+  "title": "routes same-id browser and simulator Cmd-J rows to their owning paired host"
+ },
+ {
+  "file": "tests/e2e/paired-external-worktree-discovery.spec.ts",
+  "line": 88,
+  "kind": "test",
+  "title": "shows an externally created worktree on a paired client without reconnect"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 167,
+  "kind": "test",
+  "title": "keeps an address typed into the staged tab when the paired create is adopted"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 244,
+  "kind": "test",
+  "title": "shows a paired browser tab before its create RPC resolves, then keeps it as one tab"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 299,
+  "kind": "test",
+  "title": "keeps three rapid paired browser creates as three ordered tabs"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 366,
+  "kind": "test",
+  "title": "takes back the optimistic tab when the paired create fails to reconcile"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 454,
+  "kind": "test",
+  "title": "cancels a held paired browser create when its staged tab is closed from the strip"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 566,
+  "kind": "test",
+  "title": "leaves the user on an empty worktree when its first browser create fails"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 750,
+  "kind": "test",
+  "title": "keeps a split made while the paired create is still staged"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 789,
+  "kind": "test",
+  "title": "leaves the user on the tab they switched to during client-host preparation"
+ },
+ {
+  "file": "tests/e2e/paired-instant-browser-tab.spec.ts",
+  "line": 874,
+  "kind": "test",
+  "title": "adopts a paired browser tab without rebuilding its chrome"
+ },
+ {
+  "file": "tests/e2e/paired-preview-address-bar-convergence.spec.ts",
+  "line": 115,
+  "kind": "test",
+  "title": "converts a preview to a web tab and back from the address bar"
+ },
+ {
+  "file": "tests/e2e/paired-quick-open-large-tree.spec.ts",
+  "line": 167,
+  "kind": "test",
+  "title": "finds paths beyond the old prefix on a headed paired runtime @headful"
+ },
+ {
+  "file": "tests/e2e/paired-quick-open-large-tree.spec.ts",
+  "line": 195,
+  "kind": "test",
+  "title": "finds paths beyond the old prefix on a headless paired runtime"
+ },
+ {
+  "file": "tests/e2e/paired-remote-browser-ghost-subscriber-rejoin.spec.ts",
+  "line": 264,
+  "kind": "test",
+  "title": "replaces a force-quit client screencast subscriber when the same device rejoins"
+ },
+ {
+  "file": "tests/e2e/paired-remote-browser-link-open-routing.spec.ts",
+  "line": 224,
+  "kind": "test",
+  "title": "opens a remote pane link on the pane runtime and refuses to fall back to the client"
+ },
+ {
+  "file": "tests/e2e/paired-remote-browser-stream-reconnect.spec.ts",
+  "line": 43,
+  "kind": "test",
+  "title": "bounds remote browser stream retries, then offers reconnect"
+ },
+ {
+  "file": "tests/e2e/paired-remote-browser-stream-reconnect.spec.ts",
+  "line": 178,
+  "kind": "test",
+  "title": "offers reconnect when the remote browser never opens at all"
+ },
+ {
+  "file": "tests/e2e/paired-remote-html-preview-local-render.spec.ts",
+  "line": 133,
+  "kind": "test",
+  "title": "renders a paired HTML doc as a document browser tab while the host gains no browser page"
+ },
+ {
+  "file": "tests/e2e/paired-remote-html-preview-local-render.spec.ts",
+  "line": 664,
+  "kind": "test",
+  "title": "asks before a paired preview reads a sibling directory"
+ },
+ {
+  "file": "tests/e2e/paired-remote-html-preview-local-render.spec.ts",
+  "line": 763,
+  "kind": "test",
+  "title": "restores the document tab, on a fresh grant, after the client quits and relaunches"
+ },
+ {
+  "file": "tests/e2e/paired-remote-pane-layout-retry.spec.ts",
+  "line": 108,
+  "kind": "test",
+  "title": "retries an identical remote pane layout after reconnect"
+ },
+ {
+  "file": "tests/e2e/paired-remote-split-pane-focus.spec.ts",
+  "line": 30,
+  "kind": "test",
+  "title": "focuses the pane a client split creates on a paired remote workspace @headful"
+ },
+ {
+  "file": "tests/e2e/paired-remote-split-pane-host-retired-ghost.spec.ts",
+  "line": 59,
+  "kind": "test",
+  "title": "removes the pane a paired remote host retired instead of leaving a dead ghost"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-browser-link.spec.ts",
+  "line": 160,
+  "kind": "test",
+  "title": "opens a paired-runtime terminal link on its owning host"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-client-restart-survival.spec.ts",
+  "line": 232,
+  "kind": "test",
+  "title": "a relaunched client gets its live remote terminal back, still attached to the same process"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-host-restart-background-sync.spec.ts",
+  "line": 323,
+  "kind": "test",
+  "title": "foregrounds a preserved daemon PTY after the paired host relaunches"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-lossy-initial-snapshot.spec.ts",
+  "line": 82,
+  "kind": "test",
+  "title": "paints a nonempty lossy initial snapshot on a paired Electron client @headful"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-materialization-reconnect.spec.ts",
+  "line": 334,
+  "kind": "test",
+  "title": "materializes a stopped terminal on reconnect from a headed paired host"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-materialization-reconnect.spec.ts",
+  "line": 357,
+  "kind": "test",
+  "title": "materializes a stopped terminal on reconnect from a headless folder host"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-parked-reveal-interactivity.spec.ts",
+  "line": 350,
+  "kind": "test",
+  "title": "paired client keeps revealed remote terminals interactive"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-parked-scrollback-survives.spec.ts",
+  "line": 397,
+  "kind": "test.describe",
+  "title": "host retains the buffer"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-parked-scrollback-survives.spec.ts",
+  "line": 398,
+  "kind": "test",
+  "title": "a cold-parked remote terminal restores its scrollback on reveal"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-parked-scrollback-survives.spec.ts",
+  "line": 408,
+  "kind": "test.describe",
+  "title": "host retains nothing"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-parked-scrollback-survives.spec.ts",
+  "line": 413,
+  "kind": "test",
+  "title": "a cold-parked remote terminal keeps its scrollback when the host cannot answer"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-parked-scrollback-survives.spec.ts",
+  "line": 423,
+  "kind": "test.describe",
+  "title": "force-park with a host that cannot answer"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-parked-scrollback-survives.spec.ts",
+  "line": 433,
+  "kind": "test",
+  "title": "a force-parked remote terminal keeps its shared-layout capture across an inventory frame"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-probe-gap-recovery.spec.ts",
+  "line": 71,
+  "kind": "test",
+  "title": "replaces a stale paired stream when the PTY snapshot advanced @headful"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-retention-memory.spec.ts",
+  "line": 8,
+  "kind": "test",
+  "title": "ordinary-parks paired terminals and restores authoritative host scrollback @headful"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-serve-restart-binding.spec.ts",
+  "line": 468,
+  "kind": "test",
+  "title": "retains a verified mirrored PTY binding through a serve restart pending snapshot"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-stall-recovery.spec.ts",
+  "line": 244,
+  "kind": "test",
+  "title": "restarts one ACK-starved paired terminal stream without replacing its PTY @headful"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-truncated-tail-first-paint.spec.ts",
+  "line": 73,
+  "kind": "test",
+  "title": "paints a paired remote terminal when only its retained text tail overflowed @headful"
+ },
+ {
+  "file": "tests/e2e/paired-remote-terminal-truncated-tail-first-paint.spec.ts",
+  "line": 227,
+  "kind": "test",
+  "title": "legacy paired hosts retain the lossy hidden-manager budget fallback @headful"
+ },
+ {
+  "file": "tests/e2e/paired-skill-installation.spec.ts",
+  "line": 38,
+  "kind": "test",
+  "title": "installs on a headed desktop runtime without a local fallback"
+ },
+ {
+  "file": "tests/e2e/paired-skill-installation.spec.ts",
+  "line": 85,
+  "kind": "test",
+  "title": "installs on a headless serve runtime through the same contract"
+ },
+ {
+  "file": "tests/e2e/paired-split-pane-browser-placement.spec.ts",
+  "line": 13,
+  "kind": "test",
+  "title": "appends a paired browser tab last in its pane and keeps it there across host snapshots"
+ },
+ {
+  "file": "tests/e2e/paired-split-pane-browser-placement.spec.ts",
+  "line": 48,
+  "kind": "test",
+  "title": "creates paired split-pane tabs in the focused pane without disturbing the other pane"
+ },
+ {
+  "file": "tests/e2e/paired-split-pane-browser-placement.spec.ts",
+  "line": 123,
+  "kind": "test",
+  "title": "collapses the split pane when its last paired browser tab is closed from the tab strip"
+ },
+ {
+  "file": "tests/e2e/paired-split-pane-browser-placement.spec.ts",
+  "line": 208,
+  "kind": "test",
+  "title": "places a paired split-pane terminal in the pane that asked for it"
+ },
+ {
+  "file": "tests/e2e/paired-startup-exec-readiness.spec.ts",
+  "line": 81,
+  "kind": "test",
+  "title": "recovers startup exec through a headed paired desktop owner @headful"
+ },
+ {
+  "file": "tests/e2e/paired-startup-exec-readiness.spec.ts",
+  "line": 122,
+  "kind": "test",
+  "title": "recovers the same startup exec through an isolated headless orca serve"
+ },
+ {
+  "file": "tests/e2e/paired-two-client-emptied-workspace-reseed.spec.ts",
+  "line": 161,
+  "kind": "test",
+  "title": "two paired clients stay in step with the host across an emptied workspace"
+ },
+ {
+  "file": "tests/e2e/paired-two-client-emptied-workspace-reseed.spec.ts",
+  "line": 345,
+  "kind": "test",
+  "title": "a client that works immediately after pairing stays in step with the host"
+ },
+ {
+  "file": "tests/e2e/paired-web-add-project-unavailable-host.spec.ts",
+  "line": 148,
+  "kind": "test",
+  "title": "disables paired-web Add Project for a blocked or unavailable headed host @headful"
+ },
+ {
+  "file": "tests/e2e/paired-web-add-project-unavailable-host.spec.ts",
+  "line": 163,
+  "kind": "test",
+  "title": "keeps paired-web Add Project disabled for a headless unavailable host"
+ },
+ {
+  "file": "tests/e2e/persisted-session-production-upgrade.spec.ts",
+  "line": 113,
+  "kind": "test",
+  "title": "upgrades a legacy daemon session and keeps it stable after relaunch"
+ },
+ {
+  "file": "tests/e2e/pet-status-segment-layout.spec.ts",
+  "line": 72,
+  "kind": "test.describe",
+  "title": "Pet status segment layout"
+ },
+ {
+  "file": "tests/e2e/pet-status-segment-layout.spec.ts",
+  "line": 73,
+  "kind": "test",
+  "title": "does not reserve empty space after its label"
+ },
+ {
+  "file": "tests/e2e/pi-ui-prompt-status.spec.ts",
+  "line": 12,
+  "kind": "test",
+  "title": "Pi modal hooks show the existing waiting-for-input indicator"
+ },
+ {
+  "file": "tests/e2e/plugin-demo.spec.ts",
+  "line": 71,
+  "kind": "test",
+  "title": "runs hello-orca panel, command, and event behind visible consent"
+ },
+ {
+  "file": "tests/e2e/plugin-marketplace-content.spec.ts",
+  "line": 274,
+  "kind": "test",
+  "title": "installs and applies official Phase 1 content from a fresh profile"
+ },
+ {
+  "file": "tests/e2e/plugin-panel-containment.spec.ts",
+  "line": 197,
+  "kind": "test",
+  "title": "contains hostile panel network and navigation probes"
+ },
+ {
+  "file": "tests/e2e/plugin-panel-containment.spec.ts",
+  "line": 433,
+  "kind": "test",
+  "title": "detects and suspends a busy-looping panel in an isolated renderer"
+ },
+ {
+  "file": "tests/e2e/plugin-startup-budget.spec.ts",
+  "line": 127,
+  "kind": "test",
+  "title": "keeps real Electron launch stable with 20 approved inert plugins"
+ },
+ {
+  "file": "tests/e2e/pr-comments-sidebar-cards.spec.ts",
+  "line": 45,
+  "kind": "test.describe",
+  "title": "PR comments sidebar cards view"
+ },
+ {
+  "file": "tests/e2e/pr-comments-sidebar-cards.spec.ts",
+  "line": 51,
+  "kind": "test",
+  "title": "groups open, conversation, and resolved comments in cards layout"
+ },
+ {
+  "file": "tests/e2e/pr-comments-sidebar-cards.spec.ts",
+  "line": 97,
+  "kind": "test",
+  "title": "can switch from grouped to chronological timeline order"
+ },
+ {
+  "file": "tests/e2e/pr-comments-sidebar-cards.spec.ts",
+  "line": 127,
+  "kind": "test",
+  "title": "adds reactions to conversation and review-thread comments"
+ },
+ {
+  "file": "tests/e2e/pr-comments-sidebar-cards.spec.ts",
+  "line": 179,
+  "kind": "test",
+  "title": "keeps reaction focus while a remote mutation fails"
+ },
+ {
+  "file": "tests/e2e/pr-comments-sidebar-cards.spec.ts",
+  "line": 235,
+  "kind": "test",
+  "title": "queues an open thread for the agent from the visible row action and menu fallback"
+ },
+ {
+  "file": "tests/e2e/pr-comments-sidebar-cards.spec.ts",
+  "line": 289,
+  "kind": "test",
+  "title": "keeps open card content aligned while the row menu is open"
+ },
+ {
+  "file": "tests/e2e/pr11346-selected-runtime-add.spec.ts",
+  "line": 751,
+  "kind": "test",
+  "title": "routes every Add Project path to a selected non-default headed runtime @headful"
+ },
+ {
+  "file": "tests/e2e/pr11346-selected-runtime-add.spec.ts",
+  "line": 759,
+  "kind": "test",
+  "title": "keeps every selected-runtime Add Project path in hidden-window desktop parity"
+ },
+ {
+  "file": "tests/e2e/project-group-creation-visibility.spec.ts",
+  "line": 16,
+  "kind": "test",
+  "title": "created groups survive sidebar expansion (${delayCreateResponse ? "
+ },
+ {
+  "file": "tests/e2e/project-group-manual-sort.spec.ts",
+  "line": 274,
+  "kind": "test.describe",
+  "title": "Project Group manual sorting"
+ },
+ {
+  "file": "tests/e2e/project-group-manual-sort.spec.ts",
+  "line": 275,
+  "kind": "test",
+  "title": "dragging a project header body reorders the visible project headers"
+ },
+ {
+  "file": "tests/e2e/project-group-manual-sort.spec.ts",
+  "line": 303,
+  "kind": "test",
+  "title": "dropping a project over another project body snaps to that section boundary"
+ },
+ {
+  "file": "tests/e2e/project-group-manual-sort.spec.ts",
+  "line": 335,
+  "kind": "test",
+  "title": "dragging a duplicate-ranked Project Group header reorders the visible headers"
+ },
+ {
+  "file": "tests/e2e/pty-input-write-queue-ssh.spec.ts",
+  "line": 76,
+  "kind": "test.describe",
+  "title": "PTY input write queue over SSH"
+ },
+ {
+  "file": "tests/e2e/pty-input-write-queue-ssh.spec.ts",
+  "line": 80,
+  "kind": "test",
+  "title": "returns an xterm OSC query reply through the live SSH PTY"
+ },
+ {
+  "file": "tests/e2e/pty-input-write-queue-ssh.spec.ts",
+  "line": 103,
+  "kind": "test",
+  "title": "keeps fish query replies out of the next child stdin on an upstream relay pty"
+ },
+ {
+  "file": "tests/e2e/pty-snapshot-capability-main-stall.spec.ts",
+  "line": 10,
+  "kind": "test",
+  "title": "PTY capability lookup keeps renderer JavaScript responsive while main is stalled"
+ },
+ {
+  "file": "tests/e2e/quick-open-file-paths.spec.ts",
+  "line": 9,
+  "kind": "test",
+  "title": "cmd+p quick open prioritizes the filename and reveals the full path on hover"
+ },
+ {
+  "file": "tests/e2e/remote-agent-session-focus-authority.spec.ts",
+  "line": 247,
+  "kind": "test",
+  "title": "headed paired host keeps structured agent focus viewer-local @headful"
+ },
+ {
+  "file": "tests/e2e/remote-session-bulk-open-freeze-repro.spec.ts",
+  "line": 46,
+  "kind": "test",
+  "title": "paired client host-focus storm keeps the latest terminal @freeze-repro"
+ },
+ {
+  "file": "tests/e2e/remote-session-bulk-open-freeze-repro.spec.ts",
+  "line": 112,
+  "kind": "test",
+  "title": "R1 paired remote bulk-open freeze oracle @freeze-repro"
+ },
+ {
+  "file": "tests/e2e/renderer-blocked-navigation-graph-authority.spec.ts",
+  "line": 16,
+  "kind": "test",
+  "title": "blocked navigation preserves the renderer document and graph authority"
+ },
+ {
+  "file": "tests/e2e/renderer-blocked-navigation-graph-authority.spec.ts",
+  "line": 67,
+  "kind": "test",
+  "title": "cancelled renderer reload restores the surviving graph authority"
+ },
+ {
+  "file": "tests/e2e/renderer-blocked-navigation-graph-authority.spec.ts",
+  "line": 108,
+  "kind": "test",
+  "title": "beforeunload cancellation never retires the surviving graph authority"
+ },
+ {
+  "file": "tests/e2e/renderer-crash-recovery-terminal-input.spec.ts",
+  "line": 99,
+  "kind": "test.describe",
+  "title": "Renderer crash recovery keeps terminal input alive"
+ },
+ {
+  "file": "tests/e2e/renderer-crash-recovery-terminal-input.spec.ts",
+  "line": 100,
+  "kind": "test",
+  "title": "typing still reaches the PTY after forced renderer crash + auto-reload"
+ },
+ {
+  "file": "tests/e2e/repo-icon-emoji-picker.spec.ts",
+  "line": 36,
+  "kind": "test.describe",
+  "title": "Repository icon emoji picker"
+ },
+ {
+  "file": "tests/e2e/repo-icon-emoji-picker.spec.ts",
+  "line": 37,
+  "kind": "test",
+  "title": "search selects a native emoji and persists it as the repo icon"
+ },
+ {
+  "file": "tests/e2e/repro-7732-gitlab-checks-job-details.spec.ts",
+  "line": 115,
+  "kind": "test.describe",
+  "title": "#7732 GitLab Checks panel job details"
+ },
+ {
+  "file": "tests/e2e/repro-7732-gitlab-checks-job-details.spec.ts",
+  "line": 116,
+  "kind": "test",
+  "title": "expanding a failed pipeline job shows its log, not "
+ },
+ {
+  "file": "tests/e2e/resource-manager-folder-labels.spec.ts",
+  "line": 11,
+  "kind": "test",
+  "title": "Resource Manager names folder workspaces and their groups (${theme})"
+ },
+ {
+  "file": "tests/e2e/resource-manager-folder-labels.spec.ts",
+  "line": 80,
+  "kind": "test",
+  "title": "names a folder terminal recovered from the daemon after restart without an open tab"
+ },
+ {
+  "file": "tests/e2e/resource-manager-unbound-session-safety.spec.ts",
+  "line": 75,
+  "kind": "test.describe",
+  "title": "Resource Manager unbound-session safety"
+ },
+ {
+  "file": "tests/e2e/resource-manager-unbound-session-safety.spec.ts",
+  "line": 76,
+  "kind": "test",
+  "title": "a warm-reattached session is bound after restore, so orphan cleanup cannot target it"
+ },
+ {
+  "file": "tests/e2e/resource-usage-warm-reattach.spec.ts",
+  "line": 47,
+  "kind": "test.describe",
+  "title": "Resource Usage warm-reattach"
+ },
+ {
+  "file": "tests/e2e/resource-usage-warm-reattach.spec.ts",
+  "line": 48,
+  "kind": "test",
+  "title": "warm-reattached local PTY is included in snapshot with non-null pid and is not flagged remote"
+ },
+ {
+  "file": "tests/e2e/restart-restore-terminal-input.spec.ts",
+  "line": 183,
+  "kind": "test",
+  "title": "restored pane accepts typing after a clean restart with a live daemon session"
+ },
+ {
+  "file": "tests/e2e/restart-restore-terminal-input.spec.ts",
+  "line": 217,
+  "kind": "test",
+  "title": "restored pane recovers input after the daemon un-wedges"
+ },
+ {
+  "file": "tests/e2e/restart-restore-terminal-input.spec.ts",
+  "line": 285,
+  "kind": "test",
+  "title": "cold-restored pane accepts typing after the daemon died between launches"
+ },
+ {
+  "file": "tests/e2e/rich-markdown-inline-image.spec.ts",
+  "line": 21,
+  "kind": "test.describe",
+  "title": "Rich markdown inline image regression"
+ },
+ {
+  "file": "tests/e2e/rich-markdown-inline-image.spec.ts",
+  "line": 27,
+  "kind": "test",
+  "title": "an inline image inside a paragraph survives a keystroke"
+ },
+ {
+  "file": "tests/e2e/rich-markdown-inline-image.spec.ts",
+  "line": 64,
+  "kind": "test",
+  "title": "an inline image inside a toggle summary survives a keystroke"
+ },
+ {
+  "file": "tests/e2e/rich-markdown-inline-image.spec.ts",
+  "line": 99,
+  "kind": "test",
+  "title": "a formatting command over an inline image keeps the image"
+ },
+ {
+  "file": "tests/e2e/rich-markdown-link-bubble-stacking.spec.ts",
+  "line": 35,
+  "kind": "test.describe",
+  "title": "Rich markdown link bubble stacking"
+ },
+ {
+  "file": "tests/e2e/rich-markdown-link-bubble-stacking.spec.ts",
+  "line": 36,
+  "kind": "test",
+  "title": "link actions stay above the right Explorer"
+ },
+ {
+  "file": "tests/e2e/right-sidebar-windows-titlebar.spec.ts",
+  "line": 14,
+  "kind": "test.describe",
+  "title": "Right sidebar native titlebar spacing"
+ },
+ {
+  "file": "tests/e2e/right-sidebar-windows-titlebar.spec.ts",
+  "line": 15,
+  "kind": "test",
+  "title": "top activity buttons follow the native desktop chrome layout"
+ },
+ {
+  "file": "tests/e2e/runtime-file-browser-windows-drives.spec.ts",
+  "line": 10,
+  "kind": "test.describe",
+  "title": "paired runtime Windows file browser"
+ },
+ {
+  "file": "tests/e2e/runtime-file-browser-windows-drives.spec.ts",
+  "line": 13,
+  "kind": "test",
+  "title": "reports the runtime path flavor with Windows drive roots"
+ },
+ {
+  "file": "tests/e2e/runtime-host-status-recovery.spec.ts",
+  "line": 103,
+  "kind": "test",
+  "title": "connection-owned status recovers with a ${topology} host and independent viewers"
+ },
+ {
+  "file": "tests/e2e/settings-agent-awake.spec.ts",
+  "line": 151,
+  "kind": "test.describe",
+  "title": "Agent awake setting"
+ },
+ {
+  "file": "tests/e2e/settings-agent-awake.spec.ts",
+  "line": 156,
+  "kind": "test",
+  "title": "can be changed from Agents settings and persists through IPC"
+ },
+ {
+  "file": "tests/e2e/settings-agent-awake.spec.ts",
+  "line": 189,
+  "kind": "test",
+  "title": "keeps the OS awake only while a hook-reported agent is working"
+ },
+ {
+  "file": "tests/e2e/settings-display-name-ime.spec.ts",
+  "line": 124,
+  "kind": "test.describe",
+  "title": "Repository Display Name IME composition"
+ },
+ {
+  "file": "tests/e2e/settings-display-name-ime.spec.ts",
+  "line": 125,
+  "kind": "test",
+  "title": "keeps Hangul syllables composed while typing slowly"
+ },
+ {
+  "file": "tests/e2e/settings-integration-dialog-dismiss.spec.ts",
+  "line": 34,
+  "kind": "test.describe",
+  "title": "Settings integrations connect dialogs"
+ },
+ {
+  "file": "tests/e2e/settings-integration-dialog-dismiss.spec.ts",
+  "line": 40,
+  "kind": "test",
+  "title": "Linear API key draft survives a backdrop click but clears on cancel"
+ },
+ {
+  "file": "tests/e2e/settings-integration-dialog-dismiss.spec.ts",
+  "line": 71,
+  "kind": "test",
+  "title": "Jira site URL draft survives a backdrop click"
+ },
+ {
+  "file": "tests/e2e/settings-search-responsiveness.spec.ts",
+  "line": 14,
+  "kind": "test.describe",
+  "title": "Settings search responsiveness"
+ },
+ {
+  "file": "tests/e2e/settings-search-responsiveness.spec.ts",
+  "line": 15,
+  "kind": "test",
+  "title": "renders only the active settings pane when many projects match search"
+ },
+ {
+  "file": "tests/e2e/settings-search-shortcuts-pane.spec.ts",
+  "line": 4,
+  "kind": "test.describe",
+  "title": "Settings sidebar search on the Shortcuts pane"
+ },
+ {
+  "file": "tests/e2e/settings-search-shortcuts-pane.spec.ts",
+  "line": 5,
+  "kind": "test",
+  "title": "pane-title-only query keeps rows visible and local search usable"
+ },
+ {
+  "file": "tests/e2e/settings-skill-detection.spec.ts",
+  "line": 87,
+  "kind": "test.describe",
+  "title": "Settings skill detection"
+ },
+ {
+  "file": "tests/e2e/settings-skill-detection.spec.ts",
+  "line": 92,
+  "kind": "test",
+  "title": "shows installed only for global orchestration skill installs"
+ },
+ {
+  "file": "tests/e2e/settled-worker-tab-survives-restart.spec.ts",
+  "line": 109,
+  "kind": "test",
+  "title": "a settled worker tab survives restart with daemon session ${daemonSessionGone ? "
+ },
+ {
+  "file": "tests/e2e/setup-guide-sidebar.spec.ts",
+  "line": 13,
+  "kind": "test.describe",
+  "title": "Setup guide sidebar entry"
+ },
+ {
+  "file": "tests/e2e/setup-guide-sidebar.spec.ts",
+  "line": 19,
+  "kind": "test",
+  "title": "does not flash while completed setup waits for capability readiness"
+ },
+ {
+  "file": "tests/e2e/setup-script-import.spec.ts",
+  "line": 149,
+  "kind": "test.describe",
+  "title": "Setup script import prompt"
+ },
+ {
+  "file": "tests/e2e/setup-script-import.spec.ts",
+  "line": 155,
+  "kind": "test",
+  "title": "imports Superset local overlays through the prompt UI"
+ },
+ {
+  "file": "tests/e2e/setup-script-import.spec.ts",
+  "line": 184,
+  "kind": "test",
+  "title": "imports cmux setup commands through the prompt UI"
+ },
+ {
+  "file": "tests/e2e/setup-script-prompt-unreadable-orca-yaml.spec.ts",
+  "line": 149,
+  "kind": "test.describe",
+  "title": "Setup script prompt"
+ },
+ {
+  "file": "tests/e2e/setup-script-prompt-unreadable-orca-yaml.spec.ts",
+  "line": 155,
+  "kind": "test",
+  "title": "recovers from an unreadable orca.yaml instead of pinning the failed verdict"
+ },
+ {
+  "file": "tests/e2e/sidebar-agent-row-identity.spec.ts",
+  "line": 150,
+  "kind": "test",
+  "title": "sidebar keeps a Cursor pane visible and an OpenCode pane out of Claude Code hands"
+ },
+ {
+  "file": "tests/e2e/slept-workspace-remount-wake.spec.ts",
+  "line": 42,
+  "kind": "test",
+  "title": "remounting a slept hidden pane does not respawn its PTY"
+ },
+ {
+  "file": "tests/e2e/source-control-commit-draft-persistence.spec.ts",
+  "line": 50,
+  "kind": "test.describe",
+  "title": "Source Control commit draft persistence"
+ },
+ {
+  "file": "tests/e2e/source-control-commit-draft-persistence.spec.ts",
+  "line": 51,
+  "kind": "test",
+  "title": "preserves a typed draft when the sidebar tab remounts"
+ },
+ {
+  "file": "tests/e2e/source-control-commit-message-ai.spec.ts",
+  "line": 44,
+  "kind": "test.describe",
+  "title": "Source Control AI commit messages"
+ },
+ {
+  "file": "tests/e2e/source-control-commit-message-ai.spec.ts",
+  "line": 56,
+  "kind": "test",
+  "title": "${label} the commit-message recipe"
+ },
+ {
+  "file": "tests/e2e/source-control-commit-message-ai.spec.ts",
+  "line": 113,
+  "kind": "test",
+  "title": "generates a commit message from staged changes through the Source Control UI"
+ },
+ {
+  "file": "tests/e2e/source-control-create-pr-intent-notice-layout.spec.ts",
+  "line": 15,
+  "kind": "test.describe",
+  "title": "Source Control Create PR intent notice layout"
+ },
+ {
+  "file": "tests/e2e/source-control-create-pr-intent-notice-layout.spec.ts",
+  "line": 16,
+  "kind": "test",
+  "title": "keeps the settings link off the message row at the minimum sidebar width"
+ },
+ {
+  "file": "tests/e2e/source-control-create-pr-intent-switch.spec.ts",
+  "line": 43,
+  "kind": "test.describe",
+  "title": "Source Control Create PR intent worktree switching"
+ },
+ {
+  "file": "tests/e2e/source-control-create-pr-intent-switch.spec.ts",
+  "line": 46,
+  "kind": "test",
+  "title": "keeps Create PR intent running after switching worktrees"
+ },
+ {
+  "file": "tests/e2e/source-control-create-pr-intent-switch.spec.ts",
+  "line": 236,
+  "kind": "test",
+  "title": "carries unavailable dirty intent through push to the final create preflight"
+ },
+ {
+  "file": "tests/e2e/source-control-create-pr.spec.ts",
+  "line": 207,
+  "kind": "test.describe",
+  "title": "Source Control create pull request"
+ },
+ {
+  "file": "tests/e2e/source-control-create-pr.spec.ts",
+  "line": 213,
+  "kind": "test",
+  "title": "creates the pull request from the Source Control primary action"
+ },
+ {
+  "file": "tests/e2e/source-control-create-pr.spec.ts",
+  "line": 260,
+  "kind": "test",
+  "title": "surfaces create failures without clearing the pull request composer"
+ },
+ {
+  "file": "tests/e2e/source-control-discard-confirmation.spec.ts",
+  "line": 131,
+  "kind": "test.describe",
+  "title": "Source Control discard confirmation"
+ },
+ {
+  "file": "tests/e2e/source-control-discard-confirmation.spec.ts",
+  "line": 137,
+  "kind": "test",
+  "title": "keeps long untracked-file confirmation usable and deletes on confirm"
+ },
+ {
+  "file": "tests/e2e/source-control-large-file-count.spec.ts",
+  "line": 268,
+  "kind": "test.describe",
+  "title": "Source Control large file count (#8013)"
+ },
+ {
+  "file": "tests/e2e/source-control-large-file-count.spec.ts",
+  "line": 273,
+  "kind": "test",
+  "title": "a large untracked set under the status cap stays responsive"
+ },
+ {
+  "file": "tests/e2e/source-control-large-file-count.spec.ts",
+  "line": 325,
+  "kind": "test",
+  "title": "a large modified set under the status cap stays responsive"
+ },
+ {
+  "file": "tests/e2e/source-control-large-file-count.spec.ts",
+  "line": 360,
+  "kind": "test",
+  "title": "a change set over the status cap degrades to the too-many-changes state"
+ },
+ {
+  "file": "tests/e2e/source-control-large-file-count.spec.ts",
+  "line": 473,
+  "kind": "test",
+  "title": "untracked line-stat cache stays effective up to the status cap"
+ },
+ {
+  "file": "tests/e2e/source-control-large-file-count.spec.ts",
+  "line": 523,
+  "kind": "test",
+  "title": "a large clean repo (tracked files only) loads instantly"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-generation-switch.spec.ts",
+  "line": 150,
+  "kind": "test.describe",
+  "title": "Source Control AI PR generation worktree switching"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-generation-switch.spec.ts",
+  "line": 153,
+  "kind": "test",
+  "title": "keeps checks-panel PR generation running after switching worktrees"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-generation-switch.spec.ts",
+  "line": 216,
+  "kind": "test",
+  "title": "keeps pending PR generation attached to its original worktree"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-generation-switch.spec.ts",
+  "line": 317,
+  "kind": "test",
+  "title": "hydrates pending PR generation after Source Control remounts"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-generation-switch.spec.ts",
+  "line": 380,
+  "kind": "test",
+  "title": "keeps pending commit message generation attached to its original worktree"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-generation-switch.spec.ts",
+  "line": 486,
+  "kind": "test",
+  "title": "hydrates pending commit message generation after Source Control remounts"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-generation-switch.spec.ts",
+  "line": 555,
+  "kind": "test",
+  "title": "hides the commit AI composer on a clean branch empty state"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-linked-issue-ai.spec.ts",
+  "line": 25,
+  "kind": "test.describe",
+  "title": "Source Control AI pull request linkedIssue"
+ },
+ {
+  "file": "tests/e2e/source-control-pr-linked-issue-ai.spec.ts",
+  "line": 38,
+  "kind": "test",
+  "title": "${label} the pull-request recipe"
+ },
+ {
+  "file": "tests/e2e/spinner-workspace-perf.spec.ts",
+  "line": 71,
+  "kind": "test",
+  "title": "spinner performance ${scenario.name}"
+ },
+ {
+  "file": "tests/e2e/ssh-ai-vault-session-history.spec.ts",
+  "line": 15,
+  "kind": "test.describe",
+  "title": "SSH Agent Session History"
+ },
+ {
+  "file": "tests/e2e/ssh-ai-vault-session-history.spec.ts",
+  "line": 19,
+  "kind": "test",
+  "title": "shows remote session history only for the SSH host and resumes Codex on that worktree"
+ },
+ {
+  "file": "tests/e2e/ssh-client-hosted-browser-drop-reconnect.spec.ts",
+  "line": 250,
+  "kind": "test",
+  "title": "recovers client-hosted SSH-routed browser pages across a real SSH drop"
+ },
+ {
+  "file": "tests/e2e/ssh-codex-display-artifacts-repro.spec.ts",
+  "line": 61,
+  "kind": "test.describe",
+  "title": "Remote SSH Codex display artifacts repro"
+ },
+ {
+  "file": "tests/e2e/ssh-codex-display-artifacts-repro.spec.ts",
+  "line": 66,
+  "kind": "test",
+  "title": "does not leave duplicated Codex status output after SSH replay (${forceReconnect ? "
+ },
+ {
+  "file": "tests/e2e/ssh-cold-activation-restore.spec.ts",
+  "line": 36,
+  "kind": "test.describe",
+  "title": "SSH cold activation restore"
+ },
+ {
+  "file": "tests/e2e/ssh-cold-activation-restore.spec.ts",
+  "line": 40,
+  "kind": "test",
+  "title": "eagerly remounts every restored remote terminal after renderer reload"
+ },
+ {
+  "file": "tests/e2e/ssh-cold-activation-restore.spec.ts",
+  "line": 222,
+  "kind": "test",
+  "title": "reclaims the authenticated PTY owner immediately after a full app restart"
+ },
+ {
+  "file": "tests/e2e/ssh-cold-hydration-gap-tab-seeding.spec.ts",
+  "line": 182,
+  "kind": "test.describe",
+  "title": "SSH cold hydration gap tab seeding"
+ },
+ {
+  "file": "tests/e2e/ssh-cold-hydration-gap-tab-seeding.spec.ts",
+  "line": 190,
+  "kind": "test",
+  "title": "adds no tab when the host workspace snapshot stalls across a relaunch"
+ },
+ {
+  "file": "tests/e2e/ssh-cold-hydration-gap-tab-seeding.spec.ts",
+  "line": 273,
+  "kind": "test",
+  "title": "adopts host tabs after their worktree catalog paths resolve"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-import.spec.ts",
+  "line": 78,
+  "kind": "test.describe",
+  "title": "SSH config host import (bulk + settings re-adopt)"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-import.spec.ts",
+  "line": 88,
+  "kind": "test",
+  "title": "P5: already-in-Orca badge, disabled row, and Add all counts only new hosts"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-import.spec.ts",
+  "line": 117,
+  "kind": "test",
+  "title": "P6: Add all N to Orca imports new hosts; re-open shows all in Orca"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-import.spec.ts",
+  "line": 155,
+  "kind": "test",
+  "title": "P7: Add all does not re-adopt deleted config hosts (suppress tombstones)"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-import.spec.ts",
+  "line": 188,
+  "kind": "test",
+  "title": "P9: Settings Import re-adopts deleted config hosts"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-picker.spec.ts",
+  "line": 54,
+  "kind": "test.describe",
+  "title": "SSH config host picker"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-picker.spec.ts",
+  "line": 65,
+  "kind": "test",
+  "title": "P1: empty config shows empty state; Back returns to blank form"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-picker.spec.ts",
+  "line": 85,
+  "kind": "test",
+  "title": "P2: seeded hosts list with summary lines and Add all enabled"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-picker.spec.ts",
+  "line": 106,
+  "kind": "test",
+  "title": "P3: select host prefills form; Save persists; N3 identity hint"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-picker.spec.ts",
+  "line": 148,
+  "kind": "test",
+  "title": "P4: filter narrows host list"
+ },
+ {
+  "file": "tests/e2e/ssh-config-host-picker.spec.ts",
+  "line": 169,
+  "kind": "test",
+  "title": "P8: Back without select leaves form empty"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-bulk-open-freeze-repro.spec.ts",
+  "line": 53,
+  "kind": "test.describe",
+  "title": "R2 Docker SSH bulk-open freeze"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-bulk-open-freeze-repro.spec.ts",
+  "line": 58,
+  "kind": "test",
+  "title": "bulk-open many flooding SSH terminals and measure renderer lag @freeze-repro @headful"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-five-pane-input-under-flood.spec.ts",
+  "line": 35,
+  "kind": "test.describe",
+  "title": "five SSH panes under simultaneous output"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-five-pane-input-under-flood.spec.ts",
+  "line": 38,
+  "kind": "test",
+  "title": "each pane acknowledges keyboard input after hiding and reopening the flooding workspace"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-half-open-link.spec.ts",
+  "line": 45,
+  "kind": "test.describe",
+  "title": "Docker SSH half-open link"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-half-open-link.spec.ts",
+  "line": 49,
+  "kind": "test",
+  "title": "declares a frozen host lost instead of wedging, and recovers @half-open"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-quick-open-large-listing.spec.ts",
+  "line": 85,
+  "kind": "test",
+  "title": "lists a monorepo-sized remote workspace, with and without a client page size (#12547)"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-reconnect-pane-restore.spec.ts",
+  "line": 58,
+  "kind": "test.describe",
+  "title": "SSH reconnect pane restore"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-reconnect-pane-restore.spec.ts",
+  "line": 61,
+  "kind": "test",
+  "title": "restores shell scrollback, a full-screen frame, and a usable new tab across a reconnect"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-relay-perf.spec.ts",
+  "line": 147,
+  "kind": "test.describe",
+  "title": "Docker SSH relay perf"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-relay-perf.spec.ts",
+  "line": 151,
+  "kind": "test",
+  "title": "keeps remote typing responsive while the Linux relay streams TUI output"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-relay-perf.spec.ts",
+  "line": 187,
+  "kind": "test",
+  "title": "keeps active remote typing responsive while a background SSH PTY stream is ACK-stalled"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-relay-perf.spec.ts",
+  "line": 267,
+  "kind": "test",
+  "title": "keeps remote typing responsive while relay file streams and git churn are active"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-relay-perf.spec.ts",
+  "line": 362,
+  "kind": "test",
+  "title": "keeps an SSH workspace terminal usable after disconnect and reconnect"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-relay-stall-credential.spec.ts",
+  "line": 128,
+  "kind": "test.describe",
+  "title": "SSH relay stall does not rotate the endpoint credential"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-resource-accumulation.spec.ts",
+  "line": 103,
+  "kind": "test.describe",
+  "title": "Docker SSH relay resource accumulation"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-resource-accumulation.spec.ts",
+  "line": 107,
+  "kind": "test",
+  "title": "does not accumulate pts devices, relay fds, or relay processes @resource-accumulation"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-transport-drop-recovery.spec.ts",
+  "line": 113,
+  "kind": "test.describe",
+  "title": "SSH transport drop recovery"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-transport-drop-recovery.spec.ts",
+  "line": 116,
+  "kind": "test",
+  "title": "recovers a live pane after the transport dies under it"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-transport-drop-recovery.spec.ts",
+  "line": 166,
+  "kind": "test",
+  "title": "stays bounded when a disconnected shell floods its pty"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-transport-drop-recovery.spec.ts",
+  "line": 252,
+  "kind": "test",
+  "title": "replaces the pane only when the host proves the session is gone"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-transport-drop-recovery.spec.ts",
+  "line": 319,
+  "kind": "test",
+  "title": "keeps one reattachable lease per pane across repeated relay restarts"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-transport-drop-recovery.spec.ts",
+  "line": 399,
+  "kind": "test",
+  "title": "keeps the session while a frozen host goes silent"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-transport-drop-recovery.spec.ts",
+  "line": 436,
+  "kind": "test",
+  "title": "accepts input again after a frozen host resumes"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-watcher-isolation.spec.ts",
+  "line": 103,
+  "kind": "test.describe",
+  "title": "Docker SSH relay watcher isolation"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-watcher-isolation.spec.ts",
+  "line": 107,
+  "kind": "test",
+  "title": "keeps the relay, terminal, and explorer alive when only relay-watcher.js crashes"
+ },
+ {
+  "file": "tests/e2e/ssh-docker-watcher-isolation.spec.ts",
+  "line": 188,
+  "kind": "test",
+  "title": "repairs a missing deployed relay-watcher.js on reconnect"
+ },
+ {
+  "file": "tests/e2e/ssh-egress-indicator-preview.spec.ts",
+  "line": 26,
+  "kind": "test",
+  "title": "shows the egress indicator on a live routed SSH page and holds"
+ },
+ {
+  "file": "tests/e2e/ssh-external-image-preview.spec.ts",
+  "line": 105,
+  "kind": "test.describe",
+  "title": "SSH external image preview"
+ },
+ {
+  "file": "tests/e2e/ssh-external-image-preview.spec.ts",
+  "line": 109,
+  "kind": "test",
+  "title": "opens an image outside the worktree from a terminal link"
+ },
+ {
+  "file": "tests/e2e/ssh-host-form-modal.spec.ts",
+  "line": 99,
+  "kind": "test.describe",
+  "title": "SSH host add/edit modal"
+ },
+ {
+  "file": "tests/e2e/ssh-host-form-modal.spec.ts",
+  "line": 111,
+  "kind": "test",
+  "title": "opens add/edit form in a viewport-stable dialog over a long host list"
+ },
+ {
+  "file": "tests/e2e/ssh-host-form-modal.spec.ts",
+  "line": 211,
+  "kind": "test",
+  "title": "add-ssh-host settings intent opens the same modal dialog"
+ },
+ {
+  "file": "tests/e2e/ssh-localhost.spec.ts",
+  "line": 144,
+  "kind": "test.describe",
+  "title": "Localhost SSH"
+ },
+ {
+  "file": "tests/e2e/ssh-localhost.spec.ts",
+  "line": 155,
+  "kind": "test",
+  "title": "routes a terminal and agent-hook status over localhost SSH"
+ },
+ {
+  "file": "tests/e2e/ssh-lost-kill-tab-resurrection.spec.ts",
+  "line": 168,
+  "kind": "test.describe",
+  "title": "SSH lost kill tab resurrection"
+ },
+ {
+  "file": "tests/e2e/ssh-lost-kill-tab-resurrection.spec.ts",
+  "line": 178,
+  "kind": "test",
+  "title": "does not resurrect tabs whose kill was lost to a killed relay daemon"
+ },
+ {
+  "file": "tests/e2e/ssh-lost-kill-tab-resurrection.spec.ts",
+  "line": 190,
+  "kind": "test",
+  "title": "does not resurrect tabs closed while the host is disconnected"
+ },
+ {
+  "file": "tests/e2e/ssh-pi-compatible-agent-title.spec.ts",
+  "line": 70,
+  "kind": "test.describe",
+  "title": "Docker SSH Pi-compatible agent titles"
+ },
+ {
+  "file": "tests/e2e/ssh-pi-compatible-agent-title.spec.ts",
+  "line": 74,
+  "kind": "test",
+  "title": "classifies OMP and Pi title transitions from a remote terminal"
+ },
+ {
+  "file": "tests/e2e/ssh-port-forward-lifecycle.spec.ts",
+  "line": 48,
+  "kind": "test.describe",
+  "title": "Docker SSH port-forward lifecycle"
+ },
+ {
+  "file": "tests/e2e/ssh-port-forward-lifecycle.spec.ts",
+  "line": 52,
+  "kind": "test",
+  "title": "keeps a user-forwarded listener live across scan refresh @headful"
+ },
+ {
+  "file": "tests/e2e/ssh-reconnect-tab-destruction.spec.ts",
+  "line": 59,
+  "kind": "test.describe",
+  "title": "SSH reconnect tab destruction"
+ },
+ {
+  "file": "tests/e2e/ssh-reconnect-tab-destruction.spec.ts",
+  "line": 62,
+  "kind": "test",
+  "title": "keeps a tab created right after a reconnect alive across the next one"
+ },
+ {
+  "file": "tests/e2e/ssh-restart-tab-accumulation.spec.ts",
+  "line": 248,
+  "kind": "test.describe",
+  "title": "SSH restart tab accumulation"
+ },
+ {
+  "file": "tests/e2e/ssh-restart-tab-accumulation.spec.ts",
+  "line": 255,
+  "kind": "test",
+  "title": "keeps a single restored SSH tab across repeated quit and relaunch cycles"
+ },
+ {
+  "file": "tests/e2e/ssh-restart-tab-accumulation.spec.ts",
+  "line": 262,
+  "kind": "test",
+  "title": "keeps every restored SSH tab across repeated quit and relaunch cycles"
+ },
+ {
+  "file": "tests/e2e/ssh-route-error-card-preview.spec.ts",
+  "line": 15,
+  "kind": "test",
+  "title": "shows the SSH routing error cards and holds for review"
+ },
+ {
+  "file": "tests/e2e/ssh-routing-optout-demo.spec.ts",
+  "line": 24,
+  "kind": "test",
+  "title": "stages the per-host routing opt-out loop against a real forwarding-blocked sshd"
+ },
+ {
+  "file": "tests/e2e/ssh-skill-installation.spec.ts",
+  "line": 55,
+  "kind": "test.describe",
+  "title": "SSH skill installation"
+ },
+ {
+  "file": "tests/e2e/ssh-skill-installation.spec.ts",
+  "line": 59,
+  "kind": "test",
+  "title": "installs and removes global, Git-worktree, and folder copies through the real relay"
+ },
+ {
+  "file": "tests/e2e/ssh-stale-resume-execution-host-scope.spec.ts",
+  "line": 244,
+  "kind": "test.describe",
+  "title": "SSH sleeping-agent resume execution-host scope"
+ },
+ {
+  "file": "tests/e2e/ssh-stale-resume-execution-host-scope.spec.ts",
+  "line": 249,
+  "kind": "test",
+  "title": "does not issue another host"
+ },
+ {
+  "file": "tests/e2e/ssh-stale-resume-execution-host-scope.spec.ts",
+  "line": 287,
+  "kind": "test",
+  "title": "still resumes a session captured on the SSH host that owns the workspace"
+ },
+ {
+  "file": "tests/e2e/ssh-startup-exec-readiness.spec.ts",
+  "line": 25,
+  "kind": "test.describe",
+  "title": "startup exec readiness over live SSH"
+ },
+ {
+  "file": "tests/e2e/ssh-startup-exec-readiness.spec.ts",
+  "line": 29,
+  "kind": "test",
+  "title": "survives an SSH reconnect while the replacement shell is not ready @headful"
+ },
+ {
+  "file": "tests/e2e/ssh-terminal-parking.spec.ts",
+  "line": 49,
+  "kind": "test.describe",
+  "title": "SSH terminal hidden view parking"
+ },
+ {
+  "file": "tests/e2e/ssh-terminal-parking.spec.ts",
+  "line": 53,
+  "kind": "test",
+  "title": "parks a hidden SSH tab and restores its scrollback on reveal"
+ },
+ {
+  "file": "tests/e2e/ssh-terminal-window-wake-stale-grid-repro.spec.ts",
+  "line": 48,
+  "kind": "test.describe",
+  "title": "SSH terminal window-wake stale PTY grid repro"
+ },
+ {
+  "file": "tests/e2e/ssh-terminal-window-wake-stale-grid-repro.spec.ts",
+  "line": 52,
+  "kind": "test",
+  "title": "window focus heals a remote PTY whose applied grid drifted from xterm"
+ },
+ {
+  "file": "tests/e2e/staging-skill-sharing.spec.ts",
+  "line": 52,
+  "kind": "test",
+  "title": "publishes, updates, revokes, and deletes without losing local state"
+ },
+ {
+  "file": "tests/e2e/status-bar-caffeinate.spec.ts",
+  "line": 31,
+  "kind": "test",
+  "title": "shows keep-awake mode and Agent activity in the status bar"
+ },
+ {
+  "file": "tests/e2e/status-bar-session-count-management-kill.spec.ts",
+  "line": 74,
+  "kind": "test.describe",
+  "title": "Status bar CLI session count"
+ },
+ {
+  "file": "tests/e2e/status-bar-session-count-management-kill.spec.ts",
+  "line": 75,
+  "kind": "test",
+  "title": "drops after Manage Sessions kills a foreign daemon session, popover never opened"
+ },
+ {
+  "file": "tests/e2e/tab-close-navigation.spec.ts",
+  "line": 120,
+  "kind": "test.describe",
+  "title": "Tab Close Navigation"
+ },
+ {
+  "file": "tests/e2e/tab-close-navigation.spec.ts",
+  "line": 131,
+  "kind": "test",
+  "title": "closing the active editor tab activates its visual neighbor"
+ },
+ {
+  "file": "tests/e2e/tab-close-navigation.spec.ts",
+  "line": 177,
+  "kind": "test",
+  "title": "closing the active diff tab activates a still-open neighbor"
+ },
+ {
+  "file": "tests/e2e/tab-close-navigation.spec.ts",
+  "line": 241,
+  "kind": "test",
+  "title": "closing the last visible surface returns the app to Landing"
+ },
+ {
+  "file": "tests/e2e/tab-create-entry-file-paths.spec.ts",
+  "line": 9,
+  "kind": "test",
+  "title": "new-tab file results prioritize the filename and reveal the full path on hover"
+ },
+ {
+  "file": "tests/e2e/tab-drag-blur-cancel.spec.ts",
+  "line": 4,
+  "kind": "test",
+  "title": "tab drag stays cancelled after blur and a later drag still splits (${theme})"
+ },
+ {
+  "file": "tests/e2e/tab-rename-paste-ownership.spec.ts",
+  "line": 47,
+  "kind": "test.describe",
+  "title": "tab rename paste ownership"
+ },
+ {
+  "file": "tests/e2e/tab-rename-paste-ownership.spec.ts",
+  "line": 48,
+  "kind": "test",
+  "title": "keyboard paste into rename textbox does not also write to the active terminal"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 18,
+  "kind": "test.describe",
+  "title": "Tab Rename (Inline)"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 95,
+  "kind": "test",
+  "title": "double-clicking a tab opens an inline rename input and Enter commits"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 121,
+  "kind": "test",
+  "title": "context-menu Change Title opens a focused select-all rename input"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 149,
+  "kind": "test",
+  "title": "Escape during inline rename discards the edit"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 177,
+  "kind": "test",
+  "title": "renaming to an empty string resets the tab to its default title"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 226,
+  "kind": "test",
+  "title": "clicking away (blur) commits the rename"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 283,
+  "kind": "test",
+  "title": "right-clicking during inline rename commits and opens context menu"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 311,
+  "kind": "test",
+  "title": "terminal title updates do not resize neighboring tabs"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 361,
+  "kind": "test",
+  "title": "rename input stays at a usable width when many tabs are open"
+ },
+ {
+  "file": "tests/e2e/tab-rename.spec.ts",
+  "line": 436,
+  "kind": "test",
+  "title": "middle-clicking inside the rename input does not close the tab"
+ },
+ {
+  "file": "tests/e2e/tab-sidebar-closed-overlap.spec.ts",
+  "line": 29,
+  "kind": "test.describe",
+  "title": "Tab visibility with closed sidebar"
+ },
+ {
+  "file": "tests/e2e/tab-sidebar-closed-overlap.spec.ts",
+  "line": 36,
+  "kind": "test",
+  "title": "first tab stays visible after Cmd+B collapses the sidebar"
+ },
+ {
+  "file": "tests/e2e/tab-sidebar-closed-overlap.spec.ts",
+  "line": 209,
+  "kind": "test",
+  "title": "sidebar toggle and Back button stay separated after sidebar collapse"
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 86,
+  "kind": "test.describe",
+  "title": "Tabs"
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 105,
+  "kind": "test",
+  "title": "clicking "
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 142,
+  "kind": "test",
+  "title": "clicking "
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 205,
+  "kind": "test",
+  "title": "Cmd/Ctrl+T creates a new terminal tab"
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 249,
+  "kind": "test",
+  "title": "Cmd/Ctrl+Shift+] and Cmd/Ctrl+Shift+[ switch between tabs"
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 297,
+  "kind": "test",
+  "title": "dragging a tab to a new position reorders it"
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 362,
+  "kind": "test",
+  "title": "clicking tabs still switches after dragging a terminal tab to reorder"
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 439,
+  "kind": "test",
+  "title": "Cmd/Ctrl+Shift+[ walks tabs in drag-reordered order"
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 519,
+  "kind": "test",
+  "title": "closing a tab removes it from the tab bar"
+ },
+ {
+  "file": "tests/e2e/tabs.spec.ts",
+  "line": 558,
+  "kind": "test",
+  "title": "closing the active tab activates a neighbor tab"
+ },
+ {
+  "file": "tests/e2e/tasks-page.spec.ts",
+  "line": 219,
+  "kind": "test.describe",
+  "title": "Tasks page"
+ },
+ {
+  "file": "tests/e2e/tasks-page.spec.ts",
+  "line": 225,
+  "kind": "test",
+  "title": "opening the tasks view renders the tasks UI"
+ },
+ {
+  "file": "tests/e2e/tasks-page.spec.ts",
+  "line": 272,
+  "kind": "test",
+  "title": "closing the tasks page returns to the previous view"
+ },
+ {
+  "file": "tests/e2e/tasks-page.spec.ts",
+  "line": 300,
+  "kind": "test",
+  "title": "reopening restores the GitHub page and scroll position"
+ },
+ {
+  "file": "tests/e2e/tasks-page.spec.ts",
+  "line": 405,
+  "kind": "test",
+  "title": "GitHub search waits for idle, keeps rows visible, and Enter does not double-fetch"
+ },
+ {
+  "file": "tests/e2e/terminal-ai-vault-typing-latency.spec.ts",
+  "line": 180,
+  "kind": "test.describe",
+  "title": "Terminal typing during AI Vault refresh bench"
+ },
+ {
+  "file": "tests/e2e/terminal-ai-vault-typing-latency.spec.ts",
+  "line": 183,
+  "kind": "test",
+  "title": "alternates control typing and forced Vault refresh typing"
+ },
+ {
+  "file": "tests/e2e/terminal-attention.spec.ts",
+  "line": 157,
+  "kind": "test.describe",
+  "title": "Terminal attention"
+ },
+ {
+  "file": "tests/e2e/terminal-attention.spec.ts",
+  "line": 161,
+  "kind": "test",
+  "title": "background terminal attention marks a tab unread and clears on focus"
+ },
+ {
+  "file": "tests/e2e/terminal-attention.spec.ts",
+  "line": 230,
+  "kind": "test",
+  "title": "a BEL on the focused tab raises, then clears on click"
+ },
+ {
+  "file": "tests/e2e/terminal-attention.spec.ts",
+  "line": 286,
+  "kind": "test",
+  "title": "a BEL on the focused tab raises, then clears on plain Escape"
+ },
+ {
+  "file": "tests/e2e/terminal-attention.spec.ts",
+  "line": 370,
+  "kind": "test",
+  "title": "mode bits replayed into xterm do not leak focus escapes to the shell"
+ },
+ {
+  "file": "tests/e2e/terminal-cjk-ime-committed-text.spec.ts",
+  "line": 131,
+  "kind": "test.describe",
+  "title": "Terminal CJK IME committed text"
+ },
+ {
+  "file": "tests/e2e/terminal-cjk-ime-committed-text.spec.ts",
+  "line": 132,
+  "kind": "test",
+  "title": "shows a growing Japanese phrase preedit and commits the converted kanji"
+ },
+ {
+  "file": "tests/e2e/terminal-cjk-ime-committed-text.spec.ts",
+  "line": 170,
+  "kind": "test",
+  "title": "sends full-width ${group.label} and never their ASCII form when ${route.name}"
+ },
+ {
+  "file": "tests/e2e/terminal-cjk-ime-committed-text.spec.ts",
+  "line": 212,
+  "kind": "test",
+  "title": "forwards Chinese pinyin conversions and their trailing full-width stop together"
+ },
+ {
+  "file": "tests/e2e/terminal-cjk-ime-committed-text.spec.ts",
+  "line": 263,
+  "kind": "test",
+  "title": "sends full-width punctuation committed through a composition session on ${policy}"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-cursor-jitter-repro.spec.ts",
+  "line": 699,
+  "kind": "test.describe",
+  "title": "Codex terminal cursor jitter repro"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-cursor-jitter-repro.spec.ts",
+  "line": 700,
+  "kind": "test",
+  "title": "keeps queued-message cursor out of the Working status row in native Windows Codex @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-hidden-startup-background.spec.ts",
+  "line": 228,
+  "kind": "test.describe",
+  "title": "Codex hidden startup composer background"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-hidden-startup-background.spec.ts",
+  "line": 229,
+  "kind": "test",
+  "title": "restores the input background when a Codex worktree first becomes visible"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-home.spec.ts",
+  "line": 25,
+  "kind": "test.describe",
+  "title": "Terminal Codex runtime home"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-home.spec.ts",
+  "line": 32,
+  "kind": "test",
+  "title": "terminal process receives the selected account Codex home"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-local-typing-latency.spec.ts",
+  "line": 196,
+  "kind": "test.describe",
+  "title": "local Codex terminal typing latency"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-local-typing-latency.spec.ts",
+  "line": 197,
+  "kind": "test",
+  "title": "keeps Codex prompt typing responsive @local-real-codex"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-skill-preview-artifact-repro.spec.ts",
+  "line": 564,
+  "kind": "test.describe",
+  "title": "Codex skill preview terminal artifact repro @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-codex-skill-preview-artifact-repro.spec.ts",
+  "line": 578,
+  "kind": "test",
+  "title": "captures the real Orca repo setup-split Codex skill preview overpaint before any click"
+ },
+ {
+  "file": "tests/e2e/terminal-cold-activation-deferral.spec.ts",
+  "line": 72,
+  "kind": "test.describe",
+  "title": "cold worktree activation deferral"
+ },
+ {
+  "file": "tests/e2e/terminal-cold-activation-deferral.spec.ts",
+  "line": 73,
+  "kind": "test",
+  "title": "mounts only the visible tab cold and reveals deferred tabs on demand"
+ },
+ {
+  "file": "tests/e2e/terminal-column-desync-repro.spec.ts",
+  "line": 128,
+  "kind": "test.describe",
+  "title": "Terminal column desync repro"
+ },
+ {
+  "file": "tests/e2e/terminal-column-desync-repro.spec.ts",
+  "line": 129,
+  "kind": "test",
+  "title": "PTY columns stay in sync with xterm across a visible resize"
+ },
+ {
+  "file": "tests/e2e/terminal-column-desync-repro.spec.ts",
+  "line": 173,
+  "kind": "test",
+  "title": "pty:getSize reports the size the PTY actually applied"
+ },
+ {
+  "file": "tests/e2e/terminal-column-desync-repro.spec.ts",
+  "line": 204,
+  "kind": "test",
+  "title": "PTY columns re-sync after the terminal is resized while hidden"
+ },
+ {
+  "file": "tests/e2e/terminal-column-desync-repro.spec.ts",
+  "line": 243,
+  "kind": "test",
+  "title": "PTY columns re-sync after repeated background resizes"
+ },
+ {
+  "file": "tests/e2e/terminal-column-desync-repro.spec.ts",
+  "line": 283,
+  "kind": "test",
+  "title": "both panes keep PTY columns synced after a vertical split reparent"
+ },
+ {
+  "file": "tests/e2e/terminal-column-desync-repro.spec.ts",
+  "line": 340,
+  "kind": "test",
+  "title": "both panes stay PTY-synced when a tab MOUNTS with a split layout present"
+ },
+ {
+  "file": "tests/e2e/terminal-column-desync-repro.spec.ts",
+  "line": 413,
+  "kind": "test",
+  "title": "PTY columns stay synced when the window is resized during initial mount"
+ },
+ {
+  "file": "tests/e2e/terminal-context-menu-session-id.spec.ts",
+  "line": 15,
+  "kind": "test",
+  "title": "terminal pane context menu copies its agent session ID"
+ },
+ {
+  "file": "tests/e2e/terminal-cursor-inactive-style.spec.ts",
+  "line": 102,
+  "kind": "test.describe",
+  "title": "Terminal inactive cursor rendering"
+ },
+ {
+  "file": "tests/e2e/terminal-cursor-inactive-style.spec.ts",
+  "line": 111,
+  "kind": "test",
+  "title": "keeps an unfocused prompt cursor rendered as one block outline"
+ },
+ {
+  "file": "tests/e2e/terminal-document-visibility-webgl-recovery.spec.ts",
+  "line": 283,
+  "kind": "test.describe",
+  "title": "terminal document visibility WebGL recovery"
+ },
+ {
+  "file": "tests/e2e/terminal-document-visibility-webgl-recovery.spec.ts",
+  "line": 284,
+  "kind": "test",
+  "title": "@headful preserves the WebGL atlas and keeps terminal text painted after document visibility resumes"
+ },
+ {
+  "file": "tests/e2e/terminal-duplicate-pty-renderer-reveal.spec.ts",
+  "line": 186,
+  "kind": "test",
+  "title": "repairs duplicate persisted PTY renderers before streaming tab reveal"
+ },
+ {
+  "file": "tests/e2e/terminal-foreground-redraw-freeze.spec.ts",
+  "line": 341,
+  "kind": "test.describe",
+  "title": "Terminal foreground redraw freeze repro"
+ },
+ {
+  "file": "tests/e2e/terminal-foreground-redraw-freeze.spec.ts",
+  "line": 342,
+  "kind": "test",
+  "title": "@headful Codex-style line rewrites request a visible row refresh"
+ },
+ {
+  "file": "tests/e2e/terminal-foreground-redraw-freeze.spec.ts",
+  "line": 401,
+  "kind": "test",
+  "title": "active OpenTUI-style redraw bursts do not monopolize the renderer"
+ },
+ {
+  "file": "tests/e2e/terminal-foreground-redraw-freeze.spec.ts",
+  "line": 423,
+  "kind": "test",
+  "title": "captured OpenCode/OpenTUI redraw bytes do not monopolize foreground writes"
+ },
+ {
+  "file": "tests/e2e/terminal-hangul-terminating-digit-native.spec.ts",
+  "line": 171,
+  "kind": "test.describe",
+  "title": "Hangul terminating digit @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-hangul-terminating-digit-native.spec.ts",
+  "line": 174,
+  "kind": "test",
+  "title": "a digit typed right after a Hangul syllable reaches the pty"
+ },
+ {
+  "file": "tests/e2e/terminal-hangul-wrap-boundary-bytes.spec.ts",
+  "line": 248,
+  "kind": "test.describe",
+  "title": "Terminal Hangul wrap-boundary byte exactness"
+ },
+ {
+  "file": "tests/e2e/terminal-hangul-wrap-boundary-bytes.spec.ts",
+  "line": 251,
+  "kind": "test",
+  "title": "sends ${scenario.name} unaltered to the pty (${policy})"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-child-tui-kill-mode-reset.spec.ts",
+  "line": 37,
+  "kind": "test",
+  "title": "clears modes when a child TUI exits via ${exitMode} while its shell survives hidden"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-tui-visual-restore.spec.ts",
+  "line": 214,
+  "kind": "test.describe",
+  "title": "Hidden terminal TUI visual restore"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-tui-visual-restore.spec.ts",
+  "line": 215,
+  "kind": "test",
+  "title": "restores hidden full-screen TUI output without visible corruption"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-tui-visual-restore.spec.ts",
+  "line": 309,
+  "kind": "test",
+  "title": "keeps newer live output correct after plain hidden output restores"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-tui-visual-restore.spec.ts",
+  "line": 400,
+  "kind": "test",
+  "title": "restores rich synchronized TUI output from the headless model"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-tui-visual-restore.spec.ts",
+  "line": 493,
+  "kind": "test",
+  "title": "keeps hidden terminal side effects live while hidden output may restore"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-view-parking.spec.ts",
+  "line": 274,
+  "kind": "test.describe",
+  "title": "Terminal hidden view parking"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-view-parking.spec.ts",
+  "line": 275,
+  "kind": "test",
+  "title": "parks a hidden terminal tab and restores rich TUI output on reveal"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-view-parking.spec.ts",
+  "line": 372,
+  "kind": "test",
+  "title": "keeps bell and title side effects live while parked"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-view-parking.spec.ts",
+  "line": 429,
+  "kind": "test",
+  "title": "does not park excluded tabs"
+ },
+ {
+  "file": "tests/e2e/terminal-hidden-view-parking.spec.ts",
+  "line": 477,
+  "kind": "test",
+  "title": "reproduces a static frame byte-for-byte across 25 park/reveal cycles"
+ },
+ {
+  "file": "tests/e2e/terminal-history-size-typing-latency.spec.ts",
+  "line": 208,
+  "kind": "test.describe",
+  "title": "Terminal typing latency vs scrollback history size"
+ },
+ {
+  "file": "tests/e2e/terminal-history-size-typing-latency.spec.ts",
+  "line": 209,
+  "kind": "test",
+  "title": "typing stays responsive as terminal history grows"
+ },
+ {
+  "file": "tests/e2e/terminal-ibus-hangul-native.spec.ts",
+  "line": 165,
+  "kind": "test.describe",
+  "title": "Native IBus Hangul terminal input @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-ibus-hangul-native.spec.ts",
+  "line": 171,
+  "kind": "test",
+  "title": "forwards the issue exact-byte sequence without loss or duplication"
+ },
+ {
+  "file": "tests/e2e/terminal-ibus-hangul-native.spec.ts",
+  "line": 178,
+  "kind": "test",
+  "title": "forwards the issue sentence stress sequence without leaked ASCII"
+ },
+ {
+  "file": "tests/e2e/terminal-image-paste-webgl-recovery.spec.ts",
+  "line": 109,
+  "kind": "test.describe",
+  "title": "terminal image paste WebGL recovery @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-image-paste-webgl-recovery.spec.ts",
+  "line": 110,
+  "kind": "test",
+  "title": "clears the WebGL atlas after a real image clipboard paste"
+ },
+ {
+  "file": "tests/e2e/terminal-ime-exact-byte.spec.ts",
+  "line": 99,
+  "kind": "test.describe",
+  "title": "Terminal IME exact-byte forwarding"
+ },
+ {
+  "file": "tests/e2e/terminal-ime-exact-byte.spec.ts",
+  "line": 102,
+  "kind": "test",
+  "title": "replays the observed IBus Hangul mixed-input order through xterm and the PTY"
+ },
+ {
+  "file": "tests/e2e/terminal-ime-exact-byte.spec.ts",
+  "line": 121,
+  "kind": "test",
+  "title": "keeps retained Hangul commits and stale fallbacks in their transactions"
+ },
+ {
+  "file": "tests/e2e/terminal-ime-exact-byte.spec.ts",
+  "line": 143,
+  "kind": "test",
+  "title": "does not suppress repeated legitimate ${scenario.name} conversions"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-images-memory.spec.ts",
+  "line": 31,
+  "kind": "test",
+  "title": "twelve image terminals release decoder and image storage across reset and close cycles"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-images-paired-runtime.spec.ts",
+  "line": 70,
+  "kind": "test",
+  "title": "paired runtime paints inline images and resumes the same PTY after host restart"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-images-ssh.spec.ts",
+  "line": 27,
+  "kind": "test",
+  "title": "inline images stay bounded and recover through SSH drop and stall"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-tui-reveal-convergence.spec.ts",
+  "line": 535,
+  "kind": "test.describe",
+  "title": "Inline TUI reveal convergence"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-tui-reveal-convergence.spec.ts",
+  "line": 536,
+  "kind": "test",
+  "title": "hidden-but-mounted tab reveal converges while the inline TUI streams"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-tui-reveal-convergence.spec.ts",
+  "line": 560,
+  "kind": "test",
+  "title": "worktree switch reveal converges after a hidden-time window resize"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-tui-reveal-convergence.spec.ts",
+  "line": 590,
+  "kind": "test",
+  "title": "parked tab reveal converges across repeated cycles while the inline TUI streams heavily"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-tui-reveal-convergence.spec.ts",
+  "line": 635,
+  "kind": "test",
+  "title": "rapid tab hide/reveal flapping never wedges delivery for the streaming inline TUI"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-tui-reveal-convergence.spec.ts",
+  "line": 660,
+  "kind": "test",
+  "title": "rapid worktree switch flapping never wedges delivery for the streaming inline TUI"
+ },
+ {
+  "file": "tests/e2e/terminal-inline-tui-reveal-convergence.spec.ts",
+  "line": 690,
+  "kind": "test",
+  "title": "parked tab reveal converges after a parked-time window resize"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-composing-chord-order.spec.ts",
+  "line": 41,
+  "kind": "test.describe",
+  "title": "Terminal 2-Set Korean composing-chord order"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-composing-chord-order.spec.ts",
+  "line": 42,
+  "kind": "test",
+  "title": "sends the composing syllable before a Cmd+Left pressed during it"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-endofrow-preedit-cell-span.spec.ts",
+  "line": 58,
+  "kind": "test.describe",
+  "title": "Terminal end-of-row Korean preedit cell span"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-endofrow-preedit-cell-span.spec.ts",
+  "line": 59,
+  "kind": "test",
+  "title": "keeps the preedit caret inside the final terminal cell"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-endofrow-preedit-cell-span.spec.ts",
+  "line": 126,
+  "kind": "test",
+  "title": "renders a composing syllable wider than the one cell #12729 measured"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-midline-preedit-occlusion.spec.ts",
+  "line": 70,
+  "kind": "test.describe",
+  "title": "Terminal mid-line Korean preedit occlusion"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-midline-preedit-occlusion.spec.ts",
+  "line": 71,
+  "kind": "test",
+  "title": "masks a semantically owned Codex placeholder during its first Korean preedit"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-midline-preedit-occlusion.spec.ts",
+  "line": 111,
+  "kind": "test",
+  "title": "renders the row tail it covers, so the character after the cursor stays readable"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-midline-preedit-occlusion.spec.ts",
+  "line": 151,
+  "kind": "test",
+  "title": "leaves the end-of-row composition untouched, with nothing covered to render"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-preedit-visibility.spec.ts",
+  "line": 71,
+  "kind": "test.describe",
+  "title": "Terminal 2-Set Korean preedit visibility"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-preedit-visibility.spec.ts",
+  "line": 72,
+  "kind": "test",
+  "title": "shows every assembling jamo at non-zero size and commits the syllable ahead of the newline"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-preedit-visibility.spec.ts",
+  "line": 106,
+  "kind": "test",
+  "title": "keeps a preedit the IME resumes without a compositionstart visible"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-preedit-visibility.spec.ts",
+  "line": 135,
+  "kind": "test",
+  "title": "renders the preedit at every update of a recorded Windows/WSL Hangul session"
+ },
+ {
+  "file": "tests/e2e/terminal-korean-preedit-visibility.spec.ts",
+  "line": 177,
+  "kind": "test",
+  "title": "loses and duplicates nothing when back-to-back syllables commit at full speed"
+ },
+ {
+  "file": "tests/e2e/terminal-large-paste-responsiveness.spec.ts",
+  "line": 97,
+  "kind": "test.describe",
+  "title": "large terminal paste responsiveness"
+ },
+ {
+  "file": "tests/e2e/terminal-large-paste-responsiveness.spec.ts",
+  "line": 98,
+  "kind": "test",
+  "title": "chunked keyboard paste keeps the renderer responsive while PTY writes are pending"
+ },
+ {
+  "file": "tests/e2e/terminal-link-click-ownership.spec.ts",
+  "line": 100,
+  "kind": "test.describe",
+  "title": "terminal link click ownership"
+ },
+ {
+  "file": "tests/e2e/terminal-link-click-ownership.spec.ts",
+  "line": 101,
+  "kind": "test",
+  "title": "an Orca-owned plain link click emits no child PTY mouse frames"
+ },
+ {
+  "file": "tests/e2e/terminal-link-click-ownership.spec.ts",
+  "line": 115,
+  "kind": "test",
+  "title": "an Orca-owned OSC link click emits no child PTY mouse frames"
+ },
+ {
+  "file": "tests/e2e/terminal-link-click-ownership.spec.ts",
+  "line": 134,
+  "kind": "test",
+  "title": "a plain click stays child-owned when link actions are disabled"
+ },
+ {
+  "file": "tests/e2e/terminal-link-click-ownership.spec.ts",
+  "line": 149,
+  "kind": "test",
+  "title": "a drag across a link stays child-owned"
+ },
+ {
+  "file": "tests/e2e/terminal-link-hover-after-worktree-return.spec.ts",
+  "line": 246,
+  "kind": "test.describe",
+  "title": "Terminal link hover after worktree return"
+ },
+ {
+  "file": "tests/e2e/terminal-link-hover-after-worktree-return.spec.ts",
+  "line": 251,
+  "kind": "test",
+  "title": "re-establishes a URL link on hover after the pointer leaves the terminal"
+ },
+ {
+  "file": "tests/e2e/terminal-link-hover-after-worktree-return.spec.ts",
+  "line": 292,
+  "kind": "test",
+  "title": "re-establishes a file-path link on hover after switching worktrees and back"
+ },
+ {
+  "file": "tests/e2e/terminal-link-hover-after-worktree-return.spec.ts",
+  "line": 347,
+  "kind": "test",
+  "title": "re-establishes a URL link on hover after switching worktrees and back"
+ },
+ {
+  "file": "tests/e2e/terminal-linux-direct-ime-commit.spec.ts",
+  "line": 20,
+  "kind": "test",
+  "title": "Linux direct IME punctuation reaches the PTY before and after composition"
+ },
+ {
+  "file": "tests/e2e/terminal-long-table-scroll-restore.spec.ts",
+  "line": 341,
+  "kind": "test.describe",
+  "title": "Terminal long table scroll restore repro"
+ },
+ {
+  "file": "tests/e2e/terminal-long-table-scroll-restore.spec.ts",
+  "line": 342,
+  "kind": "test",
+  "title": "reproduces long markdown table artifacts after workspace switch and scroll"
+ },
+ {
+  "file": "tests/e2e/terminal-long-table-scroll-restore.spec.ts",
+  "line": 404,
+  "kind": "test",
+  "title": "keeps narrow wrapped signer markdown table coherent after restore and scroll"
+ },
+ {
+  "file": "tests/e2e/terminal-long-table-scroll-restore.spec.ts",
+  "line": 476,
+  "kind": "test",
+  "title": "keeps real emoji markdown table right edge clean after restore and scroll"
+ },
+ {
+  "file": "tests/e2e/terminal-macos-2set-korean-native.spec.ts",
+  "line": 120,
+  "kind": "test.describe",
+  "title": "Native macOS 2-Set Korean terminal input @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-macos-2set-korean-native.spec.ts",
+  "line": 126,
+  "kind": "test",
+  "title": "forwards physical Hangul input as exact PTY bytes"
+ },
+ {
+  "file": "tests/e2e/terminal-macos-2set-korean-native.spec.ts",
+  "line": 141,
+  "kind": "test",
+  "title": "preserves leading vowels and composes the following syllable"
+ },
+ {
+  "file": "tests/e2e/terminal-macos-2set-korean-native.spec.ts",
+  "line": 156,
+  "kind": "test",
+  "title": "flushes each syllable while the next remains in preedit"
+ },
+ {
+  "file": "tests/e2e/terminal-macos-system-key-remap.spec.ts",
+  "line": 100,
+  "kind": "test.describe",
+  "title": "Terminal macOS system key remap"
+ },
+ {
+  "file": "tests/e2e/terminal-macos-system-key-remap.spec.ts",
+  "line": 110,
+  "kind": "test",
+  "title": "sends ${committed} for the ${layout.label} backquote key when ${arm.name}"
+ },
+ {
+  "file": "tests/e2e/terminal-multi-workspace-typing-latency.spec.ts",
+  "line": 364,
+  "kind": "test.describe",
+  "title": "Multi-workspace sustained typing latency bench"
+ },
+ {
+  "file": "tests/e2e/terminal-multi-workspace-typing-latency.spec.ts",
+  "line": 370,
+  "kind": "test",
+  "title": "baseline: paced typing with no agent load"
+ },
+ {
+  "file": "tests/e2e/terminal-multi-workspace-typing-latency.spec.ts",
+  "line": 406,
+  "kind": "test",
+  "title": "typing under sustained hidden multi-workspace agent load"
+ },
+ {
+  "file": "tests/e2e/terminal-multi-workspace-typing-latency.spec.ts",
+  "line": 648,
+  "kind": "test",
+  "title": "typing under sustained visible split agent load"
+ },
+ {
+  "file": "tests/e2e/terminal-opencode-emoji-table-rendering.spec.ts",
+  "line": 256,
+  "kind": "test.describe",
+  "title": "OpenCode emoji table terminal rendering"
+ },
+ {
+  "file": "tests/e2e/terminal-opencode-emoji-table-rendering.spec.ts",
+  "line": 257,
+  "kind": "test",
+  "title": "keeps emoji table output visually sane and restores the cursor"
+ },
+ {
+  "file": "tests/e2e/terminal-opencode-emoji-table-rendering.spec.ts",
+  "line": 303,
+  "kind": "test",
+  "title": "local real OpenCode demo keeps table rendering and cursor visible"
+ },
+ {
+  "file": "tests/e2e/terminal-option-composed-ascii.spec.ts",
+  "line": 158,
+  "kind": "test.describe",
+  "title": "Option-composed ASCII in a kitty-keyboard pane"
+ },
+ {
+  "file": "tests/e2e/terminal-option-composed-ascii.spec.ts",
+  "line": 161,
+  "kind": "test",
+  "title": "types the composed character instead of reporting the physical Alt chord"
+ },
+ {
+  "file": "tests/e2e/terminal-option-composed-ascii.spec.ts",
+  "line": 183,
+  "kind": "test",
+  "title": "types a composed character that also needs Shift"
+ },
+ {
+  "file": "tests/e2e/terminal-option-composed-ascii.spec.ts",
+  "line": 206,
+  "kind": "test",
+  "title": "still reports the Alt chord when Option is configured as Alt"
+ },
+ {
+  "file": "tests/e2e/terminal-option-composed-ascii.spec.ts",
+  "line": 226,
+  "kind": "test",
+  "title": "keeps non-ASCII Option glyphs as TUI hotkeys"
+ },
+ {
+  "file": "tests/e2e/terminal-osc-color-queries.spec.ts",
+  "line": 57,
+  "kind": "test",
+  "title": "answers OSC foreground and background color queries from the active terminal theme"
+ },
+ {
+  "file": "tests/e2e/terminal-osc8-cold-park-restore.spec.ts",
+  "line": 123,
+  "kind": "test",
+  "title": "restores and opens an OSC 8 link after its terminal is cold-parked"
+ },
+ {
+  "file": "tests/e2e/terminal-output-scheduler.spec.ts",
+  "line": 179,
+  "kind": "test.describe",
+  "title": "Terminal output scheduler"
+ },
+ {
+  "file": "tests/e2e/terminal-output-scheduler.spec.ts",
+  "line": 180,
+  "kind": "test",
+  "title": "background tab output bursts use the shared drain while the active tab renders"
+ },
+ {
+  "file": "tests/e2e/terminal-output-scheduler.spec.ts",
+  "line": 304,
+  "kind": "test",
+  "title": "visible bulk output uses the high-priority drain instead of synchronous xterm writes"
+ },
+ {
+  "file": "tests/e2e/terminal-output-scheduler.spec.ts",
+  "line": 347,
+  "kind": "test",
+  "title": "hidden overflow restores from main-owned terminal state when the tab becomes visible"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-binding-lifecycle.spec.ts",
+  "line": 22,
+  "kind": "test.describe",
+  "title": "Terminal Panes"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-binding-lifecycle.spec.ts",
+  "line": 25,
+  "kind": "test",
+  "title": "closing a split pane prunes its leaf-keyed PTY binding without remapping siblings"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-binding-lifecycle.spec.ts",
+  "line": 51,
+  "kind": "test",
+  "title": "closing and remaking right/down splits keeps surviving leaf-keyed bindings stable"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-binding-lifecycle.spec.ts",
+  "line": 94,
+  "kind": "test",
+  "title": "moving panes through the drag-drop handler preserves leaf-keyed PTY bindings"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-binding-lifecycle.spec.ts",
+  "line": 126,
+  "kind": "test",
+  "title": "@headful dragging terminal panes around preserves leaf-keyed PTY bindings"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-close-layout-consistency.spec.ts",
+  "line": 252,
+  "kind": "test.describe",
+  "title": "terminal pane close vs hidden/park lifecycle keeps layout consistent"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-close-layout-consistency.spec.ts",
+  "line": 253,
+  "kind": "test",
+  "title": "control: close while visible"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-close-layout-consistency.spec.ts",
+  "line": 259,
+  "kind": "test",
+  "title": "close and hide the tab in the same tick"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-close-layout-consistency.spec.ts",
+  "line": 287,
+  "kind": "test",
+  "title": "close while hidden but still mounted (hot-retain window)"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-close-layout-consistency.spec.ts",
+  "line": 299,
+  "kind": "test",
+  "title": "close immediately after reveal remount, before panes settle"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-close-layout-consistency.spec.ts",
+  "line": 318,
+  "kind": "test",
+  "title": "clean visible close survives a later park/reveal cycle"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-close-layout-consistency.spec.ts",
+  "line": 331,
+  "kind": "test",
+  "title": "split pane shell exits while hidden but still mounted"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-close-layout-consistency.spec.ts",
+  "line": 343,
+  "kind": "test",
+  "title": "split pane shell exits while the tab is parked"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-content-retention.spec.ts",
+  "line": 35,
+  "kind": "test.describe",
+  "title": "Terminal Panes"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-content-retention.spec.ts",
+  "line": 42,
+  "kind": "test",
+  "title": "terminal pane retains content when switching tabs and back"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-content-retention.spec.ts",
+  "line": 79,
+  "kind": "test",
+  "title": "terminal pane retains content when splitting and closing a pane"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-content-retention.spec.ts",
+  "line": 106,
+  "kind": "test",
+  "title": "terminal pane retains content when switching worktrees and back"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-divider-capture-loss.spec.ts",
+  "line": 98,
+  "kind": "test",
+  "title": "@headful keeps resizing after the divider loses pointer capture"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-layout-resize.spec.ts",
+  "line": 25,
+  "kind": "test.describe",
+  "title": "Terminal Panes"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-layout-resize.spec.ts",
+  "line": 28,
+  "kind": "test",
+  "title": "Always-on pane header split button hover stays transparent"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-layout-resize.spec.ts",
+  "line": 49,
+  "kind": "test",
+  "title": "shows a pane divider after splitting"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-layout-resize.spec.ts",
+  "line": 74,
+  "kind": "test",
+  "title": "@headful can resize terminal panes by real mouse drag"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-layout-resize.spec.ts",
+  "line": 124,
+  "kind": "test",
+  "title": "@headful resizing split panes forwards only the settled PTY size"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-layout-resize.spec.ts",
+  "line": 176,
+  "kind": "test",
+  "title": "closing a split pane removes it and remaining pane fills space"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-split-identity.spec.ts",
+  "line": 26,
+  "kind": "test.describe",
+  "title": "Terminal Panes"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-split-identity.spec.ts",
+  "line": 33,
+  "kind": "test",
+  "title": "can split terminal pane right"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-split-identity.spec.ts",
+  "line": 47,
+  "kind": "test",
+  "title": "can split terminal pane down"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-split-identity.spec.ts",
+  "line": 57,
+  "kind": "test",
+  "title": "split panes persist PTY bindings by stable UUID leaf id"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-split-identity.spec.ts",
+  "line": 79,
+  "kind": "test",
+  "title": "terminal process receives ORCA_PANE_KEY with the active UUID leaf id"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-split-identity.spec.ts",
+  "line": 98,
+  "kind": "test",
+  "title": "terminal context menu copies the stable pane ID"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-editing.spec.ts",
+  "line": 89,
+  "kind": "test.describe",
+  "title": "Terminal Panes"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-editing.spec.ts",
+  "line": 92,
+  "kind": "test",
+  "title": "first Set Title from terminal context menu stays open for typing"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-editing.spec.ts",
+  "line": 112,
+  "kind": "test",
+  "title": "Set Title editor renders in Orca overlay while terminal reserves title space"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-editing.spec.ts",
+  "line": 148,
+  "kind": "test",
+  "title": "Set Title context menu opens from the title overlay strip"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-editing.spec.ts",
+  "line": 167,
+  "kind": "test",
+  "title": "Set Title commits when tabbing away from the title input"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-editing.spec.ts",
+  "line": 183,
+  "kind": "test",
+  "title": "Set Title overlay hides with its inactive terminal tab"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-editing.spec.ts",
+  "line": 200,
+  "kind": "test",
+  "title": "Set Title still commits by blur after focus settles"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-editing.spec.ts",
+  "line": 220,
+  "kind": "test",
+  "title": "Set Title stays pane-local during agent title churn"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-focus-handoff.spec.ts",
+  "line": 37,
+  "kind": "test.describe",
+  "title": "Terminal Panes"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-focus-handoff.spec.ts",
+  "line": 40,
+  "kind": "test",
+  "title": "Set Title input stays open when clicked in a split terminal"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-focus-handoff.spec.ts",
+  "line": 79,
+  "kind": "test",
+  "title": "Set Title survives an early blur during first focus handoff"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-focus-handoff.spec.ts",
+  "line": 105,
+  "kind": "test",
+  "title": "Set Title survives delayed terminal focus handoffs"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-focus-handoff.spec.ts",
+  "line": 118,
+  "kind": "test",
+  "title": "Set Title survives delayed terminal focus handoffs in a split pane"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-focus-handoff.spec.ts",
+  "line": 136,
+  "kind": "test",
+  "title": "Set Title preserves draft text across terminal focus steals"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-focus-handoff.spec.ts",
+  "line": 157,
+  "kind": "test",
+  "title": "Set Title does not submit when synthetic focus restore fails"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-focus-handoff.spec.ts",
+  "line": 181,
+  "kind": "test",
+  "title": "Set Title still commits by blur after synthetic terminal focus steals"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-strip-placement.spec.ts",
+  "line": 58,
+  "kind": "test.describe",
+  "title": "Terminal Panes"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-strip-placement.spec.ts",
+  "line": 61,
+  "kind": "test",
+  "title": "Set Title strip activates its pane and accepts file-path drops"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-strip-placement.spec.ts",
+  "line": 119,
+  "kind": "test",
+  "title": "Set Title overlay follows its pane after same-count pane move"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-strip-placement.spec.ts",
+  "line": 150,
+  "kind": "test",
+  "title": "Set Title keeps the pane drag handle available over the title strip"
+ },
+ {
+  "file": "tests/e2e/terminal-pane-title-strip-placement.spec.ts",
+  "line": 205,
+  "kind": "test",
+  "title": "@headful Set Title pane can be dragged from the title strip"
+ },
+ {
+  "file": "tests/e2e/terminal-parked-cli-split.spec.ts",
+  "line": 199,
+  "kind": "test",
+  "title": "CLI splits an exact cold-parked tab without stealing the active tab or focus"
+ },
+ {
+  "file": "tests/e2e/terminal-parked-close-retirement.spec.ts",
+  "line": 44,
+  "kind": "test",
+  "title": "closing a parked terminal tab retires its exact PTY session"
+ },
+ {
+  "file": "tests/e2e/terminal-parked-memory.spec.ts",
+  "line": 264,
+  "kind": "test.describe",
+  "title": "Terminal parked memory"
+ },
+ {
+  "file": "tests/e2e/terminal-parked-memory.spec.ts",
+  "line": 265,
+  "kind": "test",
+  "title": "releases renderer terminal memory when hidden tabs park"
+ },
+ {
+  "file": "tests/e2e/terminal-parked-memory.spec.ts",
+  "line": 316,
+  "kind": "test",
+  "title": "retains terminal views when parking is disabled"
+ },
+ {
+  "file": "tests/e2e/terminal-parked-memory.spec.ts",
+  "line": 596,
+  "kind": "test.describe",
+  "title": "Terminal hidden worktree retention budget"
+ },
+ {
+  "file": "tests/e2e/terminal-parked-memory.spec.ts",
+  "line": 610,
+  "kind": "test",
+  "title": "releases un-parkable hidden worktree buffers only once the retention budget engages"
+ },
+ {
+  "file": "tests/e2e/terminal-paste-ownership.spec.ts",
+  "line": 186,
+  "kind": "test.describe",
+  "title": "terminal paste ownership"
+ },
+ {
+  "file": "tests/e2e/terminal-paste-ownership.spec.ts",
+  "line": 187,
+  "kind": "test",
+  "title": "keyboard paste shortcuts send clipboard text to the focused terminal exactly once"
+ },
+ {
+  "file": "tests/e2e/terminal-paste-ownership.spec.ts",
+  "line": 230,
+  "kind": "test",
+  "title": "keyboard paste survives transient terminal blur during clipboard read"
+ },
+ {
+  "file": "tests/e2e/terminal-paste-ownership.spec.ts",
+  "line": 273,
+  "kind": "test",
+  "title": "terminal context-menu Paste sends clipboard text exactly once"
+ },
+ {
+  "file": "tests/e2e/terminal-paste-ownership.spec.ts",
+  "line": 315,
+  "kind": "test",
+  "title": "Windows multiline keyboard paste normalizes terminal newlines with one PTY owner"
+ },
+ {
+  "file": "tests/e2e/terminal-paste-ownership.spec.ts",
+  "line": 368,
+  "kind": "test",
+  "title": "right-click paste sends clipboard text to the focused terminal exactly once"
+ },
+ {
+  "file": "tests/e2e/terminal-pinned-viewport-streaming-switch.spec.ts",
+  "line": 143,
+  "kind": "test.describe",
+  "title": "Terminal pinned viewport with streaming agent across worktree switch"
+ },
+ {
+  "file": "tests/e2e/terminal-pinned-viewport-streaming-switch.spec.ts",
+  "line": 144,
+  "kind": "test",
+  "title": "returning to a pinned pane with an active stream does not land at the top"
+ },
+ {
+  "file": "tests/e2e/terminal-pinned-viewport-worktree-switch.spec.ts",
+  "line": 121,
+  "kind": "test.describe",
+  "title": "Terminal pinned viewport worktree switch"
+ },
+ {
+  "file": "tests/e2e/terminal-pinned-viewport-worktree-switch.spec.ts",
+  "line": 122,
+  "kind": "test",
+  "title": "does not jump or flash when returning to a viewport pinned just above bottom"
+ },
+ {
+  "file": "tests/e2e/terminal-push-delivery-loss-recovery.spec.ts",
+  "line": 47,
+  "kind": "test.describe",
+  "title": "terminal push-delivery loss recovery"
+ },
+ {
+  "file": "tests/e2e/terminal-push-delivery-loss-recovery.spec.ts",
+  "line": 54,
+  "kind": "test",
+  "title": "watchdog repaints wedged terminals from the main buffer without push delivery or reload"
+ },
+ {
+  "file": "tests/e2e/terminal-quick-command-pre-bind-recovery.spec.ts",
+  "line": 43,
+  "kind": "test.describe",
+  "title": "Quick Command startup recovery"
+ },
+ {
+  "file": "tests/e2e/terminal-quick-command-pre-bind-recovery.spec.ts",
+  "line": 46,
+  "kind": "test",
+  "title": "visible Quick Command survives a forced pre-bind recovery on one fresh PTY"
+ },
+ {
+  "file": "tests/e2e/terminal-raw-emoji-table-scroll-restore.spec.ts",
+  "line": 454,
+  "kind": "test.describe",
+  "title": "Terminal raw emoji table scroll restore repro"
+ },
+ {
+  "file": "tests/e2e/terminal-raw-emoji-table-scroll-restore.spec.ts",
+  "line": 479,
+  "kind": "test",
+  "title": "uses WebGL by default for ordinary terminal output when available @terminal-rendering-golden"
+ },
+ {
+  "file": "tests/e2e/terminal-raw-emoji-table-scroll-restore.spec.ts",
+  "line": 519,
+  "kind": "test",
+  "title": "keeps raw emoji box table aligned after restore and scroll @terminal-rendering-golden"
+ },
+ {
+  "file": "tests/e2e/terminal-reattach-mouse-mode-leak.spec.ts",
+  "line": 50,
+  "kind": "test.describe",
+  "title": "reattach mouse-mode leak"
+ },
+ {
+  "file": "tests/e2e/terminal-reattach-mouse-mode-leak.spec.ts",
+  "line": 51,
+  "kind": "test",
+  "title": "warm reattach disarms mouse modes a killed TUI left armed"
+ },
+ {
+  "file": "tests/e2e/terminal-reattach-tui-mouse-mode.spec.ts",
+  "line": 152,
+  "kind": "test.describe",
+  "title": "terminal reattach mouse mode"
+ },
+ {
+  "file": "tests/e2e/terminal-reattach-tui-mouse-mode.spec.ts",
+  "line": 153,
+  "kind": "test",
+  "title": "live TUI keeps mouse tracking after an app restart reattach instead of falling back to drag selection"
+ },
+ {
+  "file": "tests/e2e/terminal-restart-persistence.spec.ts",
+  "line": 208,
+  "kind": "test.describe",
+  "title": "Terminal restart persistence"
+ },
+ {
+  "file": "tests/e2e/terminal-restart-persistence.spec.ts",
+  "line": 209,
+  "kind": "test",
+  "title": "scrollback survives clean quit and relaunch"
+ },
+ {
+  "file": "tests/e2e/terminal-restart-persistence.spec.ts",
+  "line": 265,
+  "kind": "test",
+  "title": "daemon snapshot relaunch preserves the cursor on the shell prompt"
+ },
+ {
+  "file": "tests/e2e/terminal-restart-persistence.spec.ts",
+  "line": 331,
+  "kind": "test",
+  "title": "active worktree and terminal tab count survive restart"
+ },
+ {
+  "file": "tests/e2e/terminal-restart-persistence.spec.ts",
+  "line": 392,
+  "kind": "test",
+  "title": "restored Set Title pane label survives agent title churn"
+ },
+ {
+  "file": "tests/e2e/terminal-restart-persistence.spec.ts",
+  "line": 461,
+  "kind": "test",
+  "title": "idle session does not spam session.set writes"
+ },
+ {
+  "file": "tests/e2e/terminal-retention-budget.spec.ts",
+  "line": 37,
+  "kind": "test.describe",
+  "title": "terminal hidden-worktree retention budget"
+ },
+ {
+  "file": "tests/e2e/terminal-retention-budget.spec.ts",
+  "line": 41,
+  "kind": "test",
+  "title": "force-parks the older hidden un-parkable worktree and spares the newest"
+ },
+ {
+  "file": "tests/e2e/terminal-reveal-paused-render-repro.spec.ts",
+  "line": 344,
+  "kind": "test.describe",
+  "title": "terminal reveal paused-render recovery"
+ },
+ {
+  "file": "tests/e2e/terminal-reveal-paused-render-repro.spec.ts",
+  "line": 345,
+  "kind": "test",
+  "title": "reveal repaint forces a render through xterm"
+ },
+ {
+  "file": "tests/e2e/terminal-reveal-paused-render-repro.spec.ts",
+  "line": 428,
+  "kind": "test",
+  "title": "@headful atlas recovery presents a synchronized-output WebGL frame"
+ },
+ {
+  "file": "tests/e2e/terminal-reveal-paused-render-repro.spec.ts",
+  "line": 506,
+  "kind": "test",
+  "title": "@headful reveal preserves the coherent frame until synchronized output releases"
+ },
+ {
+  "file": "tests/e2e/terminal-reveal-stale-pty-resize-repro.spec.ts",
+  "line": 258,
+  "kind": "test.describe",
+  "title": "Terminal reveal stale PTY resize repro"
+ },
+ {
+  "file": "tests/e2e/terminal-reveal-stale-pty-resize-repro.spec.ts",
+  "line": 259,
+  "kind": "test",
+  "title": "applied PTY size converges across hidden-resize/reveal cycles (natural read ordering)"
+ },
+ {
+  "file": "tests/e2e/terminal-reveal-stale-pty-resize-repro.spec.ts",
+  "line": 277,
+  "kind": "test",
+  "title": "the PTY is never resized back to its stale pre-reveal grid under slow applied-size reads"
+ },
+ {
+  "file": "tests/e2e/terminal-scroll-intent-follow.spec.ts",
+  "line": 239,
+  "kind": "test.describe",
+  "title": "terminal scroll intent keeps following output"
+ },
+ {
+  "file": "tests/e2e/terminal-scroll-intent-follow.spec.ts",
+  "line": 240,
+  "kind": "test",
+  "title": "a sub-row wheel-up that never moves the viewport must not stop follow-output"
+ },
+ {
+  "file": "tests/e2e/terminal-scroll-intent-follow.spec.ts",
+  "line": 255,
+  "kind": "test",
+  "title": "a plain Home keypress delivered to the app must not stop follow-output"
+ },
+ {
+  "file": "tests/e2e/terminal-scroll-intent-follow.spec.ts",
+  "line": 266,
+  "kind": "test",
+  "title": "a real wheel pin stays fixed while visible output streams"
+ },
+ {
+  "file": "tests/e2e/terminal-scroll-intent-follow.spec.ts",
+  "line": 293,
+  "kind": "test",
+  "title": "typing after a pinned write is queued resumes follow-output"
+ },
+ {
+  "file": "tests/e2e/terminal-search-results.spec.ts",
+  "line": 11,
+  "kind": "test",
+  "title": "terminal search counts real matches and repeat find selects the query"
+ },
+ {
+  "file": "tests/e2e/terminal-send-agent-prompt-submit.spec.ts",
+  "line": 87,
+  "kind": "test",
+  "title": "CLI text plus Enter waits for a slow agent composer before submitting"
+ },
+ {
+  "file": "tests/e2e/terminal-send-agent-prompt-submit.spec.ts",
+  "line": 138,
+  "kind": "test",
+  "title": "CLI reports a swallowed Enter as accepted without submitting a second Enter"
+ },
+ {
+  "file": "tests/e2e/terminal-send-agent-prompt-submit.spec.ts",
+  "line": 199,
+  "kind": "test",
+  "title": "CLI does not write prompt bytes into an active permission dialog"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 458,
+  "kind": "test.describe",
+  "title": "Terminal Shortcuts"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 473,
+  "kind": "test",
+  "title": "Shift+Enter follows the pane Kitty keyboard state"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 496,
+  "kind": "test",
+  "title": "Droid gets CSI-u Shift+Enter on Windows without changing Antigravity"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 516,
+  "kind": "test",
+  "title": "Windows forwards genuine Ctrl+Alt text chords to the PTY"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 529,
+  "kind": "test",
+  "title": "Ctrl+Enter protects local ConPTY shells without breaking trusted TUI chords"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 555,
+  "kind": "test",
+  "title": "plain Ctrl+C sends ETX under kitty keyboard reporting"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 605,
+  "kind": "test",
+  "title": "@headful Codex-like background output stays visible without disabling WebGL in auto mode"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 687,
+  "kind": "test",
+  "title": "floating terminal owns tab switch shortcuts while focused"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 730,
+  "kind": "test",
+  "title": "all terminal chords reach the PTY or fire their action"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 854,
+  "kind": "test",
+  "title": "Cmd+Up/Down scrolls terminal viewport without writing to the PTY on macOS"
+ },
+ {
+  "file": "tests/e2e/terminal-shortcuts.spec.ts",
+  "line": 908,
+  "kind": "test",
+  "title": "Shift with Russian layout text reaches the PTY as Cyrillic under kitty keyboard reporting"
+ },
+ {
+  "file": "tests/e2e/terminal-sleep-wake-restore.spec.ts",
+  "line": 184,
+  "kind": "test.describe",
+  "title": "Terminal sleep wake restore"
+ },
+ {
+  "file": "tests/e2e/terminal-sleep-wake-restore.spec.ts",
+  "line": 185,
+  "kind": "test",
+  "title": "restores slept terminal output and accepts fresh input after wake"
+ },
+ {
+  "file": "tests/e2e/terminal-split-activation-latency.spec.ts",
+  "line": 577,
+  "kind": "test.describe",
+  "title": "Terminal split activation latency benchmark @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-split-activation-latency.spec.ts",
+  "line": 582,
+  "kind": "test",
+  "title": "records attributed CWD, spawn, bind, fixture-ready, input, and echo phases"
+ },
+ {
+  "file": "tests/e2e/terminal-split-pane-paste-ownership.spec.ts",
+  "line": 55,
+  "kind": "test.describe",
+  "title": "split terminal pane paste ownership"
+ },
+ {
+  "file": "tests/e2e/terminal-split-pane-paste-ownership.spec.ts",
+  "line": 56,
+  "kind": "test",
+  "title": "keyboard paste writes only to the active split pane PTY"
+ },
+ {
+  "file": "tests/e2e/terminal-split-pane-paste-ownership.spec.ts",
+  "line": 116,
+  "kind": "test",
+  "title": "internal file drop writes only to the pane under the drop target"
+ },
+ {
+  "file": "tests/e2e/terminal-streaming-refocus-viewport.spec.ts",
+  "line": 193,
+  "kind": "test.describe",
+  "title": "terminal streaming refocus viewport"
+ },
+ {
+  "file": "tests/e2e/terminal-streaming-refocus-viewport.spec.ts",
+  "line": 194,
+  "kind": "test",
+  "title": "keeps follow-output at the bottom through a queued-write refocus wobble"
+ },
+ {
+  "file": "tests/e2e/terminal-stuck-occlusion-recovery.spec.ts",
+  "line": 43,
+  "kind": "test.describe",
+  "title": "terminal stuck-occlusion recovery"
+ },
+ {
+  "file": "tests/e2e/terminal-stuck-occlusion-recovery.spec.ts",
+  "line": 53,
+  "kind": "test",
+  "title": "a keystroke unlatches the hidden-delivery gate wedged by stale visibilityState"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-close-restart-persistence.spec.ts",
+  "line": 26,
+  "kind": "test",
+  "title": "durable whole-tab close removes a split tab across restart"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-close-running-confirm-mouse.spec.ts",
+  "line": 57,
+  "kind": "test",
+  "title": "middle-clicking a busy tab prompts, and cancelling keeps the tab"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-close-running-confirm-mouse.spec.ts",
+  "line": 72,
+  "kind": "test",
+  "title": "confirming the X-button prompt closes the busy tab"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-close-running-confirm-mouse.spec.ts",
+  "line": 86,
+  "kind": "test",
+  "title": "Cmd+W on a busy single-pane tab raises exactly one dialog"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-close-running-confirm.spec.ts",
+  "line": 36,
+  "kind": "test",
+  "title": "the tab X button applies the same running-process confirmation as Cmd+W"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-switch-sigwinch-restore.spec.ts",
+  "line": 215,
+  "kind": "test.describe",
+  "title": "Terminal tab switch SIGWINCH restore"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-switch-sigwinch-restore.spec.ts",
+  "line": 216,
+  "kind": "test",
+  "title": "keeps an alternate-screen Codex viewport after hidden snapshot replay"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-switch-visual-restore.spec.ts",
+  "line": 529,
+  "kind": "test.describe",
+  "title": "Terminal tab switch visual restore"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-switch-visual-restore.spec.ts",
+  "line": 532,
+  "kind": "test",
+  "title": "keeps full-width geometry after switching away and back"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-switch-visual-restore.spec.ts",
+  "line": 609,
+  "kind": "test",
+  "title": "keeps geometry after hidden alt-screen TUI redraws during tab switches"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-switch-visual-restore.spec.ts",
+  "line": 693,
+  "kind": "test",
+  "title": "restores skipped hidden agent output on light tab resume"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-switch-visual-restore.spec.ts",
+  "line": 744,
+  "kind": "test",
+  "title": "restores skipped hidden Grok output on light tab resume"
+ },
+ {
+  "file": "tests/e2e/terminal-tab-switch-visual-restore.spec.ts",
+  "line": 797,
+  "kind": "test",
+  "title": "@headful keeps returned tab glyphs intact across tab switches"
+ },
+ {
+  "file": "tests/e2e/terminal-tui-wheel-drain.spec.ts",
+  "line": 155,
+  "kind": "test.describe",
+  "title": "terminal TUI wheel report drain"
+ },
+ {
+  "file": "tests/e2e/terminal-tui-wheel-drain.spec.ts",
+  "line": 156,
+  "kind": "test",
+  "title": "dense trackpad-like wheel stream reaches the PTY while the gesture happens"
+ },
+ {
+  "file": "tests/e2e/terminal-tui-wheel-drain.spec.ts",
+  "line": 183,
+  "kind": "test",
+  "title": "aggressive alternating trackpad-like gesture does not replay after input ends"
+ },
+ {
+  "file": "tests/e2e/terminal-tui-wheel-reports.spec.ts",
+  "line": 287,
+  "kind": "test.describe",
+  "title": "terminal TUI wheel reports"
+ },
+ {
+  "file": "tests/e2e/terminal-tui-wheel-reports.spec.ts",
+  "line": 288,
+  "kind": "test",
+  "title": "notched mouse wheel ticks produce immediate mouse-reporting TUI scroll reports"
+ },
+ {
+  "file": "tests/e2e/terminal-tui-wheel-reports.spec.ts",
+  "line": 308,
+  "kind": "test",
+  "title": "fullscreen mouse-reporting TUI scroll distance follows wheel magnitude @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-tui-wheel-reports.spec.ts",
+  "line": 393,
+  "kind": "test",
+  "title": "TUI scroll setting scales notched mouse wheel reports"
+ },
+ {
+  "file": "tests/e2e/terminal-typing-latency.spec.ts",
+  "line": 62,
+  "kind": "test.describe",
+  "title": "Terminal typing latency"
+ },
+ {
+  "file": "tests/e2e/terminal-typing-latency.spec.ts",
+  "line": 63,
+  "kind": "test",
+  "title": "interactive prompt echoes typed keys without visible lag"
+ },
+ {
+  "file": "tests/e2e/terminal-typing-measurement-control.spec.ts",
+  "line": 21,
+  "kind": "test",
+  "title": "typing measurement charges known renderer stalls to the planned schedule"
+ },
+ {
+  "file": "tests/e2e/terminal-warm-reattach-split-live-output.spec.ts",
+  "line": 155,
+  "kind": "test",
+  "title": "restored hidden split drains live alternate-screen output without a click @headful"
+ },
+ {
+  "file": "tests/e2e/terminal-webgl-atlas-budget.spec.ts",
+  "line": 431,
+  "kind": "test.describe",
+  "title": "terminal WebGL atlas budget"
+ },
+ {
+  "file": "tests/e2e/terminal-webgl-atlas-budget.spec.ts",
+  "line": 434,
+  "kind": "test",
+  "title": "@headful keeps shared glyph pages bindable through overflow and recovery @terminal-rendering-golden"
+ },
+ {
+  "file": "tests/e2e/terminal-webgl-atlas-budget.spec.ts",
+  "line": 454,
+  "kind": "test",
+  "title": "@headful rebuilds cached vertices after attaching a different shared atlas @terminal-rendering-golden"
+ },
+ {
+  "file": "tests/e2e/terminal-wedged-write-pipeline-recovery.spec.ts",
+  "line": 48,
+  "kind": "test.describe",
+  "title": "Wedged terminal write pipeline recovery"
+ },
+ {
+  "file": "tests/e2e/terminal-wedged-write-pipeline-recovery.spec.ts",
+  "line": 49,
+  "kind": "test",
+  "title": "pane recovers rendering and input after its write pipeline wedges"
+ },
+ {
+  "file": "tests/e2e/terminal-wedged-write-pipeline-recovery.spec.ts",
+  "line": 92,
+  "kind": "test",
+  "title": "pane recovers after its xterm is disposed under live bindings (zombie pane)"
+ },
+ {
+  "file": "tests/e2e/terminal-window-wake-stale-grid-repro.spec.ts",
+  "line": 31,
+  "kind": "test.describe",
+  "title": "terminal window-wake stale grid repro"
+ },
+ {
+  "file": "tests/e2e/terminal-window-wake-stale-grid-repro.spec.ts",
+  "line": 32,
+  "kind": "test",
+  "title": "window focus heals a local PTY whose applied grid drifted from xterm"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-codex-multiline-paste.spec.ts",
+  "line": 129,
+  "kind": "test.describe",
+  "title": "Windows Codex multiline paste"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-codex-multiline-paste.spec.ts",
+  "line": 132,
+  "kind": "test",
+  "title": "multiline Ctrl+V keeps the existing Codex draft unsent @local-real-codex"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-codex-multiline-paste.spec.ts",
+  "line": 176,
+  "kind": "test",
+  "title": "delivers a normalized large paste through native ConPTY"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-conpty-keyboard-reset.spec.ts",
+  "line": 49,
+  "kind": "test",
+  "title": "resets standard keyboard bytes after a protocol-mode agent exits on ConPTY"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-path-expansion.spec.ts",
+  "line": 30,
+  "kind": "test",
+  "title": "expands variables in PATH before spawning a Windows shell"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-shell-paste-ownership.spec.ts",
+  "line": 191,
+  "kind": "test.describe",
+  "title": "Windows terminal shell paste ownership"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-shell-paste-ownership.spec.ts",
+  "line": 197,
+  "kind": "test",
+  "title": "PowerShell default terminal keyboard paste preserves exact content with one PTY owner"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-shell-paste-ownership.spec.ts",
+  "line": 250,
+  "kind": "test",
+  "title": "cmd.exe default terminal keyboard paste preserves exact content with one PTY owner"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-shell-paste-ownership.spec.ts",
+  "line": 301,
+  "kind": "test",
+  "title": "Git Bash default terminal keyboard paste preserves POSIX-shaped content with one PTY owner"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-shell-paste-ownership.spec.ts",
+  "line": 353,
+  "kind": "test",
+  "title": "WSL terminal keyboard paste preserves Linux shell content with one PTY owner"
+ },
+ {
+  "file": "tests/e2e/terminal-windows-shell-paste-ownership.spec.ts",
+  "line": 412,
+  "kind": "test",
+  "title": "existing WSL terminal keeps paste runtime after default shell changes"
+ },
+ {
+  "file": "tests/e2e/update-install-renderer-checkpoint-recovery.spec.ts",
+  "line": 13,
+  "kind": "test",
+  "title": "recovers update install from a corrupt clean session but preserves dirty drafts"
+ },
+ {
+  "file": "tests/e2e/update-status-error-details.spec.ts",
+  "line": 9,
+  "kind": "test",
+  "title": "automatic update failure opens details from the status bar (${theme})"
+ },
+ {
+  "file": "tests/e2e/usage-overview.spec.ts",
+  "line": 4,
+  "kind": "test.describe",
+  "title": "usage overview"
+ },
+ {
+  "file": "tests/e2e/usage-overview.spec.ts",
+  "line": 9,
+  "kind": "test",
+  "title": "Stats & Usage opens on the combined overview with provider controls"
+ },
+ {
+  "file": "tests/e2e/voice-microphone-selection.spec.ts",
+  "line": 106,
+  "kind": "test.describe",
+  "title": "Voice microphone selection"
+ },
+ {
+  "file": "tests/e2e/voice-microphone-selection.spec.ts",
+  "line": 107,
+  "kind": "test",
+  "title": "lists devices, persists a selected microphone, and restores it"
+ },
+ {
+  "file": "tests/e2e/voice-microphone-selection.spec.ts",
+  "line": 139,
+  "kind": "test",
+  "title": "marks an unplugged device unavailable and follows a relabeled device"
+ },
+ {
+  "file": "tests/e2e/windows-project-runtime-smoke.spec.ts",
+  "line": 80,
+  "kind": "test.describe",
+  "title": "Windows project runtime smoke"
+ },
+ {
+  "file": "tests/e2e/windows-project-runtime-smoke.spec.ts",
+  "line": 81,
+  "kind": "test",
+  "title": "keeps a Windows-host project and WSL project available side by side"
+ },
+ {
+  "file": "tests/e2e/windows-terminal-env-icons.spec.ts",
+  "line": 11,
+  "kind": "test.describe",
+  "title": "Windows terminal env and shell identity"
+ },
+ {
+  "file": "tests/e2e/windows-terminal-env-icons.spec.ts",
+  "line": 18,
+  "kind": "test",
+  "title": "dev terminal preserves parent PATH so PATH commands resolve"
+ },
+ {
+  "file": "tests/e2e/windows-terminal-env-icons.spec.ts",
+  "line": 31,
+  "kind": "test",
+  "title": "native Windows tab icons stay pinned to the effective shell at tab creation"
+ },
+ {
+  "file": "tests/e2e/windows-terminal-env-icons.spec.ts",
+  "line": 95,
+  "kind": "test",
+  "title": "WSL project tab icons retain runtime ownership across global shell changes"
+ },
+ {
+  "file": "tests/e2e/windows-wsl-terminal-restore.spec.ts",
+  "line": 113,
+  "kind": "test",
+  "title": "WSL terminal preserves guest cwd, liveness, and PTY ownership across relaunch"
+ },
+ {
+  "file": "tests/e2e/workspace-back-forward-navigation.spec.ts",
+  "line": 87,
+  "kind": "test.describe",
+  "title": "Workspace Back/Forward Navigation"
+ },
+ {
+  "file": "tests/e2e/workspace-back-forward-navigation.spec.ts",
+  "line": 94,
+  "kind": "test",
+  "title": "buttons are hidden outside the terminal view"
+ },
+ {
+  "file": "tests/e2e/workspace-back-forward-navigation.spec.ts",
+  "line": 113,
+  "kind": "test",
+  "title": "both buttons disabled at cold start with a single history entry"
+ },
+ {
+  "file": "tests/e2e/workspace-back-forward-navigation.spec.ts",
+  "line": 129,
+  "kind": "test",
+  "title": "clicking Back and Forward walks the history stack"
+ },
+ {
+  "file": "tests/e2e/workspace-back-forward-navigation.spec.ts",
+  "line": 172,
+  "kind": "test",
+  "title": "re-activating the current worktree is a no-op (dedupe)"
+ },
+ {
+  "file": "tests/e2e/workspace-back-forward-navigation.spec.ts",
+  "line": 187,
+  "kind": "test",
+  "title": "new navigation after going back truncates the forward stack"
+ },
+ {
+  "file": "tests/e2e/workspace-back-forward-navigation.spec.ts",
+  "line": 217,
+  "kind": "test",
+  "title": "${isMac ? "
+ },
+ {
+  "file": "tests/e2e/workspace-back-forward-navigation.spec.ts",
+  "line": 247,
+  "kind": "test",
+  "title": "shortcut is a no-op in settings view"
+ },
+ {
+  "file": "tests/e2e/workspace-board-lane-virtualization.spec.ts",
+  "line": 15,
+  "kind": "test.describe",
+  "title": "Workspace board lane virtualization"
+ },
+ {
+  "file": "tests/e2e/workspace-board-lane-virtualization.spec.ts",
+  "line": 21,
+  "kind": "test",
+  "title": "mounts a window of cards for a large lane and keeps lane indexes"
+ },
+ {
+  "file": "tests/e2e/workspace-board-lane-virtualization.spec.ts",
+  "line": 87,
+  "kind": "test",
+  "title": "renders later lane indexes after the lane scrolls"
+ },
+ {
+  "file": "tests/e2e/workspace-board-lane-virtualization.spec.ts",
+  "line": 156,
+  "kind": "test",
+  "title": "bounds mounted lanes and cards while preserving a 21-status workflow"
+ },
+ {
+  "file": "tests/e2e/workspace-board-lane-virtualization.spec.ts",
+  "line": 309,
+  "kind": "test",
+  "title": "selects the full lane across a single large marquee scroll jump"
+ },
+ {
+  "file": "tests/e2e/workspace-emoji-picker.spec.ts",
+  "line": 14,
+  "kind": "test.describe",
+  "title": "Workspace emoji picker"
+ },
+ {
+  "file": "tests/e2e/workspace-emoji-picker.spec.ts",
+  "line": 22,
+  "kind": "test",
+  "title": "inserts emoji in sidebar rename, worktree details, and Cmd+J"
+ },
+ {
+  "file": "tests/e2e/workspace-session-corrupt-tab-salvage.spec.ts",
+  "line": 67,
+  "kind": "test",
+  "title": "keeps valid terminal tabs visible after a corrupt sibling record on restart"
+ },
+ {
+  "file": "tests/e2e/workspace-space-git-status.spec.ts",
+  "line": 8,
+  "kind": "test.describe",
+  "title": "Workspace Space git status checks"
+ },
+ {
+  "file": "tests/e2e/workspace-space-git-status.spec.ts",
+  "line": 9,
+  "kind": "test",
+  "title": "checks every scanned deletable row, including rows after the first 50"
+ },
+ {
+  "file": "tests/e2e/worktree-active-delete-scroll-position.spec.ts",
+  "line": 234,
+  "kind": "test",
+  "title": "deleting the active scrolled worktree preserves position and closes the row gap"
+ },
+ {
+  "file": "tests/e2e/worktree-active-delete-scroll-position.spec.ts",
+  "line": 287,
+  "kind": "test",
+  "title": "reduced motion removes the active row without animating its neighbor"
+ },
+ {
+  "file": "tests/e2e/worktree-card-downward-drag.spec.ts",
+  "line": 162,
+  "kind": "test",
+  "title": "dragging a virtualized worktree downward keeps rows stable"
+ },
+ {
+  "file": "tests/e2e/worktree-delete-shortcut.spec.ts",
+  "line": 28,
+  "kind": "test.describe",
+  "title": "Worktree Delete Shortcut"
+ },
+ {
+  "file": "tests/e2e/worktree-delete-shortcut.spec.ts",
+  "line": 53,
+  "kind": "test",
+  "title": "deletes the hovered worktree after Mod+Shift+Backspace confirmation"
+ },
+ {
+  "file": "tests/e2e/worktree-jump-palette-filter.spec.ts",
+  "line": 163,
+  "kind": "test.describe",
+  "title": "Worktree jump-palette filters"
+ },
+ {
+  "file": "tests/e2e/worktree-jump-palette-filter.spec.ts",
+  "line": 176,
+  "kind": "test",
+  "title": "filters results, intersects fields, and reseeds from the sidebar on reopen"
+ },
+ {
+  "file": "tests/e2e/worktree-jump-palette-filter.spec.ts",
+  "line": 229,
+  "kind": "test",
+  "title": "opens with the sidebar repository scope without widening it"
+ },
+ {
+  "file": "tests/e2e/worktree-jump-palette-filter.spec.ts",
+  "line": 246,
+  "kind": "test",
+  "title": "pressing Enter creates a worktree from a typed name"
+ },
+ {
+  "file": "tests/e2e/worktree-jump-palette-filter.spec.ts",
+  "line": 254,
+  "kind": "test",
+  "title": "Escape closes the composer opened over the Automations page"
+ },
+ {
+  "file": "tests/e2e/worktree-lifecycle.spec.ts",
+  "line": 85,
+  "kind": "test.describe",
+  "title": "Worktree Lifecycle"
+ },
+ {
+  "file": "tests/e2e/worktree-lifecycle.spec.ts",
+  "line": 124,
+  "kind": "test",
+  "title": "removing a worktree clears its tabs, open files, and browser tabs"
+ },
+ {
+  "file": "tests/e2e/worktree-lifecycle.spec.ts",
+  "line": 214,
+  "kind": "test",
+  "title": "switching worktrees preserves per-worktree state across a round-trip"
+ },
+ {
+  "file": "tests/e2e/worktree-lifecycle.spec.ts",
+  "line": 300,
+  "kind": "test",
+  "title": "terminal tabs stay scoped to the worktree that created them"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage-agent-expansion.spec.ts",
+  "line": 72,
+  "kind": "test.describe",
+  "title": "Worktree lineage agent-list expansion independence"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage-agent-expansion.spec.ts",
+  "line": 80,
+  "kind": "test",
+  "title": "toggling child worktrees does not collapse the expanded agent summary"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage.spec.ts",
+  "line": 36,
+  "kind": "test.describe",
+  "title": "Worktree Lineage"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage.spec.ts",
+  "line": 44,
+  "kind": "test",
+  "title": "renders existing child lineage in the sidebar"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage.spec.ts",
+  "line": 110,
+  "kind": "test",
+  "title": "renders legacy-only inline lineage when side-map hydration is absent"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage.spec.ts",
+  "line": 131,
+  "kind": "test",
+  "title": "injects filtered parents structurally without showing a parent badge"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage.spec.ts",
+  "line": 195,
+  "kind": "test",
+  "title": "updates nested child preview status when the child terminal sleeps"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage.spec.ts",
+  "line": 212,
+  "kind": "test",
+  "title": "sleeps a workspace and every descendant from the parent context menu"
+ },
+ {
+  "file": "tests/e2e/worktree-lineage.spec.ts",
+  "line": 285,
+  "kind": "test",
+  "title": "shows parent and child agent rows while the parent workspace is active"
+ },
+ {
+  "file": "tests/e2e/worktree-recent-sort.spec.ts",
+  "line": 56,
+  "kind": "test.describe",
+  "title": "Worktree Recent Sort"
+ },
+ {
+  "file": "tests/e2e/worktree-recent-sort.spec.ts",
+  "line": 87,
+  "kind": "test",
+  "title": "stamps lastActivityAt on a newly-added folder repo so it sorts to the top of Recent"
+ },
+ {
+  "file": "tests/e2e/worktree-recent-sort.spec.ts",
+  "line": 103,
+  "kind": "test",
+  "title": "leaves lastActivityAt stable across repeated list refreshes"
+ },
+ {
+  "file": "tests/e2e/worktree-scroll-to-current.spec.ts",
+  "line": 26,
+  "kind": "test.describe",
+  "title": "Reveal active workspace button"
+ },
+ {
+  "file": "tests/e2e/worktree-scroll-to-current.spec.ts",
+  "line": 43,
+  "kind": "test",
+  "title": "clears sidebar filters before revealing a hidden current workspace"
+ },
+ {
+  "file": "tests/e2e/worktree-scroll-to-current.spec.ts",
+  "line": 158,
+  "kind": "test",
+  "title": "reveals the current workspace when it starts outside the virtualized window"
+ },
+ {
+  "file": "tests/e2e/worktree-scroll-to-current.spec.ts",
+  "line": 269,
+  "kind": "test",
+  "title": "uses the active workspace key when the legacy active worktree id is not set"
+ },
+ {
+  "file": "tests/e2e/worktree-smart-sort.spec.ts",
+  "line": 213,
+  "kind": "test.describe",
+  "title": "Worktree Smart Sort"
+ },
+ {
+  "file": "tests/e2e/worktree-smart-sort.spec.ts",
+  "line": 220,
+  "kind": "test",
+  "title": "renders attention-needed worktrees above finished agents in Smart mode"
+ },
+ {
+  "file": "tests/e2e/worktree-switch-first-paint.spec.ts",
+  "line": 376,
+  "kind": "test.describe",
+  "title": "Worktree switch first paint @headful"
+ },
+ {
+  "file": "tests/e2e/worktree-switch-first-paint.spec.ts",
+  "line": 381,
+  "kind": "test",
+  "title": "repaints an unmounted worktree within the switch budget"
+ },
+ {
+  "file": "tests/e2e/worktree-switch-responsiveness.spec.ts",
+  "line": 43,
+  "kind": "test.describe",
+  "title": "Worktree switch responsiveness"
+ },
+ {
+  "file": "tests/e2e/worktree-switch-responsiveness.spec.ts",
+  "line": 49,
+  "kind": "test",
+  "title": "updates the selected workspace in the same click task when changing back"
+ },
+ {
+  "file": "tests/e2e/worktree.spec.ts",
+  "line": 33,
+  "kind": "test.describe",
+  "title": "Create Workspace"
+ },
+ {
+  "file": "tests/e2e/worktree.spec.ts",
+  "line": 39,
+  "kind": "test",
+  "title": "creates a worktree through the composer UI and activates it"
+ },
+ {
+  "file": "tests/e2e/worktree.spec.ts",
+  "line": 156,
+  "kind": "test",
+  "title": "creates an emoji-named worktree with a safe git branch"
+ },
+ {
+  "file": "tests/e2e/worktree.spec.ts",
+  "line": 194,
+  "kind": "test",
+  "title": "enters the Korean flag with the flag_kr shortcode suggestion"
+ },
+ {
+  "file": "tests/e2e/worktree.spec.ts",
+  "line": 231,
+  "kind": "test",
+  "title": "shows a failed workspace entry when worktree creation fails"
+ },
+ {
+  "file": "tests/e2e/worktree.spec.ts",
+  "line": 293,
+  "kind": "test",
+  "title": "reuses a resolved pasted GitHub URL when quick create submits"
+ },
+ {
+  "file": "tests/e2e/worktree.spec.ts",
+  "line": 410,
+  "kind": "test",
+  "title": "names the workspace after the PR title when the pasted URL suggestion is selected"
+ }
+]

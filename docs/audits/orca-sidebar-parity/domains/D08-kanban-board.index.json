@@ -1,0 +1,2079 @@
+{
+ "exports": {
+  "components/sidebar/WorkspaceKanbanAreaSelectionOverlay.tsx": [
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanCard.tsx": [
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanDrawer.tsx": [
+   "WorkspaceKanbanDrawer",
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanDrawerHeader.tsx": [
+   "WorkspaceKanbanDrawerHeader",
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanDrawerView.tsx": [
+   "WorkspaceKanbanDrawerView",
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanLaneCardList.tsx": [
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanLaneGrid.tsx": [
+   "WorkspaceKanbanLaneGrid",
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanPinDropTarget.tsx": [
+   "WorkspaceKanbanPinDropTarget",
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanSearchField.tsx": [
+   "overlayReserve",
+   "WorkspaceKanbanSearchField",
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanSettingsMenu.tsx": [
+   "WorkspaceKanbanSettingsMenu",
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanSheet.tsx": [
+   "WorkspaceKanbanSheet",
+   "default"
+  ],
+  "components/sidebar/WorkspaceKanbanStatusLane.tsx": [
+   "default"
+  ],
+  "components/sidebar/use-workspace-board-task-status-sync.ts": [
+   "useWorkspaceBoardTaskStatusSync"
+  ],
+  "components/sidebar/use-workspace-kanban-area-selection.ts": [
+   "useWorkspaceKanbanAreaSelection"
+  ],
+  "components/sidebar/use-workspace-kanban-board-projection.ts": [
+   "useWorkspaceKanbanBoardProjection"
+  ],
+  "components/sidebar/use-workspace-kanban-card-pointer-drag.ts": [
+   "useWorkspaceKanbanCardPointerDrag"
+  ],
+  "components/sidebar/use-workspace-kanban-column-resize.ts": [
+   "useWorkspaceKanbanColumnResize"
+  ],
+  "components/sidebar/use-workspace-kanban-create-worktree.ts": [
+   "useWorkspaceKanbanCreateWorktree"
+  ],
+  "components/sidebar/use-workspace-kanban-drawer-lingering.ts": [
+   "useWorkspaceKanbanDrawerLingering"
+  ],
+  "components/sidebar/use-workspace-kanban-native-drag.ts": [
+   "useWorkspaceKanbanNativeDrag"
+  ],
+  "components/sidebar/use-workspace-kanban-outside-dismiss.ts": [
+   "isWorkspaceBoardKeepOpenTarget",
+   "useWorkspaceKanbanOutsideDismiss"
+  ],
+  "components/sidebar/use-workspace-kanban-render-lifecycle.ts": [
+   "useWorkspaceKanbanRenderLifecycle"
+  ],
+  "components/sidebar/use-workspace-kanban-search.ts": [
+   "useWorkspaceKanbanSearch"
+  ],
+  "components/sidebar/use-workspace-kanban-selection.ts": [
+   "useWorkspaceKanbanSelection"
+  ],
+  "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts": [
+   "useWorkspaceKanbanShiftWheelScroll"
+  ],
+  "components/sidebar/use-workspace-kanban-status-actions.ts": [
+   "useWorkspaceKanbanStatusActions"
+  ],
+  "components/sidebar/use-workspace-kanban-worktree-actions.ts": [
+   "useWorkspaceKanbanWorktreeActions"
+  ],
+  "components/sidebar/useWorkspaceBoardPanel.ts": [
+   "TOGGLE_WORKSPACE_BOARD_EVENT",
+   "WorkspaceBoardPanelState",
+   "useWorkspaceBoardPanel"
+  ],
+  "components/sidebar/workspace-board-task-status-sync.ts": [
+   "WorkspaceBoardTaskStatusSyncResult",
+   "WorkspaceBoardTaskStatusSyncMessage",
+   "SyncWorkspaceBoardTaskStatusesArgs",
+   "WorkspaceBoardTaskStatusSyncRequest",
+   "getWorkspaceBoardTaskStatusSyncRequest",
+   "syncWorkspaceBoardTaskStatuses"
+  ],
+  "components/sidebar/workspace-kanban-area-selection-card-rects.ts": [
+   "AreaSelectionViewportRect",
+   "AreaSelectionCardRect",
+   "AREA_SELECTION_SCROLL_CONTAINER_SELECTOR",
+   "getAreaSelectionCardRects"
+  ],
+  "components/sidebar/workspace-kanban-area-selection-dom.ts": [
+   "AreaSelectionRect",
+   "AREA_SELECTION_AUTO_SCROLL_EDGE_SIZE",
+   "AREA_SELECTION_AUTO_SCROLL_MAX_DELTA",
+   "getAreaSelectionRect",
+   "shouldIgnoreAreaSelectionStart",
+   "isScrollbarPointerDown",
+   "getAreaSelectionCardIds",
+   "getAreaSelectionScrollStartContentYByElement",
+   "getAreaSelectionAutoScrollDelta",
+   "getAreaSelectionScrollContainer",
+   "setOverlayRect",
+   "clearPreviewSelection",
+   "updatePreviewSelection"
+  ],
+  "components/sidebar/workspace-kanban-area-selection-state.ts": [
+   "AreaSelectionDragState",
+   "UseWorkspaceKanbanAreaSelectionParams",
+   "AREA_SELECTION_DRAG_THRESHOLD",
+   "shouldCommitWorkspaceKanbanAreaSelection"
+  ],
+  "components/sidebar/workspace-kanban-card-drag-preview-dom.ts": [
+   "setDragDocumentStyles",
+   "setDraggedCardsDragging",
+   "updateDragPreviewPosition",
+   "createDragPreview"
+  ],
+  "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts": [
+   "CARD_SELECTOR",
+   "STATUS_DROP_TARGET",
+   "PIN_DROP_TARGET",
+   "WorkspaceKanbanStatusDropRect",
+   "WorkspaceKanbanCardDropRect",
+   "WorkspaceKanbanLaneDropRect",
+   "WorkspaceKanbanCardDropTarget",
+   "WorkspaceKanbanCardTrackedDropTarget",
+   "resolveWorkspaceStatusDropTargetFromRects",
+   "resolveWorkspaceCardDropIndexFromRects",
+   "resolveWorkspaceCardDropIndicatorY",
+   "resolveWorkspaceKanbanCardDropCommitTarget",
+   "getDropTarget",
+   "getCardDropTarget",
+   "removeCardDropIndicator",
+   "updateCardDropIndicator"
+  ],
+  "components/sidebar/workspace-kanban-card-pointer-drag-start.ts": [
+   "shouldStartWorkspaceKanbanCardPointerDrag",
+   "shouldIgnoreWorkspaceKanbanCardPointerDown"
+  ],
+  "components/sidebar/workspace-kanban-filtered-drop-index.ts": [
+   "WORKSPACE_LANE_FULL_IDS_DELIMITER",
+   "serializeWorkspaceLaneFullIds",
+   "parseWorkspaceLaneFullIds",
+   "resolveFullLaneDropIndex"
+  ],
+  "components/sidebar/workspace-kanban-lane-range.ts": [
+   "extractWorkspaceKanbanLaneRange"
+  ],
+  "components/sidebar/workspace-kanban-pointer-drag-selection.ts": [
+   "resolveWorkspaceKanbanPointerDragSelection",
+   "UseWorkspaceKanbanCardPointerDragParams"
+  ],
+  "components/sidebar/workspace-kanban-search.ts": [
+   "WorkspaceKanbanLaneView",
+   "buildWorkspaceBoardPaletteDocuments",
+   "matchWorkspaceBoardWorktrees",
+   "buildWorkspaceKanbanLaneViews"
+  ],
+  "components/sidebar/workspace-kanban-sidebar-drop.ts": [
+   "hasWorkspaceKanbanSidebarDropBoard",
+   "isWorkspaceKanbanSidebarDropPointInBoard",
+   "clearWorkspaceKanbanSidebarDropTargetVisual",
+   "registerWorkspaceKanbanSidebarDropGroups",
+   "getWorkspaceKanbanSidebarDropGroups",
+   "getWorkspaceKanbanSidebarDropTarget",
+   "resolveWorkspaceKanbanSidebarFullLaneDropIndex",
+   "updateWorkspaceKanbanSidebarDropTargetVisual",
+   "buildWorkspaceKanbanSidebarDropUpdates"
+  ],
+  "components/sidebar/workspace-kanban-virtual-lane-layout.ts": [
+   "WorkspaceKanbanVirtualLaneItemRect",
+   "registerWorkspaceKanbanVirtualLaneLayout",
+   "getWorkspaceKanbanVirtualLaneItemIds",
+   "getWorkspaceKanbanVirtualLaneItemRects",
+   "resolveWorkspaceKanbanVirtualLaneDropIndex",
+   "resolveWorkspaceKanbanVirtualLaneDropIndicatorY"
+  ],
+  "components/sidebar/workspace-kanban-worktree-groups.ts": [
+   "groupWorkspaceKanbanWorktrees"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/WorkspaceKanbanCard.tsx",
+   "line": 60,
+   "text": "aria-label={translate('auto.components.sidebar.WorkspaceKanbanCard.cefae8983e', 'Pinned')}"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 172,
+   "text": "{ id: 'todo', label: 'Todo' },"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 173,
+   "text": "{ id: 'in-review', label: 'In review' }"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 321,
+   "text": "targetStatus: { id: 'todo', label: 'Todo' }"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 195,
+   "text": "{ id: 'todo', label: 'Todo' },"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 196,
+   "text": "{ id: 'in-review', label: 'In review' }"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 326,
+   "text": "targetStatus: { id: 'in-review', label: 'In review' },"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 359,
+   "text": "targetStatus: { id: 'in-review', label: 'In review' }"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 426,
+   "text": "targetStatus: { id: 'in-review', label: 'In review' }"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx",
+   "line": 17,
+   "text": "const statuses: WorkspaceStatusDefinition[] = [{ id: 'todo', label: 'Todo' }]"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.tsx",
+   "line": 23,
+   "text": "onRenameStatus: (statusId: string, label: string) => void"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.tsx",
+   "line": 99,
+   "text": "tooltipSide=\"top\""
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.tsx",
+   "line": 117,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 94,
+   "text": "label: `State ${index + 1}`"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 48,
+   "text": "return container.querySelector<HTMLButtonElement>('button[aria-label=\"Clear search\"]')"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+   "line": 105,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+   "line": 109,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+   "line": 140,
+   "text": "title={tooLargeMessage ?? undefined}"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+   "line": 154,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+   "line": 7,
+   "text": "const statuses: WorkspaceStatusDefinition[] = [{ id: 'todo', label: 'Todo' }]"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+   "line": 17,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+   "line": 73,
+   "text": "'button[role=\"switch\"][aria-label=\"Sync board and issue status\"]'"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+   "line": 91,
+   "text": "label: `State ${index + 1}`"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+   "line": 10,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+   "line": 22,
+   "text": "onRenameStatus: (statusId: string, label: string) => void"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+   "line": 49,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+   "line": 133,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+   "line": 151,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+   "line": 166,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+   "line": 181,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 29,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 35,
+   "text": "const status = { id: 'todo', label: 'Todo' }"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+   "line": 15,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+   "line": 102,
+   "text": "aria-label={createTooltip}"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+   "line": 137,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+   "line": 221,
+   "text": "aria-label={createTooltip}"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-status-actions.ts",
+   "line": 19,
+   "text": "(statusId: string, label: string) => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-status-actions.ts",
+   "line": 26,
+   "text": "status.id === statusId ? { ...status, label: trimmed } : status"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 172,
+   "text": "it('lets Escape close the board while non-interactive tooltip content is open', async () => {"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 174,
+   "text": "const tooltip = document.createElement('div')"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 175,
+   "text": "tooltip.setAttribute('data-slot', 'tooltip-content')"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 176,
+   "text": "tooltip.setAttribute('data-state', 'open')"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 177,
+   "text": "document.body.appendChild(tooltip)"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+   "line": 146,
+   "text": "// companion panel, but non-interactive tooltips should not trap it."
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 51,
+   "text": "return { id: 'in-review', label: 'In review', ...overrides }"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 324,
+   "text": "targetStatus: targetStatus({ id: 'done', label: 'Done' }),"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 374,
+   "text": "{ id: 'todo', label: 'Todo' },"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 375,
+   "text": "{ id: 'in-review', label: 'In review' }"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 389,
+   "text": "targetStatus: { id: 'in-review', label: 'In review' }"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 17,
+   "text": "{ id: 'todo', label: 'Todo' },"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 18,
+   "text": "{ id: 'doing', label: 'Doing' }"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+   "line": 34,
+   "text": "{ id: 'todo', label: 'Todo' },"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+   "line": 35,
+   "text": "{ id: 'doing', label: 'Doing' }"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+   "line": 53,
+   "text": "onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 150,
+   "text": "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 159,
+   "text": "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 185,
+   "text": "new KeyboardEvent('keydown', {"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+   "line": 122,
+   "text": "if (event.key !== 'Escape' || event.nativeEvent.isComposing) {"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+   "line": 128,
+   "text": "if (event.key === 'Enter') {"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+   "line": 49,
+   "text": "onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 12,
+   "text": "onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 133,
+   "text": "(event: React.KeyboardEvent<HTMLElement>) => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 134,
+   "text": "if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 139,
+   "text": "const direction = event.key === 'ArrowRight' ? 1 : -1"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 57,
+   "text": "from.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 102,
+   "text": "it('toggles the board from the shortcut bridge event', async () => {"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+   "line": 135,
+   "text": "const handleKeyDown = (event: KeyboardEvent): void => {"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+   "line": 136,
+   "text": "if (event.key !== 'Escape') {"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "line": 178,
+   "text": "vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 150,
+   "text": "vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+   "line": 158,
+   "text": "frameId = window.requestAnimationFrame(renderNextLane)"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+   "line": 162,
+   "text": "frameId = window.requestAnimationFrame(renderNextLane)"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+   "line": 92,
+   "text": "const timer = window.setTimeout("
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+   "line": 147,
+   "text": "state.frameId = window.requestAnimationFrame(flushAreaSelectionDrag)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+   "line": 179,
+   "text": "state.scrollFrameId = window.requestAnimationFrame(runAreaSelectionAutoScroll)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+   "line": 187,
+   "text": "state.scrollFrameId = window.requestAnimationFrame(runAreaSelectionAutoScroll)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+   "line": 202,
+   "text": "state.frameId = window.requestAnimationFrame(flushPointerDragFrame)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 59,
+   "text": "frameRef.current = window.requestAnimationFrame(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-drawer-lingering.ts",
+   "line": 12,
+   "text": "const timer = window.setTimeout(() => setLingering(false), WORKSPACE_BOARD_CLOSE_LINGER_MS)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+   "line": 18,
+   "text": "const frameId = window.requestAnimationFrame(() => {"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "line": 62,
+   "text": "React.useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "line": 64,
+   "text": "const unsubscribe = useAppStore.subscribe(() => contentProbe.storeNotifications())"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+   "line": 131,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+   "line": 83,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+   "line": 268,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+   "line": 311,
+   "text": "document.addEventListener('pointermove', handlePointerMove, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+   "line": 312,
+   "text": "document.addEventListener('pointerup', handlePointerUp, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+   "line": 313,
+   "text": "document.addEventListener('pointercancel', handlePointerUp, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-area-selection.ts",
+   "line": 314,
+   "text": "document.addEventListener('scroll', handleScroll, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+   "line": 207,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+   "line": 255,
+   "text": "document.addEventListener('pointermove', handlePointerMove, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+   "line": 256,
+   "text": "document.addEventListener('pointerup', handlePointerUp, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+   "line": 257,
+   "text": "document.addEventListener('pointercancel', handlePointerUp, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+   "line": 258,
+   "text": "document.addEventListener('click', handleClick, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+   "line": 259,
+   "text": "window.addEventListener('blur', handleBlur)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 98,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 99,
+   "text": "window.addEventListener('pointermove', handlePointerMove)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 100,
+   "text": "window.addEventListener('pointerup', stopResize)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 101,
+   "text": "window.addEventListener('pointercancel', stopResize)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+   "line": 102,
+   "text": "window.addEventListener('blur', stopResize)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-drawer-lingering.ts",
+   "line": 7,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-outside-dismiss.ts",
+   "line": 38,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-outside-dismiss.ts",
+   "line": 60,
+   "text": "document.addEventListener('pointerdown', handlePointerDown, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+   "line": 12,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+   "line": 30,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+   "line": 45,
+   "text": "document.addEventListener('pointerdown', clearSelectionOutsideBoard, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+   "line": 46,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+   "line": 95,
+   "text": "document.addEventListener('dragstart', handleDragStart, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+   "line": 96,
+   "text": "document.addEventListener('dragover', handleDragOver, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+   "line": 97,
+   "text": "document.addEventListener('drop', stopTrackingDrag, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+   "line": 98,
+   "text": "document.addEventListener('dragend', stopTrackingDrag, true)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+   "line": 99,
+   "text": "window.addEventListener('blur', stopTrackingDrag)"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+   "line": 102,
+   "text": "document.addEventListener('wheel', handleWheel, { capture: true, passive: false })"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+   "line": 130,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+   "line": 156,
+   "text": "document.addEventListener('keydown', handleKeyDown, true)"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+   "line": 160,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+   "line": 161,
+   "text": "window.addEventListener(TOGGLE_WORKSPACE_BOARD_EVENT, toggleWorkspaceBoard)"
+  }
+ ],
+ "preload": [],
+ "tests": [
+  {
+   "file": "components/sidebar/WorkspaceKanbanCard.host-identity.test.tsx",
+   "line": 31,
+   "kind": "plain",
+   "name": "WorkspaceKanbanCard host identity"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanCard.host-identity.test.tsx",
+   "line": 32,
+   "kind": "plain",
+   "name": "keeps the DOM and selection gesture scoped to one host"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "line": 175,
+   "kind": "plain",
+   "name": "WorkspaceKanbanDrawer mount gating"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "line": 197,
+   "kind": "plain",
+   "name": "unmounts heavy content after the close animation and isolates closed churn"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "line": 236,
+   "kind": "plain",
+   "name": "cancels the pending unmount when reopened at 299 ms"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+   "line": 248,
+   "kind": "plain",
+   "name": "preserves drag preview presentation when the preview becomes a full board"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 266,
+   "kind": "plain",
+   "name": "WorkspaceKanbanDrawer search"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 267,
+   "kind": "plain",
+   "name": "filters every lane in place and reports lane totals"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 281,
+   "kind": "plain",
+   "name": "restores every lane when the query is cleared"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 294,
+   "kind": "plain",
+   "name": "drops the query when the board closes so a reopen starts unfiltered"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 306,
+   "kind": "plain",
+   "name": "still runs the Linear status sync for a drop made under an active query"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 326,
+   "kind": "plain",
+   "name": "narrows the pointer-drag payload to the rendered cards"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 336,
+   "kind": "plain",
+   "name": "narrows the context-menu "
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 345,
+   "kind": "plain",
+   "name": "keeps selection highlighting unfiltered while a query is active"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 354,
+   "kind": "plain",
+   "name": "counts only the rendered cards in the header selection badge"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 364,
+   "kind": "plain",
+   "name": "scopes selection gestures to the rendered cards"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 373,
+   "kind": "plain",
+   "name": "reports a non-filtering query so the header withholds match counts"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 382,
+   "kind": "plain",
+   "name": "leaves the whole board unfiltered for an over-bound query"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+   "line": 400,
+   "kind": "plain",
+   "name": "ranks a drop into a filtered lane against the full lane, not the rendered one"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 286,
+   "kind": "plain",
+   "name": "WorkspaceKanbanDrawer task status sync wiring"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 287,
+   "kind": "plain",
+   "name": "reserves the status bar row in the board sheet and overlay when visible"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 301,
+   "kind": "plain",
+   "name": "keeps the board sheet and overlay flush to the viewport bottom when status bar is hidden"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 315,
+   "kind": "plain",
+   "name": "syncs Linear after a document-drop status move when the setting is enabled"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 333,
+   "kind": "plain",
+   "name": "does not sync when a document-drop status move happens while disabled"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 344,
+   "kind": "plain",
+   "name": "syncs pointer-drop status changes through the board callback"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 364,
+   "kind": "plain",
+   "name": "does not sync manual-order-only drops that keep the same board status"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 379,
+   "kind": "plain",
+   "name": "does not sync pin-only paths"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 392,
+   "kind": "plain",
+   "name": "shows a warning toast when task status sync is skipped with a message"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 415,
+   "kind": "plain",
+   "name": "syncs Linear when the board context-menu "
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 431,
+   "kind": "plain",
+   "name": "does not sync a context-menu status move when the setting is disabled"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 442,
+   "kind": "plain",
+   "name": "does not sync a context-menu status move that keeps the same board status"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+   "line": 453,
+   "kind": "plain",
+   "name": "shows an error toast when task status sync unexpectedly rejects"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx",
+   "line": 81,
+   "kind": "plain",
+   "name": "WorkspaceKanbanDrawerHeader"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx",
+   "line": 82,
+   "kind": "plain",
+   "name": "routes the close button through the explicit drawer close callback"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx",
+   "line": 96,
+   "kind": "plain",
+   "name": "renders the search field as a sibling of the sheet title, not inside it"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx",
+   "line": 117,
+   "kind": "plain",
+   "name": "keeps the filter, settings, and close cluster reachable alongside the field"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx",
+   "line": 130,
+   "kind": "plain",
+   "name": "keeps the selected-count badge and the field clear of the control cluster"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx",
+   "line": 112,
+   "kind": "plain",
+   "name": "WorkspaceKanbanLaneCardList"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx",
+   "line": 113,
+   "kind": "plain",
+   "name": "mounts only the virtual window, not the whole lane"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx",
+   "line": 129,
+   "kind": "plain",
+   "name": "gives every rendered card its lane index, not its rendered position"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx",
+   "line": 138,
+   "kind": "plain",
+   "name": "reserves the full lane height so the scrollbar spans the whole list"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx",
+   "line": 146,
+   "kind": "plain",
+   "name": "positions each card at its virtual offset"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx",
+   "line": 155,
+   "kind": "plain",
+   "name": "renders nothing for an empty lane and a single card at index 0"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx",
+   "line": 165,
+   "kind": "plain",
+   "name": "gives same-id cards unique host-qualified virtual and DOM identities"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 167,
+   "kind": "plain",
+   "name": "WorkspaceKanbanLaneGrid"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 168,
+   "kind": "plain",
+   "name": "reserves the full workflow width while mounting only the horizontal window"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 183,
+   "kind": "plain",
+   "name": "mounts later ordered lanes and releases distant lanes after horizontal scroll"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 198,
+   "kind": "plain",
+   "name": "keeps one focused lane mounted without unbounding the virtual window"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 215,
+   "kind": "plain",
+   "name": "adds only the focused lane to the normal overscanned range"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 221,
+   "kind": "plain",
+   "name": "hydrates at most one mounted lane per animation frame"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+   "line": 233,
+   "kind": "plain",
+   "name": "passes the host-qualified active workspace through virtualized lanes"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 75,
+   "kind": "plain",
+   "name": "WorkspaceKanbanSearchField"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 76,
+   "kind": "plain",
+   "name": "reports every keystroke without debouncing"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 89,
+   "kind": "plain",
+   "name": "only offers the clear affordance for a non-empty query"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 101,
+   "kind": "plain",
+   "name": "hides the visual match count from assistive tech but keeps the clear button named"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 110,
+   "kind": "plain",
+   "name": "withholds counts for text that never narrows the board"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 122,
+   "kind": "plain",
+   "name": "announces match counts only after the query settles"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 141,
+   "kind": "plain",
+   "name": "clears a non-empty query on Escape and closes the board on an empty one"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 166,
+   "kind": "plain",
+   "name": "says so when a query was discarded for length instead of silently not filtering"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 180,
+   "kind": "plain",
+   "name": "leaves Escape to the IME while a composition is in progress"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 198,
+   "kind": "plain",
+   "name": "keeps focus in the field after the clear button unmounts itself"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+   "line": 209,
+   "kind": "plain",
+   "name": "reserves overlay width in font-relative units, capped so text stays visible"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+   "line": 67,
+   "kind": "plain",
+   "name": "WorkspaceKanbanSettingsMenu"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+   "line": 68,
+   "kind": "plain",
+   "name": "renders the task status sync switch and forwards changes"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+   "line": 86,
+   "kind": "plain",
+   "name": "keeps adding available for workflows above the former board limit"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 103,
+   "kind": "plain",
+   "name": "WorkspaceKanbanStatusLane"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 104,
+   "kind": "plain",
+   "name": "shows a plain count without a query and a matches/total count with one"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 113,
+   "kind": "plain",
+   "name": "keeps a fully filtered lane as a labeled drop target"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 120,
+   "kind": "plain",
+   "name": "shows the empty placeholder when there is no query"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 127,
+   "kind": "plain",
+   "name": "leaves an already-empty lane as Empty under a query rather than "
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 135,
+   "kind": "plain",
+   "name": "publishes the full lane membership even when the rendered set is a subset"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 147,
+   "kind": "plain",
+   "name": "stays off the full-id channel when nothing is filtered"
+  },
+  {
+   "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+   "line": 160,
+   "kind": "plain",
+   "name": "passes the host-qualified active workspace through to the card list"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "workspace kanban card pointer drag start"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "starts for plain primary mouse drags"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts",
+   "line": 24,
+   "kind": "plain",
+   "name": "does not steal modifier gestures from selection"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "ignores touch and non-primary buttons"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "workspace kanban pointer drag selection identity"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "does not expand a same-id drag to the unselected host"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "drags the selected host-qualified batch when the source row is selected"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx",
+   "line": 7,
+   "kind": "plain",
+   "name": "workspace board close linger"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx",
+   "line": 10,
+   "kind": "plain",
+   "name": "keeps drawer state through the close animation, then releases it at 300 ms"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx",
+   "line": 23,
+   "kind": "plain",
+   "name": "cancels the pending release when reopened"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "workspace kanban outside dismiss keep-open targets"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "keeps the board open when a Sonner toast action is clicked"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "keeps the board open when the contextual tour panel is clicked"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "does not keep the board open for generic outside content"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 92,
+   "kind": "plain",
+   "name": "useWorkspaceKanbanSelection"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 93,
+   "kind": "plain",
+   "name": "ranges across the whole board when nothing is filtered"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 102,
+   "kind": "plain",
+   "name": "never ranges through cards a search has hidden"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 111,
+   "kind": "plain",
+   "name": "keeps a hidden card selected so clearing the search restores the selection"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 124,
+   "kind": "plain",
+   "name": "extends the range from a visible card when a search hides the anchor"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 140,
+   "kind": "plain",
+   "name": "replaces a hidden selection on every replace-shaped gesture alike"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 155,
+   "kind": "plain",
+   "name": "lets a plain click clear a selection the search is hiding"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 166,
+   "kind": "plain",
+   "name": "still prunes ids that leave the board entirely"
+  },
+  {
+   "file": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+   "line": 176,
+   "kind": "plain",
+   "name": "selects same-id cards independently by host"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 72,
+   "kind": "plain",
+   "name": "useWorkspaceBoardPanel"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 85,
+   "kind": "plain",
+   "name": "toggles the board and records the feature interaction when opened"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 102,
+   "kind": "plain",
+   "name": "toggles the board from the shortcut bridge event"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 122,
+   "kind": "plain",
+   "name": "renders a drag preview without recording an open interaction"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 133,
+   "kind": "plain",
+   "name": "cancels an uncommitted drag preview"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 144,
+   "kind": "plain",
+   "name": "solidifies a drag preview and keeps the board open after drag cleanup"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 157,
+   "kind": "plain",
+   "name": "keeps the board open on Escape while a nested board menu is open"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 172,
+   "kind": "plain",
+   "name": "lets Escape close the board while non-interactive tooltip content is open"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 185,
+   "kind": "plain",
+   "name": "lets Escape close the board when the board sheet itself is the open dialog"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 199,
+   "kind": "plain",
+   "name": "keeps the board open on Escape while an interactive popover is open"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 212,
+   "kind": "plain",
+   "name": "defers Escape to a text field inside the board"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 226,
+   "kind": "plain",
+   "name": "still closes the board on Escape from a text field outside it"
+  },
+  {
+   "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+   "line": 236,
+   "kind": "plain",
+   "name": "keeps the board open on Escape while a nested dialog is open"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "syncWorkspaceBoardTaskStatuses"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "updates Linear when exactly one workflow state matches the board status"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 119,
+   "kind": "plain",
+   "name": "uses the fetched issue workspace for state reads and writes when the link lacks one"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 144,
+   "kind": "plain",
+   "name": "routes each Linear update through the moved worktree owner settings"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 201,
+   "kind": "plain",
+   "name": "preserves null settings from the moved worktree resolver"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 226,
+   "kind": "plain",
+   "name": "skips worktrees without linked Linear issues"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 244,
+   "kind": "plain",
+   "name": "skips when the Linear issue is already in the matching state"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 255,
+   "kind": "plain",
+   "name": "skips missing or ambiguous workflow state matches"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 282,
+   "kind": "plain",
+   "name": "skips stale async writes when the local workspace status changed again"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 298,
+   "kind": "plain",
+   "name": "serializes repeated moves for the same worktree so the latest status wins"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 353,
+   "kind": "plain",
+   "name": "aggregates provider write failures without throwing"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 372,
+   "kind": "plain",
+   "name": "getWorkspaceBoardTaskStatusSyncRequest"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 378,
+   "kind": "plain",
+   "name": "builds a sync request for enabled status moves"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 393,
+   "kind": "plain",
+   "name": "does not build a sync request while the board setting is disabled"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 405,
+   "kind": "plain",
+   "name": "skips same-status and duplicate ids so manual-order-only drops do not sync"
+  },
+  {
+   "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+   "line": 417,
+   "kind": "plain",
+   "name": "does not build a sync request without a board status target"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "workspace kanban area selection finish"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "commits an empty non-additive surface click so selection clears"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 21,
+   "kind": "plain",
+   "name": "ignores empty additive surface clicks so modifier-click off does not clear"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "commits marquee drags even when additive"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 40,
+   "kind": "plain",
+   "name": "workspace kanban area selection auto-scroll"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 41,
+   "kind": "plain",
+   "name": "scrolls down near the bottom edge while more lane content is available"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 54,
+   "kind": "plain",
+   "name": "scrolls up near the top edge while content exists above"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "does not scroll when the pointer is away from the edges or at scroll limits"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 91,
+   "kind": "plain",
+   "name": "workspace kanban area selection scrolled content hit-testing"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "keeps cards selected after lane scroll moves them above the viewport marquee"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 138,
+   "kind": "plain",
+   "name": "falls back to viewport hit-testing for cards outside lane scrollers"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 175,
+   "kind": "plain",
+   "name": "workspace kanban area selection preview remount"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-area-selection.test.ts",
+   "line": 176,
+   "kind": "plain",
+   "name": "re-applies the preview attribute when a card remounts under the same id"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "workspace kanban pointer drag drop target"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "uses the containing lane when the pointer is inside one"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "falls back to the nearest lane when the pointer is in a lane gap"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "does not resolve a lane outside the lane row"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "workspace kanban pointer drag card drop index"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "inserts before the first card whose midpoint is below the pointer"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "inserts at the end when the pointer is below every card midpoint"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "uses the lane index of a rendered card rather than its rendered position"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 61,
+   "kind": "plain",
+   "name": "workspace kanban drop indicator placement"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "places the line above, between, and below rendered cards"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 73,
+   "kind": "plain",
+   "name": "falls back to the lane top when the lane renders no cards"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "anchors to the rendered card that owns the lane index"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "workspace kanban pointer drag commit target"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "uses the current target when release hit-testing succeeds"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "reuses the latest tracked target when release hit-testing blanks at the same point"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+   "line": 119,
+   "kind": "plain",
+   "name": "does not reuse a tracked target after the pointer has moved away"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "resolveFullLaneDropIndex"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "is the identity when nothing is filtered"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "maps the first filtered slot onto the first match position"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 33,
+   "kind": "plain",
+   "name": "maps the end of a filtered lane one past the last match"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "maps a slot between two matches onto the following match"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 53,
+   "kind": "plain",
+   "name": "appends into a lane whose cards are all filtered away"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 68,
+   "kind": "plain",
+   "name": "falls back toward the end of the lane the branch was aiming at"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "still translates when a stale lane has the same length but different members"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 106,
+   "kind": "plain",
+   "name": "clamps out-of-range filtered indices to the first and last branches"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 124,
+   "kind": "plain",
+   "name": "workspace lane full-id channel"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "round-trips lane membership through the delimiter"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "distinguishes an unpublished lane from an empty one"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "survives ids holding every character a path can legally contain"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "matchWorkspaceBoardWorktrees"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "treats blank and whitespace-only queries as no filtering"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 45,
+   "kind": "plain",
+   "name": "matches display name, branch, and repo display name"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 57,
+   "kind": "plain",
+   "name": "matches the workspace comment"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 66,
+   "kind": "plain",
+   "name": "excludes worktrees that only match on PR, issue, or port"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "matches composite repo/branch queries"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "is case-insensitive"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 90,
+   "kind": "plain",
+   "name": "treats regex metacharacters as literal text"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "matches non-ASCII display names and comments"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 113,
+   "kind": "plain",
+   "name": "treats an over-bound query as no filtering rather than zero matches"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 121,
+   "kind": "plain",
+   "name": "separates two same-id host rows"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 136,
+   "kind": "plain",
+   "name": "buildWorkspaceKanbanLaneViews"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 144,
+   "kind": "plain",
+   "name": "reuses the input arrays when no query is active"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 152,
+   "kind": "plain",
+   "name": "preserves lane order and per-lane sort order"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-search.test.ts",
+   "line": 162,
+   "kind": "plain",
+   "name": "keeps a fully filtered lane with an empty item list and its real total"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 328,
+   "kind": "plain",
+   "name": "workspace kanban sidebar drop DOM bridge"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 329,
+   "kind": "plain",
+   "name": "resolves the board lane and rendered card index under a sidebar pointer drag"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 343,
+   "kind": "plain",
+   "name": "prefers complete registered groups and restores the DOM fallback on cleanup"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 360,
+   "kind": "plain",
+   "name": "uses the full virtual layout when the mounted card window is stale"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 408,
+   "kind": "plain",
+   "name": "prefers the published full lane membership over the rendered card scan"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 419,
+   "kind": "plain",
+   "name": "keeps the tracked drop target in the rendered index space of the indicator"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 431,
+   "kind": "plain",
+   "name": "translates a rendered drop index onto the full lane at the commit boundary"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 444,
+   "kind": "plain",
+   "name": "lands a virtualized searched lane drop where the indicator pointed"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 462,
+   "kind": "plain",
+   "name": "translates virtualized searched lane drops above and below the mounted window"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 479,
+   "kind": "plain",
+   "name": "passes a virtualized unfiltered lane drop index through untranslated"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 496,
+   "kind": "plain",
+   "name": "still counts unlaid-out cards as lane members without a virtual layout"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 512,
+   "kind": "plain",
+   "name": "passes the drop index through for a lane it cannot find"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 518,
+   "kind": "plain",
+   "name": "marks and clears the external board hover target"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 537,
+   "kind": "plain",
+   "name": "detects pointer entry across the whole board sheet"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 553,
+   "kind": "plain",
+   "name": "workspace kanban sidebar drop updates"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 554,
+   "kind": "plain",
+   "name": "writes a status-only update for cross-lane drops outside Manual sort"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 582,
+   "kind": "plain",
+   "name": "keeps the dropped board position when Manual sort is active"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+   "line": 618,
+   "kind": "plain",
+   "name": "keeps board drops sparse when filtered rows already have durable ranks"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts",
+   "line": 57,
+   "kind": "plain",
+   "name": "workspace kanban virtual lane layout"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts",
+   "line": 58,
+   "kind": "plain",
+   "name": "resolves mid-lane and bottom drops immediately after a large scroll jump"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts",
+   "line": 69,
+   "kind": "plain",
+   "name": "exposes every logical item even when no card is mounted"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts",
+   "line": 85,
+   "kind": "plain",
+   "name": "selects intermediate never-mounted cards across a jumped lane range"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts",
+   "line": 110,
+   "kind": "plain",
+   "name": "does not let stale cleanup remove a newer lane registration"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "places empty-lane and boundary drop indicators from the spacer"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts",
+   "line": 152,
+   "kind": "plain",
+   "name": "returns null when measurements are incomplete or mismatched"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "groupWorkspaceKanbanWorktrees"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "uses manualOrder inside lanes when Manual sort is active"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "does not crash when a worktree is missing its displayName under Manual sort"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+   "line": 105,
+   "kind": "plain",
+   "name": "does not crash when a worktree is missing its displayName outside Manual sort"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+   "line": 130,
+   "kind": "plain",
+   "name": "keeps pinned then recent ordering outside Manual sort"
+  },
+  {
+   "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+   "line": 157,
+   "kind": "plain",
+   "name": "does not admit another host row that shares the visible workspace id"
+  }
+ ]
+}

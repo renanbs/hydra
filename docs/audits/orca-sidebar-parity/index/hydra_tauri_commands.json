@@ -1,0 +1,552 @@
+[
+ {
+  "cmd": "get_system_status",
+  "file": "src-tauri/src/lib.rs",
+  "line": 67
+ },
+ {
+  "cmd": "get_app_version",
+  "file": "src-tauri/src/lib.rs",
+  "line": 72
+ },
+ {
+  "cmd": "check_preflight_tools_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 76
+ },
+ {
+  "cmd": "check_github_starred_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 85
+ },
+ {
+  "cmd": "star_github_repo_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 91
+ },
+ {
+  "cmd": "open_external_url_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 97
+ },
+ {
+  "cmd": "get_repo_git_status",
+  "file": "src-tauri/src/lib.rs",
+  "line": 103
+ },
+ {
+  "cmd": "get_repo_git_status_for_path",
+  "file": "src-tauri/src/lib.rs",
+  "line": 108
+ },
+ {
+  "cmd": "get_detailed_git_status_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 113
+ },
+ {
+  "cmd": "git_stage",
+  "file": "src-tauri/src/lib.rs",
+  "line": 118
+ },
+ {
+  "cmd": "git_unstage",
+  "file": "src-tauri/src/lib.rs",
+  "line": 122
+ },
+ {
+  "cmd": "git_discard",
+  "file": "src-tauri/src/lib.rs",
+  "line": 126
+ },
+ {
+  "cmd": "git_commit_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 130
+ },
+ {
+  "cmd": "git_commit_amend_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 134
+ },
+ {
+  "cmd": "git_diff_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 138
+ },
+ {
+  "cmd": "list_directory_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 143
+ },
+ {
+  "cmd": "read_file_text_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 147
+ },
+ {
+  "cmd": "search_files_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 151
+ },
+ {
+  "cmd": "get_git_history_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 155
+ },
+ {
+  "cmd": "git_stage_all_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 159
+ },
+ {
+  "cmd": "git_unstage_all_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 163
+ },
+ {
+  "cmd": "check_git_ignored_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 167
+ },
+ {
+  "cmd": "get_diff_numstat_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 171
+ },
+ {
+  "cmd": "git_rename_branch_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 175
+ },
+ {
+  "cmd": "create_file_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 181
+ },
+ {
+  "cmd": "create_folder_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 185
+ },
+ {
+  "cmd": "rename_path_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 189
+ },
+ {
+  "cmd": "delete_path_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 193
+ },
+ {
+  "cmd": "path_exists",
+  "file": "src-tauri/src/lib.rs",
+  "line": 199
+ },
+ {
+  "cmd": "get_branch_commits_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 205
+ },
+ {
+  "cmd": "git_push_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 209
+ },
+ {
+  "cmd": "git_pull_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 213
+ },
+ {
+  "cmd": "git_stage_paths_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 217
+ },
+ {
+  "cmd": "git_unstage_paths_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 221
+ },
+ {
+  "cmd": "get_submodule_paths_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 225
+ },
+ {
+  "cmd": "git_stash_list_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 229
+ },
+ {
+  "cmd": "git_stash_push_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 233
+ },
+ {
+  "cmd": "git_stash_pop_cmd",
+  "file": "src-tauri/src/lib.rs",
+  "line": 237
+ },
+ {
+  "cmd": "open_in_file_manager",
+  "file": "src-tauri/src/lib.rs",
+  "line": 242
+ },
+ {
+  "cmd": "open_in_external_editor",
+  "file": "src-tauri/src/lib.rs",
+  "line": 256
+ },
+ {
+  "cmd": "catalog_get",
+  "file": "src-tauri/src/lib.rs",
+  "line": 270
+ },
+ {
+  "cmd": "catalog_add_folder",
+  "file": "src-tauri/src/lib.rs",
+  "line": 277
+ },
+ {
+  "cmd": "catalog_remove_repo",
+  "file": "src-tauri/src/lib.rs",
+  "line": 289
+ },
+ {
+  "cmd": "catalog_set_worktree_visibility",
+  "file": "src-tauri/src/lib.rs",
+  "line": 304
+ },
+ {
+  "cmd": "catalog_set_worktree_visibility_sources",
+  "file": "src-tauri/src/lib.rs",
+  "line": 332
+ },
+ {
+  "cmd": "list_projects",
+  "file": "src-tauri/src/lib.rs",
+  "line": 361
+ },
+ {
+  "cmd": "register_existing_project",
+  "file": "src-tauri/src/lib.rs",
+  "line": 366
+ },
+ {
+  "cmd": "remove_project",
+  "file": "src-tauri/src/lib.rs",
+  "line": 380
+ },
+ {
+  "cmd": "get_project_worktree_base",
+  "file": "src-tauri/src/lib.rs",
+  "line": 385
+ },
+ {
+  "cmd": "set_project_worktree_base",
+  "file": "src-tauri/src/lib.rs",
+  "line": 390
+ },
+ {
+  "cmd": "list_worktrees",
+  "file": "src-tauri/src/lib.rs",
+  "line": 395
+ },
+ {
+  "cmd": "scan_worktrees",
+  "file": "src-tauri/src/lib.rs",
+  "line": 399
+ },
+ {
+  "cmd": "pr_status",
+  "file": "src-tauri/src/lib.rs",
+  "line": 410
+ },
+ {
+  "cmd": "import_worktree",
+  "file": "src-tauri/src/lib.rs",
+  "line": 418
+ },
+ {
+  "cmd": "suppress_worktree_inbox",
+  "file": "src-tauri/src/lib.rs",
+  "line": 423
+ },
+ {
+  "cmd": "create_project",
+  "file": "src-tauri/src/lib.rs",
+  "line": 428
+ },
+ {
+  "cmd": "clone_project",
+  "file": "src-tauri/src/lib.rs",
+  "line": 445
+ },
+ {
+  "cmd": "create_worktree",
+  "file": "src-tauri/src/lib.rs",
+  "line": 457
+ },
+ {
+  "cmd": "delete_worktree",
+  "file": "src-tauri/src/lib.rs",
+  "line": 476
+ },
+ {
+  "cmd": "set_worktree_display_name",
+  "file": "src-tauri/src/lib.rs",
+  "line": 505
+ },
+ {
+  "cmd": "set_worktree_rename_error",
+  "file": "src-tauri/src/lib.rs",
+  "line": 514
+ },
+ {
+  "cmd": "set_worktree_status",
+  "file": "src-tauri/src/lib.rs",
+  "line": 523
+ },
+ {
+  "cmd": "auto_rename_worktree",
+  "file": "src-tauri/src/lib.rs",
+  "line": 532
+ },
+ {
+  "cmd": "scan_workspace_ports",
+  "file": "src-tauri/src/lib.rs",
+  "line": 584
+ },
+ {
+  "cmd": "kill_port_process",
+  "file": "src-tauri/src/lib.rs",
+  "line": 595
+ },
+ {
+  "cmd": "get_layout_persistence",
+  "file": "src-tauri/src/lib.rs",
+  "line": 626
+ },
+ {
+  "cmd": "save_layout_persistence",
+  "file": "src-tauri/src/lib.rs",
+  "line": 631
+ },
+ {
+  "cmd": "get_workbench_persistence",
+  "file": "src-tauri/src/lib.rs",
+  "line": 636
+ },
+ {
+  "cmd": "save_workbench_persistence",
+  "file": "src-tauri/src/lib.rs",
+  "line": 641
+ },
+ {
+  "cmd": "get_workbench_persistence_for_project",
+  "file": "src-tauri/src/lib.rs",
+  "line": 646
+ },
+ {
+  "cmd": "save_workbench_persistence_for_project",
+  "file": "src-tauri/src/lib.rs",
+  "line": 654
+ },
+ {
+  "cmd": "save_sidebar_pref",
+  "file": "src-tauri/src/lib.rs",
+  "line": 667
+ },
+ {
+  "cmd": "get_sidebar_pref",
+  "file": "src-tauri/src/lib.rs",
+  "line": 672
+ },
+ {
+  "cmd": "list_available_agents",
+  "file": "src-tauri/src/lib.rs",
+  "line": 677
+ },
+ {
+  "cmd": "list_available_shells",
+  "file": "src-tauri/src/lib.rs",
+  "line": 682
+ },
+ {
+  "cmd": "get_default_system_shell",
+  "file": "src-tauri/src/lib.rs",
+  "line": 686
+ },
+ {
+  "cmd": "list_persisted_sessions",
+  "file": "src-tauri/src/lib.rs",
+  "line": 692
+ },
+ {
+  "cmd": "save_session_record",
+  "file": "src-tauri/src/lib.rs",
+  "line": 700
+ },
+ {
+  "cmd": "delete_session_record",
+  "file": "src-tauri/src/lib.rs",
+  "line": 705
+ },
+ {
+  "cmd": "start_agent_terminal",
+  "file": "src-tauri/src/lib.rs",
+  "line": 722
+ },
+ {
+  "cmd": "resize_terminal",
+  "file": "src-tauri/src/lib.rs",
+  "line": 807
+ },
+ {
+  "cmd": "send_terminal_input",
+  "file": "src-tauri/src/lib.rs",
+  "line": 825
+ },
+ {
+  "cmd": "get_terminal_snapshot",
+  "file": "src-tauri/src/lib.rs",
+  "line": 842
+ },
+ {
+  "cmd": "check_agent_state",
+  "file": "src-tauri/src/lib.rs",
+  "line": 906
+ },
+ {
+  "cmd": "check_agent_detailed_status",
+  "file": "src-tauri/src/lib.rs",
+  "line": 918
+ },
+ {
+  "cmd": "get_folded_logs",
+  "file": "src-tauri/src/lib.rs",
+  "line": 943
+ },
+ {
+  "cmd": "get_session_state_history",
+  "file": "src-tauri/src/lib.rs",
+  "line": 961
+ },
+ {
+  "cmd": "save_chat_message",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1030
+ },
+ {
+  "cmd": "get_session_messages",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1043
+ },
+ {
+  "cmd": "get_pairing_qr",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1054
+ },
+ {
+  "cmd": "get_settings",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1062
+ },
+ {
+  "cmd": "save_settings",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1067
+ },
+ {
+  "cmd": "list_terminal_sessions",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1089
+ },
+ {
+  "cmd": "poll_terminal_output",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1106
+ },
+ {
+  "cmd": "create_split_terminal",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1123
+ },
+ {
+  "cmd": "close_split_terminal",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1221
+ },
+ {
+  "cmd": "is_daemon_available",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1246
+ },
+ {
+  "cmd": "get_keep_awake_status",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1251
+ },
+ {
+  "cmd": "sync_keep_awake",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1256
+ },
+ {
+  "cmd": "set_keep_awake_working_count",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1273
+ },
+ {
+  "cmd": "resolve_tool_approval",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1289
+ },
+ {
+  "cmd": "list_tool_approvals",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1363
+ },
+ {
+  "cmd": "create_tool_approval",
+  "file": "src-tauri/src/lib.rs",
+  "line": 1371
+ },
+ {
+  "cmd": "preview_ghostty_import",
+  "file": "src-tauri/src/theme_import.rs",
+  "line": 337
+ },
+ {
+  "cmd": "preview_warp_themes",
+  "file": "src-tauri/src/theme_import.rs",
+  "line": 445
+ },
+ {
+  "cmd": "choose_warp_themes_file",
+  "file": "src-tauri/src/theme_import.rs",
+  "line": 501
+ },
+ {
+  "cmd": "window_minimize",
+  "file": "src-tauri/src/window_actions.rs",
+  "line": 4
+ },
+ {
+  "cmd": "window_toggle_maximize",
+  "file": "src-tauri/src/window_actions.rs",
+  "line": 18
+ },
+ {
+  "cmd": "window_close",
+  "file": "src-tauri/src/window_actions.rs",
+  "line": 33
+ },
+ {
+  "cmd": "window_start_dragging",
+  "file": "src-tauri/src/window_actions.rs",
+  "line": 43
+ }
+]

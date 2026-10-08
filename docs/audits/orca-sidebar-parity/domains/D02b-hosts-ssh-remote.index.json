@@ -1,0 +1,1291 @@
+{
+ "exports": {
+  "components/sidebar/AddRemoteHostDialog.tsx": [
+   "AddRemoteHostMode",
+   "AddRemoteHostDialog"
+  ],
+  "components/sidebar/AddRemoteHostFields.tsx": [
+   "SshHostFields",
+   "RemoteServerFields"
+  ],
+  "components/sidebar/AddRemoteHostServerFormPanel.tsx": [
+   "AddRemoteHostServerFormPanel"
+  ],
+  "components/sidebar/AddRemoteHostSshConfigPicker.tsx": [
+   "AddRemoteHostSshConfigPicker"
+  ],
+  "components/sidebar/AddRemoteHostSshFormPanel.tsx": [
+   "AddRemoteHostSshFormPanel"
+  ],
+  "components/sidebar/ForgetSshWorkspaceDialog.tsx": [
+   "ForgetSshWorkspaceDialog",
+   "default"
+  ],
+  "components/sidebar/HostRemoveDialog.tsx": [
+   "HostRemoveDialog"
+  ],
+  "components/sidebar/HostRenameDialog.tsx": [
+   "HostRenameDialog"
+  ],
+  "components/sidebar/HostSectionHeaderMenu.tsx": [
+   "HostSectionHeaderMenu"
+  ],
+  "components/sidebar/RemoteFileBrowser.tsx": [
+   "RemoteFileBrowser"
+  ],
+  "components/sidebar/RemoteFileBrowserBreadcrumbs.tsx": [
+   "RemoteFileBrowserBreadcrumbs"
+  ],
+  "components/sidebar/RemoteFileBrowserEntryList.tsx": [
+   "RemoteFileBrowserEntryList"
+  ],
+  "components/sidebar/SshTargetRow.tsx": [
+   "SshTargetRow"
+  ],
+  "components/sidebar/add-remote-host-ssh-actions.ts": [
+   "saveNewSshHostFromForm",
+   "prefillFormFromSshConfigHost",
+   "addAllSshConfigHostsToOrca",
+   "loadSshConfigHostsForPicker"
+  ],
+  "components/sidebar/host-header-menu-items.ts": [
+   "HostHeaderMenuAction",
+   "HostHeaderMenuModel",
+   "HostHeaderMenuInput",
+   "buildHostHeaderMenuModel"
+  ],
+  "components/sidebar/host-rename-remove.ts": [
+   "getHostDisplayLabelOverride",
+   "applyHostRename",
+   "clearHostRename",
+   "HostRemovalTarget",
+   "resolveHostRemoval"
+  ],
+  "components/sidebar/remote-file-browser-drive-paths.ts": [
+   "BrowsePathParts",
+   "isDrivePath",
+   "isDriveRoot",
+   "driveRootOf",
+   "splitBrowsePath",
+   "joinDrivePath",
+   "parentOfDrivePath",
+   "driveBreadcrumbPath"
+  ],
+  "components/sidebar/remote-file-browser-helpers.ts": [
+   "DirEntry",
+   "REMOTE_FILE_BROWSER_FILTER_QUERY_MAX_BYTES",
+   "isRemoteFileBrowserFilterQueryTooLarge",
+   "filterEntries",
+   "EnterAction",
+   "decideEnterAction",
+   "EscAction",
+   "decideEscAction",
+   "joinPath",
+   "parentPath",
+   "ParsedInput",
+   "isPathMode",
+   "isRemoteFileBrowserPathResolveTextTooLarge",
+   "shouldDeferRemoteFileBrowserPasteResolve",
+   "parsePathInput",
+   "SegmentOutcome",
+   "resolveSegmentStep"
+  ],
+  "components/sidebar/remote-file-browser-path-preview-resolver.ts": [
+   "PreviewState",
+   "ResolvePathInputArgs",
+   "resolvePathInput",
+   "committedPrefix"
+  ],
+  "components/sidebar/ssh-host-remove-resolution.ts": [
+   "SshHostRemoveResolution",
+   "resolveSshHostRemoval"
+  ],
+  "components/sidebar/ssh-host-remove-workspaces.ts": [
+   "ClearSshHostWorkspacesResult",
+   "clearSshHostWorkspaces"
+  ],
+  "components/sidebar/ssh-target-duplicate.ts": [
+   "isDuplicateSshTargetAlias"
+  ],
+  "components/sidebar/ssh-workspace-forget-resolution.ts": [
+   "SshWorkspaceForgetResolution",
+   "resolveSshWorkspaceForget"
+  ],
+  "components/sidebar/use-remote-file-browser-filter-key-commands.ts": [
+   "RemoteFileBrowserFilterKeyCommandsArgs",
+   "useRemoteFileBrowserFilterKeyCommands"
+  ],
+  "components/sidebar/use-remote-file-browser-listing.ts": [
+   "BrowseResult",
+   "FetchListing",
+   "RemoteFileBrowserListing",
+   "useRemoteFileBrowserListing"
+  ],
+  "components/sidebar/use-remote-file-browser-path-preview.ts": [
+   "RemoteFileBrowserPathPreviewArgs",
+   "RemoteFileBrowserPathPreview",
+   "useRemoteFileBrowserPathPreview"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/AddRemoteHostFields.tsx",
+   "line": 49,
+   "text": "onChange={(event) => onFormChange((draft) => ({ ...draft, label: event.target.value }))}"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.tsx",
+   "line": 50,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.tsx",
+   "line": 67,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.tsx",
+   "line": 84,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.tsx",
+   "line": 102,
+   "text": "placeholder=\"22\""
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.tsx",
+   "line": 116,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.tsx",
+   "line": 189,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.tsx",
+   "line": 206,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+   "line": 90,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+   "line": 96,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+   "line": 156,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/HostRemoveDialog.tsx",
+   "line": 30,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/HostRenameDialog.tsx",
+   "line": 78,
+   "text": "placeholder={derivedLabel}"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 18,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 23,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 186,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 213,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 219,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 232,
+   "text": "<DropdownMenuItem onSelect={() => setRenameOpen(true)}>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 235,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 238,
+   "text": "<DropdownMenuItem onSelect={() => void runSshAction('connect')}>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 241,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 244,
+   "text": "<DropdownMenuItem onSelect={() => void runSshAction('disconnect')}>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 247,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 250,
+   "text": "<DropdownMenuItem onSelect={() => void handleCheckConnection()}>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 256,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 259,
+   "text": "<DropdownMenuItem onSelect={handleManage}>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 262,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 266,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 275,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.tsx",
+   "line": 256,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.tsx",
+   "line": 299,
+   "text": "title={fileHint ? undefined : resolvedPath}"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.tsx",
+   "line": 318,
+   "text": "title={resolvedPath}"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 77,
+   "text": "label: 'prod',"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 129,
+   "text": "targets: [{ id: 'ssh-1', label: 'prod', host: 'prod', port: 22, username: '' }],"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.ts",
+   "line": 87,
+   "text": "label: form.label.trim() || (username ? `${username}@${host}` : configHost || host),"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.ts",
+   "line": 106,
+   "text": "label: target.label,"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 8,
+   "text": "existingTargets: [{ configHost: 'staging', label: 'Staging', host: '10.0.0.1' }],"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 10,
+   "text": "label: 'Staging box',"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 19,
+   "text": "existingTargets: [{ label: 'prod-box', host: 'prod-box' }],"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 21,
+   "text": "label: 'prod-box',"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 30,
+   "text": "existingTargets: [{ configHost: 'Staging', label: 'Staging', host: '10.0.0.1' }],"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 32,
+   "text": "label: 'staging',"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 43,
+   "text": "existingTargets: [{ configHost: 'box1', label: 'prod', host: '10.0.0.1' }],"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 45,
+   "text": "label: 'Prod',"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 54,
+   "text": "existingTargets: [{ configHost: 'staging', label: 'staging', host: 's.example' }],"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 56,
+   "text": "label: 'prod',"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.ts",
+   "line": 13,
+   "text": "label: string"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/RemoteFileBrowser.paste.test.tsx",
+   "line": 121,
+   "text": "input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))"
+  },
+  {
+   "file": "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+   "line": 1,
+   "text": "import { useCallback, type Dispatch, type KeyboardEvent, type SetStateAction } from 'react'"
+  },
+  {
+   "file": "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+   "line": 43,
+   "text": "}: RemoteFileBrowserFilterKeyCommandsArgs): (e: KeyboardEvent<HTMLInputElement>) => void {"
+  },
+  {
+   "file": "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+   "line": 45,
+   "text": "(e: KeyboardEvent<HTMLInputElement>) => {"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+   "line": 46,
+   "text": "const queryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+   "line": 88,
+   "text": "queryTimer.current = setTimeout(() => onQueryChange(value), 200)"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.tsx",
+   "line": 43,
+   "text": "const fileHintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.tsx",
+   "line": 44,
+   "text": "const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.tsx",
+   "line": 163,
+   "text": "fileHintTimerRef.current = setTimeout(() => {"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.tsx",
+   "line": 186,
+   "text": "clickTimerRef.current = setTimeout(() => {"
+  },
+  {
+   "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+   "line": 60,
+   "text": "const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+  },
+  {
+   "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+   "line": 62,
+   "text": "const pasteResolveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)"
+  },
+  {
+   "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+   "line": 165,
+   "text": "debounceTimerRef.current = setTimeout(() => {"
+  },
+  {
+   "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+   "line": 185,
+   "text": "pasteResolveTimerRef.current = setTimeout(() => {"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+   "line": 47,
+   "text": "useEffect("
+  },
+  {
+   "file": "components/sidebar/HostRenameDialog.tsx",
+   "line": 39,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.tsx",
+   "line": 138,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.tsx",
+   "line": 114,
+   "text": "ssh: window.api.ssh,"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.tsx",
+   "line": 134,
+   "text": "const result = await loadSshConfigHostsForPicker(window.api.ssh, {"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.tsx",
+   "line": 172,
+   "text": "resolved = await prefillFormFromSshConfigHost(host, window.api.ssh)"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.tsx",
+   "line": 220,
+   "text": "ssh: window.api.ssh,"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.tsx",
+   "line": 268,
+   "text": "const result = await window.api.runtimeEnvironments.verifyAndAddFromPairingCode({"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.tsx",
+   "line": 284,
+   "text": "const environments = await window.api.runtimeEnvironments.list()"
+  },
+  {
+   "file": "components/sidebar/ForgetSshWorkspaceDialog.tsx",
+   "line": 78,
+   "text": "await window.api.ssh.connect({ targetId: resolution.targetId })"
+  },
+  {
+   "file": "components/sidebar/HostRemoveDialog.tsx",
+   "line": 81,
+   "text": "await removeSshTargetWithBestEffortCleanup(window.api.ssh, targetId)"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 106,
+   "text": "await window.api.ssh[action]({ targetId: parsed.targetId })"
+  },
+  {
+   "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+   "line": 140,
+   "text": "const response = await window.api.runtimeEnvironments.getStatus({"
+  },
+  {
+   "file": "components/sidebar/use-remote-file-browser-listing.ts",
+   "line": 35,
+   "text": "? await window.api.ssh.browseDir({ targetId, dirPath })"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 99,
+   "kind": "plain",
+   "name": "SSH config picker host selection"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 100,
+   "kind": "plain",
+   "name": "drops a resolve that lands after the user backs out of the picker"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 114,
+   "kind": "plain",
+   "name": "keeps the host the user settled on when an earlier resolve lands late"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 140,
+   "kind": "plain",
+   "name": "freezes the other rows while a pick is resolving"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 157,
+   "kind": "plain",
+   "name": "SSH config picker tombstoned hosts"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 158,
+   "kind": "plain",
+   "name": "keeps a previously removed host pickable while an adopted one stays disabled"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 178,
+   "kind": "plain",
+   "name": "never claims the config is empty when every host is only tombstoned"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 191,
+   "kind": "plain",
+   "name": "still shows the empty state when the config really has no hosts"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 201,
+   "kind": "plain",
+   "name": "SSH config picker bulk add"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+   "line": 202,
+   "kind": "plain",
+   "name": "adds only new hosts and never re-adopts deleted aliases"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.test.tsx",
+   "line": 17,
+   "kind": "plain",
+   "name": "RemoteServerFields"
+  },
+  {
+   "file": "components/sidebar/AddRemoteHostFields.test.tsx",
+   "line": 18,
+   "kind": "plain",
+   "name": "associates blocked loopback guidance with the access-link input"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.paste.test.tsx",
+   "line": 69,
+   "kind": "plain",
+   "name": "RemoteFileBrowser paste-sized input"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.paste.test.tsx",
+   "line": 95,
+   "kind": "plain",
+   "name": "still debounces and resolves ordinary path-mode input"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.paste.test.tsx",
+   "line": 111,
+   "kind": "plain",
+   "name": "navigates a typed Windows drive root and renders its breadcrumb"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.paste.test.tsx",
+   "line": 133,
+   "kind": "plain",
+   "name": "keeps a drive-shaped POSIX directory as an ordinary filtered row"
+  },
+  {
+   "file": "components/sidebar/RemoteFileBrowser.paste.test.tsx",
+   "line": 149,
+   "kind": "plain",
+   "name": "does not parse or remotely resolve oversized slash-containing paste text"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "individual SSH config host selection"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 27,
+   "kind": "plain",
+   "name": "saves effective values while leaving all config identities authoritative"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "manual SSH host label fallback"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "labels a bare host with its hostname instead of an empty string"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 120,
+   "kind": "plain",
+   "name": "bulk add of ~/.ssh/config hosts"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 127,
+   "kind": "plain",
+   "name": "imports without re-adopting deleted aliases"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 152,
+   "kind": "plain",
+   "name": "reports already-synced without clearing tombstones"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 172,
+   "kind": "plain",
+   "name": "SSH config picker response admission"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 173,
+   "kind": "plain",
+   "name": "accepts the legacy preload array without exposing an unbounded row list"
+  },
+  {
+   "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+   "line": 197,
+   "kind": "plain",
+   "name": "explains when a live renderer still has the older preload API"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 4,
+   "kind": "plain",
+   "name": "buildHostHeaderMenuModel"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 5,
+   "kind": "plain",
+   "name": "offers Focus + Rename + Manage for the local host (no Remove)"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "offers Reconnect + Remove for a disconnected SSH host"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 21,
+   "kind": "plain",
+   "name": "offers Disconnect + Remove for a connected SSH host"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "offers Check connection + Remove for a runtime host"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "offers Rename for every host kind"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 41,
+   "kind": "plain",
+   "name": "offers Remove only for ssh and runtime hosts"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 53,
+   "kind": "plain",
+   "name": "surfaces a server-too-old block for a blocked runtime host"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 69,
+   "kind": "plain",
+   "name": "surfaces a client-too-old block per verdict reason"
+  },
+  {
+   "file": "components/sidebar/host-header-menu-items.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "does not surface a block when health is not blocked"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "host rename helpers"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "reads the current display-label override"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "applies a rename"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "clears the override when renamed to blank"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 27,
+   "kind": "plain",
+   "name": "resets a rename to the derived label"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "resolveHostRemoval"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 40,
+   "kind": "plain",
+   "name": "resolves an ssh host to its target id"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 44,
+   "kind": "plain",
+   "name": "resolves a runtime host to its environment id"
+  },
+  {
+   "file": "components/sidebar/host-rename-remove.test.ts",
+   "line": 51,
+   "kind": "plain",
+   "name": "returns null for the local host"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "isDrivePath"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "accepts drive anchors with either separator, bare colon, and any case"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "rejects POSIX paths and ordinary filter text"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "driveRootOf / isDriveRoot"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "normalizes any drive anchor to an uppercase backslash root"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "treats M:, M:\\\\ and M:/ as roots but not deeper paths"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "splitBrowsePath"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "splits drive paths on either separator"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "keeps POSIX paths in the POSIX shape"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 66,
+   "kind": "plain",
+   "name": "joinDrivePath / parentOfDrivePath"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "joins with a backslash without doubling the root separator"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "walks up to the drive root and then to the host root"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 79,
+   "kind": "plain",
+   "name": "driveBreadcrumbPath"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+   "line": 80,
+   "kind": "plain",
+   "name": "rebuilds absolute paths for breadcrumb clicks"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 26,
+   "kind": "plain",
+   "name": "filterEntries"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 27,
+   "kind": "plain",
+   "name": "substring-matches case-insensitively across files and folders"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "returns the full list when filter is empty or whitespace"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "rejects oversized pasted filters before reading remote entry names"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 52,
+   "kind": "plain",
+   "name": "rejects oversized whitespace before trimming remote entry filters"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 59,
+   "kind": "plain",
+   "name": "decideEnterAction"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "navigates when filter matches exactly one folder (files alongside do not block)"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 65,
+   "kind": "plain",
+   "name": "is a no-op when multiple folders match"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 70,
+   "kind": "plain",
+   "name": "shows the file hint when only files match"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "is a no-op on empty filtered list"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 80,
+   "kind": "plain",
+   "name": "decideEscAction"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "clears a non-empty filter"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 85,
+   "kind": "plain",
+   "name": "cancels when filter is empty"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 90,
+   "kind": "plain",
+   "name": "parentPath"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 91,
+   "kind": "plain",
+   "name": "strips last segment"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "stays at root"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 97,
+   "kind": "plain",
+   "name": "returns root for single-segment absolute"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "isPathMode"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "treats plain names as filter mode"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 109,
+   "kind": "plain",
+   "name": "treats any "
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 115,
+   "kind": "plain",
+   "name": "treats bare base markers as path mode"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 122,
+   "kind": "plain",
+   "name": "shouldDeferRemoteFileBrowserPasteResolve"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "keeps small path and filter pastes on the immediate resolver path"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "defers large text-control pastes to the chunked paste owner"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 132,
+   "kind": "plain",
+   "name": "defers multibyte paste text using bounded byte measurement"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 136,
+   "kind": "plain",
+   "name": "treats oversized slash-containing paste as too large for path resolving"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 143,
+   "kind": "plain",
+   "name": "parsePathInput"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 144,
+   "kind": "plain",
+   "name": "no slash stays in filter mode"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 220,
+   "kind": "plain",
+   "name": "reports repeated separators as invalid"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 228,
+   "kind": "plain",
+   "name": "preserves spaces inside segments"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 237,
+   "kind": "plain",
+   "name": "preserves leading/trailing spaces in the full input"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 250,
+   "kind": "plain",
+   "name": "resolveSegmentStep"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 258,
+   "kind": "plain",
+   "name": "exact directory match descends"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 265,
+   "kind": "plain",
+   "name": "unique prefix descends"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 272,
+   "kind": "plain",
+   "name": "ambiguous prefix errors"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 280,
+   "kind": "plain",
+   "name": "missing segment errors"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 285,
+   "kind": "plain",
+   "name": "exact file match reports not-a-directory instead of prefix-descending"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 303,
+   "kind": "plain",
+   "name": "case-insensitive exact match descends when no case-sensitive match exists"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 310,
+   "kind": "plain",
+   "name": "case-insensitive unique prefix descends"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 317,
+   "kind": "plain",
+   "name": "case-sensitive exact match wins over a case-insensitive peer"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 332,
+   "kind": "plain",
+   "name": "case-insensitive ambiguous prefix errors"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 341,
+   "kind": "plain",
+   "name": "Windows drive paths"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 342,
+   "kind": "plain",
+   "name": "isPathMode triggers on drive-anchored input"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 351,
+   "kind": "plain",
+   "name": "keeps drive-shaped POSIX names in filter and child-path semantics"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 358,
+   "kind": "plain",
+   "name": "parsePathInput anchors drive input at the normalized drive root"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 382,
+   "kind": "plain",
+   "name": "parsePathInput rejects repeated separators in drive input, either kind"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 392,
+   "kind": "plain",
+   "name": "joinPath treats drive rows in the host-root listing as absolute"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 397,
+   "kind": "plain",
+   "name": "joinPath appends with a backslash inside a drive"
+  },
+  {
+   "file": "components/sidebar/remote-file-browser-helpers.test.ts",
+   "line": 402,
+   "kind": "plain",
+   "name": "parentPath climbs drive paths and exits to the host root"
+  },
+  {
+   "file": "components/sidebar/ssh-host-remove-resolution.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "resolveSshHostRemoval"
+  },
+  {
+   "file": "components/sidebar/ssh-host-remove-resolution.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "collects non-main worktrees and root repos on the target"
+  },
+  {
+   "file": "components/sidebar/ssh-host-remove-resolution.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "ignores repos and worktrees on other hosts"
+  },
+  {
+   "file": "components/sidebar/ssh-host-remove-resolution.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "reports connected when the target relay is connected"
+  },
+  {
+   "file": "components/sidebar/ssh-host-remove-resolution.test.ts",
+   "line": 59,
+   "kind": "plain",
+   "name": "reports zero workspaces for a target nothing points at"
+  },
+  {
+   "file": "components/sidebar/ssh-host-remove-resolution.test.ts",
+   "line": 70,
+   "kind": "plain",
+   "name": "dedupes duplicate repo and worktree rows so the count is not inflated"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 4,
+   "kind": "plain",
+   "name": "isDuplicateSshTargetAlias"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 5,
+   "kind": "plain",
+   "name": "matches by configHost alias"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "matches by label when configHost is empty"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 27,
+   "kind": "plain",
+   "name": "matches case-only alias variants like the config picker does"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 40,
+   "kind": "plain",
+   "name": "matches an existing label even when that target has a different configHost"
+  },
+  {
+   "file": "components/sidebar/ssh-target-duplicate.test.ts",
+   "line": 51,
+   "kind": "plain",
+   "name": "returns false for a new alias"
+  },
+  {
+   "file": "components/sidebar/ssh-workspace-forget-resolution.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "resolveSshWorkspaceForget"
+  },
+  {
+   "file": "components/sidebar/ssh-workspace-forget-resolution.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "returns not-ssh for a repo with no connectionId"
+  },
+  {
+   "file": "components/sidebar/ssh-workspace-forget-resolution.test.ts",
+   "line": 26,
+   "kind": "plain",
+   "name": "returns not-ssh for a runtime-owned target"
+  },
+  {
+   "file": "components/sidebar/ssh-workspace-forget-resolution.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "returns ghost when the target is no longer configured"
+  },
+  {
+   "file": "components/sidebar/ssh-workspace-forget-resolution.test.ts",
+   "line": 44,
+   "kind": "plain",
+   "name": "returns connected when the configured target is connected"
+  },
+  {
+   "file": "components/sidebar/ssh-workspace-forget-resolution.test.ts",
+   "line": 53,
+   "kind": "plain",
+   "name": "returns disconnected when configured but not connected"
+  },
+  {
+   "file": "components/sidebar/ssh-workspace-forget-resolution.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "defaults to disconnected status when configured target has no live state"
+  }
+ ]
+}

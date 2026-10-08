@@ -1,0 +1,1458 @@
+{
+ "steps": {
+  "static_sidebar": [
+   {
+    "tag": "div",
+    "role": "presentation",
+    "name": "orca-e2e-repo-uwC3SPInactivemasterprimarymasterInactivee2e-secondarye2e-secondary",
+    "testid": null,
+    "data": {},
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     4,
+     221,
+     272,
+     140
+    ],
+    "cursor": "auto"
+   },
+   {
+    "tag": "div",
+    "role": "presentation",
+    "name": "orca-e2e-repo-uwC3SP",
+    "testid": null,
+    "data": {
+     "data-worktree-virtual-row": "true",
+     "data-worktree-virtual-row-key": "hdr:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+     "data-worktree-virtual-row-start": "0",
+     "data-worktree-sticky-header": "",
+     "data-worktree-sticky-header-active": "",
+     "data-index": "0"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     4,
+     221,
+     272,
+     28
+    ],
+    "cursor": "auto"
+   },
+   {
+    "tag": "div",
+    "role": "button",
+    "name": "orca-e2e-repo-uwC3SP",
+    "testid": null,
+    "data": {
+     "data-repo-header-id": "052401b2-4887-4e8e-8cc9-255008a347d7",
+     "data-repo-header-index": "0",
+     "data-repo-header-bucket": "ungrouped",
+     "data-repo-header-section-end": "260"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     4,
+     221,
+     272,
+     28
+    ],
+    "cursor": "pointer"
+   },
+   {
+    "tag": "button",
+    "role": null,
+    "name": "Project actions for orca-e2e-repo-uwC3SP",
+    "testid": null,
+    "data": {
+     "data-slot": "tooltip-trigger",
+     "data-variant": "ghost",
+     "data-size": "icon-xs",
+     "data-repo-header-action": "",
+     "data-state": "closed"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": false,
+    "box": [
+     276,
+     225,
+     0,
+     20
+    ],
+    "cursor": "pointer"
+   },
+   {
+    "tag": "button",
+    "role": null,
+    "name": "Create new worktree for orca-e2e-repo-uwC3SP",
+    "testid": null,
+    "data": {
+     "data-slot": "tooltip-trigger",
+     "data-variant": "ghost",
+     "data-size": "icon-xs",
+     "data-repo-header-action": "",
+     "data-state": "closed"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": false,
+    "box": [
+     272,
+     225,
+     0,
+     20
+    ],
+    "cursor": "pointer"
+   },
+   {
+    "tag": "div",
+    "role": "presentation",
+    "name": "Inactivemasterprimarymaster",
+    "testid": null,
+    "data": {
+     "data-worktree-virtual-row": "true",
+     "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+     "data-worktree-virtual-row-start": "34",
+     "data-index": "1"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     4,
+     255,
+     272,
+     50
+    ],
+    "cursor": "auto"
+   },
+   {
+    "tag": "div",
+    "role": "option",
+    "name": "Inactivemasterprimarymaster",
+    "testid": null,
+    "data": {
+     "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+     "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+     "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+     "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+     "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+     "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+     "data-worktree-drag-group-index": "0"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     4,
+     293,
+     272,
+     50
+    ],
+    "cursor": "auto"
+   },
+   {
+    "tag": "button",
+    "role": null,
+    "name": "Mark as unread",
+    "testid": null,
+    "data": {
+     "data-workspace-board-preserve-open": "",
+     "data-state": "closed",
+     "data-slot": "tooltip-trigger"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     25,
+     301,
+     16,
+     16
+    ],
+    "cursor": "pointer"
+   },
+   {
+    "tag": "span",
+    "role": null,
+    "name": "master",
+    "testid": null,
+    "data": {
+     "data-worktree-title-inline-rename": ""
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     43,
+     299,
+     43,
+     20
+    ],
+    "cursor": "pointer"
+   },
+   {
+    "tag": "button",
+    "role": null,
+    "name": "",
+    "testid": null,
+    "data": {
+     "data-state": "closed",
+     "data-slot": "dropdown-menu-trigger"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     4,
+     293,
+     1,
+     1
+    ],
+    "cursor": "pointer"
+   },
+   {
+    "tag": "div",
+    "role": "presentation",
+    "name": "Inactivee2e-secondarye2e-secondary",
+    "testid": null,
+    "data": {
+     "data-worktree-virtual-row": "true",
+     "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+     "data-worktree-virtual-row-start": "90",
+     "data-index": "2"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     4,
+     311,
+     272,
+     50
+    ],
+    "cursor": "auto"
+   },
+   {
+    "tag": "div",
+    "role": "option",
+    "name": "Inactivee2e-secondarye2e-secondary",
+    "testid": null,
+    "data": {
+     "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+     "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+     "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+     "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+     "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+     "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+     "data-worktree-drag-group-index": "1"
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     4,
+     311,
+     272,
+     50
+    ],
+    "cursor": "auto"
+   },
+   {
+    "tag": "span",
+    "role": null,
+    "name": "e2e-secondary",
+    "testid": null,
+    "data": {
+     "data-worktree-title-inline-rename": ""
+    },
+    "ariaDisabled": null,
+    "disabled": false,
+    "visible": true,
+    "box": [
+     43,
+     317,
+     92,
+     20
+    ],
+    "cursor": "pointer"
+   }
+  ],
+  "hover_cards": [
+   {
+    "index": 0,
+    "after": [
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "orca-e2e-repo-uwC3SPActivemasterprimarymasterInactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {},
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       140
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "hdr:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-virtual-row-start": "0",
+       "data-worktree-sticky-header": "",
+       "data-worktree-sticky-header-active": "",
+       "data-index": "0"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       28
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "button",
+      "name": "orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-repo-header-id": "052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-repo-header-index": "0",
+       "data-repo-header-bucket": "ungrouped",
+       "data-repo-header-section-end": "260"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       28
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Project actions for orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-slot": "tooltip-trigger",
+       "data-variant": "ghost",
+       "data-size": "icon-xs",
+       "data-repo-header-action": "",
+       "data-state": "closed"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": false,
+      "box": [
+       276,
+       225,
+       0,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Create new worktree for orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-slot": "tooltip-trigger",
+       "data-variant": "ghost",
+       "data-size": "icon-xs",
+       "data-repo-header-action": "",
+       "data-state": "closed"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": false,
+      "box": [
+       272,
+       225,
+       0,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "Activemasterprimarymaster",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-virtual-row-start": "34",
+       "data-index": "1"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       255,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "option",
+      "name": "Activemasterprimarymaster",
+      "testid": null,
+      "data": {
+       "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-group-index": "0"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       293,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Mark as unread",
+      "testid": null,
+      "data": {
+       "data-workspace-board-preserve-open": "",
+       "data-state": "closed",
+       "data-slot": "tooltip-trigger"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       25,
+       301,
+       16,
+       16
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "span",
+      "role": null,
+      "name": "master",
+      "testid": null,
+      "data": {
+       "data-worktree-title-inline-rename": ""
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       43,
+       299,
+       43,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "",
+      "testid": null,
+      "data": {
+       "data-state": "closed",
+       "data-slot": "dropdown-menu-trigger"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       293,
+       1,
+       1
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "Inactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-virtual-row-start": "90",
+       "data-index": "2"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       311,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "option",
+      "name": "Inactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-group-index": "1"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       311,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "span",
+      "role": null,
+      "name": "e2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-title-inline-rename": ""
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       43,
+       317,
+       92,
+       20
+      ],
+      "cursor": "pointer"
+     }
+    ],
+    "before": [
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "orca-e2e-repo-uwC3SPInactivemasterprimarymasterInactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {},
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       140
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "hdr:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-virtual-row-start": "0",
+       "data-worktree-sticky-header": "",
+       "data-worktree-sticky-header-active": "",
+       "data-index": "0"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       28
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "button",
+      "name": "orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-repo-header-id": "052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-repo-header-index": "0",
+       "data-repo-header-bucket": "ungrouped",
+       "data-repo-header-section-end": "260"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       28
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Project actions for orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-slot": "tooltip-trigger",
+       "data-variant": "ghost",
+       "data-size": "icon-xs",
+       "data-repo-header-action": "",
+       "data-state": "closed"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": false,
+      "box": [
+       276,
+       225,
+       0,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Create new worktree for orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-slot": "tooltip-trigger",
+       "data-variant": "ghost",
+       "data-size": "icon-xs",
+       "data-repo-header-action": "",
+       "data-state": "closed"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": false,
+      "box": [
+       272,
+       225,
+       0,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "Inactivemasterprimarymaster",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-virtual-row-start": "34",
+       "data-index": "1"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       255,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "option",
+      "name": "Inactivemasterprimarymaster",
+      "testid": null,
+      "data": {
+       "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-group-index": "0"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       293,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Mark as unread",
+      "testid": null,
+      "data": {
+       "data-workspace-board-preserve-open": "",
+       "data-state": "closed",
+       "data-slot": "tooltip-trigger"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       25,
+       301,
+       16,
+       16
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "span",
+      "role": null,
+      "name": "master",
+      "testid": null,
+      "data": {
+       "data-worktree-title-inline-rename": ""
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       43,
+       299,
+       43,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "",
+      "testid": null,
+      "data": {
+       "data-state": "closed",
+       "data-slot": "dropdown-menu-trigger"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       293,
+       1,
+       1
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "Inactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-virtual-row-start": "90",
+       "data-index": "2"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       311,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "option",
+      "name": "Inactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-group-index": "1"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       311,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "span",
+      "role": null,
+      "name": "e2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-title-inline-rename": ""
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       43,
+       317,
+       92,
+       20
+      ],
+      "cursor": "pointer"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "after": [
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "orca-e2e-repo-uwC3SPActivemasterprimarymasterInactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {},
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       140
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "hdr:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-virtual-row-start": "0",
+       "data-worktree-sticky-header": "",
+       "data-worktree-sticky-header-active": "",
+       "data-index": "0"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       28
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "button",
+      "name": "orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-repo-header-id": "052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-repo-header-index": "0",
+       "data-repo-header-bucket": "ungrouped",
+       "data-repo-header-section-end": "260"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       28
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Project actions for orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-slot": "tooltip-trigger",
+       "data-variant": "ghost",
+       "data-size": "icon-xs",
+       "data-repo-header-action": "",
+       "data-state": "closed"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": false,
+      "box": [
+       276,
+       225,
+       0,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Create new worktree for orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-slot": "tooltip-trigger",
+       "data-variant": "ghost",
+       "data-size": "icon-xs",
+       "data-repo-header-action": "",
+       "data-state": "closed"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": false,
+      "box": [
+       272,
+       225,
+       0,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "Activemasterprimarymaster",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-virtual-row-start": "34",
+       "data-index": "1"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       255,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "option",
+      "name": "Activemasterprimarymaster",
+      "testid": null,
+      "data": {
+       "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-group-index": "0"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       293,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Mark as unread",
+      "testid": null,
+      "data": {
+       "data-workspace-board-preserve-open": "",
+       "data-state": "closed",
+       "data-slot": "tooltip-trigger"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       25,
+       301,
+       16,
+       16
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "span",
+      "role": null,
+      "name": "master",
+      "testid": null,
+      "data": {
+       "data-worktree-title-inline-rename": ""
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       43,
+       299,
+       43,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "",
+      "testid": null,
+      "data": {
+       "data-state": "closed",
+       "data-slot": "dropdown-menu-trigger"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       293,
+       1,
+       1
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "Inactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-virtual-row-start": "90",
+       "data-index": "2"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       311,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "option",
+      "name": "Inactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-group-index": "1"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       311,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "span",
+      "role": null,
+      "name": "e2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-title-inline-rename": ""
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       43,
+       317,
+       92,
+       20
+      ],
+      "cursor": "pointer"
+     }
+    ],
+    "before": [
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "orca-e2e-repo-uwC3SPInactivemasterprimarymasterInactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {},
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       140
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "hdr:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-virtual-row-start": "0",
+       "data-worktree-sticky-header": "",
+       "data-worktree-sticky-header-active": "",
+       "data-index": "0"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       28
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "button",
+      "name": "orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-repo-header-id": "052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-repo-header-index": "0",
+       "data-repo-header-bucket": "ungrouped",
+       "data-repo-header-section-end": "260"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       221,
+       272,
+       28
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Project actions for orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-slot": "tooltip-trigger",
+       "data-variant": "ghost",
+       "data-size": "icon-xs",
+       "data-repo-header-action": "",
+       "data-state": "closed"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": false,
+      "box": [
+       276,
+       225,
+       0,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Create new worktree for orca-e2e-repo-uwC3SP",
+      "testid": null,
+      "data": {
+       "data-slot": "tooltip-trigger",
+       "data-variant": "ghost",
+       "data-size": "icon-xs",
+       "data-repo-header-action": "",
+       "data-state": "closed"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": false,
+      "box": [
+       272,
+       225,
+       0,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "Inactivemasterprimarymaster",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-virtual-row-start": "34",
+       "data-index": "1"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       255,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "option",
+      "name": "Inactivemasterprimarymaster",
+      "testid": null,
+      "data": {
+       "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-repo-uwC3SP",
+       "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-group-index": "0"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       293,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "Mark as unread",
+      "testid": null,
+      "data": {
+       "data-workspace-board-preserve-open": "",
+       "data-state": "closed",
+       "data-slot": "tooltip-trigger"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       25,
+       301,
+       16,
+       16
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "span",
+      "role": null,
+      "name": "master",
+      "testid": null,
+      "data": {
+       "data-worktree-title-inline-rename": ""
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       43,
+       299,
+       43,
+       20
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "button",
+      "role": null,
+      "name": "",
+      "testid": null,
+      "data": {
+       "data-state": "closed",
+       "data-slot": "dropdown-menu-trigger"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       293,
+       1,
+       1
+      ],
+      "cursor": "pointer"
+     },
+     {
+      "tag": "div",
+      "role": "presentation",
+      "name": "Inactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-virtual-row": "true",
+       "data-worktree-virtual-row-key": "wt:project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-virtual-row-start": "90",
+       "data-index": "2"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       311,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "div",
+      "role": "option",
+      "name": "Inactivee2e-secondarye2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-host-identity": "local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-row-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7:local|052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-section-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-id": "052401b2-4887-4e8e-8cc9-255008a347d7::/tmp/orca-e2e-worktree-8716ac8b-14d2-4662-b3df-6247a550e612",
+       "data-worktree-drag-group-key": "project:repo:052401b2-4887-4e8e-8cc9-255008a347d7",
+       "data-worktree-drag-group-index": "1"
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       4,
+       311,
+       272,
+       50
+      ],
+      "cursor": "auto"
+     },
+     {
+      "tag": "span",
+      "role": null,
+      "name": "e2e-secondary",
+      "testid": null,
+      "data": {
+       "data-worktree-title-inline-rename": ""
+      },
+      "ariaDisabled": null,
+      "disabled": false,
+      "visible": true,
+      "box": [
+       43,
+       317,
+       92,
+       20
+      ],
+      "cursor": "pointer"
+     }
+    ]
+   }
+  ],
+  "card_context_menu": null,
+  "header_actions": [
+   {
+    "index": 0,
+    "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-worktree-sidebar] button:visible, [data-worktree-sidebar] [role=\"button\"]:visible').first()\u001b[22m\n\u001b[2m    - locator "
+   },
+   {
+    "index": 1,
+    "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-worktree-sidebar] button:visible, [data-worktree-sidebar] [role=\"button\"]:visible').nth(1)\u001b[22m\n\u001b[2m    - locator r"
+   },
+   {
+    "index": 2,
+    "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-worktree-sidebar] button:visible, [data-worktree-sidebar] [role=\"button\"]:visible').nth(2)\u001b[22m\n\u001b[2m    - locator r"
+   },
+   {
+    "index": 3,
+    "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-worktree-sidebar] button:visible, [data-worktree-sidebar] [role=\"button\"]:visible').nth(3)\u001b[22m\n\u001b[2m    - locator r"
+   },
+   {
+    "index": 4,
+    "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-worktree-sidebar] button:visible, [data-worktree-sidebar] [role=\"button\"]:visible').nth(4)\u001b[22m\n\u001b[2m    - locator r"
+   }
+  ]
+ },
+ "errors": [
+  "card_context_menu: locator.click: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-worktree-card-surface]').first()\u001b[22m\n\u001b[2m    - locator resolved to <div draggable=\"false\" aria-busy=\"false\" data-worktree-card-surface=\"true\" data-worktree-card-active=\"primary\" class=\"relative flex cursor-pointer "
+ ]
+}

@@ -1,0 +1,4850 @@
+[
+ {
+  "path": "components/Sidebar.tsx",
+  "kind": "prod",
+  "loc": 1,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+  "kind": "test",
+  "loc": 328,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddProjectFromFolderDialog.tsx",
+  "kind": "prod",
+  "loc": 220,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRemoteHostDialog.config-picker.test.tsx",
+  "kind": "test",
+  "loc": 211,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRemoteHostDialog.tsx",
+  "kind": "prod",
+  "loc": 374,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRemoteHostFields.test.tsx",
+  "kind": "test",
+  "loc": 38,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRemoteHostFields.tsx",
+  "kind": "prod",
+  "loc": 271,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRemoteHostServerFormPanel.tsx",
+  "kind": "prod",
+  "loc": 76,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+  "kind": "prod",
+  "loc": 276,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRemoteHostSshFormPanel.tsx",
+  "kind": "prod",
+  "loc": 75,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoCloneStep.tsx",
+  "kind": "prod",
+  "loc": 219,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoCreateStep.test.tsx",
+  "kind": "test",
+  "loc": 74,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoCreateStep.tsx",
+  "kind": "prod",
+  "loc": 271,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoDialog.default-checkout.test.ts",
+  "kind": "test",
+  "loc": 27,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoDialog.tsx",
+  "kind": "prod",
+  "loc": 406,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoDialogChrome.tsx",
+  "kind": "prod",
+  "loc": 36,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "kind": "test",
+  "loc": 296,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoDialogStepContent.tsx",
+  "kind": "prod",
+  "loc": 274,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoHostSelector.test.tsx",
+  "kind": "test",
+  "loc": 137,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoHostSelector.tsx",
+  "kind": "prod",
+  "loc": 235,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoHostSelectorSlot.tsx",
+  "kind": "prod",
+  "loc": 28,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+  "kind": "test",
+  "loc": 227,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoNestedImportStep.tsx",
+  "kind": "prod",
+  "loc": 234,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoRemoteStep.tsx",
+  "kind": "prod",
+  "loc": 226,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoServerStartStep.tsx",
+  "kind": "prod",
+  "loc": 306,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoStartSteps.test.tsx",
+  "kind": "test",
+  "loc": 397,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoStartSteps.tsx",
+  "kind": "prod",
+  "loc": 343,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoStepIndicator.tsx",
+  "kind": "prod",
+  "loc": 39,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+  "kind": "test",
+  "loc": 229,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AddRepoSteps.tsx",
+  "kind": "prod",
+  "loc": 265,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AgentDashboardSidebarEntry.tsx",
+  "kind": "prod",
+  "loc": 94,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AgentDashboardSidebarHost.test.tsx",
+  "kind": "test",
+  "loc": 75,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AgentDashboardSidebarHost.tsx",
+  "kind": "prod",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AutoRenameFailedDialog.test.tsx",
+  "kind": "test",
+  "loc": 110,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/AutoRenameFailedDialog.tsx",
+  "kind": "prod",
+  "loc": 162,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/CacheTimer.test.tsx",
+  "kind": "test",
+  "loc": 90,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/CacheTimer.tsx",
+  "kind": "prod",
+  "loc": 112,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx",
+  "kind": "test",
+  "loc": 64,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/CommentMarkdown.link-click.test.tsx",
+  "kind": "test",
+  "loc": 603,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/CommentMarkdown.test.tsx",
+  "kind": "test",
+  "loc": 303,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/CommentMarkdown.tsx",
+  "kind": "prod",
+  "loc": 263,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/CommentMermaidBlock.tsx",
+  "kind": "prod",
+  "loc": 28,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/CreateProjectLocationField.tsx",
+  "kind": "prod",
+  "loc": 168,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts",
+  "kind": "test",
+  "loc": 34,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+  "kind": "test",
+  "loc": 467,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeDialog.tsx",
+  "kind": "prod",
+  "loc": 427,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeDialogDescription.tsx",
+  "kind": "prod",
+  "loc": 33,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeDialogFooter.tsx",
+  "kind": "prod",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx",
+  "kind": "prod",
+  "loc": 36,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeLineageNotice.tsx",
+  "kind": "prod",
+  "loc": 73,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx",
+  "kind": "prod",
+  "loc": 41,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeTargetPreview.test.tsx",
+  "kind": "test",
+  "loc": 154,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeTargetPreview.tsx",
+  "kind": "prod",
+  "loc": 146,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/DeleteWorktreeWarningPanels.tsx",
+  "kind": "prod",
+  "loc": 51,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/FilterToggleRow.test.tsx",
+  "kind": "test",
+  "loc": 61,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/FilterToggleRow.tsx",
+  "kind": "prod",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ForgetSshWorkspaceDialog.tsx",
+  "kind": "prod",
+  "loc": 204,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/HiddenWorktreeRecoveryList.tsx",
+  "kind": "prod",
+  "loc": 201,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/HostRemoveDialog.tsx",
+  "kind": "prod",
+  "loc": 299,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/HostRenameDialog.tsx",
+  "kind": "prod",
+  "loc": 104,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "kind": "prod",
+  "loc": 296,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+  "kind": "test",
+  "loc": 159,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+  "kind": "prod",
+  "loc": 335,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/LinearAgentSkillSetupDialog.tsx",
+  "kind": "prod",
+  "loc": 198,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "kind": "test",
+  "loc": 360,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "kind": "test",
+  "loc": 932,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+  "kind": "prod",
+  "loc": 413,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx",
+  "kind": "test",
+  "loc": 182,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/MarkdownImageLightbox.test.tsx",
+  "kind": "test",
+  "loc": 68,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/MarkdownImageLightbox.tsx",
+  "kind": "prod",
+  "loc": 82,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+  "kind": "test",
+  "loc": 179,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/NewExternalWorktreesInboxLine.tsx",
+  "kind": "prod",
+  "loc": 156,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/NonGitFolderDialog.test.tsx",
+  "kind": "test",
+  "loc": 257,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/NonGitFolderDialog.tsx",
+  "kind": "prod",
+  "loc": 170,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "kind": "test",
+  "loc": 169,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/NoticeHostGlyph.tsx",
+  "kind": "prod",
+  "loc": 94,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/OrcaYamlTrustDialog.test.tsx",
+  "kind": "test",
+  "loc": 98,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/OrcaYamlTrustDialog.tsx",
+  "kind": "prod",
+  "loc": 214,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/PendingWorktreeRow.tsx",
+  "kind": "prod",
+  "loc": 94,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/PreservedBranchBatchReviewDialog.tsx",
+  "kind": "prod",
+  "loc": 188,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/PreservedBranchBatchReviewModal.tsx",
+  "kind": "prod",
+  "loc": 52,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ProjectAddedDialog.test.tsx",
+  "kind": "test",
+  "loc": 195,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ProjectAddedDialog.tsx",
+  "kind": "prod",
+  "loc": 123,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+  "kind": "test",
+  "loc": 132,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ProjectGroupDeleteDialog.tsx",
+  "kind": "prod",
+  "loc": 218,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ProjectGroupNameDialog.tsx",
+  "kind": "prod",
+  "loc": 136,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ProjectHeaderActions.test.tsx",
+  "kind": "test",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ProjectHeaderActions.tsx",
+  "kind": "prod",
+  "loc": 30,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/RemoteFileBrowser.paste.test.tsx",
+  "kind": "test",
+  "loc": 165,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/RemoteFileBrowser.tsx",
+  "kind": "prod",
+  "loc": 325,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/RemoteFileBrowserBreadcrumbs.tsx",
+  "kind": "prod",
+  "loc": 93,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/RemoteFileBrowserEntryList.tsx",
+  "kind": "prod",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/RemoveFolderDialog.test.tsx",
+  "kind": "test",
+  "loc": 94,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/RemoveFolderDialog.tsx",
+  "kind": "prod",
+  "loc": 122,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx",
+  "kind": "prod",
+  "loc": 34,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+  "kind": "test",
+  "loc": 200,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SetupGuideSidebarEntry.tsx",
+  "kind": "prod",
+  "loc": 124,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SetupScriptPromptCard.test.ts",
+  "kind": "test",
+  "loc": 169,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SetupScriptPromptCard.tsx",
+  "kind": "prod",
+  "loc": 410,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SetupScriptPromptCardShell.test.tsx",
+  "kind": "test",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SetupScriptPromptCardShell.tsx",
+  "kind": "prod",
+  "loc": 106,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SetupScriptPromptCardViews.tsx",
+  "kind": "prod",
+  "loc": 299,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SetupScriptPromptToast.tsx",
+  "kind": "prod",
+  "loc": 38,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/Sidebar.test.tsx",
+  "kind": "test",
+  "loc": 246,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarAgentsList.test.tsx",
+  "kind": "test",
+  "loc": 65,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarAgentsList.tsx",
+  "kind": "prod",
+  "loc": 192,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarFeedbackDialog.test.tsx",
+  "kind": "test",
+  "loc": 349,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarFeedbackDialog.tsx",
+  "kind": "prod",
+  "loc": 377,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarFeedbackImageAttachments.tsx",
+  "kind": "prod",
+  "loc": 107,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarFilter.tsx",
+  "kind": "prod",
+  "loc": 407,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarGroupByToggle.test.tsx",
+  "kind": "test",
+  "loc": 54,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarGroupByToggle.tsx",
+  "kind": "prod",
+  "loc": 39,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarHeader.test.tsx",
+  "kind": "test",
+  "loc": 351,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarHeader.tsx",
+  "kind": "prod",
+  "loc": 137,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarHostScopeMenuSection.tsx",
+  "kind": "prod",
+  "loc": 151,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarNav.test.tsx",
+  "kind": "test",
+  "loc": 508,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarNav.tsx",
+  "kind": "prod",
+  "loc": 293,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "kind": "prod",
+  "loc": 245,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+  "kind": "test",
+  "loc": 209,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarRepositoryFilterSection.tsx",
+  "kind": "prod",
+  "loc": 140,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "kind": "test",
+  "loc": 349,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "kind": "prod",
+  "loc": 364,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarTaskNavButton.tsx",
+  "kind": "prod",
+  "loc": 237,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarToolbar.test.tsx",
+  "kind": "test",
+  "loc": 157,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarToolbar.tsx",
+  "kind": "prod",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+  "kind": "test",
+  "loc": 120,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarWorkspaceFilterSection.tsx",
+  "kind": "prod",
+  "loc": 129,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SidebarWorkspaceOptionsMenu.tsx",
+  "kind": "prod",
+  "loc": 100,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SshTargetRow.tsx",
+  "kind": "prod",
+  "loc": 103,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/StatusIndicator.test.ts",
+  "kind": "test",
+  "loc": 119,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/StatusIndicator.tsx",
+  "kind": "prod",
+  "loc": 107,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx",
+  "kind": "prod",
+  "loc": 88,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanAreaSelectionOverlay.tsx",
+  "kind": "prod",
+  "loc": 19,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanCard.host-identity.test.tsx",
+  "kind": "test",
+  "loc": 53,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanCard.tsx",
+  "kind": "prod",
+  "loc": 81,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx",
+  "kind": "test",
+  "loc": 269,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+  "kind": "test",
+  "loc": 425,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+  "kind": "test",
+  "loc": 474,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanDrawer.tsx",
+  "kind": "prod",
+  "loc": 303,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx",
+  "kind": "test",
+  "loc": 142,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanDrawerHeader.tsx",
+  "kind": "prod",
+  "loc": 128,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanDrawerView.tsx",
+  "kind": "prod",
+  "loc": 70,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx",
+  "kind": "test",
+  "loc": 193,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanLaneCardList.tsx",
+  "kind": "prod",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+  "kind": "test",
+  "loc": 241,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+  "kind": "prod",
+  "loc": 231,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanPinDropTarget.tsx",
+  "kind": "prod",
+  "loc": 40,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+  "kind": "test",
+  "loc": 221,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+  "kind": "prod",
+  "loc": 175,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+  "kind": "test",
+  "loc": 104,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "kind": "prod",
+  "loc": 210,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanSheet.tsx",
+  "kind": "prod",
+  "loc": 100,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+  "kind": "test",
+  "loc": 173,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+  "kind": "prod",
+  "loc": 236,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+  "kind": "prod",
+  "loc": 69,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+  "kind": "prod",
+  "loc": 128,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.affiliate-list-mode.test.tsx",
+  "kind": "test",
+  "loc": 231,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+  "kind": "test",
+  "loc": 838,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.compact-ports-hover-independence.test.tsx",
+  "kind": "test",
+  "loc": 256,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.hosted-review-refresh.test.tsx",
+  "kind": "test",
+  "loc": 172,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.lineage.test.tsx",
+  "kind": "test",
+  "loc": 144,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.merged-pr-display.test.tsx",
+  "kind": "test",
+  "loc": 249,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.pinned-repo-icon.test.tsx",
+  "kind": "test",
+  "loc": 176,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+  "kind": "test",
+  "loc": 886,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "kind": "test",
+  "loc": 540,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+  "kind": "test",
+  "loc": 304,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.test.ts",
+  "kind": "test",
+  "loc": 72,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCard.tsx",
+  "kind": "prod",
+  "loc": 82,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+  "kind": "test",
+  "loc": 463,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+  "kind": "test",
+  "loc": 223,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+  "kind": "test",
+  "loc": 238,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "kind": "test",
+  "loc": 900,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardAgents.tsx",
+  "kind": "prod",
+  "loc": 426,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+  "kind": "test",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardAutomationDetailSection.tsx",
+  "kind": "prod",
+  "loc": 153,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardCliDetailSection.tsx",
+  "kind": "prod",
+  "loc": 51,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardDetailSection.tsx",
+  "kind": "prod",
+  "loc": 23,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardDisplayMenuSection.test.tsx",
+  "kind": "test",
+  "loc": 180,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardDisplayMenuSection.tsx",
+  "kind": "prod",
+  "loc": 200,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardHelpers.tsx",
+  "kind": "prod",
+  "loc": 60,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardHoverIdentityHeader.tsx",
+  "kind": "prod",
+  "loc": 77,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+  "kind": "prod",
+  "loc": 164,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+  "kind": "test",
+  "loc": 399,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "kind": "test",
+  "loc": 383,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardMeta.tsx",
+  "kind": "prod",
+  "loc": 381,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardMetaBadges.tsx",
+  "kind": "prod",
+  "loc": 157,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardMetadataControls.tsx",
+  "kind": "prod",
+  "loc": 86,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardMetadataStatusBadges.tsx",
+  "kind": "prod",
+  "loc": 197,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardPorts.test.tsx",
+  "kind": "test",
+  "loc": 56,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardPorts.tsx",
+  "kind": "prod",
+  "loc": 314,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+  "kind": "prod",
+  "loc": 182,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+  "kind": "test",
+  "loc": 377,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "kind": "prod",
+  "loc": 283,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "kind": "test",
+  "loc": 478,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeCardStatusSlot.tsx",
+  "kind": "prod",
+  "loc": 234,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "kind": "test",
+  "loc": 244,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+  "kind": "test",
+  "loc": 234,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeContextMenu.test.ts",
+  "kind": "test",
+  "loc": 316,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeContextMenu.tsx",
+  "kind": "prod",
+  "loc": 34,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeContextMenuOverlays.tsx",
+  "kind": "prod",
+  "loc": 34,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeContextMenuView.tsx",
+  "kind": "prod",
+  "loc": 386,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeDeveloperMenu.test.tsx",
+  "kind": "test",
+  "loc": 58,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeDeveloperMenu.tsx",
+  "kind": "prod",
+  "loc": 32,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+  "kind": "test",
+  "loc": 140,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeDisplayNameField.tsx",
+  "kind": "prod",
+  "loc": 79,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeHostContextBadge.tsx",
+  "kind": "prod",
+  "loc": 29,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeIssueLinkField.tsx",
+  "kind": "prod",
+  "loc": 260,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+  "kind": "test",
+  "loc": 386,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.empty-project-rows.test.ts",
+  "kind": "test",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+  "kind": "test",
+  "loc": 243,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.group-headers.test.ts",
+  "kind": "test",
+  "loc": 242,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+  "kind": "test",
+  "loc": 580,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+  "kind": "test",
+  "loc": 265,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+  "kind": "test",
+  "loc": 502,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+  "kind": "test",
+  "loc": 442,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeList.tsx",
+  "kind": "prod",
+  "loc": 364,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeListScrollToTopButton.tsx",
+  "kind": "prod",
+  "loc": 50,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeMetaDialog.test.tsx",
+  "kind": "test",
+  "loc": 636,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeMetaDialog.tsx",
+  "kind": "prod",
+  "loc": 441,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+  "kind": "test",
+  "loc": 310,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "kind": "prod",
+  "loc": 382,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+  "kind": "test",
+  "loc": 237,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "kind": "prod",
+  "loc": 413,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeParentPickerRow.tsx",
+  "kind": "prod",
+  "loc": 53,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeReviewLinkField.tsx",
+  "kind": "prod",
+  "loc": 60,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeSidebarDropIndicator.tsx",
+  "kind": "prod",
+  "loc": 28,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeStatusMenuItems.tsx",
+  "kind": "prod",
+  "loc": 48,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+  "kind": "test",
+  "loc": 227,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "kind": "test",
+  "loc": 200,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+  "kind": "test",
+  "loc": 80,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "kind": "prod",
+  "loc": 385,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "kind": "test",
+  "loc": 956,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilityDialog.tsx",
+  "kind": "prod",
+  "loc": 394,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx",
+  "kind": "prod",
+  "loc": 82,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+  "kind": "test",
+  "loc": 122,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilityHelpPopover.tsx",
+  "kind": "prod",
+  "loc": 67,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilityScanStatus.tsx",
+  "kind": "prod",
+  "loc": 39,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilitySourceAddForm.tsx",
+  "kind": "prod",
+  "loc": 100,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilitySourceList.test.tsx",
+  "kind": "test",
+  "loc": 108,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+  "kind": "prod",
+  "loc": 364,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+  "kind": "test",
+  "loc": 249,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/active-worktree-focus-after-delete.ts",
+  "kind": "prod",
+  "loc": 111,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+  "kind": "test",
+  "loc": 211,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-remote-host-ssh-actions.ts",
+  "kind": "prod",
+  "loc": 267,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-browse-authority.test.ts",
+  "kind": "test",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-browse-authority.ts",
+  "kind": "prod",
+  "loc": 24,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-dialog-types.ts",
+  "kind": "prod",
+  "loc": 14,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts",
+  "kind": "test",
+  "loc": 137,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-existing-workspaces-telemetry.ts",
+  "kind": "prod",
+  "loc": 93,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-host-availability.ts",
+  "kind": "prod",
+  "loc": 12,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-local-start-actions.ts",
+  "kind": "prod",
+  "loc": 121,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-runtime-owner.ts",
+  "kind": "prod",
+  "loc": 35,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-skip-finalization.test.ts",
+  "kind": "test",
+  "loc": 155,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-skip-finalization.ts",
+  "kind": "prod",
+  "loc": 50,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/add-repo-store-upsert.ts",
+  "kind": "prod",
+  "loc": 54,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/clone-defaults.test.ts",
+  "kind": "test",
+  "loc": 120,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/clone-defaults.ts",
+  "kind": "prod",
+  "loc": 51,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/comment-markdown-element-renderers.tsx",
+  "kind": "prod",
+  "loc": 355,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/comment-markdown-github-attachment-media.tsx",
+  "kind": "prod",
+  "loc": 116,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/comment-markdown-lazy.tsx",
+  "kind": "prod",
+  "loc": 49,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/comment-markdown-native-chat-file-links.ts",
+  "kind": "prod",
+  "loc": 243,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/comment-mermaid-fence.tsx",
+  "kind": "prod",
+  "loc": 28,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/complete-nested-folder-open.ts",
+  "kind": "prod",
+  "loc": 55,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/create-project-defaults.test.ts",
+  "kind": "test",
+  "loc": 137,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/create-project-defaults.ts",
+  "kind": "prod",
+  "loc": 103,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+  "kind": "test",
+  "loc": 206,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/default-branch-workspace.ts",
+  "kind": "prod",
+  "loc": 10,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-dialog-copy.ts",
+  "kind": "prod",
+  "loc": 91,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-dialog-force-delete.ts",
+  "kind": "prod",
+  "loc": 82,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-dirty-change-counts.test.ts",
+  "kind": "test",
+  "loc": 47,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-dirty-change-counts.ts",
+  "kind": "prod",
+  "loc": 69,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+  "kind": "test",
+  "loc": 214,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-failure-toast.tsx",
+  "kind": "prod",
+  "loc": 132,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-flow.test.ts",
+  "kind": "test",
+  "loc": 675,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-flow.ts",
+  "kind": "prod",
+  "loc": 200,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-lineage-delete-all.ts",
+  "kind": "prod",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-parallel-flow.test.ts",
+  "kind": "test",
+  "loc": 434,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-preference-toast.ts",
+  "kind": "prod",
+  "loc": 50,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-toast.test.ts",
+  "kind": "test",
+  "loc": 179,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/delete-worktree-toast.ts",
+  "kind": "prod",
+  "loc": 142,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/empty-project-placeholder-repos.test.ts",
+  "kind": "test",
+  "loc": 203,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/empty-project-placeholder-repos.ts",
+  "kind": "prod",
+  "loc": 32,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/focused-agent-row-highlight.test.ts",
+  "kind": "test",
+  "loc": 154,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/focused-agent-row-highlight.ts",
+  "kind": "prod",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-agent-startup.ts",
+  "kind": "prod",
+  "loc": 92,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+  "kind": "test",
+  "loc": 371,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-card-pr-display.ts",
+  "kind": "prod",
+  "loc": 137,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-composer-helpers.test.ts",
+  "kind": "test",
+  "loc": 92,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-composer-helpers.ts",
+  "kind": "prod",
+  "loc": 107,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-composer-path-status.test.tsx",
+  "kind": "test",
+  "loc": 292,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-composer-path-status.ts",
+  "kind": "prod",
+  "loc": 138,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-composer-submit.test.ts",
+  "kind": "test",
+  "loc": 872,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-composer-submit.ts",
+  "kind": "prod",
+  "loc": 267,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-host-id.ts",
+  "kind": "prod",
+  "loc": 21,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/folder-workspace-linked-startup-plan.test.ts",
+  "kind": "test",
+  "loc": 26,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/header-drag-click-swallow.ts",
+  "kind": "prod",
+  "loc": 20,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/header-drag-pointer-release.ts",
+  "kind": "prod",
+  "loc": 14,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-header-drag-dom.ts",
+  "kind": "prod",
+  "loc": 42,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-header-drag.test.tsx",
+  "kind": "test",
+  "loc": 92,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-header-drag.ts",
+  "kind": "prod",
+  "loc": 310,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-header-menu-items.test.ts",
+  "kind": "test",
+  "loc": 92,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-header-menu-items.ts",
+  "kind": "prod",
+  "loc": 73,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-rename-remove.test.ts",
+  "kind": "test",
+  "loc": 54,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-rename-remove.ts",
+  "kind": "prod",
+  "loc": 57,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+  "kind": "test",
+  "loc": 127,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-section-order.test.ts",
+  "kind": "test",
+  "loc": 31,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-section-order.ts",
+  "kind": "prod",
+  "loc": 32,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-section-rows.test.ts",
+  "kind": "test",
+  "loc": 857,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/host-section-rows.ts",
+  "kind": "prod",
+  "loc": 308,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/hovered-workspace-delete.test.ts",
+  "kind": "test",
+  "loc": 223,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/hovered-workspace-delete.ts",
+  "kind": "prod",
+  "loc": 133,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/imported-worktrees-card-actions.test.ts",
+  "kind": "test",
+  "loc": 115,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/imported-worktrees-card-actions.ts",
+  "kind": "prod",
+  "loc": 92,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+  "kind": "test",
+  "loc": 184,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/imported-worktrees-card-candidates.ts",
+  "kind": "prod",
+  "loc": 68,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/index.tsx",
+  "kind": "prod",
+  "loc": 278,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts",
+  "kind": "test",
+  "loc": 33,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/linear-agent-skill-runtime.ts",
+  "kind": "prod",
+  "loc": 147,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/linear-agent-skill-setup-copy.ts",
+  "kind": "prod",
+  "loc": 114,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+  "kind": "prod",
+  "loc": 148,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/linear-agent-skill-setup-reminders.test.ts",
+  "kind": "test",
+  "loc": 89,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/linear-agent-skill-setup-reminders.ts",
+  "kind": "prod",
+  "loc": 79,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+  "kind": "test",
+  "loc": 154,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/local-base-ref-suggestion-toast.tsx",
+  "kind": "prod",
+  "loc": 164,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/mobile-sidebar-onboarding-badge.test.ts",
+  "kind": "test",
+  "loc": 113,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/mobile-sidebar-onboarding-badge.ts",
+  "kind": "prod",
+  "loc": 55,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/natural-worktree-ids.test.ts",
+  "kind": "test",
+  "loc": 45,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/natural-worktree-ids.ts",
+  "kind": "prod",
+  "loc": 24,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/new-external-worktrees-inbox-actions.test.ts",
+  "kind": "test",
+  "loc": 102,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/new-external-worktrees-inbox-actions.ts",
+  "kind": "prod",
+  "loc": 148,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/new-external-worktrees-inbox-candidates.test.ts",
+  "kind": "test",
+  "loc": 107,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/new-external-worktrees-inbox-candidates.ts",
+  "kind": "prod",
+  "loc": 50,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/open-setup-script-settings.ts",
+  "kind": "prod",
+  "loc": 27,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/pinned-section-worktrees.test.ts",
+  "kind": "test",
+  "loc": 189,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/pinned-section-worktrees.ts",
+  "kind": "prod",
+  "loc": 56,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+  "kind": "test",
+  "loc": 208,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/preserved-branch-batch-toast.tsx",
+  "kind": "prod",
+  "loc": 190,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/preserved-branch-toast.test.tsx",
+  "kind": "test",
+  "loc": 105,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/preserved-branch-toast.tsx",
+  "kind": "prod",
+  "loc": 119,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-added-default-checkout.test.ts",
+  "kind": "test",
+  "loc": 535,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-added-default-checkout.ts",
+  "kind": "prod",
+  "loc": 274,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-filter-reveal.test.ts",
+  "kind": "test",
+  "loc": 32,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-filter-reveal.ts",
+  "kind": "prod",
+  "loc": 12,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-dom.test.ts",
+  "kind": "test",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drag-commit.test.ts",
+  "kind": "test",
+  "loc": 118,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drag-commit.ts",
+  "kind": "prod",
+  "loc": 20,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drag-contract.ts",
+  "kind": "prod",
+  "loc": 78,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drag-start.test.ts",
+  "kind": "test",
+  "loc": 225,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drag-start.ts",
+  "kind": "prod",
+  "loc": 64,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drag.test.ts",
+  "kind": "test",
+  "loc": 54,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drag.ts",
+  "kind": "prod",
+  "loc": 309,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drop.test.ts",
+  "kind": "test",
+  "loc": 287,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-group-header-drop.ts",
+  "kind": "prod",
+  "loc": 199,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-action-selector-lockstep.test.ts",
+  "kind": "test",
+  "loc": 25,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-color.test.ts",
+  "kind": "test",
+  "loc": 81,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-color.ts",
+  "kind": "prod",
+  "loc": 33,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drag-commit.test.ts",
+  "kind": "test",
+  "loc": 113,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drag-commit.ts",
+  "kind": "prod",
+  "loc": 76,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drag-contract.ts",
+  "kind": "prod",
+  "loc": 78,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drag-start.test.ts",
+  "kind": "test",
+  "loc": 208,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drag-start.ts",
+  "kind": "prod",
+  "loc": 61,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drag.test.ts",
+  "kind": "test",
+  "loc": 60,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drag.ts",
+  "kind": "prod",
+  "loc": 323,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drop.test.ts",
+  "kind": "test",
+  "loc": 409,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-header-drop.ts",
+  "kind": "prod",
+  "loc": 226,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-order-manual-default-notice-visibility.test.ts",
+  "kind": "test",
+  "loc": 87,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/project-order-manual-default-notice-visibility.ts",
+  "kind": "prod",
+  "loc": 15,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/prompt-cache-countdown-clock.test.ts",
+  "kind": "test",
+  "loc": 81,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/prompt-cache-countdown-clock.ts",
+  "kind": "prod",
+  "loc": 97,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/prompt-cache-timer-selection.test.ts",
+  "kind": "test",
+  "loc": 69,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/prompt-cache-timer-selection.ts",
+  "kind": "prod",
+  "loc": 48,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/remote-file-browser-drive-paths.test.ts",
+  "kind": "test",
+  "loc": 86,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/remote-file-browser-drive-paths.ts",
+  "kind": "prod",
+  "loc": 62,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/remote-file-browser-helpers.test.ts",
+  "kind": "test",
+  "loc": 407,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/remote-file-browser-helpers.ts",
+  "kind": "prod",
+  "loc": 296,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/remote-file-browser-path-preview-resolver.ts",
+  "kind": "prod",
+  "loc": 164,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "kind": "test",
+  "loc": 300,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/rendered-sidebar-worktree-order.ts",
+  "kind": "prod",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/repo-header-action-button-class.ts",
+  "kind": "prod",
+  "loc": 4,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/repo-header-create-state.test.ts",
+  "kind": "test",
+  "loc": 84,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/repo-header-create-state.ts",
+  "kind": "prod",
+  "loc": 70,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/run-worktree-delete-with-toast.ts",
+  "kind": "prod",
+  "loc": 178,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/setup-script-prompt-exposure-telemetry.ts",
+  "kind": "prod",
+  "loc": 41,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/setup-script-prompt-render-state.ts",
+  "kind": "prod",
+  "loc": 65,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-count-badge.tsx",
+  "kind": "prod",
+  "loc": 24,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-empty-state-gate.test.ts",
+  "kind": "test",
+  "loc": 60,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-empty-state-gate.ts",
+  "kind": "prod",
+  "loc": 24,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-filter-actions.ts",
+  "kind": "prod",
+  "loc": 78,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-filter-state.test.ts",
+  "kind": "test",
+  "loc": 289,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-header-actions.tsx",
+  "kind": "prod",
+  "loc": 104,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-host-options.test.ts",
+  "kind": "test",
+  "loc": 216,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-host-options.ts",
+  "kind": "prod",
+  "loc": 154,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-nav-controls.tsx",
+  "kind": "prod",
+  "loc": 15,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-project-drop.test.ts",
+  "kind": "test",
+  "loc": 69,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-project-drop.ts",
+  "kind": "prod",
+  "loc": 80,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-resize-handle.test.ts",
+  "kind": "test",
+  "loc": 26,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-workspace-option-items.test.ts",
+  "kind": "test",
+  "loc": 67,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sidebar-workspace-option-items.ts",
+  "kind": "prod",
+  "loc": 294,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sleep-worktree-activation-race.test.ts",
+  "kind": "test",
+  "loc": 112,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sleep-worktree-flow.test.ts",
+  "kind": "test",
+  "loc": 331,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/sleep-worktree-flow.ts",
+  "kind": "prod",
+  "loc": 234,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/smart-attention.test.ts",
+  "kind": "test",
+  "loc": 785,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/smart-attention.ts",
+  "kind": "prod",
+  "loc": 416,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/smart-sort.test.ts",
+  "kind": "test",
+  "loc": 878,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/smart-sort.ts",
+  "kind": "prod",
+  "loc": 219,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ssh-host-remove-resolution.test.ts",
+  "kind": "test",
+  "loc": 90,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ssh-host-remove-resolution.ts",
+  "kind": "prod",
+  "loc": 56,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ssh-host-remove-workspaces.ts",
+  "kind": "prod",
+  "loc": 73,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ssh-target-duplicate.test.ts",
+  "kind": "test",
+  "loc": 61,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ssh-target-duplicate.ts",
+  "kind": "prod",
+  "loc": 33,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ssh-workspace-forget-resolution.test.ts",
+  "kind": "test",
+  "loc": 70,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/ssh-workspace-forget-resolution.ts",
+  "kind": "prod",
+  "loc": 50,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/stale-agent-row-unverifiable.test.ts",
+  "kind": "test",
+  "loc": 158,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/stale-workspace-list-toast.ts",
+  "kind": "prod",
+  "loc": 33,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/track-nested-folder-open.ts",
+  "kind": "prod",
+  "loc": 30,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "kind": "test",
+  "loc": 144,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/truncated-sidebar-label.tsx",
+  "kind": "prod",
+  "loc": 94,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-add-repo-host-change-reset.ts",
+  "kind": "prod",
+  "loc": 32,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-add-repo-host-selection.test.ts",
+  "kind": "test",
+  "loc": 313,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-add-repo-host-selection.ts",
+  "kind": "prod",
+  "loc": 188,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-add-repo-hosted-controller.test.ts",
+  "kind": "test",
+  "loc": 113,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-add-repo-hosted-controller.ts",
+  "kind": "prod",
+  "loc": 72,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-add-repo-remote-nested-scan.ts",
+  "kind": "prod",
+  "loc": 62,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-complete-git-repo-add.ts",
+  "kind": "prod",
+  "loc": 81,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-confirmed-worktree-delete-targets.ts",
+  "kind": "prod",
+  "loc": 45,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-delete-worktree-status-hydration.ts",
+  "kind": "prod",
+  "loc": 101,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-feedback-image-drop.test.tsx",
+  "kind": "test",
+  "loc": 185,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-feedback-image-drop.ts",
+  "kind": "prod",
+  "loc": 101,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+  "kind": "prod",
+  "loc": 120,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-remote-file-browser-listing.ts",
+  "kind": "prod",
+  "loc": 58,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-remote-file-browser-path-preview.ts",
+  "kind": "prod",
+  "loc": 208,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-repo-owner-visibility-defaults.ts",
+  "kind": "prod",
+  "loc": 12,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-sidebar-feedback-environment-prefill.ts",
+  "kind": "prod",
+  "loc": 84,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-sidebar-feedback-images.ts",
+  "kind": "prod",
+  "loc": 129,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-sidebar-host-scope-options.ts",
+  "kind": "prod",
+  "loc": 50,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-visible-workspace-kanban-worktree-ids.test.tsx",
+  "kind": "test",
+  "loc": 41,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts",
+  "kind": "prod",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-board-task-status-sync.ts",
+  "kind": "prod",
+  "loc": 161,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-area-selection.ts",
+  "kind": "prod",
+  "loc": 333,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-board-projection.ts",
+  "kind": "prod",
+  "loc": 106,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts",
+  "kind": "test",
+  "loc": 72,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-card-pointer-drag.ts",
+  "kind": "prod",
+  "loc": 321,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "kind": "prod",
+  "loc": 157,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-create-worktree.ts",
+  "kind": "prod",
+  "loc": 21,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx",
+  "kind": "test",
+  "loc": 35,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-drawer-lingering.ts",
+  "kind": "prod",
+  "loc": 16,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-native-drag.ts",
+  "kind": "prod",
+  "loc": 68,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts",
+  "kind": "test",
+  "loc": 61,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-outside-dismiss.ts",
+  "kind": "prod",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-render-lifecycle.ts",
+  "kind": "prod",
+  "loc": 49,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-search.ts",
+  "kind": "prod",
+  "loc": 102,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-selection.test.tsx",
+  "kind": "test",
+  "loc": 191,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-selection.ts",
+  "kind": "prod",
+  "loc": 150,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts",
+  "kind": "prod",
+  "loc": 112,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-status-actions.ts",
+  "kind": "prod",
+  "loc": 111,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-kanban-worktree-actions.ts",
+  "kind": "prod",
+  "loc": 223,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-reveal-body-redirect.test.tsx",
+  "kind": "test",
+  "loc": 77,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+  "kind": "prod",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-status-drop.test.ts",
+  "kind": "test",
+  "loc": 44,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-workspace-status-drop.ts",
+  "kind": "prod",
+  "loc": 143,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-activity-status.test.tsx",
+  "kind": "test",
+  "loc": 352,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-activity-status.ts",
+  "kind": "prod",
+  "loc": 72,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-activity-statuses.test.ts",
+  "kind": "test",
+  "loc": 46,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-activity-statuses.ts",
+  "kind": "prod",
+  "loc": 75,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-activation-actions.ts",
+  "kind": "prod",
+  "loc": 164,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-controller.ts",
+  "kind": "prod",
+  "loc": 165,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-foundation.ts",
+  "kind": "prod",
+  "loc": 243,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+  "kind": "prod",
+  "loc": 240,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-linked-details.ts",
+  "kind": "prod",
+  "loc": 138,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-review-details.ts",
+  "kind": "prod",
+  "loc": 199,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+  "kind": "test",
+  "loc": 224,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-secondary-details.ts",
+  "kind": "prod",
+  "loc": 275,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-card-workspace-actions.ts",
+  "kind": "prod",
+  "loc": 181,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-context-menu-commands.ts",
+  "kind": "prod",
+  "loc": 182,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-context-menu-model.tsx",
+  "kind": "prod",
+  "loc": 426,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-context-menu-secondary-actions.ts",
+  "kind": "prod",
+  "loc": 36,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-issue-link.ts",
+  "kind": "prod",
+  "loc": 280,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-meta-workspace.ts",
+  "kind": "prod",
+  "loc": 107,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/use-worktree-parent-picker-transition.ts",
+  "kind": "prod",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoCloneFlow.test.ts",
+  "kind": "test",
+  "loc": 237,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoCloneFlow.ts",
+  "kind": "prod",
+  "loc": 209,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoLocalFolderFlow.test.ts",
+  "kind": "test",
+  "loc": 242,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoLocalFolderFlow.ts",
+  "kind": "prod",
+  "loc": 314,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+  "kind": "test",
+  "loc": 249,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoNestedImportFlow.ts",
+  "kind": "prod",
+  "loc": 298,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoNestedReviewController.ts",
+  "kind": "prod",
+  "loc": 82,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoNestedReviewState.ts",
+  "kind": "prod",
+  "loc": 151,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoServerPathFlow.test.ts",
+  "kind": "test",
+  "loc": 141,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useAddRepoServerPathFlow.ts",
+  "kind": "prod",
+  "loc": 208,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useCreateProjectDefaults.test.ts",
+  "kind": "test",
+  "loc": 266,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useCreateProjectDefaults.ts",
+  "kind": "prod",
+  "loc": 304,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+  "kind": "test",
+  "loc": 287,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useCreateRepo.ts",
+  "kind": "prod",
+  "loc": 268,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useRenderedSetupScriptPromptState.test.ts",
+  "kind": "test",
+  "loc": 48,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useRenderedSetupScriptPromptState.ts",
+  "kind": "prod",
+  "loc": 45,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useSetupScriptPromptRevalidation.test.tsx",
+  "kind": "test",
+  "loc": 296,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useSetupScriptPromptRevalidation.ts",
+  "kind": "prod",
+  "loc": 114,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useSidebarProjectDrop.ts",
+  "kind": "prod",
+  "loc": 166,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+  "kind": "test",
+  "loc": 248,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useWorkspaceBoardPanel.ts",
+  "kind": "prod",
+  "loc": 179,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useWorktreeAgentRows.test.ts",
+  "kind": "test",
+  "loc": 817,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/useWorktreeAgentRows.ts",
+  "kind": "prod",
+  "loc": 150,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+  "kind": "test",
+  "loc": 161,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/visible-worktree-activity-inputs.ts",
+  "kind": "prod",
+  "loc": 35,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/visible-worktree-host-scope.ts",
+  "kind": "prod",
+  "loc": 42,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/visible-worktree-indexes.test.ts",
+  "kind": "test",
+  "loc": 180,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/visible-worktree-indexes.ts",
+  "kind": "prod",
+  "loc": 49,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/visible-worktree-kinds.ts",
+  "kind": "prod",
+  "loc": 74,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/visible-worktrees.test.ts",
+  "kind": "test",
+  "loc": 911,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/visible-worktrees.ts",
+  "kind": "prod",
+  "loc": 380,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-board-task-status-sync.test.ts",
+  "kind": "test",
+  "loc": 428,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-board-task-status-sync.ts",
+  "kind": "prod",
+  "loc": 267,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-chrome-metrics.ts",
+  "kind": "prod",
+  "loc": 4,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-creator-visibility.test.ts",
+  "kind": "test",
+  "loc": 48,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-creator-visibility.ts",
+  "kind": "prod",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-delete-lineage.test.ts",
+  "kind": "test",
+  "loc": 219,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-delete-lineage.ts",
+  "kind": "prod",
+  "loc": 75,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-delete-quick-action.ts",
+  "kind": "prod",
+  "loc": 99,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-area-selection-card-rects.ts",
+  "kind": "prod",
+  "loc": 99,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-area-selection-dom.ts",
+  "kind": "prod",
+  "loc": 256,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-area-selection-state.ts",
+  "kind": "prod",
+  "loc": 50,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-area-selection.test.ts",
+  "kind": "test",
+  "loc": 219,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-card-drag-preview-dom.ts",
+  "kind": "prod",
+  "loc": 103,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts",
+  "kind": "test",
+  "loc": 133,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts",
+  "kind": "prod",
+  "loc": 312,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-card-pointer-drag-start.ts",
+  "kind": "prod",
+  "loc": 32,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-filtered-drop-index.test.ts",
+  "kind": "test",
+  "loc": 148,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-filtered-drop-index.ts",
+  "kind": "prod",
+  "loc": 87,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-lane-range.ts",
+  "kind": "prod",
+  "loc": 17,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-pointer-drag-selection.ts",
+  "kind": "prod",
+  "loc": 45,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-search.test.ts",
+  "kind": "test",
+  "loc": 171,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-search.ts",
+  "kind": "prod",
+  "loc": 90,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+  "kind": "test",
+  "loc": 679,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-sidebar-drop.ts",
+  "kind": "prod",
+  "loc": 286,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts",
+  "kind": "test",
+  "loc": 173,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-virtual-lane-layout.ts",
+  "kind": "prod",
+  "loc": 173,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+  "kind": "test",
+  "loc": 172,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-kanban-worktree-groups.ts",
+  "kind": "prod",
+  "loc": 48,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-lineage-menu-actions.test.ts",
+  "kind": "test",
+  "loc": 130,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-lineage-menu-actions.ts",
+  "kind": "prod",
+  "loc": 70,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-options-menu-items.tsx",
+  "kind": "prod",
+  "loc": 240,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-status-drag-data.ts",
+  "kind": "prod",
+  "loc": 112,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-status-icon-options.ts",
+  "kind": "prod",
+  "loc": 111,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-status-icons.tsx",
+  "kind": "prod",
+  "loc": 74,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-status.test.ts",
+  "kind": "test",
+  "loc": 119,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/workspace-status.ts",
+  "kind": "prod",
+  "loc": 227,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-activity-summary.test.ts",
+  "kind": "test",
+  "loc": 506,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-activity-summary.ts",
+  "kind": "prod",
+  "loc": 307,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-freshness-selector.test.ts",
+  "kind": "test",
+  "loc": 105,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-freshness-selector.ts",
+  "kind": "prod",
+  "loc": 53,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-live-index-patch.ts",
+  "kind": "prod",
+  "loc": 111,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-orchestration-batch.test.ts",
+  "kind": "test",
+  "loc": 715,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-orchestration-batch.ts",
+  "kind": "prod",
+  "loc": 42,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-orchestration-index.test.ts",
+  "kind": "test",
+  "loc": 522,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-orchestration-index.ts",
+  "kind": "prod",
+  "loc": 314,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-row-fallback-tab.ts",
+  "kind": "prod",
+  "loc": 29,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-row-orchestration.ts",
+  "kind": "prod",
+  "loc": 49,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-row-order.ts",
+  "kind": "prod",
+  "loc": 24,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-row-selectors.test.ts",
+  "kind": "test",
+  "loc": 528,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-row-selectors.ts",
+  "kind": "prod",
+  "loc": 309,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-row-type.ts",
+  "kind": "prod",
+  "loc": 30,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-agent-rows.ts",
+  "kind": "prod",
+  "loc": 275,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-agent-ack-inputs.test.tsx",
+  "kind": "test",
+  "loc": 99,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-agent-ack-inputs.ts",
+  "kind": "prod",
+  "loc": 12,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-agent-summary.test.ts",
+  "kind": "test",
+  "loc": 105,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-agent-summary.ts",
+  "kind": "prod",
+  "loc": 130,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-agents-expansion-state.ts",
+  "kind": "prod",
+  "loc": 130,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-compact-agent-row.stable-message.test.tsx",
+  "kind": "test",
+  "loc": 112,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "kind": "prod",
+  "loc": 310,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-compact-agents.tsx",
+  "kind": "prod",
+  "loc": 191,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-details-hover-state.test.tsx",
+  "kind": "test",
+  "loc": 108,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-details-hover-state.ts",
+  "kind": "prod",
+  "loc": 49,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-display-property-options.ts",
+  "kind": "prod",
+  "loc": 71,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-dom-events.test.ts",
+  "kind": "test",
+  "loc": 29,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-dom-events.ts",
+  "kind": "prod",
+  "loc": 9,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-header.tsx",
+  "kind": "prod",
+  "loc": 321,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-jira-issue-display.test.ts",
+  "kind": "test",
+  "loc": 60,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-jira-issue-display.ts",
+  "kind": "prod",
+  "loc": 33,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-markdown-isolation.test.ts",
+  "kind": "test",
+  "loc": 103,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-meta-row.tsx",
+  "kind": "prod",
+  "loc": 108,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-meta-types.ts",
+  "kind": "prod",
+  "loc": 68,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-model.ts",
+  "kind": "prod",
+  "loc": 117,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-parent-content.tsx",
+  "kind": "prod",
+  "loc": 171,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-pr-display.test.ts",
+  "kind": "test",
+  "loc": 211,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-pr-display.ts",
+  "kind": "prod",
+  "loc": 163,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-presentation.tsx",
+  "kind": "prod",
+  "loc": 293,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-secondary-rows.tsx",
+  "kind": "prod",
+  "loc": 122,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+  "kind": "test",
+  "loc": 131,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-send-target-inputs.ts",
+  "kind": "prod",
+  "loc": 75,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-status-inputs.test.ts",
+  "kind": "test",
+  "loc": 222,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-status-inputs.ts",
+  "kind": "prod",
+  "loc": 87,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-surface.tsx",
+  "kind": "prod",
+  "loc": 138,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-title-display.test.ts",
+  "kind": "test",
+  "loc": 132,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-card-title-display.ts",
+  "kind": "prod",
+  "loc": 71,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-context-menu-delete-intent.test.ts",
+  "kind": "test",
+  "loc": 134,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-context-menu-delete-intent.ts",
+  "kind": "prod",
+  "loc": 80,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-context-menu-policy.ts",
+  "kind": "prod",
+  "loc": 249,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-delete-execution.ts",
+  "kind": "prod",
+  "loc": 205,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-delete-host-qualification.test.ts",
+  "kind": "test",
+  "loc": 274,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-delete-position-scaling.test.ts",
+  "kind": "test",
+  "loc": 68,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-delete-request.test.ts",
+  "kind": "test",
+  "loc": 130,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-delete-request.ts",
+  "kind": "prod",
+  "loc": 94,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-delete-state-host-match.ts",
+  "kind": "prod",
+  "loc": 19,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-drag-preview-offsets.ts",
+  "kind": "prod",
+  "loc": 205,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-drag-units.test.ts",
+  "kind": "test",
+  "loc": 131,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-drag-units.ts",
+  "kind": "prod",
+  "loc": 85,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-filter-visibility.test.ts",
+  "kind": "test",
+  "loc": 79,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-filter-visibility.ts",
+  "kind": "prod",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-header-section-boundaries.test.ts",
+  "kind": "test",
+  "loc": 95,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-header-section-boundaries.ts",
+  "kind": "prod",
+  "loc": 154,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-issue-displacement.ts",
+  "kind": "prod",
+  "loc": 48,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-keyboard-cycle.test.ts",
+  "kind": "test",
+  "loc": 177,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-keyboard-cycle.ts",
+  "kind": "prod",
+  "loc": 97,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+  "kind": "test",
+  "loc": 285,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-lineage-drag-drop.ts",
+  "kind": "prod",
+  "loc": 86,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-lineage-expansion.performance.test.ts",
+  "kind": "test",
+  "loc": 88,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-lineage-projection.test.ts",
+  "kind": "test",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-lineage-projection.ts",
+  "kind": "prod",
+  "loc": 147,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-lineage-toggle-handler-cache.test.ts",
+  "kind": "test",
+  "loc": 48,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-lineage-toggle-handler-cache.ts",
+  "kind": "prod",
+  "loc": 26,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/drop-commit-context.ts",
+  "kind": "prod",
+  "loc": 51,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/groups.ts",
+  "kind": "prod",
+  "loc": 64,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/pointer-commit.ts",
+  "kind": "prod",
+  "loc": 155,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+  "kind": "test",
+  "loc": 259,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/pointer-flush.ts",
+  "kind": "prod",
+  "loc": 215,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/row-state.test.ts",
+  "kind": "test",
+  "loc": 59,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/row-state.ts",
+  "kind": "prod",
+  "loc": 165,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/status-target.ts",
+  "kind": "prod",
+  "loc": 53,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+  "kind": "prod",
+  "loc": 115,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-drop-commit-context.ts",
+  "kind": "prod",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-header-drag.ts",
+  "kind": "prod",
+  "loc": 235,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts",
+  "kind": "prod",
+  "loc": 118,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-native-autoscroll.ts",
+  "kind": "prod",
+  "loc": 108,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-native-drag.ts",
+  "kind": "prod",
+  "loc": 232,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts",
+  "kind": "prod",
+  "loc": 79,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-pointer-drag.ts",
+  "kind": "prod",
+  "loc": 262,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+  "kind": "prod",
+  "loc": 109,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-runtime.ts",
+  "kind": "prod",
+  "loc": 123,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-session.ts",
+  "kind": "prod",
+  "loc": 237,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-status-mutations.ts",
+  "kind": "prod",
+  "loc": 211,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/drag/use-status-row-drag.ts",
+  "kind": "prod",
+  "loc": 148,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+  "kind": "test",
+  "loc": 246,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "kind": "test",
+  "loc": 421,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/build-rows.ts",
+  "kind": "prod",
+  "loc": 252,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts",
+  "kind": "prod",
+  "loc": 77,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/group-keys.ts",
+  "kind": "prod",
+  "loc": 174,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/group-sections.ts",
+  "kind": "prod",
+  "loc": 218,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/host-labels.test.ts",
+  "kind": "test",
+  "loc": 62,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/host-labels.ts",
+  "kind": "prod",
+  "loc": 246,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+  "kind": "test",
+  "loc": 134,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/pinned-group-rows.ts",
+  "kind": "prod",
+  "loc": 115,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/project-group-sections.ts",
+  "kind": "prod",
+  "loc": 140,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "kind": "prod",
+  "loc": 169,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/row-builders.ts",
+  "kind": "prod",
+  "loc": 269,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/row-types.ts",
+  "kind": "prod",
+  "loc": 108,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/section-order.ts",
+  "kind": "prod",
+  "loc": 214,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/worktree-group-keys.ts",
+  "kind": "prod",
+  "loc": 80,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "kind": "prod",
+  "loc": 244,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/EmptyState.tsx",
+  "kind": "prod",
+  "loc": 39,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+  "kind": "test",
+  "loc": 129,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/host-filtering.ts",
+  "kind": "prod",
+  "loc": 146,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.test.ts",
+  "kind": "test",
+  "loc": 53,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts",
+  "kind": "prod",
+  "loc": 39,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/render-row.ts",
+  "kind": "prod",
+  "loc": 31,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/renderable-rows.ts",
+  "kind": "prod",
+  "loc": 50,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/review-cache-inputs.test.ts",
+  "kind": "test",
+  "loc": 86,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/review-cache-inputs.ts",
+  "kind": "prod",
+  "loc": 44,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-agent-send-target.ts",
+  "kind": "prod",
+  "loc": 64,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-collapsed-groups.ts",
+  "kind": "prod",
+  "loc": 121,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-external-worktree-cards.ts",
+  "kind": "prod",
+  "loc": 206,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-filters.ts",
+  "kind": "prod",
+  "loc": 220,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-folder-path-statuses.ts",
+  "kind": "prod",
+  "loc": 128,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-host-visible-scope.ts",
+  "kind": "prod",
+  "loc": 72,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-reused-array-identity.ts",
+  "kind": "prod",
+  "loc": 13,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-section-rows.ts",
+  "kind": "prod",
+  "loc": 255,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+  "kind": "prod",
+  "loc": 234,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-visible-worktrees.test.tsx",
+  "kind": "test",
+  "loc": 162,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/listing/use-visible-worktrees.ts",
+  "kind": "prod",
+  "loc": 138,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/active-descendant-option.test.ts",
+  "kind": "test",
+  "loc": 37,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/active-descendant-option.ts",
+  "kind": "prod",
+  "loc": 103,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+  "kind": "test",
+  "loc": 157,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/folder-reveal.ts",
+  "kind": "prod",
+  "loc": 108,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/mounted-row-reveal.ts",
+  "kind": "prod",
+  "loc": 35,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/pending-reveal-inputs.ts",
+  "kind": "prod",
+  "loc": 155,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/render-row-lookup.folder-workspace.test.ts",
+  "kind": "test",
+  "loc": 82,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/render-row-lookup.ts",
+  "kind": "prod",
+  "loc": 135,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/reveal-ancestors.ts",
+  "kind": "prod",
+  "loc": 111,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-active-row.ts",
+  "kind": "prod",
+  "loc": 101,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+  "kind": "test",
+  "loc": 122,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+  "kind": "prod",
+  "loc": 168,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-pending-reveal.ts",
+  "kind": "prod",
+  "loc": 305,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts",
+  "kind": "prod",
+  "loc": 63,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+  "kind": "test",
+  "loc": 240,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-reveal-requests.ts",
+  "kind": "prod",
+  "loc": 218,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+  "kind": "test",
+  "loc": 81,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "kind": "prod",
+  "loc": 156,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "kind": "test",
+  "loc": 65,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx",
+  "kind": "prod",
+  "loc": 47,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/HostSectionHeader.tsx",
+  "kind": "prod",
+  "loc": 161,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/ProjectGroupDialogs.tsx",
+  "kind": "prod",
+  "loc": 118,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+  "kind": "test",
+  "loc": 102,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+  "kind": "prod",
+  "loc": 153,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/SectionHeader.tsx",
+  "kind": "prod",
+  "loc": 403,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/folder-row.tsx",
+  "kind": "prod",
+  "loc": 132,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/header-event-guards.ts",
+  "kind": "prod",
+  "loc": 31,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/indentation.test.ts",
+  "kind": "test",
+  "loc": 299,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/indentation.ts",
+  "kind": "prod",
+  "loc": 243,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/item-row.tsx",
+  "kind": "prod",
+  "loc": 262,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/notice-rows.tsx",
+  "kind": "prod",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/option-dom-host-collision.test.ts",
+  "kind": "test",
+  "loc": 29,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/option-dom.ts",
+  "kind": "prod",
+  "loc": 67,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "kind": "prod",
+  "loc": 136,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "kind": "prod",
+  "loc": 246,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/use-project-group-dialogs-owner-host.test.tsx",
+  "kind": "test",
+  "loc": 136,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/use-project-group-dialogs.ts",
+  "kind": "prod",
+  "loc": 206,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/rows/virtual-row-dispatch.tsx",
+  "kind": "prod",
+  "loc": 258,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx",
+  "kind": "prod",
+  "loc": 373,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/drop-indicators.tsx",
+  "kind": "prod",
+  "loc": 36,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+  "kind": "test",
+  "loc": 262,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/hard-scroll-up.ts",
+  "kind": "prod",
+  "loc": 338,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+  "kind": "test",
+  "loc": 252,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/sticky-headers.test.ts",
+  "kind": "test",
+  "loc": 138,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-group-toggle.ts",
+  "kind": "prod",
+  "loc": 30,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-row-measurement.ts",
+  "kind": "prod",
+  "loc": 124,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-row-removal-animation.test.ts",
+  "kind": "test",
+  "loc": 99,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-row-removal-animation.ts",
+  "kind": "prod",
+  "loc": 121,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-scroll-suppression.ts",
+  "kind": "prod",
+  "loc": 90,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.ts",
+  "kind": "test",
+  "loc": 175,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.tsx",
+  "kind": "test",
+  "loc": 102,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+  "kind": "prod",
+  "loc": 231,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-virtualizer.ts",
+  "kind": "prod",
+  "loc": 157,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts",
+  "kind": "prod",
+  "loc": 134,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/viewport-props.ts",
+  "kind": "prod",
+  "loc": 106,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/virtual-row-context.ts",
+  "kind": "prod",
+  "loc": 158,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+  "kind": "test",
+  "loc": 345,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/virtual-rows.ts",
+  "kind": "prod",
+  "loc": 334,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list/viewport/visible-refresh.test.ts",
+  "kind": "test",
+  "loc": 32,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-card-markup-queries.ts",
+  "kind": "prod",
+  "loc": 57,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-host-collision.test.ts",
+  "kind": "test",
+  "loc": 103,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+  "kind": "test",
+  "loc": 343,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+  "kind": "test",
+  "loc": 659,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-lineage-nesting.test.ts",
+  "kind": "test",
+  "loc": 657,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-nested-project-groups.test.ts",
+  "kind": "test",
+  "loc": 420,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "kind": "test",
+  "loc": 220,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-pending-creations.test.ts",
+  "kind": "test",
+  "loc": 117,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts",
+  "kind": "test",
+  "loc": 119,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+  "kind": "test",
+  "loc": 464,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "kind": "test",
+  "loc": 791,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-project-order.test.ts",
+  "kind": "test",
+  "loc": 522,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+  "kind": "test",
+  "loc": 93,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-groups-test-fixtures.ts",
+  "kind": "prod",
+  "loc": 102,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-lineage-card-test-fixtures.ts",
+  "kind": "prod",
+  "loc": 62,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-lineage-card-test-harness.ts",
+  "kind": "prod",
+  "loc": 253,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-lineage-store-state.ts",
+  "kind": "prod",
+  "loc": 160,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-list-pinned-store-state.ts",
+  "kind": "prod",
+  "loc": 82,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-manual-order-catalog.test.ts",
+  "kind": "test",
+  "loc": 62,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-manual-order-catalog.ts",
+  "kind": "prod",
+  "loc": 49,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-manual-order-ranks.ts",
+  "kind": "prod",
+  "loc": 141,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-manual-order-store-write.test.ts",
+  "kind": "test",
+  "loc": 115,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-manual-order.test.ts",
+  "kind": "test",
+  "loc": 565,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-manual-order.ts",
+  "kind": "prod",
+  "loc": 252,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-meta-updates.test.ts",
+  "kind": "test",
+  "loc": 413,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-meta-updates.ts",
+  "kind": "prod",
+  "loc": 309,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-multi-selection.test.ts",
+  "kind": "test",
+  "loc": 134,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-multi-selection.ts",
+  "kind": "prod",
+  "loc": 124,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-name-suggestions.test.ts",
+  "kind": "test",
+  "loc": 165,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-name-suggestions.ts",
+  "kind": "prod",
+  "loc": 56,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-parent-candidates.ts",
+  "kind": "prod",
+  "loc": 77,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-parent-eligibility.test.ts",
+  "kind": "test",
+  "loc": 258,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-parent-eligibility.ts",
+  "kind": "prod",
+  "loc": 51,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-parent-picker-filtering.ts",
+  "kind": "prod",
+  "loc": 35,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-parent-picker-placement.ts",
+  "kind": "prod",
+  "loc": 34,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-review-helpers.test.tsx",
+  "kind": "test",
+  "loc": 128,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-review-helpers.tsx",
+  "kind": "prod",
+  "loc": 80,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-scroll-to-current-button.test.ts",
+  "kind": "test",
+  "loc": 22,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+  "kind": "test",
+  "loc": 291,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-drag-autoscroll.ts",
+  "kind": "prod",
+  "loc": 228,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+  "kind": "test",
+  "loc": 263,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-drag-geometry.ts",
+  "kind": "prod",
+  "loc": 112,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-drop-preview.test.ts",
+  "kind": "test",
+  "loc": 340,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-drop-preview.ts",
+  "kind": "prod",
+  "loc": 261,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-header-drop-preview.ts",
+  "kind": "prod",
+  "loc": 142,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts",
+  "kind": "test",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-pointer-drag-dom.ts",
+  "kind": "prod",
+  "loc": 109,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts",
+  "kind": "test",
+  "loc": 34,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-reveal-scroll-settle.ts",
+  "kind": "prod",
+  "loc": 36,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-reveal.test.ts",
+  "kind": "test",
+  "loc": 55,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-reveal.ts",
+  "kind": "prod",
+  "loc": 69,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-row-preference.test.ts",
+  "kind": "test",
+  "loc": 105,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sidebar-row-preference.ts",
+  "kind": "prod",
+  "loc": 65,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-snapshot-prune-batch.ts",
+  "kind": "prod",
+  "loc": 24,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-sort-label-ordering.test.ts",
+  "kind": "test",
+  "loc": 151,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-subagent-child-rows.test.ts",
+  "kind": "test",
+  "loc": 55,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-subagent-child-rows.ts",
+  "kind": "prod",
+  "loc": 72,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-title-derived-agent-rows.test.ts",
+  "kind": "test",
+  "loc": 404,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-title-derived-agent-rows.ts",
+  "kind": "prod",
+  "loc": 330,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-unambiguous-id-index.test.ts",
+  "kind": "test",
+  "loc": 43,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-unambiguous-id-index.ts",
+  "kind": "prod",
+  "loc": 17,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-unnest.test.ts",
+  "kind": "test",
+  "loc": 54,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-unnest.ts",
+  "kind": "prod",
+  "loc": 31,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-visibility-host-target.ts",
+  "kind": "prod",
+  "loc": 56,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-visibility-mutation-fence.ts",
+  "kind": "prod",
+  "loc": 92,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-visibility-repo-sources.ts",
+  "kind": "prod",
+  "loc": 31,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-visibility-source-mutation.ts",
+  "kind": "prod",
+  "loc": 64,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+  "kind": "test",
+  "loc": 129,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-visibility-source-provenance.ts",
+  "kind": "prod",
+  "loc": 126,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-visibility-update-error.ts",
+  "kind": "prod",
+  "loc": 19,
+  "reachable_from_mounts": true
+ },
+ {
+  "path": "components/sidebar/worktree-visibility-use-global.ts",
+  "kind": "prod",
+  "loc": 90,
+  "reachable_from_mounts": true
+ }
+]

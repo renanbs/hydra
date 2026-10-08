@@ -1,0 +1,18 @@
+{
+ "domain": "D15-misc-a",
+ "status": "ok",
+ "rows": 12,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "4/4",
+  "symbols": "7/7",
+  "tests": "37/37",
+  "labels": "3/3",
+  "hotkeys": "0/0",
+  "prefs": "0/0",
+  "timers": "0/0",
+  "subscriptions": "0/0",
+  "preload": "0/0"
+ }
+}

@@ -1,0 +1,4519 @@
+{
+ "exports": {
+  "components/sidebar/WorktreeCard.tsx": [
+   "default"
+  ],
+  "components/sidebar/WorktreeCardAgents.tsx": [
+   "SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT",
+   "default"
+  ],
+  "components/sidebar/WorktreeCardAutomationDetailSection.tsx": [
+   "WorktreeCardAutomationDetailSection"
+  ],
+  "components/sidebar/WorktreeCardCliDetailSection.tsx": [
+   "WorktreeCardCliDetailSection"
+  ],
+  "components/sidebar/WorktreeCardDetailSection.tsx": [
+   "WorktreeCardDetailSection",
+   "WorktreeCardDetailSectionContent"
+  ],
+  "components/sidebar/WorktreeCardDisplayMenuSection.tsx": [
+   "WorktreeCardDisplayMenuSection"
+  ],
+  "components/sidebar/WorktreeCardHelpers.tsx": [
+   "branchDisplayName",
+   "checksLabel",
+   "CONFLICT_OPERATION_LABELS",
+   "EMPTY_TABS",
+   "EMPTY_BROWSER_TABS",
+   "FilledBellIcon",
+   "PullRequestIcon"
+  ],
+  "components/sidebar/WorktreeCardHoverIdentityHeader.tsx": [
+   "WorktreeCardHoverIdentityHeader"
+  ],
+  "components/sidebar/WorktreeCardIssueDetailSection.tsx": [
+   "WorktreeCardIssueDetailSection"
+  ],
+  "components/sidebar/WorktreeCardMeta.tsx": [
+   "WorktreeCardDetailsHover"
+  ],
+  "components/sidebar/WorktreeCardMetaBadges.tsx": [
+   "hasWorktreeCardDetails",
+   "WorktreeCardMetaBadges"
+  ],
+  "components/sidebar/WorktreeCardMetadataControls.tsx": [
+   "MetaIconBadge",
+   "DetailHeader",
+   "MetadataActionIcon"
+  ],
+  "components/sidebar/WorktreeCardMetadataStatusBadges.tsx": [
+   "IssueStateBadge",
+   "LinearStateBadge",
+   "ReviewStateBadge",
+   "ReviewChecksBadge"
+  ],
+  "components/sidebar/WorktreeCardPorts.tsx": [
+   "WorktreeCardPortsTrigger",
+   "WorktreeCardPortsDetails"
+  ],
+  "components/sidebar/WorktreeCardReviewDetailSection.tsx": [
+   "WorktreeCardReviewDetailSection"
+  ],
+  "components/sidebar/WorktreeCardSshHostControl.tsx": [
+   "WorktreeCardSshHostControl"
+  ],
+  "components/sidebar/WorktreeCardStatusSlot.tsx": [
+   "WorktreeCardStatusSlot"
+  ],
+  "components/sidebar/WorktreeContextMenu.tsx": [
+   "default"
+  ],
+  "components/sidebar/WorktreeContextMenuOverlays.tsx": [
+   "WorktreeContextMenuOverlays"
+  ],
+  "components/sidebar/WorktreeContextMenuView.tsx": [
+   "WorktreeContextMenuView",
+   "default"
+  ],
+  "components/sidebar/WorktreeDeveloperMenu.tsx": [
+   "WorktreeDeveloperMenu"
+  ],
+  "components/sidebar/WorktreeDisplayNameField.tsx": [
+   "WorktreeDisplayNameField"
+  ],
+  "components/sidebar/WorktreeHostContextBadge.tsx": [
+   "WorktreeHostContextBadge"
+  ],
+  "components/sidebar/WorktreeIssueLinkField.tsx": [
+   "issueAdornmentReserve",
+   "WorktreeIssueLinkFieldProps",
+   "WorktreeIssueLinkField"
+  ],
+  "components/sidebar/WorktreeMetaDialog.tsx": [
+   "default"
+  ],
+  "components/sidebar/WorktreeOpenInMenu.tsx": [
+   "OpenInMenuEntry",
+   "getWorktreeOpenInEntries",
+   "getOpenInEntryAvailability",
+   "openOpenInAppsSettings",
+   "openWorktreePath",
+   "WorktreeOpenInMenuItems",
+   "WorktreeOpenInSubMenu"
+  ],
+  "components/sidebar/WorktreeReviewLinkField.tsx": [
+   "WorktreeReviewLinkField"
+  ],
+  "components/sidebar/WorktreeStatusMenuItems.tsx": [
+   "WorktreeStatusMenuItems"
+  ],
+  "components/sidebar/WorktreeTitleInlineRename.tsx": [
+   "WorktreeTitleRenameCommit",
+   "getWorktreeTitleRenameCommit",
+   "isWorktreeTitleTruncated",
+   "WorktreeTitleInlineRename"
+  ],
+  "components/sidebar/worktree-card-agent-summary.ts": [
+   "SummaryAgentGroup",
+   "getAgentDotState",
+   "formatSummaryStateLabel",
+   "buildSummaryAgentGroups",
+   "summarizeAgents",
+   "summarizeAgentIdentities",
+   "selectSummaryGroupIconAgents"
+  ],
+  "components/sidebar/worktree-card-agents-expansion-state.ts": [
+   "WorktreeAgentExpansionState",
+   "MAX_PERSISTED_WORKTREE_AGENT_EXPANSIONS",
+   "WorktreeAgentExpansionControls",
+   "useWorktreeAgentExpansionState",
+   "clearWorktreeAgentExpansionStateForTests",
+   "getWorktreeAgentExpansionCountForTests",
+   "seedWorktreeAgentExpansionStateForTests"
+  ],
+  "components/sidebar/worktree-card-compact-agent-row.tsx": [
+   "getCompactAgentSecondary",
+   "CompactAgentRow"
+  ],
+  "components/sidebar/worktree-card-compact-agents.tsx": [
+   "CompactAgentExpansion",
+   "CompactAgentSummaryButton"
+  ],
+  "components/sidebar/worktree-card-details-hover-state.ts": [
+   "useWorktreeCardDetailsHoverControl",
+   "WorktreeCardDetailsHoverControl"
+  ],
+  "components/sidebar/worktree-card-display-property-options.ts": [
+   "PROPERTY_OPTIONS"
+  ],
+  "components/sidebar/worktree-card-dom-events.ts": [
+   "isEventTargetInsideCurrentTarget"
+  ],
+  "components/sidebar/worktree-card-header.tsx": [
+   "WorktreeCardHeader"
+  ],
+  "components/sidebar/worktree-card-jira-issue-display.ts": [
+   "getWorktreeCardJiraIssueDisplay",
+   "getConfiguredWorktreeCardJiraIssueDisplay"
+  ],
+  "components/sidebar/worktree-card-meta-row.tsx": [
+   "WorktreeCardMetaRow"
+  ],
+  "components/sidebar/worktree-card-meta-types.ts": [
+   "WorktreeCardIssueDisplay",
+   "WorktreeCardLinearIssueDisplay",
+   "WorktreeCardJiraIssueDisplay",
+   "WorktreeCardMetaBadgesProps",
+   "WorktreeCardMetaBadgesRootProps",
+   "WorktreeCardDetailsHoverProps"
+  ],
+  "components/sidebar/worktree-card-model.ts": [
+   "WorktreeRenameRequest",
+   "ActiveSurfaceVariant",
+   "WorktreeCardProps",
+   "ResolvedWorktreeCardProps",
+   "EMPTY_WORKSPACE_PORTS",
+   "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS",
+   "shouldBeginWorktreeRename",
+   "formatSparseDirectoryPreview",
+   "isWebClient",
+   "getDirectoryName"
+  ],
+  "components/sidebar/worktree-card-parent-content.tsx": [
+   "WorktreeCardParentContent"
+  ],
+  "components/sidebar/worktree-card-pr-display.ts": [
+   "isCachedMergedBranchPRCurrentForWorktree",
+   "WorktreeCardPrDisplay",
+   "getWorktreeCardPrDisplay"
+  ],
+  "components/sidebar/worktree-card-presentation.tsx": [
+   "buildWorktreeCardPresentation",
+   "WorktreeCardPresentation"
+  ],
+  "components/sidebar/worktree-card-secondary-rows.tsx": [
+   "WorktreeCardSecondaryRows"
+  ],
+  "components/sidebar/worktree-card-status-inputs.ts": [
+   "EMPTY_RUNTIME_PANE_TITLES",
+   "EMPTY_LIVE_PTY_IDS",
+   "EMPTY_TERMINAL_LAYOUT_ROOTS",
+   "selectRuntimePaneTitlesForWorktree",
+   "selectLivePtyIdsForWorktree",
+   "selectTerminalLayoutRootsForWorktree",
+   "selectTerminalLayoutRootsForWorktrees"
+  ],
+  "components/sidebar/worktree-card-surface.tsx": [
+   "WorktreeCardSurface"
+  ],
+  "components/sidebar/worktree-card-title-display.ts": [
+   "coerceWorktreeCardVisibleTitle",
+   "getWorktreeCardTitleDisplay"
+  ],
+  "components/sidebar/worktree-issue-displacement.ts": [
+   "getDisplacedLinkLabels"
+  ],
+  "components/sidebar/worktree-review-helpers.tsx": [
+   "getReviewLabel",
+   "getProviderName",
+   "ReviewIcon"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/WorktreeCard.affiliate-list-mode.test.tsx",
+   "line": 59,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 84,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 246,
+   "text": "expect(markup).toContain('aria-label=\"1 live port\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 628,
+   "text": "it('keeps status and agent tooltip targets outside the worktree details hover trigger', async () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-ports-hover-independence.test.tsx",
+   "line": 99,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-ports-hover-independence.test.tsx",
+   "line": 240,
+   "text": "const portsRoot = rootContaining('[aria-label=\"1 live port\"]')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.hosted-review-refresh.test.tsx",
+   "line": 53,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.lineage.test.tsx",
+   "line": 43,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.lineage.test.tsx",
+   "line": 138,
+   "text": "expect(markup).toContain('aria-label=\"Hide 1 child workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.merged-pr-display.test.tsx",
+   "line": 50,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pinned-repo-icon.test.tsx",
+   "line": 46,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 54,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 200,
+   "text": "expect(unreadMarkup).toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 229,
+   "text": "expect(unreadMarkup).not.toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 54,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 152,
+   "text": "expect(markup).toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 161,
+   "text": "expect(markup).not.toContain('aria-label=\"Project orca\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 264,
+   "text": "'aria-label=\"This worktree will be renamed from the first agent message\"'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 279,
+   "text": "expect(markup).toContain('aria-label=\"Auto-rename failed: view error\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 295,
+   "text": "expect(markup).toContain('aria-label=\"Auto-rename failed: view error\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 394,
+   "text": "expect(markup).not.toContain('aria-label=\"Primary worktree\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 415,
+   "text": "expect(markup).toContain('aria-label=\"Primary worktree\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 425,
+   "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 435,
+   "text": "expect(markup).toContain('aria-label=\"Delete workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 453,
+   "text": "expect(markup).toContain('aria-label=\"Delete workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 464,
+   "text": "expect(markup).toContain('aria-label=\"Delete workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 478,
+   "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 490,
+   "text": "expect(markup).not.toContain('aria-label=\"Sleep workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 491,
+   "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 503,
+   "text": "expect(markup).not.toContain('aria-label=\"Sleep workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 504,
+   "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 514,
+   "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 57,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 8,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+   "line": 77,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 48,
+   "text": "label: 'Send',"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 142,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 236,
+   "text": "expect(markup).not.toContain('title=\"Agent is working\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 164,
+   "text": "aria-label={`${childAgentsExpanded ? 'Hide' : 'Show'} ${childAgentCount} child ${"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 182,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 207,
+   "text": "expect(markup).toContain('aria-label=\"Agents\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 221,
+   "text": "expect(markup).toContain('title=\"Codex\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 442,
+   "text": "expect(markup).toContain('aria-label=\"Hide 1 child agent\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 467,
+   "text": "expect(markup).toContain('aria-label=\"Hide 1 child agent\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 491,
+   "text": "expect(markup).toContain('aria-label=\"Hide 1 child agent\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 529,
+   "text": "expect(markup).not.toContain('aria-label=\"Show 1 child agent\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 559,
+   "text": "expect(markup).not.toContain('title=\"Codex done\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 560,
+   "text": "expect(markup).not.toContain('title=\"Claude done\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 723,
+   "text": "expect(markup).not.toContain('title=\"Codex waiting\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 724,
+   "text": "expect(markup).not.toContain('title=\"Claude working\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 725,
+   "text": "expect(markup).not.toContain('title=\"Gemini done\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 772,
+   "text": "const iconTitles = [...markup.matchAll(/title=\"([^\"]+)\"/g)].map((match) => match[1])"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 774,
+   "text": "// Variety icons stay identity-free; the state label belongs to the shared tooltip."
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 893,
+   "text": "expect(markup).not.toContain('title=\"Gemini waiting\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 894,
+   "text": "expect(markup).not.toContain('title=\"Codex working\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 895,
+   "text": "expect(markup).not.toContain('title=\"Codex done\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.tsx",
+   "line": 377,
+   "text": "aria-label={translate('auto.components.sidebar.WorktreeCardAgents.1b0a156717', 'Agents')}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.tsx",
+   "line": 419,
+   "text": "aria-label={translate('auto.components.sidebar.WorktreeCardAgents.1b0a156717', 'Agents')}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+   "line": 13,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+   "line": 122,
+   "text": "expect(container.querySelector('[aria-label=\"Open automation\"]')).not.toBeNull()"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+   "line": 123,
+   "text": "expect(container.querySelector('[aria-label=\"Open run\"]')).not.toBeNull()"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+   "line": 6,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+   "line": 9,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+   "line": 55,
+   "text": "aria-label={moreActionsLabel}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+   "line": 90,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+   "line": 100,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+   "line": 103,
+   "text": "<DropdownMenuItem onSelect={onCopyIssueLink}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+   "line": 106,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 43,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 45,
+   "text": "<div data-tooltip-open={open === false ? 'false' : 'default'}>{children}</div>"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 69,
+   "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 194,
+   "text": "it('omits the review trigger tooltip while the review menu is open', () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 12,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 24,
+   "text": "DropdownMenuItem: ({ children }: { children: ReactNode; onSelect?: () => void }) => ("
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 140,
+   "text": "const moreActionsIndex = markup.indexOf('aria-label=\"More PR actions\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 141,
+   "text": "const openInOrcaIndex = markup.indexOf('aria-label=\"Open in Orca\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 142,
+   "text": "const viewOnGitHubIndex = markup.indexOf('aria-label=\"View on GitHub\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 156,
+   "text": "expect(markup).not.toContain('aria-label=\"Unlink PR from workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 181,
+   "text": "const moreActionsIndex = markup.indexOf('aria-label=\"More issue actions\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 183,
+   "text": "const editIssueIndex = markup.indexOf('aria-label=\"Edit issue\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 184,
+   "text": "const openInOrcaIndex = markup.indexOf('aria-label=\"Open in Orca\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 185,
+   "text": "const viewOnGitHubIndex = markup.indexOf('aria-label=\"View on GitHub\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 221,
+   "text": "expect(markup).toContain('aria-label=\"More MR actions\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.tsx",
+   "line": 126,
+   "text": "const copyLinkedWorkItemLink = React.useCallback(async (url: string, label: string) => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetaBadges.tsx",
+   "line": 76,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+   "line": 2,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+   "line": 8,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+   "line": 25,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+   "line": 45,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+   "line": 56,
+   "text": "aria-label={label}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+   "line": 68,
+   "text": "aria-label={label}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetadataStatusBadges.tsx",
+   "line": 15,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMetadataStatusBadges.tsx",
+   "line": 94,
+   "text": "label: 'MR' | 'PR'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.test.tsx",
+   "line": 17,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.test.tsx",
+   "line": 49,
+   "text": "expect(markup).toContain('aria-label=\"Copy dev.preview.localhost:58941\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 6,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 42,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 59,
+   "text": "tooltipLabel = label,"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 64,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 65,
+   "text": "tooltipLabel?: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 86,
+   "text": "aria-label={label}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 93,
+   "text": "{tooltipLabel}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 256,
+   "text": "tooltipLabel={getPortOpenBrowserTooltipLabel(openBrowserLabel)}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+   "line": 6,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+   "line": 9,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+   "line": 61,
+   "text": "aria-label={moreActionsLabel}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+   "line": 102,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+   "line": 113,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+   "line": 116,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+   "line": 127,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 29,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 32,
+   "text": "<span data-tooltip=\"\">{children}</span>"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 103,
+   "text": "it('distinguishes an auth failure from a generic connection failure in the tooltip', () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 105,
+   "text": "expect(container.querySelector('[data-tooltip]')).toHaveTextContent("
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 111,
+   "text": "expect(retry.container.querySelector('[data-tooltip]')).toHaveTextContent("
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 132,
+   "text": "// through to the card and would kill the tooltip for the whole in-flight window."
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 222,
+   "text": "{ id: 'ssh-live', label: 'devbox', host: 'devbox', port: 22, username: 'me' }"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 32,
+   "text": "/** True when the row cannot afford a visible label: icon-only with an sr-only label. */"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 48,
+   "text": "tooltip,"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 53,
+   "text": "tooltip: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 66,
+   "text": "{tooltip}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 145,
+   "text": "tooltip={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 166,
+   "text": "tooltip={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 212,
+   "text": "const tooltip = connecting"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 241,
+   "text": "aria-label={accessibleName}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 247,
+   "text": "// tooltip for the entire in-flight window."
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 279,
+   "text": "{tooltip}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 11,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 12,
+   "text": "Tooltip: ({ children }: { children: ReactNode }) => <span data-tooltip-root=\"\">{children}</span>,"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 14,
+   "text": "<span data-tooltip-content=\"\">{children}</span>"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 56,
+   "text": "expect(markup).toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 78,
+   "text": "expect(markup).not.toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 109,
+   "text": "expect(markup).not.toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 135,
+   "text": "expect(markup).not.toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 153,
+   "text": "expect(markup).toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 176,
+   "text": "expect(markup.match(/data-tooltip-root/g)).toHaveLength(1)"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 218,
+   "text": "expect(markup).not.toContain('data-tooltip-root')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 305,
+   "text": "expect(markup).not.toContain('data-tooltip-root')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 326,
+   "text": "expect(markup).not.toContain('data-tooltip-root')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 347,
+   "text": "expect(markup).not.toContain('data-tooltip-root')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 369,
+   "text": "expect(markup).toContain('data-tooltip-root')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 370,
+   "text": "expect(markup).toContain('data-tooltip-content=\"\">Working')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 393,
+   "text": "expect(markup).toContain('data-tooltip-root')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 394,
+   "text": "expect(markup).toContain('data-tooltip-content=\"\">Needs permission')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 412,
+   "text": "expect(markup).toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 435,
+   "text": "expect(markup).not.toContain('aria-label=\"Mark as read\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 447,
+   "text": "expect(markup).not.toContain('data-tooltip-root')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 476,
+   "text": "expect(markup).not.toContain('data-tooltip-root')"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+   "line": 3,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+   "line": 144,
+   "text": "<StatusIndicator status={status} aria-hidden=\"true\" tooltipSide=\"right\" />"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+   "line": 154,
+   "text": "tooltipSide=\"right\""
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+   "line": 171,
+   "text": "const tooltip ="
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+   "line": 190,
+   "text": "aria-label={actionLabel}"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+   "line": 228,
+   "text": "<span>{tooltip}</span>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 27,
+   "text": "DropdownMenuItem: function DropdownMenuItem(props: {"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 71,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+   "line": 6,
+   "text": "* DropdownMenuItem inside the worktree row's context menu)."
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+   "line": 19,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+   "line": 28,
+   "text": "{ id: 'todo', label: 'Todo' },"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+   "line": 29,
+   "text": "{ id: 'doing', label: 'Doing' }"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 277,
+   "text": "{ id: 'todo', label: 'Todo' },"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 278,
+   "text": "{ id: 'in-review', label: 'In review' }"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuOverlays.tsx",
+   "line": 11,
+   "text": "title={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 4,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 13,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 160,
+   "text": "<DropdownMenuItem onSelect={handleRename} disabled={isDeleting}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 163,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 180,
+   "text": "<DropdownMenuItem onSelect={handleCopyPath} disabled={isDeleting}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 183,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 185,
+   "text": "<DropdownMenuItem onSelect={handleTogglePin} disabled={isDeleting}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 190,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 191,
+   "text": "<DropdownMenuItem onSelect={handleToggleRead} disabled={isDeleting}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 203,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 207,
+   "text": "<DropdownMenuItem onSelect={handleCreateGroupFromRepo} disabled={isDeleting}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 213,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 225,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 231,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 237,
+   "text": "<DropdownMenuItem onSelect={handleRemoveProjectFromGroup} disabled={isDeleting}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 243,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 248,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 254,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 258,
+   "text": "<DropdownMenuItem onSelect={handleOpenParent} disabled={isDeleting}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 264,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 267,
+   "text": "<DropdownMenuItem onSelect={handleRemoveParentLink} disabled={isDeleting}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 273,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 282,
+   "text": "<DropdownMenuItem onSelect={handleRemoveParentLink} disabled={deletingContext}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 288,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 315,
+   "text": "<DropdownMenuItem variant=\"destructive\" disabled>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 321,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 336,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 344,
+   "text": "title={"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 380,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenu.test.tsx",
+   "line": 22,
+   "text": "DropdownMenuItem: (props: MenuItemProps) => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenu.tsx",
+   "line": 2,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenu.tsx",
+   "line": 25,
+   "text": "<DropdownMenuItem onSelect={() => requestManualTerminalWorktreePark(worktreeId)}>"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenu.tsx",
+   "line": 28,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+   "line": 48,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+   "line": 61,
+   "text": "DropdownMenuItem: passthrough,"
+  },
+  {
+   "file": "components/sidebar/WorktreeDisplayNameField.tsx",
+   "line": 53,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeHostContextBadge.tsx",
+   "line": 21,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+   "line": 11,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+   "line": 178,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+   "line": 195,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+   "line": 223,
+   "text": "aria-label={openIssueLabel}"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 15,
+   "text": "// Why: Radix tooltips need a provider the dialog does not own, and the menu's"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 17,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.tsx",
+   "line": 394,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 29,
+   "text": "openInApplications: [] as { id: string; label: string; command: string }[]"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 179,
+   "text": "{ id: 'vscode', label: 'VS Code', command: 'code' },"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 180,
+   "text": "{ id: 'cursor', label: 'Cursor', command: 'cursor' },"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 181,
+   "text": "{ id: 'zed', label: 'Zed', command: 'zed' }"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 233,
+   "text": "{ id: 'renamed', label: 'My Remote Editor', command: 'code-insiders' },"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 234,
+   "text": "{ id: 'fake', label: 'VS Code', command: 'cursor' },"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 235,
+   "text": "{ id: 'compound', label: 'VS Code Reuse', command: 'code --reuse-window' }"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 5,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 33,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 45,
+   "text": "label: application.label,"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 49,
+   "text": "{ id: 'file-manager', label: fileManagerLabel, target: 'file-manager' }"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 319,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 343,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 372,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 378,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/WorktreeReviewLinkField.tsx",
+   "line": 34,
+   "text": "placeholder={"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+   "line": 50,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 3,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 47,
+   "text": "expect(markup).not.toContain('title=\"Feature workspace\"')"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 118,
+   "text": "// clipped; the tooltip should track the rendered geometry, not just text."
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 290,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 4,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 38,
+   "text": "return [...markup.matchAll(/\\stitle=\"([^\"]*)\"/g)].map((match) => match[1])"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 62,
+   "text": "expect(markup).toContain('title=\"Monitoring background tasks - Run background checks\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 89,
+   "text": "expect(eligible).toContain('data-slot=\"tooltip-trigger\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.stable-message.test.tsx",
+   "line": 6,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 194,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 222,
+   "text": "title={sendTargetDisabledReason ? null : undefined}"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 223,
+   "text": "tooltipSide=\"right\""
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 226,
+   "text": "<span className=\"inline-flex shrink-0\" title={formatAgentTypeLabel(agent.agentType)}>"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 232,
+   "text": "title={sendTargetDisabledReason ? undefined : rowTitle}"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 252,
+   "text": "title={model}"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 305,
+   "text": "title={sendTargetDisabledReason}"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agents.tsx",
+   "line": 118,
+   "text": "aria-label={"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agents.tsx",
+   "line": 153,
+   "text": "<AgentStateDot state={group.state} size=\"sm\" tooltipSide=\"right\" />"
+  },
+  {
+   "file": "components/sidebar/worktree-card-display-property-options.ts",
+   "line": 4,
+   "text": "export const PROPERTY_OPTIONS: { id: WorktreeCardProperty; label: string }[] = ["
+  },
+  {
+   "file": "components/sidebar/worktree-card-header.tsx",
+   "line": 7,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-card-header.tsx",
+   "line": 31,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-card-header.tsx",
+   "line": 190,
+   "text": "// Why: the error can be raw agent CLI output, so the badge opens a dialog rather than a tooltip."
+  },
+  {
+   "file": "components/sidebar/worktree-card-header.tsx",
+   "line": 200,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-card-header.tsx",
+   "line": 274,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-card-header.tsx",
+   "line": 304,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-card-meta-row.tsx",
+   "line": 65,
+   "text": "tooltipEnabled={!hasHoverDetails}"
+  },
+  {
+   "file": "components/sidebar/worktree-card-meta-row.tsx",
+   "line": 70,
+   "text": "title={worktree.path}"
+  },
+  {
+   "file": "components/sidebar/worktree-card-meta-row.tsx",
+   "line": 78,
+   "text": "// Why: whole-card details hover already shows full identity; a nested tooltip would compete for it."
+  },
+  {
+   "file": "components/sidebar/worktree-card-meta-row.tsx",
+   "line": 79,
+   "text": "tooltipEnabled={!hasHoverDetails}"
+  },
+  {
+   "file": "components/sidebar/worktree-card-parent-content.tsx",
+   "line": 76,
+   "text": "// Why: status glyphs and agent rows own their tooltips; only identity content should open the larger details card."
+  },
+  {
+   "file": "components/sidebar/worktree-card-presentation.tsx",
+   "line": 143,
+   "text": "// Why: the parent row owns metadata hover; don't stack the title's truncation tooltip on the details popover."
+  },
+  {
+   "file": "components/sidebar/worktree-card-secondary-rows.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-card-secondary-rows.tsx",
+   "line": 89,
+   "text": "aria-label={lineageChildAriaLabel}"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.tsx",
+   "line": 29,
+   "text": "// their state tone so the glyph agrees with its tooltip. A stateless row (folder"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 233,
+   "text": "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 254,
+   "text": "if (event.key === 'Enter' || event.key === ' ') {"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 12,
+   "text": "const shortcutLabelMock = vi.hoisted(() => vi.fn())"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 14,
+   "text": "vi.mock('@/hooks/useShortcutLabel', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 15,
+   "text": "useOptionalShortcutLabel: shortcutLabelMock,"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 16,
+   "text": "formatShortcutLabel: () => '',"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 17,
+   "text": "formatOptionalShortcutLabel: () => null"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 45,
+   "text": "DropdownMenuShortcut: function DropdownMenuShortcut(props: { children?: React.ReactNode }) {"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 46,
+   "text": "return <span data-testid=\"dropdown-menu-shortcut\">{props.children}</span>"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 158,
+   "text": "describe('WorktreeContextMenu delete shortcut display', () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 160,
+   "text": "shortcutLabelMock.mockImplementation((action: string) => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 178,
+   "text": "it('renders the delete shortcut badge for standard worktree delete', () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 196,
+   "text": "const shortcuts = container.querySelectorAll('[data-testid=\"dropdown-menu-shortcut\"]')"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 197,
+   "text": "const deleteShortcuts = Array.from(shortcuts).filter((el) => el.textContent === '\u2318\u21e7\u232b')"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 198,
+   "text": "expect(deleteShortcuts.length).toBe(1)"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 201,
+   "text": "it('omits the delete shortcut on disabled Delete Worktree for primary checkout', () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 218,
+   "text": "const shortcuts = container.querySelectorAll('[data-testid=\"dropdown-menu-shortcut\"]')"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 219,
+   "text": "const deleteShortcuts = Array.from(shortcuts).filter((el) => el.textContent === '\u2318\u21e7\u232b')"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 220,
+   "text": "expect(deleteShortcuts.length).toBe(0)"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 223,
+   "text": "it('omits the shortcut badge when the action is unassigned', () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 224,
+   "text": "shortcutLabelMock.mockReturnValue(null)"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 241,
+   "text": "const shortcuts = container.querySelectorAll('[data-testid=\"dropdown-menu-shortcut\"]')"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 242,
+   "text": "expect(shortcuts.length).toBe(0)"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 7,
+   "text": "DropdownMenuShortcut,"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 35,
+   "text": "import { useOptionalShortcutLabel } from '@/hooks/useShortcutLabel'"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 103,
+   "text": "const deleteShortcut = useOptionalShortcutLabel('workspace.delete')"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 377,
+   "text": "{!isMultiContext && !removesProject && deleteShortcut ? ("
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenuView.tsx",
+   "line": 378,
+   "text": "<DropdownMenuShortcut>{deleteShortcut}</DropdownMenuShortcut>"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+   "line": 70,
+   "text": "DropdownMenuShortcut: passthrough"
+  },
+  {
+   "file": "components/sidebar/WorktreeDisplayNameField.tsx",
+   "line": 47,
+   "text": "if (emojiInput.handleKeyDown(event) || event.key !== 'Enter') {"
+  },
+  {
+   "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+   "line": 71,
+   "text": "onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.tsx",
+   "line": 25,
+   "text": "import { getScreenSubmitShortcutLabel, isScreenSubmitShortcut } from '@/lib/screen-submit-shortcut'"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.tsx",
+   "line": 57,
+   "text": "const submitShortcutLabel = getScreenSubmitShortcutLabel()"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.tsx",
+   "line": 292,
+   "text": "(e: React.KeyboardEvent<HTMLTextAreaElement>) => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.tsx",
+   "line": 294,
+   "text": "if (isPlainEnter || isScreenSubmitShortcut(e)) {"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.tsx",
+   "line": 304,
+   "text": "(e: React.KeyboardEvent<HTMLInputElement>) => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.tsx",
+   "line": 406,
+   "text": "{submitShortcutLabel}{' '}"
+  },
+  {
+   "file": "components/sidebar/WorktreeReviewLinkField.tsx",
+   "line": 8,
+   "text": "onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 55,
+   "text": "function ShortcutRenameHarness({"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 74,
+   "text": "function openEditorByShortcut(props: HarnessProps = {}): {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 79,
+   "text": "const { rerender } = render(<ShortcutRenameHarness {...props} />)"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 82,
+   "text": "throw new Error('the rename shortcut did not open an editor')"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 86,
+   "text": "markUnread: () => rerender(<ShortcutRenameHarness {...props} showUnreadEmphasis={true} />),"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 88,
+   "text": "rerender(<ShortcutRenameHarness {...props} displayName={displayName} />)"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 93,
+   "text": "it('closes the shortcut-opened editor on Escape', () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 94,
+   "text": "const { input } = openEditorByShortcut()"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 101,
+   "text": "it('closes the shortcut-opened editor once the rename commits', async () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 103,
+   "text": "const { input } = openEditorByShortcut({ onRename })"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 112,
+   "text": "it('closes the shortcut-opened editor when it loses focus', async () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 113,
+   "text": "const { input } = openEditorByShortcut()"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 124,
+   "text": "const { input } = openEditorByShortcut({ onEditingChange })"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 133,
+   "text": "it('reports the shortcut-open transition once in Strict Mode', () => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 138,
+   "text": "<ShortcutRenameHarness onEditingChange={onEditingChange} />"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 165,
+   "text": "const { input } = openEditorByShortcut()"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 174,
+   "text": "const { input, renameElsewhere } = openEditorByShortcut()"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 187,
+   "text": "const { input, markUnread } = openEditorByShortcut()"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 44,
+   "text": "// Why: lets a parent (e.g. the workspace.rename shortcut via WorktreeCard)"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 154,
+   "text": "// Why: double-click and the shortcut both open here, so neither can skip a step."
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 171,
+   "text": "// shortcut). Always consume the request so the parent's trigger can't linger;"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 244,
+   "text": "(event: React.KeyboardEvent<HTMLInputElement>) => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 254,
+   "text": "if (event.key === 'Enter') {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 257,
+   "text": "} else if (event.key === 'Escape') {"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 68,
+   "text": "function stopActivationKeyPropagation(e: React.KeyboardEvent): void {"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agents.tsx",
+   "line": 18,
+   "text": "function stopActivationKeyPropagation(e: React.KeyboardEvent): void {"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/WorktreeCardAgents.tsx",
+   "line": 219,
+   "text": "const handle = requestAnimationFrame(() => {"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.tsx",
+   "line": 37,
+   "text": "React.useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+   "line": 15,
+   "text": "useEffect(effect: () => void | (() => void)) {"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 111,
+   "text": "window.addEventListener('resize', updateTitleTruncated)"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+   "line": 173,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+   "line": 130,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/WorktreeCardMeta.tsx",
+   "line": 130,
+   "text": "await window.api.ui.writeClipboardText(url)"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.tsx",
+   "line": 166,
+   "text": "void window.api.ui.writeClipboardText(address)"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 102,
+   "text": "trackSshConnect(targetId, window.api.ssh.connect({ targetId })),"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 128,
+   "text": "const targets = await window.api.ssh.listTargets()"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+   "line": 130,
+   "text": "const removedLabels = await window.api.ssh.listRemovedTargetLabels()"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 274,
+   "text": "? await window.api.shell.openInFileManager(args.worktreePath)"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+   "line": 275,
+   "text": ": await window.api.shell.openInExternalEditor({"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/WorktreeCard.affiliate-list-mode.test.tsx",
+   "line": 146,
+   "kind": "plain",
+   "name": "WorktreeCard affiliate list mode"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.affiliate-list-mode.test.tsx",
+   "line": 166,
+   "kind": "plain",
+   "name": "keeps the card visual surface but disables mutating list interactions"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.affiliate-list-mode.test.tsx",
+   "line": 213,
+   "kind": "plain",
+   "name": "still shows inline agent details in affiliate list mode"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 183,
+   "kind": "plain",
+   "name": "WorktreeCard compact hover details"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 197,
+   "kind": "plain",
+   "name": "shows PR and live port details from the compact worktree card hover"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 249,
+   "kind": "plain",
+   "name": "shows hidden task, notes, and port details from the compact worktree card hover"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 300,
+   "kind": "plain",
+   "name": "reads linked issue details from the local repo-owner cache while a runtime is focused"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 332,
+   "kind": "plain",
+   "name": "shows selected task and note metadata on the compact card title row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 355,
+   "kind": "plain",
+   "name": "keeps selected task and note metadata above the compact branch row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 382,
+   "kind": "plain",
+   "name": "keeps branch identity visible on detailed cards by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 400,
+   "kind": "plain",
+   "name": "uses one identity hover even when detailed metadata icons are visible when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 425,
+   "kind": "plain",
+   "name": "keeps long workspace and branch identity in hover details when the branch row is hidden"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 449,
+   "kind": "plain",
+   "name": "repeats a long workspace title inside the identity hover when branch is already visible"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 470,
+   "kind": "plain",
+   "name": "uses identity hover for identity-only new card worktrees with branch row visible"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 492,
+   "kind": "plain",
+   "name": "does not duplicate workspace identity when trimmed title equals branch"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 509,
+   "kind": "plain",
+   "name": "keeps detailed metadata hover scoped to metadata icons by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 535,
+   "kind": "plain",
+   "name": "keeps child card markup inside the parent card by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 557,
+   "kind": "plain",
+   "name": "suppresses inline agent rows in compact cards by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 569,
+   "kind": "plain",
+   "name": "does not create a compact metadata row solely for an aggregate cache timer"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 589,
+   "kind": "plain",
+   "name": "keeps unlink available for an auto-detected PR in the identity hover"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 609,
+   "kind": "plain",
+   "name": "suppresses the aggregate cache timer when compact inline agents are visible"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 628,
+   "kind": "plain",
+   "name": "keeps status and agent tooltip targets outside the worktree details hover trigger"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 650,
+   "kind": "plain",
+   "name": "preserves the aggregate cache timer when compact inline agents are enabled but absent"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 670,
+   "kind": "plain",
+   "name": "keeps child card markup outside the parent hover trigger when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 699,
+   "kind": "plain",
+   "name": "uses a centered parent row and raised title size when no meta row is visible"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 715,
+   "kind": "plain",
+   "name": "does not show a folder path row in new-card mode when no project groups exist"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 738,
+   "kind": "plain",
+   "name": "shows a folder path row in new-card mode through the branch setting when project groups exist"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 762,
+   "kind": "plain",
+   "name": "keeps hidden folder path identity available from the new-card hover"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 787,
+   "kind": "plain",
+   "name": "shows the branch row for migrated Default cards with branch enabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 804,
+   "kind": "plain",
+   "name": "keeps compact card branch hidden in the row but available from title hover by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+   "line": 822,
+   "kind": "plain",
+   "name": "shows the branch row for compact cards when branch is enabled and new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-ports-hover-independence.test.tsx",
+   "line": 207,
+   "kind": "plain",
+   "name": "WorktreeCard compact ports hover independence"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.compact-ports-hover-independence.test.tsx",
+   "line": 229,
+   "kind": "plain",
+   "name": "does not force the compact title hover open when the live-ports hover opens"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.hosted-review-refresh.test.tsx",
+   "line": 112,
+   "kind": "plain",
+   "name": "WorktreeCard hosted review refresh"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.hosted-review-refresh.test.tsx",
+   "line": 132,
+   "kind": "plain",
+   "name": "polls visible hosted review cards after a cached branch miss"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.hosted-review-refresh.test.tsx",
+   "line": 158,
+   "kind": "plain",
+   "name": "does not poll hosted reviews when status and PR surfaces are hidden"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.lineage.test.tsx",
+   "line": 98,
+   "kind": "plain",
+   "name": "WorktreeCard lineage indicators"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.lineage.test.tsx",
+   "line": 105,
+   "kind": "plain",
+   "name": "does not render parent lineage badge copy on workspace cards"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.lineage.test.tsx",
+   "line": 123,
+   "kind": "plain",
+   "name": "keeps the child workspace toggle chip"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.merged-pr-display.test.tsx",
+   "line": 142,
+   "kind": "plain",
+   "name": "WorktreeCard merged PR fallback display"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.merged-pr-display.test.tsx",
+   "line": 156,
+   "kind": "plain",
+   "name": "shows cached merged PR when a newer hosted-review miss still matches the worktree head"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.merged-pr-display.test.tsx",
+   "line": 177,
+   "kind": "plain",
+   "name": "suppresses cached merged PR after a newer hosted-review miss when the worktree head moved"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.merged-pr-display.test.tsx",
+   "line": 201,
+   "kind": "plain",
+   "name": "does not let branch provenance resurrect a merged review after the worktree head moved"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.merged-pr-display.test.tsx",
+   "line": 224,
+   "kind": "plain",
+   "name": "keeps proven merged review visible when the worktree head is a confirmed PR commit"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pinned-repo-icon.test.tsx",
+   "line": 107,
+   "kind": "plain",
+   "name": "WorktreeCard pinned repo icon"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pinned-repo-icon.test.tsx",
+   "line": 115,
+   "kind": "plain",
+   "name": "shows the configured repo icon for pinned cards even when the repo badge is hidden"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pinned-repo-icon.test.tsx",
+   "line": 137,
+   "kind": "plain",
+   "name": "does not render the leading pinned repo icon for non-pinned cards"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pinned-repo-icon.test.tsx",
+   "line": 156,
+   "kind": "plain",
+   "name": "uses the pinned-style repo icon in new card style instead of a metadata-row badge"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 154,
+   "kind": "plain",
+   "name": "WorktreeCard linked PR display"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 165,
+   "kind": "plain",
+   "name": "keeps linked GH PR status out of the left status slot by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 178,
+   "kind": "plain",
+   "name": "keeps compact toggle-off unread and read-title visuals legacy"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 208,
+   "kind": "plain",
+   "name": "applies experimental unread status and read-title visuals only when enabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 242,
+   "kind": "plain",
+   "name": "shows linked GH PR status in the left status slot before hosted review details are cached when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 254,
+   "kind": "plain",
+   "name": "does not show cached branch PR details when the worktree has no linked PR"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 282,
+   "kind": "plain",
+   "name": "shows branch-discovered GH PR status when the worktree has no linked PR"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 313,
+   "kind": "plain",
+   "name": "shows branch-discovered hosted review providers without linked worktree metadata"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 340,
+   "kind": "plain",
+   "name": "keeps the stored branch title by default when a hosted review title is available"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 365,
+   "kind": "plain",
+   "name": "uses the hosted review title when new card style is on and stored title is the branch"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 391,
+   "kind": "plain",
+   "name": "shows task and notes metadata while keeping PR out of the right metadata list"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 419,
+   "kind": "plain",
+   "name": "shows selected task and notes metadata on compact cards when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 445,
+   "kind": "plain",
+   "name": "hides individual metadata surfaces when their card properties are disabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 469,
+   "kind": "plain",
+   "name": "shows automation-created workspaces as a metadata icon property"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 499,
+   "kind": "plain",
+   "name": "hides the automation metadata icon in compact card mode by preset default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 531,
+   "kind": "plain",
+   "name": "shows the automation metadata icon in compact card mode when manually enabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 562,
+   "kind": "plain",
+   "name": "hides automation-created card surfaces when the Automation property is disabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 593,
+   "kind": "plain",
+   "name": "hides live port metadata when the Ports card property is disabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 630,
+   "kind": "plain",
+   "name": "renders linked PR status in the left status slot instead of the right metadata list"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 651,
+   "kind": "plain",
+   "name": "uses branch PR cache for the status slot before hosted-review metadata warms"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 682,
+   "kind": "plain",
+   "name": "reads the local branch PR cache for a known local repo while a runtime is focused"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 718,
+   "kind": "plain",
+   "name": "keeps the detailed right-side PR badge during a transient hosted-review miss"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 752,
+   "kind": "plain",
+   "name": "keeps the detailed PR badge when a transient miss still has an older review hint"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 787,
+   "kind": "plain",
+   "name": "keeps durable non-GitHub linked review metadata ahead of branch PR cache"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 821,
+   "kind": "plain",
+   "name": "does not resurrect an older PR cache entry after a newer hosted-review miss"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+   "line": 854,
+   "kind": "plain",
+   "name": "does not resurrect PR cache on the same millisecond as a hosted-review miss"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 130,
+   "kind": "plain",
+   "name": "WorktreeCard quick actions"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 147,
+   "kind": "plain",
+   "name": "marks the unread toggle as a workspace-board-preserving action"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 156,
+   "kind": "plain",
+   "name": "renders repo identity in the detailed metadata row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 166,
+   "kind": "plain",
+   "name": "can render the current workspace with a secondary active surface"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 184,
+   "kind": "plain",
+   "name": "marks the primary active workspace for token-driven selected styling"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 196,
+   "kind": "plain",
+   "name": "renders folder directory name in the detailed metadata row without a Folder badge"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 211,
+   "kind": "plain",
+   "name": "renders synthetic folder workspace directory name in the detailed metadata row without a Folder badge"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 231,
+   "kind": "plain",
+   "name": "does not render a branch icon for synthetic folder workspace path identity"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 253,
+   "kind": "plain",
+   "name": "does not render a pending first-agent rename title badge"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 270,
+   "kind": "plain",
+   "name": "renders the failed first-agent rename title badge"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 283,
+   "kind": "plain",
+   "name": "renders the failed first-agent rename title badge when rename is also pending"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 300,
+   "kind": "plain",
+   "name": "renders the migrated branch metadata row when branch is enabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 322,
+   "kind": "plain",
+   "name": "renders detached HEAD identity in detailed card metadata"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 341,
+   "kind": "plain",
+   "name": "omits the repeated branch metadata row when compact cards are enabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 358,
+   "kind": "plain",
+   "name": "omits the branch metadata row when the workspace has a custom title"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 377,
+   "kind": "plain",
+   "name": "uses the left status lane and primary badge when compact cards are disabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 398,
+   "kind": "plain",
+   "name": "keeps unread in the status lane and moves primary into the title row when compact cards are enabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 420,
+   "kind": "plain",
+   "name": "hides delete by default for an inactive workspace"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 428,
+   "kind": "plain",
+   "name": "shows delete as the top-right quick action while Option/Alt is held"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 438,
+   "kind": "plain",
+   "name": "shows delete as the quick action for folder workspace instances while Option/Alt is held"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 456,
+   "kind": "plain",
+   "name": "shows delete for a current workspace while Option/Alt is held"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 467,
+   "kind": "plain",
+   "name": "does not show delete for the main worktree while Option/Alt is held"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 481,
+   "kind": "plain",
+   "name": "does not replace sleep with delete for a workspace with live activity"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 494,
+   "kind": "plain",
+   "name": "does not show sleep as the top-right quick action for an active workspace"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 507,
+   "kind": "plain",
+   "name": "does not show delete when the workspace is current but not selected in the sidebar"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 517,
+   "kind": "plain",
+   "name": "does not show the rebase operation chip on the card"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+   "line": 529,
+   "kind": "plain",
+   "name": "keeps non-rebase operation chips on the card"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 116,
+   "kind": "plain",
+   "name": "WorktreeCard SSH reconnect prompt"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 135,
+   "kind": "plain",
+   "name": "offers an inline reconnect control and never a blocking dialog for a disconnected SSH worktree"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 151,
+   "kind": "plain",
+   "name": "names the failure state in the control verb rather than a generic Connect"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 163,
+   "kind": "plain",
+   "name": "renders the passive host glyph, not a control, when the SSH host is connected"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 177,
+   "kind": "plain",
+   "name": "offers the control for a folder workspace on a disconnected SSH host"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 195,
+   "kind": "plain",
+   "name": "never reports a runtime-owned SSH target as removed"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 209,
+   "kind": "plain",
+   "name": "reports a removed SSH host once the target list no longer carries it"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 221,
+   "kind": "plain",
+   "name": "marks a runtime-host worktree disconnected once a probe finds it unreachable"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 237,
+   "kind": "plain",
+   "name": "leaves a runtime-host worktree undimmed before its first probe answers"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 252,
+   "kind": "plain",
+   "name": "distinguishes connected worktrees on different Orca servers"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "line": 279,
+   "kind": "plain",
+   "name": "reads nested SSH readiness from the owning HUB instead of client-local SSH state"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "getWorktreeStatus"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "treats browser-only worktrees as active"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "keeps terminal agent states higher priority than browser presence"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.test.ts",
+   "line": 61,
+   "kind": "plain",
+   "name": "shouldBeginWorktreeRename"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "matches unscoped legacy rename requests by worktree id"
+  },
+  {
+   "file": "components/sidebar/WorktreeCard.test.ts",
+   "line": 66,
+   "kind": "plain",
+   "name": "matches row-scoped rename requests only on the target row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 159,
+   "kind": "plain",
+   "name": "WorktreeCardAgents activation"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 177,
+   "kind": "plain",
+   "name": "activates a projected structured session row through the unified tab path"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 206,
+   "kind": "plain",
+   "name": "reveals the worktree and focuses an automation worker row hydrated during reveal"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 240,
+   "kind": "plain",
+   "name": "reveals the terminal surface through the helper path when activating a hydrated row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 280,
+   "kind": "plain",
+   "name": "keeps a live worktree-attributed row visible while its tab is hydrating"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 305,
+   "kind": "plain",
+   "name": "does not pane-focus a fallback terminal when the worker tab is still missing after reveal"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 338,
+   "kind": "plain",
+   "name": "dismisses a malformed pane key instead of guessing a terminal pane"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 366,
+   "kind": "plain",
+   "name": "dismisses a pane key whose parsed tab does not match the row tab"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 391,
+   "kind": "plain",
+   "name": "dismisses a missing tab row that is no longer attributed to this worktree"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+   "line": 416,
+   "kind": "plain",
+   "name": "reveals the worktree and focuses a compact automation worker row hydrated during reveal"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+   "line": 107,
+   "kind": "plain",
+   "name": "WorktreeCardAgents inline-list expansion durability"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+   "line": 124,
+   "kind": "plain",
+   "name": "keeps the compact agent summary expanded across a card remount"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+   "line": 146,
+   "kind": "plain",
+   "name": "does not leak expansion between different worktrees"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+   "line": 158,
+   "kind": "plain",
+   "name": "worktree-card-agents-expansion-state module cache"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+   "line": 167,
+   "kind": "plain",
+   "name": "persists a collapsed lineage parent across a hook remount and toggles independently"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+   "line": 208,
+   "kind": "plain",
+   "name": "drops default (empty) state and bounds the cache with LRU eviction"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 148,
+   "kind": "plain",
+   "name": "WorktreeCardAgents send targets"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 159,
+   "kind": "plain",
+   "name": "marks eligible active-worktree rows including working send targets"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 170,
+   "kind": "plain",
+   "name": "disables rows whose live pane title needs permission"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 191,
+   "kind": "plain",
+   "name": "leaves other worktree rows in ordinary mode during target selection"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 205,
+   "kind": "plain",
+   "name": "marks the currently sending row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+   "line": 225,
+   "kind": "plain",
+   "name": "marks compact active-worktree rows as send targets in the default row UI"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 188,
+   "kind": "plain",
+   "name": "WorktreeCardAgents"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 200,
+   "kind": "plain",
+   "name": "renders ordinary rows in full mode without a child disclosure"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 213,
+   "kind": "plain",
+   "name": "uses compact mode when the display preference is absent"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 225,
+   "kind": "plain",
+   "name": "dims non-focused compact agent row text"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 245,
+   "kind": "plain",
+   "name": "keeps focused compact agent row text legible"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 266,
+   "kind": "plain",
+   "name": "shows a matching pane prompt-cache timer before the compact row age"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 290,
+   "kind": "plain",
+   "name": "does not show a prompt-cache timer on a nonmatching compact row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 312,
+   "kind": "plain",
+   "name": "does not show a prompt-cache timer when the feature is disabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 334,
+   "kind": "plain",
+   "name": "keeps hidden retained compact rows from rendering prompt-cache timers"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 360,
+   "kind": "plain",
+   "name": "does not repeat a subagent role used as its compact primary label"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 382,
+   "kind": "plain",
+   "name": "marks only the focused agent row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 396,
+   "kind": "plain",
+   "name": "keeps retained completion rows passive when activated"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 409,
+   "kind": "plain",
+   "name": "shows orchestration child agent rows under their parent by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 446,
+   "kind": "plain",
+   "name": "shows orchestration children under a retained parent matched by terminal handle"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 470,
+   "kind": "plain",
+   "name": "shows orchestration children under a visible coordinator when parent handle is absent"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 494,
+   "kind": "plain",
+   "name": "keeps partially cyclic orchestration rows visible as flat roots"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 532,
+   "kind": "plain",
+   "name": "does not render the labeled wrapper when there are no agent rows"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 541,
+   "kind": "plain",
+   "name": "renders a compact summary affordance for two flat agents"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 567,
+   "kind": "plain",
+   "name": "does not show a prompt-cache timer on a collapsed compact summary row"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 598,
+   "kind": "plain",
+   "name": "keeps compact agent messages with trusted data image markdown to the single-line preview"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 621,
+   "kind": "plain",
+   "name": "keeps compact agent messages with trusted blob image markdown to the single-line preview"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 641,
+   "kind": "plain",
+   "name": "keeps reference-style compact agent image markdown to the single-line preview"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 667,
+   "kind": "plain",
+   "name": "keeps untrusted compact agent image markdown to the single-line preview"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 688,
+   "kind": "plain",
+   "name": "renders a compact summary affordance for multiple flat agents"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 729,
+   "kind": "plain",
+   "name": "avoids repeating the total when every compact summary agent has the same state"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 758,
+   "kind": "plain",
+   "name": "prioritizes agent varieties in compact summary icons"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 781,
+   "kind": "plain",
+   "name": "rotates the compact summary chevron when collapsed"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 802,
+   "kind": "plain",
+   "name": "uses a neutral compact summary label while expanded"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 831,
+   "kind": "plain",
+   "name": "can slightly indent expanded compact summary content"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+   "line": 843,
+   "kind": "plain",
+   "name": "summarizes compact lineage by parent rows before revealing children"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+   "line": 83,
+   "kind": "plain",
+   "name": "WorktreeCardAutomationDetailSection host resolution"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+   "line": 84,
+   "kind": "plain",
+   "name": "asks the host the provenance recorded"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+   "line": 96,
+   "kind": "plain",
+   "name": "reports a miss as uncheckable when no host was ever recorded"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+   "line": 105,
+   "kind": "plain",
+   "name": "still reports a miss as removed when the recorded host answered"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+   "line": 111,
+   "kind": "plain",
+   "name": "offers both affordances when a record with no recorded host is found anyway"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardDisplayMenuSection.test.tsx",
+   "line": 146,
+   "kind": "plain",
+   "name": "WorktreeCardDisplayMenuSection"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardDisplayMenuSection.test.tsx",
+   "line": 147,
+   "kind": "plain",
+   "name": "applies the compact card mode preset from the visible card layout menu"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardDisplayMenuSection.test.tsx",
+   "line": 162,
+   "kind": "plain",
+   "name": "keeps branch-only copy when project groups are unavailable"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardDisplayMenuSection.test.tsx",
+   "line": 171,
+   "kind": "plain",
+   "name": "mentions folder paths when project groups can create folder workspaces"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 87,
+   "kind": "plain",
+   "name": "WorktreeCardDetailsHover interactions"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 165,
+   "kind": "plain",
+   "name": "defers hover close while the review menu is open"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 179,
+   "kind": "plain",
+   "name": "closes the hover after the review menu dismisses a deferred close"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 194,
+   "kind": "plain",
+   "name": "omits the review trigger tooltip while the review menu is open"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 204,
+   "kind": "plain",
+   "name": "keeps the hover mounted while the workspace title is being edited"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 242,
+   "kind": "plain",
+   "name": "invokes unlink and closes the hover from the menu item"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 267,
+   "kind": "plain",
+   "name": "copies the review URL and closes the hover from the menu item"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 295,
+   "kind": "plain",
+   "name": "opens the review URL in Orca browser and leaves existing actions independent"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 319,
+   "kind": "plain",
+   "name": "preserves repeated-click behavior by forwarding each browser action"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 338,
+   "kind": "plain",
+   "name": "reports clipboard failures without unlinking the review"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+   "line": 361,
+   "kind": "plain",
+   "name": "passes a linked issue URL to the embedded-browser action"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 29,
+   "kind": "plain",
+   "name": "WorktreeCardDetailsHover"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 30,
+   "kind": "plain",
+   "name": "wraps workspace and branch identity so long names stay readable in the hover panel"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 51,
+   "kind": "plain",
+   "name": "puts workspace title before branch identity and metadata details"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 81,
+   "kind": "plain",
+   "name": "keeps the hover title unruled and inline editable while section bodies stay inset"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 114,
+   "kind": "plain",
+   "name": "puts unlink behind the first PR actions menu and keeps GitHub last"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 159,
+   "kind": "plain",
+   "name": "puts issue copy menu before edit and open actions and keeps GitHub last"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 198,
+   "kind": "plain",
+   "name": "labels GitLab unlink actions with MR terminology"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 230,
+   "kind": "plain",
+   "name": "hides the embedded-browser action when a linked review has no URL"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 251,
+   "kind": "plain",
+   "name": "keeps the embedded-browser action provider-neutral for unsupported review URLs"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 276,
+   "kind": "plain",
+   "name": "displays Linear issue details with link"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 304,
+   "kind": "plain",
+   "name": "shows the Jira icon badge and linked issue details"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 338,
+   "kind": "plain",
+   "name": "shows identifier when Linear issue URL is unavailable"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+   "line": 360,
+   "kind": "plain",
+   "name": "shows link when fallback URL is provided"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.test.tsx",
+   "line": 42,
+   "kind": "plain",
+   "name": "WorktreeCardPortsDetails"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardPorts.test.tsx",
+   "line": 43,
+   "kind": "plain",
+   "name": "shows advertised port addresses in workspace hover details"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 71,
+   "kind": "plain",
+   "name": "WorktreeCardSshHostControl"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 85,
+   "kind": "plain",
+   "name": "offers a Connect control naming the host for a disconnected target"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 97,
+   "kind": "each",
+   "name": "labels the %s state %s"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 103,
+   "kind": "plain",
+   "name": "distinguishes an auth failure from a generic connection failure in the tooltip"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 117,
+   "kind": "each",
+   "name": "tints the %s state with the destructive token, not the quiet one"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 126,
+   "kind": "each",
+   "name": "shows a disabled busy control while the host is %s"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 139,
+   "kind": "plain",
+   "name": "renders the passive host glyph, not a control, when connected"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 148,
+   "kind": "plain",
+   "name": "renders the passive host glyph for a null status"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 156,
+   "kind": "plain",
+   "name": "never offers Connect for a removed host, even in a failed state"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 163,
+   "kind": "plain",
+   "name": "keeps the label available to assistive tech but not on screen in icon-only mode"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 172,
+   "kind": "plain",
+   "name": "connects and mirrors the returned state so deferred PTY reattach can resume"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 195,
+   "kind": "plain",
+   "name": "does not activate the surrounding card when clicked"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 217,
+   "kind": "plain",
+   "name": "reports connect failures and resyncs target metadata so a ghost host converges"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 244,
+   "kind": "plain",
+   "name": "routes connect to the owning Orca server for a remote-owned target"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 264,
+   "kind": "plain",
+   "name": "suppresses a sibling card dialing a host that is already connecting"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 299,
+   "kind": "plain",
+   "name": "ignores a second click while its own connect is in flight"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 314,
+   "kind": "plain",
+   "name": "does not let Enter or Space bubble to the sidebar key handler"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 338,
+   "kind": "plain",
+   "name": "shows the connected glyph even if a stale removal tombstone is present"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 346,
+   "kind": "plain",
+   "name": "carries one height class across every actionable state"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+   "line": 372,
+   "kind": "each",
+   "name": "sizes the passive glyph for %s at size-3"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 23,
+   "kind": "plain",
+   "name": "WorktreeCardStatusSlot"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 43,
+   "kind": "plain",
+   "name": "lets the unread bell replace the visual status dot by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 63,
+   "kind": "plain",
+   "name": "overlays an unread badge on the status dot when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 89,
+   "kind": "plain",
+   "name": "suppresses the new-card unread badge while unread status is working"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 114,
+   "kind": "plain",
+   "name": "suppresses the new-card unread badge while unread status is permission"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 139,
+   "kind": "plain",
+   "name": "keeps legacy unread working cards on the unread bell control"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 161,
+   "kind": "plain",
+   "name": "shows status in the unread toggle affordance"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 179,
+   "kind": "plain",
+   "name": "keeps the quiet active dot ahead of PR status by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 198,
+   "kind": "plain",
+   "name": "uses PR status instead of the quiet active dot when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 221,
+   "kind": "plain",
+   "name": "uses the unified compact review glyph for GitLab MR status"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 243,
+   "kind": "plain",
+   "name": "uses PR status instead of the quiet done dot when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 263,
+   "kind": "plain",
+   "name": "uses PR status instead of the inactive dot when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 284,
+   "kind": "plain",
+   "name": "uses a branch icon with branch-only accessible copy by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 308,
+   "kind": "plain",
+   "name": "uses context-aware branch or folder path accessible copy"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 329,
+   "kind": "plain",
+   "name": "keeps the quiet dot when the row has no branch identity"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 350,
+   "kind": "plain",
+   "name": "keeps working activity ahead of PR status in new card style"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 374,
+   "kind": "plain",
+   "name": "keeps permission activity ahead of PR status in new card style"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 398,
+   "kind": "plain",
+   "name": "keeps unread ahead of PR status by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 420,
+   "kind": "plain",
+   "name": "overlays an unread badge on PR status when new card style is on"
+  },
+  {
+   "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+   "line": 450,
+   "kind": "plain",
+   "name": "overlays an unread badge on the branch icon in new card style"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 158,
+   "kind": "plain",
+   "name": "WorktreeContextMenu delete shortcut display"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 178,
+   "kind": "plain",
+   "name": "renders the delete shortcut badge for standard worktree delete"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 201,
+   "kind": "plain",
+   "name": "omits the delete shortcut on disabled Delete Worktree for primary checkout"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+   "line": 223,
+   "kind": "plain",
+   "name": "omits the shortcut badge when the action is unassigned"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+   "line": 147,
+   "kind": "plain",
+   "name": "WorktreeContextMenu and React #185"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+   "line": 148,
+   "kind": "plain",
+   "name": "opening the row context menu on its own does not trip the nested-update limit"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+   "line": 171,
+   "kind": "plain",
+   "name": "is blamed for a driver-owned cascade when its items mount past the limit"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "shouldRevealWorktreeDeveloperMenu"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "stays hidden for an ordinary right-click"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "reveals when Option/Alt was held at open time"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "stays hidden for a multi-workspace selection"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 44,
+   "kind": "plain",
+   "name": "selectMenuScopedMap (delete-teardown re-render guard)"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 52,
+   "kind": "plain",
+   "name": "returns the stable empty sentinel when the menu is closed"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "returns the live map synchronously once the menu is open"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "getDeleteStateForWorktreeHost"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 83,
+   "kind": "plain",
+   "name": "keeps host-qualified pending state on its matching row only"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "retains legacy unqualified state"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 97,
+   "kind": "plain",
+   "name": "shouldUseNativeContextMenu"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 98,
+   "kind": "plain",
+   "name": "uses the browser context menu for marked hovercard content"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "uses the browser context menu for text nodes inside marked content"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "keeps the worktree context menu for unmarked targets"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 127,
+   "kind": "plain",
+   "name": "shouldIgnoreNestedWorktreeContextMenuScope"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "allows the context menu scope that owns the event target"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 137,
+   "kind": "plain",
+   "name": "ignores context menu events owned by a nested scope"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 147,
+   "kind": "plain",
+   "name": "ignores context menu events from text nodes inside a nested scope"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 159,
+   "kind": "plain",
+   "name": "allows events from unscoped targets"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 169,
+   "kind": "plain",
+   "name": "shouldSuppressContextMenuFollowUpClick"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 170,
+   "kind": "plain",
+   "name": "suppresses the click emitted immediately after opening a context menu"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 174,
+   "kind": "plain",
+   "name": "does not suppress later unrelated clicks"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 178,
+   "kind": "plain",
+   "name": "keeps the 500 ms ctrl-click boundary inclusive"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 183,
+   "kind": "plain",
+   "name": "does not suppress clicks that predate the context menu timestamp"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 188,
+   "kind": "plain",
+   "name": "shouldContinueDeleteSiblingPositionRestore"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 189,
+   "kind": "plain",
+   "name": "stops once the delete row position has settled even when the row remains mounted"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 199,
+   "kind": "plain",
+   "name": "parent picker context menu affordance"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 200,
+   "kind": "plain",
+   "name": "offers unlink for valid inline-only legacy lineage after stable-update hydration"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 220,
+   "kind": "plain",
+   "name": "uses set/change labels based on valid parent presence"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 225,
+   "kind": "plain",
+   "name": "disables the parent picker while deleting or without candidates"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 233,
+   "kind": "plain",
+   "name": "snapshots the stable row anchor before the context menu closes"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 242,
+   "kind": "plain",
+   "name": "uses the child scope instead of climbing to a different workspace drag row"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 252,
+   "kind": "plain",
+   "name": "project removal from workspace context menus"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 253,
+   "kind": "plain",
+   "name": "routes primary workspace rows to project removal in non-repo grouped views"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 263,
+   "kind": "plain",
+   "name": "treats additional folder workspace rows as deletable workspace rows"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 272,
+   "kind": "plain",
+   "name": "planWorkspaceStatusAssignment (context-menu "
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 283,
+   "kind": "plain",
+   "name": "routes to board Linear-sync with ALL selected ids when the board wired a callback"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 295,
+   "kind": "plain",
+   "name": "falls back to local-only writes of only status-changed worktrees off the board"
+  },
+  {
+   "file": "components/sidebar/WorktreeContextMenu.test.ts",
+   "line": 306,
+   "kind": "plain",
+   "name": "writes nothing on the local-only path when every worktree already has the target status"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenu.test.tsx",
+   "line": 34,
+   "kind": "plain",
+   "name": "WorktreeDeveloperMenu"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenu.test.tsx",
+   "line": 40,
+   "kind": "plain",
+   "name": "shows the developer submenu with the parking action"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenu.test.tsx",
+   "line": 51,
+   "kind": "plain",
+   "name": "requests parking for the context worktree"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+   "line": 120,
+   "kind": "plain",
+   "name": "Developer submenu reveal"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+   "line": 126,
+   "kind": "plain",
+   "name": "hides the Developer submenu on a plain right-click"
+  },
+  {
+   "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+   "line": 134,
+   "kind": "plain",
+   "name": "reveals the Developer submenu when Option/Alt is held"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 210,
+   "kind": "plain",
+   "name": "WorktreeMetaDialog issue link row"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 229,
+   "kind": "plain",
+   "name": "seeds the chip and value from a GitHub link"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 236,
+   "kind": "plain",
+   "name": "seeds and saves the GitLab MR row through the GitLab slot"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 258,
+   "kind": "plain",
+   "name": "replaces a completed emoji shortcode in the display name"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 269,
+   "kind": "plain",
+   "name": "seeds the chip and value from a Linear link"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 276,
+   "kind": "plain",
+   "name": "flips to Linear when a linear.app issue URL is pasted"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 288,
+   "kind": "plain",
+   "name": "keeps the chip on GitHub when a bare issue key is typed"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 297,
+   "kind": "plain",
+   "name": "flips to GitHub when a GitHub issue URL is pasted over a Linear link"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 307,
+   "kind": "plain",
+   "name": "names the Linear issue that switching to GitHub would unlink"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 319,
+   "kind": "plain",
+   "name": "names both links when clearing the field would drop both"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 333,
+   "kind": "plain",
+   "name": "clears the displaced GitHub link when a Linear value is saved"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 350,
+   "kind": "plain",
+   "name": "sends no Linear keys when the workspace has no Linear link"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 363,
+   "kind": "plain",
+   "name": "qualifies a save with the host selected by the opening row"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 387,
+   "kind": "plain",
+   "name": "sends no comment when only the issue link changed"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 401,
+   "kind": "plain",
+   "name": "keeps the dialog open and reports why when the save fails"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 414,
+   "kind": "plain",
+   "name": "leaves the Linear link alone when only the comment is edited"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 434,
+   "kind": "plain",
+   "name": "blocks saving an unparseable Linear value"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 443,
+   "kind": "plain",
+   "name": "is read-only for a folder workspace"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 457,
+   "kind": "plain",
+   "name": "shows a folder workspace its own linked issue"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 466,
+   "kind": "plain",
+   "name": "keeps the baseline frozen when the store changes while open"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 492,
+   "kind": "plain",
+   "name": "resolves a bare Linear key across workspaces rather than the active organization"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 510,
+   "kind": "plain",
+   "name": "opens a stored Linear link directly from its organization key"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 529,
+   "kind": "plain",
+   "name": "does not open a lookup result after the field moved on"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 555,
+   "kind": "plain",
+   "name": "clears a Linear link added while the dialog was open"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 583,
+   "kind": "plain",
+   "name": "keeps the linked work item when the value is only respelled"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 614,
+   "kind": "plain",
+   "name": "shows the clicked row when the same workspace ID exists under two hosts"
+  },
+  {
+   "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+   "line": 625,
+   "kind": "plain",
+   "name": "dispatches nothing when the dialog is cancelled"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 88,
+   "kind": "plain",
+   "name": "WorktreeOpenInMenu"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 111,
+   "kind": "plain",
+   "name": "maps file manager labels by platform"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 117,
+   "kind": "plain",
+   "name": "disables the Open in submenu while deleting"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 127,
+   "kind": "plain",
+   "name": "stops menu item click propagation"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 140,
+   "kind": "plain",
+   "name": "uses the blocked-path toast without calling main IPC"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 156,
+   "kind": "plain",
+   "name": "shows an actionable toast when the host launcher fails"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 175,
+   "kind": "plain",
+   "name": "builds menu entries from configured launchers with file manager last"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 188,
+   "kind": "plain",
+   "name": "opens settings at the Open In Apps section"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 199,
+   "kind": "plain",
+   "name": "forwards the configured command when opening a configured launcher"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 213,
+   "kind": "plain",
+   "name": "blocks configured launchers in remote context before calling main IPC"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 230,
+   "kind": "plain",
+   "name": "enables only VS Code-compatible launchers for SSH paths"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 258,
+   "kind": "plain",
+   "name": "forwards SSH context for a supported VS Code launcher"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 273,
+   "kind": "plain",
+   "name": "blocks SSH local-only launchers before IPC with actionable copy"
+  },
+  {
+   "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+   "line": 287,
+   "kind": "plain",
+   "name": "shows the SSH alias recovery details returned by main"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+   "line": 167,
+   "kind": "plain",
+   "name": "WorktreeTitleInlineRename beginEditing"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+   "line": 173,
+   "kind": "plain",
+   "name": "opens the inline input and consumes the parent trigger once"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+   "line": 188,
+   "kind": "plain",
+   "name": "still consumes the trigger when the title is disabled"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+   "line": 200,
+   "kind": "plain",
+   "name": "ignores IME composition Enter before committing the edited title"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 92,
+   "kind": "plain",
+   "name": "WorktreeTitleInlineRename editor lifecycle"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 93,
+   "kind": "plain",
+   "name": "closes the shortcut-opened editor on Escape"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 101,
+   "kind": "plain",
+   "name": "closes the shortcut-opened editor once the rename commits"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 112,
+   "kind": "plain",
+   "name": "closes the shortcut-opened editor when it loses focus"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 122,
+   "kind": "plain",
+   "name": "reports both edit-mode transitions to the parent exactly once"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 133,
+   "kind": "plain",
+   "name": "reports the shortcut-open transition once in Strict Mode"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 145,
+   "kind": "plain",
+   "name": "opens the editor on double-click and reports it the same way"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 162,
+   "kind": "plain",
+   "name": "focuses and selects the current name when the editor opens"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 173,
+   "kind": "plain",
+   "name": "leaves an open editor untouched when the workspace is renamed elsewhere"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "line": 186,
+   "kind": "plain",
+   "name": "leaves an open editor untouched when an unread notification arrives"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 10,
+   "kind": "plain",
+   "name": "getWorktreeTitleRenameCommit"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 11,
+   "kind": "plain",
+   "name": "cancels blank or unchanged inline titles"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 19,
+   "kind": "plain",
+   "name": "trims and saves changed inline titles"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 27,
+   "kind": "plain",
+   "name": "WorktreeTitleInlineRename"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 28,
+   "kind": "plain",
+   "name": "treats only actual text overflow as truncation"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 34,
+   "kind": "plain",
+   "name": "renders the title as the double-click inline rename target"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 54,
+   "kind": "plain",
+   "name": "keeps read titles at the default foreground color unless requested"
+  },
+  {
+   "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+   "line": 66,
+   "kind": "plain",
+   "name": "dims read titles when requested by the experimental card style"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "worktree card agent summary"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "presents passive working as monitoring"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "keeps monitoring visible before a compact row prompt"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 68,
+   "kind": "plain",
+   "name": "hands the whole row to the send-target reason, and only then"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "lists interrupted outcomes before clean completions"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.stable-message.test.tsx",
+   "line": 77,
+   "kind": "plain",
+   "name": "CompactAgentRow stable assistant message"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.stable-message.test.tsx",
+   "line": 78,
+   "kind": "plain",
+   "name": "holds the last assistant line when a same-turn ping omits it"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.stable-message.test.tsx",
+   "line": 88,
+   "kind": "plain",
+   "name": "drops the held line when a new turn starts"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.stable-message.test.tsx",
+   "line": 96,
+   "kind": "plain",
+   "name": "never holds across pings for entries without a turn identity (stateStartedAt 0)"
+  },
+  {
+   "file": "components/sidebar/worktree-card-compact-agent-row.stable-message.test.tsx",
+   "line": 104,
+   "kind": "plain",
+   "name": "drops the held line when the agent leaves working"
+  },
+  {
+   "file": "components/sidebar/worktree-card-details-hover-state.test.tsx",
+   "line": 20,
+   "kind": "plain",
+   "name": "useWorktreeCardDetailsHoverControl"
+  },
+  {
+   "file": "components/sidebar/worktree-card-details-hover-state.test.tsx",
+   "line": 47,
+   "kind": "plain",
+   "name": "keeps the hover open while the review menu is open"
+  },
+  {
+   "file": "components/sidebar/worktree-card-details-hover-state.test.tsx",
+   "line": 63,
+   "kind": "plain",
+   "name": "closes the hover after the review menu dismisses a deferred close"
+  },
+  {
+   "file": "components/sidebar/worktree-card-details-hover-state.test.tsx",
+   "line": 80,
+   "kind": "plain",
+   "name": "clears a deferred close when the pointer returns before the menu closes"
+  },
+  {
+   "file": "components/sidebar/worktree-card-details-hover-state.test.tsx",
+   "line": 95,
+   "kind": "plain",
+   "name": "closes both layers from closeHover"
+  },
+  {
+   "file": "components/sidebar/worktree-card-dom-events.test.ts",
+   "line": 6,
+   "kind": "plain",
+   "name": "worktree card DOM events"
+  },
+  {
+   "file": "components/sidebar/worktree-card-dom-events.test.ts",
+   "line": 7,
+   "kind": "plain",
+   "name": "recognizes DOM events that originate inside the current target"
+  },
+  {
+   "file": "components/sidebar/worktree-card-dom-events.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "rejects portaled DOM events that bubble through the React tree"
+  },
+  {
+   "file": "components/sidebar/worktree-card-dom-events.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "supports text-node event targets inside the current target"
+  },
+  {
+   "file": "components/sidebar/worktree-card-jira-issue-display.test.ts",
+   "line": 7,
+   "kind": "plain",
+   "name": "getWorktreeCardJiraIssueDisplay"
+  },
+  {
+   "file": "components/sidebar/worktree-card-jira-issue-display.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "projects persisted Jira linked-item metadata for the workspace card"
+  },
+  {
+   "file": "components/sidebar/worktree-card-jira-issue-display.test.ts",
+   "line": 27,
+   "kind": "plain",
+   "name": "does not infer Jira from another provider"
+  },
+  {
+   "file": "components/sidebar/worktree-card-jira-issue-display.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "shows persisted Jira metadata only when the Jira display property is enabled"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "getWorktreeCardPrDisplay"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "uses cached PR details when available"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "falls back to linkedPR while PR details load"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "keeps linkedPR visible when PR details are unavailable"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "does not show a PR row for unlinked worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "ignores linked-lookup PR details when the worktree is unlinked"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "keeps an unlinked GitHub PR visible when branch provenance names the same PR"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "still suppresses unlinked linked-lookup details when branch provenance names a different PR"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 93,
+   "kind": "plain",
+   "name": "does not let a GitHub branch PR number corroborate an unlinked GitLab MR"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "does not let branch provenance override linked non-GitHub review metadata"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 111,
+   "kind": "plain",
+   "name": "shows branch-discovered GitHub PR details when the worktree is unlinked"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 119,
+   "kind": "plain",
+   "name": "hides a matching suppressed branch-discovered GitHub PR"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "lets an explicit GitHub link override stale suppression metadata"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 136,
+   "kind": "plain",
+   "name": "keeps a different branch-discovered GitHub PR visible"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 145,
+   "kind": "plain",
+   "name": "treats missing cache hints as unsafe for unlinked GitHub PR details"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 149,
+   "kind": "plain",
+   "name": "keeps the linked PR number visible when cached details belong to a different PR"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 157,
+   "kind": "plain",
+   "name": "uses cached GitLab MR details when linked metadata matches"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 161,
+   "kind": "plain",
+   "name": "keeps the linked GitLab MR number visible when cached details belong to a different MR"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 169,
+   "kind": "plain",
+   "name": "preserves branch-discovered hosted reviews for providers without worktree metadata"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 178,
+   "kind": "plain",
+   "name": "isCachedMergedBranchPRCurrentForWorktree"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 190,
+   "kind": "plain",
+   "name": "matches when the worktree sits exactly on the merged head"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 194,
+   "kind": "plain",
+   "name": "matches when the worktree head is a confirmed commit of the merged PR"
+  },
+  {
+   "file": "components/sidebar/worktree-card-pr-display.test.ts",
+   "line": 203,
+   "kind": "plain",
+   "name": "rejects a merged PR when the worktree head is neither the final head nor confirmed"
+  },
+  {
+   "file": "components/sidebar/worktree-card-status-inputs.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "worktree card status input selectors"
+  },
+  {
+   "file": "components/sidebar/worktree-card-status-inputs.test.ts",
+   "line": 44,
+   "kind": "plain",
+   "name": "stays shallow-equal when unrelated tabs receive PTY ids or pane titles"
+  },
+  {
+   "file": "components/sidebar/worktree-card-status-inputs.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "changes when this worktree receives a new live PTY id list"
+  },
+  {
+   "file": "components/sidebar/worktree-card-status-inputs.test.ts",
+   "line": 114,
+   "kind": "plain",
+   "name": "stays shallow-equal when wake updates only PTY bindings inside terminal layouts"
+  },
+  {
+   "file": "components/sidebar/worktree-card-status-inputs.test.ts",
+   "line": 154,
+   "kind": "plain",
+   "name": "returns one identity per store generation instead of rebuilding per call"
+  },
+  {
+   "file": "components/sidebar/worktree-card-status-inputs.test.ts",
+   "line": 181,
+   "kind": "plain",
+   "name": "carries the same identity across unrelated pane-title and PTY churn"
+  },
+  {
+   "file": "components/sidebar/worktree-card-status-inputs.test.ts",
+   "line": 207,
+   "kind": "plain",
+   "name": "returns the shared frozen empty for a worktree with no tabs"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 7,
+   "kind": "plain",
+   "name": "worktree card title display"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "keeps custom workspace titles"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 26,
+   "kind": "plain",
+   "name": "uses linked work titles instead of repeating the branch as the card title"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 36,
+   "kind": "plain",
+   "name": "keeps the stored title while linked titles are still loading"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 46,
+   "kind": "plain",
+   "name": "keeps the stored title when there is no linked work title"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "does not replace a branch-like workspace name with the repository name"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 64,
+   "kind": "plain",
+   "name": "uses linked work titles when the stored title is nullish and the branch is usable"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 82,
+   "kind": "plain",
+   "name": "uses Jira issue titles when the card title would otherwise be the branch"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "treats blank stored titles as absent"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 109,
+   "kind": "plain",
+   "name": "skips linked-title replacement when the branch name is nullish or blank"
+  },
+  {
+   "file": "components/sidebar/worktree-card-title-display.test.ts",
+   "line": 127,
+   "kind": "plain",
+   "name": "coerces legacy visible titles before downstream title operations"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 15,
+   "kind": "plain",
+   "name": "ReviewIcon"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 16,
+   "kind": "plain",
+   "name": "uses the provider-specific GitLab MR icon by default"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 22,
+   "kind": "plain",
+   "name": "can use the generic review icon for compact lanes"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 34,
+   "kind": "plain",
+   "name": "does not paint a manual-blocked GitLab pipeline like a passing one"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 50,
+   "kind": "plain",
+   "name": "gives a draft its own glyph and never paints it with a check tone"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 78,
+   "kind": "plain",
+   "name": "keeps check tones on open reviews so failing checks still stand out"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 90,
+   "kind": "plain",
+   "name": "renders merged reviews with the merge glyph"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 103,
+   "kind": "plain",
+   "name": "overrides the GitLab provider glyph for closed merge requests"
+  },
+  {
+   "file": "components/sidebar/worktree-review-helpers.test.tsx",
+   "line": 115,
+   "kind": "plain",
+   "name": "flags problems on a stateless row without ever claiming success"
+  }
+ ]
+}

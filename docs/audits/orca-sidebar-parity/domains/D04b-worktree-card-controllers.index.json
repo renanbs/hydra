@@ -1,0 +1,1000 @@
+{
+ "exports": {
+  "components/sidebar/active-worktree-focus-after-delete.ts": [
+   "prepareActiveWorktreeFocusAfterDelete"
+  ],
+  "components/sidebar/focused-agent-row-highlight.ts": [
+   "FocusedAgentRowHighlightState",
+   "getFocusedAgentPaneKeyForWorktree",
+   "useFocusedAgentPaneKey"
+  ],
+  "components/sidebar/local-base-ref-suggestion-toast.tsx": [
+   "showLocalBaseRefUpdateSuggestionToast"
+  ],
+  "components/sidebar/run-worktree-delete-with-toast.ts": [
+   "runWorktreeDeleteWithToast"
+  ],
+  "components/sidebar/truncated-sidebar-label.tsx": [
+   "isSidebarLabelTruncated",
+   "TruncatedSidebarLabel"
+  ],
+  "components/sidebar/use-confirmed-worktree-delete-targets.ts": [
+   "useConfirmedWorktreeDeleteTargets"
+  ],
+  "components/sidebar/use-delete-worktree-status-hydration.ts": [
+   "useDeleteWorktreeStatusHydration"
+  ],
+  "components/sidebar/use-worktree-activity-status.ts": [
+   "useWorktreeActivityStatus"
+  ],
+  "components/sidebar/use-worktree-activity-statuses.ts": [
+   "selectWorktreeActivityStatuses",
+   "useWorktreeActivityStatuses"
+  ],
+  "components/sidebar/use-worktree-card-activation-actions.ts": [
+   "useWorktreeCardActivationActions"
+  ],
+  "components/sidebar/use-worktree-card-controller.ts": [
+   "useWorktreeCardController",
+   "WorktreeCardController"
+  ],
+  "components/sidebar/use-worktree-card-foundation.ts": [
+   "useWorktreeCardFoundation"
+  ],
+  "components/sidebar/use-worktree-card-lifecycle-effects.ts": [
+   "useWorktreeCardLifecycleEffects"
+  ],
+  "components/sidebar/use-worktree-card-linked-details.ts": [
+   "useWorktreeCardLinkedDetails"
+  ],
+  "components/sidebar/use-worktree-card-review-details.ts": [
+   "useWorktreeCardReviewDetails"
+  ],
+  "components/sidebar/use-worktree-card-secondary-details.ts": [
+   "useWorktreeCardSecondaryDetails"
+  ],
+  "components/sidebar/use-worktree-card-workspace-actions.ts": [
+   "useWorktreeCardWorkspaceActions"
+  ],
+  "components/sidebar/use-worktree-issue-link.ts": [
+   "useWorktreeIssueLink"
+  ],
+  "components/sidebar/worktree-card-agent-ack-inputs.ts": [
+   "selectAcknowledgedAgentTimes"
+  ],
+  "components/sidebar/worktree-card-send-target-inputs.ts": [
+   "SendTargetInputsState",
+   "SendTargetControlInputsState",
+   "SendTargetControlInputs",
+   "EMPTY_SEND_TARGET_INPUTS",
+   "EMPTY_SEND_TARGET_CONTROL_INPUTS",
+   "selectSendTargetInputs",
+   "selectSendTargetControlInputs"
+  ],
+  "components/sidebar/worktree-meta-updates.ts": [
+   "WorktreeReviewProvider",
+   "WorktreeMetaSavedPayload",
+   "WorktreeMetaDraft",
+   "WorktreeMetaSnapshot",
+   "WorktreeMetaLiveLinks",
+   "parseExplicitGitHubIssueUrl",
+   "parseGitHubWorkItemNumberForMetaField",
+   "parseGitLabMergeRequestNumberForMetaField",
+   "isIssueFieldDirty",
+   "buildWorktreeMetaUpdates"
+  ],
+  "components/sidebar/worktree-name-suggestions.ts": [
+   "getSuggestedCreatureName",
+   "shouldApplySuggestedName"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+   "line": 59,
+   "text": "function clickButton(container: HTMLElement, label: string): void {"
+  },
+  {
+   "file": "components/sidebar/run-worktree-delete-with-toast.ts",
+   "line": 89,
+   "text": "label: translate('auto.components.sidebar.delete.worktree.flow.7488ed8711', 'View'),"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 8,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 11,
+   "text": "<div className={className} data-tooltip-content=\"\">"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 80,
+   "text": "expect(container.querySelector('[data-tooltip-content]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 86,
+   "text": "const longTooltip = container.querySelector('[data-tooltip-content]')"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 95,
+   "text": "expect(container.querySelector('[data-tooltip-content]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 98,
+   "text": "it('keeps the nested tooltip disabled when a parent hover owns the full identity', async () => {"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 101,
+   "text": "<TruncatedSidebarLabel text=\"feature/really-long-branch-name\" tooltipEnabled={false} />"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 106,
+   "text": "expect(container.querySelector('[data-tooltip-content]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 2,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 14,
+   "text": "tooltipEnabled?: boolean"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 15,
+   "text": "tooltipSide?: 'top' | 'right' | 'bottom' | 'left'"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 16,
+   "text": "tooltipSideOffset?: number"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 22,
+   "text": "tooltipEnabled = true,"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 23,
+   "text": "tooltipSide = 'right',"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 24,
+   "text": "tooltipSideOffset = 8"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 78,
+   "text": "if (!tooltipEnabled || !truncated) {"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 86,
+   "text": "side={tooltipSide}"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 87,
+   "text": "sideOffset={tooltipSideOffset}"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 29,
+   "text": "label: 'Send',"
+  }
+ ],
+ "shortcuts": [],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/use-worktree-issue-link.ts",
+   "line": 23,
+   "text": "let timer: ReturnType<typeof setTimeout> | undefined"
+  },
+  {
+   "file": "components/sidebar/use-worktree-issue-link.ts",
+   "line": 28,
+   "text": "timer = setTimeout(() => resolve(null), OPEN_ISSUE_TIMEOUT_MS)"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/truncated-sidebar-label.tsx",
+   "line": 52,
+   "text": "window.addEventListener('resize', updateTruncated)"
+  },
+  {
+   "file": "components/sidebar/use-delete-worktree-status-hydration.ts",
+   "line": 38,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-foundation.ts",
+   "line": 153,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+   "line": 59,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+   "line": 113,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+   "line": 161,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+   "line": 183,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+   "line": 208,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+   "line": 220,
+   "text": "window.addEventListener('focus', refreshLinearIssueIfVisible)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+   "line": 221,
+   "text": "document.addEventListener('visibilitychange', refreshLinearIssueIfVisible)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-lifecycle-effects.ts",
+   "line": 228,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/use-worktree-issue-link.ts",
+   "line": 177,
+   "text": "void window.api.shell.openUrl(linearIssueUrl)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-issue-link.ts",
+   "line": 194,
+   "text": "void window.api.shell.openUrl(url)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-issue-link.ts",
+   "line": 210,
+   "text": "void window.api.shell.openUrl(issueUrlFromInput)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-issue-link.ts",
+   "line": 219,
+   "text": "void window.api.shell.openUrl(cachedIssueUrl)"
+  },
+  {
+   "file": "components/sidebar/use-worktree-issue-link.ts",
+   "line": 236,
+   "text": "void window.api.shell.openUrl(url)"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "prepareActiveWorktreeFocusAfterDelete"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 91,
+   "kind": "plain",
+   "name": "focuses the most-recently-visited non-base sibling of the same project"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "falls back to the base/primary worktree when no other workspace remains"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 114,
+   "kind": "plain",
+   "name": "does not re-focus a sibling hosted on a torn-down runtime-owned SSH target"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 130,
+   "kind": "plain",
+   "name": "stays within the deleted worktree project instead of jumping to another project"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 148,
+   "kind": "plain",
+   "name": "does not steal focus when the deleted worktree was not the active one"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 159,
+   "kind": "plain",
+   "name": "does not reclaim focus when the user navigated away during the delete"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 172,
+   "kind": "plain",
+   "name": "does not steal focus when the delete starts from a non-terminal view"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 186,
+   "kind": "plain",
+   "name": "does not reclaim focus when the user leaves terminal view during the delete"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 198,
+   "kind": "plain",
+   "name": "does not steal focus when a pending creation panel is active before delete"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 212,
+   "kind": "plain",
+   "name": "does not reclaim focus when pending creation opens during the delete"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 224,
+   "kind": "plain",
+   "name": "skips workspaces that are themselves mid-delete when picking a successor"
+  },
+  {
+   "file": "components/sidebar/active-worktree-focus-after-delete.test.ts",
+   "line": 237,
+   "kind": "plain",
+   "name": "does not steal focus when a non-worktree workspace is active"
+  },
+  {
+   "file": "components/sidebar/focused-agent-row-highlight.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "getFocusedAgentPaneKeyForWorktree"
+  },
+  {
+   "file": "components/sidebar/focused-agent-row-highlight.test.ts",
+   "line": 85,
+   "kind": "plain",
+   "name": "returns the focused pane key when that pane has a live agent status"
+  },
+  {
+   "file": "components/sidebar/focused-agent-row-highlight.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "highlights a focused row whose status has decayed past freshness"
+  },
+  {
+   "file": "components/sidebar/focused-agent-row-highlight.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "does not return another split pane in the same terminal tab"
+  },
+  {
+   "file": "components/sidebar/focused-agent-row-highlight.test.ts",
+   "line": 117,
+   "kind": "plain",
+   "name": "does not highlight while another surface type is active"
+  },
+  {
+   "file": "components/sidebar/focused-agent-row-highlight.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "returns retained agent row pane keys for the focused pane"
+  },
+  {
+   "file": "components/sidebar/focused-agent-row-highlight.test.ts",
+   "line": 145,
+   "kind": "plain",
+   "name": "returns migration-unsupported agent row pane keys for the focused pane"
+  },
+  {
+   "file": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+   "line": 77,
+   "kind": "plain",
+   "name": "showLocalBaseRefUpdateSuggestionToast"
+  },
+  {
+   "file": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+   "line": 78,
+   "kind": "plain",
+   "name": "does nothing without a suggestion"
+  },
+  {
+   "file": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+   "line": 83,
+   "kind": "plain",
+   "name": "turns on the setting and confirms from the Keep main up to date button"
+  },
+  {
+   "file": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+   "line": 100,
+   "kind": "plain",
+   "name": "reports failure when enabling cannot persist the setting"
+  },
+  {
+   "file": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+   "line": 118,
+   "kind": "plain",
+   "name": "deep-links to the Git setting and closes the toast from the Settings link"
+  },
+  {
+   "file": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+   "line": 138,
+   "kind": "plain",
+   "name": "does not record a permanent dismissal when opening the Git setting"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 18,
+   "kind": "plain",
+   "name": "isSidebarLabelTruncated"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 19,
+   "kind": "plain",
+   "name": "returns false when the label fits"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 24,
+   "kind": "plain",
+   "name": "returns true when the label overflows"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 29,
+   "kind": "plain",
+   "name": "TruncatedSidebarLabel"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 75,
+   "kind": "plain",
+   "name": "remeasures when the branch text changes without a resize event"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 98,
+   "kind": "plain",
+   "name": "keeps the nested tooltip disabled when a parent hover owns the full identity"
+  },
+  {
+   "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+   "line": 111,
+   "kind": "plain",
+   "name": "keeps one ResizeObserver across a label text change"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-status.test.tsx",
+   "line": 103,
+   "kind": "plain",
+   "name": "useWorktreeActivityStatus"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-status.test.tsx",
+   "line": 124,
+   "kind": "plain",
+   "name": "keeps a restored offscreen working agent yellow from the hook snapshot"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-status.test.tsx",
+   "line": 145,
+   "kind": "plain",
+   "name": "lets a fresh hook done state override the same pane stale working title"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-status.test.tsx",
+   "line": 174,
+   "kind": "plain",
+   "name": "lets a retained done row override the same pane stale working title"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-status.test.tsx",
+   "line": 209,
+   "kind": "plain",
+   "name": "does not keep the card working when all retained parent agents are done"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-status.test.tsx",
+   "line": 252,
+   "kind": "plain",
+   "name": "lets a legacy numeric done hook override the matching stale working title"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-status.test.tsx",
+   "line": 277,
+   "kind": "plain",
+   "name": "lets a completed worker suppress its parent pane stale working title"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-status.test.tsx",
+   "line": 315,
+   "kind": "plain",
+   "name": "scopes cached agent summaries to the matching worktree"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-statuses.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "selectWorktreeActivityStatuses"
+  },
+  {
+   "file": "components/sidebar/use-worktree-activity-statuses.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "stays shallow-equal when an unrelated worktree receives activity updates"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+   "line": 112,
+   "kind": "plain",
+   "name": "useWorktreeCardSecondaryDetails store subscriptions"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+   "line": 113,
+   "kind": "plain",
+   "name": "adds no store listener of its own beyond the hooks it composes"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+   "line": 142,
+   "kind": "plain",
+   "name": "reads the cache TTL from the passed settings"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+   "line": 158,
+   "kind": "plain",
+   "name": "reports no TTL while the aggregate cache timer is suppressed"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+   "line": 173,
+   "kind": "plain",
+   "name": "writes a suppression tombstone when the user unlinks a displayed GitHub PR"
+  },
+  {
+   "file": "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx",
+   "line": 201,
+   "kind": "plain",
+   "name": "surfaces a failed GitHub unlink after the optimistic card update is reverted"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-ack-inputs.test.tsx",
+   "line": 30,
+   "kind": "plain",
+   "name": "selectAcknowledgedAgentTimes"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-ack-inputs.test.tsx",
+   "line": 49,
+   "kind": "plain",
+   "name": "projects only this card rows so unrelated acknowledgements stay shallow-equal"
+  },
+  {
+   "file": "components/sidebar/worktree-card-agent-ack-inputs.test.tsx",
+   "line": 78,
+   "kind": "plain",
+   "name": "updates when one of this card rows is acknowledged"
+  },
+  {
+   "file": "components/sidebar/worktree-card-markdown-isolation.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "worktree card markdown performance isolation"
+  },
+  {
+   "file": "components/sidebar/worktree-card-markdown-isolation.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "keeps CommentMarkdown off the renderer boot graph entirely"
+  },
+  {
+   "file": "components/sidebar/worktree-card-markdown-isolation.test.ts",
+   "line": 86,
+   "kind": "plain",
+   "name": "routes both sidebar markdown surfaces through the shared lazy boundary"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "selectSendTargetInputs"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "returns the shared empty constant when the popover does not target this worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "stays the stable empty constant when the popover targets a different worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "exposes the live maps when the popover targets this worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 73,
+   "kind": "plain",
+   "name": "shallow-changes only when a subscribed map reference actually changes while active"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "selectSendTargetControlInputs"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 93,
+   "kind": "plain",
+   "name": "stays stable across global epoch changes while the picker is closed"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 108,
+   "kind": "plain",
+   "name": "stays stable when the picker targets another worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+   "line": 117,
+   "kind": "plain",
+   "name": "tracks the mode and freshness epoch only for the targeted worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 61,
+   "kind": "plain",
+   "name": "buildWorktreeMetaUpdates"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "writes only the GitLab MR slot in GitLab mode"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 69,
+   "kind": "plain",
+   "name": "accepts only positive MR references for the GitLab review row"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 91,
+   "kind": "plain",
+   "name": "emits no link keys when the issue field is untouched"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 105,
+   "kind": "plain",
+   "name": "writes a GitHub issue number and clears the Linear slots"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "emits no Linear clear when the workspace holds no Linear link"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "writes a bare Linear identifier and clears the stored organization key"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 134,
+   "kind": "plain",
+   "name": "takes the organization key from a Linear issue URL"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 148,
+   "kind": "plain",
+   "name": "clears every provider slot when the issue field is emptied"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 163,
+   "kind": "plain",
+   "name": "treats a provider switch with unchanged text as dirty"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 173,
+   "kind": "plain",
+   "name": "displaces a Linear linked work item when the issue field changes"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 190,
+   "kind": "plain",
+   "name": "leaves a PR-typed work item alone"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 203,
+   "kind": "plain",
+   "name": "leaves work items owned by other providers alone"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 218,
+   "kind": "plain",
+   "name": "emits nothing when a GitHub number is respelled with a hash"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 228,
+   "kind": "plain",
+   "name": "emits nothing when a Linear identifier is respelled in lower case"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 238,
+   "kind": "plain",
+   "name": "emits nothing when a Linear identifier is respelled as its stored URL"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 254,
+   "kind": "plain",
+   "name": "records an organization key for a stored bare identifier without displacing it"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 272,
+   "kind": "plain",
+   "name": "displaces the work item when a URL names another organization"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 295,
+   "kind": "plain",
+   "name": "clears a Linear link added after the snapshot was taken"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 302,
+   "kind": "plain",
+   "name": "clears a Linear link added after the snapshot when the field is emptied"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 313,
+   "kind": "plain",
+   "name": "ignores a provider switch on an empty field"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 325,
+   "kind": "plain",
+   "name": "does not displace a Linear work item when the issue field is clean"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 332,
+   "kind": "plain",
+   "name": "leaves links untouched for unparseable issue input"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 344,
+   "kind": "plain",
+   "name": "clears a display name with empty string, never a present-undefined key"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 350,
+   "kind": "plain",
+   "name": "rejects issue URLs in the PR input"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 356,
+   "kind": "plain",
+   "name": "accepts PR URLs in the PR input"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 362,
+   "kind": "plain",
+   "name": "records suppression when the user clears an explicit PR link"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 369,
+   "kind": "plain",
+   "name": "does not invent suppression for an already-unlinked PR field"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 373,
+   "kind": "plain",
+   "name": "does not suppress a PR linked in the background when the PR field is untouched"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 379,
+   "kind": "plain",
+   "name": "accepts issue URLs in the issue input"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 394,
+   "kind": "plain",
+   "name": "rejects PR URLs in the issue input"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 400,
+   "kind": "plain",
+   "name": "emits no comment when the note is unchanged"
+  },
+  {
+   "file": "components/sidebar/worktree-meta-updates.test.ts",
+   "line": 410,
+   "kind": "plain",
+   "name": "clears a comment with empty string, never a present-undefined key"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "getSuggestedCreatureName"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "picks the first unused name when the RNG selects index 0"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 21,
+   "kind": "plain",
+   "name": "dedupes against worktrees in EVERY repo, not just one"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 33,
+   "kind": "plain",
+   "name": "never reuses a name already used in another repo"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "selects randomly from the unused pool"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 54,
+   "kind": "plain",
+   "name": "falls back to suffixed variants after the base list is exhausted"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "never reissues a retired name whose workspace is already deleted"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 66,
+   "kind": "plain",
+   "name": "treats retired names case-insensitively"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "retires names on top of live worktrees rather than replacing that check"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 82,
+   "kind": "plain",
+   "name": "skips a retired suffixed variant when falling back past an exhausted pool"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 90,
+   "kind": "plain",
+   "name": "treats used names case-insensitively"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "handles Windows-style worktree paths when deriving used basenames"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "handles stored worktree paths with trailing separators"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 117,
+   "kind": "plain",
+   "name": "shouldApplySuggestedName"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "applies a suggestion when the field is blank"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "applies a recomputed suggestion when the current value is still the prior suggestion"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 127,
+   "kind": "plain",
+   "name": "does not overwrite a user-edited custom name when the repo selection changes"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 132,
+   "kind": "plain",
+   "name": "MARINE_CREATURES"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "is non-empty and unique after normalization and sanitization"
+  },
+  {
+   "file": "components/sidebar/worktree-name-suggestions.test.ts",
+   "line": 143,
+   "kind": "plain",
+   "name": "avoids names that read poorly as UI defaults"
+  }
+ ]
+}

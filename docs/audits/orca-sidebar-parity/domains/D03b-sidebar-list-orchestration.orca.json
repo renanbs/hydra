@@ -1,0 +1,2162 @@
+{
+  "domain": "D03b-sidebar-list-orchestration",
+  "rows": [
+    {
+      "id": "D03b-001",
+      "capability": "Redimensionamento da largura do sidebar esquerdo com cursor interativo, limites mínimo/máximo e atualização de variável CSS em tempo real",
+      "surface": "borda direita do sidebar esquerdo (resize handle)",
+      "trigger": "arrastar a alça de redimensionamento na borda direita do sidebar",
+      "behaviors": [
+        "Permite redimensionar a largura do sidebar entre 220px (MIN_WIDTH) e 500px (MAX_WIDTH)",
+        "Aplica classe CSS de hover e feedback ativo na linha divisória (WORKTREE_SIDEBAR_RESIZE_HANDLE_CLASS_NAME e WORKTREE_SIDEBAR_RESIZE_HANDLE_LINE_CLASS_NAME)",
+        "Atualiza a variável CSS live --workspace-sidebar-live-width no elemento raiz durante o arrasto",
+        "Persiste a largura final no store via setSidebarWidth ao soltar o ponteiro"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sidebarOpen",
+        "useAppStore.sidebarWidth",
+        "useAppStore.setSidebarWidth"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:33-40",
+        "components/sidebar/index.tsx:112-114",
+        "components/sidebar/index.tsx:139-147",
+        "components/sidebar/index.tsx:226-240"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:268 :: WorktreeCard memo bail-out across epoch bumps"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-002",
+      "capability": "Alternância de modo do corpo do sidebar entre Workspaces e Agents com preservação de estado de colapso e scroll",
+      "surface": "corpo do sidebar esquerdo",
+      "trigger": "alteração de sidebarBody no store ('workspaces' vs 'agents')",
+      "behaviors": [
+        "Renderiza lazy SidebarAgentsList quando sidebarBody === 'agents' com fallback de carregamento",
+        "Provê ActivityThreadCollapseContext para gerenciar e preservar grupos colapsados de threads de agentes (agentsCollapsedGroupKeys) mesmo quando a lista é desmontada",
+        "Preserva a posição de rolagem dos agentes (agentsScrollTopRef) ao alternar entre visualizações",
+        "Passa filtros de leitura (agentReadFilter), agrupamento (agentGroupBy) e query de busca de agentes"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sidebarBody",
+        "useAppStore.agentsReadFilter",
+        "useAppStore.setAgentsReadFilter",
+        "useAppStore.agentsGroupBy",
+        "useAppStore.setAgentsGroupBy"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:22-24",
+        "components/sidebar/index.tsx:57-88",
+        "components/sidebar/index.tsx:168-182"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:287 :: does not re-render cards on an order-preserving sortEpoch bump"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-003",
+      "capability": "Redirecionamento automático do modo de corpo do sidebar de Agents para Workspaces ao receber solicitação de reveal de worktree",
+      "surface": "background / gerenciador de navegação do sidebar",
+      "trigger": "evento ou solicitação de reveal de workspace quando o sidebar está no modo 'agents'",
+      "behaviors": [
+        "Observa solicitações de reveal de workspace através do hook useWorkspaceRevealBodyRedirect",
+        "Redireciona automaticamente o sidebarBody para 'workspaces' para permitir a exibição e seleção do card correspondente"
+      ],
+      "background_activity": "watcher reativo sobre solicitações de reveal",
+      "state_inputs": [
+        "useAppStore.sidebarOpen",
+        "useAppStore.sidebarBody"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:17",
+        "components/sidebar/index.tsx:149"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:163 :: points aria-activedescendant at the active folder workspace row"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-004",
+      "capability": "Resolução dinâmica de variáveis de estilo e tema do sidebar esquerdo com base em preferências do sistema e configurações",
+      "surface": "container raiz do sidebar esquerdo",
+      "trigger": "mudança de tema do sistema (dark/light) ou alteração de configurações de aparência",
+      "behaviors": [
+        "Monitora preferências de modo escuro via useSystemPrefersDark",
+        "Resolve propriedades CSS inline do sidebar esquerdo via resolveLeftSidebarStyleVariables(settings, systemPrefersDark)",
+        "Aplica estilos inline calculados no elemento container principal do sidebar"
+      ],
+      "background_activity": "listener reativo de MediaQuery do sistema para tema",
+      "state_inputs": [
+        "useAppStore.settings",
+        "useSystemPrefersDark"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:18-19",
+        "components/sidebar/index.tsx:92-96",
+        "components/sidebar/index.tsx:157"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:310 :: re-renders a card when its own worktree data changes"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-005",
+      "capability": "Sincronização automática do catálogo de worktrees após alteração na contagem de repositórios",
+      "surface": "background do sidebar",
+      "trigger": "alteração na quantidade de repositórios cadastrados após a conclusão do refresh inicial de inicialização",
+      "behaviors": [
+        "Rastreia mudanças no comprimento da lista de repositórios (repoCount)",
+        "Aciona fetchAllWorktrees() quando a contagem muda e é maior que zero, garantindo que novos projetos tenham seus worktrees carregados sem disparar scans redundantes durante o boot"
+      ],
+      "background_activity": "watcher reativo de contagem de repositórios",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.startupWorktreeRefreshCompleted",
+        "useAppStore.fetchAllWorktrees"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:54-55",
+        "components/sidebar/index.tsx:89",
+        "components/sidebar/index.tsx:116-125"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.group-headers.test.ts:123 :: renders project group headers when repos import before worktree rows load"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-006",
+      "capability": "Hospedagem e carregamento preguiçoso de caixas de diálogo modais fora da hierarquia do sidebar",
+      "surface": "camada externa de modais (portal/root)",
+      "trigger": "ativação de modal no store (activeModal)",
+      "behaviors": [
+        "Renderiza diálogos com lazyWithRetry fora da árvore DOM do sidebar para evitar problemas de clipping com overflow",
+        "Suporta modais: 'edit-meta' (WorktreeMetaDialog), 'confirm-remove-folder' (RemoveFolderDialog), 'worktree-visibility' (WorktreeVisibilityDialog), 'confirm-orca-yaml-hooks' (OrcaYamlTrustDialog), 'forget-ssh-workspace' (ForgetSshWorkspaceDialog) e AgentDashboardSidebarHost"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeModal",
+        "useAppStore.settings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:26-31",
+        "components/sidebar/index.tsx:90",
+        "components/sidebar/index.tsx:243-251",
+        "components/sidebar/index.tsx:263-273"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:462 :: double-clicking a nested child opens edit metadata for the child only"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-007",
+      "capability": "Integração do painel lateral Kanban de Workspaces com o ciclo de vida do sidebar e pré-visualização de arrasto",
+      "surface": "gaveta lateral do Kanban (WorkspaceKanbanDrawer)",
+      "trigger": "abertura/fechamento do Kanban, arrasto de cards ou fechamento do sidebar",
+      "behaviors": [
+        "Gerencia estado de abertura e renderização do drawer de Kanban via useWorkspaceBoardPanel",
+        "Fecha automaticamente o painel Kanban quando o sidebar principal é fechado",
+        "Suporta estados de pré-visualização de drag (workspaceBoardDragPreviewOpen) e preservação de estado aberto quando menus internos estão ativos",
+        "Passa estilos do sidebar e visibilidade da barra de status para o drawer"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sidebarOpen",
+        "useAppStore.statusBarVisible"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:10",
+        "components/sidebar/index.tsx:98-110",
+        "components/sidebar/index.tsx:127-131",
+        "components/sidebar/index.tsx:252-262"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:405 :: moves a dragged parent and its visible lineage child to the dropped lane"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-008",
+      "capability": "Exibição de affordance visual e rastreamento de profundidade durante arrasto de pastas do sistema operacional para o sidebar",
+      "surface": "área inteira do sidebar esquerdo (overlay de drop)",
+      "trigger": "evento onDragEnter/onDragOver/onDragLeave com tipos de arquivo nativos (native file drag)",
+      "behaviors": [
+        "Rastreia profundidade de eventos de drag enter/leave (dragDepthRef) para evitar tremulação ao passar sobre filhos",
+        "Exibe overlay centralizado com ícone, título e descrição de acordo com o estado:",
+        "Estado 'ready': tom verde/padrão, ícone FolderPlus, label 'Drop folder to add project', descrição 'Local folders and Git repositories'",
+        "Estado 'blocked': tom destrutivo/vermelho, ícone FolderPlus, label 'Server runtime active', descrição 'Use Add Project for host paths' quando runtime remoto está ativo",
+        "Estado 'busy': tom neutro, ícone Loader2 girando, label 'Checking folder', descrição 'Preparing the project add flow' durante verificação",
+        "Limpa estado de drag globalmente nos eventos document 'drop' e 'dragend'"
+      ],
+      "background_activity": "listeners globais de documento para drop e dragend",
+      "state_inputs": [
+        "useAppStore.settings",
+        "useAppStore.sidebarOpen"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-project-drop.ts:9-12",
+        "components/sidebar/sidebar-project-drop.ts:32-80",
+        "components/sidebar/useSidebarProjectDrop.ts:22-47",
+        "components/sidebar/useSidebarProjectDrop.ts:127-165",
+        "components/sidebar/index.tsx:97",
+        "components/sidebar/index.tsx:155",
+        "components/sidebar/index.tsx:207-224"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-project-drop.test.ts:25 :: isRemoteRuntimeActive",
+        "components/sidebar/sidebar-project-drop.test.ts:31 :: getSidebarProjectDropAffordance"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-009",
+      "capability": "Validação e roteamento de pastas soltas no sidebar para o assistente de adição de projetos",
+      "surface": "sidebar esquerdo (IPC onFileDrop)",
+      "trigger": "soltura (drop) de arquivos/pastas nativas do SO no sidebar",
+      "behaviors": [
+        "Filtra eventos para o target NATIVE_FILE_DROP_TARGET.projectSidebar",
+        "Valida caminhos recebidos via resolveSidebarProjectDropPath (rejeita vazio; emite aviso 'Drop one folder at a time.' para múltiplos caminhos)",
+        "Bloqueia soltura se ambiente runtime for remoto com toast 'Local folder drops are unavailable for server runtimes.' e orientação para usar Add Project",
+        "Autoriza caminho no backend via window.api.fs.authorizeExternalPath({ targetPath })",
+        "Verifica se caminho é diretório via window.api.fs.stat({ filePath }); exibe erro 'Drop a folder to add it as a project.' se não for diretório",
+        "Abre o modal 'add-repo' com { droppedLocalPath: path } em caso de sucesso ou exibe toast de erro com detalhes em falhas"
+      ],
+      "background_activity": "listener IPC window.api.ui.onFileDrop",
+      "state_inputs": [
+        "useAppStore.settings",
+        "useAppStore.openModal"
+      ],
+      "backend_contract": [
+        "window.api.fs.authorizeExternalPath -> main fs handler",
+        "window.api.fs.stat -> main fs stat handler",
+        "window.api.ui.onFileDrop -> main ui file drop event broadcaster"
+      ],
+      "orca_evidence": [
+        "components/sidebar/sidebar-project-drop.ts:4-8",
+        "components/sidebar/sidebar-project-drop.ts:13-30",
+        "components/sidebar/useSidebarProjectDrop.ts:49-125"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-project-drop.test.ts:8 :: resolveSidebarProjectDropPath",
+        "components/sidebar/sidebar-project-drop.test.ts:9 :: accepts exactly one dropped path",
+        "components/sidebar/sidebar-project-drop.test.ts:16 :: rejects empty and multi-path drops before routing",
+        "components/sidebar/sidebar-project-drop.test.ts:26 :: distinguishes local runtime from active server runtime"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-010",
+      "capability": "Orquestração central de seletores granulares e memoização de insumos de cache de revisão para a lista de worktrees",
+      "surface": "componente WorktreeList",
+      "trigger": "renderização da lista de worktrees e alterações no store",
+      "behaviors": [
+        "Consome seletores otimizados useAllWorktrees, useRepoMap, useWorktreeMap e projeção de hosts useProjectHostSetupProjection",
+        "Extrai insumos de cache de PR e revisão hospedada via selectWorktreeListReviewCacheInputs com useShallow para evitar renderizações supérfluas",
+        "Calcula worktree ativa corrente considerando workspace-key e worktreeId via getActiveSidebarWorkspaceId",
+        "Obtém política de exibição de fixados (pinnedDisplayPolicy) e host padrão de configurações"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAllWorktrees",
+        "useRepoMap",
+        "useWorktreeMap",
+        "useProjectHostSetupProjection",
+        "useAppStore.repos",
+        "useAppStore.worktreeLineageById",
+        "useAppStore.workspaceLineageByChildKey",
+        "useAppStore.activeWorktreeId",
+        "useAppStore.activeWorkspaceExecutionHostId",
+        "useAppStore.activeWorkspaceKey",
+        "useAppStore.groupBy",
+        "useAppStore.workspaceStatuses",
+        "useAppStore.sortBy",
+        "useAppStore.projectOrderBy",
+        "useAppStore.settings",
+        "useAppStore.worktreeCardProperties"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:50-105"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:268 :: WorktreeCard memo bail-out across epoch bumps",
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:287 :: does not re-render cards on an order-preserving sortEpoch bump",
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:310 :: re-renders a card when its own worktree data changes",
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:334 :: tracks Smart attention changes that preserve the displayed order"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-011",
+      "capability": "Integração do pipeline de ordenação, catálogo de ordem manual e derivação de worktrees visíveis",
+      "surface": "componente WorktreeList",
+      "trigger": "mudança de modo de ordenação (sortBy) ou alteração nos filtros de worktree",
+      "behaviors": [
+        "Obtém ordem de IDs ordenados através de useSidebarWorktreeSortOrder com base no algoritmo selecionado",
+        "Constrói catálogo de ordem manual para worktrees e workspaces de pasta via buildWorktreeManualOrderCatalog",
+        "Deriva conjunto de worktrees visíveis e mapeamento de dispositivos pareados via useVisibleSidebarWorktrees, respeitando linhagem e host padrão"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarWorktreeFilters",
+        "useSidebarWorktreeSortOrder",
+        "useVisibleSidebarWorktrees"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:106-122"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sort-label-ordering.test.ts:107 :: worktree sort label ordering",
+        "components/sidebar/worktree-sort-label-ordering.test.ts:108 :: matches the pre-precompute comparator on every pair",
+        "components/sidebar/worktree-sort-label-ordering.test.ts:119 :: produces byte-for-byte identical sort output in every mode",
+        "components/sidebar/worktree-sort-label-ordering.test.ts:132 :: falls back to deriving labels for rows missing from the precomputed map",
+        "components/sidebar/worktree-sort-label-ordering.test.ts:140 :: keys labels by row so a two-host id collision keeps each row its own label"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-012",
+      "capability": "Expansão automática de grupos colapsados para alvos de envio de agente e insumos de revisão",
+      "surface": "componente WorktreeList",
+      "trigger": "alteração de grupos colapsados, alvo de agente ou estado de revisão",
+      "behaviors": [
+        "Calcula effectiveCollapsedGroups através de useEffectiveCollapsedGroups",
+        "Garante que o grupo que contém o alvo de envio de comando de agente (agentSendTargetWorktreeId) seja mantido expandido",
+        "Mantém desacoplada a expansão da lista de agentes em relação à expansão de filhos na linhagem de worktrees"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useEffectiveCollapsedGroups",
+        "useAppStore.collapsedGroups",
+        "useAgentSendTargetWorktreeId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:106",
+        "components/sidebar/WorktreeList.tsx:123-139"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:449 :: WorktreeCard agent-list <-> child-worktrees expansion coupling",
+        "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:471 :: [full mode] both toggles render independently at mount",
+        "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:491 :: [full mode] toggling AGENTS does NOT change the child-worktrees chip (agents -> children uncoupled)",
+        "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:511 :: [full mode] toggling CHILD WORKTREES still remounts the card but PRESERVES agent expansion (regression)",
+        "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:540 :: [full mode] CONTROL: a re-render that does NOT change collapsedGroups preserves agent state (isolates the remount)"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-013",
+      "capability": "Filtragem de escopo de visibilidade por host e integração de cartões de worktrees externos/importados",
+      "surface": "componente WorktreeList",
+      "trigger": "alteração de escopo de host ou detecção de novos worktrees externos no disco",
+      "behaviors": [
+        "Calcula escopo visível de repositórios, grupos de projetos e workspaces de pasta via useSidebarHostVisibleScope",
+        "Identifica worktrees importados e gerencia a caixa de entrada de novos worktrees externos detectados via useSidebarExternalWorktreeCards",
+        "Permite aceitar/exibir ou suprimir a descoberta de worktrees externos por repositório"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarHostVisibleScope",
+        "useSidebarExternalWorktreeCards",
+        "useAppStore.detectedWorktreesByRepo"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:140-153"
+      ],
+      "tests": [
+        "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:7 :: buildRows with pinned worktrees",
+        "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:8 :: emits an imported worktrees card at the top of repo-group rows",
+        "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:45 :: suppresses the repo-group imported worktrees card when the repo group is collapsed",
+        "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:67 :: emits a repo header and imported worktrees card when no visible worktree rows remain",
+        "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:96 :: emits an empty ungrouped repo placeholder before imported cards are merged",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:17 :: buildRows with pinned worktrees",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:18 :: groups Windows host and WSL setups on the same runtime host",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:99 :: uses saved host labels for mixed-host sidebar card badges",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:158 :: uses the registered SSH target label for openclaw rows",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:205 :: shows distinct Orca server names when status grouping mixes runtime hosts"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-014",
+      "capability": "Geração do modelo de linhas de seção do sidebar com ordenação de projetos e políticas de fixação",
+      "surface": "componente WorktreeList",
+      "trigger": "atualização do modelo de linhas da lista de worktrees",
+      "behaviors": [
+        "Constrói o modelo de linhas renderizáveis (rowModel) através de useSidebarSectionRows",
+        "Aplica critérios de ordenação de projetos (projectOrderBy), política de exibição de itens fixados (pinnedDisplayPolicy) e identificadores de repositórios placeholder",
+        "Fornece manipuladores para reordenação de seções de host (handleReorderHostSections) e controle de estado de arrasto de host (setHostDragActive)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarSectionRows",
+        "useAppStore.projectOrderBy",
+        "useAppStore.settings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:154-177"
+      ],
+      "tests": [
+        "components/sidebar/worktree-list-groups-project-order.test.ts:8 :: buildRows project grouping order",
+        "components/sidebar/worktree-list-groups-project-order.test.ts:48 :: orders repo headers by explicit repoOrder, not first-encounter",
+        "components/sidebar/worktree-list-groups-project-order.test.ts:60 :: places unknown repo ids last and sorts them by label",
+        "components/sidebar/worktree-list-groups-project-order.test.ts:68 :: orders repo headers by max(lastActivityAt) per repo in Recent mode",
+        "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:69 :: pinned rows on a multi-host sidebar",
+        "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:84 :: labels pinned rows when the only other host is itself pinned",
+        "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:99 :: labels both copies when pinned worktrees also show in their groups",
+        "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:109 :: draws no badge on a single-host sidebar even with a pinned row"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-015",
+      "capability": "Gerenciamento de seleção múltipla e mutações de status/pino/ordem de worktrees na lista",
+      "surface": "componente WorktreeList",
+      "trigger": "gestos de seleção (click, Shift/Cmd click) e ações de mutação de status ou arrasto",
+      "behaviors": [
+        "Rastreia seleção múltipla de worktrees via useSidebarWorktreeSelection",
+        "Disponibiliza mutações via useWorktreeStatusMutations: mover para status (moveWorktreeToStatus, moveWorktreesToStatus, moveWorktreesToStatusAtIndex), fixar/desafixar (pinWorktree, pinWorktrees), soltar no quadro Kanban (dropWorktreesOnWorkspaceBoard) e reordenar manualmente (reorderWorktrees)",
+        "Carrega automaticamente linhagem de filhos visíveis ao mover um card pai entre raias de status"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarWorktreeSelection",
+        "useWorktreeStatusMutations"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:178-187",
+        "components/sidebar/WorktreeList.tsx:325-329",
+        "components/sidebar/WorktreeList.tsx:343-356"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:386 :: WorktreeList status-lane drop carries visible lineage children (#9083)",
+        "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:405 :: moves a dragged parent and its visible lineage child to the dropped lane",
+        "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:417 :: leaves worktrees in other lanes untouched",
+        "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:428 :: commits only itself when a childless worktree is dropped onto another lane"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-016",
+      "capability": "Ativação visual imediata no DOM do card de worktree ao clique para eliminar latência perceptível",
+      "surface": "linha/card da lista de worktrees",
+      "trigger": "evento pointerdown ou click sobre a linha de uma worktree",
+      "behaviors": [
+        "Invoca markSidebarWorktreeActiveImmediately(worktreeId, rowKey) na rota do ponteiro",
+        "Altera diretamente o atributo DOM data-worktree-card-active e classes visuais antes da reconciliação assíncrona do store Zustand, eliminando atraso perceptível na virtualização"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:23",
+        "components/sidebar/WorktreeList.tsx:190-193",
+        "components/sidebar/WorktreeList.tsx:328"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:268 :: WorktreeCard memo bail-out across epoch bumps"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-017",
+      "capability": "Abertura de caixas de diálogo modais e configurações a partir de ações de repositório e grupos no sidebar",
+      "surface": "cabeçalhos de projeto/repositório e menus de contexto no sidebar",
+      "trigger": "clique em botões de ação nos cabeçalhos de repo/projeto ou itens de menu",
+      "behaviors": [
+        "handleCreateForRepo: abre modal 'new-workspace-composer' para o repositório selecionado",
+        "handleOpenRepoSettings: navega para a página de configurações no painel 'repo' e seção específica",
+        "handleOpenWorktreeVisibility: abre modal 'worktree-visibility' com repoId e hostId",
+        "handleRemoveProject: abre modal de confirmação 'confirm-remove-folder' com detalhes do repositório",
+        "handleCreateFolderWorkspace: abre modal 'new-workspace-composer' para grupo de pastas com parentPath válido"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.openModal",
+        "useAppStore.openSettingsPage",
+        "useAppStore.openSettingsTarget"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:195-235",
+        "components/sidebar/WorktreeList.tsx:298-316"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.group-headers.test.ts:118 :: WorktreeList lineage child card renderer"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-018",
+      "capability": "Processamento de requisições de reveal para rolagem e destaque de worktrees na lista virtualizada",
+      "surface": "viewport da lista de worktrees",
+      "trigger": "mudança em pendingRevealWorktree ou pendingRevealSidebarRow no store",
+      "behaviors": [
+        "Executa useSidebarRevealRequests para rolar a lista virtualizada até a linha alvo",
+        "Expande automaticamente grupos colapsados que contêm o item a ser revelado",
+        "Ajusta filtros ativos se necessário para tornar a worktree visível e limpa a requisição pendente no store após a revelação"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarRevealRequests",
+        "useAppStore.pendingRevealWorktree",
+        "useAppStore.pendingRevealSidebarRow",
+        "useAppStore.clearPendingRevealWorktreeId",
+        "useAppStore.clearPendingRevealSidebarRow"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:31",
+        "components/sidebar/WorktreeList.tsx:237-249",
+        "components/sidebar/WorktreeList.tsx:318-321"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:163 :: points aria-activedescendant at the active folder workspace row"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-019",
+      "capability": "Priorização do estado vazio 'Clear Filters' sobre cabeçalhos de grupos quando todos os itens são filtrados",
+      "surface": "corpo da lista de worktrees",
+      "trigger": "filtros ativos que resultam em zero worktrees, zero workspaces de pasta e zero cartões externos visíveis",
+      "behaviors": [
+        "Avalia shouldFiltersHideAllRows considerando filtros ativos, contagens de itens visíveis e cartões de repositórios placeholder",
+        "Substitui cabeçalhos de grupos de projetos vazios pelo componente SidebarWorktreeListEmptyState com botão para limpar filtros",
+        "Executa clearFilters ao clicar no botão do estado vazio"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarWorktreeFilters",
+        "shouldFiltersHideAllRows"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:38",
+        "components/sidebar/WorktreeList.tsx:251-261"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.empty-project-rows.test.ts:98 :: WorktreeList lineage child card renderer",
+        "components/sidebar/WorktreeList.empty-project-rows.test.ts:103 :: does not render the collapse affordance on empty ungrouped projects",
+        "components/sidebar/WorktreeList.empty-project-rows.test.ts:110 :: renders an empty ungrouped project instead of the empty workspace state",
+        "components/sidebar/WorktreeList.empty-project-rows.test.ts:118 :: shows Clear Filters when repo filters exclude an empty ungrouped project"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-020",
+      "capability": "Renderização do viewport virtualizado da lista de worktrees e integração de caixas de diálogo de grupos de projetos",
+      "surface": "viewport virtualizado da lista e diálogos de grupo",
+      "trigger": "renderização da lista com suporte a scroll infinito/virtualização",
+      "behaviors": [
+        "Renderiza SidebarWorktreeListDialogs para diálogos de criar grupo, renomear, mover e confirmações de supressão de caixa de entrada",
+        "Renderiza VirtualizedWorktreeViewport com chave composta única baseada em groupBy, hostIds visíveis e linhagem",
+        "Desmarca seleção visual de cards quando o usuário está nas visualizações globais de tarefas ('tasks') ou atividades ('activity')"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeView",
+        "useProjectGroupDialogs"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeList.tsx:20-22",
+        "components/sidebar/WorktreeList.tsx:263-360"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:40 :: WorktreeList lineage child card renderer",
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:45 :: renders recursive lineage descendants through WorktreeCard once",
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:63 :: passes child review details through the shared WorktreeCard path",
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:74 :: uses shared nested-row indentation for child and grandchild cards",
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:86 :: shows deleting feedback on nested lineage child cards",
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:384 :: WorktreeList real child WorktreeCard integration",
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:403 :: renders GitLab MR metadata from a child through the real WorktreeCard path",
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:412 :: keeps expanded child cards in the parent title column",
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:422 :: keeps three-level experimental lineage children on the immediate-parent step"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-021",
+      "capability": "Exibição de linha inline de criação de worktree em andamento com indicador de progresso e roteamento para o terminal",
+      "surface": "linha inline na lista de worktrees sob o repositório de destino",
+      "trigger": "existência de entrada correspondente em pendingWorktreeCreations no store",
+      "behaviors": [
+        "Renderiza a linha inline na lista onde a nova worktree irá pousar",
+        "Exibe ícone giratório Loader2 e rótulo de progresso atualizado dinamicamente via getCreationProgressLabel",
+        "Exibe nome do branch ou displayName da criação",
+        "Ao clicar na linha, ativa a criação pendente no store (setActivePendingWorktreeCreation), define loaderVisible como true e muda activeView para 'terminal' sem chamar setActiveWorktree"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.pendingWorktreeCreations",
+        "useAppStore.activePendingCreationId",
+        "useAppStore.setActivePendingWorktreeCreation",
+        "useAppStore.updatePendingWorktreeCreation",
+        "useAppStore.setActiveView"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/PendingWorktreeRow.tsx:11-16",
+        "components/sidebar/PendingWorktreeRow.tsx:23-76"
+      ],
+      "tests": [
+        "components/sidebar/worktree-list-groups-pending-creations.test.ts:6 :: buildRows pending creations",
+        "components/sidebar/worktree-list-groups-pending-creations.test.ts:11 :: nests a pending creation under its repo, above the repo worktrees",
+        "components/sidebar/worktree-list-groups-pending-creations.test.ts:43 :: creates a repo group for a pending creation in a repo with no worktrees yet",
+        "components/sidebar/worktree-list-groups-pending-creations.test.ts:67 :: keeps a pending creation visible when its repo metadata is temporarily missing",
+        "components/sidebar/worktree-list-groups-pending-creations.test.ts:94 :: surfaces pending creations at the top for non-repo groupings"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-022",
+      "capability": "Tratamento visual de erro e cancelamento de criação de worktree inline",
+      "surface": "linha de worktree pendente (botão Cancel / ícone de erro)",
+      "trigger": "status === 'error' na entrada pendente ou clique no botão Cancelar",
+      "behaviors": [
+        "Exibe ícone AlertTriangle em tom destrutivo e mensagem de erro personalizada (entry.error ?? 'Creation failed')",
+        "Disponibiliza botão de cancelamento com ícone 'X', tooltip 'Cancel' e aria-label 'Cancel worktree creation'",
+        "Botão de cancelamento é sempre visível em caso de erro e visível no hover durante progresso normal",
+        "Ao clicar no botão de cancelamento, remove a criação do store via removePendingWorktreeCreation(creationId)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.pendingWorktreeCreations",
+        "useAppStore.removePendingWorktreeCreation"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/PendingWorktreeRow.tsx:34",
+        "components/sidebar/PendingWorktreeRow.tsx:57-61",
+        "components/sidebar/PendingWorktreeRow.tsx:77-92"
+      ],
+      "tests": [
+        "components/sidebar/worktree-list-groups-pending-creations.test.ts:6 :: buildRows pending creations"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-023",
+      "capability": "Botão flutuante para rolagem rápida ao topo da lista de worktrees com tooltip e animação de fade",
+      "surface": "topo do sidebar esquerdo (botão flutuante absoluto)",
+      "trigger": "clique no botão 'Jump to top'",
+      "behaviors": [
+        "Renderiza botão de ícone ChevronsUp centralizado no topo (top-2 z-40)",
+        "Possui tooltip inferior 'Jump to top' com delay e acessibilidade aria-label='Jump to top'",
+        "Apresenta animação suave de entrada fade-in-0 duration-150 que respeita preferência motion-reduce",
+        "Executa callback onClick para rolar o viewport virtualizado ao topo"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeListScrollToTopButton.tsx:8-50"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.card-memo-stability.test.tsx:268 :: WorktreeCard memo bail-out across epoch bumps"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-024",
+      "capability": "Renderização da linha indicadora de soltura (drop indicator) personalizada para o sidebar",
+      "surface": "posição Y do container da lista de worktrees durante arrasto",
+      "trigger": "arrasto ativo com posição de soltura calculada",
+      "behaviors": [
+        "Renderiza indicador posicionado absolutamente em style={{ top: `${y}px` }}",
+        "Estrutura com 3 elementos: ponto circular esquerdo (size-1.5), linha horizontal central (h-0.5) e ponto circular direito (size-1.5)",
+        "Aplica cores do tema bg-worktree-sidebar-ring com anel de sombra contrastante shadow-[0_0_0_2px_var(--worktree-sidebar)] e role='presentation'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeSidebarDropIndicator.tsx:10-28"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drop-preview.test.ts:13 :: computes an insertion line for a target group"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-025",
+      "capability": "Iniciação e qualificação de sessão de arrasto para cabeçalhos de projeto/repositório",
+      "surface": "cabeçalho de repositório no sidebar",
+      "trigger": "pointerdown com botão esquerdo (button 0) no handle de drag do cabeçalho de projeto",
+      "behaviors": [
+        "Verifica se o alvo do evento é um drag handle válido ([data-repo-header-drag-handle]), suportando nós SVGElement",
+        "Ignora cliques originados em controles interativos ou botões de ação do cabeçalho (REPO_HEADER_ACTION_SELECTOR)",
+        "Determina bucket de arrasto do repositório (group:${groupId} ou 'ungrouped')",
+        "Cancela iniciação se o repositório for o único item do bucket (length <= 1)",
+        "Captura retângulo do container, posições iniciais (startX, startY) e mede retângulos de cabeçalhos irmãos"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "sidebarRepoHeaderIdsByBucket",
+        "repoById"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-header-drag-contract.ts:46-78",
+        "components/sidebar/project-header-drag-start.ts:15-61",
+        "components/sidebar/project-header-drag.ts:299-315"
+      ],
+      "tests": [
+        "components/sidebar/project-header-drag-start.test.ts:19 :: createProjectHeaderDragSession",
+        "components/sidebar/project-header-drag-start.test.ts:20 :: does not capture the pointer when arming a drag session",
+        "components/sidebar/project-header-drag-start.test.ts:49 :: arms a drag session from plain project header text when the row is the drag handle",
+        "components/sidebar/project-header-drag-start.test.ts:78 :: arms a drag session when pressing the project icon svg (SVGElement target)",
+        "components/sidebar/project-header-drag-start.test.ts:109 :: does not arm a drag session when pressing an svg icon inside an action button",
+        "components/sidebar/project-header-drag.test.ts:14 :: repo header action targets",
+        "components/sidebar/project-header-drag.test.ts:15 :: ignores explicit project action wrappers",
+        "components/sidebar/project-header-drag.test.ts:25 :: ignores native nested controls",
+        "components/sidebar/project-header-drag.test.ts:31 :: does not ignore plain header text or the header itself",
+        "components/sidebar/project-header-drag.test.ts:38 :: ignores the hover collapse affordance"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-026",
+      "capability": "Controle de ponteiro, autoscroll, cancelamento por teclado e supressão de clique no arrasto de cabeçalhos de projeto",
+      "surface": "sidebar esquerdo durante arrasto de cabeçalho de projeto",
+      "trigger": "movimentação do ponteiro (pointermove), soltura (pointerup), cancelamento (pointercancel/blur/Escape)",
+      "behaviors": [
+        "Promove o arrasto apenas quando o deslocamento supera o limiar de 4px (PROJECT_HEADER_DRAG_THRESHOLD_PX)",
+        "Aplica captura de ponteiro (setPointerCapture) no handle e define estilos globais de documento (cursor grabbing, user-select none)",
+        "Executa autoscroll suave com requestAnimationFrame via getWorktreeSidebarDragAutoscroll ao aproximar o ponteiro das bordas do container",
+        "Detecta liberação prematura de botão via hasPointerBeenReleased para descartar sessões fantasmas",
+        "Ao soltar o ponteiro após arrasto promovido, suprime o clique subsequente via swallowNextClickOnDragHandle para não alternar o colapso da seção",
+        "Cancela o arrasto com restauração de estado ao pressionar Escape ou ocorrer perda de foco (blur)"
+      ],
+      "background_activity": "loop rAF de autoscroll e listeners globais em window",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/header-drag-click-swallow.ts:9-20",
+        "components/sidebar/header-drag-pointer-release.ts:12-14",
+        "components/sidebar/project-header-drag.ts:59-68",
+        "components/sidebar/project-header-drag.ts:106-193",
+        "components/sidebar/project-header-drag.ts:195-282",
+        "components/sidebar/project-header-drag.ts:284-297"
+      ],
+      "tests": [
+        "components/sidebar/project-header-drag-start.test.ts:20 :: does not capture the pointer when arming a drag session"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-027",
+      "capability": "Medição de retângulos e cálculo de pré-visualização de soltura para cabeçalhos de projeto",
+      "surface": "viewport do sidebar durante arrasto de cabeçalho de projeto",
+      "trigger": "movimento do ponteiro no arrasto de cabeçalho de projeto",
+      "behaviors": [
+        "Mede posições de cabeçalhos no DOM com compensação de virtualização (data-worktree-virtual-row-start e data-repo-header-section-end) via measureProjectHeaderDragRects",
+        "Filtra e indexa retângulos exclusivamente para o bucket de arrasto ativo",
+        "Calcula índice de soltura (dropIndex) e posição visual do indicador (dropIndicatorY) via computeProjectHeaderDropPreview / computeWorktreeSidebarHeaderDropPreview"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-header-drop.ts:9-45",
+        "components/sidebar/project-header-drop.ts:109-165",
+        "components/sidebar/project-header-drop.ts:185-203",
+        "components/sidebar/project-header-drag.ts:70-87"
+      ],
+      "tests": [
+        "components/sidebar/project-header-drop.test.ts:17 :: getProjectHeaderDragBucketKey",
+        "components/sidebar/project-header-drop.test.ts:18 :: uses ungrouped for repos without a project group",
+        "components/sidebar/project-header-drop.test.ts:22 :: scopes grouped repos to their project group bucket",
+        "components/sidebar/project-header-drop.test.ts:27 :: getSidebarOrderedRepoHeaderIdsByBucket",
+        "components/sidebar/project-header-drop.test.ts:28 :: groups repo headers by project group membership"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-028",
+      "capability": "Comprometimento de reordenação de cabeçalho de projeto no modo de ordenação por grupos de projetos",
+      "surface": "lista de repositórios agrupados por projeto",
+      "trigger": "soltura do cabeçalho de projeto quando usesProjectGroupOrdering é verdadeiro",
+      "behaviors": [
+        "Mapeia o índice de soltura do sidebar para a lista de repositórios irmãos excluindo o arrastado via mapSidebarProjectHeaderDropIndexToSiblingInsertIndex",
+        "Calcula o novo ranking numérico fracionário via getProjectGroupOrderForSidebarDrop interpolando entre os vizinhos anterior e posterior",
+        "Invoca onCommitProjectGroupOrder(repoId, projectGroupId, order) com a nova ordem calculada"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "repoById",
+        "usesProjectGroupOrdering"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-header-drop.ts:61-107",
+        "components/sidebar/project-header-drag-commit.ts:37-64"
+      ],
+      "tests": [
+        "components/sidebar/project-header-drag-commit.test.ts:37 :: commitProjectHeaderDragDrop",
+        "components/sidebar/project-header-drag-commit.test.ts:92 :: commits projectGroupOrder when project groups are present"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-029",
+      "capability": "Comprometimento de reordenação de cabeçalho de projeto no modo de ordenação global de repositórios com preservação de blocos multi-host",
+      "surface": "lista plana de repositórios",
+      "trigger": "soltura do cabeçalho de projeto quando usesProjectGroupOrdering é falso",
+      "behaviors": [
+        "Mapeia o índice de soltura do sidebar para o índice na lista global de repositórios via mapSidebarRepoDropIndexToAllRepoInsertAt",
+        "Move todas as ocorrências do repositório lógico (em caso de hosts pareados) juntas como um único bloco estável via applyAllRepoInsertAt",
+        "Invoca onCommitRepoOrder(orderedIds) com a nova lista de repositórios reordenada"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "orderedRepoIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-header-drop.ts:47-59",
+        "components/sidebar/project-header-drop.ts:167-183",
+        "components/sidebar/project-header-drop.ts:205-226",
+        "components/sidebar/project-header-drag-commit.ts:66-76"
+      ],
+      "tests": [
+        "components/sidebar/project-header-drag-commit.test.ts:37 :: commitProjectHeaderDragDrop",
+        "components/sidebar/project-header-drag-commit.test.ts:38 :: commits whole-repo reordering when project groups are absent",
+        "components/sidebar/project-header-drag-commit.test.ts:56 :: moves a merged paired-host header upward as one stable block",
+        "components/sidebar/project-header-drag-commit.test.ts:74 :: does not reorder host occurrences when a merged header stays in place"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-030",
+      "capability": "Iniciação e qualificação de sessão de arrasto para cabeçalhos de grupos de projetos",
+      "surface": "cabeçalho de grupo de projetos no sidebar",
+      "trigger": "pointerdown com botão 0 no handle de drag do cabeçalho de grupo de projetos",
+      "behaviors": [
+        "Valida alvo como drag handle válido ([data-project-group-header-drag-handle]), aceitando elementos SVG",
+        "Ignora alvos de ação de cabeçalho (botões de colapso, menus e ações)",
+        "Determina bucket de grupo pai (root ou parent:${parentGroupId}) via getProjectGroupHeaderDragBucketKey",
+        "Cancela se o grupo for filho único no bucket (não há para onde mover sem reparenting)",
+        "Inicializa sessão com medição de retângulos irmãos via measureProjectGroupHeaderDragRects"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "projectGroupById",
+        "sidebarProjectGroupHeaderIdsByBucket"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-group-header-drag-contract.ts:50-78",
+        "components/sidebar/project-group-header-drag-start.ts:15-64",
+        "components/sidebar/project-group-header-drop.ts:27-50"
+      ],
+      "tests": [
+        "components/sidebar/project-group-header-drag-start.test.ts:23 :: createProjectGroupHeaderDragSession",
+        "components/sidebar/project-group-header-drag-start.test.ts:24 :: arms a drag session from plain header text when the row is the drag handle",
+        "components/sidebar/project-group-header-drag-start.test.ts:58 :: does not arm from nested Project Group header actions",
+        "components/sidebar/project-group-header-drag-start.test.ts:91 :: arms from the group icon svg (SVGElement target)",
+        "components/sidebar/project-group-header-drag-start.test.ts:123 :: does not arm when pressing an svg icon inside an action button",
+        "components/sidebar/project-group-header-drag.test.ts:14 :: project group header action targets",
+        "components/sidebar/project-group-header-drag.test.ts:15 :: ignores explicit project action wrappers",
+        "components/sidebar/project-group-header-drag.test.ts:25 :: ignores the project header actions overlay (including gaps between icons)",
+        "components/sidebar/project-group-header-drag.test.ts:38 :: ignores the hover collapse affordance",
+        "components/sidebar/project-group-header-drag.test.ts:48 :: does not ignore plain header text or the header itself",
+        "components/sidebar/project-group-header-drop.test.ts:31 :: getProjectGroupHeaderDragBucketKey",
+        "components/sidebar/project-group-header-drop.test.ts:32 :: uses root for top-level groups",
+        "components/sidebar/project-group-header-drop.test.ts:36 :: scopes child groups to their parent bucket",
+        "components/sidebar/project-group-header-drop.test.ts:47 :: falls back to root when persisted parent metadata is missing"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-031",
+      "capability": "Rastreamento, autoscroll e cancelamento por teclado no arrasto de cabeçalhos de grupos de projetos",
+      "surface": "sidebar esquerdo durante arrasto de grupo de projetos",
+      "trigger": "movimento do ponteiro, término ou cancelamento do arrasto de grupo",
+      "behaviors": [
+        "Promove o arrasto ao ultrapassar 4px de deslocamento (PROJECT_GROUP_HEADER_DRAG_THRESHOLD_PX)",
+        "Aplica captura de ponteiro e estilos de cursor grabbing no documento",
+        "Executa autoscroll suave com requestAnimationFrame quando o cursor atinge as bordas do container",
+        "Engole o clique pós-arrasto via swallowNextClickOnDragHandle para não alternar o colapso do grupo",
+        "Cancela a operação ao pressionar Escape ou em eventos de blur"
+      ],
+      "background_activity": "loop rAF de autoscroll e listeners em window",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-group-header-drag.ts:48-57",
+        "components/sidebar/project-group-header-drag.ts:142-269",
+        "components/sidebar/project-group-header-drag.ts:270-283"
+      ],
+      "tests": [
+        "components/sidebar/project-group-header-drag-start.test.ts:23 :: createProjectGroupHeaderDragSession"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-032",
+      "capability": "Medição de retângulos e cálculo de pré-visualização de soltura para grupos de projetos",
+      "surface": "viewport do sidebar durante arrasto de grupo de projetos",
+      "trigger": "movimentação do ponteiro sobre a lista de grupos de projetos",
+      "behaviors": [
+        "Mede posições de cabeçalhos de grupos no DOM com suporte a virtualização (data-project-group-header-section-end) via measureProjectGroupHeaderDragRects",
+        "Filtra e ordena retângulos pelo bucket pai correspondente",
+        "Calcula o índice de soltura e a coordenada Y do indicador de soltura via computeProjectGroupHeaderDropPreview"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-group-header-drop.ts:123-199",
+        "components/sidebar/project-group-header-drag.ts:59-77"
+      ],
+      "tests": [
+        "components/sidebar/project-group-header-drop.test.ts:54 :: getSidebarOrderedProjectGroupHeaderIdsByBucket"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-033",
+      "capability": "Comprometimento de reordenação de grupos de projetos gerando atualizações discretas de tabOrder para irmãos",
+      "surface": "árvore de grupos de projetos",
+      "trigger": "soltura do cabeçalho de grupo de projetos em uma nova posição",
+      "behaviors": [
+        "Mapeia o índice de soltura do sidebar para a lista de grupos irmãos via mapSidebarProjectGroupDropIndexToSiblingInsertIndex",
+        "Gera lote de atualizações densas de tabOrder para todos os irmãos afetados via getProjectGroupTabOrderUpdatesForSidebarDrop, resolvendo ambiguidades de rankings zerados",
+        "Dispara onCommitProjectGroupTabOrder(groupId, tabOrder) para cada grupo alterado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "projectGroupById"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-group-header-drop.ts:68-121",
+        "components/sidebar/project-group-header-drag-commit.ts:5-20"
+      ],
+      "tests": [
+        "components/sidebar/project-group-header-drag-commit.test.ts:42 :: commitProjectGroupHeaderDragDrop",
+        "components/sidebar/project-group-header-drag-commit.test.ts:43 :: commits dense tabOrder updates for the affected Project Group siblings",
+        "components/sidebar/project-group-header-drag-commit.test.ts:66 :: computes order only from the captured sibling bucket",
+        "components/sidebar/project-group-header-drag-commit.test.ts:89 :: does not commit when the drop keeps the group in the same slot",
+        "components/sidebar/project-group-header-drag-commit.test.ts:104 :: does not commit when a stale session no longer contains the dragged group"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-034",
+      "capability": "Iniciação e qualificação de sessão de arrasto para cabeçalhos de seção de host de execução",
+      "surface": "cabeçalho de seção de host no sidebar",
+      "trigger": "pointerdown com botão 0 no cabeçalho de seção de host",
+      "behaviors": [
+        "Verifica se o alvo não é um controle interativo ou botão de ação de host (HOST_HEADER_ACTION_SELECTOR)",
+        "Cancela se houver apenas um host cadastrado (orderedHostIds.length <= 1)",
+        "Lê retângulos de todos os cabeçalhos de host presentes no DOM via readHostHeaderRects",
+        "Aplica captura de ponteiro e arma a sessão de arrasto"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "orderedHostIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/host-header-drag-dom.ts:9-41",
+        "components/sidebar/host-header-drag.ts:273-299"
+      ],
+      "tests": [
+        "components/sidebar/host-header-drag.test.tsx:40 :: useHostHeaderDrag",
+        "components/sidebar/host-header-drag.test.tsx:41 :: does not start a drag when the pointer is released before the window listeners attach",
+        "components/sidebar/host-header-drag.test.tsx:59 :: clears a session whose pointerup was missed so a later drag still works",
+        "components/sidebar/host-header-drag.test.tsx:80 :: still promotes a drag while the pointer stays down"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-035",
+      "capability": "Geração de pré-visualização flutuante de arrasto e estilos de cursor para cabeçalhos de host",
+      "surface": "documento / cursor durante arrasto de cabeçalho de host",
+      "trigger": "movimentação do ponteiro após ultrapassar 4px de deslocamento (DRAG_THRESHOLD_PX)",
+      "behaviors": [
+        "Cria elemento de clone flutuante do cabeçalho via createSidebarDragPreview",
+        "Atualiza a posição do clone flutuante dinamicamente via updateSidebarDragPreviewPosition",
+        "Aplica estilos de cursor e seleção no documento via setSidebarPointerDragDocumentStyles",
+        "Engole o clique pós-arrasto no handle e encerra preview ao soltar/cancelar"
+      ],
+      "background_activity": "listeners em window para eventos de ponteiro e teclado",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/host-header-drag.ts:9-13",
+        "components/sidebar/host-header-drag.ts:205-232",
+        "components/sidebar/host-header-drag.ts:159-163"
+      ],
+      "tests": [
+        "components/sidebar/host-header-drag.test.tsx:80 :: still promotes a drag while the pointer stays down"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-036",
+      "capability": "Cálculo de pré-visualização de soltura com ponto médio e agendamento diferido por frame para seções de host",
+      "surface": "lista de seções de host",
+      "trigger": "movimento do ponteiro durante arrasto de host",
+      "behaviors": [
+        "Calcula ponto médio entre cabeçalhos de host para determinar o índice de inserção (dropIndex)",
+        "Posiciona o indicador de soltura com margem de 4px (INDICATOR_GAP_PX)",
+        "Agenda cálculo diferido via requestAnimationFrame (deferredComputeFrameRef) para acompanhar alterações dinâmicas de colapso de seções"
+      ],
+      "background_activity": "agendamento via window.requestAnimationFrame",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/host-header-drag.ts:77-143"
+      ],
+      "tests": [
+        "components/sidebar/host-header-drag.test.tsx:40 :: useHostHeaderDrag"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-037",
+      "capability": "Comprometimento de nova ordem de hosts de execução com splicing do array de identificadores",
+      "surface": "ordenação de seções de host no store",
+      "trigger": "soltura do cabeçalho de host (pointerup)",
+      "behaviors": [
+        "Calcula o novo índice de inserção ajustado",
+        "Executa splice na lista de identificadores de host (orderedHostIds)",
+        "Invoca callback onCommit(nextOrderedHostIds) para persistir a nova ordem de hosts"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "orderedHostIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/host-header-drag.ts:145-189"
+      ],
+      "tests": [
+        "components/sidebar/host-header-drag.test.tsx:40 :: useHostHeaderDrag"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-038",
+      "capability": "Reconstrução da ordem renderizada de worktrees para atalhos de teclado Cmd+1 a Cmd+9 com o sidebar fechado",
+      "surface": "motor de atalhos globais de teclado (Cmd+1..9 / Ctrl+1..9)",
+      "trigger": "acionamento de atalhos numéricos de navegação de worktree quando o sidebar está fechado ou desmontado",
+      "behaviors": [
+        "Executa computeRenderedSidebarWorktrees reencenando exatamente o pipeline de buildRows do sidebar",
+        "Respeita agrupamento (groupBy), ordenação de projetos, políticas de itens fixados (pinnedDisplayPolicy) e elisão de itens em grupos colapsados",
+        "Garante içamento da worktree principal do repositório (main worktree hoisting)",
+        "Ignora sobreposições de colapso temporárias de envio de agentes que só se aplicam à lista montada"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "AppState.settings",
+        "AppState.repos",
+        "AppState.groupBy",
+        "AppState.collapsedGroups",
+        "AppState.workspaceStatuses",
+        "AppState.projectOrderBy",
+        "AppState.worktreeLineageById",
+        "AppState.projectGroups",
+        "AppState.folderWorkspaces"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/rendered-sidebar-worktree-order.ts:29-117"
+      ],
+      "tests": [
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:115 :: closed-sidebar Cmd+1-9 ordering (#9497)",
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:122 :: hoists the repo main worktree first, matching the rendered sidebar",
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:136 :: ignores the agent-send collapse override, which only applies to a mounted list",
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:156 :: places a pinned workspace per the pinned section under both display policies",
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:175 :: elides members of a collapsed group, which render no card to number"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-039",
+      "capability": "Derivação da sequência única de IDs de worktrees renderizadas com suporte a separação de colisões de host",
+      "surface": "motor de atalhos de teclado",
+      "trigger": "consulta de ordem de IDs de worktree via computeRenderedSidebarWorktreeOrder",
+      "behaviors": [
+        "Extrai lista de IDs de worktree sem duplicações a partir dos itens renderizados",
+        "Mantém hosts com o mesmo ID como posições separadas de atalhos quando ambos estão visíveis",
+        "Não reconstrói hosts filtrados em atalhos de sidebar fechado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/rendered-sidebar-worktree-order.ts:119-126"
+      ],
+      "tests": [
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:273 :: keeps same-id hosts as separate closed-sidebar shortcut positions",
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:280 :: expect(getVisibleWorktreeShortcutTargets()).toEqual",
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:286 :: does not reconstruct a filtered same-id host in closed-sidebar shortcuts",
+        "components/sidebar/rendered-sidebar-worktree-order.test.ts:296 :: expect(getVisibleWorktreeShortcutTargets()).toEqual"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-040",
+      "capability": "Cálculo indexado O(1) de limites verticais de seção para cabeçalhos de repositório",
+      "surface": "algoritmo de layout de linhas do sidebar",
+      "trigger": "cálculo de limites de seção para cabeçalhos de repositório via getRepoHeaderSectionEndByRepoId",
+      "behaviors": [
+        "Precalcula posições iniciais estimadas de linhas via getEstimatedRenderRowStarts e estimateRenderRowSize",
+        "Indexa cabeçalhos e sucessores por bucket em passagens únicas O(N)",
+        "Calcula a posição vertical final (sectionBottom) de cada repositório, resolvendo sucessores imediatos ou o próximo cabeçalho da lista"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-header-section-boundaries.ts:5-53",
+        "components/sidebar/worktree-header-section-boundaries.ts:88-115"
+      ],
+      "tests": [
+        "components/sidebar/worktree-header-section-boundaries.test.ts:28 :: getRepoHeaderSectionEndByRepoId",
+        "components/sidebar/worktree-header-section-boundaries.test.ts:29 :: ends a section at the successor from the header’s own bucket",
+        "components/sidebar/worktree-header-section-boundaries.test.ts:49 :: falls back to the next header when a bucket has no successor",
+        "components/sidebar/worktree-header-section-boundaries.test.ts:60 :: resolves a header id that renders twice to its first row, matching findIndex"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-041",
+      "capability": "Cálculo indexado O(1) de limites verticais de seção para grupos de projetos aninhados",
+      "surface": "algoritmo de layout de linhas do sidebar",
+      "trigger": "cálculo de limites de seção para grupos de projetos via getProjectGroupHeaderSectionEndByGroupId",
+      "behaviors": [
+        "Precalcula posições estimadas de linhas e indexa cabeçalhos de grupo",
+        "Rastreia profundidade de aninhamento (projectGroupDepth) para delimitar o término de seções pai quando grupos filhos ou novos grupos raiz aparecem",
+        "Determina a coordenada inferior exata de cada grupo de projetos para ancoragem de sticky headers e cálculo de drop"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-header-section-boundaries.ts:64-86",
+        "components/sidebar/worktree-header-section-boundaries.ts:117-154"
+      ],
+      "tests": [
+        "components/sidebar/worktree-header-section-boundaries.test.ts:77 :: getProjectGroupHeaderSectionEndByGroupId"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-042",
+      "capability": "Agrupamento de retângulos de linhagem em unidades de arrasto coesas para cálculo de pré-visualização",
+      "surface": "cálculo geométrico de drag & drop de worktrees",
+      "trigger": "arrasto de card de worktree que possui filhos de linhagem expandidos",
+      "behaviors": [
+        "Agrupa card pai e todos os cards filhos/netos sob uma única unidade de arrasto unificada via getWorktreeSidebarDragUnitRects",
+        "Define o topo da unidade como o topo do pai e o fundo como o fundo do último filho visível da linhagem",
+        "Garante que o deslocamento de pré-visualização mova toda a família de linhagem como um único bloco"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drop-preview.ts:38-74",
+        "components/sidebar/worktree-sidebar-drop-preview.ts:189-195"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drop-preview.test.ts:12 :: computeWorktreeSidebarDropPreview",
+        "components/sidebar/worktree-sidebar-drop-preview.test.ts:42 :: collapses lineage child rects into the parent drag unit for preview offsets"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-043",
+      "capability": "Resolução geométrica de pré-visualização de soltura de worktree por centro mais próximo e limites de grupo",
+      "surface": "viewport do sidebar durante arrasto de worktree",
+      "trigger": "movimentação do ponteiro sobre a lista de worktrees em arrasto de reordenação",
+      "behaviors": [
+        "Calcula Y de referência considerando ponto de agarre da carta (grab offset) via getWorktreeSidebarDragReferenceY",
+        "Verifica limites de grupo via getWorktreeSidebarBoundaryDrop (rejeita solturas fora do grupo)",
+        "Respeita âncora retida do frame anterior (anchor) para evitar oscilações durante redimensionamentos de cards",
+        "Utiliza algoritmo de centro mais próximo (getWorktreeSidebarClosestCenterDropIndex) para permitir soltura precisa entre cards com alturas heterogêneas (ex.: sessões de agentes expandidas de 404px ao lado de cards de 116px)",
+        "Gera mapa de offsets de pré-visualização para animação suave dos cards vizinhos via buildWorktreeDragPreviewOffsets"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drop-preview.ts:136-171",
+        "components/sidebar/worktree-sidebar-drop-preview.ts:173-250"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drop-preview.test.ts:13 :: computes an insertion line for a target group",
+        "components/sidebar/worktree-sidebar-drop-preview.test.ts:29 :: returns null outside the group boundary",
+        "components/sidebar/worktree-sidebar-drop-preview.test.ts:67 :: uses one card-height placeholder for multi-select reorder previews"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-044",
+      "capability": "Posicionamento do indicador de soltura alinhado ao espaço reservado (placeholder) calculado",
+      "surface": "linha indicadora de soltura durante arrasto de worktrees",
+      "trigger": "cálculo de coordenadas do drop preview",
+      "behaviors": [
+        "Posiciona o indicador Y no topo do placeholder calculado (placeholderTop - 3px) gerado pela abertura de espaço",
+        "Evita salto incorreto do indicador para o topo de cards vizinhos não deslocados",
+        "Aplica fallbacks para o próprio card arrastado ou para o final do grupo em caso de solturas no final"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drop-preview.ts:113-134",
+        "components/sidebar/worktree-sidebar-drop-preview.ts:251-260"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drop-preview.test.ts:13 :: computes an insertion line for a target group"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-045",
+      "capability": "Resolução de alvo de commit de status de worktree com tolerância de raio de 6px",
+      "surface": "raias de status / soltura de worktree em status",
+      "trigger": "soltura do card de worktree sobre ou próximo a uma raia de status",
+      "behaviors": [
+        "Avalia se o alvo atual possui status, pino ou linhagem válida via hasWorktreeSidebarStatusDropTarget",
+        "Se o cursor escapar momentaneamente da raia durante a soltura, recupera o último alvo rastreado se a distância euclidiana for <= 6px (STATUS_DROP_TARGET_FALLBACK_TOLERANCE_PX)",
+        "Retorna o alvo e o preview correspondentes para garantir que solturas rápidas perto da borda da raia sejam confirmadas"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drop-preview.ts:24-36",
+        "components/sidebar/worktree-sidebar-drop-preview.ts:76-103"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:386 :: WorktreeList status-lane drop carries visible lineage children (#9083)"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-046",
+      "capability": "Coordenação de lote de expurgo de snapshots de workspace via IPC durante remoção múltipla",
+      "surface": "background / gerenciador de limpeza de workspaces",
+      "trigger": "início de operação de remoção ou expurgo de múltiplos workspaces",
+      "behaviors": [
+        "Inicia lote de expurgo de snapshots via beginWorktreeSnapshotPruneBatch()",
+        "Gera UUID de lote e invoca window.api.workspaceCleanup.beginRemovalSnapshotPruneBatch({ batchId })",
+        "Retorna objeto de lote com método finish() para invocar window.api.workspaceCleanup.finishRemovalSnapshotPruneBatch({ batchId })",
+        "Trata falhas ou ausência de API graciosamente com log de aviso"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [
+        "window.api.workspaceCleanup.beginRemovalSnapshotPruneBatch -> main cleanup begin batch",
+        "window.api.workspaceCleanup.recordRemovalSnapshotPrune -> main cleanup record prune",
+        "window.api.workspaceCleanup.finishRemovalSnapshotPruneBatch -> main cleanup finish batch"
+      ],
+      "orca_evidence": [
+        "components/sidebar/worktree-snapshot-prune-batch.ts:6-24"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.empty-project-rows.test.ts:98 :: WorktreeList lineage child card renderer"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-047",
+      "capability": "Renderização e indentação de linhas de workspace de pasta sob grupos de projetos de pastas",
+      "surface": "linhas de workspace de pasta no sidebar",
+      "trigger": "presença de folderWorkspaces sob grupos de projetos criados por scan de pasta",
+      "behaviors": [
+        "Aponta aria-activedescendant para a linha de workspace de pasta ativa",
+        "Mantém cards de workspace de pasta um passo compacto abaixo do cabeçalho do grupo de pastas",
+        "Preserva indentação manual para workspaces de pasta fora de grupos escaneados",
+        "Utiliza geometria compatível de worktree para linhas de workspace de pasta experimentais"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.folderWorkspaces",
+        "useAppStore.projectGroups"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-list-card-markup-queries.ts:22-34",
+        "components/sidebar/worktree-list-lineage-store-state.ts:37-64"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:158 :: WorktreeList lineage child card renderer",
+        "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:163 :: points aria-activedescendant at the active folder workspace row",
+        "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:172 :: keeps folder workspace cards one compact step under their group header",
+        "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:190 :: uses comparable new-card worktree geometry for experimental folder workspace rows",
+        "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:209 :: preserves manual folder workspace indentation outside folder-scanned groups",
+        "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:10 :: project groups",
+        "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:11 :: renders nested Project Groups before repos assigned to their leaf group",
+        "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:75 :: renders folder workspaces under their owning folder-backed Project Group",
+        "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:141 :: preserves nested Project Group depth for folder workspace rows",
+        "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:223 :: does not render folder workspaces under non-folder Project Groups"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-048",
+      "capability": "Renderização recursiva de linhagem e aninhamento de cards filhos e netos através de WorktreeCard",
+      "surface": "cards de worktree aninhados por linhagem",
+      "trigger": "presença de worktreeLineageById no store e expansão do card pai",
+      "behaviors": [
+        "Renderiza descendentes recursivos de linhagem através do componente WorktreeCard com recuo compartilhado (contentIndent / flushSurface)",
+        "Exibe metadata de PR e GitLab MR em cards filhos através do caminho compartilhado de WorktreeCard",
+        "Exibe feedback de deleção (isDeleting) em cards filhos aninhados",
+        "Mantém filhos na coluna de título do pai e suporta três níveis de linhagem aninhada",
+        "Duplo clique em card filho aninhado abre edição de metadados exclusivamente para a worktree filha clicada"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreeLineageById",
+        "useAppStore.workspaceLineageByChildKey"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-list-card-markup-queries.ts:3-20",
+        "components/sidebar/worktree-list-card-markup-queries.ts:44-56",
+        "components/sidebar/worktree-list-lineage-card-test-harness.ts:86-180",
+        "components/sidebar/worktree-list-lineage-store-state.ts:14-24",
+        "components/sidebar/worktree-list-lineage-card-test-fixtures.ts:1-62"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:40 :: WorktreeList lineage child card renderer",
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:45 :: renders recursive lineage descendants through WorktreeCard once",
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:63 :: passes child review details through the shared WorktreeCard path",
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:74 :: uses shared nested-row indentation for child and grandchild cards",
+        "components/sidebar/WorktreeList.lineage-child-card.test.ts:86 :: shows deleting feedback on nested lineage child cards",
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:384 :: WorktreeList real child WorktreeCard integration",
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:403 :: renders GitLab MR metadata from a child through the real WorktreeCard path",
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:412 :: keeps expanded child cards in the parent title column",
+        "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:422 :: keeps three-level experimental lineage children on the immediate-parent step",
+        "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:9 :: buildRows workspace lineage nesting",
+        "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:53 :: keeps lineage flat when nesting is off",
+        "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:79 :: places children directly under their parent when nesting is on",
+        "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:106 :: keeps same-id parent and child lineages partitioned by host",
+        "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:153 :: nests stable-update resolved legacy lineage when generalized lineage is absent"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-049",
+      "capability": "Consolidação de cabeçalhos de projeto multi-host, desambiguação de nomes de seção e etiquetagem de contexto de host",
+      "surface": "cabeçalhos de projeto e badges de host nos cards",
+      "trigger": "projetos com repositórios distribuídos em múltiplos hosts de execução (local, SSH, runtime server)",
+      "behaviors": [
+        "Agrupa múltiplos setups de host para o mesmo projeto sob um único cabeçalho de projeto consolidado",
+        "Desambigua cabeçalhos de seção que compartilham o mesmo displayName incluindo o caminho pai (ex.: 'work/api' vs 'oss/api')",
+        "Exibe badges de host em cards de sidebar quando o sidebar contém múltiplos hosts ativos",
+        "Trata colisões de ID de workspace entre hosts distintos renderizando linhas selecionáveis separadas com chaves React únicas",
+        "Apresenta labels distintos para notices de descoberta e linhas fixadas em múltiplos hosts"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.settings",
+        "useAppStore.sshTargetLabels",
+        "useAppStore.runtimeEnvironments"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-list-groups-test-fixtures.ts:6-89",
+        "components/sidebar/worktree-list-pinned-store-state.ts:10-82"
+      ],
+      "tests": [
+        "components/sidebar/worktree-list-groups-host-collision.test.ts:59 :: sidebar rows for a workspace id owned by two hosts",
+        "components/sidebar/worktree-list-groups-host-collision.test.ts:60 :: renders one selectable row per host",
+        "components/sidebar/worktree-list-groups-host-collision.test.ts:67 :: gives each row its own React key so neither replaces the other",
+        "components/sidebar/worktree-list-groups-host-collision.test.ts:75 :: labels each row with the host it lives on",
+        "components/sidebar/worktree-list-groups-host-collision.test.ts:83 :: counts the two hosts separately in the group header",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:17 :: buildRows with pinned worktrees",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:18 :: groups Windows host and WSL setups on the same runtime host",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:99 :: uses saved host labels for mixed-host sidebar card badges",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:158 :: uses the registered SSH target label for openclaw rows",
+        "components/sidebar/worktree-list-groups-host-labels.test.ts:205 :: shows distinct Orca server names when status grouping mixes runtime hosts",
+        "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:140 :: discovery notice rows on a multi-host project",
+        "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:141 :: labels both rows when two distinct hosts share one label",
+        "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:165 :: labels a lone eligible row on a project that spans hosts",
+        "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:173 :: keeps each row its own label and count under either host filter",
+        "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:184 :: returns labels for exactly the eligible records, never the filtered-out ones",
+        "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:69 :: pinned rows on a multi-host sidebar",
+        "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:84 :: labels pinned rows when the only other host is itself pinned",
+        "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:99 :: labels both copies when pinned worktrees also show in their groups",
+        "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:109 :: draws no badge on a single-host sidebar even with a pinned row",
+        "components/sidebar/worktree-list-groups-project-host-setups.test.ts:19 :: buildRows with pinned worktrees",
+        "components/sidebar/worktree-list-groups-project-host-setups.test.ts:20 :: groups multiple host setups for the same project under one project header",
+        "components/sidebar/worktree-list-groups-project-host-setups.test.ts:55 :: keeps the cross-host project header label when another project section renders",
+        "components/sidebar/worktree-list-groups-project-host-setups.test.ts:110 :: renders same-project records with git remote identity as one mixed-host project header",
+        "components/sidebar/worktree-list-groups-project-host-setups.test.ts:210 :: keeps mixed-host project item order while inserting inbox rows before worktrees",
+        "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:60 :: sidebar section headers with colliding display names",
+        "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:64 :: path-disambiguates two project headers that share a display name",
+        "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:77 :: leaves a lone project header un-suffixed",
+        "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:87 :: path-disambiguates untracked repo headers that share a display name"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D03b-050",
+      "capability": "Ciclo de vida e renderização de cabeçalhos de grupos de projetos com suporte a colapso e grupos vazios",
+      "surface": "cabeçalhos de grupos de projetos no sidebar",
+      "trigger": "presença de projectGroups no store",
+      "behaviors": [
+        "Renderiza cabeçalhos de grupos de projetos mesmo antes dos worktrees terminarem de carregar",
+        "Exibe chevron de colapso quando o grupo possui filhos e reflete o estado colapsado",
+        "Não renderiza chevron de colapso em cabeçalhos de seções planas",
+        "Mantém grupos de projetos vazios visíveis no modo de agrupamento por projetos e preserva membros com filtros de inatividade/sleep"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.projectGroups",
+        "useAppStore.collapsedGroups"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-list-lineage-store-state.ts:37-64"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeList.group-headers.test.ts:118 :: WorktreeList lineage child card renderer",
+        "components/sidebar/WorktreeList.group-headers.test.ts:123 :: renders project group headers when repos import before worktree rows load",
+        "components/sidebar/WorktreeList.group-headers.test.ts:131 :: renders a collapse chevron on project group headers with children",
+        "components/sidebar/WorktreeList.group-headers.test.ts:139 :: renders collapsed project group header affordance state",
+        "components/sidebar/WorktreeList.group-headers.test.ts:148 :: does not render the project collapse affordance on flat section headers",
+        "components/sidebar/worktree-list-groups-project-groups.test.ts:8 :: project groups",
+        "components/sidebar/worktree-list-groups-project-groups.test.ts:9 :: keeps empty project groups visible in project grouping mode",
+        "components/sidebar/worktree-list-groups-project-groups.test.ts:49 :: renders grouped repos before their visible worktrees are loaded",
+        "components/sidebar/worktree-list-groups-project-groups.test.ts:92 :: does not resurrect filtered repos as empty Project Group headers",
+        "components/sidebar/worktree-list-groups-project-groups.test.ts:129 :: keeps sleep-filtered Project Group members as empty project headers"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "PendingWorktreeRow.tsx": [
+        "D03b-021",
+        "D03b-022"
+      ],
+      "WorktreeList.tsx": [
+        "D03b-010",
+        "D03b-011",
+        "D03b-012",
+        "D03b-013",
+        "D03b-014",
+        "D03b-015",
+        "D03b-016",
+        "D03b-017",
+        "D03b-018",
+        "D03b-019",
+        "D03b-020"
+      ],
+      "WorktreeListScrollToTopButton.tsx": [
+        "D03b-023"
+      ],
+      "WorktreeSidebarDropIndicator.tsx": [
+        "D03b-024"
+      ],
+      "header-drag-click-swallow.ts": [
+        "D03b-026",
+        "D03b-031",
+        "D03b-035"
+      ],
+      "header-drag-pointer-release.ts": [
+        "D03b-026",
+        "D03b-031",
+        "D03b-034"
+      ],
+      "host-header-drag-dom.ts": [
+        "D03b-034"
+      ],
+      "host-header-drag.ts": [
+        "D03b-034",
+        "D03b-035",
+        "D03b-036",
+        "D03b-037"
+      ],
+      "index.tsx": [
+        "D03b-001",
+        "D03b-002",
+        "D03b-003",
+        "D03b-004",
+        "D03b-005",
+        "D03b-006",
+        "D03b-007",
+        "D03b-008"
+      ],
+      "project-group-header-drag-commit.ts": [
+        "D03b-033"
+      ],
+      "project-group-header-drag-contract.ts": [
+        "D03b-030"
+      ],
+      "project-group-header-drag-start.ts": [
+        "D03b-030"
+      ],
+      "project-group-header-drag.ts": [
+        "D03b-030",
+        "D03b-031"
+      ],
+      "project-group-header-drop.ts": [
+        "D03b-032",
+        "D03b-033"
+      ],
+      "project-header-drag-commit.ts": [
+        "D03b-028",
+        "D03b-029"
+      ],
+      "project-header-drag-contract.ts": [
+        "D03b-025"
+      ],
+      "project-header-drag-start.ts": [
+        "D03b-025"
+      ],
+      "project-header-drag.ts": [
+        "D03b-025",
+        "D03b-026"
+      ],
+      "project-header-drop.ts": [
+        "D03b-027",
+        "D03b-028",
+        "D03b-029"
+      ],
+      "rendered-sidebar-worktree-order.ts": [
+        "D03b-038",
+        "D03b-039"
+      ],
+      "sidebar-project-drop.ts": [
+        "D03b-008",
+        "D03b-009"
+      ],
+      "useSidebarProjectDrop.ts": [
+        "D03b-008",
+        "D03b-009"
+      ],
+      "worktree-header-section-boundaries.ts": [
+        "D03b-040",
+        "D03b-041"
+      ],
+      "worktree-list-card-markup-queries.ts": [
+        "D03b-047",
+        "D03b-048"
+      ],
+      "worktree-list-groups-test-fixtures.ts": [
+        "D03b-049"
+      ],
+      "worktree-list-lineage-card-test-fixtures.ts": [
+        "D03b-048"
+      ],
+      "worktree-list-lineage-card-test-harness.ts": [
+        "D03b-048"
+      ],
+      "worktree-list-lineage-store-state.ts": [
+        "D03b-047",
+        "D03b-048",
+        "D03b-050"
+      ],
+      "worktree-list-pinned-store-state.ts": [
+        "D03b-049"
+      ],
+      "worktree-sidebar-drop-preview.ts": [
+        "D03b-042",
+        "D03b-043",
+        "D03b-044",
+        "D03b-045"
+      ],
+      "worktree-snapshot-prune-batch.ts": [
+        "D03b-046"
+      ]
+    },
+    "symbols": {
+      "components/sidebar/PendingWorktreeRow.tsx:PendingWorktreeRow": "D03b-021",
+      "components/sidebar/WorktreeListScrollToTopButton.tsx:WorktreeListScrollToTopButton": "D03b-023",
+      "components/sidebar/WorktreeSidebarDropIndicator.tsx:WorktreeSidebarDropIndicator": "D03b-024",
+      "components/sidebar/header-drag-click-swallow.ts:swallowNextClickOnDragHandle": "D03b-026",
+      "components/sidebar/header-drag-pointer-release.ts:hasPointerBeenReleased": "D03b-026",
+      "components/sidebar/host-header-drag-dom.ts:HostHeaderRect": "D03b-034",
+      "components/sidebar/host-header-drag-dom.ts:isHostHeaderActionTarget": "D03b-034",
+      "components/sidebar/host-header-drag-dom.ts:readHostHeaderRects": "D03b-034",
+      "components/sidebar/host-header-drag.ts:HostDragState": "D03b-034",
+      "components/sidebar/host-header-drag.ts:UseHostHeaderDragArgs": "D03b-034",
+      "components/sidebar/host-header-drag.ts:HostHeaderDragController": "D03b-034",
+      "components/sidebar/host-header-drag.ts:useHostHeaderDrag": "D03b-034",
+      "components/sidebar/index.tsx:WORKTREE_SIDEBAR_RESIZE_HANDLE_CLASS_NAME": "D03b-001",
+      "components/sidebar/index.tsx:WORKTREE_SIDEBAR_RESIZE_HANDLE_LINE_CLASS_NAME": "D03b-001",
+      "components/sidebar/project-group-header-drag-commit.ts:commitProjectGroupHeaderDragDrop": "D03b-033",
+      "components/sidebar/project-group-header-drag-contract.ts:ProjectGroupDragState": "D03b-030",
+      "components/sidebar/project-group-header-drag-contract.ts:INITIAL_PROJECT_GROUP_DRAG_STATE": "D03b-030",
+      "components/sidebar/project-group-header-drag-contract.ts:UseProjectGroupHeaderDragArgs": "D03b-030",
+      "components/sidebar/project-group-header-drag-contract.ts:ProjectGroupHeaderDragController": "D03b-030",
+      "components/sidebar/project-group-header-drag-contract.ts:ProjectGroupHeaderDragSession": "D03b-030",
+      "components/sidebar/project-group-header-drag-contract.ts:PROJECT_GROUP_HEADER_DRAG_THRESHOLD_PX": "D03b-030",
+      "components/sidebar/project-group-header-drag-contract.ts:isProjectGroupHeaderDragHandleTarget": "D03b-030",
+      "components/sidebar/project-group-header-drag-contract.ts:isProjectGroupHeaderActionTarget": "D03b-030",
+      "components/sidebar/project-group-header-drag-start.ts:createProjectGroupHeaderDragSession": "D03b-030",
+      "components/sidebar/project-group-header-drag.ts:useProjectGroupHeaderDrag": "D03b-030",
+      "components/sidebar/project-group-header-drop.ts:ProjectGroupHeaderDragBucketKey": "D03b-032",
+      "components/sidebar/project-group-header-drop.ts:ProjectGroupHeaderDragRect": "D03b-032",
+      "components/sidebar/project-group-header-drop.ts:ProjectGroupHeaderDropPreview": "D03b-032",
+      "components/sidebar/project-group-header-drop.ts:ProjectGroupTabOrderUpdate": "D03b-033",
+      "components/sidebar/project-group-header-drop.ts:getProjectGroupHeaderDragBucketKey": "D03b-030",
+      "components/sidebar/project-group-header-drop.ts:getSidebarOrderedProjectGroupHeaderIdsByBucket": "D03b-032",
+      "components/sidebar/project-group-header-drop.ts:mapSidebarProjectGroupDropIndexToSiblingInsertIndex": "D03b-033",
+      "components/sidebar/project-group-header-drop.ts:getProjectGroupTabOrderUpdatesForSidebarDrop": "D03b-033",
+      "components/sidebar/project-group-header-drop.ts:measureProjectGroupHeaderDragRects": "D03b-032",
+      "components/sidebar/project-group-header-drop.ts:computeProjectGroupHeaderDropPreview": "D03b-032",
+      "components/sidebar/project-header-drag-commit.ts:commitProjectHeaderDragDrop": "D03b-028",
+      "components/sidebar/project-header-drag-contract.ts:RepoDragState": "D03b-025",
+      "components/sidebar/project-header-drag-contract.ts:INITIAL_REPO_DRAG_STATE": "D03b-025",
+      "components/sidebar/project-header-drag-contract.ts:UseRepoHeaderDragArgs": "D03b-025",
+      "components/sidebar/project-header-drag-contract.ts:RepoHeaderDragController": "D03b-025",
+      "components/sidebar/project-header-drag-contract.ts:ProjectHeaderDragSession": "D03b-025",
+      "components/sidebar/project-header-drag-contract.ts:PROJECT_HEADER_DRAG_THRESHOLD_PX": "D03b-025",
+      "components/sidebar/project-header-drag-contract.ts:REPO_HEADER_ACTION_SELECTOR": "D03b-025",
+      "components/sidebar/project-header-drag-contract.ts:isProjectHeaderDragHandleTarget": "D03b-025",
+      "components/sidebar/project-header-drag-contract.ts:isRepoHeaderActionTarget": "D03b-025",
+      "components/sidebar/project-header-drag-start.ts:createProjectHeaderDragSession": "D03b-025",
+      "components/sidebar/project-header-drag.ts:useRepoHeaderDrag": "D03b-025",
+      "components/sidebar/project-header-drop.ts:ProjectHeaderDragBucketKey": "D03b-027",
+      "components/sidebar/project-header-drop.ts:ProjectHeaderDragRect": "D03b-027",
+      "components/sidebar/project-header-drop.ts:ProjectHeaderDropPreview": "D03b-027",
+      "components/sidebar/project-header-drop.ts:getProjectHeaderDragBucketKey": "D03b-025",
+      "components/sidebar/project-header-drop.ts:getSidebarOrderedRepoHeaderIdsByBucket": "D03b-027",
+      "components/sidebar/project-header-drop.ts:getLogicalRepoOrderRankById": "D03b-029",
+      "components/sidebar/project-header-drop.ts:getProjectGroupOrderForSidebarDrop": "D03b-028",
+      "components/sidebar/project-header-drop.ts:mapSidebarProjectHeaderDropIndexToSiblingInsertIndex": "D03b-028",
+      "components/sidebar/project-header-drop.ts:measureProjectHeaderDragRects": "D03b-027",
+      "components/sidebar/project-header-drop.ts:mapSidebarRepoDropIndexToAllRepoInsertAt": "D03b-029",
+      "components/sidebar/project-header-drop.ts:computeProjectHeaderDropPreview": "D03b-027",
+      "components/sidebar/project-header-drop.ts:applyAllRepoInsertAt": "D03b-029",
+      "components/sidebar/rendered-sidebar-worktree-order.ts:computeRenderedSidebarWorktrees": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.ts:computeRenderedSidebarWorktreeOrder": "D03b-039",
+      "components/sidebar/sidebar-project-drop.ts:SidebarProjectDropPathResolution": "D03b-009",
+      "components/sidebar/sidebar-project-drop.ts:SidebarProjectDropAffordance": "D03b-008",
+      "components/sidebar/sidebar-project-drop.ts:resolveSidebarProjectDropPath": "D03b-009",
+      "components/sidebar/sidebar-project-drop.ts:isRemoteRuntimeActive": "D03b-008",
+      "components/sidebar/sidebar-project-drop.ts:getSidebarProjectDropAffordance": "D03b-008",
+      "components/sidebar/useSidebarProjectDrop.ts:useSidebarProjectDrop": "D03b-008",
+      "components/sidebar/worktree-header-section-boundaries.ts:getRepoHeaderSectionEndByRepoId": "D03b-040",
+      "components/sidebar/worktree-header-section-boundaries.ts:getProjectGroupHeaderSectionEndByGroupId": "D03b-041",
+      "components/sidebar/worktree-list-card-markup-queries.ts:getCardOpeningTag": "D03b-048",
+      "components/sidebar/worktree-list-card-markup-queries.ts:getOptionOpeningTag": "D03b-048",
+      "components/sidebar/worktree-list-card-markup-queries.ts:getFolderWorkspaceSurfaceOpeningTag": "D03b-047",
+      "components/sidebar/worktree-list-card-markup-queries.ts:getDataNumber": "INFRA: test markup parser helper (worktree-list-card-markup-queries.ts:36)",
+      "components/sidebar/worktree-list-card-markup-queries.ts:getPaddingLeft": "D03b-048",
+      "components/sidebar/worktree-list-card-markup-queries.ts:getFlushCardContentStart": "D03b-048",
+      "components/sidebar/worktree-list-groups-host-collision.test.ts:SSH_REPO_FIXTURE": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:LOCAL_HOST_LABEL": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:repo": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:worktree": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:repoMap": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:remoteRepo": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:remoteWorktree": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:project": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:projectHostSetups": "D03b-049",
+      "components/sidebar/worktree-list-groups-test-fixtures.ts:makeDetectedWorktree": "D03b-013",
+      "components/sidebar/worktree-list-lineage-card-test-fixtures.ts:makeFolderWorkspacePathStatusMockState": "D03b-047",
+      "components/sidebar/worktree-list-lineage-card-test-fixtures.ts:makeRepo": "D03b-048",
+      "components/sidebar/worktree-list-lineage-card-test-fixtures.ts:makeWorktree": "D03b-048",
+      "components/sidebar/worktree-list-lineage-card-test-fixtures.ts:makeFolderWorkspacePathStatusState": "D03b-047",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:mockStore": "INFRA: test store fixture container (worktree-list-lineage-card-test-harness.ts:8)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:WorktreeListComponent": "INFRA: type definition for test component (worktree-list-lineage-card-test-harness.ts:10)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:loadWorktreeList": "INFRA: dynamic test module loader (worktree-list-lineage-card-test-harness.ts:17)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:renderWorktreeListMarkup": "D03b-048",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createAppStoreModuleMock": "INFRA: test mock generator (worktree-list-lineage-card-test-harness.ts:35)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createReactVirtualModuleMock": "INFRA: test virtualizer mock generator (worktree-list-lineage-card-test-harness.ts:50)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createVirtualizedScrollAnchorModuleMock": "INFRA: test scroll anchor mock (worktree-list-lineage-card-test-harness.ts:70)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createProjectHeaderDragModuleMock": "INFRA: test header drag mock (worktree-list-lineage-card-test-harness.ts:77)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createWorktreeCardModuleMock": "D03b-048",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createWorktreeCardAgentsModuleMock": "D03b-012",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createWorktreeTitleInlineRenameModuleMock": "INFRA: test rename module mock (worktree-list-lineage-card-test-harness.ts:193)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createWorktreeContextMenuModuleMock": "INFRA: test context menu mock (worktree-list-lineage-card-test-harness.ts:213)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createTooltipModuleMock": "INFRA: test tooltip mock (worktree-list-lineage-card-test-harness.ts:222)",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:createDropdownMenuModuleMock": "INFRA: test dropdown menu mock (worktree-list-lineage-card-test-harness.ts:233)",
+      "components/sidebar/worktree-list-lineage-store-state.ts:setLineageFixtureState": "D03b-048",
+      "components/sidebar/worktree-list-pinned-store-state.ts:setPinnedFixtureState": "D03b-049",
+      "components/sidebar/worktree-sidebar-drop-preview.ts:WorktreeSidebarDropPreview": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.ts:WorktreeSidebarStatusDropTarget": "D03b-045",
+      "components/sidebar/worktree-sidebar-drop-preview.ts:WorktreeSidebarTrackedStatusDropTarget": "D03b-045",
+      "components/sidebar/worktree-sidebar-drop-preview.ts:resolveWorktreeSidebarStatusDropCommitTarget": "D03b-045",
+      "components/sidebar/worktree-sidebar-drop-preview.ts:computeWorktreeSidebarDropPreview": "D03b-043",
+      "components/sidebar/worktree-snapshot-prune-batch.ts:WorktreeSnapshotPruneBatch": "D03b-046",
+      "components/sidebar/worktree-snapshot-prune-batch.ts:beginWorktreeSnapshotPruneBatch": "D03b-046",
+      "components/sidebar/WorktreeList.tsx:default": "D03b-010",
+      "components/sidebar/index.tsx:default": "D03b-001"
+    },
+    "tests": {
+      "components/sidebar/WorktreeList.card-memo-stability.test.tsx:268 :: WorktreeCard memo bail-out across epoch bumps": "D03b-010",
+      "components/sidebar/WorktreeList.card-memo-stability.test.tsx:287 :: does not re-render cards on an order-preserving sortEpoch bump": "D03b-010",
+      "components/sidebar/WorktreeList.card-memo-stability.test.tsx:310 :: re-renders a card when its own worktree data changes": "D03b-010",
+      "components/sidebar/WorktreeList.card-memo-stability.test.tsx:334 :: tracks Smart attention changes that preserve the displayed order": "D03b-010",
+      "components/sidebar/WorktreeList.empty-project-rows.test.ts:98 :: WorktreeList lineage child card renderer": "D03b-019",
+      "components/sidebar/WorktreeList.empty-project-rows.test.ts:103 :: does not render the collapse affordance on empty ungrouped projects": "D03b-019",
+      "components/sidebar/WorktreeList.empty-project-rows.test.ts:110 :: renders an empty ungrouped project instead of the empty workspace state": "D03b-019",
+      "components/sidebar/WorktreeList.empty-project-rows.test.ts:118 :: shows Clear Filters when repo filters exclude an empty ungrouped project": "D03b-019",
+      "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:158 :: WorktreeList lineage child card renderer": "D03b-047",
+      "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:163 :: points aria-activedescendant at the active folder workspace row": "D03b-047",
+      "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:172 :: keeps folder workspace cards one compact step under their group header": "D03b-047",
+      "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:190 :: uses comparable new-card worktree geometry for experimental folder workspace rows": "D03b-047",
+      "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:209 :: preserves manual folder workspace indentation outside folder-scanned groups": "D03b-047",
+      "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:226 :: caps nested folder workspace surfaces to keep compact final anchors": "D03b-047",
+      "components/sidebar/WorktreeList.group-headers.test.ts:118 :: WorktreeList lineage child card renderer": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:123 :: renders project group headers when repos import before worktree rows load": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:131 :: renders a collapse chevron on project group headers with children": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:139 :: renders collapsed project group header affordance state": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:148 :: does not render the project collapse affordance on flat section headers": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:155 :: uncollapses pinned reveal for a descendant that only lives under a pinned parent": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:173 :: uncollapses pinned reveal through the pinned section after host expansion": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:191 :: renders a collapse chevron on status group headers with worktrees": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:201 :: renders a collapse chevron on the pinned section header with worktrees": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:211 :: renders collapsed pinned section header affordance state": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:225 :: renders a collapse chevron on grouped repo headers with worktrees": "D03b-050",
+      "components/sidebar/WorktreeList.group-headers.test.ts:234 :: shows Clear Filters when filters exclude pre-worktree project groups": "D03b-050",
+      "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:449 :: WorktreeCard agent-list <-> child-worktrees expansion coupling": "D03b-012",
+      "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:471 :: [full mode] both toggles render independently at mount": "D03b-012",
+      "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:491 :: [full mode] toggling AGENTS does NOT change the child-worktrees chip (agents -> children uncoupled)": "D03b-012",
+      "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:511 :: [full mode] toggling CHILD WORKTREES still remounts the card but PRESERVES agent expansion (regression)": "D03b-012",
+      "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:540 :: [full mode] CONTROL: a re-render that does NOT change collapsedGroups preserves agent state (isolates the remount)": "D03b-012",
+      "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:557 :: [compact mode] toggling CHILD WORKTREES preserves the compact agent summary expansion (regression)": "D03b-012",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:40 :: WorktreeList lineage child card renderer": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:45 :: renders recursive lineage descendants through WorktreeCard once": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:63 :: passes child review details through the shared WorktreeCard path": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:74 :: uses shared nested-row indentation for child and grandchild cards": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:86 :: shows deleting feedback on nested lineage child cards": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:100 :: shows the unread bell action on unread nested lineage child cards": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:114 :: lets WorktreeCard own the reconnect dialog for an active disconnected lineage child": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:131 :: points aria-activedescendant at the active lineage child row": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:139 :: points aria-activedescendant at the pinned row for active pinned workspaces": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:148 :: points aria-activedescendant at the natural duplicate when enabled": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:158 :: opens inline rename only for the row-scoped lineage child request": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:175 :: does not add group indentation when grouping is disabled": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:185 :: passes one group indentation step into the card when grouped by project": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:196 :: keeps nested card inner padding aligned with grouped parent cards": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:205 :: keeps nested card inner padding aligned inside project groups": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:214 :: adds project group depth to workspace card content indentation": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:225 :: keeps repo worktrees shallower inside folder-scanned project groups": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:244 :: caps deeply nested folder-scanned repo worktree surfaces at the compact anchor": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:384 :: WorktreeList real child WorktreeCard integration": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:403 :: renders GitLab MR metadata from a child through the real WorktreeCard path": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:412 :: keeps expanded child cards in the parent title column": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:422 :: keeps three-level experimental lineage children on the immediate-parent step": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:462 :: double-clicking a nested child opens edit metadata for the child only": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:488 :: does not activate a nested child while it is deleting": "D03b-048",
+      "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:386 :: WorktreeList status-lane drop carries visible lineage children (#9083)": "D03b-015",
+      "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:405 :: moves a dragged parent and its visible lineage child to the dropped lane": "D03b-015",
+      "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:417 :: leaves worktrees in other lanes untouched": "D03b-015",
+      "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:428 :: commits only itself when a childless worktree is dropped onto another lane": "D03b-015",
+      "components/sidebar/host-header-drag.test.tsx:40 :: useHostHeaderDrag": "D03b-034",
+      "components/sidebar/host-header-drag.test.tsx:41 :: does not start a drag when the pointer is released before the window listeners attach": "D03b-034",
+      "components/sidebar/host-header-drag.test.tsx:59 :: clears a session whose pointerup was missed so a later drag still works": "D03b-034",
+      "components/sidebar/host-header-drag.test.tsx:80 :: still promotes a drag while the pointer stays down": "D03b-034",
+      "components/sidebar/project-group-header-drag-commit.test.ts:42 :: commitProjectGroupHeaderDragDrop": "D03b-033",
+      "components/sidebar/project-group-header-drag-commit.test.ts:43 :: commits dense tabOrder updates for the affected Project Group siblings": "D03b-033",
+      "components/sidebar/project-group-header-drag-commit.test.ts:66 :: computes order only from the captured sibling bucket": "D03b-033",
+      "components/sidebar/project-group-header-drag-commit.test.ts:89 :: does not commit when the drop keeps the group in the same slot": "D03b-033",
+      "components/sidebar/project-group-header-drag-commit.test.ts:104 :: does not commit when a stale session no longer contains the dragged group": "D03b-033",
+      "components/sidebar/project-group-header-drag-start.test.ts:23 :: createProjectGroupHeaderDragSession": "D03b-030",
+      "components/sidebar/project-group-header-drag-start.test.ts:24 :: arms a drag session from plain header text when the row is the drag handle": "D03b-030",
+      "components/sidebar/project-group-header-drag-start.test.ts:58 :: does not arm from nested Project Group header actions": "D03b-030",
+      "components/sidebar/project-group-header-drag-start.test.ts:91 :: arms from the group icon svg (SVGElement target)": "D03b-030",
+      "components/sidebar/project-group-header-drag-start.test.ts:123 :: does not arm when pressing an svg icon inside an action button": "D03b-030",
+      "components/sidebar/project-group-header-drag-start.test.ts:159 :: does not arm from the actions overlay even if the row is the drag handle": "D03b-030",
+      "components/sidebar/project-group-header-drag.test.ts:14 :: project group header action targets": "D03b-030",
+      "components/sidebar/project-group-header-drag.test.ts:15 :: ignores explicit project action wrappers": "D03b-030",
+      "components/sidebar/project-group-header-drag.test.ts:25 :: ignores the project header actions overlay (including gaps between icons)": "D03b-030",
+      "components/sidebar/project-group-header-drag.test.ts:38 :: ignores the hover collapse affordance": "D03b-030",
+      "components/sidebar/project-group-header-drag.test.ts:48 :: does not ignore plain header text or the header itself": "D03b-030",
+      "components/sidebar/project-group-header-drop.test.ts:31 :: getProjectGroupHeaderDragBucketKey": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:32 :: uses root for top-level groups": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:36 :: scopes child groups to their parent bucket": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:47 :: falls back to root when persisted parent metadata is missing": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:54 :: getSidebarOrderedProjectGroupHeaderIdsByBucket": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:55 :: groups Project Group headers by effective parent bucket": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:102 :: mapSidebarProjectGroupDropIndexToSiblingInsertIndex": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:103 :: keeps upward drops at the same target index after removing the source": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:113 :: shifts downward drops because the source header is removed first": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:124 :: computeProjectGroupHeaderDropPreview": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:125 :: uses row-model header indices instead of mounted subset order": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:141 :: snaps a drop inside the last expanded Project Group section to its bottom boundary": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:165 :: rejects a drop below the measured content when the estimated section overshoots": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:188 :: rejects an edge-zone final drop below measured content when the estimate overshoots": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:211 :: snaps a within-content drop even when the estimated section overshoots": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:233 :: uses the whole Project Group section for the final boundary slot": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:255 :: getProjectGroupTabOrderUpdatesForSidebarDrop": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:256 :: reindexes sibling groups so duplicate legacy tabOrder values can move between siblings": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:274 :: returns no updates when the drop keeps the group in the same slot": "D03b-032",
+      "components/sidebar/project-header-drag-commit.test.ts:37 :: commitProjectHeaderDragDrop": "D03b-028",
+      "components/sidebar/project-header-drag-commit.test.ts:38 :: commits whole-repo reordering when project groups are absent": "D03b-028",
+      "components/sidebar/project-header-drag-commit.test.ts:56 :: moves a merged paired-host header upward as one stable block": "D03b-028",
+      "components/sidebar/project-header-drag-commit.test.ts:74 :: does not reorder host occurrences when a merged header stays in place": "D03b-028",
+      "components/sidebar/project-header-drag-commit.test.ts:92 :: commits projectGroupOrder when project groups are present": "D03b-028",
+      "components/sidebar/project-header-drag-start.test.ts:19 :: createProjectHeaderDragSession": "D03b-025",
+      "components/sidebar/project-header-drag-start.test.ts:20 :: does not capture the pointer when arming a drag session": "D03b-025",
+      "components/sidebar/project-header-drag-start.test.ts:49 :: arms a drag session from plain project header text when the row is the drag handle": "D03b-025",
+      "components/sidebar/project-header-drag-start.test.ts:78 :: arms a drag session when pressing the project icon svg (SVGElement target)": "D03b-025",
+      "components/sidebar/project-header-drag-start.test.ts:109 :: does not arm a drag session when pressing an svg icon inside an action button": "D03b-025",
+      "components/sidebar/project-header-drag-start.test.ts:143 :: does not arm a drag session when pressing the actions overlay even if the row is the drag handle": "D03b-025",
+      "components/sidebar/project-header-drag.test.ts:14 :: repo header action targets": "D03b-025",
+      "components/sidebar/project-header-drag.test.ts:15 :: ignores explicit project action wrappers": "D03b-025",
+      "components/sidebar/project-header-drag.test.ts:25 :: ignores native nested controls": "D03b-025",
+      "components/sidebar/project-header-drag.test.ts:31 :: does not ignore plain header text or the header itself": "D03b-025",
+      "components/sidebar/project-header-drag.test.ts:38 :: ignores the hover collapse affordance": "D03b-025",
+      "components/sidebar/project-header-drag.test.ts:48 :: ignores the project header actions overlay (including gaps between icons)": "D03b-025",
+      "components/sidebar/project-header-drop.test.ts:17 :: getProjectHeaderDragBucketKey": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:18 :: uses ungrouped for repos without a project group": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:22 :: scopes grouped repos to their project group bucket": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:27 :: getSidebarOrderedRepoHeaderIdsByBucket": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:28 :: groups repo headers by project group membership": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:57 :: getLogicalRepoOrderRankById": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:58 :: anchors a merged paired-host header to its first persisted occurrence": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:71 :: mapSidebarRepoDropIndexToAllRepoInsertAt": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:74 :: maps sidebar start drops onto the first visible repo in the full list": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:78 :: maps sidebar end drops onto the slot after the last visible repo": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:82 :: maps middle sidebar drops onto the target repo id in the full list": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:87 :: mapSidebarProjectHeaderDropIndexToSiblingInsertIndex": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:88 :: keeps upward drops at the same target index after removing the source": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:98 :: shifts downward drops because the source header is removed first": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:108 :: maps a drop immediately after the source back to the original slot": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:119 :: computeProjectHeaderDropPreview": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:120 :: uses row-model header indices instead of mounted subset order": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:136 :: supports boundary drops at the end of the full sidebar list": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:157 :: snaps a drop inside the last expanded project section to its bottom boundary": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:181 :: snaps a drop between sibling project headers to the nearer boundary": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:206 :: nearest-boundary choice across an interior gap": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:237 :: snaps to the previous section bottom when the pointer is nearer to it": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:249 :: snaps to the next header top when the pointer is nearer to it": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:261 :: breaks the midpoint tie toward the next header boundary": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:274 :: content bound for the last section": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:297 :: rejects a drop below the measured content when the estimate overshoots": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:303 :: rejects an edge-zone final drop below measured content when the estimate overshoots": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:309 :: still snaps within the measured content when the estimate overshoots": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:317 :: snaps within the measured content when actual content undershoots the estimate": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:328 :: applyAllRepoInsertAt": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:329 :: reorders repos using a full-list insertion index": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:338 :: moves duplicate host occurrences as one stable logical-project block": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:347 :: returns null for no-op reorders": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:352 :: getProjectGroupOrderForSidebarDrop": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:363 :: uses a midpoint between sibling orders when there is room": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:372 :: uses manual repo rank as the fallback for missing sibling orders": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:386 :: keeps a deterministic finite anchor when sibling orders collide": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:395 :: assigns an order that sorts before siblings ranked by repo order": "D03b-027",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:115 :: closed-sidebar Cmd+1-9 ordering (#9497)": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:122 :: hoists the repo main worktree first, matching the rendered sidebar": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:136 :: ignores the agent-send collapse override, which only applies to a mounted list": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:156 :: places a pinned workspace per the pinned section under both display policies": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:175 :: elides members of a collapsed group, which render no card to number": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:183 :: numbers folder workspaces, which the flat fallback omitted entirely": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:194 :: numbers a workspace created while nothing was published": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:204 :: treats a published order as authoritative, including an explicitly empty one": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:218 :: honors an explicit host filter and keeps the all-hosts default unfiltered": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:261 :: keeps the sort layer intact for smart and comparator sort modes": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:273 :: keeps same-id hosts as separate closed-sidebar shortcut positions": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:286 :: does not reconstruct a filtered same-id host in closed-sidebar shortcuts": "D03b-038",
+      "components/sidebar/sidebar-project-drop.test.ts:8 :: resolveSidebarProjectDropPath": "D03b-009",
+      "components/sidebar/sidebar-project-drop.test.ts:9 :: accepts exactly one dropped path": "D03b-009",
+      "components/sidebar/sidebar-project-drop.test.ts:16 :: rejects empty and multi-path drops before routing": "D03b-009",
+      "components/sidebar/sidebar-project-drop.test.ts:25 :: isRemoteRuntimeActive": "D03b-009",
+      "components/sidebar/sidebar-project-drop.test.ts:26 :: distinguishes local runtime from active server runtime": "D03b-009",
+      "components/sidebar/sidebar-project-drop.test.ts:33 :: getSidebarProjectDropAffordance": "D03b-009",
+      "components/sidebar/sidebar-project-drop.test.ts:34 :: hides when the sidebar is not in a drop interaction": "D03b-009",
+      "components/sidebar/sidebar-project-drop.test.ts:44 :: shows ready, busy, and blocked states": "D03b-009",
+      "components/sidebar/worktree-header-section-boundaries.test.ts:28 :: getRepoHeaderSectionEndByRepoId": "D03b-040",
+      "components/sidebar/worktree-header-section-boundaries.test.ts:29 :: ends a section at the successor from the header’s own bucket": "D03b-040",
+      "components/sidebar/worktree-header-section-boundaries.test.ts:49 :: falls back to the next header when a bucket has no successor": "D03b-040",
+      "components/sidebar/worktree-header-section-boundaries.test.ts:60 :: resolves a header id that renders twice to its first row, matching findIndex": "D03b-040",
+      "components/sidebar/worktree-header-section-boundaries.test.ts:77 :: getProjectGroupHeaderSectionEndByGroupId": "D03b-040",
+      "components/sidebar/worktree-header-section-boundaries.test.ts:78 :: ends a section at the successor from the group’s own bucket": "D03b-040",
+      "components/sidebar/worktree-list-groups-host-collision.test.ts:59 :: sidebar rows for a workspace id owned by two hosts": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-collision.test.ts:60 :: renders one selectable row per host": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-collision.test.ts:67 :: gives each row its own React key so neither replaces the other": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-collision.test.ts:75 :: labels each row with the host it lives on": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-collision.test.ts:83 :: counts the two hosts separately in the group header": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-collision.test.ts:89 :: keeps an unpinned host row visible when its same-id peer is pinned": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:17 :: buildRows with pinned worktrees": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:18 :: groups Windows host and WSL setups on the same runtime host": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:99 :: uses saved host labels for mixed-host sidebar card badges": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:158 :: uses the registered SSH target label for openclaw rows": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:205 :: shows distinct Orca server names when status grouping mixes runtime hosts": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:264 :: omits host context labels when a project group only has one host": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:309 :: keeps same-named repos separate without project setup identity": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:327 :: returns project group keys for worktree reveal when project setup identity exists": "D03b-049",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:7 :: buildRows with pinned worktrees": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:8 :: emits an imported worktrees card at the top of repo-group rows": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:45 :: suppresses the repo-group imported worktrees card when the repo group is collapsed": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:67 :: emits a repo header and imported worktrees card when no visible worktree rows remain": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:96 :: emits an empty ungrouped repo placeholder before imported cards are merged": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:125 :: skips stale empty placeholder repo ids that are absent from repoMap": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:146 :: does not emit unpinned imported worktree cards outside repo grouping": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:168 :: places non-repo imported fallbacks after each repo last pinned row when expanded": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:232 :: places collapsed non-repo imported fallbacks after Pinned in pinned repo order": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:285 :: emits a new external worktrees inbox row before repo worktree rows": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:321 :: suppresses the new external worktrees inbox row when the repo group is collapsed": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:344 :: emits a repo header and inbox row when no visible worktree rows remain": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:373 :: keeps the inbox group when the repo only has a pinned worktree": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:418 :: does not emit new external worktrees inbox rows outside repo grouping": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:441 :: emits imported worktree cards in repo groups when visible rows are pinned": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:520 :: duplicates pinned worktrees into repo groups when the policy allows it": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:556 :: suppresses duplicate-mode imported fallback only when a natural anchor renders": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:602 :: suppresses pinned imported worktree fallback when the repo has visible unpinned rows": "D03b-013",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:630 :: keeps repo imported worktree cards visible when Pinned is collapsed": "D03b-013",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:9 :: buildRows workspace lineage nesting": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:53 :: keeps lineage flat when nesting is off": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:79 :: places children directly under their parent when nesting is on": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:106 :: keeps same-id parent and child lineages partitioned by host": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:153 :: nests stable-update resolved legacy lineage when generalized lineage is absent": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:222 :: rejects stale resolved lineage after a parent instance is replaced": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:247 :: keeps mixed cyclic lineage participants visible as roots": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:282 :: resolves inline-only ancestor chains for reveal and temporary picker expansion": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:301 :: keeps a resolved child at the root when its parent is missing": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:359 :: keeps the hydrated lineage side-map authoritative when inline metadata disagrees": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:402 :: supports nested lineage chains beyond one level": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:443 :: collapses descendants under lineage parents": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:472 :: does not create a parent group for stale instance links": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:499 :: marks stale instance links as missing for shared context-menu validation": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:514 :: nests unpinned children under a pinned parent in Pinned": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:542 :: nests grandchildren under a pinned ancestor in Pinned": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:571 :: duplicates a pinned parent tree into All when the policy allows it": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:603 :: nests a pinned child under its pinned parent in Pinned": "D03b-048",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:631 :: keeps pinned children in Pinned without a parent badge": "D03b-048",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:10 :: project groups": "D03b-047",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:11 :: renders nested Project Groups before repos assigned to their leaf group": "D03b-047",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:75 :: renders folder workspaces under their owning folder-backed Project Group": "D03b-047",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:141 :: preserves nested Project Group depth for folder workspace rows": "D03b-047",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:223 :: does not render folder workspaces under non-folder Project Groups": "D03b-047",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:284 :: renders imported repos under nested Project Groups before worktree rows load": "D03b-047",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:361 :: returns both parent Project Group and repo keys for grouped repo reveals": "D03b-047",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:389 :: returns only the repo key for missing Project Group metadata reveals": "D03b-047",
+      "components/sidebar/worktree-list-groups-nested-project-groups.test.ts:417 :: returns only the repo key for ungrouped repo reveals": "D03b-047",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:140 :: discovery notice rows on a multi-host project": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:141 :: labels both rows when two distinct hosts share one label": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:165 :: labels a lone eligible row on a project that spans hosts": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:173 :: keeps each row its own label and count under either host filter": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:184 :: returns labels for exactly the eligible records, never the filtered-out ones": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:201 :: leaves a single-host project unlabelled even with several records on it": "D03b-049",
+      "components/sidebar/worktree-list-groups-pending-creations.test.ts:6 :: buildRows pending creations": "D03b-021",
+      "components/sidebar/worktree-list-groups-pending-creations.test.ts:11 :: nests a pending creation under its repo, above the repo worktrees": "D03b-021",
+      "components/sidebar/worktree-list-groups-pending-creations.test.ts:43 :: creates a repo group for a pending creation in a repo with no worktrees yet": "D03b-021",
+      "components/sidebar/worktree-list-groups-pending-creations.test.ts:67 :: keeps a pending creation visible when its repo metadata is temporarily missing": "D03b-021",
+      "components/sidebar/worktree-list-groups-pending-creations.test.ts:94 :: surfaces pending creations at the top for non-repo groupings": "D03b-021",
+      "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:69 :: pinned rows on a multi-host sidebar": "D03b-049",
+      "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:84 :: labels pinned rows when the only other host is itself pinned": "D03b-049",
+      "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:99 :: labels both copies when pinned worktrees also show in their groups": "D03b-049",
+      "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:109 :: draws no badge on a single-host sidebar even with a pinned row": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:8 :: project groups": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:9 :: keeps empty project groups visible in project grouping mode": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:49 :: renders grouped repos before their visible worktrees are loaded": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:92 :: does not resurrect filtered repos as empty Project Group headers": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:129 :: keeps sleep-filtered Project Group members as empty project headers": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:196 :: renders ungrouped repos as top-level repo rows when Project Groups exist": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:232 :: renders repos whose Project Group metadata is missing as top-level repo rows": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:272 :: does not render collapsed child-group repos as missing metadata fallbacks": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:315 :: disambiguates duplicate top-level repo basenames without renaming repos": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:387 :: disambiguates duplicate repo basenames inside each Project Group scope": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:19 :: buildRows with pinned worktrees": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:20 :: groups multiple host setups for the same project under one project header": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:55 :: keeps the cross-host project header label when another project section renders": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:110 :: renders same-project records with git remote identity as one mixed-host project header": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:210 :: keeps mixed-host project item order while inserting inbox rows before worktrees": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:299 :: orders project identity headers by the manual repo order anchor": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:376 :: splits same-host checkouts of one project into separate per-setup groups": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:438 :: splits only the surface with duplicate checkouts": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:499 :: counts projection twins for one directory as one checkout": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:562 :: keeps Git hosts grouped when folder setups share the project identity": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:632 :: keeps a provisioned runtime copy under the project header alongside a same-host checkout": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:696 :: splits duplicate user checkouts while a provisioned copy nests, on one host": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:8 :: buildRows project grouping order": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:48 :: orders repo headers by explicit repoOrder, not first-encounter": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:60 :: places unknown repo ids last and sorts them by label": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:68 :: orders repo headers by max(lastActivityAt) per repo in Recent mode": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:91 :: uses each repo": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:116 :: keeps the main workspace first inside its project group in Recent mode": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:151 :: orders repo headers by repoOrder in Manual mode (default), ignoring activity": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:162 :: builds rows for a very large repo-group list": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:179 :: buildRows Recent project order fallbacks": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:195 :: sorts placeholder projects after projects with activity": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:219 :: project groups": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:220 :: orders repos inside a Project Group by projectGroupOrder in manual mode": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:281 :: falls back to repoOrder for grouped repos missing projectGroupOrder in manual mode": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:336 :: sorts a dragged project between repo-order fallbacks inside a group": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:397 :: orders repos inside a Project Group by activity in recent mode, keeping tabOrder": "D03b-014",
+      "components/sidebar/worktree-list-groups-project-order.test.ts:462 :: orders Project Group siblings by tabOrder within each parent bucket": "D03b-014",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:60 :: sidebar section headers with colliding display names": "D03b-049",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:64 :: path-disambiguates two project headers that share a display name": "D03b-049",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:77 :: leaves a lone project header un-suffixed": "D03b-049",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:87 :: path-disambiguates untracked repo headers that share a display name": "D03b-049",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:12 :: computeWorktreeSidebarDropPreview": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:13 :: computes an insertion line for a target group": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:29 :: returns null outside the group boundary": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:42 :: collapses lineage child rects into the parent drag unit for preview offsets": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:67 :: uses one card-height placeholder for multi-select reorder previews": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:97 :: uses the grabbed selected card as the multi-select preview placeholder": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:121 :: marks the gap the row previews open, not the displaced card top": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:153 :: resolves the same slot wherever a tall card is grabbed": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:178 :: keeps a downward end drop stable when leading rows are virtualized": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:216 :: uses the full group index when the dragged row is outside the mounted window": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:235 :: preserves the virtual row gap when only one row remains mounted": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:253 :: resolveWorktreeSidebarStatusDropCommitTarget": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:261 :: uses the current status target when pointerup hit-testing succeeds": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:281 :: reuses the latest status target when pointerup hit-testing blanks at the same point": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:301 :: reuses the latest lineage target when pointerup hit-testing blanks at the same point": "D03b-043",
+      "components/sidebar/worktree-sidebar-drop-preview.test.ts:321 :: does not reuse a stale status target after the pointer has moved away": "D03b-043",
+      "components/sidebar/worktree-sort-label-ordering.test.ts:107 :: worktree sort label ordering": "D03b-011",
+      "components/sidebar/worktree-sort-label-ordering.test.ts:108 :: matches the pre-precompute comparator on every pair": "D03b-011",
+      "components/sidebar/worktree-sort-label-ordering.test.ts:119 :: produces byte-for-byte identical sort output in every mode": "D03b-011",
+      "components/sidebar/worktree-sort-label-ordering.test.ts:132 :: falls back to deriving labels for rows missing from the precomputed map": "D03b-011",
+      "components/sidebar/worktree-sort-label-ordering.test.ts:140 :: keys labels by row so a two-host id collision keeps each row its own label": "D03b-011",
+      "components/sidebar/worktree-list-groups-lineage-nesting.test.ts:324 :: does not nest resolved lineage across a known %s boundary": "D03b-048",
+      "components/sidebar/worktree-list-groups-pinned-host-labels.test.ts:71 :: labels a pinned remote worktree in the Pinned section (%s grouping)": "D03b-049"
+    },
+    "labels": {
+      "components/sidebar/PendingWorktreeRow.tsx:79 title={translate('auto.components.sidebar.PendingWorktreeRow.188f6922a0', 'Cancel')}": "D03b-022",
+      "components/sidebar/PendingWorktreeRow.tsx:80 aria-label={translate(": "D03b-022",
+      "components/sidebar/WorktreeList.card-memo-stability.test.tsx:84 vi.mock('@/components/ui/tooltip', () => ({": "D03b-010",
+      "components/sidebar/WorktreeList.card-memo-stability.test.tsx:93 DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => (": "D03b-010",
+      "components/sidebar/WorktreeList.empty-project-rows.test.ts:32 vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())": "D03b-019",
+      "components/sidebar/WorktreeList.folder-workspace-rows.test.ts:40 vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())": "D03b-047",
+      "components/sidebar/WorktreeList.group-headers.test.ts:37 vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())": "D03b-050",
+      "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:109 vi.mock('@/components/ui/tooltip', () => ({": "D03b-012",
+      "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx:118 DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => (": "D03b-012",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:36 vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:110 expect(childMarkup).toContain('aria-label=\"Mark as read\"')": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-card.test.ts:111 expect(childMarkup).not.toContain('aria-label=\"Mark as unread\"')": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:103 vi.mock('@/components/ui/tooltip', () => ({": "D03b-048",
+      "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx:112 DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => (": "D03b-048",
+      "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:104 vi.mock('@/components/ui/tooltip', () => ({": "D03b-015",
+      "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx:113 DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => (": "D03b-015",
+      "components/sidebar/WorktreeListScrollToTopButton.tsx:4 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D03b-023",
+      "components/sidebar/WorktreeListScrollToTopButton.tsx:33 aria-label={label}": "D03b-023",
+      "components/sidebar/index.tsx:3 import { TooltipProvider } from '@/components/ui/tooltip'": "D03b-001",
+      "components/sidebar/project-group-header-drop.test.ts:69 label: 'A',": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:74 { type: 'header', key: 'repo:repo-a', label: 'repo', count: 0, tone: '', repo },": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:78 label: 'A child',": "D03b-032",
+      "components/sidebar/project-group-header-drop.test.ts:86 label: 'B',": "D03b-032",
+      "components/sidebar/project-header-drop.test.ts:33 label: 'A',": "D03b-027",
+      "components/sidebar/project-header-drop.test.ts:41 label: 'B',": "D03b-027",
+      "components/sidebar/sidebar-project-drop.ts:11 | { visible: true; tone: 'ready' | 'blocked' | 'busy'; label: string; description: string }": "D03b-008",
+      "components/sidebar/sidebar-project-drop.ts:44 label: translate(": "D03b-008",
+      "components/sidebar/sidebar-project-drop.ts:58 label: translate(": "D03b-008",
+      "components/sidebar/sidebar-project-drop.ts:71 label: translate(": "D03b-008",
+      "components/sidebar/worktree-header-section-boundaries.test.ts:10 ({ type: 'header', key: `repo:${id}`, label: id, count: 1, tone: '', repo: { id } }) as RenderRow": "D03b-040",
+      "components/sidebar/worktree-header-section-boundaries.test.ts:15 label: id,": "D03b-040",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:93 label: 'Orca',": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:152 { type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },": "D03b-049",
+      "components/sidebar/worktree-list-groups-host-labels.test.ts:298 { type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },": "D03b-049",
+      "components/sidebar/worktree-list-groups-imported-worktrees.test.ts:116 { type: 'header', key: 'repo:repo-1', label: 'orca' },": "D03b-013",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:26 /** Both twins display the same label: the reporting account's shape. */": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:129 ): { repoId: string; label: string | undefined; hostId: string | undefined; count: number }[] {": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:132 label: row.hostContextLabel,": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:160 { repoId: sshTwin.id, label: 'openclaw', hostId: SSH_HOST_ID, count: 61 },": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:161 { repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:169 { repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:177 { repoId: sshTwin.id, label: 'openclaw', hostId: SSH_HOST_ID, count: 61 }": "D03b-049",
+      "components/sidebar/worktree-list-groups-notice-host-labels.test.ts:180 { repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }": "D03b-049",
+      "components/sidebar/worktree-list-groups-pending-creations.test.ts:89 { type: 'header', key: `repo:${repo.id}`, label: 'Unknown' },": "D03b-021",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:43 label: 'Platform',": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-groups.test.ts:126 expect(rows[0]).toMatchObject({ label: 'Platform' })": "D03b-050",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:49 { type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:102 { key: 'project:github:stablyai/orca', label: 'Orca' }": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:105 { key: 'project:github:stablyai/orca', label: 'Orca' },": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:106 { key: 'repo:repo-other', label: 'design-assets' }": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:201 label: 'sample-app',": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:428 label: 'orca'": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:432 label: 'orca-2'": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:691 label: 'Orca',": "D03b-049",
+      "components/sidebar/worktree-list-groups-project-host-setups.test.ts:787 label: 'Orca',": "D03b-049",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:72 { key: 'project:github:acme/api', label: 'work/api' },": "D03b-049",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:73 { key: 'project:gitlab:me/api', label: 'oss/api' }": "D03b-049",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:84 ).toMatchObject([{ key: 'project:github:acme/api', label: 'api' }])": "D03b-049",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:89 { key: 'repo:repo-work', label: 'work/api' },": "D03b-049",
+      "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts:90 { key: 'repo:repo-oss', label: 'oss/api' }": "D03b-049",
+      "components/sidebar/worktree-list-lineage-card-test-harness.ts:239 DropdownMenuItem: ({ children }: { children: React.ReactNode }) =>": "INFRA: test dropdown mock item (worktree-list-lineage-card-test-harness.ts:239)"
+    },
+    "hotkeys": {
+      "components/sidebar/host-header-drag.ts:252 const onKeyDown = (e: KeyboardEvent): void => {": "D03b-035",
+      "components/sidebar/project-group-header-drag.ts:236 const onKeyDown = (event: KeyboardEvent): void => {": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:237 if (event.key === 'Escape') {": "D03b-031",
+      "components/sidebar/project-header-drag.ts:250 const onKeyDown = (e: KeyboardEvent): void => {": "D03b-026",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:5 getVisibleWorktreeShortcutTargets,": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:7 setVisibleWorktreeShortcutTargets": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:112 setVisibleWorktreeShortcutTargets(null)": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:118 setVisibleWorktreeShortcutTargets(null)": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:273 it('keeps same-id hosts as separate closed-sidebar shortcut positions', () => {": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:280 expect(getVisibleWorktreeShortcutTargets()).toEqual([": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:286 it('does not reconstruct a filtered same-id host in closed-sidebar shortcuts', () => {": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.test.ts:296 expect(getVisibleWorktreeShortcutTargets()).toEqual([": "D03b-038",
+      "components/sidebar/rendered-sidebar-worktree-order.ts:34 * hoisting and collapse elision, so the shortcut numbered the wrong card.": "D03b-038"
+    },
+    "prefs": {},
+    "timers": {
+      "components/sidebar/header-drag-click-swallow.ts:9 export function swallowNextClickOnDragHandle(handleEl: HTMLElement): ReturnType<typeof setTimeout> {": "D03b-026",
+      "components/sidebar/header-drag-click-swallow.ts:19 return setTimeout(() => window.removeEventListener('click', swallow, true), 0)": "D03b-026",
+      "components/sidebar/host-header-drag.ts:136 deferredComputeFrameRef.current = window.requestAnimationFrame(() => {": "D03b-036",
+      "components/sidebar/project-group-header-drag.ts:46 const clickSwallowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:169 autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:179 autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)": "D03b-031",
+      "components/sidebar/project-header-drag.ts:57 const clickSwallowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)": "D03b-026",
+      "components/sidebar/project-header-drag.ts:182 autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)": "D03b-026",
+      "components/sidebar/project-header-drag.ts:192 autoscrollFrameIdRef.current = window.requestAnimationFrame(runAutoscrollFrame)": "D03b-026"
+    },
+    "subscriptions": {
+      "components/sidebar/header-drag-click-swallow.ts:18 window.addEventListener('click', swallow, true)": "D03b-026",
+      "components/sidebar/host-header-drag.ts:192 useEffect(() => {": "D03b-035",
+      "components/sidebar/host-header-drag.ts:259 window.addEventListener('pointermove', onPointerMove)": "D03b-035",
+      "components/sidebar/host-header-drag.ts:260 window.addEventListener('pointerup', onPointerUp)": "D03b-035",
+      "components/sidebar/host-header-drag.ts:261 window.addEventListener('pointercancel', onPointerCancel)": "D03b-035",
+      "components/sidebar/host-header-drag.ts:262 window.addEventListener('keydown', onKeyDown)": "D03b-035",
+      "components/sidebar/host-header-drag.ts:263 window.addEventListener('blur', onBlur)": "D03b-035",
+      "components/sidebar/host-header-drag.ts:301 useEffect(() => {": "D03b-035",
+      "components/sidebar/index.tsx:118 useEffect(() => {": "D03b-005",
+      "components/sidebar/index.tsx:127 useEffect(() => {": "D03b-007",
+      "components/sidebar/index.tsx:133 useEffect(() => {": "D03b-007",
+      "components/sidebar/project-group-header-drag.ts:182 useEffect(() => {": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:243 window.addEventListener('pointermove', onPointerMove)": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:244 window.addEventListener('pointerup', onPointerUp)": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:245 window.addEventListener('pointercancel', onPointerCancel)": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:246 window.addEventListener('keydown', onKeyDown)": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:247 window.addEventListener('blur', onBlur)": "D03b-031",
+      "components/sidebar/project-group-header-drag.ts:270 useEffect(() => {": "D03b-031",
+      "components/sidebar/project-header-drag.ts:195 useEffect(() => {": "D03b-026",
+      "components/sidebar/project-header-drag.ts:257 window.addEventListener('pointermove', onPointerMove)": "D03b-026",
+      "components/sidebar/project-header-drag.ts:258 window.addEventListener('pointerup', onPointerUp)": "D03b-026",
+      "components/sidebar/project-header-drag.ts:259 window.addEventListener('pointercancel', onPointerCancel)": "D03b-026",
+      "components/sidebar/project-header-drag.ts:260 window.addEventListener('keydown', onKeyDown)": "D03b-026",
+      "components/sidebar/project-header-drag.ts:261 window.addEventListener('blur', onBlur)": "D03b-026",
+      "components/sidebar/project-header-drag.ts:284 useEffect(() => {": "D03b-026",
+      "components/sidebar/useSidebarProjectDrop.ts:40 useEffect(() => {": "D03b-008",
+      "components/sidebar/useSidebarProjectDrop.ts:41 document.addEventListener('drop', clearDragState, true)": "D03b-008",
+      "components/sidebar/useSidebarProjectDrop.ts:42 document.addEventListener('dragend', clearDragState, true)": "D03b-008",
+      "components/sidebar/useSidebarProjectDrop.ts:118 useEffect(() => {": "D03b-009"
+    },
+    "preload": {
+      "components/sidebar/useSidebarProjectDrop.ts:82 await window.api.fs.authorizeExternalPath({ targetPath: pathResolution.path })": "D03b-009",
+      "components/sidebar/useSidebarProjectDrop.ts:83 const stat = await window.api.fs.stat({ filePath: pathResolution.path })": "D03b-009",
+      "components/sidebar/useSidebarProjectDrop.ts:119 return window.api.ui.onFileDrop((data) => {": "D03b-009",
+      "components/sidebar/worktree-snapshot-prune-batch.ts:10 const api = window.api.workspaceCleanup": "D03b-046"
+    }
+  }
+}

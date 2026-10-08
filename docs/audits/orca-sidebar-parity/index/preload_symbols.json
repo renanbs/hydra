@@ -1,0 +1,682 @@
+[
+ {
+  "file": "components/sidebar/AddProjectFromFolderDialog.tsx",
+  "line": 77,
+  "text": "const result = await window.api.repos.addRemote({"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostDialog.tsx",
+  "line": 114,
+  "text": "ssh: window.api.ssh,"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostDialog.tsx",
+  "line": 134,
+  "text": "const result = await loadSshConfigHostsForPicker(window.api.ssh, {"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostDialog.tsx",
+  "line": 172,
+  "text": "resolved = await prefillFormFromSshConfigHost(host, window.api.ssh)"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostDialog.tsx",
+  "line": 220,
+  "text": "ssh: window.api.ssh,"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostDialog.tsx",
+  "line": 268,
+  "text": "const result = await window.api.runtimeEnvironments.verifyAndAddFromPairingCode({"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostDialog.tsx",
+  "line": 284,
+  "text": "const environments = await window.api.runtimeEnvironments.list()"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialog.tsx",
+  "line": 213,
+  "text": "void window.api.repos.cloneAbort()"
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.tsx",
+  "line": 78,
+  "text": "const targets = (await window.api.ssh.listTargets()) as SshTarget[]"
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.tsx",
+  "line": 84,
+  "text": "const state = (await window.api.ssh.getState({"
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.tsx",
+  "line": 119,
+  "text": "const unsubscribe = window.api.ssh.onStateChanged(({ targetId, state }) => {"
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.tsx",
+  "line": 130,
+  "text": "await window.api.ssh.connect({ targetId })"
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.tsx",
+  "line": 185,
+  "text": "const result = await window.api.repos.addRemote({"
+ },
+ {
+  "file": "components/sidebar/AgentDashboardSidebarEntry.tsx",
+  "line": 74,
+  "text": "void window.api.dashboard.openPopout()"
+ },
+ {
+  "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 56,
+  "text": "window.api.worktrees"
+ },
+ {
+  "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 80,
+  "text": "await window.api.ui.writeClipboardText(detailText)"
+ },
+ {
+  "file": "components/sidebar/ForgetSshWorkspaceDialog.tsx",
+  "line": 78,
+  "text": "await window.api.ssh.connect({ targetId: resolution.targetId })"
+ },
+ {
+  "file": "components/sidebar/HostRemoveDialog.tsx",
+  "line": 81,
+  "text": "await removeSshTargetWithBestEffortCleanup(window.api.ssh, targetId)"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 106,
+  "text": "await window.api.ssh[action]({ targetId: parsed.targetId })"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 140,
+  "text": "const response = await window.api.runtimeEnvironments.getStatus({"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+  "line": 175,
+  "text": "? window.api.cli.getWslInstallStatus(getWslCliDistroRequest(agentRuntime))"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+  "line": 176,
+  "text": ": window.api.cli.getInstallStatus())"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+  "line": 301,
+  "text": "? () => window.api.cli.getWslInstallStatus(getWslCliDistroRequest(agentRuntime))"
+ },
+ {
+  "file": "components/sidebar/NonGitFolderDialog.tsx",
+  "line": 61,
+  "text": "const result = await window.api.repos.addRemote({"
+ },
+ {
+  "file": "components/sidebar/NonGitFolderDialog.tsx",
+  "line": 88,
+  "text": "const onboarding = await window.api.onboarding.get().catch(() => null)"
+ },
+ {
+  "file": "components/sidebar/SidebarAgentsList.test.tsx",
+  "line": 63,
+  "text": "expect(window.api.ui.set).toHaveBeenCalledWith({ agentsShowSearch: false })"
+ },
+ {
+  "file": "components/sidebar/SidebarAgentsList.test.tsx",
+  "line": 64,
+  "text": "expect(window.api.ui.set).toHaveBeenCalledWith({ agentsShowSearch: true })"
+ },
+ {
+  "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+  "line": 42,
+  "text": "void window.api.shell.openUrl(url)"
+ },
+ {
+  "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+  "line": 98,
+  "text": "void window.api.gh"
+ },
+ {
+  "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+  "line": 146,
+  "text": "const result = await window.api.feedback.submit({"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 63,
+  "text": "void window.api.shell.openUrl(url)"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 153,
+  "text": "void window.api.app.restart().catch((error) => {"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 186,
+  "text": "void window.api.updater.check(getUpdateCheckClickOptions(modifiers))"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.tsx",
+  "line": 130,
+  "text": "await window.api.ui.writeClipboardText(url)"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 166,
+  "text": "void window.api.ui.writeClipboardText(address)"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 102,
+  "text": "trackSshConnect(targetId, window.api.ssh.connect({ targetId })),"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 128,
+  "text": "const targets = await window.api.ssh.listTargets()"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 130,
+  "text": "const removedLabels = await window.api.ssh.listRemovedTargetLabels()"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 274,
+  "text": "? await window.api.shell.openInFileManager(args.worktreePath)"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 275,
+  "text": ": await window.api.shell.openInExternalEditor({"
+ },
+ {
+  "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+  "line": 316,
+  "text": "expect(window.api.agentTrust?.markTrusted).toHaveBeenCalledWith({"
+ },
+ {
+  "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+  "line": 367,
+  "text": "expect(window.api.agentTrust?.markTrusted).toHaveBeenCalledWith({"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.ts",
+  "line": 191,
+  "text": "if (typeof window !== 'undefined' && window.api?.ephemeralVm?.suspendWorkspace) {"
+ },
+ {
+  "file": "components/sidebar/sleep-worktree-flow.ts",
+  "line": 192,
+  "text": "await window.api.ephemeralVm.suspendWorkspace({ workspaceId: worktreeId })"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-selection.ts",
+  "line": 132,
+  "text": "const connectResult = (await window.api.ssh.connect({"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-selection.ts",
+  "line": 137,
+  "text": "((await window.api.ssh.getState({"
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-listing.ts",
+  "line": 35,
+  "text": "? await window.api.ssh.browseDir({ targetId, dirPath })"
+ },
+ {
+  "file": "components/sidebar/use-worktree-context-menu-commands.ts",
+  "line": 42,
+  "text": "window.api.ui.writeClipboardText(args.worktree.path)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-issue-link.ts",
+  "line": 177,
+  "text": "void window.api.shell.openUrl(linearIssueUrl)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-issue-link.ts",
+  "line": 194,
+  "text": "void window.api.shell.openUrl(url)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-issue-link.ts",
+  "line": 210,
+  "text": "void window.api.shell.openUrl(issueUrlFromInput)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-issue-link.ts",
+  "line": 219,
+  "text": "void window.api.shell.openUrl(cachedIssueUrl)"
+ },
+ {
+  "file": "components/sidebar/use-worktree-issue-link.ts",
+  "line": 236,
+  "text": "void window.api.shell.openUrl(url)"
+ },
+ {
+  "file": "components/sidebar/useAddRepoCloneFlow.ts",
+  "line": 69,
+  "text": "return window.api.repos.onCloneProgress(setCloneProgress)"
+ },
+ {
+  "file": "components/sidebar/useAddRepoCloneFlow.ts",
+  "line": 111,
+  "text": "const dir = await window.api.repos.pickDirectory()"
+ },
+ {
+  "file": "components/sidebar/useAddRepoCloneFlow.ts",
+  "line": 136,
+  "text": "? await window.api.repos.cloneRemote({"
+ },
+ {
+  "file": "components/sidebar/useAddRepoCloneFlow.ts",
+  "line": 153,
+  "text": ": ((await window.api.repos.clone({"
+ },
+ {
+  "file": "components/sidebar/useAddRepoLocalFolderFlow.ts",
+  "line": 299,
+  "text": "const paths = await window.api.repos.pickFolders()"
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.ts",
+  "line": 158,
+  "text": "void window.api.repos"
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.ts",
+  "line": 276,
+  "text": ": window.api.repos.isGitAvailable()"
+ },
+ {
+  "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+  "line": 157,
+  "text": "vi.mocked(window.api.repos.pickDirectory).mockResolvedValue(pickedDir)"
+ },
+ {
+  "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+  "line": 174,
+  "text": "expect(window.api.repos.pickDirectory).not.toHaveBeenCalled()"
+ },
+ {
+  "file": "components/sidebar/useCreateRepo.ts",
+  "line": 77,
+  "text": "const dir = await window.api.repos.pickDirectory()"
+ },
+ {
+  "file": "components/sidebar/useCreateRepo.ts",
+  "line": 107,
+  "text": "? await window.api.repos.createRemote({"
+ },
+ {
+  "file": "components/sidebar/useCreateRepo.ts",
+  "line": 124,
+  "text": ": await window.api.repos.create({"
+ },
+ {
+  "file": "components/sidebar/useSidebarProjectDrop.ts",
+  "line": 82,
+  "text": "await window.api.fs.authorizeExternalPath({ targetPath: pathResolution.path })"
+ },
+ {
+  "file": "components/sidebar/useSidebarProjectDrop.ts",
+  "line": 83,
+  "text": "const stat = await window.api.fs.stat({ filePath: pathResolution.path })"
+ },
+ {
+  "file": "components/sidebar/useSidebarProjectDrop.ts",
+  "line": 119,
+  "text": "return window.api.ui.onFileDrop((data) => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+  "line": 77,
+  "text": "await window.api.ui.writeClipboardText(value)"
+ },
+ {
+  "file": "components/sidebar/worktree-snapshot-prune-batch.ts",
+  "line": 10,
+  "text": "const api = window.api.workspaceCleanup"
+ },
+ {
+  "file": "components/SelectedTextCopyMenu.tsx",
+  "line": 101,
+  "text": "void window.api.ui.writeClipboardText(menu.text)"
+ },
+ {
+  "file": "components/dashboard/AgentDashboardDrawer.tsx",
+  "line": 60,
+  "text": "void window.api.dashboard.openPopout?.()"
+ },
+ {
+  "file": "components/mobile/paired-mobile-devices.ts",
+  "line": 96,
+  "text": "const promise = window.api.mobile"
+ },
+ {
+  "file": "components/onboarding/show-onboarding-event.ts",
+  "line": 6,
+  "text": "const nextOnboarding = await window.api.onboarding.update({"
+ },
+ {
+  "file": "components/settings/AgentSkillSetupPanel.tsx",
+  "line": 74,
+  "text": "() => (getPrerequisiteStatus ?? window.api.cli.getInstallStatus)(),"
+ },
+ {
+  "file": "components/settings/AgentSkillSetupPanel.tsx",
+  "line": 187,
+  "text": "await window.api.ui.writeClipboardText(openTerminalCommand)"
+ },
+ {
+  "file": "components/settings/CliSkillRuntimeSetup.tsx",
+  "line": 259,
+  "text": "typeof window === 'undefined' ? undefined : window.api?.platform?.get?.()?.platform"
+ },
+ {
+  "file": "components/settings/CliSkillRuntimeSetup.tsx",
+  "line": 306,
+  "text": "const status = await window.api.cli.getWslInstallStatus(args)"
+ },
+ {
+  "file": "components/settings/CliSkillRuntimeSetup.tsx",
+  "line": 343,
+  "text": "const next = await window.api.cli.installWsl(args)"
+ },
+ {
+  "file": "components/setup-guide/use-setup-guide-progress.ts",
+  "line": 193,
+  "text": "const status = await window.api.computerUsePermissions.getStatus().catch(() => null)"
+ },
+ {
+  "file": "lib/agent-skill-cli-prerequisite.ts",
+  "line": 26,
+  "text": "const status = await window.api.cli.getInstallStatus()"
+ },
+ {
+  "file": "lib/agent-skill-cli-prerequisite.ts",
+  "line": 43,
+  "text": "const next = await window.api.cli.install()"
+ },
+ {
+  "file": "lib/agent-trust-preflight.ts",
+  "line": 12,
+  "text": "if (!args.agent || !args.workspacePath || !window.api.agentTrust?.markTrusted) {"
+ },
+ {
+  "file": "lib/agent-trust-preflight.ts",
+  "line": 20,
+  "text": "await window.api.agentTrust.markTrusted({"
+ },
+ {
+  "file": "lib/client-environment-info.ts",
+  "line": 20,
+  "text": "function resolvePlatformInfo(): ReturnType<NonNullable<typeof window.api.platform>['get']> | null {"
+ },
+ {
+  "file": "lib/client-environment-info.ts",
+  "line": 22,
+  "text": "return window.api?.platform?.get?.() ?? null"
+ },
+ {
+  "file": "lib/client-environment-info.ts",
+  "line": 42,
+  "text": "const version = await window.api?.updater?.getVersion?.()"
+ },
+ {
+  "file": "lib/onboarding-project-checklist.ts",
+  "line": 9,
+  "text": "if (typeof window === 'undefined' || !window.api?.onboarding) {"
+ },
+ {
+  "file": "lib/onboarding-project-checklist.ts",
+  "line": 12,
+  "text": "const onboarding = await window.api.onboarding.get().catch(() => null)"
+ },
+ {
+  "file": "lib/onboarding-project-checklist.ts",
+  "line": 20,
+  "text": "await window.api.onboarding.update({ checklist })"
+ },
+ {
+  "file": "lib/sidebar-worktree-activation.ts",
+  "line": 31,
+  "text": "if (typeof window !== 'undefined' && window.api?.ephemeralVm?.resumeWorkspace) {"
+ },
+ {
+  "file": "lib/sidebar-worktree-activation.ts",
+  "line": 33,
+  "text": "const runtime = await window.api.ephemeralVm.resumeWorkspace({ workspaceId: worktreeId })"
+ },
+ {
+  "file": "lib/sidebar-worktree-activation.ts",
+  "line": 36,
+  "text": "store.getState().setRuntimeEnvironments(await window.api.runtimeEnvironments.list())"
+ },
+ {
+  "file": "lib/telemetry.ts",
+  "line": 32,
+  "text": "void window.api?.telemetryTrack?.(name, props as Record<string, unknown>)?.catch((err) => {"
+ },
+ {
+  "file": "lib/telemetry.ts",
+  "line": 44,
+  "text": "window.api?.telemetrySetOptIn?.(optedIn)?.catch((err) => {"
+ },
+ {
+  "file": "lib/telemetry.ts",
+  "line": 57,
+  "text": "const result = await window.api?.telemetryGetConsentState?.()"
+ },
+ {
+  "file": "lib/telemetry.ts",
+  "line": 70,
+  "text": "window.api?.telemetryAcknowledgeBanner?.()?.catch((err) => {"
+ },
+ {
+  "file": "lib/workspace-port-actions.ts",
+  "line": 118,
+  "text": "url = (await window.api.localhostWorktreeLabels.register(args.localhostLabelRoute)).url"
+ },
+ {
+  "file": "lib/workspace-port-actions.ts",
+  "line": 125,
+  "text": "await window.api.shell.openUrl(url)"
+ },
+ {
+  "file": "lib/workspace-port-actions.ts",
+  "line": 319,
+  "text": "return window.api.workspacePorts.kill(args)"
+ },
+ {
+  "file": "lib/worktree-activation.ts",
+  "line": 72,
+  "text": "typeof window.api?.runtime?.call === 'function' &&"
+ },
+ {
+  "file": "lib/worktree-activation.ts",
+  "line": 73,
+  "text": "typeof window.api?.pty?.listSessions === 'function'"
+ },
+ {
+  "file": "lib/worktree-sort-order-persistence.ts",
+  "line": 32,
+  "text": "window.api.worktrees.persistSortOrder({ orderedIds: group.orderedIds })"
+ },
+ {
+  "file": "runtime/runtime-hooks-client.ts",
+  "line": 41,
+  "text": "return window.api.hooks.check({ repoId, ...(hostId ? { hostId } : {}) })"
+ },
+ {
+  "file": "runtime/runtime-hooks-client.ts",
+  "line": 58,
+  "text": "return window.api.hooks.inspectSetupScriptImports({ repoId, ...(hostId ? { hostId } : {}) })"
+ },
+ {
+  "file": "runtime/runtime-hooks-client.ts",
+  "line": 75,
+  "text": "return window.api.hooks.readIssueCommand({ repoId, ...(hostId ? { hostId } : {}) })"
+ },
+ {
+  "file": "runtime/runtime-hooks-client.ts",
+  "line": 93,
+  "text": "await window.api.hooks.writeIssueCommand({ repoId, content, ...(hostId ? { hostId } : {}) })"
+ },
+ {
+  "file": "runtime/runtime-linear-client.ts",
+  "line": 109,
+  "text": ": window.api.linear.status()"
+ },
+ {
+  "file": "runtime/runtime-linear-client.ts",
+  "line": 126,
+  "text": ": window.api.linear.testConnection(workspaceId ? { workspaceId } : undefined)"
+ },
+ {
+  "file": "runtime/runtime-linear-client.ts",
+  "line": 141,
+  "text": ": window.api.linear.connect({ apiKey })"
+ },
+ {
+  "file": "runtime/runtime-linear-client.ts",
+  "line": 164,
+  "text": "await window.api.linear.disconnect(workspaceId ? { workspaceId } : undefined)"
+ },
+ {
+  "file": "runtime/runtime-linear-client.ts",
+  "line": 179,
+  "text": ": window.api.linear.selectWorkspace({ workspaceId })"
+ },
+ {
+  "file": "runtime/runtime-linear-client.ts",
+  "line": 199,
+  "text": ": window.api.linear.searchIssues({ query, limit, workspaceId: workspaceId ?? undefined })"
+ },
+ {
+  "file": "runtime/runtime-linear-client.ts",
+  "line": 238,
+  "text": ": await window.api.linear.listIssues(payload)"
+ },
+ {
+  "file": "runtime/runtime-linear-issue-mutations.ts",
+  "line": 32,
+  "text": ": window.api.linear.createIssue(args)"
+ },
+ {
+  "file": "runtime/runtime-linear-issue-mutations.ts",
+  "line": 62,
+  "text": ": window.api.linear.getIssue({ id, workspaceId: workspaceId ?? undefined })"
+ },
+ {
+  "file": "runtime/runtime-linear-issue-mutations.ts",
+  "line": 79,
+  "text": ": window.api.linear.updateIssue({ id, updates, workspaceId: workspaceId ?? undefined })"
+ },
+ {
+  "file": "runtime/runtime-linear-issue-mutations.ts",
+  "line": 96,
+  "text": ": window.api.linear.addIssueComment({ issueId, body, workspaceId: workspaceId ?? undefined })"
+ },
+ {
+  "file": "runtime/runtime-linear-issue-mutations.ts",
+  "line": 112,
+  "text": ": window.api.linear.issueComments({ issueId, workspaceId: workspaceId ?? undefined })"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 38,
+  "text": ": window.api.linear.listTeams(workspaceId ? { workspaceId } : undefined)"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 59,
+  "text": ": typeof window.api.linear.listProjects === 'function'"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 60,
+  "text": "? window.api.linear.listProjects({"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 90,
+  "text": ": window.api.linear.createProject(args)"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 107,
+  "text": ": window.api.linear.getProject({ id, workspaceId, ...linearReadForce(options) })"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 125,
+  "text": ": window.api.linear.listProjectIssues({"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 148,
+  "text": ": window.api.linear.listCustomViews({"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 171,
+  "text": ": window.api.linear.getCustomView({ viewId, model, workspaceId, ...linearReadForce(options) })"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 189,
+  "text": ": window.api.linear.listCustomViewIssues({"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 212,
+  "text": ": window.api.linear.listCustomViewProjects({"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 233,
+  "text": ": window.api.linear.teamStates({ teamId, workspaceId: workspaceId ?? undefined })"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 249,
+  "text": ": window.api.linear.teamLabels({ teamId, workspaceId: workspaceId ?? undefined })"
+ },
+ {
+  "file": "runtime/runtime-linear-project-client.ts",
+  "line": 265,
+  "text": ": window.api.linear.teamMembers({ teamId, workspaceId: workspaceId ?? undefined })"
+ },
+ {
+  "file": "runtime/runtime-rpc-client.ts",
+  "line": 85,
+  "text": "? await window.api.runtime.call({ method, params: nextParams })"
+ },
+ {
+  "file": "runtime/runtime-rpc-client.ts",
+  "line": 119,
+  "text": "const response = await window.api.runtimeEnvironments.call({"
+ },
+ {
+  "file": "runtime/runtime-rpc-client.ts",
+  "line": 252,
+  "text": "const response = await window.api.runtimeEnvironments.call({"
+ },
+ {
+  "file": "store/slices/project-group-owner-routing.ts",
+  "line": 86,
+  "text": "// Why: direct-SSH groups live in the local main process catalog, so they route through window.api."
+ }
+]

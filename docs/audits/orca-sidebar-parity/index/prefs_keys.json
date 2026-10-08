@@ -1,0 +1,172 @@
+[
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 19,
+  "text": "const HOST_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.host'"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 317,
+  "text": "getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)?.activeToastId"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 323,
+  "text": "dismissLinearAgentSkillSetupReminderToast(HOST_DISMISS_STORAGE_KEY)"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 325,
+  "text": "expect(getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)).toBeUndefined()"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 332,
+  "text": "resetLinearAgentSkillSetupReminderToastForRuntime(HOST_DISMISS_STORAGE_KEY)"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 334,
+  "text": "expect(getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)).toBeUndefined()"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 355,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 14,
+  "text": "const HOST_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.host'"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 15,
+  "text": "const FEDORA_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.wsl.Fedora'"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 272,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 307,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 390,
+  "text": "expect(window.localStorage.getItem(FEDORA_DISMISS_STORAGE_KEY)).toBe('1')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 391,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 479,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 505,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 533,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 562,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 577,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 927,
+  "text": "expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+  "line": 225,
+  "text": "localStorage.setItem(localDismissStorageKey, '1')"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.test.tsx",
+  "line": 114,
+  "text": "expect(window.localStorage.getItem('orca.workspaceBoardMovedHintSeen.v1')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.test.tsx",
+  "line": 128,
+  "text": "expect(window.localStorage.getItem('orca.workspaceBoardMovedHintSeen.v1')).toBe('true')"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.tsx",
+  "line": 12,
+  "text": "const WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY = 'orca.workspaceBoardMovedHintSeen.v1'"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.tsx",
+  "line": 52,
+  "text": "if (window.localStorage.getItem(WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY) === 'true') {"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.tsx",
+  "line": 55,
+  "text": "window.localStorage.setItem(WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY, 'true')"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 8,
+  "text": "const LOCAL_DISMISS_STORAGE_KEY_PREFIX = 'orca.linearTicketsSkill.setupDismissed'"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 126,
+  "text": "return `${LOCAL_DISMISS_STORAGE_KEY_PREFIX}.host`"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 128,
+  "text": "return `${LOCAL_DISMISS_STORAGE_KEY_PREFIX}.wsl.${runtime.wslDistro?.trim() || 'default'}`"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 131,
+  "text": "export function readLocalDismissed(storageKey: string): boolean {"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 135,
+  "text": "return localStorage.getItem(storageKey) === '1'"
+ },
+ {
+  "file": "components/sidebar/mobile-sidebar-onboarding-badge.ts",
+  "line": 8,
+  "text": "return window.localStorage.getItem(DISMISS_KEY) === '1'"
+ },
+ {
+  "file": "components/sidebar/mobile-sidebar-onboarding-badge.ts",
+  "line": 37,
+  "text": "window.localStorage.setItem(DISMISS_KEY, '1')"
+ },
+ {
+  "file": "lib/lazy-with-retry.ts",
+  "line": 69,
+  "text": "const stored = window.sessionStorage.getItem(RELOAD_GUARD_KEY)"
+ },
+ {
+  "file": "lib/lazy-with-retry.ts",
+  "line": 83,
+  "text": "window.sessionStorage.setItem(RELOAD_GUARD_KEY, currentDocumentReloadToken())"
+ }
+]

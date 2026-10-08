@@ -1,0 +1,13 @@
+[
+ "src/components/sidebar/agent-row-lineage-model.ts",
+ "src/components/sidebar/build-rows.ts",
+ "src/components/sidebar/group-keys.ts",
+ "src/components/sidebar/project-filter-reveal.ts",
+ "src/components/sidebar/project-group-sections.ts",
+ "src/components/sidebar/row-types.ts",
+ "src/components/sidebar/worktree-list/buildSidebarRows.ts",
+ "src/components/sidebar/worktree-list/hard-scroll-up.ts",
+ "src/components/sidebar/worktree-list/keyboard-cycle.ts",
+ "src/components/sidebar/worktree-list/pointer-drag-dom.ts",
+ "src/components/sidebar/worktree-list/rows/SectionHeader.tsx"
+]

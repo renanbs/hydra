@@ -1,0 +1,1815 @@
+{
+ "domain": "D10-visibility-inbox-notices",
+ "rows": [
+  {
+   "id": "D10-001",
+   "capability": "Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido",
+   "orca_evidence": [
+    "components/sidebar/AutoRenameFailedDialog.tsx:31",
+    "components/sidebar/AutoRenameFailedDialog.tsx:50",
+    "components/sidebar/AutoRenameFailedDialog.tsx:56",
+    "components/sidebar/AutoRenameFailedDialog.tsx:73",
+    "components/sidebar/AutoRenameFailedDialog.tsx:147"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:116",
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:87"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "busca window.api.worktrees.getBranchRenameFailureOutput ao abrir (Hydra só renderiza a prop `error`; `worktreeId` é declarado e não usado — :11)",
+     "resposta null mantém o excerto persistido",
+     "rejeição do IPC mantém o excerto",
+     "guard de staleness no cleanup",
+     "refetch quando error/open/worktreeId mudam"
+    ],
+    "notes": "Sem comando Tauri equivalente chamado a partir do sidebar (hydra_sidebar_backend_map.json não lista getBranchRenameFailureOutput)."
+   }
+  },
+  {
+   "id": "D10-002",
+   "capability": "Copiar detalhes do erro para o clipboard com confirmação inline",
+   "orca_evidence": [
+    "components/sidebar/AutoRenameFailedDialog.tsx:80",
+    "components/sidebar/AutoRenameFailedDialog.tsx:85",
+    "components/sidebar/AutoRenameFailedDialog.tsx:132",
+    "components/sidebar/AutoRenameFailedDialog.tsx:133"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:42-57",
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:19",
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:49"
+    ],
+    "backend": [
+     "navigator.clipboard.writeText (Web API) no lugar do IPC ui.writeClipboardText"
+    ],
+    "notes": "Mesmo efeito observável (Copy→Check + 'Copied', reset 1500ms, clearTimeout no unmount, catch best-effort), via clipboard do webview."
+   }
+  },
+  {
+   "id": "D10-003",
+   "capability": "Título, narrativa e botão Close do dialog de falha de auto-rename",
+   "orca_evidence": [
+    "components/sidebar/AutoRenameFailedDialog.tsx:94",
+    "components/sidebar/AutoRenameFailedDialog.tsx:95",
+    "components/sidebar/AutoRenameFailedDialog.tsx:100",
+    "components/sidebar/AutoRenameFailedDialog.tsx:107",
+    "components/sidebar/AutoRenameFailedDialog.tsx:155"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:73",
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:87",
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:78",
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:63",
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:124"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-004",
+   "capability": "Conter output multi-linha/token gigante sem quebrar o grid do dialog",
+   "orca_evidence": [
+    "components/sidebar/AutoRenameFailedDialog.tsx:147",
+    "components/sidebar/AutoRenameFailedDialog.tsx:122"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:92",
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:116"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "overflow-wrap:anywhere (Hydra usa `break-words`)",
+     "padding-right reservado para botão de cópia flutuante (Hydra coloca o botão no header, não flutuante)"
+    ]
+   }
+  },
+  {
+   "id": "D10-005",
+   "capability": "Abrir/fechar o dialog de confirmação de delete com resolução de alvos por id+host",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:40",
+    "components/sidebar/DeleteWorktreeDialog.tsx:58",
+    "components/sidebar/DeleteWorktreeDialog.tsx:88",
+    "components/sidebar/DeleteWorktreeDialog.tsx:201",
+    "components/sidebar/DeleteWorktreeDialog.tsx:219"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:105-126 identidades + lookupLiveTarget + missingTargets por (id,host)",
+     "src/components/DeleteWorktreeDialog.tsx:186-198 auto-close + onStaleTargets quando nenhum alvo resolve",
+     "src/components/DeleteWorktreeDialog.tsx:184-213 revalidação no confirm",
+     "src/App.tsx:4300-4306 onClose limpa o estado publicado"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Abertura/fechamento do dialog com alvos resolvidos por id+hostId (resolveWorktreeBatchDeleteTargets), auto-close quando o alvo some e limpeza do deleteState ao fechar."
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-006",
+   "capability": "Título e frase destrutiva do dialog (single, batch e lineage)",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:353",
+    "components/sidebar/DeleteWorktreeDialog.tsx:355",
+    "components/sidebar/DeleteWorktreeDialog.tsx:365"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:140",
+     "src/components/DeleteWorktreeDialog.tsx:147"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "copy de lineage (com filhos)",
+     "copy não-destrutiva para folder workspace",
+     "targetLabel destacado / childTargetLabel"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-007",
+   "capability": "Preview do alvo do delete (único ou lista batch) com labels de host em colisão",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:378"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:150-171",
+     "src/components/DeleteWorktreeDialog.tsx:153"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "labels de host em colisão",
+     "preview single vs batch com semântica própria (role/region)"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-008",
+   "capability": "Aviso de lineage com descendentes que serão deletados junto",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:140",
+    "components/sidebar/DeleteWorktreeDialog.tsx:388"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: DeleteWorktreeDialog.tsx não trata lineage; worktree-lineage-projection.ts e ProjectGroupDeleteDialog.tsx não fazem delete-all de descendentes no dialog. Buscas: 'LineageNotice', 'descendants', 'canDeleteAllLineage'."
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-009",
+   "capability": "Painel de bloqueio do main worktree e painel de erro do delete",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:139",
+    "components/sidebar/DeleteWorktreeDialog.tsx:395"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:177",
+     "src/components/DeleteWorktreeDialog.tsx:183",
+     "src/components/DeleteWorktreeDialog.tsx:210"
+    ],
+    "backend": [],
+    "notes": "Botão destrutivo oculto quando isMainWorktree; erro nunca oferece override de lock."
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-010",
+   "capability": "Checkbox 'Don't ask again' com persistência e reset ao fechar",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:153",
+    "components/sidebar/DeleteWorktreeDialog.tsx:155",
+    "components/sidebar/DeleteWorktreeDialog.tsx:243",
+    "components/sidebar/DeleteWorktreeDialog.tsx:401"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:44",
+     "src/components/DeleteWorktreeDialog.tsx:58",
+     "src/components/DeleteWorktreeDialog.tsx:98",
+     "src/components/DeleteWorktreeDialog.tsx:199"
+    ],
+    "backend": []
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-011",
+   "capability": "Botões do rodapé: Cancel/Close, Delete/Force Delete e Delete N Workspaces",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:26",
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:45",
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:54",
+    "components/sidebar/DeleteWorktreeDialog.tsx:408"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:60-68",
+     "src/components/DeleteWorktreeDialog.tsx:211",
+     "src/components/DeleteWorktreeDialog.tsx:217"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "variante de label lineage 'Delete {count} Workspaces' (canDeleteAllLineage)"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-012",
+   "capability": "Focar o botão de confirmação ao abrir (fluxo 'Delete, Enter')",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:340",
+    "components/sidebar/DeleteWorktreeDialog.tsx:350"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:94"
+    ],
+    "backend": []
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-013",
+   "capability": "Confirmar delete: validar instâncias, disparar deletes paralelos e avisar caller",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:258",
+    "components/sidebar/DeleteWorktreeDialog.tsx:265"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:184-213 validação de identidades (id+host+instanceId) no confirm",
+     "src/App.tsx:490-494,4297 toast \"Workspace list changed\" via onStaleTargets",
+     "src/components/DeleteWorktreeDialog.tsx:202-243 deletes paralelos + close após settle"
+    ],
+    "backend": {
+     "be": [
+      "invoke('delete_worktree') -> src-tauri/src/lib.rs:476"
+     ]
+    },
+    "missing_behaviors": [
+     "closeModal imediato: o Hydra mantém o dialog aberto até todos os deletes terminarem (DeleteWorktreeDialog.tsx:238-248) em vez de fechar antes de deletar"
+    ],
+    "notes": "Validação de instanceId/hostId e o toast de lista obsoleta agora existem; permanece a diferença de fechar o modal de forma imediata."
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-014",
+   "capability": "Force delete de recuperação (sem persistir preferência)",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:251",
+    "components/sidebar/DeleteWorktreeDialog.tsx:283"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:57",
+     "src/components/DeleteWorktreeDialog.tsx:98"
+    ],
+    "backend": {
+     "be": [
+      "invoke('delete_worktree') -> src-tauri/src/lib.rs:476"
+     ]
+    },
+    "missing_behaviors": [
+     "entrada de force-delete a partir de toast/erro (Hydra só oferece no próprio dialog)"
+    ]
+   },
+   "par": [
+    "PAR-56",
+    "PAR-86"
+   ]
+  },
+  {
+   "id": "D10-015",
+   "capability": "Deletar workspace pai + descendentes em um clique (delete-all lineage)",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:142",
+    "components/sidebar/DeleteWorktreeDialog.tsx:316"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem canDeleteAllLineage/lineageDeleteIdentities no DeleteWorktreeDialog. Buscas: 'lineage', 'descendants', 'runLineageDeleteAll'."
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-016",
+   "capability": "Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:188",
+    "components/sidebar/DeleteWorktreeDialog.tsx:198",
+    "components/sidebar/DeleteWorktreeDialog.tsx:378"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:153",
+     "src/App.tsx:408"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "useDeleteWorktreeStatusHydration por host dono do alvo",
+     "AbortController / não reiniciar requests pendentes quando um alvo hidrata"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-017",
+   "capability": "Limpar estado de delete por alvo ao fechar (preservando alvos em andamento)",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialog.tsx:219"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/App.tsx:4296-4305 onDeleteStart/onDeleteSettled + onClose publicam e limpam o estado por alvo",
+     "src/components/DeleteWorktreeDialog.tsx:162,256 destrutivo bloqueado durante isDeleting (close preserva alvos em andamento)",
+     "src/App.tsx:497-518 getDeleteStateKeyForWorktreeHost no publish/clear"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "O estado de delete por alvo é limpo ao fechar (publishDeleteStateForTargets(...,null)) e o fechamento é bloqueado enquanto há delete em andamento."
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-018",
+   "capability": "Compor a frase de descrição com alvo e alvo-filho",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialogDescription.tsx:19",
+    "components/sidebar/DeleteWorktreeDialogDescription.tsx:24"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:145-148"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "childTargetLabel de lineage",
+     "classe de destaque do targetLabel"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-019",
+   "capability": "Matriz de rótulos do rodapé e variante destrutiva",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:27",
+    "components/sidebar/DeleteWorktreeDialogFooter.tsx:50"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:60-68",
+     "src/components/DeleteWorktreeDialog.tsx:217"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "variante canDeleteAllLineage"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-020",
+   "capability": "Lista batch de alvos com nomes acessíveis e estado por linha",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:60",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:73",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:74"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:150-171"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "role=list/listitem + aria-labelledby name+path(+host)",
+     "bounding box max-h-48 com scroll",
+     "erro inline por linha"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-021",
+   "capability": "Distinguir linhas de batch com ids colididos pelo label de host",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:16",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:31",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:69"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem getCollisionIds/getTargetHostLabel/hostLabelById no delete dialog. Buscas: 'collision', 'hostLabelById', 'Unknown host'."
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-022",
+   "capability": "Hint de mudanças locais/untracked por alvo, erro inline e spinner",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:96",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:107",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:112"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:153-168",
+     "src/components/DeleteWorktreeDialog.tsx:166"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "erro inline por alvo (Hydra agrega o erro num único painel global)"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-023",
+   "capability": "Preview de alvo único como região rotulada",
+   "orca_evidence": [
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:120",
+    "components/sidebar/DeleteWorktreeTargetPreview.tsx:124"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:150"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "role=region com aria-labelledby",
+     "host no nome acessível em colisão",
+     "retorno null sem worktree resolvido"
+    ]
+   },
+   "par": [
+    "PAR-56"
+   ]
+  },
+  {
+   "id": "D10-024",
+   "capability": "Linha compacta 'Hiding N discovered worktrees' com copia por placement e host",
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:108",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:132"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:207-224 compact copy + hostContext",
+     "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts:60-115 placement"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "copy por placement (pinned-fallback 'Hiding N … in <repo>') — a linha pintada usa o mesmo texto em ambos os placements e apenas suprime o hostContext no pinned-fallback"
+    ],
+    "notes": "O repoScopeLabel de multi-host agora existe ('<repo> on <host>' + NoticeHostGlyph); falta a variante de copy por placement."
+   }
+  },
+  {
+   "id": "D10-025",
+   "capability": "Botao expand/collapse da lista de worktrees ocultos",
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:144",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:150"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:185",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:183",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:155"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-026",
+   "capability": "Dispensar ('Keep hidden') a linha de worktrees descobertos",
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:181",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:182"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:206",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:207",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:57"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-027",
+   "capability": "Atribuir host à linha quando o projeto tem mais de um checkout",
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:156"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:213-231 hostContextLabel/NoticeHostGlyph",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:104-131 buildExternalWorktreeNoticeCandidates",
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:89 getNoticeHostContextLabels"
+    ],
+    "backend": [],
+    "notes": "A linha de notice recebe hostContext (glyph + label) quando o projeto tem mais de um checkout; resolved do payload de candidatos.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-028",
+   "capability": "Detalhe expandido: grupos por pasta pai, preview limitado e 'Show more/fewer'",
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:198",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:225",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:255",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:277"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:290",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:295",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:279",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:56"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-029",
+   "capability": "Ações do detalhe expandido e estados de pending/erro",
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:297",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:312",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:327"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:307",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:319",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:328"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-030",
+   "capability": "Normalizar parent paths ao agrupar (Windows/UNC) e exportar o agrupador",
+   "orca_evidence": [
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:76",
+    "components/sidebar/ImportedWorktreesVisibilityLine.tsx:86"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:60",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:83"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-031",
+   "capability": "Linha de inbox 'N hidden worktrees' com botão único de review",
+   "orca_evidence": [
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:75",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:89",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:90"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:59",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:69",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:77"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-032",
+   "capability": "Qualificar com host os rótulos de review e de suppress",
+   "orca_evidence": [
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:42",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:49",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:89",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:135"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:60-115 repoScopeLabel + NoticeHostGlyph",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:63-66 suppressAriaLabel/reviewAriaLabel qualificados por host"
+    ],
+    "backend": [],
+    "notes": "Rótulos de review e suppress agora nomeiam o host ('in <repo> on <host>') e a linha exibe o glyph de host.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-033",
+   "capability": "Botão suppress revelado no hover, sem disparar o review",
+   "orca_evidence": [
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:122",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:136",
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:137"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:87-100",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:95",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:103"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-034",
+   "capability": "Erro da ação de inbox como alerta",
+   "orca_evidence": [
+    "components/sidebar/NewExternalWorktreesInboxLine.tsx:150"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:110"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-035",
+   "capability": "Glyph de host da linha de notice com vocabulário único e tooltip",
+   "orca_evidence": [
+    "components/sidebar/NoticeHostGlyph.tsx:31",
+    "components/sidebar/NoticeHostGlyph.tsx:48",
+    "components/sidebar/NoticeHostGlyph.tsx:61",
+    "components/sidebar/NoticeHostGlyph.tsx:77",
+    "components/sidebar/NoticeHostGlyph.tsx:90"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/NoticeHostGlyph.tsx:28-90 (Monitor/Server + tooltip)",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:218",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:94"
+    ],
+    "backend": [],
+    "notes": "NoticeHostGlyph portado com vocabulário único (Monitor local / Server remoto) e tooltip 'Project on …'; consumido pelas duas linhas de notice.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-036",
+   "capability": "Acessibilidade do glyph: foco por teclado só quando passivo",
+   "orca_evidence": [
+    "components/sidebar/NoticeHostGlyph.tsx:75",
+    "components/sidebar/NoticeHostGlyph.tsx:78",
+    "components/sidebar/NoticeHostGlyph.tsx:79"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/NoticeHostGlyph.tsx:74-84 role=img/tabIndex/aria-label quando keyboardFocusable",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:218-222 keyboardFocusable",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:94-98 keyboardFocusable={false}"
+    ],
+    "backend": [],
+    "notes": "O glyph só é focável por teclado quando passivo (linha de imported worktrees); dentro de um botão (inbox) fica non-focusable com aria-label undefined.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-037",
+   "capability": "Derivar 'desconectado' do estado de runtime sem confundir 'nunca sondado'",
+   "orca_evidence": [
+    "components/sidebar/NoticeHostGlyph.tsx:41",
+    "components/sidebar/NoticeHostGlyph.tsx:44"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/NoticeHostGlyph.tsx:37-46 isDisconnectedRuntimeHostState(runtimeHostConnectionStateForEntry(...))",
+     "src/runtime/runtime-host-connection-state.ts"
+    ],
+    "backend": [],
+    "notes": "'Desconectado' deriva de isDisconnectedRuntimeHostState; entrada ausente significa 'nunca sondado' e não marca o glyph como desligado.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-038",
+   "capability": "Abrir o dialog 'Non-Orca worktrees' com alvo resolvido por repo+host",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:60",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:76",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:337",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:347"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:336",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:348",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:352"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "guard isGitRepoKind(repo)",
+     "resolução de alvo por host (resolveWorktreeVisibilityHostTarget)"
+    ]
+   }
+  },
+  {
+   "id": "D10-039",
+   "capability": "Executar fetch/update de visibilidade no host do alvo, não no host focado",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:94",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:98",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:104"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "sem executionHostId/host scope nas chamadas fetchWorktrees/updateRepo. Buscas: 'requestedHostId', 'executionHostId' no dialog — ausentes."
+   }
+  },
+  {
+   "id": "D10-040",
+   "capability": "Scan autoritativo ao abrir com estados checking/ready/failed",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:117",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:126",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:371"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:107-130",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:110"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "pular o scan quando há mutação ativa no scope",
+     "travar linhas/ações enquanto 'checking'",
+     "nunca confiar em snapshot fallback/vazio"
+    ]
+   }
+  },
+  {
+   "id": "D10-041",
+   "capability": "Retry do scan quando a lista não pode ser lida",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:137",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:141"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:537",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:542",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:550"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-042",
+   "capability": "Recuperar um worktree oculto individualmente (Show por path)",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:148",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:377"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:313",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:317",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:308"
+    ],
+    "backend": [
+     "invoke('import_worktree') -> src-tauri/src/lib.rs:418"
+    ],
+    "missing_behaviors": [
+     "fence de scope nos callbacks (não aplica estado se o scope mudou)",
+     "sucesso promove listState para 'ready' limpando falha anterior"
+    ]
+   }
+  },
+  {
+   "id": "D10-043",
+   "capability": "Alternar a visibilidade de uma source (Show/Hide) com validação de aceitação e refresh",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:186",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:240"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:229",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:204",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:220"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
+    ],
+    "missing_behaviors": [
+     "checagem isAccepted contra o repo mais recente no scope"
+    ]
+   }
+  },
+  {
+   "id": "D10-044",
+   "capability": "Reverter a override do projeto quando o valor escolhido é o global ('Use global')",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:229",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:240"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:260"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
+    ],
+    "missing_behaviors": [
+     "validação de aceitação no commit (campo ausente + visibilidade efetiva == default global)"
+    ]
+   }
+  },
+  {
+   "id": "D10-045",
+   "capability": "Rotear o toggle para reverter quando o valor coincide com o global",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:240",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:250"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:229",
+     "src/lib/worktree-visibility-sources.ts:345"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "rotear o próprio toggle para revert (Hydra só expõe o link 'Use global')"
+    ]
+   }
+  },
+  {
+   "id": "D10-046",
+   "capability": "Adicionar location custom com validação (limite/invalido/duplicado/save)",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:269",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:276"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:285",
+     "src/lib/worktree-visibility-sources.ts:279"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
+    ],
+    "missing_behaviors": [
+     "validação de aceitação (source presente E visibility 'hide' no repo mais recente)"
+    ]
+   }
+  },
+  {
+   "id": "D10-047",
+   "capability": "Remover location custom sem tocar nas outras preferências de source",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:312"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:304"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
+    ],
+    "missing_behaviors": [
+     "validação de aceitação (source ausente E pref custom removida)"
+    ]
+   }
+  },
+  {
+   "id": "D10-048",
+   "capability": "Lista de recuperação de worktrees ocultos embutida (busca, lista virtualizada, ação por path)",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:377"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:561",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:595",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:608"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "lista virtualizada",
+     "nome acessível distinto 'Show <nome> at <path>'"
+    ]
+   }
+  },
+  {
+   "id": "D10-049",
+   "capability": "Gating de disabled do dialog e erro de ação",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityDialog.tsx:357",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:369",
+    "components/sidebar/WorktreeVisibilityDialog.tsx:387"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:625",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:413",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:528"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "disabled incluindo checking/busyPath/toggling (Hydra só usa savingSource)",
+     "link 'Manage in Global Settings' posicionado abaixo da lista de sources"
+    ]
+   }
+  },
+  {
+   "id": "D10-050",
+   "capability": "Abrir Global Settings na seção de visibilidade de worktrees",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:22",
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:36",
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:39"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:528",
+     "src/App.tsx:3662"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "navegar para a seção de visibilidade de worktrees (Hydra abre 'general')",
+     "closeModal + openSettingsTarget({pane:'general',repoId:null,sectionId})"
+    ]
+   }
+  },
+  {
+   "id": "D10-051",
+   "capability": "Listar as sources herdadas do global com o valor global de cada uma",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:48",
+    "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:62"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:494",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:496-524"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-052",
+   "capability": "Ajuda 'Which worktrees are hidden by default?' com hover, click, Escape e click-outside",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:8",
+    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:17",
+    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:29",
+    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:35"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: WorktreeVisibilityHelpPopover inexistente. Buscas: 'Which worktrees', 'hidden by default', 'CircleHelp' na sidebar — ausentes."
+   }
+  },
+  {
+   "id": "D10-053",
+   "capability": "Status do scan: 'Checking…' aria-live, falha com alerta e 'Try again'",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilityScanStatus.tsx:18",
+    "components/sidebar/WorktreeVisibilityScanStatus.tsx:27",
+    "components/sidebar/WorktreeVisibilityScanStatus.tsx:34"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:537",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:542",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:550"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-054",
+   "capability": "Form inline 'Add location' com erros de validação e reset no sucesso",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:19",
+    "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:36",
+    "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:56",
+    "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:83"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:467-488",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:288-296"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "input#custom-worktree-root + aria-invalid/aria-describedby",
+     "erro inline role=alert no próprio form",
+     "distinção 'save-failed' silencioso"
+    ]
+   }
+  },
+  {
+   "id": "D10-055",
+   "capability": "Modelo de linhas de source: Claude Code, GSD, custom e 'Other locations'",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:65",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:86",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:167"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/lib/worktree-visibility-sources.ts:421",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:74",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:84"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-056",
+   "capability": "Resolver a visibilidade efetiva de cada linha (builtin/custom/other) e migrar legacy",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:100"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/lib/worktree-visibility-sources.ts:186",
+     "src/lib/worktree-visibility-sources.ts:199",
+     "src/lib/worktree-visibility-sources.ts:217"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-057",
+   "capability": "Contador 'N found' por source, ignorando checkouts selecionados e Orca-managed",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:193",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:250"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:525-529",
+     "src/lib/worktree-visibility-sources.ts:406"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "pular selectedCheckout e ownership orca-managed",
+     "base configurada de built-in contada como 'other'"
+    ]
+   }
+  },
+  {
+   "id": "D10-058",
+   "capability": "Remover location custom pela linha (aria-label com o path completo)",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:268",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:276"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:413"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "aria-label com rootPath completo (Hydra usa o basename)",
+     "tooltip 'Remove custom location'"
+    ]
+   }
+  },
+  {
+   "id": "D10-059",
+   "capability": "Botão 'Use global' para reverter override que já é igual ao global",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:292",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:301"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:419",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:424"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-060",
+   "capability": "Segmentos Show/Hide por source (ToggleGroup) com nome acessível por path",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:141",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:320",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:337"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:433",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:442"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "nome acessível com rootPath completo para custom",
+     "ignorar re-seleção do mesmo segmento"
+    ]
+   }
+  },
+  {
+   "id": "D10-061",
+   "capability": "Aviso 'Overriding global setting: <valor>' por linha",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:342",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:346"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem getWorktreeVisibilityOverrideNotice / role=status de override. Hydra só mostra o link 'Use global' quando o override coincide com o global."
+   }
+  },
+  {
+   "id": "D10-062",
+   "capability": "Cabeçalho da seção Sources e gating do form embutido",
+   "orca_evidence": [
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:209",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:212",
+    "components/sidebar/WorktreeVisibilitySourceList.tsx:353"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:377",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:381",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:479"
+    ],
+    "backend": []
+   }
+  },
+  {
+   "id": "D10-063",
+   "capability": "Mostrar worktrees descobertos a partir do card do projeto (com rollback)",
+   "orca_evidence": [
+    "components/sidebar/imported-worktrees-card-actions.ts:33",
+    "components/sidebar/imported-worktrees-card-actions.ts:37",
+    "components/sidebar/imported-worktrees-card-actions.ts:47"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem card 'Imported worktrees' nem ação show com update+refresh+rollback. Buscas: 'ImportedWorktreesCard', 'showImportedWorktreesCard' — ausentes."
+   }
+  },
+  {
+   "id": "D10-064",
+   "capability": "Manter worktrees descobertos ocultos e dispensar o card",
+   "orca_evidence": [
+    "components/sidebar/imported-worktrees-card-actions.ts:34",
+    "components/sidebar/imported-worktrees-card-actions.ts:69"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:773"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility') -> src-tauri/src/lib.rs:304"
+    ],
+    "missing_behaviors": [
+     "superfície de erro/rollback (Hydra só faz console.error)"
+    ]
+   }
+  },
+  {
+   "id": "D10-065",
+   "capability": "Listar apenas worktrees externos ocultos de resultados autoritativos",
+   "orca_evidence": [
+    "components/sidebar/imported-worktrees-card-candidates.ts:17",
+    "components/sidebar/imported-worktrees-card-candidates.ts:20"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/App.tsx:1068",
+     "src/App.tsx:1100",
+     "src/components/sidebar/WorktreeList.tsx:254"
+    ],
+    "backend": [],
+    "notes": "helper getHiddenImportedWorktrees inlined; hidden vem de scan_worktrees (autoritativo)."
+   }
+  },
+  {
+   "id": "D10-066",
+   "capability": "Decidir quais repos mostram o card de imported worktrees",
+   "orca_evidence": [
+    "components/sidebar/imported-worktrees-card-candidates.ts:23",
+    "components/sidebar/imported-worktrees-card-candidates.ts:37",
+    "components/sidebar/imported-worktrees-card-candidates.ts:48"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:104-131 buildExternalWorktreeNoticeCandidates (importedWorktreesByRepo)",
+     "src/components/sidebar/WorktreeList.tsx:648-657 alimenta os candidatos a partir de hiddenWorktreesByProject"
+    ],
+    "backend": [],
+    "notes": "Decisão de quais repos mostram o card de imported worktrees portada (hidden>0, não suprimido e prompt não dispensado).",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-067",
+   "capability": "Importar worktrees do inbox para a allowlist do sidebar (com rollback explícito)",
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:56",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:104"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:761"
+    ],
+    "backend": [
+     "invoke('import_worktree') -> src-tauri/src/lib.rs:418"
+    ],
+    "missing_behaviors": [
+     "import em lote para a allowlist (importedExternalWorktreePaths)",
+     "rollback explícito quando o refresh falha"
+    ]
+   }
+  },
+  {
+   "id": "D10-068",
+   "capability": "Manter o inbox oculto estendendo a baseline (sem refresh)",
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:83",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:91"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:773"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility') -> src-tauri/src/lib.rs:304"
+    ],
+    "missing_behaviors": [
+     "mensagem de erro 'Could not keep external worktrees hidden. Try again.'",
+     "superfície de erro na linha"
+    ]
+   }
+  },
+  {
+   "id": "D10-069",
+   "capability": "Suprimir permanentemente a descoberta de worktrees externos",
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:127",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:131"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:792"
+    ],
+    "backend": [
+     "invoke('suppress_worktree_inbox') -> src-tauri/src/lib.rs:423",
+     "src-tauri/src/project_manager.rs:205"
+    ],
+    "missing_behaviors": [
+     "fundir a baseline no mesmo write",
+     "gravar externalWorktreeDiscoverySuppressedAt no config do repo (Hydra grava suppressed_discovery em SQLite)",
+     "mensagem de erro"
+    ]
+   }
+  },
+  {
+   "id": "D10-070",
+   "capability": "Catálogo de mensagens de erro das ações de inbox",
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:31",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:38",
+    "components/sidebar/new-external-worktrees-inbox-actions.ts:45"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: ações só fazem console.error (WorktreeSidebar.tsx:761-799). Buscas pelas strings 'Could not keep external worktrees hidden', 'Could not import external worktrees' — ausentes."
+   }
+  },
+  {
+   "id": "D10-071",
+   "capability": "Decidir quais repos mostram a linha de inbox de worktrees externos",
+   "orca_evidence": [
+    "components/sidebar/new-external-worktrees-inbox-candidates.ts:13",
+    "components/sidebar/new-external-worktrees-inbox-candidates.ts:26"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:116-131 newExternalWorktreesInboxByRepo (baseline)",
+     "src/components/sidebar/WorktreeList.tsx:648-657"
+    ],
+    "backend": [],
+    "notes": "Decisão da linha de inbox (prompt dispensado e worktrees além da baseline) portada e alimentada pela lista montada.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-072",
+   "capability": "Relógio compartilhado de 1s para countdowns de prompt-cache (um intervalo para todos)",
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-countdown-clock.ts:7",
+    "components/sidebar/prompt-cache-countdown-clock.ts:30",
+    "components/sidebar/prompt-cache-countdown-clock.ts:63"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/CacheTimer.tsx:12-23"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "relógio compartilhado (um único setInterval para todos os assinantes)",
+     "subscribe/unsubscribe + stopClock",
+     "publicação imediata de currentNow"
+    ]
+   },
+   "par": [
+    "PAR-60"
+   ]
+  },
+  {
+   "id": "D10-073",
+   "capability": "Pausar o relógio com o documento oculto e reconciliar na volta",
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-countdown-clock.ts:33",
+    "components/sidebar/prompt-cache-countdown-clock.ts:48"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: CacheTimer.tsx não escuta visibilitychange. Buscas: 'visibilitychange', 'isWindowVisible' no countdown — ausentes."
+   },
+   "par": [
+    "PAR-60"
+   ]
+  },
+  {
+   "id": "D10-074",
+   "capability": "Hook usePromptCacheCountdownNow(active) via useSyncExternalStore",
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-countdown-clock.ts:91"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem useSyncExternalStore de countdown; CacheTimer usa useState+setInterval local."
+   },
+   "par": [
+    "PAR-60"
+   ]
+  },
+  {
+   "id": "D10-075",
+   "capability": "Escolher o timer de cache mais antigo entre as tabs do worktree",
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-timer-selection.ts:9",
+    "components/sidebar/prompt-cache-timer-selection.ts:14",
+    "components/sidebar/prompt-cache-timer-selection.ts:21"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem getMostUrgentPromptCacheStartedAt. cacheStartedAt é hardcoded null em use-worktree-card-controller.ts:305."
+   },
+   "par": [
+    "PAR-60"
+   ]
+  },
+  {
+   "id": "D10-076",
+   "capability": "Selecionar o countdown exato do pane (ttl positivo, chave válida)",
+   "orca_evidence": [
+    "components/sidebar/prompt-cache-timer-selection.ts:38",
+    "components/sidebar/prompt-cache-timer-selection.ts:46"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem getPromptCacheCountdownForPane. Buscas: 'getPromptCacheCountdownForPane', 'paneKey', 'ttlMs' na sidebar — ausentes."
+   },
+   "par": [
+    "PAR-60"
+   ]
+  },
+  {
+   "id": "D10-077",
+   "capability": "Toasts de lista de workspaces obsoleta",
+   "orca_evidence": [
+    "components/sidebar/stale-workspace-list-toast.ts:7",
+    "components/sidebar/stale-workspace-list-toast.ts:18",
+    "components/sidebar/stale-workspace-list-toast.ts:28"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:488-494 showStaleDeleteNotice → toast.info(\"Workspace list changed\")",
+     "src/App.tsx:4297 onStaleTargets={showStaleDeleteNotice}",
+     "src/i18n/locales/en.json:5852 chave 'No deletable workspaces selected' sem call-site"
+    ],
+    "backend": [],
+    "notes": "O toast de lista obsoleta ('Workspace list changed') agora existe e dispara quando um alvo confirmado sumiu; falta o toast de 'nenhum workspace deletável'.",
+    "missing_behaviors": [
+     "showNoDeletableWorkspacesToast ausente: só existe a chave i18n \"No deletable workspaces selected\" (en.json:5852), sem função/toast"
+    ]
+   },
+   "par": [
+    "PAR-86"
+   ]
+  },
+  {
+   "id": "D10-078",
+   "capability": "Highlight de drag e aceite do dragover no dialog de feedback",
+   "orca_evidence": [
+    "components/sidebar/use-feedback-image-drop.ts:22",
+    "components/sidebar/use-feedback-image-drop.ts:37",
+    "components/sidebar/use-feedback-image-drop.ts:47",
+    "components/sidebar/use-feedback-image-drop.ts:55"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+   }
+  },
+  {
+   "id": "D10-079",
+   "capability": "Reivindicar drops de imagem no dialog antes da lane nativa do preload",
+   "orca_evidence": [
+    "components/sidebar/use-feedback-image-drop.ts:67",
+    "components/sidebar/use-feedback-image-drop.ts:80",
+    "components/sidebar/use-feedback-image-drop.ts:87",
+    "components/sidebar/use-feedback-image-drop.ts:90"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+   }
+  },
+  {
+   "id": "D10-080",
+   "capability": "Prefill do rodapé de ambiente (versão/OS) no feedback sem roubar o caret",
+   "orca_evidence": [
+    "components/sidebar/use-sidebar-feedback-environment-prefill.ts:15",
+    "components/sidebar/use-sidebar-feedback-environment-prefill.ts:27",
+    "components/sidebar/use-sidebar-feedback-environment-prefill.ts:53"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+   }
+  },
+  {
+   "id": "D10-081",
+   "capability": "Anexar imagens ao feedback com reserva de capacidade e avisos",
+   "orca_evidence": [
+    "components/sidebar/use-sidebar-feedback-images.ts:11",
+    "components/sidebar/use-sidebar-feedback-images.ts:51",
+    "components/sidebar/use-sidebar-feedback-images.ts:57",
+    "components/sidebar/use-sidebar-feedback-images.ts:90"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+   }
+  },
+  {
+   "id": "D10-082",
+   "capability": "Remover/limpar imagens liberando object URLs",
+   "orca_evidence": [
+    "components/sidebar/use-sidebar-feedback-images.ts:36",
+    "components/sidebar/use-sidebar-feedback-images.ts:43",
+    "components/sidebar/use-sidebar-feedback-images.ts:103"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+   }
+  },
+  {
+   "id": "D10-083",
+   "capability": "Resolver repo/alvo do dialog de visibilidade no host pedido",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-host-target.ts:10",
+    "components/sidebar/worktree-visibility-host-target.ts:22",
+    "components/sidebar/worktree-visibility-host-target.ts:31"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-host-target.ts:24-48 resolveWorktreeVisibilityHostTarget",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:152-166 uso no dialog"
+    ],
+    "backend": [],
+    "notes": "Resolução do repo/alvo no host pedido (findRepoForHost + filtro de detected por executionHostId + scope host\\0repoId) portada e usada pelo dialog.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-084",
+   "capability": "Encapsular fetch/update escopados ao host alvo",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-host-target.ts:35",
+    "components/sidebar/worktree-visibility-host-target.ts:48"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-host-target.ts:61-86 useWorktreeVisibilityHostActions",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:221-224 refreshTargetRepo/updateTargetRepo"
+    ],
+    "backend": [],
+    "notes": "Fetch/update encapsulados com executionHostId/hostId do alvo resolvido.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-085",
+   "capability": "Fence de mutações de visibilidade que sobrevive ao unmount do dialog",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-mutation-fence.ts:3",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:14",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:18",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:30"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-mutation-fence.ts:12-40 activeMutations/finishVisibilityMutation",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:226-233 useVisibilityMutationFence"
+    ],
+    "backend": [],
+    "notes": "Fence de mutações em singleton keyed por host\\0repoId, sobrevivendo ao unmount do dialog.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-086",
+   "capability": "Rehidratar o estado busy no remount e refrescar quando a mutação antiga termina",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-mutation-fence.ts:38",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:58",
+    "components/sidebar/worktree-visibility-mutation-fence.ts:68"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-mutation-fence.ts:54-100 useVisibilityMutationFence",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:236-247 guard de getActiveVisibilityMutation no remount",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:322-352 commitSourceUpdate"
+    ],
+    "backend": [],
+    "notes": "Remount rehidrata busyPath/isToggling da mutação ativa e refresca quando ela termina; a abertura não inicia scan durante mutação em voo.",
+    "missing_behaviors": []
+   }
+  },
+  {
+   "id": "D10-087",
+   "capability": "Helpers de sources do repo para o dialog: repo atual por scope, ids custom e detecção de duplicata",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-repo-sources.ts:10",
+    "components/sidebar/worktree-visibility-repo-sources.ts:14",
+    "components/sidebar/worktree-visibility-repo-sources.ts:22"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-repo-sources.ts:15-27 getLatestRepoForVisibilityScope/getRepoCustomWorktreeVisibilitySourceIds/isDuplicateWorktreeVisibilitySource",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:28 getRepoCustomWorktreeVisibilitySourceIds consumido",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:157-167 resolveWorktreeVisibilityHostTarget"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getLatestRepoForVisibilityScope (repo-sources.ts:15) sem call-site no dialog"
+    ],
+    "notes": "O helper de sources do repo existe e a detecção de ids custom é consumida; getLatestRepoForVisibilityScope segue sem uso (o repo atual vem de resolveWorktreeVisibilityHostTarget)."
+   }
+  },
+  {
+   "id": "D10-088",
+   "capability": "Construir a mutação de visibilidade por source com predicado de aceitação",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-source-mutation.ts:21",
+    "components/sidebar/worktree-visibility-source-mutation.ts:42",
+    "components/sidebar/worktree-visibility-source-mutation.ts:46"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-source-mutation.ts:18-55 createWorktreeVisibilitySourceMutation com isAccepted",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:322-352 commitSourceUpdate(fn, mutation.isAccepted)",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:377-385 handleToggleSource"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
+    ],
+    "missing_behaviors": [],
+    "notes": "A mutação por source carrega o predicado de aceitação, avaliado contra a linha do host alvo antes de confirmar a escrita."
+   }
+  },
+  {
+   "id": "D10-089",
+   "capability": "Mapear falha de update de visibilidade para a mensagem certa (host antigo vs erro genérico)",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-update-error.ts:9",
+    "components/sidebar/worktree-visibility-update-error.ts:15"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:340-352 copy específica quando o host descarta worktreeVisibilitySourcePreferences",
+     "src/components/sidebar/worktree-visibility-source-mutation.ts:37,53 predicados de aceitação"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
+    ],
+    "missing_behaviors": [],
+    "notes": "Falha de update mapeada para a mensagem certa: host sem suporte a source-specific visibility vs erro genérico."
+   }
+  },
+  {
+   "id": "D10-090",
+   "capability": "Detectar revert para o global e montar a mutação correspondente",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-use-global.ts:27",
+    "components/sidebar/worktree-visibility-use-global.ts:40",
+    "components/sidebar/worktree-visibility-use-global.ts:46"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:388-418 handleUseGlobal (revert inline + predicados de aceitação)",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:322-352 commitSourceUpdate"
+    ],
+    "backend": [
+     "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
+    ],
+    "missing_behaviors": [
+     "helper shouldUseGlobalWorktreeVisibility não portado; o revert por valor igual ao global ao alternar (D10-045) segue ausente"
+    ],
+    "notes": "A ação explícita 'Use global' monta a mutação de revert com validação de aceitação; falta o helper que detecta o revert quando o valor escolhido coincide com o global."
+   }
+  },
+  {
+   "id": "D10-091",
+   "capability": "Contrato do sidebar: manter workspace do branch default visível sob 'Hide sleeping'",
+   "orca_evidence": [
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:69",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:88",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:113",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:145",
+    "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts:196"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/visible-worktrees.ts:168-175",
+     "src/components/sidebar/visible-worktree-kinds.ts:12",
+     "src/components/sidebar/visible-worktrees.ts:131",
+     "src/components/sidebar/visible-worktrees.ts:143"
+    ],
+    "backend": [],
+    "notes": "isenção implementada como 'qualquer main worktree' (isMainWorktree), não restrita à default-branch; hide-Default-Branch e hide-Detached-HEAD explícitos rodam antes e vencem (:131,:143)."
+   }
+  }
+ ],
+ "summary": {
+  "parity": 37,
+  "partial": 37,
+  "missing": 17,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
+}

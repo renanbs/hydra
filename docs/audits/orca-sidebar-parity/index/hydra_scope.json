@@ -1,0 +1,686 @@
+[
+ {
+  "path": "src/components/sidebar/AddRepoDialog.tsx",
+  "kind": "prod",
+  "loc": 297,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/AutoRenameFailedDialog.tsx",
+  "kind": "prod",
+  "loc": 133,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/CacheTimer.tsx",
+  "kind": "prod",
+  "loc": 45,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/CompactAgentRow.parity.test.tsx",
+  "kind": "test",
+  "loc": 142,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/CompactAgentRow.tsx",
+  "kind": "prod",
+  "loc": 181,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/FolderWorkspaceRow.parity.test.tsx",
+  "kind": "test",
+  "loc": 112,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/FolderWorkspaceRow.tsx",
+  "kind": "prod",
+  "loc": 70,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/ParentPickerModal.tsx",
+  "kind": "prod",
+  "loc": 189,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
+  "kind": "prod",
+  "loc": 140,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/ProjectGroupNameDialog.tsx",
+  "kind": "prod",
+  "loc": 132,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/ProjectHeaderActions.tsx",
+  "kind": "prod",
+  "loc": 33,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/SectionHeader.parity.test.tsx",
+  "kind": "test",
+  "loc": 117,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/SectionHeader.tsx",
+  "kind": "prod",
+  "loc": 389,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/SidebarAgentsList.tsx",
+  "kind": "prod",
+  "loc": 700,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/SidebarFooter.tsx",
+  "kind": "prod",
+  "loc": 51,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/SidebarHeader.tsx",
+  "kind": "prod",
+  "loc": 172,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/SidebarNav.tsx",
+  "kind": "prod",
+  "loc": 22,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "kind": "prod",
+  "loc": 475,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/WorktreeCard.tsx",
+  "kind": "prod",
+  "loc": 16,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/WorktreeCardAgents.tsx",
+  "kind": "prod",
+  "loc": 214,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "kind": "prod",
+  "loc": 301,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/WorktreeCardHelpers.tsx",
+  "kind": "prod",
+  "loc": 39,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/WorktreeCardPortsTrigger.tsx",
+  "kind": "prod",
+  "loc": 41,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/WorktreeCardReviewBadge.tsx",
+  "kind": "prod",
+  "loc": 58,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/WorktreeCardStatusLane.parity.test.tsx",
+  "kind": "test",
+  "loc": 60,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/WorktreeCardStatusLane.tsx",
+  "kind": "prod",
+  "loc": 77,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/WorktreeContextMenu.tsx",
+  "kind": "prod",
+  "loc": 34,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/WorktreeHostContextBadge.tsx",
+  "kind": "prod",
+  "loc": 19,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/WorktreeList.tsx",
+  "kind": "prod",
+  "loc": 615,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/WorktreeSidebar.tsx",
+  "kind": "prod",
+  "loc": 1173,
+  "reachable_depth": 0
+ },
+ {
+  "path": "src/components/sidebar/WorktreeStatusIndicator.tsx",
+  "kind": "prod",
+  "loc": 94,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/WorktreeTitleInlineRename.tsx",
+  "kind": "prod",
+  "loc": 181,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx",
+  "kind": "test",
+  "loc": 383,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "kind": "prod",
+  "loc": 648,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/agent-finished-timestamp.ts",
+  "kind": "prod",
+  "loc": 54,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/agent-row-lineage-model.ts",
+  "kind": "prod",
+  "loc": 127,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/agent-status-types.ts",
+  "kind": "prod",
+  "loc": 87,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/build-rows.ts",
+  "kind": "prod",
+  "loc": 3,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/compact-agent-row-labels.ts",
+  "kind": "prod",
+  "loc": 171,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/default-branch-workspace.ts",
+  "kind": "prod",
+  "loc": 10,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/folder-workspace-host-id.ts",
+  "kind": "prod",
+  "loc": 21,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/group-keys.ts",
+  "kind": "prod",
+  "loc": 2,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/host-section-order.ts",
+  "kind": "prod",
+  "loc": 32,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/host-section-rows.ts",
+  "kind": "prod",
+  "loc": 308,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/indentation.ts",
+  "kind": "prod",
+  "loc": 2,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/natural-worktree-ids.ts",
+  "kind": "prod",
+  "loc": 24,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/pinned-section-worktrees.ts",
+  "kind": "prod",
+  "loc": 56,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/pr-display.tsx",
+  "kind": "prod",
+  "loc": 77,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/project-filter-reveal.ts",
+  "kind": "prod",
+  "loc": 12,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/project-group-sections.ts",
+  "kind": "prod",
+  "loc": 2,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/project-header-drop.ts",
+  "kind": "prod",
+  "loc": 226,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/rendered-sidebar-worktree-order.ts",
+  "kind": "prod",
+  "loc": 126,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/repo-header-action-button-class.ts",
+  "kind": "prod",
+  "loc": 5,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/row-types.ts",
+  "kind": "prod",
+  "loc": 2,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/sidebar-filter-actions.ts",
+  "kind": "prod",
+  "loc": 78,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/sidebar-host-options.ts",
+  "kind": "prod",
+  "loc": 154,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/smart-attention.ts",
+  "kind": "prod",
+  "loc": 26,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/smart-sort.ts",
+  "kind": "prod",
+  "loc": 219,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/truncated-sidebar-label.tsx",
+  "kind": "prod",
+  "loc": 75,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/types.ts",
+  "kind": "prod",
+  "loc": 221,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/use-worktree-card-controller.ts",
+  "kind": "prod",
+  "loc": 349,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/visible-worktree-host-scope.ts",
+  "kind": "prod",
+  "loc": 42,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/visible-worktree-indexes.ts",
+  "kind": "prod",
+  "loc": 49,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/visible-worktree-kinds.ts",
+  "kind": "prod",
+  "loc": 74,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/visible-worktrees.ts",
+  "kind": "prod",
+  "loc": 402,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/workspace-creator-visibility.ts",
+  "kind": "prod",
+  "loc": 82,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/workspace-status-drag-data.ts",
+  "kind": "prod",
+  "loc": 112,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/workspace-status-icon-options.ts",
+  "kind": "prod",
+  "loc": 111,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/workspace-status-icons.tsx",
+  "kind": "prod",
+  "loc": 75,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/workspace-status.ts",
+  "kind": "prod",
+  "loc": 227,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-agent-summary.ts",
+  "kind": "prod",
+  "loc": 133,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-compact-agents.tsx",
+  "kind": "prod",
+  "loc": 237,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-header.tsx",
+  "kind": "prod",
+  "loc": 210,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-lane-placement.parity.test.tsx",
+  "kind": "test",
+  "loc": 81,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-meta-row.tsx",
+  "kind": "prod",
+  "loc": 109,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-model.ts",
+  "kind": "prod",
+  "loc": 143,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-parent-content.tsx",
+  "kind": "prod",
+  "loc": 127,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-presentation.tsx",
+  "kind": "prod",
+  "loc": 191,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/worktree-card-surface.tsx",
+  "kind": "prod",
+  "loc": 156,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/worktree-drag-units.ts",
+  "kind": "prod",
+  "loc": 85,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-lineage-projection.ts",
+  "kind": "prod",
+  "loc": 147,
+  "reachable_depth": 3
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/buildSidebarRows.ts",
+  "kind": "prod",
+  "loc": 386,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/build-rows.ts",
+  "kind": "prod",
+  "loc": 252,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts",
+  "kind": "prod",
+  "loc": 77,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/group-keys.ts",
+  "kind": "prod",
+  "loc": 174,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/group-sections.ts",
+  "kind": "prod",
+  "loc": 218,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/host-labels.ts",
+  "kind": "prod",
+  "loc": 246,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts",
+  "kind": "prod",
+  "loc": 115,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/project-group-sections.ts",
+  "kind": "prod",
+  "loc": 140,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "kind": "prod",
+  "loc": 169,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/row-builders.ts",
+  "kind": "prod",
+  "loc": 269,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/row-types.ts",
+  "kind": "prod",
+  "loc": 108,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/section-order.ts",
+  "kind": "prod",
+  "loc": 214,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts",
+  "kind": "prod",
+  "loc": 80,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "kind": "prod",
+  "loc": 244,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/hard-scroll-up.ts",
+  "kind": "prod",
+  "loc": 329,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/keyboard-cycle.ts",
+  "kind": "prod",
+  "loc": 65,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/listing/host-filtering.ts",
+  "kind": "prod",
+  "loc": 146,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/listing/review-cache-inputs.ts",
+  "kind": "prod",
+  "loc": 44,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/pointer-drag-dom.ts",
+  "kind": "prod",
+  "loc": 111,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx",
+  "kind": "test",
+  "loc": 242,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx",
+  "kind": "prod",
+  "loc": 334,
+  "reachable_depth": 1
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.parity.test.tsx",
+  "kind": "test",
+  "loc": 106,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx",
+  "kind": "prod",
+  "loc": 116,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/rows/SectionHeader.tsx",
+  "kind": "prod",
+  "loc": 3,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/rows/indentation.ts",
+  "kind": "prod",
+  "loc": 244,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/worktree-list/types.ts",
+  "kind": "prod",
+  "loc": 97,
+  "reachable_depth": 2
+ },
+ {
+  "path": "src/components/sidebar/worktree-manual-order-ranks.ts",
+  "kind": "prod",
+  "loc": 141,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-manual-order.ts",
+  "kind": "prod",
+  "loc": 252,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts",
+  "kind": "prod",
+  "loc": 228,
+  "reachable_depth": 6
+ },
+ {
+  "path": "src/components/sidebar/worktree-sidebar-drag-geometry.ts",
+  "kind": "prod",
+  "loc": 112,
+  "reachable_depth": null
+ },
+ {
+  "path": "src/components/sidebar/worktree-sidebar-header-drop-preview.ts",
+  "kind": "prod",
+  "loc": 142,
+  "reachable_depth": 5
+ },
+ {
+  "path": "src/components/sidebar/worktree-sidebar-row-preference.ts",
+  "kind": "prod",
+  "loc": 65,
+  "reachable_depth": 4
+ },
+ {
+  "path": "src/components/sidebar/worktree-title-derived-agent-rows.ts",
+  "kind": "prod",
+  "loc": 4,
+  "reachable_depth": null
+ }
+]

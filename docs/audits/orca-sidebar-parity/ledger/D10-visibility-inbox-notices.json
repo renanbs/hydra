@@ -1,0 +1,18 @@
+{
+ "domain": "D10-visibility-inbox-notices",
+ "status": "ok",
+ "rows": 91,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "30/30",
+  "symbols": "66/66",
+  "tests": "164/164",
+  "labels": "57/57",
+  "hotkeys": "1/1",
+  "prefs": "0/0",
+  "timers": "4/4",
+  "subscriptions": "13/13",
+  "preload": "2/2"
+ }
+}
