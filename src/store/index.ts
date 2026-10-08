@@ -647,8 +647,8 @@ export const useAppStore = create<AppState>()(
     setMruTabIds: (ids) => set({ mruTabIds: ids }),
 
     // Why bare set: persistence is the App's debounced `ui.sidebar` writer, not
-    // the store (the ported Orca slice went through a `window.api.ui` bridge that
-    // does not exist under Tauri).
+    // the store (the ported Orca slice went through an Electron preload bridge
+    // that does not exist under Tauri).
     setWorkspaceHostScope: (scope) => {
       const workspaceHostScope = normalizeExecutionHostScope(scope)
       set({

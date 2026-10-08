@@ -66,6 +66,7 @@ import {
   clampPetSize
 } from './ui-slice-hydration-sanitizers'
 import { hydrateAgentReadState, sanitizeTaskResumeState } from './ui-slice-hydration-values'
+import { uiPrefsBridge } from '../../ui-prefs-bridge'
 
 const MAX_LEFT_SIDEBAR_WIDTH = 500
 const MAX_RIGHT_SIDEBAR_WIDTH = 4000
@@ -90,7 +91,7 @@ function hydrateStatusBarItems(ui: PersistedUIState): StatusBarItem[] {
     }
   }
   if (typeof window !== 'undefined' && defaults.some(([flag]) => !ui[flag])) {
-    window.api.ui
+    uiPrefsBridge
       .set({ statusBarItems: items, ...Object.fromEntries(defaults.map(([flag]) => [flag, true])) })
       .catch(console.error)
   }

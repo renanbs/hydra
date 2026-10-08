@@ -30,7 +30,7 @@ export function createUiSettingsActions(set: UISliceSet, get: UISliceGet): Parti
     clearSettingsTarget: () => set({ settingsNavigationTarget: null }),
     settingsProjectHostSelection: {},
     settingsProjectSetupSelection: {},
-    // Why: renderer-only, never persisted — no window.api.ui.set, and absent from the debounced UI writer in App.tsx.
+    // Why: renderer-only, never persisted — no write through uiPrefsBridge, and absent from the App's debounced UI writer.
     setSettingsProjectHostSelection: (projectId: any, hostId: any, setupId: any) =>
       set((s: any) => {
         const nextSetupSelections = { ...s.settingsProjectSetupSelection }

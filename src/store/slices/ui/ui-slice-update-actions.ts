@@ -4,6 +4,7 @@ import {
   normalizeBrowserPageZoomLevel
 } from '../../../shared/browser-page-zoom'
 import { normalizeKagiSessionLink } from '../../../shared/browser-url'
+import { uiPrefsBridge } from '../../ui-prefs-bridge'
 export function createUiUpdateActions(set: UISliceSet, get: UISliceGet): Partial<UISlice> {
   return {
     updateStatus: { state: 'idle' },
@@ -66,14 +67,14 @@ export function createUiUpdateActions(set: UISliceSet, get: UISliceGet): Partial
         dismissedUnexpectedSignoutVersion: version,
         unexpectedSignoutDismissedVersions: [...get().unexpectedSignoutDismissedVersions, version]
       })
-      void window.api.ui.set({ dismissedUnexpectedSignoutVersion: version }).catch(console.error)
+      void uiPrefsBridge.set({ dismissedUnexpectedSignoutVersion: version }).catch(console.error)
     },
     clearDismissedUpdateVersion: () => {
       set({ dismissedUpdateVersion: null })
     },
     releaseChannelOverride: null,
     setReleaseChannelOverride: (channel: any) => {
-      void window.api.ui.set({ releaseChannelOverride: channel }).catch(console.error)
+      void uiPrefsBridge.set({ releaseChannelOverride: channel }).catch(console.error)
       set({ releaseChannelOverride: channel })
     },
     dismissUpdate: (versionOverride?: string) =>
@@ -84,7 +85,7 @@ export function createUiUpdateActions(set: UISliceSet, get: UISliceGet): Partial
         const activeNudgeId =
           'activeNudgeId' in s.updateStatus ? (s.updateStatus.activeNudgeId ?? null) : null
         // Why: persist dismissal so relaunch doesn't immediately re-show the same card until a newer release.
-        void window.api.ui.set({ dismissedUpdateVersion }).catch(console.error)
+        void uiPrefsBridge.set({ dismissedUpdateVersion }).catch(console.error)
         // Why: main can't otherwise tell an offered update was abandoned, which keeps a local-build session pinned and stalls background checks.
         void window.api.updater.dismissAvailableUpdate().catch(console.error)
         // Why: only consume the nudge campaign for cards from a nudge cycle, not ordinary dismissals.
@@ -97,7 +98,7 @@ export function createUiUpdateActions(set: UISliceSet, get: UISliceGet): Partial
     setUpdateCardCollapsed: (collapsed: any) => set({ updateCardCollapsed: collapsed }),
     updateReassuranceSeen: false,
     markUpdateReassuranceSeen: () => {
-      void window.api.ui.set({ updateReassuranceSeen: true }).catch(console.error)
+      void uiPrefsBridge.set({ updateReassuranceSeen: true }).catch(console.error)
       set({ updateReassuranceSeen: true })
     },
     osc52ClipboardDefaultOnNoticePending: false,
@@ -105,30 +106,30 @@ export function createUiUpdateActions(set: UISliceSet, get: UISliceGet): Partial
       // Why clear locally first: a failed persist must not re-toast this session. It will
       // re-arm on the next launch, which is the safe direction for a one-shot notice.
       set({ osc52ClipboardDefaultOnNoticePending: false })
-      void window.api.ui.set({ osc52ClipboardDefaultOnNoticePending: false }).catch(console.error)
+      void uiPrefsBridge.set({ osc52ClipboardDefaultOnNoticePending: false }).catch(console.error)
     },
     isFullScreen: false,
     setIsFullScreen: (v: any) => set({ isFullScreen: v }),
     browserDefaultUrl: null,
     setBrowserDefaultUrl: (url: any) => {
-      void window.api.ui.set({ browserDefaultUrl: url }).catch(console.error)
+      void uiPrefsBridge.set({ browserDefaultUrl: url }).catch(console.error)
       set({ browserDefaultUrl: url })
     },
     browserDefaultSearchEngine: null,
     setBrowserDefaultSearchEngine: (engine: any) => {
-      void window.api.ui.set({ browserDefaultSearchEngine: engine }).catch(console.error)
+      void uiPrefsBridge.set({ browserDefaultSearchEngine: engine }).catch(console.error)
       set({ browserDefaultSearchEngine: engine })
     },
     browserDefaultZoomLevel: DEFAULT_BROWSER_PAGE_ZOOM_LEVEL,
     setBrowserDefaultZoomLevel: (level: any) => {
       const normalized = normalizeBrowserPageZoomLevel(level)
-      void window.api.ui.set({ browserDefaultZoomLevel: normalized }).catch(console.error)
+      void uiPrefsBridge.set({ browserDefaultZoomLevel: normalized }).catch(console.error)
       set({ browserDefaultZoomLevel: normalized })
     },
     browserKagiSessionLink: null,
     setBrowserKagiSessionLink: (link: any) => {
       const normalized = link ? normalizeKagiSessionLink(link) : null
-      void window.api.ui.set({ browserKagiSessionLink: normalized }).catch(console.error)
+      void uiPrefsBridge.set({ browserKagiSessionLink: normalized }).catch(console.error)
       set({ browserKagiSessionLink: normalized })
     }
   }
