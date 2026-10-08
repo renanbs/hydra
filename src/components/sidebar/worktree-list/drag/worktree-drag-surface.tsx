@@ -17,12 +17,18 @@ export function WorktreeDragRow({
   rowKey,
   worktreeId,
   worktreePath,
+  optionId,
+  isActive = false,
   style,
   children
 }: {
   rowKey: string
   worktreeId: string
   worktreePath: string
+  /** Listbox option id; the viewport points `aria-activedescendant` at it. */
+  optionId?: string
+  /** True when this card paints the active workspace. */
+  isActive?: boolean
   style?: React.CSSProperties
   children: React.ReactNode
 }): React.JSX.Element {
@@ -34,6 +40,10 @@ export function WorktreeDragRow({
 
   return (
     <div
+      id={optionId}
+      role="option"
+      aria-selected={isActive}
+      aria-current={isActive ? 'page' : undefined}
       data-worktree-path={worktreePath}
       data-worktree-drag-id={groupKey ? worktreeId : undefined}
       data-worktree-drag-group-key={groupKey}

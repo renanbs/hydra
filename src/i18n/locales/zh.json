@@ -4868,6 +4868,9 @@
           "openGlobalSettings": "在全局设置中管理",
           "globalSettingsSources": "以下来源有全局设置，可在此处覆盖："
         },
+        "WorktreeListScrollToTopButton": {
+          "jumpToTop": "返回顶部"
+        },
         "WorktreeVisibilitySourceList": {
           "claude": "Claude Code",
           "gsd": "GSD",

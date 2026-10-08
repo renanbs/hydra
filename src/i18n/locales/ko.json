@@ -4825,6 +4825,9 @@
           "openGlobalSettings": "전역 설정에서 관리",
           "globalSettingsSources": "다음 소스에는 여기에서 재정의할 수 있는 전역 설정이 있습니다:"
         },
+        "WorktreeListScrollToTopButton": {
+          "jumpToTop": "맨 위로 이동"
+        },
         "WorktreeVisibilitySourceList": {
           "claude": "Claude Code",
           "gsd": "GSD",

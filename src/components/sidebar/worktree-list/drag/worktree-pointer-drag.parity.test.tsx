@@ -125,6 +125,17 @@ function renderList() {
   const rows = Array.from(
     container.querySelectorAll<HTMLElement>("[data-worktree-drag-id]")
   );
+  // The painted rows are virtual slots now: the drag geometry reads the slot's own start plus
+  // the row's offset inside it. Mock both, so the synthetic geometry lands in the same
+  // coordinate space these tests have always asserted (first card at 0, ROW_PITCH apart).
+  Array.from(container.querySelectorAll<HTMLElement>("[data-worktree-virtual-row]")).forEach(
+    (virtualRow, index) => {
+      Object.defineProperty(virtualRow, "getBoundingClientRect", {
+        configurable: true,
+        value: () => fakeRect(index * ROW_PITCH, index * ROW_PITCH + ROW_HEIGHT),
+      });
+    }
+  );
   rows.forEach((row, index) => {
     Object.defineProperty(row, "getBoundingClientRect", {
       configurable: true,
@@ -172,6 +183,9 @@ function dropIndicator(): HTMLElement | null {
 
 /** Press the first row, cross the threshold, and settle: a live drag session. */
 async function startDragOnFirstRow(row: HTMLElement): Promise<void> {
+  // The virtualizer measures the freshly mounted rows a frame after the commit; drain it so the
+  // drag geometry is the same one the user would get.
+  await settleDragFrame();
   pressRow(row, ROW_HEIGHT / 2);
   movePointer(ROW_HEIGHT / 2 + 10);
   await settleDragFrame();
