@@ -260,19 +260,15 @@
     "components/sidebar/WorktreeList.tsx:140-153"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:287",
-     "src/components/sidebar/WorktreeList.tsx:304",
-     "src/components/sidebar/WorktreeSidebar.tsx:761",
-     "src/components/sidebar/WorktreeSidebar.tsx:773",
-     "src/components/sidebar/WorktreeSidebar.tsx:792"
+     "src/components/sidebar/WorktreeList.tsx:541-542,627-657 pipelineState com visibleWorkspaceHostIds/workspaceHostScope do store",
+     "src/components/sidebar/WorktreeList.tsx:830-838 deleteState host-qualificado + renameRequest",
+     "src/components/sidebar/WorktreeSidebar.tsx:709-717 hiddenWorktreesByProject para o inbox"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "escopo de host na lista montada (useSidebarHostVisibleScope): getVisibleSidebarHostIdSet/filterProjectGroupsForVisibleHosts só são usados no pipeline de atalhos (rendered-sidebar-worktree-order.ts:41,63)"
-    ],
-    "notes": "Linhas de inbox (notice + pill) e supressão/keep por repo estão montadas e chamam import_worktree / catalog_set_worktree_visibility / suppress_worktree_inbox (preload equivalente)."
+    "missing_behaviors": [],
+    "notes": "A lista montada agora aplica o escopo de host (getVisibleSidebarHostIdSet via computeSidebarRows) e integra os cartões de worktrees externas/importados (candidatos a partir de hiddenWorktreesByProject)."
    }
   },
   {
@@ -977,8 +973,8 @@
   }
  ],
  "summary": {
-  "parity": 2,
-  "partial": 17,
+  "parity": 3,
+  "partial": 16,
   "missing": 31,
   "not-applicable": 0,
   "out-of-scope": 0

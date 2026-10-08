@@ -1062,20 +1062,16 @@
     "components/sidebar/sidebar-host-options.ts:97-154"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/sidebar-host-options.ts:97-154",
-     "src/store/slices/ui/ui-slice-preference-actions.ts:68-80"
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:97-98 setWorkspaceHostScope/setVisibleWorkspaceHostIds",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:200-231 showHostScopeControls/getSidebarHostVisibilityLabel/toggleAllHosts/toggleHost",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:378-445 submenu Hosts (aria-disabled do último host + getSidebarHostHealthLabel)",
+     "src/components/sidebar/sidebar-host-options.ts:97,120 shouldShowHostScopeControls/getSidebarHostVisibilityLabel"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "trigger com resumo de visibilidade (getSidebarHostVisibilityLabel)",
-     "alternância entre 'All hosts' e seleção múltipla (setWorkspaceHostScope/setVisibleWorkspaceHostIds)",
-     "metadados de presença/saúde por host (getSidebarHostHealthLabel)",
-     "disabled ao tentar desmarcar o último host",
-     "data-workspace-board-preserve-open"
-    ],
-    "notes": "Busca em 5 passos: (1) 'SidebarHostScopeMenuSection' -> 0 em src; (2) nenhum submenu de hosts no WorkspaceOptionsMenu (só submenus sort/projectOrder/cardDisplay/show→Projects, src/components/sidebar/WorkspaceOptionsMenu.tsx:41, :143-262); (3) buildSidebarHostScopeOptions/getSidebarHostVisibilityLabel/getSidebarHostHealthLabel/shouldShowHostScopeControls existem mas têm ZERO consumidores (grep em src = só a própria definição); setWorkspaceHostScope/setVisibleWorkspaceHostIds existem no store (ui-slice-preference-actions.ts:68, :77) sem chamada de componente; (4) sem backend; (5) não há UI de escopo — o filtro de host só é aplicado no pipeline de dados (host-filtering via rendered-sidebar-worktree-order.ts)."
+    "missing_behaviors": [],
+    "notes": "Submenu Hosts agora montado (não mais sob guard): resumo de visibilidade por host, alternância All/múltipla via setWorkspaceHostScope/setVisibleWorkspaceHostIds, presença/saúde por host e bloqueio do último host visível. O contrato DOM data-workspace-board-preserve-open do Orca é N/A no Hydra — não há Workspace Board (D15b-001 missing); o atributo que existe hoje (worktree-card-header.tsx:192) serve a outro contrato."
    }
   },
   {
@@ -1250,9 +1246,9 @@
   }
  ],
  "summary": {
-  "parity": 7,
+  "parity": 8,
   "partial": 15,
-  "missing": 30,
+  "missing": 29,
   "not-applicable": 0,
   "out-of-scope": 0
  }

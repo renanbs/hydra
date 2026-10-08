@@ -69,13 +69,13 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-surface.tsx:95-101",
-     "src/components/sidebar/worktree-card-surface.tsx:103-111",
-     "src/components/sidebar/worktree-card-surface.tsx:92"
+     "src/components/sidebar/worktree-card-surface.tsx:92-111 overlay/rótulo/aria-busy",
+     "src/components/sidebar/WorktreeList.tsx:830-838 deleteState via getDeleteStateForWorktreeHost (host-qualificado)",
+     "src/App.tsx:4297-4305 onDeleteStart/onDeleteSettled/onClose publicam e limpam o estado"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Overlay absoluto z-10 com backdrop-blur cobrindo o card (:103-111), LoaderCircle só quando !isQueuedForDeletion (:106-108), rótulo deleteLabel (:109), aria-busy (:92) e inércia opacity-50 grayscale cursor-not-allowed (:75). Defeito observado (não é gap de paridade): isDeleting é useState local (use-worktree-card-controller.ts:134) setado em :241 e nunca resetado — falha/cancelamento do diálogo deixa o overlay preso."
+    "notes": "Overlay de exclusão portado e agora derivado do estado host-qualificado (getDeleteStateForWorktreeHost); o publish/clear do App usa getDeleteStateKeyForWorktreeHost."
    },
    "par": [
     "PAR-05"
@@ -360,18 +360,17 @@
     "components/sidebar/worktree-card-header.tsx:184"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-header.tsx:114-133",
-     "src/components/sidebar/WorktreeTitleInlineRename.tsx:62-68",
-     "src/store/slices/worktrees/session/worktree-slice-lookups.ts:15"
+     "src/components/sidebar/WorktreeList.tsx:734-746 keydown workspace.rename → setRenameRequest",
+     "src/components/sidebar/WorktreeList.tsx:837-838 renameRequest/onRenameRequestConsumed no card",
+     "src/components/sidebar/use-worktree-card-controller.ts:149-156 renamingWorktreeId/consume",
+     "src/components/sidebar/worktree-card-header.tsx:132 shouldBeginWorktreeRename",
+     "src/components/sidebar/WorktreeTitleInlineRename.tsx:70-161"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Abertura por atalho (beginEditing): renamingWorktreeId é useState local (controller :132) que nunca recebe valor — o setter da store é auto-stub (createSetRenamingWorktreeId: any = null) e nenhum call-site define a request; só o duplo clique abre o editor",
-     "WorktreeList.tsx:354-405 não passa renameRowKey/renamingWorktreeId"
-    ],
-    "notes": "Duplo clique funciona (controller :179-186 -> WorktreeTitleInlineRename :156-161); disabled em deleting/afiliado, showUnreadEmphasis (:117) e dimReadTitle (:118) conferem; onEditingChange informa o card (:122)."
+    "missing_behaviors": [],
+    "notes": "Abertura por atalho religada: WorktreeList casa workspace.rename e publica uma renameRequest que o card consome para abrir o editor inline (além do duplo clique)."
    }
   },
   {
@@ -1591,9 +1590,8 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/App.tsx:3492",
-     "src/App.tsx:1756-1791",
-     "src-tauri/src/lib.rs:476",
+     "src/App.tsx:3696 rótulos Delete Worktree/Delete with Descendants…/Remove Project from Hydra",
+     "src/components/sidebar/WorktreeList.tsx:125-150,734-746 matchWorkspaceSidebarShortcut (rename/delete)",
      "src/shared/keybindings/definitions-core-1.ts:84"
     ],
     "backend": [
@@ -1601,13 +1599,13 @@
      "invoke('get_detailed_git_status_cmd') -> src/App.tsx:1798"
     ],
     "missing_behaviors": [
-     "Estado pendente (Deleting…) no item",
-     "Badge de atalho workspace.delete (a keybinding existe em definitions-core-1.ts:84, mas matchKeybinding não é chamado fora do módulo de keybindings e o item não declara shortcut)",
+     "Estado pendente (Deleting…) no item de menu",
+     "Badge de atalho workspace.delete no item (o matcher existe em WorktreeList.tsx:125/734, mas o item não declara shortcut)",
      "Rótulos de multi-contexto e Remove Workspace para folder workspace",
-     "Title The project could not be found",
+     "Title 'The project could not be found'",
      "Toast informativo com ação Re-add (PAR-86)"
     ],
-    "notes": "Rótulo variável (Delete Worktree / Delete with Descendants… / Remove Project from Hydra) e a confirmação por modal (DeleteWorktreeDialog com contagem de alterações) conferem; o delete real é invoke delete_worktree."
+    "notes": "Rótulo variável e confirmação por modal conferem; o atalho workspace.delete agora é despachado pelo sidebar (WorktreeList.tsx:734), mas o item de contexto não exibe o badge nem estado pendente."
    },
    "par": [
     "PAR-86"
@@ -2574,8 +2572,8 @@
   }
  ],
  "summary": {
-  "parity": 14,
-  "partial": 56,
+  "parity": 15,
+  "partial": 55,
   "missing": 41,
   "not-applicable": 0,
   "out-of-scope": 0

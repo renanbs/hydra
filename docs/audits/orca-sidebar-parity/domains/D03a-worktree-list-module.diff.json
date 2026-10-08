@@ -480,18 +480,14 @@
     "components/sidebar/worktree-list/grouping/build-rows.ts:48-252"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:283-301",
-     "src/components/sidebar/worktree-list/grouping/build-rows.ts:48",
-     "src/components/sidebar/WorktreeList.tsx:338"
+     "src/components/sidebar/WorktreeList.tsx:627-657 pipelineState+computeSidebarRows (groupBy real)",
+     "src/components/sidebar/WorktreeList.tsx:1056-1091 switch pinta header(item/lane)/item/folder/notice",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:48-252"
     ],
-    "missing_behaviors": [
-     "seção Pinned antes de todas",
-     "modos 'none'/'workspace-status'/'pr-status' realmente agrupando",
-     "colapso por chave de grupo"
-    ],
-    "notes": "O seletor Group by (None/Status/Project) existe, e buildRows implementa os 4 modos, mas o sidebar pintado só agrupa por repo: groupBy é usado apenas para calcular indentação (WorktreeList.tsx:338). O pipeline buildRows é alcançável só pela numeração Cmd+1-9 (rendered-sidebar-worktree-order.ts:56)."
+    "missing_behaviors": [],
+    "notes": "O sidebar pintado agora consome o modelo portado: groupBy (none/workspace-status/pr-status/repo) alimenta computeSidebarRows, que emite seções Pinned/lane/host e é pintado em WorktreeList. Colapso por chave de grupo via collapsedGroups/isCollapsedKey."
    }
   },
   {
@@ -502,18 +498,14 @@
     "components/sidebar/worktree-list/grouping/group-keys.ts:88-96"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/build-rows.ts:48",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:88-96",
-     "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:19"
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:140-172 lane All com header+count",
+     "src/components/sidebar/WorktreeList.tsx:374-414 LaneSectionHeader (label/ícone/tone/count)",
+     "src/components/sidebar/WorktreeList.tsx:1056-1060 header não-repo → LaneSectionHeader"
     ],
-    "missing_behaviors": [
-     "header 'All' com contagem",
-     "colapso suprime linhas",
-     "ordem manual/sortOrder + nome"
-    ],
-    "notes": "O lane 'All' existe no pipeline headless (usado para ordenar atalhos), mas não é renderizado; a lista pintada sempre mostra projetos."
+    "missing_behaviors": [],
+    "notes": "Lane 'All' pintada com header e contagem; colapso suprime as linhas (collapsedGroups.has(ALL_GROUP_KEY)); a ordem dos itens vem do sort do caller (getFilteredAndSortedWorktrees), aplicado antes de computeSidebarRows."
    }
   },
   {
@@ -525,17 +517,14 @@
     "components/sidebar/worktree-list/grouping/section-order.ts:66-74"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:250-285",
-     "src/components/sidebar/worktree-list/grouping/group-sections.ts:82",
-     "src/components/sidebar/worktree-list/grouping/section-order.ts:66-97"
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:193 orderMainWorktreeFirst no modo repo",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:80-110 withRepoSectionDisplayLabels",
+     "src/components/sidebar/WorktreeList.tsx:992-998 renderRepoHeader"
     ],
-    "missing_behaviors": [
-     "worktree principal primeiro na seção",
-     "desambiguação de label por path (#16127)"
-    ],
-    "notes": "O Hydra renderiza seções por projeto com header (SectionHeader variant repo) e notices (ImportedWorktreesVisibilityLine/NewExternalWorktreesInboxLine) no topo da seção; faltam main-worktree-first e a desambiguação por path."
+    "missing_behaviors": [],
+    "notes": "Seções por repo com header+count; worktree principal primeiro (orderMainWorktreeFirst) e labels desambiguados por path (#16127) aplicados no caminho pintado."
    }
   },
   {
@@ -546,17 +535,13 @@
     "components/sidebar/worktree-list/grouping/group-sections.ts:94-123"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts:216-225",
-     "src/components/sidebar/worktree-list/grouping/group-sections.ts:94"
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:94-125 lane workspace-status com label/tone/ícone/count",
+     "src/components/sidebar/WorktreeList.tsx:374-414 LaneSectionHeader"
     ],
-    "missing_behaviors": [
-     "lanes por status com label/tone/ícone",
-     "omissão de lanes vazias",
-     "contagem incluindo folder workspaces"
-    ],
-    "notes": "Lanes de status existem só no pipeline headless; a lista pintada não tem lanes de status (WorktreeList.tsx:338 só muda indent)."
+    "missing_behaviors": [],
+    "notes": "Lanes de status pintadas com metadado visual por definição; lanes vazias são omitidas pelo agrupador (buildOrderedGroups) e a contagem soma folder workspaces."
    }
   },
   {
@@ -568,18 +553,14 @@
     "components/sidebar/worktree-list/grouping/worktree-grouping.ts:208-215"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:23",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:108",
-     "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts:208-215"
+     "src/components/sidebar/worktree-list/grouping/group-keys.ts:21-67,108-167 PR_GROUP_ORDER/getPRGroupKey",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:126-160 lane PR com PR_GROUP_META",
+     "src/components/sidebar/WorktreeList.tsx:648-657 prCache repo-scoped alimentado"
     ],
-    "missing_behaviors": [
-     "lanes Done/In review/In progress/Closed visíveis",
-     "ícones/tons dedicados por lane",
-     "cache de PR repo-scoped no render"
-    ],
-    "notes": "PR_GROUP_ORDER/getPRGroupKey existem no pipeline headless; não há lane de PR renderizada no sidebar pintado."
+    "missing_behaviors": [],
+    "notes": "Lanes Done/In review/In progress/Closed pintadas com ícone/tone por lane; o cache de PR é computado por repo e entregue à pipeline."
    }
   },
   {
@@ -591,19 +572,15 @@
     "components/sidebar/worktree-list/grouping/build-rows.ts:100-153"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts:17",
-     "src/components/sidebar/worktree-list/grouping/row-types.ts:12",
-     "src/components/sidebar/pinned-section-worktrees.ts:8",
-     "src/components/sidebar/WorktreeList.tsx:374"
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:100-138 emitPinnedGroup",
+     "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts:17-115",
+     "src/components/sidebar/WorktreeList.tsx:374-414 LaneSectionHeader",
+     "src/components/sidebar/WorktreeList.tsx:814-824 isPinned no card"
     ],
-    "missing_behaviors": [
-     "seção Pinned renderizada com header/contagem por host",
-     "política single-location vs duplicate-in-groups no render",
-     "pinned-fallback do card de imported worktrees"
-    ],
-    "notes": "O pipeline emite a seção Pinned (pinned-group-rows) e pinned-section-worktrees define a política, mas o sidebar pintado não tem seção Pinned: pinnedWorktrees só marca o card (isPinned)."
+    "missing_behaviors": [],
+    "notes": "Seção Pinned emitida antes das demais, com header/contagem por host e política single-location vs duplicate-in-groups (getPinnedWorktreeDisplayPolicy) aplicada no render."
    },
    "par": [
     "PAR-35"
@@ -617,18 +594,14 @@
     "components/sidebar/worktree-list/grouping/project-group-sections.ts:57-71"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:511-534",
-     "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:19",
-     "src/components/sidebar/worktree-list/grouping/project-group-sections.ts:57-71"
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:93-99 getRenderableFolderWorkspaces",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:107-115,200-202 folderPairs em cada lane",
+     "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:19-77"
     ],
-    "missing_behaviors": [
-     "membership única por getRenderableFolderWorkspaces",
-     "lane por status/pr/none",
-     "ordem manualOrder/sortOrder+name"
-    ],
-    "notes": "FolderWorkspaceRow é renderizado sob grupos de projeto, mas o lane/membership do Orca não é aplicado: só há linhas de folder em grupos com projectGroupId."
+    "missing_behaviors": [],
+    "notes": "Membership única decidida uma vez (getRenderableFolderWorkspaces) e folder workspaces distribuídos por lane/modo de agrupamento com ordenação manualOrder/sortOrder+nome."
    }
   },
   {
@@ -641,17 +614,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/row-builders.ts:146",
-     "src/components/sidebar/worktree-lineage-projection.ts:15",
-     "src/components/sidebar/worktree-lineage-projection.ts:105"
+     "src/components/sidebar/worktree-list/grouping/row-builders.ts:146-253 (nestLineage depth/trail/collapse)",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:63 nestLineage=true no caminho pintado",
+     "src/components/sidebar/WorktreeList.tsx:792-799 cardContentIndent com lineageDepth:0"
     ],
     "missing_behaviors": [
-     "árvore pai/filho renderizada inline",
-     "lineageTrail/isLastLineageChild",
-     "colapso por lineageGroupKey",
-     "proteção de ciclo no render"
+     "lineageTrail/isLastLineageChild não renderizados: renderWorktreeRow calcula a indentação com lineageDepth:0 (WorktreeList.tsx:792-799), então a árvore pai/filho não aparece aninhada visualmente"
     ],
-    "notes": "A projeção de linhagem (com WeakMap e detecção de ciclos) e o row-builder existem e são alcançáveis, mas o card pintado não aninha filhos (WorktreeList não passa lineageChildren)."
+    "notes": "As rows agora são emitidas aninhadas (appendWorktreeRows com nestLineage=true) e colapsam por lineageGroupKey com proteção de ciclo, mas o card pintado não consome lineageTrail/isLastLineageChild."
    },
    "par": [
     "PAR-82"
@@ -665,20 +635,18 @@
     "components/sidebar/worktree-list/grouping/row-types.ts:49-63"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:130-210",
-     "src/components/sidebar/WorktreeList.tsx:287-303",
-     "src/components/sidebar/WorktreeSidebar.tsx:761-772"
+     "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts:60-115 placement pinned-fallback",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:158-180 notice repo-group com hostContext",
+     "src/components/sidebar/WorktreeList.tsx:986-1030 renderNoticeRow (row.hostContextLabel/hostContextHostId)",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:136-224"
     ],
     "backend": [
      "invoke('import_worktree') -> src-tauri (comando alcançável do sidebar)"
     ],
-    "missing_behaviors": [
-     "placement pinned-fallback",
-     "hostContext quando o repo está em >1 host"
-    ],
-    "notes": "A linha de imported worktrees é renderizada com ações Show/Keep hidden; falta o placement pinned-fallback e o hostContext."
+    "missing_behaviors": [],
+    "notes": "Linha de imported worktrees pintada com placement pinned-fallback e hostContext quando o repo está em >1 host (getNoticeHostContextLabels)."
    }
   },
   {
@@ -689,20 +657,17 @@
     "components/sidebar/worktree-list/grouping/worktree-grouping.ts:169-186"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:39",
-     "src/components/sidebar/WorktreeList.tsx:304-325",
-     "src/components/sidebar/WorktreeSidebar.tsx:792-799"
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:180-190 inbox row",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:262-292 placeholderRepoIds garante a seção do repo",
+     "src/components/sidebar/WorktreeList.tsx:986-1030 renderNoticeRow"
     ],
     "backend": [
      "invoke('suppress_worktree_inbox') -> src-tauri (comando alcançável do sidebar)"
     ],
-    "missing_behaviors": [
-     "garantir a seção do repo mesmo com política Pinned removendo itens naturais",
-     "hostContext ambíguo"
-    ],
-    "notes": "A inbox é renderizada com Review/Suppress; não há garantia de seção nem hostContext."
+    "missing_behaviors": [],
+    "notes": "Inbox de worktrees externas pintada com Review/Suppress; a seção do repo é garantida mesmo quando a política Pinned remove os itens naturais (noticeRepoIds) e o hostContext é resolvido por buildExternalWorktreeNoticeCandidates."
    }
   },
   {
@@ -715,13 +680,14 @@
    "hydra": {
     "status": "missing",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/row-builders.ts:22"
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:73-80 buildPendingCreationRow",
+     "src/components/sidebar/WorktreeList.tsx:1089-1091 case \"pending-creation\" é no-op"
     ],
     "missing_behaviors": [
      "row pending-creation renderizada",
      "pending:<creationId> como tipo virtual"
     ],
-    "notes": "buildPendingCreationRow existe no pipeline headless, mas o sidebar pintado não renderiza linha de criação em andamento (WorktreeList não tem ramo pending)."
+    "notes": "O pipeline emite buildPendingCreationRow, mas o sidebar pintado descarta a linha (WorktreeList.tsx:1089-1091 sem ramo). Sem criação em andamento na lista."
    }
   },
   {
@@ -731,18 +697,14 @@
     "components/sidebar/worktree-list/grouping/host-labels.ts:44-246"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/host-labels.ts:44",
-     "src/components/sidebar/worktree-list/grouping/host-labels.ts:83",
-     "src/components/sidebar/SectionHeader.tsx:330-341"
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:204-254 getLaneHostWorktreeCounts/Ids",
+     "src/components/sidebar/host-section-rows.ts:290-306 count/detail por host",
+     "src/components/sidebar/WorktreeList.tsx:417-465,1046-1053 HostSectionHeader"
     ],
-    "missing_behaviors": [
-     "counts/ids por host no header",
-     "labels de contexto misto por repo",
-     "notice host context labels"
-    ],
-    "notes": "Os helpers de host-labels são alcançáveis via pipeline headless; o header pintado (SectionHeader) não mostra contagem por host (nem badge de contagem)."
+    "missing_behaviors": [],
+    "notes": "HostSectionHeader pinta label/contagem por host (inclui folder workspaces) e o detalhe de contexto misto; notice host context labels alimentam as linhas de notice."
    }
   },
   {
@@ -756,15 +718,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/section-order.ts:99",
-     "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts:226-242",
-     "src/components/sidebar/WorktreeSidebar.tsx:508-524"
+     "src/components/sidebar/WorktreeList.tsx:648-657 computeSidebarRows usa projectOrderBy default manual",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:514-535 submenu Project order (Manual fixo)",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:99-215 sortProjectEntries"
     ],
     "missing_behaviors": [
-     "ordenação Manual vs Recent de projetos",
-     "getManualOrderAnchorRepo"
+     "alternância Manual vs Recent de ordem de projetos: o submenu mostra \"Manual\" fixo e nenhum caller passa projectOrderBy=\"recent\""
     ],
-    "notes": "displayProjects só reordena por pin; não há opção Manual/Recent de ordem de projetos (WorkspaceOptionsMenu mostra 'Project order: Manual' fixo, sem alternância real)."
+    "notes": "sortProjectEntries suporta Manual e Recent, mas a lista pintada usa o default manual e a UI não alterna."
    }
   },
   {
@@ -775,18 +736,13 @@
     "components/sidebar/worktree-list/grouping/group-keys.ts:69-76"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:463-556",
-     "src/components/sidebar/worktree-list/grouping/project-group-sections.ts:19-140",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:74"
+     "src/components/sidebar/worktree-list/grouping/project-group-sections.ts:71-140 nesting/subtree count/órfãos",
+     "src/components/sidebar/WorktreeList.tsx:1001-1030 renderGroupHeader (depth)"
     ],
-    "missing_behaviors": [
-     "subgrupos aninhados (parentGroupId)",
-     "contagem de subtree completa",
-     "órfãos sem metadata caem no nível raiz"
-    ],
-    "notes": "O Hydra renderiza project groups (header variant group) com contagem = repos diretos + folder workspaces, mas é plano: não há subgrupos aninhados (projectGroups é lista plana em WorktreeList)."
+    "missing_behaviors": [],
+    "notes": "Project groups aninhados por parentGroupId com contagem de subtree (repos diretos + folder workspaces + filhos) e órfãos sem metadata caindo no nível raiz."
    }
   },
   {
@@ -798,16 +754,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/project-grouping.ts:14",
-     "src/components/sidebar/worktree-list/grouping/host-labels.ts:83",
-     "src/components/sidebar/WorktreeList.tsx:250-285"
+     "src/components/sidebar/worktree-list/grouping/project-grouping.ts:14-165 buildProjectGroupingIndex",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:176-250 computeSidebarRows não passa projectGrouping",
+     "src/components/sidebar/WorktreeList.tsx:992-998 header pintado usa project.id"
     ],
     "missing_behaviors": [
-     "surface key projectId::hostId::execução::path",
-     "headers por setup de checkout ambíguo",
-     "cache WeakMap"
+     "headers por setup de checkout ambíguo no render (computeSidebarRows não passa projectGrouping, então buildProjectGroupingIndex fica vazio no caminho pintado)",
+     "surface key projectId::hostId::execução::path no header pintado"
     ],
-    "notes": "O índice de project grouping (com WeakMap) existe e é alcançável; o header pintado não desambigua por setup de checkout (usa project.id)."
+    "notes": "O índice de project grouping (com WeakMap) existe, mas o caminho pintado não o alimenta; o header usa project.id sem desambiguar o setup de checkout."
    }
   },
   {
@@ -819,15 +774,13 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12",
-     "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:37",
-     "src/components/sidebar/worktree-list/grouping/section-order.ts:50"
+     "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12-80 getGroupKeyForWorktree/getGroupKeysForWorktree",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:50 getGroupKeyForWorktree para ordenação"
     ],
     "missing_behaviors": [
-     "getGroupKeysForWorktree usado por reveal/expand",
-     "keys de project groups ancestrais"
+     "getGroupKeysForWorktree não alimenta nenhum caminho de reveal/expand no sidebar pintado"
     ],
-    "notes": "getGroupKeyForWorktree é usado por section-order.ts para ordenação; getGroupKeysForWorktree existe mas não alimenta nenhum caminho de reveal no sidebar pintado."
+    "notes": "getGroupKeyForWorktree é usado para ordenação; getGroupKeysForWorktree (keys de project groups ancestrais) não é consumido por reveal/expand."
    }
   },
   {
@@ -838,16 +791,14 @@
     "components/sidebar/worktree-list/grouping/group-keys.ts:21-106"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/row-types.ts:8",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:23",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:108"
+     "src/components/sidebar/worktree-list/grouping/row-types.ts:8-108 row types/keys",
+     "src/components/sidebar/WorktreeList.tsx:1056-1091 consome header/item/folder/notice",
+     "src/components/sidebar/worktree-list/grouping/group-keys.ts:21-106 group keys"
     ],
-    "missing_behaviors": [
-     "GroupHeaderRow/WorktreeRow consumidos pelo render"
-    ],
-    "notes": "Os tipos e keys de agrupamento estão portados e são alcançáveis pelo pipeline headless (build-rows/group-sections), mas não pelo render pintado."
+    "missing_behaviors": [],
+    "notes": "Tipos e keys de agrupamento agora consumidos pelo render pintado (WorktreeList alterna pelos row types emitidos por computeSidebarRows)."
    }
   },
   {
@@ -859,15 +810,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:586-606",
-     "src/components/sidebar/WorktreeList.tsx:405-412"
+     "src/components/sidebar/WorktreeList.tsx:1120-1142 empty state (\"No workspaces matching\" + \"Clear filter\")",
+     "src/components/sidebar/WorktreeList.tsx:405-412 (sem data-attributes)"
     ],
     "missing_behaviors": [
      "texto exato 'No workspaces found'",
      "botão 'Clear Filters' com ícone CircleX (size xs)",
      "data-worktree-sidebar-container / data-contextual-tour-target"
     ],
-    "notes": "O Hydra tem empty state por projeto ('No workspaces') e por filtro ('No workspaces matching \"{filter}\"' + 'Clear filter') — texto/ações diferentes do Orca e sem os data-attributes."
+    "notes": "O empty state pintado usa textos/ações próprios ('No workspaces matching \"{filter}\"' + 'Clear filter') sem os data-attributes do Orca."
    },
    "par": [
     "PAR-80"
@@ -882,16 +833,16 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:683-698",
-     "src/components/sidebar/sidebar-filter-actions.ts:12",
-     "src/components/sidebar/sidebar-filter-actions.ts:53",
-     "src/components/sidebar/WorktreeSidebar.tsx:533-599"
+     "src/components/sidebar/WorktreeList.tsx:602-621 hideAutomationCreated/hideCliCreated/hideSleeping aplicados ao caminho pintado",
+     "src/components/sidebar/WorktreeSidebar.tsx:534-558 hideDefaultBranch/hideDetachedHead + busca textual",
+     "src/components/sidebar/WorktreeList.tsx:1130-1142 onClearFilter só limpa a busca",
+     "src/components/sidebar/sidebar-filter-actions.ts:53 computeClearFilterActions (sem call-site no render)"
     ],
     "missing_behaviors": [
-     "showSleepingWorkspaces/filterRepoIds/automation/cli/detached/devices/visibleHostIds aplicados à lista pintada",
-     "clearFilters reseta só os filtros ativos via computeClearFilterActions"
+     "Clear Filters reseta apenas a busca textual (onClearFilter → setFilter(\"\")); computeClearFilterActions (sidebar-filter-actions.ts:53) não tem call-site no render",
+     "hideWorkspacesFromOtherDevices (workspaces de outros clientes) não aplicado à lista pintada"
     ],
-    "notes": "A lista pintada aplica apenas hideDefaultBranch/hideDetachedHead e busca textual; hideSleeping/hideAutomationCreated/hideCliCreated existem em displayOptions mas não são aplicados. computeClearFilterActions existe só no pipeline Cmd+1-9."
+    "notes": "Os toggles hide sleeping/default branch/automation/CLI/detached e o filtro de host agora são aplicados ao caminho pintado; falta o escape hatch que reseta os filtros ativos."
    },
    "par": [
     "PAR-26"
@@ -2086,8 +2037,8 @@
   }
  ],
  "summary": {
-  "parity": 2,
-  "partial": 51,
+  "parity": 14,
+  "partial": 39,
   "missing": 51,
   "not-applicable": 0,
   "out-of-scope": 0

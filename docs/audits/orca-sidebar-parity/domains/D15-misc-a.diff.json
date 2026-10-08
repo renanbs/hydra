@@ -1,298 +1,284 @@
 {
-  "domain": "D15-misc-a",
-  "rows": [
-    {
-      "id": "D15a-001",
-      "capability": "Detecção e desempacotamento de blocos de diagrama Mermaid em comentários Markdown",
-      "orca_evidence": [
-        "components/sidebar/comment-mermaid-fence.tsx:7",
-        "components/sidebar/comment-mermaid-fence.tsx:21"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Verifica via regex /\\blanguage-mermaid\\b/ se o elemento code possui a classe de linguagem mermaid gerada pelo react-markdown",
-          "Inspeciona o primeiro filho do container <pre>, valida se é um elemento React válido e detecta a classe language-mermaid",
-          "Permite desempacotar o container <pre> para evitar HTML inválido gerado pelo <div> interno do MermaidBlock"
-        ],
-        "notes": "Não localizado após busca em 5 passos: (1) homônimos comment-mermaid-fence/CommentMermaidBlock inexistentes em src/components/sidebar/**; (2) strings 'mermaid'/'language-mermaid' em src/components/sidebar/** → 0 hits; (3) react-markdown/remark-gfm/rehype ausentes de package.json e de src/components/sidebar/** (nenhum renderer de Markdown existe no sidebar); (4) sem contrato de backend; (5) os únicos resquícios de Mermaid são a chave i18n 'MermaidBlock' em src/i18n/locales/en.json:14974 e a extensão '.mmd'/'.mermaid' em src/lib/language-detect.ts:32, ambos sem componente. Nada alcançável a partir do mount (src/App.tsx:3636 → WorktreeSidebar.tsx:705 → WorktreeList.tsx)."
-      },
-      "par": [
-        "PAR-39"
-      ]
-    },
-    {
-      "id": "D15a-002",
-      "capability": "Renderização isolada de diagramas Mermaid em comentários do sidebar",
-      "orca_evidence": [
-        "components/sidebar/comment-mermaid-fence.tsx:11",
-        "components/sidebar/CommentMermaidBlock.tsx:11"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Converte nós filhos para string de código Mermaid aplicando trimEnd() no conteúdo",
-          "Instancia CommentMermaidBlock com conteúdo sanitizado e repassa className opcional",
-          "Reutiliza MermaidBlock do editor com resolução de tema escuro via app store e htmlLabels desabilitado para compatibilidade entre plataformas"
-        ],
-        "notes": "Não localizado após busca em 5 passos: (1) CommentMermaidBlock/MermaidBlock inexistentes em src/components/** (grep case-sensitive e case-insensitive por 'mermaid' em .tsx/.ts → 0 hits fora de i18n/lib); (2) 'language-mermaid' → 0 hits; (3) nenhum hook/store de tema consumido por renderer de diagrama no sidebar; (4) sem backend; (5) dependência 'mermaid' ausente de package.json. O sidebar do Hidra não renderiza Markdown (nem mermaid nem GFM) em comentários/notas — ver D12-markdown-inline-render, também missing."
-      },
-      "par": [
-        "PAR-39"
-      ]
-    },
-    {
-      "id": "D15a-003",
-      "capability": "Resolução e normalização de cores de badge de repositório",
-      "orca_evidence": [
-        "components/sidebar/project-header-color.ts:7"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Recebe cor bruta badgeColor e aplica normalização de whitespace e casing",
-          "Valida se o valor normalizado pertence à paleta canônica REPO_COLORS ou se é um código hexadecimal customizado válido",
-          "Aplica fallback seguro para a cor cinza padrão DEFAULT_REPO_BADGE_COLOR caso o valor seja nulo, vazio ou inválido"
-        ],
-        "notes": "Não localizado após busca em 5 passos: (1) resolveRepoHeaderColor/project-header-color.ts inexistentes em src/components/**; (2) 'badgeColor' → 0 hits em src/components/** e src/App.tsx (só em shared/store/testes); (3) nenhuma cor de cabeçalho é produzida: SectionHeader.tsx:238-262 (repo) e :105-140 (grupo) renderizam apenas ícone (FolderGit2/Folder/FolderTree) + texto, sem style/color de badge; (4) sem backend; (5) as constantes REPO_COLORS/DEFAULT_REPO_BADGE_COLOR existem (src/shared/constants.ts:108-119) e normalizeRepoBadgeColor existe para sanitização de update de repo (src/store/repos/repo-update.ts:26-29), mas têm semântica diferente (retornam undefined em inválido, não fallback cinza) e nenhum consumo no sidebar."
-      },
-      "par": []
-    },
-    {
-      "id": "D15a-004",
-      "capability": "Resolução contextual de cor para cabeçalhos de Project Group e Provider",
-      "orca_evidence": [
-        "components/sidebar/project-header-color.ts:18"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Verifica se o agrupamento atual é estritamente 'repo'",
-          "Verifica se o headerKey inicia com o prefixo 'repo:' ou 'project:'",
-          "Delega a resolução de cor para resolveRepoHeaderColor(badgeColor) apenas para cabeçalhos genuínos de projeto",
-          "Retorna undefined para seções especiais como 'pinned' ou outros modos de agrupamento (ex.: 'workspace-status') evitando colorização incorreta"
-        ],
-        "notes": "Não localizado após busca em 5 passos: (1) resolveProjectGroupHeaderColor inexistente; (2) nenhuma colorização condicional por headerKey/'repo:'/'project:' em src/components/**; (3) groupBy existe (src/shared/persisted-ui-state-types.ts:41) e é consumido em worktree-list/grouping/build-rows.ts e rendered-sidebar-worktree-order.ts, mas nunca para resolver cor de cabeçalho; (4) sem backend; (5) GroupSectionHeader (SectionHeader.tsx:69-200) não recebe badgeColor nem aplica cor — só ícone FolderTree e nome."
-      },
-      "par": []
-    },
-    {
-      "id": "D15a-005",
-      "capability": "Controle de visibilidade do aviso de ordenação manual de projetos",
-      "orca_evidence": [
-        "components/sidebar/project-order-manual-default-notice-visibility.ts:1"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Avalia a conjunção de 5 condições: UI persistida pronta, aviso não dispensado, agrupamento por repo, ordenação manual e contagem de repositórios > 0",
-          "Oculta o aviso se o usuário já o dispensou explicitamente",
-          "Oculta o aviso para novos perfis criados ou quando a ordenação recente já tiver sido selecionada explicitamente",
-          "Exibe o aviso em perfis atualizados que não possuem preferência explícita gravada"
-        ],
-        "notes": "Não localizado após busca em 5 passos: (1) project-order-manual-default-notice-visibility.ts / resolveProjectOrderManualDefaultNoticeDismissed / shouldShowProjectOrderManualDefaultNotice inexistentes; (2) strings 'notice'/'banner'/'dismiss' em src/components/sidebar/** só atingem os avisos de worktrees descobertas (ImportedWorktreesVisibilityLine / NewExternalWorktreesInboxLine), não ordenação; (3) projectOrderBy existe e é consumido (src/components/sidebar/worktree-list/grouping/build-rows.ts:56,211; section-order.ts:181-184; WorkspaceOptionsMenu.tsx:346-360 exibe o submenu 'projectOrder'), mas nenhuma função decide exibir aviso; (4) persistedUIReady existe no store (src/store/slices/ui/ui-slice-hydration-actions.ts:289) e é usado só por contextual tours e usage-percentage notice (src/shared/usage-percentage-display-change-notice.ts:32-39); (5) sem backend."
-      },
-      "par": []
-    },
-    {
-      "id": "D15a-006",
-      "capability": "Derivação reativa de opções e escopos de hosts de execução no sidebar",
-      "orca_evidence": [
-        "components/sidebar/use-sidebar-host-scope-options.ts:14"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/sidebar-host-options.ts:39",
-          "src/components/sidebar/sidebar-host-options.ts:97",
-          "src/components/sidebar/sidebar-host-options.ts:101",
-          "src/components/sidebar/sidebar-host-options.ts:120",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:96",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:103"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Consumo da lista SidebarHostScopeOption por barra de escopo/menu de workspace: buildSidebarHostScopeOptions (sidebar-host-options.ts:101), shouldShowHostScopeControls (:97) e getSidebarHostVisibilityLabel (:120) não têm callsites; nenhum componente em src/components/** referencia ExecutionHostId/opções de escopo de host",
-          "Memoização reativa (hook) compartilhada entre barra de escopo e menus de workspace: a derivação ocorre inline em computeRenderedSidebarWorktrees, sem hook/useMemo equivalente a useSidebarHostScopeOptions",
-          "Superfície de UI do sidebar que exiba as opções derivadas: as opções só alimentam addHostSectionRows (modelo de ordenação Cmd+1–9), que não é renderizado"
-        ],
-        "notes": "Parcial: buildSidebarHostOptions (sidebar-host-options.ts:39-95) reproduz fielmente os inputs do Orca (repos, sshTargetLabels, sshConnectionStates, settings.activeRuntimeEnvironmentId, runtimeEnvironments, runtimeStatusByEnvironmentId) e aplica getHostDisplayLabelOverrides (rendered-sidebar-worktree-order.ts:103), gerando SidebarHostOption com id/label/detail/kind/health/presence/compatibility/connectionStatus. Também existe buildSidebarHostScopeOptions gerando SidebarHostScopeOption. Porém o único callsite (rendered-sidebar-worktree-order.ts:96) está no pipeline de ordenação usado por getVisibleWorktreeShortcutTargets (src/App.tsx:2456), não por renderização: WorktreeSidebar.tsx e WorktreeList.tsx não têm nenhuma ocorrência de 'host' e não há scope strip no sidebar. Reachable_depth 4 (index/hydra_scope.json)."
-      },
-      "par": []
-    },
-    {
-      "id": "D15a-007",
-      "capability": "Contagem e preservação de workspaces de pasta em seções de hosts locais e remotos",
-      "orca_evidence": [
-        "components/sidebar/host-section-rows.ts:18",
-        "components/sidebar/host-section-folder-workspace-counts.test.ts:104"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/host-section-rows.ts:205",
-          "src/components/sidebar/host-section-rows.ts:211",
-          "src/components/sidebar/host-section-rows.ts:290",
-          "src/components/sidebar/host-section-rows.ts:300",
-          "src/components/sidebar/worktree-list/grouping/host-labels.ts:204",
-          "src/components/sidebar/worktree-list/grouping/host-labels.ts:229",
-          "src/components/sidebar/folder-workspace-host-id.ts:16",
-          "src/components/sidebar/worktree-list/grouping/group-sections.ts:105",
-          "src/components/sidebar/worktree-list/grouping/group-sections.ts:134",
-          "src/components/sidebar/worktree-list/grouping/build-rows.ts:165"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Cabeçalhos de seção de host renderizados no sidebar: nenhum renderer consome rows `type: 'host-header'` (host-section-rows.ts:19,290-306); em src/components/** o único consumidor é worktree-sidebar-row-preference.ts:48, acionado por computeRenderedSidebarWorktreeOrder (visible-worktrees.ts:377) para numeração Cmd+1–9",
-          "Contagem de workspace de pasta observável por host no cabeçalho de seção (o usuário não vê a contagem; WorktreeList.tsx, corpo renderizado do sidebar, não tem nenhuma referência a host nem props de host)"
-        ],
-        "notes": "Parcial: a semântica do Orca está implementada — getLaneHostWorktreeCounts (host-labels.ts:204-227) soma folder-workspaces às contagens de worktrees; getLaneHostWorktreeIds (:229-254) cria array vazio por host para pastas puras não vazarem ids globais; getFolderWorkspaceHostId (folder-workspace-host-id.ts:16-21) resolve o host da pasta via connectionId da própria pasta ou do ProjectGroup (SSH remoto); addHostSectionRows distribui hostWorktreeCounts em raias colapsadas (host-section-rows.ts:205-227) e grava count em cabeçalhos (host-section-rows.ts:290-300); as lanes são armadas em group-sections.ts:105-145 e build-rows.ts:163-175. O gap é de superfície: WorktreeSidebar.tsx (grep 'host' → 0 hits) e WorktreeList.tsx montam grupos/repos diretamente e nunca renderizam seções de host."
-      },
-      "par": []
-    },
-    {
-      "id": "D15a-008",
-      "capability": "Atributos DOM de drag-and-drop e persistência de ordenação de Project Groups",
-      "orca_evidence": [
-        "components/sidebar/worktree-list/rows/SectionHeader.tsx:23",
-        "components/sidebar/worktree-list/drag/use-header-drag.ts:32",
-        "components/sidebar/project-group-header-dom.test.ts:20"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Renderiza atributos semânticos de drag no cabeçalho (data-project-group-header-id, data-project-group-header-index, data-project-group-header-bucket, data-project-group-header-drag-handle)",
-          "Restringe o cursor grab à superfície do título enquanto a alça de drag cobre a linha e o título",
-          "Comita a ordenação manual via updateProjectGroup(groupId, { tabOrder }, { hostId }) propagando o ID do host proprietário"
-        ],
-        "notes": "Não localizado após busca em 5 passos: (1) nenhum homônimo de use-header-drag/project-group-header-* em src/components/sidebar/**; (2) 'data-project-group-header' → 0 hits em src; (3) GroupSectionHeader (SectionHeader.tsx:69-200) não tem draggable/onDragStart/onDragEnd e não é alvo de reordenação — só recebe onDragOver/onDragLeave/onDrop como destino (WorktreeList.tsx:476-509 isDropTarget; props em :138-140/:562); (4) updateProjectGroup/tabOrder-update inexistente: ProjectGroup.tabOrder é apenas lido para ordenar (worktree-list/grouping/project-group-sections.ts:82) e o drag de repo usa índice posicional (WorktreeSidebar.tsx:485-501), não rank persistido de grupo; (5) o módulo de drop de cabeçalho existe (project-header-drop.ts) mas é código morto: consulta '[data-repo-header-id]' (:136-160), atributo que nenhum componente renderiza (verificado: só aparecem data-repo-header-actions em ProjectHeaderActions.tsx:26 e data-repo-header-collapse-affordance em SectionHeader.tsx:160,340)."
-      },
-      "par": []
-    },
-    {
-      "id": "D15a-009",
-      "capability": "Isolamento de cliques em ações de cabeçalho contra disparo de drag e colapso",
-      "orca_evidence": [
-        "components/sidebar/project-header-drag-contract.ts:6",
-        "components/sidebar/project-group-header-drag-contract.ts:4",
-        "components/sidebar/project-header-action-selector-lockstep.test.ts:11"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/ProjectHeaderActions.tsx:26",
-          "src/components/sidebar/SectionHeader.tsx:154",
-          "src/components/sidebar/SectionHeader.tsx:335",
-          "src/components/sidebar/SectionHeader.tsx:265",
-          "src/components/sidebar/SectionHeader.tsx:293",
-          "src/components/sidebar/SectionHeader.tsx:168",
-          "src/components/sidebar/SectionHeader.tsx:88",
-          "src/components/sidebar/WorktreeSidebar.tsx:470"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Constante REPO_HEADER_ACTION_SELECTOR e predicados isRepoHeaderActionTarget/isProjectGroupHeaderActionTarget: inexistentes (0 hits em src); o atributo data-repo-header-actions é renderizado (ProjectHeaderActions.tsx:26) mas nenhum guard o consulta",
-          "Bloqueio do início de drag quando o clique nasce no overlay de ações: o cabeçalho de repo é draggable (SectionHeader.tsx:265) e handleProjectDragStart (WorktreeSidebar.tsx:470-475) não inspeciona e.target, então arrastar a partir de .../+ /chevron ainda inicia o drag do cabeçalho; pointer-drag-dom.ts:21 (isSidebarPointerDragBlocked) existe mas não tem callsites"
-        ],
-        "notes": "Parcial: a metade 'colapso' funciona — todos os controles de ação chamam stopPropagation e não propagam para o onClick do cabeçalho (SectionHeader.tsx:88-94 handleContext do grupo, :168-171 chevron, :192-196 '+' do grupo, :234-239 handleToggleOnly, :240-245 handleContext, :247-253 handleNewWorkspace; a linha clicável é :293). Falta a metade 'drag' do contrato do Orca."
-      },
-      "par": []
-    },
-    {
-      "id": "D15a-010",
-      "capability": "Dimensionamento e área de toque da alça de redimensionamento do sidebar",
-      "orca_evidence": [
-        "components/sidebar/index.tsx:37",
-        "components/sidebar/sidebar-resize-handle.test.ts:16"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:3705",
-          "src/App.tsx:3709",
-          "src/App.tsx:737",
-          "src/hooks/useSidebarResize.ts:51",
-          "src/hooks/useSidebarResize.ts:185",
-          "src/components/sidebar/WorktreeSidebar.tsx:703"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Área de toque de 12px (w-3) sobreposta à emenda: o Hidra usa w-2.5 (10px) com -ml-1.5/-mr-1.5 e z-20 (App.tsx:3705), não o w-3 com -right-1.5/top-0/z-10 do Orca",
-          "Linha interna fina de 1px com transição de cores no hover/ativo (group-hover:bg-ring/50, group-active:bg-ring): o Hidra desenha 2px (w-[2px]) com emerald-500/400 (App.tsx:3714-3715)"
-        ],
-        "notes": "Parcial: a alça existe, é alcançável do mount e funcional — App.tsx:3705 renderiza o divisor com cursor-col-resize e onMouseDown={leftSidebar.onResizeStart}; useSidebarResize (src/hooks/useSidebarResize.ts:51,185) faz drag por rAF e persiste a largura clampada (App.tsx:737,763). O terceiro behavior exigido está satisfeito: o container com scrollbar tem pr-3 (12px ≥ 4px) em WorktreeSidebar.tsx:703."
-      },
-      "par": []
-    },
-    {
-      "id": "D15a-011",
-      "capability": "Tratamento de concorrência no fluxo de suspensão (sleep) e ativação de workspaces em VM",
-      "orca_evidence": [
-        "components/sidebar/sleep-worktree-flow.ts:44",
-        "lib/sidebar-worktree-activation.ts:43",
-        "components/sidebar/sleep-worktree-activation-race.test.ts:81"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai",
-          "Invoca resumeWorkspace na API do backend para reativar VM efêmera",
-          "Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor"
-        ],
-        "notes": "Não localizado após busca em 5 passos: (1) homônimos sleep-worktree-flow/sidebar-worktree-activation inexistentes em src/**; (2) 'resumeWorkspace'/'slept'/'shutdownWorktreeBrowsers'/'shutdownWorktreeTerminals' → 0 hits em produção (só fixtures: src/hooks/ipc-events-*.ts mencionam onSleepWorktree como stub); (3) nenhum store/hook executa sleep/resume de worktree — há apenas sleepingAgentSessionsByPaneKey (src/store/index.ts:123) e o filtro showSleepingWorkspaces (visible-worktrees.ts:168), que escondem linhas inertes, não suspendem/reativam VM; (4) backend ausente: index/hydra_tauri_commands.json lista 110 comandos e nenhum de sleep/resume/vm/ephemeral; 'ephemeralVm' no TS é só campo/seleção de receita do composer (src/hooks/composer-state/*, src/components/settings/ephemeral-vms-search.ts); (5) sem equivalente."
-      },
-      "par": [
-        "PAR-21"
-      ]
-    },
-    {
-      "id": "D15a-012",
-      "capability": "Isolamento qualificado por host na seleção de worktrees visíveis no Kanban",
-      "orca_evidence": [
-        "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:15",
-        "components/sidebar/use-visible-workspace-kanban-worktree-ids.test.tsx:22"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/shared/worktree/host-qualified-identity.ts:30",
-          "src/components/sidebar/visible-worktrees.ts:147",
-          "src/components/sidebar/visible-worktrees.ts:155",
-          "src/components/sidebar/worktree-list/grouping/host-labels.ts:171",
-          "src/components/sidebar/worktree-list/grouping/host-labels.ts:184",
-          "src/components/sidebar/pinned-section-worktrees.ts:13",
-          "src/components/sidebar/pinned-section-worktrees.ts:26"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Hook useVisibleWorkspaceKanbanWorktreeIds e aplicação do filtro no quadro Kanban do sidebar: não existe quadro Kanban (grep 'kanban' em src/components/sidebar/** → 0 hits); o dashboard experimental é apenas entrada de settings/atalho (src/components/settings/experimental-search.ts:57, src/hooks/ipc-events/agent-dashboard-command.ts:3), sem board renderizado"
-        ],
-        "notes": "Parcial: a qualificação por host existe e está wired na lista do sidebar (não no Kanban) — getWorktreeHostIdentity (shared/worktree/host-qualified-identity.ts:30) deduplica a mesma id em hosts distintos (host-labels.ts:171-190, comentário STA-4343), a filtragem respeita visibleWorkspaceHostIds/workspaceHostScope (visible-worktrees.ts:147-155) e o mesmo eixo sustenta as seções fixadas (pinned-section-worktrees.ts:13,26). Falta o alvo Kanban do Orca (PAR-14), que não foi portado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    }
-  ],
-  "summary": {
-    "parity": 0,
-    "partial": 5,
-    "missing": 7,
-    "not-applicable": 0,
-    "out-of-scope": 0
+ "domain": "D15-misc-a",
+ "rows": [
+  {
+   "id": "D15a-001",
+   "capability": "Detecção e desempacotamento de blocos de diagrama Mermaid em comentários Markdown",
+   "orca_evidence": [
+    "components/sidebar/comment-mermaid-fence.tsx:7",
+    "components/sidebar/comment-mermaid-fence.tsx:21"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Verifica via regex /\\blanguage-mermaid\\b/ se o elemento code possui a classe de linguagem mermaid gerada pelo react-markdown",
+     "Inspeciona o primeiro filho do container <pre>, valida se é um elemento React válido e detecta a classe language-mermaid",
+     "Permite desempacotar o container <pre> para evitar HTML inválido gerado pelo <div> interno do MermaidBlock"
+    ],
+    "notes": "Não localizado após busca em 5 passos: (1) homônimos comment-mermaid-fence/CommentMermaidBlock inexistentes em src/components/sidebar/**; (2) strings 'mermaid'/'language-mermaid' em src/components/sidebar/** → 0 hits; (3) react-markdown/remark-gfm/rehype ausentes de package.json e de src/components/sidebar/** (nenhum renderer de Markdown existe no sidebar); (4) sem contrato de backend; (5) os únicos resquícios de Mermaid são a chave i18n 'MermaidBlock' em src/i18n/locales/en.json:14974 e a extensão '.mmd'/'.mermaid' em src/lib/language-detect.ts:32, ambos sem componente. Nada alcançável a partir do mount (src/App.tsx:3636 → WorktreeSidebar.tsx:705 → WorktreeList.tsx)."
+   },
+   "par": [
+    "PAR-39"
+   ]
+  },
+  {
+   "id": "D15a-002",
+   "capability": "Renderização isolada de diagramas Mermaid em comentários do sidebar",
+   "orca_evidence": [
+    "components/sidebar/comment-mermaid-fence.tsx:11",
+    "components/sidebar/CommentMermaidBlock.tsx:11"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Converte nós filhos para string de código Mermaid aplicando trimEnd() no conteúdo",
+     "Instancia CommentMermaidBlock com conteúdo sanitizado e repassa className opcional",
+     "Reutiliza MermaidBlock do editor com resolução de tema escuro via app store e htmlLabels desabilitado para compatibilidade entre plataformas"
+    ],
+    "notes": "Não localizado após busca em 5 passos: (1) CommentMermaidBlock/MermaidBlock inexistentes em src/components/** (grep case-sensitive e case-insensitive por 'mermaid' em .tsx/.ts → 0 hits fora de i18n/lib); (2) 'language-mermaid' → 0 hits; (3) nenhum hook/store de tema consumido por renderer de diagrama no sidebar; (4) sem backend; (5) dependência 'mermaid' ausente de package.json. O sidebar do Hidra não renderiza Markdown (nem mermaid nem GFM) em comentários/notas — ver D12-markdown-inline-render, também missing."
+   },
+   "par": [
+    "PAR-39"
+   ]
+  },
+  {
+   "id": "D15a-003",
+   "capability": "Resolução e normalização de cores de badge de repositório",
+   "orca_evidence": [
+    "components/sidebar/project-header-color.ts:7"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Recebe cor bruta badgeColor e aplica normalização de whitespace e casing",
+     "Valida se o valor normalizado pertence à paleta canônica REPO_COLORS ou se é um código hexadecimal customizado válido",
+     "Aplica fallback seguro para a cor cinza padrão DEFAULT_REPO_BADGE_COLOR caso o valor seja nulo, vazio ou inválido"
+    ],
+    "notes": "Não localizado após busca em 5 passos: (1) resolveRepoHeaderColor/project-header-color.ts inexistentes em src/components/**; (2) 'badgeColor' → 0 hits em src/components/** e src/App.tsx (só em shared/store/testes); (3) nenhuma cor de cabeçalho é produzida: SectionHeader.tsx:238-262 (repo) e :105-140 (grupo) renderizam apenas ícone (FolderGit2/Folder/FolderTree) + texto, sem style/color de badge; (4) sem backend; (5) as constantes REPO_COLORS/DEFAULT_REPO_BADGE_COLOR existem (src/shared/constants.ts:108-119) e normalizeRepoBadgeColor existe para sanitização de update de repo (src/store/repos/repo-update.ts:26-29), mas têm semântica diferente (retornam undefined em inválido, não fallback cinza) e nenhum consumo no sidebar."
+   },
+   "par": []
+  },
+  {
+   "id": "D15a-004",
+   "capability": "Resolução contextual de cor para cabeçalhos de Project Group e Provider",
+   "orca_evidence": [
+    "components/sidebar/project-header-color.ts:18"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Verifica se o agrupamento atual é estritamente 'repo'",
+     "Verifica se o headerKey inicia com o prefixo 'repo:' ou 'project:'",
+     "Delega a resolução de cor para resolveRepoHeaderColor(badgeColor) apenas para cabeçalhos genuínos de projeto",
+     "Retorna undefined para seções especiais como 'pinned' ou outros modos de agrupamento (ex.: 'workspace-status') evitando colorização incorreta"
+    ],
+    "notes": "Não localizado após busca em 5 passos: (1) resolveProjectGroupHeaderColor inexistente; (2) nenhuma colorização condicional por headerKey/'repo:'/'project:' em src/components/**; (3) groupBy existe (src/shared/persisted-ui-state-types.ts:41) e é consumido em worktree-list/grouping/build-rows.ts e rendered-sidebar-worktree-order.ts, mas nunca para resolver cor de cabeçalho; (4) sem backend; (5) GroupSectionHeader (SectionHeader.tsx:69-200) não recebe badgeColor nem aplica cor — só ícone FolderTree e nome."
+   },
+   "par": []
+  },
+  {
+   "id": "D15a-005",
+   "capability": "Controle de visibilidade do aviso de ordenação manual de projetos",
+   "orca_evidence": [
+    "components/sidebar/project-order-manual-default-notice-visibility.ts:1"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Avalia a conjunção de 5 condições: UI persistida pronta, aviso não dispensado, agrupamento por repo, ordenação manual e contagem de repositórios > 0",
+     "Oculta o aviso se o usuário já o dispensou explicitamente",
+     "Oculta o aviso para novos perfis criados ou quando a ordenação recente já tiver sido selecionada explicitamente",
+     "Exibe o aviso em perfis atualizados que não possuem preferência explícita gravada"
+    ],
+    "notes": "Não localizado após busca em 5 passos: (1) project-order-manual-default-notice-visibility.ts / resolveProjectOrderManualDefaultNoticeDismissed / shouldShowProjectOrderManualDefaultNotice inexistentes; (2) strings 'notice'/'banner'/'dismiss' em src/components/sidebar/** só atingem os avisos de worktrees descobertas (ImportedWorktreesVisibilityLine / NewExternalWorktreesInboxLine), não ordenação; (3) projectOrderBy existe e é consumido (src/components/sidebar/worktree-list/grouping/build-rows.ts:56,211; section-order.ts:181-184; WorkspaceOptionsMenu.tsx:346-360 exibe o submenu 'projectOrder'), mas nenhuma função decide exibir aviso; (4) persistedUIReady existe no store (src/store/slices/ui/ui-slice-hydration-actions.ts:289) e é usado só por contextual tours e usage-percentage notice (src/shared/usage-percentage-display-change-notice.ts:32-39); (5) sem backend."
+   },
+   "par": []
+  },
+  {
+   "id": "D15a-006",
+   "capability": "Derivação reativa de opções e escopos de hosts de execução no sidebar",
+   "orca_evidence": [
+    "components/sidebar/use-sidebar-host-scope-options.ts:14"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:100-119 buildSidebarHostOptions/buildSidebarHostScopeOptions com callsite",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:200-231 shouldShowHostScopeControls/getSidebarHostVisibilityLabel/toggles",
+     "src/components/sidebar/sidebar-host-options.ts:39-95,97,120",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:266-285 buildSidebarHostOptions inline"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Memoização reativa (hook) compartilhada entre menu e pipeline: a derivação está duplicada (useMemo no menu + buildSidebarHostOptions em computeSidebarRows), sem hook equivalente a use-sidebar-host-scope-options"
+    ],
+    "notes": "A derivação de opções/escopos de host agora tem callsite de UI (submenu Hosts) e alimenta as host sections; falta centralizar num hook compartilhado."
+   },
+   "par": []
+  },
+  {
+   "id": "D15a-007",
+   "capability": "Contagem e preservação de workspaces de pasta em seções de hosts locais e remotos",
+   "orca_evidence": [
+    "components/sidebar/host-section-rows.ts:18",
+    "components/sidebar/host-section-folder-workspace-counts.test.ts:104"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:417-465,1046-1053 HostSectionHeader",
+     "src/components/sidebar/host-section-rows.ts:290-306 count/detail por host",
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:204-254 getLaneHostWorktreeCounts/Ids"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Cabeçalhos de host são renderizados com contagem de workspaces (soma folder workspaces) e ids por host; a contagem de pasta por host é observável no header."
+   },
+   "par": []
+  },
+  {
+   "id": "D15a-008",
+   "capability": "Atributos DOM de drag-and-drop e persistência de ordenação de Project Groups",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/SectionHeader.tsx:23",
+    "components/sidebar/worktree-list/drag/use-header-drag.ts:32",
+    "components/sidebar/project-group-header-dom.test.ts:20"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Renderiza atributos semânticos de drag no cabeçalho (data-project-group-header-id, data-project-group-header-index, data-project-group-header-bucket, data-project-group-header-drag-handle)",
+     "Restringe o cursor grab à superfície do título enquanto a alça de drag cobre a linha e o título",
+     "Comita a ordenação manual via updateProjectGroup(groupId, { tabOrder }, { hostId }) propagando o ID do host proprietário"
+    ],
+    "notes": "Não localizado após busca em 5 passos: (1) nenhum homônimo de use-header-drag/project-group-header-* em src/components/sidebar/**; (2) 'data-project-group-header' → 0 hits em src; (3) GroupSectionHeader (SectionHeader.tsx:69-200) não tem draggable/onDragStart/onDragEnd e não é alvo de reordenação — só recebe onDragOver/onDragLeave/onDrop como destino (WorktreeList.tsx:476-509 isDropTarget; props em :138-140/:562); (4) updateProjectGroup/tabOrder-update inexistente: ProjectGroup.tabOrder é apenas lido para ordenar (worktree-list/grouping/project-group-sections.ts:82) e o drag de repo usa índice posicional (WorktreeSidebar.tsx:485-501), não rank persistido de grupo; (5) o módulo de drop de cabeçalho existe (project-header-drop.ts) mas é código morto: consulta '[data-repo-header-id]' (:136-160), atributo que nenhum componente renderiza (verificado: só aparecem data-repo-header-actions em ProjectHeaderActions.tsx:26 e data-repo-header-collapse-affordance em SectionHeader.tsx:160,340)."
+   },
+   "par": []
+  },
+  {
+   "id": "D15a-009",
+   "capability": "Isolamento de cliques em ações de cabeçalho contra disparo de drag e colapso",
+   "orca_evidence": [
+    "components/sidebar/project-header-drag-contract.ts:6",
+    "components/sidebar/project-group-header-drag-contract.ts:4",
+    "components/sidebar/project-header-action-selector-lockstep.test.ts:11"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/ProjectHeaderActions.tsx:26",
+     "src/components/sidebar/SectionHeader.tsx:154",
+     "src/components/sidebar/SectionHeader.tsx:335",
+     "src/components/sidebar/SectionHeader.tsx:265",
+     "src/components/sidebar/SectionHeader.tsx:293",
+     "src/components/sidebar/SectionHeader.tsx:168",
+     "src/components/sidebar/SectionHeader.tsx:88",
+     "src/components/sidebar/WorktreeSidebar.tsx:470"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Constante REPO_HEADER_ACTION_SELECTOR e predicados isRepoHeaderActionTarget/isProjectGroupHeaderActionTarget: inexistentes (0 hits em src); o atributo data-repo-header-actions é renderizado (ProjectHeaderActions.tsx:26) mas nenhum guard o consulta",
+     "Bloqueio do início de drag quando o clique nasce no overlay de ações: o cabeçalho de repo é draggable (SectionHeader.tsx:265) e handleProjectDragStart (WorktreeSidebar.tsx:470-475) não inspeciona e.target, então arrastar a partir de .../+ /chevron ainda inicia o drag do cabeçalho; pointer-drag-dom.ts:21 (isSidebarPointerDragBlocked) existe mas não tem callsites"
+    ],
+    "notes": "Parcial: a metade 'colapso' funciona — todos os controles de ação chamam stopPropagation e não propagam para o onClick do cabeçalho (SectionHeader.tsx:88-94 handleContext do grupo, :168-171 chevron, :192-196 '+' do grupo, :234-239 handleToggleOnly, :240-245 handleContext, :247-253 handleNewWorkspace; a linha clicável é :293). Falta a metade 'drag' do contrato do Orca."
+   },
+   "par": []
+  },
+  {
+   "id": "D15a-010",
+   "capability": "Dimensionamento e área de toque da alça de redimensionamento do sidebar",
+   "orca_evidence": [
+    "components/sidebar/index.tsx:37",
+    "components/sidebar/sidebar-resize-handle.test.ts:16"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:3705",
+     "src/App.tsx:3709",
+     "src/App.tsx:737",
+     "src/hooks/useSidebarResize.ts:51",
+     "src/hooks/useSidebarResize.ts:185",
+     "src/components/sidebar/WorktreeSidebar.tsx:703"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Área de toque de 12px (w-3) sobreposta à emenda: o Hidra usa w-2.5 (10px) com -ml-1.5/-mr-1.5 e z-20 (App.tsx:3705), não o w-3 com -right-1.5/top-0/z-10 do Orca",
+     "Linha interna fina de 1px com transição de cores no hover/ativo (group-hover:bg-ring/50, group-active:bg-ring): o Hidra desenha 2px (w-[2px]) com emerald-500/400 (App.tsx:3714-3715)"
+    ],
+    "notes": "Parcial: a alça existe, é alcançável do mount e funcional — App.tsx:3705 renderiza o divisor com cursor-col-resize e onMouseDown={leftSidebar.onResizeStart}; useSidebarResize (src/hooks/useSidebarResize.ts:51,185) faz drag por rAF e persiste a largura clampada (App.tsx:737,763). O terceiro behavior exigido está satisfeito: o container com scrollbar tem pr-3 (12px ≥ 4px) em WorktreeSidebar.tsx:703."
+   },
+   "par": []
+  },
+  {
+   "id": "D15a-011",
+   "capability": "Tratamento de concorrência no fluxo de suspensão (sleep) e ativação de workspaces em VM",
+   "orca_evidence": [
+    "components/sidebar/sleep-worktree-flow.ts:44",
+    "lib/sidebar-worktree-activation.ts:43",
+    "components/sidebar/sleep-worktree-activation-race.test.ts:81"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai",
+     "Invoca resumeWorkspace na API do backend para reativar VM efêmera",
+     "Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor"
+    ],
+    "notes": "Não localizado após busca em 5 passos: (1) homônimos sleep-worktree-flow/sidebar-worktree-activation inexistentes em src/**; (2) 'resumeWorkspace'/'slept'/'shutdownWorktreeBrowsers'/'shutdownWorktreeTerminals' → 0 hits em produção (só fixtures: src/hooks/ipc-events-*.ts mencionam onSleepWorktree como stub); (3) nenhum store/hook executa sleep/resume de worktree — há apenas sleepingAgentSessionsByPaneKey (src/store/index.ts:123) e o filtro showSleepingWorkspaces (visible-worktrees.ts:168), que escondem linhas inertes, não suspendem/reativam VM; (4) backend ausente: index/hydra_tauri_commands.json lista 110 comandos e nenhum de sleep/resume/vm/ephemeral; 'ephemeralVm' no TS é só campo/seleção de receita do composer (src/hooks/composer-state/*, src/components/settings/ephemeral-vms-search.ts); (5) sem equivalente."
+   },
+   "par": [
+    "PAR-21"
+   ]
+  },
+  {
+   "id": "D15a-012",
+   "capability": "Isolamento qualificado por host na seleção de worktrees visíveis no Kanban",
+   "orca_evidence": [
+    "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:15",
+    "components/sidebar/use-visible-workspace-kanban-worktree-ids.test.tsx:22"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/shared/worktree/host-qualified-identity.ts:30",
+     "src/components/sidebar/visible-worktrees.ts:147",
+     "src/components/sidebar/visible-worktrees.ts:155",
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:171",
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:184",
+     "src/components/sidebar/pinned-section-worktrees.ts:13",
+     "src/components/sidebar/pinned-section-worktrees.ts:26"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Hook useVisibleWorkspaceKanbanWorktreeIds e aplicação do filtro no quadro Kanban do sidebar: não existe quadro Kanban (grep 'kanban' em src/components/sidebar/** → 0 hits); o dashboard experimental é apenas entrada de settings/atalho (src/components/settings/experimental-search.ts:57, src/hooks/ipc-events/agent-dashboard-command.ts:3), sem board renderizado"
+    ],
+    "notes": "Parcial: a qualificação por host existe e está wired na lista do sidebar (não no Kanban) — getWorktreeHostIdentity (shared/worktree/host-qualified-identity.ts:30) deduplica a mesma id em hosts distintos (host-labels.ts:171-190, comentário STA-4343), a filtragem respeita visibleWorkspaceHostIds/workspaceHostScope (visible-worktrees.ts:147-155) e o mesmo eixo sustenta as seções fixadas (pinned-section-worktrees.ts:13,26). Falta o alvo Kanban do Orca (PAR-14), que não foi portado."
+   },
+   "par": [
+    "PAR-14"
+   ]
   }
+ ],
+ "summary": {
+  "parity": 1,
+  "partial": 4,
+  "missing": 7,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
 }

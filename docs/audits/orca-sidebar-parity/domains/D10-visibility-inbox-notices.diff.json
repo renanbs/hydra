@@ -103,17 +103,16 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:219"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:49",
-     "src/components/DeleteWorktreeDialog.tsx:44"
+     "src/components/DeleteWorktreeDialog.tsx:105-126 identidades + lookupLiveTarget + missingTargets por (id,host)",
+     "src/components/DeleteWorktreeDialog.tsx:186-198 auto-close + onStaleTargets quando nenhum alvo resolve",
+     "src/components/DeleteWorktreeDialog.tsx:184-213 revalidação no confirm",
+     "src/App.tsx:4300-4306 onClose limpa o estado publicado"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "resolução do alvo pelo par id+hostId (identidades escopadas)",
-     "useEffect de auto-close/limpeza quando nenhum alvo é resolvível",
-     "limpeza de deleteState por alvo ao fechar (handleOpenChange)"
-    ]
+    "missing_behaviors": [],
+    "notes": "Abertura/fechamento do dialog com alvos resolvidos por id+hostId (resolveWorktreeBatchDeleteTargets), auto-close quando o alvo some e limpeza do deleteState ao fechar."
    },
    "par": [
     "PAR-56"
@@ -280,8 +279,9 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:96",
-     "`invoke('delete_worktree')` em loop paralelo em src/components/DeleteWorktreeDialog.tsx:106"
+     "src/components/DeleteWorktreeDialog.tsx:184-213 validação de identidades (id+host+instanceId) no confirm",
+     "src/App.tsx:490-494,4297 toast \"Workspace list changed\" via onStaleTargets",
+     "src/components/DeleteWorktreeDialog.tsx:202-243 deletes paralelos + close após settle"
     ],
     "backend": {
      "be": [
@@ -289,10 +289,9 @@
      ]
     },
     "missing_behaviors": [
-     "validação de instanceId/hostId",
-     "toast 'Workspace list changed' + closeModal antes de deletar",
-     "closeModal imediato (Hydra mantém o dialog aberto até todos terminarem)"
-    ]
+     "closeModal imediato: o Hydra mantém o dialog aberto até todos os deletes terminarem (DeleteWorktreeDialog.tsx:238-248) em vez de fechar antes de deletar"
+    ],
+    "notes": "Validação de instanceId/hostId e o toast de lista obsoleta agora existem; permanece a diferença de fechar o modal de forma imediata."
    },
    "par": [
     "PAR-56"
@@ -373,14 +372,15 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:219"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:70-77"
+     "src/App.tsx:4296-4305 onDeleteStart/onDeleteSettled + onClose publicam e limpam o estado por alvo",
+     "src/components/DeleteWorktreeDialog.tsx:162,256 destrutivo bloqueado durante isDeleting (close preserva alvos em andamento)",
+     "src/App.tsx:497-518 getDeleteStateKeyForWorktreeHost no publish/clear"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "limpar deleteStateByWorktreeId por alvo que não está isDeleting ao fechar"
-    ]
+    "missing_behaviors": [],
+    "notes": "O estado de delete por alvo é limpo ao fechar (publishDeleteStateForTargets(...,null)) e o fechamento é bloqueado enquanto há delete em andamento."
    },
    "par": [
     "PAR-56"
@@ -528,14 +528,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:196",
-     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:155"
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:207-224 compact copy + hostContext",
+     "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts:60-115 placement"
     ],
     "backend": [],
     "missing_behaviors": [
-     "copy por placement (pinned-fallback 'Hiding N … in <repo>')",
-     "repoScopeLabel '<repo> on <host>' (multi-host)"
-    ]
+     "copy por placement (pinned-fallback 'Hiding N … in <repo>') — a linha pintada usa o mesmo texto em ambos os placements e apenas suprime o hostContext no pinned-fallback"
+    ],
+    "notes": "O repoScopeLabel de multi-host agora existe ('<repo> on <host>' + NoticeHostGlyph); falta a variante de copy por placement."
    }
   },
   {
@@ -579,10 +579,15 @@
     "components/sidebar/ImportedWorktreesVisibilityLine.tsx:156"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:213-231 hostContextLabel/NoticeHostGlyph",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:104-131 buildExternalWorktreeNoticeCandidates",
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:89 getNoticeHostContextLabels"
+    ],
     "backend": [],
-    "notes": "sem host glyph/context na linha montada: getNoticeHostContextLabels (grouping/host-labels.ts:89) produz NoticeHostContext mas o componente alcançável (via WorktreeList.tsx:287) não o consome."
+    "notes": "A linha de notice recebe hostContext (glyph + label) quando o projeto tem mais de um checkout; resolved do payload de candidatos.",
+    "missing_behaviors": []
    }
   },
   {
@@ -667,10 +672,14 @@
     "components/sidebar/NewExternalWorktreesInboxLine.tsx:135"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:60-115 repoScopeLabel + NoticeHostGlyph",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:63-66 suppressAriaLabel/reviewAriaLabel qualificados por host"
+    ],
     "backend": [],
-    "notes": "sem host: o componente recebe apenas repoDisplayName; não há repoScopeLabel/glyph. Buscas: 'on <host>', 'hostContextHostId' — nenhum consumidor alcançável."
+    "notes": "Rótulos de review e suppress agora nomeiam o host ('in <repo> on <host>') e a linha exibe o glyph de host.",
+    "missing_behaviors": []
    }
   },
   {
@@ -716,12 +725,15 @@
     "components/sidebar/NoticeHostGlyph.tsx:90"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeHostContextBadge.tsx:5"
+     "src/components/sidebar/NoticeHostGlyph.tsx:28-90 (Monitor/Server + tooltip)",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:218",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:94"
     ],
     "backend": [],
-    "notes": "sem NoticeHostGlyph: existe apenas WorktreeHostContextBadge (badge de texto, sem ícone monitor/server, tooltip ou estado desconectado). Buscas: 'Project on this host', 'lucide-monitor', 'lucide-server', 'HostRowIcon' — ausentes."
+    "notes": "NoticeHostGlyph portado com vocabulário único (Monitor local / Server remoto) e tooltip 'Project on …'; consumido pelas duas linhas de notice.",
+    "missing_behaviors": []
    }
   },
   {
@@ -733,10 +745,15 @@
     "components/sidebar/NoticeHostGlyph.tsx:79"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/NoticeHostGlyph.tsx:74-84 role=img/tabIndex/aria-label quando keyboardFocusable",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:218-222 keyboardFocusable",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:94-98 keyboardFocusable={false}"
+    ],
     "backend": [],
-    "notes": "não localizado: sem role=img/tabIndex/keyboardFocusable em glyph de notice."
+    "notes": "O glyph só é focável por teclado quando passivo (linha de imported worktrees); dentro de um botão (inbox) fica non-focusable com aria-label undefined.",
+    "missing_behaviors": []
    }
   },
   {
@@ -747,10 +764,14 @@
     "components/sidebar/NoticeHostGlyph.tsx:44"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/NoticeHostGlyph.tsx:37-46 isDisconnectedRuntimeHostState(runtimeHostConnectionStateForEntry(...))",
+     "src/runtime/runtime-host-connection-state.ts"
+    ],
     "backend": [],
-    "notes": "não localizado: sem runtimeHostConnectionStateForEntry/isDisconnectedRuntimeHostState para o glyph de notice."
+    "notes": "'Desconectado' deriva de isDisconnectedRuntimeHostState; entrada ausente significa 'nunca sondado' e não marca o glyph como desligado.",
+    "missing_behaviors": []
    }
   },
   {
@@ -1294,10 +1315,14 @@
     "components/sidebar/imported-worktrees-card-candidates.ts:48"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:104-131 buildExternalWorktreeNoticeCandidates (importedWorktreesByRepo)",
+     "src/components/sidebar/WorktreeList.tsx:648-657 alimenta os candidatos a partir de hiddenWorktreesByProject"
+    ],
     "backend": [],
-    "notes": "sem buildImportedWorktreesCardCandidates; os row-types/grouping (buildSidebarRows) estão em hydra_unreachable.json."
+    "notes": "Decisão de quais repos mostram o card de imported worktrees portada (hidden>0, não suprimido e prompt não dispensado).",
+    "missing_behaviors": []
    }
   },
   {
@@ -1388,10 +1413,14 @@
     "components/sidebar/new-external-worktrees-inbox-candidates.ts:26"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:116-131 newExternalWorktreesInboxByRepo (baseline)",
+     "src/components/sidebar/WorktreeList.tsx:648-657"
+    ],
     "backend": [],
-    "notes": "sem buildNewExternalWorktreesInboxCandidates; a linha renderiza por projeto visível, sem gating de candidatura (WorktreeList.tsx:304)."
+    "notes": "Decisão da linha de inbox (prompt dispensado e worktrees além da baseline) portada e alimentada pela lista montada.",
+    "missing_behaviors": []
    }
   },
   {
@@ -1495,10 +1524,17 @@
     "components/sidebar/stale-workspace-list-toast.ts:28"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:488-494 showStaleDeleteNotice → toast.info(\"Workspace list changed\")",
+     "src/App.tsx:4297 onStaleTargets={showStaleDeleteNotice}",
+     "src/i18n/locales/en.json:5852 chave 'No deletable workspaces selected' sem call-site"
+    ],
     "backend": [],
-    "notes": "não localizado: sem showWorkspaceListChangedToast/showNoDeletableWorkspacesToast. Buscas: 'Workspace list changed', 'No deletable workspaces', 'toast.info' no fluxo de delete — ausentes."
+    "notes": "O toast de lista obsoleta ('Workspace list changed') agora existe e dispara quando um alvo confirmado sumiu; falta o toast de 'nenhum workspace deletável'.",
+    "missing_behaviors": [
+     "showNoDeletableWorkspacesToast ausente: só existe a chave i18n \"No deletable workspaces selected\" (en.json:5852), sem função/toast"
+    ]
    },
    "par": [
     "PAR-86"
@@ -1591,10 +1627,14 @@
     "components/sidebar/worktree-visibility-host-target.ts:31"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-host-target.ts:24-48 resolveWorktreeVisibilityHostTarget",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:152-166 uso no dialog"
+    ],
     "backend": [],
-    "notes": "sem worktree-visibility-host-target.ts: sem parse de hostId/findRepoForHost/scope. Buscas: 'resolveWorktreeVisibilityHostTarget', 'getRepoHostIdentity' no dialog — ausentes."
+    "notes": "Resolução do repo/alvo no host pedido (findRepoForHost + filtro de detected por executionHostId + scope host\\0repoId) portada e usada pelo dialog.",
+    "missing_behaviors": []
    }
   },
   {
@@ -1605,10 +1645,14 @@
     "components/sidebar/worktree-visibility-host-target.ts:48"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-host-target.ts:61-86 useWorktreeVisibilityHostActions",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:221-224 refreshTargetRepo/updateTargetRepo"
+    ],
     "backend": [],
-    "notes": "sem useWorktreeVisibilityHostActions; chamadas usam project.path sem executionHostId."
+    "notes": "Fetch/update encapsulados com executionHostId/hostId do alvo resolvido.",
+    "missing_behaviors": []
    }
   },
   {
@@ -1621,10 +1665,14 @@
     "components/sidebar/worktree-visibility-mutation-fence.ts:30"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-mutation-fence.ts:12-40 activeMutations/finishVisibilityMutation",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:226-233 useVisibilityMutationFence"
+    ],
     "backend": [],
-    "notes": "sem worktree-visibility-mutation-fence.ts (busyPath é estado local do dialog, não sobrevive ao unmount)."
+    "notes": "Fence de mutações em singleton keyed por host\\0repoId, sobrevivendo ao unmount do dialog.",
+    "missing_behaviors": []
    }
   },
   {
@@ -1636,10 +1684,15 @@
     "components/sidebar/worktree-visibility-mutation-fence.ts:68"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-mutation-fence.ts:54-100 useVisibilityMutationFence",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:236-247 guard de getActiveVisibilityMutation no remount",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:322-352 commitSourceUpdate"
+    ],
     "backend": [],
-    "notes": "não localizado: sem useVisibilityMutationFence."
+    "notes": "Remount rehidrata busyPath/isToggling da mutação ativa e refresca quando ela termina; a abertura não inicia scan durante mutação em voo.",
+    "missing_behaviors": []
    }
   },
   {
@@ -1653,13 +1706,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:157-167",
-     "src/lib/worktree-visibility-sources.ts:279"
+     "src/components/sidebar/worktree-visibility-repo-sources.ts:15-27 getLatestRepoForVisibilityScope/getRepoCustomWorktreeVisibilitySourceIds/isDuplicateWorktreeVisibilitySource",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:28 getRepoCustomWorktreeVisibilitySourceIds consumido",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:157-167 resolveWorktreeVisibilityHostTarget"
     ],
     "backend": [],
     "missing_behaviors": [
-     "getLatestRepoForVisibilityScope (repo atual por scope de host)"
-    ]
+     "getLatestRepoForVisibilityScope (repo-sources.ts:15) sem call-site no dialog"
+    ],
+    "notes": "O helper de sources do repo existe e a detecção de ids custom é consumida; getLatestRepoForVisibilityScope segue sem uso (o repo atual vem de resolveWorktreeVisibilityHostTarget)."
    }
   },
   {
@@ -1671,16 +1726,17 @@
     "components/sidebar/worktree-visibility-source-mutation.ts:46"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:229"
+     "src/components/sidebar/worktree-visibility-source-mutation.ts:18-55 createWorktreeVisibilitySourceMutation com isAccepted",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:322-352 commitSourceUpdate(fn, mutation.isAccepted)",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:377-385 handleToggleSource"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
     ],
-    "missing_behaviors": [
-     "predicado de aceitação (isAccepted)"
-    ]
+    "missing_behaviors": [],
+    "notes": "A mutação por source carrega o predicado de aceitação, avaliado contra a linha do host alvo antes de confirmar a escrita."
    }
   },
   {
@@ -1691,16 +1747,16 @@
     "components/sidebar/worktree-visibility-update-error.ts:15"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:223"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:340-352 copy específica quando o host descarta worktreeVisibilitySourcePreferences",
+     "src/components/sidebar/worktree-visibility-source-mutation.ts:37,53 predicados de aceitação"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
     ],
-    "missing_behaviors": [
-     "copy específica de host antigo que descarta prefs de source ('This host doesn't support source-specific worktree visibility…')"
-    ]
+    "missing_behaviors": [],
+    "notes": "Falha de update mapeada para a mensagem certa: host sem suporte a source-specific visibility vs erro genérico."
    }
   },
   {
@@ -1714,14 +1770,16 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:260"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:388-418 handleUseGlobal (revert inline + predicados de aceitação)",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:322-352 commitSourceUpdate"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
     ],
     "missing_behaviors": [
-     "helper shouldUseGlobalWorktreeVisibility + validação de aceitação"
-    ]
+     "helper shouldUseGlobalWorktreeVisibility não portado; o revert por valor igual ao global ao alternar (D10-045) segue ausente"
+    ],
+    "notes": "A ação explícita 'Use global' monta a mutação de revert com validação de aceitação; falta o helper que detecta o revert quando o valor escolhido coincide com o global."
    }
   },
   {
@@ -1748,9 +1806,9 @@
   }
  ],
  "summary": {
-  "parity": 22,
-  "partial": 40,
-  "missing": 29,
+  "parity": 37,
+  "partial": 37,
+  "missing": 17,
   "not-applicable": 0,
   "out-of-scope": 0
  }

@@ -1,736 +1,713 @@
 {
-  "domain": "D09-filters-sort",
-  "rows": [
-    {
-      "id": "D09-001",
-      "capability": "Renderização de linha de alternância (switch toggle) padronizada para menus de filtros de workspaces",
-      "orca_evidence": [
-        "components/sidebar/FilterToggleRow.tsx:11",
-        "components/sidebar/FilterToggleRow.tsx:28",
-        "components/sidebar/FilterToggleRow.tsx:35"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-415",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-472",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:12"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Componente reutilizável FilterToggleRow (0 hits em src/**)",
-          "Elemento button nativo com role='switch' + aria-checked refletindo o booleano (os filtros são <div onClick>); role=switch só existe em SettingsModal.tsx:29/732 e NewWorkspaceComposer.tsx:400, não no menu de filtros",
-          "aria-label explícito por linha (as linhas não têm aria-* próprio)",
-          "Callback onChange(negation) — o Hydra muta displayOptions via handleToggle (WorkspaceOptionsMenu.tsx:109-114)"
-        ],
-        "notes": "A linha de toggle existe (ícone + label 11px + pílula w-7 h-4 que muda de cor quando ativa), mas não como componente FilterToggleRow e sem semântica ARIA de switch. Alcançável: WorktreeSidebar.tsx:845-854 monta WorkspaceOptionsMenu; SidebarHeader.tsx:88-110 é o gatilho."
-      }
-    },
-    {
-      "id": "D09-002",
-      "capability": "Suporte a indentação visual de sub-opções de filtros sem conflito de especificidade com Tailwind v4",
-      "orca_evidence": [
-        "components/sidebar/FilterToggleRow.tsx:38",
-        "components/sidebar/FilterToggleRow.tsx:43"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-472",
-          "src/components/ui/dropdown-menu.tsx:64"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Prop indented + classe pl-7 para sub-opções de filtro",
-          "Nenhuma sub-opção indentada ('Except default branch' etc.) existe no menu de filtros",
-          "Reforço de cor text-muted-foreground do label indentado"
-        ],
-        "notes": "Busca em 5 passos: (1) FilterToggleRow/indented: 0 hits em src/**; (2) pl-7 só em inputs e em data-[inset]:pl-7 do dropdown Radix (dropdown-menu.tsx:64), nunca em linha de filtro; (3) não há sub-opção de filtro no Hydra; (4)(5) sem backend. Não localizado."
-      }
-    },
-    {
-      "id": "D09-003",
-      "capability": "Exibição de badge de atalho de teclado na linha de alternância de filtro",
-      "orca_evidence": [
-        "components/sidebar/FilterToggleRow.tsx:54"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-472",
-          "src/components/ui/dropdown-menu.tsx:161"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Prop shortcutLabel exibida como DropdownMenuShortcut na linha de filtro",
-          "Ocultação condicional do badge quando ausente"
-        ],
-        "notes": "Busca em 5 passos: (1) DropdownMenuShortcut existe em src/components/ui/dropdown-menu.tsx:161/238 mas nenhum consumidor no sidebar; (2) o menu de filtros do Hydra é um <div> artesanal (não Radix DropdownMenu), sem slot de atalho; (3) nenhuma linha de filtro lê atalho; (4)(5) sem backend."
-      }
-    },
-    {
-      "id": "D09-004",
-      "capability": "Botão de gatilho do menu de filtros do sidebar com badge de contagem de filtros ativos e tooltip dinâmico",
-      "orca_evidence": [
-        "components/sidebar/SidebarFilter.tsx:41",
-        "components/sidebar/SidebarFilter.tsx:117",
-        "components/sidebar/SidebarFilter.tsx:173",
-        "components/sidebar/SidebarFilter.tsx:180",
-        "components/sidebar/SidebarFilter.tsx:197",
-        "components/sidebar/SidebarFilter.tsx:209"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/SidebarHeader.tsx:88-110",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:131-138"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Badge numérico de filtros ativos (-top-0.5 -right-0.5 / bg-primary) e cap '9+' (0 hits para activeFilterCount/'9+' no sidebar)",
-          "Tooltip/aria-label dinâmico ('Filter workspaces' vs 'Edit filters (N active)') — o gatilho tem título fixo 'Workspace display options' (SidebarHeader.tsx:95-96)",
-          "Ícone ListFilter (strokeWidth 2.25, size 3.5) — Hydra usa SlidersHorizontal",
-          "data-workspace-board-preserve-open no gatilho (o atributo só aparece em worktree-card-header.tsx:190)"
-        ],
-        "notes": "O botão de gatilho existe e abre o menu (SidebarHeader.tsx:88-110, aria-haspopup/aria-expanded), mas a contagem de filtros ativos nunca é calculada nem exibida; 'Filter workspaces'/'Edit filters': 0 hits."
-      }
-    },
-    {
-      "id": "D09-005",
-      "capability": "Alternância de filtro para ocultar/exibir workspaces inativos (sleeping) com descoberta de atalho",
-      "orca_evidence": [
-        "components/sidebar/SidebarFilter.tsx:54",
-        "components/sidebar/SidebarFilter.tsx:222"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-415",
-          "src/components/sidebar/WorktreeSidebar.tsx:44",
-          "src/components/sidebar/WorktreeSidebar.tsx:352-355",
-          "src/components/sidebar/WorktreeSidebar.tsx:534-543",
-          "src/shared/keybindings/definitions-core-1.ts:241"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Efeito de filtragem: hideSleeping não é aplicado no caminho renderizado (WorktreeSidebar.tsx:534-543 só aplica hideDefaultBranch e hideDetachedHead; hideSleeping só existe no módulo morto worktree-list/buildSidebarRows.ts:76/294, sem importador)",
-          "Escrita em useAppStore.showSleepingWorkspaces: a UI escreve displayOptions.hideSleeping (prefs persistidas), o flag da store fica no default",
-          "Descoberta de atalho na linha (useShortcutLabel('sidebar.sleepingWorkspaces.toggle')) — 0 hits",
-          "Handler do atalho global: a keybinding existe (definitions-core-1.ts:241) mas nenhum módulo despacha 'sidebar.sleepingWorkspaces.toggle'"
-        ],
-        "notes": "Toggle 'Hide sleeping' presente (SwitchIndicator + label) e persistido via notifyPrefs→onSidebarPrefsChange (WorktreeSidebar.tsx:305-320; App.tsx:468). Falta o efeito observável e o ponto de descoberta de atalho."
-      }
-    },
-    {
-      "id": "D09-006",
-      "capability": "Sub-filtro condicional de exceção para manter visível a branch padrão ao ocultar workspaces inativos",
-      "orca_evidence": [
-        "components/sidebar/SidebarFilter.tsx:112",
-        "components/sidebar/SidebarFilter.tsx:230",
-        "components/sidebar/SidebarWorkspaceFilterSection.tsx:47"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-429",
-          "src/components/sidebar/visible-worktree-kinds.ts:12-28",
-          "src/components/sidebar/WorktreeSidebar.tsx:537-539"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Linha sub-opção 'Except default branch' e sua visibilidade condicional (!hideSleeping)",
-          "Toggle de alwaysShowDefaultBranchWorkspace na UI (o flag existe em visible-worktree-kinds.ts:12-28/constants.ts:270, sem nenhum consumidor de UI)",
-          "Regra isSleepingSweepExemptionNarrowingList exposta ao usuário"
-        ],
-        "notes": "Busca em 5 passos: (1) 'Except default branch': 0 hits; (2) alwaysShowDefaultBranchWorkspace só aparece em sidebar-filter-actions/visible-worktree-kinds/visible-worktrees/constants/persisted-types (pipeline da store não montado), sem JSX; (3) o caminho montado usa regra diferente — hideDefaultBranch mantém visível o worktree ATIVO (WorktreeSidebar.tsx:537-539); (4)(5) sem backend. Não localizado."
-      }
-    },
-    {
-      "id": "D09-007",
-      "capability": "Filtros de ocultação por tipo e origem de workspace (default branch, automação, CLI, detached HEAD)",
-      "orca_evidence": [
-        "components/sidebar/SidebarFilter.tsx:246",
-        "components/sidebar/SidebarFilter.tsx:255",
-        "components/sidebar/SidebarFilter.tsx:264",
-        "components/sidebar/SidebarFilter.tsx:270"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-472",
-          "src/components/sidebar/WorktreeSidebar.tsx:537-542",
-          "src/components/sidebar/WorktreeSidebar.tsx:44-48"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Efeito dos toggles 'Hide automation-created' e 'Hide CLI-created' no caminho renderizado (só aplicados em worktree-list/buildSidebarRows.ts:74-75, módulo sem importador)",
-          "Nuance 'exceto quando mantido por provisão de receita' no hide default branch"
-        ],
-        "notes": "Os 4 toggles existem com ícone+label+pílula e são persistidos em displayOptions; no sidebar montado apenas hideDefaultBranch e hideDetachedHead filtram de fato."
-      }
-    },
-    {
-      "id": "D09-008",
-      "capability": "Seção de filtragem por projetos com busca integrada, listagem de repositórios e indicação de servidor SSH",
-      "orca_evidence": [
-        "components/sidebar/SidebarFilter.tsx:279",
-        "components/sidebar/SidebarFilter.tsx:312",
-        "components/sidebar/SidebarFilter.tsx:340",
-        "components/sidebar/SidebarFilter.tsx:361"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:143-260",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-262"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "CommandInput/CommandList (Radix cmdk) e placeholder 'Search projects...' — Hydra usa <input> com placeholder fixo 'Add project...' (WorkspaceOptionsMenu.tsx:216)",
-          "Estado vazio 'No projects match'",
-          "Reset da seleção de teclado ao digitar nova query",
-          "Interrupção de onKeyDown para não vazar para o typeahead do menu (menu não é Radix)",
-          "RepoBadgeLabel (nome + cor de badge) e badge 'SSH' com ícone Server para connectionId",
-          "Alternância de repoId em filterRepoIds (Hydra filtra por id de PROJETO em displayOptions.filterProjectIds, WorkspaceOptionsMenu.tsx:246-262)"
-        ],
-        "notes": "Existe submenu 'Show → Projects' com busca, lista de projetos (ponto colorido + check) e contagem. Sem badges de repo/SSH e sem o vocabulário cmdk."
-      }
-    },
-    {
-      "id": "D09-009",
-      "capability": "Ações de seleção em lote ('Select all' e 'Clear') para projetos no menu de filtros",
-      "orca_evidence": [
-        "components/sidebar/SidebarFilter.tsx:158",
-        "components/sidebar/SidebarFilter.tsx:162",
-        "components/sidebar/SidebarFilter.tsx:288",
-        "components/sidebar/SidebarFilter.tsx:300"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:166-174",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:241-262"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Botão 'Select all' (0 hits)",
-          "Estado desabilitado: 'Clear' só é renderizado quando há seleção (nunca aparece desabilitado) e não há pill rounded-full text-[11px] com opacidade reduzida"
-        ],
-        "notes": "'Clear' existe no cabeçalho do submenu e zera filterProjectIds (WorkspaceOptionsMenu.tsx:167-173)."
-      }
-    },
-    {
-      "id": "D09-010",
-      "capability": "Rodapé de ações do menu de filtros com botão de reset global e adição de projeto",
-      "orca_evidence": [
-        "components/sidebar/SidebarFilter.tsx:141",
-        "components/sidebar/SidebarFilter.tsx:376",
-        "components/sidebar/SidebarFilter.tsx:389"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:384-475",
-          "src/components/sidebar/SidebarHeader.tsx:74-86"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Botão 'Reset filters' (visível só com hasAnyFilter) restaurando showSleepingWorkspaces/booleanos/alwaysShowDefaultBranchWorkspace/filterRepoIds",
-          "Botão 'Add project' no rodapé do menu de filtros"
-        ],
-        "notes": "Busca em 5 passos: (1) 'Reset filters'/'Clear filters': 0 hits; (2) o menu termina na seção Filters (WorkspaceOptionsMenu.tsx:397-475) sem rodapé de ações; (3) 'Add project' existe apenas como botão do header (SidebarHeader.tsx:74-86 → onOpenAddRepoDialog) e no placeholder do submenu; (4) computeClearFilterActions existe mas não é consumido (ver D09-020); (5) sem backend."
-      }
-    },
-    {
-      "id": "D09-011",
-      "capability": "Alternância de modo de agrupamento de worktrees no sidebar (none, repo, project-group)",
-      "orca_evidence": [
-        "components/sidebar/SidebarGroupByToggle.tsx:10",
-        "components/sidebar/SidebarGroupByToggle.tsx:25"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:278-302",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:14-16",
-          "src/components/sidebar/WorktreeSidebar.tsx:352-355"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Modo 'project-group' do toggle (Hydra usa 'workspace-status' como 3º modo; grupos de projeto são renderizados sempre, não como modo)",
-          "onPointerDownCapture contra roving-focus do Radix e ToggleGroup single-select (Hydra usa 3 <button> num grid)",
-          "Disparo de setGroupBy (Hydra usa onOptionsChange({groupBy}))"
-        ],
-        "notes": "Toggle group inline com None/Status/Project e estilo ativo (WorkspaceOptionsMenu.tsx:283-300), persistido em displayOptions.groupBy."
-      }
-    },
-    {
-      "id": "D09-012",
-      "capability": "Painel de busca e seleção de projetos em submenu com foco resiliente via requestAnimationFrame",
-      "orca_evidence": [
-        "components/sidebar/SidebarProjectFilterPanel.tsx:50",
-        "components/sidebar/SidebarProjectFilterPanel.tsx:65",
-        "components/sidebar/SidebarProjectFilterPanel.tsx:139"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:196-235",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:159-161",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:48"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Foco via requestAnimationFrame para escapar do focus-scope do Radix (Hydra usa autoFocus direto, WorkspaceOptionsMenu.tsx:203)",
-          "cancelAnimationFrame no unmount",
-          "Reset da query ao reabrir o painel (projectSearch é estado do componente e persiste entre aberturas, WorkspaceOptionsMenu.tsx:48/205)",
-          "Placeholder alternando 'Filter projects...'/'Add project...' (fixo em 'Add project...')"
-        ],
-        "notes": "O submenu é montado/desmontado condicionalmente (openSubmenu==='show') e o input tem autoFocus + Escape que limpa a query (211-213)."
-      }
-    },
-    {
-      "id": "D09-013",
-      "capability": "Exibição de pills com badges e botão de remoção para projetos selecionados no filtro",
-      "orca_evidence": [
-        "components/sidebar/SidebarProjectFilterPanel.tsx:192",
-        "components/sidebar/SidebarProjectFilterPanel.tsx:205",
-        "components/sidebar/SidebarProjectFilterPanel.tsx:220"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:176-196"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Container com scroll vertical (max-h-16 overflow-y-auto scrollbar-sleek) para as pills",
-          "RepoBadgeLabel truncado (max-w-[8rem]) com indicador colorido por repo",
-          "aria-label internacionalizado 'Remove {displayName} filter' (o botão × não tem aria-label)",
-          "onMouseDown preventDefault para não perder o foco do input"
-        ],
-        "notes": "Pills com nome do projeto + botão × que remove o id de filterProjectIds existem (WorkspaceOptionsMenu.tsx:178-195)."
-      }
-    },
-    {
-      "id": "D09-014",
-      "capability": "Algoritmo de pontuação e ranking de busca de projetos por nome de exibição e caminho",
-      "orca_evidence": [
-        "components/sidebar/SidebarProjectFilterPanel.tsx:15"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-247"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Correspondência por path (Hydra só compara proj.name)",
-          "Função de score (displayName 2 + 1/(index+1); path 1 + 1/(index+1)) e ordenação por score — Hydra faz filter substring, sem ranking",
-          "Normalização (toLowerCase/trim) além do toLowerCase da query"
-        ],
-        "notes": "A busca filtra por substring de nome (WorkspaceOptionsMenu.tsx:242), sem score nem ordenação por relevância. Nenhum símbolo homólogo ao scorer do Orca."
-      }
-    },
-    {
-      "id": "D09-015",
-      "capability": "Navegação e atalhos de teclado inteligentes no input de busca do filtro de projetos",
-      "orca_evidence": [
-        "components/sidebar/SidebarProjectFilterPanel.tsx:87",
-        "components/sidebar/SidebarProjectFilterPanel.tsx:91",
-        "components/sidebar/SidebarProjectFilterPanel.tsx:101",
-        "components/sidebar/SidebarProjectFilterPanel.tsx:115",
-        "components/sidebar/SidebarProjectFilterPanel.tsx:124"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:206-214"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Backspace com query vazia removendo o último projeto selecionado",
-          "Enter selecionando o projeto destacado/primeiro resultado e limpando a query",
-          "ArrowLeft caret-aware (segura no campo; em 0,0 deixa subir para fechar o submenu)",
-          "Isolamento de keydown (exceto ArrowUp/ArrowDown) contra o typeahead do menu"
-        ],
-        "notes": "Busca em 5 passos: (1) nenhum handler de Backspace/Enter/ArrowLeft no input de projetos; (2) o único onKeyDown trata Escape (WorkspaceOptionsMenu.tsx:211-213); (3) não há highlightedRepoId nem navegação por teclado na lista de projetos; (4)(5) sem backend. Não localizado."
-      }
-    },
-    {
-      "id": "D09-016",
-      "capability": "Submenu de filtro de projetos com resumo dinâmico de visibilidade e botão de limpeza",
-      "orca_evidence": [
-        "components/sidebar/SidebarRepositoryFilterSection.tsx:14",
-        "components/sidebar/SidebarRepositoryFilterSection.tsx:42",
-        "components/sidebar/SidebarRepositoryFilterSection.tsx:69",
-        "components/sidebar/SidebarRepositoryFilterSection.tsx:86"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:145-160",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:161-174",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:116-127",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-262"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Auto-ocultar-se quando projects.length <= 1 (a linha 'Projects' é sempre renderizada)",
-          "Props filterRepoIds/setFilterRepoIds para reuso pela visão de agentes (Hydra expõe apenas options.filterProjectIds + onOptionsChange)",
-          "RepoBadgeLabel no gatilho do submenu",
-          "Conjunto availableRepos separado (Hydra lista todos os projetos com estado selecionado/não)"
-        ],
-        "notes": "O gatilho 'Projects' com resumo de visibilidade ('All projects' / nome / 'N projects', WorkspaceOptionsMenu.tsx:116-127) e o cabeçalho com '· N' + Clear (161-174) existem, derivados de `projects` (ids obsoletos não inflam a contagem)."
-      }
-    },
-    {
-      "id": "D09-017",
-      "capability": "Seção de filtros no menu de opções de workspaces com toggle condicional para workspaces de outros dispositivos",
-      "orca_evidence": [
-        "components/sidebar/SidebarWorkspaceFilterSection.tsx:16",
-        "components/sidebar/SidebarWorkspaceFilterSection.tsx:32",
-        "components/sidebar/SidebarWorkspaceFilterSection.tsx:75"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:397-472",
-          "src/components/sidebar/visible-worktrees.ts:125-129",
-          "src/store/index.ts:135,377"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Toggle 'Hide other-client workspaces' (hideWorkspacesFromOtherDevices) — não existe UI; o flag só vive na store/pipeline não montado (visible-worktrees.ts:125)",
-          "Gate de visibilidade por runtimeEnvironments/runtimeEnvironmentCatalogHydrated e permanência do filtro quando já ativo"
-        ],
-        "notes": "A seção 'Filters' existe com cabeçalho e 5 linhas de alternância (sleeping, default branch, automação, CLI, detached HEAD) — WorkspaceOptionsMenu.tsx:399-472. Busca por 'Hide other'/'other-client': 0 hits no sidebar."
-      }
-    },
-    {
-      "id": "D09-018",
-      "capability": "Revelação automática de repositório no filtro ativo de projetos ao interagir com workspace",
-      "orca_evidence": [
-        "components/sidebar/project-filter-reveal.ts:6"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/project-filter-reveal.ts:1-12",
-          "src/lib/worktree-activation.ts:279",
-          "src/components/sidebar/WorktreeSidebar.tsx:509-512"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Alcance a partir da interação com workspace no sidebar montado: worktree-activation.ts não tem consumidor de produção (só workspace-port-actions.ts:1-99, cujo goToWorkspacePortOwner também não tem consumidor, e testes)",
-          "Efeito sobre o estado que a sidebar renderiza: revealRepoInProjectFilter muta store.filterRepoIds, mas o sidebar renderiza displayOptions.filterProjectIds (WorktreeSidebar.tsx:510-512)"
-        ],
-        "notes": "A função é um port fiel (as 4 regras batem com o Orca) e tem um call-site em worktree-activation.ts:279, mas aponta para o átomo de estado errado e o módulo chamador está fora do caminho montado."
-      }
-    },
-    {
-      "id": "D09-019",
-      "capability": "Avaliação abrangente de estado de filtros ativos na sidebar",
-      "orca_evidence": [
-        "components/sidebar/sidebar-filter-actions.ts:11"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/sidebar-filter-actions.ts:12-26",
-          "src/components/sidebar/visible-worktrees.ts:12"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Consumidor: nenhum componente/hook usa sidebarHasActiveFilters (o símbolo só é re-exportado em visible-worktrees.ts:12) — logo não existe badge de filtros ativos nem gate de 'Clear Filters' com esse cálculo"
-        ],
-        "notes": "A regra é port fiel: os 10 critérios do Orca estão em sidebar-filter-actions.ts:12-26 (inclui alwaysShowDefaultBranchWorkspace===false, visibleWorkspaceHostIds!=null e workspaceHostScope!=ALL_EXECUTION_HOSTS_SCOPE). Efeito observável ausente."
-      }
-    },
-    {
-      "id": "D09-020",
-      "capability": "Cálculo puro do plano de ação para limpeza de filtros ativos sem churn de estado",
-      "orca_evidence": [
-        "components/sidebar/sidebar-filter-actions.ts:39"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/sidebar-filter-actions.ts:31-67",
-          "src/components/sidebar/visible-worktrees.ts:12"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Consumidor: computeClearFilterActions não é chamado por nenhum componente — não há botão de Clear/Reset que execute o plano de mutações"
-        ],
-        "notes": "Port fiel: flags por seletor (resetShowSleepingWorkspaces/resetFilterRepoIds/resetHide*/resetAlwaysShowDefaultBranchWorkspace/resetVisibleWorkspaceHostIds) em sidebar-filter-actions.ts:53-67, com o mesmo racional de evitar churn do write-back debounced (comentário 49-52). Sem consumidor."
-      }
-    },
-    {
-      "id": "D09-021",
-      "capability": "Predicado de visibilidade isolada de filtros para um worktree com resolução de host qualificado",
-      "orca_evidence": [
-        "components/sidebar/worktree-filter-visibility.ts:18"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/visible-worktree-host-scope.ts:30-39",
-          "src/components/sidebar/visible-worktrees.ts:111-190",
-          "src/components/sidebar/visible-worktrees.ts:147-160"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Predicado isolado por worktree (worktreePassesSidebarFilters: 0 hits; só existe o pipeline em lote computeVisibleWorktrees)",
-          "Garantia explícita de que elisão por colapso de grupo/ordem renderizada não entra no predicado (no Hydra o colapso é aplicado depois, em rendered-sidebar-worktree-order.ts)"
-        ],
-        "notes": "A qualificação de host (STA-4343) existe: getWorktreeExecutionHostId + worktreeMatchesVisibleHost (visible-worktree-host-scope.ts:30-39) e o filtro por visibleHostIds/workspaceHostScope dentro de computeVisibleWorktrees (147-160). O predicado por worktree não foi portado."
-      }
-    },
-    {
-      "id": "D09-022",
-      "capability": "Classificação ordinal de atenção de agentes (SmartClass 1 a 5) para ordenação inteligente",
-      "orca_evidence": [
-        "components/sidebar/smart-attention.ts:25",
-        "components/sidebar/smart-attention.ts:40",
-        "components/sidebar/smart-attention.ts:98",
-        "components/sidebar/smart-attention.ts:121"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/lib/smart-attention.ts:52-72",
-          "src/lib/smart-attention.ts:83-94",
-          "src/components/sidebar/WorktreeSidebar.tsx:566-595",
-          "src/components/sidebar/SidebarAgentsList.tsx:88-110",
-          "src/components/sidebar/smart-attention.ts:20-26"
-        ],
-        "backend": [
-          "decay do hook: src-tauri/src/agent_state.rs:63-75 (AGENT_STATE_STALE_AFTER_MS = 30*60*1000, agent_state.rs:13) chamado por src-tauri/src/hooks/pipeline.rs:610-619"
-        ],
-        "missing_behaviors": [
-          "Ordem das classes 2/3 invertida: Hydra põe Working=2 e Done&unvisited=3 (lib/smart-attention.ts:63-66, doc 26-31), Orca põe Done=2 e Working=3",
-          "Heurísticas de título ('permission'→Classe 1, 'working'→Classe 3, title idle/null→nada): o resolver do Hydra não lê títulos (SessionAttentionInput não tem title, lib/smart-attention.ts:33-44)",
-          "'done' interrompido por Ctrl+C → Classe 5: não há flag interrupted chegando ao resolver (WorktreeSession não tem interrupted/stateHistory, components/sidebar/types.ts:126-148)",
-          "Campo cause ('blocked'|'waiting'|'title-heuristic') — AttentionCause: 0 hits no Hydra"
-        ],
-        "notes": "A classificação real do sidebar montado vem de src/lib/smart-attention.ts (WorktreeSidebar.tsx:566-595 e SidebarAgentsList.tsx:88-110), NÃO de src/components/sidebar/smart-attention.ts — esse arquivo é um stub (IDLE/WorktreeAttention/buildAttentionByWorktree/hasFreshAttributedAgentStatus exportados como `null`/`any`, linhas 20-26). Frescor de 30min e stale→unknown/idle são delegados ao Rust (agent_state.rs:63-75), então Classe 4 (unknown com PTY vivo) e expiração de done existem via backend."
-      }
-    },
-    {
-      "id": "D09-023",
-      "capability": "Resolução de atenção entre múltiplos painéis com precedência de menor classe e desempate por recência",
-      "orca_evidence": [
-        "components/sidebar/smart-attention.ts:98",
-        "components/sidebar/smart-attention.ts:210"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/lib/smart-attention.ts:102-115",
-          "src/components/sidebar/WorktreeSidebar.tsx:588-595"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Propagação de `cause` quando a classe resolvida é Classe 1 (SessionAttention = {cls, attentionTimestamp} apenas, lib/smart-attention.ts:46-49)",
-          "Garantia de que um 'done' expirado não mascare um 'working' vivo é implícita (depende do decay do Rust); não há teste/lógica frontend para o caso"
-        ],
-        "notes": "Min-classe vence e, dentro da classe, maior attentionTimestamp (lib/smart-attention.ts:105-113); lista vazia → IDLE {cls:5, ts:0} (linha 52). Equivalente ao resolveAttention do Orca no essencial, sem cause."
-      }
-    },
-    {
-      "id": "D09-024",
-      "capability": "Extração do timestamp mais recente de atenção a partir do histórico de estados do agente",
-      "orca_evidence": [
-        "components/sidebar/smart-attention.ts:69"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/shared/agent-completion-time.ts:6-22",
-          "src/shared/agent-completion-time.ts:35-47",
-          "src/components/sidebar/agent-finished-timestamp.ts:12-51",
-          "src/components/sidebar/compact-agent-row-labels.ts:165"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Varredura inclui 'blocked'/'waiting' (Hydra varre apenas 'done' em agent-completion-time.ts:13-18; Orca considera done/blocked/waiting)",
-          "Consumo pelo resolvedor de atenção/sort (no Hydra o histórico alimenta só o relógio de 'finished' da linha de agente; lib/smart-attention.ts não lê stateHistory)"
-        ],
-        "notes": "O análogo existe e mantém os detalhes: pula done com interrupted=true, exige startedAt finito e retorna o maior (ou null) — agent-completion-time.ts:6-22 (mostRecentCompletedTurnInHistory), consumido por lastEnteredDoneAt (agent-finished-timestamp.ts:12) via compact-agent-row-labels.ts:165."
-      }
-    },
-    {
-      "id": "D09-025",
-      "capability": "Coleta e resolução de entradas de atenção por aba de terminal com suporte a splits e supressão de títulos",
-      "orca_evidence": [
-        "components/sidebar/smart-attention.ts:258",
-        "components/sidebar/smart-attention.ts:271"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/lib/smart-attention.ts:33-44",
-          "src/components/sidebar/WorktreeSidebar.tsx:567-580",
-          "src/components/sidebar/SidebarAgentsList.tsx:15-21",
-          "src/lib/tab-has-live-pty.ts:1"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Descarte da heurística de título por falta de PTY vivo na aba (tabHasLivePty existe em src/lib/tab-has-live-pty.ts mas só é usado no caminho do sto stub smart-sort.ts:189)",
-          "Índice entriesByTabId de entradas de hook por aba",
-          "Supressão do título coberto por hook e de títulos sintéticos de permissão (permissionHookLeafIds)",
-          "Resolução de leafId por painel em abas divididas (resolveRuntimePaneTitleLeafId) com classifyTitleActivity individual",
-          "Herança do título da aba para abas restauradas/não visitadas"
-        ],
-        "notes": "Busca em 5 passos: (1) collectTabPaneInputs/PaneInput/TabPaneInputSources/permissionHookLeafIds/resolveRuntimePaneTitleLeafId: 0 hits; (2) o input de atenção do Hydra é por SESSÃO (state/stateStartedAt/lastActivityAt/hasLivePty/isUnvisited), sem títulos nem panes; (3) classifyTitleActivity existe (lib/pane-agent-evidence.ts:44) mas alimenta agent-status/status-bar, não a atenção do sidebar; (4)(5) sem backend equivalente. Não localizado."
-      }
-    },
-    {
-      "id": "D09-026",
-      "capability": "Construção do mapa de atenção por worktree e indexação por abas com suporte a abas headless",
-      "orca_evidence": [
-        "components/sidebar/smart-attention.ts:219",
-        "components/sidebar/smart-attention.ts:239",
-        "components/sidebar/smart-attention.ts:327"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/smart-attention.ts:23-24",
-          "src/components/sidebar/smart-sort.ts:11-15",
-          "src/components/sidebar/smart-sort.ts:205-214",
-          "src/components/sidebar/visible-worktrees.ts:341-350"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Implementação de buildAttentionByWorktree — o símbolo exportado é `null` (components/sidebar/smart-attention.ts:23) e o único call-site é smart-sort.ts:205 (via visible-worktrees.ts:341)",
-          "Índice O(T) Map<tabId, AgentStatusEntry[]> (buildExplicitEntriesByTabId: 0 hits)",
-          "Conversão de entradas legado (migrationUnsupportedByPtyId) e descarte de paneKeys malformados",
-          "Atribuição direta byAttributedWorktree para abas headless e precedência de abas espelhadas"
-        ],
-        "notes": "O call-site existe e é alcançável (App.tsx:58 → visible-worktrees.ts → smart-sort.ts), porém a callee é um stub nulo: o warm path do smart sort lança TypeError. O sidebar renderizado não usa esse caminho (resolve atenção por sessão em lib/smart-attention.ts)."
-      }
-    },
-    {
-      "id": "D09-027",
-      "capability": "Detecção de status de agentes atribuídos e frescos para transição de cold-start",
-      "orca_evidence": [
-        "components/sidebar/smart-attention.ts:45"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/smart-attention.ts:25-26",
-          "src/components/sidebar/smart-sort.ts:197",
-          "src/lib/worktree-activity-state.ts:24-70",
-          "src/lib/pane-agent-evidence.ts:18-36",
-          "src/components/sidebar/visible-worktrees.ts:26,301"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Wiring ao cold-start do sort: smart-sort.ts:197 chama hasFreshAttributedAgentStatus, que é `null` (components/sidebar/smart-attention.ts:25)",
-          "Uso direto de isExplicitAgentStatusFresh (Hydra usa isFreshNonDoneAgentStatus, que exclui 'done')"
-        ],
-        "notes": "O análogo funcional existe e cobre os 3 primeiros comportamentos: getWorktreeIdsWithLiveAgent/getLiveAgentStatusByWorktreeId (worktree-activity-state.ts:24-70) valida frescor e resolve worktreeId explícito OU via aba espelhada (worktreeIdByTabId), consumido em visible-worktrees.ts:301 para o sweep de sleeping/atividade — não para o cold-start."
-      }
-    },
-    {
-      "id": "D09-028",
-      "capability": "Janela de tolerância de criação (grace period de 5 minutos) e cálculo de atividade recente efetiva",
-      "orca_evidence": [
-        "components/sidebar/smart-sort.ts:16",
-        "components/sidebar/smart-sort.ts:32"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/smart-sort.ts:28",
-          "src/components/sidebar/smart-sort.ts:38-51",
-          "src/components/sidebar/smart-sort.ts:125,142",
-          "src/components/sidebar/WorktreeSidebar.tsx:563-565"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Uso no sort 'Recent' renderizado: WorktreeSidebar usa created_at desc (WorktreeSidebar.tsx:563-565) e ignora o grace floor",
-          "Alcance do helper no caminho montado: effectiveRecentActivity só é exercido por smart-sort.ts (consumido via visible-worktrees.ts para numeração Cmd+1-9 quando o sidebar está desmontado)"
-        ],
-        "notes": "Port fiel da regra: CREATE_GRACE_MS = 5*60*1000 e piso Math.max(lastActivityAt, createdAt+CREATE_GRACE_MS) apenas durante a janela, imune a createdAt ausente (smart-sort.ts:28-51)."
-      }
-    },
-    {
-      "id": "D09-029",
-      "capability": "Derivação e pré-computação em lote de labels de ordenação imunes a colisão de IDs multi-host",
-      "orca_evidence": [
-        "components/sidebar/smart-sort.ts:43",
-        "components/sidebar/smart-sort.ts:58",
-        "components/sidebar/smart-sort.ts:68"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/smart-sort.ts:51-92",
-          "src/components/sidebar/smart-sort.ts:196-197",
-          "src/components/sidebar/WorktreeSidebar.tsx:560-561"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Uso no sort 'Name' renderizado: WorktreeSidebar compara (displayName||branch).localeCompare (WorktreeSidebar.tsx:560-561), sem basename/id fallback",
-          "Alcance no caminho montado (os labels só são construídos dentro de smart-sort.ts, exercido via visible-worktrees.ts)"
-        ],
-        "notes": "Port fiel, incluindo o ponto crítico: labels keyed na REFERÊNCIA do worktree (WorktreeSortLabels = ReadonlyMap<WorktreeSortLabelInput,string>, smart-sort.ts:73) para não trocar rótulos em colisão de id multi-host (STA-4343), com fallback displayName→basename(path)→id (53-63)."
-      }
-    },
-    {
-      "id": "D09-030",
-      "capability": "Comparador unificado de ordenação de worktrees para todos os modos suportados",
-      "orca_evidence": [
-        "components/sidebar/smart-sort.ts:80"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/smart-sort.ts:104-160",
-          "src/components/sidebar/visible-worktrees.ts:341-357",
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:305-330"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Modos 'repo' e 'manual' na UI: o menu Sort by oferece apenas Agent Activity/Name/Recent (WorkspaceOptionsMenu.tsx:309-312) e o render usa created_at para 'recent'",
-          "Consumo pelo caminho renderizado: buildWorktreeComparator só é chamado no fallback de Cmd+1-9 (visible-worktrees.ts:355)"
-        ],
-        "notes": "O comparador do módulo implementa os 5 modos com as regras do Orca (smart: cls→attentionTimestamp→effectiveRecentActivity→label; recent ignora sortOrder; repo por displayName; manual com fallback manualOrder→sortOrder) — smart-sort.ts:104-160."
-      }
-    },
-    {
-      "id": "D09-031",
-      "capability": "Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido",
-      "orca_evidence": [
-        "components/sidebar/smart-sort.ts:167"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/smart-sort.ts:178-215",
-          "src/components/sidebar/smart-attention.ts:23,25",
-          "src/components/sidebar/visible-worktrees.ts:341-350",
-          "src/components/sidebar/WorktreeSidebar.tsx:534-600"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Funcionamento: ambas as ramificações dependem de símbolos `null` — cold start chama hasFreshAttributedAgentStatus (smart-sort.ts:197 → stub:25) e warm chama buildAttentionByWorktree (smart-sort.ts:205 → stub:23)",
-          "Consumo pela lista de worktrees renderizada (WorktreeSidebar ordena por conta própria; sortWorktreesSmart só é alcançado por getVisibleWorktreeIds quando o sidebar está desmontado)",
-          "Consumo pela paleta de comandos (comentário 168-170 cita a paleta, mas não há chamada em WorktreeJumpPalette/command palette)"
-        ],
-        "notes": "A forma do pipeline está portada (tabHasLivePty para liveness, fallback b.sortOrder-a.sortOrder no cold start), mas é inoperante com o stub e não é o caminho do sidebar montado."
-      }
-    }
-  ],
-  "summary": {
-    "parity": 0,
-    "partial": 24,
-    "missing": 7,
-    "not-applicable": 0,
-    "out-of-scope": 0
+ "domain": "D09-filters-sort",
+ "rows": [
+  {
+   "id": "D09-001",
+   "capability": "Renderização de linha de alternância (switch toggle) padronizada para menus de filtros de workspaces",
+   "orca_evidence": [
+    "components/sidebar/FilterToggleRow.tsx:11",
+    "components/sidebar/FilterToggleRow.tsx:28",
+    "components/sidebar/FilterToggleRow.tsx:35"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-415",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-472",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:12"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Componente reutilizável FilterToggleRow (0 hits em src/**)",
+     "Elemento button nativo com role='switch' + aria-checked refletindo o booleano (os filtros são <div onClick>); role=switch só existe em SettingsModal.tsx:29/732 e NewWorkspaceComposer.tsx:400, não no menu de filtros",
+     "aria-label explícito por linha (as linhas não têm aria-* próprio)",
+     "Callback onChange(negation) — o Hydra muta displayOptions via handleToggle (WorkspaceOptionsMenu.tsx:109-114)"
+    ],
+    "notes": "A linha de toggle existe (ícone + label 11px + pílula w-7 h-4 que muda de cor quando ativa), mas não como componente FilterToggleRow e sem semântica ARIA de switch. Alcançável: WorktreeSidebar.tsx:845-854 monta WorkspaceOptionsMenu; SidebarHeader.tsx:88-110 é o gatilho."
+   }
+  },
+  {
+   "id": "D09-002",
+   "capability": "Suporte a indentação visual de sub-opções de filtros sem conflito de especificidade com Tailwind v4",
+   "orca_evidence": [
+    "components/sidebar/FilterToggleRow.tsx:38",
+    "components/sidebar/FilterToggleRow.tsx:43"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-472",
+     "src/components/ui/dropdown-menu.tsx:64"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Prop indented + classe pl-7 para sub-opções de filtro",
+     "Nenhuma sub-opção indentada ('Except default branch' etc.) existe no menu de filtros",
+     "Reforço de cor text-muted-foreground do label indentado"
+    ],
+    "notes": "Busca em 5 passos: (1) FilterToggleRow/indented: 0 hits em src/**; (2) pl-7 só em inputs e em data-[inset]:pl-7 do dropdown Radix (dropdown-menu.tsx:64), nunca em linha de filtro; (3) não há sub-opção de filtro no Hydra; (4)(5) sem backend. Não localizado."
+   }
+  },
+  {
+   "id": "D09-003",
+   "capability": "Exibição de badge de atalho de teclado na linha de alternância de filtro",
+   "orca_evidence": [
+    "components/sidebar/FilterToggleRow.tsx:54"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-472",
+     "src/components/ui/dropdown-menu.tsx:161"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Prop shortcutLabel exibida como DropdownMenuShortcut na linha de filtro",
+     "Ocultação condicional do badge quando ausente"
+    ],
+    "notes": "Busca em 5 passos: (1) DropdownMenuShortcut existe em src/components/ui/dropdown-menu.tsx:161/238 mas nenhum consumidor no sidebar; (2) o menu de filtros do Hydra é um <div> artesanal (não Radix DropdownMenu), sem slot de atalho; (3) nenhuma linha de filtro lê atalho; (4)(5) sem backend."
+   }
+  },
+  {
+   "id": "D09-004",
+   "capability": "Botão de gatilho do menu de filtros do sidebar com badge de contagem de filtros ativos e tooltip dinâmico",
+   "orca_evidence": [
+    "components/sidebar/SidebarFilter.tsx:41",
+    "components/sidebar/SidebarFilter.tsx:117",
+    "components/sidebar/SidebarFilter.tsx:173",
+    "components/sidebar/SidebarFilter.tsx:180",
+    "components/sidebar/SidebarFilter.tsx:197",
+    "components/sidebar/SidebarFilter.tsx:209"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarHeader.tsx:88-110",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:131-138"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Badge numérico de filtros ativos (-top-0.5 -right-0.5 / bg-primary) e cap '9+' (0 hits para activeFilterCount/'9+' no sidebar)",
+     "Tooltip/aria-label dinâmico ('Filter workspaces' vs 'Edit filters (N active)') — o gatilho tem título fixo 'Workspace display options' (SidebarHeader.tsx:95-96)",
+     "Ícone ListFilter (strokeWidth 2.25, size 3.5) — Hydra usa SlidersHorizontal",
+     "data-workspace-board-preserve-open no gatilho (o atributo só aparece em worktree-card-header.tsx:190)"
+    ],
+    "notes": "O botão de gatilho existe e abre o menu (SidebarHeader.tsx:88-110, aria-haspopup/aria-expanded), mas a contagem de filtros ativos nunca é calculada nem exibida; 'Filter workspaces'/'Edit filters': 0 hits."
+   }
+  },
+  {
+   "id": "D09-005",
+   "capability": "Alternância de filtro para ocultar/exibir workspaces inativos (sleeping) com descoberta de atalho",
+   "orca_evidence": [
+    "components/sidebar/SidebarFilter.tsx:54",
+    "components/sidebar/SidebarFilter.tsx:222"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:608-621 hideSleeping aplicado no caminho pintado (isSleepingSweepExemptWorkspace + isInactiveWorkspace)",
+     "src/components/sidebar/WorktreeList.tsx:602-606 hideAutomationCreated/hideCliCreated",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:570-590 toggle Hide sleeping",
+     "src/shared/keybindings/definitions-core-1.ts:241 keybinding sidebar.sleepingWorkspaces.toggle"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Escrita em useAppStore.showSleepingWorkspaces: a UI escreve displayOptions.hideSleeping (prefs), o flag da store fica no default",
+     "Descoberta de atalho na linha (useShortcutLabel('sidebar.sleepingWorkspaces.toggle')) — 0 hits",
+     "Handler global do atalho 'sidebar.sleepingWorkspaces.toggle' sem dispatcher"
+    ],
+    "notes": "Efeito de filtragem agora aplicado ao caminho pintado (WorktreeList.tsx:608-621); faltam a descoberta e o handler do atalho e a unificação com showSleepingWorkspaces."
+   }
+  },
+  {
+   "id": "D09-006",
+   "capability": "Sub-filtro condicional de exceção para manter visível a branch padrão ao ocultar workspaces inativos",
+   "orca_evidence": [
+    "components/sidebar/SidebarFilter.tsx:112",
+    "components/sidebar/SidebarFilter.tsx:230",
+    "components/sidebar/SidebarWorkspaceFilterSection.tsx:47"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-429",
+     "src/components/sidebar/visible-worktree-kinds.ts:12-28",
+     "src/components/sidebar/WorktreeSidebar.tsx:537-539"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Linha sub-opção 'Except default branch' e sua visibilidade condicional (!hideSleeping)",
+     "Toggle de alwaysShowDefaultBranchWorkspace na UI (o flag existe em visible-worktree-kinds.ts:12-28/constants.ts:270, sem nenhum consumidor de UI)",
+     "Regra isSleepingSweepExemptionNarrowingList exposta ao usuário"
+    ],
+    "notes": "Busca em 5 passos: (1) 'Except default branch': 0 hits; (2) alwaysShowDefaultBranchWorkspace só aparece em sidebar-filter-actions/visible-worktree-kinds/visible-worktrees/constants/persisted-types (pipeline da store não montado), sem JSX; (3) o caminho montado usa regra diferente — hideDefaultBranch mantém visível o worktree ATIVO (WorktreeSidebar.tsx:537-539); (4)(5) sem backend. Não localizado."
+   }
+  },
+  {
+   "id": "D09-007",
+   "capability": "Filtros de ocultação por tipo e origem de workspace (default branch, automação, CLI, detached HEAD)",
+   "orca_evidence": [
+    "components/sidebar/SidebarFilter.tsx:246",
+    "components/sidebar/SidebarFilter.tsx:255",
+    "components/sidebar/SidebarFilter.tsx:264",
+    "components/sidebar/SidebarFilter.tsx:270"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:570-625 toggles hide sleeping/default branch/automation/CLI/detached",
+     "src/components/sidebar/WorktreeList.tsx:602-606 hideAutomationCreated/hideCliCreated aplicados",
+     "src/components/sidebar/visible-worktree-kinds.ts:31-37 isAutomationGeneratedWorkspace/isCliCreatedWorkspace",
+     "src/shared/worktree/worktree-row.ts:74-84 projeção automationProvenance/cliProvenance"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Nuance 'exceto quando mantido por provisão de receita' no hide default branch: isDefaultBranchWorkspace (default-branch-workspace.ts:6) só alimenta o pipeline headless (visible-worktrees.ts:49); o hideDefaultBranch pintado (WorktreeSidebar.tsx:537) usa is_main||isMainWorktree"
+    ],
+    "notes": "Hide automation-created e Hide CLI-created agora filtram o caminho pintado (frontend do provenance_kind); falta a nuance de provisão de receita no hide default branch."
+   }
+  },
+  {
+   "id": "D09-008",
+   "capability": "Seção de filtragem por projetos com busca integrada, listagem de repositórios e indicação de servidor SSH",
+   "orca_evidence": [
+    "components/sidebar/SidebarFilter.tsx:279",
+    "components/sidebar/SidebarFilter.tsx:312",
+    "components/sidebar/SidebarFilter.tsx:340",
+    "components/sidebar/SidebarFilter.tsx:361"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:143-260",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-262"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "CommandInput/CommandList (Radix cmdk) e placeholder 'Search projects...' — Hydra usa <input> com placeholder fixo 'Add project...' (WorkspaceOptionsMenu.tsx:216)",
+     "Estado vazio 'No projects match'",
+     "Reset da seleção de teclado ao digitar nova query",
+     "Interrupção de onKeyDown para não vazar para o typeahead do menu (menu não é Radix)",
+     "RepoBadgeLabel (nome + cor de badge) e badge 'SSH' com ícone Server para connectionId",
+     "Alternância de repoId em filterRepoIds (Hydra filtra por id de PROJETO em displayOptions.filterProjectIds, WorkspaceOptionsMenu.tsx:246-262)"
+    ],
+    "notes": "Existe submenu 'Show → Projects' com busca, lista de projetos (ponto colorido + check) e contagem. Sem badges de repo/SSH e sem o vocabulário cmdk."
+   }
+  },
+  {
+   "id": "D09-009",
+   "capability": "Ações de seleção em lote ('Select all' e 'Clear') para projetos no menu de filtros",
+   "orca_evidence": [
+    "components/sidebar/SidebarFilter.tsx:158",
+    "components/sidebar/SidebarFilter.tsx:162",
+    "components/sidebar/SidebarFilter.tsx:288",
+    "components/sidebar/SidebarFilter.tsx:300"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:166-174",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:241-262"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Botão 'Select all' (0 hits)",
+     "Estado desabilitado: 'Clear' só é renderizado quando há seleção (nunca aparece desabilitado) e não há pill rounded-full text-[11px] com opacidade reduzida"
+    ],
+    "notes": "'Clear' existe no cabeçalho do submenu e zera filterProjectIds (WorkspaceOptionsMenu.tsx:167-173)."
+   }
+  },
+  {
+   "id": "D09-010",
+   "capability": "Rodapé de ações do menu de filtros com botão de reset global e adição de projeto",
+   "orca_evidence": [
+    "components/sidebar/SidebarFilter.tsx:141",
+    "components/sidebar/SidebarFilter.tsx:376",
+    "components/sidebar/SidebarFilter.tsx:389"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:384-475",
+     "src/components/sidebar/SidebarHeader.tsx:74-86"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Botão 'Reset filters' (visível só com hasAnyFilter) restaurando showSleepingWorkspaces/booleanos/alwaysShowDefaultBranchWorkspace/filterRepoIds",
+     "Botão 'Add project' no rodapé do menu de filtros"
+    ],
+    "notes": "Busca em 5 passos: (1) 'Reset filters'/'Clear filters': 0 hits; (2) o menu termina na seção Filters (WorkspaceOptionsMenu.tsx:397-475) sem rodapé de ações; (3) 'Add project' existe apenas como botão do header (SidebarHeader.tsx:74-86 → onOpenAddRepoDialog) e no placeholder do submenu; (4) computeClearFilterActions existe mas não é consumido (ver D09-020); (5) sem backend."
+   }
+  },
+  {
+   "id": "D09-011",
+   "capability": "Alternância de modo de agrupamento de worktrees no sidebar (none, repo, project-group)",
+   "orca_evidence": [
+    "components/sidebar/SidebarGroupByToggle.tsx:10",
+    "components/sidebar/SidebarGroupByToggle.tsx:25"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:278-302",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:14-16",
+     "src/components/sidebar/WorktreeSidebar.tsx:352-355"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Modo 'project-group' do toggle (Hydra usa 'workspace-status' como 3º modo; grupos de projeto são renderizados sempre, não como modo)",
+     "onPointerDownCapture contra roving-focus do Radix e ToggleGroup single-select (Hydra usa 3 <button> num grid)",
+     "Disparo de setGroupBy (Hydra usa onOptionsChange({groupBy}))"
+    ],
+    "notes": "Toggle group inline com None/Status/Project e estilo ativo (WorkspaceOptionsMenu.tsx:283-300), persistido em displayOptions.groupBy."
+   }
+  },
+  {
+   "id": "D09-012",
+   "capability": "Painel de busca e seleção de projetos em submenu com foco resiliente via requestAnimationFrame",
+   "orca_evidence": [
+    "components/sidebar/SidebarProjectFilterPanel.tsx:50",
+    "components/sidebar/SidebarProjectFilterPanel.tsx:65",
+    "components/sidebar/SidebarProjectFilterPanel.tsx:139"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:196-235",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:159-161",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:48"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Foco via requestAnimationFrame para escapar do focus-scope do Radix (Hydra usa autoFocus direto, WorkspaceOptionsMenu.tsx:203)",
+     "cancelAnimationFrame no unmount",
+     "Reset da query ao reabrir o painel (projectSearch é estado do componente e persiste entre aberturas, WorkspaceOptionsMenu.tsx:48/205)",
+     "Placeholder alternando 'Filter projects...'/'Add project...' (fixo em 'Add project...')"
+    ],
+    "notes": "O submenu é montado/desmontado condicionalmente (openSubmenu==='show') e o input tem autoFocus + Escape que limpa a query (211-213)."
+   }
+  },
+  {
+   "id": "D09-013",
+   "capability": "Exibição de pills com badges e botão de remoção para projetos selecionados no filtro",
+   "orca_evidence": [
+    "components/sidebar/SidebarProjectFilterPanel.tsx:192",
+    "components/sidebar/SidebarProjectFilterPanel.tsx:205",
+    "components/sidebar/SidebarProjectFilterPanel.tsx:220"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:176-196"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Container com scroll vertical (max-h-16 overflow-y-auto scrollbar-sleek) para as pills",
+     "RepoBadgeLabel truncado (max-w-[8rem]) com indicador colorido por repo",
+     "aria-label internacionalizado 'Remove {displayName} filter' (o botão × não tem aria-label)",
+     "onMouseDown preventDefault para não perder o foco do input"
+    ],
+    "notes": "Pills com nome do projeto + botão × que remove o id de filterProjectIds existem (WorkspaceOptionsMenu.tsx:178-195)."
+   }
+  },
+  {
+   "id": "D09-014",
+   "capability": "Algoritmo de pontuação e ranking de busca de projetos por nome de exibição e caminho",
+   "orca_evidence": [
+    "components/sidebar/SidebarProjectFilterPanel.tsx:15"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-247"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Correspondência por path (Hydra só compara proj.name)",
+     "Função de score (displayName 2 + 1/(index+1); path 1 + 1/(index+1)) e ordenação por score — Hydra faz filter substring, sem ranking",
+     "Normalização (toLowerCase/trim) além do toLowerCase da query"
+    ],
+    "notes": "A busca filtra por substring de nome (WorkspaceOptionsMenu.tsx:242), sem score nem ordenação por relevância. Nenhum símbolo homólogo ao scorer do Orca."
+   }
+  },
+  {
+   "id": "D09-015",
+   "capability": "Navegação e atalhos de teclado inteligentes no input de busca do filtro de projetos",
+   "orca_evidence": [
+    "components/sidebar/SidebarProjectFilterPanel.tsx:87",
+    "components/sidebar/SidebarProjectFilterPanel.tsx:91",
+    "components/sidebar/SidebarProjectFilterPanel.tsx:101",
+    "components/sidebar/SidebarProjectFilterPanel.tsx:115",
+    "components/sidebar/SidebarProjectFilterPanel.tsx:124"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:206-214"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Backspace com query vazia removendo o último projeto selecionado",
+     "Enter selecionando o projeto destacado/primeiro resultado e limpando a query",
+     "ArrowLeft caret-aware (segura no campo; em 0,0 deixa subir para fechar o submenu)",
+     "Isolamento de keydown (exceto ArrowUp/ArrowDown) contra o typeahead do menu"
+    ],
+    "notes": "Busca em 5 passos: (1) nenhum handler de Backspace/Enter/ArrowLeft no input de projetos; (2) o único onKeyDown trata Escape (WorkspaceOptionsMenu.tsx:211-213); (3) não há highlightedRepoId nem navegação por teclado na lista de projetos; (4)(5) sem backend. Não localizado."
+   }
+  },
+  {
+   "id": "D09-016",
+   "capability": "Submenu de filtro de projetos com resumo dinâmico de visibilidade e botão de limpeza",
+   "orca_evidence": [
+    "components/sidebar/SidebarRepositoryFilterSection.tsx:14",
+    "components/sidebar/SidebarRepositoryFilterSection.tsx:42",
+    "components/sidebar/SidebarRepositoryFilterSection.tsx:69",
+    "components/sidebar/SidebarRepositoryFilterSection.tsx:86"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:145-160",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:161-174",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:116-127",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-262"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Auto-ocultar-se quando projects.length <= 1 (a linha 'Projects' é sempre renderizada)",
+     "Props filterRepoIds/setFilterRepoIds para reuso pela visão de agentes (Hydra expõe apenas options.filterProjectIds + onOptionsChange)",
+     "RepoBadgeLabel no gatilho do submenu",
+     "Conjunto availableRepos separado (Hydra lista todos os projetos com estado selecionado/não)"
+    ],
+    "notes": "O gatilho 'Projects' com resumo de visibilidade ('All projects' / nome / 'N projects', WorkspaceOptionsMenu.tsx:116-127) e o cabeçalho com '· N' + Clear (161-174) existem, derivados de `projects` (ids obsoletos não inflam a contagem)."
+   }
+  },
+  {
+   "id": "D09-017",
+   "capability": "Seção de filtros no menu de opções de workspaces com toggle condicional para workspaces de outros dispositivos",
+   "orca_evidence": [
+    "components/sidebar/SidebarWorkspaceFilterSection.tsx:16",
+    "components/sidebar/SidebarWorkspaceFilterSection.tsx:32",
+    "components/sidebar/SidebarWorkspaceFilterSection.tsx:75"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:397-472",
+     "src/components/sidebar/visible-worktrees.ts:125-129",
+     "src/store/index.ts:135,377"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Toggle 'Hide other-client workspaces' (hideWorkspacesFromOtherDevices) — não existe UI; o flag só vive na store/pipeline não montado (visible-worktrees.ts:125)",
+     "Gate de visibilidade por runtimeEnvironments/runtimeEnvironmentCatalogHydrated e permanência do filtro quando já ativo"
+    ],
+    "notes": "A seção 'Filters' existe com cabeçalho e 5 linhas de alternância (sleeping, default branch, automação, CLI, detached HEAD) — WorkspaceOptionsMenu.tsx:399-472. Busca por 'Hide other'/'other-client': 0 hits no sidebar."
+   }
+  },
+  {
+   "id": "D09-018",
+   "capability": "Revelação automática de repositório no filtro ativo de projetos ao interagir com workspace",
+   "orca_evidence": [
+    "components/sidebar/project-filter-reveal.ts:6"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/project-filter-reveal.ts:1-12",
+     "src/lib/worktree-activation.ts:279",
+     "src/components/sidebar/WorktreeSidebar.tsx:509-512"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Alcance a partir da interação com workspace no sidebar montado: worktree-activation.ts não tem consumidor de produção (só workspace-port-actions.ts:1-99, cujo goToWorkspacePortOwner também não tem consumidor, e testes)",
+     "Efeito sobre o estado que a sidebar renderiza: revealRepoInProjectFilter muta store.filterRepoIds, mas o sidebar renderiza displayOptions.filterProjectIds (WorktreeSidebar.tsx:510-512)"
+    ],
+    "notes": "A função é um port fiel (as 4 regras batem com o Orca) e tem um call-site em worktree-activation.ts:279, mas aponta para o átomo de estado errado e o módulo chamador está fora do caminho montado."
+   }
+  },
+  {
+   "id": "D09-019",
+   "capability": "Avaliação abrangente de estado de filtros ativos na sidebar",
+   "orca_evidence": [
+    "components/sidebar/sidebar-filter-actions.ts:11"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/sidebar-filter-actions.ts:12-26",
+     "src/components/sidebar/visible-worktrees.ts:12"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Consumidor: nenhum componente/hook usa sidebarHasActiveFilters (o símbolo só é re-exportado em visible-worktrees.ts:12) — logo não existe badge de filtros ativos nem gate de 'Clear Filters' com esse cálculo"
+    ],
+    "notes": "A regra é port fiel: os 10 critérios do Orca estão em sidebar-filter-actions.ts:12-26 (inclui alwaysShowDefaultBranchWorkspace===false, visibleWorkspaceHostIds!=null e workspaceHostScope!=ALL_EXECUTION_HOSTS_SCOPE). Efeito observável ausente."
+   }
+  },
+  {
+   "id": "D09-020",
+   "capability": "Cálculo puro do plano de ação para limpeza de filtros ativos sem churn de estado",
+   "orca_evidence": [
+    "components/sidebar/sidebar-filter-actions.ts:39"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/sidebar-filter-actions.ts:31-67",
+     "src/components/sidebar/visible-worktrees.ts:12"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Consumidor: computeClearFilterActions não é chamado por nenhum componente — não há botão de Clear/Reset que execute o plano de mutações"
+    ],
+    "notes": "Port fiel: flags por seletor (resetShowSleepingWorkspaces/resetFilterRepoIds/resetHide*/resetAlwaysShowDefaultBranchWorkspace/resetVisibleWorkspaceHostIds) em sidebar-filter-actions.ts:53-67, com o mesmo racional de evitar churn do write-back debounced (comentário 49-52). Sem consumidor."
+   }
+  },
+  {
+   "id": "D09-021",
+   "capability": "Predicado de visibilidade isolada de filtros para um worktree com resolução de host qualificado",
+   "orca_evidence": [
+    "components/sidebar/worktree-filter-visibility.ts:18"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/visible-worktree-host-scope.ts:30-39",
+     "src/components/sidebar/visible-worktrees.ts:111-190",
+     "src/components/sidebar/visible-worktrees.ts:147-160"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Predicado isolado por worktree (worktreePassesSidebarFilters: 0 hits; só existe o pipeline em lote computeVisibleWorktrees)",
+     "Garantia explícita de que elisão por colapso de grupo/ordem renderizada não entra no predicado (no Hydra o colapso é aplicado depois, em rendered-sidebar-worktree-order.ts)"
+    ],
+    "notes": "A qualificação de host (STA-4343) existe: getWorktreeExecutionHostId + worktreeMatchesVisibleHost (visible-worktree-host-scope.ts:30-39) e o filtro por visibleHostIds/workspaceHostScope dentro de computeVisibleWorktrees (147-160). O predicado por worktree não foi portado."
+   }
+  },
+  {
+   "id": "D09-022",
+   "capability": "Classificação ordinal de atenção de agentes (SmartClass 1 a 5) para ordenação inteligente",
+   "orca_evidence": [
+    "components/sidebar/smart-attention.ts:25",
+    "components/sidebar/smart-attention.ts:40",
+    "components/sidebar/smart-attention.ts:98",
+    "components/sidebar/smart-attention.ts:121"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/lib/smart-attention.ts:52-72",
+     "src/lib/smart-attention.ts:83-94",
+     "src/components/sidebar/WorktreeSidebar.tsx:566-595",
+     "src/components/sidebar/SidebarAgentsList.tsx:88-110",
+     "src/components/sidebar/smart-attention.ts:20-26"
+    ],
+    "backend": [
+     "decay do hook: src-tauri/src/agent_state.rs:63-75 (AGENT_STATE_STALE_AFTER_MS = 30*60*1000, agent_state.rs:13) chamado por src-tauri/src/hooks/pipeline.rs:610-619"
+    ],
+    "missing_behaviors": [
+     "Ordem das classes 2/3 invertida: Hydra põe Working=2 e Done&unvisited=3 (lib/smart-attention.ts:63-66, doc 26-31), Orca põe Done=2 e Working=3",
+     "Heurísticas de título ('permission'→Classe 1, 'working'→Classe 3, title idle/null→nada): o resolver do Hydra não lê títulos (SessionAttentionInput não tem title, lib/smart-attention.ts:33-44)",
+     "'done' interrompido por Ctrl+C → Classe 5: não há flag interrupted chegando ao resolver (WorktreeSession não tem interrupted/stateHistory, components/sidebar/types.ts:126-148)",
+     "Campo cause ('blocked'|'waiting'|'title-heuristic') — AttentionCause: 0 hits no Hydra"
+    ],
+    "notes": "A classificação real do sidebar montado vem de src/lib/smart-attention.ts (WorktreeSidebar.tsx:566-595 e SidebarAgentsList.tsx:88-110), NÃO de src/components/sidebar/smart-attention.ts — esse arquivo é um stub (IDLE/WorktreeAttention/buildAttentionByWorktree/hasFreshAttributedAgentStatus exportados como `null`/`any`, linhas 20-26). Frescor de 30min e stale→unknown/idle são delegados ao Rust (agent_state.rs:63-75), então Classe 4 (unknown com PTY vivo) e expiração de done existem via backend."
+   }
+  },
+  {
+   "id": "D09-023",
+   "capability": "Resolução de atenção entre múltiplos painéis com precedência de menor classe e desempate por recência",
+   "orca_evidence": [
+    "components/sidebar/smart-attention.ts:98",
+    "components/sidebar/smart-attention.ts:210"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/lib/smart-attention.ts:102-115",
+     "src/components/sidebar/WorktreeSidebar.tsx:588-595"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Propagação de `cause` quando a classe resolvida é Classe 1 (SessionAttention = {cls, attentionTimestamp} apenas, lib/smart-attention.ts:46-49)",
+     "Garantia de que um 'done' expirado não mascare um 'working' vivo é implícita (depende do decay do Rust); não há teste/lógica frontend para o caso"
+    ],
+    "notes": "Min-classe vence e, dentro da classe, maior attentionTimestamp (lib/smart-attention.ts:105-113); lista vazia → IDLE {cls:5, ts:0} (linha 52). Equivalente ao resolveAttention do Orca no essencial, sem cause."
+   }
+  },
+  {
+   "id": "D09-024",
+   "capability": "Extração do timestamp mais recente de atenção a partir do histórico de estados do agente",
+   "orca_evidence": [
+    "components/sidebar/smart-attention.ts:69"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/shared/agent-completion-time.ts:6-22",
+     "src/shared/agent-completion-time.ts:35-47",
+     "src/components/sidebar/agent-finished-timestamp.ts:12-51",
+     "src/components/sidebar/compact-agent-row-labels.ts:165"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Varredura inclui 'blocked'/'waiting' (Hydra varre apenas 'done' em agent-completion-time.ts:13-18; Orca considera done/blocked/waiting)",
+     "Consumo pelo resolvedor de atenção/sort (no Hydra o histórico alimenta só o relógio de 'finished' da linha de agente; lib/smart-attention.ts não lê stateHistory)"
+    ],
+    "notes": "O análogo existe e mantém os detalhes: pula done com interrupted=true, exige startedAt finito e retorna o maior (ou null) — agent-completion-time.ts:6-22 (mostRecentCompletedTurnInHistory), consumido por lastEnteredDoneAt (agent-finished-timestamp.ts:12) via compact-agent-row-labels.ts:165."
+   }
+  },
+  {
+   "id": "D09-025",
+   "capability": "Coleta e resolução de entradas de atenção por aba de terminal com suporte a splits e supressão de títulos",
+   "orca_evidence": [
+    "components/sidebar/smart-attention.ts:258",
+    "components/sidebar/smart-attention.ts:271"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/smart-attention.ts:305-343 resolveRuntimePaneTitleLeafId (splits)",
+     "src/components/sidebar/smart-attention.ts:345-398 collectTabPaneInputs (tabHasLivePty + permissionHookLeafIds + herança de título)",
+     "src/components/sidebar/smart-attention.ts:243-260 buildExplicitEntriesByTabId",
+     "src/lib/tab-has-live-pty.ts:1 tabHasLivePty"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Coleta por aba portada: índice por tabId, supressão de títulos por hook (permissionHookLeafIds), resolução de leafId por pane em abas divididas e herança de título de abas restauradas/não visitadas; gated por PTY vivo."
+   }
+  },
+  {
+   "id": "D09-026",
+   "capability": "Construção do mapa de atenção por worktree e indexação por abas com suporte a abas headless",
+   "orca_evidence": [
+    "components/sidebar/smart-attention.ts:219",
+    "components/sidebar/smart-attention.ts:239",
+    "components/sidebar/smart-attention.ts:327"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/smart-attention.ts:424-500 buildAttentionByWorktree",
+     "src/components/sidebar/smart-attention.ts:243-260 buildExplicitEntriesByTabId (migrationUnsupportedByPtyId + descarte de paneKeys malformados)",
+     "src/components/sidebar/smart-attention.ts:462-478 byAttributedWorktree para abas headless",
+     "src/components/sidebar/smart-sort.ts:205 call-site"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "buildAttentionByWorktree implementado (não é mais null): índice O(T) por tabId, conversão de entradas legado e atribuição direta por worktree para abas headless, com precedência de abas espelhadas."
+   }
+  },
+  {
+   "id": "D09-027",
+   "capability": "Detecção de status de agentes atribuídos e frescos para transição de cold-start",
+   "orca_evidence": [
+    "components/sidebar/smart-attention.ts:45"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/smart-attention.ts:108-133 hasFreshAttributedAgentStatus",
+     "src/components/sidebar/smart-attention.ts:13 isExplicitAgentStatusFresh import",
+     "src/components/sidebar/smart-sort.ts:197 chamada no cold-start"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "hasFreshAttributedAgentStatus implementado (não mais null) usando isExplicitAgentStatusFresh e o mapeamento via aba espelhada; consumido pelo cold-start do sort."
+   }
+  },
+  {
+   "id": "D09-028",
+   "capability": "Janela de tolerância de criação (grace period de 5 minutos) e cálculo de atividade recente efetiva",
+   "orca_evidence": [
+    "components/sidebar/smart-sort.ts:16",
+    "components/sidebar/smart-sort.ts:32"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/smart-sort.ts:28,38-48 CREATE_GRACE_MS/effectiveRecentActivity",
+     "src/components/sidebar/WorktreeSidebar.tsx:558-562 sort 'recent' usa created_at desc",
+     "src/components/sidebar/WorktreeList.tsx:559-563"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Uso no sort 'Recent' renderizado: WorktreeSidebar ordena por created_at desc e ignora o grace floor"
+    ],
+    "notes": "Port fiel do grace period (5min + piso Math.max), mas exercido só pelo pipeline de atalhos (visible-worktrees.ts:341), não pelo sort pintado."
+   }
+  },
+  {
+   "id": "D09-029",
+   "capability": "Derivação e pré-computação em lote de labels de ordenação imunes a colisão de IDs multi-host",
+   "orca_evidence": [
+    "components/sidebar/smart-sort.ts:43",
+    "components/sidebar/smart-sort.ts:58",
+    "components/sidebar/smart-sort.ts:68"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/smart-sort.ts:53-92 getWorktreeSortLabel/buildWorktreeSortLabels (keyed na referência do worktree)",
+     "src/components/sidebar/WorktreeSidebar.tsx:556-558 sort 'name' por (displayName||branch).localeCompare"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Uso no sort 'Name' renderizado: WorktreeSidebar compara (displayName||branch).localeCompare, sem fallback basename/id"
+    ],
+    "notes": "Port fiel incluindo o keyed-por-referência anti-colisão multi-host (STA-4343), mas não consumido pelo sort pintado."
+   }
+  },
+  {
+   "id": "D09-030",
+   "capability": "Comparador unificado de ordenação de worktrees para todos os modos suportados",
+   "orca_evidence": [
+    "components/sidebar/smart-sort.ts:80"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/smart-sort.ts:104-160 buildWorktreeComparator (5 modos)",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:487-500 Sort by com apenas Agent Activity/Name/Recent",
+     "src/components/sidebar/visible-worktrees.ts:341-357"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Modos 'repo' e 'manual' ausentes na UI (Sort by oferece só Agent Activity/Name/Recent)",
+     "Comparador não consumido pelo caminho renderizado (só o fallback de Cmd+1-9)"
+    ],
+    "notes": "O comparador implementa os 5 modos do Orca, mas a UI oferece 3 e a lista pintada ordena por conta própria."
+   }
+  },
+  {
+   "id": "D09-031",
+   "capability": "Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido",
+   "orca_evidence": [
+    "components/sidebar/smart-sort.ts:167"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/smart-sort.ts:178-215 sortWorktreesSmart",
+     "src/components/sidebar/smart-attention.ts:424-500 buildAttentionByWorktree",
+     "src/components/sidebar/visible-worktrees.ts:341-350",
+     "src/components/sidebar/WorktreeSidebar.tsx:567-590 (sort pintado usa resolveWorktreeAttention)"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Consumo pela lista de worktrees renderizada (WorktreeSidebar ordena por conta própria via lib/smart-attention.ts)",
+     "Consumo pela paleta de comandos (comentário 168-170 cita a paleta, sem chamada)"
+    ],
+    "notes": "O pipeline agora funciona: os stubs nulos (smart-attention.ts:23/25) foram substituídos por buildAttentionByWorktree/hasFreshAttributedAgentStatus reais. Segue alcançável apenas pelo caminho de atalhos (sidebar desmontado)."
+   }
   }
+ ],
+ "summary": {
+  "parity": 3,
+  "partial": 23,
+  "missing": 5,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
 }
