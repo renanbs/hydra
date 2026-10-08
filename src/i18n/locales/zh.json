@@ -4445,8 +4445,7 @@
           "a30e34eb5c": "关闭工作区板",
           "spaces": "空间",
           "views": "侧边栏视图",
-          "addProject": "添加项目",
-          "addSshHost": "添加 SSH 主机"
+          "addProject": "添加项目"
         },
         "SidebarNav": {
           "80611a8b10": "搜索",

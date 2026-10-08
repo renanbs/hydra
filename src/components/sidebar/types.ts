@@ -207,8 +207,6 @@ export interface WorktreeSidebarProps {
   /** Opens Global Settings on the worktree-visibility section (dialog override note). */
   onOpenGlobalSettings?: () => void;
   onOpenAddRepoDialog: () => void;
-  /** Opens the Add-SSH-host dialog (config picker + manual form). */
-  onOpenAddHostDialog: () => void;
   onOpenNewWorkspaceModal: (proj?: HydraProject) => void;
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
   onProjectContextMenu?: (e: React.MouseEvent, project: HydraProject) => void;
