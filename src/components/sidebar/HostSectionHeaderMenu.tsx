@@ -1,11 +1,11 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Parity with Orca `components/sidebar/HostSectionHeaderMenu.tsx`, restricted to the
-// entries Hydra has a backend for: Rename (`ssh_update_target`) and Remove
-// (`ssh_remove_target`), plus the compatibility warning the host registry already
-// computes. Connect/Disconnect, runtime "Check connection", and the "Manage host…" deep
-// link are deliberately absent — see `host-header-menu-items.ts`.
+// entries Hydra has a backend for: Rename (`ssh_update_target`), Remove
+// (`ssh_remove_target`), the "Manage host…" deep link into Settings → SSH Hosts, plus the
+// compatibility warning the host registry already computes. Connect/Disconnect and runtime
+// "Check connection" are deliberately absent — see `host-header-menu-items.ts`.
 import { useState } from 'react'
-import { AlertTriangle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { AlertTriangle, MoreHorizontal, Pencil, Settings2, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -95,6 +95,25 @@ export function HostSectionHeaderMenu({ row }: { row: HostHeaderRow }): React.JS
             <Pencil className="size-3.5" />
             {translate('auto.components.sidebar.HostSectionHeaderMenu.8d1e2f3a4b', 'Rename…')}
           </DropdownMenuItem>
+        ) : null}
+        {actions.includes('manage') ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                // Why: the settings modal lives in App, far above this menu. This is the
+                // same event bus App's other deep links (command palette, new group) use,
+                // so Settings still opens through its one opening path — this only names
+                // the pane it should land on.
+                window.dispatchEvent(
+                  new CustomEvent('hydra:open-settings', { detail: { section: 'ssh' } })
+                )
+              }}
+            >
+              <Settings2 className="size-3.5" />
+              {translate('auto.components.sidebar.HostSectionHeaderMenu.3c4d5e6f7a', 'Manage host…')}
+            </DropdownMenuItem>
+          </>
         ) : null}
         {actions.includes('remove') ? (
           <>

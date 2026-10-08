@@ -3,6 +3,8 @@
 // folding the section when it opens the menu. This port keeps all three, and adds the
 // rule the port introduces: a host with neither a registry action nor a compatibility
 // warning paints NO trigger at all, so the sidebar never offers a menu that opens empty.
+// It also locks the "Manage host…" deep link: the item must hand App the SSH pane through
+// the shared settings event, never open a settings surface of its own.
 import { describe, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
@@ -76,6 +78,23 @@ describe('HostSectionHeaderMenu trigger (Orca parity)', () => {
     renderMenu(hostRow({ hostId: 'local', kind: 'local', label: 'Local Linux' }))
 
     expect(screen.queryByRole('button', { name: 'Host actions for Local Linux' })).toBeNull()
+  })
+
+  it('deep-links Manage host… to App as a request for the SSH settings pane', () => {
+    const listener = vi.fn()
+    window.addEventListener('hydra:open-settings', listener)
+    renderMenu(hostRow())
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Host actions for Build server' }), {
+      key: 'Enter'
+    })
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Manage host…' }))
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect((listener.mock.calls[0][0] as CustomEvent<{ section: string }>).detail).toEqual({
+      section: 'ssh'
+    })
+    window.removeEventListener('hydra:open-settings', listener)
   })
 
   it('keeps the warning reachable for a blocked host that has no action to offer', () => {

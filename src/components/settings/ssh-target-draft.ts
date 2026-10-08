@@ -3,7 +3,7 @@
 // Add-host dialog exposes today: label, host, port, username, identity file. Orca's draft
 // also carries the GSSAPI/proxy/jump/relay-timeout knobs behind its `Advanced` section;
 // those land with that section's PR instead of sitting here inert.
-import type { SshConfigHostResolution } from '../../shared/ssh-types'
+import type { SshConfigHostResolution, SshTarget } from '../../shared/ssh-types'
 
 export type EditingTarget = {
   label: string
@@ -38,6 +38,21 @@ export function getEditingTargetFromSshConfigHost(host: SshConfigHostResolution)
     username: host.username,
     // Why: no scalar override lets connection-time `ssh -G` retain every IdentityFile.
     identityFile: ''
+  }
+}
+
+/** Prefill the edit form from a registered target (does not save). */
+export function getEditingTargetForSshTarget(target: SshTarget): EditingTarget {
+  // Why: manual targets store their host as the config alias. Clear that implicit
+  // value on edit so changing Host recomputes the alias instead of keeping a stale one.
+  const configHost = target.configHost && target.configHost !== target.host ? target.configHost : ''
+  return {
+    label: target.label,
+    configHost,
+    host: target.host,
+    port: String(target.port),
+    username: target.username,
+    identityFile: target.identityFile ?? ''
   }
 }
 

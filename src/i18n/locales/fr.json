@@ -8100,7 +8100,11 @@
           "c77f1abfe3": "Arrêt des terminaux distants",
           "18968ede9e": "Erreur",
           "f0871e6bfb": "connect",
-          "47e94bd6ba": "connecté"
+          "47e94bd6ba": "connecté",
+          "configAlias": "alias {{value0}}",
+          "presenceFromSshConfig": "Depuis ~/.ssh/config",
+          "presenceLocal": "Ajouté sur cet ordinateur",
+          "generation": "génération {{value0}}"
         },
         "SshTargetDestructiveActions": {
           "7e66942808": "Ceci arrêtera les sessions de terminal actives sur cette cible SSH. La reconnexion ne les restaurera pas.",

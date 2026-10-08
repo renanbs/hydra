@@ -1,15 +1,15 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Parity with Orca `components/sidebar/host-header-menu-items.ts`, reduced to the actions
-// Hydra can actually execute today: `ssh_update_target` (rename) and `ssh_remove_target`
-// (remove). Orca's Reconnect/Disconnect, runtime "Check connection" and "Manage host…"
-// all need the remote-execution subsystem (PTY over SSH, credentials, leases, relay) or
-// the SSH settings pane, neither of which exists here yet — they are absent rather than
-// inert, because a menu item with nothing behind it is a lie about the product.
+// Hydra can actually execute today: `ssh_update_target` (rename), `ssh_remove_target`
+// (remove), and the "Manage host…" deep link into Settings → SSH Hosts. Orca's
+// Reconnect/Disconnect and runtime "Check connection" still need the remote-execution
+// subsystem (PTY over SSH, credentials, leases, relay), so they stay absent rather than
+// inert — a menu item with nothing behind it is a lie about the product.
 import type { ExecutionHostKind } from '../../shared/execution-host'
 import type { ExecutionHostHealth } from '../../shared/execution-host-registry'
 import type { RuntimeCompatVerdict } from '../../shared/protocol-compat'
 
-export type HostHeaderMenuAction = 'rename' | 'remove'
+export type HostHeaderMenuAction = 'rename' | 'manage' | 'remove'
 
 export type HostHeaderMenuModel = {
   /** Registry actions the host offers, in display order. */
@@ -38,7 +38,7 @@ export type HostHeaderMenuInput = {
  * host never paints an alarm, and the severity always comes from the verdict reason.
  */
 export function buildHostHeaderMenuModel(input: HostHeaderMenuInput): HostHeaderMenuModel {
-  const actions: HostHeaderMenuAction[] = input.kind === 'ssh' ? ['rename', 'remove'] : []
+  const actions: HostHeaderMenuAction[] = input.kind === 'ssh' ? ['rename', 'manage', 'remove'] : []
   const blocked =
     input.health === 'blocked' && input.compatibility?.kind === 'blocked'
       ? { reason: input.compatibility.reason }
