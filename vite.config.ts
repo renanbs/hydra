@@ -10,9 +10,26 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    // The last three entries stand in for `resources/{claude,opencode,gremlin}.webp`, which
+    // `src/components/pet/pet-models.ts` imports at a path that resolves outside this
+    // checkout and which was never vendored. The store's UI slice needs that module for its
+    // pet ids, so without the alias every store consumer fails to resolve the images.
+    // Remove them (and `src/lib/asset-url-placeholder.ts`) once the assets exist.
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+      {
+        find: "../../../../../resources/claude.webp?url",
+        replacement: path.resolve(__dirname, "./src/lib/asset-url-placeholder.ts"),
+      },
+      {
+        find: "../../../../../resources/opencode.webp?url",
+        replacement: path.resolve(__dirname, "./src/lib/asset-url-placeholder.ts"),
+      },
+      {
+        find: "../../../../../resources/gremlin.webp?url",
+        replacement: path.resolve(__dirname, "./src/lib/asset-url-placeholder.ts"),
+      },
+    ],
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
