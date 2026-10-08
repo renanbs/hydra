@@ -6028,6 +6028,10 @@
         },
         "HostRenameDialog": {
           "1a2b3c4d5e": "Rename host",
+          "description": "The saved SSH host is renamed everywhere it appears — sidebar, pickers and settings.",
+          "labelRequired": "Enter a name for this host.",
+          "labelDuplicate": "Another host already uses this name.",
+          "renameFailed": "Failed to rename host.",
           "2b3c4d5e6f": "This label is shown only on this computer. Leave it blank to use the default name.",
           "3c4d5e6f7a": "Display name",
           "4d5e6f7a8b": "Reset to default",

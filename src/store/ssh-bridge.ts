@@ -4,18 +4,20 @@ import type {
   SshConfigHostListResult,
   SshConfigHostResolution,
   SshConfigImportResult,
+  SshRemoveTargetResult,
   SshTarget,
   SshTargetAddResult,
-  SshTargetCreateInput
+  SshTargetCreateInput,
+  SshTargetUpdateInput
 } from '../shared/ssh-types'
 import { useAppStore } from './index'
 
 /**
  * Tauri transport for the SSH host registry the backend exposes
  * (`src-tauri/src/ssh_hosts.rs`). `hydrateSshTargets` is the boot path the live
- * store uses; the functions below are the registry mutations and reads the
- * Add-host dialog drives. The update/remove commands stay with the Settings
- * pane that owns them.
+ * store uses and the single re-read every registry mutation ends with; the
+ * functions below are the registry mutations and reads the Add-host dialog and
+ * the sidebar host-header menu drive.
  *
  * The `ssh_hosts` commands return serde camelCase payloads that mirror
  * `src/shared/ssh-types.ts`, so no reshaping happens here.
@@ -53,6 +55,27 @@ export async function resolveSshConfigHost(alias: string): Promise<SshConfigHost
 /** Persist one renderer-authored target. Main allocates the id and generation. */
 export async function addSshTarget(target: SshTargetCreateInput): Promise<SshTargetAddResult> {
   return invoke<SshTargetAddResult>('ssh_add_target', { target })
+}
+
+/**
+ * Patch one registry target. `null` means main holds no target with that id — the
+ * host was removed between the menu opening and the write, so callers must treat
+ * it as "nothing to update" rather than as a successful rename.
+ */
+export async function updateSshTarget(
+  targetId: string,
+  updates: SshTargetUpdateInput
+): Promise<SshTarget | null> {
+  return invoke<SshTarget | null>('ssh_update_target', { id: targetId, updates })
+}
+
+/**
+ * Delete one registry target. Main tombstones it and suppresses its config alias,
+ * so re-reading the registry is what makes the host disappear and turns its
+ * label into a removed-target label.
+ */
+export async function removeSshTarget(targetId: string): Promise<SshRemoveTargetResult> {
+  return invoke<SshRemoveTargetResult>('ssh_remove_target', { id: targetId })
 }
 
 /**
