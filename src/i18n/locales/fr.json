@@ -5683,6 +5683,10 @@
         },
         "HostRenameDialog": {
           "1a2b3c4d5e": "Renommer l'hôte",
+          "description": "L'hôte SSH enregistré est renommé partout où il apparaît : barre latérale, sélecteurs et réglages.",
+          "labelRequired": "Saisissez un nom pour cet hôte.",
+          "labelDuplicate": "Un autre hôte utilise déjà ce nom.",
+          "renameFailed": "Échec du renommage de l'hôte.",
           "2b3c4d5e6f": "Ce libellé n'est affiché que sur cet ordinateur. Laissez vide pour utiliser le nom par défaut.",
           "3c4d5e6f7a": "Nom d'affichage",
           "4d5e6f7a8b": "Rétablir la valeur par défaut",

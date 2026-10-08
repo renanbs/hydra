@@ -32,6 +32,7 @@ import type { FolderWorkspace } from "../../shared/folder-workspace-types";
 import type { ProjectGroup as SharedProjectGroup } from "../../shared/project-group-types";
 import type { Worktree } from "../../shared/worktree/types";
 import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
+import { HostSectionHeaderMenu } from "./HostSectionHeaderMenu";
 import type {
   FolderWorkspaceRow as FolderWorkspaceRowModel,
   GroupHeaderRow,
@@ -430,7 +431,7 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
       aria-expanded={!isCollapsed}
       aria-label={row.label}
       data-host-header-id={row.hostId}
-      className="group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
+      className="group/host-header relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
       style={{ paddingLeft: WORKTREE_SECTION_HEADER_PADDING_LEFT }}
       onClick={onToggleCollapse}
       onKeyDown={(e) => {
@@ -451,6 +452,7 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
         className={cn("size-3.5 shrink-0 text-muted-foreground transition-transform", isCollapsed && "-rotate-90")}
         aria-hidden
       />
+      <HostSectionHeaderMenu row={row} />
     </div>
   );
 });
