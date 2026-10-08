@@ -18,13 +18,23 @@ import type {
   WorkspaceHostScope,
 } from '../shared/ui-chrome-types'
 import {
-  ALL_EXECUTION_HOSTS_SCOPE,
   normalizeExecutionHostScope,
   normalizeVisibleExecutionHostIds,
   type ExecutionHostId,
 } from '../shared/execution-host'
+import { createUISlice } from './slices/ui'
 
 export const EMPTY_TABS: TabItem[] = [];
+/**
+ * Live store shape.
+ *
+ * The members the composed UI slice owns (`createUISlice`, spread first in `useAppStore`) are
+ * still declared here: `UISlice` is an auto-stub (`any`) on this branch, so an
+ * `& UISlice` intersection would erase every check on this object instead of adding the
+ * slice's members. What this interface declares is therefore the live store's public type;
+ * `store-ui-slice-composition.parity.test.ts` pins the runtime side (the slice's values win,
+ * no literal re-declares a slice key).
+ */
 export interface AppState {
   /** Tabs grouped by workspace (worktree path) */
   tabsByWorktree: Record<string, TabItem[]>
@@ -96,7 +106,8 @@ export interface AppState {
   /** Which status bar items are enabled (claude, codex, ssh, ports, resource-usage, ...) */
   statusBarItems: string[]
   toggleStatusBarItem: (item: string) => void
-  recordFeatureInteraction: (feature: string) => void
+  /** Resolves once the slice's own persistence write settles (the slice's shape, not the old void stub). */
+  recordFeatureInteraction: (feature: string) => Promise<void>
   /** Agent CLI binaries detected on PATH */
   detectedAgentIds: string[]
   ensureDetectedAgents: () => Promise<void>
@@ -217,7 +228,9 @@ export interface AppState {
   workspaceHostScope: WorkspaceHostScope
   worktreeNavHistory: any[]
   worktreeNavHistoryIndex: number
-  // ─── Sidebar host scope actions (Orca ui slice, live-store port) ───
+  // ─── Sidebar host scope actions (supplied by the composed UI slice) ───
+  // Same normalizers the slice runs; the slice also writes its own `ui.state` row through the
+  // Tauri adapter. The App still hydrates the boot value from its `ui.sidebar` blob.
   setWorkspaceHostScope: (scope: WorkspaceHostScope) => void
   setVisibleWorkspaceHostIds: (ids: readonly ExecutionHostId[] | null) => void
   // ─── Orca Compat: Actions ───
@@ -314,6 +327,16 @@ export interface AppState {
   updateBrowserPageState: (...args: any[]) => any
   updateTabPtyId: (...args: any[]) => any
   updateTabTitle: (...args: any[]) => any
+  // ─── Cross-slice interop the composed UI slice calls ───
+  /** nav-history slice (not composed yet) — `open*Page` records a visit. */
+  recordViewVisit: (...args: any[]) => any
+  /** diffComments slice (not composed yet) — diff-notes menu reads a worktree's notes. */
+  getDiffComments: (...args: any[]) => any
+  /** editor right-sidebar slice (not composed yet) — diff-notes menu opens Source Control. */
+  setRightSidebarTab: (...args: any[]) => any
+  setRightSidebarOpen: (...args: any[]) => any
+  /** github slice (not composed yet) — the task page prefetches work items. */
+  prefetchWorkItems: (...args: any[]) => any
   // ─── Orca Compat: Getters ───
   getActiveTab: (...args: any[]) => any
   getAgentLaunchConfigForStatusMetadata: (...args: any[]) => any
@@ -330,7 +353,13 @@ function isCreateWorktreeCallOptions(value: unknown): value is CreateWorktreeCal
 }
 
 export const useAppStore = create<AppState>()(
-  subscribeWithSelector((set, get) => ({
+  subscribeWithSelector((set, get, store) => ({
+    // The ported UI slice owns every key it defines (sortBy/groupBy, host scope, pets,
+    // port scans, activity ack, tours, persistence, hydration, ...). It is spread first
+    // and nothing below re-declares a key it provides, so the slice is the only source.
+    // `UISlice` is still an auto-stub (`any`) in this branch, so the slice's shape is
+    // asserted at runtime by store-ui-slice-composition.parity.test.ts, not by tsc.
+    ...createUISlice(set, get, store),
     tabsByWorktree: {},
     activeTabIdByWorktree: {},
     mruTabIds: [],
@@ -345,22 +374,15 @@ export const useAppStore = create<AppState>()(
     collapsedLineageParentsByWorktree: {},
 
     // ─── Status bar / settings slices (Orca useStatusBarController parity) ───
+    // Everything the UI slice owns now comes from the spread above. What stays here belongs
+    // to slices this store does not compose yet (`createRateLimitSlice`,
+    // `createSettingsSlice`, `createDetectedAgentsSlice`).
     rateLimits: {},
     refreshRateLimits: () => Promise.resolve(),
     settings: null,
-    openSettingsTarget: () => {},
-    openSettingsPage: () => {},
-    usagePercentageDisplay: 'used',
-    statusBarUsageMode: 'usage',
-    setStatusBarUsageMode: () => {},
-    statusBarVisible: true,
-    statusBarItems: ['resource-usage', 'ports', 'ssh', 'claude', 'codex'],
-    toggleStatusBarItem: () => {},
-    recordFeatureInteraction: () => {},
     detectedAgentIds: [],
     ensureDetectedAgents: () => Promise.resolve(),
     refreshDetectedAgents: () => Promise.resolve([]),
-    usageEmptyStateDismissed: false,
     keybindings: {},
     updateSettings: () => {},
 
@@ -379,7 +401,6 @@ export const useAppStore = create<AppState>()(
     gitStatusHugeByWorktree: {},
     groupsByWorktree: {},
     localDetectedAgentIdsByContext: {},
-    manuallyUnreadTurnsByPaneKey: {},
     pendingAddressBarFocusByTabId: {},
     pendingReconnectPtyIdByTabId: {},
     pendingStartupByTabId: {},
@@ -396,13 +417,7 @@ export const useAppStore = create<AppState>()(
     terminalLayoutsByTabId: {},
     unifiedTabsByWorktree: {},
     worktreeLineageById: {},
-    alwaysShowDefaultBranchWorkspace: false,
     detectedBrowsersLoaded: false,
-    hideAutomationGeneratedWorkspaces: false,
-    hideCliCreatedWorkspaces: false,
-    hideDefaultBranchWorkspace: false,
-    hideDetachedHeadWorkspaces: false,
-    hideWorkspacesFromOtherDevices: false,
     isDetectingAgents: false,
     isDetectingLocalAgentsByContext: false,
     isDetectingRemoteAgents: false,
@@ -413,19 +428,16 @@ export const useAppStore = create<AppState>()(
     isRefreshingRuntimeAgents: false,
     runtimeEnvironmentCatalogHydrated: false,
     runtimeEnvironmentCatalogSettled: false,
-    showSleepingWorkspaces: false,
     sshTargetsHydrated: false,
     terminalStartupRestorationReady: false,
     workspaceSessionReady: false,
     allWorktrees: [],
-    filterRepoIds: [],
     remoteDetectedAgentIds: [],
     remoteWorkspaceHydratedTargetIds: [],
     removedRuntimeEnvironmentIds: [],
     runtimeDetectedAgentIds: [],
     suppressedPtyExitIds: [],
     transientClearedAgentStatusConnectionIds: [],
-    visibleWorkspaceHostIds: null,
     activeBrowserTabId: null,
     activeFileId: null,
     activeTabId: null,
@@ -439,13 +451,10 @@ export const useAppStore = create<AppState>()(
     remoteBrowserPageHandlesByPageId: null,
     remoteWorkspaceSyncStatusByTargetId: null,
     activeTabType: null,
-    activeView: null,
     agentStatusEpoch: 0,
-    browserDefaultUrl: null,
     browserSessionProfiles: [],
     browserUrlHistory: [],
     detectedWorktreesByRepo: null,
-    editorFontZoomLevel: 0,
     folderWorkspaces: null,
     linearStatus: null,
     linearStatusContextKey: null,
@@ -455,17 +464,14 @@ export const useAppStore = create<AppState>()(
     rightSidebarTab: null,
     runtimeEnvironments: null,
     runtimeTerminalQuickCommands: null,
-    sortBy: 'recent',
     sshConnectedGeneration: 0,
     sshConnectionStates: null,
     sshCredentialQueue: [],
     sshTargetGenerations: 0,
     sshTargetLabels: null,
-    taskPageData: null,
-    unreadAgentCompletionPanes: null,
+    unreadAgentCompletionPanes: {},
     unreadTerminalTabs: null,
     workspaceDocHistory: [],
-    workspaceHostScope: 'all',
     worktreeNavHistory: [],
     worktreeNavHistoryIndex: 0,
     setActiveBrowserPage: () => {},
@@ -475,16 +481,11 @@ export const useAppStore = create<AppState>()(
     setActiveRepo: () => {},
     setActiveTab: () => {},
     setActiveTabType: () => {},
-    setActiveView: () => {},
     setActiveWorktree: () => {},
     setAgentStatus: () => {},
     setBrowserPageCertificateFailure: () => {},
     setBrowserPageUrl: () => {},
-    setEditorFontZoomLevel: () => {},
     setExternalMutation: () => {},
-    setHideAutomationGeneratedWorkspaces: () => {},
-    setHideCliCreatedWorkspaces: () => {},
-    setHideDetachedHeadWorkspaces: () => {},
     setPendingLiveDiskVerification: () => {},
     setRemoteBrowserPageHandle: () => {},
     setRuntimeEnvironmentStatus: () => {},
@@ -494,10 +495,8 @@ export const useAppStore = create<AppState>()(
     setTabColor: () => {},
     setTabLabel: () => {},
     setTabLayout: () => {},
-    setWorkspacePortScanRefreshing: () => {},
     clearAgentLaunchConfig: () => {},
     clearCodexRestartNotice: () => {},
-    clearManuallyUnreadTurns: () => {},
     clearSelfMoveEcho: () => {},
     clearSleepingAgentSession: () => {},
     clearTabPtyId: () => {},
@@ -575,8 +574,6 @@ export const useAppStore = create<AppState>()(
     closeFile: () => {},
     closeTab: () => {},
     closeUnifiedTab: () => {},
-    acknowledgeAgents: () => {},
-    acknowledgedAgentsByPaneKey: {},
     activateTab: () => {},
     applyRuntimeHostStatusSnapshot: () => {},
     ensureRemoteDetectedAgents: () => {},
@@ -603,17 +600,24 @@ export const useAppStore = create<AppState>()(
     reopenClosedBrowserTab: () => {},
     reopenClosedEditorTab: () => {},
     reopenClosedTerminalTab: () => {},
-    replaceWorkspacePortScans: () => {},
     retainEnvironmentSshState: () => {},
     retainRuntimeDetectedAgents: () => {},
     retainRuntimeTerminalQuickCommands: () => {},
     retainedAgentsByPaneKey: {},
-    revealWorktreeInSidebar: () => {},
     scheduleAgentStatusFreshness: () => {},
-    unacknowledgeAgents: () => {},
     updateBrowserPageState: () => {},
     updateTabPtyId: () => {},
     updateTabTitle: () => {},
+    // ─── Cross-slice interop the composed UI slice calls ───
+    // The UI slice's page/menu actions call into slices this store does not compose yet
+    // (worktree-nav-history, diffComments, github, editor right-sidebar). Their owners are
+    // still un-composed, so keep the live store's stub shape: without it those actions throw
+    // on an undefined call. Each entry goes away when its own slice is composed.
+    recordViewVisit: () => {},
+    getDiffComments: () => [],
+    setRightSidebarTab: () => {},
+    setRightSidebarOpen: () => {},
+    prefetchWorkItems: () => {},
     getActiveTab: () => null,
     getAgentLaunchConfigForStatusMetadata: () => null,
     getFreshFolderWorkspacePathStatus: () => null,
@@ -646,30 +650,12 @@ export const useAppStore = create<AppState>()(
 
     setMruTabIds: (ids) => set({ mruTabIds: ids }),
 
-    // Why bare set: persistence is the App's debounced `ui.sidebar` writer, not
-    // the store (the ported Orca slice went through an Electron preload bridge
-    // that does not exist under Tauri).
-    setWorkspaceHostScope: (scope) => {
-      const workspaceHostScope = normalizeExecutionHostScope(scope)
-      set({
-        workspaceHostScope,
-        // A concrete scope means exactly that host; 'all' clears the filter.
-        visibleWorkspaceHostIds:
-          workspaceHostScope === ALL_EXECUTION_HOSTS_SCOPE ? null : [workspaceHostScope],
-      })
-    },
-    setVisibleWorkspaceHostIds: (ids) => {
-      const visibleWorkspaceHostIds = normalizeVisibleExecutionHostIds(ids)
-      // Why: workspaceHostScope stays the compat/default-host signal for creation
-      // flows; visibility can now be multi-select (only 0 or 1 host rewrites it).
-      let workspaceHostScope = get().workspaceHostScope
-      if (visibleWorkspaceHostIds === null) {
-        workspaceHostScope = ALL_EXECUTION_HOSTS_SCOPE
-      } else if (visibleWorkspaceHostIds.length === 1) {
-        workspaceHostScope = visibleWorkspaceHostIds[0]
-      }
-      set({ visibleWorkspaceHostIds, workspaceHostScope })
-    },
+    // `setWorkspaceHostScope` / `setVisibleWorkspaceHostIds` used to live here as a
+    // bare-set port. The UI slice now owns them: same normalizers, plus the slice's
+    // own `ui.state` write through the Tauri adapter (`ui-prefs-bridge`). The App
+    // still hydrates the boot value from its `ui.sidebar` blob via
+    // `hydrateWorkspaceHostScopePreference` below.
+
     addTabToWorktree: (worktreePath, tab, select = true) =>
       set((s) => {
         const currentTabs = s.tabsByWorktree[worktreePath] ?? [];
