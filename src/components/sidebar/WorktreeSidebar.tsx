@@ -193,6 +193,8 @@ export function WorktreeSidebar({
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
   const [projectDropTarget, setProjectDropTarget] = useState<{ id: string; position: "top" | "bottom" } | null>(null);
   const [groupDropTargetId, setGroupDropTargetId] = useState<string | null>(null);
+  /** The panel's scroll container: row-rect and autoscroll reference for the pointer drag. */
+  const worktreeScrollRef = useRef<HTMLDivElement | null>(null);
 
   // ─── App Version & Ports ─────────────────────────────────────────────────
   useEffect(() => {
@@ -427,6 +429,17 @@ export function WorktreeSidebar({
   ]);
 
   // ─── Drag and Drop Handlers ──────────────────────────────────────────────
+  /**
+   * The panel's single order writer: an in-group reorder from any gesture — the HTML5
+   * drop and the pointer drag — lands here, so there is one persisted order per list.
+   */
+  const commitReorderedWorktrees = useCallback(
+    (ordered: GitWorktreeInfo[], projectPath: string) => {
+      onReorderWorktrees?.(ordered, projectPath);
+    },
+    [onReorderWorktrees]
+  );
+
   const handleWorktreeDragStart = useCallback((e: React.DragEvent, path: string) => {
     setDraggedWorktreePath(path);
     e.dataTransfer.effectAllowed = "move";
@@ -457,12 +470,12 @@ export function WorktreeSidebar({
         const [moved] = next.splice(fromIdx, 1);
         const insertIdx = worktreeDropTarget?.position === "top" ? toIdx : toIdx + 1;
         next.splice(insertIdx > fromIdx ? insertIdx - 1 : insertIdx, 0, moved);
-        onReorderWorktrees(next, proj.path);
+        commitReorderedWorktrees(next, proj.path);
       }
     }
     setDraggedWorktreePath(null);
     setWorktreeDropTarget(null);
-  }, [draggedWorktreePath, worktreeDropTarget, getWorktreesForProject, onReorderWorktrees]);
+  }, [draggedWorktreePath, worktreeDropTarget, getWorktreesForProject, onReorderWorktrees, commitReorderedWorktrees]);
 
   const handleWorktreeDragEnd = useCallback(() => {
     setDraggedWorktreePath(null);
@@ -703,6 +716,7 @@ export function WorktreeSidebar({
               horizontal inset comes from the row geometry, so the card's hit box reaches
               the container edge instead of dying in its padding. */}
           <div
+            ref={worktreeScrollRef}
             className="flex-1 overflow-y-auto overflow-x-hidden pl-1 pr-3 pt-px min-h-0 scrollbar-sleek"
           >
             <WorktreeList
@@ -810,6 +824,8 @@ export function WorktreeSidebar({
               }}
               draggedWorktreePath={draggedWorktreePath}
               worktreeDropTarget={worktreeDropTarget}
+              scrollRef={worktreeScrollRef}
+              onReorderWorktreesInGroup={commitReorderedWorktrees}
               draggedProjectId={draggedProjectId}
               projectDropTarget={projectDropTarget}
               groupDropTargetId={groupDropTargetId}
