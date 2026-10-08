@@ -1,4 +1,3 @@
-// @ts-nocheck — Orca port buffer; typecheck when this subsystem is wired.
 import type { StateCreator } from 'zustand'
 import type { AppState } from '../index'
 import type {
