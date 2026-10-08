@@ -55,6 +55,19 @@ export const createRefreshRoutingActions = (
   },
 
   reportVisibleGitHubPRRefreshCandidates: (worktreeIds, generation) => {
+    // Why probe: Hydra has not wired the PR-refresh coordinator yet — `findWorktreeById`,
+    // `buildPRRefreshCandidate`, `getPRRefreshRuntimeRepoTarget` and the `window.api.gh` bridge
+    // are all port stubs (null) or absent under Tauri. The sidebar's visible-row reporter calls
+    // this on every window change, so degrade to "nothing to report" instead of throwing out of
+    // a render effect.
+    const reportVisible = window.api?.gh?.reportVisiblePRRefreshCandidates
+    if (
+      !reportVisible ||
+      typeof findWorktreeById !== 'function' ||
+      typeof buildPRRefreshCandidate !== 'function'
+    ) {
+      return
+    }
     const state = get()
     const candidates = worktreeIds
       .map((id) => {
@@ -79,12 +92,9 @@ export const createRefreshRoutingActions = (
         localCandidates.push(candidate)
       }
     }
-    const reportVisible = window.api.gh.reportVisiblePRRefreshCandidates
-    if (reportVisible) {
-      void reportVisible({ candidates: localCandidates, generation }).catch((err: any) => {
-        console.warn('Failed to report visible PR refresh candidates:', err)
-      })
-    }
+    void reportVisible({ candidates: localCandidates, generation }).catch((err: unknown) => {
+      console.warn('Failed to report visible PR refresh candidates:', err)
+    })
   },
 
   bumpGitHubPRVisibleRefreshGeneration: () => {
