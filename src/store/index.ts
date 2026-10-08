@@ -23,6 +23,7 @@ import {
   type ExecutionHostId,
 } from '../shared/execution-host'
 import { createUISlice } from './slices/ui'
+import { createSshSlice, type SshSlice } from './slices/ssh'
 
 export const EMPTY_TABS: TabItem[] = [];
 /**
@@ -34,8 +35,13 @@ export const EMPTY_TABS: TabItem[] = [];
  * slice's members. What this interface declares is therefore the live store's public type;
  * `store-ui-slice-composition.parity.test.ts` pins the runtime side (the slice's values win,
  * no literal re-declares a slice key).
+ *
+ * The SSH slice (`createSshSlice`) is composed below and its shape is real (not an `any`
+ * stub), so its members are declared by intersection here instead of being re-declared as
+ * `any`/placeholder literals. The live store literal spreads it, so the slice is the single
+ * source for every ssh* key.
  */
-export interface AppState {
+export interface AppState extends SshSlice {
   /** Tabs grouped by workspace (worktree path) */
   tabsByWorktree: Record<string, TabItem[]>
   /** The currently active tab id for each workspace */
@@ -129,7 +135,6 @@ export interface AppState {
   clientHostedBrowserCloseIntentsByEnvironment: Record<string, any>
   defaultBrowserSessionProfileIdByHostId: Record<string, any>
   deferredSshSessionIdsByTabId: Record<string, any>
-  detectedPortsByConnection: Record<string, any>
   gitStatusHugeByWorktree: Record<string, any>
   groupsByWorktree: Record<string, any>
   localDetectedAgentIdsByContext: Record<string, any>
@@ -137,7 +142,6 @@ export interface AppState {
   pendingAddressBarFocusByTabId: Record<string, any>
   pendingReconnectPtyIdByTabId: Record<string, any>
   pendingStartupByTabId: Record<string, any>
-  portForwardsByConnection: Record<string, any>
   ptyIdsByTabId: Record<string, any>
   recentlyClosedBrowserPagesByWorkspace: Record<string, any>
   recentlyClosedBrowserTabsByWorktree: Record<string, any>
@@ -169,18 +173,16 @@ export interface AppState {
   runtimeEnvironmentCatalogHydrated: boolean
   runtimeEnvironmentCatalogSettled: boolean
   showSleepingWorkspaces: boolean
-  sshTargetsHydrated: boolean
   terminalStartupRestorationReady: boolean
   workspaceSessionReady: boolean
   // ─── Orca Compat: Arrays ───
   allWorktrees: any[]
   filterRepoIds: any[]
   remoteDetectedAgentIds: any[]
-  remoteWorkspaceHydratedTargetIds: any[]
   removedRuntimeEnvironmentIds: any[]
   runtimeDetectedAgentIds: any[]
   suppressedPtyExitIds: any[]
-  transientClearedAgentStatusConnectionIds: any[]
+  transientClearedAgentStatusConnectionIds: Record<string, true>
   /** Which execution hosts the sidebar shows; `null` = all hosts (sticky). */
   visibleWorkspaceHostIds: VisibleWorkspaceHostIds
   // ─── Orca Compat: String IDs ───
@@ -195,7 +197,6 @@ export interface AppState {
   migrationUnsupportedByPtyId: Record<string, any>
   pendingAddressBarFocusByPageId: string | null
   remoteBrowserPageHandlesByPageId: string | null
-  remoteWorkspaceSyncStatusByTargetId: string | null
   // ─── Orca Compat: Other State ───
   activeTabType: any
   activeView: any
@@ -215,11 +216,6 @@ export interface AppState {
   runtimeEnvironments: any
   runtimeTerminalQuickCommands: any
   sortBy: 'name' | 'smart' | 'recent' | 'repo' | 'manual'
-  sshConnectedGeneration: number
-  sshConnectionStates: any
-  sshCredentialQueue: any[]
-  sshTargetGenerations: number
-  sshTargetLabels: any
   taskPageData: any
   unreadAgentCompletionPanes: any
   unreadTerminalTabs: any
@@ -362,6 +358,9 @@ export const useAppStore = create<AppState>()(
     // `UISlice` is still an auto-stub (`any`) in this branch, so the slice's shape is
     // asserted at runtime by store-ui-slice-composition.parity.test.ts, not by tsc.
     ...createUISlice(set, get, store),
+    // The SSH slice is composed directly: its shape is real (see `SshSlice`), so the
+    // live literal must not re-declare any key it provides.
+    ...createSshSlice(set, get, store),
     tabsByWorktree: {},
     activeTabIdByWorktree: {},
     mruTabIds: [],
@@ -399,14 +398,12 @@ export const useAppStore = create<AppState>()(
     clientHostedBrowserCloseIntentsByEnvironment: {},
     defaultBrowserSessionProfileIdByHostId: {},
     deferredSshSessionIdsByTabId: {},
-    detectedPortsByConnection: {},
     gitStatusHugeByWorktree: {},
     groupsByWorktree: {},
     localDetectedAgentIdsByContext: {},
     pendingAddressBarFocusByTabId: {},
     pendingReconnectPtyIdByTabId: {},
     pendingStartupByTabId: {},
-    portForwardsByConnection: {},
     ptyIdsByTabId: {},
     recentlyClosedBrowserPagesByWorkspace: {},
     recentlyClosedBrowserTabsByWorktree: {},
@@ -430,16 +427,14 @@ export const useAppStore = create<AppState>()(
     isRefreshingRuntimeAgents: false,
     runtimeEnvironmentCatalogHydrated: false,
     runtimeEnvironmentCatalogSettled: false,
-    sshTargetsHydrated: false,
     terminalStartupRestorationReady: false,
     workspaceSessionReady: false,
     allWorktrees: [],
     remoteDetectedAgentIds: [],
-    remoteWorkspaceHydratedTargetIds: [],
     removedRuntimeEnvironmentIds: [],
     runtimeDetectedAgentIds: [],
     suppressedPtyExitIds: [],
-    transientClearedAgentStatusConnectionIds: [],
+    transientClearedAgentStatusConnectionIds: {},
     activeBrowserTabId: null,
     activeFileId: null,
     activeTabId: null,
@@ -451,7 +446,6 @@ export const useAppStore = create<AppState>()(
     migrationUnsupportedByPtyId: {},
     pendingAddressBarFocusByPageId: null,
     remoteBrowserPageHandlesByPageId: null,
-    remoteWorkspaceSyncStatusByTargetId: null,
     activeTabType: null,
     agentStatusEpoch: 0,
     browserSessionProfiles: [],
@@ -466,11 +460,6 @@ export const useAppStore = create<AppState>()(
     rightSidebarTab: null,
     runtimeEnvironments: null,
     runtimeTerminalQuickCommands: null,
-    sshConnectedGeneration: 0,
-    sshConnectionStates: null,
-    sshCredentialQueue: [],
-    sshTargetGenerations: 0,
-    sshTargetLabels: null,
     unreadAgentCompletionPanes: {},
     unreadTerminalTabs: null,
     workspaceDocHistory: [],
