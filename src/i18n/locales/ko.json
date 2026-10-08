@@ -4402,8 +4402,7 @@
           "a30e34eb5c": "워크스페이스 보드 닫기",
           "spaces": "스페이스",
           "views": "사이드바 보기",
-          "addProject": "프로젝트 추가",
-          "addSshHost": "SSH 호스트 추가"
+          "addProject": "프로젝트 추가"
         },
         "SidebarNav": {
           "80611a8b10": "검색",
