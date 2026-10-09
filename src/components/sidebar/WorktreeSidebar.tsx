@@ -17,6 +17,8 @@ import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
 import { SidebarAgentsList } from "./SidebarAgentsList";
 import { WorktreeList } from "./WorktreeList";
+import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
+import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
@@ -194,6 +196,18 @@ export function WorktreeSidebar({
   const [groupDropTargetId, setGroupDropTargetId] = useState<string | null>(null);
   /** The panel's scroll container: row-rect and autoscroll reference for the pointer drag. */
   const worktreeScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // ─── Workspace board (Orca D08 shell) ────────────────────────────────────
+  // The board is a companion panel of this sidebar: it is anchored to the
+  // sidebar's own box and reads the sidebar's visible workspaces, so it lives
+  // here rather than in the shell.
+  const sidebarRootRef = useRef<HTMLDivElement | null>(null);
+  const {
+    workspaceBoardOpen,
+    workspaceBoardRenderedOpen,
+    toggleWorkspaceBoard,
+    handleWorkspaceBoardOpenChange,
+  } = useWorkspaceBoardPanel();
 
   // ─── App Version & Ports ─────────────────────────────────────────────────
   useEffect(() => {
@@ -633,6 +647,7 @@ export function WorktreeSidebar({
   }, [settings?.left_sidebar_appearance_mode, settings?.left_sidebar_tint_color, settings?.left_sidebar_tint_opacity]);
   return (
     <div
+      ref={sidebarRootRef}
       className="flex h-full w-full flex-col bg-worktree-sidebar text-worktree-sidebar-foreground select-none overflow-hidden"
       style={sidebarTintStyle}
     >
@@ -874,6 +889,30 @@ export function WorktreeSidebar({
         gitStatus={gitStatus}
         onOpenSettings={onOpenSettings}
         onRevealCurrent={sidebarBody === "workspaces" ? () => handleRevealCurrent() : undefined}
+        workspaceBoardOpen={workspaceBoardOpen}
+        onToggleWorkspaceBoard={toggleWorkspaceBoard}
+      />
+
+      {/* 5b. Workspace board — companion panel anchored to this sidebar */}
+      <WorkspaceBoardDrawer
+        open={workspaceBoardOpen}
+        renderedOpen={workspaceBoardRenderedOpen}
+        sidebarRef={sidebarRootRef}
+        displayProjects={displayProjects}
+        getProjectWorktrees={getFilteredAndSortedWorktrees}
+        sessions={sessions}
+        displayOptions={displayOptions}
+        activeWorktreePath={activeWorktreePath}
+        liveWorkspacePaths={liveWorkspacePaths}
+        pinnedWorktreePaths={pinnedWorktrees}
+        unreadWorktreePaths={unreadWorktrees}
+        portsByWorktree={portsByWorktree}
+        prByPath={prByPath}
+        compactCards={compactCards}
+        onOpenChange={handleWorkspaceBoardOpenChange}
+        onSelectWorktree={onSelectGitWorktree}
+        onSelectSession={onSelectSession}
+        onWorktreeContextMenu={onWorktreeContextMenu}
       />
 
       {/* 6. Context Menus */}
