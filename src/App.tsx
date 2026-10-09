@@ -36,6 +36,9 @@ import {
 import { isShellProcess } from "./components/workbench/tab-agent";
 import { hydrateWorkspaceHostScopePreference, useAppStore } from "./store";
 import { hydrateSshTargets } from "./store/ssh-bridge";
+import { getWorkspaceStatusVisualMeta } from "./components/sidebar/workspace-status";
+import { cloneDefaultWorkspaceStatuses } from "./shared/workspace-statuses";
+import { translate } from "./i18n/i18n";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraNavId } from "./components/SettingsModal";
@@ -3504,6 +3507,8 @@ export default function App() {
   };
 
   const handleWorktreeContextMenu = (e: React.MouseEvent, wt: GitWorktreeInfo, proj: HydraProject) => {
+    // Same source the sidebar pipeline and the workspace board read (`state.workspaceStatuses`).
+    const workspaceStatuses = useAppStore.getState().workspaceStatuses ?? cloneDefaultWorkspaceStatuses();
     const isMain = wt.path === proj.path;
     const isPinned = pinnedWorktrees.has(wt.path);
     const isUnread = unreadWorktrees.has(wt.path);
@@ -3627,40 +3632,23 @@ export default function App() {
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(wt.path) },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(wt.path) },
         {
-          label: "Status",
+          label: translate(
+            "auto.components.sidebar.WorktreeContextMenu.84cdbb7e30",
+            "Move to Status"
+          ),
           icon: <Kanban className="w-3.5 h-3.5" />,
-          children: [
-            {
-              label: "Blocked",
-              icon: <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("blocked"),
-            },
-            {
-              label: "Waiting",
-              icon: <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("waiting"),
-            },
-            {
-              label: "Working",
-              icon: <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("working"),
-            },
-            {
-              label: "Done",
-              icon: <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("done"),
-            },
-            {
-              label: "Idle",
-              icon: <span className="w-2 h-2 rounded-full bg-neutral-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("idle"),
-            },
-            {
-              label: "Clear Status",
-              separator: true,
-              onClick: () => handleAssignWorktreeStatus(null),
-            },
-          ],
+          // Orca `WorktreeStatusMenuItems`: the items are the user's workspace-status
+          // definitions (not agent activity), so the value written here is what the
+          // sidebar grouping and the workspace board lanes read back.
+          children: workspaceStatuses.map((status) => {
+            const meta = getWorkspaceStatusVisualMeta(status);
+            const StatusIcon = meta.icon;
+            return {
+              label: status.label,
+              icon: <StatusIcon className={`w-3.5 h-3.5 ${meta.tone}`} />,
+              onClick: () => handleAssignWorktreeStatus(status.id),
+            };
+          }),
           onClick: () => {},
         },
         {
