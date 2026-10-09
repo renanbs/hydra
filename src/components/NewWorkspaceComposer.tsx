@@ -13,12 +13,19 @@ import {
   Loader2 
 } from "lucide-react";
 import type { AvailableAgent, HydraProject } from "./sidebar/WorktreeSidebar";
+import { persistWorktreeStatus } from "@/lib/worktree-status-persistence";
+import type { WorkspaceStatus } from "../shared/worktree/types";
 
 interface NewWorkspaceComposerProps {
   isOpen: boolean;
   activeProject: HydraProject | null;
   projects: HydraProject[];
   availableAgents: AvailableAgent[];
+  /**
+   * Status of the workspace board's lane the composer was opened from (D08-030). The
+   * created worktree is persisted into that lane; absent for every other entry point.
+   */
+  initialWorkspaceStatus?: WorkspaceStatus | null;
   onSelectProject?: (proj: HydraProject) => void;
   onOpenAddRepoDialog?: () => void;
   onOpenSettings?: () => void;
@@ -31,6 +38,7 @@ export function NewWorkspaceComposer({
   activeProject,
   projects,
   availableAgents,
+  initialWorkspaceStatus,
   onSelectProject,
   onOpenAddRepoDialog,
   onOpenSettings,
@@ -114,7 +122,17 @@ export function NewWorkspaceComposer({
       branchName: branchToUse,
       newBranch: true,
     })
-      .then((createdPath) => {
+      .then(async (createdPath) => {
+        // D08-030: create from a lane's `+` seeds the status here, so the new worktree is
+        // born in that lane. The write is the app's single status writer; a failed write
+        // must not lose the worktree that already exists on disk.
+        if (initialWorkspaceStatus) {
+          try {
+            await persistWorktreeStatus(createdPath, initialWorkspaceStatus);
+          } catch (statusError) {
+            console.error("Failed to set workspace status on create:", statusError);
+          }
+        }
         setIsSubmitting(false);
         onCreated(createdPath, branchToUse, chosenAgent.name, chosenAgent.executable);
         if (!createMultiple) {

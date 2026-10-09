@@ -4551,7 +4551,8 @@
         "WorkspaceKanbanStatusLane": {
           "8ad104642b": "空の",
           "3611d1ae7f": "ワークスペースボードの列のサイズを変更する",
-          "2df01a03ff": "一致なし"
+          "2df01a03ff": "一致なし",
+          "4031918ca7": "{{value0}} に新規ワークスペース"
         },
         "WorkspaceStatusAppearancePopover": {
           "514be2f569": "{{value0}} の色を {{value1}} に設定します",

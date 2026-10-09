@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
+import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
-import type { WorkspaceStatusDefinition } from '../../../shared/worktree/types'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import type { WorkspaceStatus, WorkspaceStatusDefinition } from '../../../shared/worktree/types'
 import {
   WORKSPACE_BOARD_COLUMN_WIDTH_MAX,
   WORKSPACE_BOARD_COLUMN_WIDTH_MIN
@@ -32,6 +35,11 @@ type WorkspaceBoardStatusLaneProps = {
   isDropTarget?: boolean
   /** The board's selection, by host-qualified card identity. */
   selectedWorktreeIds: ReadonlySet<string>
+  /**
+   * Opens the workspace composer with this lane's status preselected (Orca
+   * `useWorkspaceKanbanCreateWorktree`). The header and the lane footer both call it.
+   */
+  onCreateWorktree: (workspaceStatus: WorkspaceStatus) => void
   onSelectionGesture: (event: React.MouseEvent<HTMLElement>, worktreeIdentity: string) => boolean
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
@@ -47,8 +55,8 @@ type WorkspaceBoardStatusLaneProps = {
  * lane and `isDropTarget` paints the highlight while a card hovers it. The lane body is the
  * card list's own scroll element, so the cards are virtualized inside it (`renderCards`
  * gates them until this lane's hydration frame). Its right edge carries the column resize
- * handle (D08-022); the lane's create-workspace buttons are not part of this increment, so
- * they are absent rather than inert.
+ * handle (D08-022); each lane also carries its create-workspace affordance — the header
+ * `+` and the full-width footer `+` (D08-021/D08-030), both wired to the composer.
  */
 function WorkspaceBoardStatusLane({
   status,
@@ -61,6 +69,7 @@ function WorkspaceBoardStatusLane({
   compactCards,
   isDropTarget = false,
   selectedWorktreeIds,
+  onCreateWorktree,
   onSelectionGesture,
   onActivate,
   onSelectSession,
@@ -73,6 +82,13 @@ function WorkspaceBoardStatusLane({
   // list would never register its measured layout for the drop geometry.
   const [cardScrollerElement, setCardScrollerElement] = useState<HTMLDivElement | null>(null)
   const meta = getWorkspaceStatusVisualMeta(status)
+  // Orca spells this tooltip `New workspace in ${status.label}`; localized here so the
+  // label the user renamed the status to still lands inside the sentence.
+  const createTooltip = translate(
+    'auto.components.sidebar.WorkspaceKanbanStatusLane.4031918ca7',
+    'New workspace in {{value0}}',
+    { value0: status.label }
+  )
   // Why: a lane that is empty on its own merits is still "Empty" under a query —
   // only a lane whose cards were filtered away has anything to say about matches.
   const isFiltered = hasQuery && totalCount > 0
@@ -129,6 +145,23 @@ function WorkspaceBoardStatusLane({
             {isFiltered ? `${cards.length} / ${totalCount}` : cards.length}
           </div>
         </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="size-6 shrink-0 text-muted-foreground"
+              aria-label={createTooltip}
+              onClick={() => onCreateWorktree(status.id)}
+            >
+              <Plus className="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" sideOffset={6}>
+            {createTooltip}
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <div
@@ -156,6 +189,26 @@ function WorkspaceBoardStatusLane({
               : translate('auto.components.sidebar.WorkspaceKanbanStatusLane.8ad104642b', 'Empty')}
           </div>
         )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="secondary"
+              size="xs"
+              className={cn(
+                'mt-2 h-7 w-full can-hover:opacity-0 transition-opacity',
+                'group-hover/lane:opacity-100 group-focus-within/lane:opacity-100'
+              )}
+              aria-label={createTooltip}
+              onClick={() => onCreateWorktree(status.id)}
+            >
+              <Plus className="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={6}>
+            {createTooltip}
+          </TooltipContent>
+        </Tooltip>
       </div>
     </section>
   )

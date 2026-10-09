@@ -4599,7 +4599,8 @@
         "WorkspaceKanbanStatusLane": {
           "8ad104642b": "空的",
           "3611d1ae7f": "调整工作区板列的大小",
-          "2df01a03ff": "没有匹配项"
+          "2df01a03ff": "没有匹配项",
+          "4031918ca7": "在 {{value0}} 中新建工作区"
         },
         "WorkspaceStatusAppearancePopover": {
           "514be2f569": "将 {{value0}} 颜色设置为 {{value1}}",

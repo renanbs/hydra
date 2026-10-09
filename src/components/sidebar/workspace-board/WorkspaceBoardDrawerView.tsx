@@ -41,6 +41,8 @@ type WorkspaceBoardDrawerViewProps = {
   selectedCount: number
   /** The board's selection, by host-qualified card identity. */
   selectedWorktreeIds: ReadonlySet<string>
+  /** Opens the workspace composer with the clicked lane's status preselected. */
+  onCreateWorktree: (workspaceStatus: WorkspaceStatus) => void
   onQueryChange: (query: string) => void
   onClearQuery: () => void
   onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
@@ -83,6 +85,7 @@ export default function WorkspaceBoardDrawerView({
   totalCount,
   selectedCount,
   selectedWorktreeIds,
+  onCreateWorktree,
   onQueryChange,
   onClearQuery,
   onCardPointerDownCapture,
@@ -143,6 +146,7 @@ export default function WorkspaceBoardDrawerView({
             dropTargetStatus={dropTargetStatus}
             areaSelectionOverlayRef={areaSelectionOverlayRef}
             selectedWorktreeIds={selectedWorktreeIds}
+            onCreateWorktree={onCreateWorktree}
             onSelectionGesture={onSelectionGesture}
             onCardPointerDownCapture={onCardPointerDownCapture}
             onActivate={onActivate}

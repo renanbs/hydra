@@ -56,6 +56,8 @@ type WorkspaceBoardLaneGridProps = {
   areaSelectionOverlayRef: React.RefObject<HTMLDivElement | null>
   /** The board's selection, by host-qualified card identity. */
   selectedWorktreeIds: ReadonlySet<string>
+  /** Opens the workspace composer with the clicked lane's status preselected. */
+  onCreateWorktree: (workspaceStatus: WorkspaceStatus) => void
   onSelectionGesture: (event: React.MouseEvent<HTMLElement>, worktreeIdentity: string) => boolean
   onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
   onActivate: (worktree: GitWorktreeInfo) => void
@@ -92,6 +94,7 @@ export default function WorkspaceBoardLaneGrid({
   dropTargetStatus,
   areaSelectionOverlayRef,
   selectedWorktreeIds,
+  onCreateWorktree,
   onSelectionGesture,
   onCardPointerDownCapture,
   onActivate,
@@ -212,6 +215,7 @@ export default function WorkspaceBoardLaneGrid({
               compactCards={compactCards}
               isDropTarget={laneDropTargetStatus === lane.status.id}
               selectedWorktreeIds={selectedWorktreeIds}
+              onCreateWorktree={onCreateWorktree}
               onSelectionGesture={onSelectionGesture}
               onActivate={onActivate}
               onSelectSession={onSelectSession}

@@ -198,11 +198,13 @@
   },
   {
    "id": "D08-021",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:47-88"
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:88-92",
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:155",
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:202"
    ],
-   "note": "Raia tem contador (data-workspace-board-lane-count) e placeholder Empty; falta o botao 'New workspace in {status}'."
+   "note": "Raia com contador (matchCount/totalCount), placeholder Empty/No matches e os DOIS botoes de criacao do Orca (icone no header + full-width no rodape, visivel em hover/focus), presentes com cards e vazio."
   },
   {
    "id": "D08-022",
@@ -287,11 +289,13 @@
   },
   {
    "id": "D08-030",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:47-88"
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:249",
+    "src/App.tsx:3929",
+    "src/components/NewWorkspaceComposer.tsx:1"
    ],
-   "note": "Sem gatilho 'New workspace in {status.label}' nem passagem de workspaceStatus ao createWorktree."
+   "note": "Botao da raia abre o composer com initialWorkspaceStatus; o status e persistido por worktree pelo escritor unico (persistWorktreeStatus -> set_worktree_status) apos create_worktree resolver, e o reset ao fechar e coberto por teste (nao vaza para a proxima criacao)."
   },
   {
    "id": "D08-031",

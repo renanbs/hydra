@@ -4570,7 +4570,8 @@
         "WorkspaceKanbanStatusLane": {
           "8ad104642b": "Vacío",
           "3611d1ae7f": "Cambiar tamaño de columnas del tablero de espacios de trabajo",
-          "2df01a03ff": "No hay coincidencias"
+          "2df01a03ff": "No hay coincidencias",
+          "4031918ca7": "Nuevo espacio de trabajo en {{value0}}"
         },
         "WorkspaceStatusAppearancePopover": {
           "514be2f569": "Establecer color de {{value0}} en {{value1}}",
