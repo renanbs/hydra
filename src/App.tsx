@@ -40,7 +40,7 @@ import { buildWorktreeStatusMenuItems } from "./components/sidebar/worktree-stat
 import {
   applyWorktreeStatus,
   applyWorktreeStatusByProject,
-  persistWorktreeStatus,
+  persistWorktreeStatusBatch,
 } from "./lib/worktree-status-persistence";
 import { cloneDefaultWorkspaceStatuses } from "./shared/workspace-statuses";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
@@ -3517,14 +3517,24 @@ export default function App() {
    * The single writer for a workspace status: the host command plus the local worktree maps
    * the sidebar (and the workspace board, which projects from them) read. Shared by the
    * worktree context menu and the board's card drop — one column, one persist path.
+   *
+   * Why a batch: the workspace board's card menu assigns a status to the whole selection when
+   * the right-clicked card is part of it. The write stays per worktree — the host command keys
+   * on one path, and a workspace the host refuses must not cancel the others — while the local
+   * projections are patched in one pass, so the sidebar never paints a half-applied batch.
    */
-  const assignWorktreeStatus = useCallback(
-    async (worktreePath: string, status: string | null) => {
+  const assignWorktreeStatuses = useCallback(
+    async (worktreePaths: readonly string[], status: string | null) => {
       try {
-        await persistWorktreeStatus(worktreePath, status);
-        setGitWorktrees((prev) => applyWorktreeStatus(prev, worktreePath, status));
+        await persistWorktreeStatusBatch(worktreePaths, status);
+        setGitWorktrees((prev) =>
+          worktreePaths.reduce((next, path) => applyWorktreeStatus(next, path, status), prev)
+        );
         setWorktreesByProject((prev) =>
-          applyWorktreeStatusByProject(prev, worktreePath, status)
+          worktreePaths.reduce(
+            (next, path) => applyWorktreeStatusByProject(next, path, status),
+            prev
+          )
         );
         window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
       } catch (e) {
@@ -3534,7 +3544,17 @@ export default function App() {
     []
   );
 
-  const handleWorktreeContextMenu = (e: React.MouseEvent, wt: GitWorktreeInfo, proj: HydraProject) => {
+  const assignWorktreeStatus = useCallback(
+    (worktreePath: string, status: string | null) => assignWorktreeStatuses([worktreePath], status),
+    [assignWorktreeStatuses]
+  );
+
+  const handleWorktreeContextMenu = (
+    e: React.MouseEvent,
+    wt: GitWorktreeInfo,
+    proj: HydraProject,
+    targetWorktreePaths?: readonly string[]
+  ) => {
     // Same source the sidebar pipeline and the workspace board read (`state.workspaceStatuses`).
     const workspaceStatuses = useAppStore.getState().workspaceStatuses ?? cloneDefaultWorkspaceStatuses();
     const isMain = wt.path === proj.path;
@@ -3554,7 +3574,12 @@ export default function App() {
     const descendantCount = Object.values(worktreeLineage).filter((parent) => parent === wt.path).length;
 
     const handleAssignWorktreeStatus = async (status: string | null) => {
-      await assignWorktreeStatus(wt.path, status);
+      await assignWorktreeStatuses(
+        targetWorktreePaths && targetWorktreePaths.length > 0
+          ? targetWorktreePaths
+          : [wt.path],
+        status
+      );
     };
 
     setContextMenu({

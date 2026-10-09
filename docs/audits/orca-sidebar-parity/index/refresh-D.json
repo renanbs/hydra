@@ -55,12 +55,12 @@
   },
   {
    "id": "D08-006",
-   "status": "missing",
+   "status": "partial",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59",
-    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:83-100"
+    "src/components/sidebar/workspace-board/use-workspace-board-lane-hydration.ts:44-68",
+    "src/components/sidebar/workspace-board/use-workspace-board-selection.ts:70-82"
    ],
-   "note": "Board renderiza todas as raias/cards por map; sem startTransition/ciclo diferido nem descarte de selecao externa."
+   "note": "Ciclo diferido existe por raia (startTransition, D08-020) e a selecao e descartada ao reabrir/fechar o board; falta o descarte por pointerdown fora do board (Orca useWorkspaceKanbanRenderLifecycle), declarado fora do escopo do PR 24."
   },
   {
    "id": "D08-007",
@@ -75,17 +75,21 @@
    "id": "D08-008",
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:21-50"
+    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:36-95",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:1-175",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:1-182"
    ],
-   "note": "Header tem titulo e botao fechar; faltam busca, filtro, menu de configuracoes e contagem de selecao."
+   "note": "Titulo, badge de contagem de selecao (>1), busca, menu de configuracoes, descricao sr-only e botao fechar existem; falta apenas o menu de filtro do sidebar (SidebarFilter) no cluster direito."
   },
   {
    "id": "D08-009",
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:45-59"
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:100-127",
+    "src/components/sidebar/workspace-board/WorkspaceBoardAreaSelectionOverlay.tsx:1-21",
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:183"
    ],
-   "note": "Container de raias existe; faltam superficie de selecao, overlay de area e alvo de contextual tour."
+   "note": "Superficie de selecao (data-workspace-board-selection-surface) com pointerdown do marquee, overlay de area e container de raias existem; falta o alvo central de contextual tour (o Hydra nao tem sistema de tour)."
   },
   {
    "id": "D08-010",
@@ -287,43 +291,56 @@
   },
   {
    "id": "D08-031",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardCard.tsx:41-57"
+    "src/components/sidebar/workspace-board/workspace-board-selection.ts:32-214",
+    "src/components/sidebar/workspace-board/use-workspace-board-selection.ts:27-176",
+    "src/components/sidebar/workspace-board/WorkspaceBoardCard.tsx:52-96",
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:190-214"
    ],
-   "note": "Sem multi-selecao de cards (selectedWorktreeIds)."
+   "note": "Clique simples substitui, ctrl/meta alterna por plataforma e shift estende da ancora no escopo dos cards visiveis; poda/re-ancoragem quando a lista muda, reset ao fechar, selectForContextMenu preservando o lote, e teclado com Mod+A (seleciona os visiveis) guardado contra campos de texto."
   },
   {
    "id": "D08-032",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:30"
+    "src/components/sidebar/workspace-board/use-workspace-board-area-selection.ts:257-311",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-state.ts:56-84",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-dom.ts:46-116",
+    "src/components/sidebar/workspace-board/WorkspaceBoardAreaSelectionOverlay.tsx:1-21"
    ],
-   "note": "Sem marquee/selecao por area (DrawerView explicitamente sem a maquinaria de overlay/multi-select)."
+   "note": "Marquee so com botao primario e ponteiro nao-touch (ignora scrollbar e elementos interativos), modo aditivo por shift/cmd-ctrl da plataforma, threshold de 4px, overlay escrito imperativamente com translate3d por frame e recorte nos limites do board."
   },
   {
    "id": "D08-033",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26"
+    "src/components/sidebar/workspace-board/use-workspace-board-area-selection.ts:178-215",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-dom.ts:177-243"
    ],
-   "note": "Sem auto-scroll de selecao por area."
+   "note": "Auto-scroll vertical da raia sob o ponteiro (coluna X + vizinhanca Y de 96px), zona de borda de 48px com delta maximo de 22px, frame auto-agendado enquanto o ponteiro fica na zona, e remedicao do layout + flush do marquee a cada frame de rolagem."
   },
   {
    "id": "D08-034",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-card-rects.ts:40-116",
+    "src/components/sidebar/workspace-board/workspace-board-virtual-card-layout.ts:80-121",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-dom.ts:117-155",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-dom.ts:259-318"
    ],
-   "note": "Rects sao lidos no hit-test; sem rects de selecao por area/preview imperativo."
+   "note": "Rects vem do layout virtual medido (card fora da janela montada conta) com override pelo elemento pintado; hit-test horizontal no viewport e vertical no espaco de conteudo do scroller da raia (sobrevive a rolagem), preview imperativo via data-workspace-board-card-area-selected reaplicado em remount."
   },
   {
    "id": "D08-035",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-start.ts:7-14"
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-state.ts:58-84",
+    "src/components/sidebar/workspace-board/use-workspace-board-area-selection.ts:224-256",
+    "src/components/sidebar/workspace-board/use-workspace-board-area-selection.ts:333-343",
+    "src/components/sidebar/workspace-board/workspace-board-selection.ts:116-142"
    ],
-   "note": "Sem maquina de selecao por area (commit/cancel); modifiers sao deliberadamente reservados."
+   "note": "Clique simples em espaco vazio comita a area vazia e limpa a selecao; clique aditivo em espaco vazio nao limpa; pointerup apos arrasto comita a lista final via updateSelectionForArea (aditivo faz uniao) e limpa preview/overlay; Escape cancela o marquee (captura no window, sem fechar o board) e os frames de animacao/auto-scroll pendentes sao cancelados."
   },
   {
    "id": "D08-036",

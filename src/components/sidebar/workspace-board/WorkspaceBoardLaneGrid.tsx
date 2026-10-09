@@ -7,7 +7,8 @@ import React, {
 } from 'react'
 import { useVirtualizer, type Range } from '@tanstack/react-virtual'
 import type { WorkspaceStatus } from '../../../shared/worktree/types'
-import type { GitWorktreeInfo, HydraProject } from '../types'
+import type { GitWorktreeInfo } from '../types'
+import WorkspaceBoardAreaSelectionOverlay from './WorkspaceBoardAreaSelectionOverlay'
 import { useWorkspaceBoardLaneHydration } from './use-workspace-board-lane-hydration'
 import WorkspaceBoardStatusLane from './WorkspaceBoardStatusLane'
 import { registerWorkspaceBoardVirtualLaneLayout } from './workspace-board-virtual-lane-layout'
@@ -20,7 +21,10 @@ import {
   WORKSPACE_BOARD_LANE_OVERSCAN,
   extractWorkspaceBoardLaneRange
 } from './workspace-board-virtual-lanes'
-import type { WorkspaceBoardLane } from './workspace-board-worktrees'
+import type {
+  WorkspaceBoardCard as WorkspaceBoardCardModel,
+  WorkspaceBoardLane
+} from './workspace-board-worktrees'
 
 type WorkspaceBoardLaneGridProps = {
   /** Whether the board is open; hydration only runs while it is. */
@@ -40,14 +44,20 @@ type WorkspaceBoardLaneGridProps = {
   laneScrollerElement: HTMLDivElement | null
   /** Destination lane of the card drag in flight, for the lane highlight. */
   dropTargetStatus: WorkspaceStatus | null
+  /**
+   * The marquee's own box. It is rendered here, inside the grid, because the grid *is* the
+   * board's coordinate space: the marquee's rectangle is clipped and painted with the same
+   * `getBoundingClientRect` the hit test measures against, so the two can never disagree by the
+   * surrounding padding.
+   */
+  areaSelectionOverlayRef: React.RefObject<HTMLDivElement | null>
+  /** The board's selection, by host-qualified card identity. */
+  selectedWorktreeIds: ReadonlySet<string>
+  onSelectionGesture: (event: React.MouseEvent<HTMLElement>, worktreeIdentity: string) => boolean
   onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
-  onContextMenu?: (
-    event: React.MouseEvent,
-    worktree: GitWorktreeInfo,
-    project: HydraProject
-  ) => void
+  onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
 }
 
 /**
@@ -74,6 +84,9 @@ export default function WorkspaceBoardLaneGrid({
   boardRef,
   laneScrollerElement,
   dropTargetStatus,
+  areaSelectionOverlayRef,
+  selectedWorktreeIds,
+  onSelectionGesture,
   onCardPointerDownCapture,
   onActivate,
   onSelectSession,
@@ -167,6 +180,7 @@ export default function WorkspaceBoardLaneGrid({
         }
       }}
     >
+      <WorkspaceBoardAreaSelectionOverlay ref={areaSelectionOverlayRef} />
       {virtualLanes.map((virtualLane) => {
         const lane = lanes[virtualLane.index]
         if (!lane) {
@@ -190,6 +204,8 @@ export default function WorkspaceBoardLaneGrid({
               columnWidth={columnWidth}
               compactCards={compactCards}
               isDropTarget={laneDropTargetStatus === lane.status.id}
+              selectedWorktreeIds={selectedWorktreeIds}
+              onSelectionGesture={onSelectionGesture}
               onActivate={onActivate}
               onSelectSession={onSelectSession}
               onContextMenu={onContextMenu}

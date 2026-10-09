@@ -13,6 +13,12 @@ type WorkspaceBoardHeaderProps = {
   isTooLarge: boolean
   matchCount: number
   totalCount: number
+  /**
+   * How many of the cards the board shows are selected. The badge appears past one, exactly as
+   * in Orca: a single selected card is what a plain click always leaves behind, so a badge for
+   * it would be noise.
+   */
+  selectedCount: number
   onQueryChange: (query: string) => void
   onClearQuery: () => void
   onClose: () => void
@@ -31,6 +37,7 @@ export default function WorkspaceBoardHeader({
   isTooLarge,
   matchCount,
   totalCount,
+  selectedCount,
   onQueryChange,
   onClearQuery,
   onClose,
@@ -49,6 +56,18 @@ export default function WorkspaceBoardHeader({
                 'Workspace board'
               )}
             </span>
+            {selectedCount > 1 ? (
+              <span
+                data-workspace-board-selection-count=""
+                className="rounded-full bg-worktree-sidebar-accent px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+              >
+                {selectedCount}{' '}
+                {translate(
+                  'auto.components.sidebar.WorkspaceKanbanDrawerHeader.81870af08f',
+                  'selected'
+                )}
+              </span>
+            ) : null}
           </SheetTitle>
           <WorkspaceBoardSearchField
             query={query}

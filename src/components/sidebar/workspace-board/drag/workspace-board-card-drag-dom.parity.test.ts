@@ -336,7 +336,8 @@ describe('workspace board card drop target with a virtualized card list', () => 
     registerWorkspaceBoardVirtualCardLayout({
       scrollElement: scroller,
       spacerElement: spacer,
-      getItemCount: () => LANE_CARD_COUNT,
+      getItemIdentities: () =>
+        Array.from({ length: LANE_CARD_COUNT }, (_, index) => `|wt-${index}`),
       getMeasurements: () =>
         Array.from({ length: LANE_CARD_COUNT }, (_, index) => {
           const start = index * (CARD_ESTIMATED_HEIGHT + CARD_GAP)
