@@ -55,8 +55,8 @@ export type WorkspaceBoardPanelState = {
 }
 
 /**
- * Ported from Orca `useWorkspaceBoardPanel` (drag preview and board menu are not
- * part of this increment, so their state is absent rather than inert).
+ * Ported from Orca `useWorkspaceBoardPanel` (the board menu is not part of this
+ * increment, so its state is absent rather than inert).
  */
 export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
   const [workspaceBoardOpen, setWorkspaceBoardOpen] = useState(false)

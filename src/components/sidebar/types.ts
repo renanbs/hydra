@@ -211,6 +211,12 @@ export interface WorktreeSidebarProps {
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
   onProjectContextMenu?: (e: React.MouseEvent, project: HydraProject) => void;
   onWorktreeContextMenu?: (e: React.MouseEvent, worktree: GitWorktreeInfo, project: HydraProject) => void;
+  /**
+   * The app's own workspace-status write (`set_worktree_status` + the local worktree
+   * maps this sidebar projects from). The workspace board's card drop commits through
+   * it, so the board and the context menu share one writer (D08-041).
+   */
+  onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
   onReorderSessions?: (sessions: WorktreeSession[]) => void;
   onReorderProjects?: (projects: HydraProject[]) => void;
   onReorderWorktrees?: (worktrees: GitWorktreeInfo[], projectPath?: string) => void;

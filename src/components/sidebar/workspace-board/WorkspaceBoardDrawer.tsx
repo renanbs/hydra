@@ -1,8 +1,10 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef } from 'react'
+import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { PrDisplay } from '../pr-display'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeSession } from '../types'
 import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
 import WorkspaceBoardDrawerView from './WorkspaceBoardDrawerView'
+import { useWorkspaceBoardCardPointerDrag } from './drag/use-workspace-board-card-pointer-drag'
 import { useWorkspaceBoardGeometry, type WorkspaceBoardGeometry } from './use-workspace-board-geometry'
 import { useWorkspaceBoardProjection } from './use-workspace-board-projection'
 
@@ -24,6 +26,12 @@ export type WorkspaceBoardDrawerProps = {
   portsByWorktree?: ReadonlyMap<string, WorkspacePort[]>
   prByPath?: Readonly<Record<string, PrDisplay>>
   compactCards: boolean
+  /**
+   * The app's own status write (`set_worktree_status` + the local worktree maps the
+   * sidebar projects from). The board's card drop commits through it — the board never
+   * grows a second writer for the same column.
+   */
+  onAssignWorktreeStatus: (worktreePath: string, status: WorkspaceStatus) => void | Promise<void>
   onOpenChange: (open: boolean) => void
   onSelectWorktree: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
@@ -63,6 +71,7 @@ function WorkspaceBoardDrawerContent({
   portsByWorktree,
   prByPath,
   compactCards,
+  onAssignWorktreeStatus,
   onOpenChange,
   onSelectWorktree,
   onSelectSession,
@@ -83,6 +92,12 @@ function WorkspaceBoardDrawerContent({
     portsByWorktree,
     prByPath,
   })
+  const boardRef = useRef<HTMLDivElement | null>(null)
+  const { onCardPointerDownCapture, dropTargetStatus } = useWorkspaceBoardCardPointerDrag({
+    open,
+    boardRef,
+    onAssignWorktreeStatus,
+  })
 
   // Orca `handleWorktreeActivate`: opening a workspace from the board closes it.
   const handleActivate = useCallback(
@@ -100,6 +115,9 @@ function WorkspaceBoardDrawerContent({
       lanes={lanes}
       columnWidth={columnWidth}
       compactCards={compactCards}
+      boardRef={boardRef}
+      dropTargetStatus={dropTargetStatus}
+      onCardPointerDownCapture={onCardPointerDownCapture}
       onOpenChange={onOpenChange}
       onActivate={handleActivate}
       onSelectSession={onSelectSession}

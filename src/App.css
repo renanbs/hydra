@@ -708,6 +708,35 @@ html.native-shell, html.native-shell body, html.native-shell #root, html.native-
   padding: 0 4px;
 }
 
+/* Workspace board card drag & drop (D08-036/037) */
+[data-workspace-board-card-drag-preview='true'] {
+  z-index: 2147483000;
+  overflow: visible;
+  border-radius: var(--radius);
+  opacity: 0.96;
+  background: var(--worktree-sidebar);
+  box-shadow: var(--shadow-floating);
+  will-change: transform;
+}
+[data-workspace-board-card-drag-preview='true'] * {
+  cursor: grabbing !important;
+}
+/* The drag owns the cursor for its whole duration, not only while over the board. */
+[data-workspace-board-pointer-dragging] * {
+  cursor: grabbing !important;
+}
+[data-workspace-board-card-pointer-dragging] {
+  opacity: 0.35;
+  pointer-events: none;
+}
+[data-workspace-board-card-drop-indicator] {
+  z-index: 2147483000;
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--worktree-sidebar-ring);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--worktree-sidebar-ring) 70%, transparent);
+}
+
 /* Window controls — Orca titlebar */
 .window-controls { position: fixed; top: 0; right: 0; z-index: 9999; display: flex; height: 36px; -webkit-app-region: no-drag; }
 .window-controls-btn { display: flex; align-items: center; justify-content: center; width: 46px; height: 36px; background: transparent; border: none; color: var(--muted-foreground); cursor: pointer; transition: background 100ms, color 100ms; }

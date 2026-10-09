@@ -1,4 +1,5 @@
 import React from 'react'
+import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { GitWorktreeInfo, HydraProject } from '../types'
 import WorkspaceBoardHeader from './WorkspaceBoardHeader'
 import WorkspaceBoardLaneGrid from './WorkspaceBoardLaneGrid'
@@ -12,6 +13,9 @@ type WorkspaceBoardDrawerViewProps = {
   lanes: readonly WorkspaceBoardLane[]
   columnWidth: number
   compactCards: boolean
+  boardRef: React.RefObject<HTMLDivElement | null>
+  dropTargetStatus: WorkspaceStatus | null
+  onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
   onOpenChange: (open: boolean) => void
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
@@ -22,13 +26,16 @@ type WorkspaceBoardDrawerViewProps = {
   ) => void
 }
 
-/** Ported from Orca `WorkspaceKanbanDrawerView`, minus the overlay/drag machinery. */
+/** Ported from Orca `WorkspaceKanbanDrawerView`, minus the overlay/multi-select machinery. */
 export default function WorkspaceBoardDrawerView({
   open,
   geometry,
   lanes,
   columnWidth,
   compactCards,
+  boardRef,
+  dropTargetStatus,
+  onCardPointerDownCapture,
   onOpenChange,
   onActivate,
   onSelectSession,
@@ -43,6 +50,9 @@ export default function WorkspaceBoardDrawerView({
             lanes={lanes}
             columnWidth={columnWidth}
             compactCards={compactCards}
+            boardRef={boardRef}
+            dropTargetStatus={dropTargetStatus}
+            onCardPointerDownCapture={onCardPointerDownCapture}
             onActivate={onActivate}
             onSelectSession={onSelectSession}
             onContextMenu={onContextMenu}
