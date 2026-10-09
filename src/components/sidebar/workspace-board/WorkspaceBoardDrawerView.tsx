@@ -16,8 +16,16 @@ type WorkspaceBoardDrawerViewProps = {
   geometry: WorkspaceBoardGeometry
   lanes: readonly WorkspaceBoardLane[]
   columnWidth: number
+  isResizingColumn: boolean
+  onColumnResizeStart: (event: React.PointerEvent<HTMLElement>) => void
+  onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void
   compactCards: boolean
   boardRef: React.RefObject<HTMLDivElement | null>
+  /**
+   * The lane row's scroller, also owned by the drawer: the Shift+wheel scroll writes its
+   * `scrollLeft` imperatively, so the resize/scroll hooks and the grid share one element.
+   */
+  laneScrollerRef: React.RefObject<HTMLDivElement | null>
   /** The marquee's own box, painted imperatively while a selection drag is in flight. */
   areaSelectionOverlayRef: React.RefObject<HTMLDivElement | null>
   dropTargetStatus: WorkspaceStatus | null
@@ -59,8 +67,12 @@ export default function WorkspaceBoardDrawerView({
   geometry,
   lanes,
   columnWidth,
+  isResizingColumn,
+  onColumnResizeStart,
+  onColumnResizeKeyDown,
   compactCards,
   boardRef,
+  laneScrollerRef,
   areaSelectionOverlayRef,
   dropTargetStatus,
   statusActions,
@@ -83,8 +95,16 @@ export default function WorkspaceBoardDrawerView({
 }: WorkspaceBoardDrawerViewProps): React.JSX.Element {
   // Why the drawer owns the lane row's scroller: the lanes are virtualized inside it. It is
   // handed to the grid as an element, not a ref — the grid is a child of this scroller, so its
-  // layout effects run before this element's own ref is attached.
+  // layout effects run before this element's own ref is attached. The same node is published on
+  // `laneScrollerRef` for the Shift+wheel scroll, which writes `scrollLeft` imperatively.
   const [laneScrollerElement, setLaneScrollerElement] = React.useState<HTMLDivElement | null>(null)
+  const attachLaneScroller = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      laneScrollerRef.current = node
+      setLaneScrollerElement(node)
+    },
+    [laneScrollerRef]
+  )
   return (
     <WorkspaceBoardSheet geometry={geometry} open={open} onOpenChange={onOpenChange}>
       <WorkspaceBoardHeader
@@ -105,7 +125,7 @@ export default function WorkspaceBoardDrawerView({
         onPointerDown={onAreaSelectionPointerDown}
       >
         <div
-          ref={setLaneScrollerElement}
+          ref={attachLaneScroller}
           data-workspace-board-lanes-scroller=""
           className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-sleek"
         >
@@ -114,6 +134,9 @@ export default function WorkspaceBoardDrawerView({
             lanes={lanes}
             hasQuery={isFiltering}
             columnWidth={columnWidth}
+            isResizingColumn={isResizingColumn}
+            onColumnResizeStart={onColumnResizeStart}
+            onColumnResizeKeyDown={onColumnResizeKeyDown}
             compactCards={compactCards}
             boardRef={boardRef}
             laneScrollerElement={laneScrollerElement}

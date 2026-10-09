@@ -13873,10 +13873,12 @@
    "components/sidebar/use-workspace-kanban-column-resize.ts:130"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:55",
-    "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:47"
+    "src/components/sidebar/workspace-board/use-workspace-board-column-resize.ts:150-158",
+    "src/components/sidebar/workspace-board/use-workspace-board-column-resize.ts:4",
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:92",
+    "src/components/sidebar/workspace-board/use-workspace-board-column-resize.parity.test.tsx:1"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -13887,7 +13889,7 @@
     "Persiste a largura final no store ao soltar/teclar"
    ],
    "notes": "Passo 1/3: use-workspace-kanban-column-resize ausente (0 hits); não há alça de resize no sidebar. O mecanismo está pela metade e inerte: constantes e clamp existem (workspace-statuses.ts:20-23,237-243), o campo persistido existe (persisted-ui-state-types.ts:101) e setWorkspaceBoardColumnWidth existe (ui-slice-preference-actions.ts:253) mas não tem nenhum caller. Sem interação observável. Não localizado.",
-   "note": "Largura vem do store persistido; sem alca de resize/atalhos de teclado."
+   "note": "Alca de arraste (role=separator, aria-valuemin/max/now, tabIndex 0) + atalhos ArrowLeft/ArrowRight com Shift dobrando o passo; clamp MIN/MAX e commit 1x por gesto persistindo workspaceBoardColumnWidth, com o virtualizador re-medido. Nao dispara drag nem marquee."
   },
   "par": [
    "PAR-14"
@@ -13903,9 +13905,11 @@
    "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:70"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:47-48"
+    "src/components/sidebar/workspace-board/use-workspace-board-shift-wheel-scroll.ts:103",
+    "src/components/sidebar/workspace-board/use-workspace-board-shift-wheel-scroll.ts:113",
+    "src/components/sidebar/workspace-board/use-workspace-board-shift-wheel-scroll.ts:8-10"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -13915,7 +13919,7 @@
     "Aplica delta no scrollLeft do scroller de raias"
    ],
    "notes": "Passo 1/3: use-workspace-kanban-shift-wheel-scroll ausente (0 hits para Shift+wheel/scrollLeft em src/components/sidebar/**). O autoscroll existente (worktree-sidebar-drag-autoscroll.ts) é rAF vertical para o drag da lista e está fora do caminho de render. Passo 5: {BOARD_ABSENT}. Não localizado.",
-   "note": "Sem Shift+wheel horizontal durante drag no board."
+   "note": "Shift+roda rola o scroller de raias horizontalmente de forma acelerada durante drag (listener em capture/passive:false); roda normal passa intacta e fora de drag o hook fica inerte (coerente com a capability)."
   },
   "par": [
    "PAR-14"
