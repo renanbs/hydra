@@ -36,9 +36,8 @@ import {
 import { isShellProcess } from "./components/workbench/tab-agent";
 import { hydrateWorkspaceHostScopePreference, useAppStore } from "./store";
 import { hydrateSshTargets } from "./store/ssh-bridge";
-import { getWorkspaceStatusVisualMeta } from "./components/sidebar/workspace-status";
+import { buildWorktreeStatusMenuItems } from "./components/sidebar/worktree-status-menu-items";
 import { cloneDefaultWorkspaceStatuses } from "./shared/workspace-statuses";
-import { translate } from "./i18n/i18n";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraNavId } from "./components/SettingsModal";
@@ -114,7 +113,6 @@ import {
   MoreHorizontal,
   Hash,
   Terminal,
-  Kanban,
 } from "lucide-react";
 import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
@@ -3631,26 +3629,10 @@ export default function App() {
         { label: "Copy Commit", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) },
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(wt.path) },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(wt.path) },
-        {
-          label: translate(
-            "auto.components.sidebar.WorktreeContextMenu.84cdbb7e30",
-            "Move to Status"
-          ),
-          icon: <Kanban className="w-3.5 h-3.5" />,
-          // Orca `WorktreeStatusMenuItems`: the items are the user's workspace-status
-          // definitions (not agent activity), so the value written here is what the
-          // sidebar grouping and the workspace board lanes read back.
-          children: workspaceStatuses.map((status) => {
-            const meta = getWorkspaceStatusVisualMeta(status);
-            const StatusIcon = meta.icon;
-            return {
-              label: status.label,
-              icon: <StatusIcon className={`w-3.5 h-3.5 ${meta.tone}`} />,
-              onClick: () => handleAssignWorktreeStatus(status.id),
-            };
-          }),
-          onClick: () => {},
-        },
+        buildWorktreeStatusMenuItems({
+          workspaceStatuses,
+          onAssignStatus: handleAssignWorktreeStatus,
+        }),
         {
           label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
           icon: <FolderTree className="w-3.5 h-3.5" />,
