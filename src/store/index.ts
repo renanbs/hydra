@@ -230,6 +230,8 @@ export interface AppState extends SshSlice {
   hydrateSliceUiPreferences: (snapshot: Record<string, unknown>) => void
   /** Persisted workspace-board lane width (UI slice). */
   workspaceBoardColumnWidth: number
+  /** Clamps and persists the board's lane width; the resize gesture writes once per gesture. */
+  setWorkspaceBoardColumnWidth: (width: number) => void
   taskPageData: any
   unreadAgentCompletionPanes: any
   unreadTerminalTabs: any
