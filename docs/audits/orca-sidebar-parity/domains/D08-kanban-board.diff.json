@@ -1,1318 +1,1314 @@
 {
-  "domain": "D08-kanban-board",
-  "rows": [
-    {
-      "id": "D08-001",
-      "capability": "Alternar abertura e fechamento do painel Kanban via evento global ou ação de UI com telemetria",
-      "orca_evidence": [
-        "components/sidebar/useWorkspaceBoardPanel.ts:50",
-        "components/sidebar/useWorkspaceBoardPanel.ts:63",
-        "components/sidebar/useWorkspaceBoardPanel.ts:79",
-        "components/sidebar/useWorkspaceBoardPanel.ts:160"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/keybindings/definitions-core-1.ts:103",
-          "src/shared/feature-interaction-catalog.ts:66",
-          "src/hooks/useIpcEvents-lifecycle.test.ts:135",
-          "src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3",
-          "src/components/sidebar/SidebarHeader.tsx:50"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Gerencia o estado de abertura workspaceBoardOpen/renderedOpen",
-          "Registra interação de feature workspace-board no store ao abrir",
-          "Fecha e limpa estados de pré-visualização de drag e menus ativos",
-          "Escuta o evento global orca:toggle-workspace-board na janela"
-        ],
-        "notes": "Passos 1-2: nenhum componente/estado de board. Passo 3: sem board: 0 hits para WorkspaceKanban*/workspace-kanban*/workspaceBoardOpen/toggleWorkspaceBoard em src/**; marcação data-workspace-board-* e label 'Workspace board' só no catálogo i18n importado do Orca (src/i18n/en-runtime-required.json:1898); canal ui.onOpenWorkspaceBoard existe apenas como expectativa de teste (src/hooks/useIpcEvents-lifecycle.test.ts:135) e o bridge que o registraria é auto-stub (src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3 = null); keybinding workspace.openBoard definido mas sem handler (src/shared/keybindings/definitions-core-1.ts:103); nenhum comando Tauri equivalente (index/hydra_tauri_commands.json). Passo 5: SidebarHeader.tsx:50 renderiza título estático 'Projects' sem controle de board. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-002",
-      "capability": "Pré-visualização e solidificação do painel Kanban a partir de drag da barra lateral",
-      "orca_evidence": [
-        "components/sidebar/useWorkspaceBoardPanel.ts:87",
-        "components/sidebar/useWorkspaceBoardPanel.ts:95",
-        "components/sidebar/useWorkspaceBoardPanel.ts:109"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:1",
-          "src/components/sidebar/project-header-drop.ts:5",
-          "src/components/sidebar/WorktreeSidebar.tsx:442"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Ativa workspaceBoardDragPreviewOpen sem telemetria até solidificar",
-          "Solidifica a abertura convertendo preview em abertura definitiva + telemetria",
-          "Cancela a pré-visualização se o drag for abortado/sair sem drop"
-        ],
-        "notes": "Passo 1: previewWorkspaceBoardFromDrag/solidifyWorkspaceBoardFromDrag/cancelWorkspaceBoardDragPreview ausentes (0 hits). Passo 3: o único drag da sidebar resolve drop para projeto/worktree (WorktreeSidebar.tsx:442 handleWorktreeDrop, project-header-drop.ts:5), sem superfície de board. Passo 4: sem backend. Passo 5: sem board: 0 hits para WorkspaceKanban*/workspace-kanban*/workspaceBoardOpen/toggleWorkspaceBoard em src/**; marcação data-workspace-board-* e label 'Workspace board' só no catálogo i18n importado do Orca (src/i18n/en-runtime-required.json:1898); canal ui.onOpenWorkspaceBoard existe apenas como expectativa de teste (src/hooks/useIpcEvents-lifecycle.test.ts:135) e o bridge que o registraria é auto-stub (src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3 = null); keybinding workspace.openBoard definido mas sem handler (src/shared/keybindings/definitions-core-1.ts:103); nenhum comando Tauri equivalente (index/hydra_tauri_commands.json). Não localizado."
-      },
-      "par": [
-        "PAR-14",
-        "PAR-88"
-      ]
-    },
-    {
-      "id": "D08-003",
-      "capability": "Fechamento por tecla Escape no nível do documento com respeito a overlays e campos editáveis",
-      "orca_evidence": [
-        "components/sidebar/useWorkspaceBoardPanel.ts:18",
-        "components/sidebar/useWorkspaceBoardPanel.ts:130",
-        "components/sidebar/useWorkspaceBoardPanel.ts:135"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:678",
-          "src/components/sidebar/SectionHeader.tsx:54"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Intercepta Escape em fase de captura no document quando o board está aberto",
-          "Ignora Escape quando o menu do board está aberto (workspaceBoardMenuOpen)",
-          "Ignora Escape com foco em campo editável do sheet (isWorkspaceBoardEditableTarget)",
-          "Ignora Escape quando há overlays bloqueantes (dropdown/context/popover/dialog/alertdialog/menu/listbox)",
-          "Não é bloqueado por tooltips não interativos (data-slot=tooltip-content)",
-          "Fecha o painel e previne o evento padrão"
-        ],
-        "notes": "Passo 1/3: isWorkspaceBoardEditableTarget e o listener de capture ausentes (0 hits para workspaceBoardMenuOpen). O único Escape em sidebar é o do input de filtro (WorktreeSidebar.tsx:678), que limpa/blur, não fecha drawer. Passo 5: nenhum handler global de Escape no sidebar (só dialogs). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-004",
-      "capability": "Descarte do board por interação fora da área (outside dismiss) preservando aberturas de menus e modais",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-outside-dismiss.ts:4",
-        "components/sidebar/use-workspace-kanban-outside-dismiss.ts:24",
-        "components/sidebar/use-workspace-kanban-outside-dismiss.ts:33",
-        "components/sidebar/WorkspaceKanbanSheet.tsx:30"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:300",
-          "src/components/sidebar/worktree-card-header.tsx:190",
-          "src/components/sidebar/worktree-list/pointer-drag-dom.ts:18"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Calcula bounding rect do sheet content e descarta o board em clique à direita do painel",
-          "Preserva abertura via preserveOpenForMenu",
-          "Preserva abertura para isWorkspaceBoardKeepOpenTarget (gatilhos, popovers, context menus, dropdowns, dialogs, toasts, tour)",
-          "Ignora cliques à esquerda da borda viva do sheet"
-        ],
-        "notes": "Passo 2: a marcação existe como resíduo — worktree-card-header.tsx:190 emite data-workspace-board-preserve-open e worktree-list/pointer-drag-dom.ts:18 a consome, mas pointer-drag-dom.ts está em index/hydra_unreachable.json (módulo morto) e não há sheet de board. Passo 3: WorktreeSidebar.tsx:300 faz click-outside apenas do WorkspaceOptionsMenu. Passo 5: sem board: 0 hits para WorkspaceKanban*/workspace-kanban*/workspaceBoardOpen/toggleWorkspaceBoard em src/**; marcação data-workspace-board-* e label 'Workspace board' só no catálogo i18n importado do Orca (src/i18n/en-runtime-required.json:1898); canal ui.onOpenWorkspaceBoard existe apenas como expectativa de teste (src/hooks/useIpcEvents-lifecycle.test.ts:135) e o bridge que o registraria é auto-stub (src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3 = null); keybinding workspace.openBoard definido mas sem handler (src/shared/keybindings/definitions-core-1.ts:103); nenhum comando Tauri equivalente (index/hydra_tauri_commands.json). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-005",
-      "capability": "Retenção temporária do drawer (lingering de 300ms) para conclusão suave da animação de fechamento",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-drawer-lingering.ts:3",
-        "components/sidebar/use-workspace-kanban-drawer-lingering.ts:5",
-        "components/sidebar/WorkspaceKanbanDrawer.tsx:37"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeCardAgents.tsx:1"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Mantém lingering=true por 300ms (WORKSPACE_BOARD_CLOSE_LINGER_MS) após open=false",
-          "Permite a animação de saída do Radix Sheet sem desmontar abruptamente",
-          "Cancela o timer de unmount e restaura lingering se reabrir antes do término",
-          "Desmonta o conteúdo pesado após 300ms"
-        ],
-        "notes": "Passo 1/3: use-workspace-kanban-drawer-lingering e WORKSPACE_BOARD_CLOSE_LINGER_MS ausentes (0 hits). Passo 2: nenhum Radix Sheet de board (radix-ui está nas deps, usado por dropdown-menu). Passo 5: nenhum timer de lingering no sidebar (index/hydra_timers.json só tem CacheTimer/WorktreeSidebar/etc.). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-006",
-      "capability": "Ciclo de renderização diferido dos cards e descarte de seleção externa",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-render-lifecycle.ts:4",
-        "components/sidebar/use-workspace-kanban-render-lifecycle.ts:12",
-        "components/sidebar/use-workspace-kanban-render-lifecycle.ts:30"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:373",
-          "src/components/sidebar/WorktreeSidebar.tsx:410"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Diferimento da renderização de cards com requestAnimationFrame + startTransition",
-          "Cancela a animação se o drawer fechar antes do frame disparar",
-          "Limpa seleção de cards em pointerdown fora do sheet e fora de keep-open targets"
-        ],
-        "notes": "Passo 1/3: use-workspace-kanban-render-lifecycle ausente (0 hits); startTransition não aparece em src/components/sidebar/**. Os rAF existentes (WorktreeSidebar.tsx:373,410) servem ao highlight de reveal, não ao board. Passo 5: sem seleção de cards no sidebar (0 hits para selectedWorktreeIds). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-007",
-      "capability": "Container e layout do Kanban Sheet com posicionamento e reserva de barra de status",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanSheet.tsx:18",
-        "components/sidebar/WorkspaceKanbanSheet.tsx:50",
-        "components/sidebar/WorkspaceKanbanSheet.tsx:60"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/ui/dropdown-menu.tsx:1",
-          "src/shared/constants.ts:287"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Renderiza Sheet não-modal (modal={false}) no lado esquerdo com largura min(calc(100vw - sidebarWidth), 1294px)",
-          "Posiciona topo abaixo de WORKSPACE_TOP_CHROME_HEIGHT e base conforme STATUS_BAR_RESERVE_HEIGHT",
-          "Impede auto-focus e desativa close button nativo do Radix Sheet",
-          "Configura overlay sem pointer events alinhado à largura da sidebar",
-          "Expõe data-attributes de tour contextual e preview de drag"
-        ],
-        "notes": "Passo 1/2: constantes WORKSPACE_TOP_CHROME_HEIGHT, STATUS_BAR_RESERVE_HEIGHT e o atributo data-contextual-tour-target=workspace-board-surface ausentes (0 hits). Passo 3: nenhum Sheet/drawer de board; Radix presente só em ui/dropdown-menu.tsx. Passo 5: shared/constants.ts:287 tem apenas workspaceBoardOpacity (nunca lido). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-008",
-      "capability": "Header do drawer Kanban com contagem de seleção, campo de busca, filtro, configurações e botão fechar",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:29",
-        "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:49",
-        "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:88",
-        "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:112"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/SidebarHeader.tsx:50",
-          "src/components/sidebar/WorktreeSidebar.tsx:672",
-          "src/shared/feature-interaction-catalog.ts:66"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "SheetTitle com label 'Workspace board' e badge de contagem de seleção ({selectedCount} selected)",
-          "Campo de busca como irmão do título dentro do SheetHeader",
-          "SheetDescription oculta para leitores de tela",
-          "Agrupa SidebarFilter + WorkspaceKanbanSettingsMenu + botão fechar (X)",
-          "Encaminha clique de fechar ao callback onClose explícito"
-        ],
-        "notes": "Passo 2: os labels existem só no catálogo i18n importado (src/i18n/en-runtime-required.json:1898-1902 'Workspace board'/'Close workspace board'); nenhum uso em src/**. O header da sidebar (SidebarHeader.tsx:50) tem título estático e botões de agents/add-project. Passo 5: sem contagem de seleção (0 hits). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-009",
-      "capability": "Superfície de seleção, overlay de área, alvo central de contextual tour e container de raias do Drawer View",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanDrawerView.tsx:21",
-        "components/sidebar/WorkspaceKanbanDrawerView.tsx:43",
-        "components/sidebar/WorkspaceKanbanDrawerView.tsx:50"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:698",
-          "src/components/sidebar/WorktreeList.tsx:211"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Layout interno combinando Header + overlay de seleção + target de tour + drop target de Pin",
-          "Superfície de seleção via data-workspace-board-selection-surface",
-          "Listeners de pointerdown capture para cards e pointerdown para seleção por área",
-          "Container com rolagem horizontal personalizada (scrollbar-sleek) para a grade de raias"
-        ],
-        "notes": "Passo 2: atributo data-workspace-board-selection-surface ausente (0 hits). Passo 3: nenhum container de raias; scrollbar-sleek existe no scroller vertical da lista (WorktreeSidebar.tsx:698), sem grade horizontal. Passo 5: sem drop target de pin. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-010",
-      "capability": "Campo de busca de workspaces com input em tempo real, ícone e botão de limpeza que preserva foco",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:34",
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:50",
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:98",
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:150"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:670",
-          "src/components/sidebar/WorktreeSidebar.tsx:678",
-          "src/components/sidebar/WorktreeSidebar.tsx:684",
-          "src/components/sidebar/WorktreeSidebar.tsx:688"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Preserva foco no input ao clicar em limpar (onMouseDown.preventDefault + refocus imediato)",
-          "Calcula overlayReserve à direita para o contador sem sobrepor o texto digitado",
-          "Campo vive no header do board Kanban (superfície distinta da lista)"
-        ],
-        "notes": "PARCIAL: o campo de busca de workspaces existe e está ligado — input controlado com onChange imediato (WorktreeSidebar.tsx:670), ícone Search (:672), placeholder 'Filter projects and workspaces...' (:684) e botão de limpeza com aria-label 'Clear filter' (:688) condicionado a texto. Faltam os sub-comportamentos nomeados acima (o clear não preserva foco: não há onMouseDown/refocus; não há contador/overlayReserve)."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-011",
-      "capability": "Tratamento de tecla Escape no campo de busca para limpar texto ou fechar o board respeitando IME",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:120"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:677",
-          "src/components/sidebar/WorktreeSidebar.tsx:678"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Ignora Escape durante composição de caractere (event.nativeEvent.isComposing)",
-          "Aciona o fechamento do painel Kanban (onClose) se o campo já estiver vazio",
-          "Previne propagação do evento para evitar duplo acionamento"
-        ],
-        "notes": "PARCIAL: existe tratamento de Escape no campo de busca (WorktreeSidebar.tsx:677-681): se há texto, limpa; se vazio, blur. Faltam: guard de IME, fechar o board quando vazio (faz blur), e stopPropagation. Sem board, onClose não existe."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-012",
-      "capability": "Live region acessível debouncada e badges de contagem/aviso de texto muito longo no campo de busca",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:7",
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:42",
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:80",
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:135",
-        "components/sidebar/WorkspaceKanbanSearchField.tsx:170"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:686",
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:536",
-          "src/shared/clipboard-text.ts:1"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Badge tabular-nums {matchCount} / {totalCount} com aria-hidden",
-          "Aviso visual destrutivo 'Too long' com tooltip quando o texto excede o limite de bytes",
-          "Live region role=status aria-live=polite com debounce de 400ms (ANNOUNCE_DEBOUNCE_MS)",
-          "Anuncia 'No workspaces match' ou '{matchCount} of {totalCount} workspaces match'",
-          "Omite contagens quando a busca é só espaços em branco ou não filtrante"
-        ],
-        "notes": "Passo 2: strings 'No workspaces match'/'Too long'/ANNOUNCE_DEBOUNCE_MS ausentes (0 hits). Passo 3: nenhuma live region de busca — o único aria-live do sidebar é do WorktreeVisibilityDialog.tsx:536. O campo de filtro não mostra contagem de correspondências (WorktreeSidebar.tsx:686-694). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-013",
-      "capability": "Indexação e correspondência de busca de workspaces no Kanban com suporte a host-qualified identities",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-search.ts:24",
-        "components/sidebar/use-workspace-kanban-search.ts:46",
-        "components/sidebar/use-workspace-kanban-search.ts:54",
-        "components/sidebar/workspace-kanban-search.ts:26",
-        "components/sidebar/workspace-kanban-search.ts:43"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:530",
-          "src/components/sidebar/WorktreeSidebar.tsx:544",
-          "src/components/sidebar/WorktreeSidebar.tsx:551"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "useDeferredValue para manter o input responsivo e permitir interrupção do re-render",
-          "Política board-only de indexação (apenas texto impresso nos cards, sem portas/reviews/automações)",
-          "Retorna null para query vazia ou acima do limite (isWorktreePaletteQueryTooLarge) em vez de zerar o board",
-          "Chave de resultado qualificada por host (composeWorktreeHostIdentity)",
-          "Estabilidade de referência de matchingWorktreeIds (evita re-render em ticks de status de agente) e reset da query ao fechar"
-        ],
-        "notes": "PARCIAL: há matching de busca de workspaces ligado (WorktreeSidebar.tsx:530-560): compara branch, displayName e path da worktree e title/agentName das sessões, sem debounce. Faltam os sub-comportamentos de board (deferred value, política de campos, guarda de tamanho, identidade host-qualified, estabilidade do set)."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-014",
-      "capability": "Projeção de visualização das raias sob filtro de busca preservando ordem e contagens totais",
-      "orca_evidence": [
-        "components/sidebar/workspace-kanban-search.ts:15",
-        "components/sidebar/workspace-kanban-search.ts:74"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:53",
-          "src/components/sidebar/worktree-list/grouping/build-rows.ts:1",
-          "index/hydra_unreachable.json"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Reutiliza arrays originais quando não há query (sem alocação)",
-          "Filtra itens por matchingWorktreeIds preservando a ordem de cada raia",
-          "Preserva totalCount original de cada raia antes da filtragem",
-          "Raias totalmente filtradas mantêm lista vazia com total correto"
-        ],
-        "notes": "Passo 1/3: use-workspace-kanban-search/workspace-kanban-search ausentes (0 hits); não há projeção de raias. Passo 2: getWorkspaceStatusGroupKey em folder-workspace-lanes.ts:53 pertence a módulo não alcançável (build-rows.ts e buildSidebarRows.ts listados em index/hydra_unreachable.json). Passo 5: o filtro da lista apenas remove worktrees, sem contagens por grupo. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-015",
-      "capability": "Menu de configurações do Kanban em dropdown com toggle de sincronização de tarefas e listagem de status",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:33",
-        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:58",
-        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:75",
-        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:112"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/ui/ui-slice-preference-actions.ts:259",
-          "src/components/sidebar/workspace-status-icon-options.ts:28",
-          "src/components/sidebar/workspace-status.ts:58",
-          "src/components/sidebar/WorktreeSidebar.tsx:680"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Dropdown não-modal (modal={false}) de configurações com tooltip 'Board settings'",
-          "Switch 'Sync board and issue status'",
-          "Preserva abertura ao interagir com popover aninhado de aparência de status",
-          "Lista todos os status com ícones/cores e inputs de renomeação inline",
-          "Renomeia status no blur ou Enter"
-        ],
-        "notes": "Passo 1: WorkspaceKanbanSettingsMenu/WorkspaceStatusAppearancePopover ausentes (0 hits em src/**; os rótulos existem só em src/i18n/en-runtime-required.json:1926-1930). Passo 3: não há UI de configuração de status; o catálogo de cores/ícones está em módulo morto (workspace-status.ts:58, sem importadores) e setSyncTaskStatusFromWorkspaceBoard (ui-slice-preference-actions.ts:259) não tem caller. Passo 5: nenhum menu de engrenagem no header da sidebar. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-016",
-      "capability": "Reordenação e remoção de status no menu de configurações com migração automática de worktrees",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:143",
-        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:158",
-        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:173",
-        "components/sidebar/use-workspace-kanban-status-actions.ts:50",
-        "components/sidebar/use-workspace-kanban-status-actions.ts:74"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/ui/ui-slice-preference-actions.ts:239",
-          "src/shared/workspace-statuses.ts:1",
-          "src/components/sidebar/workspace-status.ts:58"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Botão 'Move {label} left' desabilitado no primeiro índice",
-          "Botão 'Move {label} right' desabilitado no último índice",
-          "Botão 'Remove {label}' desabilitado quando resta apenas 1 status",
-          "Migra automaticamente worktrees do status removido para o status adjacente/fallback"
-        ],
-        "notes": "Passo 2: strings 'Move … left'/'Remove …' de status ausentes (0 hits fora de i18n). Passo 3: não há funções de mover/remover status; nenhuma mutação de workspaceStatus em worktree existe (grep workspaceStatus: em src/store/** só no payload de criação, worktree-create-payload.ts:79) e src-tauri não tem workspace_status. Passo 5: sem menu de status. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-017",
-      "capability": "Adição de novos status no Kanban com geração dinâmica de ID único",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:191",
-        "components/sidebar/use-workspace-kanban-status-actions.ts:65"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/workspace-statuses.ts:143",
-          "src/store/slices/ui/ui-slice-preference-actions.ts:239"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Adiciona novo status ao final com label 'Status N'",
-          "Gera ID único via makeWorkspaceStatusId",
-          "Registra interação de feature workspace-board-actions no store"
-        ],
-        "notes": "Passo 1/2: botão 'Add status' e label 'Status N' ausentes (0 hits). Passo 3: makeWorkspaceStatusId existe (workspace-statuses.ts:143) mas só é usado na normalização interna de persistência; setWorkspaceStatuses (ui-slice-preference-actions.ts:239) não tem caller e a telemetria workspace-board-actions (feature-interaction-catalog.ts:72) nunca é emitida. Passo 5: sem board: 0 hits para WorkspaceKanban*/workspace-kanban*/workspaceBoardOpen/toggleWorkspaceBoard em src/**; marcação data-workspace-board-* e label 'Workspace board' só no catálogo i18n importado do Orca (src/i18n/en-runtime-required.json:1898); canal ui.onOpenWorkspaceBoard existe apenas como expectativa de teste (src/hooks/useIpcEvents-lifecycle.test.ts:135) e o bridge que o registraria é auto-stub (src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3 = null); keybinding workspace.openBoard definido mas sem handler (src/shared/keybindings/definitions-core-1.ts:103); nenhum comando Tauri equivalente (index/hydra_tauri_commands.json). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-018",
-      "capability": "Ações e persistência de alterações de status (renomear, cor, ícone) com registro de telemetria",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-status-actions.ts:13",
-        "components/sidebar/use-workspace-kanban-status-actions.ts:18",
-        "components/sidebar/use-workspace-kanban-status-actions.ts:32",
-        "components/sidebar/use-workspace-kanban-status-actions.ts:41"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/ui/ui-slice-preference-actions.ts:239",
-          "src/components/sidebar/workspace-status.ts:197"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Renomeia status aplicando trim e ignorando entradas vazias",
-          "Atualiza cor personalizada do status",
-          "Atualiza ícone do status",
-          "Persiste a lista no store e registra interação workspace-board-actions"
-        ],
-        "notes": "Passo 1/3: handleRenameStatus/handleChangeStatusColor/handleChangeStatusIcon ausentes (0 hits). Existe apenas o setter genérico setWorkspaceStatuses (ui-slice-preference-actions.ts:239-243, persiste via window.api.ui.set e set()) sem nenhum caller de UI; getWorkspaceStatusVisualMeta (workspace-status.ts:197) vive em módulo morto. Sem interação observável. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-019",
-      "capability": "Grade virtualizada de raias horizontais com medição de colunas, overscan e retenção de raia focada",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:82",
-        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:102",
-        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:173",
-        "components/sidebar/workspace-kanban-lane-range.ts:3"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "package.json:1",
-          "src/hooks/useVirtualizedScrollAnchor.ts:10",
-          "src/components/sidebar/WorktreeList.tsx:211"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Virtualiza colunas horizontalmente com @tanstack/react-virtual, overscan 1 e gap 12px",
-          "Reserva largura total do workflow via getTotalSize()",
-          "Mede dinamicamente o tamanho das raias conforme columnWidth",
-          "Mantém a raia focada montada via extractWorkspaceKanbanLaneRange",
-          "Rastreia foco por onFocusCapture/onBlurCapture nas raias"
-        ],
-        "notes": "Passo 1: WorkspaceKanbanLaneGrid/workspace-kanban-lane-range ausentes (0 hits). Passo 3: não há virtualização de raias; @tanstack/react-virtual não está declarado em package.json/pnpm-lock (único hit é import type em src/hooks/useVirtualizedScrollAnchor.ts:10, sem uso runtime) e a lista renderiza via map (WorktreeList.tsx:211). Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-020",
-      "capability": "Hidratação progressiva de raias a no máximo uma raia por quadro de animação",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:128",
-        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:142"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "package.json:1",
-          "src/hooks/useVirtualizedScrollAnchor.ts:10"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Adiciona no máximo uma raia por requestAnimationFrame via startTransition",
-          "Retém apenas raias atualmente montadas no virtualizador",
-          "Cancela animação pendente em desmontagem/cancelamento",
-          "Evita gargalo ao carregar fluxos com múltiplas raias pesadas"
-        ],
-        "notes": "Passo 1/3: hidratação escalonada de raias ausente (0 hits para startTransition/overscan de lane em src/components/sidebar/**). Não há virtualizador de raias (ver D08-019). Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-021",
-      "capability": "Raia de status do Kanban com contadores de itens, botão de criação de workspace e placeholder vazio",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanStatusLane.tsx:55",
-        "components/sidebar/WorkspaceKanbanStatusLane.tsx:75",
-        "components/sidebar/WorkspaceKanbanStatusLane.tsx:112",
-        "components/sidebar/WorkspaceKanbanStatusLane.tsx:165",
-        "components/sidebar/WorkspaceKanbanStatusLane.tsx:185"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-list/grouping/group-sections.ts:96",
-          "src/components/sidebar/WorktreeList.tsx:476",
-          "src/components/sidebar/WorktreeList.tsx:338",
-          "src/components/sidebar/WorktreeCardStatusLane.tsx:1",
-          "src/components/sidebar/SectionHeader.tsx:188"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Raia de status como coluna do board com ícone/cor do status",
-          "Contador '{count}' ou '{items.length} / {totalCount}' sob busca ativa",
-          "Botões no header e rodapé para criação rápida ('New workspace in {status.label}')",
-          "Placeholder 'Empty' / 'No matches' por raia",
-          "Destaque da raia como alvo de drag (isDragTarget / data-workspace-board-external-drag-target)",
-          "Passa identidade qualificada do workspace ativo para a lista de cards"
-        ],
-        "notes": "Passo 1/2: header 'New workspace in {status.label}', placeholder 'No matches' e data-workspace-board-external-drag-target ausentes (0 hits). O header de status existe apenas como dado em group-sections.ts:96-120, módulo não alcançável (build-rows.ts/buildSidebarRows.ts em index/hydra_unreachable.json); a lista renderizada monta só grupos de projeto (WorktreeList.tsx:476) e usa groupBy apenas para indentação (WorktreeList.tsx:338). WorktreeCardStatusLane.tsx:1 é o glifo do card (portado de WorktreeCardStatusSlot.tsx), não uma raia. O '+' de SectionHeader.tsx:188 é de grupo de projeto. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-022",
-      "capability": "Redimensionamento de largura de coluna por arraste de alça e atalhos de teclado",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanStatusLane.tsx:108",
-        "components/sidebar/use-workspace-kanban-column-resize.ts:18",
-        "components/sidebar/use-workspace-kanban-column-resize.ts:49",
-        "components/sidebar/use-workspace-kanban-column-resize.ts:114",
-        "components/sidebar/use-workspace-kanban-column-resize.ts:130"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/workspace-statuses.ts:20",
-          "src/shared/workspace-statuses.ts:237",
-          "src/store/slices/ui/ui-slice-preference-actions.ts:253",
-          "src/shared/persisted-ui-state-types.ts:101"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Alça acessível role=separator aria-orientation=vertical com min/max/now",
-          "Arrasto por ponteiro com cursor col-resize e userSelect:none",
-          "Rascunho em requestAnimationFrame com clamp entre MIN e MAX",
-          "ArrowLeft/ArrowRight na alça (passo padrão ou duplicado com Shift)",
-          "Persiste a largura final no store ao soltar/teclar"
-        ],
-        "notes": "Passo 1/3: use-workspace-kanban-column-resize ausente (0 hits); não há alça de resize no sidebar. O mecanismo está pela metade e inerte: constantes e clamp existem (workspace-statuses.ts:20-23,237-243), o campo persistido existe (persisted-ui-state-types.ts:101) e setWorkspaceBoardColumnWidth existe (ui-slice-preference-actions.ts:253) mas não tem nenhum caller. Sem interação observável. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-023",
-      "capability": "Rolagem horizontal acelerada com Shift + roda do mouse durante drag no board",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:5",
-        "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:40",
-        "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:70"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:259",
-          "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:1"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Detecta drag nativo (dragstart/dragover/drop/dragend/blur) ou pointer drag",
-          "Converte delta por DOM_DELTA_LINE/PIXEL",
-          "Intercepta wheel em capture com passive:false e cancela propagação",
-          "Aplica delta no scrollLeft do scroller de raias"
-        ],
-        "notes": "Passo 1/3: use-workspace-kanban-shift-wheel-scroll ausente (0 hits para Shift+wheel/scrollLeft em src/components/sidebar/**). O autoscroll existente (worktree-sidebar-drag-autoscroll.ts) é rAF vertical para o drag da lista e está fora do caminho de render. Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-024",
-      "capability": "Lista virtualizada vertical de cards dentro da raia com estimativa de altura e renderização assíncrona",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanLaneCardList.tsx:10",
-        "components/sidebar/WorkspaceKanbanLaneCardList.tsx:43",
-        "components/sidebar/WorkspaceKanbanLaneCardList.tsx:64",
-        "components/sidebar/WorkspaceKanbanLaneCardList.tsx:80"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "package.json:1",
-          "src/components/sidebar/WorktreeList.tsx:326",
-          "src/hooks/useVirtualizedScrollAnchor.ts:10"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Virtualiza cards verticalmente (estimativa 36px, gap 8px, overscan 6)",
-          "useFlushSync:false para não bloquear a thread principal",
-          "Reserva a altura total no espaçador para barra nativa suave",
-          "Chaves únicas qualificadas por host (getWorktreeHostIdentity)",
-          "Registra o layout virtual para operações de drag"
-        ],
-        "notes": "Passo 1: WorkspaceKanbanLaneCardList ausente (0 hits). Passo 3: cards são renderizados por map sem virtualizador (WorktreeList.tsx:326) e @tanstack/react-virtual não é dependência (só import type em useVirtualizedScrollAnchor.ts:10). Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-025",
-      "capability": "Registro e consulta de layout virtual das raias para hit-testing, índice e indicador de drop",
-      "orca_evidence": [
-        "components/sidebar/workspace-kanban-virtual-lane-layout.ts:25",
-        "components/sidebar/workspace-kanban-virtual-lane-layout.ts:54",
-        "components/sidebar/workspace-kanban-virtual-lane-layout.ts:83",
-        "components/sidebar/workspace-kanban-virtual-lane-layout.ts:109"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-list/pointer-drag-dom.ts:18",
-          "index/hydra_unreachable.json"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Armazena registros de layout virtual em WeakMap por elemento de scroll",
-          "Fornece snapshot de itens lógicos e medições do virtualizador",
-          "Calcula retângulos virtuais por item (WorkspaceKanbanVirtualLaneItemRect)",
-          "Resolve índice de drop por busca binária (resolveWorkspaceKanbanVirtualLaneDropIndex)",
-          "Calcula Y exato do indicador de drop mesmo fora da janela montada",
-          "Desregistro seguro sem remover instâncias mais recentes"
-        ],
-        "notes": "Passo 1/3: workspace-kanban-virtual-lane-layout ausente (0 hits para WeakMap de layout de raia/resolveWorkspaceKanban*). O único hit-testing de drag do sidebar está em worktree-list/pointer-drag-dom.ts, listado em index/hydra_unreachable.json. Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-026",
-      "capability": "Publicação e serialização de IDs completos da raia via canal DOM com delimitador NUL",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanStatusLane.tsx:68",
-        "components/sidebar/WorkspaceKanbanStatusLane.tsx:88",
-        "components/sidebar/workspace-kanban-filtered-drop-index.ts:8",
-        "components/sidebar/workspace-kanban-filtered-drop-index.ts:16",
-        "components/sidebar/workspace-kanban-filtered-drop-index.ts:25"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/workspace-status-drag-data.ts:3",
-          "src/components/sidebar/workspace-status.ts:40",
-          "src/components/sidebar/WorktreeSidebar.tsx:456"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Serializa IDs completos da raia com delimitador NUL (WORKSPACE_LANE_FULL_IDS_DELIMITER)",
-          "Publica data-workspace-lane-full-ids na raia apenas sob busca ativa",
-          "Permite que drops da sidebar conheçam a lista completa de IDs da raia",
-          "Faz parsing seguro distinguindo raia não publicada de raia vazia"
-        ],
-        "notes": "Passo 2: WORKSPACE_LANE_FULL_IDS_DELIMITER e o atributo data-workspace-lane-full-ids ausentes (0 hits). Existem tipos de payload de drag em workspace-status-drag-data.ts:3-5 e re-export em workspace-status.ts:40, mas ambos sem consumidor (0 callers de writeWorkspaceDragData/readWorkspaceDragDataIds/hasWorkspaceDragData) — e não há raia. O drag efetivo da lista (WorktreeSidebar.tsx:456) usa outro caminho. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-027",
-      "capability": "Card de workspace no Kanban integrando WorktreeCard, badge de fixado e atributos host-qualified",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanCard.tsx:24",
-        "components/sidebar/WorkspaceKanbanCard.tsx:41",
-        "components/sidebar/WorkspaceKanbanCard.tsx:50"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeCard.tsx:1",
-          "src/components/sidebar/WorktreeList.tsx:374",
-          "src/components/sidebar/worktree-card-surface.tsx:89"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Wrapper com data-workspace-board-card-id/worktree-id/card-index/card-mode=detailed/card-selected",
-          "Badge 'Pinned' no canto superior direito quando worktree.isPinned",
-          "Encapsula WorktreeCard com estado ativo, seleção múltipla e callbacks de ativação/contexto",
-          "Destaque de seleção por área via data-workspace-board-card-area-selected"
-        ],
-        "notes": "Passo 2: atributos data-workspace-board-card-* e badge 'Pinned' no card ausentes (0 hits). Passo 3: a worktree é renderizada por WorktreeCard/worktree-card-surface.tsx:89 (draggable nativo), sem wrapper de board; há badge de pin (WorktreeList.tsx:374 isPinned) mas nenhuma seleção múltipla. Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-028",
-      "capability": "Alvo de drop para fixação de cards (Pin Drop Target) com feedback visual de hover",
-      "orca_evidence": [
-        "components/sidebar/WorkspaceKanbanPinDropTarget.tsx:12",
-        "components/sidebar/WorkspaceKanbanPinDropTarget.tsx:18"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/App.tsx:3405",
-          "src/components/sidebar/SectionHeader.tsx:273"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Área tracejada acima das raias com ícone Pin e texto 'Pinned - Drop here to pin without changing status.'",
-          "Destaca borda/fundo quando isDragOver ou data-workspace-board-external-drag-target",
-          "Encaminha onDragOver/onDragLeave ao manipulador de drag"
-        ],
-        "notes": "Passo 2: o texto 'Pinned - Drop here to pin without changing status.' e data-workspace-pin-drop-target ausentes (0 hits). A ação de fixar existe no menu de contexto do worktree (App.tsx:3405 'Pin'/'Unpin' → togglePinWorktree), mas não há alvo de drop de pin. Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-029",
-      "capability": "Projeção de dados e agrupamento de worktrees no Kanban com ordenação manual ou recente/fixada",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-board-projection.ts:16",
-        "components/sidebar/use-workspace-kanban-board-projection.ts:40",
-        "components/sidebar/workspace-kanban-worktree-groups.ts:10",
-        "components/sidebar/workspace-kanban-worktree-groups.ts:22"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorkspaceOptionsMenu.tsx:278",
-          "src/components/sidebar/WorktreeSidebar.tsx:513",
-          "src/components/sidebar/WorktreeSidebar.tsx:559",
-          "src/components/sidebar/WorktreeList.tsx:338",
-          "src/components/sidebar/worktree-list/grouping/group-sections.ts:96"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Agrupa worktrees em raias por status do workspace (colunas do board)",
-          "Aplica ordenação manual (sortManualBoardWorktrees por manualOrder/sortOrder) no board",
-          "Constrói grupos de drag do board (boardDragGroups) e registra para drop da sidebar",
-          "Constrói buildUnambiguousWorktreeIdIndex e identidade ativa host-qualified no board"
-        ],
-        "notes": "PARCIAL: a projeção de worktrees com filtros e modos de ordenação está ligada na lista — hideDefaultBranch/hideDetachedHead e sortBy name/recent/agent-activity (WorktreeSidebar.tsx:559-600), opções expostas no menu (WorkspaceOptionsMenu.tsx:278-294) e projetos fixados primeiro (WorktreeSidebar.tsx:513-522). Faltam: agrupamento em raias por status (a opção 'Status' do Group-by só altera indentação — WorktreeList.tsx:338 — e o emissor de headers de status em group-sections.ts:96 está em módulo não alcançável), ordenação manual por manualOrder (worktree-manual-order.ts sem callers) e grupos/índice host-qualified do board."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-030",
-      "capability": "Criação rápida de worktree a partir do Kanban disparando o modal compositor com status pré-configurado",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-create-worktree.ts:5",
-        "components/sidebar/use-workspace-kanban-create-worktree.ts:11"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/App.tsx:4055",
-          "src/components/sidebar/SidebarHeader.tsx:56",
-          "src/components/sidebar/types.ts:184",
-          "src/store/slices/worktree-helpers.ts:200",
-          "src/components/NewWorkspaceComposer.tsx:1"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Abre o modal new-workspace-composer a partir do botão da raia",
-          "Define telemetrySource como sidebar",
-          "Pré-configura o status inicial do novo workspace com o statusId da raia"
-        ],
-        "notes": "Passo 1/2: o gatilho da raia ('New workspace in {status.label}') não existe. Passo 3: o modal compositor está montado (App.tsx:4055) e é acionável do header da sidebar (SidebarHeader.tsx:56 / types.ts:184 onOpenNewWorkspaceModal), mas nenhum caminho passa workspaceStatus ao createWorktree (parâmetro existe em store/slices/worktree-helpers.ts:200) e telemetrySource não é usado em App.tsx/NewWorkspaceComposer. A ação 'criar já no status clicado' não é executável. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-031",
-      "capability": "Seleção múltipla por clique, modificadores e teclado escopada aos cards visíveis com re-ancoragem",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-selection.ts:10",
-        "components/sidebar/use-workspace-kanban-selection.ts:25",
-        "components/sidebar/use-workspace-kanban-selection.ts:63",
-        "components/sidebar/use-workspace-kanban-selection.ts:93"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeList.tsx:374",
-          "src/components/sidebar/use-worktree-card-controller.ts:196"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Gerencia conjunto de IDs selecionados e ID da âncora",
-          "Reseta seleção ao fechar o drawer",
-          "Poda seleções de worktrees que não existem mais",
-          "Re-ancora seleção no primeiro card visível ainda selecionado quando a busca oculta a âncora",
-          "Escopa ranges aos cards visíveis/renderizados",
-          "selectForContextMenu preserva seleção se o card clicado já estiver selecionado"
-        ],
-        "notes": "Passo 3: não existe multi-seleção de worktrees no sidebar — 0 hits para selectedWorktreeIds/selectedIds/shiftKey em src/components/sidebar/**; o clique do card só ativa o worktree e abre menu (use-worktree-card-controller.ts:196; WorktreeList.tsx:374 passa isPinned, não seleção). Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-032",
-      "capability": "Seleção por área / marquee no Kanban com botão primário, overlay visual e threshold de 4px",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-area-selection.ts:40",
-        "components/sidebar/use-workspace-kanban-area-selection.ts:200",
-        "components/sidebar/workspace-kanban-area-selection-state.ts:38",
-        "components/sidebar/workspace-kanban-area-selection-dom.ts:43",
-        "components/sidebar/WorkspaceKanbanAreaSelectionOverlay.tsx:5"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/use-worktree-card-controller.ts:190",
-          "src/components/sidebar/workspace-status-area-selection-state.ts:1"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Inicia seleção por área só com botão primário, ignorando touch/scrollbar/interativos",
-          "Modo aditivo por Shift/Cmd/Ctrl conforme SO",
-          "Threshold de 4px antes de ativar o retângulo",
-          "Atualiza overlay imperativamente via translate3d sem re-render",
-          "Recorta o retângulo dentro dos limites do board"
-        ],
-        "notes": "Passo 1: use-workspace-kanban-area-selection/workspace-kanban-area-selection-state/WorkspaceKanbanAreaSelectionOverlay ausentes (0 hits); AREA_SELECTION_DRAG_THRESHOLD ausente. Passo 3: nenhum marquee/seleção por área no sidebar (grep marquee/area-selection = 0). Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-033",
-      "capability": "Auto-scroll suave durante seleção por área ao aproximar das bordas superior/inferior da raia",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-area-selection.ts:145",
-        "components/sidebar/workspace-kanban-area-selection-dom.ts:109",
-        "components/sidebar/workspace-kanban-area-selection-dom.ts:139"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:1",
-          "src/components/sidebar/WorktreeSidebar.tsx:698"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Detecta container de rolagem mais próximo (getAreaSelectionScrollContainer)",
-          "Calcula velocidade/direção em zona de borda de 48px com delta máximo de 22px",
-          "Executa rolagem vertical contínua via rAF enquanto o ponteiro permanece na zona",
-          "Recalcula hit-testing dos cards a cada frame"
-        ],
-        "notes": "Passo 1/3: getAreaSelectionScrollContainer/getAreaSelectionAutoScrollDelta ausentes (0 hits). O autoscroll existente é do drag de linhas da lista (worktree-sidebar-drag-autoscroll.ts, não alcançável pela renderização) e não há hit-testing de marquee. Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-034",
-      "capability": "Cálculo de retângulos e hit-testing de cards sob rolagem de raia com preview imperativo sem re-render",
-      "orca_evidence": [
-        "components/sidebar/workspace-kanban-area-selection-card-rects.ts:25",
-        "components/sidebar/workspace-kanban-area-selection-dom.ts:68",
-        "components/sidebar/workspace-kanban-area-selection-dom.ts:182",
-        "components/sidebar/workspace-kanban-area-selection-dom.ts:192"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/workspace-kanban-area-selection-card-rects.ts:1",
-          "src/components/sidebar/WorktreeList.tsx:326"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Coleta retângulos dos cards a partir do layout virtual e elementos DOM",
-          "Calcula interseção compensando a posição inicial do scroll (scrollStartContentYByElement)",
-          "Mantém cards selecionados mesmo se a rolagem os mover para fora do viewport",
-          "Aplica data-workspace-board-card-area-selected direto no DOM",
-          "Re-aplica o preview quando cards virtuais forem remontados"
-        ],
-        "notes": "Passo 1/2: workspace-kanban-area-selection-card-rects e o atributo data-workspace-board-card-area-selected ausentes (0 hits). Passo 3: sem seleção por área nem layout virtual para hit-testing (WorktreeList.tsx:326 renderiza direto). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-035",
-      "capability": "Commit e cancelamento de seleção por área respeitando modo aditivo e clique em espaço vazio",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-area-selection.ts:167",
-        "components/sidebar/workspace-kanban-area-selection-state.ts:40"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/workspace-kanban-area-selection-state.ts:1",
-          "src/components/sidebar/WorktreeSidebar.tsx:300"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Clique simples em espaço vazio (não aditivo) limpa a seleção",
-          "Clique com modificador (aditivo) em espaço vazio não limpa",
-          "Commit da lista final via updateSelectionForArea ao soltar após arrasto",
-          "Limpa atributos de preview de todos os cards e oculta o overlay",
-          "Cancela frames pendentes de animação e auto-scroll"
-        ],
-        "notes": "Passo 1/3: updateSelectionForArea e a máquina de estado de seleção por área ausentes (0 hits); não há seleção de cards (ver D08-031). O único click-outside é o do WorkspaceOptionsMenu (WorktreeSidebar.tsx:300). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-036",
-      "capability": "Drag de cards via ponteiro no Kanban com threshold de 5px e supressão de clique pós-arrasto",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:20",
-        "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:114",
-        "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:215",
-        "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:270",
-        "components/sidebar/workspace-kanban-card-pointer-drag-start.ts:1",
-        "components/sidebar/workspace-kanban-card-pointer-drag-start.ts:11"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/use-worktree-card-controller.ts:190",
-          "src/components/sidebar/WorktreeSidebar.tsx:442",
-          "src/components/sidebar/worktree-drag-units.ts:18"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Captura só o botão primário sem modificadores (Shift/Cmd/Ctrl ficam para seleção)",
-          "Ignora cliques em controles interativos internos do card",
-          "Resolve single card ou lote de selecionados preservando host identity",
-          "Threshold de 5px (POINTER_DRAG_THRESHOLD) antes do modo drag",
-          "Suprime cliques por 250ms após o drag"
-        ],
-        "notes": "Passo 1/3: use-workspace-kanban-card-pointer-drag/workspace-kanban-card-pointer-drag-start ausentes (0 hits); POINTER_DRAG_THRESHOLD ausente. O sidebar usa drag nativo HTML5 para reordenar (use-worktree-card-controller.ts:190 onDragStart; WorktreeSidebar.tsx:442 drop), sem pointer drag com clonagem, sem lote de selecionados (worktree-drag-units.ts está fora do caminho de render). Passo 5: {BOARD_ABSENT}. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-037",
-      "capability": "Preview visual de drag e multi-drag com clonagem de elemento, cursor grabbing e badge de contagem",
-      "orca_evidence": [
-        "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:22",
-        "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:28",
-        "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:63",
-        "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:70"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-card-surface.tsx:89",
-          "src/components/sidebar/worktree-card-model.ts:60"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Define cursor grabbing, userSelect none e data-workspace-board-pointer-dragging no html",
-          "Marca os cards originais com data-workspace-board-card-pointer-dragging",
-          "Clona o nó do card e anexa elemento flutuante fixed no body",
-          "Exibe badge de contagem (data-workspace-board-card-drag-count) para múltiplos cards",
-          "Atualiza a posição do preview via translate3d acompanhando o ponteiro"
-        ],
-        "notes": "Passo 2: workspace-kanban-card-drag-preview-dom, os atributos data-workspace-board-card-pointer-dragging/drag-count e o preview flutuante ausentes (0 hits). O sidebar usa o drag nativo do navegador (worktree-card-surface.tsx:89 draggable + model.ts:60 onDragStart), cujo preview é do próprio browser. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-038",
-      "capability": "Resolução de alvo de drop, tolerância de gaps e linha indicadora de inserção",
-      "orca_evidence": [
-        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:49",
-        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:71",
-        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:88",
-        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:133",
-        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:172",
-        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:243"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:1",
-          "src/components/sidebar/SectionHeader.tsx:273"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Resolve status da raia sob o ponteiro com tolerância de 24px entre colunas (STATUS_DROP_GAP_TOLERANCE_PX)",
-          "Detecta drop target na área de fixação (data-workspace-pin-drop-target)",
-          "Calcula índice de inserção comparando Y com os pontos médios dos cards",
-          "Renderiza linha indicadora (data-workspace-board-card-drop-indicator)",
-          "Mantém o último alvo com tolerância de 6px (COMMIT_TARGET_FALLBACK_TOLERANCE_PX)"
-        ],
-        "notes": "Passo 1/2: workspace-kanban-card-pointer-drag-dom, STATUS_DROP_GAP_TOLERANCE_PX, data-workspace-pin-drop-target e data-workspace-board-card-drop-indicator ausentes (0 hits; o único indicador é data-hydra-drop-indicator de SectionHeader.tsx:273, para headers de projeto). Passo 3: o drop da lista resolve topo/base por altura do alvo (WorktreeSidebar.tsx:446), não por raias/índice de cards. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-039",
-      "capability": "Tradução de índice de drop sob filtro de busca para a lista completa da raia",
-      "orca_evidence": [
-        "components/sidebar/workspace-kanban-filtered-drop-index.ts:33"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/workspace-kanban-filtered-drop-index.ts:1",
-          "src/components/sidebar/WorktreeSidebar.tsx:544"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Mapeia índice de drop dos cards visíveis para a posição na lista completa da raia",
-          "Retorna o índice direto quando a raia não está filtrada",
-          "Append ao final quando todos os cards da raia estão filtrados",
-          "Mapeia inserção antes do primeiro / após o último item visível para a raia cheia",
-          "Garante que a ordenação manual não seja corrompida por filtros parciais"
-        ],
-        "notes": "Passo 1: workspace-kanban-filtered-drop-index/resolveWorkspaceKanbanSidebarFullLaneDropIndex ausentes (0 hits). Passo 3: o drop da lista não usa índice de inserção virtual — reordena por splice sobre as worktrees filtradas do projeto (WorktreeSidebar.tsx:449-458). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-040",
-      "capability": "Integração de drop vindo da barra lateral para o Kanban com registro de grupos e destaque visual",
-      "orca_evidence": [
-        "components/sidebar/workspace-kanban-sidebar-drop.ts:32",
-        "components/sidebar/workspace-kanban-sidebar-drop.ts:91",
-        "components/sidebar/workspace-kanban-sidebar-drop.ts:100",
-        "components/sidebar/workspace-kanban-sidebar-drop.ts:133",
-        "components/sidebar/workspace-kanban-sidebar-drop.ts:153",
-        "components/sidebar/workspace-kanban-sidebar-drop.ts:182"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:442",
-          "src/components/sidebar/project-header-drop.ts:1",
-          "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:1"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Registra grupos lógicos (registerWorkspaceKanbanSidebarDropGroups) com o drawer aberto",
-          "Verifica se o ponto do ponteiro está dentro da superfície do sheet do Kanban",
-          "Destaca a raia alvo (data-workspace-board-external-drag-target) e posiciona a linha indicadora",
-          "Traduz índices virtuais/filtrados na fronteira de commit",
-          "Constrói atualizações em lote (buildWorkspaceKanbanSidebarDropUpdates) e decide comutação para ordenação manual"
-        ],
-        "notes": "Passo 1/3: workspace-kanban-sidebar-drop e registerWorkspaceKanbanSidebarDropGroups/isWorkspaceKanbanSidebarDropPointInBoard ausentes (0 hits). O drop da sidebar tem apenas alvos de projeto/worktree (WorktreeSidebar.tsx:442, project-header-drop.ts) e nenhum alvo de board. PAR-88 não implementado. Não localizado."
-      },
-      "par": [
-        "PAR-14",
-        "PAR-88"
-      ]
-    },
-    {
-      "id": "D08-041",
-      "capability": "Drag and drop nativo HTML5 no Kanban com detecção de dados de workspace e inserção no fim da raia",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-native-drag.ts:5",
-        "components/sidebar/use-workspace-kanban-native-drag.ts:10",
-        "components/sidebar/use-workspace-kanban-native-drag.ts:44"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/workspace-status-drag-data.ts:3",
-          "src/components/sidebar/WorktreeSidebar.tsx:456",
-          "src/components/sidebar/use-worktree-card-controller.ts:196"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Valida dados de workspace via hasWorkspaceDragData e extrai IDs via readWorkspaceDragDataIds",
-          "Define dropEffect=move durante dragover",
-          "Destaca a raia ou o alvo de pin durante o arraste e limpa em dragleave/dragend",
-          "Insere os worktrees soltos ao final da raia de status de destino"
-        ],
-        "notes": "Passo 1/3: use-workspace-kanban-native-drag ausente (0 hits) e as funções de payload existem mas sem consumidor — workspace-status-drag-data.ts:3-5 define application/x-orca-worktree-id(-ids) porém writeWorkspaceDragData/readWorkspaceDragDataIds/hasWorkspaceDragData têm 0 callers (só re-export em workspace-status.ts:40). O drag nativo da lista usa outro caminho e só reordena dentro do projeto (WorktreeSidebar.tsx:456). Não localizado."
-      },
-      "par": [
-        "PAR-14",
-        "PAR-88"
-      ]
-    },
-    {
-      "id": "D08-042",
-      "capability": "Ações de reordenação, movimentação e fixação de worktrees com comutação automática para ordenação manual",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-kanban-worktree-actions.ts:20",
-        "components/sidebar/use-workspace-kanban-worktree-actions.ts:44",
-        "components/sidebar/use-workspace-kanban-worktree-actions.ts:60",
-        "components/sidebar/use-workspace-kanban-worktree-actions.ts:85",
-        "components/sidebar/use-workspace-kanban-worktree-actions.ts:172",
-        "components/sidebar/use-workspace-kanban-worktree-actions.ts:183"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:449",
-          "src/App.tsx:1922",
-          "src/App.tsx:3405",
-          "src/App.tsx:3135",
-          "src/components/sidebar/WorktreeList.tsx:374",
-          "src/components/sidebar/worktree-manual-order.ts:161",
-          "src/components/sidebar/worktree-manual-order.ts:240"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "moveWorktreeToStatus / moveWorktreesToStatus qualificados por hostId",
-          "Pin em lote do conjunto selecionado (pinWorktrees)",
-          "Comutação automática para sortBy 'manual' ao reordenar intencionalmente no board",
-          "Sincronização opcional de status de tarefa com Linear (maybeSyncTaskStatuses)",
-          "Telemetria workspace-board-actions"
-        ],
-        "notes": "PARCIAL: reordenar e fixar worktrees existem no sidebar — drop reordena dentro do projeto (WorktreeSidebar.tsx:449-458) e persiste a ordem em localStorage (App.tsx:1922-1935); 'Pin'/'Unpin' no menu de contexto (App.tsx:3405 → togglePinWorktree:3135) com badge no card (WorktreeList.tsx:374). Faltam: movimentação de status (nenhuma mutação de workspaceStatus existe — src-tauri/src sem workspace_status e store só no payload de criação), pin em lote, comutação automática para ordenação manual (buildManualOrderUpdatesForGroupDrop/shouldWriteManualOrderForGroupDrop em worktree-manual-order.ts:161,240 estão sem callers), sync Linear e telemetria de board."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-043",
-      "capability": "Sincronização de status de tarefas com Linear via hook com notificações toast de sucesso/aviso/erro",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-board-task-status-sync.ts:13",
-        "components/sidebar/use-workspace-board-task-status-sync.ts:51",
-        "components/sidebar/use-workspace-board-task-status-sync.ts:74",
-        "components/sidebar/use-workspace-board-task-status-sync.ts:98"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/runtime/runtime-linear-client.ts:57",
-          "src/runtime/runtime-linear-project-client.ts:220",
-          "src/components/task-page-github-status-actions.ts:5"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Valida a preferência syncTaskStatusFromWorkspaceBoard e monta a requisição",
-          "Sincroniza de forma assíncrona em background",
-          "Toast 'Task status sync skipped' com motivo (issue não lida, estado não encontrado, múltiplos estados)",
-          "Toast 'Task status sync failed' em falha de mutação/erro do provedor",
-          "Detalha contadores de atualizados/ignorados/falhados"
-        ],
-        "notes": "Passo 1: use-workspace-board-task-status-sync ausente (0 hits); strings 'Task status sync skipped/failed' ausentes (0 hits). Passo 4: existe integração Linear de leitura (runtime-linear-project-client.ts:220 linearTeamStates; runtime-linear-client.ts:57 só o tipo LinearMutationResult) mas nenhuma mutação de issue para sync de board; task-page-github-status-actions.ts:5 trata mutações de GitHub da task page. Preferência existe e nunca é lida (constants.ts:289, ui-slice-hydration-actions.ts:203). Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-044",
-      "capability": "Motor de sincronização com Linear com fila por worktree, normalização de estados e consistência local",
-      "orca_evidence": [
-        "components/sidebar/workspace-board-task-status-sync.ts:68",
-        "components/sidebar/workspace-board-task-status-sync.ts:130",
-        "components/sidebar/workspace-board-task-status-sync.ts:143",
-        "components/sidebar/workspace-board-task-status-sync.ts:241"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/runtime/runtime-linear-client.ts:202",
-          "src/runtime/runtime-linear-project-client.ts:220"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Fila por worktree (enqueueWorktreeSync) para evitar corridas",
-          "Resolve configurações de Linear por dono de runtime do worktree",
-          "Lê issue e workflow states do time Linear",
-          "Correspondência normalizada case-insensitive entre label do board e nome do estado",
-          "Ignora se a issue já está no estado destino",
-          "Aborta se o status local mudar antes da resposta (local-first)",
-          "Atualiza a issue e agrega resultados em lote"
-        ],
-        "notes": "Passo 1/3: syncWorkspaceBoardTaskStatuses/enqueueWorktreeSync/normalizeStateName ausentes (0 hits). Passo 4: não existe comando/mutação de estado de issue Linear no backend nem em runtime/** (grep linearUpdateIssue/updateIssueState = 0; src-tauri/src sem 'linear'). Sem board e sem mutação, o motor não existe. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    },
-    {
-      "id": "D08-045",
-      "capability": "Construção e filtragem de requisições de sincronização de tarefas evitando no-ops e redundâncias",
-      "orca_evidence": [
-        "components/sidebar/workspace-board-task-status-sync.ts:46"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/ui/ui-slice-preference-actions.ts:259",
-          "src/shared/constants.ts:289"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Retorna null com sync desabilitada ou lista de IDs vazia",
-          "Localiza a definição do status alvo em workspaceStatuses do store",
-          "Filtra IDs duplicados e worktrees já no status alvo",
-          "Retorna changedWorktreeIds e targetStatus limpos"
-        ],
-        "notes": "Passo 1/3: getWorkspaceBoardTaskStatusSyncRequest ausente (0 hits). O estado base existe mas inerte: syncTaskStatusFromWorkspaceBoard default false (constants.ts:289) com setter persistente sem caller (ui-slice-preference-actions.ts:259-262) e nenhuma leitura no renderer. Não localizado."
-      },
-      "par": [
-        "PAR-14"
-      ]
-    }
-  ],
-  "summary": {
-    "parity": 0,
-    "partial": 5,
-    "missing": 40,
-    "not-applicable": 0,
-    "out-of-scope": 0
+ "domain": "D08-kanban-board",
+ "rows": [
+  {
+   "id": "D08-001",
+   "capability": "Alternar abertura e fechamento do painel Kanban via evento global ou ação de UI com telemetria",
+   "orca_evidence": [
+    "components/sidebar/useWorkspaceBoardPanel.ts:50",
+    "components/sidebar/useWorkspaceBoardPanel.ts:63",
+    "components/sidebar/useWorkspaceBoardPanel.ts:79",
+    "components/sidebar/useWorkspaceBoardPanel.ts:160"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:43",
+     "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:124-127",
+     "src/components/sidebar/SidebarFooter.tsx:53-58",
+     "src/components/sidebar/WorktreeSidebar.tsx:207-211",
+     "src/components/sidebar/WorktreeSidebar.tsx:893-894",
+     "src/shared/keybindings/definitions-core-1.ts:103"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Gerencia o estado de abertura workspaceBoardOpen/renderedOpen",
+     "Registra interação de feature workspace-board no store ao abrir",
+     "Fecha e limpa estados de pré-visualização de drag e menus ativos",
+     "Escuta o evento global orca:toggle-workspace-board na janela"
+    ],
+    "notes": "Passos 1-2: nenhum componente/estado de board. Passo 3: sem board: 0 hits para WorkspaceKanban*/workspace-kanban*/workspaceBoardOpen/toggleWorkspaceBoard em src/**; marcação data-workspace-board-* e label 'Workspace board' só no catálogo i18n importado do Orca (src/i18n/en-runtime-required.json:1898); canal ui.onOpenWorkspaceBoard existe apenas como expectativa de teste (src/hooks/useIpcEvents-lifecycle.test.ts:135) e o bridge que o registraria é auto-stub (src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3 = null); keybinding workspace.openBoard definido mas sem handler (src/shared/keybindings/definitions-core-1.ts:103); nenhum comando Tauri equivalente (index/hydra_tauri_commands.json). Passo 5: SidebarHeader.tsx:50 renderiza título estático 'Projects' sem controle de board. Não localizado.",
+    "note": "Board substitui o antigo missing: toggle ligado via evento global + botao do footer; faltam telemetria e handler do keybinding workspace.openBoard."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-002",
+   "capability": "Pré-visualização e solidificação do painel Kanban a partir de drag da barra lateral",
+   "orca_evidence": [
+    "components/sidebar/useWorkspaceBoardPanel.ts:87",
+    "components/sidebar/useWorkspaceBoardPanel.ts:95",
+    "components/sidebar/useWorkspaceBoardPanel.ts:109"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:471-492",
+     "src/components/sidebar/worktree-sidebar-drop-preview.ts:1"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Ativa workspaceBoardDragPreviewOpen sem telemetria até solidificar",
+     "Solidifica a abertura convertendo preview em abertura definitiva + telemetria",
+     "Cancela a pré-visualização se o drag for abortado/sair sem drop"
+    ],
+    "notes": "Passo 1: previewWorkspaceBoardFromDrag/solidifyWorkspaceBoardFromDrag/cancelWorkspaceBoardDragPreview ausentes (0 hits). Passo 3: o único drag da sidebar resolve drop para projeto/worktree (WorktreeSidebar.tsx:442 handleWorktreeDrop, project-header-drop.ts:5), sem superfície de board. Passo 4: sem backend. Passo 5: sem board: 0 hits para WorkspaceKanban*/workspace-kanban*/workspaceBoardOpen/toggleWorkspaceBoard em src/**; marcação data-workspace-board-* e label 'Workspace board' só no catálogo i18n importado do Orca (src/i18n/en-runtime-required.json:1898); canal ui.onOpenWorkspaceBoard existe apenas como expectativa de teste (src/hooks/useIpcEvents-lifecycle.test.ts:135) e o bridge que o registraria é auto-stub (src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3 = null); keybinding workspace.openBoard definido mas sem handler (src/shared/keybindings/definitions-core-1.ts:103); nenhum comando Tauri equivalente (index/hydra_tauri_commands.json). Não localizado.",
+    "note": "Sem previewWorkspaceBoardFromDrag/solidify: o board so recebe cards por drop interno (ponteiro), nao por drag da lista."
+   },
+   "par": [
+    "PAR-14",
+    "PAR-88"
+   ]
+  },
+  {
+   "id": "D08-003",
+   "capability": "Fechamento por tecla Escape no nível do documento com respeito a overlays e campos editáveis",
+   "orca_evidence": [
+    "components/sidebar/useWorkspaceBoardPanel.ts:18",
+    "components/sidebar/useWorkspaceBoardPanel.ts:130",
+    "components/sidebar/useWorkspaceBoardPanel.ts:135"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:10-24",
+     "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:31-40",
+     "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:99-111"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Intercepta Escape em fase de captura no document quando o board está aberto",
+     "Ignora Escape quando o menu do board está aberto (workspaceBoardMenuOpen)",
+     "Ignora Escape com foco em campo editável do sheet (isWorkspaceBoardEditableTarget)",
+     "Ignora Escape quando há overlays bloqueantes (dropdown/context/popover/dialog/alertdialog/menu/listbox)",
+     "Não é bloqueado por tooltips não interativos (data-slot=tooltip-content)",
+     "Fecha o painel e previne o evento padrão"
+    ],
+    "notes": "Passo 1/3: isWorkspaceBoardEditableTarget e o listener de capture ausentes (0 hits para workspaceBoardMenuOpen). O único Escape em sidebar é o do input de filtro (WorktreeSidebar.tsx:678), que limpa/blur, não fecha drawer. Passo 5: nenhum handler global de Escape no sidebar (só dialogs). Não localizado.",
+    "note": "Escape em capture no document, respeitando campo editavel (isEditableTarget) e overlays abertos; fecha so o board."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-004",
+   "capability": "Descarte do board por interação fora da área (outside dismiss) preservando aberturas de menus e modais",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-outside-dismiss.ts:4",
+    "components/sidebar/use-workspace-kanban-outside-dismiss.ts:24",
+    "components/sidebar/use-workspace-kanban-outside-dismiss.ts:33",
+    "components/sidebar/WorkspaceKanbanSheet.tsx:30"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:60-61",
+     "src/components/sidebar/WorktreeSidebar.tsx:312-316"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Calcula bounding rect do sheet content e descarta o board em clique à direita do painel",
+     "Preserva abertura via preserveOpenForMenu",
+     "Preserva abertura para isWorkspaceBoardKeepOpenTarget (gatilhos, popovers, context menus, dropdowns, dialogs, toasts, tour)",
+     "Ignora cliques à esquerda da borda viva do sheet"
+    ],
+    "notes": "Passo 2: a marcação existe como resíduo — worktree-card-header.tsx:190 emite data-workspace-board-preserve-open e worktree-list/pointer-drag-dom.ts:18 a consome, mas pointer-drag-dom.ts está em index/hydra_unreachable.json (módulo morto) e não há sheet de board. Passo 3: WorktreeSidebar.tsx:300 faz click-outside apenas do WorkspaceOptionsMenu. Passo 5: sem board: 0 hits para WorkspaceKanban*/workspace-kanban*/workspaceBoardOpen/toggleWorkspaceBoard em src/**; marcação data-workspace-board-* e label 'Workspace board' só no catálogo i18n importado do Orca (src/i18n/en-runtime-required.json:1898); canal ui.onOpenWorkspaceBoard existe apenas como expectativa de teste (src/hooks/useIpcEvents-lifecycle.test.ts:135) e o bridge que o registraria é auto-stub (src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3 = null); keybinding workspace.openBoard definido mas sem handler (src/shared/keybindings/definitions-core-1.ts:103); nenhum comando Tauri equivalente (index/hydra_tauri_commands.json). Não localizado.",
+    "note": "Board ignora pointerdown/interact outside (sem outside dismiss); so Escape/botao e o click-outside do WorkspaceOptionsMenu existem."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-005",
+   "capability": "Retenção temporária do drawer (lingering de 300ms) para conclusão suave da animação de fechamento",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-drawer-lingering.ts:3",
+    "components/sidebar/use-workspace-kanban-drawer-lingering.ts:5",
+    "components/sidebar/WorkspaceKanbanDrawer.tsx:37"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/workspace-board/use-workspace-board-drawer-lingering.ts:7",
+     "src/components/sidebar/workspace-board/use-workspace-board-drawer-lingering.ts:13-22",
+     "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:54-58"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Mantém lingering=true por 300ms (WORKSPACE_BOARD_CLOSE_LINGER_MS) após open=false",
+     "Permite a animação de saída do Radix Sheet sem desmontar abruptamente",
+     "Cancela o timer de unmount e restaura lingering se reabrir antes do término",
+     "Desmonta o conteúdo pesado após 300ms"
+    ],
+    "notes": "Passo 1/3: use-workspace-kanban-drawer-lingering e WORKSPACE_BOARD_CLOSE_LINGER_MS ausentes (0 hits). Passo 2: nenhum Radix Sheet de board (radix-ui está nas deps, usado por dropdown-menu). Passo 5: nenhum timer de lingering no sidebar (index/hydra_timers.json só tem CacheTimer/WorktreeSidebar/etc.). Não localizado.",
+    "note": "Linger de 300ms com cancelamento ao reabrir; drawer so desmonta apos a animacao."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-006",
+   "capability": "Ciclo de renderização diferido dos cards e descarte de seleção externa",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-render-lifecycle.ts:4",
+    "components/sidebar/use-workspace-kanban-render-lifecycle.ts:12",
+    "components/sidebar/use-workspace-kanban-render-lifecycle.ts:30"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59",
+     "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:83-100"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Diferimento da renderização de cards com requestAnimationFrame + startTransition",
+     "Cancela a animação se o drawer fechar antes do frame disparar",
+     "Limpa seleção de cards em pointerdown fora do sheet e fora de keep-open targets"
+    ],
+    "notes": "Passo 1/3: use-workspace-kanban-render-lifecycle ausente (0 hits); startTransition não aparece em src/components/sidebar/**. Os rAF existentes (WorktreeSidebar.tsx:373,410) servem ao highlight de reveal, não ao board. Passo 5: sem seleção de cards no sidebar (0 hits para selectedWorktreeIds). Não localizado.",
+    "note": "Board renderiza todas as raias/cards por map; sem startTransition/ciclo diferido nem descarte de selecao externa."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-007",
+   "capability": "Container e layout do Kanban Sheet com posicionamento e reserva de barra de status",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanSheet.tsx:18",
+    "components/sidebar/WorkspaceKanbanSheet.tsx:50",
+    "components/sidebar/WorkspaceKanbanSheet.tsx:60"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:44-56",
+     "src/components/sidebar/workspace-board/use-workspace-board-geometry.ts:24-57"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Renderiza Sheet não-modal (modal={false}) no lado esquerdo com largura min(calc(100vw - sidebarWidth), 1294px)",
+     "Posiciona topo abaixo de WORKSPACE_TOP_CHROME_HEIGHT e base conforme STATUS_BAR_RESERVE_HEIGHT",
+     "Impede auto-focus e desativa close button nativo do Radix Sheet",
+     "Configura overlay sem pointer events alinhado à largura da sidebar",
+     "Expõe data-attributes de tour contextual e preview de drag"
+    ],
+    "notes": "Passo 1/2: constantes WORKSPACE_TOP_CHROME_HEIGHT, STATUS_BAR_RESERVE_HEIGHT e o atributo data-contextual-tour-target=workspace-board-surface ausentes (0 hits). Passo 3: nenhum Sheet/drawer de board; Radix presente só em ui/dropdown-menu.tsx. Passo 5: shared/constants.ts:287 tem apenas workspaceBoardOpacity (nunca lido). Não localizado.",
+    "note": "Sheet reserva chrome/status por medicao do sidebar; faltam as constantes WORKSPACE_TOP_CHROME_HEIGHT/STATUS_BAR_RESERVE_HEIGHT e o data-contextual-tour-target."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-008",
+   "capability": "Header do drawer Kanban com contagem de seleção, campo de busca, filtro, configurações e botão fechar",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:29",
+    "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:49",
+    "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:88",
+    "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:112"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:21-50"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "SheetTitle com label 'Workspace board' e badge de contagem de seleção ({selectedCount} selected)",
+     "Campo de busca como irmão do título dentro do SheetHeader",
+     "SheetDescription oculta para leitores de tela",
+     "Agrupa SidebarFilter + WorkspaceKanbanSettingsMenu + botão fechar (X)",
+     "Encaminha clique de fechar ao callback onClose explícito"
+    ],
+    "notes": "Passo 2: os labels existem só no catálogo i18n importado (src/i18n/en-runtime-required.json:1898-1902 'Workspace board'/'Close workspace board'); nenhum uso em src/**. O header da sidebar (SidebarHeader.tsx:50) tem título estático e botões de agents/add-project. Passo 5: sem contagem de seleção (0 hits). Não localizado.",
+    "note": "Header tem titulo e botao fechar; faltam busca, filtro, menu de configuracoes e contagem de selecao."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-009",
+   "capability": "Superfície de seleção, overlay de área, alvo central de contextual tour e container de raias do Drawer View",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanDrawerView.tsx:21",
+    "components/sidebar/WorkspaceKanbanDrawerView.tsx:43",
+    "components/sidebar/WorkspaceKanbanDrawerView.tsx:50"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:45-59"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Layout interno combinando Header + overlay de seleção + target de tour + drop target de Pin",
+     "Superfície de seleção via data-workspace-board-selection-surface",
+     "Listeners de pointerdown capture para cards e pointerdown para seleção por área",
+     "Container com rolagem horizontal personalizada (scrollbar-sleek) para a grade de raias"
+    ],
+    "notes": "Passo 2: atributo data-workspace-board-selection-surface ausente (0 hits). Passo 3: nenhum container de raias; scrollbar-sleek existe no scroller vertical da lista (WorktreeSidebar.tsx:698), sem grade horizontal. Passo 5: sem drop target de pin. Não localizado.",
+    "note": "Container de raias existe; faltam superficie de selecao, overlay de area e alvo de contextual tour."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-010",
+   "capability": "Campo de busca de workspaces com input em tempo real, ícone e botão de limpeza que preserva foco",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:34",
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:50",
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:98",
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:150"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:695-720"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Preserva foco no input ao clicar em limpar (onMouseDown.preventDefault + refocus imediato)",
+     "Calcula overlayReserve à direita para o contador sem sobrepor o texto digitado",
+     "Campo vive no header do board Kanban (superfície distinta da lista)"
+    ],
+    "notes": "PARCIAL: o campo de busca de workspaces existe e está ligado — input controlado com onChange imediato (WorktreeSidebar.tsx:670), ícone Search (:672), placeholder 'Filter projects and workspaces...' (:684) e botão de limpeza com aria-label 'Clear filter' (:688) condicionado a texto. Faltam os sub-comportamentos nomeados acima (o clear não preserva foco: não há onMouseDown/refocus; não há contador/overlayReserve).",
+    "note": "Busca do sidebar existe (input + Clear filter), mas o board nao tem campo de busca proprio; o clear nao preserva foco."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-011",
+   "capability": "Tratamento de tecla Escape no campo de busca para limpar texto ou fechar o board respeitando IME",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:120"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:704-709"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Ignora Escape durante composição de caractere (event.nativeEvent.isComposing)",
+     "Aciona o fechamento do painel Kanban (onClose) se o campo já estiver vazio",
+     "Previne propagação do evento para evitar duplo acionamento"
+    ],
+    "notes": "PARCIAL: existe tratamento de Escape no campo de busca (WorktreeSidebar.tsx:677-681): se há texto, limpa; se vazio, blur. Faltam: guard de IME, fechar o board quando vazio (faz blur), e stopPropagation. Sem board, onClose não existe.",
+    "note": "Escape limpa texto do filtro ou da blur; sem guard de IME nem fechar-board (nao ha busca no board)."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-012",
+   "capability": "Live region acessível debouncada e badges de contagem/aviso de texto muito longo no campo de busca",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:7",
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:42",
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:80",
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:135",
+    "components/sidebar/WorkspaceKanbanSearchField.tsx:170"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:695-720"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Badge tabular-nums {matchCount} / {totalCount} com aria-hidden",
+     "Aviso visual destrutivo 'Too long' com tooltip quando o texto excede o limite de bytes",
+     "Live region role=status aria-live=polite com debounce de 400ms (ANNOUNCE_DEBOUNCE_MS)",
+     "Anuncia 'No workspaces match' ou '{matchCount} of {totalCount} workspaces match'",
+     "Omite contagens quando a busca é só espaços em branco ou não filtrante"
+    ],
+    "notes": "Passo 2: strings 'No workspaces match'/'Too long'/ANNOUNCE_DEBOUNCE_MS ausentes (0 hits). Passo 3: nenhuma live region de busca — o único aria-live do sidebar é do WorktreeVisibilityDialog.tsx:536. O campo de filtro não mostra contagem de correspondências (WorktreeSidebar.tsx:686-694). Não localizado.",
+    "note": "Sem live region debouncada nem badges de contagem/aviso de filtro longo."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-013",
+   "capability": "Indexação e correspondência de busca de workspaces no Kanban com suporte a host-qualified identities",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-search.ts:24",
+    "components/sidebar/use-workspace-kanban-search.ts:46",
+    "components/sidebar/use-workspace-kanban-search.ts:54",
+    "components/sidebar/workspace-kanban-search.ts:26",
+    "components/sidebar/workspace-kanban-search.ts:43"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:562-635",
+     "src/components/sidebar/visible-worktree-filters.ts:1"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "useDeferredValue para manter o input responsivo e permitir interrupção do re-render",
+     "Política board-only de indexação (apenas texto impresso nos cards, sem portas/reviews/automações)",
+     "Retorna null para query vazia ou acima do limite (isWorktreePaletteQueryTooLarge) em vez de zerar o board",
+     "Chave de resultado qualificada por host (composeWorktreeHostIdentity)",
+     "Estabilidade de referência de matchingWorktreeIds (evita re-render em ticks de status de agente) e reset da query ao fechar"
+    ],
+    "notes": "PARCIAL: há matching de busca de workspaces ligado (WorktreeSidebar.tsx:530-560): compara branch, displayName e path da worktree e title/agentName das sessões, sem debounce. Faltam os sub-comportamentos de board (deferred value, política de campos, guarda de tamanho, identidade host-qualified, estabilidade do set).",
+    "note": "Matching de busca do sidebar existe; falta o pipeline host-qualified/board (deferred value, politica de campos, guarda de tamanho)."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-014",
+   "capability": "Projeção de visualização das raias sob filtro de busca preservando ordem e contagens totais",
+   "orca_evidence": [
+    "components/sidebar/workspace-kanban-search.ts:15",
+    "components/sidebar/workspace-kanban-search.ts:74"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:96-120",
+     "src/components/sidebar/WorktreeList.tsx:338"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Reutiliza arrays originais quando não há query (sem alocação)",
+     "Filtra itens por matchingWorktreeIds preservando a ordem de cada raia",
+     "Preserva totalCount original de cada raia antes da filtragem",
+     "Raias totalmente filtradas mantêm lista vazia com total correto"
+    ],
+    "notes": "Passo 1/3: use-workspace-kanban-search/workspace-kanban-search ausentes (0 hits); não há projeção de raias. Passo 2: getWorkspaceStatusGroupKey em folder-workspace-lanes.ts:53 pertence a módulo não alcançável (build-rows.ts e buildSidebarRows.ts listados em index/hydra_unreachable.json). Passo 5: o filtro da lista apenas remove worktrees, sem contagens por grupo. Não localizado.",
+    "note": "Sem projecao de raias sob busca/contagens por grupo; o agrupamento por status so afeta indentacao."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-015",
+   "capability": "Menu de configurações do Kanban em dropdown com toggle de sincronização de tarefas e listagem de status",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:33",
+    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:58",
+    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:75",
+    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:112"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:21-50",
+     "src/store/slices/ui/ui-slice-preference-actions.ts:259"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Dropdown não-modal (modal={false}) de configurações com tooltip 'Board settings'",
+     "Switch 'Sync board and issue status'",
+     "Preserva abertura ao interagir com popover aninhado de aparência de status",
+     "Lista todos os status com ícones/cores e inputs de renomeação inline",
+     "Renomeia status no blur ou Enter"
+    ],
+    "notes": "Passo 1: WorkspaceKanbanSettingsMenu/WorkspaceStatusAppearancePopover ausentes (0 hits em src/**; os rótulos existem só em src/i18n/en-runtime-required.json:1926-1930). Passo 3: não há UI de configuração de status; o catálogo de cores/ícones está em módulo morto (workspace-status.ts:58, sem importadores) e setSyncTaskStatusFromWorkspaceBoard (ui-slice-preference-actions.ts:259) não tem caller. Passo 5: nenhum menu de engrenagem no header da sidebar. Não localizado.",
+    "note": "Sem menu de configuracoes do board (sync toggle/lista de status); setter de sync sem caller."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-016",
+   "capability": "Reordenação e remoção de status no menu de configurações com migração automática de worktrees",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:143",
+    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:158",
+    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:173",
+    "components/sidebar/use-workspace-kanban-status-actions.ts:50",
+    "components/sidebar/use-workspace-kanban-status-actions.ts:74"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/shared/workspace-statuses.ts:143",
+     "src/store/slices/ui/ui-slice-preference-actions.ts:239"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Botão 'Move {label} left' desabilitado no primeiro índice",
+     "Botão 'Move {label} right' desabilitado no último índice",
+     "Botão 'Remove {label}' desabilitado quando resta apenas 1 status",
+     "Migra automaticamente worktrees do status removido para o status adjacente/fallback"
+    ],
+    "notes": "Passo 2: strings 'Move … left'/'Remove …' de status ausentes (0 hits fora de i18n). Passo 3: não há funções de mover/remover status; nenhuma mutação de workspaceStatus em worktree existe (grep workspaceStatus: em src/store/** só no payload de criação, worktree-create-payload.ts:79) e src-tauri não tem workspace_status. Passo 5: sem menu de status. Não localizado.",
+    "note": "Sem mover/remover status nem migracao de worktrees."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-017",
+   "capability": "Adição de novos status no Kanban com geração dinâmica de ID único",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:191",
+    "components/sidebar/use-workspace-kanban-status-actions.ts:65"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/shared/workspace-statuses.ts:143",
+     "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:21-50"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Adiciona novo status ao final com label 'Status N'",
+     "Gera ID único via makeWorkspaceStatusId",
+     "Registra interação de feature workspace-board-actions no store"
+    ],
+    "notes": "Passo 1/2: botão 'Add status' e label 'Status N' ausentes (0 hits). Passo 3: makeWorkspaceStatusId existe (workspace-statuses.ts:143) mas só é usado na normalização interna de persistência; setWorkspaceStatuses (ui-slice-preference-actions.ts:239) não tem caller e a telemetria workspace-board-actions (feature-interaction-catalog.ts:72) nunca é emitida. Passo 5: sem board: 0 hits para WorkspaceKanban*/workspace-kanban*/workspaceBoardOpen/toggleWorkspaceBoard em src/**; marcação data-workspace-board-* e label 'Workspace board' só no catálogo i18n importado do Orca (src/i18n/en-runtime-required.json:1898); canal ui.onOpenWorkspaceBoard existe apenas como expectativa de teste (src/hooks/useIpcEvents-lifecycle.test.ts:135) e o bridge que o registraria é auto-stub (src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts:3 = null); keybinding workspace.openBoard definido mas sem handler (src/shared/keybindings/definitions-core-1.ts:103); nenhum comando Tauri equivalente (index/hydra_tauri_commands.json). Não localizado.",
+    "note": "Sem botao 'Add status'; makeWorkspaceStatusId so usado na normalizacao de persistencia."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-018",
+   "capability": "Ações e persistência de alterações de status (renomear, cor, ícone) com registro de telemetria",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-status-actions.ts:13",
+    "components/sidebar/use-workspace-kanban-status-actions.ts:18",
+    "components/sidebar/use-workspace-kanban-status-actions.ts:32",
+    "components/sidebar/use-workspace-kanban-status-actions.ts:41"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/ui/ui-slice-preference-actions.ts:239-243",
+     "src/components/sidebar/workspace-status.ts:197"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Renomeia status aplicando trim e ignorando entradas vazias",
+     "Atualiza cor personalizada do status",
+     "Atualiza ícone do status",
+     "Persiste a lista no store e registra interação workspace-board-actions"
+    ],
+    "notes": "Passo 1/3: handleRenameStatus/handleChangeStatusColor/handleChangeStatusIcon ausentes (0 hits). Existe apenas o setter genérico setWorkspaceStatuses (ui-slice-preference-actions.ts:239-243, persiste via window.api.ui.set e set()) sem nenhum caller de UI; getWorkspaceStatusVisualMeta (workspace-status.ts:197) vive em módulo morto. Sem interação observável. Não localizado.",
+    "note": "Sem acoes de renomear/cor/icone de status; setter generico sem caller de UI."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-019",
+   "capability": "Grade virtualizada de raias horizontais com medição de colunas, overscan e retenção de raia focada",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanLaneGrid.tsx:82",
+    "components/sidebar/WorkspaceKanbanLaneGrid.tsx:102",
+    "components/sidebar/WorkspaceKanbanLaneGrid.tsx:173",
+    "components/sidebar/workspace-kanban-lane-range.ts:3"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Virtualiza colunas horizontalmente com @tanstack/react-virtual, overscan 1 e gap 12px",
+     "Reserva largura total do workflow via getTotalSize()",
+     "Mede dinamicamente o tamanho das raias conforme columnWidth",
+     "Mantém a raia focada montada via extractWorkspaceKanbanLaneRange",
+     "Rastreia foco por onFocusCapture/onBlurCapture nas raias"
+    ],
+    "notes": "Passo 1: WorkspaceKanbanLaneGrid/workspace-kanban-lane-range ausentes (0 hits). Passo 3: não há virtualização de raias; @tanstack/react-virtual não está declarado em package.json/pnpm-lock (único hit é import type em src/hooks/useVirtualizedScrollAnchor.ts:10, sem uso runtime) e a lista renderiza via map (WorktreeList.tsx:211). Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Grade de raias nao virtualizada (render direto); @tanstack/react-virtual nao e dependencia."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-020",
+   "capability": "Hidratação progressiva de raias a no máximo uma raia por quadro de animação",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanLaneGrid.tsx:128",
+    "components/sidebar/WorkspaceKanbanLaneGrid.tsx:142"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Adiciona no máximo uma raia por requestAnimationFrame via startTransition",
+     "Retém apenas raias atualmente montadas no virtualizador",
+     "Cancela animação pendente em desmontagem/cancelamento",
+     "Evita gargalo ao carregar fluxos com múltiplas raias pesadas"
+    ],
+    "notes": "Passo 1/3: hidratação escalonada de raias ausente (0 hits para startTransition/overscan de lane em src/components/sidebar/**). Não há virtualizador de raias (ver D08-019). Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Sem hidratacao progressiva de raias (sem startTransition/virtualizacao)."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-021",
+   "capability": "Raia de status do Kanban com contadores de itens, botão de criação de workspace e placeholder vazio",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanStatusLane.tsx:55",
+    "components/sidebar/WorkspaceKanbanStatusLane.tsx:75",
+    "components/sidebar/WorkspaceKanbanStatusLane.tsx:112",
+    "components/sidebar/WorkspaceKanbanStatusLane.tsx:165",
+    "components/sidebar/WorkspaceKanbanStatusLane.tsx:185"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:47-88"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Raia de status como coluna do board com ícone/cor do status",
+     "Contador '{count}' ou '{items.length} / {totalCount}' sob busca ativa",
+     "Botões no header e rodapé para criação rápida ('New workspace in {status.label}')",
+     "Placeholder 'Empty' / 'No matches' por raia",
+     "Destaque da raia como alvo de drag (isDragTarget / data-workspace-board-external-drag-target)",
+     "Passa identidade qualificada do workspace ativo para a lista de cards"
+    ],
+    "notes": "Passo 1/2: header 'New workspace in {status.label}', placeholder 'No matches' e data-workspace-board-external-drag-target ausentes (0 hits). O header de status existe apenas como dado em group-sections.ts:96-120, módulo não alcançável (build-rows.ts/buildSidebarRows.ts em index/hydra_unreachable.json); a lista renderizada monta só grupos de projeto (WorktreeList.tsx:476) e usa groupBy apenas para indentação (WorktreeList.tsx:338). WorktreeCardStatusLane.tsx:1 é o glifo do card (portado de WorktreeCardStatusSlot.tsx), não uma raia. O '+' de SectionHeader.tsx:188 é de grupo de projeto. Não localizado.",
+    "note": "Raia tem contador (data-workspace-board-lane-count) e placeholder Empty; falta o botao 'New workspace in {status}'."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-022",
+   "capability": "Redimensionamento de largura de coluna por arraste de alça e atalhos de teclado",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanStatusLane.tsx:108",
+    "components/sidebar/use-workspace-kanban-column-resize.ts:18",
+    "components/sidebar/use-workspace-kanban-column-resize.ts:49",
+    "components/sidebar/use-workspace-kanban-column-resize.ts:114",
+    "components/sidebar/use-workspace-kanban-column-resize.ts:130"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:55",
+     "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:47"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Alça acessível role=separator aria-orientation=vertical com min/max/now",
+     "Arrasto por ponteiro com cursor col-resize e userSelect:none",
+     "Rascunho em requestAnimationFrame com clamp entre MIN e MAX",
+     "ArrowLeft/ArrowRight na alça (passo padrão ou duplicado com Shift)",
+     "Persiste a largura final no store ao soltar/teclar"
+    ],
+    "notes": "Passo 1/3: use-workspace-kanban-column-resize ausente (0 hits); não há alça de resize no sidebar. O mecanismo está pela metade e inerte: constantes e clamp existem (workspace-statuses.ts:20-23,237-243), o campo persistido existe (persisted-ui-state-types.ts:101) e setWorkspaceBoardColumnWidth existe (ui-slice-preference-actions.ts:253) mas não tem nenhum caller. Sem interação observável. Não localizado.",
+    "note": "Largura vem do store persistido; sem alca de resize/atalhos de teclado."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-023",
+   "capability": "Rolagem horizontal acelerada com Shift + roda do mouse durante drag no board",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:5",
+    "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:40",
+    "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:70"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:47-48"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Detecta drag nativo (dragstart/dragover/drop/dragend/blur) ou pointer drag",
+     "Converte delta por DOM_DELTA_LINE/PIXEL",
+     "Intercepta wheel em capture com passive:false e cancela propagação",
+     "Aplica delta no scrollLeft do scroller de raias"
+    ],
+    "notes": "Passo 1/3: use-workspace-kanban-shift-wheel-scroll ausente (0 hits para Shift+wheel/scrollLeft em src/components/sidebar/**). O autoscroll existente (worktree-sidebar-drag-autoscroll.ts) é rAF vertical para o drag da lista e está fora do caminho de render. Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Sem Shift+wheel horizontal durante drag no board."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-024",
+   "capability": "Lista virtualizada vertical de cards dentro da raia com estimativa de altura e renderização assíncrona",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanLaneCardList.tsx:10",
+    "components/sidebar/WorkspaceKanbanLaneCardList.tsx:43",
+    "components/sidebar/WorkspaceKanbanLaneCardList.tsx:64",
+    "components/sidebar/WorkspaceKanbanLaneCardList.tsx:80"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:70-84"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Virtualiza cards verticalmente (estimativa 36px, gap 8px, overscan 6)",
+     "useFlushSync:false para não bloquear a thread principal",
+     "Reserva a altura total no espaçador para barra nativa suave",
+     "Chaves únicas qualificadas por host (getWorktreeHostIdentity)",
+     "Registra o layout virtual para operações de drag"
+    ],
+    "notes": "Passo 1: WorkspaceKanbanLaneCardList ausente (0 hits). Passo 3: cards são renderizados por map sem virtualizador (WorktreeList.tsx:326) e @tanstack/react-virtual não é dependência (só import type em useVirtualizedScrollAnchor.ts:10). Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Cards renderizados por map sem virtualizador vertical/est. de altura."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-025",
+   "capability": "Registro e consulta de layout virtual das raias para hit-testing, índice e indicador de drop",
+   "orca_evidence": [
+    "components/sidebar/workspace-kanban-virtual-lane-layout.ts:25",
+    "components/sidebar/workspace-kanban-virtual-lane-layout.ts:54",
+    "components/sidebar/workspace-kanban-virtual-lane-layout.ts:83",
+    "components/sidebar/workspace-kanban-virtual-lane-layout.ts:109"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Armazena registros de layout virtual em WeakMap por elemento de scroll",
+     "Fornece snapshot de itens lógicos e medições do virtualizador",
+     "Calcula retângulos virtuais por item (WorkspaceKanbanVirtualLaneItemRect)",
+     "Resolve índice de drop por busca binária (resolveWorkspaceKanbanVirtualLaneDropIndex)",
+     "Calcula Y exato do indicador de drop mesmo fora da janela montada",
+     "Desregistro seguro sem remover instâncias mais recentes"
+    ],
+    "notes": "Passo 1/3: workspace-kanban-virtual-lane-layout ausente (0 hits para WeakMap de layout de raia/resolveWorkspaceKanban*). O único hit-testing de drag do sidebar está em worktree-list/pointer-drag-dom.ts, listado em index/hydra_unreachable.json. Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Hit-testing/indice/indicador existem, mas a partir de rects vivos do DOM, nao de um layout virtual registrado."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-026",
+   "capability": "Publicação e serialização de IDs completos da raia via canal DOM com delimitador NUL",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanStatusLane.tsx:68",
+    "components/sidebar/WorkspaceKanbanStatusLane.tsx:88",
+    "components/sidebar/workspace-kanban-filtered-drop-index.ts:8",
+    "components/sidebar/workspace-kanban-filtered-drop-index.ts:16",
+    "components/sidebar/workspace-kanban-filtered-drop-index.ts:25"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-status-drag-data.ts:3-5",
+     "src/components/sidebar/workspace-status.ts:38-46"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Serializa IDs completos da raia com delimitador NUL (WORKSPACE_LANE_FULL_IDS_DELIMITER)",
+     "Publica data-workspace-lane-full-ids na raia apenas sob busca ativa",
+     "Permite que drops da sidebar conheçam a lista completa de IDs da raia",
+     "Faz parsing seguro distinguindo raia não publicada de raia vazia"
+    ],
+    "notes": "Passo 2: WORKSPACE_LANE_FULL_IDS_DELIMITER e o atributo data-workspace-lane-full-ids ausentes (0 hits). Existem tipos de payload de drag em workspace-status-drag-data.ts:3-5 e re-export em workspace-status.ts:40, mas ambos sem consumidor (0 callers de writeWorkspaceDragData/readWorkspaceDragDataIds/hasWorkspaceDragData) — e não há raia. O drag efetivo da lista (WorktreeSidebar.tsx:456) usa outro caminho. Não localizado.",
+    "note": "Sem canal DOM de IDs completos (delimitador NUL); helpers de payload seguem sem consumidor."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-027",
+   "capability": "Card de workspace no Kanban integrando WorktreeCard, badge de fixado e atributos host-qualified",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanCard.tsx:24",
+    "components/sidebar/WorkspaceKanbanCard.tsx:41",
+    "components/sidebar/WorkspaceKanbanCard.tsx:50"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardCard.tsx:41-57"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Wrapper com data-workspace-board-card-id/worktree-id/card-index/card-mode=detailed/card-selected",
+     "Badge 'Pinned' no canto superior direito quando worktree.isPinned",
+     "Encapsula WorktreeCard com estado ativo, seleção múltipla e callbacks de ativação/contexto",
+     "Destaque de seleção por área via data-workspace-board-card-area-selected"
+    ],
+    "notes": "Passo 2: atributos data-workspace-board-card-* e badge 'Pinned' no card ausentes (0 hits). Passo 3: a worktree é renderizada por WorktreeCard/worktree-card-surface.tsx:89 (draggable nativo), sem wrapper de board; há badge de pin (WorktreeList.tsx:374 isPinned) mas nenhuma seleção múltipla. Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Card integra WorktreeCard com atributos data-workspace-board-card-*, identidade host-qualified e badge Pinned."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-028",
+   "capability": "Alvo de drop para fixação de cards (Pin Drop Target) com feedback visual de hover",
+   "orca_evidence": [
+    "components/sidebar/WorkspaceKanbanPinDropTarget.tsx:12",
+    "components/sidebar/WorkspaceKanbanPinDropTarget.tsx:18"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:4-18"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Área tracejada acima das raias com ícone Pin e texto 'Pinned - Drop here to pin without changing status.'",
+     "Destaca borda/fundo quando isDragOver ou data-workspace-board-external-drag-target",
+     "Encaminha onDragOver/onDragLeave ao manipulador de drag"
+    ],
+    "notes": "Passo 2: o texto 'Pinned - Drop here to pin without changing status.' e data-workspace-pin-drop-target ausentes (0 hits). A ação de fixar existe no menu de contexto do worktree (App.tsx:3405 'Pin'/'Unpin' → togglePinWorktree), mas não há alvo de drop de pin. Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Alvo de drop so por raia de status; sem data-workspace-pin-drop-target/feedback de pin."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-029",
+   "capability": "Projeção de dados e agrupamento de worktrees no Kanban com ordenação manual ou recente/fixada",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-board-projection.ts:16",
+    "components/sidebar/use-workspace-kanban-board-projection.ts:40",
+    "components/sidebar/workspace-kanban-worktree-groups.ts:10",
+    "components/sidebar/workspace-kanban-worktree-groups.ts:22"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:37-88",
+     "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:55-140"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Agrupa worktrees em raias por status do workspace (colunas do board)",
+     "Aplica ordenação manual (sortManualBoardWorktrees por manualOrder/sortOrder) no board",
+     "Constrói grupos de drag do board (boardDragGroups) e registra para drop da sidebar",
+     "Constrói buildUnambiguousWorktreeIdIndex e identidade ativa host-qualified no board"
+    ],
+    "notes": "PARCIAL: a projeção de worktrees com filtros e modos de ordenação está ligada na lista — hideDefaultBranch/hideDetachedHead e sortBy name/recent/agent-activity (WorktreeSidebar.tsx:559-600), opções expostas no menu (WorkspaceOptionsMenu.tsx:278-294) e projetos fixados primeiro (WorktreeSidebar.tsx:513-522). Faltam: agrupamento em raias por status (a opção 'Status' do Group-by só altera indentação — WorktreeList.tsx:338 — e o emissor de headers de status em group-sections.ts:96 está em módulo não alcançável), ordenação manual por manualOrder (worktree-manual-order.ts sem callers) e grupos/índice host-qualified do board.",
+    "note": "Projecao reusa os filtros/sort do sidebar e fixa os pinned no topo da raia; faltam ordenacao manual, grupos host-qualified e indice de board."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-030",
+   "capability": "Criação rápida de worktree a partir do Kanban disparando o modal compositor com status pré-configurado",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-create-worktree.ts:5",
+    "components/sidebar/use-workspace-kanban-create-worktree.ts:11"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:47-88"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Abre o modal new-workspace-composer a partir do botão da raia",
+     "Define telemetrySource como sidebar",
+     "Pré-configura o status inicial do novo workspace com o statusId da raia"
+    ],
+    "notes": "Passo 1/2: o gatilho da raia ('New workspace in {status.label}') não existe. Passo 3: o modal compositor está montado (App.tsx:4055) e é acionável do header da sidebar (SidebarHeader.tsx:56 / types.ts:184 onOpenNewWorkspaceModal), mas nenhum caminho passa workspaceStatus ao createWorktree (parâmetro existe em store/slices/worktree-helpers.ts:200) e telemetrySource não é usado em App.tsx/NewWorkspaceComposer. A ação 'criar já no status clicado' não é executável. Não localizado.",
+    "note": "Sem gatilho 'New workspace in {status.label}' nem passagem de workspaceStatus ao createWorktree."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-031",
+   "capability": "Seleção múltipla por clique, modificadores e teclado escopada aos cards visíveis com re-ancoragem",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-selection.ts:10",
+    "components/sidebar/use-workspace-kanban-selection.ts:25",
+    "components/sidebar/use-workspace-kanban-selection.ts:63",
+    "components/sidebar/use-workspace-kanban-selection.ts:93"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardCard.tsx:41-57"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Gerencia conjunto de IDs selecionados e ID da âncora",
+     "Reseta seleção ao fechar o drawer",
+     "Poda seleções de worktrees que não existem mais",
+     "Re-ancora seleção no primeiro card visível ainda selecionado quando a busca oculta a âncora",
+     "Escopa ranges aos cards visíveis/renderizados",
+     "selectForContextMenu preserva seleção se o card clicado já estiver selecionado"
+    ],
+    "notes": "Passo 3: não existe multi-seleção de worktrees no sidebar — 0 hits para selectedWorktreeIds/selectedIds/shiftKey em src/components/sidebar/**; o clique do card só ativa o worktree e abre menu (use-worktree-card-controller.ts:196; WorktreeList.tsx:374 passa isPinned, não seleção). Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Sem multi-selecao de cards (selectedWorktreeIds)."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-032",
+   "capability": "Seleção por área / marquee no Kanban com botão primário, overlay visual e threshold de 4px",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-area-selection.ts:40",
+    "components/sidebar/use-workspace-kanban-area-selection.ts:200",
+    "components/sidebar/workspace-kanban-area-selection-state.ts:38",
+    "components/sidebar/workspace-kanban-area-selection-dom.ts:43",
+    "components/sidebar/WorkspaceKanbanAreaSelectionOverlay.tsx:5"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:30"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Inicia seleção por área só com botão primário, ignorando touch/scrollbar/interativos",
+     "Modo aditivo por Shift/Cmd/Ctrl conforme SO",
+     "Threshold de 4px antes de ativar o retângulo",
+     "Atualiza overlay imperativamente via translate3d sem re-render",
+     "Recorta o retângulo dentro dos limites do board"
+    ],
+    "notes": "Passo 1: use-workspace-kanban-area-selection/workspace-kanban-area-selection-state/WorkspaceKanbanAreaSelectionOverlay ausentes (0 hits); AREA_SELECTION_DRAG_THRESHOLD ausente. Passo 3: nenhum marquee/seleção por área no sidebar (grep marquee/area-selection = 0). Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Sem marquee/selecao por area (DrawerView explicitamente sem a maquinaria de overlay/multi-select)."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-033",
+   "capability": "Auto-scroll suave durante seleção por área ao aproximar das bordas superior/inferior da raia",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-area-selection.ts:145",
+    "components/sidebar/workspace-kanban-area-selection-dom.ts:109",
+    "components/sidebar/workspace-kanban-area-selection-dom.ts:139"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Detecta container de rolagem mais próximo (getAreaSelectionScrollContainer)",
+     "Calcula velocidade/direção em zona de borda de 48px com delta máximo de 22px",
+     "Executa rolagem vertical contínua via rAF enquanto o ponteiro permanece na zona",
+     "Recalcula hit-testing dos cards a cada frame"
+    ],
+    "notes": "Passo 1/3: getAreaSelectionScrollContainer/getAreaSelectionAutoScrollDelta ausentes (0 hits). O autoscroll existente é do drag de linhas da lista (worktree-sidebar-drag-autoscroll.ts, não alcançável pela renderização) e não há hit-testing de marquee. Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Sem auto-scroll de selecao por area."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-034",
+   "capability": "Cálculo de retângulos e hit-testing de cards sob rolagem de raia com preview imperativo sem re-render",
+   "orca_evidence": [
+    "components/sidebar/workspace-kanban-area-selection-card-rects.ts:25",
+    "components/sidebar/workspace-kanban-area-selection-dom.ts:68",
+    "components/sidebar/workspace-kanban-area-selection-dom.ts:182",
+    "components/sidebar/workspace-kanban-area-selection-dom.ts:192"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Coleta retângulos dos cards a partir do layout virtual e elementos DOM",
+     "Calcula interseção compensando a posição inicial do scroll (scrollStartContentYByElement)",
+     "Mantém cards selecionados mesmo se a rolagem os mover para fora do viewport",
+     "Aplica data-workspace-board-card-area-selected direto no DOM",
+     "Re-aplica o preview quando cards virtuais forem remontados"
+    ],
+    "notes": "Passo 1/2: workspace-kanban-area-selection-card-rects e o atributo data-workspace-board-card-area-selected ausentes (0 hits). Passo 3: sem seleção por área nem layout virtual para hit-testing (WorktreeList.tsx:326 renderiza direto). Não localizado.",
+    "note": "Rects sao lidos no hit-test; sem rects de selecao por area/preview imperativo."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-035",
+   "capability": "Commit e cancelamento de seleção por área respeitando modo aditivo e clique em espaço vazio",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-area-selection.ts:167",
+    "components/sidebar/workspace-kanban-area-selection-state.ts:40"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-start.ts:7-14"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Clique simples em espaço vazio (não aditivo) limpa a seleção",
+     "Clique com modificador (aditivo) em espaço vazio não limpa",
+     "Commit da lista final via updateSelectionForArea ao soltar após arrasto",
+     "Limpa atributos de preview de todos os cards e oculta o overlay",
+     "Cancela frames pendentes de animação e auto-scroll"
+    ],
+    "notes": "Passo 1/3: updateSelectionForArea e a máquina de estado de seleção por área ausentes (0 hits); não há seleção de cards (ver D08-031). O único click-outside é o do WorkspaceOptionsMenu (WorktreeSidebar.tsx:300). Não localizado.",
+    "note": "Sem maquina de selecao por area (commit/cancel); modifiers sao deliberadamente reservados."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-036",
+   "capability": "Drag de cards via ponteiro no Kanban com threshold de 5px e supressão de clique pós-arrasto",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:20",
+    "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:114",
+    "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:215",
+    "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:270",
+    "components/sidebar/workspace-kanban-card-pointer-drag-start.ts:1",
+    "components/sidebar/workspace-kanban-card-pointer-drag-start.ts:11"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23",
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:26",
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:213-218",
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:127",
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:47"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Captura só o botão primário sem modificadores (Shift/Cmd/Ctrl ficam para seleção)",
+     "Ignora cliques em controles interativos internos do card",
+     "Resolve single card ou lote de selecionados preservando host identity",
+     "Threshold de 5px (POINTER_DRAG_THRESHOLD) antes do modo drag",
+     "Suprime cliques por 250ms após o drag"
+    ],
+    "notes": "Passo 1/3: use-workspace-kanban-card-pointer-drag/workspace-kanban-card-pointer-drag-start ausentes (0 hits); POINTER_DRAG_THRESHOLD ausente. O sidebar usa drag nativo HTML5 para reordenar (use-worktree-card-controller.ts:190 onDragStart; WorktreeSidebar.tsx:442 drop), sem pointer drag com clonagem, sem lote de selecionados (worktree-drag-units.ts está fora do caminho de render). Passo 5: {BOARD_ABSENT}. Não localizado.",
+    "note": "Pointer drag do card com threshold 5px e supressao de clique (250ms), ligado ao lane grid."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-037",
+   "capability": "Preview visual de drag e multi-drag com clonagem de elemento, cursor grabbing e badge de contagem",
+   "orca_evidence": [
+    "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:22",
+    "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:28",
+    "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:63",
+    "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:70"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:12-14",
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:25-63"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Define cursor grabbing, userSelect none e data-workspace-board-pointer-dragging no html",
+     "Marca os cards originais com data-workspace-board-card-pointer-dragging",
+     "Clona o nó do card e anexa elemento flutuante fixed no body",
+     "Exibe badge de contagem (data-workspace-board-card-drag-count) para múltiplos cards",
+     "Atualiza a posição do preview via translate3d acompanhando o ponteiro"
+    ],
+    "notes": "Passo 2: workspace-kanban-card-drag-preview-dom, os atributos data-workspace-board-card-pointer-dragging/drag-count e o preview flutuante ausentes (0 hits). O sidebar usa o drag nativo do navegador (worktree-card-surface.tsx:89 draggable + model.ts:60 onDragStart), cujo preview é do próprio browser. Não localizado.",
+    "note": "Preview clonado e cursor grabbing existem; falta o badge de contagem para multi-drag."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-038",
+   "capability": "Resolução de alvo de drop, tolerância de gaps e linha indicadora de inserção",
+   "orca_evidence": [
+    "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:49",
+    "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:71",
+    "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:88",
+    "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:133",
+    "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:172",
+    "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:243"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:18",
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:77-82",
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:228-252"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Resolve status da raia sob o ponteiro com tolerância de 24px entre colunas (STATUS_DROP_GAP_TOLERANCE_PX)",
+     "Detecta drop target na área de fixação (data-workspace-pin-drop-target)",
+     "Calcula índice de inserção comparando Y com os pontos médios dos cards",
+     "Renderiza linha indicadora (data-workspace-board-card-drop-indicator)",
+     "Mantém o último alvo com tolerância de 6px (COMMIT_TARGET_FALLBACK_TOLERANCE_PX)"
+    ],
+    "notes": "Passo 1/2: workspace-kanban-card-pointer-drag-dom, STATUS_DROP_GAP_TOLERANCE_PX, data-workspace-pin-drop-target e data-workspace-board-card-drop-indicator ausentes (0 hits; o único indicador é data-hydra-drop-indicator de SectionHeader.tsx:273, para headers de projeto). Passo 3: o drop da lista resolve topo/base por altura do alvo (WorktreeSidebar.tsx:446), não por raias/índice de cards. Não localizado.",
+    "note": "Resolucao de raia com tolerancia de gap e linha indicadora existem; falta o alvo de pin."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-039",
+   "capability": "Tradução de índice de drop sob filtro de busca para a lista completa da raia",
+   "orca_evidence": [
+    "components/sidebar/workspace-kanban-filtered-drop-index.ts:33"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Mapeia índice de drop dos cards visíveis para a posição na lista completa da raia",
+     "Retorna o índice direto quando a raia não está filtrada",
+     "Append ao final quando todos os cards da raia estão filtrados",
+     "Mapeia inserção antes do primeiro / após o último item visível para a raia cheia",
+     "Garante que a ordenação manual não seja corrompida por filtros parciais"
+    ],
+    "notes": "Passo 1: workspace-kanban-filtered-drop-index/resolveWorkspaceKanbanSidebarFullLaneDropIndex ausentes (0 hits). Passo 3: o drop da lista não usa índice de inserção virtual — reordena por splice sobre as worktrees filtradas do projeto (WorktreeSidebar.tsx:449-458). Não localizado.",
+    "note": "Sem traducao de indice filtrado->raia cheia (o board nao tem busca)."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-040",
+   "capability": "Integração de drop vindo da barra lateral para o Kanban com registro de grupos e destaque visual",
+   "orca_evidence": [
+    "components/sidebar/workspace-kanban-sidebar-drop.ts:32",
+    "components/sidebar/workspace-kanban-sidebar-drop.ts:91",
+    "components/sidebar/workspace-kanban-sidebar-drop.ts:100",
+    "components/sidebar/workspace-kanban-sidebar-drop.ts:133",
+    "components/sidebar/workspace-kanban-sidebar-drop.ts:153",
+    "components/sidebar/workspace-kanban-sidebar-drop.ts:182"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:57"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Registra grupos lógicos (registerWorkspaceKanbanSidebarDropGroups) com o drawer aberto",
+     "Verifica se o ponto do ponteiro está dentro da superfície do sheet do Kanban",
+     "Destaca a raia alvo (data-workspace-board-external-drag-target) e posiciona a linha indicadora",
+     "Traduz índices virtuais/filtrados na fronteira de commit",
+     "Constrói atualizações em lote (buildWorkspaceKanbanSidebarDropUpdates) e decide comutação para ordenação manual"
+    ],
+    "notes": "Passo 1/3: workspace-kanban-sidebar-drop e registerWorkspaceKanbanSidebarDropGroups/isWorkspaceKanbanSidebarDropPointInBoard ausentes (0 hits). O drop da sidebar tem apenas alvos de projeto/worktree (WorktreeSidebar.tsx:442, project-header-drop.ts) e nenhum alvo de board. PAR-88 não implementado. Não localizado.",
+    "note": "Sem registo de grupos de drop vindos da sidebar/destaque externo do board."
+   },
+   "par": [
+    "PAR-14",
+    "PAR-88"
+   ]
+  },
+  {
+   "id": "D08-041",
+   "capability": "Drag and drop nativo HTML5 no Kanban com detecção de dados de workspace e inserção no fim da raia",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-native-drag.ts:5",
+    "components/sidebar/use-workspace-kanban-native-drag.ts:10",
+    "components/sidebar/use-workspace-kanban-native-drag.ts:44"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26",
+     "src/components/sidebar/workspace-status-drag-data.ts:28"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Valida dados de workspace via hasWorkspaceDragData e extrai IDs via readWorkspaceDragDataIds",
+     "Define dropEffect=move durante dragover",
+     "Destaca a raia ou o alvo de pin durante o arraste e limpa em dragleave/dragend",
+     "Insere os worktrees soltos ao final da raia de status de destino"
+    ],
+    "notes": "Passo 1/3: use-workspace-kanban-native-drag ausente (0 hits) e as funções de payload existem mas sem consumidor — workspace-status-drag-data.ts:3-5 define application/x-orca-worktree-id(-ids) porém writeWorkspaceDragData/readWorkspaceDragDataIds/hasWorkspaceDragData têm 0 callers (só re-export em workspace-status.ts:40). O drag nativo da lista usa outro caminho e só reordena dentro do projeto (WorktreeSidebar.tsx:456). Não localizado.",
+    "note": "Drop de card->raia existe, mas por pointer drag, nao HTML5 nativo; helpers de payload continuam sem consumidor."
+   },
+   "par": [
+    "PAR-14",
+    "PAR-88"
+   ]
+  },
+  {
+   "id": "D08-042",
+   "capability": "Ações de reordenação, movimentação e fixação de worktrees com comutação automática para ordenação manual",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-kanban-worktree-actions.ts:20",
+    "components/sidebar/use-workspace-kanban-worktree-actions.ts:44",
+    "components/sidebar/use-workspace-kanban-worktree-actions.ts:60",
+    "components/sidebar/use-workspace-kanban-worktree-actions.ts:85",
+    "components/sidebar/use-workspace-kanban-worktree-actions.ts:172",
+    "components/sidebar/use-workspace-kanban-worktree-actions.ts:183"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:130-137",
+     "src/components/sidebar/WorktreeSidebar.tsx:471-492",
+     "src/App.tsx:3517-3528"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "moveWorktreeToStatus / moveWorktreesToStatus qualificados por hostId",
+     "Pin em lote do conjunto selecionado (pinWorktrees)",
+     "Comutação automática para sortBy 'manual' ao reordenar intencionalmente no board",
+     "Sincronização opcional de status de tarefa com Linear (maybeSyncTaskStatuses)",
+     "Telemetria workspace-board-actions"
+    ],
+    "notes": "PARCIAL: reordenar e fixar worktrees existem no sidebar — drop reordena dentro do projeto (WorktreeSidebar.tsx:449-458) e persiste a ordem em localStorage (App.tsx:1922-1935); 'Pin'/'Unpin' no menu de contexto (App.tsx:3405 → togglePinWorktree:3135) com badge no card (WorktreeList.tsx:374). Faltam: movimentação de status (nenhuma mutação de workspaceStatus existe — src-tauri/src sem workspace_status e store só no payload de criação), pin em lote, comutação automática para ordenação manual (buildManualOrderUpdatesForGroupDrop/shouldWriteManualOrderForGroupDrop em worktree-manual-order.ts:161,240 estão sem callers), sync Linear e telemetria de board.",
+    "note": "Movimentacao de status agora existe via drop no board (set_worktree_status); faltam pin em lote, comutacao automatica para ordenacao manual, sync Linear e telemetria."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-043",
+   "capability": "Sincronização de status de tarefas com Linear via hook com notificações toast de sucesso/aviso/erro",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-board-task-status-sync.ts:13",
+    "components/sidebar/use-workspace-board-task-status-sync.ts:51",
+    "components/sidebar/use-workspace-board-task-status-sync.ts:74",
+    "components/sidebar/use-workspace-board-task-status-sync.ts:98"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/runtime/runtime-linear-client.ts:57",
+     "src/runtime/runtime-linear-project-client.ts:220",
+     "src/components/task-page-github-status-actions.ts:5"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Valida a preferência syncTaskStatusFromWorkspaceBoard e monta a requisição",
+     "Sincroniza de forma assíncrona em background",
+     "Toast 'Task status sync skipped' com motivo (issue não lida, estado não encontrado, múltiplos estados)",
+     "Toast 'Task status sync failed' em falha de mutação/erro do provedor",
+     "Detalha contadores de atualizados/ignorados/falhados"
+    ],
+    "notes": "Passo 1: use-workspace-board-task-status-sync ausente (0 hits); strings 'Task status sync skipped/failed' ausentes (0 hits). Passo 4: existe integração Linear de leitura (runtime-linear-project-client.ts:220 linearTeamStates; runtime-linear-client.ts:57 só o tipo LinearMutationResult) mas nenhuma mutação de issue para sync de board; task-page-github-status-actions.ts:5 trata mutações de GitHub da task page. Preferência existe e nunca é lida (constants.ts:289, ui-slice-hydration-actions.ts:203). Não localizado."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-044",
+   "capability": "Motor de sincronização com Linear com fila por worktree, normalização de estados e consistência local",
+   "orca_evidence": [
+    "components/sidebar/workspace-board-task-status-sync.ts:68",
+    "components/sidebar/workspace-board-task-status-sync.ts:130",
+    "components/sidebar/workspace-board-task-status-sync.ts:143",
+    "components/sidebar/workspace-board-task-status-sync.ts:241"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/runtime/runtime-linear-client.ts:202",
+     "src/runtime/runtime-linear-project-client.ts:220"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Fila por worktree (enqueueWorktreeSync) para evitar corridas",
+     "Resolve configurações de Linear por dono de runtime do worktree",
+     "Lê issue e workflow states do time Linear",
+     "Correspondência normalizada case-insensitive entre label do board e nome do estado",
+     "Ignora se a issue já está no estado destino",
+     "Aborta se o status local mudar antes da resposta (local-first)",
+     "Atualiza a issue e agrega resultados em lote"
+    ],
+    "notes": "Passo 1/3: syncWorkspaceBoardTaskStatuses/enqueueWorktreeSync/normalizeStateName ausentes (0 hits). Passo 4: não existe comando/mutação de estado de issue Linear no backend nem em runtime/** (grep linearUpdateIssue/updateIssueState = 0; src-tauri/src sem 'linear'). Sem board e sem mutação, o motor não existe. Não localizado."
+   },
+   "par": [
+    "PAR-14"
+   ]
+  },
+  {
+   "id": "D08-045",
+   "capability": "Construção e filtragem de requisições de sincronização de tarefas evitando no-ops e redundâncias",
+   "orca_evidence": [
+    "components/sidebar/workspace-board-task-status-sync.ts:46"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/ui/ui-slice-preference-actions.ts:259",
+     "src/shared/constants.ts:289"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Retorna null com sync desabilitada ou lista de IDs vazia",
+     "Localiza a definição do status alvo em workspaceStatuses do store",
+     "Filtra IDs duplicados e worktrees já no status alvo",
+     "Retorna changedWorktreeIds e targetStatus limpos"
+    ],
+    "notes": "Passo 1/3: getWorkspaceBoardTaskStatusSyncRequest ausente (0 hits). O estado base existe mas inerte: syncTaskStatusFromWorkspaceBoard default false (constants.ts:289) com setter persistente sem caller (ui-slice-preference-actions.ts:259-262) e nenhuma leitura no renderer. Não localizado."
+   },
+   "par": [
+    "PAR-14"
+   ]
   }
+ ],
+ "summary": {
+  "parity": 0,
+  "partial": 5,
+  "missing": 40,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
 }

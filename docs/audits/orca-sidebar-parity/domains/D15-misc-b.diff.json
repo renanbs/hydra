@@ -1,286 +1,291 @@
 {
-  "domain": "D15-misc-b",
-  "rows": [
-    {
-      "id": "D15b-001",
-      "capability": "Cálculo reativo do conjunto de worktrees visíveis no quadro Kanban com sincronização dos filtros do sidebar e desativação de injeção de ancestrais",
-      "orca_evidence": [
-        "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:25-48",
-        "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:73-126"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/workspace-statuses.ts:20-23 (constantes WORKSPACE_BOARD_COLUMN_WIDTH_* definidas, sem componente que as consuma)",
-          "src/shared/persisted-ui-state-types.ts:100-102 (workspaceBoardOpacity/ColumnWidth/syncTaskStatusFromWorkspaceBoard)",
-          "src/shared/keybindings/definitions-core-1.ts:103 (id 'workspace.openBoard' sem handler)",
-          "src/components/sidebar/visible-worktrees.ts:111 (computeVisibleWorktrees existe, mas é consumido só pela lista do sidebar e pelo jump palette)",
-          "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:24-26 (agrupamento por 'workspace-status' existe, mas é lista, não board com colunas)",
-          "src/App.tsx:96,3409 (única ocorrência de 'Kanban' é o ícone lucide do submenu Status)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Busca 5 passos: (1) nome useVisibleWorkspaceKanbanWorktreeIds/WorkspaceKanbanDrawer ausente em src/components/sidebar/**; (2) labels 'Kanban'/'board' só aparecem em prefs, keybinding e ícone; (3) nenhum hook de board; (4) nenhum comando Tauri de board/coluna; (5) nenhum componente de colunas por status. Não há gaveta/quadro Kanban de workspaces no Hydra."
-      }
-    },
-    {
-      "id": "D15b-002",
-      "capability": "Amostragem otimizada por epoch clock de agentes ativos e isolamento em modo sleeping workspaces no Kanban",
-      "orca_evidence": [
-        "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:49-71"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/visible-worktrees.ts:301-304 (worktreeIdsWithLiveAgent via getWorktreeIdsWithLiveAgent(..., Date.now()), sem epoch)",
-          "src/components/sidebar/visible-worktrees.ts:168-178 (showSleepingWorkspaces aplicado só à lista)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "agentStatusEpoch não aparece em src/components/sidebar/** (grep no diretório retorna 0). Não existe re-keying por epoch nem amostra compartilhada entre board e lista; sem board, o modo 'sleeping workspaces' do Kanban não existe."
-      }
-    },
-    {
-      "id": "D15b-003",
-      "capability": "Redirecionamento automático e repasse síncrono de requisições de reveal/renomeação de workspace ao alternar da visualização de Agentes para Spaces",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-reveal-body-redirect.ts:10-43"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:861 (onRevealCurrent só é passado quando sidebarBody === 'workspaces')",
-          "src/components/sidebar/SidebarHeader.tsx:72 (troca agents/workspaces só por clique manual)",
-          "src/components/sidebar/WorktreeSidebar.tsx:346-347 (handleSetSidebarBody sem repasse de requisição)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Nenhum listener para SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT (grep do nome em src/** = 0) nem evento equivalente. Quando a aba Agents está ativa o Hydra simplesmente não oferece o reveal (prop undefined); não há redirecionamento de corpo nem replay síncrono."
-      }
-    },
-    {
-      "id": "D15b-004",
-      "capability": "Despacho de operações de drop de worktrees em lote ou individuais para alteração de status ou fixação (pin)",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-status-drop.ts:19-61"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/workspace-status-drag-data.ts:28 (readWorkspaceDragDataIds sem consumidores)",
-          "src/components/sidebar/workspace-status-drag-data.ts:70 (hasWorkspaceDragData sem consumidores)",
-          "src/components/sidebar/workspace-status.ts:38-46 (re-export dos helpers de drag sem nenhum importador)",
-          "src/App.tsx:3301,3414-3439 (status do workspace só é atribuído via menu de contexto)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Nenhum commitWorkspaceStatusDocumentDrop nem callbacks onPinWorktrees/onMoveWorktreesToStatus (individuais ou em lote). Os helpers de payload de drag foram portados mas são código morto: nenhuma chamada em src/**."
-      }
-    },
-    {
-      "id": "D15b-005",
-      "capability": "Captura em nível de documento de eventos de arrasto e soltura (drag-and-drop) de workspaces com bypass de interceptação do Electron e encerramento de preview",
-      "orca_evidence": [
-        "components/sidebar/use-workspace-status-drop.ts:63-143"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/workspace-status-drag-data.ts:1-21 (tipos 'application/x-orca-worktree-id(s)' definidos, nenhum uso)",
-          "src/components/sidebar/WorktreeSidebar.tsx:263,290,300 (única subscriptions de window do mount: refresh-ports, open-new-group-dialog, click-outside)",
-          "src/components/sidebar/WorktreeSidebar.tsx:433-437 (drag de worktree usa dataTransfer 'application/x-hydra-worktree-drag' por handlers React, não captura em document)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Nenhum listener de 'drop'/'dragend' em fase de captura no document e nenhum seletor [data-workspace-status-drop-target]/[data-workspace-pin-drop-target] em src/** (grep = 0). O único D&D do sidebar é a reordenação de linhas via props React onDrop."
-      }
-    },
-    {
-      "id": "D15b-006",
-      "capability": "Resolução de identidade e dados de workspace com suporte a repositório proprietário, múltiplos hosts e folder workspaces para o diálogo de metadados",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-meta-workspace.ts:14-62",
-        "components/sidebar/use-worktree-meta-workspace.ts:104"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/workspace-scope.ts:15 (parseWorkspaceKey existe, infra genérica)",
-          "src/lib/worktree-runtime-owner-index.ts:92 (findIndexedWorktreeOwner existe, infra genérica)",
-          "src/shared/folder-workspace-worktree.ts:29 (folderWorkspaceToWorktree existe, infra genérica)",
-          "src/components/sidebar/WorktreeTitleInlineRename.tsx:1-30 (única edição de metadado no sidebar: rename inline do título)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Não há WorktreeMetaDialog nem hook useWorktreeMetaWorkspace em src/** (grep dos nomes = 0). A infra de resolução existe (workspace-scope, worktree-runtime-owner-index, folder-workspace-worktree), mas nenhum diálogo de metadados a consome."
-      }
-    },
-    {
-      "id": "D15b-007",
-      "capability": "Resolução de provedor de issue (GitHub/Linear) e mapeamento de vínculos ao vivo para prevenção de sobreposição em metadados",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-meta-workspace.ts:63-106"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/worktrees.ts:99 (updateWorktreeMeta exposto no store)",
-          "src/store/github/pull-request-actions.ts:88 (único consumidor programático, refresh automático)",
-          "src/store/slices/worktree-meta-update-application.ts:16-27 (campos linkedIssue/linkedPR/linkedLinearIssue tratados sem UI)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Nenhum liveLinks/currentProvider/currentIssue em src/** (grep = 0). Não há UI de edição de vínculo de issue/Linear; updateWorktreeMeta é chamado apenas pelo refresh do GitHub, não por um diálogo de metadados."
-      }
-    },
-    {
-      "id": "D15b-008",
-      "capability": "Abertura do seletor de worktree pai (parent picker) com captura de elemento âncora e fallback por timer",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-parent-picker-transition.ts:19-35",
-        "components/sidebar/use-worktree-parent-picker-transition.ts:49-61"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:3238,3253 (label 'Change Parent Worktree...' abre o seletor)",
-          "src/App.tsx:411,3950-3967 (estado parentPickerModal + render em nível de App)",
-          "src/components/sidebar/ParentPickerModal.tsx:12-30,66 (modal centralizado, sem âncora)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "captura do elemento âncora do card via getWorktreeParentPickerAnchor(scopeRef.current, worktreeId)",
-          "estado pendente pendingRef { childWorktreeId, anchorElement }",
-          "fechamento coordenado do menu de contexto (setMenuOpenState(false)) antes de abrir o picker",
-          "timer de fallback de 50ms (fallbackTimerRef) para abrir o picker caso o fechamento do menu não o execute",
-          "openPendingParentPicker consumindo pendingRef"
-        ],
-        "notes": "A ação observável 'abrir seletor de pai' existe (menu de contexto → ParentPickerModal), porém o picker do Hydra é um modal centralizado de App, não um popover ancorado ao card; toda a mecânica de âncora/pending/timer de fallback de 50ms está ausente."
-      }
-    },
-    {
-      "id": "D15b-009",
-      "capability": "Fechamento temporizado do parent picker com retenção para execução de animação de saída (unmount delay)",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-parent-picker-transition.ts:29-32",
-        "components/sidebar/use-worktree-parent-picker-transition.ts:36-48"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/App.tsx:3957 (if (!open) setParentPickerModal(null) — unmount imediato)",
-          "src/components/sidebar/ParentPickerModal.tsx:66 (if (!open) return null)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Nenhum unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS (grep = 0) e nenhuma animação de saída retida: o close desmonta o picker no mesmo commit; o único timer do modal é requestAnimationFrame de foco (ParentPickerModal.tsx:37)."
-      }
-    },
-    {
-      "id": "D15b-010",
-      "capability": "Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento",
-      "orca_evidence": [
-        "components/sidebar/useRenderedSetupScriptPromptState.ts:8-45"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/lib/setup-script-prompt.ts:32 (inspectSetupScriptPromptState sem nenhum consumidor)",
-          "src/lib/setup-script-prompt.ts:83-91 (chaves de dismissal por repoHostIdentity, infra)",
-          "src/store/slices/ui/ui-slice-trust-actions.ts:48-57 (dismissal persistido no store, sem UI)",
-          "src/components/SettingsModal.tsx:754-762 (única superfície de setup script: settings, não sidebar)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Nenhum useRenderedSetupScriptPromptState/lastVisiblePromptRef (grep = 0) e nenhum card/prompt de setup na sidebar (grep de 'setup script' em src/components = só SettingsModal). A infra de inspeção existe mas nenhum componente a renderiza."
-      }
-    },
-    {
-      "id": "D15b-011",
-      "capability": "Definição de métricas de reserva de layout para o chrome superior da janela e barra de status em painéis portalizados de workspace",
-      "orca_evidence": [
-        "components/sidebar/workspace-chrome-metrics.ts:1-4"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/WindowTitlebar.tsx:103 (h-9 = 36px, valor equivalente ao chrome, mas sem constante exportada)",
-          "src/components/SelectedTextCopyMenu.tsx:109 (portal em document.body sem reserva de chrome)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Nenhuma constante WORKSPACE_TOP_CHROME_HEIGHT/STATUS_BAR_RESERVE_HEIGHT em src/** (grep = 0) e nenhum helper equivalente. Busca 5 passos: nome, valores 36/24, 'chromeMetrics', 'TOP_CHROME', usos de createPortal. Os portais do Hydra usam posicionamento fixed sem reserva."
-      }
-    },
-    {
-      "id": "D15b-012",
-      "capability": "Cálculo de índice de inserção e posição visual do indicador de drop para reordenação de cabeçalhos de repositório e seção no sidebar",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-header-drop-preview.ts:17-86"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:17-100 (função portada, equivalente ao Orca)",
-          "src/components/sidebar/project-header-drop.ts:185-204 (única chamadora; a própria computeProjectHeaderDropPreview não tem nenhum caller em src/**)",
-          "src/components/sidebar/WorktreeSidebar.tsx:476-500 (reorder wired: clientY vs metade do rect do header)",
-          "src/components/sidebar/WorktreeList.tsx:274-282 (props onDragStart/onDragOver/onDrop passadas ao SectionHeader)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "cálculo localY = pointerY - containerTop + scrollTop",
-          "guarda de contentBottom para não fabricar slot abaixo do fim da lista (linhas 39-41)",
-          "delegação a getWorktreeSidebarBoundaryDrop para arrastos outside/bordas extremas (linhas 45-63)",
-          "posição do indicador dropIndicatorY em px (nextRect.top - 4 / bottom + 4) com clamp >= scrollTop"
-        ],
-        "notes": "A reordenação de cabeçalhos existe e usa lógica de midpoint equivalente para o header sob o cursor (clientY - rect.top < height/2), mas o restante do cálculo (scrollTop/contentBottom/bordas/indicador em px) só existe no caminho morto: computeWorktreeSidebarHeaderDropPreview é chamada apenas por computeProjectHeaderDropPreview, que não é chamada por ninguém."
-      }
-    },
-    {
-      "id": "D15b-013",
-      "capability": "Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:92,107-142 (pickNearestHeaderBoundarySlot portado)",
-          "src/components/sidebar/WorktreeSidebar.tsx:476-482 (dragOver só é registrado no elemento do header)"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "O snap existe apenas no caminho morto (pickNearestHeaderBoundarySlot só é invocado pela computeWorktreeSidebarHeaderDropPreview, sem callers). No caminho wired, dragOver vive no header; soltar no corpo de uma seção/gap não gera slot algum — exatamente a zona morta que o Orca corrigiu retornando o limite mais próximo."
-      }
-    },
-    {
-      "id": "D15b-014",
-      "capability": "Cálculo de rolagem para revelação de card de workspace ativo nos limites visíveis do viewport do sidebar",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-reveal.ts:21-36"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/SidebarFooter.tsx:28-36 (botão 'Reveal active workspace')",
-          "src/components/sidebar/WorktreeSidebar.tsx:382-414 (handleRevealCurrent -> el.scrollIntoView({ block: 'nearest' }))",
-          "src/components/sidebar/WorktreeSidebar.tsx:861 (wiring do botão)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "compensação de topInset / WORKTREE_SIDEBAR_REVEAL_TOP_INSET",
-          "cálculo explícito de scrollTop alinhando o card ao topo do viewport quando ele está acima (Hydra usa rolagem mínima do scrollIntoView 'nearest')",
-          "retorno null quando já totalmente visível (implícito no 'nearest' nativo, mas sem contrato próprio)"
-        ],
-        "notes": "A ação observável 'revelar card do workspace ativo' existe, mas a matemática de bounds do Orca (getScrollTopToRevealBounds) não foi portada: não há scroll-margin/inset nem cálculo de scrollTop em src/components/sidebar (grep de scroll-margin/scroll-mt = 0)."
-      }
-    }
-  ],
-  "summary": {
-    "parity": 0,
-    "partial": 3,
-    "missing": 11,
-    "not-applicable": 0,
-    "out-of-scope": 0
+ "domain": "D15-misc-b",
+ "rows": [
+  {
+   "id": "D15b-001",
+   "capability": "Cálculo reativo do conjunto de worktrees visíveis no quadro Kanban com sincronização dos filtros do sidebar e desativação de injeção de ancestrais",
+   "orca_evidence": [
+    "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:25-48",
+    "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:73-126"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:37-88",
+     "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:55-140",
+     "src/components/sidebar/visible-worktree-filters.ts:1"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Busca 5 passos: (1) nome useVisibleWorkspaceKanbanWorktreeIds/WorkspaceKanbanDrawer ausente em src/components/sidebar/**; (2) labels 'Kanban'/'board' só aparecem em prefs, keybinding e ícone; (3) nenhum hook de board; (4) nenhum comando Tauri de board/coluna; (5) nenhum componente de colunas por status. Não há gaveta/quadro Kanban de workspaces no Hydra.",
+    "note": "Board existe e projeta as worktrees visiveis do sidebar (getProjectWorktrees + isVisibleUnderSidebarMenuFilters); falta o hook/epoch proprio e a desativacao de injecao de ancestrais do Orca."
+   }
+  },
+  {
+   "id": "D15b-002",
+   "capability": "Amostragem otimizada por epoch clock de agentes ativos e isolamento em modo sleeping workspaces no Kanban",
+   "orca_evidence": [
+    "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:49-71"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/visible-worktrees.ts:301-304 (worktreeIdsWithLiveAgent via getWorktreeIdsWithLiveAgent(..., Date.now()), sem epoch)",
+     "src/components/sidebar/visible-worktrees.ts:168-178 (showSleepingWorkspaces aplicado só à lista)"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "agentStatusEpoch não aparece em src/components/sidebar/** (grep no diretório retorna 0). Não existe re-keying por epoch nem amostra compartilhada entre board e lista; sem board, o modo 'sleeping workspaces' do Kanban não existe."
+   }
+  },
+  {
+   "id": "D15b-003",
+   "capability": "Redirecionamento automático e repasse síncrono de requisições de reveal/renomeação de workspace ao alternar da visualização de Agentes para Spaces",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-reveal-body-redirect.ts:10-43"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:892",
+     "src/components/sidebar/SidebarHeader.tsx:72",
+     "src/components/sidebar/WorktreeSidebar.tsx:364-367"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Nenhum listener para SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT (grep do nome em src/** = 0) nem evento equivalente. Quando a aba Agents está ativa o Hydra simplesmente não oferece o reveal (prop undefined); não há redirecionamento de corpo nem replay síncrono.",
+    "note": "Nenhum redirect/replay de reveal ao trocar Agents->Workspaces; linhas do WorktreeSidebar atualizadas."
+   }
+  },
+  {
+   "id": "D15b-004",
+   "capability": "Despacho de operações de drop de worktrees em lote ou individuais para alteração de status ou fixação (pin)",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-status-drop.ts:19-61"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26",
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:130-137",
+     "src/App.tsx:3517-3528",
+     "src/components/sidebar/workspace-status-drag-data.ts:28"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Nenhum commitWorkspaceStatusDocumentDrop nem callbacks onPinWorktrees/onMoveWorktreesToStatus (individuais ou em lote). Os helpers de payload de drag foram portados mas são código morto: nenhuma chamada em src/**.",
+    "note": "Drop de card->status agora existe via onAssignWorktreeStatus/set_worktree_status; faltam pin, lote e commitWorkspaceStatusDocumentDrop."
+   }
+  },
+  {
+   "id": "D15b-005",
+   "capability": "Captura em nível de documento de eventos de arrasto e soltura (drag-and-drop) de workspaces com bypass de interceptação do Electron e encerramento de preview",
+   "orca_evidence": [
+    "components/sidebar/use-workspace-status-drop.ts:63-143"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:195-266"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Nenhum listener de 'drop'/'dragend' em fase de captura no document e nenhum seletor [data-workspace-status-drop-target]/[data-workspace-pin-drop-target] em src/** (grep = 0). O único D&D do sidebar é a reordenação de linhas via props React onDrop.",
+    "note": "Board captura pointermove/up/cancel em window (capture) e click no document para o drag de card; nao ha drop/dragend HTML5 nem bypass de interceptacao do Electron."
+   }
+  },
+  {
+   "id": "D15b-006",
+   "capability": "Resolução de identidade e dados de workspace com suporte a repositório proprietário, múltiplos hosts e folder workspaces para o diálogo de metadados",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-meta-workspace.ts:14-62",
+    "components/sidebar/use-worktree-meta-workspace.ts:104"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/shared/workspace-scope.ts:15 (parseWorkspaceKey existe, infra genérica)",
+     "src/lib/worktree-runtime-owner-index.ts:92 (findIndexedWorktreeOwner existe, infra genérica)",
+     "src/shared/folder-workspace-worktree.ts:29 (folderWorkspaceToWorktree existe, infra genérica)",
+     "src/components/sidebar/WorktreeTitleInlineRename.tsx:1-30 (única edição de metadado no sidebar: rename inline do título)"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Não há WorktreeMetaDialog nem hook useWorktreeMetaWorkspace em src/** (grep dos nomes = 0). A infra de resolução existe (workspace-scope, worktree-runtime-owner-index, folder-workspace-worktree), mas nenhum diálogo de metadados a consome."
+   }
+  },
+  {
+   "id": "D15b-007",
+   "capability": "Resolução de provedor de issue (GitHub/Linear) e mapeamento de vínculos ao vivo para prevenção de sobreposição em metadados",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-meta-workspace.ts:63-106"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/worktrees.ts:99 (updateWorktreeMeta exposto no store)",
+     "src/store/github/pull-request-actions.ts:88 (único consumidor programático, refresh automático)",
+     "src/store/slices/worktree-meta-update-application.ts:16-27 (campos linkedIssue/linkedPR/linkedLinearIssue tratados sem UI)"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Nenhum liveLinks/currentProvider/currentIssue em src/** (grep = 0). Não há UI de edição de vínculo de issue/Linear; updateWorktreeMeta é chamado apenas pelo refresh do GitHub, não por um diálogo de metadados."
+   }
+  },
+  {
+   "id": "D15b-008",
+   "capability": "Abertura do seletor de worktree pai (parent picker) com captura de elemento âncora e fallback por timer",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-parent-picker-transition.ts:19-35",
+    "components/sidebar/use-worktree-parent-picker-transition.ts:49-61"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:3466",
+     "src/App.tsx:4154-4174",
+     "src/components/sidebar/ParentPickerModal.tsx:12-30,66"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "captura do elemento âncora do card via getWorktreeParentPickerAnchor(scopeRef.current, worktreeId)",
+     "estado pendente pendingRef { childWorktreeId, anchorElement }",
+     "fechamento coordenado do menu de contexto (setMenuOpenState(false)) antes de abrir o picker",
+     "timer de fallback de 50ms (fallbackTimerRef) para abrir o picker caso o fechamento do menu não o execute",
+     "openPendingParentPicker consumindo pendingRef"
+    ],
+    "notes": "A ação observável 'abrir seletor de pai' existe (menu de contexto → ParentPickerModal), porém o picker do Hydra é um modal centralizado de App, não um popover ancorado ao card; toda a mecânica de âncora/pending/timer de fallback de 50ms está ausente.",
+    "note": "Acao 'Change Parent Worktree...' abre o ParentPickerModal (App-level); sem ancora/pending/timer de fallback."
+   }
+  },
+  {
+   "id": "D15b-009",
+   "capability": "Fechamento temporizado do parent picker com retenção para execução de animação de saída (unmount delay)",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-parent-picker-transition.ts:29-32",
+    "components/sidebar/use-worktree-parent-picker-transition.ts:36-48"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/App.tsx:4161",
+     "src/components/sidebar/ParentPickerModal.tsx:66"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Nenhum unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS (grep = 0) e nenhuma animação de saída retida: o close desmonta o picker no mesmo commit; o único timer do modal é requestAnimationFrame de foco (ParentPickerModal.tsx:37).",
+    "note": "Close desmonta o picker no mesmo commit; sem unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS."
+   }
+  },
+  {
+   "id": "D15b-010",
+   "capability": "Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento",
+   "orca_evidence": [
+    "components/sidebar/useRenderedSetupScriptPromptState.ts:8-45"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/lib/setup-script-prompt.ts:32",
+     "src/lib/setup-script-prompt.ts:83-91",
+     "src/store/slices/ui/ui-slice-trust-actions.ts:48-57",
+     "src/components/SettingsModal.tsx:754-762"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Nenhum useRenderedSetupScriptPromptState/lastVisiblePromptRef (grep = 0) e nenhum card/prompt de setup na sidebar (grep de 'setup script' em src/components = só SettingsModal). A infra de inspeção existe mas nenhum componente a renderiza.",
+    "note": "Sem prompt de setup script na sidebar; infra de inspecao sem renderer."
+   }
+  },
+  {
+   "id": "D15b-011",
+   "capability": "Definição de métricas de reserva de layout para o chrome superior da janela e barra de status em painéis portalizados de workspace",
+   "orca_evidence": [
+    "components/sidebar/workspace-chrome-metrics.ts:1-4"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/WindowTitlebar.tsx:103 (h-9 = 36px, valor equivalente ao chrome, mas sem constante exportada)",
+     "src/components/SelectedTextCopyMenu.tsx:109 (portal em document.body sem reserva de chrome)"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Nenhuma constante WORKSPACE_TOP_CHROME_HEIGHT/STATUS_BAR_RESERVE_HEIGHT em src/** (grep = 0) e nenhum helper equivalente. Busca 5 passos: nome, valores 36/24, 'chromeMetrics', 'TOP_CHROME', usos de createPortal. Os portais do Hydra usam posicionamento fixed sem reserva."
+   }
+  },
+  {
+   "id": "D15b-012",
+   "capability": "Cálculo de índice de inserção e posição visual do indicador de drop para reordenação de cabeçalhos de repositório e seção no sidebar",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-header-drop-preview.ts:17-86"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:17-100",
+     "src/components/sidebar/project-header-drop.ts:185-204",
+     "src/components/sidebar/WorktreeSidebar.tsx:471-492",
+     "src/components/sidebar/WorktreeList.tsx:1000-1003"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "cálculo localY = pointerY - containerTop + scrollTop",
+     "guarda de contentBottom para não fabricar slot abaixo do fim da lista (linhas 39-41)",
+     "delegação a getWorktreeSidebarBoundaryDrop para arrastos outside/bordas extremas (linhas 45-63)",
+     "posição do indicador dropIndicatorY em px (nextRect.top - 4 / bottom + 4) com clamp >= scrollTop"
+    ],
+    "notes": "A reordenação de cabeçalhos existe e usa lógica de midpoint equivalente para o header sob o cursor (clientY - rect.top < height/2), mas o restante do cálculo (scrollTop/contentBottom/bordas/indicador em px) só existe no caminho morto: computeWorktreeSidebarHeaderDropPreview é chamada apenas por computeProjectHeaderDropPreview, que não é chamada por ninguém.",
+    "note": "Reordenacao de headers wired por midpoint; o calculo completo (scrollTop/contentBottom/bordas/indicador px) segue no caminho morto."
+   }
+  },
+  {
+   "id": "D15b-013",
+   "capability": "Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:92,107-142",
+     "src/components/sidebar/WorktreeSidebar.tsx:471-478"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "O snap existe apenas no caminho morto (pickNearestHeaderBoundarySlot só é invocado pela computeWorktreeSidebarHeaderDropPreview, sem callers). No caminho wired, dragOver vive no header; soltar no corpo de uma seção/gap não gera slot algum — exatamente a zona morta que o Orca corrigiu retornando o limite mais próximo.",
+    "note": "Snap existe so no caminho morto; no wired, dragOver vive no header - zone morta persiste."
+   }
+  },
+  {
+   "id": "D15b-014",
+   "capability": "Cálculo de rolagem para revelação de card de workspace ativo nos limites visíveis do viewport do sidebar",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-reveal.ts:21-36"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarFooter.tsx:35-42",
+     "src/components/sidebar/WorktreeSidebar.tsx:400-433",
+     "src/components/sidebar/WorktreeSidebar.tsx:892"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "compensação de topInset / WORKTREE_SIDEBAR_REVEAL_TOP_INSET",
+     "cálculo explícito de scrollTop alinhando o card ao topo do viewport quando ele está acima (Hydra usa rolagem mínima do scrollIntoView 'nearest')",
+     "retorno null quando já totalmente visível (implícito no 'nearest' nativo, mas sem contrato próprio)"
+    ],
+    "notes": "A ação observável 'revelar card do workspace ativo' existe, mas a matemática de bounds do Orca (getScrollTopToRevealBounds) não foi portada: não há scroll-margin/inset nem cálculo de scrollTop em src/components/sidebar (grep de scroll-margin/scroll-mt = 0).",
+    "note": "Acao 'Reveal active workspace' existe (scrollIntoView 'nearest'), mas sem a matematica de bounds/inset do Orca."
+   }
   }
+ ],
+ "summary": {
+  "parity": 0,
+  "partial": 3,
+  "missing": 11,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
 }

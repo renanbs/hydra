@@ -22,7 +22,7 @@
   },
   {
    "id": "D08-001",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-002",
@@ -30,7 +30,7 @@
   },
   {
    "id": "D08-003",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D08-004",
@@ -38,7 +38,7 @@
   },
   {
    "id": "D08-005",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D08-006",
@@ -46,15 +46,15 @@
   },
   {
    "id": "D08-007",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-008",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-009",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-010",
@@ -102,7 +102,7 @@
   },
   {
    "id": "D08-021",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-022",
@@ -118,7 +118,7 @@
   },
   {
    "id": "D08-025",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-026",
@@ -126,7 +126,7 @@
   },
   {
    "id": "D08-027",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D08-028",
@@ -162,15 +162,15 @@
   },
   {
    "id": "D08-036",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D08-037",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-038",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-039",
@@ -182,7 +182,7 @@
   },
   {
    "id": "D08-041",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D08-042",
@@ -344,7 +344,7 @@
   },
   {
    "id": "D06-004",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D06-005",
@@ -402,7 +402,7 @@
   },
   {
    "id": "D08-041",
-   "status": "missing"
+   "status": "partial"
   }
  ],
  "PAR-35": [
