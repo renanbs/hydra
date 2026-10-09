@@ -24,6 +24,7 @@ import {
   type ExecutionHostId,
 } from '../shared/execution-host'
 import { createUISlice } from './slices/ui'
+import { hydrateUiPrefsBridge } from './ui-prefs-bridge'
 import { createSshSlice, type SshSlice } from './slices/ssh'
 
 export const EMPTY_TABS: TabItem[] = [];
@@ -219,6 +220,14 @@ export interface AppState extends SshSlice {
   sortBy: 'name' | 'smart' | 'recent' | 'repo' | 'manual'
   /** User-defined workspace statuses (UI slice) — the workspace board's lanes. */
   workspaceStatuses: WorkspaceStatusDefinition[]
+  /** Replaces the board's lanes; the slice normalizes them and persists via `ui.state`. */
+  setWorkspaceStatuses: (statuses: WorkspaceStatusDefinition[]) => void
+  /**
+   * Boot hydration of the slice-owned `ui.state` keys. Never touches the five keys the
+   * App's own `ui.sidebar` blob owns (host scope/visibility, collapsed groups, agents
+   * read filter/grouping).
+   */
+  hydrateSliceUiPreferences: (snapshot: Record<string, unknown>) => void
   /** Persisted workspace-board lane width (UI slice). */
   workspaceBoardColumnWidth: number
   taskPageData: any
@@ -833,4 +842,18 @@ export function hydrateWorkspaceHostScopePreference(blob: {
   const store = useAppStore.getState()
   store.setWorkspaceHostScope(workspaceHostScope)
   store.setVisibleWorkspaceHostIds(visibleWorkspaceHostIds)
+}
+
+/**
+ * Boot hydration for the slice's own persistence row (`ui.state`). Reads the blob once
+ * and applies only the keys that are actually present, through the slice's
+ * `hydrateSliceUiPreferences` — the five App-owned `ui.sidebar` keys are never written.
+ *
+ * A rejected read or an unparseable blob degrades to an empty snapshot (no throw at the
+ * caller) and the defaults stay in place; a failed `invoke` still surfaces so the boot
+ * caller can log it.
+ */
+export async function hydrateUiStatePreferences(): Promise<void> {
+  const snapshot = await hydrateUiPrefsBridge()
+  useAppStore.getState().hydrateSliceUiPreferences(snapshot)
 }
