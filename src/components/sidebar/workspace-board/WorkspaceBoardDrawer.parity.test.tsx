@@ -84,6 +84,20 @@ function laneCount(statusId: string): string | null {
   return lane(statusId)?.querySelector('[data-workspace-board-lane-count]')?.textContent ?? null
 }
 
+/**
+ * The board hydrates one lane's cards per animation frame (D08-020), so a test that reads the
+ * cards has to let those frames run. Four user statuses plus the frame that starts the chain.
+ */
+async function settleLaneHydration(): Promise<void> {
+  for (let frame = 0; frame < 6; frame++) {
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve())
+      })
+    })
+  }
+}
+
 /** The sidebar's real wiring: one panel hook drives both the trigger and the drawer. */
 function BoardHarness(): React.JSX.Element {
   const { workspaceBoardOpen, workspaceBoardRenderedOpen, toggleWorkspaceBoard, handleWorkspaceBoardOpenChange } =
@@ -152,8 +166,9 @@ describe('WorkspaceBoardDrawer', () => {
     expect(laneCount('completed')).toBe('1')
   })
 
-  it('renders a card per visible workspace, keyed by the board card attributes', () => {
+  it('renders a card per visible workspace, keyed by the board card attributes', async () => {
     render(<Board {...drawerProps()} />)
+    await settleLaneHydration()
 
     const cards = document.body.querySelectorAll('[data-workspace-board-card-id]')
     expect(cards).toHaveLength(2)
@@ -172,15 +187,17 @@ describe('WorkspaceBoardDrawer', () => {
     expect(lane('in-progress')?.textContent).not.toContain('Empty')
   })
 
-  it('shows only the workspaces the sidebar hands over', () => {
+  it('shows only the workspaces the sidebar hands over', async () => {
     render(<Board {...drawerProps({ getProjectWorktrees: () => [WORKTREES[0]] })} />)
+    await settleLaneHydration()
 
     expect(document.body.querySelectorAll('[data-workspace-board-card-id]')).toHaveLength(1)
     expect(laneCount('completed')).toBe('0')
   })
 
-  it('filters the cards as the search text changes and restores them when cleared', () => {
+  it('filters the cards as the search text changes and restores them when cleared', async () => {
     render(<Board {...drawerProps()} />)
+    await settleLaneHydration()
     const input = screen.getByRole('textbox', { name: 'Search workspaces' })
 
     fireEvent.change(input, { target: { value: 'progress' } })
@@ -226,10 +243,11 @@ describe('WorkspaceBoardDrawer', () => {
     expect(screen.getByRole('button', { name: 'Add status' })).toBeInTheDocument()
   })
 
-  it('closes itself and opens the workspace when a card is activated', () => {
+  it('closes itself and opens the workspace when a card is activated', async () => {
     const onOpenChange = vi.fn()
     const onSelectWorktree = vi.fn()
     render(<Board {...drawerProps({ onOpenChange, onSelectWorktree })} />)
+    await settleLaneHydration()
 
     const card = document.body.querySelector<HTMLElement>(
       '[data-workspace-board-worktree-id="wt-done"] [data-worktree-card-surface]'
