@@ -110,6 +110,7 @@ function listProps(overrides: Partial<WorktreeListProps> = {}): WorktreeListProp
     onOpenAddRepoDialog: vi.fn(),
     onToggleProjectCollapse: vi.fn(),
     onToggleGroupCollapse: vi.fn(),
+    onAssignWorktreeStatus: vi.fn(),
     ...overrides,
   };
 }

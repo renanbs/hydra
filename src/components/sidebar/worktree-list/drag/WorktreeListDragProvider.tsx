@@ -20,11 +20,14 @@ export function WorktreeListDragProvider({
   rows,
   scrollRef,
   onReorderWorktrees,
+  onAssignWorktreesStatus,
   children
 }: {
   rows: readonly HostSectionRow[]
   scrollRef?: React.RefObject<HTMLDivElement | null>
   onReorderWorktrees: (args: WorktreeGroupReorderArgs) => void
+  /** The workspace board's lane drop: a status write, never an order write. */
+  onAssignWorktreesStatus: (worktreeIds: readonly string[], status: string) => void
   children: React.ReactNode
 }): React.JSX.Element {
   // Why the fallback: a caller that renders the list without its scroll container
@@ -41,9 +44,10 @@ export function WorktreeListDragProvider({
       computeWorktreeDrop: session.computeWorktreeDrop,
       refreshWorktreeDragSession: session.refreshWorktreeDragSession,
       clearWorktreeDrag: runtime.clearWorktreeDrag,
-      onReorderWorktrees
+      onReorderWorktrees,
+      onAssignWorktreesStatus
     }),
-    [onReorderWorktrees, resolvedScrollRef, runtime, session]
+    [onAssignWorktreesStatus, onReorderWorktrees, resolvedScrollRef, runtime, session]
   )
   const pointerDrag = useWorktreePointerDrag({ ctx, session, runtime })
   const handlers = useMemo(

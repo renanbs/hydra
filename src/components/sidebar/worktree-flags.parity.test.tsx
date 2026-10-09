@@ -87,6 +87,7 @@ function renderList(
       onOpenAddRepoDialog={() => {}}
       onToggleProjectCollapse={() => {}}
       onToggleGroupCollapse={() => {}}
+      onAssignWorktreeStatus={() => {}}
       {...rest}
     />
   );

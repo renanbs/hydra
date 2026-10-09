@@ -8,6 +8,7 @@ import {
 } from '../pointer-drag-dom'
 import { getWorktreeSidebarDragGrab } from '../../worktree-sidebar-drag-geometry'
 import { getWorktreeSidebarDragRectsForGroup } from '../../worktree-sidebar-drag-autoscroll'
+import { hasWorkspaceBoardSidebarDropBoard } from '../../workspace-board/workspace-board-sidebar-drop'
 import type { WorktreeDropCommitContext } from './drop-commit-context'
 import type { WorktreeDragRuntime } from './use-runtime'
 import type { WorktreeDragSession } from './use-session'
@@ -129,8 +130,9 @@ export function useWorktreePointerDrag(args: {
       }
       const rects = getWorktreeSidebarDragRectsForGroup(container, sourceGroupKey)
       // Why: a group of one row has no slot to move to, so the whole gesture would
-      // only hide the card behind a preview that can never land anywhere.
-      if (rects.length <= 1) {
+      // only hide the card behind a preview that can never land anywhere — unless the
+      // board is open, where these rows are still a status drop away.
+      if (rects.length <= 1 && !hasWorkspaceBoardSidebarDropBoard()) {
         return
       }
       const draggedIds = [worktreeId]

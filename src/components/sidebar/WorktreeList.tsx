@@ -337,6 +337,12 @@ export interface WorktreeListProps {
    * panel routes it through the same write path the HTML5 drop uses.
    */
   onReorderWorktreesInGroup?: (ordered: GitWorktreeInfo[], projectPath: string) => void;
+  /**
+   * The app's own workspace-status write (`set_worktree_status` + the local worktree
+   * maps). A sidebar row dragged onto an open workspace board commits through it, so the
+   * board and the context menu share one writer (D08-002/D08-040).
+   */
+  onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
   draggedProjectId?: string | null;
   projectDropTarget?: { id: string; position: "top" | "bottom" } | null;
   groupDropTargetId?: string | null;
@@ -485,6 +491,7 @@ export function WorktreeList({
   worktreeDropTarget,
   scrollRef,
   onReorderWorktreesInGroup,
+  onAssignWorktreeStatus,
   draggedProjectId,
   projectDropTarget,
   groupDropTargetId,
@@ -785,6 +792,21 @@ export function WorktreeList({
       getFilteredAndSortedWorktrees,
       onReorderWorktreesInGroup,
     ]
+  );
+
+  // ─── Pointer-drag board drop → the panel's status writer ───────────────────
+  //
+  // The drag speaks Orca row ids; the app's writer speaks workspace paths. This is the
+  // ONE bridge for a card dropped on an open board, and it commits through the same
+  // `onAssignWorktreeStatus` the context menu and the board's own card drop use.
+  const handleAssignWorktreesStatus = useCallback(
+    (worktreeIds: readonly string[], status: string) => {
+      for (const worktreeId of worktreeIds) {
+        const entry = dragWorktreeById.get(worktreeId);
+        if (entry) void onAssignWorktreeStatus(entry.worktree.path, status);
+      }
+    },
+    [dragWorktreeById, onAssignWorktreeStatus]
   );
 
   // Same contract as Orca `use-selection`: publish before paint so Cmd+1–9 matches
@@ -1248,6 +1270,7 @@ export function WorktreeList({
       rows={rows}
       scrollRef={viewportScrollRef}
       onReorderWorktrees={handlePointerGroupReorder}
+      onAssignWorktreesStatus={handleAssignWorktreesStatus}
     >
       <VirtualizedWorktreeViewport
         rows={rows}

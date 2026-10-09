@@ -1,6 +1,10 @@
 // Ported from Orca — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: orca/src/renderer/src/components/sidebar/worktree-list/drag/pointer-flush.ts
 import { updateSidebarDragPreviewPosition } from '../pointer-drag-dom'
+import {
+  getWorkspaceBoardSidebarDropTarget,
+  updateWorkspaceBoardSidebarDropTargetVisual
+} from '../../workspace-board/workspace-board-sidebar-drop'
 import type { WorktreeDropCommitContext } from './drop-commit-context'
 import {
   applyWorktreeDropPreview,
@@ -36,6 +40,15 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
   })
   if (!ctx.refreshWorktreeDragSession()) {
     ctx.clearWorktreeDrag()
+    return
+  }
+  // Why the board first: its lane resolves from its own measured layout, and a drop there
+  // assigns a status instead of reordering the list — so the list's own slot must not be
+  // computed for the same frame, or its insertion line would promise a reorder.
+  const boardTarget = getWorkspaceBoardSidebarDropTarget(drag.currentX, drag.currentY)
+  updateWorkspaceBoardSidebarDropTargetVisual(boardTarget)
+  if (boardTarget) {
+    args.setWorktreeDragState((previous) => clearWorktreeDropPreview(previous))
     return
   }
   const drop = ctx.computeWorktreeDrop(drag.currentY)

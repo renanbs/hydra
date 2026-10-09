@@ -1,6 +1,7 @@
 // Ported from Orca — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: orca/src/renderer/src/components/sidebar/worktree-list/drag/pointer-commit.ts
 import { getFullDropIndexForWorktreeDragUnit } from '../../worktree-drag-units'
+import { getWorkspaceBoardSidebarDropTarget } from '../../workspace-board/workspace-board-sidebar-drop'
 import type { WorktreeDropCommitContext } from './drop-commit-context'
 import type { WorktreePointerDrag } from './row-state'
 
@@ -19,16 +20,29 @@ function isReleaseInsideSidebar(drag: WorktreePointerDrag, ctx: WorktreeDropComm
 }
 
 /**
- * Resolve where a released pointer drag lands: a reorder slot inside the source
- * group, or nothing at all. No-op releases (the drop resolves to the order the group
- * already has) never reach the order writer.
+ * Resolve where a released pointer drag lands: a workspace board lane (a status
+ * assignment, never a reorder), a reorder slot inside the source group, or nothing at
+ * all. No-op releases (the drop resolves to the order the group already has) never reach
+ * the order writer.
  */
 export function commitWorktreePointerDrop(args: {
   drag: WorktreePointerDrag
   ctx: WorktreeDropCommitContext
 }): void {
   const { drag, ctx } = args
-  if (!ctx.refreshWorktreeDragSession() || !isReleaseInsideSidebar(drag, ctx)) {
+  if (!ctx.refreshWorktreeDragSession()) {
+    ctx.clearWorktreeDrag()
+    return
+  }
+  // Why before the sidebar band test: the board sits outside the list's horizontal band,
+  // so a release over it would otherwise read as a throw-away.
+  const boardTarget = getWorkspaceBoardSidebarDropTarget(drag.currentX, drag.currentY)
+  if (boardTarget) {
+    ctx.onAssignWorktreesStatus(drag.draggedIds, boardTarget.status)
+    ctx.clearWorktreeDrag()
+    return
+  }
+  if (!isReleaseInsideSidebar(drag, ctx)) {
     ctx.clearWorktreeDrag()
     return
   }
