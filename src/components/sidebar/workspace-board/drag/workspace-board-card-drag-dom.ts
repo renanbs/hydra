@@ -64,15 +64,36 @@ export type WorkspaceBoardCardLaneDropTarget = {
   laneRect: WorkspaceBoardLaneBox
 }
 
+/**
+ * The board's pin strip (D08-028): a release over it pins the dragged workspace and writes
+ * no status, so the target carries neither a lane nor an insertion slot. Only this member
+ * of the union has `isPinDrop`, which is what tells the two apart.
+ */
+export type WorkspaceBoardPinDropTarget = {
+  status: null
+  dropIndex: 0
+  isPinDrop: true
+}
+
 export type WorkspaceBoardCardDropTarget =
   | WorkspaceBoardCardLaneDropTarget
   | { status: null; dropIndex: number }
+  | WorkspaceBoardPinDropTarget
 
 export type WorkspaceBoardCardTrackedDropTarget = {
   target: WorkspaceBoardCardDropTarget
   x: number
   y: number
 }
+
+/** Whether a resolved target is the pin strip — the one target that is not a lane. */
+export function isWorkspaceBoardPinDropTarget(
+  target: WorkspaceBoardCardDropTarget
+): target is WorkspaceBoardPinDropTarget {
+  return target.status === null && 'isPinDrop' in target
+}
+
+
 
 /**
  * Geometry of the destination lane, from the lanes' live rects. Rects are viewport
@@ -161,11 +182,14 @@ export function resolveWorkspaceBoardCardDropCommitTarget(args: {
   x: number
   y: number
 }): WorkspaceBoardCardDropTarget {
-  if (args.currentTarget.status !== null) {
+  if (args.currentTarget.status !== null || isWorkspaceBoardPinDropTarget(args.currentTarget)) {
     return args.currentTarget
   }
   const latest = args.latestTrackedTarget
-  if (!latest || latest.target.status === null) {
+  if (
+    !latest ||
+    (latest.target.status === null && !isWorkspaceBoardPinDropTarget(latest.target))
+  ) {
     return args.currentTarget
   }
   const distance = Math.hypot(args.x - latest.x, args.y - latest.y)

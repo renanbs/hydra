@@ -3,6 +3,7 @@ import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { GitWorktreeInfo } from '../types'
 import WorkspaceBoardHeader from './WorkspaceBoardHeader'
 import WorkspaceBoardLaneGrid from './WorkspaceBoardLaneGrid'
+import WorkspaceBoardPinDropTarget from './WorkspaceBoardPinDropTarget'
 import WorkspaceBoardSheet from './WorkspaceBoardSheet'
 import type { WorkspaceBoardGeometry } from './use-workspace-board-geometry'
 import type { WorkspaceBoardStatusActions } from './use-workspace-board-status-actions'
@@ -29,6 +30,8 @@ type WorkspaceBoardDrawerViewProps = {
   /** The marquee's own box, painted imperatively while a selection drag is in flight. */
   areaSelectionOverlayRef: React.RefObject<HTMLDivElement | null>
   dropTargetStatus: WorkspaceStatus | null
+  /** Whether the board's own card drag is over the pin strip, for its hover highlight. */
+  pinDropTargetActive: boolean
   /** The board's status CRUD, owned by the drawer and rendered into the header. */
   statusActions: WorkspaceBoardStatusActions
   /** Board search state, threaded to the header field and the lane counts. */
@@ -55,8 +58,8 @@ type WorkspaceBoardDrawerViewProps = {
 }
 
 /**
- * Ported from Orca `WorkspaceKanbanDrawerView` (minus the pin drop target and the contextual
- * tour, which are not part of this increment).
+ * Ported from Orca `WorkspaceKanbanDrawerView` (minus the contextual tour, which is not part
+ * of this increment).
  *
  * Why the marquee listens on its own surface, below the header: a press on the board's padded
  * area around and between the lanes is the "empty space" a marquee starts from, and the cards
@@ -77,6 +80,7 @@ export default function WorkspaceBoardDrawerView({
   laneScrollerRef,
   areaSelectionOverlayRef,
   dropTargetStatus,
+  pinDropTargetActive,
   statusActions,
   query,
   isFiltering,
@@ -127,6 +131,9 @@ export default function WorkspaceBoardDrawerView({
         className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3"
         onPointerDown={onAreaSelectionPointerDown}
       >
+        {/* Above the lane row, as Orca places it: the strip is the board's second drop
+            destination and answers before the lanes (D08-028). */}
+        <WorkspaceBoardPinDropTarget open={open} isDragOver={pinDropTargetActive} />
         <div
           ref={attachLaneScroller}
           data-workspace-board-lanes-scroller=""

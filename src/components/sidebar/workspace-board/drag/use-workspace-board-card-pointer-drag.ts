@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type React from 'react'
 import type { WorkspaceStatus } from '../../../../shared/worktree/types'
 import { isSidebarPointerDragBlocked } from '../../worktree-list/pointer-drag-dom'
+import { resolveWorkspaceBoardPinDropTarget } from '../workspace-board-pin-drop-target'
 import {
   getWorkspaceBoardCardDropTarget,
+  isWorkspaceBoardPinDropTarget,
   removeWorkspaceBoardCardDropIndicator,
   resolveWorkspaceBoardCardDropCommitTarget,
   updateWorkspaceBoardCardDropIndicator,
@@ -69,28 +71,36 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   open: boolean
   boardRef: React.RefObject<HTMLDivElement | null>
   onAssignWorktreeStatus: (worktreePath: string, status: WorkspaceStatus) => void | Promise<void>
+  /** Pins the dropped workspace without touching its status (D08-028). */
+  onPinWorktree: (worktreePath: string) => void | Promise<void>
 }): {
   onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
   /** Destination lane of the drag in flight, for the lane's own highlight. */
   dropTargetStatus: WorkspaceStatus | null
+  /** Whether the drag in flight is over the pin strip; the lane highlight stays dark then. */
+  pinDropTargetActive: boolean
   /**
    * Whether a card drag is in flight *past its threshold*. Read imperatively (never rendered)
    * by the Shift+wheel scroll, which is only allowed to take the wheel mid-drag.
    */
   isPointerDragActiveRef: React.RefObject<boolean>
 } {
-  const { open, boardRef, onAssignWorktreeStatus } = args
+  const { open, boardRef, onAssignWorktreeStatus, onPinWorktree } = args
   const dragRef = useRef<WorkspaceBoardCardDragState | null>(null)
   const isPointerDragActiveRef = useRef(false)
   const suppressClickUntilRef = useRef(0)
   const [dropTargetStatus, setDropTargetStatus] = useState<WorkspaceStatus | null>(null)
-  // Why: the window listeners are installed once per open board, so the commit callback
-  // must be read through a ref that always holds the latest one App handed down.
+  const [pinDropTargetActive, setPinDropTargetActive] = useState(false)
+  // Why: the window listeners are installed once per open board, so the commit callbacks
+  // must be read through refs that always hold the latest ones App handed down.
   const assignStatusRef = useRef(onAssignWorktreeStatus)
   assignStatusRef.current = onAssignWorktreeStatus
+  const pinWorktreeRef = useRef(onPinWorktree)
+  pinWorktreeRef.current = onPinWorktree
 
   const clearDropTarget = useCallback(() => {
     setDropTargetStatus(null)
+    setPinDropTargetActive(false)
     removeWorkspaceBoardCardDropIndicator()
   }, [])
 
@@ -103,11 +113,15 @@ export function useWorkspaceBoardCardPointerDrag(args: {
       const commitTarget =
         commit && state.started && boardRef.current
           ? resolveWorkspaceBoardCardDropCommitTarget({
-              currentTarget: getWorkspaceBoardCardDropTarget(
-                boardRef.current,
-                state.currentX,
-                state.currentY
-              ),
+              // Why the pin again here: the pointerup can land with no frame for its final
+              // position, and the strip is not inside the board's hit-test root.
+              currentTarget:
+                resolveWorkspaceBoardPinDropTarget(state.currentX, state.currentY) ??
+                getWorkspaceBoardCardDropTarget(
+                  boardRef.current,
+                  state.currentX,
+                  state.currentY
+                ),
               latestTrackedTarget: state.latestDropTarget,
               x: state.currentX,
               y: state.currentY
@@ -132,6 +146,12 @@ export function useWorkspaceBoardCardPointerDrag(args: {
       }
       isPointerDragActiveRef.current = false
       suppressClickUntilRef.current = performance.now() + CLICK_SUPPRESSION_MS
+      // Why before the status commit: a release over the pin strip is a pin, and the strip
+      // resolves no lane, so it can never also write the column.
+      if (commitTarget && isWorkspaceBoardPinDropTarget(commitTarget)) {
+        void pinWorktreeRef.current(state.worktreePath)
+        return
+      }
       if (!commitStatus) {
         return
       }
@@ -162,8 +182,14 @@ export function useWorkspaceBoardCardPointerDrag(args: {
         clearDropTarget()
         return
       }
-      const target = getWorkspaceBoardCardDropTarget(board, state.currentX, state.currentY)
+      // Why the pin first: the strip sits above the lane row, outside the board's hit-test
+      // root, so the lane hit test would never see it — and while it is the destination the
+      // lane highlight and the insertion line must both stay dark.
+      const target =
+        resolveWorkspaceBoardPinDropTarget(state.currentX, state.currentY) ??
+        getWorkspaceBoardCardDropTarget(board, state.currentX, state.currentY)
       state.latestDropTarget = { target, x: state.currentX, y: state.currentY }
+      setPinDropTargetActive(isWorkspaceBoardPinDropTarget(target))
       setDropTargetStatus((previous) => (previous === target.status ? previous : target.status))
       if (target.status === null) {
         removeWorkspaceBoardCardDropIndicator()
@@ -339,5 +365,5 @@ export function useWorkspaceBoardCardPointerDrag(args: {
     [boardRef, open]
   )
 
-  return { onCardPointerDownCapture, dropTargetStatus, isPointerDragActiveRef }
+  return { onCardPointerDownCapture, dropTargetStatus, pinDropTargetActive, isPointerDragActiveRef }
 }

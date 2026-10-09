@@ -1,6 +1,7 @@
 // Ported from Orca — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: orca/src/renderer/src/components/sidebar/worktree-list/drag/pointer-commit.ts
 import { getFullDropIndexForWorktreeDragUnit } from '../../worktree-drag-units'
+import { isWorkspaceBoardPinDropTarget } from '../../workspace-board/drag/workspace-board-card-drag-dom'
 import { getWorkspaceBoardSidebarDropTarget } from '../../workspace-board/workspace-board-sidebar-drop'
 import type { WorktreeDropCommitContext } from './drop-commit-context'
 import type { WorktreePointerDrag } from './row-state'
@@ -38,7 +39,11 @@ export function commitWorktreePointerDrop(args: {
   // so a release over it would otherwise read as a throw-away.
   const boardTarget = getWorkspaceBoardSidebarDropTarget(drag.currentX, drag.currentY)
   if (boardTarget) {
-    ctx.onAssignWorktreesStatus(drag.draggedIds, boardTarget.status)
+    if (isWorkspaceBoardPinDropTarget(boardTarget)) {
+      ctx.onPinWorktrees(drag.draggedIds)
+    } else {
+      ctx.onAssignWorktreesStatus(drag.draggedIds, boardTarget.status)
+    }
     ctx.clearWorktreeDrag()
     return
   }

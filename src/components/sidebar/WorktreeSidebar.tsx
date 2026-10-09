@@ -77,6 +77,7 @@ export function WorktreeSidebar({
   onProjectContextMenu,
   onWorktreeContextMenu,
   onAssignWorktreeStatus,
+  onPinWorktree,
   onCreateWorktree,
   onReorderSessions: _onReorderSessions,
   onReorderProjects,
@@ -655,6 +656,16 @@ export function WorktreeSidebar({
     }
     return {};
   }, [settings?.left_sidebar_appearance_mode, settings?.left_sidebar_tint_color, settings?.left_sidebar_tint_opacity]);
+
+  // The list's own drop on the board's pin strip is multi-select: it hands over the paths
+  // it dragged, and the app's pin writer takes them one by one (D08-028).
+  const handlePinWorktreePaths = useCallback(
+    (worktreePaths: readonly string[]) => {
+      for (const worktreePath of worktreePaths) onPinWorktree(worktreePath);
+    },
+    [onPinWorktree]
+  );
+
   return (
     <div
       ref={sidebarRootRef}
@@ -847,6 +858,7 @@ export function WorktreeSidebar({
               scrollRef={worktreeScrollRef}
               onReorderWorktreesInGroup={commitReorderedWorktrees}
               onAssignWorktreeStatus={onAssignWorktreeStatus}
+              onPinWorktreePaths={handlePinWorktreePaths}
               draggedProjectId={draggedProjectId}
               projectDropTarget={projectDropTarget}
               groupDropTargetId={groupDropTargetId}
@@ -922,6 +934,7 @@ export function WorktreeSidebar({
         compactCards={compactCards}
         allWorktrees={allWorktrees}
         onAssignWorktreeStatus={onAssignWorktreeStatus}
+        onPinWorktree={onPinWorktree}
         onCreateWorktree={onCreateWorktree}
         onOpenChange={handleWorkspaceBoardOpenChange}
         onSelectWorktree={onSelectGitWorktree}

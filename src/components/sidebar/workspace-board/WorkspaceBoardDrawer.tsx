@@ -53,6 +53,12 @@ export type WorkspaceBoardDrawerProps = {
    */
   onAssignWorktreeStatus: (worktreePath: string, status: WorkspaceStatus) => void | Promise<void>
   /**
+   * The app's own pin write (`set_worktree_flags` with `is_pinned`). A card dropped on the
+   * board's pin strip commits through it — the board never grows a second writer for the
+   * pin, and a pin drop never writes a status (D08-028).
+   */
+  onPinWorktree: (worktreePath: string) => void
+  /**
    * Opens the workspace composer (the sidebar's own modal) with the clicked lane's status
    * preselected (D08-021/D08-030). The board never grows a second modal mechanism; the
    * app owns the composer and clears the preselected status when it closes.
@@ -105,6 +111,7 @@ function WorkspaceBoardDrawerContent({
   compactCards,
   allWorktrees,
   onAssignWorktreeStatus,
+  onPinWorktree,
   onCreateWorktree,
   onOpenChange,
   onSelectWorktree,
@@ -132,11 +139,12 @@ function WorkspaceBoardDrawerContent({
   const boardRef = useRef<HTMLDivElement | null>(null)
   const laneScrollerRef = useRef<HTMLDivElement | null>(null)
   const areaSelectionOverlayRef = useRef<HTMLDivElement | null>(null)
-  const { onCardPointerDownCapture, dropTargetStatus, isPointerDragActiveRef } =
+  const { onCardPointerDownCapture, dropTargetStatus, pinDropTargetActive, isPointerDragActiveRef } =
     useWorkspaceBoardCardPointerDrag({
       open,
       boardRef,
       onAssignWorktreeStatus,
+      onPinWorktree,
     })
   useWorkspaceBoardShiftWheelScroll(boardRef, laneScrollerRef, open, isPointerDragActiveRef)
   const statusActions = useWorkspaceBoardStatusActions({ allWorktrees, onAssignWorktreeStatus })
@@ -254,6 +262,7 @@ function WorkspaceBoardDrawerContent({
       laneScrollerRef={laneScrollerRef}
       areaSelectionOverlayRef={areaSelectionOverlayRef}
       dropTargetStatus={dropTargetStatus}
+      pinDropTargetActive={pinDropTargetActive}
       statusActions={statusActions}
       query={query}
       isFiltering={isFiltering}
