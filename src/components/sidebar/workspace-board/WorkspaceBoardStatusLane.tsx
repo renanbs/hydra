@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import type { WorkspaceStatusDefinition } from '../../../shared/worktree/types'
 import { getWorkspaceStatusVisualMeta } from '../workspace-status'
-import type { GitWorktreeInfo, HydraProject } from '../types'
+import type { GitWorktreeInfo } from '../types'
 import WorkspaceBoardStatusLaneCardList from './WorkspaceBoardStatusLaneCardList'
 import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-board-worktrees'
 
@@ -24,13 +24,12 @@ type WorkspaceBoardStatusLaneProps = {
   compactCards: boolean
   /** True while a card drag hovers this lane; the destination lane paints its own ring. */
   isDropTarget?: boolean
+  /** The board's selection, by host-qualified card identity. */
+  selectedWorktreeIds: ReadonlySet<string>
+  onSelectionGesture: (event: React.MouseEvent<HTMLElement>, worktreeIdentity: string) => boolean
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
-  onContextMenu?: (
-    event: React.MouseEvent,
-    worktree: GitWorktreeInfo,
-    project: HydraProject
-  ) => void
+  onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
 }
 
 /**
@@ -52,6 +51,8 @@ function WorkspaceBoardStatusLane({
   columnWidth,
   compactCards,
   isDropTarget = false,
+  selectedWorktreeIds,
+  onSelectionGesture,
   onActivate,
   onSelectSession,
   onContextMenu,
@@ -102,6 +103,8 @@ function WorkspaceBoardStatusLane({
               cards={cards}
               scrollerElement={cardScrollerElement}
               compactCards={compactCards}
+              selectedWorktreeIds={selectedWorktreeIds}
+              onSelectionGesture={onSelectionGesture}
               onActivate={onActivate}
               onSelectSession={onSelectSession}
               onContextMenu={onContextMenu}

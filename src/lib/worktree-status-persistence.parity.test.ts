@@ -3,7 +3,7 @@
 // the local projections the sidebar reads patched to match.
 //
 // Only the host transport is mocked — the mapping under test is the real one.
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { invokeMock } = vi.hoisted(() => ({ invokeMock: vi.fn() }))
 vi.mock('@tauri-apps/api/core', () => ({ invoke: invokeMock }))
@@ -11,10 +11,15 @@ vi.mock('@tauri-apps/api/core', () => ({ invoke: invokeMock }))
 import {
   applyWorktreeStatus,
   applyWorktreeStatusByProject,
-  persistWorktreeStatus
+  persistWorktreeStatus,
+  persistWorktreeStatusBatch
 } from './worktree-status-persistence'
 
 type TestWorktree = { path: string; status?: string | null; branch: string }
+
+beforeEach(() => {
+  invokeMock.mockReset()
+})
 
 function worktree(path: string, status: string | null): TestWorktree {
   return { path, status, branch: path.split('/').pop() as string }
@@ -39,6 +44,55 @@ describe('persistWorktreeStatus', () => {
     await expect(persistWorktreeStatus('/repo/hydra/wt-progress', 'completed')).rejects.toThrow(
       'sqlite is busy'
     )
+  })
+})
+
+describe('persistWorktreeStatusBatch', () => {
+  it('writes the destination status once per worktree of the set', async () => {
+    invokeMock.mockResolvedValue(undefined)
+
+    await persistWorktreeStatusBatch(
+      ['/repo/hydra/wt-a', '/repo/hydra/wt-b', '/repo/hydra/wt-c'],
+      'completed'
+    )
+
+    expect(invokeMock).toHaveBeenCalledTimes(3)
+    expect(invokeMock.mock.calls).toEqual([
+      ['set_worktree_status', { worktreePath: '/repo/hydra/wt-a', status: 'completed' }],
+      ['set_worktree_status', { worktreePath: '/repo/hydra/wt-b', status: 'completed' }],
+      ['set_worktree_status', { worktreePath: '/repo/hydra/wt-c', status: 'completed' }]
+    ])
+  })
+
+  it('clears the status of every worktree with a null destination', async () => {
+    invokeMock.mockResolvedValue(undefined)
+
+    await persistWorktreeStatusBatch(['/repo/hydra/wt-a', '/repo/hydra/wt-b'], null)
+
+    expect(invokeMock).toHaveBeenCalledTimes(2)
+    expect(invokeMock).toHaveBeenNthCalledWith(1, 'set_worktree_status', {
+      worktreePath: '/repo/hydra/wt-a',
+      status: null
+    })
+    expect(invokeMock).toHaveBeenNthCalledWith(2, 'set_worktree_status', {
+      worktreePath: '/repo/hydra/wt-b',
+      status: null
+    })
+  })
+
+  it('writes nothing for an empty set', async () => {
+    await persistWorktreeStatusBatch([], 'todo')
+
+    expect(invokeMock).not.toHaveBeenCalled()
+  })
+
+  it('surfaces a host failure instead of reporting a batch that did not land', async () => {
+    invokeMock.mockResolvedValueOnce(undefined)
+    invokeMock.mockRejectedValueOnce(new Error('sqlite is busy'))
+
+    await expect(
+      persistWorktreeStatusBatch(['/repo/hydra/wt-a', '/repo/hydra/wt-b'], 'todo')
+    ).rejects.toThrow('sqlite is busy')
   })
 })
 
