@@ -153,6 +153,7 @@ async function renderList(): Promise<{
       onToggleProjectCollapse={vi.fn()}
       onToggleGroupCollapse={vi.fn()}
       onReorderWorktreesInGroup={onReorderWorktreesInGroup}
+      onAssignWorktreeStatus={vi.fn()}
     />
   );
 

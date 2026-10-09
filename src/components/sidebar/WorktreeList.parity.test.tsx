@@ -90,6 +90,7 @@ function renderList(
       onOpenAddRepoDialog={vi.fn()}
       onToggleProjectCollapse={vi.fn()}
       onToggleGroupCollapse={vi.fn()}
+      onAssignWorktreeStatus={vi.fn()}
       {...rest}
     />
   );

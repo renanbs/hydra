@@ -109,6 +109,7 @@ function renderList() {
           onToggleGroupCollapse={vi.fn()}
           scrollRef={scrollRef}
           onReorderWorktreesInGroup={onReorderWorktreesInGroup}
+          onAssignWorktreeStatus={vi.fn()}
         />
       </div>
     );

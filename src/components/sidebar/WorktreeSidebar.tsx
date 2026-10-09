@@ -845,6 +845,7 @@ export function WorktreeSidebar({
               worktreeDropTarget={worktreeDropTarget}
               scrollRef={worktreeScrollRef}
               onReorderWorktreesInGroup={commitReorderedWorktrees}
+              onAssignWorktreeStatus={onAssignWorktreeStatus}
               draggedProjectId={draggedProjectId}
               projectDropTarget={projectDropTarget}
               groupDropTargetId={groupDropTargetId}

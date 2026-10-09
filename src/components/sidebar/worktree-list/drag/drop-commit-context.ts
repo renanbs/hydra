@@ -21,4 +21,10 @@ export type WorktreeDropCommitContext = {
   refreshWorktreeDragSession: () => boolean
   clearWorktreeDrag: () => void
   onReorderWorktrees: (args: WorktreeGroupReorderArgs) => void
+  /**
+   * Writes a persisted workspace status for the dragged workspaces. The workspace board's
+   * lane drop is its only caller: the list's own drops reorder, they do not recolour the
+   * status column, and the panel bridges the ids onto the app's single status writer.
+   */
+  onAssignWorktreesStatus: (worktreeIds: readonly string[], status: string) => void
 }
