@@ -5533,6 +5533,7 @@
           "79eb990aa4": "Add status",
           "054cb50df7": "Remove {{value0}}",
           "b45b350eb0": "Move {{value0}} left",
+          "9c10b1606f": "Move {{value0}} right",
           "8ce44af9a8": "Rename {{value0}}",
           "395e541d5d": "Statuses",
           "34f03eb0de": "Board settings",
@@ -5547,6 +5548,7 @@
         },
         "WorkspaceStatusAppearancePopover": {
           "514be2f569": "Set {{value0}} color to {{value1}}",
+          "dfbd2f434e": "Set {{value0}} icon to {{value1}}",
           "8be427206b": "Icon",
           "2ac106f6b2": "Color",
           "74b1413279": "Appearance",

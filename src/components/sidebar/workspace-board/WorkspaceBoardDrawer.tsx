@@ -8,6 +8,7 @@ import { useWorkspaceBoardCardPointerDrag } from './drag/use-workspace-board-car
 import { useWorkspaceBoardGeometry, type WorkspaceBoardGeometry } from './use-workspace-board-geometry'
 import { useWorkspaceBoardProjection } from './use-workspace-board-projection'
 import { useWorkspaceBoardSearch } from './use-workspace-board-search'
+import { useWorkspaceBoardStatusActions } from './use-workspace-board-status-actions'
 import { filterWorkspaceBoardLanes } from './workspace-board-search'
 
 export type WorkspaceBoardDrawerProps = {
@@ -28,6 +29,12 @@ export type WorkspaceBoardDrawerProps = {
   portsByWorktree?: ReadonlyMap<string, WorkspacePort[]>
   prByPath?: Readonly<Record<string, PrDisplay>>
   compactCards: boolean
+  /**
+   * Every workspace of every project, unfiltered. The board's lanes read the sidebar's
+   * visible set, but removing a status has to migrate the workspaces the sidebar hides
+   * too, so the CRUD gets the unfiltered list.
+   */
+  allWorktrees: readonly GitWorktreeInfo[]
   /**
    * The app's own status write (`set_worktree_status` + the local worktree maps the
    * sidebar projects from). The board's card drop commits through it — the board never
@@ -73,6 +80,7 @@ function WorkspaceBoardDrawerContent({
   portsByWorktree,
   prByPath,
   compactCards,
+  allWorktrees,
   onAssignWorktreeStatus,
   onOpenChange,
   onSelectWorktree,
@@ -100,6 +108,7 @@ function WorkspaceBoardDrawerContent({
     boardRef,
     onAssignWorktreeStatus,
   })
+  const statusActions = useWorkspaceBoardStatusActions({ allWorktrees, onAssignWorktreeStatus })
   const boardCards = useMemo(() => lanes.flatMap((lane) => lane.cards), [lanes])
   const { query, setQuery, clearQuery, matchingWorktreeIds, isFiltering, isQueryTooLarge } =
     useWorkspaceBoardSearch({ open, cards: boardCards })
@@ -126,6 +135,7 @@ function WorkspaceBoardDrawerContent({
       compactCards={compactCards}
       boardRef={boardRef}
       dropTargetStatus={dropTargetStatus}
+      statusActions={statusActions}
       query={query}
       isFiltering={isFiltering}
       isTooLarge={isQueryTooLarge}
