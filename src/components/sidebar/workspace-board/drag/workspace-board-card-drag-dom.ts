@@ -1,10 +1,18 @@
 import type { WorkspaceStatus } from '../../../../shared/worktree/types'
+import { getWorkspaceBoardVirtualLaneSlots } from '../workspace-board-virtual-lane-layout'
+import {
+  getWorkspaceBoardVirtualCardItemCount,
+  resolveWorkspaceBoardVirtualCardSlot
+} from '../workspace-board-virtual-card-layout'
 
 /** The board's own card hook: `data-workspace-board-card-id` on the card frame. */
 export const WORKSPACE_BOARD_CARD_SELECTOR = '[data-workspace-board-card-id]'
 
 /** One lane root per user status; also the element the drop highlight paints. */
 export const WORKSPACE_BOARD_LANE_SELECTOR = '[data-workspace-status]'
+
+/** The lane body the virtualized card list scrolls inside. */
+export const WORKSPACE_BOARD_CARD_SCROLLER_SELECTOR = '[data-workspace-board-card-scroller]'
 
 export const WORKSPACE_BOARD_DROP_INDICATOR_ATTR = 'data-workspace-board-card-drop-indicator'
 
@@ -164,39 +172,72 @@ export function resolveWorkspaceBoardCardDropCommitTarget(args: {
   return distance <= COMMIT_TARGET_FALLBACK_TOLERANCE_PX ? latest.target : args.currentTarget
 }
 
-/** Resolves the lane and the insertion slot under a pointer position inside the board. */
-export function getWorkspaceBoardCardDropTarget(
-  board: HTMLElement,
-  x: number,
-  y: number
-): WorkspaceBoardCardDropTarget {
-  const lanes = Array.from(board.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_LANE_SELECTOR)).flatMap(
-    (element) => {
-      const status = element.dataset.workspaceStatus
-      if (!status) {
-        return []
-      }
-      const rect = element.getBoundingClientRect()
-      return [
-        {
-          element,
-          status,
-          left: rect.left,
-          top: rect.top,
-          right: rect.right,
-          bottom: rect.bottom
-        }
-      ]
-    }
-  )
+/** One lane as the hit test sees it: its painted rect, or its measured slot when unpainted. */
+type WorkspaceBoardLaneHitRect = WorkspaceBoardLaneDropRect & { element: HTMLElement | null }
 
-  const lane = resolveWorkspaceBoardLaneDropRect(lanes, x, y)
-  if (!lane) {
-    return { status: null, dropIndex: 0 }
+/**
+ * Every lane of the board, painted or not. A painted lane reports its live rect — viewport
+ * coordinates, so the board's horizontal scroll is already baked in. A lane the virtualizer has
+ * outside its window reports the slot the grid measured, so a drop never depends on every lane
+ * being mounted; the row's own top/bottom band is shared by every lane (`h-full`), so it is read
+ * from a painted one.
+ */
+function getWorkspaceBoardLaneHitRects(board: HTMLElement): WorkspaceBoardLaneHitRect[] {
+  const paintedLanes: WorkspaceBoardLaneHitRect[] = []
+  for (const element of board.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_LANE_SELECTOR)) {
+    const status = element.dataset.workspaceStatus
+    if (!status) {
+      continue
+    }
+    const rect = element.getBoundingClientRect()
+    paintedLanes.push({
+      element,
+      status,
+      left: rect.left,
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom
+    })
   }
 
+  const virtualSlots = getWorkspaceBoardVirtualLaneSlots(board)
+  if (!virtualSlots) {
+    return paintedLanes
+  }
+  const boardRect = board.getBoundingClientRect()
+  const band = paintedLanes[0]
+  const paintedByStatus = new Map(paintedLanes.map((lane) => [lane.status, lane]))
+  return virtualSlots.map((slot) => {
+    const painted = paintedByStatus.get(slot.status)
+    if (painted) {
+      return painted
+    }
+    return {
+      element: null,
+      status: slot.status,
+      left: boardRect.left + slot.start,
+      right: boardRect.left + slot.end,
+      top: band?.top ?? boardRect.top,
+      bottom: band?.bottom ?? boardRect.bottom
+    }
+  })
+}
+
+/**
+ * The slot the pointer sits above inside the destination lane, plus the insertion line's Y.
+ *
+ * The painted cards answer first — their rects are exact pixels. The one case they cannot
+ * answer is a pointer below the last painted card while the lane holds more: the cards are
+ * virtualized too, so the lane's measured layout reports the real slot and its line position.
+ */
+function resolveWorkspaceBoardLaneCardSlot(args: {
+  laneElement: HTMLElement
+  laneTop: number
+  pointerY: number
+}): { dropIndex: number; dropIndicatorY: number } {
+  const { laneElement, laneTop, pointerY } = args
   const cardRects = Array.from(
-    lane.element.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_CARD_SELECTOR)
+    laneElement.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_CARD_SELECTOR)
   ).map((card) => {
     const rect = card.getBoundingClientRect()
     const index = Number.parseInt(card.dataset.workspaceBoardCardIndex ?? '', 10)
@@ -206,17 +247,64 @@ export function getWorkspaceBoardCardDropTarget(
       ...(Number.isInteger(index) ? { index } : {})
     }
   })
-  const dropIndex = resolveWorkspaceBoardCardDropIndexFromRects(cardRects, y)
+  const dropIndex = resolveWorkspaceBoardCardDropIndexFromRects(cardRects, pointerY)
+  const lastPainted = cardRects.at(-1)
+  const lastPaintedIndex = lastPainted?.index ?? cardRects.length - 1
+  const cardScroller = laneElement.querySelector<HTMLElement>(
+    WORKSPACE_BOARD_CARD_SCROLLER_SELECTOR
+  )
+  const cardCount = cardScroller ? getWorkspaceBoardVirtualCardItemCount(cardScroller) : null
+  if (
+    cardScroller &&
+    cardCount !== null &&
+    cardCount > lastPaintedIndex + 1 &&
+    dropIndex === lastPaintedIndex + 1
+  ) {
+    const virtualSlot = resolveWorkspaceBoardVirtualCardSlot({
+      scrollElement: cardScroller,
+      pointerY
+    })
+    if (virtualSlot) {
+      return virtualSlot
+    }
+  }
+  return {
+    dropIndex,
+    dropIndicatorY: resolveWorkspaceBoardCardDropIndicatorY(cardRects, dropIndex, laneTop)
+  }
+}
+
+/** Resolves the lane and the insertion slot under a pointer position inside the board. */
+export function getWorkspaceBoardCardDropTarget(
+  board: HTMLElement,
+  x: number,
+  y: number
+): WorkspaceBoardCardDropTarget {
+  const lane = resolveWorkspaceBoardLaneDropRect(getWorkspaceBoardLaneHitRects(board), x, y)
+  if (!lane) {
+    return { status: null, dropIndex: 0 }
+  }
+
   const laneRect = {
     left: lane.left,
     top: lane.top,
     width: lane.right - lane.left
   }
+  // Why the fallback: a lane outside the virtual window paints no cards yet. The drag's
+  // retention mounts it on the next frame, which is where its line position comes from; the
+  // lane itself is already resolved, and the lane is all a release commits.
+  const slot = lane.element
+    ? resolveWorkspaceBoardLaneCardSlot({
+        laneElement: lane.element,
+        laneTop: laneRect.top,
+        pointerY: y
+      })
+    : { dropIndex: 0, dropIndicatorY: laneRect.top + EMPTY_LANE_INDICATOR_OFFSET_PX }
 
   return {
     status: lane.status,
-    dropIndex,
-    dropIndicatorY: resolveWorkspaceBoardCardDropIndicatorY(cardRects, dropIndex, laneRect.top),
+    dropIndex: slot.dropIndex,
+    dropIndicatorY: slot.dropIndicatorY,
     laneRect
   }
 }

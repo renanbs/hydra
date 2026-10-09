@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import type { WorkspaceStatusDefinition } from '../../../shared/worktree/types'
 import { getWorkspaceStatusVisualMeta } from '../workspace-status'
 import type { GitWorktreeInfo, HydraProject } from '../types'
-import WorkspaceBoardCard from './WorkspaceBoardCard'
+import WorkspaceBoardStatusLaneCardList from './WorkspaceBoardStatusLaneCardList'
 import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-board-worktrees'
 
 type WorkspaceBoardStatusLaneProps = {
@@ -14,6 +14,12 @@ type WorkspaceBoardStatusLaneProps = {
   totalCount: number
   /** True while a query narrows the board — switches the badge to "matches / total". */
   hasQuery: boolean
+  /**
+   * True once this lane's cards have been hydrated. The lane shell always paints; its cards
+   * mount one lane per animation frame (D08-020), and until then the lane must not claim to be
+   * "Empty" when it is only still loading.
+   */
+  renderCards: boolean
   columnWidth: number
   compactCards: boolean
   /** True while a card drag hovers this lane; the destination lane paints its own ring. */
@@ -31,15 +37,18 @@ type WorkspaceBoardStatusLaneProps = {
  * Ported from Orca `WorkspaceKanbanStatusLane`: one lane per user-defined
  * `WorkspaceStatus`, with its icon, label, card counter and empty placeholder.
  * The lane root is also the board's drop destination — its rect resolves the target
- * lane and `isDropTarget` paints the highlight while a card hovers it. The column
- * resize handle and the lane's create-workspace buttons are not part of this
- * increment, so they are absent rather than inert.
+ * lane and `isDropTarget` paints the highlight while a card hovers it. The lane body is the
+ * card list's own scroll element, so the cards are virtualized inside it (`renderCards`
+ * gates them until this lane's hydration frame). The column resize handle and the lane's
+ * create-workspace buttons are not part of this increment, so they are absent rather than
+ * inert.
  */
 function WorkspaceBoardStatusLane({
   status,
   cards,
   totalCount,
   hasQuery,
+  renderCards,
   columnWidth,
   compactCards,
   isDropTarget = false,
@@ -47,6 +56,10 @@ function WorkspaceBoardStatusLane({
   onSelectSession,
   onContextMenu,
 }: WorkspaceBoardStatusLaneProps): React.JSX.Element {
+  // Why state, not a ref: the card list is a child of this body, so its layout effects run
+  // before this element's own ref is attached — a ref read there would see `null` and the
+  // list would never register its measured layout for the drop geometry.
+  const [cardScrollerElement, setCardScrollerElement] = useState<HTMLDivElement | null>(null)
   const meta = getWorkspaceStatusVisualMeta(status)
   // Why: a lane that is empty on its own merits is still "Empty" under a query —
   // only a lane whose cards were filtered away has anything to say about matches.
@@ -78,18 +91,22 @@ function WorkspaceBoardStatusLane({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-1.5 py-2 scrollbar-sleek">
+      <div
+        ref={setCardScrollerElement}
+        data-workspace-board-card-scroller=""
+        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-1.5 py-2 scrollbar-sleek"
+      >
         {cards.length > 0 ? (
-          cards.map((card) => (
-            <WorkspaceBoardCard
-              key={card.identity}
-              card={card}
+          renderCards ? (
+            <WorkspaceBoardStatusLaneCardList
+              cards={cards}
+              scrollerElement={cardScrollerElement}
               compactCards={compactCards}
               onActivate={onActivate}
               onSelectSession={onSelectSession}
               onContextMenu={onContextMenu}
             />
-          ))
+          ) : null
         ) : (
           <div className="flex h-20 items-center justify-center rounded-md border border-dashed border-border/70 text-[11px] text-muted-foreground">
             {isFiltered

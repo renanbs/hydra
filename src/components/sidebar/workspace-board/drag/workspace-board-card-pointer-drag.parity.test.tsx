@@ -198,7 +198,7 @@ function BoardHarness({
   )
 }
 
-function renderBoard(): { onAssign: Mock; onSelect: Mock } {
+async function renderBoard(): Promise<{ onAssign: Mock; onSelect: Mock }> {
   const onAssign = vi.fn()
   const onSelect = vi.fn()
   render(
@@ -207,6 +207,7 @@ function renderBoard(): { onAssign: Mock; onSelect: Mock } {
     </TooltipProvider>
   )
   fireEvent.click(screen.getByRole('button', { name: 'Toggle board' }))
+  await settleLaneHydration()
   stubBoardRects()
   return { onAssign, onSelect }
 }
@@ -218,6 +219,16 @@ async function settleDragFrame(): Promise<void> {
       requestAnimationFrame(() => resolve())
     })
   })
+}
+
+/**
+ * The board hydrates one lane's cards per animation frame (D08-020), so the cards a drag needs
+ * only exist after those frames ran. Four user statuses plus the frame that starts the chain.
+ */
+async function settleLaneHydration(): Promise<void> {
+  for (let frame = 0; frame < 6; frame++) {
+    await settleDragFrame()
+  }
 }
 
 function pressCard(clientX: number): void {
@@ -251,7 +262,7 @@ async function startDrag(): Promise<void> {
 
 describe('workspace board card pointer drag', () => {
   it('lifts the card only past the threshold, then paints the preview and the cursor', async () => {
-    renderBoard()
+    await renderBoard()
 
     pressCard(PROGRESS_X)
     movePointer(PROGRESS_X + 2)
@@ -277,7 +288,7 @@ describe('workspace board card pointer drag', () => {
   })
 
   it('highlights the destination lane and hangs the insertion line, empty lanes included', async () => {
-    renderBoard()
+    await renderBoard()
 
     await startDrag()
     movePointer(TODO_X)
@@ -299,7 +310,7 @@ describe('workspace board card pointer drag', () => {
   })
 
   it('moves the card to the destination lane through exactly one status write', async () => {
-    const { onAssign } = renderBoard()
+    const { onAssign } = await renderBoard()
 
     await startDrag()
     movePointer(COMPLETED_X)
@@ -319,7 +330,7 @@ describe('workspace board card pointer drag', () => {
   })
 
   it('treats a release back in the card own lane as a no-op', async () => {
-    const { onAssign } = renderBoard()
+    const { onAssign } = await renderBoard()
 
     await startDrag()
     movePointer(PROGRESS_DRAG_X)
@@ -334,7 +345,7 @@ describe('workspace board card pointer drag', () => {
   })
 
   it('aborts on Escape without committing and keeps the board open', async () => {
-    const { onAssign } = renderBoard()
+    const { onAssign } = await renderBoard()
 
     await startDrag()
     movePointer(COMPLETED_X)
@@ -353,7 +364,7 @@ describe('workspace board card pointer drag', () => {
   })
 
   it('aborts on pointercancel without committing, and the release after it is inert', async () => {
-    const { onAssign } = renderBoard()
+    const { onAssign } = await renderBoard()
 
     await startDrag()
     movePointer(COMPLETED_X)
@@ -369,7 +380,7 @@ describe('workspace board card pointer drag', () => {
   })
 
   it('commits nothing when the release lands outside every lane', async () => {
-    const { onAssign } = renderBoard()
+    const { onAssign } = await renderBoard()
 
     await startDrag()
     movePointer(COMPLETED_X)
@@ -381,7 +392,7 @@ describe('workspace board card pointer drag', () => {
   })
 
   it('never lifts the card from a control inside it', async () => {
-    renderBoard()
+    await renderBoard()
     const card = boardCard('/repo/hydra/wt-progress')
     const control = document.createElement('button')
     card?.appendChild(control)
@@ -401,7 +412,7 @@ describe('workspace board card pointer drag', () => {
   })
 
   it('swallows the click that follows a drop', async () => {
-    const { onAssign, onSelect } = renderBoard()
+    const { onAssign, onSelect } = await renderBoard()
 
     await startDrag()
     movePointer(COMPLETED_X)
@@ -418,8 +429,8 @@ describe('workspace board card pointer drag', () => {
     expect(onSelect).not.toHaveBeenCalled()
   })
 
-  it('still lets a press that never crossed the threshold activate the card', () => {
-    const { onAssign, onSelect } = renderBoard()
+  it('still lets a press that never crossed the threshold activate the card', async () => {
+    const { onAssign, onSelect } = await renderBoard()
 
     pressCard(PROGRESS_X)
     movePointer(PROGRESS_X + 2)

@@ -46,7 +46,7 @@ function card(
 
 function renderLane(
   cards: WorkspaceBoardCardModel[],
-  overrides: { totalCount?: number; hasQuery?: boolean } = {}
+  overrides: { totalCount?: number; hasQuery?: boolean; renderCards?: boolean } = {}
 ): HTMLElement {
   const { container } = render(
     <WorkspaceBoardStatusLane
@@ -54,6 +54,7 @@ function renderLane(
       cards={cards}
       totalCount={overrides.totalCount ?? cards.length}
       hasQuery={overrides.hasQuery ?? false}
+      renderCards={overrides.renderCards ?? true}
       columnWidth={308}
       compactCards={false}
       onActivate={vi.fn()}
@@ -79,6 +80,18 @@ describe('WorkspaceBoardStatusLane (Orca WorkspaceKanbanStatusLane parity)', () 
 
     const filled = renderLane([card('wt-a', 0)])
     expect(filled.textContent).not.toContain('Empty')
+  })
+
+  it('holds the cards back until this lane is hydrated, without calling itself empty', () => {
+    const pending = renderLane([card('wt-a', 0)], { renderCards: false })
+
+    expect(pending.querySelectorAll('[data-workspace-board-card-id]')).toHaveLength(0)
+    expect(pending.querySelector('[data-workspace-board-lane-count]')?.textContent).toBe('1')
+    expect(pending.textContent).not.toContain('Empty')
+
+    // A lane that really has no cards says so on the first paint, hydrated or not.
+    const emptyPending = renderLane([], { renderCards: false })
+    expect(emptyPending.textContent).toContain('Empty')
   })
 
   it('prints "matches / total" and a "No matches" placeholder under a query', () => {
