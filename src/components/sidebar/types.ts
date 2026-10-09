@@ -229,6 +229,13 @@ export interface WorktreeSidebarProps {
    */
   onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
   /**
+   * The app's own pin write (`set_worktree_flags` with `is_pinned`). The board's pin strip
+   * and the sidebar list's drop on it commit through it, so both share the one writer the
+   * row menu already uses (D08-028). Pinning is idempotent: an already-pinned workspace is
+   * left pinned.
+   */
+  onPinWorktree: (worktreePath: string) => void;
+  /**
    * The workspace board's lane create button: opens the composer with the lane's status
    * preselected (D08-021/D08-030). The app owns the composer and clears the status on close.
    */

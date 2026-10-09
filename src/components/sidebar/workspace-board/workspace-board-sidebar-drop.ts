@@ -1,20 +1,32 @@
 // The contract of a sidebar-list drop onto the workspace board (D08-002, D08-040,
-// D03a-011, D03a-012).
+// D03a-011, D03a-012, D08-028).
 //
 // Why a module store and not React state: the drag lives in the sidebar list, and the lane
 // that paints the highlight lives in the board — a sibling. The lane grid registers the
 // open board here, the drag publishes the lane and slot it resolved, and the grid
 // subscribes so the destination lane paints its own ring. The geometry stays the board's
 // own: the resolution reads the layout the grid measured, so a lane the virtualizer has
-// outside its window still resolves.
+// outside its window still resolves. The pin strip is the same bridge's other destination
+// (D08-028): it registers itself and answers first, because it sits above the lane row.
 import { useSyncExternalStore } from 'react'
 import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import {
   getWorkspaceBoardCardDropTarget,
+  isWorkspaceBoardPinDropTarget,
   removeWorkspaceBoardCardDropIndicator,
   updateWorkspaceBoardCardDropIndicator,
-  type WorkspaceBoardCardLaneDropTarget
+  type WorkspaceBoardCardLaneDropTarget,
+  type WorkspaceBoardPinDropTarget
 } from './drag/workspace-board-card-drag-dom'
+import {
+  resolveWorkspaceBoardPinDropTarget,
+  setWorkspaceBoardPinDropTargetDragOver
+} from './workspace-board-pin-drop-target'
+
+/** What a sidebar-list drop onto the open board resolves: a lane, or the pin strip. */
+export type WorkspaceBoardSidebarDropTarget =
+  | WorkspaceBoardCardLaneDropTarget
+  | WorkspaceBoardPinDropTarget
 
 type WorkspaceBoardSidebarDropBoard = {
   element: HTMLElement
@@ -65,13 +77,18 @@ export function hasWorkspaceBoardSidebarDropBoard(): boolean {
 }
 
 /**
- * The board lane and insertion slot under the pointer, or `null` when the board is not
- * the destination — unregistered, closed, or the pointer outside it.
+ * The board's destination under the pointer, or `null` when the board is not the
+ * destination — unregistered, closed, or the pointer outside it. The pin strip answers
+ * first: it sits above the lane row, outside the board's own hit-test root.
  */
 export function getWorkspaceBoardSidebarDropTarget(
   x: number,
   y: number
-): WorkspaceBoardCardLaneDropTarget | null {
+): WorkspaceBoardSidebarDropTarget | null {
+  const pinTarget = resolveWorkspaceBoardPinDropTarget(x, y)
+  if (pinTarget) {
+    return pinTarget
+  }
   const board = registeredBoard
   if (!board) {
     return null
@@ -89,15 +106,20 @@ export function getWorkspaceBoardSidebarDropTarget(
 
 /**
  * Paints the target the drag resolved: the destination lane's highlight (the grid reads
- * the published status) and the insertion line the board's own card drag paints. `null`
- * clears both.
+ * the published status), the pin strip's own hover, and the insertion line the board's own
+ * card drag paints. `null` clears all of it.
  */
 export function updateWorkspaceBoardSidebarDropTargetVisual(
-  target: WorkspaceBoardCardLaneDropTarget | null
+  target: WorkspaceBoardSidebarDropTarget | null
 ): void {
-  setDropTargetStatus(target?.status ?? null)
-  if (target) {
-    updateWorkspaceBoardCardDropIndicator(target)
+  // Why the lane is derived from the status and not from the target: the pin strip resolves
+  // no lane, so a pin target must leave the lane highlight and the line dark.
+  const laneTarget: WorkspaceBoardCardLaneDropTarget | null =
+    target !== null && target.status !== null ? target : null
+  setWorkspaceBoardPinDropTargetDragOver(target !== null && isWorkspaceBoardPinDropTarget(target))
+  setDropTargetStatus(laneTarget?.status ?? null)
+  if (laneTarget) {
+    updateWorkspaceBoardCardDropIndicator(laneTarget)
     return
   }
   removeWorkspaceBoardCardDropIndicator()
@@ -106,6 +128,7 @@ export function updateWorkspaceBoardSidebarDropTargetVisual(
 /** Tears the target's visual down: a drop, an abort, or a board that closed under the drag. */
 export function clearWorkspaceBoardSidebarDropTargetVisual(): void {
   setDropTargetStatus(null)
+  setWorkspaceBoardPinDropTargetDragOver(false)
   removeWorkspaceBoardCardDropIndicator()
 }
 

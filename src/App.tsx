@@ -3390,6 +3390,13 @@ export default function App() {
   const togglePinWorktree = (path: string) => {
     void applyPinnedWorktreeFlag(path, pinnedWorktrees.has(path));
   };
+  // D08-028: soltar um card na faixa de pin do board fixa — nunca desafixa, e nunca
+  // escreve status. Um workspace já fixado é no-op, então o drop é idempotente (mesma
+  // regra do `pinWorktrees` do Orca) e continua sendo o ÚNICO escritor de pin do app.
+  const pinWorktree = (path: string) => {
+    if (pinnedWorktrees.has(path)) return;
+    togglePinWorktree(path);
+  };
   const toggleUnreadWorktree = (path: string) => {
     void applyUnreadWorktreeFlag(path, unreadWorktrees.has(path));
   };
@@ -3927,6 +3934,7 @@ export default function App() {
                 onProjectContextMenu={handleProjectContextMenu}
                 onWorktreeContextMenu={handleWorktreeContextMenu}
                 onAssignWorktreeStatus={assignWorktreeStatus}
+                onPinWorktree={pinWorktree}
                 onCreateWorktree={handleCreateWorktreeInStatus}
                 onReorderSessions={handleReorderSessions}
                 onReorderProjects={handleReorderProjects}
