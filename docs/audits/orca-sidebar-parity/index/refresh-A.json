@@ -1,0 +1,663 @@
+{
+ "group": "A",
+ "generatedFrom": "bd69b33",
+ "rows": [
+  {
+   "id": "D01-001",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3834-3837",
+    "src/App.tsx:867-873",
+    "src/App.tsx:890-900",
+    "src/hooks/useSidebarResize.ts:82-96",
+    "src/store/slices/ui/ui-slice-agent-actions.ts:45-49"
+   ],
+   "note": "Sem mudanca material da pilha: <aside> segue sem data-sidebar, default 280 e limites 180/480 (App.tsx:870-871, :895-900), live-width via style inline."
+  },
+  {
+   "id": "D01-002",
+   "status": "partial",
+   "evidence": [
+    "src/lib/left-sidebar-appearance.ts:45-70",
+    "src/App.tsx:429-442",
+    "src/App.tsx:3823",
+    "src/App.css:156-161"
+   ],
+   "note": "Continua so o braco 'tinted' pintando o sidebar; resolveLeftSidebarStyleVariables segue consumido apenas para o WindowTitlebar."
+  },
+  {
+   "id": "D01-003",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:867-873",
+    "src/hooks/useSidebarResize.ts:186-217",
+    "src/hooks/useSidebarResize.ts:118-133",
+    "src/App.tsx:3834-3837"
+   ],
+   "note": "Sem mudanca: alca e irmao flex de 2.5px, sem pointer capture e sem reset por duplo clique."
+  },
+  {
+   "id": "D01-005",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:18",
+    "src/components/sidebar/WorktreeSidebar.tsx:663-670",
+    "src/components/sidebar/SidebarHeader.tsx:59-77"
+   ],
+   "note": "Alternancia existe; SidebarAgentsList segue import estatico e sem preservacao de scroll."
+  },
+  {
+   "id": "D01-007",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarHeader.tsx:43-57"
+   ],
+   "note": "Titulo segue fixo 'Projects' com data-sidebar-section-title constante; sem consumo de groupBy/i18n."
+  },
+  {
+   "id": "D01-008",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarHeader.tsx:43-44",
+    "src/components/sidebar/SidebarHeader.tsx:59-77",
+    "src/components/sidebar/WorktreeSidebar.tsx:663-670"
+   ],
+   "note": "Botao de atividade com aria-pressed/tooltip dinamico inalterado."
+  },
+  {
+   "id": "D01-009",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarHeader.tsx:25-44",
+    "src/components/sidebar/SidebarHeader.tsx:139-170"
+   ],
+   "note": "Intro popover segue com gate em localStorage e sem ancoragem/outside-dismiss."
+  },
+  {
+   "id": "D01-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarHeader.tsx:104-117",
+    "src/App.tsx:3869",
+    "src/App.tsx:4230-4233"
+   ],
+   "note": "Abre modal por prop (setIsAddRepoOpen) e monta AddRepoDialog no App; falta data-workspace-board-preserve-open no botao (o board agora existe mas nao e preservado por ele)."
+  },
+  {
+   "id": "D01-012",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarHeader.tsx:119-138",
+    "src/App.tsx:3870-3873"
+   ],
+   "note": "Segue 'Mod+N' hardcoded e sem data-contextual-tour-target/tour handoff."
+  },
+  {
+   "id": "D01-013",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarHeader.tsx:16-138"
+   ],
+   "note": "Layout compacto do cabecalho inalterado."
+  },
+  {
+   "id": "D01-016",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarNav.tsx:8-21",
+    "src/App.tsx:1392-1393",
+    "src/App.tsx:4199-4201",
+    "src/App.tsx:4209-4211"
+   ],
+   "note": "Segue disparando 'hydra:open-command-palette' (CommandPalette) em vez do WorktreeJumpPalette; chips '⌘P' literais e so group-hover."
+  },
+  {
+   "id": "D01-030",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarFooter.tsx:23-33",
+    "src/components/sidebar/SidebarFooter.tsx:44-73"
+   ],
+   "note": "Botao Workspace Board (data-workspace-board-trigger, aria-pressed, tooltip) agora existe no rodape; ainda faltam useTranslation no container (strings literais) e o agrupamento SidebarSettingsHelpMenu/Help."
+  },
+  {
+   "id": "D01-031",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarFooter.tsx:35-49",
+    "src/components/sidebar/WorktreeSidebar.tsx:888-895"
+   ],
+   "note": "Botao de revelar workspace ativo presente e condicionado ao corpo workspaces."
+  },
+  {
+   "id": "D01-034",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarFooter.tsx:26-33",
+    "src/components/sidebar/WorktreeSidebar.tsx:888-895"
+   ],
+   "note": "Botao Settings segue com title literal, icone+texto e sem aria-label/ShortcutKeyCombo."
+  },
+  {
+   "id": "D01-044",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/sidebar-host-options.ts:39-88",
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:243-256",
+    "src/components/sidebar/WorktreeList.tsx:508-520"
+   ],
+   "note": "Registro de hosts com saude/compat continua construido no caminho de producao."
+  },
+  {
+   "id": "D01-045",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:87-98",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:119",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:202-229",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:381-437",
+    "src/store/slices/ui/ui-slice-preference-actions.ts:68-80"
+   ],
+   "note": "ERRATA: o submenu 'Hosts' existe e esta ligado (buildSidebarHostScopeOptions, resumo getSidebarHostVisibilityLabel, saude por host, toggle All/multiplo) e os writers duplicados foram consolidados (PR9); falta apenas data-workspace-board-preserve-open."
+  },
+  {
+   "id": "D01-046",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/host-section-order.ts:4-30",
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:243-256",
+    "src/components/sidebar/WorktreeList.tsx:627-636"
+   ],
+   "note": "Ordenacao de secoes de host inalterada no caminho de producao."
+  },
+  {
+   "id": "D01-047",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:399-441",
+    "src/components/sidebar/WorktreeList.tsx:438",
+    "src/components/sidebar/WorktreeList.tsx:627-636",
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:243-256"
+   ],
+   "note": "ERRATA: as linhas host-header agora sao pintadas (HostSectionHeader com rotulo, detail, count, ChevronDown e HostSectionHeaderMenu) e o colapso por host esta ligado em toggleRowCollapse('host-header')."
+  },
+  {
+   "id": "D01-048",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeStatusIndicator.tsx:17-24",
+    "src/components/sidebar/WorktreeList.tsx:517-533",
+    "src/components/AgentStateDot.tsx:43-52"
+   ],
+   "note": "Indicador segue com rotulos hardcoded e glifo divergente; o import no lane ainda nao passa pelo componente."
+  },
+  {
+   "id": "D01-051",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:541-560",
+    "src/components/sidebar/sidebar-filter-actions.ts:14-65",
+    "src/components/sidebar/visible-worktrees.ts:12-13"
+   ],
+   "note": "shouldFiltersHideAllRows segue inexistente; a pilha so extraiu visible-worktree-filters.ts (live-activity + filtros), sem o gate de conta baseada em pastas."
+  },
+  {
+   "id": "D01-052",
+   "status": "partial",
+   "evidence": [
+    "src/shared/keybindings/definitions-core-1.ts:180-187",
+    "src/App.tsx:2748-2753",
+    "src/components/WindowTitlebar.tsx:118-120"
+   ],
+   "note": "sidebar.left.toggle segue orfao no registry: o atalho e tratado por keydown raw (App.tsx:2748) e o titulo e estatico."
+  },
+  {
+   "id": "D02a-001",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/AddRepoDialog.tsx:20-21",
+    "src/App.tsx:3869",
+    "src/App.tsx:4230-4233"
+   ],
+   "note": "Ciclo de vida inalterado (prop isOpen, sem activeModal/droppedLocalPath/cloneAbort/generation ref)."
+  },
+  {
+   "id": "D02a-008",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:4233-4253",
+    "src/components/sidebar/AddRepoDialog.tsx:20-21"
+   ],
+   "note": "onProjectAdded so rele catalog_get; seguem ausentes scan aninhado, labels de progresso e droppedLocalPath."
+  },
+  {
+   "id": "D02a-028",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:4233-4253"
+   ],
+   "note": "Handoff de checkout padrao segue ausente no caminho de producao (so re-selecao do primeiro projeto + tab sintetica)."
+  },
+  {
+   "id": "D02a-036",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:517-533",
+    "src/store/folder-workspaces/folder-path-status-actions.ts:1-20"
+   ],
+   "note": "Hook useFolderWorkspaceComposerPathStatus segue so referenciado em teste de boundary; sem cache TTL/bloqueio de criacao no compositor."
+  },
+  {
+   "id": "D02b-001",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/AddRemoteHostDialog.tsx:120-160",
+    "src/components/sidebar/AddRemoteHostDialog.tsx:36-40",
+    "src/components/settings/SshPane.tsx:145-152"
+   ],
+   "note": "Dialog SSH agora existe e esta ligado (montado pelo SshPane em Settings): reset() invalida resolucoes, close bloqueia com isSaving/isBulkImporting e ha view form/config-picker. Falta o modo 'server' e o latch de renderMode; o gatilho no cabecalho do sidebar foi removido (botao inventado)."
+  },
+  {
+   "id": "D02b-002",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/AddRemoteHostFields.tsx:30-125",
+    "src/components/sidebar/AddRemoteHostSshFormPanel.tsx:18-72"
+   ],
+   "note": "Label, Host (autoFocus + parse no blur), Username, Port e Identity file com hint portados; faltam o disclosure avancado (SshHostAdvancedFields) e os campos de servidor remoto."
+  },
+  {
+   "id": "D02b-003",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/AddRemoteHostDialog.tsx:61-107",
+    "src/components/sidebar/AddRemoteHostDialog.tsx:120-155"
+   ],
+   "note": "Valida host e porta 1-65535, gera label fallback, chama addSshTarget + hydrate e emite 'SSH host added.'. Faltam checagem de duplicidade, timeout grace, setSshTargetsMetadata/readoptions e telemetria."
+  },
+  {
+   "id": "D02b-004",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:22",
+    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:92-100",
+    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:108-150",
+    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:218-228",
+    "src/components/sidebar/AddRemoteHostDialog.tsx:157-200"
+   ],
+   "note": "Picker portado: debounce 200ms, guarda de geracao, 'Reading ~/.ssh/config…', 'Try again', empty vs no-match, aviso de truncamento por SSH_CONFIG_HOST_RESULT_LIMIT e 'Back'."
+  },
+  {
+   "id": "D02b-005",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/AddRemoteHostDialog.tsx:203-262",
+    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:184-196"
+   ],
+   "note": "Resolucao por alias com configResolveGeneration, indicador 'Reading…', prefill e toast 'Filled from…' portados; faltam expansao automatica do disclosure avancado e o tratamento de preload desatualizado."
+  },
+  {
+   "id": "D02b-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:152-172",
+    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:193-215"
+   ],
+   "note": "Badge 'In Orca' desabilitado e 'Removed from Orca' re-selecionavel, com aria-busy na lista."
+  },
+  {
+   "id": "D02b-007",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/AddRemoteHostDialog.tsx:264-300",
+    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:233-261"
+   ],
+   "note": "Import em massa sem reAdopt, 'Adding hosts…', toasts 'Added N hosts'/'already in sync' e reload dentro da geracao; faltam recordSshRepoReadoptions/setSshTargetsMetadata e telemetria."
+  },
+  {
+   "id": "D02b-008",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6162-6180"
+   ],
+   "note": "Modo 'server' (pareamento Orca Server) ausente; so i18n orfao e o Mobile Companion, que e outra feature."
+  },
+  {
+   "id": "D02b-009",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6171-6174"
+   ],
+   "note": "parseHostAccessLink/loopback override seguem sem implementacao."
+  },
+  {
+   "id": "D02b-010",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6171-6174"
+   ],
+   "note": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes."
+  },
+  {
+   "id": "D02b-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/HostSectionHeaderMenu.tsx:26-70",
+    "src/components/sidebar/HostSectionHeaderMenu.tsx:73-98",
+    "src/components/sidebar/host-header-menu-items.ts:51-58",
+    "src/components/sidebar/WorktreeList.tsx:438"
+   ],
+   "note": "Trigger com aria-label/title, stopPropagation no clique e tecla, label do host e aviso destrutivo com AlertTriangle + describeRuntimeCompatBlock portados e ligados na linha host-header. O aviso nao e item clicavel (nao direciona para prefs do host)."
+  },
+  {
+   "id": "D02b-012",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/host-header-menu-items.ts:51-58"
+   ],
+   "note": "Connect/Reconnect/Check connection fora: sem subsistema de execucao remota."
+  },
+  {
+   "id": "D02b-013",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/HostSectionHeaderMenu.tsx:99-117",
+    "src/App.tsx:1396-1405"
+   ],
+   "note": "'Manage host…' existe para host SSH (emite 'hydra:open-settings' section ssh, consumido no App). Faltam os ramos runtime (servers, environmentId) e local (general)."
+  },
+  {
+   "id": "D02b-014",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/HostRenameDialog.tsx:30-160"
+   ],
+   "note": "Dialog de rename existe (ssh_update_target + hydrate, Enter submete, validacao vazio/duplicado). Difere do Orca: grava o label real do registry, sem override/placeholder derivado e sem 'Reset to default'; indisponivel para local/runtime."
+  },
+  {
+   "id": "D02b-015",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/HostRemoveDialog.tsx:18-55",
+    "src/components/sidebar/ssh-host-remove-resolution.ts:29-56"
+   ],
+   "note": "Remocao existe para SSH (targetId); sem resolucao por tipo de host e sem o ramo runtime com 'Open settings' nem local."
+  },
+  {
+   "id": "D02b-016",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/ssh-host-remove-resolution.ts:29-56",
+    "src/components/sidebar/HostRemoveDialog.tsx:45-55",
+    "src/components/sidebar/HostRemoveDialog.tsx:86-110"
+   ],
+   "note": "Coleta/dedupe de repos e worktrees, contagem e pluralizacao portadas; nao consulta sshConnectionStates para variar a descricao conectado/offline."
+  },
+  {
+   "id": "D02b-017",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/HostRemoveDialog.tsx:1-9"
+   ],
+   "note": "O switch Advanced ('also delete/forget these N workspaces') segue ausente por decisao declarada; nenhum controle existe."
+  },
+  {
+   "id": "D02b-018",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/HostRemoveDialog.tsx:57-84",
+    "src/components/sidebar/HostRemoveDialog.tsx:86-110"
+   ],
+   "note": "removeSshTarget + clearRemovedSshTargetState + hydrate + toast 'Removed {label}' portados; faltam limpeza de workspaces em cascata, aborto atomico em falha e purga de overrides de rename."
+  },
+  {
+   "id": "D02b-019",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/ssh-host-remove-resolution.ts:1-20"
+   ],
+   "note": "So conta workspaces; sem classificacao ghost/connected/disconnected nem resolucao de esquecimento."
+  },
+  {
+   "id": "D02b-020",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6231-6240"
+   ],
+   "note": "ForgetSshWorkspaceDialog segue orfao em i18n, sem componente."
+  },
+  {
+   "id": "D02b-021",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/AddRepoDialog.tsx:20-21",
+    "src/i18n/locales/en.json:5515-5518"
+   ],
+   "note": "Wizard segue start/clone/create, sem seletor de host/target SSH nem linha de status/conexao."
+  },
+  {
+   "id": "D02b-022",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "RemoteFileBrowser orfao; Hydra usa o dialogo nativo do Tauri."
+  },
+  {
+   "id": "D02b-023",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "Breadcrumbs remotos ausentes."
+  },
+  {
+   "id": "D02b-024",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "Listagem remota com debounce/duplo clique ausente."
+  },
+  {
+   "id": "D02b-025",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "Estados do file browser remoto ausentes."
+  },
+  {
+   "id": "D02b-026",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "Path Mode do navegador remoto ausente."
+  },
+  {
+   "id": "D02b-027",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "Resolucao de segmentos remotos ausente."
+  },
+  {
+   "id": "D02b-028",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "Limites/guarda de colagem remotos ausentes."
+  },
+  {
+   "id": "D02b-029",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "Navegacao por teclado do input remoto ausente."
+  },
+  {
+   "id": "D02b-030",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5276-5290"
+   ],
+   "note": "Suporte a drives win32 no file browser remoto ausente."
+  },
+  {
+   "id": "D02c-001",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:116-128",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:539-623",
+    "src/components/sidebar/WorktreeSidebar.tsx:1198-1210"
+   ],
+   "note": "Dialog montado e funcional; a lista de recuperacao segue .map() sem virtualizador/aria-posinset, gate de busca >5 (Orca >=10) e filtro por branch||path."
+  },
+  {
+   "id": "D02c-002",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6151-6155"
+   ],
+   "note": "SuppressExternalWorktreeInboxDialog orfao; o 'x' ainda suprime direto."
+  },
+  {
+   "id": "D02c-003",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:11275-11280"
+   ],
+   "note": "LinearAgentSkillPane orfao, sem componente."
+  },
+  {
+   "id": "D02c-004",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6055-6060"
+   ],
+   "note": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES."
+  },
+  {
+   "id": "D02c-005",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6055-6060"
+   ],
+   "note": "Resolucao de runtime/chave de dispensa ausente."
+  },
+  {
+   "id": "D02c-006",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6055-6060"
+   ],
+   "note": "Textos do fluxo so em i18n."
+  },
+  {
+   "id": "D02c-007",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6055-6060"
+   ],
+   "note": "Lembretes/toasts do skill Linear ausentes."
+  },
+  {
+   "id": "D02c-009",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5228-5235"
+   ],
+   "note": "NonGitFolderDialog orfao; addNonGitFolder segue sem renderer (modal 'confirm-non-git-folder' sem componente)."
+  },
+  {
+   "id": "D02c-011",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5237-5245"
+   ],
+   "note": "OrcaYamlTrustDialog orfao; markOrcaHookScriptConfirmed/AlwaysTrusted seguem sem callers."
+  },
+  {
+   "id": "D02c-015",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/ProjectGroupDeleteDialog.tsx:14-116",
+    "src/store/project-groups/project-group-mutations.ts:139",
+    "src/components/sidebar/WorktreeSidebar.tsx:1188-1196"
+   ],
+   "note": "Dialog portado e montado; segue sem checkbox 'Remove N contained projects' (store suporta, UI nao expoe)."
+  },
+  {
+   "id": "D02c-016",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/ProjectGroupNameDialog.tsx:14-125",
+    "src/components/sidebar/WorktreeSidebar.tsx:1188-1196"
+   ],
+   "note": "Criar/renomear grupo com foco+select inicial, disable com nome vazio e 'Saving...' inalterado."
+  },
+  {
+   "id": "D02c-017",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:627-636",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:62",
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:196-210"
+   ],
+   "note": "placeholderRepoIds existe e e alimentado por noticeRepoIds no pipeline, mas getEmptyProjectPlaceholderRepoIds segue inexistente e o acoplamento a filterRepoIds permanece fora do WorktreeList."
+  },
+  {
+   "id": "D02c-018",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5285-5295"
+   ],
+   "note": "RemoveFolderDialog orfao; remocao de projeto segue imediata via catalog_remove_repo."
+  },
+  {
+   "id": "D02c-019",
+   "status": "missing",
+   "evidence": [
+    "src/lib/setup-script-prompt.ts:1-32",
+    "src/i18n/locales/en.json:5300-5308"
+   ],
+   "note": "Card orquestrador ausente; inspectSetupScriptPromptState segue sem callers."
+  },
+  {
+   "id": "D02c-020",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5300-5308"
+   ],
+   "note": "Shell visual do card so em i18n."
+  },
+  {
+   "id": "D02c-021",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5309-5320"
+   ],
+   "note": "Componentes de acao do card ausentes; SetupScriptImportCandidate segue stub."
+  },
+  {
+   "id": "D02c-022",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:5300-5308"
+   ],
+   "note": "Toast de confirmacao do setup script so em i18n."
+  },
+  {
+   "id": "D02c-026",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:1190-1210"
+   ],
+   "note": "Nenhum listener de 'focus' de janela/ativacao/reconexao para revalidar prompt de setup."
+  }
+ ]
+}

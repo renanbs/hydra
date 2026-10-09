@@ -1,758 +1,831 @@
 {
-  "domain": "D04b-worktree-card-controllers",
-  "source_orca": "docs/audits/orca-sidebar-parity/domains/D04b-worktree-card-controllers.orca.json",
-  "hydra_mount": "src/App.tsx:3636 <WorktreeSidebar> (reachability index: index/hydra_scope.json, WorktreeSidebar.tsx depth 0)",
-  "method_note": "Toda evidência Hydra é arquivo:linha em código alcançável do mount (import-graph ou callback do card). Arquivos com cabeçalho 'Auto-stub so the Orca port typechecks' foram tratados como NÃO-funcionais (existe ≠ funciona).",
-  "rows": [
-    {
-      "id": "D04b-001",
-      "capability": "Seleciona e foca automaticamente o workspace sucessor adequado após a exclusão do worktree atualmente ativo",
-      "orca_evidence": [
-        "components/sidebar/active-worktree-focus-after-delete.ts:15",
-        "components/sidebar/active-worktree-focus-after-delete.ts:42",
-        "components/sidebar/active-worktree-focus-after-delete.ts:69",
-        "components/sidebar/active-worktree-focus-after-delete.ts:103"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/App.tsx:1756 handleDeleteGitWorktree — resolve repoPath e abre/fecha o dialog; nenhuma captura de sucessor",
-          "src/App.tsx:1789 after delete: refreshGitWorktrees + dispatch 'hydra:refresh-projects' apenas; setActiveWorktreePath nunca é chamado",
-          "src/App.tsx:4081 onDeleted -> refreshGitWorktrees (sem troca de foco)",
-          "src/lib/worktree-visit-recency.ts:1 Auto-stub (lastVisitedAt/recência não implementados)",
-          "src/store/slices/worktrees/session/worktree-visit-recency.ts:1 Auto-stub"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Captura pré-deleção prepareActiveWorktreeFocusAfterDelete quando o worktree excluído era o ativo",
-          "Seleção de irmãos por repoId filtrando o deletado, deleteStateByWorktreeId.isDeleting e targets SSH runtime-owned destruídos",
-          "Priorização de irmãos não-principais por lastVisitedAtByWorktreeId/getWorktreeVisitTimestamp",
-          "Fallback para o worktree base/principal do projeto",
-          "Guardas de não-roubo de foco (activeView !== 'terminal', activePendingCreationId !== null, navegação durante o delete, workspace ativo não-worktree)",
-          "Ativação via activateAndRevealWorktree com revealInSidebar: false"
-        ],
-        "reason": "",
-        "notes": "Buscas sem resultado (5 passos): prepareActiveWorktreeFocusAfterDelete, activateAndRevealWorktree, lastVisitedAtByWorktreeId, getWorktreeVisitTimestamp, isMainWorktree-priority — em src/** e src-tauri/src/**. Unwired por completo."
-      }
-    },
-    {
-      "id": "D04b-002",
-      "capability": "Detecta e destaca a linha do agente correspondente ao painel de terminal focado no worktree",
-      "orca_evidence": [
-        "components/sidebar/focused-agent-row-highlight.ts:5",
-        "components/sidebar/focused-agent-row-highlight.ts:17",
-        "components/sidebar/focused-agent-row-highlight.ts:61"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-card-compact-agents.tsx:221 isFocusedPane={r.entry.sessionId === activeSessionId} (render de destaque existe)",
-          "src/components/sidebar/CompactAgentRow.tsx:100 bg de linha focada; :134-173 realce de texto",
-          "src/components/sidebar/worktree-card-parent-content.tsx:118 repassa activeSessionId ao WorktreeCardAgents",
-          "src/components/sidebar/WorktreeCardAgents.tsx:210 repassa activeSessionId",
-          "src/components/sidebar/WorktreeList.tsx:354-388 NÃO passa activeSessionId ao WorktreeCard (prop fica undefined no mount) => isFocusedPane é sempre false"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Checagem activeWorktreeId === worktreeId e activeTabType === 'terminal'",
-          "Pertencimento da aba ativa a tabsByWorktree",
-          "makePaneKey(activeTabId, activeLeafId)",
-          "Highlight por agentStatusByPaneKey mesmo com status stale/decayed",
-          "Highlight de retainedAgentsByPaneKey do worktree",
-          "Highlight por migrationUnsupportedByPtyId",
-          "Supressão quando outro split/aba/superfície está ativo"
-        ],
-        "reason": "",
-        "notes": "O destaque é apenas um prop dormente: WorktreeSidebar/WorktreeList nunca fornecem activeSessionId (grep activeSessionId em WorktreeSidebar.tsx/WorktreeList.tsx = 0 ocorrências de pass-down). Buscas sem resultado: focused-agent-row-highlight, makePaneKey no sidebar, migrationUnsupportedByPtyId no card."
-      }
-    },
-    {
-      "id": "D04b-003",
-      "capability": "Exibe toast persistente de sugestão para manter a branch base local atualizada com upstream",
-      "orca_evidence": [
-        "components/sidebar/local-base-ref-suggestion-toast.tsx:29",
-        "components/sidebar/local-base-ref-suggestion-toast.tsx:43",
-        "components/sidebar/local-base-ref-suggestion-toast.tsx:75",
-        "components/sidebar/local-base-ref-suggestion-toast.tsx:128"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/global-settings-types.ts:67 refreshLocalBaseRefOnWorktreeCreate (apenas o campo de settings existe)",
-          "src/shared/global-settings-types.ts:70 localBaseRefSuggestionDismissed (apenas o campo de settings existe)",
-          "src/shared/default-global-settings.ts:37-38 defaults false",
-          "nenhum toast/call-site: grep 'local-base-ref', 'refreshLocalBaseRefOnWorktreeCreate', 'OpenSettingsTarget', 'behind' em src/** retorna somente os campos de settings"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Toast informativo duration: Infinity com id local-base-ref-update-suggestion:<baseRef>:<localBranch>",
-          "Formatação singular/plural de commits defasados",
-          "Botão 'Keep <localBranch> up to date' ativando refreshLocalBaseRefOnWorktreeCreate com confirmação/erro",
-          "Link 'Settings › Keep local default branch up to date' com deep-link Git sem recusa permanente",
-          "Persistência de localBaseRefSuggestionDismissed no fechamento manual"
-        ],
-        "reason": "",
-        "notes": "Buscas: showLocalBaseRefUpdateSuggestionToast, KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID, openSettingsTarget — 0 resultados em src/**."
-      }
-    },
-    {
-      "id": "D04b-004",
-      "capability": "Executa a exclusão de worktree com toasts de erro interativos, navegação a diffs e retentativas com waiver",
-      "orca_evidence": [
-        "components/sidebar/run-worktree-delete-with-toast.ts:12",
-        "components/sidebar/run-worktree-delete-with-toast.ts:27",
-        "components/sidebar/run-worktree-delete-with-toast.ts:41",
-        "components/sidebar/run-worktree-delete-with-toast.ts:78",
-        "components/sidebar/run-worktree-delete-with-toast.ts:89",
-        "components/sidebar/run-worktree-delete-with-toast.ts:136"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/worktree-card-header.tsx:187-199 botão de exclusão rápida -> handleWorkspaceQuickAction",
-          "src/components/sidebar/use-worktree-card-controller.ts:239 handleDelete -> onDelete(worktree, effectiveRepo)",
-          "src/App.tsx:1756 handleDeleteGitWorktree (skip-confirm ou abre dialog)",
-          "src/components/DeleteWorktreeDialog.tsx:96-106 handleDelete(force) -> invoke('delete_worktree')",
-          "src/components/DeleteWorktreeDialog.tsx:177 painel de erro inline (não toast)",
-          "src/components/DeleteWorktreeDialog.tsx:64-67 botão 'Force Delete' após falha",
-          "src-tauri/src/lib.rs:476 #[tauri::command] delete_worktree (assinatura repo_path/worktree_path apenas)"
-        ],
-        "backend": [
-          "invoke('delete_worktree', { repoPath, worktreePath }) -> src-tauri/src/lib.rs:476 (registrado em src-tauri/src/lib.rs:1505)"
-        ],
-        "missing_behaviors": [
-          "Toast interativo showDeleteWorktreeFailureToast em vez de painel modal",
-          "Ação 'View changes' (viewWorktreeDiff) abrindo Source Control sem spawn de shell",
-          "Retentativa 'Delete Anyway' com allowFailedArchiveHook: true",
-          "Retentativa force com waiver allowUnverifiedPtyStop: true e ação de botão 'View'",
-          "Reapresentação do toast estruturado em nova falha"
-        ],
-        "reason": "",
-        "notes": "Existe um fluxo de deleção (dialog + retry force), mas não o fluxo de toasts do Orca. A maquinaria de waiver está definida e NÃO usada: src/store/slices/worktree-removal-options.ts:3-19 (allowFailedArchiveHook/allowUnverifiedPtyStop/snapshotPruneBatchId), src/shared/worktree/archive-hook-removal-gate.ts:21 ('Delete Anyway' apenas em texto de hint), e src/store/slices/worktrees/teardown/remove-worktree.ts:9 (createRemoveWorktree: any = null → store removeWorktree nunca chamado; grep removeWorktree( em src/** = 0 call-sites)."
-      }
-    },
-    {
-      "id": "D04b-005",
-      "capability": "Exibe rótulo truncado no sidebar com medição responsiva contínua e tooltip flutuante sob demanda",
-      "orca_evidence": [
-        "components/sidebar/truncated-sidebar-label.tsx:5",
-        "components/sidebar/truncated-sidebar-label.tsx:22",
-        "components/sidebar/truncated-sidebar-label.tsx:23",
-        "components/sidebar/truncated-sidebar-label.tsx:24",
-        "components/sidebar/truncated-sidebar-label.tsx:52",
-        "components/sidebar/truncated-sidebar-label.tsx:68",
-        "components/sidebar/truncated-sidebar-label.tsx:78",
-        "components/sidebar/truncated-sidebar-label.tsx:86",
-        "components/sidebar/truncated-sidebar-label.tsx:87"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/truncated-sidebar-label.tsx:4 isSidebarLabelTruncated (scrollWidth > clientWidth)",
-          "src/components/sidebar/truncated-sidebar-label.tsx:49 window.addEventListener('resize') fallback quando ResizeObserver indisponível",
-          "src/components/sidebar/truncated-sidebar-label.tsx:62 useLayoutEffect remede quando text muda",
-          "src/components/sidebar/truncated-sidebar-label.tsx:69 span 'block min-w-0 truncate'",
-          "src/components/sidebar/worktree-card-meta-row.tsx:79,90 consumido pelo card (reachable_depth 6)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Wrapper <Tooltip>/<TooltipContent> do design system (break-all, max-w-80) — Hydra usa atributo nativo title=",
-          "Posicionamento tooltipSide (default 'right') e tooltipSideOffset (default 8) — props declarados em truncated-sidebar-label.tsx:14-15 mas ignorados no render"
-        ],
-        "reason": "",
-        "notes": "Medição/observabilidade equivalentes; só a camada de tooltip flutuante difere."
-      }
-    },
-    {
-      "id": "D04b-006",
-      "capability": "Resolve e valida alvos de exclusão confirmada de worktrees e linhagens contra o estado ao vivo da store",
-      "orca_evidence": [
-        "components/sidebar/use-confirmed-worktree-delete-targets.ts:11",
-        "components/sidebar/use-confirmed-worktree-delete-targets.ts:28"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/App.tsx:1757-1773 resolve repoPath a partir de projectsRef/worktreesByProject (resolução simples, sem validação)",
-          "src/App.tsx:4081 dialogue recebe worktrees direto de deleteWorktreeModal",
-          "nenhum resolveWorktreeBatchDeleteTargets / getWorktreeOnHostFromState no sidebar (grep)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Conversão de payloads brutos em WorktreeDeleteIdentity tipadas (worktree e linhagem)",
-          "resolveWorktreeBatchDeleteTargets consultando getWorktreeOnHostFromState no estado atual",
-          "Verificação de contagem contra expectedCount",
-          "showWorkspaceListChangedToast + fechamento do modal + retorno null em divergência"
-        ],
-        "reason": "",
-        "notes": "Buscas: use-confirmed-worktree-delete-targets, resolveWorktreeBatchDeleteTargets, expectedCount, showWorkspaceListChangedToast — 0 resultados em src/**."
-      }
-    },
-    {
-      "id": "D04b-007",
-      "capability": "Hidrata em segundo plano o status Git de múltiplos worktrees candidatos à exclusão",
-      "orca_evidence": [
-        "components/sidebar/use-delete-worktree-status-hydration.ts:17",
-        "components/sidebar/use-delete-worktree-status-hydration.ts:38",
-        "components/sidebar/use-delete-worktree-status-hydration.ts:46",
-        "components/sidebar/use-delete-worktree-status-hydration.ts:75"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:1795-1810 useEffect dispara invoke('get_detailed_git_status_cmd', { repoPath: wt.path }) por target ao abrir o modal e grava dirtyChangeCountsByWorktreeId",
-          "src/components/DeleteWorktreeDialog.tsx:165-176 renderiza contagem 'N uncommitted' por target",
-          "src-tauri/src/lib.rs:113 get_detailed_git_status_cmd (registered src-tauri/src/lib.rs:1456)"
-        ],
-        "backend": [
-          "invoke('get_detailed_git_status_cmd') -> src-tauri/src/lib.rs:113"
-        ],
-        "missing_behaviors": [
-          "Geração/isolamento de execuções concorrentes por identidade dos alvos",
-          "Filtro de alvos (excluir worktree principal e folder workspaces)",
-          "Ordenação orderDeleteWorktreeStatusHydrationTargets (visíveis + ativo primeiro)",
-          "Reuso de gitStatusByWorktree quando disponível",
-          "getRuntimeGitStatus com prioridade 'background' e includeLineStats: false",
-          "AbortController + descarte de respostas ao fechar o modal",
-          "Ambiente de runtime para hosts remotos/SSH"
-        ],
-        "reason": "",
-        "notes": "Hydra hidrata apenas a contagem de sujeira via get_detailed_git_status_cmd; não há getRuntimeGitStatus no sidebar (grep 0) nem AbortController no efeito."
-      }
-    },
-    {
-      "id": "D04b-008",
-      "capability": "Resolve o status de atividade consolidado de um worktree individual para o indicador de status",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-activity-status.ts:13",
-        "components/sidebar/use-worktree-activity-status.ts:39"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/lib/workspace-status-signals.ts:14 workspaceStatusFrom(sessions, hasLiveTerminal) — resolvedor alternativo efetivamente chamado",
-          "src/components/sidebar/WorktreeList.tsx:358 e :521 status={workspaceStatusFrom({...})} por worktree/folder row",
-          "src/components/sidebar/WorktreeStatusIndicator.tsx:37 dot ladder (working/monitoring/interrupted/permission/done-active/inactive)",
-          "src/lib/worktree-status.ts resolveWorktreeStatus/getWorktreeStatusLabel definidos mas com ZERO call-sites (grep em src/**)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Extração de tabsByWorktree/browserTabsByWorktree",
-          "selectLivePtyIdsForWorktree",
-          "selectRuntimePaneTitlesForWorktree",
-          "selectTerminalLayoutRootsForWorktree",
-          "selectWorktreeAgentActivitySummary (permission/working/monitoring/interrupted/done ativo/retido)",
-          "Invocação de resolveWorktreeStatus para o estado final"
-        ],
-        "reason": "",
-        "notes": "Divergência documentada em src/lib/workspace-status-signals.ts:9-13 ('Hydra has no per-pane PTY index, so the equivalent signals are the workspace's sessions ... and whether a terminal tab is still mounted'). O dot é observável; as entradas consolidadas de PTY/agentes não existem."
-      }
-    },
-    {
-      "id": "D04b-009",
-      "capability": "Seleciona em lote com comparação rasa os status de atividade para múltiplos worktrees candidatos",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-activity-statuses.ts:27",
-        "components/sidebar/use-worktree-activity-statuses.ts:67"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeList.tsx:358 e :521 calculam status por worktree visível em loop (cobre múltiplos worktrees)",
-          "src/lib/workspace-status-signals.ts:14 resolvedor por worktree"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Seletor em lote selectWorktreeActivityStatuses sobre uma lista de ids",
-          "Memoização useShallow (Zustand) do mapa resultado",
-          "Garantia de que updates de worktrees fora do conjunto monitorado não alterem a igualdade rasa",
-          "Assinaturas de agentStatusEpoch/agentStatusByPaneKey/migrationUnsupportedByPtyId/retainedAgentsByPaneKey/runtimeAgentOrchestrationByPaneKey"
-        ],
-        "reason": "",
-        "notes": "Sem batch selector: grep useWorktreeActivityStatuses/useShallow/shallow em src/components/sidebar/** = 0. O status multi-worktree existe pontualmente na lista, sem o contrato de igualdade rasa."
-      }
-    },
-    {
-      "id": "D04b-010",
-      "capability": "Gerencia cliques, duplo-clique de edição, renomeação inline e alternância de não-lido no card do worktree",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-card-activation-actions.ts:45",
-        "components/sidebar/use-worktree-card-activation-actions.ts:77",
-        "components/sidebar/use-worktree-card-activation-actions.ts:84",
-        "components/sidebar/use-worktree-card-activation-actions.ts:106",
-        "components/sidebar/use-worktree-card-activation-actions.ts:119",
-        "components/sidebar/use-worktree-card-activation-actions.ts:150"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/use-worktree-card-controller.ts:162-176 handleClick (guard isDeleting + onSelectionGesture + onSelect/onActivate/onImmediateActivate)",
-          "src/components/sidebar/use-worktree-card-controller.ts:179-186 handleDoubleClick -> setTitleRenaming(true)",
-          "src/components/sidebar/use-worktree-card-controller.ts:225-233 handleRenameTitle -> onRename(newTitle)",
-          "src/components/sidebar/worktree-card-header.tsx:113-135 WorktreeTitleInlineRename",
-          "src/App.tsx:3342 rename real apenas via menu de contexto (invoke 'set_worktree_display_name')",
-          "src/App.tsx:3636-3688 <WorktreeSidebar> NÃO recebe onRenameWorktreeTitle => card.onRename undefined => handleRenameTitle no-op"
-        ],
-        "backend": [
-          "invoke('set_worktree_display_name') -> src/App.tsx:3342 (apenas menu de contexto; comando em src-tauri/src/lib.rs:505, registrado src-tauri/src/lib.rs:1506)"
-        ],
-        "missing_behaviors": [
-          "Guard de seleção de texto/evento fora do contêiner no clique simples",
-          "Registro de breadcrumb de crash sidebar_worktree_activate",
-          "Ativação assíncrona activateWorktreeFromSidebar",
-          "Duplo-clique abrindo modal edit-meta (Hydra abre renomeação inline)",
-          "Persistência do novo nome via updateWorktreeMeta (update-worktree-meta.ts:1 Auto-stub; handler do mount ausente)",
-          "Toggle rápido de não-lido (handleToggleUnreadQuick): showUnreadQuickAction é computado em worktree-card-presentation.tsx:88 mas nunca renderizado"
-        ],
-        "reason": "",
-        "notes": "Buscas: 'sidebar_worktree_activate', 'edit-meta', buildWorktreeMetaUpdates, updateWorktreeMeta no card — 0 resultados. Não-lido só existe via menu de contexto (App.tsx:3406 toggleUnreadWorktree)."
-      }
-    },
-    {
-      "id": "D04b-011",
-      "capability": "Orquestra como controller central todos os hooks, propriedades de visibilidade e ações do card de worktree",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-card-controller.ts:12",
-        "components/sidebar/use-worktree-card-controller.ts:34",
-        "components/sidebar/use-worktree-card-controller.ts:43",
-        "components/sidebar/use-worktree-card-controller.ts:85",
-        "components/sidebar/use-worktree-card-controller.ts:142"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/use-worktree-card-controller.ts:72 useWorktreeCardController (reachable_depth 3; consumido por WorktreeCard.tsx:12)",
-          "src/components/sidebar/worktree-card-presentation.tsx:111-113 showDeleteQuickAction = !affiliateListMode && !isDeleting && !isMainWorktree",
-          "src/components/sidebar/worktree-card-header.tsx:187-199 render do botão de deleção rápida",
-          "src/components/sidebar/worktree-card-presentation.tsx:88 showUnreadQuickAction computado e nunca renderizado",
-          "src/shared/worktree/card-properties.ts:1 Auto-stub (cardProps não existe)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Composição de useWorktreeCardFoundation/ReviewDetails/LinkedDetails/LifecycleEffects/ActivationActions/WorkspaceActions/SecondaryDetails (Hydra concentra tudo num único hook)",
-          "Avaliação da lista cardProps ('status','issue','linear-issue','jira-issue','pr','automation','cli','comment','ports')",
-          "shouldRefreshHostedReview (novo estilo vs legado)",
-          "Hook de controle de hover useWorktreeCardDetailsHoverControl (WorktreeCardDetailsHover.tsx é um popover local próprio)",
-          "Condição deleteModifierPressed (Option/Alt) para showDeleteQuickAction — símbolo ausente no Hydra"
-        ],
-        "reason": "",
-        "notes": "Buscas: deleteModifierPressed, cardProps, shouldRefreshHostedReview, useWorktreeCardDetailsHoverControl — 0 resultados."
-      }
-    },
-    {
-      "id": "D04b-012",
-      "capability": "Fornece seletores e handlers fundamentais de estado, SSH, runtime, modais e layout do card de worktree",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-card-foundation.ts:26",
-        "components/sidebar/use-worktree-card-foundation.ts:49",
-        "components/sidebar/use-worktree-card-foundation.ts:85",
-        "components/sidebar/use-worktree-card-foundation.ts:146",
-        "components/sidebar/use-worktree-card-foundation.ts:153",
-        "components/sidebar/use-worktree-card-foundation.ts:186",
-        "components/sidebar/use-worktree-card-foundation.ts:205"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/use-worktree-card-controller.ts:72-245 fornece handlers de estado/layout e callbacks",
-          "src/components/sidebar/use-worktree-card-controller.ts:304 conflictOperation: '' (hardcoded)",
-          "src/components/sidebar/use-worktree-card-controller.ts:305 cacheStartedAt: null (hardcoded)",
-          "src/components/sidebar/use-worktree-card-controller.ts:318-319 isRuntimeDisconnected: false / isQueuedForDeletion: false (hardcoded)",
-          "src/components/sidebar/use-worktree-card-controller.ts:99 ports prop; WorktreeList.tsx:385 ports={portsByWorktree.get(wt.path)}",
-          "src/components/sidebar/worktree-card-surface.tsx:12 AutoRenameFailedDialog (dialog de erro de renomeação wired)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "selectRuntimeAwareSshStatus + hydrateRuntimeEnvironmentSshState + selectRuntimeAwareSshTargetRemoved no card",
-          "Rótulo do host de runtime e detecção isRuntimeDisconnected (hardcoded false)",
-          "workspacePorts escaneadas (port scan do card)",
-          "conflictOperation/remoteBranchConflict reais (hardcoded '' / false; remoteBranchConflict é sempre false)",
-          "Handlers openAutomationsPage/openTaskPage/setPendingAutomationRunNavigation",
-          "cardProps e workspacePortScan/runtimeEnvironments/runtimeStatusByEnvironmentId"
-        ],
-        "reason": "",
-        "notes": "SSH runtime-aware selectors existem na store (src/store/slices/runtime-environment-ssh-selectors.ts) mas não são usados pelo card. WorkspaceSidebar tem scanPorts em WorktreeSidebar.tsx:259, não no card."
-      }
-    },
-    {
-      "id": "D04b-013",
-      "capability": "Executa sincronização periódica e sob demanda de revisões hospedadas e issues com controle de visibilidade de janela",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:16",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:59",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:91",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:113",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:161",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:177",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:183",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:208",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:220",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:221",
-        "components/sidebar/use-worktree-card-lifecycle-effects.ts:228"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-card-model.ts:116 HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS = 60_000 definido e com ZERO consumidores (grep em src/**)",
-          "nenhum setInterval/polling no card: src/components/sidebar/CacheTimer.tsx:18 e worktree-card-compact-agents.tsx:196 (useNow 30s de timestamps) são os únicos timers do card",
-          "src/store/slices/hosted-review.ts:2 fetchHostedReviewForBranch definido em slice @ts-nocheck sem call-sites (grep = 0 fora do próprio arquivo)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Polling de revisões hospedadas com installWindowVisibilityInterval + jitter e pausa com janela oculta/web client",
-          "Busca sob demanda de revisão hospedada ao abrir hoverDetailsOpen",
-          "Polling de issue GitHub (5 min) condicionado a isWindowVisible",
-          "Busca sob demanda de issue GitHub no hover",
-          "Busca inicial de issue Linear + listeners window focus / document visibilitychange",
-          "Busca sob demanda de issue Linear no hover"
-        ],
-        "reason": "",
-        "notes": "installWindowVisibilityInterval existe (src/lib/window-visibility-interval.ts) mas é usado por src/hooks/use-now.ts, não pelo card. Buscas: fetchHostedReviewForBranch, fetchIssue, fetchLinearIssue, hoverDetailsOpen no sidebar — 0 call-sites."
-      }
-    },
-    {
-      "id": "D04b-014",
-      "capability": "Resolve detalhes vinculados de issues, fallback de URLs do Linear, título visual do card e rótulos de exclusão",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-card-linked-details.ts:21",
-        "components/sidebar/use-worktree-card-linked-details.ts:41",
-        "components/sidebar/use-worktree-card-linked-details.ts:61",
-        "components/sidebar/use-worktree-card-linked-details.ts:91",
-        "components/sidebar/use-worktree-card-linked-details.ts:109",
-        "components/sidebar/use-worktree-card-linked-details.ts:110",
-        "components/sidebar/use-worktree-card-linked-details.ts:120",
-        "components/sidebar/use-worktree-card-linked-details.ts:122"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/use-worktree-card-controller.ts:152-158 visibleCardTitle = display_name || displayName || branch || basename(path) || 'worktree'",
-          "src/components/sidebar/use-worktree-card-controller.ts:319-320 isQueuedForDeletion: false / deleteLabel: 'Deleting workspace...'",
-          "src/components/sidebar/worktree-card-header.tsx:113-127 WorktreeTitleInlineRename exibe o título; rótulo 'primary' em :144-152",
-          "src/components/sidebar/worktree-card-meta-row.tsx:98 cacheStartedAt != null && <CacheTimer/>"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "issueDisplay (número/título, 'Loading issue...', 'Issue details unavailable')",
-          "linearIssueDisplay + linearIssueUrlFallback",
-          "jiraIssueDisplay",
-          "Composição getWorktreeCardTitleDisplay (displayName+branch+issue/PR) no novo estilo e coerceWorktreeCardVisibleTitle no legado",
-          "Rótulo de fase enfileirada ('Queued for deletion' vs 'Deleting…')",
-          "deleteModifierPressed"
-        ],
-        "reason": "",
-        "notes": "Buscas: 'Queued for deletion', 'Loading issue', 'Issue details unavailable', getWorktreeCardTitleDisplay, linearIssueDisplay, jiraIssueDisplay em src/components/sidebar/** — 0 resultados. A meta row não renderiza badges de issue/PR."
-      }
-    },
-    {
-      "id": "D04b-015",
-      "capability": "Deriva a identidade Git do worktree e reconcilia detalhes e caches de revisões hospedadas entre múltiplos provedores",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-card-review-details.ts:19",
-        "components/sidebar/use-worktree-card-review-details.ts:28",
-        "components/sidebar/use-worktree-card-review-details.ts:46",
-        "components/sidebar/use-worktree-card-review-details.ts:86",
-        "components/sidebar/use-worktree-card-review-details.ts:119",
-        "components/sidebar/use-worktree-card-review-details.ts:159"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeList.tsx:360 prDisplay={prByPath?.[wt.path] ?? null}",
-          "src/App.tsx:2023 invoke('pr_status', { repoPath, branch }) preenche prByPath (uma sondagem por repo/branch, cacheada)",
-          "src/components/sidebar/WorktreeCardStatusLane.tsx:38 showReview = quiet && prDisplay !== null (glifo de revisão na lane)",
-          "src/components/sidebar/WorktreeCardReviewBadge.tsx:29 badge de PR (GitHub-only: pr_number/state/url)",
-          "src/components/sidebar/use-worktree-card-controller.ts:234 identityDisplay branch/path"
-        ],
-        "backend": [
-          "invoke('pr_status') -> src-tauri/src/lib.rs:410 #[tauri::command] pr_status (registrado src-tauri/src/lib.rs:1499)"
-        ],
-        "missing_behaviors": [
-          "Assinatura seletiva de hostedReviewCache/prCache/issueCache/linearIssueCache na store",
-          "Chaves de cache específicas (hosted review, PR GitHub, issue GitHub, issue Linear)",
-          "Reconciliação entre GitHub/GitLab/Bitbucket/Azure DevOps/Gitea",
-          "Validação isCachedMergedBranchPRCurrentForWorktree",
-          "getWorktreeCardPrDisplay com suppressedGitHubPR"
-        ],
-        "reason": "",
-        "notes": "Só GitHub via pr_status; suppression (src/shared/worktree/github-pr-suppression.ts) e caches multi-provedor existem na store mas não são usados pelo card. use-worktree-card-review-details.ts citado em comentário do controller (:257) mas o arquivo não existe no Hydra."
-      }
-    },
-    {
-      "id": "D04b-016",
-      "capability": "Gerencia detalhes secundários, temporizador de prompt cache, abertura de tarefas e desvinculação de revisões",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-card-secondary-details.ts:19",
-        "components/sidebar/use-worktree-card-secondary-details.ts:77",
-        "components/sidebar/use-worktree-card-secondary-details.ts:101",
-        "components/sidebar/use-worktree-card-secondary-details.ts:124",
-        "components/sidebar/use-worktree-card-secondary-details.ts:147",
-        "components/sidebar/use-worktree-card-secondary-details.ts:176",
-        "components/sidebar/use-worktree-card-secondary-details.ts:188",
-        "components/sidebar/use-worktree-card-secondary-details.ts:220",
-        "components/sidebar/use-worktree-card-secondary-details.ts:240"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/CacheTimer.tsx:10 existe mas é inalcançável em runtime: use-worktree-card-controller.ts:305 fixa cacheStartedAt: null e a meta row só o renderiza com != null (worktree-card-meta-row.tsx:98)",
-          "nenhum handleUnlinkReview / openTaskPage / openWorkspaceBrowserTab no card (grep em src/components/sidebar/** = 0)",
-          "showAggregateCacheTimer/compactInlineAgentRows/showUnreadEmphasis ausentes",
-          "src/store/slices/ui/ui-slice-task-actions.ts openTaskPage existe na store mas sem call-site no sidebar"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "showUnreadEmphasis condicionado ao toggle de status (Hydra fixa showUnreadEmphasis = isUnread)",
-          "compactInlineAgentRows",
-          "showAggregateCacheTimer + usePromptCacheCountdownStartedAt + promptCacheTtlMs",
-          "openTaskPage (GitHub e Linear) no card",
-          "openWorkspaceBrowserTab para links externos",
-          "handleUnlinkReview com tombstone suppressedGitHubPR e remoção de links GitLab/Bitbucket/Azure/Gitea"
-        ],
-        "reason": "",
-        "notes": "Buscas: use-worktree-card-secondary-details, handleUnlinkReview, showAggregateCacheTimer, compactInlineAgentRows, usePromptCacheCountdownStartedAt, openWorkspaceBrowserTab — 0 resultados. CacheTimer é código morto por construção."
-      }
-    },
-    {
-      "id": "D04b-017",
-      "capability": "Fornece ações de exclusão rápida de workspace, controle de linhagem, drag and drop e menu de contexto",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-card-workspace-actions.ts:18",
-        "components/sidebar/use-worktree-card-workspace-actions.ts:51",
-        "components/sidebar/use-worktree-card-workspace-actions.ts:96",
-        "components/sidebar/use-worktree-card-workspace-actions.ts:126",
-        "components/sidebar/use-worktree-card-workspace-actions.ts:146",
-        "components/sidebar/use-worktree-card-workspace-actions.ts:156",
-        "components/sidebar/use-worktree-card-workspace-actions.ts:161"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/use-worktree-card-controller.ts:239-245 handleDelete/handleWorkspaceQuickAction -> onDelete(worktree, effectiveRepo)",
-          "src/components/sidebar/worktree-card-header.tsx:187-199 botão de exclusão rápida (stopQuickActionPointerPropagation em :190)",
-          "src/components/sidebar/use-worktree-card-controller.ts:188-212 handleDragStart/handleDragEnd (delegam a onCardDragStart/onCardDragEnd)",
-          "src/components/sidebar/use-worktree-card-controller.ts:214-222 handleContextMenuSelect -> onContextMenu",
-          "src/components/sidebar/WorktreeList.tsx:387-405 onDragStart/onDragOver/onDrop/onDragEnd wired",
-          "src/components/sidebar/use-worktree-card-controller.ts:336 stopQuickActionPointerPropagation = e.stopPropagation()"
-        ],
-        "backend": [
-          "invoke('delete_worktree') -> src-tauri/src/lib.rs:476 (via App.tsx:1756)"
-        ],
-        "missing_behaviors": [
-          "Ramo deleteFolderWorkspace para workspaces de pasta (Hydra só trata worktree)",
-          "runWorktreeDelete com expectedHostId (host qualificado)",
-          "Rótulos 'Show/Hide child workspace(s)' para linhagem (onLineageToggle é repassado em :286 mas nunca renderizado; showLineageChildChip fixo false em :313)",
-          "writeWorkspaceDragData para arrasto único/múltiplo no dataTransfer (workspace-status-drag-data.ts:8 existe, 0 call-sites no card)",
-          "Resolução dos worktrees alvo da seleção no menu de contexto (Hydra delega cru ao App)"
-        ],
-        "reason": "",
-        "notes": "Buscas: deleteFolderWorkspace no card, writeWorkspaceDragData, 'Show child', 'Hide child', expectedHostId — 0 resultados no sidebar. onLineageToggle/writeWorkspaceDragData são símbolos órfãos."
-      }
-    },
-    {
-      "id": "D04b-018",
-      "capability": "Resolve assincronamente com timeout de 35s links de issues do GitHub e Linear para abertura externa",
-      "orca_evidence": [
-        "components/sidebar/use-worktree-issue-link.ts:18",
-        "components/sidebar/use-worktree-issue-link.ts:20",
-        "components/sidebar/use-worktree-issue-link.ts:23",
-        "components/sidebar/use-worktree-issue-link.ts:28",
-        "components/sidebar/use-worktree-issue-link.ts:44",
-        "components/sidebar/use-worktree-issue-link.ts:158",
-        "components/sidebar/use-worktree-issue-link.ts:177",
-        "components/sidebar/use-worktree-issue-link.ts:194",
-        "components/sidebar/use-worktree-issue-link.ts:210",
-        "components/sidebar/use-worktree-issue-link.ts:219",
-        "components/sidebar/use-worktree-issue-link.ts:236",
-        "components/sidebar/use-worktree-issue-link.ts:262"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "nenhum campo/dialogo edit-meta de issue no sidebar (grep 'edit-meta', 'openingIssue', 'openIssueFailed', 'isWorkItemLinkQueryTooLarge', 'OPEN_ISSUE_TIMEOUT' em src/** = 0)",
-          "src/lib/workspace-port-actions.ts:125 window.api.shell.openUrl existe para portas, mas não há call-site de issue link",
-          "src/shared/github/links.ts:1 e src/shared/linear/links.ts:1 são Auto-stubs (parsing de links não implementado)"
-        ],
-        "backend": [
-          "window.api.shell.openUrl (shim) -> src/lib/workspace-port-actions.ts:125 (sem consumidor no sidebar)"
-        ],
-        "missing_behaviors": [
-          "Suporte a URLs diretas (GitHub/Linear), números GitHub e identificadores Linear",
-          "Limite isWorkItemLinkQueryTooLarge",
-          "Construção de URL Linear com org key ou fetchLinearIssue(identifier,'all')",
-          "Timeout OPEN_ISSUE_TIMEOUT_MS de 35s",
-          "window.api.shell.openUrl para o navegador externo",
-          "Geração de requisição openRequestRef + descarte por chave de input",
-          "Indicadores openingIssue/openIssueFailed"
-        ],
-        "reason": "",
-        "notes": "Também ausentes src/shared/jira-issue-url.ts (Auto-stub). Nenhum hook equivalente a use-worktree-issue-link no sidebar."
-      }
-    },
-    {
-      "id": "D04b-019",
-      "capability": "Projeta exclusivamente os timestamps de reconhecimento de agentes associados ao card",
-      "orca_evidence": [
-        "components/sidebar/worktree-card-agent-ack-inputs.ts:7"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/hooks/agent-auto-ack-surfaces.ts:14 usa acknowledgedAgentsByPaneKey/retainedAgentsByPaneKey no fluxo de auto-ack global",
-          "src/hooks/useAutoAckViewedAgent.ts:15 consome o mesmo store",
-          "nenhum consumidor no sidebar: grep acknowledgedAgents em src/components/sidebar/** = 0",
-          "src/components/sidebar/CompactAgentRow.tsx não recebe timestamps de reconhecimento"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "selectAcknowledgedAgentTimes projetando apenas as paneKeys do card",
-          "Igualdade rasa/referencial para re-render isolado por card"
-        ],
-        "reason": "",
-        "notes": "O store tem acknowledgedAgentsByPaneKey, mas nenhum seletor de projeção por card existe no sidebar."
-      }
-    },
-    {
-      "id": "D04b-020",
-      "capability": "Garante isolamento de performance mantendo renderização de markdown dos cards fora do grafo síncrono inicial",
-      "orca_evidence": [
-        "components/sidebar/worktree-card-markdown-isolation.test.ts:7"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "símbolo CommentMarkdown inexistente: grep 'CommentMarkdown' em src/** = 0",
-          "nenhuma superfície de markdown no sidebar: grep 'Markdown|markdown|ReactMarkdown' em src/components/sidebar/** = 0",
-          "comentários de card não existem (grep 'comment' em src/components/sidebar/*.tsx = 0)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Manter CommentMarkdown fora do grafo estático de main.tsx",
-          "Roteamento das superfícies de markdown do sidebar por limites lazy"
-        ],
-        "reason": "",
-        "notes": "Nada a isolar: não há renderização de markdown de comentários no card."
-      }
-    },
-    {
-      "id": "D04b-021",
-      "capability": "Seleciona e isola os inputs de alvos de envio para o popover de agentes mantendo estabilidade para worktrees inativos",
-      "orca_evidence": [
-        "components/sidebar/worktree-card-send-target-inputs.ts:28",
-        "components/sidebar/worktree-card-send-target-inputs.ts:38",
-        "components/sidebar/worktree-card-send-target-inputs.ts:50",
-        "components/sidebar/worktree-card-send-target-inputs.ts:66"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/ui/ui-slice-agent-actions.ts:50 agentSendPopoverTargetMode existe na store (estado do popover)",
-          "grep agentSendPopoverTargetMode em src/components/** = 0 — nenhum popover/consumidor no sidebar",
-          "seletores EMPTY_SEND_TARGET_INPUTS/EMPTY_SEND_TARGET_CONTROL_INPUTS e selectSendTargetInputs inexistentes"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Retorno do singleton congelado EMPTY_SEND_TARGET_INPUTS quando o popover não mira o worktree",
-          "Exposição dos mapas dinâmicos (agentStatusByPaneKey, tabsByWorktree, terminalLayoutsByTabId, ptyIdsByTabId, runtimePaneTitlesByTabId)",
-          "selectSendTargetControlInputs isolando modo/época para cards inativos"
-        ],
-        "reason": "",
-        "notes": "O estado existe na store, mas o card não o consome — sem popover de envio de agente no sidebar."
-      }
-    },
-    {
-      "id": "D04b-022",
-      "capability": "Constrói e normaliza de forma pura o payload de atualização de metadados do worktree (nome, comentário, issues e revisões)",
-      "orca_evidence": [
-        "components/sidebar/worktree-meta-updates.ts:12",
-        "components/sidebar/worktree-meta-updates.ts:57",
-        "components/sidebar/worktree-meta-updates.ts:67",
-        "components/sidebar/worktree-meta-updates.ts:81",
-        "components/sidebar/worktree-meta-updates.ts:107",
-        "components/sidebar/worktree-meta-updates.ts:118",
-        "components/sidebar/worktree-meta-updates.ts:132",
-        "components/sidebar/worktree-meta-updates.ts:157",
-        "components/sidebar/worktree-meta-updates.ts:172",
-        "components/sidebar/worktree-meta-updates.ts:203",
-        "components/sidebar/worktree-meta-updates.ts:265",
-        "components/sidebar/worktree-meta-updates.ts:297"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "símbolos inexistentes: buildWorktreeMetaUpdates, isIssueFieldDirty, issueLinkIdentity, parseGitHubWorkItemNumberForMetaField, parseGitLabMergeRequestNumberForMetaField (grep em src/** = 0)",
-          "nenhum diálogo edit-meta no sidebar (grep 'edit-meta' em src/** = 0)",
-          "rename/unread gravam direto via invoke('set_worktree_display_name')/estado local (App.tsx:3342, :3139)",
-          "src/store/slices/worktrees/metadata/update-worktree-meta.ts:1 Auto-stub (createUpdateWorktreeMeta = null)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Normalização de displayName sem valor undefined",
-          "Emissão de comentário apenas se alterado",
-          "Detecção de campo de issue sujo por identidade normalizada",
-          "Deslocamento de work items/contextos Linear ao trocar issue",
-          "Limpeza de slots do provedor oposto (GitHub vs Linear)",
-          "Validação/parsing de PR/MR GitHub e GitLab",
-          "Tombstone suppressedGitHubPR ao limpar link explícito de PR"
-        ],
-        "reason": "",
-        "notes": "Buscas: worktree-meta-updates, isIssueFieldDirty, issueLinkIdentity, suppressedGitHubPR no sidebar — 0 call-sites."
-      }
-    },
-    {
-      "id": "D04b-023",
-      "capability": "Gera sugestões de nomes de criaturas marinhas para novos worktrees com desduplicação global e registro de aposentadoria",
-      "orca_evidence": [
-        "components/sidebar/worktree-name-suggestions.ts:17",
-        "components/sidebar/worktree-name-suggestions.ts:40",
-        "components/sidebar/worktree-name-suggestions.ts:52",
-        "components/sidebar/worktree-name-suggestions.ts:56"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/marine-creatures.ts:1 Auto-stub; :3 MARINE_CREATURES: any = null (pool vazio/quebrado)",
-          "src/shared/worktree/retired-name-registry.ts:18 CREATURE_POOL_NAMES = new Set(MARINE_CREATURES.map(...)) construído sobre o stub nulo",
-          "src/hooks/useRetiredWorktreeNames.ts:21 definido e sem consumidores (grep = 0 fora do arquivo)",
-          "src/components/NewWorkspaceComposer.tsx:264-269 campo 'Workspace name' sem sugestão de criatura",
-          "símbolos getSuggestedCreatureName/selectSuggestedCreatureName/collectUsedNames/shouldApplySuggestedName inexistentes (grep em src/** = 0)"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "collectUsedNames sobre todos os repositórios",
-          "Combinação com RetiredNameRegistry (nomes de workspaces deletados)",
-          "selectSuggestedCreatureName aleatório do pool",
-          "Fallback para variantes sufixadas quando o pool esgota",
-          "shouldApplySuggestedName preservando nomes editados manualmente"
-        ],
-        "reason": "",
-        "notes": "Existe infraestrutura parcial de aposentadoria (registry/cache/compactação) mas o gerador de sugestão e o pool real não existem — MARINE_CREATURES é stub nulo, então CREATURE_POOL_NAMES seria inválido em runtime."
-      }
-    }
-  ],
-  "summary": {
-    "parity": 0,
-    "partial": 11,
-    "missing": 12,
-    "not-applicable": 0,
-    "out-of-scope": 0
+ "domain": "D04b-worktree-card-controllers",
+ "source_orca": "docs/audits/orca-sidebar-parity/domains/D04b-worktree-card-controllers.orca.json",
+ "hydra_mount": "src/App.tsx:3636 <WorktreeSidebar> (reachability index: index/hydra_scope.json, WorktreeSidebar.tsx depth 0)",
+ "method_note": "Toda evidência Hydra é arquivo:linha em código alcançável do mount (import-graph ou callback do card). Arquivos com cabeçalho 'Auto-stub so the Orca port typechecks' foram tratados como NÃO-funcionais (existe ≠ funciona).",
+ "rows": [
+  {
+   "id": "D04b-001",
+   "capability": "Seleciona e foca automaticamente o workspace sucessor adequado após a exclusão do worktree atualmente ativo",
+   "orca_evidence": [
+    "components/sidebar/active-worktree-focus-after-delete.ts:15",
+    "components/sidebar/active-worktree-focus-after-delete.ts:42",
+    "components/sidebar/active-worktree-focus-after-delete.ts:69",
+    "components/sidebar/active-worktree-focus-after-delete.ts:103"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/App.tsx:1931",
+     "src/App.tsx:1977-1981",
+     "src/App.tsx:4308-4314"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Captura pré-deleção prepareActiveWorktreeFocusAfterDelete quando o worktree excluído era o ativo",
+     "Seleção de irmãos por repoId filtrando o deletado, deleteStateByWorktreeId.isDeleting e targets SSH runtime-owned destruídos",
+     "Priorização de irmãos não-principais por lastVisitedAtByWorktreeId/getWorktreeVisitTimestamp",
+     "Fallback para o worktree base/principal do projeto",
+     "Guardas de não-roubo de foco (activeView !== 'terminal', activePendingCreationId !== null, navegação durante o delete, workspace ativo não-worktree)",
+     "Ativação via activateAndRevealWorktree com revealInSidebar: false"
+    ],
+    "reason": "",
+    "notes": "Buscas sem resultado (5 passos): prepareActiveWorktreeFocusAfterDelete, activateAndRevealWorktree, lastVisitedAtByWorktreeId, getWorktreeVisitTimestamp, isMainWorktree-priority — em src/** e src-tauri/src/**. Unwired por completo.",
+    "note": "Pós-delete: refreshGitWorktrees + refresh-projects; sem captura de sucessor/foco."
+   }
   },
-  "par_crosswalk": {
-    "PAR-05": { "orca_rows": ["D04b-004", "D04b-011", "D04b-014"], "hydra_status": "partial", "escopo": "sidebar" },
-    "PAR-34": { "orca_rows": ["D04b-005"], "hydra_status": "partial", "escopo": "sidebar" },
-    "PAR-39": { "orca_rows": ["D04b-020"], "hydra_status": "missing", "escopo": "sidebar" },
-    "PAR-56": { "orca_rows": ["D04b-004", "D04b-006", "D04b-007"], "hydra_status": "partial", "escopo": "sidebar" },
-    "PAR-60": { "orca_rows": ["D04b-016"], "hydra_status": "missing", "escopo": "sidebar" },
-    "PAR-62": { "orca_rows": ["D04b-014"], "hydra_status": "missing", "escopo": "sidebar" },
-    "PAR-66": { "orca_rows": ["D04b-002", "D04b-019"], "hydra_status": "missing", "escopo": "sidebar" },
-    "PAR-67": { "orca_rows": ["D04b-011", "D04b-017"], "hydra_status": "partial", "escopo": "sidebar" },
-    "PAR-73": { "orca_rows": ["D04b-010"], "hydra_status": "partial", "escopo": "sidebar" },
-    "PAR-74": { "orca_rows": ["D04b-010"], "hydra_status": "missing", "escopo": "sidebar" },
-    "PAR-86": { "orca_rows": ["D04b-004"], "hydra_status": "missing", "escopo": "sidebar" },
-    "PAR-87": { "orca_rows": ["D04b-015", "D04b-016"], "hydra_status": "missing", "escopo": "sidebar" }
+  {
+   "id": "D04b-002",
+   "capability": "Detecta e destaca a linha do agente correspondente ao painel de terminal focado no worktree",
+   "orca_evidence": [
+    "components/sidebar/focused-agent-row-highlight.ts:5",
+    "components/sidebar/focused-agent-row-highlight.ts:17",
+    "components/sidebar/focused-agent-row-highlight.ts:61"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-card-compact-agents.tsx:196",
+     "src/components/sidebar/CompactAgentRow.tsx:100",
+     "src/components/sidebar/WorktreeList.tsx:927-947"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Checagem activeWorktreeId === worktreeId e activeTabType === 'terminal'",
+     "Pertencimento da aba ativa a tabsByWorktree",
+     "makePaneKey(activeTabId, activeLeafId)",
+     "Highlight por agentStatusByPaneKey mesmo com status stale/decayed",
+     "Highlight de retainedAgentsByPaneKey do worktree",
+     "Highlight por migrationUnsupportedByPtyId",
+     "Supressão quando outro split/aba/superfície está ativo"
+    ],
+    "reason": "",
+    "notes": "O destaque é apenas um prop dormente: WorktreeSidebar/WorktreeList nunca fornecem activeSessionId (grep activeSessionId em WorktreeSidebar.tsx/WorktreeList.tsx = 0 ocorrências de pass-down). Buscas sem resultado: focused-agent-row-highlight, makePaneKey no sidebar, migrationUnsupportedByPtyId no card.",
+    "note": "WorktreeList/WorktreeSidebar não passam activeSessionId; isFocusedPane sempre false."
+   }
   },
-  "coverage_inherited": {
-    "note": "Fase 2 não inventaria o Orca; a cobertura (files/symbols/tests/labels/hotkeys/prefs/timers/subscriptions/preload) é herdada de D04b-worktree-card-controllers.orca.json e não é reescrita. Verificação: 23/23 ids de row têm veredito exatamente uma vez; tests/labels/timers/subscriptions/preload estão todos tagueados por id ou INFRA:; hotkeys/prefs vazios; files/symbols são listas de entrada do Orca (não obrigações de id).",
-    "rows_without_hydra_anchor": []
+  {
+   "id": "D04b-003",
+   "capability": "Exibe toast persistente de sugestão para manter a branch base local atualizada com upstream",
+   "orca_evidence": [
+    "components/sidebar/local-base-ref-suggestion-toast.tsx:29",
+    "components/sidebar/local-base-ref-suggestion-toast.tsx:43",
+    "components/sidebar/local-base-ref-suggestion-toast.tsx:75",
+    "components/sidebar/local-base-ref-suggestion-toast.tsx:128"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/shared/global-settings-types.ts:67 refreshLocalBaseRefOnWorktreeCreate (apenas o campo de settings existe)",
+     "src/shared/global-settings-types.ts:70 localBaseRefSuggestionDismissed (apenas o campo de settings existe)",
+     "src/shared/default-global-settings.ts:37-38 defaults false",
+     "nenhum toast/call-site: grep 'local-base-ref', 'refreshLocalBaseRefOnWorktreeCreate', 'OpenSettingsTarget', 'behind' em src/** retorna somente os campos de settings"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Toast informativo duration: Infinity com id local-base-ref-update-suggestion:<baseRef>:<localBranch>",
+     "Formatação singular/plural de commits defasados",
+     "Botão 'Keep <localBranch> up to date' ativando refreshLocalBaseRefOnWorktreeCreate com confirmação/erro",
+     "Link 'Settings › Keep local default branch up to date' com deep-link Git sem recusa permanente",
+     "Persistência de localBaseRefSuggestionDismissed no fechamento manual"
+    ],
+    "reason": "",
+    "notes": "Buscas: showLocalBaseRefUpdateSuggestionToast, KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID, openSettingsTarget — 0 resultados em src/**."
+   }
+  },
+  {
+   "id": "D04b-004",
+   "capability": "Executa a exclusão de worktree com toasts de erro interativos, navegação a diffs e retentativas com waiver",
+   "orca_evidence": [
+    "components/sidebar/run-worktree-delete-with-toast.ts:12",
+    "components/sidebar/run-worktree-delete-with-toast.ts:27",
+    "components/sidebar/run-worktree-delete-with-toast.ts:41",
+    "components/sidebar/run-worktree-delete-with-toast.ts:78",
+    "components/sidebar/run-worktree-delete-with-toast.ts:89",
+    "components/sidebar/run-worktree-delete-with-toast.ts:136"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-card-header.tsx:187-199",
+     "src/components/sidebar/use-worktree-card-controller.ts:239",
+     "src/App.tsx:1931",
+     "src/components/DeleteWorktreeDialog.tsx:96-106",
+     "src-tauri/src/lib.rs:476"
+    ],
+    "backend": [
+     "invoke('delete_worktree', { repoPath, worktreePath }) -> src-tauri/src/lib.rs:476 (registrado em src-tauri/src/lib.rs:1505)"
+    ],
+    "missing_behaviors": [
+     "Toast interativo showDeleteWorktreeFailureToast em vez de painel modal",
+     "Ação 'View changes' (viewWorktreeDiff) abrindo Source Control sem spawn de shell",
+     "Retentativa 'Delete Anyway' com allowFailedArchiveHook: true",
+     "Retentativa force com waiver allowUnverifiedPtyStop: true e ação de botão 'View'",
+     "Reapresentação do toast estruturado em nova falha"
+    ],
+    "reason": "",
+    "notes": "Existe um fluxo de deleção (dialog + retry force), mas não o fluxo de toasts do Orca. A maquinaria de waiver está definida e NÃO usada: src/store/slices/worktree-removal-options.ts:3-19 (allowFailedArchiveHook/allowUnverifiedPtyStop/snapshotPruneBatchId), src/shared/worktree/archive-hook-removal-gate.ts:21 ('Delete Anyway' apenas em texto de hint), e src/store/slices/worktrees/teardown/remove-worktree.ts:9 (createRemoveWorktree: any = null → store removeWorktree nunca chamado; grep removeWorktree( em src/** = 0 call-sites).",
+    "note": "Fluxo de deleção existe (erro inline/force), sem máquina de toasts/waiver."
+   }
+  },
+  {
+   "id": "D04b-005",
+   "capability": "Exibe rótulo truncado no sidebar com medição responsiva contínua e tooltip flutuante sob demanda",
+   "orca_evidence": [
+    "components/sidebar/truncated-sidebar-label.tsx:5",
+    "components/sidebar/truncated-sidebar-label.tsx:22",
+    "components/sidebar/truncated-sidebar-label.tsx:23",
+    "components/sidebar/truncated-sidebar-label.tsx:24",
+    "components/sidebar/truncated-sidebar-label.tsx:52",
+    "components/sidebar/truncated-sidebar-label.tsx:68",
+    "components/sidebar/truncated-sidebar-label.tsx:78",
+    "components/sidebar/truncated-sidebar-label.tsx:86",
+    "components/sidebar/truncated-sidebar-label.tsx:87"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/truncated-sidebar-label.tsx:4 isSidebarLabelTruncated (scrollWidth > clientWidth)",
+     "src/components/sidebar/truncated-sidebar-label.tsx:49 window.addEventListener('resize') fallback quando ResizeObserver indisponível",
+     "src/components/sidebar/truncated-sidebar-label.tsx:62 useLayoutEffect remede quando text muda",
+     "src/components/sidebar/truncated-sidebar-label.tsx:69 span 'block min-w-0 truncate'",
+     "src/components/sidebar/worktree-card-meta-row.tsx:79,90 consumido pelo card (reachable_depth 6)"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Wrapper <Tooltip>/<TooltipContent> do design system (break-all, max-w-80) — Hydra usa atributo nativo title=",
+     "Posicionamento tooltipSide (default 'right') e tooltipSideOffset (default 8) — props declarados em truncated-sidebar-label.tsx:14-15 mas ignorados no render"
+    ],
+    "reason": "",
+    "notes": "Medição/observabilidade equivalentes; só a camada de tooltip flutuante difere."
+   }
+  },
+  {
+   "id": "D04b-006",
+   "capability": "Resolve e valida alvos de exclusão confirmada de worktrees e linhagens contra o estado ao vivo da store",
+   "orca_evidence": [
+    "components/sidebar/use-confirmed-worktree-delete-targets.ts:11",
+    "components/sidebar/use-confirmed-worktree-delete-targets.ts:28"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/App.tsx:1931-1954",
+     "src/App.tsx:4308-4314"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Conversão de payloads brutos em WorktreeDeleteIdentity tipadas (worktree e linhagem)",
+     "resolveWorktreeBatchDeleteTargets consultando getWorktreeOnHostFromState no estado atual",
+     "Verificação de contagem contra expectedCount",
+     "showWorkspaceListChangedToast + fechamento do modal + retorno null em divergência"
+    ],
+    "reason": "",
+    "notes": "Buscas: use-confirmed-worktree-delete-targets, resolveWorktreeBatchDeleteTargets, expectedCount, showWorkspaceListChangedToast — 0 resultados em src/**.",
+    "note": "Resolução de targets em lote/validação de host ausentes."
+   }
+  },
+  {
+   "id": "D04b-007",
+   "capability": "Hidrata em segundo plano o status Git de múltiplos worktrees candidatos à exclusão",
+   "orca_evidence": [
+    "components/sidebar/use-delete-worktree-status-hydration.ts:17",
+    "components/sidebar/use-delete-worktree-status-hydration.ts:38",
+    "components/sidebar/use-delete-worktree-status-hydration.ts:46",
+    "components/sidebar/use-delete-worktree-status-hydration.ts:75"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:2002-2017",
+     "src/components/DeleteWorktreeDialog.tsx:165-176"
+    ],
+    "backend": [
+     "invoke('get_detailed_git_status_cmd') -> src-tauri/src/lib.rs:113"
+    ],
+    "missing_behaviors": [
+     "Geração/isolamento de execuções concorrentes por identidade dos alvos",
+     "Filtro de alvos (excluir worktree principal e folder workspaces)",
+     "Ordenação orderDeleteWorktreeStatusHydrationTargets (visíveis + ativo primeiro)",
+     "Reuso de gitStatusByWorktree quando disponível",
+     "getRuntimeGitStatus com prioridade 'background' e includeLineStats: false",
+     "AbortController + descarte de respostas ao fechar o modal",
+     "Ambiente de runtime para hosts remotos/SSH"
+    ],
+    "reason": "",
+    "notes": "Hydra hidrata apenas a contagem de sujeira via get_detailed_git_status_cmd; não há getRuntimeGitStatus no sidebar (grep 0) nem AbortController no efeito.",
+    "note": "Só dirty count via get_detailed_git_status_cmd; sem getRuntimeGitStatus/AbortController."
+   }
+  },
+  {
+   "id": "D04b-008",
+   "capability": "Resolve o status de atividade consolidado de um worktree individual para o indicador de status",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-activity-status.ts:13",
+    "components/sidebar/use-worktree-activity-status.ts:39"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/lib/workspace-status-signals.ts:14",
+     "src/components/sidebar/WorktreeList.tsx:910",
+     "src/components/sidebar/WorktreeStatusIndicator.tsx:37"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Extração de tabsByWorktree/browserTabsByWorktree",
+     "selectLivePtyIdsForWorktree",
+     "selectRuntimePaneTitlesForWorktree",
+     "selectTerminalLayoutRootsForWorktree",
+     "selectWorktreeAgentActivitySummary (permission/working/monitoring/interrupted/done ativo/retido)",
+     "Invocação de resolveWorktreeStatus para o estado final"
+    ],
+    "reason": "",
+    "notes": "Divergência documentada em src/lib/workspace-status-signals.ts:9-13 ('Hydra has no per-pane PTY index, so the equivalent signals are the workspace's sessions ... and whether a terminal tab is still mounted'). O dot é observável; as entradas consolidadas de PTY/agentes não existem.",
+    "note": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes."
+   }
+  },
+  {
+   "id": "D04b-009",
+   "capability": "Seleciona em lote com comparação rasa os status de atividade para múltiplos worktrees candidatos",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-activity-statuses.ts:27",
+    "components/sidebar/use-worktree-activity-statuses.ts:67"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:910",
+     "src/lib/workspace-status-signals.ts:14"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Seletor em lote selectWorktreeActivityStatuses sobre uma lista de ids",
+     "Memoização useShallow (Zustand) do mapa resultado",
+     "Garantia de que updates de worktrees fora do conjunto monitorado não alterem a igualdade rasa",
+     "Assinaturas de agentStatusEpoch/agentStatusByPaneKey/migrationUnsupportedByPtyId/retainedAgentsByPaneKey/runtimeAgentOrchestrationByPaneKey"
+    ],
+    "reason": "",
+    "notes": "Sem batch selector: grep useWorktreeActivityStatuses/useShallow/shallow em src/components/sidebar/** = 0. O status multi-worktree existe pontualmente na lista, sem o contrato de igualdade rasa.",
+    "note": "Sem batch selector com igualdade rasa."
+   }
+  },
+  {
+   "id": "D04b-010",
+   "capability": "Gerencia cliques, duplo-clique de edição, renomeação inline e alternância de não-lido no card do worktree",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-card-activation-actions.ts:45",
+    "components/sidebar/use-worktree-card-activation-actions.ts:77",
+    "components/sidebar/use-worktree-card-activation-actions.ts:84",
+    "components/sidebar/use-worktree-card-activation-actions.ts:106",
+    "components/sidebar/use-worktree-card-activation-actions.ts:119",
+    "components/sidebar/use-worktree-card-activation-actions.ts:150"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/use-worktree-card-controller.ts:162-186",
+     "src/components/sidebar/use-worktree-card-controller.ts:225-233",
+     "src/components/sidebar/worktree-card-header.tsx:113-135",
+     "src/App.tsx:3860-3877"
+    ],
+    "backend": [
+     "invoke('set_worktree_display_name') -> src/App.tsx:3342 (apenas menu de contexto; comando em src-tauri/src/lib.rs:505, registrado src-tauri/src/lib.rs:1506)"
+    ],
+    "missing_behaviors": [
+     "Guard de seleção de texto/evento fora do contêiner no clique simples",
+     "Registro de breadcrumb de crash sidebar_worktree_activate",
+     "Ativação assíncrona activateWorktreeFromSidebar",
+     "Duplo-clique abrindo modal edit-meta (Hydra abre renomeação inline)",
+     "Persistência do novo nome via updateWorktreeMeta (update-worktree-meta.ts:1 Auto-stub; handler do mount ausente)",
+     "Toggle rápido de não-lido (handleToggleUnreadQuick): showUnreadQuickAction é computado em worktree-card-presentation.tsx:88 mas nunca renderizado"
+    ],
+    "reason": "",
+    "notes": "Buscas: 'sidebar_worktree_activate', 'edit-meta', buildWorktreeMetaUpdates, updateWorktreeMeta no card — 0 resultados. Não-lido só existe via menu de contexto (App.tsx:3406 toggleUnreadWorktree).",
+    "note": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op)."
+   }
+  },
+  {
+   "id": "D04b-011",
+   "capability": "Orquestra como controller central todos os hooks, propriedades de visibilidade e ações do card de worktree",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-card-controller.ts:12",
+    "components/sidebar/use-worktree-card-controller.ts:34",
+    "components/sidebar/use-worktree-card-controller.ts:43",
+    "components/sidebar/use-worktree-card-controller.ts:85",
+    "components/sidebar/use-worktree-card-controller.ts:142"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/use-worktree-card-controller.ts:72",
+     "src/components/sidebar/worktree-card-presentation.tsx:111-113",
+     "src/components/sidebar/worktree-card-header.tsx:187-199",
+     "src/shared/worktree/card-properties.ts:1"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Composição de useWorktreeCardFoundation/ReviewDetails/LinkedDetails/LifecycleEffects/ActivationActions/WorkspaceActions/SecondaryDetails (Hydra concentra tudo num único hook)",
+     "Avaliação da lista cardProps ('status','issue','linear-issue','jira-issue','pr','automation','cli','comment','ports')",
+     "shouldRefreshHostedReview (novo estilo vs legado)",
+     "Hook de controle de hover useWorktreeCardDetailsHoverControl (WorktreeCardDetailsHover.tsx é um popover local próprio)",
+     "Condição deleteModifierPressed (Option/Alt) para showDeleteQuickAction — símbolo ausente no Hydra"
+    ],
+    "reason": "",
+    "notes": "Buscas: deleteModifierPressed, cardProps, shouldRefreshHostedReview, useWorktreeCardDetailsHoverControl — 0 resultados.",
+    "note": "showUnreadQuickAction computado e não renderizado; cardProps não existe."
+   }
+  },
+  {
+   "id": "D04b-012",
+   "capability": "Fornece seletores e handlers fundamentais de estado, SSH, runtime, modais e layout do card de worktree",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-card-foundation.ts:26",
+    "components/sidebar/use-worktree-card-foundation.ts:49",
+    "components/sidebar/use-worktree-card-foundation.ts:85",
+    "components/sidebar/use-worktree-card-foundation.ts:146",
+    "components/sidebar/use-worktree-card-foundation.ts:153",
+    "components/sidebar/use-worktree-card-foundation.ts:186",
+    "components/sidebar/use-worktree-card-foundation.ts:205"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/use-worktree-card-controller.ts:72-245",
+     "src/components/sidebar/use-worktree-card-controller.ts:304-319",
+     "src/components/sidebar/WorktreeList.tsx:927"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "selectRuntimeAwareSshStatus + hydrateRuntimeEnvironmentSshState + selectRuntimeAwareSshTargetRemoved no card",
+     "Rótulo do host de runtime e detecção isRuntimeDisconnected (hardcoded false)",
+     "workspacePorts escaneadas (port scan do card)",
+     "conflictOperation/remoteBranchConflict reais (hardcoded '' / false; remoteBranchConflict é sempre false)",
+     "Handlers openAutomationsPage/openTaskPage/setPendingAutomationRunNavigation",
+     "cardProps e workspacePortScan/runtimeEnvironments/runtimeStatusByEnvironmentId"
+    ],
+    "reason": "",
+    "notes": "SSH runtime-aware selectors existem na store (src/store/slices/runtime-environment-ssh-selectors.ts) mas não são usados pelo card. WorkspaceSidebar tem scanPorts em WorktreeSidebar.tsx:259, não no card.",
+    "note": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded."
+   }
+  },
+  {
+   "id": "D04b-013",
+   "capability": "Executa sincronização periódica e sob demanda de revisões hospedadas e issues com controle de visibilidade de janela",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:16",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:59",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:91",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:113",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:161",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:177",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:183",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:208",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:220",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:221",
+    "components/sidebar/use-worktree-card-lifecycle-effects.ts:228"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-card-model.ts:124",
+     "src/components/sidebar/CacheTimer.tsx:18",
+     "src/store/slices/hosted-review.ts:2"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Polling de revisões hospedadas com installWindowVisibilityInterval + jitter e pausa com janela oculta/web client",
+     "Busca sob demanda de revisão hospedada ao abrir hoverDetailsOpen",
+     "Polling de issue GitHub (5 min) condicionado a isWindowVisible",
+     "Busca sob demanda de issue GitHub no hover",
+     "Busca inicial de issue Linear + listeners window focus / document visibilitychange",
+     "Busca sob demanda de issue Linear no hover"
+    ],
+    "reason": "",
+    "notes": "installWindowVisibilityInterval existe (src/lib/window-visibility-interval.ts) mas é usado por src/hooks/use-now.ts, não pelo card. Buscas: fetchHostedReviewForBranch, fetchIssue, fetchLinearIssue, hoverDetailsOpen no sidebar — 0 call-sites.",
+    "note": "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidores; sem polling no card."
+   }
+  },
+  {
+   "id": "D04b-014",
+   "capability": "Resolve detalhes vinculados de issues, fallback de URLs do Linear, título visual do card e rótulos de exclusão",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-card-linked-details.ts:21",
+    "components/sidebar/use-worktree-card-linked-details.ts:41",
+    "components/sidebar/use-worktree-card-linked-details.ts:61",
+    "components/sidebar/use-worktree-card-linked-details.ts:91",
+    "components/sidebar/use-worktree-card-linked-details.ts:109",
+    "components/sidebar/use-worktree-card-linked-details.ts:110",
+    "components/sidebar/use-worktree-card-linked-details.ts:120",
+    "components/sidebar/use-worktree-card-linked-details.ts:122"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/use-worktree-card-controller.ts:152-158",
+     "src/components/sidebar/worktree-card-header.tsx:113-152",
+     "src/components/sidebar/worktree-card-meta-row.tsx:98"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "issueDisplay (número/título, 'Loading issue...', 'Issue details unavailable')",
+     "linearIssueDisplay + linearIssueUrlFallback",
+     "jiraIssueDisplay",
+     "Composição getWorktreeCardTitleDisplay (displayName+branch+issue/PR) no novo estilo e coerceWorktreeCardVisibleTitle no legado",
+     "Rótulo de fase enfileirada ('Queued for deletion' vs 'Deleting…')",
+     "deleteModifierPressed"
+    ],
+    "reason": "",
+    "notes": "Buscas: 'Queued for deletion', 'Loading issue', 'Issue details unavailable', getWorktreeCardTitleDisplay, linearIssueDisplay, jiraIssueDisplay em src/components/sidebar/** — 0 resultados. A meta row não renderiza badges de issue/PR.",
+    "note": "Título resolvido; badges de issue/PR e rótulos de loading ausentes."
+   }
+  },
+  {
+   "id": "D04b-015",
+   "capability": "Deriva a identidade Git do worktree e reconcilia detalhes e caches de revisões hospedadas entre múltiplos provedores",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-card-review-details.ts:19",
+    "components/sidebar/use-worktree-card-review-details.ts:28",
+    "components/sidebar/use-worktree-card-review-details.ts:46",
+    "components/sidebar/use-worktree-card-review-details.ts:86",
+    "components/sidebar/use-worktree-card-review-details.ts:119",
+    "components/sidebar/use-worktree-card-review-details.ts:159"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:914",
+     "src/App.tsx:2227",
+     "src/components/sidebar/WorktreeCardStatusLane.tsx:38",
+     "src/components/sidebar/WorktreeCardReviewBadge.tsx:29"
+    ],
+    "backend": [
+     "invoke('pr_status') -> src-tauri/src/lib.rs:410 #[tauri::command] pr_status (registrado src-tauri/src/lib.rs:1499)"
+    ],
+    "missing_behaviors": [
+     "Assinatura seletiva de hostedReviewCache/prCache/issueCache/linearIssueCache na store",
+     "Chaves de cache específicas (hosted review, PR GitHub, issue GitHub, issue Linear)",
+     "Reconciliação entre GitHub/GitLab/Bitbucket/Azure DevOps/Gitea",
+     "Validação isCachedMergedBranchPRCurrentForWorktree",
+     "getWorktreeCardPrDisplay com suppressedGitHubPR"
+    ],
+    "reason": "",
+    "notes": "Só GitHub via pr_status; suppression (src/shared/worktree/github-pr-suppression.ts) e caches multi-provedor existem na store mas não são usados pelo card. use-worktree-card-review-details.ts citado em comentário do controller (:257) mas o arquivo não existe no Hydra.",
+    "note": "Só GitHub via pr_status; suppression/caches multi-provedor não usados."
+   }
+  },
+  {
+   "id": "D04b-016",
+   "capability": "Gerencia detalhes secundários, temporizador de prompt cache, abertura de tarefas e desvinculação de revisões",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-card-secondary-details.ts:19",
+    "components/sidebar/use-worktree-card-secondary-details.ts:77",
+    "components/sidebar/use-worktree-card-secondary-details.ts:101",
+    "components/sidebar/use-worktree-card-secondary-details.ts:124",
+    "components/sidebar/use-worktree-card-secondary-details.ts:147",
+    "components/sidebar/use-worktree-card-secondary-details.ts:176",
+    "components/sidebar/use-worktree-card-secondary-details.ts:188",
+    "components/sidebar/use-worktree-card-secondary-details.ts:220",
+    "components/sidebar/use-worktree-card-secondary-details.ts:240"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/CacheTimer.tsx:10",
+     "src/components/sidebar/use-worktree-card-controller.ts:305",
+     "src/store/slices/ui/ui-slice-task-actions.ts:43"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "showUnreadEmphasis condicionado ao toggle de status (Hydra fixa showUnreadEmphasis = isUnread)",
+     "compactInlineAgentRows",
+     "showAggregateCacheTimer + usePromptCacheCountdownStartedAt + promptCacheTtlMs",
+     "openTaskPage (GitHub e Linear) no card",
+     "openWorkspaceBrowserTab para links externos",
+     "handleUnlinkReview com tombstone suppressedGitHubPR e remoção de links GitLab/Bitbucket/Azure/Gitea"
+    ],
+    "reason": "",
+    "notes": "Buscas: use-worktree-card-secondary-details, handleUnlinkReview, showAggregateCacheTimer, compactInlineAgentRows, usePromptCacheCountdownStartedAt, openWorkspaceBrowserTab — 0 resultados. CacheTimer é código morto por construção.",
+    "note": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card."
+   }
+  },
+  {
+   "id": "D04b-017",
+   "capability": "Fornece ações de exclusão rápida de workspace, controle de linhagem, drag and drop e menu de contexto",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-card-workspace-actions.ts:18",
+    "components/sidebar/use-worktree-card-workspace-actions.ts:51",
+    "components/sidebar/use-worktree-card-workspace-actions.ts:96",
+    "components/sidebar/use-worktree-card-workspace-actions.ts:126",
+    "components/sidebar/use-worktree-card-workspace-actions.ts:146",
+    "components/sidebar/use-worktree-card-workspace-actions.ts:156",
+    "components/sidebar/use-worktree-card-workspace-actions.ts:161"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/use-worktree-card-controller.ts:239-245",
+     "src/components/sidebar/worktree-card-header.tsx:187-199",
+     "src/components/sidebar/WorktreeList.tsx:943-946"
+    ],
+    "backend": [
+     "invoke('delete_worktree') -> src-tauri/src/lib.rs:476 (via App.tsx:1756)"
+    ],
+    "missing_behaviors": [
+     "Ramo deleteFolderWorkspace para workspaces de pasta (Hydra só trata worktree)",
+     "runWorktreeDelete com expectedHostId (host qualificado)",
+     "Rótulos 'Show/Hide child workspace(s)' para linhagem (onLineageToggle é repassado em :286 mas nunca renderizado; showLineageChildChip fixo false em :313)",
+     "writeWorkspaceDragData para arrasto único/múltiplo no dataTransfer (workspace-status-drag-data.ts:8 existe, 0 call-sites no card)",
+     "Resolução dos worktrees alvo da seleção no menu de contexto (Hydra delega cru ao App)"
+    ],
+    "reason": "",
+    "notes": "Buscas: deleteFolderWorkspace no card, writeWorkspaceDragData, 'Show child', 'Hide child', expectedHostId — 0 resultados no sidebar. onLineageToggle/writeWorkspaceDragData são símbolos órfãos.",
+    "note": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais."
+   }
+  },
+  {
+   "id": "D04b-018",
+   "capability": "Resolve assincronamente com timeout de 35s links de issues do GitHub e Linear para abertura externa",
+   "orca_evidence": [
+    "components/sidebar/use-worktree-issue-link.ts:18",
+    "components/sidebar/use-worktree-issue-link.ts:20",
+    "components/sidebar/use-worktree-issue-link.ts:23",
+    "components/sidebar/use-worktree-issue-link.ts:28",
+    "components/sidebar/use-worktree-issue-link.ts:44",
+    "components/sidebar/use-worktree-issue-link.ts:158",
+    "components/sidebar/use-worktree-issue-link.ts:177",
+    "components/sidebar/use-worktree-issue-link.ts:194",
+    "components/sidebar/use-worktree-issue-link.ts:210",
+    "components/sidebar/use-worktree-issue-link.ts:219",
+    "components/sidebar/use-worktree-issue-link.ts:236",
+    "components/sidebar/use-worktree-issue-link.ts:262"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "nenhum campo/dialogo edit-meta de issue no sidebar (grep 'edit-meta', 'openingIssue', 'openIssueFailed', 'isWorkItemLinkQueryTooLarge', 'OPEN_ISSUE_TIMEOUT' em src/** = 0)",
+     "src/lib/workspace-port-actions.ts:125 window.api.shell.openUrl existe para portas, mas não há call-site de issue link",
+     "src/shared/github/links.ts:1 e src/shared/linear/links.ts:1 são Auto-stubs (parsing de links não implementado)"
+    ],
+    "backend": [
+     "window.api.shell.openUrl (shim) -> src/lib/workspace-port-actions.ts:125 (sem consumidor no sidebar)"
+    ],
+    "missing_behaviors": [
+     "Suporte a URLs diretas (GitHub/Linear), números GitHub e identificadores Linear",
+     "Limite isWorkItemLinkQueryTooLarge",
+     "Construção de URL Linear com org key ou fetchLinearIssue(identifier,'all')",
+     "Timeout OPEN_ISSUE_TIMEOUT_MS de 35s",
+     "window.api.shell.openUrl para o navegador externo",
+     "Geração de requisição openRequestRef + descarte por chave de input",
+     "Indicadores openingIssue/openIssueFailed"
+    ],
+    "reason": "",
+    "notes": "Também ausentes src/shared/jira-issue-url.ts (Auto-stub). Nenhum hook equivalente a use-worktree-issue-link no sidebar."
+   }
+  },
+  {
+   "id": "D04b-019",
+   "capability": "Projeta exclusivamente os timestamps de reconhecimento de agentes associados ao card",
+   "orca_evidence": [
+    "components/sidebar/worktree-card-agent-ack-inputs.ts:7"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/hooks/agent-auto-ack-surfaces.ts:14 usa acknowledgedAgentsByPaneKey/retainedAgentsByPaneKey no fluxo de auto-ack global",
+     "src/hooks/useAutoAckViewedAgent.ts:15 consome o mesmo store",
+     "nenhum consumidor no sidebar: grep acknowledgedAgents em src/components/sidebar/** = 0",
+     "src/components/sidebar/CompactAgentRow.tsx não recebe timestamps de reconhecimento"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "selectAcknowledgedAgentTimes projetando apenas as paneKeys do card",
+     "Igualdade rasa/referencial para re-render isolado por card"
+    ],
+    "reason": "",
+    "notes": "O store tem acknowledgedAgentsByPaneKey, mas nenhum seletor de projeção por card existe no sidebar."
+   }
+  },
+  {
+   "id": "D04b-020",
+   "capability": "Garante isolamento de performance mantendo renderização de markdown dos cards fora do grafo síncrono inicial",
+   "orca_evidence": [
+    "components/sidebar/worktree-card-markdown-isolation.test.ts:7"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "símbolo CommentMarkdown inexistente: grep 'CommentMarkdown' em src/** = 0",
+     "nenhuma superfície de markdown no sidebar: grep 'Markdown|markdown|ReactMarkdown' em src/components/sidebar/** = 0",
+     "comentários de card não existem (grep 'comment' em src/components/sidebar/*.tsx = 0)"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Manter CommentMarkdown fora do grafo estático de main.tsx",
+     "Roteamento das superfícies de markdown do sidebar por limites lazy"
+    ],
+    "reason": "",
+    "notes": "Nada a isolar: não há renderização de markdown de comentários no card."
+   }
+  },
+  {
+   "id": "D04b-021",
+   "capability": "Seleciona e isola os inputs de alvos de envio para o popover de agentes mantendo estabilidade para worktrees inativos",
+   "orca_evidence": [
+    "components/sidebar/worktree-card-send-target-inputs.ts:28",
+    "components/sidebar/worktree-card-send-target-inputs.ts:38",
+    "components/sidebar/worktree-card-send-target-inputs.ts:50",
+    "components/sidebar/worktree-card-send-target-inputs.ts:66"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/ui/ui-slice-agent-actions.ts:50 agentSendPopoverTargetMode existe na store (estado do popover)",
+     "grep agentSendPopoverTargetMode em src/components/** = 0 — nenhum popover/consumidor no sidebar",
+     "seletores EMPTY_SEND_TARGET_INPUTS/EMPTY_SEND_TARGET_CONTROL_INPUTS e selectSendTargetInputs inexistentes"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Retorno do singleton congelado EMPTY_SEND_TARGET_INPUTS quando o popover não mira o worktree",
+     "Exposição dos mapas dinâmicos (agentStatusByPaneKey, tabsByWorktree, terminalLayoutsByTabId, ptyIdsByTabId, runtimePaneTitlesByTabId)",
+     "selectSendTargetControlInputs isolando modo/época para cards inativos"
+    ],
+    "reason": "",
+    "notes": "O estado existe na store, mas o card não o consome — sem popover de envio de agente no sidebar."
+   }
+  },
+  {
+   "id": "D04b-022",
+   "capability": "Constrói e normaliza de forma pura o payload de atualização de metadados do worktree (nome, comentário, issues e revisões)",
+   "orca_evidence": [
+    "components/sidebar/worktree-meta-updates.ts:12",
+    "components/sidebar/worktree-meta-updates.ts:57",
+    "components/sidebar/worktree-meta-updates.ts:67",
+    "components/sidebar/worktree-meta-updates.ts:81",
+    "components/sidebar/worktree-meta-updates.ts:107",
+    "components/sidebar/worktree-meta-updates.ts:118",
+    "components/sidebar/worktree-meta-updates.ts:132",
+    "components/sidebar/worktree-meta-updates.ts:157",
+    "components/sidebar/worktree-meta-updates.ts:172",
+    "components/sidebar/worktree-meta-updates.ts:203",
+    "components/sidebar/worktree-meta-updates.ts:265",
+    "components/sidebar/worktree-meta-updates.ts:297"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/App.tsx:3576",
+     "src/App.tsx:3640",
+     "src/store/slices/worktrees/metadata/update-worktree-meta.ts:1"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Normalização de displayName sem valor undefined",
+     "Emissão de comentário apenas se alterado",
+     "Detecção de campo de issue sujo por identidade normalizada",
+     "Deslocamento de work items/contextos Linear ao trocar issue",
+     "Limpeza de slots do provedor oposto (GitHub vs Linear)",
+     "Validação/parsing de PR/MR GitHub e GitLab",
+     "Tombstone suppressedGitHubPR ao limpar link explícito de PR"
+    ],
+    "reason": "",
+    "notes": "Buscas: worktree-meta-updates, isIssueFieldDirty, issueLinkIdentity, suppressedGitHubPR no sidebar — 0 call-sites.",
+    "note": "Sem update de metadados agrupado; rename/unread gravam direto."
+   }
+  },
+  {
+   "id": "D04b-023",
+   "capability": "Gera sugestões de nomes de criaturas marinhas para novos worktrees com desduplicação global e registro de aposentadoria",
+   "orca_evidence": [
+    "components/sidebar/worktree-name-suggestions.ts:17",
+    "components/sidebar/worktree-name-suggestions.ts:40",
+    "components/sidebar/worktree-name-suggestions.ts:52",
+    "components/sidebar/worktree-name-suggestions.ts:56"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/shared/marine-creatures.ts:1 Auto-stub; :3 MARINE_CREATURES: any = null (pool vazio/quebrado)",
+     "src/shared/worktree/retired-name-registry.ts:18 CREATURE_POOL_NAMES = new Set(MARINE_CREATURES.map(...)) construído sobre o stub nulo",
+     "src/hooks/useRetiredWorktreeNames.ts:21 definido e sem consumidores (grep = 0 fora do arquivo)",
+     "src/components/NewWorkspaceComposer.tsx:264-269 campo 'Workspace name' sem sugestão de criatura",
+     "símbolos getSuggestedCreatureName/selectSuggestedCreatureName/collectUsedNames/shouldApplySuggestedName inexistentes (grep em src/** = 0)"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "collectUsedNames sobre todos os repositórios",
+     "Combinação com RetiredNameRegistry (nomes de workspaces deletados)",
+     "selectSuggestedCreatureName aleatório do pool",
+     "Fallback para variantes sufixadas quando o pool esgota",
+     "shouldApplySuggestedName preservando nomes editados manualmente"
+    ],
+    "reason": "",
+    "notes": "Existe infraestrutura parcial de aposentadoria (registry/cache/compactação) mas o gerador de sugestão e o pool real não existem — MARINE_CREATURES é stub nulo, então CREATURE_POOL_NAMES seria inválido em runtime."
+   }
   }
+ ],
+ "summary": {
+  "parity": 0,
+  "partial": 11,
+  "missing": 12,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ },
+ "par_crosswalk": {
+  "PAR-05": {
+   "orca_rows": [
+    "D04b-004",
+    "D04b-011",
+    "D04b-014"
+   ],
+   "hydra_status": "partial",
+   "escopo": "sidebar"
+  },
+  "PAR-34": {
+   "orca_rows": [
+    "D04b-005"
+   ],
+   "hydra_status": "partial",
+   "escopo": "sidebar"
+  },
+  "PAR-39": {
+   "orca_rows": [
+    "D04b-020"
+   ],
+   "hydra_status": "missing",
+   "escopo": "sidebar"
+  },
+  "PAR-56": {
+   "orca_rows": [
+    "D04b-004",
+    "D04b-006",
+    "D04b-007"
+   ],
+   "hydra_status": "partial",
+   "escopo": "sidebar"
+  },
+  "PAR-60": {
+   "orca_rows": [
+    "D04b-016"
+   ],
+   "hydra_status": "missing",
+   "escopo": "sidebar"
+  },
+  "PAR-62": {
+   "orca_rows": [
+    "D04b-014"
+   ],
+   "hydra_status": "missing",
+   "escopo": "sidebar"
+  },
+  "PAR-66": {
+   "orca_rows": [
+    "D04b-002",
+    "D04b-019"
+   ],
+   "hydra_status": "missing",
+   "escopo": "sidebar"
+  },
+  "PAR-67": {
+   "orca_rows": [
+    "D04b-011",
+    "D04b-017"
+   ],
+   "hydra_status": "partial",
+   "escopo": "sidebar"
+  },
+  "PAR-73": {
+   "orca_rows": [
+    "D04b-010"
+   ],
+   "hydra_status": "partial",
+   "escopo": "sidebar"
+  },
+  "PAR-74": {
+   "orca_rows": [
+    "D04b-010"
+   ],
+   "hydra_status": "missing",
+   "escopo": "sidebar"
+  },
+  "PAR-86": {
+   "orca_rows": [
+    "D04b-004"
+   ],
+   "hydra_status": "missing",
+   "escopo": "sidebar"
+  },
+  "PAR-87": {
+   "orca_rows": [
+    "D04b-015",
+    "D04b-016"
+   ],
+   "hydra_status": "missing",
+   "escopo": "sidebar"
+  }
+ },
+ "coverage_inherited": {
+  "note": "Fase 2 não inventaria o Orca; a cobertura (files/symbols/tests/labels/hotkeys/prefs/timers/subscriptions/preload) é herdada de D04b-worktree-card-controllers.orca.json e não é reescrita. Verificação: 23/23 ids de row têm veredito exatamente uma vez; tests/labels/timers/subscriptions/preload estão todos tagueados por id ou INFRA:; hotkeys/prefs vazios; files/symbols são listas de entrada do Orca (não obrigações de id).",
+  "rows_without_hydra_anchor": []
+ }
 }

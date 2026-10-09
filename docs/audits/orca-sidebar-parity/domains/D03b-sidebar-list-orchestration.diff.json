@@ -15,10 +15,7 @@
     "evidence": [
      "src/App.tsx:737",
      "src/App.tsx:3704",
-     "src/hooks/useSidebarResize.ts:53",
-     "src/hooks/useSidebarResize.ts:102",
-     "src/hooks/useSidebarResize.ts:112",
-     "src/hooks/useSidebarResize.ts:70"
+     "src/hooks/useSidebarResize.ts:53"
     ],
     "backend": [
      "invoke('save_layout_persistence') -> src/App.tsx:1029"
@@ -27,7 +24,8 @@
      "Limites 220–500px (Hydra usa 180–480: src/App.tsx:741-742)",
      "Variável CSS live --workspace-sidebar-live-width (Hydra escreve container.style.width: src/hooks/useSidebarResize.ts:70-85)"
     ],
-    "notes": "Efeito de resize ao vivo (rAF no draft) + commit no mouseup + persistência existem; handle vive no App.tsx:3702 fora do componente do sidebar e usa eventos de mouse (não pointer)."
+    "notes": "Efeito de resize ao vivo (rAF no draft) + commit no mouseup + persistência existem; handle vive no App.tsx:3702 fora do componente do sidebar e usa eventos de mouse (não pointer).",
+    "note": "Resize ao vivo + commit + persistência; faltam limites/cursor exatos do Orca."
    }
   },
   {
@@ -42,8 +40,7 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/WorktreeSidebar.tsx:105",
-     "src/components/sidebar/WorktreeSidebar.tsx:646",
-     "src/components/sidebar/SidebarAgentsList.tsx:49"
+     "src/components/sidebar/WorktreeSidebar.tsx:646"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -51,7 +48,8 @@
      "ActivityThreadCollapseContext / agentsCollapsedGroupKeys preservados fora do mount",
      "preservação de scroll dos agentes (agentsScrollTopRef): filter/focusedSessionId/selectedSessions internos (SidebarAgentsList.tsx:49-52) são perdidos no unmount"
     ],
-    "notes": "agentsReadFilter/agentsGroupBy vivem no WorktreeSidebar (105-118) e sobrevivem ao toggle; corpo alterna em 646."
+    "notes": "agentsReadFilter/agentsGroupBy vivem no WorktreeSidebar (105-118) e sobrevivem ao toggle; corpo alterna em 646.",
+    "note": "Alternância workspaces/agents parcial (estado de agentes vive no sidebar)."
    }
   },
   {
@@ -82,16 +80,14 @@
     "evidence": [
      "src/App.tsx:350",
      "src/App.tsx:370",
-     "src/App.tsx:379",
-     "src/lib/left-sidebar-appearance.ts:45",
-     "src/components/sidebar/WorktreeSidebar.tsx:610",
-     "src/components/sidebar/WorktreeSidebar.tsx:623"
+     "src/lib/left-sidebar-appearance.ts:45"
     ],
     "backend": [],
     "missing_behaviors": [
      "estilos resolvidos aplicados no container do sidebar: resolveLeftSidebarStyleVariables é calculado em App.tsx:379 mas aplicado só no titlebar (comentário App.tsx:367, uso 3621); o container aplica somente sidebarTintStyle (color-mix), cobrindo 'tinted' e não 'match-terminal'"
     ],
-    "notes": "Equivalente de useSystemPrefersDark = systemDark reativo (App.tsx:350,370-375)."
+    "notes": "Equivalente de useSystemPrefersDark = systemDark reativo (App.tsx:350,370-375).",
+    "note": "Tema do sidebar parcial."
    }
   },
   {
@@ -123,8 +119,6 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/WorktreeSidebar.tsx:1115",
-     "src/components/sidebar/WorktreeSidebar.tsx:1125",
-     "src/components/sidebar/WorktreeSidebar.tsx:1142",
      "src/components/sidebar/WorktreeVisibilityDialog.tsx:338"
     ],
     "backend": [],
@@ -133,7 +127,8 @@
      "modais edit-meta, confirm-remove-folder, confirm-orca-yaml-hooks, forget-ssh-workspace",
      "AgentDashboardSidebarHost"
     ],
-    "notes": "WorktreeVisibilityDialog montado (WorktreeSidebar.tsx:1142) mais ProjectGroupNameDialog/ProjectGroupDeleteDialog/PromptDialog (1115-1165) e AutoRenameFailedDialog pelo card (worktree-card-surface.tsx:135)."
+    "notes": "WorktreeVisibilityDialog montado (WorktreeSidebar.tsx:1142) mais ProjectGroupNameDialog/ProjectGroupDeleteDialog/PromptDialog (1115-1165) e AutoRenameFailedDialog pelo card (worktree-card-surface.tsx:135).",
+    "note": "Diálogos hospedados; lazy fora da hierarquia só parcial."
    }
   },
   {
@@ -203,16 +198,14 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/rendered-sidebar-worktree-order.ts:38",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:45",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:47",
-     "src/components/sidebar/WorktreeList.tsx:202",
-     "src/components/sidebar/WorktreeCard.tsx:11"
+     "src/components/sidebar/WorktreeList.tsx:202"
     ],
     "backend": [],
     "missing_behaviors": [
      "seletores/memoização de insumos de review no componente da lista montada: WorktreeList recebe props (WorktreeList.tsx:104-190) e o review chega por prByPath (WorktreeSidebar.tsx:724); selectWorktreeListReviewCacheInputs só roda no pipeline de atalhos (rendered-sidebar-worktree-order.ts:45), sem useShallow"
     ],
-    "notes": "pinnedDisplayPolicy/defaultHost/repo+worktree maps são resolvidos no pipeline (rendered-sidebar-worktree-order.ts:39-54); memoização de card existe (WorktreeCard.tsx:11)."
+    "notes": "pinnedDisplayPolicy/defaultHost/repo+worktree maps são resolvidos no pipeline (rendered-sidebar-worktree-order.ts:39-54); memoização de card existe (WorktreeCard.tsx:11).",
+    "note": "Seletores granulares parciais."
    }
   },
   {
@@ -225,7 +218,6 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/WorktreeSidebar.tsx:533",
-     "src/components/sidebar/WorktreeSidebar.tsx:576",
      "src/App.tsx:1922",
      "src/components/sidebar/WorktreeList.tsx:202"
     ],
@@ -235,7 +227,8 @@
      "persistência efetiva da ordem manual de worktrees: App.tsx:1928-1938 grava hydra:worktrees_order em localStorage mas nunca o lê de volta",
      "modos Smart/status e derivação de visíveis com linhagem/host padrão"
     ],
-    "notes": "Filtro de texto e ordenação básica funcionam na lista montada."
+    "notes": "Filtro de texto e ordenação básica funcionam na lista montada.",
+    "note": "Pipeline de ordenação parcial."
    }
   },
   {
@@ -263,16 +256,14 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/WorktreeList.tsx:287",
-     "src/components/sidebar/WorktreeList.tsx:304",
-     "src/components/sidebar/WorktreeSidebar.tsx:761",
-     "src/components/sidebar/WorktreeSidebar.tsx:773",
-     "src/components/sidebar/WorktreeSidebar.tsx:792"
+     "src/components/sidebar/WorktreeSidebar.tsx:761"
     ],
     "backend": [],
     "missing_behaviors": [
      "escopo de host na lista montada (useSidebarHostVisibleScope): getVisibleSidebarHostIdSet/filterProjectGroupsForVisibleHosts só são usados no pipeline de atalhos (rendered-sidebar-worktree-order.ts:41,63)"
     ],
-    "notes": "Linhas de inbox (notice + pill) e supressão/keep por repo estão montadas e chamam import_worktree / catalog_set_worktree_visibility / suppress_worktree_inbox (preload equivalente)."
+    "notes": "Linhas de inbox (notice + pill) e supressão/keep por repo estão montadas e chamam import_worktree / catalog_set_worktree_visibility / suppress_worktree_inbox (preload equivalente).",
+    "note": "Filtro de host/inbox parcial."
    }
   },
   {
@@ -285,15 +276,15 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/worktree-list/grouping/build-rows.ts:44",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:56",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:101"
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:56"
     ],
     "backend": [],
     "missing_behaviors": [
      "modelo de linhas consumido pela lista montada (só o caminho de sidebar fechado usa buildRows)",
      "handleReorderHostSections/setHostDragActive"
     ],
-    "notes": "buildRows recebe projectOrderBy, pinnedDisplayPolicy, projectGroups e folderWorkspaces (rendered-sidebar-worktree-order.ts:56-84); seções de host via addHostSectionRows/orderHostSectionOptions (101-124)."
+    "notes": "buildRows recebe projectOrderBy, pinnedDisplayPolicy, projectGroups e folderWorkspaces (rendered-sidebar-worktree-order.ts:56-84); seções de host via addHostSectionRows/orderHostSectionOptions (101-124).",
+    "note": "Modelo de linhas parcial (modos não pintam lanes)."
    }
   },
   {
@@ -308,10 +299,7 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/WorktreeSidebar.tsx:428",
-     "src/components/sidebar/WorktreeSidebar.tsx:442",
-     "src/App.tsx:1922",
-     "src/App.tsx:3135",
-     "src/App.tsx:3301"
+     "src/App.tsx:3517"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -321,7 +309,8 @@
      "dropWorktreesOnWorkspaceBoard (sem Kanban)",
      "carregamento automático da linhagem ao mover pai entre raias"
     ],
-    "notes": "Reordenação manual por HTML5 DnD existe (WorktreeSidebar.tsx:428-467) e atribuição de status por item no menu de contexto (App.tsx:3301,3406-3430)."
+    "notes": "Reordenação manual por HTML5 DnD existe (WorktreeSidebar.tsx:428-467) e atribuição de status por item no menu de contexto (App.tsx:3301,3406-3430).",
+    "note": "Mutações de status/pino parciais; seleção múltipla ausente."
    }
   },
   {
@@ -336,14 +325,14 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/worktree-card-surface.tsx:83",
-     "src/components/sidebar/use-worktree-card-controller.ts:172",
      "src/components/sidebar/WorktreeList.tsx:349"
     ],
     "backend": [],
     "missing_behaviors": [
      "markSidebarWorktreeActiveImmediately (mutação direta de data-worktree-card-active antes da reconciliação do store): o atributo deriva de isActiveSurface (React) e o caminho onImmediateActivate (controller:172) não é fornecido por nenhum caller; WorktreeList passa onSelect"
     ],
-    "notes": "data-worktree-card-active existe como superfície de estilo (worktree-card-surface.tsx:83)."
+    "notes": "data-worktree-card-active existe como superfície de estilo (worktree-card-surface.tsx:83).",
+    "note": "Ativação imediata parcial."
    }
   },
   {
@@ -357,9 +346,6 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/WorktreeList.tsx:261",
-     "src/components/sidebar/WorktreeList.tsx:481",
-     "src/components/sidebar/WorktreeSidebar.tsx:1142",
-     "src/components/sidebar/WorktreeSidebar.tsx:955",
      "src/App.tsx:1612"
     ],
     "backend": [
@@ -370,7 +356,8 @@
      "confirmação 'confirm-remove-folder': App.tsx:1612 remove direto",
      "handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500)"
     ],
-    "notes": "'+'/menu de cabeçalho e 'Manage Worktree Visibility...' abrem diálogos existentes (WorktreeSidebar.tsx:940-965,1142)."
+    "notes": "'+'/menu de cabeçalho e 'Manage Worktree Visibility...' abrem diálogos existentes (WorktreeSidebar.tsx:940-965,1142).",
+    "note": "Abertura de diálogos parcial."
    }
   },
   {
@@ -384,16 +371,16 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:382",
-     "src/components/sidebar/WorktreeSidebar.tsx:395",
-     "src/components/sidebar/WorktreeSidebar.tsx:367"
+     "src/components/sidebar/WorktreeSidebar.tsx:400",
+     "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:29"
     ],
     "backend": [],
     "missing_behaviors": [
      "ajuste de filtros ativos para tornar a worktree visível",
      "fila de requisição pendente no store (pendingRevealWorktree/pendingRevealSidebarRow + clear*)"
     ],
-    "notes": "Reveal expande projeto/grupo colapsado e rola via scrollIntoView + highlight temporário (367-424)."
+    "notes": "Reveal expande projeto/grupo colapsado e rola via scrollIntoView + highlight temporário (367-424).",
+    "note": "Reveal rola via virtualizer + destaca; sem os ramos de revalidação/rename do Orca."
    }
   },
   {
@@ -406,14 +393,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:588",
-     "src/components/sidebar/WorktreeList.tsx:601"
+     "src/components/sidebar/WorktreeList.tsx:1231",
+     "src/components/sidebar/WorktreeList.tsx:1200"
     ],
     "backend": [],
     "missing_behaviors": [
      "shouldFiltersHideAllRows: a decisão usa apenas visibleProjects (WorktreeList.tsx:588) e ignora contagens de placeholders/inbox, então um projeto vazio excluído por filtro de repo não preserva o cabeçalho antes do estado vazio"
     ],
-    "notes": "Botão 'Clear filter' chama onClearFilter → setFilter('') (WorktreeSidebar.tsx:740)."
+    "notes": "Botão 'Clear filter' chama onClearFilter → setFilter('') (WorktreeSidebar.tsx:740).",
+    "note": "Estado vazio precede headers, mas sem os botões/ações do Orca."
    }
   },
   {
@@ -441,12 +429,12 @@
    "hydra": {
     "status": "missing",
     "evidence": [
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:34",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:72"
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:34"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "O store mantém pendingWorktreeCreations (store/slices/worktree-helpers.ts:111) e buildRows sabe construí-las (grouping/row-builders.ts:buildPendingCreationRow), mas o único consumidor wired passa EMPTY_PENDING_CREATIONS e a lista montada (WorktreeList.tsx) não renderiza linha pendente."
+    "notes": "O store mantém pendingWorktreeCreations (store/slices/worktree-helpers.ts:111) e buildRows sabe construí-las (grouping/row-builders.ts:buildPendingCreationRow), mas o único consumidor wired passa EMPTY_PENDING_CREATIONS e a lista montada (WorktreeList.tsx) não renderiza linha pendente.",
+    "note": "Linha de criação pendente não pinta (renderRow devolve null para pending-creation)."
    }
   },
   {
@@ -505,7 +493,6 @@
     "status": "missing",
     "evidence": [
      "src/components/sidebar/project-header-drop.ts:25",
-     "src/components/sidebar/project-header-drop.ts:31",
      "src/components/sidebar/SectionHeader.tsx:265"
     ],
     "backend": [],
@@ -513,7 +500,8 @@
      "sessão de arrasto por ponteiro (createProjectHeaderDragSession/isProjectHeaderDragHandleTarget/isRepoHeaderActionTarget/[data-repo-header-drag-handle]/limiar 4px)",
      "as funções de bucket (project-header-drop.ts:25,31) não são invocadas: o único import de project-header-drop é getLogicalRepoOrderRankById (rendered-sidebar-worktree-order.ts:47)"
     ],
-    "notes": "Não localizado após busca por useRepoHeaderDrag, project-header-drag, REPO_HEADER_ACTION_SELECTOR, data-repo-header-drag-handle. Existe reordenação por HTML5 DnD do cabeçalho (SectionHeader.tsx:265 → WorktreeSidebar.tsx:470-500)."
+    "notes": "Não localizado após busca por useRepoHeaderDrag, project-header-drag, REPO_HEADER_ACTION_SELECTOR, data-repo-header-drag-handle. Existe reordenação por HTML5 DnD do cabeçalho (SectionHeader.tsx:265 → WorktreeSidebar.tsx:470-500).",
+    "note": "Sem sessão de drag de header de repo no caminho pintado (só HTML5 nativo)."
    }
   },
   {
@@ -592,16 +580,15 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/SectionHeader.tsx:265",
-     "src/components/sidebar/WorktreeSidebar.tsx:484",
-     "src/App.tsx:1915",
-     "src/App.tsx:1918"
+     "src/components/sidebar/WorktreeSidebar.tsx:484"
     ],
     "backend": [],
     "missing_behaviors": [
      "mapSidebarRepoDropIndexToAllRepoInsertAt/applyAllRepoInsertAt: mover todas as ocorrências do repo lógico (pares de host) como bloco único; App.tsx:1915 reordena um array plano de projetos",
      "persistência além do localStorage (App.tsx:1918)"
     ],
-    "notes": "Reordenação observável de cabeçalhos de projeto existe via HTML5 DnD."
+    "notes": "Reordenação observável de cabeçalhos de projeto existe via HTML5 DnD.",
+    "note": "Reordenação de header por HTML5 parcial."
    }
   },
   {
@@ -735,18 +722,13 @@
     "status": "parity",
     "evidence": [
      "src/components/sidebar/rendered-sidebar-worktree-order.ts:38",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:56",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:86",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:119",
-     "src/components/sidebar/visible-worktrees.ts:326",
-     "src/components/sidebar/visible-worktrees.ts:380",
-     "src/App.tsx:2456",
-     "src/components/sidebar/worktree-list/grouping/section-order.ts:72",
-     "src/components/sidebar/worktree-list/grouping/group-sections.ts:193"
+     "src/components/sidebar/WorktreeList.tsx:202",
+     "src/App.tsx:2456"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "computeRenderedSidebarWorktrees reencena buildRows com groupBy/projectOrderBy/pinnedDisplayPolicy/collapsedGroups/lineage (rendered-sidebar-worktree-order.ts:56-84); orderMainWorktreeFirst aplicado por group-sections.ts:193; atalhos publicados/recomputados em visible-worktrees.ts:326,380 e consumidos em App.tsx:2456. O override de colapso por agent-send não existe no Hydra, portanto não perturba a numeração."
+    "notes": "computeRenderedSidebarWorktrees reencena buildRows com groupBy/projectOrderBy/pinnedDisplayPolicy/collapsedGroups/lineage (rendered-sidebar-worktree-order.ts:56-84); orderMainWorktreeFirst aplicado por group-sections.ts:193; atalhos publicados/recomputados em visible-worktrees.ts:326,380 e consumidos em App.tsx:2456. O override de colapso por agent-send não existe no Hydra, portanto não perturba a numeração.",
+    "note": "Ordem renderizada de atalhos Cmd+1..9 segue ligada e publicada."
    }
   },
   {
@@ -759,14 +741,14 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/rendered-sidebar-worktree-order.ts:119",
-     "src/components/sidebar/WorktreeList.tsx:216",
-     "src/components/sidebar/WorktreeList.tsx:55"
+     "src/components/sidebar/WorktreeList.tsx:216"
     ],
     "backend": [],
     "missing_behaviors": [
      "posições separadas para hosts com o mesmo id: computeRenderedSidebarWorktreeOrder deduplica por worktree.id com new Set (rendered-sidebar-worktree-order.ts:120-124) e renderedSidebarShortcutTargets deduplica por id (WorktreeList.tsx:55-57)"
     ],
-    "notes": "Não reconstrói hosts filtrados (filtro por host aplicado antes: visible-worktrees.ts:352-360)."
+    "notes": "Não reconstrói hosts filtrados (filtro por host aplicado antes: visible-worktrees.ts:352-360).",
+    "note": "Sequência única de ids parcial (filtro por host não reconstrói colisões)."
    }
   },
   {
@@ -895,16 +877,15 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/WorktreeList.tsx:517",
-     "src/components/sidebar/FolderWorkspaceRow.tsx:35",
-     "src/components/sidebar/FolderWorkspaceRow.tsx:43",
-     "src/components/sidebar/worktree-list/rows/indentation.ts:1"
+     "src/components/sidebar/FolderWorkspaceRow.tsx:35"
     ],
     "backend": [],
     "missing_behaviors": [
      "aria-activedescendant apontando para a linha ativa de folder workspace (Hydra usa aria-current: FolderWorkspaceRow.tsx:35)",
      "indentação manual preservada fora de grupos escaneados e geometria 'new card' equivalente (a linha tem padding fixo pl-6/ml-1: FolderWorkspaceRow.tsx:43)"
     ],
-    "notes": "Linhas de folder workspace renderizadas sob o grupo dono, um passo compacto abaixo do cabeçalho (WorktreeList.tsx:515-530)."
+    "notes": "Linhas de folder workspace renderizadas sob o grupo dono, um passo compacto abaixo do cabeçalho (WorktreeList.tsx:515-530).",
+    "note": "Folder sob grupos parciais."
    }
   },
   {
@@ -940,10 +921,6 @@
     "status": "partial",
     "evidence": [
      "src/components/sidebar/worktree-list/grouping/host-labels.ts:83",
-     "src/components/sidebar/worktree-list/grouping/project-grouping.ts:117",
-     "src/components/sidebar/worktree-list/grouping/section-order.ts:94",
-     "src/components/sidebar/WorktreeHostContextBadge.tsx:14",
-     "src/components/sidebar/worktree-card-meta-row.tsx:62",
      "src/components/sidebar/WorktreeList.tsx:349"
     ],
     "backend": [],
@@ -952,7 +929,8 @@
      "desambiguação de nomes de seção por caminho no sidebar montado (withRepoSectionDisplayLabels só roda em buildRows do pipeline de atalhos)",
      "labels distintos para notices/pinned em multi-host na UI"
     ],
-    "notes": "Cálculo de labels existe e é exercitado no caminho de atalhos; colisões de id entre hosts geram linhas separáveis com chaves distintas (WorktreeList.tsx:349 key={wt.path})."
+    "notes": "Cálculo de labels existe e é exercitado no caminho de atalhos; colisões de id entre hosts geram linhas separáveis com chaves distintas (WorktreeList.tsx:349 key={wt.path}).",
+    "note": "Desambiguação multi-host parcial."
    }
   },
   {
@@ -966,13 +944,12 @@
     "evidence": [
      "src/components/sidebar/WorktreeList.tsx:476",
      "src/components/sidebar/WorktreeList.tsx:517",
-     "src/components/sidebar/SectionHeader.tsx:168",
-     "src/components/sidebar/SectionHeader.tsx:340",
-     "src/components/sidebar/WorktreeList.tsx:498"
+     "src/components/sidebar/SectionHeader.tsx:168"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Cabeçalhos de grupo renderizam a partir de projectGroups mesmo sem worktrees carregados; chevron armado só com count>0 (SectionHeader.tsx:168,340); grupo vazio mantém o header com placeholder 'Drag projects here to group them' (WorktreeList.tsx:498); membros nunca são removidos por filtro de inatividade/sleep no sidebar montado (hideSleeping não é aplicado em WorktreeSidebar.tsx:533-605 — gap de D09, não desta linha)."
+    "notes": "Cabeçalhos de grupo renderizam a partir de projectGroups mesmo sem worktrees carregados; chevron armado só com count>0 (SectionHeader.tsx:168,340); grupo vazio mantém o header com placeholder 'Drag projects here to group them' (WorktreeList.tsx:498); membros nunca são removidos por filtro de inatividade/sleep no sidebar montado (hideSleeping não é aplicado em WorktreeSidebar.tsx:533-605 — gap de D09, não desta linha).",
+    "note": "Ciclo de vida/render de headers de grupo segue ligado."
    }
   }
  ],
