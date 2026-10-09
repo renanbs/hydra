@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import type { GitWorktreeInfo, HydraProject } from '../types'
 import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-board-worktrees'
 import WorkspaceBoardStatusLane from './WorkspaceBoardStatusLane'
@@ -46,24 +47,32 @@ function card(
 
 function renderLane(
   cards: WorkspaceBoardCardModel[],
-  overrides: { totalCount?: number; hasQuery?: boolean; renderCards?: boolean } = {}
+  overrides: {
+    totalCount?: number
+    hasQuery?: boolean
+    renderCards?: boolean
+    onCreateWorktree?: (workspaceStatus: string) => void
+  } = {}
 ): HTMLElement {
   const { container } = render(
-    <WorkspaceBoardStatusLane
-      status={{ id: 'in-progress', label: 'In progress', color: 'neutral', icon: 'circle' }}
-      cards={cards}
-      totalCount={overrides.totalCount ?? cards.length}
-      hasQuery={overrides.hasQuery ?? false}
-      renderCards={overrides.renderCards ?? true}
-      columnWidth={308}
-      isResizingColumn={false}
-      compactCards={false}
-      selectedWorktreeIds={new Set()}
-      onSelectionGesture={vi.fn()}
-      onActivate={vi.fn()}
-      onColumnResizeStart={vi.fn()}
-      onColumnResizeKeyDown={vi.fn()}
-    />
+    <TooltipProvider>
+      <WorkspaceBoardStatusLane
+        status={{ id: 'in-progress', label: 'In progress', color: 'neutral', icon: 'circle' }}
+        cards={cards}
+        totalCount={overrides.totalCount ?? cards.length}
+        hasQuery={overrides.hasQuery ?? false}
+        renderCards={overrides.renderCards ?? true}
+        columnWidth={308}
+        isResizingColumn={false}
+        compactCards={false}
+        selectedWorktreeIds={new Set()}
+        onCreateWorktree={overrides.onCreateWorktree ?? vi.fn()}
+        onSelectionGesture={vi.fn()}
+        onActivate={vi.fn()}
+        onColumnResizeStart={vi.fn()}
+        onColumnResizeKeyDown={vi.fn()}
+      />
+    </TooltipProvider>
   )
   return container
 }
@@ -152,5 +161,36 @@ describe('WorkspaceBoardStatusLane (Orca WorkspaceKanbanStatusLane parity)', () 
     expect(container.querySelector('[aria-label="Delete workspace"]')).toBeNull()
     expect(container.querySelector('input')).toBeNull()
     expect(container.querySelector('[draggable="true"]')).toBeNull()
+  })
+
+  // D08-021/D08-030: the lane's `+` create-workspace affordances (header and footer),
+  // the same two Orca ships, each labelled for the lane's own status.
+  it('paints the create-workspace affordances in both the filled and the empty lane', () => {
+    const filled = renderLane([card('wt-a', 0)])
+    const filledButtons = within(filled).getAllByRole('button', {
+      name: 'New workspace in In progress',
+    })
+    expect(filledButtons).toHaveLength(2)
+
+    const empty = renderLane([])
+    expect(within(empty).getByText('Empty')).toBeInTheDocument()
+    expect(
+      within(empty).getAllByRole('button', { name: 'New workspace in In progress' })
+    ).toHaveLength(2)
+  })
+
+  it('opens the composer for this lane from either create-workspace affordance', () => {
+    const onCreateWorktree = vi.fn()
+    const container = renderLane([], { onCreateWorktree })
+    const buttons = within(container).getAllByRole('button', {
+      name: 'New workspace in In progress',
+    })
+
+    fireEvent.click(buttons[0])
+    fireEvent.click(buttons[1])
+
+    expect(onCreateWorktree).toHaveBeenCalledTimes(2)
+    expect(onCreateWorktree).toHaveBeenNthCalledWith(1, 'in-progress')
+    expect(onCreateWorktree).toHaveBeenNthCalledWith(2, 'in-progress')
   })
 })

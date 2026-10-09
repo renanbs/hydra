@@ -598,9 +598,11 @@
     "components/sidebar/WorkspaceKanbanStatusLane.tsx:185"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:47-88"
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:88-92",
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:155",
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:202"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -612,7 +614,7 @@
      "Passa identidade qualificada do workspace ativo para a lista de cards"
     ],
     "notes": "Passo 1/2: header 'New workspace in {status.label}', placeholder 'No matches' e data-workspace-board-external-drag-target ausentes (0 hits). O header de status existe apenas como dado em group-sections.ts:96-120, módulo não alcançável (build-rows.ts/buildSidebarRows.ts em index/hydra_unreachable.json); a lista renderizada monta só grupos de projeto (WorktreeList.tsx:476) e usa groupBy apenas para indentação (WorktreeList.tsx:338). WorktreeCardStatusLane.tsx:1 é o glifo do card (portado de WorktreeCardStatusSlot.tsx), não uma raia. O '+' de SectionHeader.tsx:188 é de grupo de projeto. Não localizado.",
-    "note": "Raia tem contador (data-workspace-board-lane-count) e placeholder Empty; falta o botao 'New workspace in {status}'."
+    "note": "Raia com contador (matchCount/totalCount), placeholder Empty/No matches e os DOIS botoes de criacao do Orca (icone no header + full-width no rodape, visivel em hover/focus), presentes com cards e vazio."
    },
    "par": [
     "PAR-14"
@@ -868,9 +870,11 @@
     "components/sidebar/use-workspace-kanban-create-worktree.ts:11"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:47-88"
+     "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:249",
+     "src/App.tsx:3929",
+     "src/components/NewWorkspaceComposer.tsx:1"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -879,7 +883,7 @@
      "Pré-configura o status inicial do novo workspace com o statusId da raia"
     ],
     "notes": "Passo 1/2: o gatilho da raia ('New workspace in {status.label}') não existe. Passo 3: o modal compositor está montado (App.tsx:4055) e é acionável do header da sidebar (SidebarHeader.tsx:56 / types.ts:184 onOpenNewWorkspaceModal), mas nenhum caminho passa workspaceStatus ao createWorktree (parâmetro existe em store/slices/worktree-helpers.ts:200) e telemetrySource não é usado em App.tsx/NewWorkspaceComposer. A ação 'criar já no status clicado' não é executável. Não localizado.",
-    "note": "Sem gatilho 'New workspace in {status.label}' nem passagem de workspaceStatus ao createWorktree."
+    "note": "Botao da raia abre o composer com initialWorkspaceStatus; o status e persistido por worktree pelo escritor unico (persistWorktreeStatus -> set_worktree_status) apos create_worktree resolver, e o reset ao fechar e coberto por teste (nao vaza para a proxima criacao)."
    },
    "par": [
     "PAR-14"

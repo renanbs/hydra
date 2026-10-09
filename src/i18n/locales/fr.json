@@ -5211,7 +5211,8 @@
         "WorkspaceKanbanStatusLane": {
           "8ad104642b": "Vide",
           "3611d1ae7f": "Redimensionner les colonnes du tableau des espaces de travail",
-          "2df01a03ff": "Aucun résultat"
+          "2df01a03ff": "Aucun résultat",
+          "4031918ca7": "Nouvel espace de travail dans {{value0}}"
         },
         "WorkspaceStatusAppearancePopover": {
           "514be2f569": "Définir la couleur de {{value0}} sur {{value1}}",
