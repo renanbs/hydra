@@ -3,9 +3,9 @@ import { useWorkspaceBoardDrawerLingering } from './use-workspace-board-drawer-l
 
 /**
  * Why: the board's Escape listener is capture-phase on document, so it runs before
- * React's handlers and a field inside the board cannot stop it. The board owns
- * Escape itself, and this increment ships no board-owned text field — so any
- * in-progress edit (sidebar search, inline rename) keeps Escape for itself.
+ * React's handlers and a field inside the board cannot stop it. Any in-progress
+ * edit (the board's search field, the sidebar search, an inline rename) therefore
+ * keeps Escape for itself — the search field covers clear-then-close on its own.
  */
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
