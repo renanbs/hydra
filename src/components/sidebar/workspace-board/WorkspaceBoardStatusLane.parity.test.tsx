@@ -44,11 +44,16 @@ function card(
   }
 }
 
-function renderLane(cards: WorkspaceBoardCardModel[]): HTMLElement {
+function renderLane(
+  cards: WorkspaceBoardCardModel[],
+  overrides: { totalCount?: number; hasQuery?: boolean } = {}
+): HTMLElement {
   const { container } = render(
     <WorkspaceBoardStatusLane
       status={{ id: 'in-progress', label: 'In progress', color: 'neutral', icon: 'circle' }}
       cards={cards}
+      totalCount={overrides.totalCount ?? cards.length}
+      hasQuery={overrides.hasQuery ?? false}
       columnWidth={308}
       compactCards={false}
       onActivate={vi.fn()}
@@ -74,6 +79,25 @@ describe('WorkspaceBoardStatusLane (Orca WorkspaceKanbanStatusLane parity)', () 
 
     const filled = renderLane([card('wt-a', 0)])
     expect(filled.textContent).not.toContain('Empty')
+  })
+
+  it('prints "matches / total" and a "No matches" placeholder under a query', () => {
+    const filtered = renderLane([card('wt-a', 0)], { totalCount: 3, hasQuery: true })
+    expect(filtered.querySelector('[data-workspace-board-lane-count]')?.textContent).toBe('1 / 3')
+
+    const filteredOut = renderLane([], { totalCount: 2, hasQuery: true })
+    expect(filteredOut.querySelector('[data-workspace-board-lane-count]')?.textContent).toBe('0 / 2')
+    expect(screen.getByText('No matches')).toBeInTheDocument()
+    expect(screen.queryByText('Empty')).toBeNull()
+  })
+
+  it('keeps the plain count and the "Empty" placeholder without a query', () => {
+    const filled = renderLane([card('wt-a', 0)], { totalCount: 1 })
+    expect(filled.querySelector('[data-workspace-board-lane-count]')?.textContent).toBe('1')
+
+    const empty = renderLane([], { totalCount: 0 })
+    expect(screen.getByText('Empty')).toBeInTheDocument()
+    expect(screen.queryByText('No matches')).toBeNull()
   })
 
   it('frames every card with the board card attributes and its lane index', () => {

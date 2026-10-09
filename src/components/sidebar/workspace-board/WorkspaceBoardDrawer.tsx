@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { PrDisplay } from '../pr-display'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeSession } from '../types'
@@ -7,6 +7,8 @@ import WorkspaceBoardDrawerView from './WorkspaceBoardDrawerView'
 import { useWorkspaceBoardCardPointerDrag } from './drag/use-workspace-board-card-pointer-drag'
 import { useWorkspaceBoardGeometry, type WorkspaceBoardGeometry } from './use-workspace-board-geometry'
 import { useWorkspaceBoardProjection } from './use-workspace-board-projection'
+import { useWorkspaceBoardSearch } from './use-workspace-board-search'
+import { filterWorkspaceBoardLanes } from './workspace-board-search'
 
 export type WorkspaceBoardDrawerProps = {
   /** Whether the user has the board open (the sheet's own `open` state). */
@@ -98,6 +100,13 @@ function WorkspaceBoardDrawerContent({
     boardRef,
     onAssignWorktreeStatus,
   })
+  const boardCards = useMemo(() => lanes.flatMap((lane) => lane.cards), [lanes])
+  const { query, setQuery, clearQuery, matchingWorktreeIds, isFiltering, isQueryTooLarge } =
+    useWorkspaceBoardSearch({ open, cards: boardCards })
+  const filtered = useMemo(
+    () => filterWorkspaceBoardLanes(lanes, matchingWorktreeIds),
+    [lanes, matchingWorktreeIds]
+  )
 
   // Orca `handleWorktreeActivate`: opening a workspace from the board closes it.
   const handleActivate = useCallback(
@@ -112,11 +121,18 @@ function WorkspaceBoardDrawerContent({
     <WorkspaceBoardDrawerView
       open={open}
       geometry={geometry}
-      lanes={lanes}
+      lanes={filtered.lanes}
       columnWidth={columnWidth}
       compactCards={compactCards}
       boardRef={boardRef}
       dropTargetStatus={dropTargetStatus}
+      query={query}
+      isFiltering={isFiltering}
+      isTooLarge={isQueryTooLarge}
+      matchCount={filtered.matchCount}
+      totalCount={filtered.totalCount}
+      onQueryChange={setQuery}
+      onClearQuery={clearQuery}
       onCardPointerDownCapture={onCardPointerDownCapture}
       onOpenChange={onOpenChange}
       onActivate={handleActivate}

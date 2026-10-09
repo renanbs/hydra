@@ -10,6 +10,10 @@ import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-
 type WorkspaceBoardStatusLaneProps = {
   status: WorkspaceStatusDefinition
   cards: readonly WorkspaceBoardCardModel[]
+  /** Lane membership before the search filter; the badge's denominator under a query. */
+  totalCount: number
+  /** True while a query narrows the board — switches the badge to "matches / total". */
+  hasQuery: boolean
   columnWidth: number
   compactCards: boolean
   /** True while a card drag hovers this lane; the destination lane paints its own ring. */
@@ -34,6 +38,8 @@ type WorkspaceBoardStatusLaneProps = {
 function WorkspaceBoardStatusLane({
   status,
   cards,
+  totalCount,
+  hasQuery,
   columnWidth,
   compactCards,
   isDropTarget = false,
@@ -42,6 +48,9 @@ function WorkspaceBoardStatusLane({
   onContextMenu,
 }: WorkspaceBoardStatusLaneProps): React.JSX.Element {
   const meta = getWorkspaceStatusVisualMeta(status)
+  // Why: a lane that is empty on its own merits is still "Empty" under a query —
+  // only a lane whose cards were filtered away has anything to say about matches.
+  const isFiltered = hasQuery && totalCount > 0
   return (
     <section
       data-workspace-status={status.id}
@@ -64,7 +73,7 @@ function WorkspaceBoardStatusLane({
             data-workspace-board-lane-count=""
             className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium leading-none text-muted-foreground"
           >
-            {cards.length}
+            {isFiltered ? `${cards.length} / ${totalCount}` : cards.length}
           </div>
         </div>
       </div>
@@ -83,7 +92,9 @@ function WorkspaceBoardStatusLane({
           ))
         ) : (
           <div className="flex h-20 items-center justify-center rounded-md border border-dashed border-border/70 text-[11px] text-muted-foreground">
-            {translate('auto.components.sidebar.WorkspaceKanbanStatusLane.8ad104642b', 'Empty')}
+            {isFiltered
+              ? translate('auto.components.sidebar.WorkspaceKanbanStatusLane.2df01a03ff', 'No matches')
+              : translate('auto.components.sidebar.WorkspaceKanbanStatusLane.8ad104642b', 'Empty')}
           </div>
         )}
       </div>
