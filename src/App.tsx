@@ -37,6 +37,11 @@ import { isShellProcess } from "./components/workbench/tab-agent";
 import { hydrateWorkspaceHostScopePreference, useAppStore } from "./store";
 import { hydrateSshTargets } from "./store/ssh-bridge";
 import { buildWorktreeStatusMenuItems } from "./components/sidebar/worktree-status-menu-items";
+import {
+  applyWorktreeStatus,
+  applyWorktreeStatusByProject,
+  persistWorktreeStatus,
+} from "./lib/worktree-status-persistence";
 import { cloneDefaultWorkspaceStatuses } from "./shared/workspace-statuses";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
@@ -3504,6 +3509,27 @@ export default function App() {
     });
   };
 
+  /**
+   * The single writer for a workspace status: the host command plus the local worktree maps
+   * the sidebar (and the workspace board, which projects from them) read. Shared by the
+   * worktree context menu and the board's card drop — one column, one persist path.
+   */
+  const assignWorktreeStatus = useCallback(
+    async (worktreePath: string, status: string | null) => {
+      try {
+        await persistWorktreeStatus(worktreePath, status);
+        setGitWorktrees((prev) => applyWorktreeStatus(prev, worktreePath, status));
+        setWorktreesByProject((prev) =>
+          applyWorktreeStatusByProject(prev, worktreePath, status)
+        );
+        window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      } catch (e) {
+        console.error("Failed to set worktree status:", e);
+      }
+    },
+    []
+  );
+
   const handleWorktreeContextMenu = (e: React.MouseEvent, wt: GitWorktreeInfo, proj: HydraProject) => {
     // Same source the sidebar pipeline and the workspace board read (`state.workspaceStatuses`).
     const workspaceStatuses = useAppStore.getState().workspaceStatuses ?? cloneDefaultWorkspaceStatuses();
@@ -3524,26 +3550,9 @@ export default function App() {
     const descendantCount = Object.values(worktreeLineage).filter((parent) => parent === wt.path).length;
 
     const handleAssignWorktreeStatus = async (status: string | null) => {
-      try {
-        await invoke("set_worktree_status", {
-          worktreePath: wt.path,
-          status,
-        });
-        setGitWorktrees((prev) =>
-          prev.map((w) => (w.path === wt.path ? { ...w, status } : w))
-        );
-        setWorktreesByProject((prev) => {
-          const next = { ...prev };
-          for (const k of Object.keys(next)) {
-            next[k] = next[k].map((w) => (w.path === wt.path ? { ...w, status } : w));
-          }
-          return next;
-        });
-        window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-      } catch (e) {
-        console.error("Failed to set worktree status:", e);
-      }
+      await assignWorktreeStatus(wt.path, status);
     };
+
     setContextMenu({
       source: "sidebar",
       x: e.clientX,
@@ -3865,6 +3874,7 @@ export default function App() {
                 onSessionContextMenu={handleSessionContextMenu}
                 onProjectContextMenu={handleProjectContextMenu}
                 onWorktreeContextMenu={handleWorktreeContextMenu}
+                onAssignWorktreeStatus={assignWorktreeStatus}
                 onReorderSessions={handleReorderSessions}
                 onReorderProjects={handleReorderProjects}
                 onReorderWorktrees={handleReorderWorktrees}
