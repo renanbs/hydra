@@ -27,6 +27,18 @@ describe('buildWorktreeStatusMenuItems (Orca parity)', () => {
     )
   })
 
+  it('marks the worktree current status as checked, like the Orca radio group', () => {
+    const item = buildWorktreeStatusMenuItems({
+      workspaceStatuses: DEFAULT_WORKSPACE_STATUSES,
+      currentStatus: 'in-review',
+      onAssignStatus: vi.fn(),
+    })
+
+    expect(item.children?.map((child) => child.checked)).toEqual(
+      DEFAULT_WORKSPACE_STATUSES.map((status) => status.id === 'in-review')
+    )
+  })
+
   it('never offers agent activity as an assignable status', () => {
     const item = buildWorktreeStatusMenuItems({
       workspaceStatuses: DEFAULT_WORKSPACE_STATUSES,

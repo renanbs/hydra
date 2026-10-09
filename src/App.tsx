@@ -3631,6 +3631,7 @@ export default function App() {
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(wt.path) },
         buildWorktreeStatusMenuItems({
           workspaceStatuses,
+          currentStatus: wt.status ?? null,
           onAssignStatus: handleAssignWorktreeStatus,
         }),
         {

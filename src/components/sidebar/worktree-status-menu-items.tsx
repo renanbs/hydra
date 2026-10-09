@@ -15,6 +15,7 @@ import type { WorkspaceStatusDefinition } from '../../shared/worktree/types'
  */
 export function buildWorktreeStatusMenuItems(args: {
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
+  currentStatus?: string | null
   onAssignStatus: (statusId: string) => void
 }): ContextMenuItem {
   return {
@@ -25,6 +26,7 @@ export function buildWorktreeStatusMenuItems(args: {
       const StatusIcon = meta.icon
       return {
         label: status.label,
+        checked: status.id === args.currentStatus,
         icon: <StatusIcon className={`w-3.5 h-3.5 ${meta.tone}`} />,
         onClick: () => args.onAssignStatus(status.id),
       }
