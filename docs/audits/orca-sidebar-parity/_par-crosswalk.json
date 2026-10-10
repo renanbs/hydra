@@ -166,7 +166,7 @@
   },
   {
    "id": "D08-037",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D08-038",
@@ -278,7 +278,7 @@
  "PAR-08": [
   {
    "id": "D03a-002",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D03a-060",

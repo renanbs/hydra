@@ -22,6 +22,7 @@ export function WorktreeListDragProvider({
   onReorderWorktrees,
   onAssignWorktreesStatus,
   onPinWorktrees,
+  resolveDraggedWorktreeIds,
   children
 }: {
   rows: readonly HostSectionRow[]
@@ -31,6 +32,11 @@ export function WorktreeListDragProvider({
   onAssignWorktreesStatus: (worktreeIds: readonly string[], status: string) => void
   /** The workspace board's pin strip drop: a pin write, never a status write (D08-028). */
   onPinWorktrees: (worktreeIds: readonly string[]) => void
+  /**
+   * The ids a press drags (D03a-002): the list's selection when the pressed row is part of one
+   * and it holds more than one, the pressed row alone otherwise.
+   */
+  resolveDraggedWorktreeIds: (rowKey: string, worktreeId: string) => readonly string[]
   children: React.ReactNode
 }): React.JSX.Element {
   // Why the fallback: a caller that renders the list without its scroll container
@@ -47,6 +53,7 @@ export function WorktreeListDragProvider({
       computeWorktreeDrop: session.computeWorktreeDrop,
       refreshWorktreeDragSession: session.refreshWorktreeDragSession,
       clearWorktreeDrag: runtime.clearWorktreeDrag,
+      resolveDraggedWorktreeIds,
       onReorderWorktrees,
       onAssignWorktreesStatus,
       onPinWorktrees
@@ -55,6 +62,7 @@ export function WorktreeListDragProvider({
       onAssignWorktreesStatus,
       onPinWorktrees,
       onReorderWorktrees,
+      resolveDraggedWorktreeIds,
       resolvedScrollRef,
       runtime,
       session

@@ -10,13 +10,12 @@ import {
   resolveWorkspaceBoardCardDropCommitTarget,
   updateWorkspaceBoardCardDropIndicator,
   WORKSPACE_BOARD_CARD_SELECTOR,
-  WORKSPACE_BOARD_LANE_SELECTOR,
   type WorkspaceBoardCardTrackedDropTarget
 } from './workspace-board-card-drag-dom'
 import {
   createWorkspaceBoardCardDragPreview,
   setWorkspaceBoardCardDragDocumentStyles,
-  setWorkspaceBoardDraggedCard,
+  setWorkspaceBoardDraggedCards,
   updateWorkspaceBoardCardDragPreviewPosition
 } from './workspace-board-card-drag-preview-dom'
 import { shouldStartWorkspaceBoardCardPointerDrag } from './workspace-board-card-drag-start'
@@ -33,17 +32,32 @@ type WorkspaceBoardCardDragState = {
   startY: number
   currentX: number
   currentY: number
-  /** The worktree the drop commits for; `set_worktree_status` keys on the path. */
-  worktreePath: string
-  /** Status of the lane the card was lifted from; a release back here is a no-op. */
-  sourceStatus: WorkspaceStatus | null
+  /**
+   * The batch the drop commits for (D03a-002): the whole selection when the pressed card is
+   * part of one, otherwise the pressed card alone. Each entry carries its own lane status, so a
+   * drop resolves per worktree instead of rewriting the lane every card already sits in.
+   */
+  targets: readonly WorkspaceBoardCardDragTarget[]
+  /** The card the press lifted: the clone source and the grab point. */
   sourceCard: HTMLElement
+  /** Every painted card the batch ghosts while the drag is in flight. */
+  draggedCards: readonly HTMLElement[]
   preview: HTMLElement | null
   previewOffsetX: number
   previewOffsetY: number
   started: boolean
   frameId: number | null
   latestDropTarget: WorkspaceBoardCardTrackedDropTarget | null
+}
+
+/** One worktree a board card drag moves, with the lane it was lifted from. */
+export type WorkspaceBoardCardDragTarget = {
+  /** Host-qualified card identity — the selection's vocabulary. */
+  identity: string
+  /** The workspace path the app's own writers key on. */
+  worktreePath: string
+  /** The lane the worktree sits in when the drag lifts it; a release back here is a no-op. */
+  status: WorkspaceStatus | null
 }
 
 /**
@@ -74,6 +88,15 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   /** Pins the dropped workspace without touching its status (D08-028). */
   onPinWorktree: (worktreePath: string) => void | Promise<void>
   /**
+   * Resolves the batch a press on a card moves (D03a-002): the board's selection when the card
+   * is part of it and it holds more than one, the pressed card alone otherwise. Host-qualified,
+   * so two hosts publishing the same workspace id never collapse into one entry.
+   */
+  resolveCardDragTargets: (
+    draggedWorktreeId: string,
+    draggedWorktreeIdentity: string
+  ) => readonly WorkspaceBoardCardDragTarget[]
+  /**
    * The board's one lane-highlight state (Orca's `onDragTargetChange`). The native drag owns
    * it and the pointer drag publishes into it, so both gestures light the same lane.
    */
@@ -93,6 +116,7 @@ export function useWorkspaceBoardCardPointerDrag(args: {
     boardRef,
     onAssignWorktreeStatus,
     onPinWorktree,
+    resolveCardDragTargets,
     onDragTargetChange,
     onPinDragTargetChange
   } = args
@@ -105,6 +129,10 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   assignStatusRef.current = onAssignWorktreeStatus
   const pinWorktreeRef = useRef(onPinWorktree)
   pinWorktreeRef.current = onPinWorktree
+  // Why a ref: the window listeners are installed once per open board and the press handler is
+  // handed to memoised lanes, so the resolver is read through a ref that always holds the latest.
+  const resolveCardDragTargetsRef = useRef(resolveCardDragTargets)
+  resolveCardDragTargetsRef.current = resolveCardDragTargets
 
   const clearDropTarget = useCallback(() => {
     onDragTargetChange(null)
@@ -135,16 +163,12 @@ export function useWorkspaceBoardCardPointerDrag(args: {
               y: state.currentY
             })
           : null
-      const commitStatus = resolveWorkspaceBoardCardDragCommit({
-        sourceStatus: state.sourceStatus,
-        targetStatus: commitTarget?.status ?? null
-      })
 
       dragRef.current = null
       if (state.frameId !== null) {
         window.cancelAnimationFrame(state.frameId)
       }
-      setWorkspaceBoardDraggedCard(state.sourceCard, false)
+      setWorkspaceBoardDraggedCards(state.draggedCards, false)
       clearDropTarget()
       state.preview?.remove()
       setWorkspaceBoardCardDragDocumentStyles(false)
@@ -155,15 +179,25 @@ export function useWorkspaceBoardCardPointerDrag(args: {
       isPointerDragActiveRef.current = false
       suppressClickUntilRef.current = performance.now() + CLICK_SUPPRESSION_MS
       // Why before the status commit: a release over the pin strip is a pin, and the strip
-      // resolves no lane, so it can never also write the column.
+      // resolves no lane, so it can never also write the column. The whole batch pins.
       if (commitTarget && isWorkspaceBoardPinDropTarget(commitTarget)) {
-        void pinWorktreeRef.current(state.worktreePath)
+        for (const target of state.targets) {
+          void pinWorktreeRef.current(target.worktreePath)
+        }
         return
       }
-      if (!commitStatus) {
-        return
+      // Why per target: the batch can span lanes, so each worktree is compared against its own
+      // source lane — one write per worktree that actually moves, none for the ones already
+      // sitting in the destination lane.
+      for (const target of state.targets) {
+        const commitStatus = resolveWorkspaceBoardCardDragCommit({
+          sourceStatus: target.status,
+          targetStatus: commitTarget?.status ?? null
+        })
+        if (commitStatus) {
+          void assignStatusRef.current(target.worktreePath, commitStatus)
+        }
       }
-      void assignStatusRef.current(state.worktreePath, commitStatus)
     },
     [boardRef, clearDropTarget]
   )
@@ -171,17 +205,28 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   const startWorkspaceBoardCardDrag = useCallback((state: WorkspaceBoardCardDragState) => {
     state.started = true
     isPointerDragActiveRef.current = true
-    setWorkspaceBoardDraggedCard(state.sourceCard, true)
+    const board = boardRef.current
+    if (board) {
+      const batchIdentities = new Set(state.targets.map((target) => target.identity))
+      state.draggedCards = Array.from(
+        board.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_CARD_SELECTOR)
+      ).filter((card) => {
+        const identity = card.dataset.workspaceBoardCardId
+        return identity !== undefined && batchIdentities.has(identity)
+      })
+    }
+    setWorkspaceBoardDraggedCards(state.draggedCards, true)
     const preview = createWorkspaceBoardCardDragPreview({
       sourceCard: state.sourceCard,
       pointerX: state.currentX,
-      pointerY: state.currentY
+      pointerY: state.currentY,
+      draggedCount: state.targets.length
     })
     state.preview = preview.preview
     state.previewOffsetX = preview.offsetX
     state.previewOffsetY = preview.offsetY
     setWorkspaceBoardCardDragDocumentStyles(true)
-  }, [])
+  }, [boardRef])
 
   const updateWorkspaceBoardCardDropTarget = useCallback(
     (state: WorkspaceBoardCardDragState) => {
@@ -349,7 +394,17 @@ export function useWorkspaceBoardCardPointerDrag(args: {
         return
       }
       const worktreePath = card.dataset.workspaceBoardWorktreePath
-      if (!worktreePath) {
+      const identity = card.dataset.workspaceBoardCardId
+      if (!worktreePath || !identity) {
+        return
+      }
+      // Why resolved at press time: the selection can change between the press and the
+      // threshold, and the batch a drop commits must be the one the press described.
+      const targets = resolveCardDragTargetsRef.current(
+        card.dataset.workspaceBoardWorktreeId ?? worktreePath,
+        identity
+      )
+      if (targets.length === 0) {
         return
       }
       dragRef.current = {
@@ -358,10 +413,9 @@ export function useWorkspaceBoardCardPointerDrag(args: {
         startY: event.clientY,
         currentX: event.clientX,
         currentY: event.clientY,
-        worktreePath,
-        sourceStatus:
-          card.closest<HTMLElement>(WORKSPACE_BOARD_LANE_SELECTOR)?.dataset.workspaceStatus ?? null,
+        targets,
         sourceCard: card,
+        draggedCards: [],
         preview: null,
         previewOffsetX: 0,
         previewOffsetY: 0,
