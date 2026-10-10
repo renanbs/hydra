@@ -19,6 +19,12 @@ import {
   type SidebarPrefsSnapshot,
   type SidebarShellPrefs
 } from "./components/sidebar/WorktreeSidebar";
+import {
+  SidebarChrome,
+  LEFT_SIDEBAR_DEFAULT_WIDTH,
+  LEFT_SIDEBAR_MAX_WIDTH,
+  LEFT_SIDEBAR_MIN_WIDTH,
+} from "./components/sidebar/SidebarChrome";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
 import {
   createWorktreeFlagApplier,
@@ -432,7 +438,9 @@ export default function App() {
       document.documentElement.style.zoom = String(z);
     }
   }, [hydraSettings.ui_zoom]);
-  // Single tint source fix: leftSidebarStyle kept only for WindowTitlebar header continuity; outer aside uses WorktreeSidebar inner color-mix (12a73e2)
+  // The matchMedia listener below feeds `systemDark`, which is a dependency of the
+  // single left-sidebar appearance resolver (`resolveLeftSidebarStyleVariables`); its output
+  // styles both the WindowTitlebar (header continuity) and the sidebar chrome root.
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
@@ -873,9 +881,10 @@ export default function App() {
   const leftSidebar = useSidebarResize<HTMLElement>({
     isOpen: isLeftSidebarOpen,
     width: leftSidebarWidth,
-    minWidth: 180,
-    maxWidth: 480,
+    minWidth: LEFT_SIDEBAR_MIN_WIDTH,
+    maxWidth: LEFT_SIDEBAR_MAX_WIDTH,
     deltaSign: 1,
+    defaultWidth: LEFT_SIDEBAR_DEFAULT_WIDTH,
     setWidth: setLeftSidebarWidth,
     onDraftWidthChange: onLeftSidebarDraftWidthChange,
   });
@@ -896,7 +905,11 @@ export default function App() {
           setIsRightSidebarOpen(layout.right_sidebar_open);
           const persistedWidth = layout.left_sidebar_width;
           if (typeof persistedWidth === "number" && Number.isFinite(persistedWidth)) {
-            const clamped = clampSidebarResizeWidth(persistedWidth, 180, 480);
+            const clamped = clampSidebarResizeWidth(
+              persistedWidth,
+              LEFT_SIDEBAR_MIN_WIDTH,
+              LEFT_SIDEBAR_MAX_WIDTH
+            );
             leftSidebarWidthRef.current = clamped;
             setLeftSidebarWidth(clamped);
           }
@@ -1190,6 +1203,21 @@ export default function App() {
     };
   }, [leftSidebar.isResizing, rightSidebar.width]);
 
+  // Double-click on the handle restores the default width (Orca parity). The
+  // reset commits the width and persists it in the same write the drag end uses.
+  const handleLeftSidebarResizeReset = useCallback(() => {
+    leftSidebar.onResizeReset();
+    leftSidebarWidthRef.current = LEFT_SIDEBAR_DEFAULT_WIDTH;
+    invoke("save_layout_persistence", {
+      layout: {
+        left_sidebar_open: leftSidebarOpenRef.current,
+        right_sidebar_open: rightSidebarOpenRef.current,
+        left_sidebar_width: LEFT_SIDEBAR_DEFAULT_WIDTH,
+        right_sidebar_width: rightSidebar.width,
+      }
+    }).catch(console.error);
+  }, [leftSidebar.onResizeReset, rightSidebar.width]);
+
   const saveWorkbenchPersistence = useCallback(() => {
     const targetPath = activeWorktreePathRef.current || activeProjectRef.current?.path;
     const state: WorkbenchState = {
@@ -1399,8 +1427,6 @@ export default function App() {
     window.addEventListener("hydra:remove-project-from-group", handleRemoveProjectFromGroup);
     window.addEventListener("hydra:rename-project-group", handleRenameProjectGroup);
     window.addEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
-    const handleOpenPalette = () => setIsCommandPaletteOpen(true);
-    window.addEventListener("hydra:open-command-palette", handleOpenPalette);
     const handleOpenJumpPalette = () => setIsJumpPaletteOpen(true);
     window.addEventListener("hydra:open-jump-palette", handleOpenJumpPalette);
     // Why: the sidebar's host-header menu is many layers below App, so it cannot call
@@ -1459,7 +1485,6 @@ export default function App() {
       window.removeEventListener("hydra:remove-project-from-group", handleRemoveProjectFromGroup);
       window.removeEventListener("hydra:rename-project-group", handleRenameProjectGroup);
       window.removeEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
-      window.removeEventListener("hydra:open-command-palette", handleOpenPalette);
       window.removeEventListener("hydra:open-settings", handleOpenSettingsPane);
       mql.removeEventListener("change", onSystemChange);
     };
@@ -3889,11 +3914,12 @@ export default function App() {
       <div className="flex-1 flex overflow-hidden relative">
         {/* Left Panel: Worktree / Fleet Manager with Project Switcher — single tint source via WorktreeSidebar inner style */}
         {isLeftSidebarOpen && (
-          <>
-            <aside 
-              ref={leftSidebar.containerRef}
-              className="flex flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar shrink-0 overflow-hidden relative"
-            >
+          <SidebarChrome
+            containerRef={leftSidebar.containerRef}
+            onResizeStart={leftSidebar.onResizeStart}
+            onResizeReset={handleLeftSidebarResizeReset}
+            isResizing={leftSidebar.isResizing}
+          >
               <WorktreeSidebar 
                 sessions={sessions}
                 availableAgents={availableAgents}
@@ -3959,21 +3985,11 @@ export default function App() {
                 initialAgentsGroupBy={initialSidebarPrefs?.agentsGroupBy}
                 onSidebarPrefsChange={handleSidebarPrefsChange}
                 compactCards={Boolean(hydraSettings.compact_worktree_cards)}
-                settings={hydraSettings as any}
+                settings={hydraSettings}
+                leftSidebarStyle={leftSidebarStyle}
                 isModalOpen={isJumpPaletteOpen || isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen}
               />
-            </aside>
-
-            {/* Left Resize Handle */}
-            <div 
-              onMouseDown={leftSidebar.onResizeStart}
-              className={`w-2.5 -ml-1.5 -mr-1.5 z-20 cursor-col-resize flex items-center justify-center group select-none transition-colors ${
-                leftSidebar.isResizing ? "bg-emerald-500/40" : "hover:bg-emerald-500/30"
-              }`}
-            >
-              <div className={`w-[2px] h-full transition-colors ${leftSidebar.isResizing ? "bg-emerald-400" : "group-hover:bg-emerald-400"}`} />
-            </div>
-          </>
+          </SidebarChrome>
         )}
 
         {/* Central Workspace: Multi-Tab Workbench Surface */}

@@ -1,4 +1,5 @@
 import type { HydraSettings } from "../../shared/settings-types";
+import type { CSSProperties } from "react";
 import type { RepoIcon } from "../../shared/repo-icon";
 import type {
   CustomWorktreeVisibilitySource,
@@ -263,6 +264,13 @@ export interface WorktreeSidebarProps {
   onSelectPrevSession?: (direction: "up" | "down") => void;
   isModalOpen?: boolean;
   settings?: HydraSettings;
+  /**
+   * Resolved left-sidebar appearance variables (single source:
+   * `resolveLeftSidebarStyleVariables` in the shell). Applied to the sidebar
+   * surface so the tinted/match-terminal/terminal branches reach every
+   * descendant instead of only the window titlebar (Orca sidebar parity).
+   */
+  leftSidebarStyle?: CSSProperties;
   // PR-14: one-shot hydration do snapshot SQLite (aplicado uma vez quando cada
   // prop chega: undefined → valor; o App nunca re-emite) + notificação de mudança
   // para a persistência debounced que o App centraliza.

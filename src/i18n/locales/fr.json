@@ -16494,7 +16494,11 @@
   },
   "dashboard": {
     "sidebar": {
-      "label": "Tableau de bord des agents"
+      "label": "Tableau de bord des agents",
+      "openActivity": "Voir l'activité",
+      "closeActivity": "Fermer la vue d'activité",
+      "projects": "Projets",
+      "workspaces": "Espaces de travail"
     }
   },
   "runtimeRpc": {
