@@ -10,6 +10,10 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useRef } from "react";
 import { useAppStore } from "@/store";
 import { WorktreeList } from "../../WorktreeList";
+import {
+  hasWorkspaceDragData,
+  readWorkspaceDragDataIds,
+} from "../../workspace-status-drag-data";
 import type { GitWorktreeInfo, HydraProject } from "../../types";
 import type { WorkspaceDisplayOptions } from "../../WorkspaceOptionsMenu";
 
@@ -178,6 +182,31 @@ function dragPreview(): HTMLElement | null {
   return document.querySelector<HTMLElement>("[data-worktree-sidebar-drag-preview]");
 }
 
+/** jsdom has no DataTransfer; the row's payload write only needs the members it reads. */
+class FakeDataTransfer {
+  effectAllowed = "none";
+  private readonly data = new Map<string, string>();
+
+  get types(): string[] {
+    return [...this.data.keys()];
+  }
+
+  getData(type: string): string {
+    return this.data.get(type) ?? "";
+  }
+
+  setData(type: string, value: string): void {
+    this.data.set(type, value);
+  }
+}
+
+/** jsdom has no DragEvent; React reads `dataTransfer` off the event the browser would fire. */
+function dragStartEvent(dataTransfer: DataTransfer): Event {
+  const event = new Event("dragstart", { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "dataTransfer", { value: dataTransfer });
+  return event;
+}
+
 function dropIndicator(): HTMLElement | null {
   return document.querySelector<HTMLElement>("[data-worktree-sidebar-drop-indicator]");
 }
@@ -331,20 +360,25 @@ describe("worktree list pointer drag", () => {
 
     pressRow(rows[0]!, ROW_HEIGHT / 2);
 
-    expect(fireEvent.dragStart(surface)).toBe(false);
+    expect(fireEvent(surface, dragStartEvent(new FakeDataTransfer()))).toBe(false);
   });
 
   it("keeps the native drag available when no pointer press owns the row", () => {
     const { rows } = renderList();
     const surface = rows[0]!.querySelector<HTMLElement>("[data-worktree-card-surface]")!;
 
-    expect(fireEvent.dragStart(surface)).toBe(true);
+    const dataTransfer = new FakeDataTransfer();
+    expect(fireEvent(surface, dragStartEvent(dataTransfer))).toBe(true);
+    // The row published the shared workspace payload the board's drop targets read
+    // (`hasWorkspaceDragData`), keyed on the row's workspace id — not its path.
+    expect(hasWorkspaceDragData(dataTransfer)).toBe(true);
+    expect(readWorkspaceDragDataIds(dataTransfer)).toEqual(["repo_a::/repo/hydra/w0"]);
 
     // A press that never crossed the threshold hands the row back to the native path.
     pressRow(rows[0]!, ROW_HEIGHT / 2);
     releasePointer(ROW_HEIGHT / 2);
 
-    expect(fireEvent.dragStart(surface)).toBe(true);
+    expect(fireEvent(surface, dragStartEvent(new FakeDataTransfer()))).toBe(true);
   });
 
   it("swallows the click that follows a drop", async () => {

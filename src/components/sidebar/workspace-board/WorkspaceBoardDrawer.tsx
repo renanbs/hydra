@@ -13,6 +13,7 @@ import { useWorkspaceBoardProjection } from './use-workspace-board-projection'
 import { useWorkspaceBoardSearch } from './use-workspace-board-search'
 import { useWorkspaceBoardSelection } from './use-workspace-board-selection'
 import { useWorkspaceBoardShiftWheelScroll } from './use-workspace-board-shift-wheel-scroll'
+import { useWorkspaceBoardNativeDrag } from './use-workspace-board-native-drag'
 import { useWorkspaceBoardStatusActions } from './use-workspace-board-status-actions'
 import { filterWorkspaceBoardLanes } from './workspace-board-search'
 import {
@@ -48,14 +49,14 @@ export type WorkspaceBoardDrawerProps = {
   allWorktrees: readonly GitWorktreeInfo[]
   /**
    * The app's own status write (`set_worktree_status` + the local worktree maps the
-   * sidebar projects from). The board's card drop commits through it — the board never
-   * grows a second writer for the same column.
+   * sidebar projects from). The board's card drops commit through it — the pointer drag and
+   * the native lane drop both — so the board never grows a second writer for the same column.
    */
   onAssignWorktreeStatus: (worktreePath: string, status: WorkspaceStatus) => void | Promise<void>
   /**
    * The app's own pin write (`set_worktree_flags` with `is_pinned`). A card dropped on the
-   * board's pin strip commits through it — the board never grows a second writer for the
-   * pin, and a pin drop never writes a status (D08-028).
+   * board's pin strip commits through it — by pointer or by native HTML5 drop — so the board
+   * never grows a second writer for the pin, and a pin drop never writes a status (D08-028).
    */
   onPinWorktree: (worktreePath: string) => void
   /**
@@ -139,12 +140,56 @@ function WorkspaceBoardDrawerContent({
   const boardRef = useRef<HTMLDivElement | null>(null)
   const laneScrollerRef = useRef<HTMLDivElement | null>(null)
   const areaSelectionOverlayRef = useRef<HTMLDivElement | null>(null)
-  const { onCardPointerDownCapture, dropTargetStatus, pinDropTargetActive, isPointerDragActiveRef } =
+  // The ONE bridge between the native drag's payload and the app's writers: the drag speaks
+  // workspace ids (Orca's `Worktree.id`, the id the sidebar's own drag publishes), the app's
+  // status and pin writers key on workspace paths. Same shape as the sidebar list's own bridge.
+  const worktreePathByWorktreeId = useMemo(() => {
+    const byId = new Map<string, string>()
+    for (const lane of lanes) {
+      for (const card of lane.cards) {
+        byId.set(card.worktreeId, card.worktree.path)
+      }
+    }
+    return byId
+  }, [lanes])
+  const dropWorktreesAtEndOfStatus = useCallback(
+    (worktreeIds: readonly string[], status: WorkspaceStatus) => {
+      for (const worktreeId of worktreeIds) {
+        const worktreePath = worktreePathByWorktreeId.get(worktreeId)
+        if (worktreePath) {
+          void onAssignWorktreeStatus(worktreePath, status)
+        }
+      }
+    },
+    [onAssignWorktreeStatus, worktreePathByWorktreeId]
+  )
+  const pinWorktrees = useCallback(
+    (worktreeIds: readonly string[]) => {
+      for (const worktreeId of worktreeIds) {
+        const worktreePath = worktreePathByWorktreeId.get(worktreeId)
+        if (worktreePath) {
+          void onPinWorktree(worktreePath)
+        }
+      }
+    },
+    [onPinWorktree, worktreePathByWorktreeId]
+  )
+  // Orca's shape: the native drag owns the board's lane/strip highlight state and the pointer
+  // drag publishes into it, so both gestures paint the same destination.
+  const nativeDrag = useWorkspaceBoardNativeDrag({
+    open,
+    boardRef,
+    onDropWorktreesAtEndOfStatus: dropWorktreesAtEndOfStatus,
+    onPinWorktrees: pinWorktrees
+  })
+  const { onCardPointerDownCapture, isPointerDragActiveRef } =
     useWorkspaceBoardCardPointerDrag({
       open,
       boardRef,
       onAssignWorktreeStatus,
       onPinWorktree,
+      onDragTargetChange: nativeDrag.setDragOverStatus,
+      onPinDragTargetChange: nativeDrag.setPinDragOver
     })
   useWorkspaceBoardShiftWheelScroll(boardRef, laneScrollerRef, open, isPointerDragActiveRef)
   const statusActions = useWorkspaceBoardStatusActions({ allWorktrees, onAssignWorktreeStatus })
@@ -261,8 +306,14 @@ function WorkspaceBoardDrawerContent({
       boardRef={boardRef}
       laneScrollerRef={laneScrollerRef}
       areaSelectionOverlayRef={areaSelectionOverlayRef}
-      dropTargetStatus={dropTargetStatus}
-      pinDropTargetActive={pinDropTargetActive}
+      dropTargetStatus={nativeDrag.dragOverStatus}
+      pinDropTargetActive={nativeDrag.pinDragOver}
+      onNativeDragOver={nativeDrag.handleDragOver}
+      onNativeDragLeave={nativeDrag.handleDragLeave}
+      onNativeDrop={nativeDrag.handleDrop}
+      onPinDragOver={nativeDrag.handlePinDragOver}
+      onPinDragLeave={nativeDrag.handlePinDragLeave}
+      onPinDrop={nativeDrag.handlePinDrop}
       statusActions={statusActions}
       query={query}
       isFiltering={isFiltering}

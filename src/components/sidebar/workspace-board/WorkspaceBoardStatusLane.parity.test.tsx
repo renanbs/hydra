@@ -31,6 +31,7 @@ function card(
 ): WorkspaceBoardCardModel {
   return {
     identity: `|${id}`,
+    worktreeId: `repo_1::/repo/hydra/${id}`,
     worktree: worktree(id),
     project: PROJECT,
     sessions: [],
@@ -153,14 +154,17 @@ describe('WorkspaceBoardStatusLane (Orca WorkspaceKanbanStatusLane parity)', () 
     ).toBe(true)
   })
 
-  it('renders no rename or delete affordance on a board card', () => {
+  it('renders no rename, delete or native drag affordance on a board card', () => {
     const container = renderLane([card('wt-a', 0)])
 
     // `affiliateListMode` removes the card's own destructive/editing controls; a
-    // board card must not paint a control the board does not implement.
+    // board card must not paint a control the board does not implement. The board is a
+    // native drop DESTINATION only (Orca's `nativeDragEnabled={false}` on the lane grid):
+    // the source is the sidebar list, so no card here may be `draggable`.
     expect(container.querySelector('[aria-label="Delete workspace"]')).toBeNull()
     expect(container.querySelector('input')).toBeNull()
     expect(container.querySelector('[draggable="true"]')).toBeNull()
+    expect(container.querySelector('[data-worktree-card-surface][draggable="true"]')).toBeNull()
   })
 
   // D08-021/D08-030: the lane's `+` create-workspace affordances (header and footer),

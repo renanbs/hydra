@@ -65,6 +65,7 @@ import type {
 } from "./types";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
+import { writeWorkspaceDragData } from "./workspace-status-drag-data";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
@@ -985,7 +986,15 @@ export function WorktreeList({
             onRenameRequestConsumed={() => setRenameRequest(null)}
             onContextMenu={onWorktreeContextMenu}
             onSelectSession={onSelectSession}
-            onDragStart={onWorktreeDragStart ? (e, path) => onWorktreeDragStart(e, path) : undefined}
+            onDragStart={(e, path) => {
+              // The board's lanes and pin strip are native drop destinations, and they
+              // receive this row by the shared `workspace-status-drag-data.ts` payload
+              // (D08-041): the board keys on the workspace id — the same id this list's
+              // pointer drag speaks (`row.worktree.id`) — not on the path the list's own
+              // HTML5 reorder reads. Orca publishes the same payload from its rows.
+              writeWorkspaceDragData(e.dataTransfer, row.worktree.id);
+              onWorktreeDragStart?.(e, path);
+            }}
             onDragOver={onWorktreeDragOver ? (e, path) => onWorktreeDragOver(e, path) : undefined}
             onDrop={onWorktreeDrop ? (e, path) => onWorktreeDrop(e, path, proj) : undefined}
             onDragEnd={onWorktreeDragEnd}

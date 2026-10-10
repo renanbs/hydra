@@ -464,19 +464,25 @@ export function WorktreeSidebar({
     [onReorderWorktrees]
   );
 
-  const handleWorktreeDragStart = useCallback((e: React.DragEvent, path: string) => {
+  // Why no payload here: the row publishes the shared `workspace-status-drag-data.ts`
+  // payload itself (WorktreeList owns the workspace id the board keys on). This handler only
+  // remembers the row, which is what the list's own HTML5 drop preview reads.
+  const handleWorktreeDragStart = useCallback((_event: React.DragEvent, path: string) => {
     setDraggedWorktreePath(path);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("application/x-hydra-worktree-drag", path);
   }, []);
 
   const handleWorktreeDragOver = useCallback((e: React.DragEvent, targetPath: string) => {
+    // Why the guard: the list's native drop preview belongs to the list's own drag. Any
+    // other drag that reaches a row — an external file, or a native workspace drag from
+    // another surface — is not a drop this list commits, so it must not paint an insertion
+    // line the release cannot honour.
+    if (!draggedWorktreePath) return;
     e.preventDefault();
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
     const isTop = e.clientY - rect.top < rect.height / 2;
     setWorktreeDropTarget({ path: targetPath, position: isTop ? "top" : "bottom" });
-  }, []);
+  }, [draggedWorktreePath]);
 
   const handleWorktreeDrop = useCallback((
     e: React.DragEvent,

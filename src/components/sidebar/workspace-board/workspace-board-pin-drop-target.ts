@@ -1,10 +1,12 @@
-// The board's pin drop target (D08-028): Orca's `WorkspaceKanbanPinDropTarget` strip,
-// ported onto the pointer drags this board actually has.
+// The board's pin drop target (D08-028): Orca's `WorkspaceKanbanPinDropTarget` strip.
 //
 // Why a module store and not React state: the strip is a leaf of the board's tree, the
 // sidebar list's drag lives in a sibling tree, and both drags resolve their release by
 // pointer position outside React. The strip registers its own element while the board is
 // open — the same gate the lane grid uses for the board — and everything else asks here.
+// The board's own drags (pointer and native HTML5) do not need this store: they resolve the
+// strip by its rect (`resolveWorkspaceBoardPinDropTarget`) and paint the hover through the
+// board's shared `pinDragOver` state.
 import { useSyncExternalStore } from 'react'
 import type { WorkspaceBoardPinDropTarget } from './drag/workspace-board-card-drag-dom'
 
