@@ -49,6 +49,8 @@ import {
   persistWorktreeStatusBatch,
 } from "./lib/worktree-status-persistence";
 import { cloneDefaultWorkspaceStatuses } from "./shared/workspace-statuses";
+import { keybindingMatchesAction } from "./shared/keybindings";
+import { getShortcutPlatform } from "./lib/shortcut-platform";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraNavId } from "./components/SettingsModal";
@@ -254,6 +256,7 @@ function sanitizeSidebarPrefsSnapshot(input: unknown): SidebarPrefsSnapshot {
     out.agentsReadFilter = src.agentsReadFilter;
   }
   if (src.agentsGroupBy === "state" || src.agentsGroupBy === "project") out.agentsGroupBy = src.agentsGroupBy;
+  if (typeof src.agentsSidebarIntroShown === "boolean") out.agentsSidebarIntroShown = src.agentsSidebarIntroShown;
   // Host scope: same normalizers the store setters use, so a malformed value
   // degrades to the default ('all' / all hosts) instead of blanking the sidebar.
   out.workspaceHostScope = normalizeExecutionHostScope(
@@ -488,6 +491,9 @@ export default function App() {
   // Orca parity: the store's host-aware catalog is the one source that can name a
   // repo's execution host on the render path (`WorktreeList` reads the same slice).
   const storeRepos = useAppStore((s) => s.repos);
+  // Orca parity (D01-052): the global shortcut path reads the keybinding registry
+  // (definitions + user overrides) instead of hardcoded chords.
+  const keybindings = useAppStore((s) => s.keybindings);
   /** Live workspace rows the delete confirmation revalidates its targets against. */
   const deleteLiveTargets = useMemo<WorktreeDeleteLiveTarget[]>(() => {
     const rows: WorktreeDeleteLiveTarget[] = [];
@@ -606,6 +612,7 @@ export default function App() {
     snap.displayOptions = prefs.displayOptions;
     snap.agentsReadFilter = prefs.agentsReadFilter;
     snap.agentsGroupBy = prefs.agentsGroupBy;
+    snap.agentsSidebarIntroShown = prefs.agentsSidebarIntroShown;
     scheduleSidebarPrefsSave();
   }, [scheduleSidebarPrefsSave]);
 
@@ -2797,7 +2804,10 @@ export default function App() {
         setIsCommandPaletteOpen((prev) => !prev);
         return;
       }
-      if (isChord && e.key.toLowerCase() === "b") {
+      // D01-052: the left-sidebar toggle is a first-class command — dispatched from
+      // the keybinding registry (`sidebar.left.toggle`, Mod+B by default and
+      // user-remappable) instead of a hardcoded `b` chord.
+      if (keybindingMatchesAction("sidebar.left.toggle", e, getShortcutPlatform(), keybindings)) {
         e.preventDefault();
         setIsLeftSidebarOpen((prev) => {
           const next = !prev;
@@ -2961,7 +2971,8 @@ export default function App() {
     handleNewTerminalTab,
     handleNewFileTab,
     handleOpenFileTab,
-    handleNavigateWorkspace
+    handleNavigateWorkspace,
+    keybindings
   ]);
 
 
@@ -3983,6 +3994,7 @@ export default function App() {
                 initialDisplayOptions={initialSidebarPrefs?.displayOptions}
                 initialAgentsReadFilter={initialSidebarPrefs?.agentsReadFilter}
                 initialAgentsGroupBy={initialSidebarPrefs?.agentsGroupBy}
+                initialAgentsIntroShown={initialSidebarPrefs?.agentsSidebarIntroShown}
                 onSidebarPrefsChange={handleSidebarPrefsChange}
                 compactCards={Boolean(hydraSettings.compact_worktree_cards)}
                 settings={hydraSettings}

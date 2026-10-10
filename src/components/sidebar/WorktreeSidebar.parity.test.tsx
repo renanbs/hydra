@@ -7,6 +7,15 @@ import type { WorktreeSession } from "./WorktreeSidebar";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn().mockResolvedValue(null) }));
 
+// The header's Agents intro popover is Radix-based, and Radix measures its content with
+// a ResizeObserver that jsdom does not implement. Stub only the constructor surface used.
+class ResizeObserverStub {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
+
 const PROJECT: HydraProject = {
   id: "repo_a",
   name: "repo",

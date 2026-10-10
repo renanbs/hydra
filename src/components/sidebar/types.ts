@@ -37,6 +37,8 @@ export interface SidebarPrefsSnapshot {
   displayOptions?: WorkspaceDisplayOptions;
   agentsReadFilter?: AgentsStatusFilter;
   agentsGroupBy?: AgentsGroupBy;
+  /** Set once the one-time Agents-view intro popover has been acknowledged (D01-009). */
+  agentsSidebarIntroShown?: boolean;
   /** Sidebar host filter scope; `'all'` = mixed view. */
   workspaceHostScope?: WorkspaceHostScope;
   /** Sidebar host filter ids; `null` = all hosts (sticky). */
@@ -51,6 +53,7 @@ export interface SidebarShellPrefs {
   displayOptions: WorkspaceDisplayOptions;
   agentsReadFilter: AgentsStatusFilter;
   agentsGroupBy: AgentsGroupBy;
+  agentsSidebarIntroShown: boolean;
 }
 
 export interface AvailableAgent {
@@ -280,5 +283,6 @@ export interface WorktreeSidebarProps {
   initialDisplayOptions?: WorkspaceDisplayOptions;
   initialAgentsReadFilter?: AgentsStatusFilter;
   initialAgentsGroupBy?: AgentsGroupBy;
+  initialAgentsIntroShown?: boolean;
   onSidebarPrefsChange?: (prefs: SidebarShellPrefs) => void;
 }

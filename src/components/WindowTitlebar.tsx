@@ -2,6 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { PanelLeft, PanelRight } from "lucide-react";
 import { ACTIVE_SHELL_FACE } from "../lib/shell-face";
+import { useShortcutLabel } from "../hooks/useShortcutLabel";
+import { translate } from "../i18n/i18n";
 
 export function WindowControls() {
   const [maximized, setMaximized] = useState(false);
@@ -93,6 +95,15 @@ export function WindowTitlebar({
   onToggleLeft,
   onToggleRight,
 }: WindowTitlebarProps) {
+  // D01-052: the toggle's label comes from the keybinding registry, so a remapped
+  // chord (or an alias list) is reflected instead of a hardcoded "Ctrl+B".
+  const leftSidebarShortcutLabel = useShortcutLabel("sidebar.left.toggle");
+  const leftSidebarToggleAriaLabel = translate("auto.App.e4b9e7dff7", "Toggle sidebar");
+  const leftSidebarToggleTitle = translate(
+    "auto.App.ce37cf5279",
+    "Toggle sidebar ({{value0}})",
+    { value0: leftSidebarShortcutLabel }
+  );
   const handleDragMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
       invoke("window_start_dragging").catch(console.error);
@@ -117,7 +128,8 @@ export function WindowTitlebar({
               e.stopPropagation();
               onToggleLeft();
             }}
-            title="Toggle Left Sidebar (Ctrl+B)"
+            title={leftSidebarToggleTitle}
+            aria-label={leftSidebarToggleAriaLabel}
             className="p-1.5 rounded transition cursor-pointer text-worktree-sidebar-accent-foreground bg-worktree-sidebar-accent hover:opacity-90"
           >
             <PanelLeft className="w-3.5 h-3.5" />
@@ -144,7 +156,8 @@ export function WindowTitlebar({
                 e.stopPropagation();
                 onToggleLeft();
               }}
-              title="Toggle Left Sidebar (Ctrl+B)"
+              title={leftSidebarToggleTitle}
+              aria-label={leftSidebarToggleAriaLabel}
               className="p-1.5 rounded transition cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent/60"
             >
               <PanelLeft className="w-3.5 h-3.5" />

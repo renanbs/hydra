@@ -18,6 +18,10 @@ import {
   buildSidebarLiveActivityIndex,
   isVisibleUnderSidebarMenuFilters,
 } from "./visible-worktree-filters";
+import { sidebarHasActiveFilters } from "./sidebar-filter-actions";
+import type { SidebarFilterState } from "./visible-worktree-kinds";
+import { shouldFiltersHideAllRows } from "./sidebar-empty-state-gate";
+import { WorktreeListEmptyState } from "./worktree-list/listing/WorktreeListEmptyState";
 import { getGitHubPRCacheKey } from "@/store/slices/github-cache-key";
 import { buildHostIdByRepoId } from "./repo-execution-host-index";
 import {
@@ -315,6 +319,12 @@ export interface WorktreeListProps {
   onOpenNewWorkspaceModal: (proj: HydraProject) => void;
   onOpenAddRepoDialog: () => void;
   onClearFilter?: () => void;
+  /**
+   * Resets the menu/host-scope filters (display options + host scope) — the writer
+   * behind the empty state's Clear Filters button. Distinct from `onClearFilter`,
+   * which only clears the search query.
+   */
+  onClearSidebarFilters?: () => void;
   onToggleProjectCollapse: (projectId: string) => void;
   onToggleGroupCollapse: (groupId: string) => void;
   onProjectContextMenu?: (e: React.MouseEvent, proj: HydraProject) => void;
@@ -490,6 +500,7 @@ export function WorktreeList({
   onOpenNewWorkspaceModal,
   onOpenAddRepoDialog,
   onClearFilter,
+  onClearSidebarFilters,
   onToggleProjectCollapse,
   onToggleGroupCollapse,
   onProjectContextMenu,
@@ -1318,6 +1329,36 @@ export function WorktreeList({
     ]
   );
 
+  // ─── Clear Filters empty-state gate (Orca `sidebar-empty-state-gate.ts`) ───
+  //
+  // The menu filters (display options + host scope) reduce the row model before it is
+  // painted, so a folder-only account can end up with zero rows for a reason the empty
+  // state cannot explain. The gate keeps "No workspaces found" from winning unless those
+  // filters are actually what emptied the list (#15362).
+  const sidebarFilterState: SidebarFilterState = {
+    showSleepingWorkspaces: !displayOptions.hideSleeping,
+    filterRepoIds: displayOptions.filterProjectIds ?? [],
+    hideDefaultBranchWorkspace: displayOptions.hideDefaultBranch,
+    hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
+    hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
+    hideDetachedHeadWorkspaces: displayOptions.hideDetachedHead,
+    // Hydra's sidebar has no per-device filter; false mirrors Orca's default so the
+    // gate's contract is unchanged.
+    hideWorkspacesFromOtherDevices: false,
+    visibleWorkspaceHostIds: pipelineVisibleHostIds,
+    workspaceHostScope: pipelineHostScope,
+  };
+  const hasFilters = sidebarHasActiveFilters(sidebarFilterState);
+  const filtersHideAllRows = shouldFiltersHideAllRows({
+    hasFilters,
+    visibleWorktreeCount: rows.filter((row) => row.type === "item").length,
+    visibleFolderWorkspaceCount: rows.filter((row) => row.type === "folder-workspace").length,
+    // Hydra's row union has no empty-project placeholder rows (Orca's
+    // `placeholderRepoIds`), so this term is structurally zero.
+    placeholderRepoCount: 0,
+    importedWorktreeCardCount: rows.filter((row) => row.type === "imported-worktrees-card").length,
+  });
+
   if (projects.length === 0) {
     return (
       <div className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}>
@@ -1354,6 +1395,12 @@ export function WorktreeList({
         )}
       </div>
     );
+  }
+
+  // Why after the search branch: a query that matches no project keeps its own
+  // "matching \"{filter}\"" message; this branch is the menu/host-scope case.
+  if (rows.length === 0 || filtersHideAllRows) {
+    return <WorktreeListEmptyState hasFilters={hasFilters} onClearFilters={onClearSidebarFilters} />;
   }
 
   return (

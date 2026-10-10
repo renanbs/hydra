@@ -14635,6 +14635,17 @@
     }
   },
   "components": {
+    "cacheTimer": {
+      "expired": "El próximo mensaje reenviará todo el contexto como tokens no cacheados",
+      "remaining": "La caché del prompt expira en {{remaining}}"
+    },
+    "worktreeStatusIndicator": {
+      "working": "Trabajando",
+      "monitoring": "Supervisando tareas en segundo plano",
+      "permission": "Requiere atención",
+      "interrupted": "Interrumpido",
+      "done": "Completado"
+    },
     "native-chat": {
       "composer": {
         "imageUnsupported": "Este agente no admite pegar imágenes.",

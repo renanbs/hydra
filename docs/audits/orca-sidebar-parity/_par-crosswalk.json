@@ -208,7 +208,7 @@
  "PAR-60": [
   {
    "id": "D01-049",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D04a-010",
@@ -238,13 +238,13 @@
  "PAR-38": [
   {
    "id": "D01-050",
-   "status": "missing"
+   "status": "not-applicable"
   }
  ],
  "PAR-80": [
   {
    "id": "D01-051",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D03a-042",

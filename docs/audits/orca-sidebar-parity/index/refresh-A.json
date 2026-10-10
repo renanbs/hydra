@@ -69,31 +69,33 @@
   },
   {
    "id": "D01-009",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarHeader.tsx:25-44",
-    "src/components/sidebar/SidebarHeader.tsx:139-170"
+    "src/components/sidebar/SidebarHeader.tsx:7",
+    "src/components/sidebar/SidebarHeader.tsx:47",
+    "src/components/sidebar/SidebarHeader.tsx:89-105",
+    "src/components/sidebar/SidebarHeader.tsx:106-146",
+    "src/components/sidebar/WorktreeSidebar.tsx:140,360,434"
    ],
-   "note": "Intro popover segue com gate em localStorage e sem ancoragem/outside-dismiss."
+   "note": "Intro dos Agents virou popover Radix ancorado (PopoverAnchor no botao de sino + PopoverContent com seta), com dismiss por Escape, clique fora e 'Got it'; o gate e preferencia persistida (agentsSidebarIntroShown via prefs do sidebar), nao localStorage cru."
   },
   {
    "id": "D01-011",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarHeader.tsx:104-117",
-    "src/App.tsx:3869",
-    "src/App.tsx:4230-4233"
+    "src/components/sidebar/SidebarHeader.tsx:179"
    ],
-   "note": "Abre modal por prop (setIsAddRepoOpen) e monta AddRepoDialog no App; falta data-workspace-board-preserve-open no botao (o board agora existe mas nao e preservado por ele)."
+   "note": "O botao 'Add project' carrega data-workspace-board-preserve-open (mesmo contrato do Orca em SidebarFilter.tsx:193,220 / SidebarHostScopeMenuSection.tsx:111), preservando o Workspace Board aberto ao abrir o modal."
   },
   {
    "id": "D01-012",
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/SidebarHeader.tsx:119-138",
-    "src/App.tsx:3870-3873"
+    "src/components/sidebar/SidebarHeader.tsx:6",
+    "src/components/sidebar/SidebarHeader.tsx:51",
+    "src/components/sidebar/SidebarHeader.tsx:202"
    ],
-   "note": "Segue 'Mod+N' hardcoded e sem data-contextual-tour-target/tour handoff."
+   "note": "Entregues: atalho vindo do registry (useOptionalShortcutLabel('workspace.create'), sem 'Mod+N' hardcoded) e data-contextual-tour-target='workspace-create-control'. Segue PARTIAL porque o handoff do tour nao foi portado: o Hydra nao tem overlay de tour (nenhum componente renderiza data-contextual-tour-overlay/panel) e requestContextualTour existe no slice sem overlay — portar o handoff seria controle inerte."
   },
   {
    "id": "D01-013",
@@ -190,33 +192,35 @@
   },
   {
    "id": "D01-048",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeStatusIndicator.tsx:17-24",
-    "src/components/sidebar/WorktreeList.tsx:517-533",
-    "src/components/AgentStateDot.tsx:43-52"
+    "src/components/sidebar/WorktreeStatusIndicator.tsx:10",
+    "src/components/sidebar/WorktreeStatusIndicator.tsx:47",
+    "src/components/sidebar/WorktreeStatusIndicator.tsx:71",
+    "src/i18n/locales/en.json"
    ],
-   "note": "Indicador segue com rotulos hardcoded e glifo divergente; o import no lane ainda nao passa pelo componente."
+   "note": "Indicador passa pelo componente WorktreeStatusIndicator: rotulos via i18n (components.worktreeStatusIndicator.*, presente nos 6 locales) e glifo AgentQuestionIcon (token text-agent-question), com o lane consumindo o componente em vez de markup duplicado."
   },
   {
    "id": "D01-051",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:541-560",
-    "src/components/sidebar/sidebar-filter-actions.ts:14-65",
-    "src/components/sidebar/visible-worktrees.ts:12-13"
+    "src/components/sidebar/sidebar-empty-state-gate.ts",
+    "src/components/sidebar/sidebar-empty-state-gate.test.ts",
+    "src/components/sidebar/WorktreeList.tsx:23",
+    "src/components/sidebar/WorktreeList.tsx:1352"
    ],
-   "note": "shouldFiltersHideAllRows segue inexistente; a pilha so extraiu visible-worktree-filters.ts (live-activity + filtros), sem o gate de conta baseada em pastas."
+   "note": "shouldFiltersHideAllRows portado (modulo puro + teste) e ligado na lista como o Orca: conta so-de-pastas com filtros ativos cai no estado vazio correto (com Clear Filters via onClearSidebarFilters) em vez de 'sem workspaces'."
   },
   {
    "id": "D01-052",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/shared/keybindings/definitions-core-1.ts:180-187",
-    "src/App.tsx:2748-2753",
-    "src/components/WindowTitlebar.tsx:118-120"
+    "src/App.tsx:2808-2816",
+    "src/shared/keybindings/definitions-core-1.ts:181",
+    "src/shared/keybindings/sidebar-left-toggle.parity.test.ts:12-14"
    ],
-   "note": "sidebar.left.toggle segue orfao no registry: o atalho e tratado por keydown raw (App.tsx:2748) e o titulo e estatico."
+   "note": "sidebar.left.toggle deixou de ser orfao: o atalho e despachado por keybindingMatchesAction (registry + overrides, Mod+B por padrao e remapeavel) e o keydown raw de 'b' foi removido; o titulo dos toggles da titlebar vem do label do atalho (nao estatico). Verificado no app: 1x Ctrl+B fecha e 1x Ctrl+B reabre, sem desvio de largura. Fecha o escape E3 do ledger de falsificacao."
   },
   {
    "id": "D02a-001",
@@ -665,6 +669,24 @@
     "src/components/sidebar/WorktreeSidebar.tsx:1190-1210"
    ],
    "note": "Nenhum listener de 'focus' de janela/ativacao/reconexao para revalidar prompt de setup."
+  },
+  {
+   "id": "D01-049",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/prompt-cache-countdown-clock.ts:69,97",
+    "src/components/sidebar/prompt-cache-timer-selection.ts",
+    "src/components/sidebar/CacheTimer.tsx"
+   ],
+   "note": "CacheTimer fiel ao Orca: clock unico compartilhado (subscribePromptCacheCountdownClock/usePromptCacheCountdownNow — sem setInterval por card), expirado em vermelho sem rotulo, alerta amarelo <=60s, tooltip/aria-label detalhados; o controller deixou de hardcodear null/300_000 e usa startedAt/TTL do store."
+  },
+  {
+   "id": "D01-050",
+   "status": "not-applicable",
+   "evidence": [
+    "/home/renan/src/orca/src/renderer/src/components/sidebar/sidebar-count-badge.tsx:1-24"
+   ],
+   "note": "O Orca DEFINE o componente (sidebar-count-badge.tsx, pilula absoluta) mas nao o consome em lugar nenhum (grep por CountBadge no renderer = 0 ocorrencias alem do proprio arquivo; o unico hit e a string agentsCountBadge, outra coisa). Sem consumidor nao ha comportamento observavel a replicar: portar criaria codigo morto, entao o port foi removido. Falso-positivo do inventario (artefato de fonte, nao de comportamento)."
   }
  ]
 }

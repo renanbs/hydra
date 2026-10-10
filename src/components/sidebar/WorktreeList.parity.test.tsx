@@ -452,4 +452,61 @@ describe("WorktreeList row model (Orca parity)", () => {
       expect(screen.queryByLabelText(/hidden worktrees? in hydra/)).toBeNull();
     });
   });
+
+  // D01-051: the Clear Filters empty state must not win over live rows. A folder-only
+  // account used to lose its workspaces to "No workspaces found" as soon as ANY filter
+  // was active, because the gate counted only git worktrees (#15362).
+  describe("clear-filters empty-state gate", () => {
+    const FOLDER_ONLY = {
+      projects: [PROJECT_A],
+      worktreesByProject: { [PROJECT_A.path]: [] },
+      projectGroups: [{ id: "grp_1", name: "Clients" }],
+      folderWorkspaces: [
+        { id: "fw_1", projectGroupId: "grp_1", name: "MalhaClub", folderPath: "/clients/malha" },
+      ],
+    };
+
+    it("keeps a folder workspace visible while a filter is active", () => {
+      const { container } = renderList({
+        ...FOLDER_ONLY,
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, hideDetachedHead: true },
+      });
+
+      expect(container.querySelector('[aria-label="MalhaClub"]')).not.toBeNull();
+      expect(screen.queryByText("No workspaces found")).toBeNull();
+    });
+
+    it("wins when the filters hid every row kind", () => {
+      renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: {
+          [PROJECT_A.path]: [
+            { ...worktree("/repo/hydra-cli", "feat/cli"), cliProvenanceKind: "created-by-cli" },
+          ],
+        },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, hideCliCreated: true },
+        onClearSidebarFilters: vi.fn(),
+      });
+
+      expect(screen.getByText("No workspaces found")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /clear filters/i })).toBeInTheDocument();
+    });
+
+    it("resets the filters through the shell's clear writer", () => {
+      const onClearSidebarFilters = vi.fn();
+      renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: {
+          [PROJECT_A.path]: [
+            { ...worktree("/repo/hydra-cli", "feat/cli"), cliProvenanceKind: "created-by-cli" },
+          ],
+        },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, hideCliCreated: true },
+        onClearSidebarFilters,
+      });
+
+      screen.getByRole("button", { name: /clear filters/i }).click();
+      expect(onClearSidebarFilters).toHaveBeenCalledTimes(1);
+    });
+  });
 });

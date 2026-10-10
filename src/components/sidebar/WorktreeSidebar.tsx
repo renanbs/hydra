@@ -44,6 +44,8 @@ import type {
   SidebarShellPrefs,
 } from "./types";
 import { IDLE, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
+import { useAppStore } from "../../store";
+import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
 export * from "./types";
 
@@ -113,6 +115,7 @@ export function WorktreeSidebar({
   initialDisplayOptions,
   initialAgentsReadFilter,
   initialAgentsGroupBy,
+  initialAgentsIntroShown,
   onSidebarPrefsChange,
 }: WorktreeSidebarProps): React.JSX.Element {
   // ─── View & Preference State ─────────────────────────────────────────────
@@ -131,6 +134,11 @@ export function WorktreeSidebar({
   );
   const [agentsGroupBy, setAgentsGroupBy] = useState<AgentsGroupBy>(
     initialAgentsGroupBy ?? "state"
+  );
+  // D01-009: the one-time Agents-view intro is gated by a persisted preference
+  // (the same `ui.sidebar` blob the other shell prefs use), not raw localStorage.
+  const [agentsIntroShown, setAgentsIntroShown] = useState<boolean>(
+    initialAgentsIntroShown ?? false
   );
 
   const [filter, setFilter] = useState("");
@@ -349,6 +357,7 @@ export function WorktreeSidebar({
       displayOptions: patch?.displayOptions ?? displayOptions,
       agentsReadFilter: patch?.agentsReadFilter ?? agentsStatusFilter,
       agentsGroupBy: patch?.agentsGroupBy ?? agentsGroupBy,
+      agentsSidebarIntroShown: patch?.agentsSidebarIntroShown ?? agentsIntroShown,
     });
   }, [
     onSidebarPrefsChange,
@@ -358,6 +367,7 @@ export function WorktreeSidebar({
     displayOptions,
     agentsStatusFilter,
     agentsGroupBy,
+    agentsIntroShown,
   ]);
 
   // ─── Project & Group Toggles ─────────────────────────────────────────────
@@ -391,9 +401,37 @@ export function WorktreeSidebar({
     notifyPrefs({ displayOptions: newOptions });
   }, [notifyPrefs]);
 
+  // The empty state's escape hatch (D01-051): resets every menu/host-scope filter
+  // that can empty the list, through the same writers the options menu uses — one
+  // writer per preference, no parallel state.
+  const setWorkspaceHostScope = useAppStore((s) => s.setWorkspaceHostScope);
+  const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
+  const handleClearSidebarFilters = useCallback(() => {
+    const next: WorkspaceDisplayOptions = {
+      ...displayOptions,
+      hideSleeping: false,
+      hideDefaultBranch: false,
+      hideAutomationCreated: false,
+      hideCliCreated: false,
+      hideDetachedHead: false,
+      filterProjectIds: [],
+    };
+    setDisplayOptions(next);
+    notifyPrefs({ displayOptions: next });
+    setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
+    setVisibleWorkspaceHostIds(null);
+  }, [displayOptions, notifyPrefs, setWorkspaceHostScope, setVisibleWorkspaceHostIds]);
+
   const handleAgentsGroupByChange = useCallback((groupBy: AgentsGroupBy) => {
     setAgentsGroupBy(groupBy);
     notifyPrefs({ agentsGroupBy: groupBy });
+  }, [notifyPrefs]);
+
+  // D01-009: acknowledging the intro persists through the same writer as the other
+  // shell prefs, so it shows exactly once across restarts.
+  const handleAcknowledgeAgentsIntro = useCallback(() => {
+    setAgentsIntroShown(true);
+    notifyPrefs({ agentsSidebarIntroShown: true });
   }, [notifyPrefs]);
 
   const handleAgentsStatusFilterChange = useCallback((statusFilterValue: AgentsStatusFilter) => {
@@ -693,6 +731,8 @@ export function WorktreeSidebar({
       <SidebarHeader
         sidebarBody={sidebarBody}
         setSidebarBody={handleSetSidebarBody}
+        introShown={agentsIntroShown}
+        onAcknowledgeIntro={handleAcknowledgeAgentsIntro}
         groupBy={displayOptions.groupBy}
         onOpenAddRepoDialog={onOpenAddRepoDialog}
         onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
@@ -800,6 +840,7 @@ export function WorktreeSidebar({
               onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
               onOpenAddRepoDialog={onOpenAddRepoDialog}
               onClearFilter={() => setFilter("")}
+              onClearSidebarFilters={handleClearSidebarFilters}
               onToggleProjectCollapse={toggleProjectCollapse}
               onToggleGroupCollapse={toggleGroupCollapse}
               onProjectContextMenu={(e, proj) => {

@@ -232,10 +232,13 @@
    "components/sidebar/SidebarHeader.tsx:94-124"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarHeader.tsx:25-44",
-    "src/components/sidebar/SidebarHeader.tsx:139-170"
+    "src/components/sidebar/SidebarHeader.tsx:7",
+    "src/components/sidebar/SidebarHeader.tsx:47",
+    "src/components/sidebar/SidebarHeader.tsx:89-105",
+    "src/components/sidebar/SidebarHeader.tsx:106-146",
+    "src/components/sidebar/WorktreeSidebar.tsx:140,360,434"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -245,7 +248,7 @@
     "fechar pelo 'X'/outside (Hydra só tem o botão 'Got it')"
    ],
    "notes": "Título 'Agents are easier to find' + Sparkles + 'Got it' portados e funcionais (SidebarHeader.tsx:141-170).",
-   "note": "Intro popover segue com gate em localStorage e sem ancoragem/outside-dismiss."
+   "note": "Intro dos Agents virou popover Radix ancorado (PopoverAnchor no botao de sino + PopoverContent com seta), com dismiss por Escape, clique fora e 'Got it'; o gate e preferencia persistida (agentsSidebarIntroShown via prefs do sidebar), nao localStorage cru."
   },
   "domain": "D01-shell-chrome"
  },
@@ -279,11 +282,9 @@
    "components/sidebar/sidebar-header-actions.tsx:98"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarHeader.tsx:104-117",
-    "src/App.tsx:3869",
-    "src/App.tsx:4230-4233"
+    "src/components/sidebar/SidebarHeader.tsx:179"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -292,7 +293,7 @@
     "preservação da gaveta do Workspace Board (o board não existe no Hydra)"
    ],
    "notes": "Botão FolderPlus com title/aria-label 'Add project (Folder / Clone)' e ocultação na aba agents (bloco agentsViewActive, SidebarHeader.tsx:78-117). O único consumidor do atributo data-workspace-board-preserve-open, src/components/sidebar/worktree-list/pointer-drag-dom.ts:18, é órfão (hydra_unreachable.json).",
-   "note": "Abre modal por prop (setIsAddRepoOpen) e monta AddRepoDialog no App; falta data-workspace-board-preserve-open no botao (o board agora existe mas nao e preservado por ele)."
+   "note": "O botao 'Add project' carrega data-workspace-board-preserve-open (mesmo contrato do Orca em SidebarFilter.tsx:193,220 / SidebarHostScopeMenuSection.tsx:111), preservando o Workspace Board aberto ao abrir o modal."
   },
   "domain": "D01-shell-chrome"
  },
@@ -309,8 +310,9 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/SidebarHeader.tsx:119-138",
-    "src/App.tsx:3870-3873"
+    "src/components/sidebar/SidebarHeader.tsx:6",
+    "src/components/sidebar/SidebarHeader.tsx:51",
+    "src/components/sidebar/SidebarHeader.tsx:202"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -319,7 +321,7 @@
     "openWorkspaceCreationComposerWithTourHandoff()"
    ],
    "notes": "Botão Plus wired: abre o composer via onOpenNewWorkspaceModal e permanece clicável com zero projetos (fallback projects[0] / sem argumento, SidebarHeader.tsx:122-127); <NewWorkspaceComposer> montado em App.tsx:4055. O atalho real (Mod+N) existe no caminho de teclado do app, não via keybinding store do sidebar.",
-   "note": "Segue 'Mod+N' hardcoded e sem data-contextual-tour-target/tour handoff."
+   "note": "Entregues: atalho vindo do registry (useOptionalShortcutLabel('workspace.create'), sem 'Mod+N' hardcoded) e data-contextual-tour-target='workspace-create-control'. Segue PARTIAL porque o handoff do tour nao foi portado: o Hydra nao tem overlay de tour (nenhum componente renderiza data-contextual-tour-overlay/panel) e requestContextualTour existe no slice sem overlay — portar o handoff seria controle inerte."
   },
   "domain": "D01-shell-chrome"
  },
@@ -1179,11 +1181,12 @@
    "components/sidebar/StatusIndicator.tsx:1-107"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeStatusIndicator.tsx:17-24",
-    "src/components/sidebar/WorktreeList.tsx:517-533",
-    "src/components/AgentStateDot.tsx:43-52"
+    "src/components/sidebar/WorktreeStatusIndicator.tsx:10",
+    "src/components/sidebar/WorktreeStatusIndicator.tsx:47",
+    "src/components/sidebar/WorktreeStatusIndicator.tsx:71",
+    "src/i18n/locales/en.json"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -1192,7 +1195,7 @@
     "consumo pelo lane do card — WorktreeCardStatusLane.tsx:72 usa o indicador, mas o componente só é importado por testes (órfão; o lane real vem de WorktreeCard/worktree-card-meta-row)"
    ],
    "notes": "Escada de estados portada e wired pelo caminho real (WorktreeCard -> worktree-card-surface -> ... -> worktree-card-meta-row e FolderWorkspaceRow em WorktreeList.tsx:517): spinner amarelo (working), Activity estática (monitoring, :63-67), ponto vermelho (interrupted, :69-72), question (permission, :74-78), verde para done/active e cinza para inactive (:80-86), com showLabel equivalente ao showTooltip do Orca.",
-   "note": "Indicador segue com rotulos hardcoded e glifo divergente; o import no lane ainda nao passa pelo componente."
+   "note": "Indicador passa pelo componente WorktreeStatusIndicator: rotulos via i18n (components.worktreeStatusIndicator.*, presente nos 6 locales) e glifo AgentQuestionIcon (token text-agent-question), com o lane consumindo o componente em vez de markup duplicado."
   },
   "domain": "D01-shell-chrome"
  },
@@ -1203,13 +1206,11 @@
    "components/sidebar/CacheTimer.tsx:1-112"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/CacheTimer.tsx:14-41",
-    "src/components/sidebar/worktree-card-meta-row.tsx:5",
-    "src/components/sidebar/worktree-card-meta-row.tsx:99",
-    "src/components/sidebar/use-worktree-card-controller.ts:305-306",
-    "src/components/sidebar/worktree-card-parent-content.tsx:5"
+    "src/components/sidebar/prompt-cache-countdown-clock.ts:69,97",
+    "src/components/sidebar/prompt-cache-timer-selection.ts",
+    "src/components/sidebar/CacheTimer.tsx"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -1220,7 +1221,8 @@
     "tooltip detalhado (tempo restante vs 'próxima mensagem re-envia contexto não-cacheado')",
     "hooks usePromptCacheCountdownStartedAt / usePromptCacheCountdownForPane e o store cacheTimerByKey (sem equivalente; só existe setCacheTimerStartedAt em src/store/terminals/terminal-ephemeral-state.ts:24)"
    ],
-   "notes": "PAR-60. O componente existe e está no caminho alcançável (worktree-card-meta-row.tsx:99, dentro de WorktreeCard -> WorktreeList -> WorktreeSidebar), formata M:SS e atualiza por setInterval de 1s, mas fica permanentemente inerte porque o controller nunca fornece startedAt."
+   "notes": "PAR-60. O componente existe e está no caminho alcançável (worktree-card-meta-row.tsx:99, dentro de WorktreeCard -> WorktreeList -> WorktreeSidebar), formata M:SS e atualiza por setInterval de 1s, mas fica permanentemente inerte porque o controller nunca fornece startedAt.",
+   "note": "CacheTimer fiel ao Orca: clock unico compartilhado (subscribePromptCacheCountdownClock/usePromptCacheCountdownNow — sem setInterval por card), expirado em vermelho sem rotulo, alerta amarelo <=60s, tooltip/aria-label detalhados; o controller deixou de hardcodear null/300_000 e usa startedAt/TTL do store."
   },
   "par": [
    "PAR-60"
@@ -1234,10 +1236,9 @@
    "components/sidebar/sidebar-count-badge.tsx:1-24"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "not-applicable",
    "evidence": [
-    "src/components/sidebar/SectionHeader.tsx:141-147",
-    "src/components/sidebar/SidebarAgentsList.tsx:219"
+    "/home/renan/src/orca/src/renderer/src/components/sidebar/sidebar-count-badge.tsx:1-24"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -1246,7 +1247,8 @@
     "valor exato até 9 e '9+' acima disso",
     "uso no cabeçalho de projeto colapsado e no ícone de atividade"
    ],
-   "notes": "PAR-38. Busca em 5 passos: (1) 'SidebarCountBadge'/'sidebar-count-badge' -> 0; (2) nenhum badge com '9+' (grep '9+' -> 0); (3) o cabeçalho de grupo pinta um ponto estático de não-lido e um comentário explícito de que o Orca não pinta badge no header do grupo (SectionHeader.tsx:141-147); existem pílulas numéricas locais em SidebarAgentsList.tsx:219 e NewExternalWorktreesInboxLine.tsx:74 (contagens de bucket/inbox), não o badge compartilhado do Orca; (4) sem backend; (5) census-v3 static_sidebar confirma os ícones de atividade do Orca como superfícies do badge."
+   "notes": "PAR-38. Busca em 5 passos: (1) 'SidebarCountBadge'/'sidebar-count-badge' -> 0; (2) nenhum badge com '9+' (grep '9+' -> 0); (3) o cabeçalho de grupo pinta um ponto estático de não-lido e um comentário explícito de que o Orca não pinta badge no header do grupo (SectionHeader.tsx:141-147); existem pílulas numéricas locais em SidebarAgentsList.tsx:219 e NewExternalWorktreesInboxLine.tsx:74 (contagens de bucket/inbox), não o badge compartilhado do Orca; (4) sem backend; (5) census-v3 static_sidebar confirma os ícones de atividade do Orca como superfícies do badge.",
+   "note": "O Orca DEFINE o componente (sidebar-count-badge.tsx, pilula absoluta) mas nao o consome em lugar nenhum (grep por CountBadge no renderer = 0 ocorrencias alem do proprio arquivo; o unico hit e a string agentsCountBadge, outra coisa). Sem consumidor nao ha comportamento observavel a replicar: portar criaria codigo morto, entao o port foi removido. Falso-positivo do inventario (artefato de fonte, nao de comportamento)."
   },
   "par": [
    "PAR-38"
@@ -1260,11 +1262,12 @@
    "components/sidebar/sidebar-empty-state-gate.ts:1-24"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:541-560",
-    "src/components/sidebar/sidebar-filter-actions.ts:14-65",
-    "src/components/sidebar/visible-worktrees.ts:12-13"
+    "src/components/sidebar/sidebar-empty-state-gate.ts",
+    "src/components/sidebar/sidebar-empty-state-gate.test.ts",
+    "src/components/sidebar/WorktreeList.tsx:23",
+    "src/components/sidebar/WorktreeList.tsx:1352"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -1272,7 +1275,7 @@
     "supressão do 'Clear Filters' quando a conta só tem workspaces de pasta e os filtros não são a causa da lista vazia"
    ],
    "notes": "PAR-80. Busca em 5 passos: (1) 'sidebar-empty-state-gate' -> 0 ocorrências em src; (2) nenhuma string de gate; (3) o vazio é decidido só por visibleProjects.length === 0 (WorktreeList.tsx:588-605: 'No workspaces matching \"{filter}\"' + botão 'Clear filter'); sidebarHasActiveFilters/computeClearFilterActions existem (sidebar-filter-actions.ts:14-65) mas são apenas re-exportados por visible-worktrees.ts:12-13, sem NENHUM consumidor — o gate está desligado; (4) sem backend; (5) sem equivalente em src/App.tsx.",
-   "note": "shouldFiltersHideAllRows segue inexistente; a pilha so extraiu visible-worktree-filters.ts (live-activity + filtros), sem o gate de conta baseada em pastas."
+   "note": "shouldFiltersHideAllRows portado (modulo puro + teste) e ligado na lista como o Orca: conta so-de-pastas com filtros ativos cai no estado vazio correto (com Clear Filters via onClearSidebarFilters) em vez de 'sem workspaces'."
   },
   "par": [
    "PAR-80"
@@ -1288,11 +1291,11 @@
    "app-shell/TitlebarLeftControls.tsx:31"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/shared/keybindings/definitions-core-1.ts:180-187",
-    "src/App.tsx:2748-2753",
-    "src/components/WindowTitlebar.tsx:118-120"
+    "src/App.tsx:2808-2816",
+    "src/shared/keybindings/definitions-core-1.ts:181",
+    "src/shared/keybindings/sidebar-left-toggle.parity.test.ts:12-14"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -1300,7 +1303,7 @@
     "rotulo do atalho derivado do registry (Orca TitlebarLeftControls.tsx:31 via useShortcutLabel) — o Hydra usa title estatico 'Toggle Left Sidebar (Ctrl+B)' em src/components/WindowTitlebar.tsx:119"
    ],
    "notes": "PAR-E3. Linha nasceu da falsificacao E3. Orca: command 'sidebar.left.toggle' (app-command-handlers.ts:168) + toggleSidebar (ui-slice-agent-actions.ts:46) + atalho Mod+B (window-shortcut-policy.ts:217, definitions-core-1.ts:181) + label na titlebar (TitlebarLeftControls.tsx:31). Hydra: keybinding definido (definitions-core-1.ts:181) e toggle funcional por keydown raw (App.tsx:2545-2552), botao na titlebar (WindowTitlebar.tsx:118,145) e toggleSidebar no store (ui-slice-agent-actions.ts:47). Comportamento observavel (Mod+B alterna o sidebar) presente; falta a camada de command registry.",
-   "note": "sidebar.left.toggle segue orfao no registry: o atalho e tratado por keydown raw (App.tsx:2748) e o titulo e estatico."
+   "note": "sidebar.left.toggle deixou de ser orfao: o atalho e despachado por keybindingMatchesAction (registry + overrides, Mod+B por padrao e remapeavel) e o keydown raw de 'b' foi removido; o titulo dos toggles da titlebar vem do label do atalho (nao estatico). Verificado no app: 1x Ctrl+B fecha e 1x Ctrl+B reabre, sem desvio de largura. Fecha o escape E3 do ledger de falsificacao."
   },
   "domain": "D01-shell-chrome"
  },

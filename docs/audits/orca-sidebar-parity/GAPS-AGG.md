@@ -1,10 +1,10 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 341 capabilities
+## MISSING — 339 capabilities
 
 
-### D01-shell-chrome (29)
+### D01-shell-chrome (27)
 
 - **D01-004** — Drop de diretórios nativos sobre a superfície do sidebar para adição direta de projeto | falta: captura de drag nativo do SO sobre a casca (useSidebarProjectDrop); overlay 'Drop folder to add project' com borda tracejada e FolderPlus; importação/criação do projeto ao soltar a pasta | components/sidebar/index.tsx:13
 - **D01-006** — Gating de inicialização para varredura de repositórios e proteção contra oscilação de status de runtime | falta: bloqueio de fetchAllWorktrees enquanto startupWorktreeRefreshCompleted === false; varredura total só quando a quantidade de repositórios muda após a inicialização; guarda contra disparos repetidos na oscilação de runtimeStatusByEnvironmentId | components/sidebar/index.tsx:54-55
@@ -33,8 +33,6 @@
 - **D01-041** — Resolução de identidade do GitHub e opção de submissão anônima no feedback | falta: window.api.gh.viewer() para login/email; checkbox 'Submit anonymously' e omissão de login/email no payload; estado de carregamento / instruções de conexão do gh | components/sidebar/SidebarFeedbackDialog.tsx:16
 - **D01-042** — Anexo de capturas de tela e imagens no diálogo de feedback via arquivo, drag ou clipboard | falta: limite de 5 imagens (MAX_FEEDBACK_IMAGE_COUNT); onPaste no diálogo sem consumir texto não-imagem; miniaturas com tamanho em bytes + remoção individual; revogação de object URLs ao desmontar | components/sidebar/SidebarFeedbackDialog.tsx:18-21
 - **D01-043** — Submissão de feedback via IPC e tratamento de confirmação de entrega de imagens | falta: window.api.feedback.submit (evita CORS no Electron); toast de aviso quando imagesDelivered === false; toast de sucesso + reset + close; toast de erro de rede/IPC | components/sidebar/SidebarFeedbackDialog.tsx:4
-- **D01-050** — Badge numérico de contagem em pílula sobreposta absoluta para superfícies de largura fixa | falta: componente SidebarCountBadge (não existe: 'sidebar-count-badge' -> 0 ocorrências em src); pílula absoluta (-top-0.5 -right-0.5) sem afetar o fluxo do layout; valor exato até 9 e '9+' acima disso; uso no cabeçalho de projeto colapsado e no ícone de atividade | components/sidebar/sidebar-count-badge.tsx:1-24
-- **D01-051** — Gate de estado vazio para proteção de contas baseadas em pastas sob filtros ativos | falta: função shouldFiltersHideAllRows considerando visibleWorktreeCount, visibleFolderWorkspaceCount, placeholderRepoCount e importedWorktreeCardCount; supressão do 'Clear Filters' quando a conta só tem workspaces de pasta e os filtros não são a causa da lista vazia | components/sidebar/sidebar-empty-state-gate.ts:1-24
 
 ### D02a-repo-add-wizard (22)
 
@@ -399,18 +397,13 @@
 - **D15b-011** — Definição de métricas de reserva de layout para o chrome superior da janela e barra de status em painéis portalizados de workspace | components/sidebar/workspace-chrome-metrics.ts:1-4
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 307 capabilities
+## PARTIAL — 302 capabilities
 
 
-### D01-shell-chrome (7)
+### D01-shell-chrome (2)
 
-- **D01-009** — Popover introdutório para usuários migrados da visualização experimental de Agents | falta: gate em settings.agentsSidebarMigratedFromExperimental === true (o Hydra mostra para qualquer usuário que entre na aba agents); persistência em settings.agentsSidebarIntroShown (Hydra usa localStorage 'hydra:agents_sidebar_intro_shown', SidebarHeader.tsx:34/:41); popover ancorado ao botão de sino e sem auto-focus agressivo (Hydra usa div absoluta, sem onOpenAutoFocus); fechar pelo 'X'/outside (Hydra só tem o botão 'Got it') | components/sidebar/SidebarHeader.tsx:7
-- **D01-011** — Botão 'Add project' com abertura de modal e preservação do Workspace Board | falta: data-workspace-board-preserve-open no botão do cabeçalho (o atributo só existe no botão do card, src/components/sidebar/worktree-card-header.tsx:190); abertura via useAppStore.openModal('add-repo') — Hydra usa prop onOpenAddRepoDialog -> setIsAddRepoOpen (src/App.tsx:3666) e monta <AddRepoDialog> em App.tsx:4026; preservação da gaveta do Workspace Board (o board não existe no Hydra) | components/sidebar/sidebar-header-actions.tsx:2
 - **D01-012** — Botão 'New workspace' com atalho primário de teclado e integração com tour contextual | falta: label do atalho primário a partir de keybindings (formatOptionalPrimaryShortcutLabel('workspace.create')) — Hydra tem 'Mod+N' hardcoded (SidebarHeader.tsx:129); data-contextual-tour-target='workspace-create-control'; openWorkspaceCreationComposerWithTourHandoff() | components/sidebar/sidebar-header-actions.tsx:2
 - **D01-045** — Submenu de escopo e visibilidade multi-host com garantia de seleção mínima | falta: trigger com resumo de visibilidade (getSidebarHostVisibilityLabel); alternância entre 'All hosts' e seleção múltipla (setWorkspaceHostScope/setVisibleWorkspaceHostIds); metadados de presença/saúde por host (getSidebarHostHealthLabel); disabled ao tentar desmarcar o último host | components/sidebar/SidebarHostScopeMenuSection.tsx:1-151
-- **D01-048** — Indicador visual de estado e status do agente/workspace com tooltip informativo | falta: tooltip localizado via StateIndicatorTooltip (Hydra usa title/aria-label com rótulos hardcoded em STATUS_LABEL, WorktreeStatusIndicator.tsx:17-24); glifo do estado permission igual ao do Orca (Hydra usa MessageCircleQuestion lucide em vez do AgentQuestionIcon); consumo pelo lane do card — WorktreeCardStatusLane.tsx:72 usa o indicador, mas o componente só é importado por testes (órfão; o lane real vem de WorktreeCard/worktree-card-meta-row) | components/sidebar/StatusIndicator.tsx:1-107
-- **D01-049** — Contagem regressiva de cache de prompt (Prompt Cache Timer) com alerta de expiração | falta: fonte de dados do countdown — cacheStartedAt é hardcoded null no controller (use-worktree-card-controller.ts:305), logo o componente nunca renderiza; TTL vindo de settings (promptCacheTimerEnabled / promptCacheTtlMs) — Hydra fixa 300_000 no default do componente (:42) e no controller (:306); estado vermelho quando expirado (Hydra retorna null ao expirar, :31-33); amarelo de alerta quando restam <=60s | components/sidebar/CacheTimer.tsx:1-112
-- **D01-052** — Alternância do sidebar esquerdo por comando/atalho global (sidebar.left.toggle, Cmd+B) | falta: comando de primeira classe 'sidebar.left.toggle' despachado pelo command registry com claim('sidebar.left.toggle', actions.toggleSidebar()) — o Hydra tem a definicao do keybinding (definitions-core-1.ts:181, Mod+B) mas ela e orfa: o atalho e tratado por keydown raw em src/App.tsx:2545 e nao aparece no allowlist de plugin-command-actions; rotulo do atalho derivado do registry (Orca TitlebarLeftControls.tsx:31 via useShortcutLabel) — o Hydra usa title estatico 'Toggle Left Sidebar (Ctrl+B)' em src/components/WindowTitlebar.tsx:119 | app-shell/app-command-handlers.ts:168
 
 ### D02a-repo-add-wizard (12)
 

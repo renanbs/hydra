@@ -1,4 +1,19 @@
 {
+  "agentsSidebarIntro": {
+    "migrated": {
+      "title": "Les agents sont plus faciles à trouver",
+      "description": "Votre vue Agents est désormais un onglet dédié de la barre latérale. Votre activité et vos filtres sont conservés.",
+      "dismiss": "Compris",
+      "action": "Ouvrir les agents"
+    },
+    "new": {
+      "title": "Découvrez votre onglet Agents",
+      "description": "Voyez sur quoi travaillent vos agents, ce qui est terminé et où vous devez intervenir.",
+      "hide": "Masquer les agents",
+      "action": "Essayer les agents",
+      "hiddenToast": "Onglet Agents masqué. Réactivez-le dans Paramètres → Expérimental."
+    }
+  },
   "app": {
     "recoverableError": {
       "rootTitle": "Orca a rencontré une erreur de rendu.",
@@ -16001,6 +16016,17 @@
     }
   },
   "components": {
+    "cacheTimer": {
+      "expired": "Le prochain message renverra tout le contexte sous forme de jetons non mis en cache",
+      "remaining": "Le cache du prompt expire dans {{remaining}}"
+    },
+    "worktreeStatusIndicator": {
+      "working": "En cours",
+      "monitoring": "Surveillance des tâches en arrière-plan",
+      "permission": "Intervention requise",
+      "interrupted": "Interrompu",
+      "done": "Terminé"
+    },
     "native-chat": {
       "composer": {
         "imageUnsupported": "Le collage d'image n'est pas pris en charge pour cet agent.",
