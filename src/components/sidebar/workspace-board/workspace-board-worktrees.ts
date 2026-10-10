@@ -14,6 +14,13 @@ import type { WorktreeStatus } from '../../../lib/worktree-status'
 export type WorkspaceBoardCard = {
   /** Host-qualified identity — the board's card key and `data-*` value. */
   identity: string
+  /**
+   * The workspace id the native HTML5 drag speaks (Orca's `Worktree.id` — the scan row's own
+   * id, or `repoId::path` when it has none). The drop targets key on it — the sidebar's own
+   * drag publishes the same id — and the board bridges it back onto the path the app's writers
+   * key on.
+   */
+  worktreeId: string
   worktree: GitWorktreeInfo
   project: HydraProject
   sessions: WorktreeSession[]
@@ -104,6 +111,7 @@ export function buildWorkspaceBoardLanes(args: {
       const status = getWorkspaceStatus(projected, workspaceStatuses)
       cardsByStatus.get(status)?.push({
         identity: getWorktreeHostIdentity(projected),
+        worktreeId: projected.id,
         worktree,
         project,
         sessions: worktreeSessions,
