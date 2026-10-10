@@ -261,6 +261,26 @@ async function startDrag(): Promise<void> {
   await settleDragFrame()
 }
 
+function cardSurface(worktreePath: string): HTMLElement {
+  const surface = boardCard(worktreePath)?.querySelector<HTMLElement>('[data-worktree-card-surface]')
+  if (!surface) {
+    throw new Error(`the card surface for ${worktreePath} is not painted`)
+  }
+  return surface
+}
+
+/** A click over the card's own surface: the board's selection gesture path. */
+function clickCard(worktreePath: string, init: MouseEventInit = {}): void {
+  fireEvent.click(cardSurface(worktreePath), init)
+}
+
+function dragCountBadge(): string | null {
+  return (
+    dragPreview()?.querySelector<HTMLElement>('[data-workspace-board-card-drag-count]')
+      ?.textContent ?? null
+  )
+}
+
 describe('workspace board card pointer drag', () => {
   it('lifts the card only past the threshold, then paints the preview and the cursor', async () => {
     await renderBoard()
@@ -446,5 +466,98 @@ describe('workspace board card pointer drag', () => {
     expect(onAssign).not.toHaveBeenCalled()
     expect(onSelect).toHaveBeenCalledTimes(1)
     expect(onSelect.mock.calls[0]?.[0]).toMatchObject({ path: '/repo/hydra/wt-progress' })
+  })
+})
+
+describe('workspace board card multi-drag', () => {
+  it('paints no count badge for a single-card drag', async () => {
+    await renderBoard()
+
+    await startDrag()
+
+    expect(dragPreview()).not.toBeNull()
+    expect(dragCountBadge()).toBeNull()
+  })
+
+  it('moves the whole selection and badges the count when a selected card is dragged', async () => {
+    const { onAssign } = await renderBoard()
+
+    clickCard('/repo/hydra/wt-progress', { ctrlKey: true })
+    clickCard('/repo/hydra/wt-done', { ctrlKey: true })
+
+    await startDrag()
+    movePointer(TODO_X)
+    await settleDragFrame()
+
+    expect(dragCountBadge()).toBe('2')
+    // Both lifted cards ghost their slots, not just the grabbed one.
+    expect(boardCard('/repo/hydra/wt-progress')).toHaveAttribute(
+      'data-workspace-board-card-pointer-dragging'
+    )
+    expect(boardCard('/repo/hydra/wt-done')).toHaveAttribute(
+      'data-workspace-board-card-pointer-dragging'
+    )
+
+    releasePointer(TODO_X)
+
+    expect(onAssign).toHaveBeenCalledTimes(2)
+    expect(onAssign).toHaveBeenCalledWith('/repo/hydra/wt-progress', 'todo')
+    expect(onAssign).toHaveBeenCalledWith('/repo/hydra/wt-done', 'todo')
+    expect(dragCountBadge()).toBeNull()
+    expect(boardCard('/repo/hydra/wt-progress')).not.toHaveAttribute(
+      'data-workspace-board-card-pointer-dragging'
+    )
+  })
+
+  it('writes only for the batch members that actually change lane', async () => {
+    const { onAssign } = await renderBoard()
+
+    clickCard('/repo/hydra/wt-progress', { ctrlKey: true })
+    clickCard('/repo/hydra/wt-done', { ctrlKey: true })
+
+    // `wt-done` already sits in the destination lane, so only `wt-progress` moves.
+    await startDrag()
+    movePointer(COMPLETED_X)
+    await settleDragFrame()
+    releasePointer(COMPLETED_X)
+
+    expect(onAssign).toHaveBeenCalledTimes(1)
+    expect(onAssign).toHaveBeenCalledWith('/repo/hydra/wt-progress', 'completed')
+  })
+
+  it('moves only the grabbed card when it is outside the selection', async () => {
+    const { onAssign } = await renderBoard()
+
+    // The selection holds `wt-done`; the grabbed card is `wt-progress`, which is not in it.
+    clickCard('/repo/hydra/wt-done', { ctrlKey: true })
+
+    await startDrag()
+    movePointer(TODO_X)
+    await settleDragFrame()
+    expect(dragCountBadge()).toBeNull()
+    releasePointer(TODO_X)
+
+    expect(onAssign).toHaveBeenCalledTimes(1)
+    expect(onAssign).toHaveBeenCalledWith('/repo/hydra/wt-progress', 'todo')
+  })
+
+  it('clears the batch badge and commits nothing on abort', async () => {
+    const { onAssign } = await renderBoard()
+
+    clickCard('/repo/hydra/wt-progress', { ctrlKey: true })
+    clickCard('/repo/hydra/wt-done', { ctrlKey: true })
+
+    await startDrag()
+    movePointer(TODO_X)
+    await settleDragFrame()
+    expect(dragCountBadge()).toBe('2')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(dragPreview()).toBeNull()
+    expect(dragCountBadge()).toBeNull()
+
+    releasePointer(TODO_X)
+    expect(onAssign).not.toHaveBeenCalled()
   })
 })

@@ -65,6 +65,10 @@ import type {
 } from "./types";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
+import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
+import { resolveWorktreeMultiDragSelection } from "./worktree-multi-drag-selection";
+import type { WorktreeMultiDragCandidate } from "./worktree-multi-drag-selection";
+import { useWorktreeListSelection } from "./worktree-list/use-worktree-list-selection";
 import { writeWorkspaceDragData } from "./workspace-status-drag-data";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
@@ -758,6 +762,52 @@ export function WorktreeList({
 
   const dragWorktreeIds = useMemo(() => [...dragWorktreeById.keys()], [dragWorktreeById]);
 
+  // ─── Multi-selection → the batch a press drags (D03a-002) ───────────────────
+  //
+  // The rows address their workspace by the same host-qualified identity the board's cards use
+  // (`getWorktreeHostIdentity`), so the shared pure model drives both surfaces. The selection is
+  // built from the painted rows only: a range never runs through a row the user cannot see, and
+  // a truncated identity is never fabricated for a row the list does not hold.
+  const dragMultiSelectionInput = useMemo(() => {
+    const identityByRowKey = new Map<string, string>();
+    const candidates: WorktreeMultiDragCandidate[] = [];
+    const seen = new Set<string>();
+    for (const row of rows) {
+      if (row.type !== "item") continue;
+      const identity = getWorktreeHostIdentity(row.worktree);
+      if (!identityByRowKey.has(row.rowKey)) identityByRowKey.set(row.rowKey, identity);
+      if (seen.has(identity)) continue;
+      seen.add(identity);
+      candidates.push({ identity, worktreeId: row.worktree.id });
+    }
+    return {
+      identityByRowKey,
+      candidates,
+      visibleIdentities: candidates.map((candidate) => candidate.identity),
+    };
+  }, [rows]);
+
+  const { selectedWorktreeIdentities, handleSelectionGesture } = useWorktreeListSelection({
+    visibleIdentities: dragMultiSelectionInput.visibleIdentities,
+  });
+
+  const resolveDraggedWorktreeIds = useCallback(
+    (rowKey: string, worktreeId: string) => {
+      const draggedWorktreeIdentity =
+        dragMultiSelectionInput.identityByRowKey.get(rowKey) ??
+        composeWorktreeHostIdentity(undefined, worktreeId);
+      const batch = resolveWorktreeMultiDragSelection({
+        draggedWorktreeId: worktreeId,
+        draggedWorktreeIdentity,
+        selectedWorktreeIdentities,
+        surfaceWorktrees: dragMultiSelectionInput.candidates,
+      });
+      const ids = batch.map((candidate) => candidate.worktreeId);
+      return ids.length > 0 ? ids : [worktreeId];
+    },
+    [dragMultiSelectionInput, selectedWorktreeIdentities]
+  );
+
   const handlePointerGroupReorder = useCallback(
     (dragArgs: WorktreeGroupReorderArgs) => {
       if (!onReorderWorktreesInGroup) return;
@@ -940,6 +990,8 @@ export function WorktreeList({
           lineageDepth: 0,
         }) - surfaceInset
       );
+      const identity = getWorktreeHostIdentity(row.worktree);
+      const isMultiSelected = selectedWorktreeIdentities.has(identity);
 
       return (
         <WorktreeDragRow
@@ -949,6 +1001,7 @@ export function WorktreeList({
           worktreePath={wt.path}
           optionId={slot.optionId}
           isActive={slot.isActive}
+          isSelected={isMultiSelected}
           style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
         >
           <WorktreeCard
@@ -969,11 +1022,13 @@ export function WorktreeList({
             revealHighlight={isRevealed}
             isPinned={pinnedSet.has(wt.path)}
             isUnread={unreadSet.has(wt.path)}
+            isMultiSelected={isMultiSelected}
             compactCards={compactCards}
             ports={portsByWorktree?.get(wt.path) || []}
             sessions={wtSessions}
             dropTarget={worktreeDropTarget}
             onSelect={onSelectGitWorktree}
+            onSelectionGesture={(event) => handleSelectionGesture(event, identity)}
             onDelete={onDeleteGitWorktree}
             onRename={(newTitle) => persistWorktreeDisplayName(wt.path, newTitle)}
             deleteState={
@@ -987,12 +1042,13 @@ export function WorktreeList({
             onContextMenu={onWorktreeContextMenu}
             onSelectSession={onSelectSession}
             onDragStart={(e, path) => {
-              // The board's lanes and pin strip are native drop destinations, and they
-              // receive this row by the shared `workspace-status-drag-data.ts` payload
-              // (D08-041): the board keys on the workspace id — the same id this list's
-              // pointer drag speaks (`row.worktree.id`) — not on the path the list's own
-              // HTML5 reorder reads. Orca publishes the same payload from its rows.
-              writeWorkspaceDragData(e.dataTransfer, row.worktree.id);
+              // The board's lanes and pin strip are native drop destinations, and they receive
+              // this row by the shared `workspace-status-drag-data.ts` payload (D08-041): the
+              // board keys on the workspace id — the same id this list's pointer drag speaks
+              // (`row.worktree.id`) — not on the path the list's own HTML5 reorder reads. The
+              // payload carries the whole selection (D03a-002), so a native drag moves the same
+              // batch its pointer sibling does; Orca publishes the same payload from its rows.
+              writeWorkspaceDragData(e.dataTransfer, resolveDraggedWorktreeIds(row.rowKey, row.worktree.id));
               onWorktreeDragStart?.(e, path);
             }}
             onDragOver={onWorktreeDragOver ? (e, path) => onWorktreeDragOver(e, path) : undefined}
@@ -1027,6 +1083,9 @@ export function WorktreeList({
       onWorktreeDragOver,
       onWorktreeDrop,
       onWorktreeDragEnd,
+      selectedWorktreeIdentities,
+      handleSelectionGesture,
+      resolveDraggedWorktreeIds,
     ]
   );
 
@@ -1304,6 +1363,7 @@ export function WorktreeList({
       onReorderWorktrees={handlePointerGroupReorder}
       onAssignWorktreesStatus={handleAssignWorktreesStatus}
       onPinWorktrees={handlePinWorktrees}
+      resolveDraggedWorktreeIds={resolveDraggedWorktreeIds}
     >
       <VirtualizedWorktreeViewport
         rows={rows}

@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { getShortcutPlatform } from '@/lib/shortcut-platform'
 import {
-  areWorkspaceBoardSelectionsEqual,
-  pruneWorkspaceBoardSelection,
-  resolveWorkspaceBoardRenderedAnchorId,
-  selectAllWorkspaceBoardVisible,
-  updateWorkspaceBoardAreaSelection,
-  updateWorkspaceBoardSelection,
-  getWorkspaceBoardSelectionIntent
-} from './workspace-board-selection'
+  areWorktreeSelectionsEqual,
+  pruneWorktreeSelection,
+  resolveWorktreeRenderedAnchorId,
+  selectAllWorktreeVisible,
+  updateWorktreeAreaSelection,
+  updateWorktreeSelection,
+  getWorktreeSelectionIntent
+} from '../worktree-selection'
 import type { WorkspaceBoardCard } from './workspace-board-worktrees'
 
 /**
@@ -16,8 +16,8 @@ import type { WorkspaceBoardCard } from './workspace-board-worktrees'
  * four gestures that move them (click, modified click, marquee commit, select-all).
  *
  * Ported from Orca `useWorkspaceKanbanSelection`, scoped to identity strings — Hydra's board
- * cards already carry a host-qualified identity, so the selection and the sidebar's own
- * selection speak the same language.
+ * cards carry a host-qualified identity, and the sidebar list's rows now use the same
+ * `../worktree-selection` model, so one selection vocabulary serves both surfaces.
  *
  * Why two card lists: board search hides cards without dropping them from the board (D08-014).
  * Range and marquee gestures index the *rendered* subset, so a range never swallows a card the
@@ -67,12 +67,12 @@ export function useWorkspaceBoardSelection(args: {
       setSelectionAnchorId(null)
     }
   } else {
-    const pruned = pruneWorkspaceBoardSelection(
+    const pruned = pruneWorktreeSelection(
       selectedWorktreeIds,
       selectionAnchorId,
       boardCardIds
     )
-    if (!areWorkspaceBoardSelectionsEqual(selectedWorktreeIds, pruned.selectedIds)) {
+    if (!areWorktreeSelectionsEqual(selectedWorktreeIds, pruned.selectedIds)) {
       setSelectedWorktreeIds(pruned.selectedIds)
     }
     if (selectionAnchorId !== pruned.anchorId) {
@@ -82,23 +82,23 @@ export function useWorkspaceBoardSelection(args: {
 
   const updateSelectionForGesture = useCallback(
     (event: React.MouseEvent<HTMLElement>, worktreeId: string): boolean => {
-      const intent = getWorkspaceBoardSelectionIntent(
+      const intent = getWorktreeSelectionIntent(
         event,
         getShortcutPlatform() === 'darwin'
       )
       // Why: a search can hide the anchor while leaving the rest of the selection on screen.
-      // `updateWorkspaceBoardSelection` reads an anchor missing from `visibleIds` as "no
+      // `updateWorktreeSelection` reads an anchor missing from `visibleIds` as "no
       // anchor" and collapses the range to the click, so re-anchor onto the first still-rendered
       // selected card instead.
       const anchorId =
         intent === 'range' && selectionAnchorId !== null
-          ? (resolveWorkspaceBoardRenderedAnchorId(
+          ? (resolveWorktreeRenderedAnchorId(
               visibleCardIds,
               selectedWorktreeIds,
               selectionAnchorId
             ) ?? selectionAnchorId)
           : selectionAnchorId
-      const result = updateWorkspaceBoardSelection({
+      const result = updateWorktreeSelection({
         visibleIds: visibleCardIds,
         previousSelectedIds: selectedWorktreeIds,
         previousAnchorId: anchorId,
@@ -124,7 +124,7 @@ export function useWorkspaceBoardSelection(args: {
       baseSelectedIds: ReadonlySet<string> = selectedWorktreeIds,
       baseAnchorId: string | null = selectionAnchorId
     ): void => {
-      const result = updateWorkspaceBoardAreaSelection({
+      const result = updateWorktreeAreaSelection({
         visibleIds: visibleCardIds,
         previousSelectedIds: baseSelectedIds,
         previousAnchorId: baseAnchorId,
@@ -132,7 +132,7 @@ export function useWorkspaceBoardSelection(args: {
         additive
       })
       setSelectedWorktreeIds((previous) =>
-        areWorkspaceBoardSelectionsEqual(previous, result.selectedIds)
+        areWorktreeSelectionsEqual(previous, result.selectedIds)
           ? previous
           : result.selectedIds
       )
@@ -156,7 +156,7 @@ export function useWorkspaceBoardSelection(args: {
   )
 
   const selectAllVisible = useCallback((): void => {
-    const result = selectAllWorkspaceBoardVisible(visibleCardIds)
+    const result = selectAllWorktreeVisible(visibleCardIds)
     setSelectedWorktreeIds(result.selectedIds)
     setSelectionAnchorId(result.anchorId)
   }, [visibleCardIds])

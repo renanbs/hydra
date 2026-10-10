@@ -19,6 +19,7 @@ export function WorktreeDragRow({
   worktreePath,
   optionId,
   isActive = false,
+  isSelected = false,
   style,
   children
 }: {
@@ -29,6 +30,8 @@ export function WorktreeDragRow({
   optionId?: string
   /** True when this card paints the active workspace. */
   isActive?: boolean
+  /** True when the list's multi-selection holds this row (D03a-002). */
+  isSelected?: boolean
   style?: React.CSSProperties
   children: React.ReactNode
 }): React.JSX.Element {
@@ -42,9 +45,10 @@ export function WorktreeDragRow({
     <div
       id={optionId}
       role="option"
-      aria-selected={isActive}
+      aria-selected={isActive || isSelected}
       aria-current={isActive ? 'page' : undefined}
       data-worktree-path={worktreePath}
+      data-worktree-selected={isSelected ? 'true' : undefined}
       data-worktree-drag-id={groupKey ? worktreeId : undefined}
       data-worktree-drag-group-key={groupKey}
       data-worktree-drag-group-index={groupKey ? handlers?.groupIndexByRowKey.get(rowKey) : undefined}
