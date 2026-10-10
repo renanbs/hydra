@@ -19,7 +19,7 @@ const WORKSPACE_BOARD_ESCAPE_BLOCKING_OVERLAY_SELECTOR = [
   '[role="listbox"][data-state="open"]',
 ].join(', ')
 
-/** Hydra custom-event convention (`hydra:open-command-palette`, `hydra:refresh-ports`). */
+/** Hydra custom-event convention (`hydra:open-jump-palette`, `hydra:refresh-ports`). */
 export const TOGGLE_WORKSPACE_BOARD_EVENT = 'hydra:toggle-workspace-board'
 
 export type WorkspaceBoardPanelState = {

@@ -12,13 +12,13 @@
     "components/sidebar/index.tsx:242"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3834-3837",
-     "src/App.tsx:867-873",
-     "src/App.tsx:890-900",
-     "src/hooks/useSidebarResize.ts:82-96",
-     "src/store/slices/ui/ui-slice-agent-actions.ts:45-49"
+     "src/components/sidebar/SidebarChrome.tsx:11-13",
+     "src/components/sidebar/SidebarChrome.tsx:41-46",
+     "src/App.tsx:883-886",
+     "src/hooks/useSidebarResize.ts:154-163",
+     "src/App.tsx:24-27"
     ],
     "backend": [
      "invoke('get_layout_persistence') -> src-tauri/src/lib.rs:626 (chamado em src/App.tsx:756; registrado lib.rs:1512)",
@@ -32,7 +32,7 @@
      "largura/open a partir de useAppStore.sidebarOpen/sidebarWidth/setSidebarWidth (o shell usa estado local do App; os campos do store existem mas não são lidos)"
     ],
     "notes": "Casca existe e é persistida (get/save_layout_persistence), com clamp no load (App.tsx:763-766) e gravação no mouseup (App.tsx:1024-1041). Divergem atributo, default, limites e o canal de live-width.",
-    "note": "Sem mudanca material da pilha: <aside> segue sem data-sidebar, default 280 e limites 180/480 (App.tsx:870-871, :895-900), live-width via style inline."
+    "note": "Casca propria (SidebarChrome): <aside data-sidebar> com limites do Orca 220/500 e default 280 (constants LEFT_SIDEBAR_MIN/MAX/DEFAULT_WIDTH, iguais a MIN_SIDEBAR_WIDTH/MAX_LEFT_SIDEBAR_WIDTH do store do Orca) e clamp na hidratacao; largura viva segue por style inline. Nota de honestidade: o Orca NAO tem atributo data-sidebar (grep=0 no fonte) — aqui e atributo de identificacao do Hydra; a paridade do item e dimensao/persistencia/limites, e a nota antiga do ledger (default 320, limites 180/480) estava errada contra o fonte."
    }
   },
   {
@@ -44,12 +44,13 @@
     "components/sidebar/index.tsx:243"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/lib/left-sidebar-appearance.ts:45-70",
-     "src/App.tsx:429-442",
-     "src/App.tsx:3823",
-     "src/App.css:156-161"
+     "src/App.tsx:450-455",
+     "src/App.tsx:3990",
+     "src/components/sidebar/WorktreeSidebar.tsx:109",
+     "src/components/sidebar/WorktreeSidebar.tsx:680-683",
+     "src/lib/left-sidebar-appearance.ts:45-70"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -58,7 +59,7 @@
      "reação do corpo do sidebar à troca dark/light do sistema (só o caminho 'tinted' pinta inline; App.tsx:379 recalcula mas para o titlebar)"
     ],
     "notes": "resolveLeftSidebarStyleVariables (src/lib/left-sidebar-appearance.ts:45-70) porta os modos default/match-terminal/tinted; apenas o branch 'tinted' chega ao sidebar (WorktreeSidebar.tsx:610-620 + style em :623).",
-    "note": "Continua so o braco 'tinted' pintando o sidebar; resolveLeftSidebarStyleVariables segue consumido apenas para o WindowTitlebar."
+    "note": "O resolvedor unico resolveLeftSidebarStyleVariables (default/match-terminal/tinted, claro/escuro, systemDark reativo) agora alimenta tambem a raiz do sidebar (leftSidebarStyle), nao so o WindowTitlebar; o tint local do sidebar foi removido, sem segundo resolvedor."
    }
   },
   {
@@ -70,12 +71,11 @@
     "components/sidebar/index.tsx:245"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:867-873",
-     "src/hooks/useSidebarResize.ts:186-217",
-     "src/hooks/useSidebarResize.ts:118-133",
-     "src/App.tsx:3834-3837"
+     "src/components/sidebar/SidebarChrome.tsx:46-60",
+     "src/hooks/useSidebarResize.ts:11-21",
+     "src/hooks/useSidebarResize.ts:154-163"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -84,7 +84,7 @@
      "alça absoluta sobreposta à junção com o terminal (Hydra usa um irmão flex de 2.5px entre o aside e o <main>)"
     ],
     "notes": "Alça existe e funciona: cursor col-resize no body (useSidebarResize.ts:198-200), feedback hover/active emerald (App.tsx:3707-3712), commit no mouseup.",
-    "note": "Sem mudanca: alca e irmao flex de 2.5px, sem pointer capture e sem reset por duplo clique."
+    "note": "Alca absoluta na juncao (data-sidebar-resize-handle) com cursor-col-resize, feedback group-hover/group-active e isResizing, pointer capture no inicio/fim e reset por duplo clique para o default (280) persistido."
    }
   },
   {
@@ -122,11 +122,12 @@
     "components/sidebar/SidebarHeader.tsx:23-27,83"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:18",
-     "src/components/sidebar/WorktreeSidebar.tsx:663-670",
-     "src/components/sidebar/SidebarHeader.tsx:59-77"
+     "src/components/sidebar/WorktreeSidebar.tsx:19,24",
+     "src/components/sidebar/WorktreeSidebar.tsx:707-723",
+     "src/components/sidebar/WorktreeSidebar.tsx:211",
+     "src/components/sidebar/SidebarAgentsList.tsx:57-82"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -134,7 +135,7 @@
      "preservação da posição de rolagem da lista de agentes (agentsScrollTopRef) durante a troca de abas"
     ],
     "notes": "WorktreeList <-> SidebarAgentsList alternam por sidebarBody (WorktreeSidebar.tsx:105, :346-350, :646/:663) e o colapso de grupos sobrevive (estado do shell, WorktreeSidebar.tsx:106-109). Sem reset durante hidratação: o corpo vem de estado local semeado uma vez por initialSidebarBody (WorktreeSidebar.tsx:105, App.tsx:3689).",
-    "note": "Alternancia existe; SidebarAgentsList segue import estatico e sem preservacao de scroll."
+    "note": "SidebarAgentsList virou lazy (lazyWithRetry + Suspense) e o scroll da lista de agentes e preservado na alternancia Workspaces<->Activity via agentsScrollTopRef (grava no scroll, restaura no mount)."
    }
   },
   {
@@ -173,9 +174,11 @@
     "components/sidebar/SidebarHeader.tsx:50-59"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/SidebarHeader.tsx:43-57"
+     "src/components/sidebar/SidebarHeader.tsx:34",
+     "src/components/sidebar/SidebarHeader.tsx:55",
+     "src/components/sidebar/SidebarHeader.tsx:68"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -185,7 +188,7 @@
      "data-sidebar-section-title variável ('projects' | 'workspaces') — Hydra emite sempre 'projects'"
     ],
     "notes": "PAR-03. 'Projects' + truncate + data-sidebar-section-title existem (SidebarHeader.tsx:47-57), mas são estáticos. Ver PAR-03 na spec (70-Specs/hydra/Spec - Paridade Terminal e Left Sidebar Orca.md:309-312).",
-    "note": "Titulo segue fixo 'Projects' com data-sidebar-section-title constante; sem consumo de groupBy/i18n."
+    "note": "Titulo da secao pelo groupBy do store (repo -> projects, senao workspaces) com data-sidebar-section-title variavel e texto localizado (i18n dashboard.sidebar.projects/workspaces), como no SidebarHeader do Orca."
    },
    "par": [
     "PAR-03"
@@ -375,12 +378,13 @@
     "components/sidebar/SidebarNav.tsx:90-121"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/SidebarNav.tsx:8-21",
-     "src/App.tsx:1392-1393",
-     "src/App.tsx:4199-4201",
-     "src/App.tsx:4209-4211"
+     "src/components/sidebar/SidebarNav.tsx:14",
+     "src/components/sidebar/SidebarNav.tsx:20",
+     "src/components/sidebar/SidebarNav.tsx:32-42",
+     "src/components/sidebar/WorktreeSidebar.tsx:685-689",
+     "src/App.tsx:1431-1432"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -389,7 +393,7 @@
      "i18n do rótulo/label (strings literais)"
     ],
     "notes": "Botão Search com aria-label 'Search worktrees and browser tabs' (idêntico ao census) e data-contextual-tour-target='sidebar-navigation' (SidebarNav.tsx:8) presentes e alcançáveis (WorktreeSidebar.tsx:626).",
-    "note": "Segue disparando 'hydra:open-command-palette' (CommandPalette) em vez do WorktreeJumpPalette; chips '⌘P' literais e so group-hover."
+    "note": "O botao de busca abre o WorktreeJumpPalette (evento hydra:open-jump-palette -> setIsJumpPaletteOpen), nao mais o CommandPalette; chips vem de useShortcutKeyComboDetails('worktree.palette') (sem '⌘P' literal) e sao revelados em hover E foco (group-hover + group-focus-within)."
    }
   },
   {
@@ -696,10 +700,12 @@
     "components/sidebar/SidebarToolbar.tsx:72-126"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/SidebarFooter.tsx:23-33",
-     "src/components/sidebar/SidebarFooter.tsx:44-73"
+     "src/components/sidebar/SidebarFooter.tsx:2",
+     "src/components/sidebar/SidebarFooter.tsx:28",
+     "src/components/sidebar/SidebarFooter.tsx:29-36",
+     "src/components/sidebar/SidebarFooter.tsx:71"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -709,7 +715,7 @@
      "ESCAPES de runtime sem linha no inventário: 'Refresh rate limits' (census-v3 static_sidebar box [12,1181,15,15]), 'Notifications alt+T' (box [0,1200,1920,0]) e 'Keep computer awake' — o Hydra só tem o keep-awake na StatusBar (src/components/status-bar/CaffeinateStatusSegment.tsx:26 + invoke('sync_keep_awake') -> src-tauri/src/lib.rs:1256), fora do sidebar"
     ],
     "notes": "Rodapé existe e é alcançável (SidebarFooter montado em WorktreeSidebar.tsx:857-862), com borda superior e os controles Settings (esquerda) e Reveal active workspace (direita). Os controles 'Refresh rate limits', 'Notifications' e 'Keep computer awake' do runtime do Orca NÃO têm linha no inventário D01 nem em outro domínio (grep em domains/*.orca.json = 0) — registrados aqui como escape (ver gaps.md §Escapes).",
-    "note": "Botao Workspace Board (data-workspace-board-trigger, aria-pressed, tooltip) agora existe no rodape; ainda faltam useTranslation no container (strings literais) e o agrupamento SidebarSettingsHelpMenu/Help."
+    "note": "Rodape assina i18n (useTranslation) e todas as strings sao reativas via translate (Settings, Reveal active workspace) — sem literal. O agrupamento SidebarSettingsHelpMenu/Help fica fora (D01-035, sem superficie de Feedback/update)."
    }
   },
   {
@@ -789,10 +795,11 @@
     "components/sidebar/SidebarSettingsHelpMenu.tsx:196-224"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/SidebarFooter.tsx:26-33",
-     "src/components/sidebar/WorktreeSidebar.tsx:888-895"
+     "src/components/sidebar/SidebarFooter.tsx:29",
+     "src/components/sidebar/SidebarFooter.tsx:46",
+     "src/components/sidebar/SidebarFooter.tsx:55-62"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -801,7 +808,7 @@
      "abertura via useAppStore.openSettingsPage() (Hydra usa prop onOpenSettings -> setIsSettingsOpen)"
     ],
     "notes": "Controle existe e abre as configurações (SidebarFooter.tsx:22-31 -> WorktreeSidebar.tsx:859 -> App.tsx:3647). Census-v3 static_sidebar confirma o 'Settings' do Orca em [8,1146,24,24].",
-    "note": "Botao Settings segue com title literal, icone+texto e sem aria-label/ShortcutKeyCombo."
+    "note": "Botao Settings com aria-label traduzido, icone-only e tooltip com ShortcutKeyCombo de useShortcutKeyDetails('app.settings') — sem title literal."
    }
   },
   {

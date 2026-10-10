@@ -15,8 +15,15 @@ import {
 import { SidebarNav } from "./SidebarNav";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
-import { SidebarAgentsList } from "./SidebarAgentsList";
 import { WorktreeList } from "./WorktreeList";
+import { lazyWithRetry } from "../../lib/lazy-with-retry";
+
+// Why lazy: the Agents list pulls the whole activity pipeline (virtualizer, markdown
+// previews, thread derivation), so users on the workspaces view should not load or
+// render any of it until they switch bodies (Orca SidebarAgentsList parity).
+const SidebarAgentsList = lazyWithRetry(() =>
+  import("./SidebarAgentsList").then((module) => ({ default: module.SidebarAgentsList }))
+);
 import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
 import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
@@ -99,6 +106,7 @@ export function WorktreeSidebar({
   onSelectPrevSession,
   isModalOpen = false,
   settings,
+  leftSidebarStyle,
   initialSidebarBody,
   initialCollapsedProjects,
   initialCollapsedGroups,
@@ -199,6 +207,8 @@ export function WorktreeSidebar({
   const [groupDropTargetId, setGroupDropTargetId] = useState<string | null>(null);
   /** The panel's scroll container: row-rect and autoscroll reference for the pointer drag. */
   const worktreeScrollRef = useRef<HTMLDivElement | null>(null);
+  /** Agents list scroll offset, held here so switching bodies preserves it (Orca parity). */
+  const agentsScrollTopRef = useRef(0);
 
   // ─── Workspace board (Orca D08 shell) ────────────────────────────────────
   // The board is a companion panel of this sidebar: it is anchored to the
@@ -652,16 +662,9 @@ export function WorktreeSidebar({
   ]);
 
   // ─── Background Appearance Tint ──────────────────────────────────────────
-  const sidebarTintStyle = useMemo(() => {
-    if (settings?.left_sidebar_appearance_mode === "tinted" && settings.left_sidebar_tint_color) {
-      const color = settings.left_sidebar_tint_color;
-      const opacity = settings.left_sidebar_tint_opacity ?? 0.1;
-      return {
-        backgroundColor: `color-mix(in srgb, ${color} ${Math.round(opacity * 100)}%, #121316)`,
-      } as const;
-    }
-    return {};
-  }, [settings?.left_sidebar_appearance_mode, settings?.left_sidebar_tint_color, settings?.left_sidebar_tint_opacity]);
+  // Single resolved source: the shell computes `leftSidebarStyle` via
+  // `resolveLeftSidebarStyleVariables` (default/match-terminal/tinted, dark or
+  // light) and passes it here, so this surface never re-derives a second tint.
 
   // The list's own drop on the board's pin strip is multi-select: it hands over the paths
   // it dragged, and the app's pin writer takes them one by one (D08-028).
@@ -676,12 +679,12 @@ export function WorktreeSidebar({
     <div
       ref={sidebarRootRef}
       className="flex h-full w-full flex-col bg-worktree-sidebar text-worktree-sidebar-foreground select-none overflow-hidden"
-      style={sidebarTintStyle}
+      style={leftSidebarStyle}
     >
-      {/* 1. Top Strip Nav (Search / Command Palette) */}
+      {/* 1. Top Strip Nav (Search / Worktree palette) */}
       <SidebarNav
-        onOpenCommandPalette={() => {
-          window.dispatchEvent(new CustomEvent("hydra:open-command-palette"));
+        onOpenWorktreePalette={() => {
+          window.dispatchEvent(new CustomEvent("hydra:open-jump-palette"));
         }}
       />
       <div className="h-px bg-worktree-sidebar-border mx-3 my-0.5" />
@@ -690,6 +693,7 @@ export function WorktreeSidebar({
       <SidebarHeader
         sidebarBody={sidebarBody}
         setSidebarBody={handleSetSidebarBody}
+        groupBy={displayOptions.groupBy}
         onOpenAddRepoDialog={onOpenAddRepoDialog}
         onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
         optionsButtonRef={optionsButtonRef}
@@ -700,20 +704,23 @@ export function WorktreeSidebar({
 
       {/* 3. Main Body */}
       {sidebarBody === "agents" ? (
-        <SidebarAgentsList
-          sessions={sessions}
-          projects={projects}
-          onSelectSession={onSelectSession}
-          onDeleteSession={onDeleteSession}
-          compactCards={compactCards}
-          onSelectNextSession={onSelectNextSession}
-          onSelectPrevSession={onSelectPrevSession}
-          isModalOpen={isModalOpen}
-          groupBy={agentsGroupBy}
-          onGroupByChange={handleAgentsGroupByChange}
-          statusFilter={agentsStatusFilter}
-          onStatusFilterChange={handleAgentsStatusFilterChange}
-        />
+        <React.Suspense fallback={<div className="flex-1 min-h-0" />}>
+          <SidebarAgentsList
+            sessions={sessions}
+            projects={projects}
+            onSelectSession={onSelectSession}
+            onDeleteSession={onDeleteSession}
+            compactCards={compactCards}
+            onSelectNextSession={onSelectNextSession}
+            onSelectPrevSession={onSelectPrevSession}
+            isModalOpen={isModalOpen}
+            groupBy={agentsGroupBy}
+            onGroupByChange={handleAgentsGroupByChange}
+            statusFilter={agentsStatusFilter}
+            onStatusFilterChange={handleAgentsStatusFilterChange}
+            scrollTopRef={agentsScrollTopRef}
+          />
+        </React.Suspense>
       ) : (
         <div className="flex flex-1 flex-col overflow-hidden min-h-0">
           {/* Workspaces Filter Box */}
