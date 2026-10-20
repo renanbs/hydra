@@ -71,14 +71,14 @@
    "id": "D04a-040",
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:278-290"
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:278-290",
+    "src/components/sidebar/worktree-card-detail-controls.tsx:12-27"
    ],
    "missing_behaviors": [
     "Menu de ações da issue",
-    "Ação de editar a partir da seção",
     "Abertura externa da issue"
    ],
-   "note": "The hover names the linked issue number; actions and external linking need the repo remote URL."
+   "note": "The hover names the linked issue and offers the shared edit action; the action menu and external linking still need the repo remote URL."
   },
   {
    "id": "D04a-042",
@@ -96,13 +96,13 @@
    "id": "D04a-044",
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:301-312"
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:301-312",
+    "src/components/sidebar/worktree-card-detail-controls.tsx:12-27"
    ],
    "missing_behaviors": [
-    "Renderização markdown",
-    "Ação de editar a partir da seção"
+    "Renderização markdown das notas"
    ],
-   "note": "Notes render read-only with preserved line breaks."
+   "note": "Notes render read-only with preserved line breaks and an edit action in the section header."
   },
   {
    "id": "D04a-111",

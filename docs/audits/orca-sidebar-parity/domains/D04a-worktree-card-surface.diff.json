@@ -666,15 +666,18 @@
     "components/sidebar/WorktreeCardMetadataControls.tsx:19"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263"
+     "src/components/sidebar/worktree-card-detail-controls.tsx:12-27",
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:280-345",
+     "src/components/sidebar/worktree-card-detail-controls.parity.test.tsx:12-25"
     ],
     "backend": [],
     "missing_behaviors": [
      "Cabeçalho de seção (ícone + rótulo uppercase 11px + ações à direita)"
     ],
-    "notes": "Busca: WorktreeCardMetadataControls/WorktreeCardDetailSection em src/** = 0 hits."
+    "notes": "DetailHeader is the one section header shape: icon + truncating label + right-aligned actions slot; used by Issue, Review, Linear and Notes.",
+    "note": "DetailHeader is the one section header shape: icon + truncating label + right-aligned actions slot; used by Issue, Review, Linear and Notes."
    }
   },
   {
@@ -685,17 +688,18 @@
     "components/sidebar/WorktreeCardMetadataControls.tsx:50"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:175-186",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:272-288"
+     "src/components/sidebar/worktree-card-detail-controls.tsx:29-73",
+     "src/components/sidebar/worktree-card-detail-controls.parity.test.tsx:27-62"
     ],
     "backend": [],
     "missing_behaviors": [
      "Ícone de ação como botão (callback) ou link externo (href) com Tooltip lateral",
      "stopPropagation antes do callback"
     ],
-    "notes": "O hover tem botões soltos (copiar branch/path, abrir porta) sem o shell de ação com tooltip. Busca: Button asChild/target=_blank/Tooltip lateral no hover = 0 hits; os botões são soltos e sem tooltip de design system."
+    "notes": "MetadataActionIcon renders a tooltip button with callback or an external anchor (target=_blank, rel=noreferrer); both stop propagation so the card does not activate.",
+    "note": "MetadataActionIcon renders a tooltip button with callback or an external anchor (target=_blank, rel=noreferrer); both stop propagation so the card does not activate."
    }
   },
   {
@@ -946,16 +950,16 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:278-290"
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:278-290",
+     "src/components/sidebar/worktree-card-detail-controls.tsx:12-27"
     ],
     "backend": [],
     "missing_behaviors": [
      "Menu de ações da issue",
-     "Ação de editar a partir da seção",
      "Abertura externa da issue"
     ],
-    "notes": "The hover names the linked issue number; actions and external linking need the repo remote URL.",
-    "note": "The hover names the linked issue number; actions and external linking need the repo remote URL."
+    "notes": "The hover names the linked issue and offers the shared edit action; the action menu and external linking still need the repo remote URL.",
+    "note": "The hover names the linked issue and offers the shared edit action; the action menu and external linking still need the repo remote URL."
    }
   },
   {
@@ -1046,15 +1050,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:301-312"
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:301-312",
+     "src/components/sidebar/worktree-card-detail-controls.tsx:12-27"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Renderização markdown",
-     "Ação de editar a partir da seção"
+     "Renderização markdown das notas"
     ],
-    "notes": "Notes render read-only with preserved line breaks.",
-    "note": "Notes render read-only with preserved line breaks."
+    "notes": "Notes render read-only with preserved line breaks and an edit action in the section header.",
+    "note": "Notes render read-only with preserved line breaks and an edit action in the section header."
    },
    "par": [
     "PAR-39"
