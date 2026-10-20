@@ -85,6 +85,8 @@ export interface WorktreeCardProps {
   statusPrDisplay?: unknown | null
   ports?: WorkspacePort[]
   review?: WorktreeReviewStatus
+  /** Opens the metadata editor for this card (detail-section action). */
+  onEditMetadata?: () => void
   /** Persisted notes + linked work items for the hover card (D04a-040/042/043/044). */
   metadata?: {
     comment: string

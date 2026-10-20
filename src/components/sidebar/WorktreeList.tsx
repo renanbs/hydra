@@ -374,6 +374,8 @@ export interface WorktreeListProps {
   lineageByPath?: Readonly<Record<string, string>>;
   /** Persisted notes/linked work items, keyed by checkout path. */
   worktreeMetadataByPath?: WorktreeMetadataByPath;
+  /** Opens the metadata editor for one painted row. */
+  onEditWorktreeMetadata?: (worktree: GitWorktreeInfo) => void;
   /** Commits a nest drag: parent and children are paths inside one project. */
   onAssignWorktreeParent?: (
     parentWorktreePath: string,
@@ -574,6 +576,7 @@ export function WorktreeList({
   onAssignWorktreeStatus,
   lineageByPath,
   worktreeMetadataByPath,
+  onEditWorktreeMetadata,
   onAssignWorktreeParent,
   onUnnestWorktrees,
   onPinWorktreePaths,
@@ -1178,6 +1181,15 @@ export function WorktreeList({
             ports={portsByWorktree?.get(wt.path) || []}
             sessions={wtSessions}
             dropTarget={worktreeDropTarget}
+            onEditMetadata={
+              onEditWorktreeMetadata ? () => onEditWorktreeMetadata(wt) : undefined
+            }
+            metadata={{
+              comment: row.worktree.comment,
+              linkedIssue: row.worktree.linkedIssue,
+              linkedPR: row.worktree.linkedPR,
+              linkedLinearIssue: row.worktree.linkedLinearIssue,
+            }}
             onSelect={onSelectGitWorktree}
             onSelectionGesture={(event) => handleSelectionGesture(event, identity)}
             onDelete={onDeleteGitWorktree}
@@ -1224,6 +1236,7 @@ export function WorktreeList({
       worktreeDropTarget,
       onSelectGitWorktree,
       onDeleteGitWorktree,
+      onEditWorktreeMetadata,
       persistWorktreeDisplayName,
       hostIdByRepoId,
       deleteStateByWorktreeId,

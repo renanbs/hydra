@@ -12,7 +12,9 @@ import {
   CircleDot,
   GitPullRequest,
   FileText,
+  Pencil,
 } from "lucide-react";
+import { DetailHeader, MetadataActionIcon } from "./worktree-card-detail-controls";
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from "./types";
 import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
 
@@ -28,6 +30,8 @@ export interface WorktreeCardDetailsHoverProps {
     linkedPR: number | null;
     linkedLinearIssue: string | null;
   } | null;
+  /** Opens the workspace metadata editor for this card (Orca detail actions). */
+  onEditMetadata?: () => void;
   children: React.ReactNode;
   onPortKilled?: () => void;
 }
@@ -38,6 +42,7 @@ export function WorktreeCardDetailsHover({
   ports = [],
   review,
   metadata = null,
+  onEditMetadata,
   children,
   onPortKilled,
 }: WorktreeCardDetailsHoverProps): React.JSX.Element {
@@ -277,35 +282,64 @@ export function WorktreeCardDetailsHover({
             metadata?.linkedPR != null ||
             metadata?.linkedLinearIssue ||
             (metadata?.comment?.trim().length ?? 0) > 0) && (
-            <div className="space-y-1.5 pb-2 border-b border-neutral-800">
+            <div className="space-y-2 pb-2 border-b border-neutral-800">
               {metadata?.linkedIssue != null && (
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-300">
-                  <CircleDot className="w-3 h-3 shrink-0 text-emerald-400" />
-                  <span className="text-neutral-500">Issue</span>
-                  <span className="font-mono">#{metadata.linkedIssue}</span>
-                </div>
-              )}
-              {metadata?.linkedPR != null && (
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-300">
-                  <GitPullRequest className="w-3 h-3 shrink-0 text-violet-400" />
-                  <span className="text-neutral-500">Review</span>
-                  <span className="font-mono">#{metadata.linkedPR}</span>
-                </div>
-              )}
-              {metadata?.linkedLinearIssue && (
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-300">
-                  <CircleDot className="w-3 h-3 shrink-0 text-indigo-400" />
-                  <span className="text-neutral-500">Linear</span>
-                  <span className="font-mono">{metadata.linkedLinearIssue}</span>
-                </div>
-              )}
-              {metadata?.comment?.trim() ? (
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                    <FileText className="w-3 h-3 shrink-0" />
-                    <span>Notes</span>
+                <div className="space-y-1">
+                  <DetailHeader
+                    icon={<CircleDot className="w-3 h-3 text-emerald-400" />}
+                    label="Issue"
+                    actions={
+                      onEditMetadata ? (
+                        <MetadataActionIcon label="Edit workspace metadata" onClick={onEditMetadata}>
+                          <Pencil className="w-3 h-3" />
+                        </MetadataActionIcon>
+                      ) : null
+                    }
+                  />
+                  <div className="font-mono text-[11px] text-neutral-300">
+                    #{metadata.linkedIssue}
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap break-words text-[11px] leading-4 text-neutral-300">
+                </div>
+              )}
+
+              {metadata?.linkedPR != null && (
+                <div className="space-y-1">
+                  <DetailHeader
+                    icon={<GitPullRequest className="w-3 h-3 text-violet-400" />}
+                    label="Review"
+                  />
+                  <div className="font-mono text-[11px] text-neutral-300">
+                    #{metadata.linkedPR}
+                  </div>
+                </div>
+              )}
+
+              {metadata?.linkedLinearIssue && (
+                <div className="space-y-1">
+                  <DetailHeader
+                    icon={<CircleDot className="w-3 h-3 text-indigo-400" />}
+                    label="Linear"
+                  />
+                  <div className="font-mono text-[11px] text-neutral-300">
+                    {metadata.linkedLinearIssue}
+                  </div>
+                </div>
+              )}
+
+              {metadata?.comment?.trim() ? (
+                <div className="min-w-0 space-y-1">
+                  <DetailHeader
+                    icon={<FileText className="w-3 h-3" />}
+                    label="Notes"
+                    actions={
+                      onEditMetadata ? (
+                        <MetadataActionIcon label="Edit workspace notes" onClick={onEditMetadata}>
+                          <Pencil className="w-3 h-3" />
+                        </MetadataActionIcon>
+                      ) : null
+                    }
+                  />
+                  <p className="whitespace-pre-wrap break-words text-[11px] leading-4 text-neutral-300">
                     {metadata.comment}
                   </p>
                 </div>

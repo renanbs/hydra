@@ -4082,6 +4082,7 @@ export default function App() {
                 onReorderWorktrees={handleReorderWorktrees}
                 lineageByPath={worktreeLineage}
                 worktreeMetadataByPath={worktreeMetadataByPath}
+                onEditWorktreeMetadata={(wt) => setWorktreeMetaDialog({ wt })}
                 onAssignWorktreeParent={handleAssignWorktreeParent}
                 onUnnestWorktrees={handleUnnestWorktrees}
                 pinnedProjects={pinnedProjects}

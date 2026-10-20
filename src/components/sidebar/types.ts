@@ -252,6 +252,8 @@ export interface WorktreeSidebarProps {
   lineageByPath?: Readonly<Record<string, string>>;
   /** Persisted notes/linked work items, keyed by checkout path. */
   worktreeMetadataByPath?: WorktreeMetadataByPath;
+  /** Opens the metadata editor for one painted row. */
+  onEditWorktreeMetadata?: (worktree: GitWorktreeInfo) => void;
   /** Commits a nest drag: parent and child checkout paths inside one project. */
   onAssignWorktreeParent?: (
     parentWorktreePath: string,
