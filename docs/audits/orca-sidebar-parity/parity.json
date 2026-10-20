@@ -17643,8 +17643,12 @@
    "components/sidebar/worktree-lineage-drag-drop.ts:61"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/nesting.ts:12-13",
+    "src/components/sidebar/worktree-list/drag/nesting.ts:53-79",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:150-181"
+   ],
    "backend": [],
    "missing_behaviors": [
     "isWorktreeLineageDropZoneHit: calcula calhas superior e inferior de reordenação (limitadas a min(altura * 0.2, 8px)); retorna true se o ponteiro Y estiver na zona central de aninhamento, permitindo que o topo e a base permaneçam para soltar em reordenação",
@@ -17654,7 +17658,8 @@
     "Não desaninha cards selecionados que estão fora do grupo de origem do drag",
     "Trata linhagem legada apenas inline e não recorre a inline quando o mapa lateral possui entrada com pai inválido/obsoleto"
    ],
-   "notes": "Não localizado após busca por worktree-lineage-drag-drop, isWorktreeLineageDropZoneHit, getWorktreeLineageDropTargetId, getReorderedWorktreeIdsToUnnest, dropZone, nest, 'data-worktree-drag-id'. O módulo não existe; 'data-worktree-drag-id' aparece só em módulos inalcançáveis (src/components/sidebar/worktree-list/pointer-drag-dom.ts:47,52-53; src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:134/138, este último só alcançável para o preview de drop de header). O drag pintado é reordenação plana de projetos/worktrees (WorktreeSidebar.tsx:484-502 handleProjectDrop, WorktreeList.tsx:389-398 onWorktreeDragStart/Over/Drop) sem zona central de aninhamento de linhagem. Aninhamento existe apenas por menu: ParentPickerModal (App.tsx:3951) gravando em worktreeLineage local. Relacionado: PAR-43."
+   "notes": "Hit test rejects empty rects, reserves min(20% height, 8px) at top/bottom for reorder and nests only in the middle band.",
+   "note": "Hit test rejects empty rects, reserves min(20% height, 8px) at top/bottom for reorder and nests only in the middle band."
   },
   "par": [
    "PAR-43"
@@ -17675,26 +17680,17 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/worktree-lineage-projection.ts:8",
-    "src/components/sidebar/worktree-lineage-projection.ts:15",
-    "src/components/sidebar/worktree-lineage-projection.ts:38",
-    "src/components/sidebar/worktree-lineage-projection.ts:60",
-    "src/components/sidebar/worktree-lineage-projection.ts:84",
-    "src/components/sidebar/worktree-lineage-projection.ts:105",
-    "src/components/sidebar/worktree-lineage-projection.ts:128",
-    "src/components/sidebar/visible-worktrees.ts:39",
-    "src/components/sidebar/visible-worktrees.ts:217",
-    "src/components/sidebar/visible-worktrees.ts:225",
-    "src/components/sidebar/pinned-section-worktrees.ts:14",
-    "src/components/sidebar/worktree-list/grouping/row-builders.ts:6"
+    "src/components/sidebar/WorktreeList.tsx:657-682",
+    "src/components/sidebar/WorktreeList.tsx:1080-1092",
+    "src/components/sidebar/worktree-list/grouping/lineage-nesting.parity.test.ts:1-75"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Renderização de cards aninhados por linhagem no sidebar: a indentação é fixa em lineageDepth 0 (WorktreeList.tsx:343, getWorktreeCardContentIndent); as constantes LINEAGE_* (worktree-list/rows/indentation.ts:13-17) não são exercitadas por nenhum consumidor pintado.",
-    "Chip/região de filhos de linhagem no card: showLineageChildChip é forçado a false (use-worktree-card-controller.ts:313) e worktree-card-parent-content.tsx não é referenciado pelo caminho pintado.",
-    "Estado de Pinned por seção derivado de linhagem no card (inPinnedSection nunca é passado: use-worktree-card-controller.ts:87-88/272-273)."
+    "Chip/região de filhos de linhagem no card",
+    "Estado de Pinned por seção derivado de linhagem no card"
    ],
-   "notes": "Port fiel, com os 6 símbolos nas linhas exatas do Orca (8/15/60/84/105/128) e memoização WeakMap de dois níveis (:38-57). Alcançável e usado por computeVisibleWorktrees (visible-worktrees.ts:50/217/225), pinned-section-worktrees.ts:14 e row-builders.ts:6. O efeito de árvore hierárquica de cards no sidebar pintado não existe. Relacionado: PAR-82 (persistência de expansão de linhagem)."
+   "notes": "The app's path lineage is projected into the row model, the pipeline emits nested rows (depth 1) and the card indents by lineage depth instead of flattening it.",
+   "note": "The app's path lineage is projected into the row model, the pipeline emits nested rows (depth 1) and the card indents by lineage depth instead of flattening it."
   },
   "par": [
    "PAR-82"

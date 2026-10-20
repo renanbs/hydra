@@ -1,0 +1,30 @@
+{
+ "group": "L",
+ "generatedFrom": "2026-10-21 lineage rendering increment: the painted row model now receives the app's projected lineage, nested rows indent by their lineage depth, and the nest hit zone keeps the card edges for reordering",
+ "rows": [
+  {
+   "id": "D11-013",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/nesting.ts:12-13",
+    "src/components/sidebar/worktree-list/drag/nesting.ts:53-79",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:150-181"
+   ],
+   "note": "Hit test rejects empty rects, reserves min(20% height, 8px) at top/bottom for reorder and nests only in the middle band."
+  },
+  {
+   "id": "D11-014",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:657-682",
+    "src/components/sidebar/WorktreeList.tsx:1080-1092",
+    "src/components/sidebar/worktree-list/grouping/lineage-nesting.parity.test.ts:1-75"
+   ],
+   "missing_behaviors": [
+    "Chip/região de filhos de linhagem no card",
+    "Estado de Pinned por seção derivado de linhagem no card"
+   ],
+   "note": "The app's path lineage is projected into the row model, the pipeline emits nested rows (depth 1) and the card indents by lineage depth instead of flattening it."
+  }
+ ]
+}
