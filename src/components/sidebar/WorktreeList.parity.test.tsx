@@ -7,6 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAppStore } from "@/store";
 import { WorktreeList, type WorktreeListProps } from "./WorktreeList";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
@@ -73,7 +74,8 @@ function renderList(
 ) {
   const { projects, worktreesByProject, ...rest } = props;
   return render(
-    <WorktreeList
+    <TooltipProvider>
+      <WorktreeList
       projects={projects}
       displayProjects={projects}
       activeProject={projects[0] ?? null}
@@ -91,8 +93,9 @@ function renderList(
       onToggleProjectCollapse={vi.fn()}
       onToggleGroupCollapse={vi.fn()}
       onAssignWorktreeStatus={vi.fn()}
-      {...rest}
-    />
+        {...rest}
+      />
+    </TooltipProvider>
   );
 }
 
