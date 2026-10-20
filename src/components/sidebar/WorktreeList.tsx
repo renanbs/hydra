@@ -74,7 +74,12 @@ import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shar
 import { resolveWorktreeMultiDragSelection } from "./worktree-multi-drag-selection";
 import type { WorktreeMultiDragCandidate } from "./worktree-multi-drag-selection";
 import { useWorktreeListSelection } from "./worktree-list/use-worktree-list-selection";
-import { writeWorkspaceDragData } from "./workspace-status-drag-data";
+import {
+  hasWorkspaceDragData,
+  readWorkspaceDragDataIds,
+  writeWorkspaceDragData,
+} from "./workspace-status-drag-data";
+import { PINNED_GROUP_KEY } from "./worktree-list/grouping/group-keys";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
@@ -401,12 +406,20 @@ const LaneSectionHeader = React.memo(function LaneSectionHeader({
   row,
   isCollapsed,
   onToggleCollapse,
+  onAssignStatusDrop,
+  onPinDrop,
 }: {
   row: GroupHeaderRow;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  onAssignStatusDrop: (worktreeIds: readonly string[], status: string) => void;
+  onPinDrop: (worktreeIds: readonly string[]) => void;
 }): React.JSX.Element {
   const Icon = row.icon;
+  const workspaceStatusId = row.key.startsWith("workspace-status:")
+    ? row.key.slice("workspace-status:".length)
+    : null;
+  const isPinDropTarget = row.key === PINNED_GROUP_KEY;
   return (
     <div
       role="button"
@@ -414,6 +427,33 @@ const LaneSectionHeader = React.memo(function LaneSectionHeader({
       aria-expanded={!isCollapsed}
       aria-label={row.label}
       data-section-header-id={row.key}
+      data-workspace-status-drop-target={workspaceStatusId ? "" : undefined}
+      data-workspace-status={workspaceStatusId ?? undefined}
+      data-workspace-pin-drop-target={isPinDropTarget ? "" : undefined}
+      onDragOver={
+        workspaceStatusId || isPinDropTarget
+          ? (event) => {
+              if (!hasWorkspaceDragData(event.dataTransfer)) return;
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+            }
+          : undefined
+      }
+      onDrop={
+        workspaceStatusId || isPinDropTarget
+          ? (event) => {
+              if (!hasWorkspaceDragData(event.dataTransfer)) return;
+              event.preventDefault();
+              const worktreeIds = readWorkspaceDragDataIds(event.dataTransfer);
+              if (worktreeIds.length === 0) return;
+              if (isPinDropTarget) {
+                onPinDrop(worktreeIds);
+              } else if (workspaceStatusId) {
+                onAssignStatusDrop(worktreeIds, workspaceStatusId);
+              }
+            }
+          : undefined
+      }
       className="group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
       style={{ paddingLeft: WORKTREE_SECTION_HEADER_PADDING_LEFT }}
       onClick={onToggleCollapse}
@@ -1387,6 +1427,8 @@ export function WorktreeList({
               row={row}
               isCollapsed={isCollapsedKey(row.key)}
               onToggleCollapse={slot.toggleCollapse}
+              onAssignStatusDrop={handleAssignWorktreesStatus}
+              onPinDrop={handlePinWorktrees}
             />
           );
         }

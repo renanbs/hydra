@@ -863,3 +863,10 @@ select option { background-color: var(--popover); color: var(--popover-foregroun
   box-shadow: inset 0 0 0 1px var(--worktree-sidebar-ring);
   border-color: color-mix(in srgb, var(--worktree-sidebar-foreground) 40%, transparent);
 }
+
+/* D03a-009/010: the list's own section headers are drop targets, like the board's. */
+[data-workspace-status-drop-target][data-workspace-section-drop-hover],
+[data-workspace-pin-drop-target][data-workspace-section-drop-hover] {
+  background-color: var(--worktree-sidebar-accent);
+  box-shadow: inset 0 0 0 1px var(--worktree-sidebar-ring);
+}

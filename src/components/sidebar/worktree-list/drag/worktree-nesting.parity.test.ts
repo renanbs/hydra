@@ -315,3 +315,71 @@ describe("reorder intent hysteresis (D03a-003)", () => {
     expect(pointerDrag.reorderIntent?.startedAt).toBe(1_000);
   });
 });
+
+
+describe("list section drops (D03a-009 / D03a-010)", () => {
+  function header(attributes: Record<string, string>): HTMLElement {
+    const element = document.createElement("div");
+    for (const [name, value] of Object.entries(attributes)) {
+      element.setAttribute(name, value);
+    }
+    document.body.appendChild(element);
+    return element;
+  }
+
+  it("moves the dragged cards to the status lane under the pointer", () => {
+    const lane = header({
+      "data-workspace-status-drop-target": "",
+      "data-workspace-status": "in-progress",
+    });
+    elementFromPoint.mockReturnValue(lane);
+    const ctx = context();
+
+    commitWorktreePointerDrop({ drag: drag(), ctx });
+
+    expect(ctx.onAssignWorktreesStatus).toHaveBeenCalledWith(["child"], "in-progress");
+    expect(ctx.onReorderWorktrees).not.toHaveBeenCalled();
+    expect(ctx.onNestWorktrees).not.toHaveBeenCalled();
+    expect(ctx.clearWorktreeDrag).toHaveBeenCalledTimes(1);
+  });
+
+  it("pins the dragged cards on the Pinned header", () => {
+    const pinned = header({ "data-workspace-pin-drop-target": "" });
+    elementFromPoint.mockReturnValue(pinned);
+    const ctx = context();
+
+    commitWorktreePointerDrop({ drag: drag(), ctx });
+
+    expect(ctx.onPinWorktrees).toHaveBeenCalledWith(["child"]);
+    expect(ctx.onAssignWorktreesStatus).not.toHaveBeenCalled();
+    expect(ctx.onReorderWorktrees).not.toHaveBeenCalled();
+  });
+
+  it("suppresses the insertion line while a section header is hovered", () => {
+    const lane = header({
+      "data-workspace-status-drop-target": "",
+      "data-workspace-status": "done",
+    });
+    elementFromPoint.mockReturnValue(lane);
+    const setState = vi.fn();
+    const ctx = context();
+
+    flushWorktreePointerDragFrame({
+      drag: { ...drag(), reorderIntent: null },
+      ctx,
+      setWorktreeDragState: setState,
+    });
+
+    const next = (setState.mock.calls[0][0] as (state: WorktreeRowDragState) => WorktreeRowDragState)({
+      draggingWorktreeId: "child",
+      dropIndex: 2,
+      dropIndicatorY: 88,
+      lineageDropTargetId: null,
+      previewOffsetsByWorktreeId: new Map([["child", 44]]),
+    });
+    expect(next.dropIndex).toBeNull();
+    expect(next.previewOffsetsByWorktreeId.get("child")).toBe(44);
+    expect(ctx.computeWorktreeDrop).not.toHaveBeenCalled();
+    expect(lane).toHaveAttribute("data-workspace-section-drop-hover", "true");
+  });
+});

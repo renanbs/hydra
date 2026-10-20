@@ -592,6 +592,30 @@ export function WorktreeSidebar({
     setWorktreeDropTarget(null);
   }, []);
 
+  // Orca document capture fallback (D03a-019): a native row drag released outside any
+  // registered target still ends the drag, so the list never keeps a stale preview.
+  useEffect(() => {
+    if (!draggedWorktreePath) return;
+    const clearNativeDrag = () => {
+      setDraggedWorktreePath(null);
+      setWorktreeDropTarget(null);
+    };
+    // Why deferred: the capture-phase drop runs BEFORE the row/header drop handler,
+    // so clearing synchronously would make the row reorder read a null source.
+    let dropTimer: number | null = null;
+    const handleDocumentDrop = () => {
+      if (dropTimer !== null) window.clearTimeout(dropTimer);
+      dropTimer = window.setTimeout(clearNativeDrag, 0);
+    };
+    document.addEventListener("dragend", clearNativeDrag, { capture: true });
+    document.addEventListener("drop", handleDocumentDrop, { capture: true });
+    return () => {
+      if (dropTimer !== null) window.clearTimeout(dropTimer);
+      document.removeEventListener("dragend", clearNativeDrag, { capture: true });
+      document.removeEventListener("drop", handleDocumentDrop, { capture: true });
+    };
+  }, [draggedWorktreePath]);
+
   const handleProjectDragStart = useCallback((e: React.DragEvent, id: string) => {
     setDraggedProjectId(id);
     e.dataTransfer.effectAllowed = "move";

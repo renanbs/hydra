@@ -9,6 +9,10 @@ import {
   clearWorktreeLineageDropTargetVisual,
   findWorktreeNestingTarget
 } from './nesting'
+import {
+  clearSidebarSectionDropVisual,
+  findSidebarSectionDropTarget
+} from './section-drop'
 
 /**
  * Releases outside the sidebar's horizontal band are throws away, not reorders: the
@@ -40,6 +44,20 @@ export function commitWorktreePointerDrop(args: {
     ctx.clearWorktreeDrag()
     return
   }
+  // A section header under the release is a membership write: pinning or moving
+  // to the status lane, exactly as the board's own targets do.
+  const sectionTarget = findSidebarSectionDropTarget(drag.currentX, drag.currentY)
+  if (sectionTarget) {
+    clearSidebarSectionDropVisual()
+    if (sectionTarget.kind === "pin") {
+      ctx.onPinWorktrees(drag.draggedIds)
+    } else {
+      ctx.onAssignWorktreesStatus(drag.draggedIds, sectionTarget.status)
+    }
+    ctx.clearWorktreeDrag()
+    return
+  }
+  clearSidebarSectionDropVisual()
   // A nest is committed against the card under the release point, before any
   // reorder/board target: the ring the user saw is the promise being kept.
   const nestingTarget = findWorktreeNestingTarget({

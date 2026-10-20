@@ -18,6 +18,10 @@ import {
   findWorktreeNestingTarget,
   updateWorktreeLineageDropTargetVisual
 } from './nesting'
+import {
+  findSidebarSectionDropTarget,
+  updateSidebarSectionDropVisual
+} from './section-drop'
 
 /** Crossing a gutter into the next card is an intent; it settles before the line moves. */
 const REORDER_INTENT_DELAY_MS = 160
@@ -60,6 +64,20 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
     args.setWorktreeDragState((previous) => clearWorktreeDropPreview(previous))
     return
   }
+  // A section header under the pointer is a membership write (pin/status); the
+  // insertion line must not promise a reorder on top of it.
+  const sectionTarget = findSidebarSectionDropTarget(drag.currentX, drag.currentY)
+  updateSidebarSectionDropVisual(sectionTarget)
+  if (sectionTarget) {
+    drag.reorderIntent = null
+    args.setWorktreeDragState((previous) =>
+      clearWorktreeDropPreview(clearWorktreeLineageDropPreview(previous), {
+        preserveOffsets: true
+      })
+    )
+    return
+  }
+
   // Why before the reorder slot: hovering a card promises a nest, and painting an
   // insertion line at the same time would offer two contradictory drops.
   const nestingTarget = findWorktreeNestingTarget({
