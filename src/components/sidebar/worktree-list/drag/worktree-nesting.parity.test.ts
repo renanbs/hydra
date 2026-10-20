@@ -19,6 +19,8 @@ const PARENTS = new Map([
 function cardFor(id: string): HTMLElement {
   const element = document.createElement("div");
   element.setAttribute("data-worktree-nesting-id", id);
+  element.getBoundingClientRect = () =>
+    ({ top: 100, bottom: 140, left: 0, right: 300, width: 300, height: 40, x: 0, y: 100, toJSON: () => ({}) }) as DOMRect;
   document.body.appendChild(element);
   return element;
 }
@@ -132,7 +134,7 @@ describe("worktree nesting eligibility (Orca parity)", () => {
     expect(
       findWorktreeNestingTarget({
         pointerX: 10,
-        pointerY: 20,
+        pointerY: 120,
         draggedIds: ["child"],
         parentIdByChildId: new Map(),
       })
@@ -144,13 +146,43 @@ describe("worktree nesting eligibility (Orca parity)", () => {
     expect(card).not.toHaveAttribute(WORKTREE_NESTING_HOVER_ATTRIBUTE);
   });
 
+  it("keeps the card's top and bottom edges as reorder zones", () => {
+    const card = cardFor("parent");
+    elementFromPoint.mockReturnValue(card);
+
+    expect(
+      findWorktreeNestingTarget({
+        pointerX: 10,
+        pointerY: 102,
+        draggedIds: ["child"],
+        parentIdByChildId: new Map(),
+      })
+    ).toBeNull();
+    expect(
+      findWorktreeNestingTarget({
+        pointerX: 10,
+        pointerY: 138,
+        draggedIds: ["child"],
+        parentIdByChildId: new Map(),
+      })
+    ).toBeNull();
+    expect(
+      findWorktreeNestingTarget({
+        pointerX: 10,
+        pointerY: 120,
+        draggedIds: ["child"],
+        parentIdByChildId: new Map(),
+      })
+    ).toBe("parent");
+  });
+
   it("never returns a card inside the dragged subtree", () => {
     const card = cardFor("grandchild");
     elementFromPoint.mockReturnValue(card);
     expect(
       findWorktreeNestingTarget({
         pointerX: 10,
-        pointerY: 20,
+        pointerY: 120,
         draggedIds: ["child"],
         parentIdByChildId: PARENTS,
       })

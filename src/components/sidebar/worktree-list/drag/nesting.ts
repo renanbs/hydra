@@ -8,6 +8,9 @@
 // never promise different outcomes.
 
 export const WORKTREE_NESTING_ATTRIBUTE = "data-worktree-nesting-id";
+/** Top/bottom of a card stay reorder zones; the middle nests (Orca hit-zone geometry). */
+const LINEAGE_DROP_ZONE_RATIO = 0.2;
+const LINEAGE_DROP_ZONE_MAX_PX = 8;
 export const WORKTREE_NESTING_HOVER_ATTRIBUTE = "data-worktree-lineage-drop-target-hover";
 
 export function buildLineageParentIdByChildId(
@@ -59,6 +62,17 @@ export function findWorktreeNestingTarget(args: {
   const element = document.elementFromPoint(args.pointerX, args.pointerY);
   const card = element?.closest(`[${WORKTREE_NESTING_ATTRIBUTE}]`);
   const candidateId = card?.getAttribute(WORKTREE_NESTING_ATTRIBUTE) ?? null;
+  if (card) {
+    const rect = card.getBoundingClientRect();
+    if (rect.height <= 0) {
+      return null;
+    }
+    const edge = Math.min(rect.height * LINEAGE_DROP_ZONE_RATIO, LINEAGE_DROP_ZONE_MAX_PX);
+    const offset = args.pointerY - rect.top;
+    if (offset < edge || offset > rect.height - edge) {
+      return null;
+    }
+  }
   if (
     !candidateId ||
     !isEligibleWorktreeNestingParent({

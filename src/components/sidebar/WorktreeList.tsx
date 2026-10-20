@@ -1070,16 +1070,19 @@ export function WorktreeList({
       // surface inset as padding and hands the card the content indent, both
       // derived from the row's group depth.
       const isGrouped = displayOptions.groupBy !== "none";
+      // Why row.groupDepth vs row.depth: the pipeline uses `depth` for the lineage
+      // level and `groupDepth` for the section level; feeding the lineage level as
+      // the group depth double-indented nested cards and flattened real children.
       const surfaceInset = getWorktreeCardSurfaceInset({
         isGrouped,
-        groupDepth: row.depth,
+        groupDepth: row.groupDepth,
       });
       const cardContentIndent = Math.max(
         0,
         getWorktreeCardContentIndent({
           isGrouped,
-          groupDepth: row.depth,
-          lineageDepth: 0,
+          groupDepth: row.groupDepth,
+          lineageDepth: row.depth,
         }) - surfaceInset
       );
       const identity = getWorktreeHostIdentity(row.worktree);
