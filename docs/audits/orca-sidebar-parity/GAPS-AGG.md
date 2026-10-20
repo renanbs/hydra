@@ -265,7 +265,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 333 capabilities
+## PARTIAL — 332 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -303,9 +303,8 @@
 - **D02b-016** — Dialog de remoção de host SSH — Contagem de workspaces e descrições contextuais | falta: resolveSshHostRemoval coleta e deduplica repositórios raiz (hostRepoIds) e worktrees secundários (workspaceWorktreeIds) vinculados ao targetId.; Calcula workspaceCount total e verifica se o host está conectado via sshConnectionStates.; Adapta a descrição do dialog para 0, 1 ou múltiplos workspaces, alertando que por padrão os workspaces permanecem no Orca e arquivos remotos não são tocados.; Pluralização correta de '1 workspace' vs '{N} workspaces'. | components/sidebar/HostRemoveDialog.tsx:49-74
 - **D02b-018** — Execução da remoção de host SSH, limpeza de workspaces em cascata e purga de preferências | falta: Se deleteWorkspaces for verdadeiro, invoca clearSshHostWorkspaces ('delete-remote' se conectado, 'forget-local' se offline).; Remove sequencialmente worktrees secundários e projetos raiz garantindo escopo explícito do host (toSshExecutionHostId).; Se algum workspace falhar ao ser removido, aborta a exclusão do target para não deixar itens órfãos e exibe toast de erro orientando retry.; Executa removeSshTargetWithBestEffortCleanup chamando window.api.ssh. | backend: window.api.ssh.removeTarget (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend | components/sidebar/HostRemoveDialog.tsx:76-140
 
-### D02c-project-groups-scripts (5)
+### D02c-project-groups-scripts (4)
 
-- **D02c-001** — Recuperação de worktrees externos ocultos em lista virtualizada com busca e reexibição individual | falta: Virtualização da lista com @tanstack/react-virtual (estimateSize 56px, overscan 3, max-h-56) — lib ausente do package.json; Atributos de acessibilidade aria-posinset / aria-setsize por item; Ícone FolderMinus no empty state (Hydra só renderiza texto); Limiar de busca em >=10 worktrees ocultos (Hydra mostra a busca com >5) | backend: invoke('scan_worktrees') -> src/components/sidebar/WorktreeVisibilityDialog.tsx:112 -> src-tauri/src/lib.rs:399 | components/sidebar/HiddenWorktreeRecoveryList.tsx:23
 - **D02c-002** — Dialog de confirmação para supressão da caixa de entrada de worktrees externos do repositório | falta: Link abre Settings → Non-Orca worktrees (Hydra ainda não tem essa seção; abre a página geral) | backend: invoke('suppress_worktree_inbox') -> src/components/sidebar/WorktreeSidebar.tsx:794 -> src-tauri/src/lib.rs:423 | components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:19
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-015** — Dialog modal para exclusão de grupo de projetos e opção de remoção de projetos contidos | falta: Checkbox opcional 'Remove N contained projects' e props removeContainedProjects/onRemoveContainedProjectsChange (store já suporta; UI não expõe); content ref (mountedRef) para evitar mutações de estado após desmontagem | backend: CustomEvent 'hydra:delete-project-group' -> src/components/sidebar/WorktreeSidebar.tsx:1134 -> src/App.tsx:1211 (estado local + 'hydra:refresh-projects') | components/sidebar/ProjectGroupDeleteDialog.tsx:23

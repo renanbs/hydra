@@ -4,8 +4,8 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 214 | 28.0% |
-| partial | 333 | 43.5% |
+| parity | 215 | 28.1% |
+| partial | 332 | 43.4% |
 | missing | 210 | 27.5% |
 | not-applicable | 7 | 0.9% |
 | out-of-scope | 1 | 0.1% |
@@ -19,7 +19,7 @@
 | D01-shell-chrome | 52 | 23 | 3 | 25 | 1 | 0 |
 | D02a-repo-add-wizard | 42 | 1 | 12 | 22 | 6 | 1 |
 | D02b-hosts-ssh-remote | 30 | 2 | 11 | 17 | 0 | 0 |
-| D02c-project-groups-scripts | 26 | 2 | 5 | 19 | 0 | 0 |
+| D02c-project-groups-scripts | 26 | 3 | 4 | 19 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 35 | 60 | 9 | 0 | 0 |
 | D03b-sidebar-list-orchestration | 50 | 9 | 21 | 20 | 0 | 0 |
 | D04a-worktree-card-surface | 111 | 21 | 66 | 24 | 0 | 0 |

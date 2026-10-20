@@ -13,11 +13,11 @@
     "components/sidebar/HiddenWorktreeRecoveryList.tsx:146"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:116-128",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:539-623",
-     "src/components/sidebar/WorktreeSidebar.tsx:1198-1210"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:46-120",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:819-870",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-190"
     ],
     "backend": [
      "invoke('scan_worktrees') -> src/components/sidebar/WorktreeVisibilityDialog.tsx:112 -> src-tauri/src/lib.rs:399"
@@ -30,8 +30,8 @@
      "Filtro por displayName (Hydra filtra por branch||path; GitWorktreeInfo não tem displayName aqui)",
      "Caminho relativo via relativePathInsideRoot (Hydra usa replace(project.path,''))"
     ],
-    "notes": "Dialog montado e funcional; a lista de recuperacao segue .map() sem virtualizador/aria-posinset, gate de busca >5 (Orca >=10) e filtro por branch||path.",
-    "note": "Dialog montado e funcional; a lista de recuperacao segue .map() sem virtualizador/aria-posinset, gate de busca >5 (Orca >=10) e filtro por branch||path."
+    "notes": "Search stays, rows above ten render through react-window, and each Show button is named 'Show <branch> at <path>'.",
+    "note": "Search stays, rows above ten render through react-window, and each Show button is named 'Show <branch> at <path>'."
    }
   },
   {
