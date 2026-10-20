@@ -480,6 +480,7 @@ async fn delete_worktree(
     state: State<'_, AppState>,
     repo_path: String,
     worktree_path: String,
+    force: Option<bool>,
 ) -> Result<(), String> {
     let terminal = state.terminal.clone();
     let db = state.db.clone();
@@ -499,7 +500,7 @@ async fn delete_worktree(
             let _ = terminal.close_session(id);
             let _ = db.delete_session(id);
         }
-        remove_git_worktree(&repo_path, &worktree_path)
+        remove_git_worktree(&repo_path, &worktree_path, force.unwrap_or(false))
     })
     .await
     .map_err(|e| e.to_string())?

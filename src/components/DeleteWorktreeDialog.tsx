@@ -30,6 +30,7 @@ import {
   type WorktreeDeleteResolvableTarget,
 } from "./sidebar/worktree-delete-request";
 import { DeleteWorktreeLineageNotice } from "./DeleteWorktreeLineageNotice";
+import { describeWorktreeDeleteFailure } from "./sidebar/worktree-delete-failure";
 
 export type DeleteWorktreeDialogState = Record<string, WorktreeDeleteState | undefined>;
 
@@ -308,6 +309,7 @@ export function DeleteWorktreeDialog({
           await invoke("delete_worktree", {
             repoPath: payload.repoPath,
             worktreePath: payload.path,
+            force,
             ...(payload.hostId ? { hostId: payload.hostId } : {}),
           });
           deletedPaths.push(payload.path);
@@ -324,7 +326,16 @@ export function DeleteWorktreeDialog({
         onClose();
         if (deletedPaths.length > 0) onDeleted(deletedPaths);
       } else {
-        setLocalError(failures.map((failure) => `${failure.path}: ${failure.error}`).join("\n"));
+        setLocalError(
+          failures
+            .map((failure) => {
+              const described = describeWorktreeDeleteFailure(failure.error, failure.path)
+              return [described.summary, described.guidance, `(${failure.error})`]
+                .filter(Boolean)
+                .join(' ')
+            })
+            .join('\n')
+        )
       }
     };
     void runDeletes();

@@ -83,6 +83,7 @@ import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
+import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
 import { getDeleteStateKeyForWorktreeHost } from "./components/sidebar/worktree-delete-state-host-match";
 import type { WorktreeDeleteState } from "./store/slices/worktree-delete-state-types";
 import type { ExecutionHostId } from "./shared/execution-host";
@@ -2014,6 +2015,7 @@ export default function App() {
       invoke("delete_worktree", {
         repoPath: liveTarget.repoPath ?? repoPath,
         worktreePath: liveTarget.path,
+        force: false,
         ...(liveTarget.hostId ? { hostId: liveTarget.hostId } : {}),
       })
         .then(() => {
@@ -2025,11 +2027,49 @@ export default function App() {
         })
         .catch((err) => {
           console.error("delete_worktree failed:", err);
-          setDeleteWorktreeModal({ repoPath, worktrees: [wt], deleteTargets: [deleteTarget], error: String(err) });
+          // Orca `showWorktreeDeleteFailureToast`: the recovery lives in a toast with
+          // a Force Delete action, not in a reopened dialog the user has to dismiss.
+          const failure = describeWorktreeDeleteFailure(String(err), liveTarget.path);
+          toast.error(failure.summary, {
+            description: failure.guidance ?? undefined,
+            duration: Infinity,
+            action: failure.canForce
+              ? {
+                  label: "Force Delete",
+                  onClick: () => {
+                    publishDeleteStateForTargets([deleteTarget], WORKTREE_DELETE_IN_PROGRESS);
+                    invoke("delete_worktree", {
+                      repoPath: liveTarget.repoPath ?? repoPath,
+                      worktreePath: liveTarget.path,
+                      force: true,
+                      ...(liveTarget.hostId ? { hostId: liveTarget.hostId } : {}),
+                    })
+                      .then(() => {
+                        refreshGitWorktrees(repoPath);
+                        if (activeProject && activeProject.path !== repoPath) {
+                          refreshGitWorktrees(activeProject.path);
+                        }
+                        window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                        toast.success("Workspace deleted");
+                      })
+                      .catch((forceErr) => {
+                        const retry = describeWorktreeDeleteFailure(
+                          String(forceErr),
+                          liveTarget.path
+                        );
+                        toast.error(retry.summary, {
+                          description: retry.guidance ?? undefined,
+                          duration: Infinity,
+                        });
+                      })
+                      .finally(() => publishDeleteStateForTargets([deleteTarget], null));
+                  },
+                }
+              : undefined,
+          });
         })
         .finally(() => {
-          // A refusal reopens the confirmation with the error, so the card must
-          // stop looking busy the moment the invoke settles.
+          // A refusal must leave the card interactive again; the toast owns the retry.
           publishDeleteStateForTargets([deleteTarget], null);
         });
       return;

@@ -121,6 +121,7 @@ describe("DeleteWorktreeDialog target validation", () => {
     expect(invokeMock).toHaveBeenCalledWith("delete_worktree", {
       repoPath: "/work-ssh",
       worktreePath: WORKTREE_PATH,
+      force: false,
       hostId: "ssh:build-box",
     });
     await waitFor(() => expect(onDeleted).toHaveBeenCalledWith([WORKTREE_PATH]));
