@@ -12552,15 +12552,20 @@
    "components/sidebar/use-worktree-context-menu-secondary-actions.ts:17"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/context-menu-click-debounce.ts:1-12",
+    "src/components/RadixContextMenu.tsx:93-108",
+    "src/components/sidebar/context-menu-click-debounce.parity.test.ts:1-25"
+   ],
    "backend": [],
    "missing_behaviors": [
     "contextMenuOpenedAtRef com timestamp de abertura",
     "shouldSuppressContextMenuFollowUpClick com janela de 500ms (preventDefault + stopPropagation)",
     "Limpeza da referência após o período de supressão ou no primeiro clique válido"
    ],
-   "notes": "Buscas: 'contextMenuOpenedAtRef', 'CONTEXT_MENU_CLICK_SUPPRESSION_MS', 'shouldSuppressContextMenuFollowUpClick' → 0 ocorrências; 'suppress|debounce' em RadixContextMenu.tsx e CustomContextMenu.tsx → 0."
+   "notes": "A 500ms capture-phase window swallows the follow-up click that opened the menu; menu clicks are exempt.",
+   "note": "A 500ms capture-phase window swallows the follow-up click that opened the menu; menu clicks are exempt."
   },
   "domain": "D07-menus-actions"
  },
@@ -14694,18 +14699,18 @@
    "components/sidebar/SidebarFilter.tsx:222"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:113",
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:620-625",
-    "src/components/sidebar/worktree-list/buildSidebarRows.ts:70-82"
+    "src/components/sidebar/worktree-list/buildSidebarRows.ts:70-82",
+    "src/App.tsx:2908-2921",
+    "src/components/sidebar/WorktreeSidebar.tsx:438-449"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Despacho global de 'sidebar.sleepingWorkspaces.toggle' (a keybinding existe, nenhum handler a executa)"
-   ],
-   "notes": "Hide sleeping is applied on the rendered path (buildSidebarRows) and the row now discloses the registry shortcut.",
-   "note": "Hide sleeping is applied on the rendered path (buildSidebarRows) and the row now discloses the registry shortcut."
+   "missing_behaviors": [],
+   "notes": "The registry-dispatched action toggles hideSleeping through the same writer the menu uses; the row still discloses the chord.",
+   "note": "The registry-dispatched action toggles hideSleeping through the same writer the menu uses; the row still discloses the chord."
   },
   "domain": "D09-filters-sort"
  },
@@ -14798,18 +14803,18 @@
    "components/sidebar/SidebarFilter.tsx:300"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:166-174",
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:241-262"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:300-338",
+    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:275-305"
    ],
    "backend": [],
    "missing_behaviors": [
     "Botão 'Select all' (0 hits)",
     "Estado desabilitado: 'Clear' só é renderizado quando há seleção (nunca aparece desabilitado) e não há pill rounded-full text-[11px] com opacidade reduzida"
    ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "notes": "Select all fills every project id and Clear empties it; both disable when the action is a no-op.",
+   "note": "Select all fills every project id and Clear empties it; both disable when the action is a no-op."
   },
   "domain": "D09-filters-sort"
  },
@@ -14822,16 +14827,15 @@
    "components/sidebar/SidebarFilter.tsx:389"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:678-697"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:678-697",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:700-720"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "O botão de reset só aparecer quando há filtro ativo (Hydra mostra 'Clear filters' sempre)"
-   ],
-   "notes": "Reset restores every boolean, the exception and the project filter; the footer also opens Add project.",
-   "note": "Reset restores every boolean, the exception and the project filter; the footer also opens Add project."
+   "missing_behaviors": [],
+   "notes": "Reset restores every boolean, the exception and the project filter; both footer actions now match Orca, including hiding Clear when nothing is active.",
+   "note": "Reset restores every boolean, the exception and the project filter; both footer actions now match Orca, including hiding Clear when nothing is active."
   },
   "domain": "D09-filters-sort"
  },
@@ -14895,9 +14899,9 @@
    "components/sidebar/SidebarProjectFilterPanel.tsx:220"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:176-196"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:335-365"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14906,8 +14910,8 @@
     "aria-label internacionalizado 'Remove {displayName} filter' (o botão × não tem aria-label)",
     "onMouseDown preventDefault para não perder o foco do input"
    ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "notes": "Pills scroll at max-h-16, carry the repo color dot and the remove button has an aria-label naming the project.",
+   "note": "Pills scroll at max-h-16, carry the repo color dot and the remove button has an aria-label naming the project."
   },
   "domain": "D09-filters-sort"
  },
@@ -14918,9 +14922,11 @@
    "components/sidebar/SidebarProjectFilterPanel.tsx:15"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-247"
+    "src/components/sidebar/project-filter-search.ts:1-45",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:210-214",
+    "src/components/sidebar/project-filter-search.parity.test.ts:1-35"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14928,8 +14934,8 @@
     "Função de score (displayName 2 + 1/(index+1); path 1 + 1/(index+1)) e ordenação por score — Hydra faz filter substring, sem ranking",
     "Normalização (toLowerCase/trim) além do toLowerCase da query"
    ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "notes": "Search matches display name/name/path, ranks name hits above path hits, trims and case-folds.",
+   "note": "Search matches display name/name/path, ranks name hits above path hits, trims and case-folds."
   },
   "domain": "D09-filters-sort"
  },
@@ -14944,20 +14950,17 @@
    "components/sidebar/SidebarProjectFilterPanel.tsx:124"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:345-375",
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:392-410",
-    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:190-206"
+    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:190-206",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:390-430"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Backspace com query vazia removendo o último projeto selecionado",
-    "ArrowLeft caret-aware (no início do campo, sobe para fechar o submenu)",
-    "Isolamento de keydown (exceto ArrowUp/ArrowDown) contra o typeahead do menu"
-   ],
-   "notes": "Arrow keys move the highlight and Enter toggles the highlighted project; the remaining keys keep Orca's behavior.",
-   "note": "Arrow keys move the highlight and Enter toggles the highlighted project; the remaining keys keep Orca's behavior."
+   "missing_behaviors": [],
+   "notes": "Arrows move the highlight, Enter toggles, Backspace on an empty query removes the last project, ArrowLeft at caret 0 closes the panel and other keys stay local.",
+   "note": "Arrows move the highlight, Enter toggles, Backspace on an empty query removes the last project, ArrowLeft at caret 0 closes the panel and other keys stay local."
   },
   "domain": "D09-filters-sort"
  },
@@ -14973,20 +14976,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:145-160",
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:161-174",
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:116-127",
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-262"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:250-258"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Auto-ocultar-se quando projects.length <= 1 (a linha 'Projects' é sempre renderizada)",
-    "Props filterRepoIds/setFilterRepoIds para reuso pela visão de agentes (Hydra expõe apenas options.filterProjectIds + onOptionsChange)",
-    "RepoBadgeLabel no gatilho do submenu",
-    "Conjunto availableRepos separado (Hydra lista todos os projetos com estado selecionado/não)"
+    "Props filterRepoIds/setFilterRepoIds para reuso pela visão de agentes",
+    "RepoBadgeLabel no gatilho do submenu"
    ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "notes": "The Projects row hides when there is nothing to filter; the agents-view reuse still depends on shared props.",
+   "note": "The Projects row hides when there is nothing to filter; the agents-view reuse still depends on shared props."
   },
   "domain": "D09-filters-sort"
  },
@@ -16569,10 +16567,15 @@
    "components/sidebar/WorktreeVisibilityHelpPopover.tsx:35"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:640-670",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:350-370",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-196"
+   ],
    "backend": [],
-   "notes": "não localizado: WorktreeVisibilityHelpPopover inexistente. Buscas: 'Which worktrees', 'hidden by default', 'CircleHelp' na sidebar — ausentes."
+   "notes": "Help opens on hover or click and closes on Escape or outside click, with the exact Orca question as label.",
+   "note": "Help opens on hover or click and closes on Escape or outside click, with the exact Orca question as label."
   },
   "domain": "D10-visibility-inbox-notices"
  },
@@ -16759,10 +16762,14 @@
    "components/sidebar/WorktreeVisibilitySourceList.tsx:346"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:696-706",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:198-215"
+   ],
    "backend": [],
-   "notes": "não localizado: sem getWorktreeVisibilityOverrideNotice / role=status de override. Hydra só mostra o link 'Use global' quando o override coincide com o global."
+   "notes": "A source row whose project override differs from Global Settings prints 'Overriding global setting: Show|Hide'.",
+   "note": "A source row whose project override differs from Global Settings prints 'Overriding global setting: Show|Hide'."
   },
   "domain": "D10-visibility-inbox-notices"
  },

@@ -49,16 +49,16 @@
   },
   {
    "id": "D09-005",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:113",
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:620-625",
-    "src/components/sidebar/worktree-list/buildSidebarRows.ts:70-82"
+    "src/components/sidebar/worktree-list/buildSidebarRows.ts:70-82",
+    "src/App.tsx:2908-2921",
+    "src/components/sidebar/WorktreeSidebar.tsx:438-449"
    ],
-   "missing_behaviors": [
-    "Despacho global de 'sidebar.sleepingWorkspaces.toggle' (a keybinding existe, nenhum handler a executa)"
-   ],
-   "note": "Hide sleeping is applied on the rendered path (buildSidebarRows) and the row now discloses the registry shortcut."
+   "missing_behaviors": [],
+   "note": "The registry-dispatched action toggles hideSleeping through the same writer the menu uses; the row still discloses the chord."
   },
   {
    "id": "D09-006",
@@ -84,29 +84,25 @@
   },
   {
    "id": "D09-010",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:678-697"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:678-697",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:700-720"
    ],
-   "missing_behaviors": [
-    "O botão de reset só aparecer quando há filtro ativo (Hydra mostra 'Clear filters' sempre)"
-   ],
-   "note": "Reset restores every boolean, the exception and the project filter; the footer also opens Add project."
+   "missing_behaviors": [],
+   "note": "Reset restores every boolean, the exception and the project filter; both footer actions now match Orca, including hiding Clear when nothing is active."
   },
   {
    "id": "D09-015",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:345-375",
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:392-410",
-    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:190-206"
+    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:190-206",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:390-430"
    ],
-   "missing_behaviors": [
-    "Backspace com query vazia removendo o último projeto selecionado",
-    "ArrowLeft caret-aware (no início do campo, sobe para fechar o submenu)",
-    "Isolamento de keydown (exceto ArrowUp/ArrowDown) contra o typeahead do menu"
-   ],
-   "note": "Arrow keys move the highlight and Enter toggles the highlighted project; the remaining keys keep Orca's behavior."
+   "missing_behaviors": [],
+   "note": "Arrows move the highlight, Enter toggles, Backspace on an empty query removes the last project, ArrowLeft at caret 0 closes the panel and other keys stay local."
   },
   {
    "id": "D07-010",

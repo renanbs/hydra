@@ -1165,10 +1165,15 @@
     "components/sidebar/WorktreeVisibilityHelpPopover.tsx:35"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:640-670",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:350-370",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-196"
+    ],
     "backend": [],
-    "notes": "não localizado: WorktreeVisibilityHelpPopover inexistente. Buscas: 'Which worktrees', 'hidden by default', 'CircleHelp' na sidebar — ausentes."
+    "notes": "Help opens on hover or click and closes on Escape or outside click, with the exact Orca question as label.",
+    "note": "Help opens on hover or click and closes on Escape or outside click, with the exact Orca question as label."
    }
   },
   {
@@ -1346,10 +1351,14 @@
     "components/sidebar/WorktreeVisibilitySourceList.tsx:346"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:696-706",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:198-215"
+    ],
     "backend": [],
-    "notes": "não localizado: sem getWorktreeVisibilityOverrideNotice / role=status de override. Hydra só mostra o link 'Use global' quando o override coincide com o global."
+    "notes": "A source row whose project override differs from Global Settings prints 'Overriding global setting: Show|Hide'.",
+    "note": "A source row whose project override differs from Global Settings prints 'Overriding global setting: Show|Hide'."
    }
   },
   {

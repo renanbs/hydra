@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 205 capabilities
+## MISSING — 202 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -191,12 +191,11 @@
 - **D06-025** — Cálculo de posicionamento e ancoragem virtual do popover de seleção de pai (WorktreeParentPickerPopover) | falta: estimateWorktreeParentPickerHeight (bordas 2px + header 28px + input 49px + lista até PICKER_LIST_MAX_HEIGHT=288px com PICKER_ROW_HEIGHT=56px); clampWorktreeParentPickerAnchorTop limitando ao viewport com PICKER_VIEWPORT_PADDING (12px); Âncora virtual (virtualAnchorRef/DOMRect medido) para posicionamento Radix correto sob transform CSS; Listeners de 'resize'/'scroll' da janela recalculando anchorRect e viewportHeight com o popover aberto | components/sidebar/worktree-parent-picker-placement.ts:1-33
 - **D06-034** — Proteção contra cancelamento prematuro de animação de scroll de revelação (scroll settling guard) | falta: createPendingRevealScroll registrando targetTop e expiração REVEAL_SCROLL_SETTLE_TIMEOUT_MS (1000ms); isRevealScrollSettling comparando scrollTop com targetTop dentro de SETTLED_TOLERANCE_PX (1px); Bloqueio de rotinas concorrentes de restauração de scroll que sobrescrevam scrollTop durante a animação; Expiração automática para não travar a guarda com alvo inalcançável | components/sidebar/worktree-sidebar-reveal-scroll-settle.ts:1-35
 
-### D07-menus-actions (4)
+### D07-menus-actions (3)
 
 - **D07-002** — Colocar múltiplos workspaces selecionados em modo sleep simultaneamente através do menu de contexto com contagem dinâmica | falta: Menu de contexto de multi-seleção; Cálculo dinâmico de sleepableWorktrees; Label pluralizado 'Sleep N Workspaces'; Tooltip multi-contexto | components/sidebar/WorkspaceSleepMenuItems.tsx:36
 - **D07-005** — Preservação da posição do scroll virtual do sidebar durante o sleep e recuperação de erros com toast | falta: Evento VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT e correção por requestAnimationFrame; Reversão da limpeza do workspace ativo em falha de desligamento + retry; Tradução de erros de host/daemon e toast.error consolidado | components/sidebar/sleep-worktree-flow.ts:49
 - **D07-017** — Otimização de performance com sentinelas vazias e políticas de isolamento de escopo no menu de contexto | falta: Sentinelas de módulo (EMPTY_TABS_BY_WORKTREE, EMPTY_PTY_IDS_BY_TAB_ID, EMPTY_BROWSER_TABS_BY_WORKTREE, EMPTY_DELETE_STATE_BY_WORKTREE_ID, EMPTY_WORKTREE_LINEAGE_BY_ID, EMPTY_WORKSPACE_LINEAGE_BY_CHILD_KEY, EMPTY_CYCLIC_LINEAGE_IDS) e selectMenuScopedMap; shouldUseNativeContextMenu / data-worktree-native-context-menu; shouldIgnoreNestedWorktreeContextMenuScope para previews aninhados de filhos; handleCloseAutoFocus focando [data-worktree-sidebar] com preventScroll | components/sidebar/worktree-context-menu-policy.ts:19
-- **D07-019** — Supressão de cliques acidentais logo após a abertura do menu de contexto (click debounce) | falta: contextMenuOpenedAtRef com timestamp de abertura; shouldSuppressContextMenuFollowUpClick com janela de 500ms (preventDefault + stopPropagation); Limpeza da referência após o período de supressão ou no primeiro clique válido | components/sidebar/worktree-context-menu-policy.ts:16
 
 ### D08-kanban-board (7)
 
@@ -208,10 +207,8 @@
 - **D08-044** — Motor de sincronização com Linear com fila por worktree, normalização de estados e consistência local | falta: Fila por worktree (enqueueWorktreeSync) para evitar corridas; Resolve configurações de Linear por dono de runtime do worktree; Lê issue e workflow states do time Linear; Correspondência normalizada case-insensitive entre label do board e nome do estado | components/sidebar/workspace-board-task-status-sync.ts:68
 - **D08-045** — Construção e filtragem de requisições de sincronização de tarefas evitando no-ops e redundâncias | falta: Retorna null com sync desabilitada ou lista de IDs vazia; Localiza a definição do status alvo em workspaceStatuses do store; Filtra IDs duplicados e worktrees já no status alvo; Retorna changedWorktreeIds e targetStatus limpos | components/sidebar/workspace-board-task-status-sync.ts:46
 
-### D10-visibility-inbox-notices (9)
+### D10-visibility-inbox-notices (7)
 
-- **D10-052** — Ajuda 'Which worktrees are hidden by default?' com hover, click, Escape e click-outside | components/sidebar/WorktreeVisibilityHelpPopover.tsx:8
-- **D10-061** — Aviso 'Overriding global setting: <valor>' por linha | components/sidebar/WorktreeVisibilitySourceList.tsx:342
 - **D10-063** — Mostrar worktrees descobertos a partir do card do projeto (com rollback) | components/sidebar/imported-worktrees-card-actions.ts:33
 - **D10-070** — Catálogo de mensagens de erro das ações de inbox | components/sidebar/new-external-worktrees-inbox-actions.ts:31
 - **D10-078** — Highlight de drag e aceite do dragover no dialog de feedback | components/sidebar/use-feedback-image-drop.ts:22
@@ -260,7 +257,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 331 capabilities
+## PARTIAL — 325 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -547,20 +544,14 @@
 - **D08-040** — Integração de drop vindo da barra lateral para o Kanban com registro de grupos e destaque visual | falta: Traduz índices virtuais/filtrados na fronteira de commit (resolveWorkspaceKanbanSidebarFullLaneDropIndex); Constrói atualizações em lote (buildWorkspaceKanbanSidebarDropUpdates) e decide comutação para ordenação manual | components/sidebar/workspace-kanban-sidebar-drop.ts:32
 - **D08-042** — Ações de reordenação, movimentação e fixação de worktrees com comutação automática para ordenação manual | falta: moveWorktreeToStatus / moveWorktreesToStatus qualificados por hostId; Pin em lote do conjunto selecionado (pinWorktrees); Comutação automática para sortBy 'manual' ao reordenar intencionalmente no board; Sincronização opcional de status de tarefa com Linear (maybeSyncTaskStatuses) | components/sidebar/use-workspace-kanban-worktree-actions.ts:20
 
-### D09-filters-sort (25)
+### D09-filters-sort (19)
 
 - **D09-004** — Botão de gatilho do menu de filtros do sidebar com badge de contagem de filtros ativos e tooltip dinâmico | falta: Ícone ListFilter do gatilho (Hydra usa SlidersHorizontal); data-workspace-board-preserve-open no gatilho do menu | components/sidebar/SidebarFilter.tsx:41
-- **D09-005** — Alternância de filtro para ocultar/exibir workspaces inativos (sleeping) com descoberta de atalho | falta: Despacho global de 'sidebar.sleepingWorkspaces.toggle' (a keybinding existe, nenhum handler a executa) | components/sidebar/SidebarFilter.tsx:54
 - **D09-007** — Filtros de ocultação por tipo e origem de workspace (default branch, automação, CLI, detached HEAD) | falta: Nuance 'exceto quando mantido por provisão de receita' no hide default branch | components/sidebar/SidebarFilter.tsx:246
 - **D09-008** — Seção de filtragem por projetos com busca integrada, listagem de repositórios e indicação de servidor SSH | falta: CommandInput/CommandList (Radix cmdk) e placeholder 'Search projects...' — Hydra usa <input> com placeholder fixo 'Add project...' (WorkspaceOptionsMenu.tsx:216); Estado vazio 'No projects match'; Reset da seleção de teclado ao digitar nova query; Interrupção de onKeyDown para não vazar para o typeahead do menu (menu não é Radix) | components/sidebar/SidebarFilter.tsx:279
-- **D09-009** — Ações de seleção em lote ('Select all' e 'Clear') para projetos no menu de filtros | falta: Botão 'Select all' (0 hits); Estado desabilitado: 'Clear' só é renderizado quando há seleção (nunca aparece desabilitado) e não há pill rounded-full text-[11px] com opacidade reduzida | components/sidebar/SidebarFilter.tsx:158
-- **D09-010** — Rodapé de ações do menu de filtros com botão de reset global e adição de projeto | falta: O botão de reset só aparecer quando há filtro ativo (Hydra mostra 'Clear filters' sempre) | components/sidebar/SidebarFilter.tsx:141
 - **D09-011** — Alternância de modo de agrupamento de worktrees no sidebar (none, repo, project-group) | falta: Modo 'project-group' do toggle (Hydra usa 'workspace-status' como 3º modo; grupos de projeto são renderizados sempre, não como modo); onPointerDownCapture contra roving-focus do Radix e ToggleGroup single-select (Hydra usa 3 <button> num grid); Disparo de setGroupBy (Hydra usa onOptionsChange({groupBy})) | components/sidebar/SidebarGroupByToggle.tsx:10
 - **D09-012** — Painel de busca e seleção de projetos em submenu com foco resiliente via requestAnimationFrame | falta: Foco via requestAnimationFrame para escapar do focus-scope do Radix (Hydra usa autoFocus direto, WorkspaceOptionsMenu.tsx:203); cancelAnimationFrame no unmount; Reset da query ao reabrir o painel (projectSearch é estado do componente e persiste entre aberturas, WorkspaceOptionsMenu.tsx:48/205); Placeholder alternando 'Filter projects...'/'Add project...' (fixo em 'Add project...') | components/sidebar/SidebarProjectFilterPanel.tsx:50
-- **D09-013** — Exibição de pills com badges e botão de remoção para projetos selecionados no filtro | falta: Container com scroll vertical (max-h-16 overflow-y-auto scrollbar-sleek) para as pills; RepoBadgeLabel truncado (max-w-[8rem]) com indicador colorido por repo; aria-label internacionalizado 'Remove {displayName} filter' (o botão × não tem aria-label); onMouseDown preventDefault para não perder o foco do input | components/sidebar/SidebarProjectFilterPanel.tsx:192
-- **D09-014** — Algoritmo de pontuação e ranking de busca de projetos por nome de exibição e caminho | falta: Correspondência por path (Hydra só compara proj.name); Função de score (displayName 2 + 1/(index+1); path 1 + 1/(index+1)) e ordenação por score — Hydra faz filter substring, sem ranking; Normalização (toLowerCase/trim) além do toLowerCase da query | components/sidebar/SidebarProjectFilterPanel.tsx:15
-- **D09-015** — Navegação e atalhos de teclado inteligentes no input de busca do filtro de projetos | falta: Backspace com query vazia removendo o último projeto selecionado; ArrowLeft caret-aware (no início do campo, sobe para fechar o submenu); Isolamento de keydown (exceto ArrowUp/ArrowDown) contra o typeahead do menu | components/sidebar/SidebarProjectFilterPanel.tsx:87
-- **D09-016** — Submenu de filtro de projetos com resumo dinâmico de visibilidade e botão de limpeza | falta: Auto-ocultar-se quando projects.length <= 1 (a linha 'Projects' é sempre renderizada); Props filterRepoIds/setFilterRepoIds para reuso pela visão de agentes (Hydra expõe apenas options.filterProjectIds + onOptionsChange); RepoBadgeLabel no gatilho do submenu; Conjunto availableRepos separado (Hydra lista todos os projetos com estado selecionado/não) | components/sidebar/SidebarRepositoryFilterSection.tsx:14
+- **D09-016** — Submenu de filtro de projetos com resumo dinâmico de visibilidade e botão de limpeza | falta: Props filterRepoIds/setFilterRepoIds para reuso pela visão de agentes; RepoBadgeLabel no gatilho do submenu | components/sidebar/SidebarRepositoryFilterSection.tsx:14
 - **D09-017** — Seção de filtros no menu de opções de workspaces com toggle condicional para workspaces de outros dispositivos | falta: Toggle 'Hide other-client workspaces' (hideWorkspacesFromOtherDevices) — não existe UI; o flag só vive na store/pipeline não montado (visible-worktrees.ts:125); Gate de visibilidade por runtimeEnvironments/runtimeEnvironmentCatalogHydrated e permanência do filtro quando já ativo | components/sidebar/SidebarWorkspaceFilterSection.tsx:16
 - **D09-018** — Revelação automática de repositório no filtro ativo de projetos ao interagir com workspace | falta: Alcance a partir da interação com workspace no sidebar montado: worktree-activation.ts não tem consumidor de produção (só workspace-port-actions.ts:1-99, cujo goToWorkspacePortOwner também não tem consumidor, e testes); Efeito sobre o estado que a sidebar renderiza: revealRepoInProjectFilter muta store.filterRepoIds, mas o sidebar renderiza displayOptions.filterProjectIds (WorktreeSidebar.tsx:510-512) | components/sidebar/project-filter-reveal.ts:6
 - **D09-019** — Avaliação abrangente de estado de filtros ativos na sidebar | falta: Consumidor: nenhum componente/hook usa sidebarHasActiveFilters (o símbolo só é re-exportado em visible-worktrees.ts:12) — logo não existe badge de filtros ativos nem gate de 'Clear Filters' com esse cálculo | components/sidebar/sidebar-filter-actions.ts:11

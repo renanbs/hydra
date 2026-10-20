@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 221 | 28.9% |
-| partial | 331 | 43.3% |
-| missing | 205 | 26.8% |
+| parity | 230 | 30.1% |
+| partial | 325 | 42.5% |
+| missing | 202 | 26.4% |
 | not-applicable | 7 | 0.9% |
 | out-of-scope | 1 | 0.1% |
 
@@ -26,10 +26,10 @@
 | D04b-worktree-card-controllers | 23 | 1 | 11 | 11 | 0 | 0 |
 | D05-agents-rows | 23 | 0 | 10 | 13 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 22 | 11 | 2 | 0 | 0 |
-| D07-menus-actions | 45 | 14 | 27 | 4 | 0 | 0 |
+| D07-menus-actions | 45 | 15 | 27 | 3 | 0 | 0 |
 | D08-kanban-board | 45 | 25 | 13 | 7 | 0 | 0 |
-| D09-filters-sort | 31 | 6 | 25 | 0 | 0 | 0 |
-| D10-visibility-inbox-notices | 91 | 44 | 38 | 9 | 0 | 0 |
+| D09-filters-sort | 31 | 12 | 19 | 0 | 0 | 0 |
+| D10-visibility-inbox-notices | 91 | 46 | 38 | 7 | 0 | 0 |
 | D11-lineage-grouping-model | 17 | 6 | 6 | 5 | 0 | 0 |
 | D12-markdown-inline-render | 14 | 3 | 1 | 10 | 0 | 0 |
 | D15-misc-a | 12 | 0 | 5 | 7 | 0 | 0 |

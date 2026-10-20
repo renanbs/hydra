@@ -485,15 +485,20 @@
     "components/sidebar/use-worktree-context-menu-secondary-actions.ts:17"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/context-menu-click-debounce.ts:1-12",
+     "src/components/RadixContextMenu.tsx:93-108",
+     "src/components/sidebar/context-menu-click-debounce.parity.test.ts:1-25"
+    ],
     "backend": [],
     "missing_behaviors": [
      "contextMenuOpenedAtRef com timestamp de abertura",
      "shouldSuppressContextMenuFollowUpClick com janela de 500ms (preventDefault + stopPropagation)",
      "Limpeza da referência após o período de supressão ou no primeiro clique válido"
     ],
-    "notes": "Buscas: 'contextMenuOpenedAtRef', 'CONTEXT_MENU_CLICK_SUPPRESSION_MS', 'shouldSuppressContextMenuFollowUpClick' → 0 ocorrências; 'suppress|debounce' em RadixContextMenu.tsx e CustomContextMenu.tsx → 0."
+    "notes": "A 500ms capture-phase window swallows the follow-up click that opened the menu; menu clicks are exempt.",
+    "note": "A 500ms capture-phase window swallows the follow-up click that opened the menu; menu clicks are exempt."
    }
   },
   {
