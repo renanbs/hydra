@@ -15,6 +15,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { DetailHeader, MetadataActionIcon } from "./worktree-card-detail-controls";
+import { CommentMarkdown } from "./comment-markdown";
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from "./types";
 import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
 
@@ -339,9 +340,10 @@ export function WorktreeCardDetailsHover({
                       ) : null
                     }
                   />
-                  <p className="whitespace-pre-wrap break-words text-[11px] leading-4 text-neutral-300">
-                    {metadata.comment}
-                  </p>
+                  <CommentMarkdown
+                    text={metadata.comment}
+                    className="text-[11px] leading-4 text-neutral-300"
+                  />
                 </div>
               ) : null}
             </div>
