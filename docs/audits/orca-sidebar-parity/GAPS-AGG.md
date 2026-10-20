@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 221 capabilities
+## MISSING — 218 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -135,7 +135,7 @@
 - **D03b-046** — Coordenação de lote de expurgo de snapshots de workspace via IPC durante remoção múltipla | components/sidebar/worktree-snapshot-prune-batch.ts:6-24
 - **D03b-048** — Renderização recursiva de linhagem e aninhamento de cards filhos e netos através de WorktreeCard | falta: renderização recursiva de filhos/netos via WorktreeCard; fornecimento de lineageChildren/lineageChildrenStyle: WorktreeCard aceita as props (worktree-card-model.ts:39-42) e a superfície as renderiza (worktree-card-surface.tsx:115-121), mas nenhum caller as passa — WorktreeList montado não injeta linhagem | components/sidebar/worktree-list-card-markup-queries.ts:3-20
 
-### D04a-worktree-card-surface (30)
+### D04a-worktree-card-surface (27)
 
 - **D04a-012** — Renderiza o controle de host SSH do card com conectar/reconectar, estados de falha e host removido | falta: Glifos Server/ServerOff e pill de Retry/Reconnect com estados connecting/deploying-relay/reconnecting; targetRemoved, auth-failed e tooltips diferenciados; iconOnly para compacto/novo estilo; Stop de Enter/Espaço e guarda de clique em voo | components/sidebar/WorktreeCardSshHostControl.tsx:140
 - **D04a-013** — Executa o fluxo de conexão SSH e converge o estado do host após falha | falta: Fluxo connectRuntimeEnvironmentSshTarget / window.api.ssh.connect com timeout de UI; Espelhamento em setSshConnectionState para reattach de PTY diferido; Toast de falha + resync (listTargets antes de listRemovedTargetLabels) | components/sidebar/WorktreeCardSshHostControl.tsx:86
@@ -143,9 +143,6 @@
 - **D04a-020** — Renderiza as linhas secundárias do card: banner de conflito de branch remoto, prompt de Linear e chip de worktrees filhas | falta: Banner âmbar de conflito de branch remoto (PAR-19); Prompt de setup do Linear agent skill quando o card está ativo; Chip de worktrees filhas com chevron/aria-expanded; Container deslocado -ml-[1.125rem] no estilo legado | components/sidebar/worktree-card-secondary-rows.tsx:41
 - **D04a-022** — Sobrepõe o alerta de não-lido sobre o glifo de status no novo estilo | falta: Badge âmbar de 6px sobre o glifo com ring de recorte; data-worktree-status-lane-unread e data-worktree-unread-alert; Supressão em working/permission mantendo o anúncio acessível | components/sidebar/WorktreeCardStatusSlot.tsx:126
 - **D04a-023** — Alterna lido/não-lido pelo botão de sino no estilo legado, com tooltip combinando status e ação | falta: Botão de sino lido/não-lido com aria-label Mark as read/Mark as unread; Tooltip combinando status e ação; Preservação do board e stop de pointerdown; Retorno null quando nada está habilitado | components/sidebar/WorktreeCardStatusSlot.tsx:160
-- **D04a-025** — Lista os ícones-badge de metadados do workspace (notas, automação, CLI, issue, Linear, Jira, review) | falta: Ícones de notas/automação/CLI/issue/Linear/Jira/review com sr-only; Grupo aria-label Workspace metadata; forwardRef para HoverCardTrigger asChild | components/sidebar/WorktreeCardMetaBadges.tsx:38
-- **D04a-026** — Decide se o card tem algum detalhe que justifique a fileira de badges/hover | falta: Predicado que decide se existe detalhe (issue, linear, jira, review, comentário não vazio, automação, CLI) | components/sidebar/WorktreeCardMetaBadges.tsx:18
-- **D04a-027** — Renderiza o badge/ícone de metadado simples com rótulo apenas para leitores de tela | falta: Badge/ícone simples com rótulo em sr-only | components/sidebar/WorktreeCardMetadataControls.tsx:4
 - **D04a-028** — Renderiza o cabeçalho de uma seção de detalhes (ícone + rótulo + ações) | falta: Cabeçalho de seção (ícone + rótulo uppercase 11px + ações à direita) | components/sidebar/WorktreeCardMetadataControls.tsx:19
 - **D04a-029** — Renderiza um ícone de ação de metadado como botão (com callback) ou link externo (com href), sempre com tooltip | falta: Ícone de ação como botão (callback) ou link externo (href) com Tooltip lateral; stopPropagation antes do callback | components/sidebar/WorktreeCardMetadataControls.tsx:39
 - **D04a-030** — Renderiza o badge de estado da issue do GitHub (Open/Closed) com tom e ícone | falta: Badge State: Closed/Open com tom e ícone do GitHub | components/sidebar/WorktreeCardMetadataStatusBadges.tsx:33
@@ -276,7 +273,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 331 capabilities
+## PARTIAL — 332 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -408,7 +405,7 @@
 - **D03b-047** — Renderização e indentação de linhas de workspace de pasta sob grupos de projetos de pastas | falta: aria-activedescendant apontando para a linha ativa de folder workspace (Hydra usa aria-current: FolderWorkspaceRow.tsx:35); indentação manual preservada fora de grupos escaneados e geometria 'new card' equivalente (a linha tem padding fixo pl-6/ml-1: FolderWorkspaceRow.tsx:43) | components/sidebar/worktree-list-card-markup-queries.ts:22-34
 - **D03b-049** — Consolidação de cabeçalhos de projeto multi-host, desambiguação de nomes de seção e etiquetagem de contexto de host | falta: exibição dos labels consolidados/multi-host no sidebar montado: hostContextLabel nunca é passado pela lista (WorktreeList.tsx:330-380), então WorktreeHostContextBadge não renderiza; desambiguação de nomes de seção por caminho no sidebar montado (withRepoSectionDisplayLabels só roda em buildRows do pipeline de atalhos); labels distintos para notices/pinned em multi-host na UI | components/sidebar/worktree-list-groups-test-fixtures.ts:6-89
 
-### D04a-worktree-card-surface (66)
+### D04a-worktree-card-surface (67)
 
 - **D04a-002** — Pinta o corpo do card com o estado visual correto (ativo, multi-seleção, drop target, reveal highlight, deletando, host runtime desconectado) | falta: isMultiSelected nunca é fornecido: WorktreeList.tsx:354-405 não passa a prop, então a variante de multi-seleção (:66-69) é código dormente (PAR-08) | components/sidebar/worktree-card-surface.tsx:74
 - **D04a-004** — Aninha o container de worktrees filhas (lineage) dentro do card no novo estilo | falta: lineageChildren nunca é fornecido (WorktreeList.tsx:354-405 não passa a prop) — o container data-worktree-lineage-children nunca renderiza; Caminho legado (WorktreeCardSecondaryRows) não existe no Hydra | components/sidebar/worktree-card-surface.tsx:102
@@ -422,6 +419,7 @@
 - **D04a-019** — Renderiza a coluna de ações do título: estrela de worktree principal e ação rápida de exclusão revelada por hover | falta: Gate por modificador Option/Alt: showDeleteQuickAction (:111-113) não considera o modificador; Botões de ação rápida Terminal/Diff no hover (PAR-67) | components/sidebar/worktree-card-header.tsx:267
 - **D04a-021** — Exibe a faixa de status do card: ponto de atividade, review/MR ou ícone de branch conforme o estilo | falta: Composição do texto acessível <label> · Unread quando não lido (o aria-label da lane é só reviewStatusLabel, :46-47); Variante legada da faixa (newCardStyle é fixo true, controller :291); Ação de unread na própria faixa (linhas 022/023) | components/sidebar/WorktreeCardStatusSlot.tsx:105
 - **D04a-024** — Deriva o rótulo textual do status de review/MR da faixa (Merged/Closed/Draft/checks) | falta: Terminologia por provedor: GitLab deveria renderizar MR: Draft — reviewStatusLabel sempre usa PR #N | components/sidebar/WorktreeCardStatusSlot.tsx:66
+- **D04a-025** — Lista os ícones-badge de metadados do workspace (notas, automação, CLI, issue, Linear, Jira, review) | falta: Badge de Jira (o card não projeta linked Jira) | components/sidebar/WorktreeCardMetaBadges.tsx:38
 - **D04a-032** — Renderiza o badge de estado do review (Merged/Closed/Draft/Open) com ícone por provedor | falta: Badge de estado (pílula State: Merged) — o Hydra só tem o glifo da lane; Ícone por provedor (GitMerge para MR GitLab vs PullRequestIcon para PR); O componente de badge (WorktreeCardReviewBadge.tsx:11-57) é dormente: review nunca é passado pelo mount | components/sidebar/WorktreeCardMetadataStatusBadges.tsx:89
 - **D04a-033** — Renderiza o badge de checks do review (Passing/Failing/Pending) com tom correspondente | falta: Badge de checks (Checks: Passing/Failing/Pending) — só existe no aria-label (reviewStatusLabel); Tom de checks no glifo só quando state === open (:20-22) | components/sidebar/WorktreeCardMetadataStatusBadges.tsx:156
 - **D04a-034** — Mostra o gatilho de portas ao vivo no card e registra a interação de feature | falta: recordFeatureInteraction(ports) não é chamado (grep em WorktreeCardPortsTrigger = 0); Foco visível dedicado (só hover/transition no botão, :31) | backend: invoke('scan_workspace_ports') -> src-tauri/src/lib.rs:584 | components/sidebar/WorktreeCardPorts.tsx:29

@@ -600,17 +600,18 @@
     "components/sidebar/WorktreeCardMetaBadges.tsx:152"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-card-presentation.tsx:147-155"
+     "src/components/sidebar/worktree-card-metadata-badges.tsx:60-125",
+     "src/components/sidebar/worktree-card-presentation.tsx:92-108",
+     "src/components/sidebar/worktree-card-presentation.tsx:166-176"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Ícones de notas/automação/CLI/issue/Linear/Jira/review com sr-only",
-     "Grupo aria-label Workspace metadata",
-     "forwardRef para HoverCardTrigger asChild"
+     "Badge de Jira (o card não projeta linked Jira)"
     ],
-    "notes": "Nenhum dado de issue/Linear/Jira/notas/automação/CLI chega ao card. Busca: WorktreeCardMetaBadges em src/** = 0 hits (só i18n locales)."
+    "notes": "Notes, automation, CLI, issue and Linear badges render next to the existing review/ports triggers; Jira awaits its metadata field.",
+    "note": "Notes, automation, CLI, issue and Linear badges render next to the existing review/ports triggers; Jira awaits its metadata field."
    },
    "par": [
     "PAR-62"
@@ -624,15 +625,18 @@
     "components/sidebar/WorktreeCardMetaBadges.tsx:14"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-presentation.tsx:132"
+     "src/components/sidebar/worktree-card-metadata-badges.tsx:24-33",
+     "src/components/sidebar/worktree-card-presentation.tsx:92-108",
+     "src/components/sidebar/worktree-card-metadata-badges.parity.test.tsx:12-22"
     ],
     "backend": [],
     "missing_behaviors": [
      "Predicado que decide se existe detalhe (issue, linear, jira, review, comentário não vazio, automação, CLI)"
     ],
-    "notes": "O Hydra decide o hover por hasHoverDetails (presentation :132), que só olha review/portas/identidade. Busca: WorktreeCardMetaBadges/hasWorktreeCardMetadataBadges em src/** = 0 hits."
+    "notes": "hasWorktreeCardDetails decides whether the meta row/title row detail slot and the hover exist at all.",
+    "note": "hasWorktreeCardDetails decides whether the meta row/title row detail slot and the hover exist at all."
    }
   },
   {
@@ -642,16 +646,17 @@
     "components/sidebar/WorktreeCardMetadataControls.tsx:4"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-188",
-     "src/components/sidebar/WorktreeCardHelpers.tsx:17-41"
+     "src/components/sidebar/worktree-card-metadata-badges.tsx:35-58",
+     "src/components/sidebar/worktree-card-metadata-badges.parity.test.tsx:24-42"
     ],
     "backend": [],
     "missing_behaviors": [
      "Badge/ícone simples com rótulo em sr-only"
     ],
-    "notes": "Busca: WorktreeCardMetadataControls em src/** = 0 hits."
+    "notes": "Each badge is icon-only with role=img, aria-label full sentence and a matching tooltip.",
+    "note": "Each badge is icon-only with role=img, aria-label full sentence and a matching tooltip."
    }
   },
   {
