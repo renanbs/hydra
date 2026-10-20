@@ -281,6 +281,8 @@ describe("worktree list pointer drag", () => {
 
     await startDragOnFirstRow(rows[0]!);
     movePointer(ROW_PITCH + ROW_HEIGHT / 2);
+    // D03a-003: a new slot waits out the 160ms reorder intent before the line moves.
+    await new Promise((resolve) => setTimeout(resolve, 180));
     await settleDragFrame();
 
     expect(dropIndicator()).toHaveAttribute("style", "top: 41px;");

@@ -162,6 +162,7 @@ export function useWorktreePointerDrag(args: {
         preview: null,
         previewOffsetX: 0,
         previewOffsetY: 0,
+        reorderIntent: null,
         frameId: null
       }
     },

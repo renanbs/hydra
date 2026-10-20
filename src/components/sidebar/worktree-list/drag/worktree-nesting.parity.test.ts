@@ -45,6 +45,7 @@ function drag(overrides: Partial<WorktreePointerDrag> = {}): WorktreePointerDrag
     previewOffsetX: 0,
     previewOffsetY: 0,
     frameId: null,
+    reorderIntent: null,
     ...overrides,
   };
 }
@@ -241,5 +242,76 @@ describe("pointer drag frame and release with a nest target", () => {
     expect(ctx.onUnnestWorktrees).toHaveBeenCalledWith(["child"]);
     expect(ctx.onReorderWorktrees).toHaveBeenCalledTimes(1);
     expect(ctx.onNestWorktrees).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("reorder intent hysteresis (D03a-003)", () => {
+  it("holds the previous offsets for 160ms before moving the insertion line", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(1_000);
+    const raf = vi.spyOn(window, "requestAnimationFrame").mockReturnValue(7);
+    const setState = vi.fn();
+    const pointerDrag = { ...drag(), reorderIntent: null };
+    const ctx = context();
+    const previous: WorktreeRowDragState = {
+      draggingWorktreeId: "child",
+      dropIndex: 3,
+      dropIndicatorY: 200,
+      lineageDropTargetId: null,
+      previewOffsetsByWorktreeId: new Map([["child", 44]]),
+    };
+
+    flushWorktreePointerDragFrame({
+      drag: pointerDrag,
+      ctx,
+      setWorktreeDragState: setState,
+    });
+
+    const next = (setState.mock.calls[0][0] as (state: WorktreeRowDragState) => WorktreeRowDragState)(
+      previous
+    );
+    expect(next.dropIndex).toBeNull();
+    expect(next.previewOffsetsByWorktreeId.get("child")).toBe(44);
+    expect(pointerDrag.reorderIntent?.startedAt).toBe(1_000);
+    expect(raf).toHaveBeenCalledTimes(1);
+
+    // A later frame after the intent settles applies the slot.
+    now.mockReturnValue(1_200);
+    pointerDrag.frameId = null;
+    setState.mockClear();
+    flushWorktreePointerDragFrame({ drag: pointerDrag, ctx, setWorktreeDragState: setState });
+    const settled = (
+      setState.mock.calls[0][0] as (state: WorktreeRowDragState) => WorktreeRowDragState
+    )(previous);
+    expect(settled.dropIndex).toBe(0);
+    expect(settled.dropIndicatorY).toBe(10);
+  });
+
+  it("does not renew the intent when autoscroll changes the slot under a still pointer", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(1_000);
+    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(7);
+    const setState = vi.fn();
+    const computeWorktreeDrop = vi.fn(() => ({
+      dropIndex: 2,
+      dropIndicatorY: 80,
+      dropAnchorId: null,
+      previewOffsetsByWorktreeId: new Map<string, number>(),
+    }));
+    const pointerDrag = { ...drag(), currentY: 120, reorderIntent: null };
+    const ctx = context({ computeWorktreeDrop });
+
+    flushWorktreePointerDragFrame({ drag: pointerDrag, ctx, setWorktreeDragState: setState });
+    now.mockReturnValue(1_400);
+    computeWorktreeDrop.mockReturnValue({
+      dropIndex: 3,
+      dropIndicatorY: 120,
+      dropAnchorId: null,
+      previewOffsetsByWorktreeId: new Map<string, number>(),
+    });
+    // Same pointerY: autoscroll moved the slot, not the pointer.
+    flushWorktreePointerDragFrame({ drag: pointerDrag, ctx, setWorktreeDragState: setState });
+
+    expect(pointerDrag.reorderIntent?.dropIndex).toBe(3);
+    expect(pointerDrag.reorderIntent?.startedAt).toBe(1_000);
   });
 });

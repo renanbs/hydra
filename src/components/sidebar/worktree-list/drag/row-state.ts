@@ -48,6 +48,12 @@ export type WorktreePointerDrag = {
   previewOffsetX: number
   previewOffsetY: number
   frameId: number | null
+  /**
+   * Hysteresis for the reorder slot (Orca `REORDER_INTENT_DELAY_MS`): crossing a
+   * gutter into the next card starts a 160ms intent, so a pointer that grazes the
+   * boundary does not flip the insertion line back and forth.
+   */
+  reorderIntent: { dropIndex: number; pointerY: number; startedAt: number } | null
 }
 
 export function areWorktreeDragPreviewOffsetsEqual(
@@ -91,20 +97,28 @@ export function applyWorktreeDropPreview(
 }
 
 /** Drop the insertion line and the row offsets a frame had opened. */
-export function clearWorktreeDropPreview(previous: WorktreeRowDragState): WorktreeRowDragState {
+export function clearWorktreeDropPreview(
+  previous: WorktreeRowDragState,
+  options: { preserveOffsets?: boolean } = {}
+): WorktreeRowDragState {
   const unchanged =
     previous.dropIndex === null &&
     previous.dropIndicatorY === null &&
     previous.previewOffsetsByWorktreeId.size === 0
-  return unchanged
-    ? previous
-    : {
-        draggingWorktreeId: previous.draggingWorktreeId,
-        dropIndex: null,
-        dropIndicatorY: null,
-        lineageDropTargetId: previous.lineageDropTargetId,
-        previewOffsetsByWorktreeId: EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
-      }
+  if (unchanged) {
+    return previous
+  }
+  return {
+    draggingWorktreeId: previous.draggingWorktreeId,
+    dropIndex: null,
+    dropIndicatorY: null,
+    lineageDropTargetId: previous.lineageDropTargetId,
+    // Why preserve: while the 160ms intent is pending the rows must stay where the
+    // previous slot opened them; snapping back and reopening would flicker.
+    previewOffsetsByWorktreeId: options.preserveOffsets
+      ? previous.previewOffsetsByWorktreeId
+      : EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
+  }
 }
 
 /** The pointer is over a nestable card: the insertion line gives way to the parent ring. */

@@ -19,6 +19,9 @@ import {
   updateWorktreeLineageDropTargetVisual
 } from './nesting'
 
+/** Crossing a gutter into the next card is an intent; it settles before the line moves. */
+const REORDER_INTENT_DELAY_MS = 160
+
 export type WorktreePointerDragFrameArgs = {
   drag: WorktreePointerDrag
   ctx: WorktreeDropCommitContext
@@ -67,16 +70,41 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
   })
   updateWorktreeLineageDropTargetVisual(nestingTarget)
   if (nestingTarget) {
+    drag.reorderIntent = null
     args.setWorktreeDragState((previous) =>
       applyWorktreeLineageDropPreview(previous, nestingTarget)
     )
     return
   }
   const drop = ctx.computeWorktreeDrop(drag.currentY)
+  if (!drop) {
+    drag.reorderIntent = null
+    args.setWorktreeDragState((previous) =>
+      clearWorktreeDropPreview(clearWorktreeLineageDropPreview(previous))
+    )
+    return
+  }
+  // Let the pointer cross a reorder gutter into the card before moving the target.
+  let intent = drag.reorderIntent
+  if (!intent || (intent.dropIndex !== drop.dropIndex && intent.pointerY !== drag.currentY)) {
+    intent = { dropIndex: drop.dropIndex, pointerY: drag.currentY, startedAt: performance.now() }
+  } else {
+    // Autoscroll changes slots beneath a stationary pointer without renewing intent.
+    intent.dropIndex = drop.dropIndex
+    intent.pointerY = drag.currentY
+  }
+  drag.reorderIntent = intent
+  if (performance.now() - intent.startedAt < REORDER_INTENT_DELAY_MS) {
+    args.setWorktreeDragState((previous) =>
+      clearWorktreeDropPreview(clearWorktreeLineageDropPreview(previous), {
+        preserveOffsets: true
+      })
+    )
+    drag.frameId = window.requestAnimationFrame(() => flushWorktreePointerDragFrame(args))
+    return
+  }
   args.setWorktreeDragState((previous) => {
     const withoutNesting = clearWorktreeLineageDropPreview(previous)
-    return drop
-      ? applyWorktreeDropPreview(withoutNesting, drop)
-      : clearWorktreeDropPreview(withoutNesting)
+    return applyWorktreeDropPreview(withoutNesting, drop)
   })
 }
