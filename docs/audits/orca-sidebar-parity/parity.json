@@ -3785,17 +3785,22 @@
    "components/sidebar/worktree-list/drag/pointer-flush.ts:183-207"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:22"
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:23",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:88-107",
+    "src/components/sidebar/worktree-list/drag/row-state.ts:50-57",
+    "src/components/sidebar/worktree-list/drag/row-state.ts:100-123",
+    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:165",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:263-318"
    ],
    "missing_behaviors": [
     "REORDER_INTENT_DELAY_MS=160ms",
     "preserveOffsets durante nova intenção",
     "não renovar intenção por autoscroll"
    ],
-   "notes": "Sem REORDER_INTENT_DELAY_MS/histerese de intenção; pointer-flush decide o slot por frame.",
-   "note": "Sem REORDER_INTENT_DELAY_MS/histerese de intenção; pointer-flush decide o slot por frame."
+   "notes": "REORDER_INTENT_DELAY_MS=160; a new slot stores {dropIndex,pointerY,startedAt}, the previous offsets are preserved while it settles and the frame reschedules; autoscroll changes the slot without renewing the timestamp.",
+   "note": "REORDER_INTENT_DELAY_MS=160; a new slot stores {dropIndex,pointerY,startedAt}, the previous offsets are preserved while it settles and the frame reschedules; autoscroll changes the slot without renewing the timestamp."
   },
   "domain": "D03a-worktree-list-module"
  },
