@@ -854,3 +854,12 @@ select option { background-color: var(--popover); color: var(--popover-foregroun
   -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 1.5rem), transparent);
   mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 1.5rem), transparent);
 }
+
+/* D03a-005: the card under a nest drag paints the same ring the row preview uses.
+   The attribute lives on the measured drag row; the ring goes on the card surface
+   so the row's padding is not painted. */
+[data-worktree-lineage-drop-target-hover] [data-worktree-card-surface='true'] {
+  background-color: var(--worktree-sidebar-accent);
+  box-shadow: inset 0 0 0 1px var(--worktree-sidebar-ring);
+  border-color: color-mix(in srgb, var(--worktree-sidebar-foreground) 40%, transparent);
+}

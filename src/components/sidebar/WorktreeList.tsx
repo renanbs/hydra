@@ -33,6 +33,7 @@ import type { Repo } from "../../shared/repo-types";
 import type { FolderWorkspace } from "../../shared/folder-workspace-types";
 import type { ProjectGroup as SharedProjectGroup } from "../../shared/project-group-types";
 import type { Worktree } from "../../shared/worktree/types";
+import type { WorktreeLineage } from "../../shared/worktree/lineage-types";
 import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
 import { HostSectionHeaderMenu } from "./HostSectionHeaderMenu";
 import {
@@ -77,6 +78,7 @@ import { writeWorkspaceDragData } from "./workspace-status-drag-data";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
+import { buildLineageParentIdByChildId } from "./worktree-list/drag/nesting";
 import {
   WorktreeDragDropIndicator,
   WorktreeDragRow,
@@ -274,6 +276,10 @@ interface SidebarRowModel {
   /** Projection worktree path → the Hydra prop the card and its callbacks expect. */
   propWorktreeByPath: Map<string, GitWorktreeInfo>;
   propProjectById: Map<string, HydraProject>;
+  /** Workspace id → checkout path, for drag payloads that speak ids. */
+  pathByWorktreeId: Map<string, string>;
+  /** Persisted lineage parent per child id (cycle check for nest drags). */
+  lineageParentIdByChildId: Map<string, string>;
 }
 
 export interface WorktreeListProps {
@@ -358,6 +364,15 @@ export interface WorktreeListProps {
    * board and the context menu share one writer (D08-002/D08-040).
    */
   onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
+  /** Persisted lineage (`childPath -> parentPath`) owned by the app. */
+  lineageByPath?: Readonly<Record<string, string>>;
+  /** Commits a nest drag: parent and children are paths inside one project. */
+  onAssignWorktreeParent?: (
+    parentWorktreePath: string,
+    childWorktreePaths: readonly string[]
+  ) => void;
+  /** Detaches nested rows dragged onto a reorder line. */
+  onUnnestWorktrees?: (childWorktreePaths: readonly string[]) => void;
   /**
    * The app's own pin write (`set_worktree_flags` with `is_pinned`). A sidebar row dragged
    * onto an open workspace board's pin strip commits through it, so the board strip and the
@@ -514,6 +529,9 @@ export function WorktreeList({
   scrollRef,
   onReorderWorktreesInGroup,
   onAssignWorktreeStatus,
+  lineageByPath,
+  onAssignWorktreeParent,
+  onUnnestWorktrees,
   onPinWorktreePaths,
   draggedProjectId,
   projectDropTarget,
@@ -633,6 +651,37 @@ export function WorktreeList({
       if (projectedForRepo.length > 0) worktreesByRepo[project.id] = projectedForRepo;
     }
 
+    // The app's path lineage is the single writer the row menus and delete use;
+    // project it into the rich records the row pipeline validates, so a nest drag
+    // and the context menu paint the same tree.
+    const projectedLineageById: Record<string, WorktreeLineage> = {
+      ...storeWorktreeLineageById,
+    }
+    const worktreeByPath = new Map<string, Worktree>()
+    const pathByWorktreeId = new Map<string, string>()
+    for (const list of Object.values(worktreesByRepo)) {
+      for (const worktree of list) {
+        worktreeByPath.set(worktree.path, worktree)
+        pathByWorktreeId.set(worktree.id, worktree.path)
+      }
+    }
+    for (const [childPath, parentPath] of Object.entries(lineageByPath ?? {})) {
+      const child = worktreeByPath.get(childPath)
+      const parent = worktreeByPath.get(parentPath)
+      if (!child || !parent || child.repoId !== parent.repoId) {
+        continue
+      }
+      projectedLineageById[child.id] = {
+        worktreeId: child.id,
+        worktreeInstanceId: child.instanceId as string,
+        parentWorktreeId: parent.id,
+        parentWorktreeInstanceId: parent.instanceId as string,
+        origin: "manual",
+        capture: { source: "manual-action", confidence: "explicit" },
+        createdAt: 0,
+      }
+    }
+
     const pipelineState: SidebarRowsState = {
       settings: storeSettings,
       visibleWorkspaceHostIds: pipelineVisibleHostIds,
@@ -643,7 +692,7 @@ export function WorktreeList({
       repos: pipelineRepos,
       worktreesByRepo,
       collapsedGroups: pipelineCollapsedKeys(collapsedProjects, collapsedGroups),
-      worktreeLineageById: storeWorktreeLineageById,
+      worktreeLineageById: projectedLineageById,
       folderWorkspaces: pipelineFolderWorkspaces,
       sshTargetLabels: storeSshTargetLabels,
       sshConnectionStates: storeSshConnectionStates,
@@ -665,6 +714,8 @@ export function WorktreeList({
       pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(pipelineState.settings),
       propWorktreeByPath,
       propProjectById,
+      pathByWorktreeId,
+      lineageParentIdByChildId: buildLineageParentIdByChildId(projectedLineageById),
     };
   }, [
     visibleProjects,
@@ -690,6 +741,7 @@ export function WorktreeList({
     pipelineHostScope,
     pipelineVisibleHostIds,
     storeWorktreeLineageById,
+    lineageByPath,
     storeSshTargetLabels,
     storeSshConnectionStates,
     storeRuntimeEnvironments,
@@ -697,6 +749,35 @@ export function WorktreeList({
   ]);
 
   const { rows } = rowModel;
+  const pathByWorktreeId = rowModel.pathByWorktreeId;
+
+  // Drag payloads speak workspace ids; the app's lineage writer speaks checkout
+  // paths (same map the context menu and the delete dialog read).
+  const handleNestWorktrees = useCallback(
+    (parentWorktreeId: string, childWorktreeIds: readonly string[]) => {
+      const parentPath = pathByWorktreeId.get(parentWorktreeId);
+      if (!parentPath) return;
+      const childPaths = childWorktreeIds
+        .map((id) => pathByWorktreeId.get(id))
+        .filter((path): path is string => Boolean(path));
+      if (childPaths.length > 0) {
+        onAssignWorktreeParent?.(parentPath, childPaths);
+      }
+    },
+    [onAssignWorktreeParent, pathByWorktreeId]
+  );
+
+  const handleUnnestWorktrees = useCallback(
+    (childWorktreeIds: readonly string[]) => {
+      const childPaths = childWorktreeIds
+        .map((id) => pathByWorktreeId.get(id))
+        .filter((path): path is string => Boolean(path));
+      if (childPaths.length > 0) {
+        onUnnestWorktrees?.(childPaths);
+      }
+    },
+    [onUnnestWorktrees, pathByWorktreeId]
+  );
 
   // ─── Virtualized viewport inputs ───────────────────────────────────────────
   //
@@ -1410,6 +1491,9 @@ export function WorktreeList({
       onReorderWorktrees={handlePointerGroupReorder}
       onAssignWorktreesStatus={handleAssignWorktreesStatus}
       onPinWorktrees={handlePinWorktrees}
+      lineageParentIdByChildId={rowModel.lineageParentIdByChildId}
+      onNestWorktrees={handleNestWorktrees}
+      onUnnestWorktrees={handleUnnestWorktrees}
       resolveDraggedWorktreeIds={resolveDraggedWorktreeIds}
     >
       <VirtualizedWorktreeViewport

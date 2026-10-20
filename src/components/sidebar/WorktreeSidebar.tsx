@@ -95,6 +95,9 @@ export function WorktreeSidebar({
   onReorderSessions: _onReorderSessions,
   onReorderProjects,
   onReorderWorktrees,
+  lineageByPath,
+  onAssignWorktreeParent,
+  onUnnestWorktrees,
   pinnedProjects,
   unreadProjects,
   pinnedWorktrees,
@@ -934,6 +937,9 @@ export function WorktreeSidebar({
               worktreeDropTarget={worktreeDropTarget}
               scrollRef={worktreeScrollRef}
               onReorderWorktreesInGroup={commitReorderedWorktrees}
+              lineageByPath={lineageByPath}
+              onAssignWorktreeParent={onAssignWorktreeParent}
+              onUnnestWorktrees={onUnnestWorktrees}
               onAssignWorktreeStatus={onAssignWorktreeStatus}
               onPinWorktreePaths={handlePinWorktreePaths}
               draggedProjectId={draggedProjectId}

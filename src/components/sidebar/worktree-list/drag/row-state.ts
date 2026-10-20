@@ -15,6 +15,8 @@ export type WorktreeRowDragState = {
   draggingWorktreeId: string | null
   dropIndex: number | null
   dropIndicatorY: number | null
+  /** Card the pointer is hovering to nest under, or null for a reorder. */
+  lineageDropTargetId: string | null
   previewOffsetsByWorktreeId: ReadonlyMap<string, number>
 }
 
@@ -24,6 +26,7 @@ export const WORKTREE_ROW_DRAG_INITIAL_STATE: WorktreeRowDragState = {
   draggingWorktreeId: null,
   dropIndex: null,
   dropIndicatorY: null,
+  lineageDropTargetId: null,
   previewOffsetsByWorktreeId: EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
 }
 
@@ -76,12 +79,13 @@ export function applyWorktreeDropPreview(
       previous.previewOffsetsByWorktreeId,
       drop.previewOffsetsByWorktreeId
     )
-  return unchanged
+  return unchanged && previous.lineageDropTargetId === null
     ? previous
     : {
         draggingWorktreeId: previous.draggingWorktreeId,
         dropIndex: drop.dropIndex,
         dropIndicatorY: drop.dropIndicatorY,
+        lineageDropTargetId: null,
         previewOffsetsByWorktreeId: drop.previewOffsetsByWorktreeId
       }
 }
@@ -98,6 +102,37 @@ export function clearWorktreeDropPreview(previous: WorktreeRowDragState): Worktr
         draggingWorktreeId: previous.draggingWorktreeId,
         dropIndex: null,
         dropIndicatorY: null,
+        lineageDropTargetId: previous.lineageDropTargetId,
         previewOffsetsByWorktreeId: EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
       }
+}
+
+/** The pointer is over a nestable card: the insertion line gives way to the parent ring. */
+export function applyWorktreeLineageDropPreview(
+  previous: WorktreeRowDragState,
+  targetId: string
+): WorktreeRowDragState {
+  if (
+    previous.lineageDropTargetId === targetId &&
+    previous.dropIndex === null &&
+    previous.dropIndicatorY === null &&
+    previous.previewOffsetsByWorktreeId.size === 0
+  ) {
+    return previous
+  }
+  return {
+    draggingWorktreeId: previous.draggingWorktreeId,
+    dropIndex: null,
+    dropIndicatorY: null,
+    lineageDropTargetId: targetId,
+    previewOffsetsByWorktreeId: EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
+  }
+}
+
+export function clearWorktreeLineageDropPreview(
+  previous: WorktreeRowDragState
+): WorktreeRowDragState {
+  return previous.lineageDropTargetId === null
+    ? previous
+    : { ...previous, lineageDropTargetId: null }
 }

@@ -1830,6 +1830,46 @@ export default function App() {
     handleSelectProject(projs[nextIdx]);
   }, [handleSelectProject]);
 
+  const handleAssignWorktreeParent = useCallback(
+    (parentWorktreePath: string, childWorktreePaths: readonly string[]) => {
+      const repoPathByWorktreePath = new Map<string, string>();
+      for (const [repoPath, list] of Object.entries(worktreesByProject)) {
+        for (const worktree of list) repoPathByWorktreePath.set(worktree.path, repoPath);
+      }
+      const parentRepoPath = repoPathByWorktreePath.get(parentWorktreePath);
+      if (!parentRepoPath) return;
+      const nestable = childWorktreePaths.filter(
+        (childPath) =>
+          childPath !== parentWorktreePath &&
+          repoPathByWorktreePath.get(childPath) === parentRepoPath
+      );
+      if (nestable.length === 0) return;
+      setWorktreeLineage((previous) => {
+        const next = { ...previous };
+        for (const childPath of nestable) next[childPath] = parentWorktreePath;
+        persistLineage(next);
+        return next;
+      });
+    },
+    [worktreesByProject]
+  );
+
+  const handleUnnestWorktrees = useCallback((childWorktreePaths: readonly string[]) => {
+    setWorktreeLineage((previous) => {
+      const next = { ...previous };
+      let changed = false;
+      for (const childPath of childWorktreePaths) {
+        if (next[childPath] !== undefined) {
+          delete next[childPath];
+          changed = true;
+        }
+      }
+      if (!changed) return previous;
+      persistLineage(next);
+      return next;
+    });
+  }, []);
+
   const handleRemoveProject = (proj: HydraProject) => {
     invoke("catalog_remove_repo", { path: proj.path })
       .then(() => {
@@ -4019,6 +4059,9 @@ export default function App() {
                 onReorderSessions={handleReorderSessions}
                 onReorderProjects={handleReorderProjects}
                 onReorderWorktrees={handleReorderWorktrees}
+                lineageByPath={worktreeLineage}
+                onAssignWorktreeParent={handleAssignWorktreeParent}
+                onUnnestWorktrees={handleUnnestWorktrees}
                 pinnedProjects={pinnedProjects}
                 unreadProjects={unreadProjects}
                 pinnedWorktrees={pinnedWorktrees}

@@ -22,6 +22,9 @@ export function WorktreeListDragProvider({
   onReorderWorktrees,
   onAssignWorktreesStatus,
   onPinWorktrees,
+  lineageParentIdByChildId,
+  onNestWorktrees,
+  onUnnestWorktrees,
   resolveDraggedWorktreeIds,
   children
 }: {
@@ -32,6 +35,12 @@ export function WorktreeListDragProvider({
   onAssignWorktreesStatus: (worktreeIds: readonly string[], status: string) => void
   /** The workspace board's pin strip drop: a pin write, never a status write (D08-028). */
   onPinWorktrees: (worktreeIds: readonly string[]) => void
+  /** Persisted lineage parent per child id, used to reject cycles during a nest drag. */
+  lineageParentIdByChildId: ReadonlyMap<string, string>
+  /** Commits a nest drag over the hovered parent card. */
+  onNestWorktrees: (parentWorktreeId: string, childWorktreeIds: readonly string[]) => void
+  /** Detaches nested rows that were dragged out onto a reorder line. */
+  onUnnestWorktrees: (childWorktreeIds: readonly string[]) => void
   /**
    * The ids a press drags (D03a-002): the list's selection when the pressed row is part of one
    * and it holds more than one, the pressed row alone otherwise.
@@ -56,12 +65,18 @@ export function WorktreeListDragProvider({
       resolveDraggedWorktreeIds,
       onReorderWorktrees,
       onAssignWorktreesStatus,
-      onPinWorktrees
+      onPinWorktrees,
+      lineageParentIdByChildId,
+      onNestWorktrees,
+      onUnnestWorktrees
     }),
     [
       onAssignWorktreesStatus,
       onPinWorktrees,
       onReorderWorktrees,
+      lineageParentIdByChildId,
+      onNestWorktrees,
+      onUnnestWorktrees,
       resolveDraggedWorktreeIds,
       resolvedScrollRef,
       runtime,

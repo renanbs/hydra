@@ -8,10 +8,16 @@ import {
 import type { WorktreeDropCommitContext } from './drop-commit-context'
 import {
   applyWorktreeDropPreview,
+  applyWorktreeLineageDropPreview,
   clearWorktreeDropPreview,
+  clearWorktreeLineageDropPreview,
   type WorktreePointerDrag,
   type WorktreeRowDragState
 } from './row-state'
+import {
+  findWorktreeNestingTarget,
+  updateWorktreeLineageDropTargetVisual
+} from './nesting'
 
 export type WorktreePointerDragFrameArgs = {
   drag: WorktreePointerDrag
@@ -51,8 +57,26 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
     args.setWorktreeDragState((previous) => clearWorktreeDropPreview(previous))
     return
   }
+  // Why before the reorder slot: hovering a card promises a nest, and painting an
+  // insertion line at the same time would offer two contradictory drops.
+  const nestingTarget = findWorktreeNestingTarget({
+    pointerX: drag.currentX,
+    pointerY: drag.currentY,
+    draggedIds: drag.draggedIds,
+    parentIdByChildId: ctx.lineageParentIdByChildId
+  })
+  updateWorktreeLineageDropTargetVisual(nestingTarget)
+  if (nestingTarget) {
+    args.setWorktreeDragState((previous) =>
+      applyWorktreeLineageDropPreview(previous, nestingTarget)
+    )
+    return
+  }
   const drop = ctx.computeWorktreeDrop(drag.currentY)
-  args.setWorktreeDragState((previous) =>
-    drop ? applyWorktreeDropPreview(previous, drop) : clearWorktreeDropPreview(previous)
-  )
+  args.setWorktreeDragState((previous) => {
+    const withoutNesting = clearWorktreeLineageDropPreview(previous)
+    return drop
+      ? applyWorktreeDropPreview(withoutNesting, drop)
+      : clearWorktreeDropPreview(withoutNesting)
+  })
 }
