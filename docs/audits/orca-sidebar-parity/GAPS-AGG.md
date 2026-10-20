@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 210 capabilities
+## MISSING — 209 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -111,7 +111,7 @@
 - **D03a-070** — Resolver worktree/folder workspace conhecido e sua existência | falta: getKnownSidebarWorktreeById; sidebarWorkspaceStillExists; getFolderWorkspaceRevealGroupKeys | components/sidebar/worktree-list/navigation/folder-reveal.ts:12-108
 - **D03a-075** — Indicador de falha de scan de worktrees com retry e cópia de diagnóstico | falta: RepoScanUnavailableIndicator com retry de fetchWorktrees; tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch); Copy command / Copy diagnostics | backend: window.api.ui.writeClipboardText (Orca; equivalente Tauri: clipboard do webview) | components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx:18-153
 
-### D03b-sidebar-list-orchestration (20)
+### D03b-sidebar-list-orchestration (19)
 
 - **D03b-003** — Redirecionamento automático do modo de corpo do sidebar de Agents para Workspaces ao receber solicitação de reveal de worktree | components/sidebar/index.tsx:17
 - **D03b-005** — Sincronização automática do catálogo de worktrees após alteração na contagem de repositórios | components/sidebar/index.tsx:54-55
@@ -132,7 +132,6 @@
 - **D03b-040** — Cálculo indexado O(1) de limites verticais de seção para cabeçalhos de repositório | components/sidebar/worktree-header-section-boundaries.ts:5-53
 - **D03b-041** — Cálculo indexado O(1) de limites verticais de seção para grupos de projetos aninhados | components/sidebar/worktree-header-section-boundaries.ts:64-86
 - **D03b-046** — Coordenação de lote de expurgo de snapshots de workspace via IPC durante remoção múltipla | components/sidebar/worktree-snapshot-prune-batch.ts:6-24
-- **D03b-048** — Renderização recursiva de linhagem e aninhamento de cards filhos e netos através de WorktreeCard | falta: renderização recursiva de filhos/netos via WorktreeCard; fornecimento de lineageChildren/lineageChildrenStyle: WorktreeCard aceita as props (worktree-card-model.ts:39-42) e a superfície as renderiza (worktree-card-surface.tsx:115-121), mas nenhum caller as passa — WorktreeList montado não injeta linhagem | components/sidebar/worktree-list-card-markup-queries.ts:3-20
 
 ### D04a-worktree-card-surface (24)
 
@@ -265,7 +264,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 332 capabilities
+## PARTIAL — 331 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -303,9 +302,8 @@
 - **D02b-016** — Dialog de remoção de host SSH — Contagem de workspaces e descrições contextuais | falta: resolveSshHostRemoval coleta e deduplica repositórios raiz (hostRepoIds) e worktrees secundários (workspaceWorktreeIds) vinculados ao targetId.; Calcula workspaceCount total e verifica se o host está conectado via sshConnectionStates.; Adapta a descrição do dialog para 0, 1 ou múltiplos workspaces, alertando que por padrão os workspaces permanecem no Orca e arquivos remotos não são tocados.; Pluralização correta de '1 workspace' vs '{N} workspaces'. | components/sidebar/HostRemoveDialog.tsx:49-74
 - **D02b-018** — Execução da remoção de host SSH, limpeza de workspaces em cascata e purga de preferências | falta: Se deleteWorkspaces for verdadeiro, invoca clearSshHostWorkspaces ('delete-remote' se conectado, 'forget-local' se offline).; Remove sequencialmente worktrees secundários e projetos raiz garantindo escopo explícito do host (toSshExecutionHostId).; Se algum workspace falhar ao ser removido, aborta a exclusão do target para não deixar itens órfãos e exibe toast de erro orientando retry.; Executa removeSshTargetWithBestEffortCleanup chamando window.api.ssh. | backend: window.api.ssh.removeTarget (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend | components/sidebar/HostRemoveDialog.tsx:76-140
 
-### D02c-project-groups-scripts (4)
+### D02c-project-groups-scripts (3)
 
-- **D02c-002** — Dialog de confirmação para supressão da caixa de entrada de worktrees externos do repositório | falta: Link abre Settings → Non-Orca worktrees (Hydra ainda não tem essa seção; abre a página geral) | backend: invoke('suppress_worktree_inbox') -> src/components/sidebar/WorktreeSidebar.tsx:794 -> src-tauri/src/lib.rs:423 | components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:19
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-015** — Dialog modal para exclusão de grupo de projetos e opção de remoção de projetos contidos | falta: Checkbox opcional 'Remove N contained projects' e props removeContainedProjects/onRemoveContainedProjectsChange (store já suporta; UI não expõe); content ref (mountedRef) para evitar mutações de estado após desmontagem | backend: CustomEvent 'hydra:delete-project-group' -> src/components/sidebar/WorktreeSidebar.tsx:1134 -> src/App.tsx:1211 (estado local + 'hydra:refresh-projects') | components/sidebar/ProjectGroupDeleteDialog.tsx:23
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5

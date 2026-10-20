@@ -1,0 +1,16 @@
+{
+ "group": "V",
+ "generatedFrom": "2026-10-21 recursive lineage rendering verified in the painted row pipeline (parent -> child -> grandchild)",
+ "rows": [
+  {
+   "id": "D03b-048",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/row-builders.ts:100-230",
+    "src/components/sidebar/worktree-list/grouping/lineage-nesting.parity.test.ts:76-118",
+    "src/components/sidebar/WorktreeList.tsx:1080-1092"
+   ],
+   "note": "The pipeline emits descendants recursively with increasing depth (grandchild depth 2) and the card indents by that depth."
+  }
+ ]
+}

@@ -950,16 +950,19 @@
     "components/sidebar/worktree-list-lineage-store-state.ts:14-24"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-surface.tsx:115"
+     "src/components/sidebar/worktree-list/grouping/row-builders.ts:100-230",
+     "src/components/sidebar/worktree-list/grouping/lineage-nesting.parity.test.ts:76-118",
+     "src/components/sidebar/WorktreeList.tsx:1080-1092"
     ],
     "backend": [],
     "missing_behaviors": [
      "renderização recursiva de filhos/netos via WorktreeCard",
      "fornecimento de lineageChildren/lineageChildrenStyle: WorktreeCard aceita as props (worktree-card-model.ts:39-42) e a superfície as renderiza (worktree-card-surface.tsx:115-121), mas nenhum caller as passa — WorktreeList montado não injeta linhagem"
     ],
-    "notes": "Não localizado: sem WorktreeList.lineage-child-card*, worktree-list-lineage-* no Hydra (arquivos de teste/fixtures inexistentes)."
+    "notes": "The pipeline emits descendants recursively with increasing depth (grandchild depth 2) and the card indents by that depth.",
+    "note": "The pipeline emits descendants recursively with increasing depth (grandchild depth 2) and the card indents by that depth."
    }
   },
   {

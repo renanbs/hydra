@@ -44,21 +44,20 @@
     "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:62"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
      "src/components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:1-100",
      "src/components/sidebar/WorktreeSidebar.tsx:925",
      "src/components/sidebar/WorktreeSidebar.tsx:1327-1355",
-     "src/components/sidebar/SuppressExternalWorktreeInboxDialog.parity.test.tsx:1-42"
+     "src/components/sidebar/SuppressExternalWorktreeInboxDialog.parity.test.tsx:1-42",
+     "src/components/sidebar/WorktreeSidebar.tsx:1337-1352"
     ],
     "backend": [
      "invoke('suppress_worktree_inbox') -> src/components/sidebar/WorktreeSidebar.tsx:794 -> src-tauri/src/lib.rs:423"
     ],
-    "missing_behaviors": [
-     "Link abre Settings → Non-Orca worktrees (Hydra ainda não tem essa seção; abre a página geral)"
-    ],
-    "notes": "Confirmation, copy, pending lock and the suppression command are wired; only the deep-link target differs.",
-    "note": "Confirmation, copy, pending lock and the suppression command are wired; only the deep-link target differs."
+    "missing_behaviors": [],
+    "notes": "The recovery link opens the project's Non-Orca worktrees surface (the visibility dialog), which owns the source toggles and hidden-worktree list.",
+    "note": "The recovery link opens the project's Non-Orca worktrees surface (the visibility dialog), which owns the source toggles and hidden-worktree list."
    }
   },
   {
