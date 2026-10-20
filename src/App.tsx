@@ -85,6 +85,7 @@ import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDele
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
 import { WorktreeMetaDialog } from "./components/sidebar/WorktreeMetaDialog";
+import { SIDEBAR_REVEAL_REQUEST_EVENT } from "./components/sidebar/use-worktree-reveal-body-redirect";
 import type {
   WorktreeMetadataByPath,
   WorktreeMetadataDraft,
@@ -4417,6 +4418,11 @@ export default function App() {
             handleSelectProject(proj);
           }
           handleSelectGitWorktree(wt);
+          // The jump palette is reachable from the Agents body; ask the sidebar to
+          // switch to Workspaces and reveal the chosen row.
+          window.dispatchEvent(
+            new CustomEvent(SIDEBAR_REVEAL_REQUEST_EVENT, { detail: { path: wt.path } })
+          );
         }}
         onSelectSession={(sess) => handleSelectSession(sess.id)}
         onNewWorkspace={() => setIsNewWorkspaceOpen(true)}

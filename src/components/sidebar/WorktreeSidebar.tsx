@@ -45,6 +45,7 @@ import type {
 } from "./types";
 import { IDLE, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { useAppStore } from "../../store";
+import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redirect";
 import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
 import { RemoveFolderDialog } from "./RemoveFolderDialog";
 import { SuppressExternalWorktreeInboxDialog } from "./SuppressExternalWorktreeInboxDialog";
@@ -533,6 +534,14 @@ export function WorktreeSidebar({
     projectGroupMap,
     flashRevealedWorktree,
   ]);
+
+  // Orca `useWorkspaceRevealBodyRedirect`: a reveal request that arrives while the
+  // Agents body owns the viewport switches to Workspaces and replays the reveal.
+  useWorktreeRevealBodyRedirect({
+    agentsBodyShowing: sidebarBody === "agents",
+    onShowWorkspaces: () => handleSetSidebarBody("workspaces"),
+    onReveal: (path) => handleRevealCurrent(path ?? undefined),
+  });
 
   // ─── Drag and Drop Handlers ──────────────────────────────────────────────
   /**

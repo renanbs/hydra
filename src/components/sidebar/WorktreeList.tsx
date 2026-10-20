@@ -81,6 +81,7 @@ import {
 } from "./workspace-status-drag-data";
 import { PINNED_GROUP_KEY } from "./worktree-list/grouping/group-keys";
 import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
+import { computeHeaderSectionBounds } from "./worktree-header-section-boundaries";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
@@ -809,6 +810,15 @@ export function WorktreeList({
 
   const { rows } = rowModel;
   const pathByWorktreeId = rowModel.pathByWorktreeId;
+  const headerSectionBounds = useMemo(() => {
+    const firstHeaderIndex = rows.findIndex(
+      (row) => row.type === "header" || row.type === "host-header"
+    );
+    return computeHeaderSectionBounds({
+      rows,
+      firstHeaderIndex: firstHeaderIndex < 0 ? 0 : firstHeaderIndex,
+    });
+  }, [rows]);
 
   // Drag payloads speak workspace ids; the app's lineage writer speaks checkout
   // paths (same map the context menu and the delete dialog read).
@@ -1238,6 +1248,7 @@ export function WorktreeList({
       onSelectGitWorktree,
       onDeleteGitWorktree,
       onEditWorktreeMetadata,
+      headerSectionBounds,
       persistWorktreeDisplayName,
       hostIdByRepoId,
       deleteStateByWorktreeId,
@@ -1273,6 +1284,7 @@ export function WorktreeList({
           onOpenNewWorkspace={onOpenNewWorkspaceModal}
           onContextMenu={onProjectContextMenu}
           isDropTarget={isDropTarget}
+          sectionEnd={headerSectionBounds.repoSectionEndByRepoId.get(proj.id)}
           dropPosition={projectDropTarget?.position}
           isDragged={draggedProjectId === proj.id}
           onDragStart={onProjectDragStart ? (e) => onProjectDragStart(e, proj.id) : undefined}
@@ -1319,6 +1331,7 @@ export function WorktreeList({
               : undefined
           }
           isDropTarget={groupDropTargetId === group.id}
+          sectionEnd={headerSectionBounds.projectGroupSectionEndByGroupId.get(group.id as string)}
           onDragOver={onGroupDragOver ? (e) => onGroupDragOver(e, group.id as string) : undefined}
           onDragLeave={
             onGroupDragLeave ? (e) => onGroupDragLeave(e, group.id as string) : undefined
@@ -1329,6 +1342,7 @@ export function WorktreeList({
     },
     [
       isCollapsedKey,
+      headerSectionBounds,
       onGroupContextMenu,
       groupDropTargetId,
       onGroupDragOver,
