@@ -45,6 +45,9 @@ import type {
 } from "./types";
 import { IDLE, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { useAppStore } from "../../store";
+import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
+import { RemoveFolderDialog } from "./RemoveFolderDialog";
+import { SuppressExternalWorktreeInboxDialog } from "./SuppressExternalWorktreeInboxDialog";
 import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
 export * from "./types";
@@ -155,6 +158,30 @@ export function WorktreeSidebar({
   // Context Menu state
   const [activeProjectMenu, setActiveProjectMenu] = useState<{ proj: HydraProject; x: number; y: number } | null>(null);
   const [activeGroupMenu, setActiveGroupMenu] = useState<{ group: { id: string; name: string }; x: number; y: number } | null>(null);
+  const [removeProjectTarget, setRemoveProjectTarget] = useState<HydraProject | null>(null);
+  const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
+  const [suppressInboxPending, setSuppressInboxPending] = useState(false);
+  // Why primitives/reference-stable slices: a selector that returns a fresh
+  // object literal makes zustand re-render forever (React "maximum update depth").
+  const removeProjectRepo = useAppStore((state) =>
+    removeProjectTarget
+      ? state.repos.find((entry) => entry.path === removeProjectTarget.path) ?? null
+      : null
+  );
+  const removeProjectSshLabels = useAppStore((state) => state.sshTargetLabels);
+  const removeProjectRemovedSshLabels = useAppStore((state) => state.removedSshTargetLabels);
+  const removeProjectTargetId = removeProjectRepo?.connectionId?.trim() ?? "";
+  const removeProjectHost = !removeProjectTargetId
+    ? ({ kind: "local" } as const)
+    : isRuntimeOwnedSshTargetId(removeProjectTargetId)
+      ? ({ kind: "vm" } as const)
+      : {
+          kind: "ssh" as const,
+          label:
+            removeProjectSshLabels.get(removeProjectTargetId) ??
+            removeProjectRemovedSshLabels.get(removeProjectTargetId) ??
+            removeProjectTargetId,
+        };
 
   // Dialogs state
   const [groupNameDialog, setGroupNameDialog] = useState<{
@@ -895,14 +922,7 @@ export function WorktreeSidebar({
                   console.error(err);
                 }
               }}
-              onSuppressHiddenWorktrees={async (proj) => {
-                try {
-                  await invoke("suppress_worktree_inbox", { projectPath: proj.path });
-                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-                } catch (err) {
-                  console.error(err);
-                }
-              }}
+              onSuppressHiddenWorktrees={(proj) => setSuppressInboxTarget(proj)}
               onReviewHiddenWorktrees={(proj) => {
                 setVisibilityDialog({
                   open: true,
@@ -1177,7 +1197,7 @@ export function WorktreeSidebar({
               onClick={() => {
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
-                onRemoveProject(proj);
+                setRemoveProjectTarget(proj);
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
             >
@@ -1288,6 +1308,47 @@ export function WorktreeSidebar({
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
         onOpenGlobalSettings={() => onOpenGlobalSettings?.()}
+      />
+
+      <RemoveFolderDialog
+        open={removeProjectTarget != null}
+        projectName={removeProjectTarget?.name ?? ""}
+        host={removeProjectHost}
+        onOpenChange={(open) => {
+          if (!open) setRemoveProjectTarget(null);
+        }}
+        onConfirm={() => {
+          const target = removeProjectTarget;
+          setRemoveProjectTarget(null);
+          if (target) onRemoveProject(target);
+        }}
+      />
+
+      <SuppressExternalWorktreeInboxDialog
+        open={suppressInboxTarget != null}
+        repoDisplayName={suppressInboxTarget?.name ?? ""}
+        pending={suppressInboxPending}
+        onOpenChange={(open) => {
+          if (!open && !suppressInboxPending) setSuppressInboxTarget(null);
+        }}
+        onOpenRecovery={() => {
+          setSuppressInboxTarget(null);
+          onOpenSettings?.();
+        }}
+        onConfirm={async () => {
+          const target = suppressInboxTarget;
+          if (!target) return;
+          setSuppressInboxPending(true);
+          try {
+            await invoke("suppress_worktree_inbox", { projectPath: target.path });
+            window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+            setSuppressInboxTarget(null);
+          } catch (err) {
+            console.error(err);
+          } finally {
+            setSuppressInboxPending(false);
+          }
+        }}
       />
 
       {promptDialog && (
