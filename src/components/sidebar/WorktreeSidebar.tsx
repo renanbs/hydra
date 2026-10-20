@@ -1366,8 +1366,17 @@ export function WorktreeSidebar({
           if (!open && !suppressInboxPending) setSuppressInboxTarget(null);
         }}
         onOpenRecovery={() => {
+          const target = suppressInboxTarget;
           setSuppressInboxTarget(null);
-          onOpenSettings?.();
+          // The project's own visibility dialog is Hydra's "Non-Orca worktrees
+          // settings" surface: it owns every source toggle and the recovery list.
+          if (target) {
+            setVisibilityDialog({
+              open: true,
+              project: target,
+              hiddenWorktrees: hiddenWorktreesByProject?.[target.path] ?? [],
+            });
+          }
         }}
         onConfirm={async () => {
           const target = suppressInboxTarget;

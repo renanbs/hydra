@@ -75,6 +75,40 @@ describe("lineage nesting in the painted row pipeline (Orca parity)", () => {
     expect(childRow?.depth).toBe(1);
   });
 
+  it("renders grandchildren recursively at increasing depth", () => {
+    const parent = worktree("/repo/a/parent", "feat/parent");
+    const child = worktree("/repo/a/child", "feat/child");
+    const grandchild = worktree("/repo/a/grandchild", "feat/grandchild");
+    const repoMap = new Map([[REPO_ID, repo()]]);
+    const lineageById = {
+      [child.id]: lineage(child, parent),
+      [grandchild.id]: lineage(grandchild, child),
+    };
+
+    const rows = buildRows(
+      "repo",
+      [parent, child, grandchild],
+      repoMap,
+      null,
+      new Set(),
+      undefined,
+      undefined,
+      "manual",
+      lineageById,
+      new Map([
+        [parent.id, parent],
+        [child.id, child],
+        [grandchild.id, grandchild],
+      ]),
+      true
+    );
+
+    const items = rows.filter((row): row is WorktreeRow => row.type === "item");
+    expect(items.find((row) => row.worktree.id === child.id)?.depth).toBe(1);
+    expect(items.find((row) => row.worktree.id === grandchild.id)?.depth).toBe(2);
+    expect(items.find((row) => row.worktree.id === child.id)?.lineageChildCount).toBe(1);
+  });
+
   it("keeps the child at the top level when lineage is not projected", () => {
     const parent = worktree("/repo/a/parent", "feat/parent");
     const child = worktree("/repo/a/child", "feat/child");
