@@ -257,10 +257,11 @@
     "components/sidebar/workspace-options-menu-items.tsx:23"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/SidebarHeader.tsx:82",
-     "src/components/sidebar/WorktreeSidebar.tsx:847"
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-46",
+     "src/components/sidebar/SidebarHeader.tsx:163-190",
+     "src/components/sidebar/WorktreeSidebar.tsx:745"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -268,8 +269,8 @@
      "Tooltip/aria-label dinâmicos ('Workspace options (N active)')",
      "Consumo da contagem de filtros pela UI: sidebarHasActiveFilters devolve boolean e não é consumido por nenhum componente"
     ],
-    "notes": "Gatilho do menu de opções com badge parcial.",
-    "note": "Gatilho do menu de opções com badge parcial."
+    "notes": "The trigger consumes the active-filter count and renders the badge plus the dynamic tooltip/aria label.",
+    "note": "The trigger consumes the active-filter count and renders the badge plus the dynamic tooltip/aria label."
    }
   },
   {

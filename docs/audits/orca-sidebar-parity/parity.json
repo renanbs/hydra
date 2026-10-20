@@ -12217,10 +12217,11 @@
    "components/sidebar/workspace-options-menu-items.tsx:23"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarHeader.tsx:82",
-    "src/components/sidebar/WorktreeSidebar.tsx:847"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-46",
+    "src/components/sidebar/SidebarHeader.tsx:163-190",
+    "src/components/sidebar/WorktreeSidebar.tsx:745"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -12228,8 +12229,8 @@
     "Tooltip/aria-label dinâmicos ('Workspace options (N active)')",
     "Consumo da contagem de filtros pela UI: sidebarHasActiveFilters devolve boolean e não é consumido por nenhum componente"
    ],
-   "notes": "Gatilho do menu de opções com badge parcial.",
-   "note": "Gatilho do menu de opções com badge parcial."
+   "notes": "The trigger consumes the active-filter count and renders the badge plus the dynamic tooltip/aria label.",
+   "note": "The trigger consumes the active-filter count and renders the badge plus the dynamic tooltip/aria label."
   },
   "domain": "D07-menus-actions"
  },
@@ -14492,11 +14493,11 @@
    "components/sidebar/FilterToggleRow.tsx:35"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-415",
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-472",
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:12"
+    "src/components/sidebar/FilterToggleRow.tsx:12-62",
+    "src/components/sidebar/FilterToggleRow.parity.test.tsx:6-24",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:615-665"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14505,8 +14506,8 @@
     "aria-label explícito por linha (as linhas não têm aria-* próprio)",
     "Callback onChange(negation) — o Hydra muta displayOptions via handleToggle (WorkspaceOptionsMenu.tsx:109-114)"
    ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "notes": "Shared row is a role=switch button with aria-checked/aria-label and onChange(next); the filter menu consumes it for every row.",
+   "note": "Shared row is a role=switch button with aria-checked/aria-label and onChange(next); the filter menu consumes it for every row."
   },
   "domain": "D09-filters-sort"
  },
@@ -14518,10 +14519,11 @@
    "components/sidebar/FilterToggleRow.tsx:43"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-472",
-    "src/components/ui/dropdown-menu.tsx:64"
+    "src/components/sidebar/FilterToggleRow.tsx:34-45",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:627-640",
+    "src/components/sidebar/FilterToggleRow.parity.test.tsx:46-62"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14529,8 +14531,8 @@
     "Nenhuma sub-opção indentada ('Except default branch' etc.) existe no menu de filtros",
     "Reforço de cor text-muted-foreground do label indentado"
    ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "notes": "The indented variant uses physical pl-7 and a muted label; the default-branch exception is the sub-option.",
+   "note": "The indented variant uses physical pl-7 and a muted label; the default-branch exception is the sub-option."
   },
   "domain": "D09-filters-sort"
  },
@@ -14541,18 +14543,20 @@
    "components/sidebar/FilterToggleRow.tsx:54"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-472",
-    "src/components/ui/dropdown-menu.tsx:161"
+    "src/components/sidebar/FilterToggleRow.tsx:49-57",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:113",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:622",
+    "src/components/sidebar/FilterToggleRow.parity.test.tsx:26-44"
    ],
    "backend": [],
    "missing_behaviors": [
     "Prop shortcutLabel exibida como DropdownMenuShortcut na linha de filtro",
     "Ocultação condicional do badge quando ausente"
    ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "notes": "Shortcut comes from the keybinding registry (sidebar.sleepingWorkspaces.toggle) and the badge is omitted when the action is unassigned.",
+   "note": "Shortcut comes from the keybinding registry (sidebar.sleepingWorkspaces.toggle) and the badge is omitted when the action is unassigned."
   },
   "domain": "D09-filters-sort"
  },
@@ -14570,18 +14574,17 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/SidebarHeader.tsx:79-110",
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:131-138"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-46",
+    "src/components/sidebar/SidebarHeader.tsx:163-190",
+    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:155-166"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Badge numérico de filtros ativos (-top-0.5 -right-0.5 / bg-primary) e cap '9+' (0 hits para activeFilterCount/'9+' no sidebar)",
-    "Tooltip/aria-label dinâmico ('Filter workspaces' vs 'Edit filters (N active)') — o gatilho tem título fixo 'Workspace display options' (SidebarHeader.tsx:95-96)",
-    "Ícone ListFilter (strokeWidth 2.25, size 3.5) — Hydra usa SlidersHorizontal",
-    "data-workspace-board-preserve-open no gatilho (o atributo só aparece em worktree-card-header.tsx:190)"
+    "Ícone ListFilter do gatilho (Hydra usa SlidersHorizontal)",
+    "data-workspace-board-preserve-open no gatilho do menu"
    ],
-   "notes": "Sem mudanca de comportamento; linhas do SidebarHeader atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do SidebarHeader atualizadas."
+   "notes": "Badge with 9+ cap and the dynamic 'Workspace display options (N active)' label are wired; icon/attribute differ.",
+   "note": "Badge with 9+ cap and the dynamic 'Workspace display options (N active)' label are wired; icon/attribute differ."
   },
   "domain": "D09-filters-sort"
  },
@@ -14595,20 +14598,16 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-415",
-    "src/components/sidebar/WorktreeSidebar.tsx:46-50",
-    "src/components/sidebar/WorktreeSidebar.tsx:364-367",
-    "src/shared/keybindings/definitions-core-1.ts:241"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:113",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:620-625",
+    "src/components/sidebar/worktree-list/buildSidebarRows.ts:70-82"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Efeito de filtragem: hideSleeping não é aplicado no caminho renderizado (WorktreeSidebar.tsx:534-543 só aplica hideDefaultBranch e hideDetachedHead; hideSleeping só existe no módulo morto worktree-list/buildSidebarRows.ts:76/294, sem importador)",
-    "Escrita em useAppStore.showSleepingWorkspaces: a UI escreve displayOptions.hideSleeping (prefs persistidas), o flag da store fica no default",
-    "Descoberta de atalho na linha (useShortcutLabel('sidebar.sleepingWorkspaces.toggle')) — 0 hits",
-    "Handler do atalho global: a keybinding existe (definitions-core-1.ts:241) mas nenhum módulo despacha 'sidebar.sleepingWorkspaces.toggle'"
+    "Despacho global de 'sidebar.sleepingWorkspaces.toggle' (a keybinding existe, nenhum handler a executa)"
    ],
-   "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+   "notes": "Hide sleeping is applied on the rendered path (buildSidebarRows) and the row now discloses the registry shortcut.",
+   "note": "Hide sleeping is applied on the rendered path (buildSidebarRows) and the row now discloses the registry shortcut."
   },
   "domain": "D09-filters-sort"
  },
@@ -14621,11 +14620,11 @@
    "components/sidebar/SidebarWorkspaceFilterSection.tsx:47"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-429",
-    "src/components/sidebar/visible-worktree-kinds.ts:12-28",
-    "src/components/sidebar/WorktreeSidebar.tsx:566-568"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:627-640",
+    "src/components/sidebar/worktree-list/buildSidebarRows.ts:76-81",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-42"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14633,8 +14632,8 @@
     "Toggle de alwaysShowDefaultBranchWorkspace na UI (o flag existe em visible-worktree-kinds.ts:12-28/constants.ts:270, sem nenhum consumidor de UI)",
     "Regra isSleepingSweepExemptionNarrowingList exposta ao usuário"
    ],
-   "notes": "Sem mudanca de comportamento; veredito mantido.",
-   "note": "Sem mudanca de comportamento; veredito mantido."
+   "notes": "The exception row appears only while Hide sleeping is on, writes alwaysShowDefaultBranch, keeps the default branch visible and counts as a narrowing filter.",
+   "note": "The exception row appears only while Hide sleeping is on, writes alwaysShowDefaultBranch, keeps the default branch visible and counts as a narrowing filter."
   },
   "domain": "D09-filters-sort"
  },
@@ -14650,16 +14649,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-472",
-    "src/components/sidebar/WorktreeSidebar.tsx:566-572"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:642-665",
+    "src/components/sidebar/worktree-list/buildSidebarRows.ts:72-75"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Efeito dos toggles 'Hide automation-created' e 'Hide CLI-created' no caminho renderizado (só aplicados em worktree-list/buildSidebarRows.ts:74-75, módulo sem importador)",
     "Nuance 'exceto quando mantido por provisão de receita' no hide default branch"
    ],
-   "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+   "notes": "Automation/CLI/default-branch/detached toggles are wired into the live row builder.",
+   "note": "Automation/CLI/default-branch/detached toggles are wired into the live row builder."
   },
   "domain": "D09-filters-sort"
  },
@@ -14726,18 +14724,16 @@
    "components/sidebar/SidebarFilter.tsx:389"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:384-475",
-    "src/components/sidebar/SidebarHeader.tsx:79-86"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:678-697"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Botão 'Reset filters' (visível só com hasAnyFilter) restaurando showSleepingWorkspaces/booleanos/alwaysShowDefaultBranchWorkspace/filterRepoIds",
-    "Botão 'Add project' no rodapé do menu de filtros"
+    "O botão de reset só aparecer quando há filtro ativo (Hydra mostra 'Clear filters' sempre)"
    ],
-   "notes": "Sem mudanca de comportamento; linhas do SidebarHeader atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do SidebarHeader atualizadas."
+   "notes": "Reset restores every boolean, the exception and the project filter; the footer also opens Add project.",
+   "note": "Reset restores every boolean, the exception and the project filter; the footer also opens Add project."
   },
   "domain": "D09-filters-sort"
  },
@@ -14850,19 +14846,20 @@
    "components/sidebar/SidebarProjectFilterPanel.tsx:124"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:206-214"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:345-375",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:392-410",
+    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:190-206"
    ],
    "backend": [],
    "missing_behaviors": [
     "Backspace com query vazia removendo o último projeto selecionado",
-    "Enter selecionando o projeto destacado/primeiro resultado e limpando a query",
-    "ArrowLeft caret-aware (segura no campo; em 0,0 deixa subir para fechar o submenu)",
+    "ArrowLeft caret-aware (no início do campo, sobe para fechar o submenu)",
     "Isolamento de keydown (exceto ArrowUp/ArrowDown) contra o typeahead do menu"
    ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "notes": "Arrow keys move the highlight and Enter toggles the highlighted project; the remaining keys keep Orca's behavior.",
+   "note": "Arrow keys move the highlight and Enter toggles the highlighted project; the remaining keys keep Orca's behavior."
   },
   "domain": "D09-filters-sort"
  },
