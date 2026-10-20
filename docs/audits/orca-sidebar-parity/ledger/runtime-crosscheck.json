@@ -1,7 +1,7 @@
 {
  "labels_checked": 94,
- "covered": 42,
- "uncovered": 52,
+ "covered": 43,
+ "uncovered": 51,
  "uncovered_items": [
   {
    "label": ".gitignore",
@@ -80,15 +80,6 @@
    "label": "Explorer search mode",
    "seen_in": [
     "static_all"
-   ],
-   "rows": []
-  },
-  {
-   "label": "File Manager",
-   "seen_in": [
-    "card_workspace_options/menu",
-    "footer_help/menu",
-    "footer_settings/menu"
    ],
    "rows": []
   },
@@ -415,7 +406,7 @@
     "static_all"
    ],
    "rows": [
-    "D04a-028"
+    "D04a-055"
    ]
   },
   {
@@ -427,7 +418,7 @@
    "rows": [
     "D01-023",
     "D01-026",
-    "D04a-021",
+    "D04a-045",
     "D04b-012"
    ]
   },
@@ -438,7 +429,9 @@
    ],
    "rows": [
     "D02a-038",
-    "D04a-020"
+    "D04a-024",
+    "D04a-033",
+    "D04a-041"
    ]
   },
   {
@@ -465,7 +458,7 @@
     "keyboard_probe/menu"
    ],
    "rows": [
-    "D04a-024",
+    "D04a-057",
     "D07-020"
    ]
   },
@@ -475,10 +468,10 @@
     "static_all"
    ],
    "rows": [
-    "D04a-021",
-    "D07-026",
-    "D11-010",
-    "D15b-001"
+    "D03a-087",
+    "D04a-025",
+    "D04a-046",
+    "D07-026"
    ]
   },
   {
@@ -487,10 +480,10 @@
     "static_sidebar"
    ],
    "rows": [
-    "D04a-021",
-    "D07-026",
-    "D11-010",
-    "D15b-001"
+    "D03a-087",
+    "D04a-025",
+    "D04a-046",
+    "D07-026"
    ]
   },
   {
@@ -501,7 +494,7 @@
     "footer_settings/menu"
    ],
    "rows": [
-    "D04a-028"
+    "D04a-055"
    ]
   },
   {
@@ -516,10 +509,21 @@
     "keyboard_probe/menu"
    ],
    "rows": [
-    "D04a-026",
+    "D04a-068",
     "D07-028",
     "D07-029",
     "D07-031"
+   ]
+  },
+  {
+   "label": "File Manager",
+   "seen_in": [
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu"
+   ],
+   "rows": [
+    "D04a-055"
    ]
   },
   {
@@ -543,7 +547,7 @@
     "keyboard_probe/menu"
    ],
    "rows": [
-    "D04a-024"
+    "D04a-059"
    ]
   },
   {
@@ -555,7 +559,7 @@
     "footer_settings/menu"
    ],
    "rows": [
-    "D04a-024"
+    "D04a-059"
    ]
   },
   {
@@ -567,8 +571,7 @@
     "static_sidebar"
    ],
    "rows": [
-    "D04a-024",
-    "D07-020"
+    "D04a-023"
    ]
   },
   {
@@ -583,7 +586,7 @@
     "keyboard_probe/menu"
    ],
    "rows": [
-    "D04a-027",
+    "D04a-054",
     "D07-022"
    ]
   },
@@ -599,8 +602,8 @@
     "keyboard_probe/menu"
    ],
    "rows": [
-    "D03a-046",
-    "D04a-025"
+    "D03a-084",
+    "D04a-060"
    ]
   },
   {
@@ -648,9 +651,10 @@
     "keyboard_probe/menu"
    ],
    "rows": [
-    "D04a-004",
-    "D04a-018",
-    "D04a-028"
+    "D04a-040",
+    "D04a-041",
+    "D04a-042",
+    "D04a-055"
    ]
   },
   {
@@ -677,8 +681,8 @@
     "static_all"
    ],
    "rows": [
-    "D04a-023",
-    "D04a-034",
+    "D04a-036",
+    "D04a-106",
     "D04b-011",
     "D04b-012"
    ]
@@ -689,7 +693,7 @@
     "static_all"
    ],
    "rows": [
-    "D03a-046"
+    "D03a-084"
    ]
   },
   {
@@ -698,7 +702,7 @@
     "static_sidebar"
    ],
    "rows": [
-    "D03a-046"
+    "D03a-084"
    ]
   },
   {
@@ -713,7 +717,8 @@
     "keyboard_probe/menu"
    ],
    "rows": [
-    "D04a-026"
+    "D04a-068",
+    "D04a-069"
    ]
   },
   {
@@ -748,7 +753,7 @@
     "keyboard_probe/menu"
    ],
    "rows": [
-    "D04a-025",
+    "D04a-063",
     "D06-028",
     "D07-023"
    ]
@@ -779,9 +784,9 @@
    ],
    "rows": [
     "D02a-030",
-    "D03a-033",
-    "D03b-050",
-    "D04a-026"
+    "D03a-043",
+    "D03a-044",
+    "D03a-047"
    ]
   },
   {
@@ -814,8 +819,8 @@
    "rows": [
     "D01-032",
     "D01-050",
-    "D03a-037",
-    "D04a-011"
+    "D01-052",
+    "D03a-074"
    ]
   },
   {
@@ -904,8 +909,8 @@
    "rows": [
     "D01-032",
     "D02c-002",
-    "D03a-041",
-    "D04a-001"
+    "D03a-069",
+    "D03a-081"
    ]
   },
   {

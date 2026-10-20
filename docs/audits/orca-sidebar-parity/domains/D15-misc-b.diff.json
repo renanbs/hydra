@@ -17,7 +17,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Busca 5 passos: (1) nome useVisibleWorkspaceKanbanWorktreeIds/WorkspaceKanbanDrawer ausente em src/components/sidebar/**; (2) labels 'Kanban'/'board' só aparecem em prefs, keybinding e ícone; (3) nenhum hook de board; (4) nenhum comando Tauri de board/coluna; (5) nenhum componente de colunas por status. Não há gaveta/quadro Kanban de workspaces no Hydra.",
+    "notes": "Board existe e projeta as worktrees visiveis do sidebar (getProjectWorktrees + isVisibleUnderSidebarMenuFilters); falta o hook/epoch proprio e a desativacao de injecao de ancestrais do Orca.",
     "note": "Board existe e projeta as worktrees visiveis do sidebar (getProjectWorktrees + isVisibleUnderSidebarMenuFilters); falta o hook/epoch proprio e a desativacao de injecao de ancestrais do Orca."
    }
   },
@@ -28,14 +28,21 @@
     "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:49-71"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/visible-worktrees.ts:301-304 (worktreeIdsWithLiveAgent via getWorktreeIdsWithLiveAgent(..., Date.now()), sem epoch)",
-     "src/components/sidebar/visible-worktrees.ts:168-178 (showSleepingWorkspaces aplicado só à lista)"
+     "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:108",
+     "src/components/sidebar/visible-worktree-filters.ts:62-73",
+     "src/components/sidebar/workspace-board/workspace-board-worktrees.parity.test.ts:208-217",
+     "src/components/sidebar/visible-worktrees.ts:301-304"
     ],
     "backend": [],
-    "missing_behaviors": [],
-    "notes": "agentStatusEpoch não aparece em src/components/sidebar/** (grep no diretório retorna 0). Não existe re-keying por epoch nem amostra compartilhada entre board e lista; sem board, o modo 'sleeping workspaces' do Kanban não existe."
+    "missing_behaviors": [
+     "Amostragem re-chaveada por epoch clock (getAgentStatusEpochNow/agentStatusEpoch) em vez de Date.now()",
+     "Sentinela 0 que desliga a amostra de agentes quando showSleepingWorkspaces esta ativo",
+     "Memo do conjunto de ids vivos compartilhado entre board e lista"
+    ],
+    "notes": "O board ja isola workspaces dormindo (hideSleeping via isVisibleUnderSidebarMenuFilters, com teste), mas nao ha epoch clock nem amostra compartilhada; o audit so buscou o hook pelo nome.",
+    "note": "O board ja isola workspaces dormindo (hideSleeping via isVisibleUnderSidebarMenuFilters, com teste), mas nao ha epoch clock nem amostra compartilhada; o audit so buscou o hook pelo nome."
    }
   },
   {
@@ -53,7 +60,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Nenhum listener para SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT (grep do nome em src/** = 0) nem evento equivalente. Quando a aba Agents está ativa o Hydra simplesmente não oferece o reveal (prop undefined); não há redirecionamento de corpo nem replay síncrono.",
+    "notes": "Nenhum redirect/replay de reveal ao trocar Agents->Workspaces; linhas do WorktreeSidebar atualizadas.",
     "note": "Nenhum redirect/replay de reveal ao trocar Agents->Workspaces; linhas do WorktreeSidebar atualizadas."
    }
   },
@@ -73,7 +80,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Nenhum commitWorkspaceStatusDocumentDrop nem callbacks onPinWorktrees/onMoveWorktreesToStatus (individuais ou em lote). Os helpers de payload de drag foram portados mas são código morto: nenhuma chamada em src/**.",
+    "notes": "Drop de card->status agora existe via onAssignWorktreeStatus/set_worktree_status; faltam pin, lote e commitWorkspaceStatusDocumentDrop.",
     "note": "Drop de card->status agora existe via onAssignWorktreeStatus/set_worktree_status; faltam pin, lote e commitWorkspaceStatusDocumentDrop."
    }
   },
@@ -90,7 +97,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Nenhum listener de 'drop'/'dragend' em fase de captura no document e nenhum seletor [data-workspace-status-drop-target]/[data-workspace-pin-drop-target] em src/** (grep = 0). O único D&D do sidebar é a reordenação de linhas via props React onDrop.",
+    "notes": "Board captura pointermove/up/cancel em window (capture) e click no document para o drag de card; nao ha drop/dragend HTML5 nem bypass de interceptacao do Electron.",
     "note": "Board captura pointermove/up/cancel em window (capture) e click no document para o drag de card; nao ha drop/dragend HTML5 nem bypass de interceptacao do Electron."
    }
   },
@@ -154,7 +161,7 @@
      "timer de fallback de 50ms (fallbackTimerRef) para abrir o picker caso o fechamento do menu não o execute",
      "openPendingParentPicker consumindo pendingRef"
     ],
-    "notes": "A ação observável 'abrir seletor de pai' existe (menu de contexto → ParentPickerModal), porém o picker do Hydra é um modal centralizado de App, não um popover ancorado ao card; toda a mecânica de âncora/pending/timer de fallback de 50ms está ausente.",
+    "notes": "Acao 'Change Parent Worktree...' abre o ParentPickerModal (App-level); sem ancora/pending/timer de fallback.",
     "note": "Acao 'Change Parent Worktree...' abre o ParentPickerModal (App-level); sem ancora/pending/timer de fallback."
    }
   },
@@ -173,7 +180,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Nenhum unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS (grep = 0) e nenhuma animação de saída retida: o close desmonta o picker no mesmo commit; o único timer do modal é requestAnimationFrame de foco (ParentPickerModal.tsx:37).",
+    "notes": "Close desmonta o picker no mesmo commit; sem unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS.",
     "note": "Close desmonta o picker no mesmo commit; sem unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS."
    }
   },
@@ -193,7 +200,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Nenhum useRenderedSetupScriptPromptState/lastVisiblePromptRef (grep = 0) e nenhum card/prompt de setup na sidebar (grep de 'setup script' em src/components = só SettingsModal). A infra de inspeção existe mas nenhum componente a renderiza.",
+    "notes": "Sem prompt de setup script na sidebar; infra de inspecao sem renderer.",
     "note": "Sem prompt de setup script na sidebar; infra de inspecao sem renderer."
    }
   },
@@ -204,14 +211,18 @@
     "components/sidebar/workspace-chrome-metrics.ts:1-4"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/WindowTitlebar.tsx:103 (h-9 = 36px, valor equivalente ao chrome, mas sem constante exportada)",
-     "src/components/SelectedTextCopyMenu.tsx:109 (portal em document.body sem reserva de chrome)"
+     "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:44-53",
+     "src/components/sidebar/workspace-board/use-workspace-board-geometry.ts:20-38"
     ],
     "backend": [],
-    "missing_behaviors": [],
-    "notes": "Nenhuma constante WORKSPACE_TOP_CHROME_HEIGHT/STATUS_BAR_RESERVE_HEIGHT em src/** (grep = 0) e nenhum helper equivalente. Busca 5 passos: nome, valores 36/24, 'chromeMetrics', 'TOP_CHROME', usos de createPortal. Os portais do Hydra usam posicionamento fixed sem reserva."
+    "missing_behaviors": [
+     "Constantes exportadas WORKSPACE_TOP_CHROME_HEIGHT = 36 e STATUS_BAR_RESERVE_HEIGHT = 24",
+     "Modulo de metricas compartilhado para paineis portalizados (o sheet mede o rect do sidebar em vez de usar as constantes)"
+    ],
+    "notes": "O sheet portalizado do board ja reserva chrome superior e status bar medindo o sidebar; faltam apenas as constantes/modulo de metricas que o Orca exporta.",
+    "note": "O sheet portalizado do board ja reserva chrome superior e status bar medindo o sidebar; faltam apenas as constantes/modulo de metricas que o Orca exporta."
    }
   },
   {
@@ -235,7 +246,7 @@
      "delegação a getWorktreeSidebarBoundaryDrop para arrastos outside/bordas extremas (linhas 45-63)",
      "posição do indicador dropIndicatorY em px (nextRect.top - 4 / bottom + 4) com clamp >= scrollTop"
     ],
-    "notes": "A reordenação de cabeçalhos existe e usa lógica de midpoint equivalente para o header sob o cursor (clientY - rect.top < height/2), mas o restante do cálculo (scrollTop/contentBottom/bordas/indicador em px) só existe no caminho morto: computeWorktreeSidebarHeaderDropPreview é chamada apenas por computeProjectHeaderDropPreview, que não é chamada por ninguém.",
+    "notes": "Reordenacao de headers wired por midpoint; o calculo completo (scrollTop/contentBottom/bordas/indicador px) segue no caminho morto.",
     "note": "Reordenacao de headers wired por midpoint; o calculo completo (scrollTop/contentBottom/bordas/indicador px) segue no caminho morto."
    }
   },
@@ -253,7 +264,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "O snap existe apenas no caminho morto (pickNearestHeaderBoundarySlot só é invocado pela computeWorktreeSidebarHeaderDropPreview, sem callers). No caminho wired, dragOver vive no header; soltar no corpo de uma seção/gap não gera slot algum — exatamente a zona morta que o Orca corrigiu retornando o limite mais próximo.",
+    "notes": "Snap existe so no caminho morto; no wired, dragOver vive no header - zone morta persiste.",
     "note": "Snap existe so no caminho morto; no wired, dragOver vive no header - zone morta persiste."
    }
   },
@@ -276,7 +287,7 @@
      "cálculo explícito de scrollTop alinhando o card ao topo do viewport quando ele está acima (Hydra usa rolagem mínima do scrollIntoView 'nearest')",
      "retorno null quando já totalmente visível (implícito no 'nearest' nativo, mas sem contrato próprio)"
     ],
-    "notes": "A ação observável 'revelar card do workspace ativo' existe, mas a matemática de bounds do Orca (getScrollTopToRevealBounds) não foi portada: não há scroll-margin/inset nem cálculo de scrollTop em src/components/sidebar (grep de scroll-margin/scroll-mt = 0).",
+    "notes": "Acao 'Reveal active workspace' existe (scrollIntoView 'nearest'), mas sem a matematica de bounds/inset do Orca.",
     "note": "Acao 'Reveal active workspace' existe (scrollIntoView 'nearest'), mas sem a matematica de bounds/inset do Orca."
    }
   }

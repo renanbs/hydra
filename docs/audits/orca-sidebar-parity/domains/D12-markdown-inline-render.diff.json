@@ -25,7 +25,7 @@
      "Reseta estilos de pill de código inline em <code> filhos de <pre> via seletor descendente [&_pre_code]",
      "Encaminha ref e props via React.forwardRef e React.memo permitindo composição transparente com Radix HoverCardTrigger asChild"
     ],
-    "notes": "Busca em 5 passos: (1) nome CommentMarkdown/comment-md-p ausente de todo src/** (hydra_exports.json não tem símbolo markdown); (2) marcação compacta comment-md-p/remarkBreaks ausente; (3) nenhum parser markdown nas deps (package.json:13-30, sem react-markdown/remark/rehype); (4) nenhum comando Tauri de markdown (index/hydra_tauri_commands.json); (5) a superfície PAR-39 existe mas renderiza texto puro (WorktreeCardDetailsHover.tsx:124 cardTitle, :256 review.title). Não localizado.",
+    "notes": "Sem renderer markdown; package.json tocado pela pilha mas sem dependencia de markdown inline.",
     "note": "Sem renderer markdown; package.json tocado pela pilha mas sem dependencia de markdown inline."
    },
    "par": [
@@ -50,7 +50,7 @@
      "Renderiza H1 a H6 como elementos <span> inline (classes comment-md-h, comment-md-h1 a h3, font-bold/font-semibold) preservando o fluxo inline do card",
      "Atribui role='heading' e aria-level={1..6} aos spans para manter a hierarquia de navegação acessível por leitores de tela"
     ],
-    "notes": "Busca em 5 passos: (1) nenhum renderer de heading inline (comment-md-h/role=heading/aria-level) em src/**; (2) classes comment-md-h1..h3 ausentes; (3) sem parser markdown nas deps (package.json:13-30); (4) sem backend; (5) cards usam <span> normal (worktree-card-meta-row.tsx:60-84). Não localizado.",
+    "notes": "Sem renderer markdown inline.",
     "note": "Sem renderer markdown inline."
    },
    "par": [
@@ -80,7 +80,7 @@
      "Renderiza citações em bloco <blockquote> com borda lateral esquerda (border-l-2 border-border/70 pl-3 text-muted-foreground)",
      "Renderiza divisores horizontais <hr className='my-4 border-border/60'>"
     ],
-    "notes": "Busca em 5 passos: (1) variante document/blockquote/hr ausente do sidebar; (2) tags <h1>/<blockquote>/<hr> ausentes em src/components/sidebar/**; (3) sem parser markdown nas deps; (4) sem backend; (5) o popover de detalhes mostra título/branch/porta/path como texto puro (WorktreeCardDetailsHover.tsx:124-128, :276-294). Não localizado.",
+    "notes": "Sem renderer markdown inline.",
     "note": "Sem renderer markdown inline."
    },
    "par": [
@@ -111,7 +111,7 @@
      "Permite protocolos data: e blob: em src de imagens; protocolo file: em href é filtrado e higienizado por padrão a menos que allowFileUriLinks esteja habilitado",
      "Renderiza <details>/<summary> como seções expansíveis nativas acessíveis"
     ],
-    "notes": "Busca em 5 passos: (1) nenhum sanitizador de HTML de markdown (rehypeRaw/rehypeSanitize) em src/**; (2) sem schema allowlist de tags/atributos; (3) sem dompurify em uso (aparece só como transitiva em pnpm-lock.yaml); (4) sem backend; (5) únicos hits de 'sanitize' são não relacionados (src/App.tsx:195 sanitizeSidebarPrefsSnapshot, src/components/terminal-pane/terminal-bracketed-paste.ts:51). Não localizado.",
+    "notes": "Sem renderer markdown inline; bracketed paste nao renderiza markdown.",
     "note": "Sem renderer markdown inline; bracketed paste nao renderiza markdown."
    },
    "par": [
@@ -143,7 +143,7 @@
      "Não autolinka referências situadas dentro de links <a> existentes ou blocos de código inline/fenced",
      "Processa listas massivas de referências iterativamente evitando limites de recursão ou tamanho de argumentos da V8"
     ],
-    "notes": "Busca em 5 passos: (1) nenhum remarkGitHubReferences/GITHUB_REFERENCE_PATTERN em src/**; (2) nenhum href github.com/{owner}/{repo}/issues/{n} gerado; (3) sem parser markdown nas deps; (4) sem backend; (5) camada GitHub só tem identidade de projeto (src/shared/github/project-identity.ts:11), sem autolink de referências. Não localizado.",
+    "notes": "Sem renderer markdown inline.",
     "note": "Sem renderer markdown inline."
    },
    "par": [
@@ -232,7 +232,7 @@
      "Quando expandImages=true, integra com ExpandableMarkdownImage abrindo lightbox ao clicar",
      "Quando expandImages=false, envolve imagem em link <a> delegando clique para onLinkClick"
     ],
-    "notes": "Busca em 5 passos: (1) nenhum isTrustedCompactImageSrc/ExpandableMarkdownImage em src/**; (2) nenhuma tag <img> em src/components/sidebar/** (grep zero); (3) sem parser markdown; (4) sem backend; (5) cards do sidebar só exibem badges/ícones lucide, sem thumbnails de markdown. Não localizado.",
+    "notes": "Sem renderer markdown inline.",
     "note": "Sem renderer markdown inline."
    },
    "par": [
@@ -263,7 +263,7 @@
      "Apresenta imagem centralizada com rolagem suave bg-muted/20 scrollbar-editor e max-h-full max-w-full object-contain",
      "Na variante documental, se onLinkClick for fornecido, delega clique diretamente para o callback em vez de abrir lightbox interno"
     ],
-    "notes": "Busca em 5 passos: (1) componente MarkdownImageLightbox/ExpandableMarkdownImage inexistente em src/**; (2) chaves i18n órfãs herdadas do Orca (src/i18n/locales/en.json:6237-6241 MarkdownImageLightbox.image/expand/close) sem nenhum consumidor; (3) sem Radix Dialog de lightbox; (4) sem backend; (5) nenhuma imagem expandível no sidebar. Não localizado.",
+    "notes": "Strings de markdown existem so no catalogo i18n importado; nenhum renderer.",
     "note": "Strings de markdown existem so no catalogo i18n importado; nenhum renderer."
    },
    "par": [
@@ -296,7 +296,7 @@
      "Aplica stopPropagation() nos cliques de mídia para evitar navegação de elementos pais",
      "Links convencionais para URLs que não são anexos de vídeo continuam sendo renderizados como links normais"
     ],
-    "notes": "Busca em 5 passos: (1) nenhum isGitHubUserAttachmentUrl/GitHubUserAttachmentVideo/Image em src/**; (2) string 'user-attachments' ausente (grep zero); (3) nenhum <video>/<img> no sidebar; (4) sem backend; (5) anexos GitHub não são renderizados em nenhum ponto alcançável a partir do sidebar. Não localizado.",
+    "notes": "Sem renderer markdown inline.",
     "note": "Sem renderer markdown inline."
    },
    "par": [
@@ -327,7 +327,7 @@
      "Desativa labels HTML (htmlLabels={false}) para garantir que o SVG sanitizado não perca elementos foreignObject em certas plataformas",
      "Isolamento compacto: na variante compacta (variant='compact'), cercas mermaid permanecem como blocos de código <pre> simples delimitados (max-h-32 font-mono) evitando mutações assíncronas de layout na lista do sidebar"
     ],
-    "notes": "Busca em 5 passos: (1) CommentMermaidBlock/CommentMermaidFence ausentes; (2) dependência 'mermaid' ausente de package.json; (3) único hit é o mapa de extensão de editor src/lib/language-detect.ts:32-33 ('.mmd'/'.mermaid' -> id de linguagem, sem renderização); (4) sem backend; (5) sidebar não tem bloco mermaid/theme reativo. Não localizado.",
+    "notes": "Deteccao de linguagem existe mas sem renderer de codigo inline.",
     "note": "Deteccao de linguagem existe mas sem renderer de codigo inline."
    },
    "par": [
@@ -355,7 +355,7 @@
      "Para cercas sem linguagem especificada (bare code fences), não inventa rótulo de linguagem (language=undefined)",
      "Quando renderCodeBlock não é fornecido, renderiza bloco <pre className='my-3 max-h-80 max-w-full overflow-x-auto rounded-md bg-accent p-3 font-mono text-[12px]'>"
     ],
-    "notes": "Busca em 5 passos: (1) DocumentCodeBlockRenderer/createDocumentCommentMarkdownComponents ausentes; (2) nenhum <pre>/<code> em src/components/sidebar/**; (3) módulo de preview markdown é stub (src/store/slices/editor/actions/markdown-preview-actions.ts:1-3); (4) sem backend; (5) chave i18n 'copyCode' órfã (src/i18n/locales/en.json:17501) sem componente. Não localizado.",
+    "notes": "Sem renderer markdown inline no sidebar.",
     "note": "Sem renderer markdown inline no sidebar."
    },
    "par": [
@@ -384,7 +384,7 @@
      "Listas de tarefas GFM renderizam checkboxes <input type='checkbox' disabled> com pointer-events-none evitando acionamento acidental de abertura/edição do card pai",
      "Listas ordenadas e não ordenadas renderizam com marcadores nativos (list-disc, list-decimal) e recuo ajustado (ml-3 em compact, ml-5 em document)"
     ],
-    "notes": "Busca em 5 passos: (1) renderers de tabela GFM/task-list ausentes; (2) nenhum <table>/<input type=checkbox> em src/components/sidebar/**; (3) sem parser GFM nas deps; (4) sem backend; (5) cards renderizam apenas labels truncados (truncated-sidebar-label.tsx) sem tabelas. Não localizado.",
+    "notes": "Sem renderer markdown inline.",
     "note": "Sem renderer markdown inline."
    },
    "par": [

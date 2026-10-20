@@ -126,7 +126,7 @@
      "Memoização reativa (hook) compartilhada entre barra de escopo e menus de workspace: a derivação ocorre inline em computeRenderedSidebarWorktrees, sem hook/useMemo equivalente a useSidebarHostScopeOptions",
      "Superfície de UI do sidebar que exiba as opções derivadas: as opções só alimentam addHostSectionRows (modelo de ordenação Cmd+1–9), que não é renderizado"
     ],
-    "notes": "Parcial: buildSidebarHostOptions (sidebar-host-options.ts:39-95) reproduz fielmente os inputs do Orca (repos, sshTargetLabels, sshConnectionStates, settings.activeRuntimeEnvironmentId, runtimeEnvironments, runtimeStatusByEnvironmentId) e aplica getHostDisplayLabelOverrides (rendered-sidebar-worktree-order.ts:103), gerando SidebarHostOption com id/label/detail/kind/health/presence/compatibility/connectionStatus. Também existe buildSidebarHostScopeOptions gerando SidebarHostScopeOption. Porém o único callsite (rendered-sidebar-worktree-order.ts:96) está no pipeline de ordenação usado por getVisibleWorktreeShortcutTargets (src/App.tsx:2456), não por renderização: WorktreeSidebar.tsx e WorktreeList.tsx não têm nenhuma ocorrência de 'host' e não há scope strip no sidebar. Reachable_depth 4 (index/hydra_scope.json).",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
     "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": []
@@ -157,7 +157,7 @@
      "Cabeçalhos de seção de host renderizados no sidebar: nenhum renderer consome rows `type: 'host-header'` (host-section-rows.ts:19,290-306); em src/components/** o único consumidor é worktree-sidebar-row-preference.ts:48, acionado por computeRenderedSidebarWorktreeOrder (visible-worktrees.ts:377) para numeração Cmd+1–9",
      "Contagem de workspace de pasta observável por host no cabeçalho de seção (o usuário não vê a contagem; WorktreeList.tsx, corpo renderizado do sidebar, não tem nenhuma referência a host nem props de host)"
     ],
-    "notes": "Parcial: a semântica do Orca está implementada — getLaneHostWorktreeCounts (host-labels.ts:204-227) soma folder-workspaces às contagens de worktrees; getLaneHostWorktreeIds (:229-254) cria array vazio por host para pastas puras não vazarem ids globais; getFolderWorkspaceHostId (folder-workspace-host-id.ts:16-21) resolve o host da pasta via connectionId da própria pasta ou do ProjectGroup (SSH remoto); addHostSectionRows distribui hostWorktreeCounts em raias colapsadas (host-section-rows.ts:205-227) e grava count em cabeçalhos (host-section-rows.ts:290-300); as lanes são armadas em group-sections.ts:105-145 e build-rows.ts:163-175. O gap é de superfície: WorktreeSidebar.tsx (grep 'host' → 0 hits) e WorktreeList.tsx montam grupos/repos diretamente e nunca renderizam seções de host.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
     "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": []
@@ -208,7 +208,7 @@
      "Constante REPO_HEADER_ACTION_SELECTOR e predicados isRepoHeaderActionTarget/isProjectGroupHeaderActionTarget: inexistentes (0 hits em src); o atributo data-repo-header-actions é renderizado (ProjectHeaderActions.tsx:26) mas nenhum guard o consulta",
      "Bloqueio do início de drag quando o clique nasce no overlay de ações: o cabeçalho de repo é draggable (SectionHeader.tsx:265) e handleProjectDragStart (WorktreeSidebar.tsx:470-475) não inspeciona e.target, então arrastar a partir de .../+ /chevron ainda inicia o drag do cabeçalho; pointer-drag-dom.ts:21 (isSidebarPointerDragBlocked) existe mas não tem callsites"
     ],
-    "notes": "Parcial: a metade 'colapso' funciona — todos os controles de ação chamam stopPropagation e não propagam para o onClick do cabeçalho (SectionHeader.tsx:88-94 handleContext do grupo, :168-171 chevron, :192-196 '+' do grupo, :234-239 handleToggleOnly, :240-245 handleContext, :247-253 handleNewWorkspace; a linha clicável é :293). Falta a metade 'drag' do contrato do Orca.",
+    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
     "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
    },
    "par": []
@@ -235,7 +235,7 @@
      "Área de toque de 12px (w-3) sobreposta à emenda: o Hidra usa w-2.5 (10px) com -ml-1.5/-mr-1.5 e z-20 (App.tsx:3705), não o w-3 com -right-1.5/top-0/z-10 do Orca",
      "Linha interna fina de 1px com transição de cores no hover/ativo (group-hover:bg-ring/50, group-active:bg-ring): o Hidra desenha 2px (w-[2px]) com emerald-500/400 (App.tsx:3714-3715)"
     ],
-    "notes": "Parcial: a alça existe, é alcançável do mount e funcional — App.tsx:3705 renderiza o divisor com cursor-col-resize e onMouseDown={leftSidebar.onResizeStart}; useSidebarResize (src/hooks/useSidebarResize.ts:51,185) faz drag por rAF e persiste a largura clampada (App.tsx:737,763). O terceiro behavior exigido está satisfeito: o container com scrollbar tem pr-3 (12px ≥ 4px) em WorktreeSidebar.tsx:703.",
+    "notes": "Sem mudanca de comportamento; veredito mantido.",
     "note": "Sem mudanca de comportamento; veredito mantido."
    },
    "par": []
@@ -285,7 +285,7 @@
     "missing_behaviors": [
      "Hook useVisibleWorkspaceKanbanWorktreeIds e aplicação do filtro no quadro Kanban do sidebar: não existe quadro Kanban (grep 'kanban' em src/components/sidebar/** → 0 hits); o dashboard experimental é apenas entrada de settings/atalho (src/components/settings/experimental-search.ts:57, src/hooks/ipc-events/agent-dashboard-command.ts:3), sem board renderizado"
     ],
-    "notes": "Parcial: a qualificação por host existe e está wired na lista do sidebar (não no Kanban) — getWorktreeHostIdentity (shared/worktree/host-qualified-identity.ts:30) deduplica a mesma id em hosts distintos (host-labels.ts:171-190, comentário STA-4343), a filtragem respeita visibleWorkspaceHostIds/workspaceHostScope (visible-worktrees.ts:147-155) e o mesmo eixo sustenta as seções fixadas (pinned-section-worktrees.ts:13,26). Falta o alvo Kanban do Orca (PAR-14), que não foi portado.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
     "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [

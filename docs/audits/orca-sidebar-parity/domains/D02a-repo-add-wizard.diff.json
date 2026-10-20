@@ -24,7 +24,7 @@
      "Ref de geração monotônica para descartar resultados assíncronos obsoletos",
      "onCloseAutoFocus / prop 'hosted' do workspace composer"
     ],
-    "notes": "Modal existe e é montado (App.tsx:4026): isOpen/onClose, reset de step+error na abertura (35-43), Escape fecha (40), clique no backdrop fecha (115). Ausentes os demais sub-comportamentos listados; sem store activeModal e sem clone-abort no backend (0 comandos em lib.rs).",
+    "notes": "Ciclo de vida inalterado (prop isOpen, sem activeModal/droppedLocalPath/cloneAbort/generation ref).",
     "note": "Ciclo de vida inalterado (prop isOpen, sem activeModal/droppedLocalPath/cloneAbort/generation ref)."
    },
    "par": [
@@ -179,7 +179,7 @@
      "Atualização autoritativa de worktrees após add",
      "Processamento de droppedLocalPath"
     ],
-    "notes": "Fluxo local existe: picker nativo -> catalog_add_folder -> callback onProjectAdded relê o catálogo (App.tsx:4029-4052). Backend rastreado. Faltam scan aninhado/progresso/drop.",
+    "notes": "onProjectAdded so rele catalog_get; seguem ausentes scan aninhado, labels de progresso e droppedLocalPath.",
     "note": "onProjectAdded so rele catalog_get; seguem ausentes scan aninhado, labels de progresso e droppedLocalPath."
    }
   },
@@ -606,7 +606,7 @@
      "activateAndRevealWorktree no sidebar",
      "Telemetria 'add_repo_default_checkout_handoff'"
     ],
-    "notes": "Handoff existe de forma simplificada: onProjectAdded relê catálogo, seleciona o primeiro projeto e abre um terminal com cwd = project.path (App.tsx:4029-4052) via handleSelectProject (App.tsx:1584). Sem detecção de main worktree/reveal/telemetria.",
+    "notes": "Handoff de checkout padrao segue ausente no caminho de producao (so re-selecao do primeiro projeto + tab sintetica).",
     "note": "Handoff de checkout padrao segue ausente no caminho de producao (so re-selecao do primeiro projeto + tab sintetica)."
    }
   },
@@ -768,7 +768,7 @@
      "Mensagem de erro detalhada (pathStatusProjectError)",
      "Hook useFolderWorkspaceComposerPathStatus (compositor inexistente no Hydra)"
     ],
-    "notes": "Validade de caminho de workspace de pasta é verificada em runtime de exibição: useEffect chama path_exists para cada folderWorkspace e marca badge de pasta ausente (App.tsx:2066-2085; WorktreeList.tsx:525). Não há cache TTL nem bloqueio de criação (não há compositor).",
+    "notes": "Hook useFolderWorkspaceComposerPathStatus segue so referenciado em teste de boundary; sem cache TTL/bloqueio de criacao no compositor.",
     "note": "Hook useFolderWorkspaceComposerPathStatus segue so referenciado em teste de boundary; sem cache TTL/bloqueio de criacao no compositor."
    }
   },

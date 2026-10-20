@@ -1,0 +1,179 @@
+{
+ "group": "E",
+ "generatedFrom": "re-verification pass 2026-10-20: D10 host-qualified notices, visibility host scoping, cache clock and notice candidates were implemented in b4e8029..66dfdf3 but the 0d261c2 refresh never covered these rows",
+ "rows": [
+  {
+   "id": "D10-027",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:1235-1236",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:121",
+    "src/components/sidebar/worktree-list/grouping/row-builders.ts:46",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:211-224",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:207"
+   ],
+   "note": "getNoticeHostContextLabels feeds row.hostContextLabel/hostContextHostId; the line renders label + glyph only when the project spans hosts."
+  },
+  {
+   "id": "D10-032",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:68-72",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:83",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:122",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.parity.test.tsx:107"
+   ],
+   "note": "repoScopeLabel qualifies the review and suppress accessible names and the visible host label when the project spans hosts."
+  },
+  {
+   "id": "D10-035",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/NoticeHostGlyph.tsx:74",
+    "src/components/sidebar/NoticeHostGlyph.tsx:86-90",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:217-224",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:93-100"
+   ],
+   "note": "NoticeHostGlyph draws the single Monitor/Server vocabulary with the 'Project on …' tooltip and is mounted by both notice rows."
+  },
+  {
+   "id": "D10-036",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/NoticeHostGlyph.tsx:80-84",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:221",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:98",
+    "src/components/sidebar/NoticeHostGlyph.parity.test.tsx:105",
+    "src/components/sidebar/NoticeHostGlyph.parity.test.tsx:113"
+   ],
+   "note": "keyboardFocusable controls role/tabIndex/aria-label: true on the passive expandable row, false inside the pill's button."
+  },
+  {
+   "id": "D10-037",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/NoticeHostGlyph.tsx:36-45",
+    "src/components/sidebar/NoticeHostGlyph.parity.test.tsx:88",
+    "src/components/sidebar/NoticeHostGlyph.parity.test.tsx:97"
+   ],
+   "note": "Disconnected comes from runtimeHostConnectionStateForEntry + isDisconnectedRuntimeHostState, so an absent entry stays 'not probed'."
+  },
+  {
+   "id": "D10-039",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:148",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:152-168",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:221-224",
+    "src/components/sidebar/worktree-visibility-host-target.ts:67-84",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:408"
+   ],
+   "note": "refreshTargetRepo/updateTargetRepo carry requestedHostId into fetchWorktrees and updateRepo; test proves two hosts sharing id/path stay isolated."
+  },
+  {
+   "id": "D10-066",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:101-124",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:63",
+    "src/components/sidebar/worktree-list/grouping/group-sections.ts:165"
+   ],
+   "note": "buildExternalWorktreeNoticeCandidates ports Orca's card candidates: git repo gate, phase gate, suppression and non-empty hidden list."
+  },
+  {
+   "id": "D10-071",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:116-123",
+    "src/components/sidebar/worktree-list/grouping/group-sections.ts:179"
+   ],
+   "note": "The same builder emits the compact inbox candidate only after the prompt phase, minus baseline paths."
+  },
+  {
+   "id": "D10-073",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/prompt-cache-countdown-clock.ts:36-62",
+    "src/components/sidebar/prompt-cache-countdown-clock.ts:45-51"
+   ],
+   "note": "The shared clock stops on isWindowVisible() === false, listens to visibilitychange and publishes a fresh tick on return."
+  },
+  {
+   "id": "D10-074",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/prompt-cache-countdown-clock.ts:94-103",
+    "src/components/sidebar/CacheTimer.tsx:124"
+   ],
+   "note": "usePromptCacheCountdownNow(active) is a useSyncExternalStore over the shared subscribe/get pair."
+  },
+  {
+   "id": "D10-075",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/prompt-cache-timer-selection.ts:18-45",
+    "src/components/sidebar/CacheTimer.tsx:88"
+   ],
+   "note": "getMostUrgentPromptCacheStartedAt picks the oldest startedAt among the worktree's tabs."
+  },
+  {
+   "id": "D10-076",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/prompt-cache-timer-selection.ts:47-60",
+    "src/components/sidebar/CacheTimer.tsx:113"
+   ],
+   "note": "getPromptCacheCountdownForPane requires a positive ttl and a parseable pane key, then reads that pane's startedAt."
+  },
+  {
+   "id": "D10-077",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:516-521",
+    "src/App.tsx:2009",
+    "src/App.tsx:4379"
+   ],
+   "missing_behaviors": [
+    "toast 'No deletable workspaces selected' da seleção múltipla que resolve para zero alvos (o caminho de multi-select delete ainda não existe)"
+   ],
+   "note": "The stale-list toast matches Orca; the no-deletable variant has no caller because batch deletion from a selection is absent."
+  },
+  {
+   "id": "D10-083",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-visibility-host-target.ts:22-45",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:152"
+   ],
+   "note": "resolveWorktreeVisibilityHostTarget parses the requested host, resolves the repo for it, filters detected worktrees and builds the '<host>\\0<repoId>' scope."
+  },
+  {
+   "id": "D10-084",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-visibility-host-target.ts:67-84",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:221-224"
+   ],
+   "note": "useWorktreeVisibilityHostActions wraps fetch/update so both carry the resolved executionHostId."
+  },
+  {
+   "id": "D10-085",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-visibility-mutation-fence.ts:16-42",
+    "src/components/sidebar/worktree-visibility-mutation-fence.ts:43-90",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:226"
+   ],
+   "note": "Module-level fences keyed by scope survive unmount: start/subscribe/finish plus useVisibilityMutationFence rehydrate busyPath/isToggling."
+  },
+  {
+   "id": "D10-086",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-visibility-mutation-fence.ts:66-90",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:481"
+   ],
+   "note": "On remount the fence restores the in-flight state, then refreshes and clears it when the old mutation finishes."
+  }
+ ]
+}

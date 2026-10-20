@@ -25,7 +25,7 @@
      "Filtragem de leitura agentsReadFilter (Hydra só tem filtro de status all/blocked/waiting/working/done/idle)",
      "Recebe e repassa query/readFilter/groupBy/scroll ref do shell para sincronização (Hydra guarda filter/groupBy/statusFilter em estado local do componente)"
     ],
-    "notes": "Alcançável: WorktreeSidebar.tsx:647 monta SidebarAgentsList no body \"agents\" (SidebarAgentsList:22-51 props sessions/projects/onSelectSession/groupBy/statusFilter). O componente do Hydra é a view agregada de WorktreeSession (cards planos), não a lista de threads do Orca: não existe ActivityThreadListPane em src/** (busca por nome: 0 hits) nem retenção de threads de painel fechado. Prefs agentsShowChildAgents/agentsCompactMode/agentsReadFilter existem no store (src/store/slices/ui/ui-slice-preference-actions.ts:167-194) mas nenhum consumidor em src/**/*.tsx.",
+    "notes": "Alternância de corpo wired; lazy/scroll preservado do Orca ausentes.",
     "note": "Alternância de corpo wired; lazy/scroll preservado do Orca ausentes."
    }
   },
@@ -56,7 +56,7 @@
      "Escape oculta a barra, limpa a query para \"\" e persiste agentsShowSearch:false",
      "Preserva o foco do workspace na montagem inicial sem roubar foco"
     ],
-    "notes": "O filtro em tempo real existe e é funcional (SidebarAgentsList.tsx:60-77 filtra por title/branch/agentName/projeto; input em :438 e no empty-state :403). O store tem agentsShowSearch (ui-slice-preference-actions.ts:177-181) mas o input não é gated por ela e não há handler de Escape no input da lista de agentes (o Escape de WorktreeSidebar.tsx:697 pertence ao filtro de workspaces). Não há teste equivalente.",
+    "notes": "Persistência de preferências via uiPrefsBridge; partes locais só no slice.",
     "note": "Persistência de preferências via uiPrefsBridge; partes locais só no slice."
    }
   },
@@ -198,7 +198,7 @@
      "Orca mede o gap pelo relógio de observação (evidenceObservedAt); decay_state mede por state_started_at (src-tauri/src/lib.rs:883)",
      "restoredUnconfirmed decai imediatamente para idle no Orca; não existe no decay_state (só no gate isFreshNonDoneAgentStatus, src/shared/agent-status-freshness.ts:37-52)"
     ],
-    "notes": "Paridade de threshold: AGENT_STATE_STALE_AFTER_MS = 30*60*1000 (agent_state.rs:14) pina explicitamente o AGENT_STATUS_STALE_AFTER_MS do Orca; a divisão ativo-estagnado → (vivo ⇒ unverifiable/unknown, morto ⇒ idle) coincide (agent_state.rs:82-87). As diferenças estão no destino do Done, no vocabulário 'unknown' vs 'unverifiable' (que quebra o visual de linha do sidebar) e no relógio de medição.",
+    "notes": "Freshness/decay existem; projeção completa por card parcial.",
     "note": "Freshness/decay existem; projeção completa por card parcial."
    }
   },
@@ -357,7 +357,7 @@
      "Reuso de objetos de sumário estruturalmente iguais (summariesEqual) e cache por agentStatusEpoch",
      "Participação de migrationUnsupportedByPtyId no sumário"
     ],
-    "notes": "Existe um índice real e alcançável por worktree: getLiveAgentStatusByWorktreeId (src/lib/worktree-activity-state.ts:32-81) filtra por frescor (isFreshNonDoneAgentStatus) e resolve o worktree via resolveAgentStatusWorktreeId, consumido pelo filtro de sleeping (visible-worktrees.ts:293-297). As peças de atenção do sidebar (buildAttentionByWorktree/hasFreshAttributedAgentStatus em src/components/sidebar/smart-attention.ts:19-26) são auto-stubs null importados por smart-sort.ts:197-215.",
+    "notes": "smart-attention (PR45) alimenta visibilidade; ramos de atenção ainda parciais.",
     "note": "smart-attention (PR45) alimenta visibilidade; ramos de atenção ainda parciais."
    }
   },

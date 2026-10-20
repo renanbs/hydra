@@ -25,7 +25,7 @@
      "Marca de sleep intent persistente e wake explícito",
      "Disparo com delay de 50ms após o fechamento do menu"
     ],
-    "notes": "Cadeia de mount: src/App.tsx:3673 (onWorktreeContextMenu) → WorktreeSidebar.tsx:755 → WorktreeList.tsx:387 → worktree-card-surface.tsx:132 → WorktreeContextMenu.tsx:21 → handler em src/App.tsx:3284. sleepSessionsForPaths é emulação local (fecha aba, seta state:'idle'), sem nenhum invoke.",
+    "notes": "Sleep individual parcial.",
     "note": "Sleep individual parcial."
    },
    "par": [
@@ -54,7 +54,7 @@
      "Tooltip multi-contexto",
      "Store de seleção múltipla"
     ],
-    "notes": "Buscas: selectedWorktrees/isMultiSelected existem apenas como props plumbadas (WorktreeContextMenu.tsx:7, use-worktree-card-controller.ts:81, worktree-card-model.ts:25) e isMultiSelected tem default false sem nenhum setter (grep 'isMultiSelected =|setMultiSelected|toggleMultiSelect' → 0); 'Sleep N Workspaces' → 0 ocorrências. Sem seleção múltipla, o menu multi-contexto do Orca não tem equivalente.",
+    "notes": "Sleep multi-seleção ausente.",
     "note": "Sleep multi-seleção ausente."
    },
    "par": [
@@ -84,7 +84,7 @@
      "Tooltip explicando fechamento de painéis no pai e nos descendentes aninhados",
      "Filtro de elegibilidade (subtreeSleepableWorktrees) e estado disabled (subtreeSleepDisabled)"
     ],
-    "notes": "O item condicional 'Sleep with Descendants (N)' existe com contagem de filhos diretos (src/App.tsx:3488) e chama sleepSessionsForPaths([wt.path, ...subtree]) — mesma emulação local de D07-001.",
+    "notes": "Sleep de árvore parcial.",
     "note": "Sleep de árvore parcial."
    },
    "par": [
@@ -114,7 +114,7 @@
      "markWorktreeSleepIntent e limpeza de activeWorktreeId antes do teardown",
      "Guarda de re-ativação: se o usuário reativar o workspace durante o lote, mantê-lo acordado"
     ],
-    "notes": "O 'pipeline' Hydra é uma função síncrona de 5 linhas (src/App.tsx:3122-3128): filtra sessões por path, remove abas `tab_<id>` e marca state:'idle'. Nenhum teardown de processo e nenhum invoke em todo o fluxo.",
+    "notes": "Pipeline sequencial de sleep parcial.",
     "note": "Pipeline sequencial de sleep parcial."
    },
    "par": [
@@ -154,15 +154,20 @@
     "components/sidebar/WorkspaceStatusAppearancePopover.tsx:62"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Botão de aparência de status com preview de cor/ícone",
-     "Popover não-modal lateral (side='left', align='end', sideOffset=8) com onOpenAutoFocus preventDefault",
-     "Tooltip 'Appearance' e aria-label 'Customize <status> appearance'"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:24-29",
+     "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:34-57",
+     "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:60-73",
+     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:110-115",
+     "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:92-98",
+     "src/components/sidebar/WorktreeSidebar.tsx:974-975",
+     "src/components/sidebar/SidebarFooter.tsx:88-90"
     ],
-    "notes": "Buscas: 'WorkspaceStatusAppearancePopover' (0), 'AppearancePopover' (0), 'statusAppearance' (0), 'onChangeColor'/'onChangeIcon' (0). Os catálogos existem como dado (workspace-status.ts:58, workspace-status-icon-options.ts:28) mas nenhum componente de edição os consome."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Popover portado e montado no menu de settings do board, aberto pelo footer do sidebar.",
+    "note": "Popover portado e montado no menu de settings do board, aberto pelo footer do sidebar."
    }
   },
   {
@@ -175,19 +180,16 @@
     "components/sidebar/workspace-status.ts:59"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-status.ts:58",
-     "src/components/sidebar/workspace-status.ts:209"
+     "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:74-99",
+     "src/components/sidebar/workspace-status.ts:58-147",
+     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:167-172"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Grade de 8 colunas com os 11 botões de cor",
-     "Anel de seleção (border-ring bg-accent) na cor atual",
-     "Tooltip/aria-label 'Set <status> color to <color>'",
-     "Ação onChangeColor(status.id, color.id)"
-    ],
-    "notes": "O catálogo com as 11 cores idênticas ao Orca existe (workspace-status.ts:58-147) e é usado só para resolver o visual default (workspace-status.ts:209); buscas 'ColorOptions'/'colorOptions'/grade → nenhum consumidor de UI de edição. Não há grade nem persistência da escolha do usuário."
+    "missing_behaviors": [],
+    "notes": "Grade grid-cols-8 com 11 cores, anel na cor atual, aria e onChangeColor; teste de paridade prova a escrita no store.",
+    "note": "Grade grid-cols-8 com 11 cores, anel na cor atual, aria e onChangeColor; teste de paridade prova a escrita no store."
    }
   },
   {
@@ -203,23 +205,20 @@
     "components/sidebar/workspace-status-icons.tsx:48"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-status-icon-options.ts:28",
+     "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:101-124",
      "src/components/sidebar/workspace-status-icons.tsx:4",
      "src/components/sidebar/workspace-status-icons.tsx:24",
      "src/components/sidebar/workspace-status-icons.tsx:51",
-     "src/components/sidebar/workspace-status.ts:214",
-     "src/components/sidebar/worktree-list/grouping/group-sections.ts:101"
+     "src/components/sidebar/workspace-board/use-workspace-board-status-actions.ts:66-72",
+     "src/store/slices/ui/ui-slice-preference-actions.ts:243-247",
+     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:174-176"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Grade de 6 colunas com botões de ícone",
-     "variant 'secondary' no selecionado / 'ghost' nos demais",
-     "Tooltip e aria-label 'Set <status> icon to <icon>'",
-     "Ação onChangeIcon(status.id, icon.id) e persistência do ícone por status"
-    ],
-    "notes": "Presente: catálogo de 16 ícones (workspace-status-icon-options.ts:28), os 3 ícones SVG Conductor (workspace-status-icons.tsx:4,24,51) e a renderização no header das seções de status via getWorkspaceStatusVisualMeta (workspace-status.ts:214 → group-sections.ts:101, alcançável por visible-worktrees.ts:41 → rendered-sidebar-worktree-order.ts:10 → grouping/build-rows.ts:14). Ausente: o picker."
+    "missing_behaviors": [],
+    "notes": "Grade grid-cols-6 com variant secondary/ghost, tooltip/aria e onChangeIcon persistido em workspaceStatuses.",
+    "note": "Grade grid-cols-6 com variant secondary/ghost, tooltip/aria e onChangeIcon persistido em workspaceStatuses."
    }
   },
   {
@@ -269,7 +268,7 @@
      "Tooltip/aria-label dinâmicos ('Workspace options (N active)')",
      "Consumo da contagem de filtros pela UI: sidebarHasActiveFilters devolve boolean e não é consumido por nenhum componente"
     ],
-    "notes": "O trigger existe com o mesmo ícone e geometria do Orca (SlidersHorizontal size-3.5 strokeWidth 2.25 — SidebarHeader.tsx:101) e é alcançável do mount (SidebarHeader → WorktreeSidebar.tsx:82). O popover é uma div posicionada por useLayoutEffect (WorkspaceOptionsMenu.tsx:75-104), não Radix.",
+    "notes": "Gatilho do menu de opções com badge parcial.",
     "note": "Gatilho do menu de opções com badge parcial."
    }
   },
@@ -292,7 +291,7 @@
      "Controles de escopo/visibilidade de host (SidebarHostScopeMenuSection e label dinâmico de hosts visíveis)",
      "Atributo data-workspace-board-preserve-open no menu de opções (existe apenas no botão de delete rápido do card — worktree-card-header.tsx:190)"
     ],
-    "notes": "A seção 'Show → Projects' está implementada com submenu, chips removíveis, busca com Escape/limpar e label dinâmico (All projects / <nome> / N projects) — WorkspaceOptionsMenu.tsx:115-262. Estado de host só existe nos helpers de projeção (host-section-rows.ts:169-207), sem UI de menu.",
+    "notes": "Seção 'Show' parcial (sem escopo de host completo).",
     "note": "Seção 'Show' parcial (sem escopo de host completo)."
    },
    "par": [
@@ -318,7 +317,7 @@
      "Modo de agrupamento 'PR' (Orca 0f9b959b31) — GroupByMode no Hydra é 'none'|'workspace-status'|'repo'",
      "Identificadores de opção equivalentes (c2c7a45cda / e029a2d775 / 2170d553cf)"
     ],
-    "notes": "Toggle group com 3 modos (None/Status/Project) chamando onOptionsChange({groupBy}) — WorkspaceOptionsMenu.tsx:285-300; o efeito é aplicado na projeção (App.tsx:173 aceita apenas esses 3 valores).",
+    "notes": "Toggle de agrupamento parcial (sem modo PR).",
     "note": "Toggle de agrupamento parcial (sem modo PR)."
    }
   },
@@ -344,7 +343,7 @@
      "Rótulo do valor atual com os 5 valores do Orca (Hydra mostra Agent Activity / Name / Recent)",
      "Manter o menu aberto na seleção (onSelect preventDefault): Hydra fecha o submenu com setOpenSubmenu(null)"
     ],
-    "notes": "'Agent Activity' usa o comparador smart portado (visible-worktrees.ts:25 → smart-sort.ts); sortBy é restrito a 'agent-activity'|'name'|'recent' (WorkspaceOptionsMenu.tsx:20).",
+    "notes": "Submenu Sort by parcial (rótulos/valores divergem).",
     "note": "Submenu Sort by parcial (rótulos/valores divergem)."
    }
   },
@@ -368,7 +367,7 @@
      "Persistência da escolha (setProjectOrderBy): o botão 'Manual' apenas fecha o submenu e o valor exibido é hardcoded 'Manual' (WorkspaceOptionsMenu.tsx:352)",
      "Tooltips por modalidade"
     ],
-    "notes": "O submenu é corretamente condicional a groupBy === 'repo' (WorkspaceOptionsMenu.tsx:346), cobrindo o comportamento de 'evitar controles mortos em outros modos'.",
+    "notes": "Project order parcial (valor hardcoded).",
     "note": "Project order parcial (valor hardcoded)."
    }
   },
@@ -395,7 +394,7 @@
      "Opções dinâmicas de propriedades do card (getWorktreeCardPropertyOptions: Status, Notes, Automation, Orca CLI, Ports, Agent statuses, Branch name/Folder path, Tasks/Issues)",
      "Adaptação de labels (split GitHub/Linear/Jira e 'Branch / folder path' com grupos de pastas)"
     ],
-    "notes": "Existe o submenu 'Card display' com a seção 'Card layout' e uma dica textual ('Compact via Settings → Appearance'), sem efeito no clique.",
+    "notes": "Exibição de cards parcial.",
     "note": "Exibição de cards parcial."
    }
   },
@@ -424,7 +423,7 @@
      "Callback onLifecycleComplete agendado por setTimeout(0) somente após fechar menu principal e sub-diálogos/pickers",
      "Transição para o picker de pai com pendingParentPickerRef e limpeza de timers no unmount"
     ],
-    "notes": "Coordenadas do ponteiro são rastreadas (setContextMenu({source,x:e.clientX,y:e.clientY}) — App.tsx:3294-3296) e o menu é portal Radix ancorado na posição (RadixContextMenu.tsx:94-104); o handler chega ao card via use-worktree-card-controller.ts:214 → worktree-card-surface.tsx:135 → WorktreeContextMenu.tsx:21.",
+    "notes": "Modelo do menu de contexto parcial.",
     "note": "Modelo do menu de contexto parcial."
    },
    "par": [
@@ -472,7 +471,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "developerRevealed é capturado no momento da abertura (e.altKey — App.tsx:3297) e injeta os itens de label 'Developer' + metadados (card: Head/Bare — App.tsx:3486; header de projeto: Path/Is Git — App.tsx:3276). A condição !isMultiContext do Orca é vacuamente satisfeita (não existe multi-contexto). O reset por fechamento é implícito, pois a flag é recalculada a cada abertura; não há mudança no meio da navegação.",
+    "notes": "Submenu Developer por Option/Alt segue ligado.",
     "note": "Submenu Developer por Option/Alt segue ligado."
    }
   },
@@ -521,7 +520,7 @@
      "Copy Path pela API de clipboard do preload (window.api.ui.writeClipboardText): Hydra usa navigator.clipboard (App.tsx:3402) — observável equivalente, backend diferente",
      "Modal 'edit-meta' com foco no displayName carregando repoId/executionHostId/issue/PR/comentários: Hydra abre PromptDialog com título simples (App.tsx:3332)"
     ],
-    "notes": "Copy Path e Rename Workspace existem e funcionam; o rename persiste em SQLite pelo comando set_worktree_display_name, registrado no invoke_handler.",
+    "notes": "Comandos de clipboard/metadados parciais.",
     "note": "Comandos de clipboard/metadados parciais."
    },
    "par": [
@@ -549,7 +548,7 @@
      "Entrada 'New group from project' no menu de contexto do CARD (census-v4 topLevel.2 item 6): no Hydra as ações de grupo vivem no menu do header de projeto (App.tsx:3217 e WorktreeSidebar.tsx:992)",
      "Submenu único 'Project Group' agrupando Create/Move/Remove"
     ],
-    "notes": "As três ações existem e são alcançáveis do sidebar: criar+ mover via CustomEvent 'hydra:create-project-group' / 'hydra:move-project-to-group' (WorktreeSidebar.tsx:146,1005) e remover via 'hydra:remove-project-from-group' (App.tsx:1195, WorktreeSidebar.tsx:1031).",
+    "notes": "Gestão de grupos parcial.",
     "note": "Gestão de grupos parcial."
    }
   },
@@ -572,13 +571,8 @@
      "invoke('set_worktree_status') -> src/App.tsx:3303 -> src-tauri/src/lib.rs:523 -> src-tauri/src/db.rs:1206 (persistido em SQLite)",
      "comando registrado em src-tauri/src/lib.rs:1451 (invoke_handler)"
     ],
-    "missing_behaviors": [
-     "planWorkspaceStatusAssignment (board-sync vs local-only) e filtro de status já igual (evitar escrita desnecessária): Hydra grava incondicionalmente para 1 worktree",
-     "Callback onAssignWorkspaceStatus (board sync): a prop existe em WorktreeContextMenu.tsx:9 / worktree-card-surface.tsx:21 / use-worktree-card-controller.ts:109 mas nenhum caller a passa — o caminho de sync com Kanban/Linear não existe",
-     "Atribuição em lote via Promise.all para todos os IDs selecionados",
-     "Catálogo de status do Orca (todo/in-progress/in-review/completed): o submenu Hydra usa blocked/waiting/working/done/idle (App.tsx:3412-3437) — divergência semântica"
-    ],
-    "notes": "O item 'Move to Status' do census corresponde ao submenu 'Status' do Hydra, que escreve direto no SQLite. Não há board.",
+    "missing_behaviors": [],
+    "notes": "Menu 'Move to Status' agora oferece os status do usuário, grava WorkspaceStatus (persistWorktreeStatus) e marca o atual como checked.",
     "note": "Menu 'Move to Status' agora oferece os status do usuário, grava WorkspaceStatus (persistWorktreeStatus) e marca o atual como checked."
    }
   },
@@ -606,7 +600,7 @@
      "Remoção da relação para todos os workspaces do contexto atual: Hydra apaga só a chave do worktree clicado (App.tsx:3485)",
      "Persistência da linhagem em store/backend (Orca unnestWorktrees/updateWorktreeLineage): Hydra usa localStorage 'hydra:worktree_lineage' (App.tsx:434)"
     ],
-    "notes": "Os três itens existem e são funcionais: 'Open Parent Worktree' (App.tsx:3477), 'Set/Change Parent Worktree...' com label dinâmico (App.tsx:3445) e 'Remove from Parent' (App.tsx:3485).",
+    "notes": "Hierarquia/linhagem no menu parcial.",
     "note": "Hierarquia/linhagem no menu parcial."
    },
    "par": [
@@ -661,7 +655,7 @@
      "Deleção de folder workspace pelo caminho de hover: FolderWorkspaceRow.tsx:14-25 não expõe delete (só 'Remove Project' no menu de projeto)",
      "pendingFolderDeletes para deduplicar requisições de pasta"
     ],
-    "notes": "O que existe é um botão de delete por card, visível no hover/focus, que dispara handleDeleteGitWorktree (App.tsx:1756) — não há caminho por posição de cursor/atalho.",
+    "notes": "Delete rápido por hover parcial.",
     "note": "Delete rápido por hover parcial."
    }
   },
@@ -691,7 +685,7 @@
      "Deleção de PASTA de workspace pelo menu do card (só existe 'Remove Project from Hydra', que remove o projeto inteiro)",
      "Deleção em lote a partir do menu: setDeleteWorktreeModal sempre recebe worktrees:[wt] (App.tsx:1786,1790)"
     ],
-    "notes": "O item 'Delete Worktree' (App.tsx:3492) chama handleDeleteGitWorktree, que abre o modal ou invoca o comando direto quando a preferência de skip está ligada (App.tsx:1774).",
+    "notes": "Intenção de deleção parcial.",
     "note": "Intenção de deleção parcial."
    },
    "par": [
@@ -707,15 +701,19 @@
     "components/sidebar/worktree-context-menu-policy.ts:176"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Âncora no irmão superior/inferior mais próximo da linha virtual",
-     "Loop de requestAnimationFrame com limite de frames (180 / 6 estáveis)",
-     "shouldContinueDeleteSiblingPositionRestore"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:60",
+     "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:82-90",
+     "src/components/sidebar/worktree-list/viewport/use-row-measurement.ts:103-115",
+     "src/hooks/virtualized-scroll-anchor-restore.ts:52-58",
+     "src/hooks/virtualized-scroll-anchor-restore.ts:142-159",
+     "src/hooks/useVirtualizedScrollAnchor.ts:215-242"
     ],
-    "notes": "Buscas: 'DELETE_POSITION_RESTORE_MAX_FRAMES', 'shouldContinueDeleteSiblingPositionRestore', 'data-worktree-virtual-row' → 0 ocorrências; 'requestAnimationFrame' em src/App.tsx → 0. A lista do sidebar não é virtualizada e não há restauração de scroll na deleção."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "A delecao e coberta pelo scroll anchor virtualizado: fallbackKeys ancoram na linha visivel seguinte quando a linha ancorada e removida.",
+    "note": "A delecao e coberta pelo scroll anchor virtualizado: fallbackKeys ancoram na linha visivel seguinte quando a linha ancorada e removida."
    }
   },
   {
@@ -745,7 +743,7 @@
      "Linhagem de descendentes forçando allowSkipConfirm:false",
      "Qualificação por host: o repoPath é descoberto por varredura local em projectsRef/worktreesByProject (App.tsx:1760-1771)"
     ],
-    "notes": "O backend sempre usa --force (worktree_ops.rs:1321): não há distinção entre delete normal e forçado, nem bloqueio por alterações pendentes. Buscas: 'expectedInstanceId'/'instance_id'/'forget_ssh' no sidebar e App.tsx → 0.",
+    "notes": "Árvore de decisão de delete parcial (sem checkout principal/SSH desconectado).",
     "note": "Árvore de decisão de delete parcial (sem checkout principal/SSH desconectado)."
    }
   },
@@ -775,7 +773,7 @@
      "Caminho de lote alcançável: nenhum caller passa mais de 1 worktree (App.tsx:1786,1790 sempre [wt])",
      "Tipo de request de deleção (worktree-delete-request) para lote misto"
     ],
-    "notes": "O diálogo tem UI de lote ('Delete N Workspaces', isBatchDelete — DeleteWorktreeDialog.tsx:45,140), mas é código sem caller no sidebar.",
+    "notes": "Resolução de alvos em lote parcial.",
     "note": "Resolução de alvos em lote parcial."
    }
   },
@@ -822,7 +820,7 @@
      "Execução forçada a partir do toast de retry notificando onDeleted",
      "Guarda de alvo unitário: Hydra não checa descendentes antes de pular o modal"
     ],
-    "notes": "O caminho principal está implementado: hydraSettings.skip_delete_worktree_confirm (App.tsx:1774) pula o modal e invoca delete_worktree direto; o checkbox 'Don't ask again' persiste o mesmo flag via save_settings.",
+    "notes": "Execução direta por preferência parcial.",
     "note": "Execução direta por preferência parcial."
    }
   },
@@ -847,7 +845,7 @@
      "Explicação para lote de tipos mistos (Git vs pastas)",
      "Mensagem de bloqueio 'Remove the folder project instead of deleting this workspace' para pastas"
     ],
-    "notes": "Existe uma mensagem de bloqueio genérica para o checkout principal ('Git does not allow removing the main worktree.' — DeleteWorktreeDialog.tsx:183).",
+    "notes": "Textos contextuais parciais.",
     "note": "Textos contextuais parciais."
    }
   },
@@ -873,7 +871,7 @@
      "Ignorar checkout principal e pastas na contagem",
      "Regra dirty-confirmado (forceDeleteReason==='dirty') com contagem 0 para manter o aviso sem inventar número"
     ],
-    "notes": "A hidratação existe: ao abrir o modal, o App consulta o status de cada alvo e soma unstaged+untracked+staged (App.tsx:1795-1807), exibindo o badge '{dirty} uncommitted'.",
+    "notes": "Contagem de alterações parcial.",
     "note": "Contagem de alterações parcial."
    },
    "par": [
@@ -901,7 +899,7 @@
      "Texto singular/plural ('1 uncommitted or untracked change' / 'N ... changes') e 0 com texto genérico",
      "Retorno null quando a contagem é undefined (Hydra usa `dirty != null && dirty > 0`)"
     ],
-    "notes": "Existe um badge âmbar com '{dirty} uncommitted' no preview de alvos do diálogo.",
+    "notes": "Dirty hint parcial.",
     "note": "Dirty hint parcial."
    }
   },
@@ -947,7 +945,7 @@
     "missing_behaviors": [
      "Ocultar quando o alvo tiver descendentes de linhagem (o showDontAskAgain do Orca considera filhos; no Hydra não há modelo)"
     ],
-    "notes": "role='checkbox', aria-checked, caixa customizada com Check strokeWidth={3} e label 'Don't ask again' presentes; oculto em lote, checkout principal e estado de force (allowSkipConfirm).",
+    "notes": "Checkbox don't ask again parcial.",
     "note": "Checkbox don't ask again parcial."
    }
   },
@@ -967,7 +965,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Painel âmbar para checkout principal (DeleteWorktreeDialog.tsx:181-184) e painel vermelho de erro com break-all whitespace-pre-wrap (175-179); o botão de confirmação é substituído por 'Close' no caso principal (214). Copy diverge em detalhe do mainWorktreeBlocker do Orca, mas o comportamento bloqueante é equivalente.",
+    "notes": "Painéis de aviso do modal de delete seguem ligados.",
     "note": "Painéis de aviso do modal de delete seguem ligados."
    }
   },
@@ -993,7 +991,7 @@
      "Toast informativo de 8000ms ('We'll skip this confirmation next time...')",
      "Ação 'Open Settings' navegando para a seção 'general-skip-delete-worktree-confirm'"
     ],
-    "notes": "A persistência funciona (skip_delete_worktree_confirm em save_settings), mas não há nenhum toast no caminho de deleção (buscas 'toast' em src/App.tsx e src/components/sidebar/** → 0).",
+    "notes": "Persistência de skip parcial.",
     "note": "Persistência de skip parcial."
    }
   },
@@ -1021,7 +1019,7 @@
      "Toast de lista desatualizada quando o alvo não é encontrado",
      "prepareActiveWorktreeFocusAfterDelete e confirmação de foco após sucesso"
     ],
-    "notes": "O rótulo 'Force Delete' existe quando já há erro (canForceDelete — DeleteWorktreeDialog.tsx:49,60), mas o caminho é idêntico ao delete normal.",
+    "notes": "Force Delete parcial.",
     "note": "Force Delete parcial."
    }
   },
@@ -1048,7 +1046,7 @@
      "Fechamento imediato do modal para progresso nos cards",
      "Coleta de todos os alvos excluídos e onDeleted agregado"
     ],
-    "notes": "Buscas: 'Delete All', 'runWorktreeDeletesInParallel', 'delete-worktree-lineage-delete-all' → 0 ocorrências (só onForceDeleted como prop do diálogo). O rótulo 'Delete with Descendants…' existe no menu (src/App.tsx:3492) mas executa deleção de um único worktree, sem resolver filhos.",
+    "notes": "Delete All child-first paralelo ausente.",
     "note": "Delete All child-first paralelo ausente."
    }
   },
@@ -1109,15 +1107,23 @@
     "components/sidebar/worktree-delete-state-host-match.ts:14"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Chave qualificada por host (getWorktreeHostIdentity)",
-     "Fallback legado por id puro com verificação de executionHostId",
-     "Isolamento entre exclusão em host SSH e checkout local de mesmo caminho"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-delete-state-host-match.ts:15-17",
+     "src/components/sidebar/worktree-delete-state-host-match.ts:19-33",
+     "src/components/DeleteWorktreeDialog.tsx:21",
+     "src/components/DeleteWorktreeDialog.tsx:129-131",
+     "src/App.tsx:527-540",
+     "src/App.tsx:4412",
+     "src/components/sidebar/worktree-delete-request.ts:44-70",
+     "src/components/sidebar/worktree-delete-request.parity.test.ts:1"
     ],
-    "notes": "Buscas: 'worktree-delete-state-host-match', 'getWorktreeHostIdentity', 'executionHostId' no estado de deleção → 0. O estado é keyed apenas por path (DeleteWorktreeDialogState — DeleteWorktreeDialog.tsx:12-14)."
+    "backend": [
+     "invoke('delete_worktree', { hostId }) -> src/components/DeleteWorktreeDialog.tsx:223 -> src-tauri/src/lib.rs:478 (registrado em src-tauri/src/lib.rs:1518)"
+    ],
+    "missing_behaviors": [],
+    "notes": "STA-4343: chave de estado qualificada por host, leitura com fallback legado validando executionHostId e dedupe por (id,host).",
+    "note": "STA-4343: chave de estado qualificada por host, leitura com fallback legado validando executionHostId e dedupe por (id,host)."
    }
   },
   {
@@ -1148,7 +1154,7 @@
      "Toast consolidado de branches preservadas (showPreservedBranchBatchToast)",
      "Transferência única de foco do workspace ativo após o lote"
     ],
-    "notes": "As N chamadas são disparadas em paralelo num for-loop sem ordenação nem serialização (DeleteWorktreeDialog.tsx:100-105); 'preserved branch' → 0 ocorrências.",
+    "notes": "Pipeline de delete paralelo parcial.",
     "note": "Pipeline de delete paralelo parcial."
    }
   },
@@ -1169,7 +1175,7 @@
     "missing_behaviors": [
      "isContextWorktreeDeletable: o Hydra não valida na montagem do menu que o worktree secundário tem repositório associado — quando o repoPath não resolve, o item Delete continua habilitado e o handler retorna silenciosamente (src/App.tsx:1772)"
     ],
-    "notes": "shouldRemoveProjectFromContextMenu tem equivalente direto: se isMain (wt.path === proj.path — App.tsx:3285), o menu mostra 'Delete Worktree' desabilitado com tooltip e 'Remove Project from Hydra' (App.tsx:3492).",
+    "notes": "Políticas do menu de contexto parciais.",
     "note": "Políticas do menu de contexto parciais."
    }
   }

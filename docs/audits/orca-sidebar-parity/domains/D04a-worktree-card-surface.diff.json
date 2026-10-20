@@ -26,7 +26,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Wrapper React.memo que delega 100% do estado ao useWorktreeCardController e renderiza WorktreeCardSurface; reexporta shouldBeginWorktreeRename (:7) e os tipos ActiveSurfaceVariant/WorktreeCardProps (:8). WorktreeList.tsx:5 importa o named export (o default :16 existe sem consumidores).",
+    "notes": "Reconfirmado: wrapper memo + controller ligados ao mount.",
     "note": "Reconfirmado: wrapper memo + controller ligados ao mount."
    }
   },
@@ -123,7 +123,7 @@
      "affiliateListMode nunca é fornecido por nenhum caller (grep em src/** = só o default do controller :119) — o modo lista afiliada é dormente",
      "Hover sem rename/editar issue/nota/automação/unlink: esses subcomportamentos não existem no Hydra"
     ],
-    "notes": "Quando ligado o comportamento confere: sem WorktreeContextMenu (:129-141), draggable/onDoubleClick desligados (:86-90), título read-only (header :116), hover mantido (:56) e clique simples ainda ativa (controller :162-177).",
+    "notes": "Falta propagação de affiliateListMode a todas as ações mutantes.",
     "note": "Falta propagação de affiliateListMode a todas as ações mutantes."
    }
   },
@@ -141,7 +141,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Diálogo montado como irmão do card recebendo open/worktreeId/worktreeName/error bruto; o texto vem de worktree.first_agent_message_rename_error, gravado por auto_rename_worktree (lib.rs:532 -> db.set_worktree_rename_error) e projetado no controller :254-255.",
+    "notes": "Dialog de erro de auto-rename wired no surface.",
     "note": "Dialog de erro de auto-rename wired no surface."
    }
   },
@@ -275,7 +275,7 @@
      "Tooltip lateral do design system com o nome do repo (Hydra usa title/aria-label nativos, :23-24)",
      "resolveRepoHeaderColor inexistente (grep src/** = 0): a cor cai em repo.color || hsl(var(--worktree-sidebar-foreground)) (:29)"
     ],
-    "notes": "Chip quadrado com RepoIconGlyph, aria-label Project <displayName> e render na seção fixada mesmo com hideRepoBadge (:93-101, showPinnedRepoIcon em presentation :68) conferem; hideRepoBadge chega de WorktreeList.tsx:367.",
+    "notes": "Chip de repo existe; falta o estilo compacto.",
     "note": "Chip de repo existe; falta o estilo compacto."
    }
   },
@@ -303,7 +303,7 @@
      "iconOnly para compacto/novo estilo",
      "Stop de Enter/Espaço e guarda de clique em voo"
     ],
-    "notes": "Buscas sem resultado (5 passos): WorktreeCardSshHostControl, ssh.connect, ssh.listTargets, ssh.listRemovedTargetLabels, ServerOff, SSH host em src/** e src-tauri/src/**. O contrato Orca é IPC Electron (window.api.ssh.*) sem equivalente Tauri. Busca em 5 passos: WorktreeCardSshHostControl, ssh.connect, ssh.listTargets, ssh.listRemovedTargetLabels, ServerOff e \"SSH host\" = 0 hits em src/** e src-tauri/src/**; grep \"ssh\" em src-tauri/src/** só encontra o comentário de catalog.rs:71 e o rótulo da status bar em db.rs:193.",
+    "notes": "PR54-58 adicionaram registry/dialog/settings SSH, mas nenhum controle host SSH no card.",
     "note": "PR54-58 adicionaram registry/dialog/settings SSH, mas nenhum controle host SSH no card."
    }
   },
@@ -328,7 +328,7 @@
      "Espelhamento em setSshConnectionState para reattach de PTY diferido",
      "Toast de falha + resync (listTargets antes de listRemovedTargetLabels)"
     ],
-    "notes": "Mesmas buscas da linha 012: nenhum estado de conexão SSH existe no renderer. Busca: nenhum #[tauri::command] ssh_* em src-tauri/src/** e nenhum call-site window.api.ssh.* no card (0 hits).",
+    "notes": "Sem fluxo de conexão SSH no renderer/card.",
     "note": "Sem fluxo de conexão SSH no renderer/card."
    }
   },
@@ -351,7 +351,7 @@
      "Glifo de host runtime conectado/desconectado com tooltip nomeando o host",
      "Modelo de runtime host no card"
     ],
-    "notes": "Só existe isRuntimeDisconnected (hardcoded false) consumido como opacity-60; grep ServerOff/Server no card = 0.",
+    "notes": "isRuntimeDisconnected hardcoded; sem glifo de host runtime nomeado.",
     "note": "isRuntimeDisconnected hardcoded; sem glifo de host runtime nomeado."
    }
   },
@@ -374,7 +374,7 @@
      "Abertura por atalho (beginEditing): renamingWorktreeId é useState local (controller :132) que nunca recebe valor — o setter da store é auto-stub (createSetRenamingWorktreeId: any = null) e nenhum call-site define a request; só o duplo clique abre o editor",
      "WorktreeList.tsx:354-405 não passa renameRowKey/renamingWorktreeId"
     ],
-    "notes": "Duplo clique funciona (controller :179-186 -> WorktreeTitleInlineRename :156-161); disabled em deleting/afiliado, showUnreadEmphasis (:117) e dimReadTitle (:118) conferem; onEditingChange informa o card (:122).",
+    "notes": "Rename inline existe; atalho via request depende de produtor externo.",
     "note": "Rename inline existe; atalho via request depende de produtor externo."
    }
   },
@@ -394,7 +394,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Botão destrutivo com AlertCircle + rename failed, aria-label/title exatos, clique e duplo clique abrem o diálogo e onPointerDown não propaga; o erro vem do backend (auto_rename_worktree -> db.set_worktree_rename_error).",
+    "notes": "Badge de falha + dialog ligados.",
     "note": "Badge de falha + dialog ligados."
    }
   },
@@ -413,7 +413,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Badge primary fora do compacto com tooltip exata; em compacto o papel migra para a estrela (header :177-185).",
+    "notes": "Badge primary fora do compacto, com tooltip.",
     "note": "Badge primary fora do compacto, com tooltip."
    }
   },
@@ -434,7 +434,7 @@
     "missing_behaviors": [
      "Tooltip rico (TooltipContent em fonte mono com a prévia) — o Hydra usa o atributo title nativo, onde mono não é expressável"
     ],
-    "notes": "Badge âmbar sparse com tooltip Partial checkout... e prévia formatada por formatSparseDirectoryPreview quando há sparseDirectories; is_sparse/sparse_directories são produzidos pelo backend (worktree_ops.rs:25).",
+    "notes": "Badge sparse existe; prévia depende de sparseDirectories propagado.",
     "note": "Badge sparse existe; prévia depende de sparseDirectories propagado."
    }
   },
@@ -458,7 +458,7 @@
      "Gate por modificador Option/Alt: showDeleteQuickAction (:111-113) não considera o modificador",
      "Botões de ação rápida Terminal/Diff no hover (PAR-67)"
     ],
-    "notes": "Estrela âmbar com aria-label/title, botão de exclusão opacity-0 revelado por group-hover/group-focus-within/focus-visible, data-workspace-board-preserve-open e ícone destrutivo conferem.",
+    "notes": "Estrela + delete quick action existem; falta gate de legado.",
     "note": "Estrela + delete quick action existem; falta gate de legado."
    },
    "par": [
@@ -488,7 +488,7 @@
      "Chip de worktrees filhas com chevron/aria-expanded",
      "Container deslocado -ml-[1.125rem] no estilo legado"
     ],
-    "notes": "WorktreeCardSecondaryRows não existe; remoteBranchConflict fixo em false, updateWorktreeRemoteBranchConflict é auto-stub, showLineageChildChip fixo false e grep LinearAgentSkillSetupPrompt = 0.",
+    "notes": "Linhas secundárias (conflito remoto/Linear/filhas) ausentes.",
     "note": "Linhas secundárias (conflito remoto/Linear/filhas) ausentes."
    },
    "par": [
@@ -539,7 +539,7 @@
      "data-worktree-status-lane-unread e data-worktree-unread-alert",
      "Supressão em working/permission mantendo o anúncio acessível"
     ],
-    "notes": "A lane não recebe isUnread; o destaque de não-lido no Hydra é só peso/diminuição do título (worktree-card-header.tsx:117-118). Busca: data-worktree-unread-alert e \"Unread\" na lane = 0 hits; o não-lido no Hydra é só peso/diminuição do título.",
+    "notes": "Sem badge de não-lido sobre o glifo no novo estilo.",
     "note": "Sem badge de não-lido sobre o glifo no novo estilo."
    }
   },
@@ -802,7 +802,7 @@
      "recordFeatureInteraction(ports) não é chamado (grep em WorktreeCardPortsTrigger = 0)",
      "Foco visível dedicado (só hover/transition no botão, :31)"
     ],
-    "notes": "Botão Plug com aria-label/title <N> live port(s), stopPropagation (:27-30) e null sem portas (:15-17) conferem; as portas vêm do scan de 8s da sidebar (invoke scan_workspace_ports, WorktreeSidebar :239-252) até WorktreeList.tsx:377.",
+    "notes": "Gatilho de portas existe; feature interaction parcial.",
     "note": "Gatilho de portas existe; feature interaction parcial."
    }
   },
@@ -821,7 +821,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Seção Live Ports (N) com ícone Plug e uma linha por porta (porta/processo/PID); o hover recebe workspacePorts do card (:60) alimentado pelo scan da sidebar; nada é renderizado sem portas (:191).",
+    "notes": "Lista de portas no hover wired.",
     "note": "Lista de portas no hover wired."
    }
   },
@@ -852,7 +852,7 @@
      "Gate canStopWorkspacePort e semântica disabled:pointer-events-none",
      "As ações ricas de porta (src/lib/workspace-port-actions.ts:118-125,319) não têm consumidores e usam window.api, ausente em runtime (src/types/window-api.d.ts:1-4)"
     ],
-    "notes": "Abrir no browser via window.open (:223) e encerrar via invoke kill_port_process (:114) com refresh por CustomEvent conferem.",
+    "notes": "Ações de porta parciais (toasts/refresh).",
     "note": "Ações de porta parciais (toasts/refresh)."
    }
   },
@@ -1114,7 +1114,7 @@
      "Copiar link de issue/review via IPC com toasts Issue link copied / Failed to copy link",
      "Não desvincular o review ao copiar"
     ],
-    "notes": "O Hydra copia apenas branch/path/commit via navigator.clipboard no menu de contexto (App.tsx:3402-3404). Busca: writeClipboardText no card = 0 hits; o hook de clipboard existe mas sem consumidores em src/**.",
+    "notes": "Cópia de link de work item sem desvincular não existe; só Copy Path/Commit.",
     "note": "Cópia de link de work item sem desvincular não existe; só Copy Path/Commit."
    }
   },
@@ -1223,7 +1223,7 @@
      "Supressão do clique fantasma (contextMenuOpenedAtRef + <=500ms) no wrapper e no conteúdo",
      "Escopo multi-worktree (onContextMenuSelect ignora selectedWorktrees)"
     ],
-    "notes": "preventDefault/stopPropagation e altKey (developerMenuRevealed, App.tsx:3297) conferem; o menu é renderizado por RadixContextMenu só quando aberto.",
+    "notes": "Menu por worktree abre; supressão de clique fantasma parcial.",
     "note": "Menu por worktree abre; supressão de clique fantasma parcial."
    },
    "par": [
@@ -1251,7 +1251,7 @@
      "Gate de contexto único e desabilitação durante exclusão",
      "Abrir o rename inline/meta dialog em vez de PromptDialog"
     ],
-    "notes": "Efeito equivalente (renomear o workspace) via invoke set_worktree_display_name com atualização de gitWorktrees/worktreesByProject e refresh.",
+    "notes": "Rename via PromptDialog; gate de contexto único ausente.",
     "note": "Rename via PromptDialog; gate de contexto único ausente."
    }
   },
@@ -1278,7 +1278,7 @@
      "Statuses configurados (workspaceStatuses): o modelo compartilhado é auto-stub (DEFAULT_WORKSPACE_STATUSES: any = null) e o menu usa lista fixa (blocked/waiting/working/done/idle)",
      "Variante multi-seleção"
     ],
-    "notes": "Submenu Status com 5 status + Clear Status chama invoke set_worktree_status e sincroniza o estado local (App.tsx:3301-3321).",
+    "notes": "PR63: submenu usa workspaceStatuses configurados e marca status atual (checked); falta variante multi-seleção.",
     "note": "PR63: submenu usa workspaceStatuses configurados e marca status atual (checked); falta variante multi-seleção."
    }
   },
@@ -1305,7 +1305,7 @@
      "Deep-link para a seção general-open-in-apps (grep = 0; o Hydra só abre o SettingsModal, App.tsx:3118)",
      "Stops explícitos de clique/pointerdown no submenu"
     ],
-    "notes": "Submenu com apps configurados (hydraSettings.open_in_applications) + Reveal in File Manager + Customize apps... conferem.",
+    "notes": "Submenu Open in existe; ramos file-manager/settings incompletos.",
     "note": "Submenu Open in existe; ramos file-manager/settings incompletos."
    }
   },
@@ -1332,7 +1332,7 @@
      "Capability getExternalEditorOpenCapability e toasts de erro específicos (remote-runtime-unsupported, ssh-target-*, remote-editor-unsupported, not-absolute)",
      "connectionId e validação de caminho absoluto"
     ],
-    "notes": "Os comandos Tauri existem e são chamados pelo menu do card: open_in_external_editor (:3107) e open_in_file_manager (:3112); o erro só vai para console.",
+    "notes": "Abrir em editor/gerenciador com bloqueios/toasts parcial.",
     "note": "Abrir em editor/gerenciador com bloqueios/toasts parcial."
    }
   },
@@ -1353,7 +1353,7 @@
      "Gate de contexto único",
      "Desabilitação durante exclusão do contexto"
     ],
-    "notes": "Copia o path absoluto via navigator.clipboard.writeText — mesmo efeito observável do IPC de clipboard do Orca.",
+    "notes": "Copy Path existe; erros/feedback divergente.",
     "note": "Copy Path existe; erros/feedback divergente."
    }
   },
@@ -1374,7 +1374,7 @@
     "missing_behaviors": [
      "Desabilitação durante exclusão do contexto"
     ],
-    "notes": "Rótulo/ícone derivados do estado (Pin/PinOff) e ação togglePinWorktree conferem; isPinned chega ao card via WorktreeList.tsx:374.",
+    "notes": "Pin/Unpin derivado do estado; falta desabilitação durante exclusão.",
     "note": "Pin/Unpin derivado do estado; falta desabilitação durante exclusão."
    }
   },
@@ -1395,7 +1395,7 @@
     "missing_behaviors": [
      "Desabilitação durante exclusão do contexto"
     ],
-    "notes": "Rótulo/ícone derivados do estado (Bell/BellOff) e toggleUnreadWorktree conferem.",
+    "notes": "Mark Read/Unread derivado do estado; falta desabilitação durante exclusão.",
     "note": "Mark Read/Unread derivado do estado; falta desabilitação durante exclusão."
    }
   },
@@ -1416,7 +1416,7 @@
      "Item no menu do card — no Hydra New group from project só existe no menu do projeto (cabeçalho)",
      "Diálogo de criação semeado com <repo> group a partir do card"
     ],
-    "notes": "A capacidade existe na sidebar (ProjectGroupNameDialog montado em WorktreeSidebar:1115) mas não na superfície do card.",
+    "notes": "Criação de grupo por evento; origem rica do card ausente.",
     "note": "Criação de grupo por evento; origem rica do card ausente."
    }
   },
@@ -1438,7 +1438,7 @@
      "Submenu no menu do card (só existe no menu do projeto)",
      "Gatilho desabilitado durante exclusão"
     ],
-    "notes": "Submenu Move to group com item do grupo atual desabilitado (projectGroupMap[proj.id] === g.id, :3227) confere no menu do projeto.",
+    "notes": "Mover para grupo parcial.",
     "note": "Mover para grupo parcial."
    }
   },
@@ -1458,7 +1458,7 @@
     "missing_behaviors": [
      "Item no menu do card (só existe no menu do projeto)"
     ],
-    "notes": "",
+    "notes": "Remover do grupo parcial.",
     "note": "Remover do grupo parcial."
    }
   },
@@ -1482,7 +1482,7 @@
      "Desabilitação por isDeleting (isWorktreeParentPickerDisabled)",
      "Captura do anchor estável da linha antes do menu fechar"
     ],
-    "notes": "Rótulo Change/Set Parent Worktree, disabled quando não há candidatos (:3448) e persistência da linhagem via localStorage (persistLineage, App.tsx:434) conferem.",
+    "notes": "Seletor de parent existe e wired.",
     "note": "Seletor de parent existe e wired."
    }
   },
@@ -1500,7 +1500,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Item só com lineageParent, abre o projeto/worktree pai e cai em invoke open_in_file_manager quando o pai não está carregado.",
+    "notes": "Abrir parent válido pelo menu.",
     "note": "Abrir parent válido pelo menu."
    }
   },
@@ -1521,7 +1521,7 @@
      "Remove from Parent em lote para o conjunto multi-selecionado",
      "Gate isMultiContext && hasAnyContextLineage"
     ],
-    "notes": "Busca: isMultiContext/selectedWorktrees no menu = 0 hits fora das props dormentes do card; só existe Remove from Parent individual.",
+    "notes": "Sem remoção de parentesco em lote.",
     "note": "Sem remoção de parentesco em lote."
    },
    "par": [
@@ -1547,7 +1547,7 @@
      "Item Park terminal (requestManualTerminalWorktreePark — grep = 0)",
      "Exclusão em multi-contexto"
     ],
-    "notes": "O submenu Developer é revelado por altKey e mostra um item de diagnóstico (Head: ... · Bare: ...).",
+    "notes": "Gate por Alt avaliado; submenu Developer completo ausente.",
     "note": "Gate por Alt avaliado; submenu Developer completo ausente."
    }
   },
@@ -1572,7 +1572,7 @@
      "Estado visual de worktree dormindo (badge Sleeping/opacidade) e despertar em 1 clique (PAR-21)",
      "Teardown real: sleepSessionsForPaths apenas fecha abas e marca sessões idle (App.tsx:3122-3127)"
     ],
-    "notes": "Sleep e Sleep with Descendants (N) com contagem de descendentes existem e chamam sleepSessionsForPaths.",
+    "notes": "Itens de sleep parciais.",
     "note": "Itens de sleep parciais."
    },
    "par": [
@@ -1593,7 +1593,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Item destrutivo desabilitado com o title exato (\"Primary worktree — can't be deleted. Remove the project instead.\") e a alternativa habilitada Remove Project from Hydra no mesmo ramo.",
+    "notes": "Delete Worktree desabilitado no principal com tooltip.",
     "note": "Delete Worktree desabilitado no principal com tooltip."
    }
   },
@@ -1625,7 +1625,7 @@
      "Title The project could not be found",
      "Toast informativo com ação Re-add (PAR-86)"
     ],
-    "notes": "Rótulo variável (Delete Worktree / Delete with Descendants… / Remove Project from Hydra) e a confirmação por modal (DeleteWorktreeDialog com contagem de alterações) conferem; o delete real é invoke delete_worktree.",
+    "notes": "Rótulo/atalho presentes; estado pendente parcial.",
     "note": "Rótulo/atalho presentes; estado pendente parcial."
    },
    "par": [
@@ -1651,7 +1651,7 @@
      "ProjectGroupNameDialog disparado pelo menu do card (New Project Group semeado com <repo> group)",
      "WorktreeParentPickerPopover ancorado no modelo do menu (Hydra usa modal global com anchor por estado)"
     ],
-    "notes": "Ambos os overlays existem e são funcionais, mas não como parte do modelo de overlays do menu do card.",
+    "notes": "Overlays sobre o menu parciais.",
     "note": "Overlays sobre o menu parciais."
    }
   },
@@ -1671,7 +1671,7 @@
     "missing_behaviors": [
      "WorktreeContextMenuOverlays montado junto do card, com fragmento vazio quando não há diálogos"
     ],
-    "notes": "Os diálogos existem no nível do App/Sidebar, não acoplados ao card.",
+    "notes": "Overlay montado junto do card; fragmento vazio parcial.",
     "note": "Overlay montado junto do card; fragmento vazio parcial."
    }
   },
@@ -1690,7 +1690,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "O menu só é montado quando contextMenu !== null (RadixContextMenu), então não há subscrição/re-render enquanto fechado — efeito equivalente ao sentinela congelado do Orca, com mecanismo diferente.",
+    "notes": "Menu inerte quando fechado (guard de render).",
     "note": "Menu inerte quando fechado (guard de render)."
    }
   },
@@ -1811,7 +1811,7 @@
     "missing_behaviors": [
      "Guardas contra notificação duplicada de onEditingChange (StrictMode)"
     ],
-    "notes": "onEditingChange é chamado imediatamente na transição (não em Effect) e trava o drag via titleRenaming (controller :190); o pai é notificado nos dois sentidos (:65,85,96,113).",
+    "notes": "onEditingChange trava o drag; ramo de consumo externo parcial.",
     "note": "onEditingChange trava o drag; ramo de consumo externo parcial."
    }
   },
@@ -1831,7 +1831,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Sem linhas retorna null (nenhum body/timer); o tick de 30s só habilita com lista não vazia (:193).",
+    "notes": "Lista inline só quando há linhas (return null).",
     "note": "Lista inline só quando há linhas (return null)."
    }
   },
@@ -1884,7 +1884,7 @@
      "Caminho de linhas diretas quando há um único agente raiz (o Hydra sempre usa o botão de resumo, :212)",
      "Modo de envio a agente (D04a-085)"
     ],
-    "notes": "Disclosure de filhos (:105-121), ponto de estado, ícone do agente (oculto em subagente, :68), primário/secundário, modelo em mono (:145-155), +N (:157-166), horário (:168-178) e inversão em monitoring (:58-61) conferem.",
+    "notes": "Linha compacta existe; campos (cache timer/modelo) dormentes.",
     "note": "Linha compacta existe; campos (cache timer/modelo) dormentes."
    },
    "par": [
@@ -1912,7 +1912,7 @@
      "Identidades no aria-label quando colapsado",
      "Ordem SUMMARY_STATE_ORDER específica do Orca"
     ],
-    "notes": "Até 3 grupos de estado com até 3 ícones sobrepostos + N (:131-158), aria-label expand/collapse (:116), chevron -90 graus (:168) e stop de propagação (:85-99,119-122) conferem.",
+    "notes": "Resumo agrupado existe; contadores agregados parciais.",
     "note": "Resumo agrupado existe; contadores agregados parciais."
    }
   },
@@ -1931,7 +1931,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Children permanecem montados após a primeira expansão via ref síncrona (:37-41); fechado recebe aria-hidden + inert (:46-47).",
+    "notes": "Container de expansão mantém conteúdo montado e inerte quando fechado.",
     "note": "Container de expansão mantém conteúdo montado e inerte quando fechado."
    }
   },
@@ -1959,7 +1959,7 @@
      "activateStructuredAgentSessionTab e retenção da linha durante hidratação",
      "ackPaneKeyOnSuccess/flashFocusedPane/scrollToBottomIfOutputSinceLastView"
     ],
-    "notes": "Clique/Enter/Espaço ativam via onActivate(activationId) -> onSelectSession (WorktreeSidebar:3656 -> App handleSelectSession), que troca projeto/worktree, limpa unread e foca/cria a aba.",
+    "notes": "Ativação wired; validação de paneKey/linhas obsoletas parcial.",
     "note": "Ativação wired; validação de paneKey/linhas obsoletas parcial."
    }
   },
@@ -2004,7 +2004,7 @@
      "Modo de envio a agente com status sending/disabled e razões",
      "Motivo como título da linha compacta"
     ],
-    "notes": "Busca: sendPromptToSidebarAgentTarget/deriveRunningAgentSendTargets no card = 0 hits; agentSendPopoverTargetMode existe na store sem consumidor em src/components/**.",
+    "notes": "Sem modo de envio a agente nas linhas do card.",
     "note": "Sem modo de envio a agente nas linhas do card."
    }
   },
@@ -2049,7 +2049,7 @@
      "Estado de colapso de lineage por paneKey (toggleLineageParent) — só o resumo compacto é persistido",
      "Helpers de teste"
     ],
-    "notes": "A expansão do resumo sobrevive à remontagem via mapa em Zustand (sessão, não disco) e é alternada por toggleCompactRootList.",
+    "notes": "Persistência de expansão só no store em memória.",
     "note": "Persistência de expansão só no store em memória."
    }
   },
@@ -2063,17 +2063,19 @@
     "components/sidebar/WorktreeCardAgents.tsx:39"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-card-compact-agents.tsx:28-60"
+     "src/components/sidebar/worktree-card-compact-agents.tsx:63-66",
+     "src/components/sidebar/worktree-card-compact-agents.tsx:101",
+     "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:13-18",
+     "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:44-50"
     ],
     "backend": [],
     "missing_behaviors": [
-     "CustomEvent de supressão do ajuste de scroll da lista",
-     "Revelação do card no próximo frame (rAF) em useLayoutEffect só em expansão genuína"
+     "Revelação do card no próximo frame (rAF) em useLayoutEffect, só em expansão genuína (o toggle não revela o card após abrir)"
     ],
-    "notes": "Busca: orca-suppress-worktree-list-scroll-adjustment/revealElementInScrollContainer = 0 hits e nenhum requestAnimationFrame no card.",
-    "note": "Supressão de scroll parcial; sem revelação do card no próximo frame."
+    "notes": "A supressão do ajuste de scroll já existe; só a revelação no frame seguinte falta.",
+    "note": "A supressão do ajuste de scroll já existe; só a revelação no frame seguinte falta."
    }
   },
   {
@@ -2156,7 +2158,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "useNow(30_000, rows.length > 0) — um tick por lista não vazia; worktrees sem agentes não pagam timer (return null em :195).",
+    "notes": "Tick de 30s por lista não vazia (useNow enabled).",
     "note": "Tick de 30s por lista não vazia (useNow enabled)."
    }
   },
@@ -2182,7 +2184,7 @@
      "Foco inicial por modalData.focus, provider/host e afterSave",
      "role=alert de erro e botões Cancel/Save com Saving..."
     ],
-    "notes": "Busca: WorktreeMetaDialog/edit-meta em src/** = 0 hits (só i18n locales); o único rename é o PromptDialog do menu.",
+    "notes": "Sem diálogo de edição de metadados.",
     "note": "Sem diálogo de edição de metadados."
    },
    "par": [
@@ -2208,7 +2210,7 @@
      "Campo Display Name com popover de emoji e Enter para salvar",
      "Nota Only changes the name shown in the sidebar..."
     ],
-    "notes": "Busca: WorktreeDisplayNameField, useWorkspaceEmojiShortcodeInput e emoji-shortcode em src/** = 0 hits (só i18n).",
+    "notes": "Sem campo de nome com sugestões de emoji.",
     "note": "Sem campo de nome com sugestões de emoji."
    }
   },
@@ -2272,7 +2274,7 @@
     "missing_behaviors": [
      "Textarea de notas com auto-resize (max-h-60) e submit por Enter/atalho de plataforma"
     ],
-    "notes": "Busca: isScreenSubmitShortcut/resizeCommentTextarea no card = 0 hits.",
+    "notes": "Sem campo de comentário/notas com markdown.",
     "note": "Sem campo de comentário/notas com markdown."
    }
   },
@@ -2293,7 +2295,7 @@
     "missing_behaviors": [
      "Validação e envio do payload de metadados qualificado por host"
     ],
-    "notes": "Busca: buildWorktreeMetaUpdates/canSave/isWorkItemLinkQueryTooLarge em src/** = 0 hits (ver D04b-022).",
+    "notes": "Sem payload de metadados qualificado por host.",
     "note": "Sem payload de metadados qualificado por host."
    }
   },
@@ -2338,7 +2340,7 @@
      "Filtro de títulos placeholder (Loading ... / ... details unavailable)",
      "coerceWorktreeCardVisibleTitle"
     ],
-    "notes": "Resolução visível existe e é usada no título: display_name || displayName || branch || basename(path) || worktree.",
+    "notes": "Título visível resolvido; títulos de issue/Linear/Jira/review ausentes.",
     "note": "Título visível resolvido; títulos de issue/Linear/Jira/review ausentes."
    }
   },
@@ -2367,7 +2369,7 @@
      "Validação de PR merged por head (isCachedMergedBranchPRCurrentForWorktree)",
      "Reconciliação de caches por chave (PAR-87)"
     ],
-    "notes": "O card resolve e exibe o PR via prByPath (uma sondagem pr_status por repo/branch, cacheada) -> WorktreeCardStatusLane.",
+    "notes": "Só GitHub via pr_status; supressão/multi-provedor ausentes.",
     "note": "Só GitHub via pr_status; supressão/multi-provedor ausentes."
    },
    "par": [
@@ -2470,7 +2472,7 @@
      "Seletores por worktree (títulos de pane, PTY ids vivos, raízes de layout) com identidade estável",
      "Batch selectWorktreeActivityStatuses com igualdade rasa"
     ],
-    "notes": "O status do card vem de workspaceStatusFrom por worktree em WorktreeList.tsx:358 (D04b-008 partial). Busca: worktree-card-status-inputs, selectLivePtyIdsForWorktree, selectRuntimePaneTitlesForWorktree e selectTerminalLayoutRootsForWorktree em src/** = 0 hits.",
+    "notes": "Sem seletores por worktree (pane/PTY/layout) com identidade estável.",
     "note": "Sem seletores por worktree (pane/PTY/layout) com identidade estável."
    }
   },
@@ -2498,7 +2500,7 @@
      "EMPTY_WORKSPACE_PORTS (:115) sem consumidores",
      "isWebClient (:134) sem consumidores"
     ],
-    "notes": "Defaults documentados, shouldBeginWorktreeRename, formatSparseDirectoryPreview (usado em worktree-card-header.tsx:164) e getDirectoryName (usado em worktree-card-meta-row.tsx:77) conferem.",
+    "notes": "Modelo/defaults do card existe; helpers de estilo parcial.",
     "note": "Modelo/defaults do card existe; helpers de estilo parcial."
    }
   },
@@ -2565,7 +2567,7 @@
      "Radio de layout legado chamando setWorktreeCardMode(Compact|Default) — o submenu só mostra Detailed + nota apontando Settings > Appearance",
      "onSelect com preventDefault para manter o menu aberto"
     ],
-    "notes": "O menu de opções existe e é montado (WorktreeSidebar:847) com Show/Projects (filtro granular), Group by, Sort by, Card display e Filtros (hide sleeping/default branch/automation/CLI/detached).",
+    "notes": "Menu de exibição existe; propriedades/layout de agentes parcial.",
     "note": "Menu de exibição existe; propriedades/layout de agentes parcial."
    }
   },
@@ -2576,16 +2578,17 @@
     "components/sidebar/worktree-card-display-property-options.ts:4"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:369-392"
+     "src/shared/worktree/card-properties.ts:45-58",
+     "src/shared/ui-chrome-types.ts:28-33"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Lista canônica de propriedades exibíveis (ids e rótulos com translate)"
+     "Catálogo de rótulos traduzidos por propriedade (equivalente a PROPERTY_OPTIONS com translate), consumível pelo menu de opções"
     ],
-    "notes": "Busca: worktree-card-display-property-options em src/** = 0 hits; os rótulos existem só nos i18n locales.",
-    "note": "Lista canônica existe em shared; rótulos no menu do card ausentes."
+    "notes": "A lista canônica de ids já existe e alimenta persistência/normalização; faltam os rótulos i18n por propriedade.",
+    "note": "A lista canônica de ids já existe e alimenta persistência/normalização; faltam os rótulos i18n por propriedade."
    }
   },
   {
@@ -2604,7 +2607,7 @@
     "missing_behaviors": [
      "Contrato de tipos das props de detalhes (issue/Linear/Jira/review) e do hover"
     ],
-    "notes": "Busca: worktree-card-meta-types em src/** = 0 hits; o único contrato de props do card é WorktreeCardProps (worktree-card-model.ts:14-113).",
+    "notes": "Contrato de props existe no wrapper; hover completo ausente.",
     "note": "Contrato de props existe no wrapper; hover completo ausente."
    }
   }
