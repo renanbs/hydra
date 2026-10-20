@@ -7,7 +7,7 @@
 // override note, the scan-status/`Try again` line (Orca `WorktreeVisibilityScanStatus`),
 // and the `Hidden worktrees (N)` recovery list.
 import React, { useCallback, useEffect, useLayoutEffect, useState, useMemo, useRef } from "react";
-import { Search, FolderGit2, X, Eye, Plus, Trash2, Settings } from "lucide-react";
+import { Search, FolderGit2, X, Eye, Plus, Trash2, Settings, CircleHelp } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { List } from "react-window";
 import { useAppStore } from "@/store";
@@ -202,6 +202,8 @@ export function WorktreeVisibilityDialog({
   const [isToggling, setIsToggling] = useState(false);
   const [sourceError, setSourceError] = useState<string | null>(null);
   const [rootDraft, setRootDraft] = useState("");
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpRef = useRef<HTMLDivElement | null>(null);
   // Local mirror of the project's visibility config: the sidebar hands the dialog a
   // snapshot, so writes need a local echo until the next `catalog_get` lands.
   const [draftConfig, setDraftConfig] = useState<WorktreeVisibilityRepoConfig | null>(null);
@@ -342,6 +344,26 @@ export function WorktreeVisibilityDialog({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onOpenChange]);
+
+  useEffect(() => {
+    if (!helpOpen) return;
+    const handleOutside = (event: MouseEvent) => {
+      if (!helpRef.current?.contains(event.target as Node)) setHelpOpen(false);
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        setHelpOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside, true);
+    document.addEventListener("keydown", handleEscape, true);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside, true);
+      document.removeEventListener("keydown", handleEscape, true);
+    };
+  }, [helpOpen]);
 
   const config = useMemo<WorktreeVisibilityRepoConfig>(
     () => draftConfig ?? (project ? repoVisibilityConfig(project) : {}),
@@ -603,13 +625,42 @@ export function WorktreeVisibilityDialog({
         <div className="flex-1 overflow-y-auto space-y-4 min-h-[120px] pr-1">
           {/* a) Sources */}
           <section aria-labelledby="wv-sources-heading" className="space-y-2">
-            <div>
-              <h3 id="wv-sources-heading" className="text-[13px] font-semibold text-neutral-100">
-                Sources
-              </h3>
-              <p className="text-[11px] text-neutral-500">
-                Shown sources include current and future worktrees in the sidebar.
-              </p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h3 id="wv-sources-heading" className="text-[13px] font-semibold text-neutral-100">
+                  Sources
+                </h3>
+                <p className="text-[11px] text-neutral-500">
+                  Shown sources include current and future worktrees in the sidebar.
+                </p>
+              </div>
+              <div ref={helpRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-label="Which worktrees are hidden by default?"
+                  aria-expanded={helpOpen}
+                  onMouseEnter={() => setHelpOpen(true)}
+                  onClick={() => setHelpOpen((open) => !open)}
+                  className="inline-flex size-6 items-center justify-center rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition cursor-pointer"
+                >
+                  <CircleHelp className="size-3.5" />
+                </button>
+                {helpOpen && (
+                  <div
+                    role="dialog"
+                    aria-label="Which worktrees are hidden by default?"
+                    className="absolute right-0 top-7 z-20 w-64 rounded-lg border border-neutral-800 bg-[#141518] p-3 text-[11px] leading-4 text-neutral-300 shadow-2xl"
+                    onMouseLeave={() => setHelpOpen(false)}
+                  >
+                    Which worktrees are hidden by default?
+                    <p className="mt-1 text-neutral-400">
+                      A worktree is hidden when its source is hidden here or lacks the
+                      project override. Hidden rows stay recoverable from this list even
+                      while their source is off.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
               {sourceRows.map((row, index) => {
@@ -645,6 +696,13 @@ export function WorktreeVisibilityDialog({
                       <div className="truncate font-mono text-[10px] text-neutral-500">
                         {sourceRowPath(row)}
                       </div>
+                      {provenance?.kind === "project-override" &&
+                      provenance.globalVisibility !== visibility ? (
+                        <div className="text-[10px] text-amber-400/90">
+                          Overriding global setting:{" "}
+                          {provenance.globalVisibility === "show" ? "Show" : "Hide"}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
                       {row.kind === "custom" && repoSourceIds.has(row.source.id) && (

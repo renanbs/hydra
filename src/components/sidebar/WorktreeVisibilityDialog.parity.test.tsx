@@ -94,6 +94,35 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     expect(within(hidden).getByText("fix/d")).toBeInTheDocument();
   });
 
+  it("explains which worktrees are hidden by default through the help popover", () => {
+    renderDialog();
+    const trigger = screen.getByRole("button", {
+      name: "Which worktrees are hidden by default?",
+    });
+    fireEvent.click(trigger);
+    expect(
+      screen.getByRole("dialog", { name: "Which worktrees are hidden by default?" })
+    ).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(
+      screen.queryByRole("dialog", { name: "Which worktrees are hidden by default?" })
+    ).toBeNull();
+  });
+
+  it("warns when a source overrides the global setting", () => {
+    renderDialog({
+      project: {
+        ...PROJECT,
+        worktreeVisibilitySourcePreferences: { builtIn: { claude: "show" } },
+      },
+      visibilityDefaults: {
+        external: "hide",
+        sourcePreferences: { builtIn: { claude: "hide" } },
+      },
+    });
+    expect(screen.getByText("Overriding global setting: Hide")).toBeInTheDocument();
+  });
+
   it("names the recovery action with the worktree and its path", () => {
     renderDialog();
     expect(

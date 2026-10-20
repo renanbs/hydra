@@ -230,3 +230,52 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
     ).toBe(4);
   });
 });
+
+
+describe("WorkspaceOptionsMenu project filter quick wins (D09)", () => {
+  beforeEach(() => seedStore());
+
+  it("selects every project and clears the selection", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({ onOptionsChange });
+    fireEvent.click(screen.getByText("Projects"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Select all" }));
+    expect(onOptionsChange).toHaveBeenCalledWith(
+      expect.objectContaining({ filterProjectIds: ["repo_a", "repo_b"] })
+    );
+  });
+
+  it("clears an existing project selection", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({
+      onOptionsChange,
+      options: { ...OPTIONS, filterProjectIds: ["repo_a"] },
+    });
+    fireEvent.click(screen.getByText("Projects"));
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+    expect(onOptionsChange).toHaveBeenCalledWith(
+      expect.objectContaining({ filterProjectIds: [] })
+    );
+  });
+
+  it("removes the last selected project with Backspace on an empty query", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({
+      onOptionsChange,
+      options: { ...OPTIONS, filterProjectIds: ["repo_a", "repo_b"] },
+    });
+    fireEvent.click(screen.getByText("Projects"));
+
+    const input = screen.getByPlaceholderText("Add project...");
+    fireEvent.keyDown(input, { key: "Backspace" });
+    expect(onOptionsChange).toHaveBeenCalledWith(
+      expect.objectContaining({ filterProjectIds: ["repo_a"] })
+    );
+  });
+
+  it("hides the Projects filter row when there is nothing to filter", () => {
+    renderMenu({ projects: [PROJECTS[0]!] });
+    expect(screen.queryByText("Projects")).toBeNull();
+  });
+});

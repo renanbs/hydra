@@ -435,6 +435,18 @@ export function WorktreeSidebar({
     notifyPrefs({ displayOptions: newOptions });
   }, [notifyPrefs]);
 
+  // Registry-dispatched toggle (D09-005): one writer, the same one the menu uses.
+  useEffect(() => {
+    const onToggle = () => {
+      handleDisplayOptionsChange({
+        ...displayOptions,
+        hideSleeping: !displayOptions.hideSleeping,
+      });
+    };
+    window.addEventListener("hydra:toggle-sleeping-workspaces", onToggle);
+    return () => window.removeEventListener("hydra:toggle-sleeping-workspaces", onToggle);
+  }, [displayOptions, handleDisplayOptionsChange]);
+
   // The empty state's escape hatch (D01-051): resets every menu/host-scope filter
   // that can empty the list, through the same writers the options menu uses — one
   // writer per preference, no parallel state.

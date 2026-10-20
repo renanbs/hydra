@@ -24,6 +24,7 @@ import { toHostSourceMap } from "./rendered-sidebar-worktree-order";
 import type { HydraProject } from "./WorktreeSidebar";
 import { FilterToggleRow } from "./FilterToggleRow";
 import { useOptionalShortcutLabel } from "../../hooks/useShortcutLabel";
+import { searchProjects } from "./project-filter-search";
 
 export type GroupByMode = "none" | "workspace-status" | "pr-status" | "repo";
 
@@ -208,10 +209,7 @@ export function WorkspaceOptionsMenu({
     ? projects.filter((p) => options.filterProjectIds!.includes(p.id))
     : [];
   const filteredProjects = useMemo(
-    () =>
-      projects.filter(
-        (proj) => !projectSearch || proj.name.toLowerCase().includes(projectSearch.toLowerCase())
-      ),
+    () => searchProjects(projects, projectSearch),
     [projects, projectSearch]
   );
 
@@ -281,9 +279,15 @@ export function WorkspaceOptionsMenu({
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Show
         </div>
+        {projects.length > 1 ? (
         <div className="relative">
           <div
-            onClick={() => setOpenSubmenu(openSubmenu === "show" ? null : "show")}
+            onClick={() => {
+              const next = openSubmenu === "show" ? null : "show";
+              // Orca resets the query when the panel is reopened.
+              if (next === "show") setProjectSearch("");
+              setOpenSubmenu(next);
+            }}
             className={`flex items-center justify-between px-2 py-1 text-[11px] text-popover-foreground hover:bg-accent rounded cursor-pointer transition-colors ${openSubmenu === "show" ? "bg-accent" : ""}`}
           >
             <div className="flex items-center gap-1.5">
@@ -303,25 +307,45 @@ export function WorkspaceOptionsMenu({
                     <span className="ml-1.5 font-medium text-foreground normal-case">· {selectedFilterProjects.length}</span>
                   )}
                 </span>
-                {options.filterProjectIds?.length ? (
+                <div className="flex items-center gap-1">
                   <button
+                    type="button"
+                    disabled={(options.filterProjectIds?.length ?? 0) === projects.length}
+                    onClick={() =>
+                      onOptionsChange({
+                        ...options,
+                        filterProjectIds: projects.map((project) => project.id),
+                      })
+                    }
+                    className="text-[10px] text-muted-foreground hover:text-foreground font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!options.filterProjectIds?.length}
                     onClick={() => onOptionsChange({ ...options, filterProjectIds: [] })}
-                    className="text-[10px] text-primary hover:text-primary/80 font-medium cursor-pointer"
+                    className="text-[10px] text-muted-foreground hover:text-foreground font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Clear
                   </button>
-                ) : null}
+                </div>
               </div>
               {options.filterProjectIds?.length ? (
-                <div className="flex flex-wrap gap-1 px-2 py-1">
+                <div className="flex max-h-16 flex-wrap gap-1 overflow-y-auto px-2 py-1">
                   {options.filterProjectIds.map((id) => {
                     const proj = projects.find((p) => p.id === id);
                     if (!proj) return null;
                     return (
                       <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent border border-border text-[10px] text-foreground">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        {proj.name}
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: proj.color || "var(--color-emerald-500)" }}
+                        />
+                        <span className="max-w-[8rem] truncate">{proj.name}</span>
                         <button
+                          type="button"
+                          aria-label={`Remove ${proj.displayName || proj.name} filter`}
                           onClick={() => {
                             const next = (options.filterProjectIds || []).filter((pid) => pid !== id);
                             onOptionsChange({ ...options, filterProjectIds: next });
@@ -369,6 +393,28 @@ export function WorkspaceOptionsMenu({
                         e.preventDefault();
                         const project = filteredProjects[activeProjectIndex];
                         if (project) toggleProjectFilter(project.id);
+                        return;
+                      }
+                      if (e.key === "Backspace" && !projectSearch) {
+                        const selected = options.filterProjectIds ?? [];
+                        const last = selected[selected.length - 1];
+                        if (last) {
+                          e.preventDefault();
+                          onOptionsChange({
+                            ...options,
+                            filterProjectIds: selected.slice(0, -1),
+                          });
+                        }
+                        return;
+                      }
+                      if (e.key === "ArrowLeft" && e.currentTarget.selectionStart === 0) {
+                        e.preventDefault();
+                        setOpenSubmenu(null);
+                        return;
+                      }
+                      // Arrows stay local; every other key must not reach the menu typeahead.
+                      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+                        e.stopPropagation();
                       }
                     }}
                     placeholder="Add project..."
@@ -417,6 +463,7 @@ export function WorkspaceOptionsMenu({
             </div>
           )}
         </div>
+        ) : null}
 
         {/* Hosts — Orca SidebarHostScopeMenuSection: single row, multi-select panel */}
         {showHostScopeControls && (
@@ -665,6 +712,7 @@ export function WorkspaceOptionsMenu({
         />
 
         <div className="flex items-center justify-between gap-2 px-2 pt-1">
+          {countActiveWorkspaceFilters(options) > 0 ? (
           <button
             type="button"
             onClick={() =>
@@ -683,6 +731,7 @@ export function WorkspaceOptionsMenu({
           >
             Clear filters
           </button>
+          ) : <span />}
           {onAddProject ? (
             <button
               type="button"

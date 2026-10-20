@@ -2905,6 +2905,20 @@ export default function App() {
       // D01-052: the left-sidebar toggle is a first-class command — dispatched from
       // the keybinding registry (`sidebar.left.toggle`, Mod+B by default and
       // user-remappable) instead of a hardcoded `b` chord.
+      // D09-005: the sleeping toggle ships unbound but is remappable; dispatch it from
+      // the registry so the sidebar row and the command agree on the chord.
+      if (
+        keybindingMatchesAction(
+          "sidebar.sleepingWorkspaces.toggle",
+          e,
+          getShortcutPlatform(),
+          keybindings
+        )
+      ) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("hydra:toggle-sleeping-workspaces"));
+        return;
+      }
       if (keybindingMatchesAction("sidebar.left.toggle", e, getShortcutPlatform(), keybindings)) {
         e.preventDefault();
         setIsLeftSidebarOpen((prev) => {
