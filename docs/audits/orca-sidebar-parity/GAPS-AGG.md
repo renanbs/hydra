@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 209 capabilities
+## MISSING — 205 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -111,10 +111,8 @@
 - **D03a-070** — Resolver worktree/folder workspace conhecido e sua existência | falta: getKnownSidebarWorktreeById; sidebarWorkspaceStillExists; getFolderWorkspaceRevealGroupKeys | components/sidebar/worktree-list/navigation/folder-reveal.ts:12-108
 - **D03a-075** — Indicador de falha de scan de worktrees com retry e cópia de diagnóstico | falta: RepoScanUnavailableIndicator com retry de fetchWorktrees; tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch); Copy command / Copy diagnostics | backend: window.api.ui.writeClipboardText (Orca; equivalente Tauri: clipboard do webview) | components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx:18-153
 
-### D03b-sidebar-list-orchestration (19)
+### D03b-sidebar-list-orchestration (15)
 
-- **D03b-003** — Redirecionamento automático do modo de corpo do sidebar de Agents para Workspaces ao receber solicitação de reveal de worktree | components/sidebar/index.tsx:17
-- **D03b-005** — Sincronização automática do catálogo de worktrees após alteração na contagem de repositórios | components/sidebar/index.tsx:54-55
 - **D03b-008** — Exibição de affordance visual e rastreamento de profundidade durante arrasto de pastas do sistema operacional para o sidebar | falta: listener/overlay de drop nativo com alvo projectSidebar | components/sidebar/sidebar-project-drop.ts:9-12
 - **D03b-009** — Validação e roteamento de pastas soltas no sidebar para o assistente de adição de projetos | components/sidebar/sidebar-project-drop.ts:4-8
 - **D03b-012** — Expansão automática de grupos colapsados para alvos de envio de agente e insumos de revisão | components/sidebar/WorktreeList.tsx:106
@@ -129,8 +127,6 @@
 - **D03b-035** — Geração de pré-visualização flutuante de arrasto e estilos de cursor para cabeçalhos de host | components/sidebar/host-header-drag.ts:9-13
 - **D03b-036** — Cálculo de pré-visualização de soltura com ponto médio e agendamento diferido por frame para seções de host | components/sidebar/host-header-drag.ts:77-143
 - **D03b-037** — Comprometimento de nova ordem de hosts de execução com splicing do array de identificadores | components/sidebar/host-header-drag.ts:145-189
-- **D03b-040** — Cálculo indexado O(1) de limites verticais de seção para cabeçalhos de repositório | components/sidebar/worktree-header-section-boundaries.ts:5-53
-- **D03b-041** — Cálculo indexado O(1) de limites verticais de seção para grupos de projetos aninhados | components/sidebar/worktree-header-section-boundaries.ts:64-86
 - **D03b-046** — Coordenação de lote de expurgo de snapshots de workspace via IPC durante remoção múltipla | components/sidebar/worktree-snapshot-prune-batch.ts:6-24
 
 ### D04a-worktree-card-surface (24)

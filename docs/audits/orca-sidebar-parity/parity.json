@@ -6099,11 +6099,17 @@
    "components/sidebar/index.tsx:149"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/use-worktree-reveal-body-redirect.ts:1-45",
+    "src/components/sidebar/WorktreeSidebar.tsx:538-546",
+    "src/App.tsx:4419-4427",
+    "src/components/sidebar/use-worktree-reveal-body-redirect.parity.test.tsx:1-45"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado após busca por useWorkspaceRevealBodyRedirect, setSidebarBody e reveal (WorktreeSidebar.tsx:105,355,382-424): handleRevealCurrent não altera sidebarBody e SidebarFooter só recebe onRevealCurrent quando sidebarBody==='workspaces' (WorktreeSidebar.tsx:861)."
+   "notes": "A reveal request captured while Agents is showing switches the body to Workspaces and replays the path once the list mounts; the jump palette dispatches it.",
+   "note": "A reveal request captured while Agents is showing switches the body to Workspaces and replays the path once the list mounts; the jump palette dispatches it."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6140,11 +6146,15 @@
    "components/sidebar/index.tsx:116-125"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/App.tsx:1370-1400",
+    "src/App.tsx:1292-1310"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado: nenhum watcher de repoCount no sidebar/App (buscas: 'projects.length', 'fetchAllWorktrees', 'refreshGitWorktrees', deps de useEffect em WorktreeSidebar.tsx). Worktrees carregam sob demanda por refreshGitWorktrees(repoPath) (App.tsx:1775-1791)."
+   "notes": "Every catalog refresh (add/remove repo) re-reads the envelope and calls refreshAllWorktrees for the new project set, so a repo-count change resyncs worktrees.",
+   "note": "Every catalog refresh (add/remove repo) re-reads the envelope and calls refreshAllWorktrees for the new project set, so a repo-count change resyncs worktrees."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6872,11 +6882,18 @@
    "components/sidebar/worktree-header-section-boundaries.ts:88-115"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-header-section-boundaries.ts:1-180",
+    "src/components/sidebar/WorktreeList.tsx:813-823",
+    "src/components/sidebar/WorktreeList.tsx:1287",
+    "src/components/sidebar/SectionHeader.tsx:299",
+    "src/components/sidebar/worktree-header-section-boundaries.parity.test.ts:20-60"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado após busca por worktree-header-section-boundaries, getRepoHeaderSectionEndByRepoId, getEstimatedRenderRowStarts em src/: arquivo inexistente. O atributo data-repo-header-section-end é lido (project-header-drop.ts:160) mas não tem produtor."
+   "notes": "Repo section ends are indexed once (row starts + header/successor indexes) and painted as data-repo-header-section-end, the attribute the header drop preview reads.",
+   "note": "Repo section ends are indexed once (row starts + header/successor indexes) and painted as data-repo-header-section-end, the attribute the header drop preview reads."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6888,11 +6905,17 @@
    "components/sidebar/worktree-header-section-boundaries.ts:117-154"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-header-section-boundaries.ts:120-165",
+    "src/components/sidebar/WorktreeList.tsx:1334",
+    "src/components/sidebar/SectionHeader.tsx:115",
+    "src/components/sidebar/worktree-header-section-boundaries.parity.test.ts:62-85"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado: sem getProjectGroupHeaderSectionEndByGroupId nem cálculo de profundidade de aninhamento de grupos para limites de seção (worktree-header-section-boundaries.ts inexistente)."
+   "notes": "Nested group boundaries use a depth stack for sibling buckets, fall back to the first header at depth <= current, and paint data-project-group-header-section-end.",
+   "note": "Nested group boundaries use a depth stack for sibling buckets, fall back to the first header at depth <= current, and paint data-project-group-header-section-end."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
