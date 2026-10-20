@@ -787,8 +787,12 @@
     "components/sidebar/workspace-delete-lineage.ts:72"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/workspace-delete-lineage.ts:39-123",
+     "src/components/sidebar/workspace-delete-lineage.parity.test.ts:20-120",
+     "src/components/DeleteWorktreeDialog.tsx:137-178"
+    ],
     "backend": [],
     "missing_behaviors": [
      "Resolução de colisões de id priorizando o host do pai",
@@ -796,7 +800,8 @@
      "Travessia recursiva com prevenção de ciclos",
      "deleteAllTargets em ordem child-first"
     ],
-    "notes": "Buscas: 'deleteAllTargets', 'child-first', 'delete-worktree-lineage', 'getWorkspaceDeleteLineage' → 0 ocorrências em src/. O comando delete_worktree opera em 1 caminho (src-tauri/src/lib.rs:476-500), então o Git removê-los-ia como untracked."
+    "notes": "Path lineage resolves descendants on the parent's host, drops cycle/unresolvable edges and emits post-order targets (child before parent).",
+    "note": "Path lineage resolves descendants on the parent's host, drops cycle/unresolvable edges and emits post-order targets (child before parent)."
    }
   },
   {
@@ -913,8 +918,12 @@
     "components/sidebar/DeleteWorktreeLineageNotice.tsx:59"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeLineageNotice.tsx:10-56",
+     "src/components/DeleteWorktreeDialog.tsx:404-407",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:255-288"
+    ],
     "backend": [],
     "missing_behaviors": [
      "Painel com ícone Workflow e cabeçalho 'Child workspaces will be deleted'",
@@ -922,7 +931,8 @@
      "Lista dos primeiros 4 filhos com nome/caminho truncado e hint de dirty individual",
      "Indicador '+N more' e contenção de layout (min-w-0 max-w-full)"
     ],
-    "notes": "Buscas: 'DeleteWorktreeLineageNotice', 'Child workspaces will be deleted', 'also deletes', '+N more' → 0 ocorrências em src/. Não há modelo de linhagem na deleção (ver D07-030)."
+    "notes": "Warning panel lists up to four children with name, path and dirty hint, then '+N more'.",
+    "note": "Warning panel lists up to four children with name, path and dirty hint, then '+N more'."
    }
   },
   {
@@ -935,9 +945,12 @@
     "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx:35"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:190-202"
+     "src/components/DeleteWorktreeDialog.tsx:173",
+     "src/components/DeleteWorktreeDialog.tsx:197-198",
+     "src/components/DeleteWorktreeDialog.tsx:423-427",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:290-299"
     ],
     "backend": [
      "invoke('save_settings') (persistência do flag) -> src/components/DeleteWorktreeDialog.tsx:98 -> src/App.tsx:4087 -> src-tauri/src/lib.rs:1067"
@@ -945,8 +958,8 @@
     "missing_behaviors": [
      "Ocultar quando o alvo tiver descendentes de linhagem (o showDontAskAgain do Orca considera filhos; no Hydra não há modelo)"
     ],
-    "notes": "Checkbox don't ask again parcial.",
-    "note": "Checkbox don't ask again parcial."
+    "notes": "The skip-confirmation checkbox is only offered when the target has no lineage children.",
+    "note": "The skip-confirmation checkbox is only offered when the target has no lineage children."
    }
   },
   {
@@ -1032,10 +1045,11 @@
     "components/sidebar/delete-worktree-lineage-delete-all.ts:33"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3492",
-     "src/components/DeleteWorktreeDialog.tsx:102"
+     "src/components/DeleteWorktreeDialog.tsx:173-178",
+     "src/components/DeleteWorktreeDialog.tsx:265-330",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:255-288"
     ],
     "backend": [
      "invoke('delete_worktree') em loop -> src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476"
@@ -1046,8 +1060,8 @@
      "Fechamento imediato do modal para progresso nos cards",
      "Coleta de todos os alvos excluídos e onDeleted agregado"
     ],
-    "notes": "Delete All child-first paralelo ausente.",
-    "note": "Delete All child-first paralelo ausente."
+    "notes": "Delete All dispatches every confirmed target sequentially in post-order, so a child inside the parent directory leaves first.",
+    "note": "Delete All dispatches every confirmed target sequentially in post-order, so a child inside the parent directory leaves first."
    }
   },
   {

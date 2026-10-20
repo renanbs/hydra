@@ -180,10 +180,14 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:388"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeLineageNotice.tsx:10-56",
+     "src/components/DeleteWorktreeDialog.tsx:404-407"
+    ],
     "backend": [],
-    "notes": "não localizado: DeleteWorktreeDialog.tsx não trata lineage; worktree-lineage-projection.ts e ProjectGroupDeleteDialog.tsx não fazem delete-all de descendentes no dialog. Buscas: 'LineageNotice', 'descendants', 'canDeleteAllLineage'."
+    "notes": "Lineage warning names the descendants and their count before the destructive confirm.",
+    "note": "Lineage warning names the descendants and their count before the destructive confirm."
    },
    "par": [
     "PAR-56"
@@ -246,18 +250,17 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:408"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:60-68",
-     "src/components/DeleteWorktreeDialog.tsx:211",
-     "src/components/DeleteWorktreeDialog.tsx:217"
+     "src/components/DeleteWorktreeDialog.tsx:200-208",
+     "src/components/DeleteWorktreeDialog.tsx:448-464"
     ],
     "backend": [],
     "missing_behaviors": [
      "variante de label lineage 'Delete {count} Workspaces' (canDeleteAllLineage)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Footer matrix now includes the lineage variant 'Delete N Workspaces' alongside Cancel/Delete/Force Delete.",
+    "notes": "Footer matrix now includes the lineage variant 'Delete N Workspaces' alongside Cancel/Delete/Force Delete."
    },
    "par": [
     "PAR-56"
@@ -350,10 +353,15 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:316"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:173",
+     "src/components/DeleteWorktreeDialog.tsx:246-330",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:255-288"
+    ],
     "backend": [],
-    "notes": "não localizado: sem canDeleteAllLineage/lineageDeleteIdentities no DeleteWorktreeDialog. Buscas: 'lineage', 'descendants', 'runLineageDeleteAll'."
+    "notes": "One click deletes the parent plus every descendant through the same confirmation.",
+    "note": "One click deletes the parent plus every descendant through the same confirmation."
    },
    "par": [
     "PAR-56"
@@ -439,17 +447,16 @@
     "components/sidebar/DeleteWorktreeDialogFooter.tsx:50"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:60-68",
-     "src/components/DeleteWorktreeDialog.tsx:217"
+     "src/components/DeleteWorktreeDialog.tsx:200-208"
     ],
     "backend": [],
     "missing_behaviors": [
      "variante canDeleteAllLineage"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Label matrix covers deleting/force-deleting, batch and the lineage target count.",
+    "notes": "Label matrix covers deleting/force-deleting, batch and the lineage target count."
    },
    "par": [
     "PAR-56"
@@ -490,10 +497,14 @@
     "components/sidebar/DeleteWorktreeTargetPreview.tsx:69"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:335-346",
+     "src/components/DeleteWorktreeDialog.tsx:372-386"
+    ],
     "backend": [],
-    "notes": "não localizado: sem getCollisionIds/getTargetHostLabel/hostLabelById no delete dialog. Buscas: 'collision', 'hostLabelById', 'Unknown host'."
+    "notes": "Batch rows whose path exists on more than one host now print the execution-host label.",
+    "note": "Batch rows whose path exists on more than one host now print the execution-host label."
    },
    "par": [
     "PAR-56"

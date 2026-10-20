@@ -1,0 +1,92 @@
+{
+ "group": "G",
+ "generatedFrom": "2026-10-20 lineage delete increment: getWorkspaceDeleteLineage port + warning notice + Delete All (child-first, host-isolated, cycle-safe) wired through DeleteWorktreeDialog and App's persisted path lineage",
+ "rows": [
+  {
+   "id": "D07-030",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-delete-lineage.ts:39-123",
+    "src/components/sidebar/workspace-delete-lineage.parity.test.ts:20-120",
+    "src/components/DeleteWorktreeDialog.tsx:137-178"
+   ],
+   "note": "Path lineage resolves descendants on the parent's host, drops cycle/unresolvable edges and emits post-order targets (child before parent)."
+  },
+  {
+   "id": "D07-035",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeLineageNotice.tsx:10-56",
+    "src/components/DeleteWorktreeDialog.tsx:404-407",
+    "src/components/DeleteWorktreeDialog.parity.test.tsx:255-288"
+   ],
+   "note": "Warning panel lists up to four children with name, path and dirty hint, then '+N more'."
+  },
+  {
+   "id": "D07-036",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:173",
+    "src/components/DeleteWorktreeDialog.tsx:197-198",
+    "src/components/DeleteWorktreeDialog.tsx:423-427",
+    "src/components/DeleteWorktreeDialog.parity.test.tsx:290-299"
+   ],
+   "note": "The skip-confirmation checkbox is only offered when the target has no lineage children."
+  },
+  {
+   "id": "D07-040",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:173-178",
+    "src/components/DeleteWorktreeDialog.tsx:265-330",
+    "src/components/DeleteWorktreeDialog.parity.test.tsx:255-288"
+   ],
+   "note": "Delete All dispatches every confirmed target sequentially in post-order, so a child inside the parent directory leaves first."
+  },
+  {
+   "id": "D10-008",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeLineageNotice.tsx:10-56",
+    "src/components/DeleteWorktreeDialog.tsx:404-407"
+   ],
+   "note": "Lineage warning names the descendants and their count before the destructive confirm."
+  },
+  {
+   "id": "D10-011",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:200-208",
+    "src/components/DeleteWorktreeDialog.tsx:448-464"
+   ],
+   "note": "Footer matrix now includes the lineage variant 'Delete N Workspaces' alongside Cancel/Delete/Force Delete."
+  },
+  {
+   "id": "D10-015",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:173",
+    "src/components/DeleteWorktreeDialog.tsx:246-330",
+    "src/components/DeleteWorktreeDialog.parity.test.tsx:255-288"
+   ],
+   "note": "One click deletes the parent plus every descendant through the same confirmation."
+  },
+  {
+   "id": "D10-019",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:200-208"
+   ],
+   "note": "Label matrix covers deleting/force-deleting, batch and the lineage target count."
+  },
+  {
+   "id": "D10-021",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:335-346",
+    "src/components/DeleteWorktreeDialog.tsx:372-386"
+   ],
+   "note": "Batch rows whose path exists on more than one host now print the execution-host label."
+  }
+ ]
+}
