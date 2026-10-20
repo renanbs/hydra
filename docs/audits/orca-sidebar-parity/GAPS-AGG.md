@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 239 capabilities
+## MISSING — 235 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -100,13 +100,9 @@
 - **D02c-025** — Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup | falta: findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay; markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório; getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface | components/sidebar/setup-script-prompt-render-state.ts:15
 - **D02c-026** — Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime | falta: Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco; Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes; Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota; Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar | components/sidebar/useSetupScriptPromptRevalidation.ts:14
 
-### D03a-worktree-list-module (17)
+### D03a-worktree-list-module (13)
 
 - **D03a-003** — Reordenar com histerese de intenção (evita troca de slot ao cruzar gutter) | falta: REORDER_INTENT_DELAY_MS=160ms; preserveOffsets durante nova intenção; não renovar intenção por autoscroll | components/sidebar/worktree-list/drag/pointer-flush.ts:23
-- **D03a-005** — Aninhar worktree sob outro arrastando sobre o card pai | falta: nesting por hover sobre card pai; dataset.worktreeSidebarNesting; applyWorktreeLineageDropPreview; hit test do card visível | components/sidebar/worktree-list/drag/pointer-flush.ts:145-163
-- **D03a-006** — Validação de elegibilidade de parent no aninhamento por arraste | falta: isEligibleWorktreeParent; getCyclicProjectedWorktreeLineageIds no drag; zera lineageParentId quando inelegível | components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:27-62
-- **D03a-007** — Confirmar aninhamento (nest) ao soltar | falta: assignWorktreeParent em Promise.all; toast failedNestWorkspace | components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:64-87
-- **D03a-008** — Desaninhar (unnest) ao soltar um card aninhado numa linha de reorder | falta: getReorderedWorktreeIdsToUnnest; unnestWorktrees via updateWorktreeLineage | components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:89-111
 - **D03a-009** — Mover worktree(s) para uma seção de status ao soltar | falta: drop sobre seção de status -> moveWorktreesToStatus(AtIndex); shouldPreferSidebarStatusDropTarget | components/sidebar/worktree-list/drag/pointer-commit.ts:26-49
 - **D03a-010** — Fixar (pin) worktree(s) soltando sobre a seção Pinned | falta: drop sobre [data-workspace-pin-drop-target] -> onPinWorktrees; isPinDrop | components/sidebar/worktree-list/drag/status-target.ts:19-22
 - **D03a-012** — Pré-visualizar o destino do board já no início do drag | falta: workspaceBoardDragPreviewRequested; onWorkspaceBoardDragPreviewStart; shouldShowWorkspaceBoardDropIndicator | components/sidebar/worktree-list/drag/pointer-flush.ts:101-118

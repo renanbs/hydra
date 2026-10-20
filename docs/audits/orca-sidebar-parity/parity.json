@@ -3828,16 +3828,22 @@
    "components/sidebar/worktree-list/drag/row-state.ts:144-165"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/nesting.ts:50-75",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:54-75",
+    "src/components/sidebar/worktree-list/drag/worktree-drag-surface.tsx:57-64",
+    "src/App.css:857-865",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:132-155"
+   ],
    "missing_behaviors": [
     "nesting por hover sobre card pai",
     "dataset.worktreeSidebarNesting",
     "applyWorktreeLineageDropPreview",
     "hit test do card visível"
    ],
-   "notes": "Sem nesting por hover sobre card pai: pointer-flush só resolve reorder (computeWorktreeDrop); nenhum applyWorktreeLineageDropPreview/dataset.worktreeSidebarNesting.",
-   "note": "Sem nesting por hover sobre card pai: pointer-flush só resolve reorder (computeWorktreeDrop); nenhum applyWorktreeLineageDropPreview/dataset.worktreeSidebarNesting."
+   "notes": "The pointer reads the card under it (data-worktree-nesting-id), paints the lineage ring and suppresses the insertion line while nesting is pending.",
+   "note": "The pointer reads the card under it (data-worktree-nesting-id), paints the lineage ring and suppresses the insertion line while nesting is pending."
   },
   "par": [
    "PAR-43"
@@ -3851,14 +3857,19 @@
    "components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:27-62"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/nesting.ts:28-47",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:82-115",
+    "src/components/sidebar/WorktreeList.tsx:657-682"
+   ],
    "missing_behaviors": [
     "isEligibleWorktreeParent",
     "getCyclicProjectedWorktreeLineageIds no drag",
     "zera lineageParentId quando inelegível"
    ],
-   "notes": "A projeção de linhagem existe (worktree-lineage-projection.ts:8/15) mas não há caminho de drag que a valide; ParentPickerModal (App-level) é o único setter de parent."
+   "notes": "Eligibility walks the candidate's ancestors: the dragged cards, their children and deeper descendants are rejected, so a cycle cannot be formed.",
+   "note": "Eligibility walks the candidate's ancestors: the dragged cards, their children and deeper descendants are rejected, so a cycle cannot be formed."
   },
   "par": [
    "PAR-43"
@@ -3874,16 +3885,18 @@
    "components/sidebar/worktree-list/drag/pointer-commit.ts:147-149"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:26"
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:37-56",
+    "src/components/sidebar/WorktreeList.tsx:756-772",
+    "src/App.tsx:1833-1856"
    ],
    "missing_behaviors": [
     "assignWorktreeParent em Promise.all",
     "toast failedNestWorkspace"
    ],
-   "notes": "commitWorktreePointerDrop só commita reorder; não há assignWorktreeParent/toast failedNestWorkspace.",
-   "note": "commitWorktreePointerDrop só commita reorder; não há assignWorktreeParent/toast failedNestWorkspace."
+   "notes": "Release over the ringed card writes parentPath->childPaths in one map commit; no async writer exists, so the Orca failure toast has no path to fire.",
+   "note": "Release over the ringed card writes parentPath->childPaths in one map commit; no async writer exists, so the Orca failure toast has no path to fire."
   },
   "par": [
    "PAR-43"
@@ -3897,13 +3910,19 @@
    "components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:89-111"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:71-88",
+    "src/components/sidebar/WorktreeList.tsx:774-787",
+    "src/App.tsx:1857-1872",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:192-209"
+   ],
    "missing_behaviors": [
     "getReorderedWorktreeIdsToUnnest",
     "unnestWorktrees via updateWorktreeLineage"
    ],
-   "notes": "Não localizado após busca por getReorderedWorktreeIdsToUnnest, unnestWorktrees, unnest."
+   "notes": "A nested row released on a reorder line detaches from its parent before the order write, exactly as Orca's unnest-on-reorder path.",
+   "note": "A nested row released on a reorder line detaches from its parent before the order write, exactly as Orca's unnest-on-reorder path."
   },
   "par": [
    "PAR-43"
