@@ -506,6 +506,7 @@ export default function App() {
           isMainWorktree: wt.is_main ?? wt.isMainWorktree ?? false,
           path: wt.path,
           repoPath,
+          displayName: wt.display_name ?? wt.displayName ?? wt.branch ?? wt.path,
         });
       }
     }
@@ -4376,6 +4377,7 @@ export default function App() {
         isMainWorktree={deleteWorktreeModal?.worktrees.some((w) => w.path === deleteWorktreeModal?.repoPath) ?? false}
         deleteTargets={deleteWorktreeModal?.deleteTargets ?? []}
         liveWorktrees={deleteLiveTargets}
+        lineageByPath={worktreeLineage}
         onStaleTargets={showStaleDeleteNotice}
         onDeleteStart={(targets) => publishDeleteStateForTargets(targets, WORKTREE_DELETE_IN_PROGRESS)}
         onDeleteSettled={(targets) => publishDeleteStateForTargets(targets, null)}

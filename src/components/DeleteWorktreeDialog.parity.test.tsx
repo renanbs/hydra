@@ -191,3 +191,113 @@ describe("DeleteWorktreeDialog delete-state publication", () => {
     expect(onDeleteStart).not.toHaveBeenCalled();
   });
 });
+
+// Orca `getWorkspaceDeleteLineage` / `runLineageDeleteAll`: the confirmation must
+// name every descendant it destroys and dispatch them child-first, because a child
+// can live inside the parent directory that Git force-deletes.
+describe("DeleteWorktreeDialog lineage delete", () => {
+  const CHILD_PATH = "/work/orca/child";
+  const GRANDCHILD_PATH = "/work/orca/child/grandchild";
+  const CHILD_ID = "repo-1::/work/orca/child";
+  const GRANDCHILD_ID = "repo-1::/work/orca/child/grandchild";
+  const PARENT_IDENTITY: WorktreeDeleteIdentity = {
+    id: SHARED_ID,
+    instanceId: "instance-parent",
+    hostId: "local",
+  };
+
+  function lineageRows(): WorktreeDeleteLiveTarget[] {
+    return [
+      {
+        id: SHARED_ID,
+        instanceId: "instance-parent",
+        hostId: "local",
+        isMainWorktree: false,
+        path: WORKTREE_PATH,
+        repoPath: PROJECT_PATH,
+        displayName: "Parent",
+      },
+      {
+        id: CHILD_ID,
+        instanceId: "instance-child",
+        hostId: "local",
+        isMainWorktree: false,
+        path: CHILD_PATH,
+        repoPath: PROJECT_PATH,
+        displayName: "Child",
+      },
+      {
+        id: GRANDCHILD_ID,
+        instanceId: "instance-grandchild",
+        hostId: "local",
+        isMainWorktree: false,
+        path: GRANDCHILD_PATH,
+        repoPath: PROJECT_PATH,
+        displayName: "Grandchild",
+      },
+    ];
+  }
+
+  function lineageMap(): Record<string, string> {
+    return { [CHILD_PATH]: WORKTREE_PATH, [GRANDCHILD_PATH]: CHILD_PATH };
+  }
+
+  it("names the descendants and deletes them child-first", async () => {
+    const onDeleted = vi.fn();
+    renderDialog({
+      deleteTargets: [PARENT_IDENTITY],
+      liveWorktrees: lineageRows(),
+      lineageByPath: lineageMap(),
+      onDeleted,
+    });
+
+    expect(screen.getByText("Child workspaces will be deleted")).toBeInTheDocument();
+    expect(
+      screen.getByText("Deleting this workspace also deletes 2 child workspaces.")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Child")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete 3 Workspaces" }));
+
+    await waitFor(() =>
+      expect(onDeleted).toHaveBeenCalledWith([GRANDCHILD_PATH, CHILD_PATH, WORKTREE_PATH])
+    );
+    expect(invokeMock.mock.calls.map((call) => call[1].worktreePath)).toEqual([
+      GRANDCHILD_PATH,
+      CHILD_PATH,
+      WORKTREE_PATH,
+    ]);
+    expect(invokeMock.mock.calls.map((call) => call[1].hostId)).toEqual([
+      "local",
+      "local",
+      "local",
+    ]);
+  });
+
+  it("keeps the skip-confirmation choice away while children are at risk", () => {
+    renderDialog({
+      deleteTargets: [PARENT_IDENTITY],
+      liveWorktrees: lineageRows(),
+      lineageByPath: lineageMap(),
+    });
+
+    expect(screen.queryByRole("checkbox", { name: /Don't ask again/i })).not.toBeInTheDocument();
+  });
+
+  it("recomputes the tree when a descendant is already gone", () => {
+    const onStaleTargets = vi.fn();
+    const onClose = vi.fn();
+    renderDialog({
+      deleteTargets: [PARENT_IDENTITY],
+      liveWorktrees: lineageRows().filter((row) => row.path !== GRANDCHILD_PATH),
+      lineageByPath: lineageMap(),
+      onStaleTargets,
+      onClose,
+    });
+
+    // The resolver only names live rows, so the vanished grandchild drops out
+    // instead of leaving a destructive button armed for a tree it cannot resolve.
+    expect(screen.queryByRole("button", { name: "Delete 3 Workspaces" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Delete 2 Workspaces" })).toBeInTheDocument();
+  });
+});
