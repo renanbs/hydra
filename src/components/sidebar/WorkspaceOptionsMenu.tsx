@@ -22,8 +22,26 @@ import {
 } from "./sidebar-host-options";
 import { toHostSourceMap } from "./rendered-sidebar-worktree-order";
 import type { HydraProject } from "./WorktreeSidebar";
+import { FilterToggleRow } from "./FilterToggleRow";
+import { useOptionalShortcutLabel } from "../../hooks/useShortcutLabel";
 
 export type GroupByMode = "none" | "workspace-status" | "pr-status" | "repo";
+
+/** Orca `getSidebarActiveFilterCount`: the badge on the options trigger. */
+export function countActiveWorkspaceFilters(options: WorkspaceDisplayOptions): number {
+  let count = 0;
+  if (options.hideSleeping) {
+    count += 1;
+    // Orca counts the exemption as its own narrowing filter while its parent is on.
+    if (!options.alwaysShowDefaultBranch) count += 1;
+  }
+  if (options.hideDefaultBranch) count += 1;
+  if (options.hideAutomationCreated) count += 1;
+  if (options.hideCliCreated) count += 1;
+  if (options.hideDetachedHead) count += 1;
+  count += options.filterProjectIds?.length ?? 0;
+  return count;
+}
 
 /**
  * Orca `SidebarHostScopeMenuSection.toggleHost`: toggling the last visible host
@@ -61,6 +79,8 @@ export interface WorkspaceDisplayOptions {
   hideAutomationCreated: boolean;
   hideCliCreated: boolean;
   hideDetachedHead: boolean;
+  /** Orca `alwaysShowDefaultBranchWorkspace`: keep the default branch while hiding sleeping. */
+  alwaysShowDefaultBranch: boolean;
   filterProjectIds?: string[];
 }
 
@@ -71,6 +91,8 @@ interface WorkspaceOptionsMenuProps {
   projects: HydraProject[];
   onClose: () => void;
   onOptionsChange: (newOptions: WorkspaceDisplayOptions) => void;
+  /** Opens the Add project dialog from the menu footer (Orca SidebarFilter footer). */
+  onAddProject?: () => void;
 }
 
 export function WorkspaceOptionsMenu({
@@ -80,12 +102,15 @@ export function WorkspaceOptionsMenu({
   projects,
   onClose,
   onOptionsChange,
+  onAddProject,
 }: WorkspaceOptionsMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const projectSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
   const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | "hosts" | null>(null);
   const [projectSearch, setProjectSearch] = useState("");
+  const [activeProjectIndex, setActiveProjectIndex] = useState(0);
+  const sleepingShortcut = useOptionalShortcutLabel("sidebar.sleepingWorkspaces.toggle");
 
   // ─── Host scope (Orca SidebarHostScopeMenuSection) ────────────────────────
   const storeRepos = useAppStore((s) => s.repos);
@@ -175,13 +200,6 @@ export function WorkspaceOptionsMenu({
 
   if (!isOpen) return null;
 
-  const handleToggle = (key: keyof WorkspaceDisplayOptions) => {
-    onOptionsChange({
-      ...options,
-      [key]: !options[key],
-    });
-  };
-
   // Orca SidebarRepositoryFilterSection.getProjectFilterVisibilityLabel: o label do
   // submenu "Show → Projects" reflete o filtro ativo — "All projects" sem sufixo,
   // o nome do projeto quando só um está selecionado, ou "N projects". Derivado de
@@ -189,6 +207,24 @@ export function WorkspaceOptionsMenu({
   const selectedFilterProjects = options.filterProjectIds?.length
     ? projects.filter((p) => options.filterProjectIds!.includes(p.id))
     : [];
+  const filteredProjects = useMemo(
+    () =>
+      projects.filter(
+        (proj) => !projectSearch || proj.name.toLowerCase().includes(projectSearch.toLowerCase())
+      ),
+    [projects, projectSearch]
+  );
+
+  const toggleProjectFilter = (projectId: string) => {
+    const current = options.filterProjectIds || [];
+    const next = current.length === 0
+      ? [projectId]
+      : current.includes(projectId)
+        ? current.filter((id) => id !== projectId)
+        : [...current, projectId];
+    onOptionsChange({ ...options, filterProjectIds: next });
+  };
+
   const projectFilterLabel =
     selectedFilterProjects.length === 0
       ? "All projects"
@@ -306,7 +342,10 @@ export function WorkspaceOptionsMenu({
                     autoFocus
                     type="text"
                     value={projectSearch}
-                    onChange={(e) => setProjectSearch(e.target.value)}
+                    onChange={(e) => {
+                      setProjectSearch(e.target.value);
+                      setActiveProjectIndex(0);
+                    }}
                     onKeyDown={(e) => {
                       // Orca SidebarFilter pattern: Escape clears a non-empty query
                       // first (keeps the menu open); an empty query lets the menu's
@@ -314,6 +353,22 @@ export function WorkspaceOptionsMenu({
                       if (e.key === "Escape" && projectSearch) {
                         e.stopPropagation();
                         setProjectSearch("");
+                        return;
+                      }
+                      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                        e.preventDefault();
+                        if (filteredProjects.length === 0) return;
+                        const delta = e.key === "ArrowDown" ? 1 : -1;
+                        setActiveProjectIndex(
+                          (previous) =>
+                            (previous + delta + filteredProjects.length) % filteredProjects.length
+                        );
+                        return;
+                      }
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const project = filteredProjects[activeProjectIndex];
+                        if (project) toggleProjectFilter(project.id);
                       }
                     }}
                     placeholder="Add project..."
@@ -341,28 +396,16 @@ export function WorkspaceOptionsMenu({
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto max-h-48 space-y-0.5 px-1">
-                {projects
-                  .filter((proj) => !projectSearch || proj.name.toLowerCase().includes(projectSearch.toLowerCase()))
-                  .map((proj) => {
+                {filteredProjects.map((proj, index) => {
                     const isExplicitlySelected = options.filterProjectIds?.includes(proj.id);
                     const showAsSelected = options.filterProjectIds?.length ? isExplicitlySelected : true;
+                    const isActive = index === activeProjectIndex;
                     return (
                       <button
                         key={proj.id}
-                        onClick={() => {
-                          const current = options.filterProjectIds || [];
-                          let next: string[];
-                          if (current.length === 0) {
-                            // Currently showing all, clicking one should filter to just that one
-                            next = [proj.id];
-                          } else if (current.includes(proj.id)) {
-                            next = current.filter((id) => id !== proj.id);
-                          } else {
-                            next = [...current, proj.id];
-                          }
-                          onOptionsChange({ ...options, filterProjectIds: next });
-                        }}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] text-left transition cursor-pointer ${showAsSelected ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+                        data-active-project={isActive || undefined}
+                        onClick={() => toggleProjectFilter(proj.id)}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] text-left transition cursor-pointer ${showAsSelected ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"} ${isActive ? "ring-1 ring-ring/50" : ""}`}
                       >
                         <span className={`w-2 h-2 rounded-full ${showAsSelected ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
                         <span className="truncate">{proj.name}</span>
@@ -571,74 +614,84 @@ export function WorkspaceOptionsMenu({
           Filters
         </div>
 
-        {/* 1. Hide sleeping */}
-        <div 
-          onClick={() => handleToggle("hideSleeping")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Moon className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>Hide sleeping</span>
-          </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideSleeping ? "bg-emerald-600" : "bg-input"}`}>
-            <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideSleeping ? "translate-x-3" : "translate-x-0"}`} />
-          </div>
-        </div>
+        <FilterToggleRow
+          icon={<Moon className="w-3.5 h-3.5" />}
+          label="Hide sleeping"
+          checked={options.hideSleeping}
+          onChange={(hideSleeping) => onOptionsChange({ ...options, hideSleeping })}
+          shortcutLabel={sleepingShortcut ?? undefined}
+        />
 
-        {/* 2. Hide default branch */}
-        <div 
-          onClick={() => handleToggle("hideDefaultBranch")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <GitBranch className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>Hide default branch</span>
-          </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideDefaultBranch ? "bg-emerald-600" : "bg-input"}`}>
-            <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideDefaultBranch ? "translate-x-3" : "translate-x-0"}`} />
-          </div>
-        </div>
+        {/* Why gated: the exemption only matters while sleeping workspaces are
+            being swept, so it stays hidden until its parent row is on. */}
+        {options.hideSleeping ? (
+          <FilterToggleRow
+            indented
+            icon={<GitBranch className="w-3.5 h-3.5" />}
+            label="Except default branch"
+            ariaLabel="Keep the default branch visible while hiding sleeping workspaces"
+            checked={options.alwaysShowDefaultBranch}
+            onChange={(alwaysShowDefaultBranch) =>
+              onOptionsChange({ ...options, alwaysShowDefaultBranch })
+            }
+          />
+        ) : null}
 
-        {/* 3. Hide automation-created */}
-        <div 
-          onClick={() => handleToggle("hideAutomationCreated")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>Hide automation-created</span>
-          </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideAutomationCreated ? "bg-emerald-600" : "bg-input"}`}>
-            <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideAutomationCreated ? "translate-x-3" : "translate-x-0"}`} />
-          </div>
-        </div>
+        <FilterToggleRow
+          icon={<GitBranch className="w-3.5 h-3.5" />}
+          label="Hide default branch"
+          checked={options.hideDefaultBranch}
+          onChange={(hideDefaultBranch) => onOptionsChange({ ...options, hideDefaultBranch })}
+        />
+        <FilterToggleRow
+          icon={<CalendarClock className="w-3.5 h-3.5" />}
+          label="Hide automation-created"
+          checked={options.hideAutomationCreated}
+          onChange={(hideAutomationCreated) =>
+            onOptionsChange({ ...options, hideAutomationCreated })
+          }
+        />
+        <FilterToggleRow
+          icon={<SquareTerminal className="w-3.5 h-3.5" />}
+          label="Hide CLI-created"
+          checked={options.hideCliCreated}
+          onChange={(hideCliCreated) => onOptionsChange({ ...options, hideCliCreated })}
+        />
+        <FilterToggleRow
+          icon={<GitCommitHorizontal className="w-3.5 h-3.5" />}
+          label="Hide detached HEAD"
+          checked={options.hideDetachedHead}
+          onChange={(hideDetachedHead) => onOptionsChange({ ...options, hideDetachedHead })}
+        />
 
-        {/* 4. Hide CLI-created */}
-        <div 
-          onClick={() => handleToggle("hideCliCreated")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <SquareTerminal className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>Hide CLI-created</span>
-          </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideCliCreated ? "bg-emerald-600" : "bg-input"}`}>
-            <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideCliCreated ? "translate-x-3" : "translate-x-0"}`} />
-          </div>
-        </div>
-
-        {/* 5. Hide detached HEAD */}
-        <div 
-          onClick={() => handleToggle("hideDetachedHead")}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent cursor-pointer text-[11px] text-popover-foreground transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <GitCommitHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>Hide detached HEAD</span>
-          </div>
-          <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${options.hideDetachedHead ? "bg-emerald-600" : "bg-input"}`}>
-            <div className={`w-3 h-3 rounded-full bg-white transition-transform ${options.hideDetachedHead ? "translate-x-3" : "translate-x-0"}`} />
-          </div>
+        <div className="flex items-center justify-between gap-2 px-2 pt-1">
+          <button
+            type="button"
+            onClick={() =>
+              onOptionsChange({
+                ...options,
+                hideSleeping: false,
+                hideDefaultBranch: false,
+                hideAutomationCreated: false,
+                hideCliCreated: false,
+                hideDetachedHead: false,
+                alwaysShowDefaultBranch: false,
+                filterProjectIds: [],
+              })
+            }
+            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
+            Clear filters
+          </button>
+          {onAddProject ? (
+            <button
+              type="button"
+              onClick={onAddProject}
+              className="text-[11px] font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
+            >
+              + Add project
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

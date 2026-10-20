@@ -73,7 +73,12 @@ function applyDisplayFiltersToWorktree(scope: ProjectFilterScope, wt: GitWorktre
   if (displayOptions.hideDetachedHead && scope.isDetachedHeadWt(wt)) return true;
   if (displayOptions.hideAutomationCreated && scope.isAutomationCreatedWt(wt)) return true;
   if (displayOptions.hideCliCreated && scope.isCliCreatedWt(wt)) return true;
-  if (displayOptions.hideSleeping && scope.isSleepingWorktree(wt, proj)) return true;
+  if (
+    displayOptions.hideSleeping &&
+    scope.isSleepingWorktree(wt, proj) &&
+    !(displayOptions.alwaysShowDefaultBranch && scope.isDefaultBranchWt(wt, proj))
+  )
+    return true;
   return false;
 }
 

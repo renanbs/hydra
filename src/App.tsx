@@ -202,13 +202,14 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
   // resultado é um objeto fresco (nunca o blob mutado). filterProjectIds preenche
   // ausente/malformado com [] — mesma guarda do reader antigo do Shell.
   const src = value as Record<keyof WorkspaceDisplayOptions, unknown>;
-  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead } = src;
+  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch } = src;
   if (groupBy !== "none" && groupBy !== "workspace-status" && groupBy !== "repo") return undefined;
   if (sortBy !== "agent-activity" && sortBy !== "name" && sortBy !== "recent") return undefined;
   if (
     typeof hideSleeping !== "boolean" || typeof hideDefaultBranch !== "boolean" ||
     typeof hideAutomationCreated !== "boolean" || typeof hideCliCreated !== "boolean" ||
-    typeof hideDetachedHead !== "boolean"
+    typeof hideDetachedHead !== "boolean" ||
+    (alwaysShowDefaultBranch !== undefined && typeof alwaysShowDefaultBranch !== "boolean")
   ) {
     return undefined;
   }
@@ -220,6 +221,7 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
     hideAutomationCreated,
     hideCliCreated,
     hideDetachedHead,
+    alwaysShowDefaultBranch: alwaysShowDefaultBranch === true,
     filterProjectIds: asStringArrayPref(src.filterProjectIds) ?? [],
   };
 }

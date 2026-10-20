@@ -1,3 +1,4 @@
+import type React from "react";
 // Parity guard for the multi-host scope submenu. Orca renders it from
 // `buildSidebarHostScopeOptions` inside the Workspace options "Show" section
 // (`SidebarHostScopeMenuSection.tsx`), with one hard rule: the LAST visible host
@@ -10,6 +11,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { useAppStore } from "@/store";
 import {
   WorkspaceOptionsMenu,
+  countActiveWorkspaceFilters,
   toggleWorkspaceHostVisibility,
   type WorkspaceDisplayOptions,
 } from "./WorkspaceOptionsMenu";
@@ -23,6 +25,7 @@ const OPTIONS: WorkspaceDisplayOptions = {
   hideAutomationCreated: false,
   hideCliCreated: false,
   hideDetachedHead: false,
+  alwaysShowDefaultBranch: false,
 };
 
 const PROJECTS: HydraProject[] = [
@@ -50,7 +53,7 @@ function seedStore(overrides: Record<string, unknown> = {}) {
   });
 }
 
-function renderMenu() {
+function renderMenu(overrides: Partial<React.ComponentProps<typeof WorkspaceOptionsMenu>> = {}) {
   return render(
     <WorkspaceOptionsMenu
       isOpen
@@ -59,6 +62,7 @@ function renderMenu() {
       projects={PROJECTS}
       onClose={vi.fn()}
       onOptionsChange={vi.fn()}
+      {...overrides}
     />
   );
 }
@@ -145,5 +149,84 @@ describe("WorkspaceOptionsMenu host scope (Orca parity)", () => {
 
     expect(useAppStore.getState().visibleWorkspaceHostIds).toBeNull();
     expect(useAppStore.getState().workspaceHostScope).toBe("all");
+  });
+});
+
+
+describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
+  beforeEach(() => seedStore());
+
+  it("renders the shared switch row with the registry shortcut badge", () => {
+    renderMenu();
+    const row = screen.getByRole("switch", { name: /Hide sleeping/i });
+    expect(row).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("only offers the default-branch exception while Hide sleeping is on", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({ onOptionsChange });
+
+    expect(screen.queryByRole("switch", { name: /Except default branch/i })).toBeNull();
+    fireEvent.click(screen.getByRole("switch", { name: /Hide sleeping/i }));
+    expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, hideSleeping: true });
+  });
+
+  it("clears every filter and opens Add project from the footer", () => {
+    const onOptionsChange = vi.fn();
+    const onAddProject = vi.fn();
+    renderMenu({
+      onOptionsChange,
+      onAddProject,
+      options: {
+        ...OPTIONS,
+        hideSleeping: true,
+        hideCliCreated: true,
+        alwaysShowDefaultBranch: true,
+        filterProjectIds: ["repo_a"],
+      },
+    });
+
+    fireEvent.click(screen.getByText("Clear filters"));
+    expect(onOptionsChange).toHaveBeenCalledWith({
+      ...OPTIONS,
+      hideSleeping: false,
+      hideDefaultBranch: false,
+      hideAutomationCreated: false,
+      hideCliCreated: false,
+      hideDetachedHead: false,
+      alwaysShowDefaultBranch: false,
+      filterProjectIds: [],
+    });
+
+    fireEvent.click(screen.getByText("+ Add project"));
+    expect(onAddProject).toHaveBeenCalledTimes(1);
+  });
+
+  it("moves the project highlight with the arrows and toggles it on Enter", () => {
+    const onOptionsChange = vi.fn();
+    const { container } = renderMenu({ onOptionsChange });
+
+    fireEvent.click(screen.getByText("Projects"));
+    const input = screen.getByPlaceholderText("Add project...");
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+
+    expect(container.querySelector('[data-active-project="true"]')?.textContent).toContain("orca");
+
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onOptionsChange).toHaveBeenCalledWith(
+      expect.objectContaining({ filterProjectIds: ["repo_b"] })
+    );
+  });
+
+  it("counts active filters for the trigger badge", () => {
+    expect(countActiveWorkspaceFilters(OPTIONS)).toBe(0);
+    expect(
+      countActiveWorkspaceFilters({
+        ...OPTIONS,
+        hideSleeping: true,
+        hideDetachedHead: true,
+        filterProjectIds: ["repo_a"],
+      })
+    ).toBe(4);
   });
 });

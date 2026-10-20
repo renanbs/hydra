@@ -27,7 +27,7 @@ const SidebarAgentsList = lazyWithRetry(() =>
 import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
 import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
-import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
@@ -57,6 +57,7 @@ const defaultDisplayOptions: WorkspaceDisplayOptions = {
   hideAutomationCreated: false,
   hideCliCreated: false,
   hideDetachedHead: false,
+  alwaysShowDefaultBranch: false,
 };
 
 export function WorktreeSidebar({
@@ -414,6 +415,7 @@ export function WorktreeSidebar({
       hideAutomationCreated: false,
       hideCliCreated: false,
       hideDetachedHead: false,
+      alwaysShowDefaultBranch: false,
       filterProjectIds: [],
     };
     setDisplayOptions(next);
@@ -740,6 +742,7 @@ export function WorktreeSidebar({
         optionsMenuOpen={optionsMenuOpen}
         setOptionsMenuOpen={setOptionsMenuOpen}
         projects={projects}
+        activeFilterCount={countActiveWorkspaceFilters(displayOptions)}
       />
 
       {/* 3. Main Body */}
@@ -958,6 +961,7 @@ export function WorktreeSidebar({
         projects={projects}
         onClose={() => setOptionsMenuOpen(false)}
         onOptionsChange={handleDisplayOptionsChange}
+        onAddProject={onOpenAddRepoDialog}
       />
 
       {/* 5. Footer */}

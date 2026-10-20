@@ -22,6 +22,8 @@ type SidebarHeaderProps = {
   optionsMenuOpen: boolean;
   setOptionsMenuOpen: (open: boolean) => void;
   projects: HydraProject[];
+  /** Orca `getSidebarActiveFilterCount`: badge + dynamic label on the options trigger. */
+  activeFilterCount: number;
 };
 
 export function SidebarHeader({
@@ -36,6 +38,7 @@ export function SidebarHeader({
   optionsMenuOpen,
   setOptionsMenuOpen,
   projects,
+  activeFilterCount,
 }: SidebarHeaderProps) {
   // Subscribe this header to locale changes before using translate().
   useTranslation();
@@ -156,12 +159,20 @@ export function SidebarHeader({
                 e.stopPropagation();
                 setOptionsMenuOpen(!optionsMenuOpen);
               }}
-              title="Workspace display options"
-              aria-label="Workspace display options"
+              title={
+                activeFilterCount > 0
+                  ? `Workspace display options (${activeFilterCount} active)`
+                  : "Workspace display options"
+              }
+              aria-label={
+                activeFilterCount > 0
+                  ? `Workspace display options (${activeFilterCount} active)`
+                  : "Workspace display options"
+              }
               aria-haspopup="menu"
               aria-expanded={optionsMenuOpen}
               className={cn(
-                "inline-flex size-6 items-center justify-center rounded-md transition-all outline-none cursor-pointer",
+                "relative inline-flex size-6 items-center justify-center rounded-md transition-all outline-none cursor-pointer",
                 "focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50",
                 optionsMenuOpen
                   ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground"
@@ -169,6 +180,14 @@ export function SidebarHeader({
               )}
             >
               <SlidersHorizontal className="size-3.5" strokeWidth={2.25} />
+              {activeFilterCount > 0 ? (
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-0.5 -right-0.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-medium leading-none text-primary-foreground"
+                >
+                  {activeFilterCount > 9 ? "9+" : activeFilterCount}
+                </span>
+              ) : null}
             </button>
 
             <button
