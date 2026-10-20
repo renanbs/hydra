@@ -94,6 +94,15 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     expect(within(hidden).getByText("fix/d")).toBeInTheDocument();
   });
 
+  it("names the recovery action with the worktree and its path", () => {
+    renderDialog();
+    expect(
+      screen.getByRole("button", {
+        name: "Show agent/a at /home/me/src/repo/.claude/worktrees/a",
+      })
+    ).toBeInTheDocument();
+  });
+
   it("writes a built-in Show/Hide as a full-replace source preference", () => {
     renderDialog();
 
@@ -205,7 +214,7 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     // The recovery list renders in `hiddenWorktrees` order; the third row is the
     // custom-root worktree.
     const hidden = screen.getByRole("region", { name: "Hidden worktrees (4)" });
-    fireEvent.click(within(hidden).getAllByRole("button", { name: "Show" })[2]);
+    fireEvent.click(within(hidden).getAllByRole("button", { name: /^Show .* at / })[2]);
 
     expect(invokeMock).toHaveBeenCalledWith("import_worktree", {
       projectPath: PROJECT.path,

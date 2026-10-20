@@ -9,6 +9,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useState, useMemo, useRef } from "react";
 import { Search, FolderGit2, X, Eye, Plus, Trash2, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { List } from "react-window";
 import { useAppStore } from "@/store";
 import type { CatalogEnvelope, CatalogRepo } from "@/lib/catalog-types";
 import type { GitWorktreeInfo, HydraProject } from "./types";
@@ -51,6 +52,79 @@ import {
   type WorktreeVisibilityRepoConfig,
   type WorktreeVisibilitySourceRow,
 } from "@/lib/worktree-visibility-sources";
+
+/** One hidden worktree row, shared by the plain list and the virtualized one. */
+function HiddenWorktreeRow({
+  worktree,
+  projectPath,
+  isBusy,
+  onShow,
+  style,
+}: {
+  worktree: GitWorktreeInfo;
+  projectPath: string;
+  isBusy: boolean;
+  onShow: (path: string) => void;
+  style?: React.CSSProperties;
+}): React.JSX.Element {
+  const displayPath = worktree.path.replace(projectPath, "").replace(/^\//, "") || worktree.path;
+  const name = worktree.branch || worktree.path;
+  return (
+    <div
+      style={style}
+      className="flex items-center justify-between gap-3 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60 hover:bg-neutral-900/60 transition"
+    >
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <div className="flex items-center gap-1.5 font-medium text-[13px] text-neutral-200 truncate">
+          <FolderGit2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span className="truncate">{worktree.branch || "unnamed"}</span>
+        </div>
+        <div className="font-mono text-[10px] text-neutral-500 truncate" title={worktree.path}>
+          {displayPath}
+        </div>
+      </div>
+      <button
+        type="button"
+        disabled={isBusy}
+        aria-label={`Show ${name} at ${worktree.path}`}
+        onClick={() => onShow(worktree.path)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+      >
+        <Eye className="w-3.5 h-3.5 text-neutral-400" />
+        <span>{isBusy ? "Showing..." : "Show"}</span>
+      </button>
+    </div>
+  );
+}
+
+function HiddenWorktreeVirtualRow({
+  index,
+  style,
+  worktrees,
+  projectPath,
+  busyPath,
+  onShow,
+}: {
+  index: number;
+  style: React.CSSProperties;
+  worktrees: readonly GitWorktreeInfo[];
+  projectPath: string;
+  busyPath: string | null;
+  onShow: (path: string) => void;
+}): React.JSX.Element | null {
+  const worktree = worktrees[index];
+  if (!worktree) return null;
+  return (
+    <div style={style} className="px-0.5 pb-2">
+      <HiddenWorktreeRow
+        worktree={worktree}
+        projectPath={projectPath}
+        isBusy={busyPath === worktree.path}
+        onShow={onShow}
+      />
+    </div>
+  );
+}
 
 export interface WorktreeVisibilityDialogProps {
   open: boolean;
@@ -745,48 +819,42 @@ export function WorktreeVisibilityDialog({
               </div>
             )}
 
-            <div className="space-y-2">
-              {filteredWorktrees.length > 0 ? (
-                filteredWorktrees.map((wt) => {
-                  const displayPath =
-                    wt.path.replace(project.path, "").replace(/^\//, "") || wt.path;
-                  const isBusy = busyPath === wt.path;
-                  return (
-                    <div
+            {filteredWorktrees.length > 10 ? (
+              <div style={{ height: 260 }} className="overflow-hidden">
+                <List
+                  rowCount={filteredWorktrees.length}
+                  rowHeight={76}
+                  rowComponent={HiddenWorktreeVirtualRow}
+                  // @ts-ignore react-window v2 rowProps are untyped here
+                  rowProps={{
+                    worktrees: filteredWorktrees,
+                    projectPath: project.path,
+                    busyPath,
+                    onShow: handleShow,
+                  }}
+                  style={{ height: 260, width: "100%" }}
+                  overscanCount={6}
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredWorktrees.length > 0 ? (
+                  filteredWorktrees.map((wt) => (
+                    <HiddenWorktreeRow
                       key={wt.path}
-                      className="flex items-center justify-between gap-3 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60 hover:bg-neutral-900/60 transition"
-                    >
-                      <div className="min-w-0 flex-1 space-y-0.5">
-                        <div className="flex items-center gap-1.5 font-medium text-[13px] text-neutral-200 truncate">
-                          <FolderGit2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                          <span className="truncate">{wt.branch || "unnamed"}</span>
-                        </div>
-                        <div
-                          className="font-mono text-[10px] text-neutral-500 truncate"
-                          title={wt.path}
-                        >
-                          {displayPath}
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        disabled={isBusy}
-                        onClick={() => handleShow(wt.path)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition cursor-pointer disabled:opacity-50"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-neutral-400" />
-                        <span>{isBusy ? "Showing..." : "Show"}</span>
-                      </button>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="py-8 text-center text-neutral-500 text-xs">
-                  No hidden worktrees found.
-                </div>
-              )}
-            </div>
+                      worktree={wt}
+                      projectPath={project.path}
+                      isBusy={busyPath === wt.path}
+                      onShow={handleShow}
+                    />
+                  ))
+                ) : (
+                  <div className="py-8 text-center text-neutral-500 text-xs">
+                    No hidden worktrees found.
+                  </div>
+                )}
+              </div>
+            )}
           </section>
 
           {sourceError && (
