@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 204 | 26.7% |
-| partial | 323 | 42.2% |
-| missing | 230 | 30.1% |
+| parity | 205 | 26.8% |
+| partial | 331 | 43.3% |
+| missing | 221 | 28.9% |
 | not-applicable | 7 | 0.9% |
 | out-of-scope | 1 | 0.1% |
 
@@ -22,7 +22,7 @@
 | D02c-project-groups-scripts | 26 | 2 | 4 | 20 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 35 | 60 | 9 | 0 | 0 |
 | D03b-sidebar-list-orchestration | 50 | 9 | 21 | 20 | 0 | 0 |
-| D04a-worktree-card-surface | 111 | 14 | 58 | 39 | 0 | 0 |
+| D04a-worktree-card-surface | 111 | 15 | 66 | 30 | 0 | 0 |
 | D04b-worktree-card-controllers | 23 | 1 | 11 | 11 | 0 | 0 |
 | D05-agents-rows | 23 | 0 | 10 | 13 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 22 | 11 | 2 | 0 | 0 |

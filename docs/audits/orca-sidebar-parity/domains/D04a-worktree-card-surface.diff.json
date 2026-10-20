@@ -939,16 +939,18 @@
     "components/sidebar/WorktreeCardIssueDetailSection.tsx:39"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263"
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:278-290"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Cabeçalho Issue #<n>, menu de ações, editar, Open in Orca e View on GitHub",
-     "Título da issue + badges de estado"
+     "Menu de ações da issue",
+     "Ação de editar a partir da seção",
+     "Abertura externa da issue"
     ],
-    "notes": "Busca: WorktreeCardIssueDetailSection, linkedWorkItem e issueNumber no hover = 0 hits."
+    "notes": "The hover names the linked issue number; actions and external linking need the repo remote URL.",
+    "note": "The hover names the linked issue number; actions and external linking need the repo remote URL."
    }
   },
   {
@@ -989,17 +991,17 @@
     "components/sidebar/WorktreeCardMeta.tsx:261"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263",
-     "src/store/slices/linear.ts:1"
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:292-300"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Seção Linear com link, Open in Orca e View on Linear",
-     "Título + badges de estado do Linear"
+     "Link para o item Linear",
+     "Ações de abrir"
     ],
-    "notes": "Busca: linearIssueDisplay/LinearStateBadge/LinearIcon no card = 0 hits; o dado existe na store (src/store/slices/linear.ts) sem consumidor no card."
+    "notes": "The Linear identifier renders; no URL is derived.",
+    "note": "The Linear identifier renders; no URL is derived."
    },
    "par": [
     "PAR-62"
@@ -1037,15 +1039,17 @@
     "components/sidebar/WorktreeCardMeta.tsx:356"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263"
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:301-312"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Seção Notes com StickyNote, ação Edit notes e render de markdown com fallback whitespace-pre-wrap"
+     "Renderização markdown",
+     "Ação de editar a partir da seção"
     ],
-    "notes": "Sem notas de workspace no card (D04b-020). Busca: CommentMarkdown em src/** = 0 hits e nenhuma superfície de markdown no card."
+    "notes": "Notes render read-only with preserved line breaks.",
+    "note": "Notes render read-only with preserved line breaks."
    },
    "par": [
     "PAR-39"
@@ -2174,9 +2178,13 @@
     "components/sidebar/WorktreeMetaDialog.tsx:432"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3637-3639"
+     "src/components/sidebar/WorktreeMetaDialog.tsx:1-210",
+     "src/App.tsx:584-590",
+     "src/App.tsx:3791-3796",
+     "src/App.tsx:4539-4630",
+     "src/components/sidebar/WorktreeMetaDialog.parity.test.tsx:1-70"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -2184,8 +2192,8 @@
      "Foco inicial por modalData.focus, provider/host e afterSave",
      "role=alert de erro e botões Cancel/Save com Saving..."
     ],
-    "notes": "Sem diálogo de edição de metadados.",
-    "note": "Sem diálogo de edição de metadados."
+    "notes": "Context menu opens the dialog seeded from persisted metadata; Save writes name + notes + linked items and updates the live map; Cancel/Escape never write.",
+    "note": "Context menu opens the dialog seeded from persisted metadata; Save writes name + notes + linked items and updates the live map; Cancel/Escape never write."
    },
    "par": [
     "PAR-73"
@@ -2225,16 +2233,18 @@
     "components/sidebar/WorktreeIssueLinkField.tsx:98"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263"
+     "src/components/sidebar/WorktreeMetaDialog.tsx:52-60",
+     "src/components/sidebar/WorktreeMetaDialog.tsx:151-165"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Campo de vínculo de issue com chip GitHub/Linear, reserva de espaço e região viva de ajuda",
-     "Validação e deslocamento de links"
+     "Chip de provedor (GitHub/Linear) no campo de issue",
+     "Região viva de ajuda abaixo do campo"
     ],
-    "notes": "Busca: WorktreeIssueLinkField em src/** = 0 hits (só i18n locales en/fr)."
+    "notes": "Numeric issue field with positive-integer validation and an inline alert is wired.",
+    "note": "Numeric issue field with positive-integer validation and an inline alert is wired."
    }
   },
   {
@@ -2246,15 +2256,17 @@
     "components/sidebar/WorktreeReviewLinkField.tsx:27"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263"
+     "src/components/sidebar/WorktreeMetaDialog.tsx:166-182"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Campo de review GH PR/GitLab MR com rótulo, placeholder e ajuda por provedor"
+     "Rótulo/placeholder por provedor (GH PR vs GitLab MR)",
+     "Ajuda contextual por provedor"
     ],
-    "notes": "Busca: WorktreeReviewLinkField em src/** = 0 hits."
+    "notes": "The review field validates a positive number; provider-specific copy is not derived.",
+    "note": "The review field validates a positive number; provider-specific copy is not derived."
    }
   },
   {
@@ -2266,16 +2278,19 @@
     "components/sidebar/WorktreeMetaDialog.tsx:404"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/App.tsx:3637-3639"
+     "src/components/sidebar/WorktreeMetaDialog.tsx:184-194",
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:300-310"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Textarea de notas com auto-resize (max-h-60) e submit por Enter/atalho de plataforma"
+     "Renderização markdown das notas",
+     "Auto-resize do textarea",
+     "Atalho de submit (Cmd/Ctrl+Enter)"
     ],
-    "notes": "Sem campo de comentário/notas com markdown.",
-    "note": "Sem campo de comentário/notas com markdown."
+    "notes": "Notes persist and render as pre-wrapped text in the hover; markdown and editor ergonomics remain.",
+    "note": "Notes persist and render as pre-wrapped text in the hover; markdown and editor ergonomics remain."
    }
   },
   {
@@ -2287,16 +2302,19 @@
     "components/sidebar/WorktreeMetaDialog.tsx:251"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/App.tsx:3637-3639"
+     "src/App.tsx:4569-4576",
+     "src-tauri/src/lib.rs:539-560",
+     "src-tauri/src/db.rs:1270-1300",
+     "src-tauri/src/db.rs:1519-1560"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Validação e envio do payload de metadados qualificado por host"
+     "Qualificação do save pelo host (worktree_metadata é keyed por path; dois hosts com o mesmo path compartilham a linha)"
     ],
-    "notes": "Sem payload de metadados qualificado por host.",
-    "note": "Sem payload de metadados qualificado por host."
+    "notes": "Payload is validated in the dialog and persisted atomically; the table still lacks a host-qualified key.",
+    "note": "Payload is validated in the dialog and persisted atomically; the table still lacks a host-qualified key."
    }
   },
   {
@@ -2599,16 +2617,18 @@
     "components/sidebar/worktree-card-meta-types.ts:46"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-card-model.ts:14-113"
+     "src/components/sidebar/worktree-card-model.ts:85-94",
+     "src/shared/worktree/worktree-row.ts:45-58",
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:19-39"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Contrato de tipos das props de detalhes (issue/Linear/Jira/review) e do hover"
+     "Campo Jira no contrato de metadados"
     ],
-    "notes": "Contrato de props existe no wrapper; hover completo ausente.",
-    "note": "Contrato de props existe no wrapper; hover completo ausente."
+    "notes": "Card/hover metadata contract covers issue, review, Linear and notes; Jira is absent.",
+    "note": "Card/hover metadata contract covers issue, review, Linear and notes; Jira is absent."
    }
   }
  ],

@@ -518,7 +518,7 @@
   },
   {
    "id": "D04a-042",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D04a-043",
@@ -542,7 +542,7 @@
  "PAR-39": [
   {
    "id": "D04a-044",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D12-001",
@@ -686,7 +686,7 @@
  "PAR-73": [
   {
    "id": "D04a-093",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D07-020",
