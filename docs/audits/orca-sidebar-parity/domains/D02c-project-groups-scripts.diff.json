@@ -44,20 +44,21 @@
     "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:62"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/i18n/locales/en.json:6151-6155"
+     "src/components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:1-100",
+     "src/components/sidebar/WorktreeSidebar.tsx:925",
+     "src/components/sidebar/WorktreeSidebar.tsx:1327-1355",
+     "src/components/sidebar/SuppressExternalWorktreeInboxDialog.parity.test.tsx:1-42"
     ],
     "backend": [
      "invoke('suppress_worktree_inbox') -> src/components/sidebar/WorktreeSidebar.tsx:794 -> src-tauri/src/lib.rs:423"
     ],
     "missing_behaviors": [
-     "Exibe título 'Hide external worktrees?' e descrição avisando que worktrees externos não serão mais exibidos na barra lateral ou na lista para o repositório",
-     "Exibe caixa explicativa informando que a funcionalidade pode ser reativada nas configurações do projeto com link 'Open Non-Orca worktrees settings'",
-     "Botões de rodapé: 'Cancel' (variante secondary) e 'Hide external worktrees' (default), ambos desabilitados durante estado pending"
+     "Link abre Settings → Non-Orca worktrees (Hydra ainda não tem essa seção; abre a página geral)"
     ],
-    "notes": "SuppressExternalWorktreeInboxDialog orfao; o 'x' ainda suprime direto.",
-    "note": "SuppressExternalWorktreeInboxDialog orfao; o 'x' ainda suprime direto."
+    "notes": "Confirmation, copy, pending lock and the suppression command are wired; only the deep-link target differs.",
+    "note": "Confirmation, copy, pending lock and the suppression command are wired; only the deep-link target differs."
    }
   },
   {
@@ -484,9 +485,12 @@
     "components/sidebar/RemoveFolderDialog.tsx:87"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5285-5295"
+     "src/components/sidebar/RemoveFolderDialog.tsx:1-108",
+     "src/components/sidebar/WorktreeSidebar.tsx:161-183",
+     "src/components/sidebar/WorktreeSidebar.tsx:1313-1325",
+     "src/components/sidebar/RemoveFolderDialog.parity.test.tsx:1-48"
     ],
     "backend": [
      "invoke('catalog_remove_repo') -> src/App.tsx:1613 -> src-tauri/src/lib.rs:289"
@@ -498,8 +502,8 @@
      "Para projetos locais: esclarece que os arquivos continuam no disco local",
      "Botão 'Remove' destrutivo invoca removeProject no store com feedback de toast em caso de erro"
     ],
-    "notes": "RemoveFolderDialog orfao; remocao de projeto segue imediata via catalog_remove_repo.",
-    "note": "RemoveFolderDialog orfao; remocao de projeto segue imediata via catalog_remove_repo."
+    "notes": "Remove Project asks first and adapts the copy: local disk, named SSH host, or VM recipe policy; Cancel/Escape abort and Remove confirms.",
+    "note": "Remove Project asks first and adapts the copy: local disk, named SSH host, or VM recipe policy; Cancel/Escape abort and Remove confirms."
    }
   },
   {

@@ -1,0 +1,31 @@
+{
+ "group": "J",
+ "generatedFrom": "2026-10-20 destructive-confirmation increment: Remove Project dialog with host-aware copy and the suppress-external-worktrees confirmation",
+ "rows": [
+  {
+   "id": "D02c-018",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/RemoveFolderDialog.tsx:1-108",
+    "src/components/sidebar/WorktreeSidebar.tsx:161-183",
+    "src/components/sidebar/WorktreeSidebar.tsx:1313-1325",
+    "src/components/sidebar/RemoveFolderDialog.parity.test.tsx:1-48"
+   ],
+   "note": "Remove Project asks first and adapts the copy: local disk, named SSH host, or VM recipe policy; Cancel/Escape abort and Remove confirms."
+  },
+  {
+   "id": "D02c-002",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:1-100",
+    "src/components/sidebar/WorktreeSidebar.tsx:925",
+    "src/components/sidebar/WorktreeSidebar.tsx:1327-1355",
+    "src/components/sidebar/SuppressExternalWorktreeInboxDialog.parity.test.tsx:1-42"
+   ],
+   "missing_behaviors": [
+    "Link abre Settings → Non-Orca worktrees (Hydra ainda não tem essa seção; abre a página geral)"
+   ],
+   "note": "Confirmation, copy, pending lock and the suppression command are wired; only the deep-link target differs."
+  }
+ ]
+}
