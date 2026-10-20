@@ -542,15 +542,15 @@
  "PAR-39": [
   {
    "id": "D04a-044",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D12-001",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D12-002",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D12-003",
@@ -558,7 +558,7 @@
   },
   {
    "id": "D12-004",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D12-005",
@@ -570,7 +570,7 @@
   },
   {
    "id": "D12-007",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D12-008",

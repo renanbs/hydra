@@ -11,11 +11,10 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:67"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "package.json:13",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:124",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:256"
+     "src/components/sidebar/comment-markdown.tsx:1-150",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:59-70"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -25,8 +24,8 @@
      "Reseta estilos de pill de código inline em <code> filhos de <pre> via seletor descendente [&_pre_code]",
      "Encaminha ref e props via React.forwardRef e React.memo permitindo composição transparente com Radix HoverCardTrigger asChild"
     ],
-    "notes": "Sem renderer markdown; package.json tocado pela pilha mas sem dependencia de markdown inline.",
-    "note": "Sem renderer markdown; package.json tocado pela pilha mas sem dependencia de markdown inline."
+    "notes": "Compact variant renders line divs (no <p>), preserves line breaks and uses the card's own typography.",
+    "note": "Compact variant renders line divs (no <p>), preserves line breaks and uses the card's own typography."
    },
    "par": [
     "PAR-39"
@@ -40,18 +39,18 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:142"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "package.json:13",
-     "src/components/sidebar/worktree-card-meta-row.tsx:60"
+     "src/components/sidebar/comment-markdown.tsx:118-125",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:59-70"
     ],
     "backend": [],
     "missing_behaviors": [
      "Renderiza H1 a H6 como elementos <span> inline (classes comment-md-h, comment-md-h1 a h3, font-bold/font-semibold) preservando o fluxo inline do card",
      "Atribui role='heading' e aria-level={1..6} aos spans para manter a hierarquia de navegação acessível por leitores de tela"
     ],
-    "notes": "Sem renderer markdown inline.",
-    "note": "Sem renderer markdown inline."
+    "notes": "H1–H6 lines flatten to a semibold inline line instead of block headings.",
+    "note": "H1–H6 lines flatten to a semibold inline line instead of block headings."
    },
    "par": [
     "PAR-39"
@@ -68,20 +67,13 @@
    ],
    "hydra": {
     "status": "missing",
-    "evidence": [
-     "package.json:13",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:124",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:276"
-    ],
+    "evidence": [],
     "backend": [],
     "missing_behaviors": [
-     "Renderiza parágrafos como elementos <p className='my-2 first:mt-0 last:mb-0'>",
-     "Renderiza títulos reais <h1> a <h6> com tipografia escalonada (18px, 16px, 15px), semibold, entrelinha compacta e margens verticais",
-     "Renderiza citações em bloco <blockquote> com borda lateral esquerda (border-l-2 border-border/70 pl-3 text-muted-foreground)",
-     "Renderiza divisores horizontais <hr className='my-4 border-border/60'>"
+     "Variante documental com headings em bloco, citações e espaçamento hierárquico"
     ],
-    "notes": "Sem renderer markdown inline.",
-    "note": "Sem renderer markdown inline."
+    "notes": "Only the compact sidebar variant exists.",
+    "note": "Only the compact sidebar variant exists."
    },
    "par": [
     "PAR-39"
@@ -96,23 +88,17 @@
     "components/sidebar/CommentMarkdown.tsx:185"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/App.tsx:195",
-     "src/components/terminal-pane/terminal-bracketed-paste.ts:51",
-     "pnpm-lock.yaml:0"
+     "src/components/sidebar/comment-markdown.tsx:1-30",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:32-40"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Aplica pipeline rehypeRaw seguido de rehypeSanitize com schema estendido de defaultSchema",
-     "Permite tags HTML seguras: details, summary, sub, sup, ins, kbd, table, thead, tbody, tr, th, td, blockquote",
-     "Filtra e remove completamente comentários HTML de linha única e multilinha (<!-- ... -->)",
-     "Permite atributos seguros específicos: open em details; href e title em <a>; src, alt, title, width, height em <img>; type, checked, disabled em <input>; align em <td> e <th>",
-     "Permite protocolos data: e blob: em src de imagens; protocolo file: em href é filtrado e higienizado por padrão a menos que allowFileUriLinks esteja habilitado",
-     "Renderiza <details>/<summary> como seções expansíveis nativas acessíveis"
+     "Remoção de comentários HTML (hoje aparecem como texto literal)"
     ],
-    "notes": "Sem renderer markdown inline; bracketed paste nao renderiza markdown.",
-    "note": "Sem renderer markdown inline; bracketed paste nao renderiza markdown."
+    "notes": "Raw HTML can never become markup and unsafe protocols stay literal; HTML comments are shown, not stripped.",
+    "note": "Raw HTML can never become markup and unsafe protocols stay literal; HTML comments are shown, not stripped."
    },
    "par": [
     "PAR-39"
@@ -192,9 +178,10 @@
     "components/sidebar/CommentMarkdown.tsx:40"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:223"
+     "src/components/sidebar/comment-markdown.tsx:75-92",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:42-55"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -204,7 +191,8 @@
      "Intercepção de auxclick suporta clique com botão do meio (button 1); cliques com botão direito (button 2) não ativam interceptação",
      "Quando allowFileUriLinks=true é informado, permite que o chamador intercepte URIs file:// explicitamente autorizadas"
     ],
-    "notes": "Busca em 5 passos: (1) nenhum interceptor de clique/auxclick em âncoras de markdown; (2) sem stopPropagation/preventDefault para file:/#orca-native-file:; (3) sem componente de link; (4) sem backend; (5) o único tratamento de link do popover abre URL via window.open (WorktreeCardDetailsHover.tsx:223), sem callback onLinkClick. Não localizado."
+    "notes": "Links preventDefault+stopPropagation and open via open_external_url_cmd; only http(s)/mailto linkify.",
+    "note": "Links preventDefault+stopPropagation and open via open_external_url_cmd; only http(s)/mailto linkify."
    },
    "par": [
     "PAR-39"
@@ -344,19 +332,13 @@
    ],
    "hydra": {
     "status": "missing",
-    "evidence": [
-     "src/store/slices/editor/actions/markdown-preview-actions.ts:3",
-     "src/i18n/locales/en.json:17501"
-    ],
+    "evidence": [],
     "backend": [],
     "missing_behaviors": [
-     "Extrai identificador de linguagem da classe CSS do elemento filho (language-{lang} -> lang)",
-     "Quando renderCodeBlock (ex.: NativeChatCodeBlock) é fornecido, delega a renderização do bloco passando children e language extraída",
-     "Para cercas sem linguagem especificada (bare code fences), não inventa rótulo de linguagem (language=undefined)",
-     "Quando renderCodeBlock não é fornecido, renderiza bloco <pre className='my-3 max-h-80 max-w-full overflow-x-auto rounded-md bg-accent p-3 font-mono text-[12px]'>"
+     "Bloco de código com extração de linguagem e renderer customizado"
     ],
-    "notes": "Sem renderer markdown inline no sidebar.",
-    "note": "Sem renderer markdown inline no sidebar."
+    "notes": "Fenced blocks are not recognized; backticks render inline only.",
+    "note": "Fenced blocks are not recognized; backticks render inline only."
    },
    "par": [
     "PAR-39"

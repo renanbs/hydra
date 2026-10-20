@@ -1048,17 +1048,17 @@
     "components/sidebar/WorktreeCardMeta.tsx:356"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
      "src/components/sidebar/WorktreeCardDetailsHover.tsx:301-312",
-     "src/components/sidebar/worktree-card-detail-controls.tsx:12-27"
+     "src/components/sidebar/worktree-card-detail-controls.tsx:12-27",
+     "src/components/sidebar/comment-markdown.tsx:1-150",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:1-60"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Renderização markdown das notas"
-    ],
-    "notes": "Notes render read-only with preserved line breaks and an edit action in the section header.",
-    "note": "Notes render read-only with preserved line breaks and an edit action in the section header."
+    "missing_behaviors": [],
+    "notes": "Notes render as compact inline markdown (bold/em/code/lists/safe links, raw HTML inert) with an edit action in the section header.",
+    "note": "Notes render as compact inline markdown (bold/em/code/lists/safe links, raw HTML inert) with an edit action in the section header."
    },
    "par": [
     "PAR-39"
@@ -2294,12 +2294,11 @@
     ],
     "backend": [],
     "missing_behaviors": [
-     "Renderização markdown das notas",
      "Auto-resize do textarea",
      "Atalho de submit (Cmd/Ctrl+Enter)"
     ],
-    "notes": "Notes persist and render as pre-wrapped text in the hover; markdown and editor ergonomics remain.",
-    "note": "Notes persist and render as pre-wrapped text in the hover; markdown and editor ergonomics remain."
+    "notes": "Notes persist and render as compact markdown in the card; the editor still lacks auto-resize and a submit chord.",
+    "note": "Notes persist and render as compact markdown in the card; the editor still lacks auto-resize and a submit chord."
    }
   },
   {
