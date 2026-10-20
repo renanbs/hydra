@@ -84,6 +84,12 @@ import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
+import { WorktreeMetaDialog } from "./components/sidebar/WorktreeMetaDialog";
+import type {
+  WorktreeMetadataByPath,
+  WorktreeMetadataDraft,
+  WorktreeMetadataRecord,
+} from "./components/sidebar/worktree-metadata-types";
 import { getDeleteStateKeyForWorktreeHost } from "./components/sidebar/worktree-delete-state-host-match";
 import type { WorktreeDeleteState } from "./store/slices/worktree-delete-state-types";
 import type { ExecutionHostId } from "./shared/execution-host";
@@ -575,6 +581,14 @@ export default function App() {
     try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
   });
   const persistLineage = (m: Record<string, string>) => { try { localStorage.setItem("hydra:worktree_lineage", JSON.stringify(m)); } catch {} };
+  const [worktreeMetadataByPath, setWorktreeMetadataByPath] = useState<WorktreeMetadataByPath>({});
+  const [worktreeMetaDialog, setWorktreeMetaDialog] = useState<{ wt: GitWorktreeInfo } | null>(null);
+
+  useEffect(() => {
+    invoke<Record<string, WorktreeMetadataRecord>>("list_worktree_metadata")
+      .then(setWorktreeMetadataByPath)
+      .catch(console.error);
+  }, []);
 
   // PR-14: blob merged + debounce 250ms. sidebarPrefsHydratedRef faz gate das
   // escritas até a hidratação completar — sem o gate, o mount dispararia os
@@ -3774,6 +3788,13 @@ export default function App() {
           },
         },
         {
+          label: "Edit Workspace Metadata...",
+          icon: <Pencil className="w-3.5 h-3.5" />,
+          onClick: () => {
+            setWorktreeMetaDialog({ wt });
+          },
+        },
+        {
           label: "Rename Branch in Git...",
           icon: <GitBranch className="w-3.5 h-3.5" />,
           onClick: () => {
@@ -4060,6 +4081,7 @@ export default function App() {
                 onReorderProjects={handleReorderProjects}
                 onReorderWorktrees={handleReorderWorktrees}
                 lineageByPath={worktreeLineage}
+                worktreeMetadataByPath={worktreeMetadataByPath}
                 onAssignWorktreeParent={handleAssignWorktreeParent}
                 onUnnestWorktrees={handleUnnestWorktrees}
                 pinnedProjects={pinnedProjects}
@@ -4512,6 +4534,100 @@ export default function App() {
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
         repoPath={deleteWorktreeModal?.repoPath ?? ""}
+      />
+
+      <WorktreeMetaDialog
+        open={worktreeMetaDialog != null}
+        worktreeName={
+          worktreeMetaDialog?.wt.display_name ||
+          worktreeMetaDialog?.wt.branch ||
+          worktreeMetaDialog?.wt.path ||
+          ""
+        }
+        initial={{
+          displayName:
+            worktreeMetaDialog?.wt.display_name ||
+            worktreeMetaDialog?.wt.branch ||
+            worktreeMetaDialog?.wt.path ||
+            "",
+          comment: worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.comment ?? "",
+          linkedIssue:
+            worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_issue ?? null,
+          linkedPR:
+            worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_pr ?? null,
+          linkedLinearIssue:
+            worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_linear_issue ?? null,
+        }}
+        onOpenChange={(open) => {
+          if (!open) setWorktreeMetaDialog(null);
+        }}
+        onSave={(draft: WorktreeMetadataDraft) => {
+          const target = worktreeMetaDialog?.wt;
+          if (!target) return;
+         (async () => {
+            try {
+              await invoke("save_worktree_metadata", {
+                worktreePath: target.path,
+                comment: draft.comment.trim() ? draft.comment : null,
+                linkedIssue: draft.linkedIssue,
+                linkedPr: draft.linkedPR,
+                linkedLinearIssue: draft.linkedLinearIssue,
+              });
+              if (draft.displayName && draft.displayName !== target.display_name) {
+                await invoke("set_worktree_display_name", {
+                  worktreePath: target.path,
+                  displayName: draft.displayName,
+                });
+                setGitWorktrees((prev) =>
+                  prev.map((row) =>
+                    row.path === target.path ? { ...row, display_name: draft.displayName } : row
+                  )
+                );
+                setWorktreesByProject((prev) => {
+                  const next = { ...prev };
+                  for (const key of Object.keys(next)) {
+                    next[key] = next[key].map((row) =>
+                      row.path === target.path ? { ...row, display_name: draft.displayName } : row
+                    );
+                  }
+                  return next;
+                });
+              }
+              const now = Date.now();
+              setWorktreeMetadataByPath((prev) => ({
+                ...prev,
+                [target.path]: {
+                  ...(prev[target.path] ?? {
+                    worktree_path: target.path,
+                    display_name: null,
+                    first_agent_message_rename_error: null,
+                    status: null,
+                    created_at: null,
+                    created_with_agent: null,
+                    provenance_kind: null,
+                    is_pinned: null,
+                    is_unread: null,
+                    linked_issue: null,
+                    linked_pr: null,
+                    linked_linear_issue: null,
+                    comment: null,
+                    updated_at: now,
+                  }),
+                  comment: draft.comment.trim() ? draft.comment : null,
+                  linked_issue: draft.linkedIssue,
+                  linked_pr: draft.linkedPR,
+                  linked_linear_issue: draft.linkedLinearIssue,
+                  updated_at: now,
+                },
+              }));
+              window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+            } catch (err) {
+              console.error("Failed to save workspace metadata:", err);
+            } finally {
+              setWorktreeMetaDialog(null);
+            }
+          })();
+        }}
       />
 
 

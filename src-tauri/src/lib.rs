@@ -515,6 +515,50 @@ async fn set_worktree_display_name(
 }
 
 #[tauri::command]
+async fn get_worktree_metadata(
+    worktree_path: String,
+    state: State<'_, AppState>,
+) -> Result<Option<db::WorktreeMetadataRecord>, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.get_worktree_metadata(&worktree_path))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn list_worktree_metadata(
+    state: State<'_, AppState>,
+) -> Result<std::collections::HashMap<String, db::WorktreeMetadataRecord>, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.get_all_worktree_metadata())
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn save_worktree_metadata(
+    worktree_path: String,
+    comment: Option<String>,
+    linked_issue: Option<i64>,
+    linked_pr: Option<i64>,
+    linked_linear_issue: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        db.save_worktree_metadata(
+            &worktree_path,
+            comment.as_deref(),
+            linked_issue,
+            linked_pr,
+            linked_linear_issue.as_deref(),
+        )
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn set_worktree_rename_error(
     worktree_path: String,
     error: Option<String>,
@@ -1518,6 +1562,9 @@ pub fn run() {
             create_worktree,
             delete_worktree,
             set_worktree_display_name,
+            get_worktree_metadata,
+            list_worktree_metadata,
+            save_worktree_metadata,
             set_worktree_rename_error,
             set_worktree_status,
             set_worktree_flags,

@@ -7,6 +7,7 @@ import type {
   WorktreeVisibilitySourcePreferences,
 } from "../../lib/worktree-visibility-sources";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
 import type { AgentSubagentSnapshot } from "./agent-status-types";
 import type { ProjectGroup } from "./worktree-list/types";
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
@@ -249,6 +250,8 @@ export interface WorktreeSidebarProps {
   onReorderWorktrees?: (worktrees: GitWorktreeInfo[], projectPath?: string) => void;
   /** Persisted lineage (`childPath -> parentPath`) owned by the app. */
   lineageByPath?: Readonly<Record<string, string>>;
+  /** Persisted notes/linked work items, keyed by checkout path. */
+  worktreeMetadataByPath?: WorktreeMetadataByPath;
   /** Commits a nest drag: parent and child checkout paths inside one project. */
   onAssignWorktreeParent?: (
     parentWorktreePath: string,

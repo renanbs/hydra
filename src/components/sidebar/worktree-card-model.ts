@@ -85,6 +85,13 @@ export interface WorktreeCardProps {
   statusPrDisplay?: unknown | null
   ports?: WorkspacePort[]
   review?: WorktreeReviewStatus
+  /** Persisted notes + linked work items for the hover card (D04a-040/042/043/044). */
+  metadata?: {
+    comment: string
+    linkedIssue: number | null
+    linkedPR: number | null
+    linkedLinearIssue: string | null
+  } | null
   metaRowChildren?: React.ReactNode
   sessions?: WorktreeSession[]
   onSelectSession?: (id: string) => void

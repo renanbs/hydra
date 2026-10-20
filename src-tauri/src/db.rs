@@ -75,6 +75,14 @@ pub struct WorktreeMetadataRecord {
     /// D07: não-lido persistido (Orca `WorktreeMeta.isUnread`). `None` = nunca
     /// gravado (coluna NULL).
     pub is_unread: Option<bool>,
+    /// Orca `WorktreeMeta.comment`: free-form notes rendered as inline markdown.
+    pub comment: Option<String>,
+    /// Orca `WorktreeMeta.linkedIssue` (GitHub issue number).
+    pub linked_issue: Option<i64>,
+    /// Orca `WorktreeMeta.linkedPR` (GitHub PR number).
+    pub linked_pr: Option<i64>,
+    /// Orca `WorktreeMeta.linkedLinearIssue` (identifier such as `ENG-123`).
+    pub linked_linear_issue: Option<String>,
     pub updated_at: i64,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -708,6 +716,10 @@ impl DatabaseManager {
                  provenance_kind TEXT,
                  is_pinned INTEGER,
                  is_unread INTEGER,
+                 comment TEXT,
+                 linked_issue INTEGER,
+                 linked_pr INTEGER,
+                 linked_linear_issue TEXT,
                  updated_at INTEGER NOT NULL
              );",
         )
@@ -719,6 +731,10 @@ impl DatabaseManager {
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN provenance_kind TEXT", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN comment TEXT", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_issue INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_pr INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_linear_issue TEXT", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN project_path TEXT NOT NULL DEFAULT ''", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN branch TEXT NOT NULL DEFAULT 'main'", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN agent_name TEXT NOT NULL DEFAULT 'bash'", params![]);
@@ -1179,7 +1195,7 @@ impl DatabaseManager {
     pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind FROM worktree_metadata WHERE worktree_path = ?1")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind, comment, linked_issue, linked_pr, linked_linear_issue FROM worktree_metadata WHERE worktree_path = ?1")
             .map_err(|e| format!("Error preparing worktree_metadata select: {e}"))?;
         let mut rows = stmt.query(params![worktree_path]).map_err(|e| e.to_string())?;
         if let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -1194,6 +1210,10 @@ impl DatabaseManager {
                 is_unread: row.get(7).ok().flatten(),
                 updated_at: row.get(8).unwrap_or(0),
                 provenance_kind: row.get(9).ok().flatten(),
+                comment: row.get(10).ok().flatten(),
+                linked_issue: row.get(11).ok().flatten(),
+                linked_pr: row.get(12).ok().flatten(),
+                linked_linear_issue: row.get(13).ok().flatten(),
             }))
         } else {
             Ok(None)
@@ -1203,7 +1223,7 @@ impl DatabaseManager {
     pub fn get_all_worktree_metadata(&self) -> Result<std::collections::HashMap<String, WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind FROM worktree_metadata")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind, comment, linked_issue, linked_pr, linked_linear_issue FROM worktree_metadata")
             .map_err(|e| format!("Error preparing worktree_metadata select all: {e}"))?;
         let rows = stmt
             .query_map(params![], |row| {
@@ -1218,6 +1238,10 @@ impl DatabaseManager {
                     is_unread: row.get(7).ok().flatten(),
                     updated_at: row.get(8).unwrap_or(0),
                     provenance_kind: row.get(9).ok().flatten(),
+                    comment: row.get(10).ok().flatten(),
+                    linked_issue: row.get(11).ok().flatten(),
+                    linked_pr: row.get(12).ok().flatten(),
+                    linked_linear_issue: row.get(13).ok().flatten(),
                 })
             })
             .map_err(|e| format!("Query error: {e}"))?;
@@ -1238,6 +1262,34 @@ impl DatabaseManager {
             params![worktree_path, display_name, now],
         )
         .map_err(|e| format!("Error setting worktree display name: {e}"))?;
+        Ok(())
+    }
+
+    /// Orca `updateWorktreeMeta`: notes and linked items, leaving the rest of the
+    /// row (display name, status, pins, provenance) untouched.
+    pub fn save_worktree_metadata(
+        &self,
+        worktree_path: &str,
+        comment: Option<&str>,
+        linked_issue: Option<i64>,
+        linked_pr: Option<i64>,
+        linked_linear_issue: Option<&str>,
+    ) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO worktree_metadata
+                (worktree_path, comment, linked_issue, linked_pr, linked_linear_issue, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+             ON CONFLICT(worktree_path) DO UPDATE SET
+                comment = excluded.comment,
+                linked_issue = excluded.linked_issue,
+                linked_pr = excluded.linked_pr,
+                linked_linear_issue = excluded.linked_linear_issue,
+                updated_at = excluded.updated_at",
+            params![worktree_path, comment, linked_issue, linked_pr, linked_linear_issue, now],
+        )
+        .map_err(|e| format!("Error saving worktree metadata: {e}"))?;
         Ok(())
     }
 
@@ -1409,6 +1461,10 @@ impl DatabaseManager {
                  provenance_kind TEXT,
                  is_pinned INTEGER,
                  is_unread INTEGER,
+                 comment TEXT,
+                 linked_issue INTEGER,
+                 linked_pr INTEGER,
+                 linked_linear_issue TEXT,
                  updated_at INTEGER NOT NULL
              );"
         )
@@ -1419,6 +1475,10 @@ impl DatabaseManager {
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN provenance_kind TEXT", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN comment TEXT", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_issue INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_pr INTEGER", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_linear_issue TEXT", params![]);
 
         Ok(Self {
             conn: Mutex::new(conn),
@@ -1453,6 +1513,38 @@ mod tests {
         db.delete_session("sess_1").expect("delete");
         let list2 = db.list_sessions(Some("/home/user/repo")).expect("list after delete");
         assert_eq!(list2.len(), 0);
+    }
+
+    #[test]
+    fn test_worktree_metadata_notes_preserve_other_fields() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        db.set_worktree_display_name("/repo/wt", Some("Renamed"))
+            .expect("display name");
+
+        db.save_worktree_metadata("/repo/wt", Some("note"), Some(12), Some(34), Some("ENG-7"))
+            .expect("save metadata");
+        let saved = db
+            .get_worktree_metadata("/repo/wt")
+            .expect("get")
+            .expect("row");
+        assert_eq!(saved.comment.as_deref(), Some("note"));
+        assert_eq!(saved.linked_issue, Some(12));
+        assert_eq!(saved.linked_pr, Some(34));
+        assert_eq!(saved.linked_linear_issue.as_deref(), Some("ENG-7"));
+        // Why: notes must not clobber the rename/status/pin columns.
+        assert_eq!(saved.display_name.as_deref(), Some("Renamed"));
+
+        db.save_worktree_metadata("/repo/wt", None, None, None, None)
+            .expect("clear metadata");
+        let cleared = db
+            .get_worktree_metadata("/repo/wt")
+            .expect("get")
+            .expect("row");
+        assert!(cleared.comment.is_none());
+        assert!(cleared.linked_issue.is_none());
+
+        let all = db.get_all_worktree_metadata().expect("list");
+        assert!(all.contains_key("/repo/wt"));
     }
 
     #[test]

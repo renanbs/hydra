@@ -80,6 +80,7 @@ import {
   writeWorkspaceDragData,
 } from "./workspace-status-drag-data";
 import { PINNED_GROUP_KEY } from "./worktree-list/grouping/group-keys";
+import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
@@ -371,6 +372,8 @@ export interface WorktreeListProps {
   onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
   /** Persisted lineage (`childPath -> parentPath`) owned by the app. */
   lineageByPath?: Readonly<Record<string, string>>;
+  /** Persisted notes/linked work items, keyed by checkout path. */
+  worktreeMetadataByPath?: WorktreeMetadataByPath;
   /** Commits a nest drag: parent and children are paths inside one project. */
   onAssignWorktreeParent?: (
     parentWorktreePath: string,
@@ -570,6 +573,7 @@ export function WorktreeList({
   onReorderWorktreesInGroup,
   onAssignWorktreeStatus,
   lineageByPath,
+  worktreeMetadataByPath,
   onAssignWorktreeParent,
   onUnnestWorktrees,
   onPinWorktreePaths,
@@ -672,6 +676,17 @@ export function WorktreeList({
           isPinned: pinnedSet.has(worktree.path),
           isUnread: unreadSet.has(worktree.path),
           status,
+          metadata: (() => {
+            const record = worktreeMetadataByPath?.[worktree.path];
+            return record
+              ? {
+                  comment: record.comment,
+                  linkedIssue: record.linked_issue,
+                  linkedPR: record.linked_pr,
+                  linkedLinearIssue: record.linked_linear_issue,
+                }
+              : null;
+          })(),
         });
         // Menu filters (Orca's ported predicates, never a re-derived rule). Shared
         // with the workspace board so both surfaces hide the same workspaces.
@@ -782,6 +797,7 @@ export function WorktreeList({
     pipelineVisibleHostIds,
     storeWorktreeLineageById,
     lineageByPath,
+    worktreeMetadataByPath,
     storeSshTargetLabels,
     storeSshConnectionStates,
     storeRuntimeEnvironments,

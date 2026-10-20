@@ -25,6 +25,7 @@ export function WorktreeCardParentContent({
     ports,
     workspacePorts = ports || [],
     review,
+    metadata,
     sessions,
     onSelectSession,
     activeSessionId,
@@ -59,6 +60,7 @@ export function WorktreeCardParentContent({
         project={activeProject}
         ports={workspacePorts}
         review={review}
+        metadata={metadata}
       >
         {identityContent}
       </WorktreeCardDetailsHover>
