@@ -1,0 +1,29 @@
+{
+ "group": "N",
+ "generatedFrom": "2026-10-21 list section drops: the Pinned header and workspace-status lane headers are drop targets for both the pointer drag and the native HTML5 payload",
+ "rows": [
+  {
+   "id": "D03a-009",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/section-drop.ts:1-72",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:66-84",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:46-62",
+    "src/components/sidebar/WorktreeList.tsx:405-460",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:320-350"
+   ],
+   "note": "A status lane header under the pointer suspends the insertion line and commits moveWorktreesToStatus through the same status writer the menu/board use."
+  },
+  {
+   "id": "D03a-010",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/section-drop.ts:22-31",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:46-62",
+    "src/components/sidebar/WorktreeList.tsx:430-456",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:352-365"
+   ],
+   "note": "The Pinned header exposes data-workspace-pin-drop-target and both drag paths call the list's pin writer without touching status."
+  }
+ ]
+}

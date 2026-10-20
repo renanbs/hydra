@@ -3942,14 +3942,20 @@
    "components/sidebar/worktree-list/drag/status-target.ts:39-53"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/section-drop.ts:1-72",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:66-84",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:46-62",
+    "src/components/sidebar/WorktreeList.tsx:405-460",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:320-350"
+   ],
    "missing_behaviors": [
     "drop sobre seção de status -> moveWorktreesToStatus(AtIndex)",
     "shouldPreferSidebarStatusDropTarget"
    ],
-   "notes": "Sem drop sobre seção de status: o drop resolve apenas dentro do grupo de origem; sem moveWorktreesToStatus.",
-   "note": "Sem drop sobre seção de status: o drop resolve apenas dentro do grupo de origem; sem moveWorktreesToStatus."
+   "notes": "A status lane header under the pointer suspends the insertion line and commits moveWorktreesToStatus through the same status writer the menu/board use.",
+   "note": "A status lane header under the pointer suspends the insertion line and commits moveWorktreesToStatus through the same status writer the menu/board use."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -3962,14 +3968,19 @@
    "components/sidebar/worktree-list/drag/pointer-commit.ts:68-69"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/section-drop.ts:22-31",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:46-62",
+    "src/components/sidebar/WorktreeList.tsx:430-456",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:352-365"
+   ],
    "missing_behaviors": [
     "drop sobre [data-workspace-pin-drop-target] -> onPinWorktrees",
     "isPinDrop"
    ],
-   "notes": "Sem seção/alvo Pinned de drop ([data-workspace-pin-drop-target] inexistente).",
-   "note": "Sem seção/alvo Pinned de drop ([data-workspace-pin-drop-target] inexistente)."
+   "notes": "The Pinned header exposes data-workspace-pin-drop-target and both drag paths call the list's pin writer without touching status.",
+   "note": "The Pinned header exposes data-workspace-pin-drop-target and both drag paths call the list's pin writer without touching status."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4148,15 +4159,19 @@
    "components/sidebar/worktree-list/drag/use-status-row-drag.ts:35-139"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "missing_behaviors": [
-    "hasWorkspaceDragData",
-    "computeWorktreeStatusDrop",
-    "useWorkspaceStatusDocumentDrop",
-    "getReorderDraggedIds"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/use-pointer-window-events.ts:69-96",
+    "src/components/sidebar/WorktreeSidebar.tsx:600-616",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:46-62",
+    "src/components/sidebar/worktree-list/drag/worktree-pointer-drag.parity.test.tsx:304-325"
    ],
-   "notes": "workspace-status-drag-data.ts é órfão (reachable_depth=null); não há drag de status."
+   "missing_behaviors": [
+    "visibilitychange abandonando o drag em andamento",
+    "listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo fora dos headers"
+   ],
+   "notes": "Hidden document aborts the pointer drag; native dragend/drop are caught on document capture, the drop cleanup is deferred so the row/header handler commits first; status/nest drops without a reorder slot are committed.",
+   "note": "Hidden document aborts the pointer drag; native dragend/drop are caught on document capture, the drop cleanup is deferred so the row/header handler commits first; status/nest drops without a reorder slot are committed."
   },
   "domain": "D03a-worktree-list-module"
  },

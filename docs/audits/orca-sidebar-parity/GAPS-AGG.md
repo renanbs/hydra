@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 233 capabilities
+## MISSING — 230 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -100,12 +100,9 @@
 - **D02c-025** — Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup | falta: findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay; markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório; getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface | components/sidebar/setup-script-prompt-render-state.ts:15
 - **D02c-026** — Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime | falta: Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco; Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes; Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota; Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar | components/sidebar/useSetupScriptPromptRevalidation.ts:14
 
-### D03a-worktree-list-module (12)
+### D03a-worktree-list-module (9)
 
-- **D03a-009** — Mover worktree(s) para uma seção de status ao soltar | falta: drop sobre seção de status -> moveWorktreesToStatus(AtIndex); shouldPreferSidebarStatusDropTarget | components/sidebar/worktree-list/drag/pointer-commit.ts:26-49
-- **D03a-010** — Fixar (pin) worktree(s) soltando sobre a seção Pinned | falta: drop sobre [data-workspace-pin-drop-target] -> onPinWorktrees; isPinDrop | components/sidebar/worktree-list/drag/status-target.ts:19-22
 - **D03a-012** — Pré-visualizar o destino do board já no início do drag | falta: workspaceBoardDragPreviewRequested; onWorkspaceBoardDragPreviewStart; shouldShowWorkspaceBoardDropIndicator | components/sidebar/worktree-list/drag/pointer-flush.ts:101-118
-- **D03a-019** — Arrastar cards sobre seções de status/pin com drop de documento como fallback | falta: hasWorkspaceDragData; computeWorktreeStatusDrop; useWorkspaceStatusDocumentDrop; getReorderDraggedIds | components/sidebar/worktree-list/drag/use-status-row-drag.ts:35-139
 - **D03a-035** — Linha de criação em andamento (pending creation) | falta: row pending-creation renderizada; pending:<creationId> como tipo virtual | components/sidebar/worktree-list/grouping/row-builders.ts:22-32
 - **D03a-048** — Forçar visível o alvo do seletor de envio de agente | falta: use-agent-send-target; agentSendPopoverTargetMode; forcedVisibleWorktreeIds do alvo | components/sidebar/worktree-list/listing/use-agent-send-target.ts:6-64
 - **D03a-049** — Forçar expansão das seções que escondem o worktree alvo do seletor de agente | falta: use-collapsed-groups removendo group keys do alvo; getFolderWorkspaceRevealGroupKeys; panel pinned single-location | components/sidebar/worktree-list/listing/use-collapsed-groups.ts:17-121
