@@ -1184,6 +1184,7 @@ export function WorktreeList({
             onEditMetadata={
               onEditWorktreeMetadata ? () => onEditWorktreeMetadata(wt) : undefined
             }
+            cliCreated={Boolean(row.worktree.cliProvenance)}
             metadata={{
               comment: row.worktree.comment,
               linkedIssue: row.worktree.linkedIssue,

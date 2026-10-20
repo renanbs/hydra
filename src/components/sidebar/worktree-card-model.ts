@@ -87,6 +87,8 @@ export interface WorktreeCardProps {
   review?: WorktreeReviewStatus
   /** Opens the metadata editor for this card (detail-section action). */
   onEditMetadata?: () => void
+  /** CLI provenance, rendered as a hover detail section (D04a-046). */
+  cliCreated?: boolean
   /** Persisted notes + linked work items for the hover card (D04a-040/042/043/044). */
   metadata?: {
     comment: string

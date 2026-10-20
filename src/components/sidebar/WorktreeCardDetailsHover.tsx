@@ -10,6 +10,7 @@ import {
   Square,
   Folder,
   CircleDot,
+  SquareTerminal,
   GitPullRequest,
   FileText,
   Pencil,
@@ -33,6 +34,8 @@ export interface WorktreeCardDetailsHoverProps {
   } | null;
   /** Opens the workspace metadata editor for this card (Orca detail actions). */
   onEditMetadata?: () => void;
+  /** The workspace was created through the CLI (Orca CLI provenance section). */
+  cliCreated?: boolean;
   children: React.ReactNode;
   onPortKilled?: () => void;
 }
@@ -44,6 +47,7 @@ export function WorktreeCardDetailsHover({
   review,
   metadata = null,
   onEditMetadata,
+  cliCreated = false,
   children,
   onPortKilled,
 }: WorktreeCardDetailsHoverProps): React.JSX.Element {
@@ -278,6 +282,12 @@ export function WorktreeCardDetailsHover({
               </div>
             </div>
           )}
+
+          {cliCreated ? (
+            <div className="space-y-1 pb-2 border-b border-neutral-800">
+              <DetailHeader icon={<SquareTerminal className="w-3 h-3 text-neutral-400" />} label="Created by CLI" />
+            </div>
+          ) : null}
 
           {(metadata?.linkedIssue != null ||
             metadata?.linkedPR != null ||

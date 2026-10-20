@@ -275,6 +275,16 @@ async fn catalog_get() -> CatalogEnvelope {
 }
 
 #[tauri::command]
+async fn is_git_repository(path: String) -> Result<bool, String> {
+    tokio::task::spawn_blocking(move || {
+        let candidate = std::path::Path::new(&path);
+        Ok(candidate.join(".git").exists())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn catalog_add_folder(path: String) -> Result<CatalogEnvelope, String> {
     tokio::task::spawn_blocking(move || {
         let mut envelope = read_catalog();
@@ -1544,6 +1554,7 @@ pub fn run() {
             open_in_file_manager,
             open_in_external_editor,
             catalog_get,
+            is_git_repository,
             catalog_add_folder,
             catalog_remove_repo,
             catalog_set_worktree_visibility,

@@ -27,6 +27,7 @@ export function WorktreeCardParentContent({
     review,
     metadata,
     onEditMetadata,
+    cliCreated,
     sessions,
     onSelectSession,
     activeSessionId,
@@ -63,6 +64,7 @@ export function WorktreeCardParentContent({
         review={review}
         metadata={metadata}
         onEditMetadata={onEditMetadata}
+        cliCreated={cliCreated}
       >
         {identityContent}
       </WorktreeCardDetailsHover>
