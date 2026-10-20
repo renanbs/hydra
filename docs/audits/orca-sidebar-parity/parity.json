@@ -3238,23 +3238,21 @@
    "components/sidebar/NonGitFolderDialog.tsx:154"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "partial",
    "evidence": [
-    "src/i18n/locales/en.json:5228-5235"
+    "src/components/sidebar/NonGitFolderDialog.tsx:1-92",
+    "src/components/sidebar/AddRepoDialog.tsx:57-80",
+    "src-tauri/src/lib.rs:278-290",
+    "src/components/sidebar/NonGitFolderDialog.parity.test.tsx:1-45"
    ],
    "backend": [
     "invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277"
    ],
    "missing_behaviors": [
-    "Exibe aviso esclarecendo que a pasta não é um repositório Git (editor, terminal e busca funcionam; recursos Git ficam indisponíveis)",
-    "Informa o host onde o caminho foi verificado: host SSH, ambiente de runtime específico ou local",
-    "Exibe o caminho da pasta em bloco destacado com quebra de linha",
-    "Ao confirmar pasta em host SSH: invoca window.api.repos.addRemote, atualiza store via upsertAddedRepoWithProjectHostSetup, marca onboarding (addedFolder), busca worktrees e ativa agente/chat se aplicável",
-    "Ao confirmar pasta local: invoca useAppStore.addNonGitFolder com caminho, displayName e runtimeEnvironmentId",
-    "Trata erros de adição remota exibindo toast com mensagem de falha"
+    "Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker)"
    ],
-   "notes": "NonGitFolderDialog orfao; addNonGitFolder segue sem renderer (modal 'confirm-non-git-folder' sem componente).",
-   "note": "NonGitFolderDialog orfao; addNonGitFolder segue sem renderer (modal 'confirm-non-git-folder' sem componente)."
+   "notes": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder.",
+   "note": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder."
   },
   "domain": "D02c-project-groups-scripts"
  },
@@ -8228,15 +8226,19 @@
    "components/sidebar/WorktreeCardCliDetailSection.tsx:42"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263"
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:38-44",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:285-291",
+    "src/components/sidebar/WorktreeList.tsx:1188",
+    "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx:63-70"
    ],
    "backend": [],
    "missing_behaviors": [
     "Seção Orca CLI com texto de proveniência e linha Started with <agent>"
    ],
-   "notes": "Busca: WorktreeCardCliDetailSection/callerTerminalHandle/startup_agent em src/** = 0 hits."
+   "notes": "CLI provenance renders as a 'Created by CLI' section in the hover, driven by the projected cliProvenance kind.",
+   "note": "CLI provenance renders as a 'Created by CLI' section in the hover, driven by the projected cliProvenance kind."
   },
   "domain": "D04a-worktree-card-surface"
  },

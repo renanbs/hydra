@@ -1096,15 +1096,19 @@
     "components/sidebar/WorktreeCardCliDetailSection.tsx:42"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263"
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:38-44",
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:285-291",
+     "src/components/sidebar/WorktreeList.tsx:1188",
+     "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx:63-70"
     ],
     "backend": [],
     "missing_behaviors": [
      "Seção Orca CLI com texto de proveniência e linha Started with <agent>"
     ],
-    "notes": "Busca: WorktreeCardCliDetailSection/callerTerminalHandle/startup_agent em src/** = 0 hits."
+    "notes": "CLI provenance renders as a 'Created by CLI' section in the hover, driven by the projected cliProvenance kind.",
+    "note": "CLI provenance renders as a 'Created by CLI' section in the hover, driven by the projected cliProvenance kind."
    }
   },
   {
