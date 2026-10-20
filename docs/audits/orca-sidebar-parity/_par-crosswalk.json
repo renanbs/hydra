@@ -648,11 +648,11 @@
   },
   {
    "id": "D07-041",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D10-014",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-077",
@@ -736,7 +736,7 @@
   },
   {
    "id": "D10-014",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-015",

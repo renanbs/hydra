@@ -324,10 +324,10 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:283"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:57",
-     "src/components/DeleteWorktreeDialog.tsx:98"
+     "src/App.tsx:2031-2068",
+     "src/components/sidebar/worktree-delete-failure.ts:15-75"
     ],
     "backend": {
      "be": [
@@ -337,8 +337,8 @@
     "missing_behaviors": [
      "entrada de force-delete a partir de toast/erro (Hydra só oferece no próprio dialog)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Force Delete de recuperação a partir do toast, sem persistir preferência de pular confirmação.",
+    "notes": "Force Delete de recuperação a partir do toast, sem persistir preferência de pular confirmação."
    },
    "par": [
     "PAR-56",

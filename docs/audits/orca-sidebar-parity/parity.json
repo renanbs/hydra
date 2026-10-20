@@ -13009,20 +13009,22 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/DeleteWorktreeDialog.tsx:49",
-    "src/components/DeleteWorktreeDialog.tsx:103"
+    "src-tauri/src/lib.rs:479-504",
+    "src-tauri/src/worktree_ops.rs:1270",
+    "src-tauri/src/worktree_ops.rs:1383-1430",
+    "src-tauri/src/worktree_ops.rs:1744-1781",
+    "src/components/DeleteWorktreeDialog.tsx:308-313"
    ],
    "backend": [
     "invoke('delete_worktree', { repoPath, worktreePath }) sem parâmetro de force -> src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476 (o backend já roda `git worktree remove --force` sempre — src-tauri/src/worktree_ops.rs:1321)"
    ],
    "missing_behaviors": [
-    "Semântica explícita de force (force:true / allowUnverifiedPtyStop:true): o comando não recebe nenhuma flag e o 'Force Delete' reenvia a mesma chamada",
     "Fechamento imediato do modal com progresso no card: Hydra mantém o modal aberto até o invoke terminar",
     "Toast de lista desatualizada quando o alvo não é encontrado",
     "prepareActiveWorktreeFocusAfterDelete e confirmação de foco após sucesso"
    ],
-   "notes": "Force Delete parcial.",
-   "note": "Force Delete parcial."
+   "notes": "force agora é explícito no comando e no Git: sem force o worktree sujo é recusado e a pasta sobrevive; Force Delete passa force:true.",
+   "note": "force agora é explícito no comando e no Git: sem force o worktree sujo é recusado e a pasta sobrevive; Force Delete passa force:true."
   },
   "domain": "D07-menus-actions"
  },
@@ -13065,16 +13067,19 @@
    "components/sidebar/delete-worktree-failure-toast.tsx:114"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:2028-2070",
+    "src/components/sidebar/worktree-delete-failure.ts:15-75",
+    "src/components/sidebar/worktree-delete-failure.parity.test.ts:1-45"
+   ],
    "backend": [],
    "missing_behaviors": [
-    "Toast de falha com botões 'View' / 'Force Delete' / 'Delete Anyway'",
-    "Duração Infinity quando houver opções destrutivas",
-    "Abertura do diff viewer com as alterações pendentes a partir do toast",
-    "Fechamento imediato do toast ao clicar em uma ação"
+    "Botão 'View' abrindo o diff viewer com as alterações pendentes",
+    "Botão 'Delete Anyway' para o caso de registro ausente"
    ],
-   "notes": "Buscas: 'toast' em src/App.tsx (0) e src/components/sidebar/** (0); 'DeleteWorktreeFailureToast', 'Delete Anyway' → 0. A falha é renderizada dentro do próprio diálogo (DeleteWorktreeDialog.tsx:175-179)."
+   "notes": "Toast de falha com Force Delete e duração infinita (sonner descarta ao acionar); faltam as ações View/Delete Anyway.",
+   "note": "Toast de falha com Force Delete e duração infinita (sonner descarta ao acionar); faltam as ações View/Delete Anyway."
   },
   "par": [
    "PAR-86"
@@ -13093,15 +13098,19 @@
    "components/sidebar/delete-worktree-toast.ts:121"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-delete-failure.ts:15-75",
+    "src/App.tsx:2028-2069",
+    "src/components/DeleteWorktreeDialog.tsx:329-338",
+    "src/components/sidebar/worktree-delete-failure.parity.test.ts:1-45"
+   ],
    "backend": [],
    "missing_behaviors": [
-    "Instrução 'git worktree unlock <path>' para worktree locked com razão estruturada",
-    "Orientações para orphan directory, PTYs não paradas, sessões de agente ativas, registro ausente e dirty worktree",
     "Separação entre confirmação comprovada e não confirmada de parada de PTY/agente"
    ],
-   "notes": "Buscas: 'git worktree unlock', 'Orphan', 'Missing registration', 'Unstopped', 'delete-worktree-toast' → 0 ocorrências. O backend devolve o stderr cru do git (src-tauri/src/worktree_ops.rs:1330) e o frontend o exibe sem tradução (DeleteWorktreeDialog.tsx:178)."
+   "notes": "Catálogo cobre locked (com comando unlock), dirty, orphan, permissão e sessão viva; o backend ainda não reporta confirmação de parada de PTY.",
+   "note": "Catálogo cobre locked (com comando unlock), dirty, orphan, permissão e sessão viva; o backend ainda não reporta confirmação de parada de PTY."
   },
   "domain": "D07-menus-actions"
  },
@@ -15586,10 +15595,10 @@
    "components/sidebar/DeleteWorktreeDialog.tsx:283"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/DeleteWorktreeDialog.tsx:57",
-    "src/components/DeleteWorktreeDialog.tsx:98"
+    "src/App.tsx:2031-2068",
+    "src/components/sidebar/worktree-delete-failure.ts:15-75"
    ],
    "backend": {
     "be": [
@@ -15599,8 +15608,8 @@
    "missing_behaviors": [
     "entrada de force-delete a partir de toast/erro (Hydra só oferece no próprio dialog)"
    ],
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "note": "Force Delete de recuperação a partir do toast, sem persistir preferência de pular confirmação.",
+   "notes": "Force Delete de recuperação a partir do toast, sem persistir preferência de pular confirmação."
   },
   "par": [
    "PAR-56",
