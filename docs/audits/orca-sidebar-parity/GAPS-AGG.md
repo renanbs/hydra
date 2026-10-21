@@ -245,7 +245,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 303 capabilities
+## PARTIAL — 302 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -350,7 +350,7 @@
 - **D03a-100** — Reportar rows visíveis ao coordenador de refresh de PR/CI | falta: coordenador de refresh de PR/CI (findWorktreeById/buildPRRefreshCandidate são stubs null) | components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:11-134
 - **D03a-104** — Resolver a PR de um worktree para o lane de PR (escopo repo/repo-legado/path-legado/SSH/runtime) | falta: precedência repo-scoped sobre chaves legadas; respeitar isGitHubPRSuppressed; entradas escopadas por connectionId SSH | components/sidebar/worktree-list/grouping/group-keys.ts:108-167
 
-### D03b-sidebar-list-orchestration (21)
+### D03b-sidebar-list-orchestration (20)
 
 - **D03b-001** — Redimensionamento da largura do sidebar esquerdo com cursor interativo, limites mínimo/máximo e atualização de variável CSS em tempo real | falta: Limites 220–500px (Hydra usa 180–480: src/App.tsx:741-742); Variável CSS live --workspace-sidebar-live-width (Hydra escreve container.style.width: src/hooks/useSidebarResize.ts:70-85) | backend: invoke('save_layout_persistence') -> src/App.tsx:1029 | components/sidebar/index.tsx:33-40
 - **D03b-002** — Alternância de modo do corpo do sidebar entre Workspaces e Agents com preservação de estado de colapso e scroll | falta: lazy + fallback de carregamento do SidebarAgentsList (montagem síncrona direta); ActivityThreadCollapseContext / agentsCollapsedGroupKeys preservados fora do mount; preservação de scroll dos agentes (agentsScrollTopRef): filter/focusedSessionId/selectedSessions internos (SidebarAgentsList.tsx:49-52) são perdidos no unmount | components/sidebar/index.tsx:22-24
@@ -369,7 +369,6 @@
 - **D03b-027** — Medição de retângulos e cálculo de pré-visualização de soltura para cabeçalhos de projeto | falta: measureProjectHeaderDragRects/computeProjectHeaderDropPreview sem callers; preview por limites de secao: data-repo-header-section-end sem produtor | components/sidebar/project-header-drop.ts:9-45
 - **D03b-028** — Comprometimento de reordenação de cabeçalho de projeto no modo de ordenação por grupos de projetos | falta: getProjectGroupOrderForSidebarDrop/mapSidebarProjectHeaderDropIndexToSiblingInsertIndex/applyAllRepoInsertAt sem callers; commit por bucket de grupo com ranks/tabOrder por irmaos | components/sidebar/project-header-drop.ts:61-107
 - **D03b-029** — Comprometimento de reordenação de cabeçalho de projeto no modo de ordenação global de repositórios com preservação de blocos multi-host | falta: mapSidebarRepoDropIndexToAllRepoInsertAt/applyAllRepoInsertAt: mover todas as ocorrências do repo lógico (pares de host) como bloco único; App.tsx:1915 reordena um array plano de projetos; persistência além do localStorage (App.tsx:1918) | components/sidebar/project-header-drop.ts:47-59
-- **D03b-039** — Derivação da sequência única de IDs de worktrees renderizadas com suporte a separação de colisões de host | falta: posições separadas para hosts com o mesmo id: computeRenderedSidebarWorktreeOrder deduplica por worktree.id com new Set (rendered-sidebar-worktree-order.ts:120-124) e renderedSidebarShortcutTargets deduplica por id (WorktreeList.tsx:55-57) | components/sidebar/rendered-sidebar-worktree-order.ts:119-126
 - **D03b-045** — Resolução de alvo de commit de status de worktree com tolerância de raio de 6px | falta: tolerancia de raio de 6px sobre o ultimo alvo rastreado no release do sidebar | components/sidebar/worktree-sidebar-drop-preview.ts:24-36
 - **D03b-047** — Renderização e indentação de linhas de workspace de pasta sob grupos de projetos de pastas | falta: aria-activedescendant apontando para a linha ativa de folder workspace (Hydra usa aria-current: FolderWorkspaceRow.tsx:35); indentação manual preservada fora de grupos escaneados e geometria 'new card' equivalente (a linha tem padding fixo pl-6/ml-1: FolderWorkspaceRow.tsx:43) | components/sidebar/worktree-list-card-markup-queries.ts:22-34
 - **D03b-049** — Consolidação de cabeçalhos de projeto multi-host, desambiguação de nomes de seção e etiquetagem de contexto de host | falta: exibição dos labels consolidados/multi-host no sidebar montado: hostContextLabel nunca é passado pela lista (WorktreeList.tsx:330-380), então WorktreeHostContextBadge não renderiza; desambiguação de nomes de seção por caminho no sidebar montado (withRepoSectionDisplayLabels só roda em buildRows do pipeline de atalhos); labels distintos para notices/pinned em multi-host na UI | components/sidebar/worktree-list-groups-test-fixtures.ts:6-89

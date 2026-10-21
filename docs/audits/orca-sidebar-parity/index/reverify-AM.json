@@ -1,0 +1,7 @@
+{
+ "group": "AM",
+ "generatedFrom": "2026-10-21 shortcut publisher: same-id workspaces on different execution hosts publish separate targets, while the rendered id sequence stays deduped (Orca contract)",
+ "rows": [
+  {"id":"D03b-039","status":"parity","evidence":["src/components/sidebar/WorktreeList.tsx:1145-1165","src/components/sidebar/rendered-sidebar-worktree-order.ts:297-304","src/components/sidebar/WorktreeList.parity.test.tsx:215-244"],"missing_behaviors":[],"note":"Mounted publisher dedupes by host-qualified identity, so same-id hosts keep separate Cmd+N positions; the closed-sidebar path and the id sequence match Orca exactly."}
+ ]
+}
