@@ -1150,8 +1150,13 @@ export function WorktreeList({
       if (row.type !== "item") continue;
       const prop = rowModel.propWorktreeByPath.get(row.worktree.path);
       const id = prop?.id || prop?.path || row.worktree.path;
-      if (!id || seen.has(id)) continue;
-      seen.add(id);
+      // Why the host-qualified identity: the same repo can be mounted on two
+      // execution hosts, so its workspace id repeats. Keying the dedupe on the id
+      // alone would drop the second host's Cmd+N position; keying it on the
+      // identity still folds a Pinned mirror of the same workspace on the same host.
+      const identity = getWorktreeHostIdentity({ id, hostId: row.worktree.hostId });
+      if (!id || seen.has(identity)) continue;
+      seen.add(identity);
       targets.push({
         id,
         ...(row.worktree.hostId ? { executionHostId: row.worktree.hostId } : {}),
