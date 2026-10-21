@@ -351,6 +351,8 @@ export interface WorktreeListProps {
   onSuppressHiddenWorktrees?: (proj: HydraProject) => void;
   /** Per-project inbox action error (Orca's message catalog), painted on the row. */
   hiddenWorktreeErrorsByProject?: Readonly<Record<string, string | null>>;
+  /** Card-level "Show in worktree list" (policy flip with rollback). */
+  onShowAllHiddenWorktrees?: (proj: HydraProject) => void;
   /** Recover one discovered worktree into the list (`import_worktree` per path). */
   onShowHiddenWorktree?: (proj: HydraProject, worktreePath: string) => void;
   /** Acknowledge the listed discovered worktrees into the repo's inbox baseline. */
@@ -576,6 +578,7 @@ export function WorktreeList({
   onWorktreeContextMenu,
   onSuppressHiddenWorktrees,
   hiddenWorktreeErrorsByProject,
+  onShowAllHiddenWorktrees,
   onShowHiddenWorktree,
   onKeepHiddenWorktrees,
   onReviewHiddenWorktrees,
@@ -1457,6 +1460,9 @@ export function WorktreeList({
                 ? (worktreePath) => onShowHiddenWorktree(proj, worktreePath)
                 : undefined
             }
+            onShowAll={
+              onShowAllHiddenWorktrees ? () => onShowAllHiddenWorktrees(proj) : undefined
+            }
             onKeepHidden={
               onKeepHiddenWorktrees
                 ? (worktreePaths) => onKeepHiddenWorktrees(proj, worktreePaths)
@@ -1478,6 +1484,7 @@ export function WorktreeList({
       rowModel,
       hiddenWorktreesByProject,
       onShowHiddenWorktree,
+      onShowAllHiddenWorktrees,
       onKeepHiddenWorktrees,
       onReviewHiddenWorktrees,
       onSuppressHiddenWorktrees,

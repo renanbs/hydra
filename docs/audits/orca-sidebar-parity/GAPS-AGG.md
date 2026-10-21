@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 200 capabilities
+## MISSING — 199 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -206,9 +206,8 @@
 - **D08-044** — Motor de sincronização com Linear com fila por worktree, normalização de estados e consistência local | falta: Fila por worktree (enqueueWorktreeSync) para evitar corridas; Resolve configurações de Linear por dono de runtime do worktree; Lê issue e workflow states do time Linear; Correspondência normalizada case-insensitive entre label do board e nome do estado | components/sidebar/workspace-board-task-status-sync.ts:68
 - **D08-045** — Construção e filtragem de requisições de sincronização de tarefas evitando no-ops e redundâncias | falta: Retorna null com sync desabilitada ou lista de IDs vazia; Localiza a definição do status alvo em workspaceStatuses do store; Filtra IDs duplicados e worktrees já no status alvo; Retorna changedWorktreeIds e targetStatus limpos | components/sidebar/workspace-board-task-status-sync.ts:46
 
-### D10-visibility-inbox-notices (6)
+### D10-visibility-inbox-notices (5)
 
-- **D10-063** — Mostrar worktrees descobertos a partir do card do projeto (com rollback) | components/sidebar/imported-worktrees-card-actions.ts:33
 - **D10-078** — Highlight de drag e aceite do dragover no dialog de feedback | components/sidebar/use-feedback-image-drop.ts:22
 - **D10-079** — Reivindicar drops de imagem no dialog antes da lane nativa do preload | components/sidebar/use-feedback-image-drop.ts:67
 - **D10-080** — Prefill do rodapé de ambiente (versão/OS) no feedback sem roubar o caret | components/sidebar/use-sidebar-feedback-environment-prefill.ts:15
@@ -255,7 +254,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 326 capabilities
+## PARTIAL — 327 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -565,7 +564,7 @@
 - **D09-030** — Comparador unificado de ordenação de worktrees para todos os modos suportados | falta: Modos 'repo' e 'manual' na UI: o menu Sort by oferece apenas Agent Activity/Name/Recent (WorkspaceOptionsMenu.tsx:309-312) e o render usa created_at para 'recent'; Consumo pelo caminho renderizado: buildWorktreeComparator só é chamado no fallback de Cmd+1-9 (visible-worktrees.ts:355) | components/sidebar/smart-sort.ts:80
 - **D09-031** — Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido | falta: Funcionamento: ambas as ramificações dependem de símbolos `null` — cold start chama hasFreshAttributedAgentStatus (smart-sort.ts:197 → stub:25) e warm chama buildAttentionByWorktree (smart-sort.ts:205 → stub:23); Consumo pela lista de worktrees renderizada (WorktreeSidebar ordena por conta própria; sortWorktreesSmart só é alcançado por getVisibleWorktreeIds quando o sidebar está desmontado); Consumo pela paleta de comandos (comentário 168-170 cita a paleta, mas não há chamada em WorktreeJumpPalette/command palette) | components/sidebar/smart-sort.ts:167
 
-### D10-visibility-inbox-notices (38)
+### D10-visibility-inbox-notices (39)
 
 - **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: busca window.api.worktrees.getBranchRenameFailureOutput ao abrir (Hydra só renderiza a prop `error`; `worktreeId` é declarado e não usado — :11); resposta null mantém o excerto persistido; rejeição do IPC mantém o excerto; guard de staleness no cleanup | components/sidebar/AutoRenameFailedDialog.tsx:31
 - **D10-004** — Conter output multi-linha/token gigante sem quebrar o grid do dialog | falta: overflow-wrap:anywhere (Hydra usa `break-words`); padding-right reservado para botão de cópia flutuante (Hydra coloca o botão no header, não flutuante) | components/sidebar/AutoRenameFailedDialog.tsx:147
@@ -595,6 +594,7 @@
 - **D10-057** — Contador 'N found' por source, ignorando checkouts selecionados e Orca-managed | falta: pular selectedCheckout e ownership orca-managed; base configurada de built-in contada como 'other' | components/sidebar/WorktreeVisibilitySourceList.tsx:193
 - **D10-058** — Remover location custom pela linha (aria-label com o path completo) | falta: aria-label com rootPath completo (Hydra usa o basename); tooltip 'Remove custom location' | components/sidebar/WorktreeVisibilitySourceList.tsx:268
 - **D10-060** — Segmentos Show/Hide por source (ToggleGroup) com nome acessível por path | falta: nome acessível com rootPath completo para custom; ignorar re-seleção do mesmo segmento | components/sidebar/WorktreeVisibilitySourceList.tsx:141
+- **D10-063** — Mostrar worktrees descobertos a partir do card do projeto (com rollback) | falta: Rollback quando o refresh autoritativo falha (o dispatcher de refresh-projects é fire-and-forget; só a falha do write reverte) | components/sidebar/imported-worktrees-card-actions.ts:33
 - **D10-064** — Manter worktrees descobertos ocultos e dispensar o card | falta: superfície de erro/rollback (Hydra só faz console.error) | backend: invoke('catalog_set_worktree_visibility') -> src-tauri/src/lib.rs:304 | components/sidebar/imported-worktrees-card-actions.ts:34
 - **D10-067** — Importar worktrees do inbox para a allowlist do sidebar (com rollback explícito) | falta: import em lote para a allowlist (importedExternalWorktreePaths); rollback explícito quando o refresh falha | backend: invoke('import_worktree') -> src-tauri/src/lib.rs:418 | components/sidebar/new-external-worktrees-inbox-actions.ts:56
 - **D10-068** — Manter o inbox oculto estendendo a baseline (sem refresh) | falta: mensagem de erro 'Could not keep external worktrees hidden. Try again.'; superfície de erro na linha | backend: invoke('catalog_set_worktree_visibility') -> src-tauri/src/lib.rs:304 | components/sidebar/new-external-worktrees-inbox-actions.ts:83

@@ -958,6 +958,47 @@ export function WorktreeSidebar({
                   );
                 }
               }}
+              onShowAllHiddenWorktrees={async (proj) => {
+                const previousExternal = proj.externalWorktreeVisibility ?? null;
+                try {
+                  await invoke("catalog_set_worktree_visibility_sources", {
+                    repoPath: proj.path,
+                    customSources: proj.customWorktreeVisibilitySources ?? null,
+                    sourcePreferences: proj.worktreeVisibilitySourcePreferences ?? null,
+                    externalWorktreeVisibility: "show",
+                    externalWorktreeVisibilityLegacy:
+                      proj.externalWorktreeVisibilityLegacy ?? null,
+                    agentWorktreeVisibility: proj.agentWorktreeVisibility ?? null,
+                    externalWorktreeDiscoverySuppressedAt:
+                      proj.externalWorktreeDiscoverySuppressedAt ?? null,
+                  });
+                  setHiddenWorktreeError(proj.path, null);
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (err) {
+                  console.error(err);
+                  // Roll back the policy so the card does not claim a state the scan
+                  // never confirmed (Orca `showImportedWorktreesCard`).
+                  try {
+                    await invoke("catalog_set_worktree_visibility_sources", {
+                      repoPath: proj.path,
+                      customSources: proj.customWorktreeVisibilitySources ?? null,
+                      sourcePreferences: proj.worktreeVisibilitySourcePreferences ?? null,
+                      externalWorktreeVisibility: previousExternal,
+                      externalWorktreeVisibilityLegacy:
+                        proj.externalWorktreeVisibilityLegacy ?? null,
+                      agentWorktreeVisibility: proj.agentWorktreeVisibility ?? null,
+                      externalWorktreeDiscoverySuppressedAt:
+                        proj.externalWorktreeDiscoverySuppressedAt ?? null,
+                    });
+                  } catch (rollbackError) {
+                    console.error(rollbackError);
+                  }
+                  setHiddenWorktreeError(
+                    proj.path,
+                    "Could not show discovered worktrees. Try again."
+                  );
+                }
+              }}
               onShowHiddenWorktree={async (proj, worktreePath) => {
                 try {
                   await invoke("import_worktree", {

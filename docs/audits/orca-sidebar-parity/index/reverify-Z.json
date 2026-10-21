@@ -1,0 +1,20 @@
+{
+ "group": "Z",
+ "generatedFrom": "2026-10-22 card-level 'Show in worktree list': flips the repo policy, refreshes the catalog and rolls the policy back when the write fails",
+ "rows": [
+  {
+   "id": "D10-063",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:54-58",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:340-360",
+    "src/components/sidebar/WorktreeSidebar.tsx:961-1010",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:300-325"
+   ],
+   "missing_behaviors": [
+    "Rollback quando o refresh autoritativo falha (o dispatcher de refresh-projects é fire-and-forget; só a falha do write reverte)"
+   ],
+   "note": "The card button calls the policy writer with every other visibility field preserved; a failed write restores the previous external visibility and shows the error message."
+  }
+ ]
+}
