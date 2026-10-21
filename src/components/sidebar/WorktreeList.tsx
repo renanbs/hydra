@@ -82,6 +82,10 @@ import {
 import { PINNED_GROUP_KEY } from "./worktree-list/grouping/group-keys";
 import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
 import { computeHeaderSectionBounds } from "./worktree-header-section-boundaries";
+import {
+  resolveActiveSurfaceVariant,
+  resolvePrimaryActiveRowKey,
+} from "./worktree-list/navigation/active-row";
 import { selectPendingWorktreeCreationKeys } from "./worktree-list/listing/pending-worktree-creation-keys";
 import { PendingWorktreeCreationRow } from "./worktree-list/rows/PendingWorktreeCreationRow";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
@@ -902,8 +906,14 @@ export function WorktreeList({
   const pinnedDisplayPolicy = rowModel.pinnedDisplayPolicy;
 
   /** Row key of the active workspace: the row `aria-activedescendant` points at. */
+  const primaryActiveRowKey = useMemo(
+    () => resolvePrimaryActiveRowKey(rows, activeWorktreePath, PINNED_GROUP_KEY),
+    [rows, activeWorktreePath]
+  );
+
   const activeRowKey = useMemo(() => {
     if (!activeWorktreePath) return null;
+    if (primaryActiveRowKey) return primaryActiveRowKey;
     for (const row of rows) {
       if (row.type === "folder-workspace" && row.folderWorkspace.folderPath === activeWorktreePath) {
         return row.key;
@@ -913,7 +923,7 @@ export function WorktreeList({
       }
     }
     return null;
-  }, [rows, activeWorktreePath]);
+  }, [rows, activeWorktreePath, primaryActiveRowKey]);
 
   /**
    * Collapse/expand a painted row's section. The row union carries three collapse vocabularies
@@ -1248,6 +1258,8 @@ export function WorktreeList({
             contentIndent={cardContentIndent}
             flushSurface
             isActive={activeWorktreePath === wt.path}
+            isActiveSurface={activeWorktreePath === wt.path}
+            activeSurfaceVariant={resolveActiveSurfaceVariant(row.rowKey, primaryActiveRowKey)}
             isCurrentWorktree={activeWorktreePath === wt.path}
             isFocused={isFocused}
             revealHighlight={isRevealed}
@@ -1314,6 +1326,7 @@ export function WorktreeList({
       sessions,
       livePaths,
       activeWorktreePath,
+      primaryActiveRowKey,
       highlightedRevealPath,
       displayOptions.groupBy,
       prByPath,
