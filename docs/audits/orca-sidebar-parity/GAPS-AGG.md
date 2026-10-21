@@ -245,7 +245,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 306 capabilities
+## PARTIAL — 305 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -289,7 +289,7 @@
 - **D02c-015** — Dialog modal para exclusão de grupo de projetos e opção de remoção de projetos contidos | falta: Checkbox opcional 'Remove N contained projects' e props removeContainedProjects/onRemoveContainedProjectsChange (store já suporta; UI não expõe); content ref (mountedRef) para evitar mutações de estado após desmontagem | backend: CustomEvent 'hydra:delete-project-group' -> src/components/sidebar/WorktreeSidebar.tsx:1134 -> src/App.tsx:1211 (estado local + 'hydra:refresh-projects') | components/sidebar/ProjectGroupDeleteDialog.tsx:23
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5
 
-### D03a-worktree-list-module (60)
+### D03a-worktree-list-module (59)
 
 - **D03a-017** — Commit/abandono de drag fora do sidebar via listeners de documento em captura | falta: visibilitychange abandonando o drag em andamento; listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo; commit de nest sem slot (nesting inexistente) | components/sidebar/worktree-list/drag/use-document-drop.ts:18-115
 - **D03a-020** — Reordenar os três níveis de header do sidebar (host, grupo de projeto, projeto) | falta: reorder de host sections; gating canReorderRepoHeaders (groupBy=repo + projectOrderBy=manual); canReorderProjectGroupHeaders/ordem manual por host; supressão de correção de âncora | components/sidebar/worktree-list/drag/use-header-drag.ts:45-235
@@ -327,7 +327,6 @@
 - **D03a-062** — Reveal de worktree: expandir ancestrais, rolar, destacar e iniciar rename | falta: MAX_REVEAL_RETRIES=8 com scrollToIndex virtual; iniciar rename (setRenamingWorktreeId); resolver outcome keep-pending quando o alvo some; expandir grupos de linhagem ancestrais | components/sidebar/worktree-list/navigation/use-pending-reveal.ts:22-188
 - **D03a-063** — Reveal de uma row arbitrária do sidebar (inclusive headers) | falta: reveal de headers (project-group:/project:/repo:); toast 'Target no longer exists' e retry quando a row não existe | components/sidebar/worktree-list/navigation/use-pending-reveal.ts:190-304
 - **D03a-065** — Pedido de "revelar workspace atual" e diálogo de confirmação de filtros | falta: diálogo de confirmação 'Reveal hidden workspace?' quando filtros escondem o alvo; alternar groupBy para 'repo' quando a row é header; getKnownSidebarWorktreeById / reveal checks por identidade host-qualified; revalidação do alvo após await | components/sidebar/worktree-list/navigation/use-reveal-requests.ts:30-218
-- **D03a-066** — aria-activedescendant apontando para a row ativa | falta: preferência pela cópia fora do Pinned quando pinnedDisplayPolicy=duplicate-in-groups | components/sidebar/worktree-list/navigation/active-descendant-option.ts:12-103
 - **D03a-067** — Lookups de render rows (key, contenção, índice preferido) | falta: rowKeyMatchesRenderRow; renderRowContainsWorktree; findPreferredRenderRowIndexForWorktree | components/sidebar/worktree-list/navigation/render-row-lookup.ts:10-135
 - **D03a-068** — Rolar um elemento já montado até a área visível do container | falta: revealMountedWorktreeElement/SidebarRowElement com optionId; reportar o scroll emitido | components/sidebar/worktree-list/navigation/mounted-row-reveal.ts:4-35
 - **D03a-071** — Keys de ancestrais que escondem uma row (project groups, repos, pinned) | falta: getPinnedWorktreeRevealCollapsedGroupKeys (expandir a seção Pinned colapsada) | components/sidebar/worktree-list/navigation/reveal-ancestors.ts:7-111

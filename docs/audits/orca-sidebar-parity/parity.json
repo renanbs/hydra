@@ -5229,18 +5229,17 @@
    "components/sidebar/worktree-list/navigation/active-descendant-option.ts:12-103"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/option-id.ts:28-40",
-    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:116-124",
-    "src/components/sidebar/WorktreeList.tsx:711-723"
+    "src/components/sidebar/worktree-list/navigation/active-row.ts:15-36",
+    "src/components/sidebar/WorktreeList.tsx:919-923",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:116-121",
+    "src/components/sidebar/worktree-list/navigation/active-row.parity.test.ts:28-36"
    ],
-   "missing_behaviors": [
-    "preferência pela cópia fora do Pinned quando pinnedDisplayPolicy=duplicate-in-groups"
-   ],
-   "notes": "aria-activedescendant aponta para a option montada e folder-workspace mapeia; activeRowKey pega a primeira cópia (Pinned), sem a preferência do Orca pela cópia natural.",
+   "missing_behaviors": [],
+   "notes": "activeRowKey prefers the natural (non-Pinned) copy, is host-qualified, and aria-activedescendant only names a mounted option.",
    "backend": [],
-   "note": "aria-activedescendant aponta para a option montada e folder-workspace mapeia; activeRowKey pega a primeira cópia (Pinned), sem a preferência do Orca pela cópia natural."
+   "note": "activeRowKey prefers the natural (non-Pinned) copy, is host-qualified, and aria-activedescendant only names a mounted option."
   },
   "domain": "D03a-worktree-list-module"
  },
