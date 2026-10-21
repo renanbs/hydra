@@ -1332,7 +1332,7 @@ export function WorktreeList({
       renameRequest,
       onWorktreeContextMenu,
       selectedContextWorktrees,
-      onSelectSession,
+          onSelectSession,
       onWorktreeDragStart,
       onWorktreeDragOver,
       onWorktreeDrop,

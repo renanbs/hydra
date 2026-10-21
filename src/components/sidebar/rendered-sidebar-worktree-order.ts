@@ -21,7 +21,8 @@ import { buildRows } from './worktree-list/grouping/build-rows'
 import { getPinnedWorktreeDisplayPolicy } from './worktree-list/grouping/row-types'
 import type {
   ImportedWorktreesCardCandidate,
-  NewExternalWorktreesInboxCandidate
+  NewExternalWorktreesInboxCandidate,
+  PendingCreationRef
 } from './worktree-list/grouping/row-types'
 import type { GitWorktreeInfo } from './types'
 import { normalizeRuntimePathForComparison } from '../../shared/cross-platform-path'
@@ -176,7 +177,8 @@ export interface SidebarRowsState {
 export function computeSidebarRows(
   state: SidebarRowsState,
   visibleWorktrees: readonly Worktree[],
-  externalWorktreeNoticeCandidates: ExternalWorktreeNoticeCandidates = EMPTY_EXTERNAL_WORKTREE_NOTICE_CANDIDATES
+  externalWorktreeNoticeCandidates: ExternalWorktreeNoticeCandidates = EMPTY_EXTERNAL_WORKTREE_NOTICE_CANDIDATES,
+  pendingCreations: readonly PendingCreationRef[] = EMPTY_PENDING_CREATIONS
 ): HostSectionRow[] {
   const defaultHostId = getSettingsFocusedExecutionHostId(state.settings)
   const pinnedDisplayPolicy = getPinnedWorktreeDisplayPolicy(state.settings)
@@ -223,7 +225,7 @@ export function computeSidebarRows(
     noticeRepoIds.size > 0 ? noticeRepoIds : EMPTY_REPO_ID_SET,
     importedWorktreesByRepo,
     newExternalWorktreesInboxByRepo,
-    EMPTY_PENDING_CREATIONS,
+    pendingCreations,
     { projects: projection.projects, projectHostSetups: projection.setups },
     filterFolderWorkspacesForVisibleHosts(
       state.folderWorkspaces,
