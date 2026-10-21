@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 192 capabilities
+## MISSING — 190 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -125,14 +125,12 @@
 - **D03b-037** — Comprometimento de nova ordem de hosts de execução com splicing do array de identificadores | components/sidebar/host-header-drag.ts:145-189
 - **D03b-046** — Coordenação de lote de expurgo de snapshots de workspace via IPC durante remoção múltipla | components/sidebar/worktree-snapshot-prune-batch.ts:6-24
 
-### D04a-worktree-card-surface (24)
+### D04a-worktree-card-surface (22)
 
 - **D04a-012** — Renderiza o controle de host SSH do card com conectar/reconectar, estados de falha e host removido | falta: Glifos Server/ServerOff e pill de Retry/Reconnect com estados connecting/deploying-relay/reconnecting; targetRemoved, auth-failed e tooltips diferenciados; iconOnly para compacto/novo estilo; Stop de Enter/Espaço e guarda de clique em voo | components/sidebar/WorktreeCardSshHostControl.tsx:140
 - **D04a-013** — Executa o fluxo de conexão SSH e converge o estado do host após falha | falta: Fluxo connectRuntimeEnvironmentSshTarget / window.api.ssh.connect com timeout de UI; Espelhamento em setSshConnectionState para reattach de PTY diferido; Toast de falha + resync (listTargets antes de listRemovedTargetLabels) | components/sidebar/WorktreeCardSshHostControl.tsx:86
 - **D04a-014** — Exibe o glifo do host runtime (Orca server) com estado conectado/desconectado | falta: Glifo de host runtime conectado/desconectado com tooltip nomeando o host; Modelo de runtime host no card | components/sidebar/worktree-card-header.tsx:118
 - **D04a-020** — Renderiza as linhas secundárias do card: banner de conflito de branch remoto, prompt de Linear e chip de worktrees filhas | falta: Banner âmbar de conflito de branch remoto (PAR-19); Prompt de setup do Linear agent skill quando o card está ativo; Chip de worktrees filhas com chevron/aria-expanded; Container deslocado -ml-[1.125rem] no estilo legado | components/sidebar/worktree-card-secondary-rows.tsx:41
-- **D04a-022** — Sobrepõe o alerta de não-lido sobre o glifo de status no novo estilo | falta: Badge âmbar de 6px sobre o glifo com ring de recorte; data-worktree-status-lane-unread e data-worktree-unread-alert; Supressão em working/permission mantendo o anúncio acessível | components/sidebar/WorktreeCardStatusSlot.tsx:126
-- **D04a-023** — Alterna lido/não-lido pelo botão de sino no estilo legado, com tooltip combinando status e ação | falta: Botão de sino lido/não-lido com aria-label Mark as read/Mark as unread; Tooltip combinando status e ação; Preservação do board e stop de pointerdown; Retorno null quando nada está habilitado | components/sidebar/WorktreeCardStatusSlot.tsx:160
 - **D04a-030** — Renderiza o badge de estado da issue do GitHub (Open/Closed) com tom e ícone | falta: Badge State: Closed/Open com tom e ícone do GitHub | components/sidebar/WorktreeCardMetadataStatusBadges.tsx:33
 - **D04a-031** — Renderiza o badge de estado do Linear inferindo tom/ícone pelo texto do estado | falta: Inferência de tom/ícone pelo texto do estado do Linear (done/cancel/progress/unknown) | components/sidebar/WorktreeCardMetadataStatusBadges.tsx:61
 - **D04a-043** — Exibe a seção Jira do hover com link externo | falta: Seção Jira com View on Jira e título formatado | components/sidebar/WorktreeCardMeta.tsx:292
