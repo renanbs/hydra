@@ -1,0 +1,31 @@
+{
+ "group": "T",
+ "generatedFrom": "2026-10-21 non-git folder confirmation and the CLI provenance hover section",
+ "rows": [
+  {
+   "id": "D02c-009",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/NonGitFolderDialog.tsx:1-92",
+    "src/components/sidebar/AddRepoDialog.tsx:57-80",
+    "src-tauri/src/lib.rs:278-290",
+    "src/components/sidebar/NonGitFolderDialog.parity.test.tsx:1-45"
+   ],
+   "missing_behaviors": [
+    "Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker)"
+   ],
+   "note": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder."
+  },
+  {
+   "id": "D04a-046",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:38-44",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:285-291",
+    "src/components/sidebar/WorktreeList.tsx:1188",
+    "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx:63-70"
+   ],
+   "note": "CLI provenance renders as a 'Created by CLI' section in the hover, driven by the projected cliProvenance kind."
+  }
+ ]
+}

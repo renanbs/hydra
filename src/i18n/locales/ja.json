@@ -14635,6 +14635,17 @@
     }
   },
   "components": {
+    "cacheTimer": {
+      "expired": "次のメッセージはコンテキスト全体をキャッシュなしのトークンとして再送信します",
+      "remaining": "プロンプトキャッシュは {{remaining}} 後に期限切れになります"
+    },
+    "worktreeStatusIndicator": {
+      "working": "作業中",
+      "monitoring": "バックグラウンドタスクを監視中",
+      "permission": "要対応",
+      "interrupted": "中断",
+      "done": "完了"
+    },
     "onboarding": {
       "flow": {
         "stepTooltip": {

@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
-"""Aplica os refresh-<grupo>.json (vereditos reavaliados contra o código atual) nos
+"""Aplica os `index/refresh-<grupo>.json` e `index/reverify-<grupo>.json` nos
 `domains/*.diff.json`, que são a fonte de verdade dos vereditos.
+
+Dois tiers, nesta ordem:
+- `refresh-*`: reavaliação original contra o código da época;
+- `reverify-*`: re-verificação posterior; vence o refresh para o mesmo id, porque o
+  código andou depois dele (o refresh de 0d261c2 cobriu ~455 de 765 linhas).
 
 Uso:
     python3 index/apply_refresh.py            # aplica e imprime o resumo de mudanças
@@ -20,7 +25,13 @@ STATUSES = {'parity', 'partial', 'missing', 'not-applicable', 'out-of-scope'}
 
 def domain_file_for(capability_id: str) -> pathlib.Path | None:
     prefix = capability_id.split('-')[0]
-    matches = sorted(DOMS.glob(f'{prefix}-*.diff.json'))
+    # D15's capabilities live in two files whose names carry the descriptive
+    # suffix (D15-misc-a/b), so the id prefix alone does not resolve them.
+    alias = {'D15a': 'D15-misc-a', 'D15b': 'D15-misc-b'}.get(prefix, prefix)
+    exact = DOMS / f'{alias}.diff.json'
+    if alias != prefix and exact.is_file():
+        return exact
+    matches = sorted(DOMS.glob(f'{alias}-*.diff.json'))
     return matches[0] if len(matches) == 1 else None
 
 
@@ -29,18 +40,27 @@ def main() -> int:
     overrides: dict[str, dict] = {}
     sources: dict[str, list[str]] = defaultdict(list)
 
-    for path in sorted((BASE / 'index').glob('refresh-*.json')):
-        data = json.loads(path.read_text())
-        for row in data.get('rows', []):
-            cap_id = row['id']
-            if row.get('status') not in STATUSES:
-                print(f'!! status inválido em {path.name}: {cap_id} -> {row.get("status")}')
-                return 2
-            if cap_id in overrides:
-                print(f'!! id duplicado entre refresh: {cap_id}')
-                return 2
-            overrides[cap_id] = row
-            sources[cap_id].append(path.name)
+    # Two tiers, in order: the original refresh verdicts, then the re-verification
+    # passes. A re-verification row supersedes an earlier refresh row for the same
+    # id (the code moved after that refresh), but duplicates inside one tier are
+    # still an error.
+    for tier in ('refresh', 'reverify'):
+        tier_ids: set[str] = set()
+        for path in sorted((BASE / 'index').glob(f'{tier}-*.json')):
+            data = json.loads(path.read_text())
+            for row in data.get('rows', []):
+                cap_id = row['id']
+                if row.get('status') not in STATUSES:
+                    print(f'!! status inválido em {path.name}: {cap_id} -> {row.get("status")}')
+                    return 2
+                if cap_id in tier_ids:
+                    print(f'!! id duplicado entre {tier}: {cap_id}')
+                    return 2
+                tier_ids.add(cap_id)
+                if cap_id in overrides and tier == 'reverify':
+                    print(f'  supersede {cap_id}: {overrides[cap_id]["status"]} -> {row["status"]}')
+                overrides[cap_id] = row
+                sources[cap_id].append(path.name)
 
     print(f'refresh files: {len(sources)} ids ({len(overrides)})')
 
@@ -64,7 +84,14 @@ def main() -> int:
             row['hydra']['status'] = new
             if 'evidence' in override:
                 row['hydra']['evidence'] = override['evidence']
+            if 'backend' in override:
+                row['hydra']['backend'] = override['backend']
+            if 'missing_behaviors' in override:
+                row['hydra']['missing_behaviors'] = override['missing_behaviors']
             if override.get('note'):
+                # The domain rows (and build_report) read `notes`; `note` is kept
+                # in sync because older refresh files used the singular key.
+                row['hydra']['notes'] = override['note']
                 row['hydra']['note'] = override['note']
             touched = True
         if touched and not dry_run:

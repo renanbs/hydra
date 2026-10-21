@@ -14712,6 +14712,17 @@
     }
   },
   "components": {
+    "cacheTimer": {
+      "expired": "다음 메시지는 전체 컨텍스트를 캐시되지 않은 토큰으로 다시 전송합니다",
+      "remaining": "프롬프트 캐시가 {{remaining}} 후에 만료됩니다"
+    },
+    "worktreeStatusIndicator": {
+      "working": "작업 중",
+      "monitoring": "백그라운드 작업 모니터링 중",
+      "permission": "주의 필요",
+      "interrupted": "중단됨",
+      "done": "완료"
+    },
     "onboarding": {
       "flow": {
         "stepTooltip": {

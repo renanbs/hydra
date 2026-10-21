@@ -13,11 +13,11 @@
     "components/sidebar/HiddenWorktreeRecoveryList.tsx:146"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:116-128",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:539-623",
-     "src/components/sidebar/WorktreeSidebar.tsx:1198-1210"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:46-120",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:819-870",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-190"
     ],
     "backend": [
      "invoke('scan_worktrees') -> src/components/sidebar/WorktreeVisibilityDialog.tsx:112 -> src-tauri/src/lib.rs:399"
@@ -30,8 +30,8 @@
      "Filtro por displayName (Hydra filtra por branch||path; GitWorktreeInfo não tem displayName aqui)",
      "Caminho relativo via relativePathInsideRoot (Hydra usa replace(project.path,''))"
     ],
-    "notes": "Lista de recuperação portada inline dentro de WorktreeVisibilityDialog (não existe componente HiddenWorktreeRecoveryList separado). i18n namespace HiddenWorktreeRecoveryList (en.json:5795) sem uso.",
-    "note": "Dialog montado e funcional; a lista de recuperacao segue .map() sem virtualizador/aria-posinset, gate de busca >5 (Orca >=10) e filtro por branch||path."
+    "notes": "Search stays, rows above ten render through react-window, and each Show button is named 'Show <branch> at <path>'.",
+    "note": "Search stays, rows above ten render through react-window, and each Show button is named 'Show <branch> at <path>'."
    }
   },
   {
@@ -44,20 +44,20 @@
     "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:62"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6151-6155"
+     "src/components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:1-100",
+     "src/components/sidebar/WorktreeSidebar.tsx:925",
+     "src/components/sidebar/WorktreeSidebar.tsx:1327-1355",
+     "src/components/sidebar/SuppressExternalWorktreeInboxDialog.parity.test.tsx:1-42",
+     "src/components/sidebar/WorktreeSidebar.tsx:1337-1352"
     ],
     "backend": [
      "invoke('suppress_worktree_inbox') -> src/components/sidebar/WorktreeSidebar.tsx:794 -> src-tauri/src/lib.rs:423"
     ],
-    "missing_behaviors": [
-     "Exibe título 'Hide external worktrees?' e descrição avisando que worktrees externos não serão mais exibidos na barra lateral ou na lista para o repositório",
-     "Exibe caixa explicativa informando que a funcionalidade pode ser reativada nas configurações do projeto com link 'Open Non-Orca worktrees settings'",
-     "Botões de rodapé: 'Cancel' (variante secondary) e 'Hide external worktrees' (default), ambos desabilitados durante estado pending"
-    ],
-    "notes": "Buscas: componente SuppressExternalWorktreeInboxDialog, modal id 'suppress-*', textos 'Hide external worktrees?'/'Open Non-Orca worktrees settings' (só i18n). A capacidade de supressão existe, o dialog de confirmação não.",
-    "note": "SuppressExternalWorktreeInboxDialog orfao; o 'x' ainda suprime direto."
+    "missing_behaviors": [],
+    "notes": "The recovery link opens the project's Non-Orca worktrees surface (the visibility dialog), which owns the source toggles and hidden-worktree list.",
+    "note": "The recovery link opens the project's Non-Orca worktrees surface (the visibility dialog), which owns the source toggles and hidden-worktree list."
    }
   },
   {
@@ -84,7 +84,7 @@
      "Botão discreto 'Don't show again' com ícone EyeOff e tooltip no canto superior direito alinhado ao botão de fechar para dispensa permanente",
      "Permite fechamento via botão 'Done', botão de fechar, tecla Escape ou clique fora sem dispensa permanente se já em estado de sucesso"
     ],
-    "notes": "Buscas: LinearAgentSkillSetupDialog, AgentSkillSetupPanel, IntegrationStatusPill, TicketCheck, 'Linear ticket access is ready', 'Install CLI & Skill' (só feature-tips.ts). Nenhum dialog de setup de skill Linear.",
+    "notes": "LinearAgentSkillPane orfao, sem componente.",
     "note": "LinearAgentSkillPane orfao, sem componente."
    }
   },
@@ -115,7 +115,7 @@
      "Modo inline renderiza card compacto com ícone TicketCheck, cópia contextual de runtime e botões 'Set up' e 'Re-check'",
      "Gera comandos de instalação e atualização dinâmicos via buildSkillCommandForRuntime e getLinearAgentSkillUpdateCommand"
     ],
-    "notes": "Buscas: 'LinearAgentSkillSetupPrompt', 'Dismiss Linear agent skill setup', window.api.cli.getInstallStatus/getWslInstallStatus (ausentes no preload Hydra), requestGeneration/setupCheckIdentity, lazyWithRetry.",
+    "notes": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES.",
     "note": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES."
    }
   },
@@ -143,7 +143,7 @@
      "Calcula chave de persistência de dispensa: 'orca.linearTicketsSkill.setupDismissed.host' ou 'orca.linearTicketsSkill.setupDismissed.wsl.<distro>'",
      "Determina target de descoberta de skills (SkillDiscoveryTarget) e override de terminal para shells POSIX no Windows (forçando PowerShell)"
     ],
-    "notes": "Buscas: linear-agent-skill-runtime.ts, 'orca.linearTicketsSkill.setupDismissed', LocalAgentRuntime, SkillDiscoveryTarget, getLinearPromptTerminalShellOverride. Nada em src/ (src/lib/orchestration-setup-state.ts tem setupDismissed não relacionado).",
+    "notes": "Resolucao de runtime/chave de dispensa ausente.",
     "note": "Resolucao de runtime/chave de dispensa ausente."
    }
   },
@@ -167,7 +167,7 @@
      "Gera títulos e descrições para toasts de aviso diferenciando host local, ambientes WSL e conexões remotas",
      "Gera texto explicativo inline detalhando o escopo da instalação (host, WSL ou remoto)"
     ],
-    "notes": "Buscas: linear-agent-skill-setup-copy.ts, buildMissingPrerequisitesLabel, títulos/descrições de toast host/WSL/remoto. Nenhum módulo de copy.",
+    "notes": "Textos do fluxo so em i18n.",
     "note": "Textos do fluxo so em i18n."
    }
   },
@@ -195,7 +195,7 @@
      "Descarta o toast ativo e atualiza estado ao dispensar permanentemente ou ao concluir a instalação",
      "Limpa o toast ao desmontar a visualização modal"
     ],
-    "notes": "Buscas: linear-agent-skill-setup-reminder-toast.ts, useLinearAgentSkillSetupReminderToast, toastCount, LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT, snooze.",
+    "notes": "Lembretes/toasts do skill Linear ausentes.",
     "note": "Lembretes/toasts do skill Linear ausentes."
    }
   },
@@ -237,23 +237,21 @@
     "components/sidebar/NonGitFolderDialog.tsx:154"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/i18n/locales/en.json:5228-5235"
+     "src/components/sidebar/NonGitFolderDialog.tsx:1-92",
+     "src/components/sidebar/AddRepoDialog.tsx:57-80",
+     "src-tauri/src/lib.rs:278-290",
+     "src/components/sidebar/NonGitFolderDialog.parity.test.tsx:1-45"
     ],
     "backend": [
      "invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277"
     ],
     "missing_behaviors": [
-     "Exibe aviso esclarecendo que a pasta não é um repositório Git (editor, terminal e busca funcionam; recursos Git ficam indisponíveis)",
-     "Informa o host onde o caminho foi verificado: host SSH, ambiente de runtime específico ou local",
-     "Exibe o caminho da pasta em bloco destacado com quebra de linha",
-     "Ao confirmar pasta em host SSH: invoca window.api.repos.addRemote, atualiza store via upsertAddedRepoWithProjectHostSetup, marca onboarding (addedFolder), busca worktrees e ativa agente/chat se aplicável",
-     "Ao confirmar pasta local: invoca useAppStore.addNonGitFolder com caminho, displayName e runtimeEnvironmentId",
-     "Trata erros de adição remota exibindo toast com mensagem de falha"
+     "Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker)"
     ],
-    "notes": "Buscas: NonGitFolderDialog, 'Open as Folder', 'This folder isn't a Git repository', window.api.repos.addRemote (inexistente no Hydra). Fluxo de pasta não-git sem confirmação/aviso de host.",
-    "note": "NonGitFolderDialog orfao; addNonGitFolder segue sem renderer (modal 'confirm-non-git-folder' sem componente)."
+    "notes": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder.",
+    "note": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder."
    }
   },
   {
@@ -310,7 +308,7 @@
      "Opção de checkbox 'Always trust orca.yaml in <repo>' com estilo destacado para confiar permanentemente no repositório",
      "Ações no rodapé: 'Don't run' (cancela/ignora) e 'Run hooks' (executa e registra aprovação pontual ou permanente)"
     ],
-    "notes": "Buscas: OrcaYamlTrustDialog, 'Run hooks', 'Always trust', modal 'confirm-orca-yaml-hooks', trusted_orca_hooks no Rust. Estado de trust existe no store mas nenhuma UI o aciona; nenhum comando Tauri de trust/execução de hook.",
+    "notes": "OrcaYamlTrustDialog orfao; markOrcaHookScriptConfirmed/AlwaysTrusted seguem sem callers.",
     "note": "OrcaYamlTrustDialog orfao; markOrcaHookScriptConfirmed/AlwaysTrusted seguem sem callers."
    }
   },
@@ -420,7 +418,7 @@
      "Checkbox opcional 'Remove N contained projects' e props removeContainedProjects/onRemoveContainedProjectsChange (store já suporta; UI não expõe)",
      "content ref (mountedRef) para evitar mutações de estado após desmontagem"
     ],
-    "notes": "A remoção do grupo passa por estado do App (App.tsx:1211) e não pela mutation do store; membros voltam ungrouped. Sem testes Hydra para este dialog.",
+    "notes": "Dialog portado e montado; segue sem checkbox 'Remove N contained projects' (store suporta, UI nao expoe).",
     "note": "Dialog portado e montado; segue sem checkbox 'Remove N contained projects' (store suporta, UI nao expoe)."
    }
   },
@@ -443,7 +441,7 @@
      "CustomEvent 'hydra:create-project-group'/'hydra:rename-project-group' -> src/App.tsx:1178/1205 (estado + refresh) ; persistência via sidebar prefs (App.tsx:462-465)"
     ],
     "missing_behaviors": [],
-    "notes": "Hidratação inicial via useState(initialName) + effect no open; comportamento observável equivalente (sem teste Hydra dedicado).",
+    "notes": "Criar/renomear grupo com foco+select inicial, disable com nome vazio e 'Saving...' inalterado.",
     "note": "Criar/renomear grupo com foco+select inicial, disable com nome vazio e 'Saving...' inalterado."
    }
   },
@@ -468,7 +466,7 @@
      "getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe",
      "Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList)"
     ],
-    "notes": "O efeito observável (membros de grupo/empty repos seguem visíveis) é obtido estruturalmente porque o WorktreeList renderiza seções de repo incondicionalmente; a função nomeada do Orca e seus testes (empty-project-placeholder-repos.test.ts) não existem.",
+    "notes": "placeholderRepoIds existe e e alimentado por noticeRepoIds no pipeline, mas getEmptyProjectPlaceholderRepoIds segue inexistente e o acoplamento a filterRepoIds permanece fora do WorktreeList.",
     "note": "placeholderRepoIds existe e e alimentado por noticeRepoIds no pipeline, mas getEmptyProjectPlaceholderRepoIds segue inexistente e o acoplamento a filterRepoIds permanece fora do WorktreeList."
    }
   },
@@ -484,9 +482,12 @@
     "components/sidebar/RemoveFolderDialog.tsx:87"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5285-5295"
+     "src/components/sidebar/RemoveFolderDialog.tsx:1-108",
+     "src/components/sidebar/WorktreeSidebar.tsx:161-183",
+     "src/components/sidebar/WorktreeSidebar.tsx:1313-1325",
+     "src/components/sidebar/RemoveFolderDialog.parity.test.tsx:1-48"
     ],
     "backend": [
      "invoke('catalog_remove_repo') -> src/App.tsx:1613 -> src-tauri/src/lib.rs:289"
@@ -498,8 +499,8 @@
      "Para projetos locais: esclarece que os arquivos continuam no disco local",
      "Botão 'Remove' destrutivo invoca removeProject no store com feedback de toast em caso de erro"
     ],
-    "notes": "Buscas: RemoveFolderDialog, 'Remove Project' title, removeDescriptionSsh/Local/VmRecipe, modal 'confirm-remove-folder'. Backend existe e é chamado; o dialog contextual (VM/SSH/local) não.",
-    "note": "RemoveFolderDialog orfao; remocao de projeto segue imediata via catalog_remove_repo."
+    "notes": "Remove Project asks first and adapts the copy: local disk, named SSH host, or VM recipe policy; Cancel/Escape abort and Remove confirms.",
+    "note": "Remove Project asks first and adapts the copy: local disk, named SSH host, or VM recipe policy; Cancel/Escape abort and Remove confirms."
    }
   },
   {
@@ -529,7 +530,7 @@
      "Exibe toast de confirmação com link para reabrir as configurações do projeto após salvar",
      "Suporta re-tentativa manual de inspeção em caso de erro"
     ],
-    "notes": "Buscas: SetupScriptPromptCard.tsx, 'Add a setup script', checkRuntimeHooks, inspectRuntimeSetupScriptImports, updateRepo(hookSettings). Card orquestrador ausente.",
+    "notes": "Card orquestrador ausente; inspectSetupScriptPromptState segue sem callers.",
     "note": "Card orquestrador ausente; inspectSetupScriptPromptState segue sem callers."
    }
   },
@@ -554,7 +555,7 @@
      "Exibe título 'Add a setup script', botão de fechar/dispensa com tooltip, badge de cor do repositório e nome de exibição",
      "Orquestra o corpo do texto e os botões de ação correspondentes ao estado atual (erro, package manager, candidato ou configuração)"
     ],
-    "notes": "Buscas: SetupScriptPromptCardShell.tsx, 'Add a setup script', shadow-[0_10px_24px_rgba(0,0,0,0.18)]. Nenhum shell flutuante.",
+    "notes": "Shell visual do card so em i18n.",
     "note": "Shell visual do card so em i18n."
    }
   },
@@ -585,7 +586,7 @@
      "ConfigureOnlyAction: botão 'Configure' com ícone Settings",
      "SaveLocalSetupAction: botão 'Save local setup' com ícone Download ou spinner de salvamento"
     ],
-    "notes": "Buscas: SetupScriptPromptCardViews.tsx, DismissButton, DetectedSetupPreview, PackageManagerActions, SaveLocalSetupAction, InspectionErrorActions, getDetectedSetupScriptTextareaRows.",
+    "notes": "Componentes de acao do card ausentes; SetupScriptImportCandidate segue stub.",
     "note": "Componentes de acao do card ausentes; SetupScriptImportCandidate segue stub."
    }
   },
@@ -608,7 +609,7 @@
      "Inclui link clicável sublinhado no texto do toast para navegar instantaneamente até as configurações do repositório",
      "Suporta descrição detalhando execução na criação de worktrees ou campos não suportados ignorados"
     ],
-    "notes": "Buscas: SetupScriptPromptToast.tsx, showSavedInProjectSettingsToast, onOpenSettings link. Nenhum toast.",
+    "notes": "Toast de confirmacao do setup script so em i18n.",
     "note": "Toast de confirmacao do setup script so em i18n."
    }
   },
@@ -703,7 +704,7 @@
      "Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota",
      "Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar"
     ],
-    "notes": "Buscas: useSetupScriptPromptRevalidation.ts, requestRevalidation, connectionGeneration, runtimeStatusByEnvironmentId. Hook ausente.",
+    "notes": "Nenhum listener de 'focus' de janela/ativacao/reconexao para revalidar prompt de setup.",
     "note": "Nenhum listener de 'focus' de janela/ativacao/reconexao para revalidar prompt de setup."
    }
   }

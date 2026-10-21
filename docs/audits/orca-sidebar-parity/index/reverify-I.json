@@ -1,0 +1,118 @@
+{
+ "group": "I",
+ "generatedFrom": "2026-10-20 filter-menu increment: shared FilterToggleRow, indented default-branch exception, registry shortcut badge, footer reset/add project, project keyboard navigation and the active-filter badge",
+ "rows": [
+  {
+   "id": "D09-001",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/FilterToggleRow.tsx:12-62",
+    "src/components/sidebar/FilterToggleRow.parity.test.tsx:6-24",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:615-665"
+   ],
+   "note": "Shared row is a role=switch button with aria-checked/aria-label and onChange(next); the filter menu consumes it for every row."
+  },
+  {
+   "id": "D09-002",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/FilterToggleRow.tsx:34-45",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:627-640",
+    "src/components/sidebar/FilterToggleRow.parity.test.tsx:46-62"
+   ],
+   "note": "The indented variant uses physical pl-7 and a muted label; the default-branch exception is the sub-option."
+  },
+  {
+   "id": "D09-003",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/FilterToggleRow.tsx:49-57",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:113",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:622",
+    "src/components/sidebar/FilterToggleRow.parity.test.tsx:26-44"
+   ],
+   "note": "Shortcut comes from the keybinding registry (sidebar.sleepingWorkspaces.toggle) and the badge is omitted when the action is unassigned."
+  },
+  {
+   "id": "D09-004",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-46",
+    "src/components/sidebar/SidebarHeader.tsx:163-190",
+    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:155-166"
+   ],
+   "missing_behaviors": [
+    "Ícone ListFilter do gatilho (Hydra usa SlidersHorizontal)",
+    "data-workspace-board-preserve-open no gatilho do menu"
+   ],
+   "note": "Badge with 9+ cap and the dynamic 'Workspace display options (N active)' label are wired; icon/attribute differ."
+  },
+  {
+   "id": "D09-005",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:113",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:620-625",
+    "src/components/sidebar/worktree-list/buildSidebarRows.ts:70-82",
+    "src/App.tsx:2908-2921",
+    "src/components/sidebar/WorktreeSidebar.tsx:438-449"
+   ],
+   "missing_behaviors": [],
+   "note": "The registry-dispatched action toggles hideSleeping through the same writer the menu uses; the row still discloses the chord."
+  },
+  {
+   "id": "D09-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:627-640",
+    "src/components/sidebar/worktree-list/buildSidebarRows.ts:76-81",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-42"
+   ],
+   "note": "The exception row appears only while Hide sleeping is on, writes alwaysShowDefaultBranch, keeps the default branch visible and counts as a narrowing filter."
+  },
+  {
+   "id": "D09-007",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:642-665",
+    "src/components/sidebar/worktree-list/buildSidebarRows.ts:72-75"
+   ],
+   "missing_behaviors": [
+    "Nuance 'exceto quando mantido por provisão de receita' no hide default branch"
+   ],
+   "note": "Automation/CLI/default-branch/detached toggles are wired into the live row builder."
+  },
+  {
+   "id": "D09-010",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:678-697",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:700-720"
+   ],
+   "missing_behaviors": [],
+   "note": "Reset restores every boolean, the exception and the project filter; both footer actions now match Orca, including hiding Clear when nothing is active."
+  },
+  {
+   "id": "D09-015",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:345-375",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:392-410",
+    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:190-206",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:390-430"
+   ],
+   "missing_behaviors": [],
+   "note": "Arrows move the highlight, Enter toggles, Backspace on an empty query removes the last project, ArrowLeft at caret 0 closes the panel and other keys stay local."
+  },
+  {
+   "id": "D07-010",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-46",
+    "src/components/sidebar/SidebarHeader.tsx:163-190",
+    "src/components/sidebar/WorktreeSidebar.tsx:745"
+   ],
+   "note": "The trigger consumes the active-filter count and renders the badge plus the dynamic tooltip/aria label."
+  }
+ ]
+}

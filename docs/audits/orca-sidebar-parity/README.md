@@ -41,6 +41,7 @@ Construídos por script sobre o código, sem julgamento humano — são a base d
 | `index/partition_check.py` | partição exata dos arquivos entre domínios + dependências de fora do módulo citadas + símbolos globais não citados |
 | `index/runtime_crosscheck.py` | confronta as affordances/menus observados no app real com o inventário |
 | `index/build_report.py` | consolida `inventory.json`, `parity.json`, `MATRIX.md`, `TOTALS.md`, `GAPS-AGG.md` |
+| `index/apply_refresh.py` | aplica `index/refresh-*.json` e `index/reverify-*.json` nos `domains/*.diff.json` (a re-verificação vence o refresh para o mesmo id) |
 
 ## Domínios (`domains/<DOM>.*`)
 - `<DOM>.manifest.json` / `<DOM>.index.json` — fatia de escopo e índice mecânico do domínio.

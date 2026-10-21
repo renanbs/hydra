@@ -8,10 +8,23 @@ import {
 import type { WorktreeDropCommitContext } from './drop-commit-context'
 import {
   applyWorktreeDropPreview,
+  applyWorktreeLineageDropPreview,
   clearWorktreeDropPreview,
+  clearWorktreeLineageDropPreview,
   type WorktreePointerDrag,
   type WorktreeRowDragState
 } from './row-state'
+import {
+  findWorktreeNestingTarget,
+  updateWorktreeLineageDropTargetVisual
+} from './nesting'
+import {
+  findSidebarSectionDropTarget,
+  updateSidebarSectionDropVisual
+} from './section-drop'
+
+/** Crossing a gutter into the next card is an intent; it settles before the line moves. */
+const REORDER_INTENT_DELAY_MS = 160
 
 export type WorktreePointerDragFrameArgs = {
   drag: WorktreePointerDrag
@@ -51,8 +64,65 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
     args.setWorktreeDragState((previous) => clearWorktreeDropPreview(previous))
     return
   }
+  // A section header under the pointer is a membership write (pin/status); the
+  // insertion line must not promise a reorder on top of it.
+  const sectionTarget = findSidebarSectionDropTarget(drag.currentX, drag.currentY)
+  updateSidebarSectionDropVisual(sectionTarget)
+  if (sectionTarget) {
+    drag.reorderIntent = null
+    args.setWorktreeDragState((previous) =>
+      clearWorktreeDropPreview(clearWorktreeLineageDropPreview(previous), {
+        preserveOffsets: true
+      })
+    )
+    return
+  }
+
+  // Why before the reorder slot: hovering a card promises a nest, and painting an
+  // insertion line at the same time would offer two contradictory drops.
+  const nestingTarget = findWorktreeNestingTarget({
+    pointerX: drag.currentX,
+    pointerY: drag.currentY,
+    draggedIds: drag.draggedIds,
+    parentIdByChildId: ctx.lineageParentIdByChildId
+  })
+  updateWorktreeLineageDropTargetVisual(nestingTarget)
+  if (nestingTarget) {
+    drag.reorderIntent = null
+    args.setWorktreeDragState((previous) =>
+      applyWorktreeLineageDropPreview(previous, nestingTarget)
+    )
+    return
+  }
   const drop = ctx.computeWorktreeDrop(drag.currentY)
-  args.setWorktreeDragState((previous) =>
-    drop ? applyWorktreeDropPreview(previous, drop) : clearWorktreeDropPreview(previous)
-  )
+  if (!drop) {
+    drag.reorderIntent = null
+    args.setWorktreeDragState((previous) =>
+      clearWorktreeDropPreview(clearWorktreeLineageDropPreview(previous))
+    )
+    return
+  }
+  // Let the pointer cross a reorder gutter into the card before moving the target.
+  let intent = drag.reorderIntent
+  if (!intent || (intent.dropIndex !== drop.dropIndex && intent.pointerY !== drag.currentY)) {
+    intent = { dropIndex: drop.dropIndex, pointerY: drag.currentY, startedAt: performance.now() }
+  } else {
+    // Autoscroll changes slots beneath a stationary pointer without renewing intent.
+    intent.dropIndex = drop.dropIndex
+    intent.pointerY = drag.currentY
+  }
+  drag.reorderIntent = intent
+  if (performance.now() - intent.startedAt < REORDER_INTENT_DELAY_MS) {
+    args.setWorktreeDragState((previous) =>
+      clearWorktreeDropPreview(clearWorktreeLineageDropPreview(previous), {
+        preserveOffsets: true
+      })
+    )
+    drag.frameId = window.requestAnimationFrame(() => flushWorktreePointerDragFrame(args))
+    return
+  }
+  args.setWorktreeDragState((previous) => {
+    const withoutNesting = clearWorktreeLineageDropPreview(previous)
+    return applyWorktreeDropPreview(withoutNesting, drop)
+  })
 }

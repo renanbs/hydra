@@ -94,6 +94,44 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     expect(within(hidden).getByText("fix/d")).toBeInTheDocument();
   });
 
+  it("explains which worktrees are hidden by default through the help popover", () => {
+    renderDialog();
+    const trigger = screen.getByRole("button", {
+      name: "Which worktrees are hidden by default?",
+    });
+    fireEvent.click(trigger);
+    expect(
+      screen.getByRole("dialog", { name: "Which worktrees are hidden by default?" })
+    ).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(
+      screen.queryByRole("dialog", { name: "Which worktrees are hidden by default?" })
+    ).toBeNull();
+  });
+
+  it("warns when a source overrides the global setting", () => {
+    renderDialog({
+      project: {
+        ...PROJECT,
+        worktreeVisibilitySourcePreferences: { builtIn: { claude: "show" } },
+      },
+      visibilityDefaults: {
+        external: "hide",
+        sourcePreferences: { builtIn: { claude: "hide" } },
+      },
+    });
+    expect(screen.getByText("Overriding global setting: Hide")).toBeInTheDocument();
+  });
+
+  it("names the recovery action with the worktree and its path", () => {
+    renderDialog();
+    expect(
+      screen.getByRole("button", {
+        name: "Show agent/a at /home/me/src/repo/.claude/worktrees/a",
+      })
+    ).toBeInTheDocument();
+  });
+
   it("writes a built-in Show/Hide as a full-replace source preference", () => {
     renderDialog();
 
@@ -205,7 +243,7 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     // The recovery list renders in `hiddenWorktrees` order; the third row is the
     // custom-root worktree.
     const hidden = screen.getByRole("region", { name: "Hidden worktrees (4)" });
-    fireEvent.click(within(hidden).getAllByRole("button", { name: "Show" })[2]);
+    fireEvent.click(within(hidden).getAllByRole("button", { name: /^Show .* at / })[2]);
 
     expect(invokeMock).toHaveBeenCalledWith("import_worktree", {
       projectPath: PROJECT.path,

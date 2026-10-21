@@ -3,31 +3,32 @@
 // working spinner, monitoring icon, permission question, interrupted red dot,
 // and the green/grey pair (`done`/`active` green, `inactive` grey).
 import React from "react";
-import { Activity, MessageCircleQuestion } from "lucide-react";
+import { Activity } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { translate } from "../../i18n/i18n";
 import type { WorktreeStatus } from "../../lib/worktree-status";
+import { AgentQuestionIcon } from "../AgentQuestionIcon";
 import { AgentWorkingSpinner } from "../AgentStateDot";
 
-/** Orca's `STATUS_LABELS` (`lib/worktree-status.ts`). Kept local so this row does not
- * pull the whole worktree-status module graph (agent-title classifiers) into leaf
- * consumers and tests. */
-const STATUS_LABEL: Partial<Record<WorktreeStatus, string>> = {
-  active: "Active",
-  working: "Working",
-  monitoring: "Monitoring background tasks",
-  permission: "Needs attention",
-  interrupted: "Interrupted",
-  done: "Done",
-  inactive: "Inactive",
-};
-
-/** Statuses whose dot carries Orca's label tooltip. */
-const HAS_LABEL: Partial<Record<WorktreeStatus, true>> = {
-  working: true,
-  monitoring: true,
-  permission: true,
-  interrupted: true,
-  done: true,
+/** Orca's `STATUS_LABELS` (`lib/worktree-status.ts`), localized: the sidebar is
+ *  translated, so the tooltip/aria label follows the UI locale. Kept local (with the
+ *  inline English fallback) so this leaf row does not pull the whole worktree-status
+ *  module graph (agent-title classifiers) into consumers and tests.
+ *
+ *  Orca only labels the agent-derived states; the passive `active`/`inactive` stay
+ *  decorative, so they are absent here rather than carrying an empty label. */
+const LABEL_BY_STATUS: Partial<Record<WorktreeStatus, { key: string; fallback: string }>> = {
+  working: { key: "components.worktreeStatusIndicator.working", fallback: "Working" },
+  monitoring: {
+    key: "components.worktreeStatusIndicator.monitoring",
+    fallback: "Monitoring background tasks",
+  },
+  permission: { key: "components.worktreeStatusIndicator.permission", fallback: "Needs attention" },
+  interrupted: {
+    key: "components.worktreeStatusIndicator.interrupted",
+    fallback: "Interrupted",
+  },
+  done: { key: "components.worktreeStatusIndicator.done", fallback: "Done" },
 };
 
 export interface WorktreeStatusIndicatorProps {
@@ -42,7 +43,8 @@ export function WorktreeStatusIndicator({
   className,
   showLabel = true,
 }: WorktreeStatusIndicatorProps): React.JSX.Element {
-  const label = showLabel && HAS_LABEL[status] ? STATUS_LABEL[status] : null;
+  const labelEntry = showLabel ? LABEL_BY_STATUS[status] : undefined;
+  const label = labelEntry ? translate(labelEntry.key, labelEntry.fallback) : null;
 
   let indicator: React.JSX.Element;
   if (status === "working") {
@@ -66,7 +68,7 @@ export function WorktreeStatusIndicator({
   } else if (status === "permission") {
     indicator = (
       <span className={cn("inline-flex size-3 shrink-0 items-center justify-center", className)}>
-        <MessageCircleQuestion className="size-3 text-amber-500" aria-hidden="true" />
+        <AgentQuestionIcon className="size-3" />
       </span>
     );
   } else {

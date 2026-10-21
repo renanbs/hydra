@@ -1,0 +1,49 @@
+{
+ "group": "K",
+ "generatedFrom": "2026-10-21 drag-nesting increment: hover a card to nest, cycle/host-safe eligibility, ring preview, child-first commit and detach-on-reorder; the app's path lineage is now projected into the painted row model",
+ "rows": [
+  {
+   "id": "D03a-005",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/nesting.ts:50-75",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:54-75",
+    "src/components/sidebar/worktree-list/drag/worktree-drag-surface.tsx:57-64",
+    "src/App.css:857-865",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:132-155"
+   ],
+   "note": "The pointer reads the card under it (data-worktree-nesting-id), paints the lineage ring and suppresses the insertion line while nesting is pending."
+  },
+  {
+   "id": "D03a-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/nesting.ts:28-47",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:82-115",
+    "src/components/sidebar/WorktreeList.tsx:657-682"
+   ],
+   "note": "Eligibility walks the candidate's ancestors: the dragged cards, their children and deeper descendants are rejected, so a cycle cannot be formed."
+  },
+  {
+   "id": "D03a-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:37-56",
+    "src/components/sidebar/WorktreeList.tsx:756-772",
+    "src/App.tsx:1833-1856"
+   ],
+   "note": "Release over the ringed card writes parentPath->childPaths in one map commit; no async writer exists, so the Orca failure toast has no path to fire."
+  },
+  {
+   "id": "D03a-008",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:71-88",
+    "src/components/sidebar/WorktreeList.tsx:774-787",
+    "src/App.tsx:1857-1872",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:192-209"
+   ],
+   "note": "A nested row released on a reorder line detaches from its parent before the order write, exactly as Orca's unnest-on-reorder path."
+  }
+ ]
+}

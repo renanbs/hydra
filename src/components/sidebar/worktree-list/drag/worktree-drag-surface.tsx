@@ -48,6 +48,7 @@ export function WorktreeDragRow({
       aria-selected={isActive || isSelected}
       aria-current={isActive ? 'page' : undefined}
       data-worktree-path={worktreePath}
+      data-worktree-nesting-id={worktreeId}
       data-worktree-selected={isSelected ? 'true' : undefined}
       data-worktree-drag-id={groupKey ? worktreeId : undefined}
       data-worktree-drag-group-key={groupKey}

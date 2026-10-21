@@ -1,0 +1,60 @@
+{
+ "group": "H",
+ "generatedFrom": "2026-10-20 delete-failure increment: explicit force through the Tauri command/Rust removal, Git stderr catalog and a recovery toast with Force Delete",
+ "rows": [
+  {
+   "id": "D07-039",
+   "status": "partial",
+   "evidence": [
+    "src-tauri/src/lib.rs:479-504",
+    "src-tauri/src/worktree_ops.rs:1270",
+    "src-tauri/src/worktree_ops.rs:1383-1430",
+    "src-tauri/src/worktree_ops.rs:1744-1781",
+    "src/components/DeleteWorktreeDialog.tsx:308-313"
+   ],
+   "missing_behaviors": [
+    "Fechamento imediato do modal com progresso no card: Hydra mantém o modal aberto até o invoke terminar",
+    "Toast de lista desatualizada quando o alvo não é encontrado",
+    "prepareActiveWorktreeFocusAfterDelete e confirmação de foco após sucesso"
+   ],
+   "note": "force agora é explícito no comando e no Git: sem force o worktree sujo é recusado e a pasta sobrevive; Force Delete passa force:true."
+  },
+  {
+   "id": "D07-041",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:2028-2070",
+    "src/components/sidebar/worktree-delete-failure.ts:15-75",
+    "src/components/sidebar/worktree-delete-failure.parity.test.ts:1-45"
+   ],
+   "missing_behaviors": [
+    "Botão 'View' abrindo o diff viewer com as alterações pendentes",
+    "Botão 'Delete Anyway' para o caso de registro ausente"
+   ],
+   "note": "Toast de falha com Force Delete e duração infinita (sonner descarta ao acionar); faltam as ações View/Delete Anyway."
+  },
+  {
+   "id": "D07-042",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-delete-failure.ts:15-75",
+    "src/App.tsx:2028-2069",
+    "src/components/DeleteWorktreeDialog.tsx:329-338",
+    "src/components/sidebar/worktree-delete-failure.parity.test.ts:1-45"
+   ],
+   "missing_behaviors": [
+    "Separação entre confirmação comprovada e não confirmada de parada de PTY/agente"
+   ],
+   "note": "Catálogo cobre locked (com comando unlock), dirty, orphan, permissão e sessão viva; o backend ainda não reporta confirmação de parada de PTY."
+  },
+  {
+   "id": "D10-014",
+   "status": "parity",
+   "evidence": [
+    "src/App.tsx:2031-2068",
+    "src/components/sidebar/worktree-delete-failure.ts:15-75"
+   ],
+   "note": "Force Delete de recuperação a partir do toast, sem persistir preferência de pular confirmação."
+  }
+ ]
+}

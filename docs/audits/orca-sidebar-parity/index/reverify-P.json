@@ -1,0 +1,120 @@
+{
+ "group": "P",
+ "generatedFrom": "2026-10-21 workspace metadata slice: worktree_metadata gains comment/linked issue/PR/Linear, Rust save/list commands with a preservation test, App hydration, the edit dialog from the context menu, and hover sections fed by the projected Worktree",
+ "rows": [
+  {
+   "id": "D04a-093",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeMetaDialog.tsx:1-210",
+    "src/App.tsx:584-590",
+    "src/App.tsx:3791-3796",
+    "src/App.tsx:4539-4630",
+    "src/components/sidebar/WorktreeMetaDialog.parity.test.tsx:1-70"
+   ],
+   "note": "Context menu opens the dialog seeded from persisted metadata; Save writes name + notes + linked items and updates the live map; Cancel/Escape never write."
+  },
+  {
+   "id": "D04a-095",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeMetaDialog.tsx:52-60",
+    "src/components/sidebar/WorktreeMetaDialog.tsx:151-165"
+   ],
+   "missing_behaviors": [
+    "Chip de provedor (GitHub/Linear) no campo de issue",
+    "Região viva de ajuda abaixo do campo"
+   ],
+   "note": "Numeric issue field with positive-integer validation and an inline alert is wired."
+  },
+  {
+   "id": "D04a-096",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeMetaDialog.tsx:166-182"
+   ],
+   "missing_behaviors": [
+    "Rótulo/placeholder por provedor (GH PR vs GitLab MR)",
+    "Ajuda contextual por provedor"
+   ],
+   "note": "The review field validates a positive number; provider-specific copy is not derived."
+  },
+  {
+   "id": "D04a-097",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeMetaDialog.tsx:184-194",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:300-310"
+   ],
+   "missing_behaviors": [
+    "Auto-resize do textarea",
+    "Atalho de submit (Cmd/Ctrl+Enter)"
+   ],
+   "note": "Notes persist and render as compact markdown in the card; the editor still lacks auto-resize and a submit chord."
+  },
+  {
+   "id": "D04a-098",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:4569-4576",
+    "src-tauri/src/lib.rs:539-560",
+    "src-tauri/src/db.rs:1270-1300",
+    "src-tauri/src/db.rs:1519-1560"
+   ],
+   "missing_behaviors": [
+    "Qualificação do save pelo host (worktree_metadata é keyed por path; dois hosts com o mesmo path compartilham a linha)"
+   ],
+   "note": "Payload is validated in the dialog and persisted atomically; the table still lacks a host-qualified key."
+  },
+  {
+   "id": "D04a-040",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:278-290",
+    "src/components/sidebar/worktree-card-detail-controls.tsx:12-27"
+   ],
+   "missing_behaviors": [
+    "Menu de ações da issue",
+    "Abertura externa da issue"
+   ],
+   "note": "The hover names the linked issue and offers the shared edit action; the action menu and external linking still need the repo remote URL."
+  },
+  {
+   "id": "D04a-042",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:292-300"
+   ],
+   "missing_behaviors": [
+    "Link para o item Linear",
+    "Ações de abrir"
+   ],
+   "note": "The Linear identifier renders; no URL is derived."
+  },
+  {
+   "id": "D04a-044",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:301-312",
+    "src/components/sidebar/worktree-card-detail-controls.tsx:12-27",
+    "src/components/sidebar/comment-markdown.tsx:1-150",
+    "src/components/sidebar/comment-markdown.parity.test.tsx:1-60"
+   ],
+   "missing_behaviors": [],
+   "note": "Notes render as compact inline markdown (bold/em/code/lists/safe links, raw HTML inert) with an edit action in the section header."
+  },
+  {
+   "id": "D04a-111",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-model.ts:85-94",
+    "src/shared/worktree/worktree-row.ts:45-58",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:19-39"
+   ],
+   "missing_behaviors": [
+    "Campo Jira no contrato de metadados"
+   ],
+   "note": "Card/hover metadata contract covers issue, review, Linear and notes; Jira is absent."
+  }
+ ]
+}

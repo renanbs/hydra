@@ -39,4 +39,10 @@ export type WorktreeDropCommitContext = {
    * writer — the same one the row menu uses.
    */
   onPinWorktrees: (worktreeIds: readonly string[]) => void
+  /** Persisted lineage parent per child id, the cycle check for a nest drop. */
+  lineageParentIdByChildId: ReadonlyMap<string, string>
+  /** Nests the dragged workspace(s) under the hovered card (Orca `assignWorktreeParent`). */
+  onNestWorktrees: (parentWorktreeId: string, childWorktreeIds: readonly string[]) => void
+  /** A reorder drop of nested rows detaches them from their old parent first. */
+  onUnnestWorktrees: (childWorktreeIds: readonly string[]) => void
 }

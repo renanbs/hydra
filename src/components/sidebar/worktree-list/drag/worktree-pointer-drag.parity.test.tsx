@@ -281,9 +281,11 @@ describe("worktree list pointer drag", () => {
 
     await startDragOnFirstRow(rows[0]!);
     movePointer(ROW_PITCH + ROW_HEIGHT / 2);
-    await settleDragFrame();
-
-    expect(dropIndicator()).toHaveAttribute("style", "top: 41px;");
+    // D03a-003: a new slot waits out the 160ms reorder intent before the line moves.
+    await vi.waitFor(
+      () => expect(dropIndicator()).toHaveAttribute("style", "top: 41px;"),
+      { timeout: 1_000 }
+    );
     expect(rows[0]).toHaveClass("opacity-0");
     expect((rows[1]?.firstElementChild as HTMLElement).style.transform).toBe("translateY(-44px)");
   });
@@ -299,6 +301,26 @@ describe("worktree list pointer drag", () => {
 
     expect(dragPreview()).toBeNull();
     expect(document.documentElement).not.toHaveAttribute("data-worktree-sidebar-pointer-dragging");
+  });
+
+  it("aborts the drag when the document is hidden", async () => {
+    const { rows } = renderList();
+    await startDragOnFirstRow(rows[0]!);
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    });
+    try {
+      document.dispatchEvent(new Event("visibilitychange"));
+      expect(dragPreview()).toBeNull();
+      expect(dropIndicator()).toBeNull();
+    } finally {
+      Object.defineProperty(document, "visibilityState", {
+        configurable: true,
+        value: "visible",
+      });
+    }
   });
 
   it("aborts on Escape without committing, and the release after it is inert", async () => {

@@ -45,6 +45,13 @@ export function toWorktreeRow(
     isUnread?: boolean
     /** Defaults to the row's persisted status when omitted. */
     status?: string | null
+    /** Persisted notes/linked items (`worktree_metadata`), when hydrated. */
+    metadata?: {
+      comment: string | null
+      linkedIssue: number | null
+      linkedPR: number | null
+      linkedLinearIssue: string | null
+    } | null
   }
 ): Worktree {
   const { repoId, hostId, isPinned, isUnread, status } = context
@@ -53,10 +60,10 @@ export function toWorktreeRow(
     repoId,
     projectId: repoId,
     displayName: worktree.displayName ?? worktree.display_name ?? worktree.branch,
-    comment: "",
-    linkedIssue: null,
-    linkedPR: null,
-    linkedLinearIssue: null,
+    comment: context.metadata?.comment ?? "",
+    linkedIssue: context.metadata?.linkedIssue ?? null,
+    linkedPR: context.metadata?.linkedPR ?? null,
+    linkedLinearIssue: context.metadata?.linkedLinearIssue ?? null,
     isArchived: false,
     isUnread: isUnread ?? worktree.is_unread ?? false,
     isPinned: isPinned ?? worktree.is_pinned ?? false,

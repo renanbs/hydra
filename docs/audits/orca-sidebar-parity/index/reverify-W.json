@@ -1,0 +1,49 @@
+{
+ "group": "W",
+ "generatedFrom": "2026-10-21 D03b trio: indexed header section bounds with the missing attributes, Agents->Workspaces reveal redirect, and catalog-change worktree sync",
+ "rows": [
+  {
+   "id": "D03b-003",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/use-worktree-reveal-body-redirect.ts:1-45",
+    "src/components/sidebar/WorktreeSidebar.tsx:538-546",
+    "src/App.tsx:4419-4427",
+    "src/components/sidebar/use-worktree-reveal-body-redirect.parity.test.tsx:1-45"
+   ],
+   "note": "A reveal request captured while Agents is showing switches the body to Workspaces and replays the path once the list mounts; the jump palette dispatches it."
+  },
+  {
+   "id": "D03b-005",
+   "status": "parity",
+   "evidence": [
+    "src/App.tsx:1370-1400",
+    "src/App.tsx:1292-1310"
+   ],
+   "note": "Every catalog refresh (add/remove repo) re-reads the envelope and calls refreshAllWorktrees for the new project set, so a repo-count change resyncs worktrees."
+  },
+  {
+   "id": "D03b-040",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-header-section-boundaries.ts:1-180",
+    "src/components/sidebar/WorktreeList.tsx:813-823",
+    "src/components/sidebar/WorktreeList.tsx:1287",
+    "src/components/sidebar/SectionHeader.tsx:299",
+    "src/components/sidebar/worktree-header-section-boundaries.parity.test.ts:20-60"
+   ],
+   "note": "Repo section ends are indexed once (row starts + header/successor indexes) and painted as data-repo-header-section-end, the attribute the header drop preview reads."
+  },
+  {
+   "id": "D03b-041",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-header-section-boundaries.ts:120-165",
+    "src/components/sidebar/WorktreeList.tsx:1334",
+    "src/components/sidebar/SectionHeader.tsx:115",
+    "src/components/sidebar/worktree-header-section-boundaries.parity.test.ts:62-85"
+   ],
+   "note": "Nested group boundaries use a depth stack for sibling buckets, fall back to the first header at depth <= current, and paint data-project-group-header-section-end."
+  }
+ ]
+}

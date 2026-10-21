@@ -275,6 +275,16 @@ async fn catalog_get() -> CatalogEnvelope {
 }
 
 #[tauri::command]
+async fn is_git_repository(path: String) -> Result<bool, String> {
+    tokio::task::spawn_blocking(move || {
+        let candidate = std::path::Path::new(&path);
+        Ok(candidate.join(".git").exists())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn catalog_add_folder(path: String) -> Result<CatalogEnvelope, String> {
     tokio::task::spawn_blocking(move || {
         let mut envelope = read_catalog();
@@ -480,6 +490,7 @@ async fn delete_worktree(
     state: State<'_, AppState>,
     repo_path: String,
     worktree_path: String,
+    force: Option<bool>,
 ) -> Result<(), String> {
     let terminal = state.terminal.clone();
     let db = state.db.clone();
@@ -499,7 +510,7 @@ async fn delete_worktree(
             let _ = terminal.close_session(id);
             let _ = db.delete_session(id);
         }
-        remove_git_worktree(&repo_path, &worktree_path)
+        remove_git_worktree(&repo_path, &worktree_path, force.unwrap_or(false))
     })
     .await
     .map_err(|e| e.to_string())?
@@ -511,6 +522,50 @@ async fn set_worktree_display_name(
     state: State<'_, AppState>,
 ) -> Result<(), String> {
     state.db.set_worktree_display_name(&worktree_path, display_name.as_deref())
+}
+
+#[tauri::command]
+async fn get_worktree_metadata(
+    worktree_path: String,
+    state: State<'_, AppState>,
+) -> Result<Option<db::WorktreeMetadataRecord>, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.get_worktree_metadata(&worktree_path))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn list_worktree_metadata(
+    state: State<'_, AppState>,
+) -> Result<std::collections::HashMap<String, db::WorktreeMetadataRecord>, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.get_all_worktree_metadata())
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn save_worktree_metadata(
+    worktree_path: String,
+    comment: Option<String>,
+    linked_issue: Option<i64>,
+    linked_pr: Option<i64>,
+    linked_linear_issue: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        db.save_worktree_metadata(
+            &worktree_path,
+            comment.as_deref(),
+            linked_issue,
+            linked_pr,
+            linked_linear_issue.as_deref(),
+        )
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -1499,6 +1554,7 @@ pub fn run() {
             open_in_file_manager,
             open_in_external_editor,
             catalog_get,
+            is_git_repository,
             catalog_add_folder,
             catalog_remove_repo,
             catalog_set_worktree_visibility,
@@ -1517,6 +1573,9 @@ pub fn run() {
             create_worktree,
             delete_worktree,
             set_worktree_display_name,
+            get_worktree_metadata,
+            list_worktree_metadata,
+            save_worktree_metadata,
             set_worktree_rename_error,
             set_worktree_status,
             set_worktree_flags,

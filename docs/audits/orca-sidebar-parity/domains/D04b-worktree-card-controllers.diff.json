@@ -30,7 +30,7 @@
      "Ativação via activateAndRevealWorktree com revealInSidebar: false"
     ],
     "reason": "",
-    "notes": "Buscas sem resultado (5 passos): prepareActiveWorktreeFocusAfterDelete, activateAndRevealWorktree, lastVisitedAtByWorktreeId, getWorktreeVisitTimestamp, isMainWorktree-priority — em src/** e src-tauri/src/**. Unwired por completo.",
+    "notes": "Pós-delete: refreshGitWorktrees + refresh-projects; sem captura de sucessor/foco.",
     "note": "Pós-delete: refreshGitWorktrees + refresh-projects; sem captura de sucessor/foco."
    }
   },
@@ -60,7 +60,7 @@
      "Supressão quando outro split/aba/superfície está ativo"
     ],
     "reason": "",
-    "notes": "O destaque é apenas um prop dormente: WorktreeSidebar/WorktreeList nunca fornecem activeSessionId (grep activeSessionId em WorktreeSidebar.tsx/WorktreeList.tsx = 0 ocorrências de pass-down). Buscas sem resultado: focused-agent-row-highlight, makePaneKey no sidebar, migrationUnsupportedByPtyId no card.",
+    "notes": "WorktreeList/WorktreeSidebar não passam activeSessionId; isFocusedPane sempre false.",
     "note": "WorktreeList/WorktreeSidebar não passam activeSessionId; isFocusedPane sempre false."
    }
   },
@@ -124,7 +124,7 @@
      "Reapresentação do toast estruturado em nova falha"
     ],
     "reason": "",
-    "notes": "Existe um fluxo de deleção (dialog + retry force), mas não o fluxo de toasts do Orca. A maquinaria de waiver está definida e NÃO usada: src/store/slices/worktree-removal-options.ts:3-19 (allowFailedArchiveHook/allowUnverifiedPtyStop/snapshotPruneBatchId), src/shared/worktree/archive-hook-removal-gate.ts:21 ('Delete Anyway' apenas em texto de hint), e src/store/slices/worktrees/teardown/remove-worktree.ts:9 (createRemoveWorktree: any = null → store removeWorktree nunca chamado; grep removeWorktree( em src/** = 0 call-sites).",
+    "notes": "Fluxo de deleção existe (erro inline/force), sem máquina de toasts/waiver.",
     "note": "Fluxo de deleção existe (erro inline/force), sem máquina de toasts/waiver."
    }
   },
@@ -168,21 +168,24 @@
     "components/sidebar/use-confirmed-worktree-delete-targets.ts:28"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:1931-1954",
-     "src/App.tsx:4308-4314"
+     "src/components/sidebar/worktree-delete-request.ts:23",
+     "src/components/sidebar/worktree-delete-request.ts:33",
+     "src/components/sidebar/worktree-delete-request.ts:48-51",
+     "src/components/DeleteWorktreeDialog.tsx:105",
+     "src/components/DeleteWorktreeDialog.tsx:115-121",
+     "src/components/DeleteWorktreeDialog.tsx:189-196",
+     "src/App.tsx:516-519",
+     "src/App.tsx:2002-2010",
+     "src/App.tsx:4378-4379",
+     "src/components/sidebar/worktree-delete-request.parity.test.ts:45-108"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Conversão de payloads brutos em WorktreeDeleteIdentity tipadas (worktree e linhagem)",
-     "resolveWorktreeBatchDeleteTargets consultando getWorktreeOnHostFromState no estado atual",
-     "Verificação de contagem contra expectedCount",
-     "showWorkspaceListChangedToast + fechamento do modal + retorno null em divergência"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Buscas: use-confirmed-worktree-delete-targets, resolveWorktreeBatchDeleteTargets, expectedCount, showWorkspaceListChangedToast — 0 resultados em src/**.",
-    "note": "Resolução de targets em lote/validação de host ausentes."
+    "notes": "Stale: WorktreeDeleteIdentity + host-qualified batch resolver, render/confirm-time revalidation against live rows, and 'Workspace list changed' toast + modal close all landed.",
+    "note": "Stale: WorktreeDeleteIdentity + host-qualified batch resolver, render/confirm-time revalidation against live rows, and 'Workspace list changed' toast + modal close all landed."
    }
   },
   {
@@ -213,7 +216,7 @@
      "Ambiente de runtime para hosts remotos/SSH"
     ],
     "reason": "",
-    "notes": "Hydra hidrata apenas a contagem de sujeira via get_detailed_git_status_cmd; não há getRuntimeGitStatus no sidebar (grep 0) nem AbortController no efeito.",
+    "notes": "Só dirty count via get_detailed_git_status_cmd; sem getRuntimeGitStatus/AbortController.",
     "note": "Só dirty count via get_detailed_git_status_cmd; sem getRuntimeGitStatus/AbortController."
    }
   },
@@ -241,7 +244,7 @@
      "Invocação de resolveWorktreeStatus para o estado final"
     ],
     "reason": "",
-    "notes": "Divergência documentada em src/lib/workspace-status-signals.ts:9-13 ('Hydra has no per-pane PTY index, so the equivalent signals are the workspace's sessions ... and whether a terminal tab is still mounted'). O dot é observável; as entradas consolidadas de PTY/agentes não existem.",
+    "notes": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes.",
     "note": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes."
    }
   },
@@ -266,7 +269,7 @@
      "Assinaturas de agentStatusEpoch/agentStatusByPaneKey/migrationUnsupportedByPtyId/retainedAgentsByPaneKey/runtimeAgentOrchestrationByPaneKey"
     ],
     "reason": "",
-    "notes": "Sem batch selector: grep useWorktreeActivityStatuses/useShallow/shallow em src/components/sidebar/** = 0. O status multi-worktree existe pontualmente na lista, sem o contrato de igualdade rasa.",
+    "notes": "Sem batch selector com igualdade rasa.",
     "note": "Sem batch selector com igualdade rasa."
    }
   },
@@ -301,7 +304,7 @@
      "Toggle rápido de não-lido (handleToggleUnreadQuick): showUnreadQuickAction é computado em worktree-card-presentation.tsx:88 mas nunca renderizado"
     ],
     "reason": "",
-    "notes": "Buscas: 'sidebar_worktree_activate', 'edit-meta', buildWorktreeMetaUpdates, updateWorktreeMeta no card — 0 resultados. Não-lido só existe via menu de contexto (App.tsx:3406 toggleUnreadWorktree).",
+    "notes": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op).",
     "note": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op)."
    }
   },
@@ -332,7 +335,7 @@
      "Condição deleteModifierPressed (Option/Alt) para showDeleteQuickAction — símbolo ausente no Hydra"
     ],
     "reason": "",
-    "notes": "Buscas: deleteModifierPressed, cardProps, shouldRefreshHostedReview, useWorktreeCardDetailsHoverControl — 0 resultados.",
+    "notes": "showUnreadQuickAction computado e não renderizado; cardProps não existe.",
     "note": "showUnreadQuickAction computado e não renderizado; cardProps não existe."
    }
   },
@@ -365,7 +368,7 @@
      "cardProps e workspacePortScan/runtimeEnvironments/runtimeStatusByEnvironmentId"
     ],
     "reason": "",
-    "notes": "SSH runtime-aware selectors existem na store (src/store/slices/runtime-environment-ssh-selectors.ts) mas não são usados pelo card. WorkspaceSidebar tem scanPorts em WorktreeSidebar.tsx:259, não no card.",
+    "notes": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded.",
     "note": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded."
    }
   },
@@ -402,7 +405,7 @@
      "Busca sob demanda de issue Linear no hover"
     ],
     "reason": "",
-    "notes": "installWindowVisibilityInterval existe (src/lib/window-visibility-interval.ts) mas é usado por src/hooks/use-now.ts, não pelo card. Buscas: fetchHostedReviewForBranch, fetchIssue, fetchLinearIssue, hoverDetailsOpen no sidebar — 0 call-sites.",
+    "notes": "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidores; sem polling no card.",
     "note": "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidores; sem polling no card."
    }
   },
@@ -436,7 +439,7 @@
      "deleteModifierPressed"
     ],
     "reason": "",
-    "notes": "Buscas: 'Queued for deletion', 'Loading issue', 'Issue details unavailable', getWorktreeCardTitleDisplay, linearIssueDisplay, jiraIssueDisplay em src/components/sidebar/** — 0 resultados. A meta row não renderiza badges de issue/PR.",
+    "notes": "Título resolvido; badges de issue/PR e rótulos de loading ausentes.",
     "note": "Título resolvido; badges de issue/PR e rótulos de loading ausentes."
    }
   },
@@ -470,7 +473,7 @@
      "getWorktreeCardPrDisplay com suppressedGitHubPR"
     ],
     "reason": "",
-    "notes": "Só GitHub via pr_status; suppression (src/shared/worktree/github-pr-suppression.ts) e caches multi-provedor existem na store mas não são usados pelo card. use-worktree-card-review-details.ts citado em comentário do controller (:257) mas o arquivo não existe no Hydra.",
+    "notes": "Só GitHub via pr_status; suppression/caches multi-provedor não usados.",
     "note": "Só GitHub via pr_status; suppression/caches multi-provedor não usados."
    }
   },
@@ -505,7 +508,7 @@
      "handleUnlinkReview com tombstone suppressedGitHubPR e remoção de links GitLab/Bitbucket/Azure/Gitea"
     ],
     "reason": "",
-    "notes": "Buscas: use-worktree-card-secondary-details, handleUnlinkReview, showAggregateCacheTimer, compactInlineAgentRows, usePromptCacheCountdownStartedAt, openWorkspaceBrowserTab — 0 resultados. CacheTimer é código morto por construção.",
+    "notes": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card.",
     "note": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card."
    }
   },
@@ -539,7 +542,7 @@
      "Resolução dos worktrees alvo da seleção no menu de contexto (Hydra delega cru ao App)"
     ],
     "reason": "",
-    "notes": "Buscas: deleteFolderWorkspace no card, writeWorkspaceDragData, 'Show child', 'Hide child', expectedHostId — 0 resultados no sidebar. onLineageToggle/writeWorkspaceDragData são símbolos órfãos.",
+    "notes": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais.",
     "note": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais."
    }
   },
@@ -689,7 +692,7 @@
      "Tombstone suppressedGitHubPR ao limpar link explícito de PR"
     ],
     "reason": "",
-    "notes": "Buscas: worktree-meta-updates, isIssueFieldDirty, issueLinkIdentity, suppressedGitHubPR no sidebar — 0 call-sites.",
+    "notes": "Sem update de metadados agrupado; rename/unread gravam direto.",
     "note": "Sem update de metadados agrupado; rename/unread gravam direto."
    }
   },

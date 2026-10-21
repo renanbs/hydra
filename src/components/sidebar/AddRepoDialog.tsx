@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
+import { NonGitFolderDialog } from "./NonGitFolderDialog";
 import { 
   X, 
   FolderOpen, 
@@ -25,11 +26,19 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
   const [createParent, setCreateParent] = useState("/home/renan/src");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nonGitFolder, setNonGitFolder] = useState<string | null>(null);
 
   const handleClose = () => {
     setStep("start");
     setError(null);
+    setNonGitFolder(null);
     onClose();
+  };
+
+  const addFolder = async (path: string) => {
+    await invoke("catalog_add_folder", { path });
+    onProjectAdded();
+    handleClose();
   };
 
   useEffect(() => {
@@ -57,10 +66,15 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
       if (selected && typeof selected === "string") {
         setIsSubmitting(true);
         setError(null);
-        await invoke("catalog_add_folder", { path: selected });
+        // Orca `useAddRepoLocalFolderFlow`: a non-git folder is still openable, but
+        // the user confirms with the Git-features caveat instead of finding out later.
+        const isGit = await invoke<boolean>("is_git_repository", { path: selected });
         setIsSubmitting(false);
-        onProjectAdded();
-        handleClose();
+        if (!isGit) {
+          setNonGitFolder(selected);
+          return;
+        }
+        await addFolder(selected);
       }
     } catch (err) {
       setIsSubmitting(false);
@@ -292,6 +306,19 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
           </form>
         )}
       </div>
+      <NonGitFolderDialog
+        open={nonGitFolder != null}
+        folderPath={nonGitFolder ?? ""}
+        hostLabel={null}
+        onOpenChange={(open) => {
+          if (!open) setNonGitFolder(null);
+        }}
+        onConfirm={() => {
+          const folder = nonGitFolder;
+          if (folder) void addFolder(folder);
+        }}
+      />
+
     </div>
   );
 }

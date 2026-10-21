@@ -4,6 +4,10 @@ import type { WorktreeCardController } from './use-worktree-card-controller'
 import { WorktreeCardPortsTrigger } from './WorktreeCardPortsTrigger'
 import { WorktreeCardReviewBadge } from './WorktreeCardReviewBadge'
 import { getFlushWorktreeCardPaddingLeft } from './worktree-list/rows/indentation'
+import {
+  WorktreeCardMetaBadges,
+  hasWorktreeCardDetails
+} from './worktree-card-metadata-badges'
 
 export interface WorktreeCardPresentation {
   showPinnedRepoIcon: boolean
@@ -61,6 +65,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController): Wor
     workspacePorts,
     ports,
     review,
+    metadata,
     metaRowChildren,
     isDeleting
   } = card
@@ -84,12 +89,24 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController): Wor
   const showConflictOperationBadge = Boolean(
     conflictOperation && conflictOperation !== 'unknown' && conflictOperation !== 'rebase'
   )
+  const hasMetadataDetails = hasWorktreeCardDetails({
+    comment: metadata?.comment,
+    linkedIssue: metadata?.linkedIssue,
+    linkedLinearIssue: metadata?.linkedLinearIssue,
+    automationProvenance: worktree.automationProvenanceKind,
+    cliProvenance: worktree.cliProvenanceKind,
+    hasReview: Boolean(review)
+  })
   const hasMetadataBadge = showConflictOperationBadge
   const showUnreadQuickAction = Boolean(!affiliateListMode && showStatus && !newCardStyle)
   const showCombinedStatusSlot = Boolean(showStatus)
   const showTitleRowPrimary = Boolean(compactCards && (worktree.is_main ?? worktree.isMainWorktree) && !isFolder)
-  const showMetaRowDetails = Boolean(!newCardStyle && !compactCards && (hasDetails || hasPorts))
-  const showTitleRowIndicators = Boolean((newCardStyle || compactCards) && (hasDetails || hasPorts))
+  const showMetaRowDetails = Boolean(
+    !newCardStyle && !compactCards && (hasDetails || hasPorts || hasMetadataDetails)
+  )
+  const showTitleRowIndicators = Boolean(
+    (newCardStyle || compactCards) && (hasDetails || hasPorts || hasMetadataDetails)
+  )
   const showIdentityInNewCard = Boolean(identityDisplay && newCardStyle)
 
   const hasDetailedMetaRowContent = Boolean(
@@ -129,7 +146,9 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController): Wor
       ? trimmedVisibleCardTitle
       : undefined
   const hasHoverIdentity = Boolean(hoverWorkspaceTitle || hoverBranchName)
-  const hasHoverDetails = Boolean(review || (ports && ports.length > 0) || hasHoverIdentity)
+  const hasHoverDetails = Boolean(
+    review || (ports && ports.length > 0) || hasHoverIdentity || hasMetadataDetails
+  )
 
   // Orca parity (`worktree-card-presentation.tsx:193-199`): a flush card pulls its
   // content back toward the surface edge — `max(minInset, contentIndent - pullback)`,
@@ -146,6 +165,12 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController): Wor
 
   const detailsAndPorts = (
     <div className="flex shrink-0 items-center gap-1">
+      <WorktreeCardMetaBadges
+        metadata={metadata}
+        automationCreated={Boolean(worktree.automationProvenanceKind)}
+        cliCreated={Boolean(worktree.cliProvenanceKind)}
+        hasReview={Boolean(review)}
+      />
       {hasPorts && (workspacePorts.length > 0 || (ports && ports.length > 0)) && (
         <WorktreeCardPortsTrigger ports={workspacePorts.length > 0 ? workspacePorts : ports ?? []} />
       )}

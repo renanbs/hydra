@@ -7,8 +7,9 @@
 // override note, the scan-status/`Try again` line (Orca `WorktreeVisibilityScanStatus`),
 // and the `Hidden worktrees (N)` recovery list.
 import React, { useCallback, useEffect, useLayoutEffect, useState, useMemo, useRef } from "react";
-import { Search, FolderGit2, X, Eye, Plus, Trash2, Settings } from "lucide-react";
+import { Search, FolderGit2, X, Eye, Plus, Trash2, Settings, CircleHelp } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { List } from "react-window";
 import { useAppStore } from "@/store";
 import type { CatalogEnvelope, CatalogRepo } from "@/lib/catalog-types";
 import type { GitWorktreeInfo, HydraProject } from "./types";
@@ -51,6 +52,79 @@ import {
   type WorktreeVisibilityRepoConfig,
   type WorktreeVisibilitySourceRow,
 } from "@/lib/worktree-visibility-sources";
+
+/** One hidden worktree row, shared by the plain list and the virtualized one. */
+function HiddenWorktreeRow({
+  worktree,
+  projectPath,
+  isBusy,
+  onShow,
+  style,
+}: {
+  worktree: GitWorktreeInfo;
+  projectPath: string;
+  isBusy: boolean;
+  onShow: (path: string) => void;
+  style?: React.CSSProperties;
+}): React.JSX.Element {
+  const displayPath = worktree.path.replace(projectPath, "").replace(/^\//, "") || worktree.path;
+  const name = worktree.branch || worktree.path;
+  return (
+    <div
+      style={style}
+      className="flex items-center justify-between gap-3 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60 hover:bg-neutral-900/60 transition"
+    >
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <div className="flex items-center gap-1.5 font-medium text-[13px] text-neutral-200 truncate">
+          <FolderGit2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span className="truncate">{worktree.branch || "unnamed"}</span>
+        </div>
+        <div className="font-mono text-[10px] text-neutral-500 truncate" title={worktree.path}>
+          {displayPath}
+        </div>
+      </div>
+      <button
+        type="button"
+        disabled={isBusy}
+        aria-label={`Show ${name} at ${worktree.path}`}
+        onClick={() => onShow(worktree.path)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+      >
+        <Eye className="w-3.5 h-3.5 text-neutral-400" />
+        <span>{isBusy ? "Showing..." : "Show"}</span>
+      </button>
+    </div>
+  );
+}
+
+function HiddenWorktreeVirtualRow({
+  index,
+  style,
+  worktrees,
+  projectPath,
+  busyPath,
+  onShow,
+}: {
+  index: number;
+  style: React.CSSProperties;
+  worktrees: readonly GitWorktreeInfo[];
+  projectPath: string;
+  busyPath: string | null;
+  onShow: (path: string) => void;
+}): React.JSX.Element | null {
+  const worktree = worktrees[index];
+  if (!worktree) return null;
+  return (
+    <div style={style} className="px-0.5 pb-2">
+      <HiddenWorktreeRow
+        worktree={worktree}
+        projectPath={projectPath}
+        isBusy={busyPath === worktree.path}
+        onShow={onShow}
+      />
+    </div>
+  );
+}
 
 export interface WorktreeVisibilityDialogProps {
   open: boolean;
@@ -128,6 +202,8 @@ export function WorktreeVisibilityDialog({
   const [isToggling, setIsToggling] = useState(false);
   const [sourceError, setSourceError] = useState<string | null>(null);
   const [rootDraft, setRootDraft] = useState("");
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpRef = useRef<HTMLDivElement | null>(null);
   // Local mirror of the project's visibility config: the sidebar hands the dialog a
   // snapshot, so writes need a local echo until the next `catalog_get` lands.
   const [draftConfig, setDraftConfig] = useState<WorktreeVisibilityRepoConfig | null>(null);
@@ -268,6 +344,26 @@ export function WorktreeVisibilityDialog({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onOpenChange]);
+
+  useEffect(() => {
+    if (!helpOpen) return;
+    const handleOutside = (event: MouseEvent) => {
+      if (!helpRef.current?.contains(event.target as Node)) setHelpOpen(false);
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        setHelpOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside, true);
+    document.addEventListener("keydown", handleEscape, true);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside, true);
+      document.removeEventListener("keydown", handleEscape, true);
+    };
+  }, [helpOpen]);
 
   const config = useMemo<WorktreeVisibilityRepoConfig>(
     () => draftConfig ?? (project ? repoVisibilityConfig(project) : {}),
@@ -529,13 +625,42 @@ export function WorktreeVisibilityDialog({
         <div className="flex-1 overflow-y-auto space-y-4 min-h-[120px] pr-1">
           {/* a) Sources */}
           <section aria-labelledby="wv-sources-heading" className="space-y-2">
-            <div>
-              <h3 id="wv-sources-heading" className="text-[13px] font-semibold text-neutral-100">
-                Sources
-              </h3>
-              <p className="text-[11px] text-neutral-500">
-                Shown sources include current and future worktrees in the sidebar.
-              </p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h3 id="wv-sources-heading" className="text-[13px] font-semibold text-neutral-100">
+                  Sources
+                </h3>
+                <p className="text-[11px] text-neutral-500">
+                  Shown sources include current and future worktrees in the sidebar.
+                </p>
+              </div>
+              <div ref={helpRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-label="Which worktrees are hidden by default?"
+                  aria-expanded={helpOpen}
+                  onMouseEnter={() => setHelpOpen(true)}
+                  onClick={() => setHelpOpen((open) => !open)}
+                  className="inline-flex size-6 items-center justify-center rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition cursor-pointer"
+                >
+                  <CircleHelp className="size-3.5" />
+                </button>
+                {helpOpen && (
+                  <div
+                    role="dialog"
+                    aria-label="Which worktrees are hidden by default?"
+                    className="absolute right-0 top-7 z-20 w-64 rounded-lg border border-neutral-800 bg-[#141518] p-3 text-[11px] leading-4 text-neutral-300 shadow-2xl"
+                    onMouseLeave={() => setHelpOpen(false)}
+                  >
+                    Which worktrees are hidden by default?
+                    <p className="mt-1 text-neutral-400">
+                      A worktree is hidden when its source is hidden here or lacks the
+                      project override. Hidden rows stay recoverable from this list even
+                      while their source is off.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
               {sourceRows.map((row, index) => {
@@ -571,6 +696,13 @@ export function WorktreeVisibilityDialog({
                       <div className="truncate font-mono text-[10px] text-neutral-500">
                         {sourceRowPath(row)}
                       </div>
+                      {provenance?.kind === "project-override" &&
+                      provenance.globalVisibility !== visibility ? (
+                        <div className="text-[10px] text-amber-400/90">
+                          Overriding global setting:{" "}
+                          {provenance.globalVisibility === "show" ? "Show" : "Hide"}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
                       {row.kind === "custom" && repoSourceIds.has(row.source.id) && (
@@ -745,48 +877,42 @@ export function WorktreeVisibilityDialog({
               </div>
             )}
 
-            <div className="space-y-2">
-              {filteredWorktrees.length > 0 ? (
-                filteredWorktrees.map((wt) => {
-                  const displayPath =
-                    wt.path.replace(project.path, "").replace(/^\//, "") || wt.path;
-                  const isBusy = busyPath === wt.path;
-                  return (
-                    <div
+            {filteredWorktrees.length > 10 ? (
+              <div style={{ height: 260 }} className="overflow-hidden">
+                <List
+                  rowCount={filteredWorktrees.length}
+                  rowHeight={76}
+                  rowComponent={HiddenWorktreeVirtualRow}
+                  // @ts-ignore react-window v2 rowProps are untyped here
+                  rowProps={{
+                    worktrees: filteredWorktrees,
+                    projectPath: project.path,
+                    busyPath,
+                    onShow: handleShow,
+                  }}
+                  style={{ height: 260, width: "100%" }}
+                  overscanCount={6}
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredWorktrees.length > 0 ? (
+                  filteredWorktrees.map((wt) => (
+                    <HiddenWorktreeRow
                       key={wt.path}
-                      className="flex items-center justify-between gap-3 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60 hover:bg-neutral-900/60 transition"
-                    >
-                      <div className="min-w-0 flex-1 space-y-0.5">
-                        <div className="flex items-center gap-1.5 font-medium text-[13px] text-neutral-200 truncate">
-                          <FolderGit2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                          <span className="truncate">{wt.branch || "unnamed"}</span>
-                        </div>
-                        <div
-                          className="font-mono text-[10px] text-neutral-500 truncate"
-                          title={wt.path}
-                        >
-                          {displayPath}
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        disabled={isBusy}
-                        onClick={() => handleShow(wt.path)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition cursor-pointer disabled:opacity-50"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-neutral-400" />
-                        <span>{isBusy ? "Showing..." : "Show"}</span>
-                      </button>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="py-8 text-center text-neutral-500 text-xs">
-                  No hidden worktrees found.
-                </div>
-              )}
-            </div>
+                      worktree={wt}
+                      projectPath={project.path}
+                      isBusy={busyPath === wt.path}
+                      onShow={handleShow}
+                    />
+                  ))
+                ) : (
+                  <div className="py-8 text-center text-neutral-500 text-xs">
+                    No hidden worktrees found.
+                  </div>
+                )}
+              </div>
+            )}
           </section>
 
           {sourceError && (

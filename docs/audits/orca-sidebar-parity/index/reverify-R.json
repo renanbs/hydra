@@ -1,0 +1,25 @@
+{
+ "group": "R",
+ "generatedFrom": "2026-10-21 detail section controls: shared DetailHeader and MetadataActionIcon (button or external link, tooltip, stopPropagation) used by the hover's issue/notes sections",
+ "rows": [
+  {
+   "id": "D04a-028",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-detail-controls.tsx:12-27",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:280-345",
+    "src/components/sidebar/worktree-card-detail-controls.parity.test.tsx:12-25"
+   ],
+   "note": "DetailHeader is the one section header shape: icon + truncating label + right-aligned actions slot; used by Issue, Review, Linear and Notes."
+  },
+  {
+   "id": "D04a-029",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-detail-controls.tsx:29-73",
+    "src/components/sidebar/worktree-card-detail-controls.parity.test.tsx:27-62"
+   ],
+   "note": "MetadataActionIcon renders a tooltip button with callback or an external anchor (target=_blank, rel=noreferrer); both stop propagation so the card does not activate."
+  }
+ ]
+}

@@ -17162,6 +17162,17 @@
     }
   },
   "components": {
+    "cacheTimer": {
+      "expired": "The next message will re-send the full context as uncached tokens",
+      "remaining": "Prompt cache expires in {{remaining}}"
+    },
+    "worktreeStatusIndicator": {
+      "working": "Working",
+      "monitoring": "Monitoring background tasks",
+      "permission": "Needs attention",
+      "interrupted": "Interrupted",
+      "done": "Done"
+    },
     "onboarding": {
       "flow": {
         "stepTooltip": {
