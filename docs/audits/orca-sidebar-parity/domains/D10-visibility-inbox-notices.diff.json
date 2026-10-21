@@ -471,9 +471,11 @@
     "components/sidebar/DeleteWorktreeTargetPreview.tsx:74"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:150-171"
+     "src/components/DeleteWorktreeDialog.tsx:365-410",
+     "src/components/DeleteWorktreeDialog.tsx:420-470",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:190-215"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -481,8 +483,8 @@
      "bounding box max-h-48 com scroll",
      "erro inline por linha"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Batch is role=list 'Workspaces to delete' with listitem rows labelled by branch+path(+host), max-h-48 scroll and per-row alert.",
+    "notes": "Batch is role=list 'Workspaces to delete' with listitem rows labelled by branch+path(+host), max-h-48 scroll and per-row alert."
    },
    "par": [
     "PAR-56"
@@ -519,17 +521,16 @@
     "components/sidebar/DeleteWorktreeTargetPreview.tsx:112"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:153-168",
-     "src/components/DeleteWorktreeDialog.tsx:166"
+     "src/components/DeleteWorktreeDialog.tsx:432-438"
     ],
     "backend": [],
     "missing_behaviors": [
      "erro inline por alvo (Hydra agrega o erro num único painel global)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "A failed target prints its own inline alert under that row; the dirty hint and spinner stay per target.",
+    "notes": "A failed target prints its own inline alert under that row; the dirty hint and spinner stay per target."
    },
    "par": [
     "PAR-56"
@@ -543,9 +544,10 @@
     "components/sidebar/DeleteWorktreeTargetPreview.tsx:124"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:150"
+     "src/components/DeleteWorktreeDialog.tsx:352-365",
+     "src/components/DeleteWorktreeDialog.tsx:407-416"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -553,8 +555,8 @@
      "host no nome acessível em colisão",
      "retorno null sem worktree resolvido"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Single target renders as role=region labelled by path (plus host when the path collides across hosts); no targets returns null.",
+    "notes": "Single target renders as role=region labelled by path (plus host when the path collides across hosts); no targets returns null."
    },
    "par": [
     "PAR-56"
@@ -1289,17 +1291,18 @@
     "components/sidebar/WorktreeVisibilitySourceList.tsx:276"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:413"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:690-710",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-190"
     ],
     "backend": [],
     "missing_behaviors": [
      "aria-label com rootPath completo (Hydra usa o basename)",
      "tooltip 'Remove custom location'"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "The custom-location remove button is named with the full rootPath and carries the 'Remove custom location' tooltip.",
+    "notes": "The custom-location remove button is named with the full rootPath and carries the 'Remove custom location' tooltip."
    }
   },
   {

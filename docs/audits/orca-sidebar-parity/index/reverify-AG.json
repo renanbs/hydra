@@ -1,0 +1,42 @@
+{
+ "group": "AG",
+ "generatedFrom": "2026-10-22 delete/visibility dialog accessibility: labelled batch list, labelled single region (host in collisions), inline per-target errors and the full-path custom-location label",
+ "rows": [
+  {
+   "id": "D10-020",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:365-410",
+    "src/components/DeleteWorktreeDialog.tsx:420-470",
+    "src/components/DeleteWorktreeDialog.parity.test.tsx:190-215"
+   ],
+   "note": "Batch is role=list 'Workspaces to delete' with listitem rows labelled by branch+path(+host), max-h-48 scroll and per-row alert."
+  },
+  {
+   "id": "D10-022",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:432-438"
+   ],
+   "note": "A failed target prints its own inline alert under that row; the dirty hint and spinner stay per target."
+  },
+  {
+   "id": "D10-023",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:352-365",
+    "src/components/DeleteWorktreeDialog.tsx:407-416"
+   ],
+   "note": "Single target renders as role=region labelled by path (plus host when the path collides across hosts); no targets returns null."
+  },
+  {
+   "id": "D10-058",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:690-710",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-190"
+   ],
+   "note": "The custom-location remove button is named with the full rootPath and carries the 'Remove custom location' tooltip."
+  }
+ ]
+}

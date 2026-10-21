@@ -4,7 +4,7 @@
 // right host, and the target vanished entirely.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { GitWorktreeInfo } from "./sidebar/types";
 
 const { invokeMock } = vi.hoisted(() => ({ invokeMock: vi.fn() }));
@@ -300,5 +300,33 @@ describe("DeleteWorktreeDialog lineage delete", () => {
     // instead of leaving a destructive button armed for a tree it cannot resolve.
     expect(screen.queryByRole("button", { name: "Delete 3 Workspaces" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Delete 2 Workspaces" })).toBeInTheDocument();
+  });
+});
+
+
+describe("DeleteWorktreeDialog batch preview accessibility (D10-020/022)", () => {
+  it("exposes the batch as a labelled list with one item per target", () => {
+    renderDialog({
+      worktrees: [worktree(), { ...worktree(), path: "/work/orca-two", branch: "feat/two" }],
+      liveWorktrees: [
+        liveRow("local", "instance-local", PROJECT_PATH),
+        {
+          id: "repo-1::/work/orca-two",
+          instanceId: "instance-two",
+          hostId: "local",
+          isMainWorktree: false,
+          path: "/work/orca-two",
+          repoPath: PROJECT_PATH,
+        },
+      ],
+    });
+
+    const list = screen.getByRole("list", { name: "Workspaces to delete" });
+    const items = within(list).getAllByRole("listitem");
+    expect(items).toHaveLength(2);
+    // Each row names its branch and checkout path, not just one of them.
+    const labelledBy = items[0]!.getAttribute("aria-labelledby")!;
+    expect(labelledBy.split(" ").length).toBeGreaterThanOrEqual(2);
+    expect(items[0]).toHaveTextContent("feat/orca");
   });
 });
