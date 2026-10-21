@@ -8,6 +8,7 @@
 // or needs-attention pane keeps the activity signal.
 import React from "react";
 import { GitBranch } from "lucide-react";
+
 import { cn } from "../../lib/utils";
 import type { WorktreeStatus } from "../../lib/worktree-status";
 import { WorktreeStatusIndicator } from "./WorktreeStatusIndicator";
@@ -24,22 +25,50 @@ export interface WorktreeCardStatusLaneProps {
   status: WorktreeStatus;
   branch?: string;
   prDisplay?: PrDisplay | null;
+  /** Unknown/unread state painted over the glyph in the new card style. */
+  isUnread?: boolean;
+  /** New style: whether the lane belongs to the newer card (overlay vs bell). */
+  newCardStyle?: boolean;
   className?: string;
+}
+
+const UNREAD_ALERT_CLASS =
+  "pointer-events-none absolute left-0 top-1/2 size-[6px] -translate-y-1/2 rounded-full bg-amber-500 ring-2 ring-worktree-sidebar";
+
+function withUnreadOverlay(node: React.JSX.Element): React.JSX.Element {
+  return (
+    <span
+      data-worktree-status-lane-unread=""
+      className="relative inline-flex size-5 shrink-0 items-center justify-center"
+    >
+      {node}
+      <span
+        data-worktree-unread-alert=""
+        className={UNREAD_ALERT_CLASS}
+        aria-hidden="true"
+      />
+    </span>
+  );
 }
 
 export function WorktreeCardStatusLane({
   status,
   branch = "",
   prDisplay = null,
+  isUnread = false,
+  newCardStyle = false,
   className = "",
 }: WorktreeCardStatusLaneProps): React.JSX.Element {
   const quiet = Boolean(QUIET_STATUSES[status]);
   const hasBranchIdentity = branch.length > 0;
   const showReview = quiet && prDisplay !== null;
   const showBranch = quiet && !showReview && hasBranchIdentity;
-
+  const showUnreadOverlay =
+    newCardStyle && isUnread && status !== "working" && status !== "permission";
+  const withUnread = (node: React.JSX.Element): React.JSX.Element =>
+    showUnreadOverlay ? withUnreadOverlay(node) : node;
   if (showReview && prDisplay) {
-    return (
+    return withUnread(
       <span
         data-worktree-status-lane="review"
         className={cn("inline-flex size-5 shrink-0 items-center justify-center p-0.5", className)}
@@ -52,7 +81,7 @@ export function WorktreeCardStatusLane({
   }
 
   if (showBranch) {
-    return (
+    return withUnread(
       <span
         data-worktree-status-lane="branch"
         className={cn("inline-flex size-5 shrink-0 items-center justify-center p-0.5", className)}
@@ -64,7 +93,7 @@ export function WorktreeCardStatusLane({
     );
   }
 
-  return (
+  const statusNode = (
     <span
       data-worktree-status-lane="status"
       className={cn("inline-flex size-5 shrink-0 items-center justify-center", className)}
@@ -72,6 +101,9 @@ export function WorktreeCardStatusLane({
       <WorktreeStatusIndicator status={status} />
     </span>
   );
+  // Orca suppresses the overlay while working/permission already own the lane; the
+  // unread state still reaches assistive tech through the card's aria labels.
+  return withUnread(statusNode);
 }
 
 export default WorktreeCardStatusLane;

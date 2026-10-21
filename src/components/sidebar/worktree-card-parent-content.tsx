@@ -28,6 +28,7 @@ export function WorktreeCardParentContent({
     metadata,
     onEditMetadata,
     cliCreated,
+    isUnread,
     sessions,
     onSelectSession,
     activeSessionId,
@@ -95,7 +96,13 @@ export function WorktreeCardParentContent({
           )}
           data-worktree-card-status-slot=""
         >
-          <WorktreeCardStatusLane status={status} branch={branch} prDisplay={prDisplay} />
+          <WorktreeCardStatusLane
+            status={status}
+            branch={branch}
+            prDisplay={prDisplay}
+            isUnread={isUnread}
+            newCardStyle={newCardStyle}
+          />
         </div>
       )}
 

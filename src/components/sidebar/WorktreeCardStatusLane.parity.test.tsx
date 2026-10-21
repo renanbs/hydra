@@ -58,3 +58,27 @@ describe("WorktreeCardStatusLane (Orca parity)", () => {
     expect(getReviewStateTone("draft")).toContain("muted-foreground");
   });
 });
+
+
+describe("WorktreeCardStatusLane unread lane (D04a-022/023)", () => {
+  it("overlays the unread alert on the new-card glyph", () => {
+    const { container } = render(
+      <WorktreeCardStatusLane status="active" branch="develop" newCardStyle isUnread />
+    );
+    expect(container.querySelector("[data-worktree-status-lane-unread]")).not.toBeNull();
+    expect(container.querySelector("[data-worktree-unread-alert]")).not.toBeNull();
+  });
+
+  it("suppresses the overlay while working or permission owns the glyph", () => {
+    const working = render(
+      <WorktreeCardStatusLane status="working" newCardStyle isUnread />
+    );
+    expect(working.container.querySelector("[data-worktree-unread-alert]")).toBeNull();
+    const permission = render(
+      <WorktreeCardStatusLane status="permission" newCardStyle isUnread />
+    );
+    expect(permission.container.querySelector("[data-worktree-unread-alert]")).toBeNull();
+  });
+
+
+});

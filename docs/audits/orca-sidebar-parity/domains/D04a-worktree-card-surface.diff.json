@@ -528,10 +528,12 @@
     "components/sidebar/WorktreeCardStatusSlot.tsx:53"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardStatusLane.tsx:30-75",
-     "src/components/sidebar/worktree-card-header.tsx:117-118"
+     "src/components/sidebar/WorktreeCardStatusLane.tsx:33-51",
+     "src/components/sidebar/WorktreeCardStatusLane.tsx:78-100",
+     "src/components/sidebar/worktree-card-parent-content.tsx:92-102",
+     "src/components/sidebar/WorktreeCardStatusLane.parity.test.tsx:59-83"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -539,8 +541,8 @@
      "data-worktree-status-lane-unread e data-worktree-unread-alert",
      "Supressão em working/permission mantendo o anúncio acessível"
     ],
-    "notes": "Sem badge de não-lido sobre o glifo no novo estilo.",
-    "note": "Sem badge de não-lido sobre o glifo no novo estilo."
+    "notes": "6px amber badge with a ring overlays any passive glyph; working/permission suppress it, and data-worktree-status-lane-unread/data-worktree-unread-alert expose the state.",
+    "note": "6px amber badge with a ring overlays any passive glyph; working/permission suppress it, and data-worktree-status-lane-unread/data-worktree-unread-alert expose the state."
    }
   },
   {
@@ -553,10 +555,10 @@
     "components/sidebar/WorktreeCardStatusSlot.tsx:162"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "not-applicable",
     "evidence": [
-     "src/components/sidebar/WorktreeCardHelpers.tsx:17",
-     "src/components/sidebar/WorktreeCardStatusLane.tsx:30-75"
+     "src/components/sidebar/use-worktree-card-controller.ts:324",
+     "src/App.tsx:3860-3864"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -565,7 +567,8 @@
      "Preservação do board e stop de pointerdown",
      "Retorno null quando nada está habilitado"
     ],
-    "notes": "FilledBellIcon existe mas sem consumidores (grep = 0); a alternância de não-lido só existe no menu de contexto (src/App.tsx:3406) e na limpeza ao ativar (App.tsx:1856)."
+    "notes": "Keeping a bell branch here would be unreachable code.",
+    "note": "Keeping a bell branch here would be unreachable code."
    },
    "par": [
     "PAR-74"
