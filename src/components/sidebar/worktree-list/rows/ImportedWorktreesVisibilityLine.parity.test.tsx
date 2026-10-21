@@ -271,3 +271,19 @@ describe("discovered-worktree inbox helpers (Orca parity)", () => {
     expect(mergeExternalWorktreeInboxPaths(undefined, ["/c/d"])).toEqual(["/c/d"]);
   });
 });
+
+
+describe("ImportedWorktreesVisibilityLine action errors", () => {
+  it("shows the inbox error catalog message in an alert", () => {
+    render(
+      <ImportedWorktreesVisibilityLine
+        repoDisplayName="hydra"
+        hiddenWorktrees={[{ path: "/repo/wt/a", branch: "a", head_commit: "x", is_bare: false, is_locked: false }]}
+        error="Could not keep discovered worktrees hidden. Try again."
+      />
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Could not keep discovered worktrees hidden. Try again."
+    );
+  });
+});

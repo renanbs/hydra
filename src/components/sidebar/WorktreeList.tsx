@@ -342,8 +342,15 @@ export interface WorktreeListProps {
   onToggleGroupCollapse: (groupId: string) => void;
   onProjectContextMenu?: (e: React.MouseEvent, proj: HydraProject) => void;
   onGroupContextMenu?: (e: React.MouseEvent, group: { id: string; name: string }) => void;
-  onWorktreeContextMenu?: (e: React.MouseEvent, wt: GitWorktreeInfo, proj?: HydraProject) => void;
+  onWorktreeContextMenu?: (
+    e: React.MouseEvent,
+    wt: GitWorktreeInfo,
+    proj?: HydraProject,
+    selectedWorktrees?: readonly GitWorktreeInfo[]
+  ) => void;
   onSuppressHiddenWorktrees?: (proj: HydraProject) => void;
+  /** Per-project inbox action error (Orca's message catalog), painted on the row. */
+  hiddenWorktreeErrorsByProject?: Readonly<Record<string, string | null>>;
   /** Recover one discovered worktree into the list (`import_worktree` per path). */
   onShowHiddenWorktree?: (proj: HydraProject, worktreePath: string) => void;
   /** Acknowledge the listed discovered worktrees into the repo's inbox baseline. */
@@ -568,6 +575,7 @@ export function WorktreeList({
   onGroupContextMenu,
   onWorktreeContextMenu,
   onSuppressHiddenWorktrees,
+  hiddenWorktreeErrorsByProject,
   onShowHiddenWorktree,
   onKeepHiddenWorktrees,
   onReviewHiddenWorktrees,
@@ -952,6 +960,29 @@ export function WorktreeList({
     visibleIdentities: dragMultiSelectionInput.visibleIdentities,
   });
 
+  const worktreesByIdentity = useMemo(() => {
+    const map = new Map<string, GitWorktreeInfo>();
+    for (const row of rows) {
+      if (row.type !== "item") continue;
+      const worktree = rowModel.propWorktreeByPath.get(row.worktree.path);
+      if (worktree) {
+        map.set(getWorktreeHostIdentity(row.worktree), worktree);
+      }
+    }
+    return map;
+  }, [rows, rowModel.propWorktreeByPath]);
+
+  const selectedContextWorktrees = useCallback(
+    (_identity: string, isSelected: boolean): readonly GitWorktreeInfo[] | undefined => {
+      if (!isSelected) return undefined;
+      const selected = [...selectedWorktreeIdentities]
+        .map((key) => worktreesByIdentity.get(key))
+        .filter((worktree): worktree is GitWorktreeInfo => Boolean(worktree));
+      return selected.length > 1 ? selected : undefined;
+    },
+    [selectedWorktreeIdentities, worktreesByIdentity]
+  );
+
   const resolveDraggedWorktreeIds = useCallback(
     (rowKey: string, worktreeId: string) => {
       const draggedWorktreeIdentity =
@@ -1213,7 +1244,17 @@ export function WorktreeList({
             }
             renameRequest={renameRequest}
             onRenameRequestConsumed={() => setRenameRequest(null)}
-            onContextMenu={onWorktreeContextMenu}
+            onContextMenu={
+              onWorktreeContextMenu
+                ? (event, worktree, project) =>
+                    onWorktreeContextMenu(
+                      event,
+                      worktree,
+                      project,
+                      selectedContextWorktrees(identity, isMultiSelected)
+                    )
+                : undefined
+            }
             onSelectSession={onSelectSession}
             onDragStart={(e, path) => {
               // The board's lanes and pin strip are native drop destinations, and they receive
@@ -1254,6 +1295,7 @@ export function WorktreeList({
       deleteStateByWorktreeId,
       renameRequest,
       onWorktreeContextMenu,
+      selectedContextWorktrees,
       onSelectSession,
       onWorktreeDragStart,
       onWorktreeDragOver,
@@ -1402,6 +1444,7 @@ export function WorktreeList({
         // (`getNoticeHostContextLabels`); absent when the project spans one host.
         hostContextLabel: row.hostContextLabel,
         hostContextHostId: row.hostContextHostId,
+        error: hiddenWorktreeErrorsByProject?.[proj.path] ?? null,
       };
       if (row.type === "imported-worktrees-card") {
         return (
@@ -1438,6 +1481,7 @@ export function WorktreeList({
       onKeepHiddenWorktrees,
       onReviewHiddenWorktrees,
       onSuppressHiddenWorktrees,
+      hiddenWorktreeErrorsByProject,
     ]
   );
 

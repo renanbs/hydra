@@ -167,6 +167,18 @@ export function WorktreeSidebar({
   const [removeProjectTarget, setRemoveProjectTarget] = useState<HydraProject | null>(null);
   const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
   const [suppressInboxPending, setSuppressInboxPending] = useState(false);
+  const [hiddenWorktreeErrorByProject, setHiddenWorktreeErrorByProject] = useState<
+    Record<string, string | null>
+  >({});
+  const setHiddenWorktreeError = useCallback(
+    (projectPath: string, message: string | null) => {
+      setHiddenWorktreeErrorByProject((previous) => {
+        if (previous[projectPath] === message) return previous;
+        return { ...previous, [projectPath]: message };
+      });
+    },
+    []
+  );
   // Why primitives/reference-stable slices: a selector that returns a fresh
   // object literal makes zustand re-render forever (React "maximum update depth").
   const removeProjectRepo = useAppStore((state) =>
@@ -935,10 +947,15 @@ export function WorktreeSidebar({
                 const rect = e.currentTarget.getBoundingClientRect();
                 setActiveGroupMenu({ group, x: rect.right, y: rect.bottom + 4 });
               }}
-              onWorktreeContextMenu={(e, wt, proj) => {
+              onWorktreeContextMenu={(e, wt, proj, selectedWorktrees) => {
                 const targetProject = proj || activeProject;
                 if (targetProject) {
-                  onWorktreeContextMenu?.(e, wt, targetProject);
+                  onWorktreeContextMenu?.(
+                    e,
+                    wt,
+                    targetProject,
+                    selectedWorktrees?.map((entry) => entry.path)
+                  );
                 }
               }}
               onShowHiddenWorktree={async (proj, worktreePath) => {
@@ -948,9 +965,14 @@ export function WorktreeSidebar({
                     worktreePath,
                   });
                   await stampVisibilityPromptPhase(proj);
+                  setHiddenWorktreeError(proj.path, null);
                   window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
                 } catch (err) {
                   console.error(err);
+                  setHiddenWorktreeError(
+                    proj.path,
+                    "Could not show discovered worktrees. Try again."
+                  );
                 }
               }}
               onKeepHiddenWorktrees={async (proj, worktreePaths) => {
@@ -967,12 +989,18 @@ export function WorktreeSidebar({
                         : Date.now(),
                   });
                   visibilityPromptStampedReposRef.current.add(proj.path);
+                  setHiddenWorktreeError(proj.path, null);
                   window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
                 } catch (err) {
                   console.error(err);
+                  setHiddenWorktreeError(
+                    proj.path,
+                    "Could not keep discovered worktrees hidden. Try again."
+                  );
                 }
               }}
               onSuppressHiddenWorktrees={(proj) => setSuppressInboxTarget(proj)}
+              hiddenWorktreeErrorsByProject={hiddenWorktreeErrorByProject}
               onReviewHiddenWorktrees={(proj) => {
                 setVisibilityDialog({
                   open: true,
@@ -1405,10 +1433,15 @@ export function WorktreeSidebar({
           setSuppressInboxPending(true);
           try {
             await invoke("suppress_worktree_inbox", { projectPath: target.path });
+            setHiddenWorktreeError(target.path, null);
             window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
             setSuppressInboxTarget(null);
           } catch (err) {
             console.error(err);
+            setHiddenWorktreeError(
+              target.path,
+              "Could not hide external worktrees permanently. Try again."
+            );
           } finally {
             setSuppressInboxPending(false);
           }

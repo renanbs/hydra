@@ -3900,7 +3900,20 @@ export default function App() {
               }
             } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[wt.path]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
         ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Head: ${wt.head_commit.slice(0,7)} · Bare: ${wt.is_bare ? "yes":"no"}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) } as ContextMenuItem] : []),
-        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([wt.path]) },
+        {
+          label:
+            targetWorktreePaths && targetWorktreePaths.length > 1
+              ? `Sleep ${targetWorktreePaths.length} Workspaces`
+              : "Sleep",
+          icon: <Moon className="w-3.5 h-3.5" />,
+          separator: true,
+          onClick: () =>
+            sleepSessionsForPaths(
+              targetWorktreePaths && targetWorktreePaths.length > 1
+                ? [...targetWorktreePaths]
+                : [wt.path]
+            ),
+        },
         ...(descendantCount > 0 ? [{ label: `Sleep with Descendants (${descendantCount})`, icon: <Moon className="w-3.5 h-3.5" />, onClick: () => {
               const subtree = Object.entries(worktreeLineage).filter(([, parent]) => parent === wt.path).map(([child]) => child);
               sleepSessionsForPaths([wt.path, ...subtree]);
