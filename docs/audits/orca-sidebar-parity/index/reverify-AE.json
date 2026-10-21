@@ -1,0 +1,29 @@
+{
+ "group": "AE",
+ "generatedFrom": "2026-10-22 header colors: normalized repo badge color applied to repo headers and contextual project-group colors, with the shared normalizer implemented instead of its stub",
+ "rows": [
+  {
+   "id": "D15a-003",
+   "status": "parity",
+   "evidence": [
+    "src/shared/repo-badge-color.ts:1-30",
+    "src/components/sidebar/project-header-color.ts:9-16",
+    "src/components/sidebar/SectionHeader.tsx:304-326",
+    "src/components/sidebar/project-header-color.parity.test.ts:7-20"
+   ],
+   "note": "Palette/custom/3-digit/whitespace/case inputs normalize to #rrggbb; invalid input falls back to the default; the repo header icon uses the resolved color."
+  },
+  {
+   "id": "D15a-004",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/project-header-color.ts:18-32",
+    "src/components/sidebar/WorktreeList.tsx:861-873",
+    "src/components/sidebar/WorktreeList.tsx:1437",
+    "src/components/sidebar/SectionHeader.tsx:120-146",
+    "src/components/sidebar/project-header-color.parity.test.ts:22-45"
+   ],
+   "note": "Only repo/project headers in repo grouping inherit a project color; the group header takes the first member color with the contextual resolver."
+  }
+ ]
+}

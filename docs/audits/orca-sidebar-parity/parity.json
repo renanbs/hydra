@@ -18358,15 +18358,21 @@
    "components/sidebar/project-header-color.ts:7"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/shared/repo-badge-color.ts:1-30",
+    "src/components/sidebar/project-header-color.ts:9-16",
+    "src/components/sidebar/SectionHeader.tsx:304-326",
+    "src/components/sidebar/project-header-color.parity.test.ts:7-20"
+   ],
    "backend": [],
    "missing_behaviors": [
     "Recebe cor bruta badgeColor e aplica normalização de whitespace e casing",
     "Valida se o valor normalizado pertence à paleta canônica REPO_COLORS ou se é um código hexadecimal customizado válido",
     "Aplica fallback seguro para a cor cinza padrão DEFAULT_REPO_BADGE_COLOR caso o valor seja nulo, vazio ou inválido"
    ],
-   "notes": "Não localizado após busca em 5 passos: (1) resolveRepoHeaderColor/project-header-color.ts inexistentes em src/components/**; (2) 'badgeColor' → 0 hits em src/components/** e src/App.tsx (só em shared/store/testes); (3) nenhuma cor de cabeçalho é produzida: SectionHeader.tsx:238-262 (repo) e :105-140 (grupo) renderizam apenas ícone (FolderGit2/Folder/FolderTree) + texto, sem style/color de badge; (4) sem backend; (5) as constantes REPO_COLORS/DEFAULT_REPO_BADGE_COLOR existem (src/shared/constants.ts:108-119) e normalizeRepoBadgeColor existe para sanitização de update de repo (src/store/repos/repo-update.ts:26-29), mas têm semântica diferente (retornam undefined em inválido, não fallback cinza) e nenhum consumo no sidebar."
+   "notes": "Palette/custom/3-digit/whitespace/case inputs normalize to #rrggbb; invalid input falls back to the default; the repo header icon uses the resolved color.",
+   "note": "Palette/custom/3-digit/whitespace/case inputs normalize to #rrggbb; invalid input falls back to the default; the repo header icon uses the resolved color."
   },
   "par": [],
   "domain": "D15-misc-a"
@@ -18378,8 +18384,14 @@
    "components/sidebar/project-header-color.ts:18"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/project-header-color.ts:18-32",
+    "src/components/sidebar/WorktreeList.tsx:861-873",
+    "src/components/sidebar/WorktreeList.tsx:1437",
+    "src/components/sidebar/SectionHeader.tsx:120-146",
+    "src/components/sidebar/project-header-color.parity.test.ts:22-45"
+   ],
    "backend": [],
    "missing_behaviors": [
     "Verifica se o agrupamento atual é estritamente 'repo'",
@@ -18387,7 +18399,8 @@
     "Delega a resolução de cor para resolveRepoHeaderColor(badgeColor) apenas para cabeçalhos genuínos de projeto",
     "Retorna undefined para seções especiais como 'pinned' ou outros modos de agrupamento (ex.: 'workspace-status') evitando colorização incorreta"
    ],
-   "notes": "Não localizado após busca em 5 passos: (1) resolveProjectGroupHeaderColor inexistente; (2) nenhuma colorização condicional por headerKey/'repo:'/'project:' em src/components/**; (3) groupBy existe (src/shared/persisted-ui-state-types.ts:41) e é consumido em worktree-list/grouping/build-rows.ts e rendered-sidebar-worktree-order.ts, mas nunca para resolver cor de cabeçalho; (4) sem backend; (5) GroupSectionHeader (SectionHeader.tsx:69-200) não recebe badgeColor nem aplica cor — só ícone FolderTree e nome."
+   "notes": "Only repo/project headers in repo grouping inherit a project color; the group header takes the first member color with the contextual resolver.",
+   "note": "Only repo/project headers in repo grouping inherit a project color; the group header takes the first member color with the contextual resolver."
   },
   "par": [],
   "domain": "D15-misc-a"

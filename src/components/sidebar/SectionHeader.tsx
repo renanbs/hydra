@@ -14,6 +14,7 @@ import { RepoIconGlyph } from "../repo/repo-icon";
 import type { HydraProject, ProjectGroup } from "./types";
 import { ProjectHeaderActions } from "./ProjectHeaderActions";
 import { REPO_HEADER_ACTION_BUTTON_CLASS } from "./repo-header-action-button-class";
+import { resolveRepoHeaderColor } from "./project-header-color";
 import {
   getProjectGroupHeaderPaddingLeft,
   WORKTREE_SECTION_HEADER_PADDING_LEFT,
@@ -36,6 +37,8 @@ export interface GroupSectionHeaderProps {
   onDragOver?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent) => void;
+  /** User-authored group color, resolved contextually (D15a-004). */
+  badgeColor?: string;
   /** Estimated section bottom in virtual-row pixels (drag preview bounds). */
   sectionEnd?: number;
   className?: string;
@@ -85,6 +88,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
   onDragOver,
   onDragLeave,
   onDrop,
+  badgeColor,
   sectionEnd,
   className = "",
 }: Omit<GroupSectionHeaderProps, "variant">): React.JSX.Element {
@@ -113,6 +117,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       aria-label={`Project Group ${group.name}`}
       data-section-header-id={sectionKey}
       data-project-group-header-section-end={sectionEnd}
+      data-repo-header-color={badgeColor ? resolveRepoHeaderColor(badgeColor) : undefined}
       className={cn(
         "group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
         isDropTarget && "bg-worktree-sidebar-accent ring-1 ring-worktree-sidebar-ring/40",
@@ -134,12 +139,11 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       onDrop={onDrop}
     >
       <div className="flex min-w-0 flex-1 items-center gap-1.5 self-stretch">
-        <div className="flex size-4 shrink-0 items-center justify-center rounded-[4px] text-foreground">
-          {ACTIVE_SHELL_FACE === "hydra" ? (
-            <FolderTree className="size-3 shrink-0" />
-          ) : (
-            <FolderTree className="size-3 shrink-0" />
-          )}
+        <div
+          className="flex size-4 shrink-0 items-center justify-center rounded-[4px] text-foreground"
+          style={badgeColor ? { color: resolveRepoHeaderColor(badgeColor) } : undefined}
+        >
+          <FolderTree className="size-3 shrink-0" />
         </div>
 
         <div className="min-w-0 flex-1">
@@ -296,7 +300,8 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
         aria-expanded={!isCollapsed}
         aria-label={`Project ${project.displayName || project.name}`}
         data-repo-header-id={project.id}
-      data-repo-header-section-end={sectionEnd}
+        data-repo-header-section-end={sectionEnd}
+        data-repo-header-color={resolveRepoHeaderColor(project.color)}
         className="flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
         style={{
           paddingLeft: inGroup
@@ -318,6 +323,7 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
               "flex size-4 shrink-0 items-center justify-center rounded-[4px]",
               ACTIVE_SHELL_FACE !== "hydra" && "text-muted-foreground"
             )}
+            style={{ color: resolveRepoHeaderColor(project.color) }}
           >
             {ACTIVE_SHELL_FACE === "hydra" ? (
               project.is_git ? (
