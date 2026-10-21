@@ -25,9 +25,11 @@ export function buildPendingCreationRow(
 ): PendingCreationRow {
   return {
     type: 'pending-creation',
-    key: `pending:${creation.creationId}`,
+    key: creation.key ?? `pending:${creation.creationId}`,
     creationId: creation.creationId,
-    repo: repoMap.get(creation.repoId)
+    repo: repoMap.get(creation.repoId),
+    ...(creation.branchName ? { branchName: creation.branchName } : {}),
+    ...(creation.agentName ? { agentName: creation.agentName } : {})
   }
 }
 

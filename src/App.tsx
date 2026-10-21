@@ -352,6 +352,9 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
   const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
+  const [pendingWorktreeCreations, setPendingWorktreeCreations] = useState<
+    Array<{ creationId: string; repoId: string; branchName: string; agentName: string }>
+  >([]);
   /**
    * Lane the workspace board's create button was pressed from (D08-030): the composer
    * seeds its creation request with this status, so the new worktree is born in that lane.
@@ -4110,6 +4113,7 @@ export default function App() {
                 onReorderWorktrees={handleReorderWorktrees}
                 lineageByPath={worktreeLineage}
                 worktreeMetadataByPath={worktreeMetadataByPath}
+                pendingWorktreeCreations={pendingWorktreeCreations}
                 onEditWorktreeMetadata={(wt) => setWorktreeMetaDialog({ wt })}
                 onAssignWorktreeParent={handleAssignWorktreeParent}
                 onUnnestWorktrees={handleUnnestWorktrees}
@@ -4497,6 +4501,14 @@ export default function App() {
         onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onClose={closeNewWorkspaceComposer}
+        onCreateStart={(creation) =>
+          setPendingWorktreeCreations((previous) => [...previous, creation])
+        }
+        onCreateSettled={(creationId) =>
+          setPendingWorktreeCreations((previous) =>
+            previous.filter((creation) => creation.creationId !== creationId)
+          )
+        }
         onCreated={handleCreatedWorkspace}
       />
 

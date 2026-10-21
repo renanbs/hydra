@@ -4537,15 +4537,20 @@
    "components/sidebar/worktree-list/grouping/row-types.ts:96-100"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/grouping/row-builders.ts:22"
+    "src/components/sidebar/worktree-list/rows/PendingWorktreeCreationRow.tsx:1-40",
+    "src/components/sidebar/WorktreeList.tsx:1540-1550",
+    "src/components/NewWorkspaceComposer.tsx:26-42",
+    "src/App.tsx:354-358",
+    "src/components/sidebar/worktree-list/rows/PendingWorktreeCreationRow.parity.test.tsx:1-25"
    ],
    "missing_behaviors": [
     "row pending-creation renderizada",
     "pending:<creationId> como tipo virtual"
    ],
-   "notes": "buildPendingCreationRow existe no pipeline headless, mas o sidebar pintado não renderiza linha de criação em andamento (WorktreeList não tem ramo pending)."
+   "notes": "The composer publishes {creationId, repoId, branch, agent} before the invoke and settles it in then/catch; the row shows a spinner, the branch and the agent/repo context.",
+   "note": "The composer publishes {creationId, repoId, branch, agent} before the invoke and settles it in then/catch; the row shows a spinner, the branch and the agent/repo context."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4975,14 +4980,20 @@
    "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts:3-39"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts:1-35",
+    "src/components/sidebar/WorktreeList.tsx:800-815",
+    "src/components/sidebar/worktree-list/grouping/row-builders.ts:22-36",
+    "src/components/sidebar/worktree-list/listing/pending-worktree-creation-keys.parity.test.ts:1-30"
+   ],
    "missing_behaviors": [
     "selectPendingWorktreeCreationKeys",
     "EMPTY_PENDING_WORKTREE_CREATION_KEYS congelado",
     "cache WeakMap por slice"
    ],
-   "notes": "Não localizado após busca por pending-worktree-creation-keys, selectPendingWorktreeCreationKeys."
+   "notes": "Keys are '<creationId> <repoId>', cached by source-slice identity (frozen empty array otherwise) and become the painted row key.",
+   "note": "Keys are '<creationId> <repoId>', cached by source-slice identity (frozen empty array otherwise) and become the painted row key."
   },
   "domain": "D03a-worktree-list-module"
  },

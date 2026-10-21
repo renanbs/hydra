@@ -31,6 +31,14 @@ interface NewWorkspaceComposerProps {
   onOpenSettings?: () => void;
   onClose: () => void;
   onCreated: (worktreePath: string, branchName: string, agentName: string, executable: string) => void;
+  /** Publishes the in-flight create as a sidebar row until it settles. */
+  onCreateStart?: (creation: {
+    creationId: string;
+    repoId: string;
+    branchName: string;
+    agentName: string;
+  }) => void;
+  onCreateSettled?: (creationId: string) => void;
 }
 
 export function NewWorkspaceComposer({
@@ -44,6 +52,8 @@ export function NewWorkspaceComposer({
   onOpenSettings,
   onClose,
   onCreated,
+  onCreateStart,
+  onCreateSettled,
 }: NewWorkspaceComposerProps) {
   const [name, setName] = useState("");
   const [customBranch, setCustomBranch] = useState("");
@@ -117,6 +127,14 @@ export function NewWorkspaceComposer({
     setIsSubmitting(true);
     setError(null);
 
+    const creationId = globalThis.crypto?.randomUUID?.() ?? `creation-${Date.now()}`;
+    onCreateStart?.({
+      creationId,
+      repoId: proj.id,
+      branchName: branchToUse,
+      agentName: chosenAgent.name,
+    });
+
     invoke<string>("create_worktree", {
       repoPath: proj.path,
       branchName: branchToUse,
@@ -134,6 +152,7 @@ export function NewWorkspaceComposer({
           }
         }
         setIsSubmitting(false);
+        onCreateSettled?.(creationId);
         onCreated(createdPath, branchToUse, chosenAgent.name, chosenAgent.executable);
         if (!createMultiple) {
           onClose();
@@ -145,6 +164,7 @@ export function NewWorkspaceComposer({
       })
       .catch((err) => {
         setIsSubmitting(false);
+        onCreateSettled?.(creationId);
         setError(String(err));
       });
   };
