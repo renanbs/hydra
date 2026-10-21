@@ -709,7 +709,16 @@ export function WorktreeVisibilityDialog({
                         <button
                           type="button"
                           disabled={isToggling}
-                          aria-label={`Remove ${sourceRowLabel(row)}`}
+                          aria-label={
+                            row.kind === "custom"
+                              ? `Remove custom location ${row.source.rootPath}`
+                              : `Remove ${sourceRowLabel(row)}`
+                          }
+                          title={
+                            row.kind === "custom"
+                              ? "Remove custom location"
+                              : `Remove ${sourceRowLabel(row)}`
+                          }
                           onClick={() => void handleRemoveSource(row.source)}
                           className="p-1 rounded-md text-neutral-500 hover:text-destructive hover:bg-neutral-800 transition cursor-pointer disabled:opacity-50"
                         >

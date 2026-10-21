@@ -245,7 +245,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 328 capabilities
+## PARTIAL — 324 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -556,7 +556,7 @@
 - **D09-030** — Comparador unificado de ordenação de worktrees para todos os modos suportados | falta: Modos 'repo' e 'manual' na UI: o menu Sort by oferece apenas Agent Activity/Name/Recent (WorkspaceOptionsMenu.tsx:309-312) e o render usa created_at para 'recent'; Consumo pelo caminho renderizado: buildWorktreeComparator só é chamado no fallback de Cmd+1-9 (visible-worktrees.ts:355) | components/sidebar/smart-sort.ts:80
 - **D09-031** — Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido | falta: Funcionamento: ambas as ramificações dependem de símbolos `null` — cold start chama hasFreshAttributedAgentStatus (smart-sort.ts:197 → stub:25) e warm chama buildAttentionByWorktree (smart-sort.ts:205 → stub:23); Consumo pela lista de worktrees renderizada (WorktreeSidebar ordena por conta própria; sortWorktreesSmart só é alcançado por getVisibleWorktreeIds quando o sidebar está desmontado); Consumo pela paleta de comandos (comentário 168-170 cita a paleta, mas não há chamada em WorktreeJumpPalette/command palette) | components/sidebar/smart-sort.ts:167
 
-### D10-visibility-inbox-notices (39)
+### D10-visibility-inbox-notices (35)
 
 - **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: busca window.api.worktrees.getBranchRenameFailureOutput ao abrir (Hydra só renderiza a prop `error`; `worktreeId` é declarado e não usado — :11); resposta null mantém o excerto persistido; rejeição do IPC mantém o excerto; guard de staleness no cleanup | components/sidebar/AutoRenameFailedDialog.tsx:31
 - **D10-004** — Conter output multi-linha/token gigante sem quebrar o grid do dialog | falta: overflow-wrap:anywhere (Hydra usa `break-words`); padding-right reservado para botão de cópia flutuante (Hydra coloca o botão no header, não flutuante) | components/sidebar/AutoRenameFailedDialog.tsx:147
@@ -567,9 +567,6 @@
 - **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: useDeleteWorktreeStatusHydration por host dono do alvo; AbortController / não reiniciar requests pendentes quando um alvo hidrata | components/sidebar/DeleteWorktreeDialog.tsx:188
 - **D10-017** — Limpar estado de delete por alvo ao fechar (preservando alvos em andamento) | falta: limpar deleteStateByWorktreeId por alvo que não está isDeleting ao fechar | components/sidebar/DeleteWorktreeDialog.tsx:219
 - **D10-018** — Compor a frase de descrição com alvo e alvo-filho | falta: childTargetLabel de lineage; classe de destaque do targetLabel | components/sidebar/DeleteWorktreeDialogDescription.tsx:19
-- **D10-020** — Lista batch de alvos com nomes acessíveis e estado por linha | falta: role=list/listitem + aria-labelledby name+path(+host); bounding box max-h-48 com scroll; erro inline por linha | components/sidebar/DeleteWorktreeTargetPreview.tsx:60
-- **D10-022** — Hint de mudanças locais/untracked por alvo, erro inline e spinner | falta: erro inline por alvo (Hydra agrega o erro num único painel global) | components/sidebar/DeleteWorktreeTargetPreview.tsx:96
-- **D10-023** — Preview de alvo único como região rotulada | falta: role=region com aria-labelledby; host no nome acessível em colisão; retorno null sem worktree resolvido | components/sidebar/DeleteWorktreeTargetPreview.tsx:120
 - **D10-024** — Linha compacta 'Hiding N discovered worktrees' com copia por placement e host | falta: copy por placement (pinned-fallback 'Hiding N … in <repo>'); repoScopeLabel '<repo> on <host>' (multi-host) | components/sidebar/ImportedWorktreesVisibilityLine.tsx:108
 - **D10-038** — Abrir o dialog 'Non-Orca worktrees' com alvo resolvido por repo+host | falta: guard isGitRepoKind(repo); resolução de alvo por host (resolveWorktreeVisibilityHostTarget) | components/sidebar/WorktreeVisibilityDialog.tsx:60
 - **D10-040** — Scan autoritativo ao abrir com estados checking/ready/failed | falta: pular o scan quando há mutação ativa no scope; travar linhas/ações enquanto 'checking'; nunca confiar em snapshot fallback/vazio | components/sidebar/WorktreeVisibilityDialog.tsx:117
@@ -584,7 +581,6 @@
 - **D10-050** — Abrir Global Settings na seção de visibilidade de worktrees | falta: navegar para a seção de visibilidade de worktrees (Hydra abre 'general'); closeModal + openSettingsTarget({pane:'general',repoId:null,sectionId}) | components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:22
 - **D10-054** — Form inline 'Add location' com erros de validação e reset no sucesso | falta: input#custom-worktree-root + aria-invalid/aria-describedby; erro inline role=alert no próprio form; distinção 'save-failed' silencioso | components/sidebar/WorktreeVisibilitySourceAddForm.tsx:19
 - **D10-057** — Contador 'N found' por source, ignorando checkouts selecionados e Orca-managed | falta: pular selectedCheckout e ownership orca-managed; base configurada de built-in contada como 'other' | components/sidebar/WorktreeVisibilitySourceList.tsx:193
-- **D10-058** — Remover location custom pela linha (aria-label com o path completo) | falta: aria-label com rootPath completo (Hydra usa o basename); tooltip 'Remove custom location' | components/sidebar/WorktreeVisibilitySourceList.tsx:268
 - **D10-060** — Segmentos Show/Hide por source (ToggleGroup) com nome acessível por path | falta: nome acessível com rootPath completo para custom; ignorar re-seleção do mesmo segmento | components/sidebar/WorktreeVisibilitySourceList.tsx:141
 - **D10-063** — Mostrar worktrees descobertos a partir do card do projeto (com rollback) | falta: Rollback quando o refresh autoritativo falha (o dispatcher de refresh-projects é fire-and-forget; só a falha do write reverte) | components/sidebar/imported-worktrees-card-actions.ts:33
 - **D10-064** — Manter worktrees descobertos ocultos e dispensar o card | falta: superfície de erro/rollback (Hydra só faz console.error) | backend: invoke('catalog_set_worktree_visibility') -> src-tauri/src/lib.rs:304 | components/sidebar/imported-worktrees-card-actions.ts:34

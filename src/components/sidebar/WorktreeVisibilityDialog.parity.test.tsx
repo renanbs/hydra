@@ -123,6 +123,13 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     expect(screen.getByText("Overriding global setting: Hide")).toBeInTheDocument();
   });
 
+  it("names the custom-location remove action with the full path", () => {
+    renderDialog();
+    expect(
+      screen.getByRole("button", { name: "Remove custom location /home/me/src/extra" })
+    ).toBeInTheDocument();
+  });
+
   it("names the recovery action with the worktree and its path", () => {
     renderDialog();
     expect(
