@@ -134,6 +134,38 @@ describe("WorktreeList row model (Orca parity)", () => {
     expect(container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(2);
   });
 
+  it("honors collapsing the All lane (section key passes through unprefixed)", () => {
+    const { container } = renderList({
+      projects: [PROJECT_A, PROJECT_B],
+      worktreesByProject: {
+        [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)],
+        [PROJECT_B.path]: [worktree("/repo/orca", "main", true)],
+      },
+      displayOptions: { ...BASE_DISPLAY_OPTIONS, groupBy: "none" },
+      collapsedGroups: new Set(["all"]),
+    });
+
+    expect(container.querySelector('[data-section-header-id="all"]')).not.toBeNull();
+    expect(container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(0);
+  });
+
+  it("honors collapsing the Pinned section (section key passes through unprefixed)", () => {
+    const pinnedPath = "/repo/hydra-pinned";
+    const { container } = renderList({
+      projects: [PROJECT_A],
+      worktreesByProject: {
+        [PROJECT_A.path]: [worktree("/repo/hydra", "main", true), worktree(pinnedPath, "feat/x")],
+      },
+      pinnedWorktrees: new Set([pinnedPath]),
+      collapsedGroups: new Set(["pinned"]),
+    });
+
+    expect(container.querySelector('[data-section-header-id="pinned"]')).not.toBeNull();
+    expect(
+      container.querySelector(`[data-worktree-path="${pinnedPath}"]`)
+    ).toBeNull();
+  });
+
   it("buckets worktrees into workspace-status lanes only in status mode", () => {
     const props = {
       projects: [PROJECT_A],
