@@ -353,6 +353,11 @@ export interface WorktreeListProps {
   hiddenWorktreeErrorsByProject?: Readonly<Record<string, string | null>>;
   /** Card-level "Show in worktree list" (policy flip with rollback). */
   onShowAllHiddenWorktrees?: (proj: HydraProject) => void;
+  /** Whether the workspace board is already open (D03a-012 preview is conditional). */
+  workspaceBoardOpen?: boolean;
+  onWorkspaceBoardDragPreviewStart?: () => void;
+  onWorkspaceBoardDragPreviewCommit?: () => void;
+  onWorkspaceBoardDragPreviewCancel?: () => void;
   /** Recover one discovered worktree into the list (`import_worktree` per path). */
   onShowHiddenWorktree?: (proj: HydraProject, worktreePath: string) => void;
   /** Acknowledge the listed discovered worktrees into the repo's inbox baseline. */
@@ -579,6 +584,10 @@ export function WorktreeList({
   onSuppressHiddenWorktrees,
   hiddenWorktreeErrorsByProject,
   onShowAllHiddenWorktrees,
+  workspaceBoardOpen,
+  onWorkspaceBoardDragPreviewStart,
+  onWorkspaceBoardDragPreviewCommit,
+  onWorkspaceBoardDragPreviewCancel,
   onShowHiddenWorktree,
   onKeepHiddenWorktrees,
   onReviewHiddenWorktrees,
@@ -1632,6 +1641,10 @@ export function WorktreeList({
       onAssignWorktreesStatus={handleAssignWorktreesStatus}
       onPinWorktrees={handlePinWorktrees}
       lineageParentIdByChildId={rowModel.lineageParentIdByChildId}
+      workspaceBoardOpen={workspaceBoardOpen}
+      onWorkspaceBoardDragPreviewStart={onWorkspaceBoardDragPreviewStart}
+      onWorkspaceBoardDragPreviewCommit={onWorkspaceBoardDragPreviewCommit}
+      onWorkspaceBoardDragPreviewCancel={onWorkspaceBoardDragPreviewCancel}
       onNestWorktrees={handleNestWorktrees}
       onUnnestWorktrees={handleUnnestWorktrees}
       resolveDraggedWorktreeIds={resolveDraggedWorktreeIds}

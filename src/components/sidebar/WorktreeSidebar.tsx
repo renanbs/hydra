@@ -274,6 +274,9 @@ export function WorktreeSidebar({
     workspaceBoardRenderedOpen,
     toggleWorkspaceBoard,
     handleWorkspaceBoardOpenChange,
+    previewWorkspaceBoardFromDrag,
+    solidifyWorkspaceBoardFromDrag,
+    cancelWorkspaceBoardDragPreview,
   } = useWorkspaceBoardPanel();
 
   // ─── App Version & Ports ─────────────────────────────────────────────────
@@ -958,6 +961,10 @@ export function WorktreeSidebar({
                   );
                 }
               }}
+              workspaceBoardOpen={workspaceBoardOpen}
+              onWorkspaceBoardDragPreviewStart={previewWorkspaceBoardFromDrag}
+              onWorkspaceBoardDragPreviewCommit={solidifyWorkspaceBoardFromDrag}
+              onWorkspaceBoardDragPreviewCancel={cancelWorkspaceBoardDragPreview}
               onShowAllHiddenWorktrees={async (proj) => {
                 const previousExternal = proj.externalWorktreeVisibility ?? null;
                 try {

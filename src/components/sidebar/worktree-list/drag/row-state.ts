@@ -54,6 +54,10 @@ export type WorktreePointerDrag = {
    * boundary does not flip the insertion line back and forth.
    */
   reorderIntent: { dropIndex: number; pointerY: number; startedAt: number } | null
+  /** The board was opened by this drag as a preview (D03a-012). */
+  workspaceBoardDragPreviewRequested: boolean
+  /** The pointer reached the board, so the preview must survive the drag teardown. */
+  boardPreviewCommitted: boolean
 }
 
 export function areWorktreeDragPreviewOffsetsEqual(

@@ -3,6 +3,7 @@
 import { updateSidebarDragPreviewPosition } from '../pointer-drag-dom'
 import {
   getWorkspaceBoardSidebarDropTarget,
+  hasWorkspaceBoardSidebarDropBoard,
   updateWorkspaceBoardSidebarDropTargetVisual
 } from '../../workspace-board/workspace-board-sidebar-drop'
 import type { WorktreeDropCommitContext } from './drop-commit-context'
@@ -54,6 +55,16 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
   if (!ctx.refreshWorktreeDragSession()) {
     ctx.clearWorktreeDrag()
     return
+  }
+  // Orca D03a-012: a card drag opens the board up front so its lanes are a visible
+  // destination, instead of the user having to discover the edge.
+  if (
+    !drag.workspaceBoardDragPreviewRequested &&
+    !ctx.workspaceBoardOpen &&
+    !hasWorkspaceBoardSidebarDropBoard()
+  ) {
+    drag.workspaceBoardDragPreviewRequested = true;
+    ctx.onWorkspaceBoardDragPreviewStart();
   }
   // Why the board first: its lane resolves from its own measured layout, and a drop there
   // assigns a status instead of reordering the list — so the list's own slot must not be

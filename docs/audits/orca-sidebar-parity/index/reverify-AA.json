@@ -1,0 +1,19 @@
+{
+ "group": "AA",
+ "generatedFrom": "2026-10-22 board drag preview: a sidebar card drag opens the workspace board on its first frame, solidifies when the pointer reaches it and closes on abandonment",
+ "rows": [
+  {
+   "id": "D03a-012",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:30-90",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:58-70",
+    "src/components/sidebar/worktree-list/drag/WorktreeListDragProvider.tsx:68-79",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:28-36",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:335-365",
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.parity.test.tsx:1-35"
+   ],
+   "note": "First drag frame requests the preview once when no board is open/registered; reaching the board solidifies it; an abandoned drag closes the preview."
+  }
+ ]
+}
