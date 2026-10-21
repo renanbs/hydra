@@ -80,6 +80,20 @@ beforeEach(() => {
 });
 
 describe("DeleteWorktreeDialog target validation", () => {
+  it("renders with no selected worktree instead of taking the window down", () => {
+    // The dialog stays mounted in the app shell; before the first delete it renders
+    // with an empty selection while the live rows and lineage map are already there.
+    expect(() =>
+      renderDialog({
+        worktrees: [],
+        deleteTargets: [],
+        liveWorktrees: [liveRow("local", "instance-local", PROJECT_PATH)],
+        lineageByPath: {},
+      })
+    ).not.toThrow();
+    expect(screen.queryByRole("button", { name: /Delete Workspace/i })).toBeNull();
+  });
+
   it("aborts without deleting when the confirmed instance was replaced", () => {
     const onStaleTargets = vi.fn();
     const onClose = vi.fn();
