@@ -1,0 +1,27 @@
+{
+ "group": "AF",
+ "generatedFrom": "2026-10-22 unread alert over the new-card status lane; the legacy bell lane is inapplicable because Hydra renders only the new card style",
+ "rows": [
+  {
+   "id": "D04a-022",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:33-51",
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:78-100",
+    "src/components/sidebar/worktree-card-parent-content.tsx:92-102",
+    "src/components/sidebar/WorktreeCardStatusLane.parity.test.tsx:59-83"
+   ],
+   "note": "6px amber badge with a ring overlays any passive glyph; working/permission suppress it, and data-worktree-status-lane-unread/data-worktree-unread-alert expose the state."
+  },
+  {
+   "id": "D04a-023",
+   "status": "not-applicable",
+   "reason": "Hydra renders only the new card style (`newCardStyle` is fixed true in use-worktree-card-controller), so the legacy status-lane bell does not exist; the read/unread toggle lives in the context menu.",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:324",
+    "src/App.tsx:3860-3864"
+   ],
+   "note": "Keeping a bell branch here would be unreachable code."
+  }
+ ]
+}
