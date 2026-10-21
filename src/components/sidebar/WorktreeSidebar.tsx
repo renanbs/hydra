@@ -45,6 +45,7 @@ import type {
 } from "./types";
 import { IDLE, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { useAppStore } from "../../store";
+import { getRepoExecutionHostId } from "../../shared/execution-host";
 import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redirect";
 import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
 import { RemoveFolderDialog } from "./RemoveFolderDialog";
@@ -230,6 +231,7 @@ export function WorktreeSidebar({
     open: boolean;
     project: HydraProject | null;
     hiddenWorktrees: GitWorktreeInfo[];
+    hostId?: string | null;
   }>({
     open: false,
     project: null,
@@ -1051,10 +1053,16 @@ export function WorktreeSidebar({
               onSuppressHiddenWorktrees={(proj) => setSuppressInboxTarget(proj)}
               hiddenWorktreeErrorsByProject={hiddenWorktreeErrorByProject}
               onReviewHiddenWorktrees={(proj) => {
+                // Orca guard: non-git projects have no discovered worktrees to review.
+                if (!proj.is_git) return;
+                const repo = useAppStore
+                  .getState()
+                  .repos.find((candidate) => candidate.path === proj.path);
                 setVisibilityDialog({
                   open: true,
                   project: proj,
                   hiddenWorktrees: hiddenWorktreesByProject?.[proj.path] ?? [],
+                  hostId: repo ? getRepoExecutionHostId(repo) : null,
                 });
               }}
               draggedWorktreePath={draggedWorktreePath}
@@ -1435,6 +1443,7 @@ export function WorktreeSidebar({
         open={visibilityDialog.open}
         project={visibilityDialog.project}
         hiddenWorktrees={visibilityDialog.hiddenWorktrees}
+        hostId={visibilityDialog.hostId}
         visibilityDefaults={settings?.worktree_visibility_defaults}
         onOpenChange={(open) => setVisibilityDialog((prev) => ({ ...prev, open }))}
         onImported={() => {

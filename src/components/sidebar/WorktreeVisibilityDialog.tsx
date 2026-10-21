@@ -365,6 +365,9 @@ export function WorktreeVisibilityDialog({
     };
   }, [helpOpen]);
 
+  // Orca locks every source action while the authoritative scan is still running.
+  const actionsLocked = isToggling || busyPath !== null || scanState === "checking";
+
   const config = useMemo<WorktreeVisibilityRepoConfig>(
     () => draftConfig ?? (project ? repoVisibilityConfig(project) : {}),
     [draftConfig, project]
@@ -708,7 +711,7 @@ export function WorktreeVisibilityDialog({
                       {row.kind === "custom" && repoSourceIds.has(row.source.id) && (
                         <button
                           type="button"
-                          disabled={isToggling}
+                          disabled={actionsLocked}
                           aria-label={
                             row.kind === "custom"
                               ? `Remove custom location ${row.source.rootPath}`
@@ -728,7 +731,7 @@ export function WorktreeVisibilityDialog({
                       {matchingOverride && (
                         <button
                           type="button"
-                          disabled={isToggling}
+                          disabled={actionsLocked}
                           aria-label={`Use global for ${accessibleLabel}`}
                           onClick={() => void handleUseGlobal(row)}
                           className="px-1 text-[11px] font-medium text-indigo-300 hover:text-indigo-200 transition cursor-pointer disabled:opacity-50"
@@ -738,14 +741,14 @@ export function WorktreeVisibilityDialog({
                       )}
                       <div
                         role="group"
-                        aria-label={`Visibility for ${sourceRowLabel(row)}`}
+                        aria-label={`Visibility for ${accessibleLabel}`}
                         className="flex items-center rounded-md border border-neutral-800 bg-neutral-900 p-0.5"
                       >
                         {(["show", "hide"] as const).map((option) => (
                           <button
                             key={option}
                             type="button"
-                            disabled={isToggling}
+                            disabled={actionsLocked}
                             aria-pressed={visibility === option}
                             onClick={() => void handleToggleSource(row, option)}
                             className={`min-w-11 rounded px-2 py-1 text-[11px] font-medium transition cursor-pointer disabled:opacity-50 ${
