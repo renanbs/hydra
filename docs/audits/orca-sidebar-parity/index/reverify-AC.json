@@ -1,0 +1,19 @@
+{
+ "group": "AC",
+ "generatedFrom": "2026-10-22 sleep keeps the sidebar scroll anchor: the virtualized scroller records its top row in the same tick the slept rows disappear",
+ "rows": [
+  {
+   "id": "D07-005",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3505-3515",
+    "src/hooks/requestVirtualizedScrollAnchorRecord.ts:1-18",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:156-162"
+   ],
+   "missing_behaviors": [
+    "Reversão da limpeza do workspace ativo e toast consolidado quando o teardown falha (o sleep local não tem teardown assíncrono)"
+   ],
+   "note": "Sleep snapshots the virtual scroll anchor before mutating sessions, so the restore keeps the same visible row."
+  }
+ ]
+}

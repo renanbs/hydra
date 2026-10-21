@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 196 capabilities
+## MISSING — 195 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -188,9 +188,8 @@
 - **D06-025** — Cálculo de posicionamento e ancoragem virtual do popover de seleção de pai (WorktreeParentPickerPopover) | falta: estimateWorktreeParentPickerHeight (bordas 2px + header 28px + input 49px + lista até PICKER_LIST_MAX_HEIGHT=288px com PICKER_ROW_HEIGHT=56px); clampWorktreeParentPickerAnchorTop limitando ao viewport com PICKER_VIEWPORT_PADDING (12px); Âncora virtual (virtualAnchorRef/DOMRect medido) para posicionamento Radix correto sob transform CSS; Listeners de 'resize'/'scroll' da janela recalculando anchorRect e viewportHeight com o popover aberto | components/sidebar/worktree-parent-picker-placement.ts:1-33
 - **D06-034** — Proteção contra cancelamento prematuro de animação de scroll de revelação (scroll settling guard) | falta: createPendingRevealScroll registrando targetTop e expiração REVEAL_SCROLL_SETTLE_TIMEOUT_MS (1000ms); isRevealScrollSettling comparando scrollTop com targetTop dentro de SETTLED_TOLERANCE_PX (1px); Bloqueio de rotinas concorrentes de restauração de scroll que sobrescrevam scrollTop durante a animação; Expiração automática para não travar a guarda com alvo inalcançável | components/sidebar/worktree-sidebar-reveal-scroll-settle.ts:1-35
 
-### D07-menus-actions (2)
+### D07-menus-actions (1)
 
-- **D07-005** — Preservação da posição do scroll virtual do sidebar durante o sleep e recuperação de erros com toast | falta: Evento VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT e correção por requestAnimationFrame; Reversão da limpeza do workspace ativo em falha de desligamento + retry; Tradução de erros de host/daemon e toast.error consolidado | components/sidebar/sleep-worktree-flow.ts:49
 - **D07-017** — Otimização de performance com sentinelas vazias e políticas de isolamento de escopo no menu de contexto | falta: Sentinelas de módulo (EMPTY_TABS_BY_WORKTREE, EMPTY_PTY_IDS_BY_TAB_ID, EMPTY_BROWSER_TABS_BY_WORKTREE, EMPTY_DELETE_STATE_BY_WORKTREE_ID, EMPTY_WORKTREE_LINEAGE_BY_ID, EMPTY_WORKSPACE_LINEAGE_BY_CHILD_KEY, EMPTY_CYCLIC_LINEAGE_IDS) e selectMenuScopedMap; shouldUseNativeContextMenu / data-worktree-native-context-menu; shouldIgnoreNestedWorktreeContextMenuScope para previews aninhados de filhos; handleCloseAutoFocus focando [data-worktree-sidebar] com preventScroll | components/sidebar/worktree-context-menu-policy.ts:19
 
 ### D08-kanban-board (7)
@@ -251,7 +250,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 327 capabilities
+## PARTIAL — 328 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -492,12 +491,13 @@
 - **D06-033** — Cálculo de limites de rolagem e execução de scroll suave para revelação de elementos (reveal) | falta: getScrollTopToRevealBounds calculando o scrollTop de enquadramento dos limites do elemento; Recuo superior WORKTREE_SIDEBAR_REVEAL_TOP_INSET (46px = 40px header + 6px clearance) para não cobrir o card com headers fixos; Conversão de 'smooth' em 'auto' sob matchMedia('(prefers-reduced-motion: reduce)'); Callback onScrollIssued(targetTop) para guardas de rolagem | components/sidebar/worktree-sidebar-reveal.ts:3-68
 - **D06-035** — Proveniência, herança e resolução de sobreposições de visibilidade de fontes de worktree externas | falta: listInheritedWorktreeVisibilitySources listando as fontes herdadas do global com seus valores padrão; worktreeVisibilityValueLabel retornando os rótulos traduzidos 'Show'/'Hide'; getWorktreeVisibilityOverrideNotice exibindo o aviso 'Overriding global setting: Show/Hide' quando o projeto diverge do global; getWorktreeVisibilitySourceNote exibindo a nota 'Added in this project only.' para fontes exclusivas do projeto | components/sidebar/worktree-visibility-source-provenance.ts:1-125
 
-### D07-menus-actions (28)
+### D07-menus-actions (29)
 
 - **D07-001** — Colocar workspace individual em modo sleep através do item de menu de contexto para liberar memória e processos | falta: Item desabilitado quando não há abas com PTY ativa nem abas de navegador (Hydra mostra Sleep sempre habilitado — src/App.tsx:3487); Teardown real de navegadores/webviews antes dos terminais (Hydra não toca PTY: só remove abas React e marca a sessão 'idle' — src/App.tsx:3122-3127); Marca de sleep intent persistente e wake explícito; Disparo com delay de 50ms após o fechamento do menu | components/sidebar/WorkspaceSleepMenuItems.tsx:28
 - **D07-002** — Colocar múltiplos workspaces selecionados em modo sleep simultaneamente através do menu de contexto com contagem dinâmica | falta: Tooltip multi-contexto além do label pluralizado; Filtro de elegibilidade (apenas workspaces com painéis sleepable) antes de montar a ação | components/sidebar/WorkspaceSleepMenuItems.tsx:36
 - **D07-003** — Colocar workspace pai e toda a sua árvore de descendentes em modo sleep em lote | falta: Descida recursiva completa: Hydra conta e coleta apenas 1 nível (Object.values(worktreeLineage).filter(parent === wt.path) — src/App.tsx:3299,3489-3490); Tooltip explicando fechamento de painéis no pai e nos descendentes aninhados; Filtro de elegibilidade (subtreeSleepableWorktrees) e estado disabled (subtreeSleepDisabled) | components/sidebar/WorkspaceSleepMenuItems.tsx:47
 - **D07-004** — Executar o pipeline sequencial de sleep de workspaces com teardown ordenado de navegadores, terminais e suspensão de VM efêmera | falta: shutdownWorktreeBrowsers antes de shutdownWorktreeTerminals (destruição de persistent webviews); shutdownWorktreeTerminals com keepIdentifiers:true (preservar histórico/layout em disco); Suspensão da VM efêmera (window.api.ephemeralVm.suspendWorkspace) — não há IPC equivalente no caminho; markWorktreeSleepIntent e limpeza de activeWorktreeId antes do teardown | components/sidebar/sleep-worktree-flow.ts:22
+- **D07-005** — Preservação da posição do scroll virtual do sidebar durante o sleep e recuperação de erros com toast | falta: Reversão da limpeza do workspace ativo e toast consolidado quando o teardown falha (o sleep local não tem teardown assíncrono) | components/sidebar/sleep-worktree-flow.ts:49
 - **D07-011** — Seção 'Show' do menu de opções com filtros de escopo de host e repositórios | falta: Controles de escopo/visibilidade de host (SidebarHostScopeMenuSection e label dinâmico de hosts visíveis); Atributo data-workspace-board-preserve-open no menu de opções (existe apenas no botão de delete rápido do card — worktree-card-header.tsx:190) | components/sidebar/workspace-options-menu-items.tsx:112
 - **D07-012** — Controle de alternância de agrupamento de workspaces no menu de opções | falta: Modo de agrupamento 'PR' (Orca 0f9b959b31) — GroupByMode no Hydra é 'none'|'workspace-status'|'repo'; Identificadores de opção equivalentes (c2c7a45cda / e029a2d775 / 2170d553cf) | components/sidebar/sidebar-workspace-option-items.ts:7
 - **D07-013** — Submenu de ordenação de workspaces (Sort by) com opções interativas | falta: Opções 'Project' (por repositório) e 'Manual' (arraste dentro do grupo); Tooltips explicativos de Smart/Manual; Rótulo do valor atual com os 5 valores do Orca (Hydra mostra Agent Activity / Name / Recent); Manter o menu aberto na seleção (onSelect preventDefault): Hydra fecha o submenu com setOpenSubmenu(null) | components/sidebar/sidebar-workspace-option-items.ts:233
