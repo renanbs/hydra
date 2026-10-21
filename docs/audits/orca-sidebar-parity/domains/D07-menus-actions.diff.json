@@ -41,21 +41,20 @@
     "components/sidebar/use-worktree-context-menu-model.tsx:173"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:81",
-     "src/components/sidebar/worktree-card-model.ts:25"
+     "src/components/sidebar/WorktreeList.tsx:975-987",
+     "src/components/sidebar/WorktreeList.tsx:1248-1258",
+     "src/components/sidebar/WorktreeSidebar.tsx:892-903",
+     "src/App.tsx:3900-3918"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Menu de contexto de multi-seleção",
-     "Cálculo dinâmico de sleepableWorktrees",
-     "Label pluralizado 'Sleep N Workspaces'",
-     "Tooltip multi-contexto",
-     "Store de seleção múltipla"
+     "Tooltip multi-contexto além do label pluralizado",
+     "Filtro de elegibilidade (apenas workspaces com painéis sleepable) antes de montar a ação"
     ],
-    "notes": "Sleep multi-seleção ausente.",
-    "note": "Sleep multi-seleção ausente."
+    "notes": "Right-clicking a row inside a multi-selection passes the selected paths to the app, which offers 'Sleep N Workspaces' and sleeps them in one call.",
+    "note": "Right-clicking a row inside a multi-selection passes the selected paths to the app, which offers 'Sleep N Workspaces' and sleeps them in one call."
    },
    "par": [
     "PAR-21",

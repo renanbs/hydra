@@ -1537,10 +1537,17 @@
     "components/sidebar/new-external-worktrees-inbox-actions.ts:45"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:960-1010",
+     "src/components/sidebar/WorktreeSidebar.tsx:1432-1450",
+     "src/components/sidebar/WorktreeList.tsx:1260-1280",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:270-290",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.parity.test.tsx:130-150"
+    ],
     "backend": [],
-    "notes": "não localizado: ações só fazem console.error (WorktreeSidebar.tsx:761-799). Buscas pelas strings 'Could not keep external worktrees hidden', 'Could not import external worktrees' — ausentes."
+    "notes": "Show/keep-hidden/permanent-hide failures map to Orca's three messages, clear on success and render in the row's alert.",
+    "note": "Show/keep-hidden/permanent-hide failures map to Orca's three messages, clear on success and render in the row's alert."
    }
   },
   {
