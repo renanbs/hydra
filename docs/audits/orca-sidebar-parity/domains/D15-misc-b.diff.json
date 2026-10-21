@@ -275,20 +275,16 @@
     "components/sidebar/worktree-sidebar-reveal.ts:21-36"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/SidebarFooter.tsx:35-42",
-     "src/components/sidebar/WorktreeSidebar.tsx:400-433",
-     "src/components/sidebar/WorktreeSidebar.tsx:892"
+     "src/components/sidebar/worktree-sidebar-reveal.ts:13-88",
+     "src/components/sidebar/WorktreeSidebar.tsx:552-563",
+     "src/components/sidebar/worktree-sidebar-reveal.parity.test.ts:60-105"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "compensação de topInset / WORKTREE_SIDEBAR_REVEAL_TOP_INSET",
-     "cálculo explícito de scrollTop alinhando o card ao topo do viewport quando ele está acima (Hydra usa rolagem mínima do scrollIntoView 'nearest')",
-     "retorno null quando já totalmente visível (implícito no 'nearest' nativo, mas sem contrato próprio)"
-    ],
-    "notes": "Acao 'Reveal active workspace' existe (scrollIntoView 'nearest'), mas sem a matematica de bounds/inset do Orca.",
-    "note": "Acao 'Reveal active workspace' existe (scrollIntoView 'nearest'), mas sem a matematica de bounds/inset do Orca."
+    "missing_behaviors": [],
+    "notes": "Reveal math reserves the sticky header inset (28+6), aligns an above-viewport card to the top and a below-viewport card to the bottom, and returns null when fully visible.",
+    "note": "Reveal math reserves the sticky header inset (28+6), aligns an above-viewport card to the top and a below-viewport card to the bottom, and returns null when fully visible."
    }
   }
  ],

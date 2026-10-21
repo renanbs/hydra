@@ -4,8 +4,8 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 261 | 34.1% |
-| partial | 305 | 39.9% |
+| parity | 263 | 34.4% |
+| partial | 303 | 39.6% |
 | missing | 190 | 24.8% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
@@ -20,7 +20,7 @@
 | D02a-repo-add-wizard | 42 | 1 | 12 | 22 | 6 | 1 |
 | D02b-hosts-ssh-remote | 30 | 2 | 11 | 17 | 0 | 0 |
 | D02c-project-groups-scripts | 26 | 4 | 3 | 19 | 0 | 0 |
-| D03a-worktree-list-module | 104 | 40 | 59 | 5 | 0 | 0 |
+| D03a-worktree-list-module | 104 | 41 | 58 | 5 | 0 | 0 |
 | D03b-sidebar-list-orchestration | 50 | 14 | 21 | 15 | 0 | 0 |
 | D04a-worktree-card-surface | 111 | 23 | 65 | 22 | 1 | 0 |
 | D04b-worktree-card-controllers | 23 | 1 | 11 | 11 | 0 | 0 |
@@ -33,4 +33,4 @@
 | D11-lineage-grouping-model | 17 | 6 | 6 | 5 | 0 | 0 |
 | D12-markdown-inline-render | 14 | 3 | 1 | 10 | 0 | 0 |
 | D15-misc-a | 12 | 2 | 5 | 5 | 0 | 0 |
-| D15-misc-b | 14 | 0 | 8 | 6 | 0 | 0 |
+| D15-misc-b | 14 | 1 | 7 | 6 | 0 | 0 |

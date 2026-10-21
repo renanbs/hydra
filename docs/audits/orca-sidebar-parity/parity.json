@@ -4292,19 +4292,15 @@
    "components/sidebar/worktree-list/grouping/build-rows.ts:48-252"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:283-301",
-    "src/components/sidebar/worktree-list/grouping/build-rows.ts:48",
-    "src/components/sidebar/WorktreeList.tsx:338"
+    "src/components/sidebar/WorktreeList.tsx:110-131",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:170-200",
+    "src/components/sidebar/WorktreeList.parity.test.tsx:122-167"
    ],
-   "missing_behaviors": [
-    "seção Pinned antes de todas",
-    "modos 'none'/'workspace-status'/'pr-status' realmente agrupando",
-    "colapso por chave de grupo"
-   ],
-   "notes": "Seletor Group by existe; lista pintada segue agrupando só por repo (lanes não renderizam).",
-   "note": "Seletor Group by existe; lista pintada segue agrupando só por repo (lanes não renderizam)."
+   "missing_behaviors": [],
+   "notes": "Group-by modes paint their lanes and collapse keys reach the pipeline (All/Pinned pass through unprefixed); covered by parity tests.",
+   "note": "Group-by modes paint their lanes and collapse keys reach the pipeline (All/Pinned pass through unprefixed); covered by parity tests."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4318,16 +4314,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/worktree-list/grouping/build-rows.ts:48",
-    "src/components/sidebar/worktree-list/grouping/group-keys.ts:88-96",
-    "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:19"
+    "src/components/sidebar/WorktreeList.tsx:137-150",
+    "src/components/sidebar/WorktreeList.parity.test.tsx:137-150"
    ],
    "missing_behaviors": [
-    "header 'All' com contagem",
-    "colapso suprime linhas",
-    "ordem manual/sortOrder + nome"
+    "ordem manual/sortOrder das folder rows (adapter zera sortOrder e descarta manualOrder)"
    ],
-   "notes": "O lane 'All' existe no pipeline headless (usado para ordenar atalhos), mas não é renderizado; a lista pintada sempre mostra projetos."
+   "notes": "The All lane, its count, and its collapse are live; folder rows still order by name only.",
+   "note": "The All lane, its count, and its collapse are live; folder rows still order by name only."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5275,15 +5269,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:29",
-    "src/components/sidebar/WorktreeSidebar.tsx:428"
+    "src/components/sidebar/worktree-sidebar-reveal.ts:64-88",
+    "src/components/sidebar/WorktreeSidebar.tsx:552-563"
    ],
    "missing_behaviors": [
-    "revealMountedWorktreeElement/SidebarRowElement com optionId",
-    "reportar o scroll emitido"
+    "reveal por optionId do row montado (Hydra usa data-worktree-path)",
+    "consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado)"
    ],
-   "notes": "Reveal rola via virtualizer.scrollToIndex, mas sem scroll suave/report de limites do Orca.",
-   "note": "Reveal rola via virtualizer.scrollToIndex, mas sem scroll suave/report de limites do Orca."
+   "notes": "Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet.",
+   "note": "Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -18898,20 +18892,16 @@
    "components/sidebar/worktree-sidebar-reveal.ts:21-36"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarFooter.tsx:35-42",
-    "src/components/sidebar/WorktreeSidebar.tsx:400-433",
-    "src/components/sidebar/WorktreeSidebar.tsx:892"
+    "src/components/sidebar/worktree-sidebar-reveal.ts:13-88",
+    "src/components/sidebar/WorktreeSidebar.tsx:552-563",
+    "src/components/sidebar/worktree-sidebar-reveal.parity.test.ts:60-105"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "compensação de topInset / WORKTREE_SIDEBAR_REVEAL_TOP_INSET",
-    "cálculo explícito de scrollTop alinhando o card ao topo do viewport quando ele está acima (Hydra usa rolagem mínima do scrollIntoView 'nearest')",
-    "retorno null quando já totalmente visível (implícito no 'nearest' nativo, mas sem contrato próprio)"
-   ],
-   "notes": "Acao 'Reveal active workspace' existe (scrollIntoView 'nearest'), mas sem a matematica de bounds/inset do Orca.",
-   "note": "Acao 'Reveal active workspace' existe (scrollIntoView 'nearest'), mas sem a matematica de bounds/inset do Orca."
+   "missing_behaviors": [],
+   "notes": "Reveal math reserves the sticky header inset (28+6), aligns an above-viewport card to the top and a below-viewport card to the bottom, and returns null when fully visible.",
+   "note": "Reveal math reserves the sticky header inset (28+6), aligns an above-viewport card to the top and a below-viewport card to the bottom, and returns null when fully visible."
   },
   "domain": "D15-misc-b"
  }
