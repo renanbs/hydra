@@ -73,6 +73,9 @@ function context(overrides: Partial<WorktreeDropCommitContext> = {}): WorktreeDr
     lineageParentIdByChildId: PARENTS,
     onNestWorktrees: vi.fn(),
     onUnnestWorktrees: vi.fn(),
+    workspaceBoardOpen: false,
+    onWorkspaceBoardDragPreviewStart: vi.fn(),
+    onWorkspaceBoardDragPreviewCommit: vi.fn(),
     ...overrides,
   };
 }
@@ -381,5 +384,31 @@ describe("list section drops (D03a-009 / D03a-010)", () => {
     expect(next.previewOffsetsByWorktreeId.get("child")).toBe(44);
     expect(ctx.computeWorktreeDrop).not.toHaveBeenCalled();
     expect(lane).toHaveAttribute("data-workspace-section-drop-hover", "true");
+  });
+});
+
+
+describe("board drag preview (D03a-012)", () => {
+  it("opens the board once on the first drag frame", () => {
+    const setState = vi.fn();
+    const ctx = context();
+    const pointerDrag = { ...drag(), reorderIntent: null, workspaceBoardDragPreviewRequested: false };
+
+    flushWorktreePointerDragFrame({ drag: pointerDrag, ctx, setWorktreeDragState: setState });
+    pointerDrag.frameId = null;
+    flushWorktreePointerDragFrame({ drag: pointerDrag, ctx, setWorktreeDragState: setState });
+
+    expect(ctx.onWorkspaceBoardDragPreviewStart).toHaveBeenCalledTimes(1);
+    expect(pointerDrag.workspaceBoardDragPreviewRequested).toBe(true);
+  });
+
+  it("does not open a preview when the board is already open", () => {
+    const ctx = context({ workspaceBoardOpen: true });
+    flushWorktreePointerDragFrame({
+      drag: { ...drag(), reorderIntent: null, workspaceBoardDragPreviewRequested: false },
+      ctx,
+      setWorktreeDragState: vi.fn(),
+    });
+    expect(ctx.onWorkspaceBoardDragPreviewStart).not.toHaveBeenCalled();
   });
 });

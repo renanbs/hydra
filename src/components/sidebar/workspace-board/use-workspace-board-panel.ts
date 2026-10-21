@@ -25,6 +25,8 @@ export const TOGGLE_WORKSPACE_BOARD_EVENT = 'hydra:toggle-workspace-board'
 export type WorkspaceBoardPanelState = {
   /** Whether the user has the board open — drives the sheet's `open` prop. */
   workspaceBoardOpen: boolean
+  /** The board was opened by a card drag, not by the user; a cancelled drag closes it. */
+  workspaceBoardDragPreviewOpen: boolean
   /**
    * Whether the drawer may stay mounted. Outlives `workspaceBoardOpen` by the
    * close animation, so the sheet does not flicker on its way out.
@@ -32,6 +34,9 @@ export type WorkspaceBoardPanelState = {
   workspaceBoardRenderedOpen: boolean
   toggleWorkspaceBoard: () => void
   handleWorkspaceBoardOpenChange: (open: boolean) => void
+  previewWorkspaceBoardFromDrag: () => void
+  solidifyWorkspaceBoardFromDrag: () => void
+  cancelWorkspaceBoardDragPreview: () => void
 }
 
 /**
@@ -40,11 +45,13 @@ export type WorkspaceBoardPanelState = {
  */
 export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
   const [workspaceBoardOpen, setWorkspaceBoardOpen] = useState(false)
+  const [workspaceBoardDragPreviewOpen, setWorkspaceBoardDragPreviewOpen] = useState(false)
   const workspaceBoardOpenRef = useRef(workspaceBoardOpen)
   workspaceBoardOpenRef.current = workspaceBoardOpen
   const renderedOpen = useWorkspaceBoardDrawerLingering(workspaceBoardOpen)
 
   const openWorkspaceBoard = useCallback(() => {
+    setWorkspaceBoardDragPreviewOpen(false)
     if (workspaceBoardOpenRef.current) {
       return
     }
@@ -52,8 +59,30 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
     setWorkspaceBoardOpen(true)
   }, [])
 
+  // Orca `previewWorkspaceBoardFromDrag`: a card drag opens the board so its lanes are a
+  // visible destination from the first frame; the preview is not a user-open.
+  const previewWorkspaceBoardFromDrag = useCallback(() => {
+    if (workspaceBoardOpenRef.current) {
+      return
+    }
+    workspaceBoardOpenRef.current = true
+    setWorkspaceBoardDragPreviewOpen(true)
+    setWorkspaceBoardOpen(true)
+  }, [])
+
+  const solidifyWorkspaceBoardFromDrag = useCallback(() => {
+    setWorkspaceBoardDragPreviewOpen(false)
+  }, [])
+
+  const cancelWorkspaceBoardDragPreview = useCallback(() => {
+    setWorkspaceBoardDragPreviewOpen(false)
+    workspaceBoardOpenRef.current = false
+    setWorkspaceBoardOpen(false)
+  }, [])
+
   const closeWorkspaceBoard = useCallback(() => {
     workspaceBoardOpenRef.current = false
+    setWorkspaceBoardDragPreviewOpen(false)
     setWorkspaceBoardOpen(false)
   }, [])
 
@@ -112,8 +141,12 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
 
   return {
     workspaceBoardOpen,
+    workspaceBoardDragPreviewOpen,
     workspaceBoardRenderedOpen: renderedOpen,
     toggleWorkspaceBoard,
     handleWorkspaceBoardOpenChange,
+    previewWorkspaceBoardFromDrag,
+    solidifyWorkspaceBoardFromDrag,
+    cancelWorkspaceBoardDragPreview,
   }
 }

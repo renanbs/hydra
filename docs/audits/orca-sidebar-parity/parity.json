@@ -4014,15 +4014,22 @@
    "components/sidebar/worktree-list/drag/pointer-flush.ts:101-118"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:30-90",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:58-70",
+    "src/components/sidebar/worktree-list/drag/WorktreeListDragProvider.tsx:68-79",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:28-36",
+    "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:335-365",
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.parity.test.tsx:1-35"
+   ],
    "missing_behaviors": [
     "workspaceBoardDragPreviewRequested",
     "onWorkspaceBoardDragPreviewStart",
     "shouldShowWorkspaceBoardDropIndicator"
    ],
-   "notes": "Sem preview de destino do board no início do drag do sidebar.",
-   "note": "Sem preview de destino do board no início do drag do sidebar."
+   "notes": "First drag frame requests the preview once when no board is open/registered; reaching the board solidifies it; an abandoned drag closes the preview.",
+   "note": "First drag frame requests the preview once when no board is open/registered; reaching the board solidifies it; an abandoned drag closes the preview."
   },
   "domain": "D03a-worktree-list-module"
  },

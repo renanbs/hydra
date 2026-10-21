@@ -77,6 +77,8 @@ export function commitWorktreePointerDrop(args: {
   // so a release over it would otherwise read as a throw-away.
   const boardTarget = getWorkspaceBoardSidebarDropTarget(drag.currentX, drag.currentY)
   if (boardTarget) {
+    drag.boardPreviewCommitted = true;
+    ctx.onWorkspaceBoardDragPreviewCommit();
     if (isWorkspaceBoardPinDropTarget(boardTarget)) {
       ctx.onPinWorktrees(drag.draggedIds)
     } else {

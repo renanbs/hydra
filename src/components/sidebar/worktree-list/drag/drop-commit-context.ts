@@ -45,4 +45,10 @@ export type WorktreeDropCommitContext = {
   onNestWorktrees: (parentWorktreeId: string, childWorktreeIds: readonly string[]) => void
   /** A reorder drop of nested rows detaches them from their old parent first. */
   onUnnestWorktrees: (childWorktreeIds: readonly string[]) => void
+  /** Whether the board is already open (a preview would be redundant). */
+  workspaceBoardOpen: boolean
+  /** Opens the board as a drag preview on the first frame (Orca D03a-012). */
+  onWorkspaceBoardDragPreviewStart: () => void
+  /** The pointer entered the board: the preview becomes a user-open board. */
+  onWorkspaceBoardDragPreviewCommit: () => void
 }

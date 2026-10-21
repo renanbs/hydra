@@ -1,6 +1,6 @@
 // Ported from Orca — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: orca/src/renderer/src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx (drag provider)
-import React, { useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import type { HostSectionRow } from '../../host-section-rows'
 import type { WorktreeGroupReorderArgs, WorktreeDropCommitContext } from './drop-commit-context'
 import { useWorktreeDragRuntime } from './use-runtime'
@@ -25,6 +25,10 @@ export function WorktreeListDragProvider({
   lineageParentIdByChildId,
   onNestWorktrees,
   onUnnestWorktrees,
+  workspaceBoardOpen = false,
+  onWorkspaceBoardDragPreviewStart = () => {},
+  onWorkspaceBoardDragPreviewCommit = () => {},
+  onWorkspaceBoardDragPreviewCancel = () => {},
   resolveDraggedWorktreeIds,
   children
 }: {
@@ -41,6 +45,14 @@ export function WorktreeListDragProvider({
   onNestWorktrees: (parentWorktreeId: string, childWorktreeIds: readonly string[]) => void
   /** Detaches nested rows that were dragged out onto a reorder line. */
   onUnnestWorktrees: (childWorktreeIds: readonly string[]) => void
+  /** Whether the board is already open; a preview is only needed when it is not. */
+  workspaceBoardOpen?: boolean
+  /** Opens the board as a drag preview (D03a-012). */
+  onWorkspaceBoardDragPreviewStart?: () => void
+  /** The drag reached the board; keep it open after the drag ends. */
+  onWorkspaceBoardDragPreviewCommit?: () => void
+  /** A preview board opened by this drag closes when the drag is abandoned. */
+  onWorkspaceBoardDragPreviewCancel?: () => void
   /**
    * The ids a press drags (D03a-002): the list's selection when the pressed row is part of one
    * and it holds more than one, the pressed row alone otherwise.
@@ -54,6 +66,16 @@ export function WorktreeListDragProvider({
   const resolvedScrollRef = scrollRef ?? fallbackScrollRef
   const session = useWorktreeDragSession({ rows, scrollRef: resolvedScrollRef })
   const runtime = useWorktreeDragRuntime()
+  // Why wrap: the preview board belongs to the drag, so every abandonment path
+  // (drop off-target, Escape, pointercancel, unmount) must close it — unless the drag
+  // actually reached the board.
+  const clearWorktreeDrag = useCallback(() => {
+    const drag = runtime.worktreePointerDragRef.current
+    if (drag?.workspaceBoardDragPreviewRequested && !drag.boardPreviewCommitted) {
+      onWorkspaceBoardDragPreviewCancel()
+    }
+    runtime.clearWorktreeDrag()
+  }, [onWorkspaceBoardDragPreviewCancel, runtime])
   const ctx = useMemo<WorktreeDropCommitContext>(
     () => ({
       scrollRef: resolvedScrollRef,
@@ -61,14 +83,17 @@ export function WorktreeListDragProvider({
       worktreeDragUnitGroups: session.worktreeDragUnitGroups,
       computeWorktreeDrop: session.computeWorktreeDrop,
       refreshWorktreeDragSession: session.refreshWorktreeDragSession,
-      clearWorktreeDrag: runtime.clearWorktreeDrag,
+      clearWorktreeDrag,
       resolveDraggedWorktreeIds,
       onReorderWorktrees,
       onAssignWorktreesStatus,
       onPinWorktrees,
       lineageParentIdByChildId,
       onNestWorktrees,
-      onUnnestWorktrees
+      onUnnestWorktrees,
+      workspaceBoardOpen,
+      onWorkspaceBoardDragPreviewStart,
+      onWorkspaceBoardDragPreviewCommit
     }),
     [
       onAssignWorktreesStatus,
@@ -77,6 +102,9 @@ export function WorktreeListDragProvider({
       lineageParentIdByChildId,
       onNestWorktrees,
       onUnnestWorktrees,
+      workspaceBoardOpen,
+      onWorkspaceBoardDragPreviewStart,
+      onWorkspaceBoardDragPreviewCommit,
       resolveDraggedWorktreeIds,
       resolvedScrollRef,
       runtime,

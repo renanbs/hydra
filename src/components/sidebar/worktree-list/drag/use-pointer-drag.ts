@@ -163,6 +163,8 @@ export function useWorktreePointerDrag(args: {
         previewOffsetX: 0,
         previewOffsetY: 0,
         reorderIntent: null,
+        workspaceBoardDragPreviewRequested: false,
+        boardPreviewCommitted: false,
         frameId: null
       }
     },
