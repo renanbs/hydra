@@ -216,7 +216,7 @@
   },
   {
    "id": "D10-072",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-073",
@@ -700,7 +700,7 @@
   },
   {
    "id": "D10-005",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-006",
@@ -708,7 +708,7 @@
   },
   {
    "id": "D10-007",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-008",
@@ -760,7 +760,7 @@
   },
   {
    "id": "D10-020",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-021",
@@ -768,11 +768,11 @@
   },
   {
    "id": "D10-022",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-023",
-   "status": "partial"
+   "status": "parity"
   }
  ]
 }

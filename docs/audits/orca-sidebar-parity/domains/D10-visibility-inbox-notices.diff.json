@@ -103,10 +103,11 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:219"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:49",
-     "src/components/DeleteWorktreeDialog.tsx:44"
+     "src/components/DeleteWorktreeDialog.tsx:120-175",
+     "src/components/DeleteWorktreeDialog.tsx:200-225",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:90-170"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -114,8 +115,8 @@
      "useEffect de auto-close/limpeza quando nenhum alvo é resolvível",
      "limpeza de deleteState por alvo ao fechar (handleOpenChange)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "The confirmed row resolves by id+host, the dialog closes with the stale notice when nothing resolves, and App clears the target state on close.",
+    "notes": "The confirmed row resolves by id+host, the dialog closes with the stale notice when nothing resolves, and App clears the target state on close."
    },
    "par": [
     "PAR-56"
@@ -155,18 +156,18 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:378"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:150-171",
-     "src/components/DeleteWorktreeDialog.tsx:153"
+     "src/components/DeleteWorktreeDialog.tsx:360-420",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:190-215"
     ],
     "backend": [],
     "missing_behaviors": [
      "labels de host em colisão",
      "preview single vs batch com semântica própria (role/region)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Batch rows print the host label when a path collides; single vs batch previews use region/list semantics.",
+    "notes": "Batch rows print the host label when a path collides; single vs batch previews use region/list semantics."
    },
    "par": [
     "PAR-56"
@@ -471,9 +472,11 @@
     "components/sidebar/DeleteWorktreeTargetPreview.tsx:74"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:150-171"
+     "src/components/DeleteWorktreeDialog.tsx:365-410",
+     "src/components/DeleteWorktreeDialog.tsx:420-470",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:190-215"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -481,8 +484,8 @@
      "bounding box max-h-48 com scroll",
      "erro inline por linha"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Batch is role=list 'Workspaces to delete' with listitem rows labelled by branch+path(+host), max-h-48 scroll and per-row alert.",
+    "notes": "Batch is role=list 'Workspaces to delete' with listitem rows labelled by branch+path(+host), max-h-48 scroll and per-row alert."
    },
    "par": [
     "PAR-56"
@@ -519,17 +522,16 @@
     "components/sidebar/DeleteWorktreeTargetPreview.tsx:112"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:153-168",
-     "src/components/DeleteWorktreeDialog.tsx:166"
+     "src/components/DeleteWorktreeDialog.tsx:432-438"
     ],
     "backend": [],
     "missing_behaviors": [
      "erro inline por alvo (Hydra agrega o erro num único painel global)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "A failed target prints its own inline alert under that row; the dirty hint and spinner stay per target.",
+    "notes": "A failed target prints its own inline alert under that row; the dirty hint and spinner stay per target."
    },
    "par": [
     "PAR-56"
@@ -543,9 +545,10 @@
     "components/sidebar/DeleteWorktreeTargetPreview.tsx:124"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:150"
+     "src/components/DeleteWorktreeDialog.tsx:352-365",
+     "src/components/DeleteWorktreeDialog.tsx:407-416"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -553,8 +556,8 @@
      "host no nome acessível em colisão",
      "retorno null sem worktree resolvido"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Single target renders as role=region labelled by path (plus host when the path collides across hosts); no targets returns null.",
+    "notes": "Single target renders as role=region labelled by path (plus host when the path collides across hosts); no targets returns null."
    },
    "par": [
     "PAR-56"
@@ -852,19 +855,19 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:347"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:336",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:348",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:352"
+     "src/components/sidebar/WorktreeSidebar.tsx:1055-1070",
+     "src/components/sidebar/WorktreeSidebar.tsx:1446",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:133-137"
     ],
     "backend": [],
     "missing_behaviors": [
      "guard isGitRepoKind(repo)",
      "resolução de alvo por host (resolveWorktreeVisibilityHostTarget)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "The review action guards non-git projects and passes the repo's execution host; the dialog resolves the target by repo+host.",
+    "notes": "The review action guards non-git projects and passes the repo's execution host; the dialog resolves the target by repo+host."
    }
   },
   {
@@ -898,10 +901,11 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:371"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:107-130",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:110"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:212-260",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:369",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:320"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -909,8 +913,8 @@
      "travar linhas/ações enquanto 'checking'",
      "nunca confiar em snapshot fallback/vazio"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Open runs an authoritative scan with checking/ready/failed; an active mutation skips it; every source action locks while checking.",
+    "notes": "Open runs an authoritative scan with checking/ready/failed; an active mutation skips it; every source action locks while checking."
    }
   },
   {
@@ -940,11 +944,10 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:377"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:313",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:317",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:308"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:570-595",
+     "src/components/sidebar/worktree-visibility-mutation-fence.ts:1-90"
     ],
     "backend": [
      "invoke('import_worktree') -> src-tauri/src/lib.rs:418"
@@ -953,8 +956,8 @@
      "fence de scope nos callbacks (não aplica estado se o scope mudou)",
      "sucesso promove listState para 'ready' limpando falha anterior"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Show-by-path is fenced by scope, clears the row locally and re-scans; success leaves listState ready.",
+    "notes": "Show-by-path is fenced by scope, clears the row locally and re-scans; success leaves listState ready."
    }
   },
   {
@@ -965,11 +968,10 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:240"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:229",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:204",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:220"
+     "src/components/sidebar/worktree-visibility-source-mutation.ts:1-70",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:472-485"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
@@ -977,8 +979,8 @@
     "missing_behaviors": [
      "checagem isAccepted contra o repo mais recente no scope"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Show/Hide ships the update with an isAccepted predicate evaluated against the latest repo row.",
+    "notes": "Show/Hide ships the update with an isAccepted predicate evaluated against the latest repo row."
    }
   },
   {
@@ -989,9 +991,9 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:240"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:260"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:489-525"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
@@ -999,8 +1001,8 @@
     "missing_behaviors": [
      "validação de aceitação no commit (campo ausente + visibilidade efetiva == default global)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Use global only appears when the override matches the global value, and the commit carries an acceptance predicate.",
+    "notes": "Use global only appears when the override matches the global value, and the commit carries an acceptance predicate."
    }
   },
   {
@@ -1032,10 +1034,9 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:276"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:285",
-     "src/lib/worktree-visibility-sources.ts:279"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:526-555"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
@@ -1043,8 +1044,8 @@
     "missing_behaviors": [
      "validação de aceitação (source presente E visibility 'hide' no repo mais recente)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Adding a custom root validates limit/absolute/duplicate and accepts only when the source and its 'hide' preference land in the latest row.",
+    "notes": "Adding a custom root validates limit/absolute/duplicate and accepts only when the source and its 'hide' preference land in the latest row."
    }
   },
   {
@@ -1054,9 +1055,9 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:312"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:304"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:557-585"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
@@ -1064,8 +1065,8 @@
     "missing_behaviors": [
      "validação de aceitação (source ausente E pref custom removida)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Removing a custom root accepts only when the source and its preference are gone, leaving the other preferences intact.",
+    "notes": "Removing a custom root accepts only when the source and its preference are gone, leaving the other preferences intact."
    }
   },
   {
@@ -1075,19 +1076,18 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:377"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:561",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:595",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:608"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:60-130",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:819-870"
     ],
     "backend": [],
     "missing_behaviors": [
      "lista virtualizada",
      "nome acessível distinto 'Show <nome> at <path>'"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Above ten rows the recovery list virtualizes with react-window; each action is named 'Show <branch> at <path>'.",
+    "notes": "Above ten rows the recovery list virtualizes with react-window; each action is named 'Show <branch> at <path>'."
    }
   },
   {
@@ -1099,19 +1099,18 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:387"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:625",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:413",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:528"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:369",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:425-450"
     ],
     "backend": [],
     "missing_behaviors": [
      "disabled incluindo checking/busyPath/toggling (Hydra só usa savingSource)",
      "link 'Manage in Global Settings' posicionado abaixo da lista de sources"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Actions disable for checking/busy/toggling, and Manage in Global Settings sits below the source list.",
+    "notes": "Actions disable for checking/busy/toggling, and Manage in Global Settings sits below the source list."
    }
   },
   {
@@ -1289,17 +1288,18 @@
     "components/sidebar/WorktreeVisibilitySourceList.tsx:276"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:413"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:690-710",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-190"
     ],
     "backend": [],
     "missing_behaviors": [
      "aria-label com rootPath completo (Hydra usa o basename)",
      "tooltip 'Remove custom location'"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "The custom-location remove button is named with the full rootPath and carries the 'Remove custom location' tooltip.",
+    "notes": "The custom-location remove button is named with the full rootPath and carries the 'Remove custom location' tooltip."
    }
   },
   {
@@ -1331,16 +1331,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:433",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:442"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:745-760"
     ],
     "backend": [],
     "missing_behaviors": [
-     "nome acessível com rootPath completo para custom",
      "ignorar re-seleção do mesmo segmento"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "The segment group is named with the full custom rootPath; re-selecting the active segment still writes a full replace.",
+    "notes": "The segment group is named with the full custom rootPath; re-selecting the active segment still writes a full replace."
    }
   },
   {
@@ -1497,9 +1495,10 @@
     "components/sidebar/new-external-worktrees-inbox-actions.ts:91"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:749-803"
+     "src/components/sidebar/WorktreeSidebar.tsx:990-1010",
+     "src/components/sidebar/WorktreeList.tsx:1260-1280"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility') -> src-tauri/src/lib.rs:304"
@@ -1508,8 +1507,8 @@
      "mensagem de erro 'Could not keep external worktrees hidden. Try again.'",
      "superfície de erro na linha"
     ],
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "note": "Keep-hidden failures publish 'Could not keep external worktrees hidden. Try again.' on the row's alert and clear on success.",
+    "notes": "Keep-hidden failures publish 'Could not keep external worktrees hidden. Try again.' on the row's alert and clear on success."
    }
   },
   {
@@ -1586,16 +1585,18 @@
     "components/sidebar/prompt-cache-countdown-clock.ts:63"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/CacheTimer.tsx:12-23"
+     "src/components/sidebar/prompt-cache-countdown-clock.ts:1-110"
     ],
     "backend": [],
     "missing_behaviors": [
      "relógio compartilhado (um único setInterval para todos os assinantes)",
      "subscribe/unsubscribe + stopClock",
      "publicação imediata de currentNow"
-    ]
+    ],
+    "notes": "One shared 1s interval for every subscriber, with subscribe/unsubscribe, stopClock and an immediate currentNow publish.",
+    "note": "One shared 1s interval for every subscriber, with subscribe/unsubscribe, stopClock and an immediate currentNow publish."
    },
    "par": [
     "PAR-60"
@@ -1875,17 +1876,16 @@
     "components/sidebar/worktree-visibility-repo-sources.ts:22"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:157-167",
-     "src/lib/worktree-visibility-sources.ts:279"
+     "src/components/sidebar/worktree-visibility-repo-sources.ts:15-40"
     ],
     "backend": [],
     "missing_behaviors": [
      "getLatestRepoForVisibilityScope (repo atual por scope de host)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "getLatestRepoForVisibilityScope resolves the current repo row for the host-qualified scope.",
+    "notes": "getLatestRepoForVisibilityScope resolves the current repo row for the host-qualified scope."
    }
   },
   {
@@ -1897,9 +1897,9 @@
     "components/sidebar/worktree-visibility-source-mutation.ts:46"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:229"
+     "src/components/sidebar/worktree-visibility-source-mutation.ts:15-60"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
@@ -1907,8 +1907,8 @@
     "missing_behaviors": [
      "predicado de aceitação (isAccepted)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Every source mutation carries its isAccepted predicate.",
+    "notes": "Every source mutation carries its isAccepted predicate."
    }
   },
   {
@@ -1919,9 +1919,9 @@
     "components/sidebar/worktree-visibility-update-error.ts:15"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:223"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:438-448"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
@@ -1929,8 +1929,8 @@
     "missing_behaviors": [
      "copy específica de host antigo que descarta prefs de source ('This host doesn't support source-specific worktree visibility…')"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "A dropped preference from the target host maps to the dedicated 'This host doesn't support source-specific worktree visibility' copy.",
+    "notes": "A dropped preference from the target host maps to the dedicated 'This host doesn't support source-specific worktree visibility' copy."
    }
   },
   {
@@ -1942,9 +1942,10 @@
     "components/sidebar/worktree-visibility-use-global.ts:46"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:260"
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:640-660",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:489-525"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility_sources') -> src-tauri/src/lib.rs:332"
@@ -1952,8 +1953,8 @@
     "missing_behaviors": [
      "helper shouldUseGlobalWorktreeVisibility + validação de aceitação"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Picking the global value is detected inline (matchingOverride) and routed to the revert mutation with acceptance.",
+    "notes": "Picking the global value is detected inline (matchingOverride) and routed to the revert mutation with acceptance."
    }
   },
   {
