@@ -92,6 +92,8 @@ export type PendingCreationRow = {
   key: string
   creationId: string
   repo: Repo | undefined
+  branchName?: string
+  agentName?: string
 }
 
 export type FolderWorkspaceRow = {
@@ -107,7 +109,14 @@ export type FolderWorkspaceRow = {
  *  full PendingWorktreeCreation: row identity depends only on which creates
  *  exist and their repo, so callers can subscribe on this stable shape and keep
  *  progress-field churn (phase/loaderVisible) from rebuilding the whole list. */
-export type PendingCreationRef = { creationId: string; repoId: string }
+export type PendingCreationRef = {
+  creationId: string
+  repoId: string
+  /** Identity-cached row key (`selectPendingWorktreeCreationKeys`). */
+  key?: string
+  branchName?: string
+  agentName?: string
+}
 
 export type Row =
   | GroupHeaderRow

@@ -1,0 +1,29 @@
+{
+ "group": "AB",
+ "generatedFrom": "2026-10-22 optimistic pending-creation rows: the composer publishes the in-flight create, the painted pipeline emits a spinner row with its identity-cached key",
+ "rows": [
+  {
+   "id": "D03a-035",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/PendingWorktreeCreationRow.tsx:1-40",
+    "src/components/sidebar/WorktreeList.tsx:1540-1550",
+    "src/components/NewWorkspaceComposer.tsx:26-42",
+    "src/App.tsx:354-358",
+    "src/components/sidebar/worktree-list/rows/PendingWorktreeCreationRow.parity.test.tsx:1-25"
+   ],
+   "note": "The composer publishes {creationId, repoId, branch, agent} before the invoke and settles it in then/catch; the row shows a spinner, the branch and the agent/repo context."
+  },
+  {
+   "id": "D03a-055",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts:1-35",
+    "src/components/sidebar/WorktreeList.tsx:800-815",
+    "src/components/sidebar/worktree-list/grouping/row-builders.ts:22-36",
+    "src/components/sidebar/worktree-list/listing/pending-worktree-creation-keys.parity.test.ts:1-30"
+   ],
+   "note": "Keys are '<creationId> <repoId>', cached by source-slice identity (frozen empty array otherwise) and become the painted row key."
+  }
+ ]
+}
