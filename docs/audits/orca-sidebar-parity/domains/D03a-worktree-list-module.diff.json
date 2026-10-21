@@ -466,17 +466,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:746",
-     "src/App.tsx:1922"
+     "src/components/sidebar/WorktreeList.tsx:1040-1129",
+     "src/components/sidebar/WorktreeSidebar.tsx:750",
+     "src/components/sidebar/WorktreeSidebar.tsx:1078"
     ],
     "missing_behaviors": [
-     "persistir workspaceStatus com executionHostId",
-     "moveWorktreesToStatusAtIndex (status+ordem)",
-     "forçar sortBy=manual",
-     "recordFeatureInteraction('workspace-board-actions')"
+     "gravar workspaceStatus qualificado por executionHostId no drop"
     ],
-    "notes": "Ordem manual agora persiste pelo drop do pointer (buildManualOrderUpdatesForVisibleGroups); status por drop ainda ausente.",
-    "note": "Ordem manual agora persiste pelo drop do pointer (buildManualOrderUpdatesForVisibleGroups); status por drop ainda ausente."
+    "notes": "Status/pin drops call the path-based writers; the write is not host-qualified metadata.",
+    "note": "Status/pin drops call the path-based writers; the write is not host-qualified metadata."
    }
   },
   {
@@ -953,15 +951,13 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:683-698",
-     "src/components/sidebar/sidebar-filter-actions.ts:12"
+     "src/components/sidebar/WorktreeSidebar.tsx:400-425"
     ],
     "missing_behaviors": [
-     "showSleepingWorkspaces/filterRepoIds/automation/cli/detached/devices/visibleHostIds aplicados à lista pintada",
-     "clearFilters reseta só os filtros ativos via computeClearFilterActions"
+     "computeClearFilterActions com reset seletivo"
     ],
-    "notes": "Filtros granulares (hideSleeping/hideAutomationCreated/hideCliCreated) existem em displayOptions mas não são aplicados.",
-    "note": "Filtros granulares (hideSleeping/hideAutomationCreated/hideCliCreated) existem em displayOptions mas não são aplicados."
+    "notes": "Clear filters resets the fixed display-option set to defaults, not a computed selective plan.",
+    "note": "Clear filters resets the fixed display-option set to defaults, not a computed selective plan."
    },
    "par": [
     "PAR-26"
@@ -1869,15 +1865,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:1152-1170",
-     "src/components/sidebar/ProjectGroupNameDialog.tsx:1"
+     "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
+     "src/components/sidebar/WorktreeSidebar.tsx:170"
     ],
     "missing_behaviors": [
-     "SuppressExternalWorktreeInboxDialog (confirmação de suppress com onOpenRecovery)",
      "toggle removeContainedProjects com contagem/nomes"
     ],
-    "notes": "Suppress de inbox sem diálogo de confirmação.",
-    "note": "Suppress de inbox sem diálogo de confirmação."
+    "notes": "The delete dialog shows count and names but has no remove-contained-projects choice.",
+    "note": "The delete dialog shows count and names but has no remove-contained-projects choice."
    }
   },
   {
