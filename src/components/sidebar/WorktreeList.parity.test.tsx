@@ -10,6 +10,7 @@ import { render, screen } from "@testing-library/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAppStore } from "@/store";
 import { WorktreeList, type WorktreeListProps } from "./WorktreeList";
+import { getVisibleWorktreeShortcutTargets } from "./visible-worktrees";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { HydraProject, GitWorktreeInfo } from "./types";
 
@@ -134,6 +135,38 @@ describe("WorktreeList row model (Orca parity)", () => {
     expect(container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(2);
   });
 
+  it("honors collapsing the All lane (section key passes through unprefixed)", () => {
+    const { container } = renderList({
+      projects: [PROJECT_A, PROJECT_B],
+      worktreesByProject: {
+        [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)],
+        [PROJECT_B.path]: [worktree("/repo/orca", "main", true)],
+      },
+      displayOptions: { ...BASE_DISPLAY_OPTIONS, groupBy: "none" },
+      collapsedGroups: new Set(["all"]),
+    });
+
+    expect(container.querySelector('[data-section-header-id="all"]')).not.toBeNull();
+    expect(container.querySelectorAll("[data-worktree-card-surface]")).toHaveLength(0);
+  });
+
+  it("honors collapsing the Pinned section (section key passes through unprefixed)", () => {
+    const pinnedPath = "/repo/hydra-pinned";
+    const { container } = renderList({
+      projects: [PROJECT_A],
+      worktreesByProject: {
+        [PROJECT_A.path]: [worktree("/repo/hydra", "main", true), worktree(pinnedPath, "feat/x")],
+      },
+      pinnedWorktrees: new Set([pinnedPath]),
+      collapsedGroups: new Set(["pinned"]),
+    });
+
+    expect(container.querySelector('[data-section-header-id="pinned"]')).not.toBeNull();
+    expect(
+      container.querySelector(`[data-worktree-path="${pinnedPath}"]`)
+    ).toBeNull();
+  });
+
   it("buckets worktrees into workspace-status lanes only in status mode", () => {
     const props = {
       projects: [PROJECT_A],
@@ -177,6 +210,37 @@ describe("WorktreeList row model (Orca parity)", () => {
       displayOptions: { ...BASE_DISPLAY_OPTIONS, groupBy: "pr-status" },
     });
     expect(open.container.querySelector('[data-section-header-id="pr:in-review"]')).not.toBeNull();
+  });
+
+  it("publishes same-id workspaces on different hosts as separate shortcut positions", () => {
+    resetStore({
+      repos: [
+        { id: "repo_a", connectionId: null, executionHostId: "local" },
+        { id: "repo_b", connectionId: "srv", executionHostId: "ssh:srv" },
+      ],
+      visibleWorkspaceHostIds: ["local", "ssh:srv"],
+      workspaceHostScope: "all",
+      sshTargetLabels: new Map([["srv", "Build server"]]),
+      sshConnectionStates: new Map(),
+    });
+
+    renderList({
+      projects: [PROJECT_A, PROJECT_B],
+      worktreesByProject: {
+        [PROJECT_A.path]: [worktree("/repo/shared", "main")],
+        [PROJECT_B.path]: [worktree("/repo/shared", "main")],
+      },
+    });
+
+    expect(
+      getVisibleWorktreeShortcutTargets().map((target) => [
+        target.id,
+        target.executionHostId,
+      ])
+    ).toEqual([
+      ["/repo/shared", "local"],
+      ["/repo/shared", "ssh:srv"],
+    ]);
   });
 
   it("puts the Pinned section on top and moves the pinned card into it", () => {

@@ -138,7 +138,10 @@ export function DeleteWorktreeDialog({
   const validationEnabled = liveWorktrees != null;
 
   const lineageDelete = useMemo(() => {
-    if (isBatchDelete || !lineageByPath || !liveWorktrees) {
+    // Why the empty guard: the dialog stays mounted between invocations, so it can
+    // render with no selected worktree (and, in the app shell, before the first
+    // delete). Reading `worktrees[0]` there used to throw and take the window down.
+    if (isBatchDelete || worktrees.length === 0 || !lineageByPath || !liveWorktrees) {
       return {
         descendants: [] as readonly WorkspaceDeleteLineageRow[],
         deleteAllTargets: [] as readonly WorktreeDeleteLiveTarget[],

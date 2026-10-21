@@ -466,17 +466,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:746",
-     "src/App.tsx:1922"
+     "src/components/sidebar/WorktreeList.tsx:1040-1129",
+     "src/components/sidebar/WorktreeSidebar.tsx:750",
+     "src/components/sidebar/WorktreeSidebar.tsx:1078"
     ],
     "missing_behaviors": [
-     "persistir workspaceStatus com executionHostId",
-     "moveWorktreesToStatusAtIndex (status+ordem)",
-     "forçar sortBy=manual",
-     "recordFeatureInteraction('workspace-board-actions')"
+     "gravar workspaceStatus qualificado por executionHostId no drop"
     ],
-    "notes": "Ordem manual agora persiste pelo drop do pointer (buildManualOrderUpdatesForVisibleGroups); status por drop ainda ausente.",
-    "note": "Ordem manual agora persiste pelo drop do pointer (buildManualOrderUpdatesForVisibleGroups); status por drop ainda ausente."
+    "notes": "Status/pin drops call the path-based writers; the write is not host-qualified metadata.",
+    "note": "Status/pin drops call the path-based writers; the write is not host-qualified metadata."
    }
   },
   {
@@ -545,19 +543,15 @@
     "components/sidebar/worktree-list/grouping/build-rows.ts:48-252"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:283-301",
-     "src/components/sidebar/worktree-list/grouping/build-rows.ts:48",
-     "src/components/sidebar/WorktreeList.tsx:338"
+     "src/components/sidebar/WorktreeList.tsx:110-131",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:170-200",
+     "src/components/sidebar/WorktreeList.parity.test.tsx:122-167"
     ],
-    "missing_behaviors": [
-     "seção Pinned antes de todas",
-     "modos 'none'/'workspace-status'/'pr-status' realmente agrupando",
-     "colapso por chave de grupo"
-    ],
-    "notes": "Seletor Group by existe; lista pintada segue agrupando só por repo (lanes não renderizam).",
-    "note": "Seletor Group by existe; lista pintada segue agrupando só por repo (lanes não renderizam)."
+    "missing_behaviors": [],
+    "notes": "Group-by modes paint their lanes and collapse keys reach the pipeline (All/Pinned pass through unprefixed); covered by parity tests.",
+    "note": "Group-by modes paint their lanes and collapse keys reach the pipeline (All/Pinned pass through unprefixed); covered by parity tests."
    }
   },
   {
@@ -570,16 +564,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/build-rows.ts:48",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:88-96",
-     "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:19"
+     "src/components/sidebar/WorktreeList.tsx:137-150",
+     "src/components/sidebar/WorktreeList.parity.test.tsx:137-150"
     ],
     "missing_behaviors": [
-     "header 'All' com contagem",
-     "colapso suprime linhas",
-     "ordem manual/sortOrder + nome"
+     "ordem manual/sortOrder das folder rows (adapter zera sortOrder e descarta manualOrder)"
     ],
-    "notes": "O lane 'All' existe no pipeline headless (usado para ordenar atalhos), mas não é renderizado; a lista pintada sempre mostra projetos."
+    "notes": "The All lane, its count, and its collapse are live; folder rows still order by name only.",
+    "note": "The All lane, its count, and its collapse are live; folder rows still order by name only."
    }
   },
   {
@@ -953,15 +945,13 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:683-698",
-     "src/components/sidebar/sidebar-filter-actions.ts:12"
+     "src/components/sidebar/WorktreeSidebar.tsx:400-425"
     ],
     "missing_behaviors": [
-     "showSleepingWorkspaces/filterRepoIds/automation/cli/detached/devices/visibleHostIds aplicados à lista pintada",
-     "clearFilters reseta só os filtros ativos via computeClearFilterActions"
+     "computeClearFilterActions com reset seletivo"
     ],
-    "notes": "Filtros granulares (hideSleeping/hideAutomationCreated/hideCliCreated) existem em displayOptions mas não são aplicados.",
-    "note": "Filtros granulares (hideSleeping/hideAutomationCreated/hideCliCreated) existem em displayOptions mas não são aplicados."
+    "notes": "Clear filters resets the fixed display-option set to defaults, not a computed selective plan.",
+    "note": "Clear filters resets the fixed display-option set to defaults, not a computed selective plan."
    },
    "par": [
     "PAR-26"
@@ -1443,18 +1433,17 @@
     "components/sidebar/worktree-list/navigation/active-descendant-option.ts:12-103"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/viewport/option-id.ts:28-40",
-     "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:116-124",
-     "src/components/sidebar/WorktreeList.tsx:711-723"
+     "src/components/sidebar/worktree-list/navigation/active-row.ts:15-36",
+     "src/components/sidebar/WorktreeList.tsx:919-923",
+     "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:116-121",
+     "src/components/sidebar/worktree-list/navigation/active-row.parity.test.ts:28-36"
     ],
-    "missing_behaviors": [
-     "preferência pela cópia fora do Pinned quando pinnedDisplayPolicy=duplicate-in-groups"
-    ],
-    "notes": "aria-activedescendant aponta para a option montada e folder-workspace mapeia; activeRowKey pega a primeira cópia (Pinned), sem a preferência do Orca pela cópia natural.",
+    "missing_behaviors": [],
+    "notes": "activeRowKey prefers the natural (non-Pinned) copy, is host-qualified, and aria-activedescendant only names a mounted option.",
     "backend": [],
-    "note": "aria-activedescendant aponta para a option montada e folder-workspace mapeia; activeRowKey pega a primeira cópia (Pinned), sem a preferência do Orca pela cópia natural."
+    "note": "activeRowKey prefers the natural (non-Pinned) copy, is host-qualified, and aria-activedescendant only names a mounted option."
    }
   },
   {
@@ -1488,15 +1477,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:29",
-     "src/components/sidebar/WorktreeSidebar.tsx:428"
+     "src/components/sidebar/worktree-sidebar-reveal.ts:64-88",
+     "src/components/sidebar/WorktreeSidebar.tsx:552-563"
     ],
     "missing_behaviors": [
-     "revealMountedWorktreeElement/SidebarRowElement com optionId",
-     "reportar o scroll emitido"
+     "reveal por optionId do row montado (Hydra usa data-worktree-path)",
+     "consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado)"
     ],
-    "notes": "Reveal rola via virtualizer.scrollToIndex, mas sem scroll suave/report de limites do Orca.",
-    "note": "Reveal rola via virtualizer.scrollToIndex, mas sem scroll suave/report de limites do Orca."
+    "notes": "Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet.",
+    "note": "Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet."
    }
   },
   {
@@ -1869,15 +1858,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:1152-1170",
-     "src/components/sidebar/ProjectGroupNameDialog.tsx:1"
+     "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
+     "src/components/sidebar/WorktreeSidebar.tsx:170"
     ],
     "missing_behaviors": [
-     "SuppressExternalWorktreeInboxDialog (confirmação de suppress com onOpenRecovery)",
      "toggle removeContainedProjects com contagem/nomes"
     ],
-    "notes": "Suppress de inbox sem diálogo de confirmação.",
-    "note": "Suppress de inbox sem diálogo de confirmação."
+    "notes": "The delete dialog shows count and names but has no remove-contained-projects choice.",
+    "note": "The delete dialog shows count and names but has no remove-contained-projects choice."
    }
   },
   {
