@@ -132,17 +132,16 @@
   },
   {
    "id": "D03a-066",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/option-id.ts:28-40",
-    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:116-124",
-    "src/components/sidebar/WorktreeList.tsx:711-723"
+    "src/components/sidebar/worktree-list/navigation/active-row.ts:15-36",
+    "src/components/sidebar/WorktreeList.tsx:919-923",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:116-121",
+    "src/components/sidebar/worktree-list/navigation/active-row.parity.test.ts:28-36"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "preferência pela cópia fora do Pinned quando pinnedDisplayPolicy=duplicate-in-groups"
-   ],
-   "note": "aria-activedescendant aponta para a option montada e folder-workspace mapeia; activeRowKey pega a primeira cópia (Pinned), sem a preferência do Orca pela cópia natural."
+   "missing_behaviors": [],
+   "note": "activeRowKey prefers the natural (non-Pinned) copy, is host-qualified, and aria-activedescendant only names a mounted option."
   },
   {
    "id": "D03a-067",

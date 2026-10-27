@@ -45,7 +45,9 @@ import type {
 } from "./types";
 import { IDLE, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
 import { useAppStore } from "../../store";
+import { getRepoExecutionHostId } from "../../shared/execution-host";
 import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redirect";
+import { revealElementInScrollContainer } from "./worktree-sidebar-reveal";
 import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
 import { RemoveFolderDialog } from "./RemoveFolderDialog";
 import { SuppressExternalWorktreeInboxDialog } from "./SuppressExternalWorktreeInboxDialog";
@@ -230,6 +232,7 @@ export function WorktreeSidebar({
     open: boolean;
     project: HydraProject | null;
     hiddenWorktrees: GitWorktreeInfo[];
+    hostId?: string | null;
   }>({
     open: false,
     project: null,
@@ -548,7 +551,13 @@ export function WorktreeSidebar({
 
     requestAnimationFrame(() => {
       const el = document.querySelector(`[data-worktree-path="${CSS.escape(target)}"]`);
-      if (el) {
+      if (!el) return;
+      const container = worktreeScrollRef.current;
+      // Why not `scrollIntoView({ block: "nearest" })`: a card above the viewport would
+      // land flush under the sticky group header. The reveal math reserves that inset
+      // (and honors reduced-motion); the fallback only runs when the row is outside the
+      // list's own scroll container.
+      if (!container || !revealElementInScrollContainer(container, el, "smooth")) {
         el.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     });
@@ -1051,10 +1060,16 @@ export function WorktreeSidebar({
               onSuppressHiddenWorktrees={(proj) => setSuppressInboxTarget(proj)}
               hiddenWorktreeErrorsByProject={hiddenWorktreeErrorByProject}
               onReviewHiddenWorktrees={(proj) => {
+                // Orca guard: non-git projects have no discovered worktrees to review.
+                if (!proj.is_git) return;
+                const repo = useAppStore
+                  .getState()
+                  .repos.find((candidate) => candidate.path === proj.path);
                 setVisibilityDialog({
                   open: true,
                   project: proj,
                   hiddenWorktrees: hiddenWorktreesByProject?.[proj.path] ?? [],
+                  hostId: repo ? getRepoExecutionHostId(repo) : null,
                 });
               }}
               draggedWorktreePath={draggedWorktreePath}
@@ -1435,6 +1450,7 @@ export function WorktreeSidebar({
         open={visibilityDialog.open}
         project={visibilityDialog.project}
         hiddenWorktrees={visibilityDialog.hiddenWorktrees}
+        hostId={visibilityDialog.hostId}
         visibilityDefaults={settings?.worktree_visibility_defaults}
         onOpenChange={(open) => setVisibilityDialog((prev) => ({ ...prev, open }))}
         onImported={() => {

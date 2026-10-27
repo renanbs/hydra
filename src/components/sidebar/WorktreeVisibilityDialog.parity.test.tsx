@@ -53,6 +53,13 @@ function renderDialog(overrides: Partial<WorktreeVisibilityDialogProps> = {}) {
   );
 }
 
+/** The dialog locks source actions while its authoritative scan runs (D10-040). */
+async function settleScan(): Promise<void> {
+  await waitFor(() => {
+    expect(screen.queryByText("Checking…")).toBeNull();
+  });
+}
+
 function sourceToggle(region: HTMLElement, label: string, action: "Show" | "Hide") {
   return within(within(region).getByRole("group", { name: `Visibility for ${label}` })).getByRole(
     "button",
@@ -139,8 +146,9 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     ).toBeInTheDocument();
   });
 
-  it("writes a built-in Show/Hide as a full-replace source preference", () => {
+  it("writes a built-in Show/Hide as a full-replace source preference", async () => {
     renderDialog();
+    await settleScan();
 
     const sources = screen.getByRole("region", { name: "Sources" });
     fireEvent.click(sourceToggle(sources, "Claude Code", "Show"));
@@ -156,8 +164,9 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     });
   });
 
-  it("writes Other locations as the project-level external override", () => {
+  it("writes Other locations as the project-level external override", async () => {
     renderDialog();
+    await settleScan();
 
     const sources = screen.getByRole("region", { name: "Sources" });
     fireEvent.click(sourceToggle(sources, "Other locations", "Show"));
@@ -173,10 +182,11 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     });
   });
 
-  it("clears the discovery suppression when Other locations is shown", () => {
+  it("clears the discovery suppression when Other locations is shown", async () => {
     renderDialog({
       project: { ...PROJECT, externalWorktreeDiscoverySuppressedAt: 1_700_000_000_000 },
     });
+    await settleScan();
 
     const sources = screen.getByRole("region", { name: "Sources" });
     fireEvent.click(sourceToggle(sources, "Other locations", "Show"));
@@ -190,10 +200,11 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     );
   });
 
-  it("preserves an existing suppression timestamp on unrelated source writes", () => {
+  it("preserves an existing suppression timestamp on unrelated source writes", async () => {
     renderDialog({
       project: { ...PROJECT, externalWorktreeDiscoverySuppressedAt: 1_700_000_000_000 },
     });
+    await settleScan();
 
     const sources = screen.getByRole("region", { name: "Sources" });
     fireEvent.click(sourceToggle(sources, "Claude Code", "Show"));
@@ -269,7 +280,7 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     expect(onOpenGlobalSettings).toHaveBeenCalledTimes(1);
   });
 
-  it("offers Use global only for the override that matches the global value, and clears it", () => {
+  it("offers Use global only for the override that matches the global value, and clears it", async () => {
     renderDialog({
       project: {
         ...PROJECT,
@@ -277,6 +288,7 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
       },
       visibilityDefaults: { external: "hide", sourcePreferences: { builtIn: { claude: "show" } } },
     });
+    await settleScan();
 
     const sources = screen.getByRole("region", { name: "Sources" });
     // GSD and Other locations inherit the global value, so only Claude Code is revertible.
@@ -300,11 +312,12 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     });
   });
 
-  it("treats a repo-level agentWorktreeVisibility alone as a built-in override", () => {
+  it("treats a repo-level agentWorktreeVisibility alone as a built-in override", async () => {
     renderDialog({
       project: { ...PROJECT, agentWorktreeVisibility: "show" },
       visibilityDefaults: { external: "hide", sourcePreferences: { builtIn: { claude: "show" } } },
     });
+    await settleScan();
 
     const sources = screen.getByRole("region", { name: "Sources" });
     // The policy drives the row even without a per-source preference…
@@ -352,11 +365,12 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("clears the Other locations override when Use global is picked", () => {
+  it("clears the Other locations override when Use global is picked", async () => {
     renderDialog({
       project: { ...PROJECT, externalWorktreeVisibility: "show" },
       visibilityDefaults: { external: "show" },
     });
+    await settleScan();
 
     const sources = screen.getByRole("region", { name: "Sources" });
     expect(
@@ -467,6 +481,7 @@ describe("WorktreeVisibilityDialog host scope + mutation fence (Orca parity)", (
     );
 
     renderDialog({ hostId: "ssh:srv" });
+    await settleScan();
     const sources = screen.getByRole("region", { name: "Sources" });
     fireEvent.click(sourceToggle(sources, "Claude Code", "Show"));
 
@@ -501,6 +516,7 @@ describe("WorktreeVisibilityDialog host scope + mutation fence (Orca parity)", (
     );
 
     renderDialog({ hostId: "ssh:old" });
+    await settleScan();
     const sources = screen.getByRole("region", { name: "Sources" });
     fireEvent.click(sourceToggle(sources, "Claude Code", "Show"));
 

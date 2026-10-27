@@ -785,17 +785,16 @@
     "components/sidebar/rendered-sidebar-worktree-order.ts:119-126"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:119",
-     "src/components/sidebar/WorktreeList.tsx:216"
+     "src/components/sidebar/WorktreeList.tsx:1145-1165",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:297-304",
+     "src/components/sidebar/WorktreeList.parity.test.tsx:215-244"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "posições separadas para hosts com o mesmo id: computeRenderedSidebarWorktreeOrder deduplica por worktree.id com new Set (rendered-sidebar-worktree-order.ts:120-124) e renderedSidebarShortcutTargets deduplica por id (WorktreeList.tsx:55-57)"
-    ],
-    "notes": "Sequência única de ids parcial (filtro por host não reconstrói colisões).",
-    "note": "Sequência única de ids parcial (filtro por host não reconstrói colisões)."
+    "missing_behaviors": [],
+    "notes": "Mounted publisher dedupes by host-qualified identity, so same-id hosts keep separate Cmd+N positions; the closed-sidebar path and the id sequence match Orca exactly.",
+    "note": "Mounted publisher dedupes by host-qualified identity, so same-id hosts keep separate Cmd+N positions; the closed-sidebar path and the id sequence match Orca exactly."
    }
   },
   {

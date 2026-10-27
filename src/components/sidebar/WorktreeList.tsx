@@ -79,7 +79,7 @@ import {
   readWorkspaceDragDataIds,
   writeWorkspaceDragData,
 } from "./workspace-status-drag-data";
-import { PINNED_GROUP_KEY } from "./worktree-list/grouping/group-keys";
+import { ALL_GROUP_KEY, PINNED_GROUP_KEY } from "./worktree-list/grouping/group-keys";
 import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
 import { computeHeaderSectionBounds } from "./worktree-header-section-boundaries";
 import {
@@ -108,7 +108,7 @@ import type { WorktreeVirtualRowSlot } from "./worktree-list/viewport/viewport-p
 // elision all stay in the pipeline (`computeSidebarRows`).
 
 /** Collapsed-state keys the pipeline reads, derived from the sidebar's two sets. */
-function pipelineCollapsedKeys(
+export function pipelineCollapsedKeys(
   collapsedProjects: Set<string>,
   collapsedGroups: Set<string>
 ): Set<string> {
@@ -116,8 +116,17 @@ function pipelineCollapsedKeys(
   // Project headers collapse by `repo:<id>`; Hydra persists the bare project id.
   for (const id of collapsedProjects) keys.add(`repo:${id}`);
   // Group headers collapse by `project-group:<id>`; Hydra persists the bare group id.
-  // Keys already carrying their prefix (`all`, `pinned`, `host:…`) pass through.
-  for (const id of collapsedGroups) keys.add(id.includes(":") ? id : `project-group:${id}`);
+  // The pipeline's own section keys (`all`, `pinned`) and already-prefixed keys
+  // (`project-group:…`, `host:…`) must pass through untouched: prefixing `pinned` would
+  // make the Pinned section ignore its collapse and prefixing `all` would leave the All
+  // rows painted under a header that claims to be collapsed.
+  for (const id of collapsedGroups) {
+    keys.add(
+      id === ALL_GROUP_KEY || id === PINNED_GROUP_KEY || id.includes(":")
+        ? id
+        : `project-group:${id}`
+    );
+  }
   return keys;
 }
 
@@ -1141,8 +1150,13 @@ export function WorktreeList({
       if (row.type !== "item") continue;
       const prop = rowModel.propWorktreeByPath.get(row.worktree.path);
       const id = prop?.id || prop?.path || row.worktree.path;
-      if (!id || seen.has(id)) continue;
-      seen.add(id);
+      // Why the host-qualified identity: the same repo can be mounted on two
+      // execution hosts, so its workspace id repeats. Keying the dedupe on the id
+      // alone would drop the second host's Cmd+N position; keying it on the
+      // identity still folds a Pinned mirror of the same workspace on the same host.
+      const identity = getWorktreeHostIdentity({ id, hostId: row.worktree.hostId });
+      if (!id || seen.has(identity)) continue;
+      seen.add(identity);
       targets.push({
         id,
         ...(row.worktree.hostId ? { executionHostId: row.worktree.hostId } : {}),
