@@ -1,11 +1,13 @@
 import { useState, useId, useEffect } from "react";
-import { Bell, FolderPlus, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Bell, FolderPlus, Plus, ServerPlus, SlidersHorizontal, Sparkles } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { translate } from "../../i18n/i18n";
 
 type SidebarHeaderProps = {
   sidebarBody: "workspaces" | "agents";
   setSidebarBody: (body: "workspaces" | "agents") => void;
   onOpenAddRepoDialog: () => void;
+  onOpenAddHostDialog: () => void;
   onOpenNewWorkspaceModal: (proj?: any) => void;
   optionsButtonRef: React.RefObject<HTMLButtonElement | null>;
   optionsMenuOpen: boolean;
@@ -17,6 +19,7 @@ export function SidebarHeader({
   sidebarBody,
   setSidebarBody,
   onOpenAddRepoDialog,
+  onOpenAddHostDialog,
   onOpenNewWorkspaceModal,
   optionsButtonRef,
   optionsMenuOpen,
@@ -113,6 +116,26 @@ export function SidebarHeader({
               )}
             >
               <FolderPlus className="size-3.5" strokeWidth={2.25} />
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenAddHostDialog}
+              title={translate(
+                "auto.components.sidebar.SidebarHeader.addSshHost",
+                "Add SSH host"
+              )}
+              aria-label={translate(
+                "auto.components.sidebar.SidebarHeader.addSshHost",
+                "Add SSH host"
+              )}
+              className={cn(
+                "inline-flex size-6 items-center justify-center rounded-md transition-all outline-none cursor-pointer",
+                "focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50",
+                "text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60"
+              )}
+            >
+              <ServerPlus className="size-3.5" strokeWidth={2.25} />
             </button>
           </>
         )}

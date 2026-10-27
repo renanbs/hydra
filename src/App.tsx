@@ -27,6 +27,10 @@ import {
   type ProjectFlagTarget,
 } from "./components/sidebar/worktree-flags";
 import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
+import {
+  AddRemoteHostDialog,
+  type AddRemoteHostMode,
+} from "./components/sidebar/AddRemoteHostDialog";
 import { WorkbenchTabBar, type TabItem, type SplitPane, RUNNING_CLOSE_PROBE_TIMEOUT_MS, SHELL_EXECUTABLES, TAB_COLORS } from "./components/workbench/WorkbenchTabBar";
 import {
   RunningTerminalCloseDialog,
@@ -326,6 +330,7 @@ export default function App() {
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
+  const [addHostMode, setAddHostMode] = useState<AddRemoteHostMode | null>(null);
   const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
@@ -2701,7 +2706,7 @@ export default function App() {
 
       const target = e.target as HTMLElement | null;
       const isInputFocused = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || Boolean(target?.isContentEditable);
-      const isModalOpen = isJumpPaletteOpen || isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen;
+      const isModalOpen = isJumpPaletteOpen || isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || addHostMode !== null || isNewWorkspaceOpen || isPairingOpen;
       const isChord = e.ctrlKey || e.metaKey;
       if (isChord && e.key === "Tab") {
         e.preventDefault();
@@ -2886,6 +2891,7 @@ export default function App() {
     isSettingsOpen,
     isNewWorkspaceOpen,
     isAddRepoOpen,
+    addHostMode,
     isPairingOpen,
     handleSplitTerminal,
     handleCloseTab,
@@ -3876,6 +3882,7 @@ export default function App() {
                   setIsSettingsOpen(true);
                 }}
                 onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
+                onOpenAddHostDialog={() => setAddHostMode("ssh")}
                 onOpenNewWorkspaceModal={(proj) => {
                   if (proj) handleSelectProject(proj);
                   setIsNewWorkspaceOpen(true);
@@ -3907,7 +3914,7 @@ export default function App() {
                 onSidebarPrefsChange={handleSidebarPrefsChange}
                 compactCards={Boolean(hydraSettings.compact_worktree_cards)}
                 settings={hydraSettings as any}
-                isModalOpen={isJumpPaletteOpen || isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || isNewWorkspaceOpen || isPairingOpen}
+                isModalOpen={isJumpPaletteOpen || isCommandPaletteOpen || isSettingsOpen || isAddRepoOpen || addHostMode !== null || isNewWorkspaceOpen || isPairingOpen}
               />
             </aside>
 
@@ -4262,6 +4269,9 @@ export default function App() {
           }).catch(console.error);
         }}
       />
+
+      {/* Orca Add SSH host: ~/.ssh/config picker + manual form (mode null = closed) */}
+      <AddRemoteHostDialog mode={addHostMode} onOpenChange={setAddHostMode} />
 
       {/* Orca 100% New Workspace Composer Modal */}
       <NewWorkspaceComposer

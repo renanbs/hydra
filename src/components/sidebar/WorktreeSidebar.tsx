@@ -70,6 +70,7 @@ export function WorktreeSidebar({
   onOpenSettings,
   onOpenGlobalSettings,
   onOpenAddRepoDialog,
+  onOpenAddHostDialog,
   onOpenNewWorkspaceModal,
   onSessionContextMenu: _onSessionContextMenu,
   onProjectContextMenu,
@@ -636,6 +637,7 @@ export function WorktreeSidebar({
         sidebarBody={sidebarBody}
         setSidebarBody={handleSetSidebarBody}
         onOpenAddRepoDialog={onOpenAddRepoDialog}
+        onOpenAddHostDialog={onOpenAddHostDialog}
         onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
         optionsButtonRef={optionsButtonRef}
         optionsMenuOpen={optionsMenuOpen}
