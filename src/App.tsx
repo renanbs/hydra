@@ -3864,6 +3864,11 @@ export default function App() {
           workspaceStatuses,
           currentStatus: wt.status ?? null,
           onAssignStatus: handleAssignWorktreeStatus,
+          // The removal state is keyed by the row's identity; the bare id is the
+          // legacy key the delete flow still writes for a local workspace.
+          disabled: Boolean(
+            deleteStateByWorktreeId[wt.id ?? `${proj.path}::${wt.path}`]?.isDeleting
+          ),
         }),
         {
           label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",

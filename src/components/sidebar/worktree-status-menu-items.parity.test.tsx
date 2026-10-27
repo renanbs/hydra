@@ -51,3 +51,15 @@ describe('buildWorktreeStatusMenuItems (Orca parity)', () => {
     }
   })
 })
+
+describe("buildWorktreeStatusMenuItems — delete guard (D04a-054)", () => {
+  it("disables the submenu and every child while the workspace is being deleted", () => {
+    const item = buildWorktreeStatusMenuItems({
+      workspaceStatuses: DEFAULT_WORKSPACE_STATUSES,
+      onAssignStatus: vi.fn(),
+      disabled: true,
+    })
+    expect(item.disabled).toBe(true)
+    expect(item.children?.every((child) => child.disabled === true)).toBe(true)
+  })
+})

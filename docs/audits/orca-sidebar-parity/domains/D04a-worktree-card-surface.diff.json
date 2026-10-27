@@ -1281,20 +1281,19 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/App.tsx:3744-3768",
-     "src/App.tsx:3863-3867",
-     "src/components/sidebar/worktree-status-menu-items.tsx:16-35"
+     "src/components/sidebar/worktree-status-menu-items.tsx:16-46",
+     "src/App.tsx:3863-3874",
+     "src/components/sidebar/worktree-status-menu-items.parity.test.tsx:48-60"
     ],
     "backend": [
      "invoke('set_worktree_status') -> src-tauri/src/lib.rs:523",
      "db.set_worktree_status -> src-tauri/src/db.rs:1206-1217"
     ],
     "missing_behaviors": [
-     "Rótulo plural Move Statuses To na multi-seleção (o item é sempre Move to Status)",
-     "Desabilitação durante exclusão"
+     "rótulo plural da multi-seleção (o item é sempre \"Move to Status\")"
     ],
-    "notes": "Configured workspace statuses, the current-status check and batch assign are live. The label stays singular and the item is not disabled while deleting.",
-    "note": "Configured workspace statuses, the current-status check and batch assign are live. The label stays singular and the item is not disabled while deleting."
+    "notes": "Submenu offers the user definitions, checks the current status and is disabled (trigger + children) while the workspace delete is running; only the plural label remains.",
+    "note": "Submenu offers the user definitions, checks the current status and is disabled (trigger + children) while the workspace delete is running; only the plural label remains."
    }
   },
   {
