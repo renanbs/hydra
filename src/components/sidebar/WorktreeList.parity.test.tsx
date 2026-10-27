@@ -6,7 +6,7 @@
 // the component, so every lane/filter toggle was inert — the divergence this locks out.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { useAppStore } from "@/store";
 import { WorktreeList, type WorktreeListProps } from "./WorktreeList";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
@@ -261,5 +261,89 @@ describe("WorktreeList row model (Orca parity)", () => {
 
     expect(container.querySelector('[data-section-header-id="project-group:grp_1"]')).not.toBeNull();
     expect(container.querySelector('[aria-label="MalhaClub"]')).not.toBeNull();
+  });
+
+  // The discovered-worktree inbox is a ROW (Orca `buildRows` → notice rows), so the
+  // painted list only shows it when the pipeline receives the candidates. These guard
+  // the two-phase gate: the expandable notice while the repo's prompt has not
+  // completed, then the compact pill — and nothing at all when there is nothing to
+  // offer. Before the candidates were wired, the maps were empty and both lines
+  // vanished from the UI.
+  describe("discovered-worktree inbox rows", () => {
+    const DISCOVERED_A = worktree("/external/hydra-wt-a", "feat/a");
+    const DISCOVERED_B = worktree("/external/hydra-wt-b", "feat/b");
+
+    it("paints the expandable notice while the repo prompt has not completed", () => {
+      renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+        hiddenWorktreesByProject: { [PROJECT_A.path]: [DISCOVERED_A, DISCOVERED_B] },
+      });
+
+      expect(screen.getByLabelText("Expand 2 hidden worktrees for hydra")).not.toBeNull();
+      expect(screen.getByText("Hiding 2 discovered worktrees")).not.toBeNull();
+      // Phase two owns the surface only after the prompt completes.
+      expect(screen.queryByLabelText("Review 2 hidden worktrees in hydra")).toBeNull();
+    });
+
+    it("swaps in the compact pill once the repo prompt completed", () => {
+      renderList({
+        projects: [{ ...PROJECT_A, externalWorktreeVisibilityPromptDismissedAt: 1_700_000_000_000 }],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+        hiddenWorktreesByProject: { [PROJECT_A.path]: [DISCOVERED_A, DISCOVERED_B] },
+      });
+
+      expect(screen.getByLabelText("Review 2 hidden worktrees in hydra")).not.toBeNull();
+      expect(screen.queryByLabelText("Expand 2 hidden worktrees for hydra")).toBeNull();
+    });
+
+    it("keeps the repo section (and its notice) when every worktree is hidden", () => {
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: {},
+        hiddenWorktreesByProject: { [PROJECT_A.path]: [DISCOVERED_A] },
+      });
+
+      expect(container.querySelector('[data-repo-header-id="repo_a"]')).not.toBeNull();
+      expect(screen.getByLabelText("Expand 1 hidden worktrees for hydra")).not.toBeNull();
+    });
+
+    it("paints no inbox line when nothing was discovered", () => {
+      renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+      });
+
+      expect(screen.queryByText(/discovered worktree/)).toBeNull();
+      expect(screen.queryByLabelText(/hidden worktrees? in hydra/)).toBeNull();
+      expect(screen.queryByLabelText(/hidden worktrees? for hydra/)).toBeNull();
+    });
+
+    it("paints no inbox line once the repo opted out of discovery", () => {
+      renderList({
+        projects: [{ ...PROJECT_A, suppressed_discovery: true }],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+        hiddenWorktreesByProject: { [PROJECT_A.path]: [DISCOVERED_A, DISCOVERED_B] },
+      });
+
+      expect(screen.queryByText(/discovered worktree/)).toBeNull();
+      expect(screen.queryByLabelText(/hidden worktrees? in hydra/)).toBeNull();
+    });
+
+    it("does not offer the pill for paths the Keep hidden baseline acknowledged", () => {
+      renderList({
+        projects: [
+          {
+            ...PROJECT_A,
+            externalWorktreeVisibilityPromptDismissedAt: 1_700_000_000_000,
+            externalWorktreeInboxBaselinePaths: [DISCOVERED_A.path, DISCOVERED_B.path],
+          },
+        ],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+        hiddenWorktreesByProject: { [PROJECT_A.path]: [DISCOVERED_A, DISCOVERED_B] },
+      });
+
+      expect(screen.queryByLabelText(/hidden worktrees? in hydra/)).toBeNull();
+    });
   });
 });

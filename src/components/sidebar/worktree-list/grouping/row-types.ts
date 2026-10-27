@@ -2,8 +2,18 @@ import type React from 'react'
 import type { FolderWorkspace } from '../../../../shared/folder-workspace-types'
 import type { ProjectGroup } from '../../../../shared/project-group-types'
 import type { Repo } from '../../../../shared/repo-types'
-import type { DetectedWorktree, Worktree } from '../../../../shared/worktree/types'
+import type { Worktree } from '../../../../shared/worktree/types'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
+import type { GitWorktreeInfo } from '../../types'
+
+/**
+ * The discovered-worktree payload a notice row carries. Orca types it as
+ * `DetectedWorktree[]` because its notice rows hand it straight to the lines; Hydra's
+ * painted list reads the live props instead (`WorktreeList.renderNoticeRow`), and the
+ * only source the renderer has for those worktrees is the `scan_worktrees` wire shape
+ * (`hiddenWorktreesByProject`), so the ported payload carries that shape.
+ */
+export type NoticeWorktreePayload = readonly GitWorktreeInfo[]
 
 export type WorktreeGroupBy = 'none' | 'workspace-status' | 'repo' | 'pr-status'
 export type PinnedWorktreeDisplayPolicy = 'single-location' | 'duplicate-in-groups'
@@ -48,14 +58,14 @@ export type WorktreeRow = {
 
 export type ImportedWorktreesCardCandidate = {
   repo: Repo
-  hiddenWorktrees: DetectedWorktree[]
+  hiddenWorktrees: NoticeWorktreePayload
 }
 
 export type ImportedWorktreesCardRow = {
   type: 'imported-worktrees-card'
   key: string
   repo: Repo
-  hiddenWorktrees: DetectedWorktree[]
+  hiddenWorktrees: NoticeWorktreePayload
   placement: 'repo-group' | 'pinned-fallback'
   /** Set only when the row's project is checked out on more than one host. */
   hostContextLabel?: string
@@ -64,14 +74,14 @@ export type ImportedWorktreesCardRow = {
 
 export type NewExternalWorktreesInboxCandidate = {
   repo: Repo
-  inboxWorktrees: DetectedWorktree[]
+  inboxWorktrees: NoticeWorktreePayload
 }
 
 export type NewExternalWorktreesInboxRow = {
   type: 'new-external-worktrees-inbox'
   key: string
   repo: Repo
-  inboxWorktrees: DetectedWorktree[]
+  inboxWorktrees: NoticeWorktreePayload
   /** Set only when the row's project is checked out on more than one host. */
   hostContextLabel?: string
   hostContextHostId?: ExecutionHostId

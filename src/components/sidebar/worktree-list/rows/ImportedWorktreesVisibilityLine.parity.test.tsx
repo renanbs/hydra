@@ -203,6 +203,37 @@ describe("ImportedWorktreesVisibilityLine (Orca parity)", () => {
     expect(screen.getByText("feature/b")).toBeInTheDocument();
     expect(screen.getByText("fix/c")).toBeInTheDocument();
   });
+
+  it("names the host on the header and its aria labels when the project spans hosts", () => {
+    const { container } = renderLine({
+      hostContextLabel: "openclaw",
+      hostContextHostId: "ssh:openclaw",
+      placement: "repo-group",
+    });
+
+    // The glyph carries the host vocabulary; the label names it in text.
+    expect(container.querySelector('[data-notice-host-kind="ssh"]')).not.toBeNull();
+    expect(screen.getByText("openclaw")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Expand 3 hidden worktrees for repo on openclaw" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Keep 3 discovered worktrees hidden for repo on openclaw; recover from the project menu",
+      })
+    ).toBeInTheDocument();
+  });
+
+  it("drops the host label on the pinned fallback, where it names another section", () => {
+    const { container } = renderLine({
+      hostContextLabel: "openclaw",
+      hostContextHostId: "ssh:openclaw",
+      placement: "pinned-fallback",
+    });
+
+    expect(container.querySelector("[data-notice-host-kind]")).toBeNull();
+    expect(screen.queryByText("openclaw")).toBeNull();
+  });
 });
 
 describe("discovered-worktree inbox helpers (Orca parity)", () => {

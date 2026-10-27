@@ -12,11 +12,17 @@ import React from "react";
 import { ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { ExecutionHostId } from "@/shared/execution-host";
+import NoticeHostGlyph from "../../NoticeHostGlyph";
 import type { GitWorktreeInfo } from "../../types";
 import { selectInboxWorktrees } from "./ImportedWorktreesVisibilityLine";
 
 export interface NewExternalWorktreesInboxLineProps {
   repoDisplayName: string;
+  /** Host this checkout lives on. Set only when the project is checked out on more
+   *  than one host, where the count alone cannot identify the row. */
+  hostContextLabel?: string;
+  hostContextHostId?: ExecutionHostId;
   /** Raw `scan_worktrees.hidden` for this repo; the line owns gate + baseline filtering. */
   hiddenWorktrees: readonly GitWorktreeInfo[];
   /** Paths the user already acknowledged with `Keep hidden`; never offered again
@@ -38,6 +44,8 @@ export interface NewExternalWorktreesInboxLineProps {
 
 export function NewExternalWorktreesInboxLine({
   repoDisplayName,
+  hostContextLabel,
+  hostContextHostId,
   hiddenWorktrees,
   baselinePaths,
   suppressed = false,
@@ -55,8 +63,13 @@ export function NewExternalWorktreesInboxLine({
 
   const isSingular = inboxCount === 1;
   const countLabel = isSingular ? "hidden worktree" : "hidden worktrees";
-  const suppressAriaLabel = `Hide external worktrees permanently for ${repoDisplayName}`;
-  const reviewAriaLabel = `Review ${inboxCount} ${countLabel} in ${repoDisplayName}`;
+  // Why: the same project on two hosts renders two identical rows, so every accessible
+  // name has to name the host as well as the project (Orca `repoScopeLabel`).
+  const repoScopeLabel = hostContextLabel
+    ? `${repoDisplayName} on ${hostContextLabel}`
+    : repoDisplayName;
+  const suppressAriaLabel = `Hide external worktrees permanently for ${repoScopeLabel}`;
+  const reviewAriaLabel = `Review ${inboxCount} ${countLabel} in ${repoScopeLabel}`;
 
   return (
     <section
@@ -75,6 +88,20 @@ export function NewExternalWorktreesInboxLine({
             {inboxCount}
           </span>
           <span className="min-w-0 flex-1 truncate text-left">{countLabel}</span>
+          {hostContextLabel ? (
+            <span className="inline-flex min-w-0 shrink items-center gap-1">
+              {hostContextHostId ? (
+                <NoticeHostGlyph
+                  hostId={hostContextHostId}
+                  hostLabel={hostContextLabel}
+                  keyboardFocusable={false}
+                />
+              ) : null}
+              <span className="min-w-0 truncate text-[10px] leading-none text-muted-foreground">
+                {hostContextLabel}
+              </span>
+            </span>
+          ) : null}
           <ChevronRight
             aria-hidden="true"
             className={`size-3 shrink-0 ${

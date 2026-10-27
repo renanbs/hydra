@@ -36,7 +36,11 @@ import {
   getWorktreeCardContentIndent,
   getWorktreeCardSurfaceInset,
 } from "./worktree-list/rows/indentation";
-import { computeSidebarRows, type SidebarRowsState } from "./rendered-sidebar-worktree-order";
+import {
+  buildExternalWorktreeNoticeCandidates,
+  computeSidebarRows,
+  type SidebarRowsState,
+} from "./rendered-sidebar-worktree-order";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import { ImportedWorktreesVisibilityLine } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import {
@@ -104,6 +108,19 @@ function toPipelineRepo(args: {
     badgeColor: project.color ?? "#64748b",
     addedAt: 0,
     projectGroupId,
+    // Why: the discovered-worktree notice candidates are built off the repo
+    // (Orca `buildImportedWorktreesCardCandidates`), so the pipeline repo has to
+    // carry the phase state the project persists — otherwise every repo looks
+    // un-prompted and un-suppressed.
+    ...(project.externalWorktreeVisibilityPromptDismissedAt != null
+      ? { externalWorktreeVisibilityPromptDismissedAt: project.externalWorktreeVisibilityPromptDismissedAt }
+      : {}),
+    ...(project.externalWorktreeInboxBaselinePaths
+      ? { externalWorktreeInboxBaselinePaths: project.externalWorktreeInboxBaselinePaths }
+      : {}),
+    ...(project.externalWorktreeDiscoverySuppressedAt != null
+      ? { externalWorktreeDiscoverySuppressedAt: project.externalWorktreeDiscoverySuppressedAt }
+      : {}),
     ...(hostId ? { executionHostId: hostId } : {}),
   };
 }
@@ -586,7 +603,14 @@ export function WorktreeList({
     };
 
     return {
-      rows: computeSidebarRows(pipelineState, Object.values(worktreesByRepo).flat()),
+      rows: computeSidebarRows(
+        pipelineState,
+        Object.values(worktreesByRepo).flat(),
+        buildExternalWorktreeNoticeCandidates({
+          repos: pipelineRepos,
+          hiddenWorktreesByProjectPath: hiddenWorktreesByProject ?? {},
+        })
+      ),
       propWorktreeByPath,
       propProjectById,
     };
@@ -599,6 +623,7 @@ export function WorktreeList({
     livePaths,
     pinnedSet,
     unreadSet,
+    hiddenWorktreesByProject,
     displayOptions.groupBy,
     displayOptions.hideAutomationCreated,
     displayOptions.hideCliCreated,
@@ -871,11 +896,16 @@ export function WorktreeList({
         baselinePaths: proj.externalWorktreeInboxBaselinePaths,
         suppressed: proj.suppressed_discovery === true,
         promptDismissedAt: proj.externalWorktreeVisibilityPromptDismissedAt ?? null,
+        // Host attribution the row pipeline resolved for this project's notice
+        // (`getNoticeHostContextLabels`); absent when the project spans one host.
+        hostContextLabel: row.hostContextLabel,
+        hostContextHostId: row.hostContextHostId,
       };
       if (row.type === "imported-worktrees-card") {
         return (
           <ImportedWorktreesVisibilityLine
             key={row.key}
+            placement={row.placement}
             {...noticeProps}
             onShow={
               onShowHiddenWorktree
