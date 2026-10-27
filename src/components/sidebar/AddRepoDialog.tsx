@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { NonGitFolderDialog } from "./NonGitFolderDialog";
+import { useAppStore } from "../../store";
+import { getDefaultCloneParent } from "./clone-defaults";
 import { 
   X, 
   FolderOpen, 
@@ -19,11 +21,19 @@ interface AddRepoDialogProps {
 }
 
 export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialogProps) {
+  const settings = useAppStore((state) => state.settings);
+  // Orca `useAddRepoLocalFolderFlow`: clone/create land in the configured workspace
+  // directory, not a baked-in path. Empty until the settings hydrate.
+  const workspaceDir = settings?.workspace_dir?.trim() ?? "";
   const [step, setStep] = useState<"start" | "clone" | "create">("start");
   const [cloneUrl, setCloneUrl] = useState("");
-  const [cloneDest, setCloneDest] = useState("/home/renan/src");
+  // Orca `getDefaultCloneParent`: clones sit beside the "workspaces" tree, so a
+  // workspace dir ending in /workspaces clones into its parent.
+  const defaultCloneParent = getDefaultCloneParent(workspaceDir);
+  const [cloneDest, setCloneDest] = useState(defaultCloneParent);
   const [createName, setCreateName] = useState("");
-  const [createParent, setCreateParent] = useState("/home/renan/src");
+  const [createParent, setCreateParent] = useState(workspaceDir);
+  const [gitInstalled, setGitInstalled] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nonGitFolder, setNonGitFolder] = useState<string | null>(null);
@@ -43,14 +53,37 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
 
   useEffect(() => {
     if (!isOpen) return;
+    // Why reset: the dialog stays mounted between invocations, so a half-typed
+    // clone URL or project name must not survive into the next open (Orca resets
+    // every form state scoped to the dialog).
     setStep("start");
     setError(null);
+    setCloneUrl("");
+    setCreateName("");
+    setCloneDest(getDefaultCloneParent(workspaceDir));
+    setCreateParent(workspaceDir);
+    let cancelled = false;
+    // Why probe on open: without git, clone and create cannot work — say so before
+    // the user types a URL instead of failing after submit.
+    void invoke<{ git_installed: boolean }>("check_preflight_tools_cmd")
+      .then((status) => {
+        if (!cancelled) setGitInstalled(status.git_installed);
+      })
+      .catch(() => {
+        if (!cancelled) setGitInstalled(null);
+      });
+    return () => {
+      cancelled = true;
+    };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, workspaceDir]);
 
   if (!isOpen) return null;
 
@@ -161,6 +194,14 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
           </div>
         )}
 
+        {/* Git availability (Orca preflight): clone/create are disabled without it. */}
+        {gitInstalled === false && (
+          <div className="m-4 mb-0 p-2.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>Git is not installed or not on PATH. Cloning and creating projects are disabled.</span>
+          </div>
+        )}
+
         {/* 1. START STEP: 100% Orca AddRepoLocalStartStep actions */}
         {step === "start" && (
           <div className="p-4 space-y-2">
@@ -251,7 +292,9 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || !cloneUrl.trim()}
+                disabled={
+                  isSubmitting || !cloneUrl.trim() || !cloneDest.trim() || gitInstalled === false
+                }
                 className="px-4 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition disabled:opacity-50"
               >
                 {isSubmitting ? "Cloning..." : "Clone Project"}
@@ -297,7 +340,9 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || !createName.trim()}
+                disabled={
+                  isSubmitting || !createName.trim() || !createParent.trim() || gitInstalled === false
+                }
                 className="px-4 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition disabled:opacity-50"
               >
                 {isSubmitting ? "Creating..." : "Create Project"}

@@ -84,16 +84,16 @@
     "components/sidebar/AddRepoDialog.tsx:254"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:38-66"
+    ],
     "backend": [],
     "missing_behaviors": [
-     "Detecta alteração do selectedHostId através de ref de host anterior",
-     "Executa onResetClosed quando o modal fecha para limpar dados residuais",
-     "Executa onResetHostScopedState ao alternar entre hosts para limpar caminhos digitados, erros e scans pendentes",
-     "Evita submissão acidental de caminhos pertencentes a outro host"
+     "reset por troca de host (o diálogo ainda não tem seletor de host)"
     ],
-    "notes": "useAddRepoHostChangeReset inexistente em src/**. Nenhum ref de host anterior / reset host-scoped; AddRepoDialog só reseta step+error. Busca em src/** e index/hydra_exports.json. Não localizado."
+    "notes": "Opening/closing the dialog now clears URL, project name, destinations and errors.",
+    "note": "Opening/closing the dialog now clears URL, project name, destinations and errors."
    }
   },
   {
@@ -263,16 +263,16 @@
     "components/sidebar/useAddRepoCloneFlow.ts:46"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Remove o segmento final 'workspaces' do workspaceDir para posicionar clones como irmãos dos workspaces",
-     "Trata caminhos POSIX, Windows e raízes absolutas (/ ou C:\\)",
-     "Auto-preenche a pasta de destino apenas na primeira entrada na etapa clone sem sobrescrever dados digitados",
-     "Não auto-preenche destinos locais quando um host de runtime ou SSH estiver selecionado"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/clone-defaults.ts:1-33",
+     "src/components/sidebar/AddRepoDialog.tsx:22-40",
+     "src/components/sidebar/clone-defaults.parity.test.ts:4-18"
     ],
-    "notes": "getDefaultCloneParent/getCloneDestinationAutoFill inexistentes; destino de clone é literal '/home/renan/src' (AddRepoDialog.tsx:26) e não deriva de settings.workspaceDir. Backend sem repos:get-default-create-project-parent. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Clone parent strips the trailing workspaces segment (POSIX, Windows drive and root cases) and fills only on the first local entry; covered by tests.",
+    "note": "Clone parent strips the trailing workspaces segment (POSIX, Windows drive and root cases) and fills only on the first local entry; covered by tests."
    }
   },
   {
@@ -358,19 +358,17 @@
     "components/sidebar/create-project-defaults.ts:40"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:56-66",
+     "src/components/sidebar/AddRepoDialog.parity.test.tsx:74-90"
+    ],
     "backend": [],
     "missing_behaviors": [
-     "Obtém o diretório padrão local via window.api.repos.getDefaultCreateProjectParent()",
-     "Obtém o diretório padrão no host de runtime via browseRuntimeServerDirectory(runtimeEnvironmentId, '~')",
-     "Aplica timeout de 1500ms para sonda local de Git e 3000ms para sonda de runtime",
-     "Sonda disponibilidade de Git via window.api.repos.isGitAvailable() ou RPC 'repo.gitAvailable'",
-     "Formata resumo com shorthand '~/orca/projects' para caminhos padrão locais",
-     "Marca o campo como 'touched' para nunca sobrescrever caminhos inseridos manualmente pelo usuário",
-     "Impede submissão enquanto a pasta padrão pertencer a um host anterior"
+     "pasta padrão por host de runtime (browseRuntimeServerDirectory) e sondagem de Git no host remoto"
     ],
-    "notes": "useCreateProjectDefaults/create-project-defaults inexistentes; pasta de criação é literal '/home/renan/src' (AddRepoDialog.tsx:27); sem sonda de Git (0 comandos isGitAvailable/getDefaultCreateProjectParent em lib.rs). Não localizado."
+    "notes": "Local default comes from settings.workspace_dir and Git availability is probed via check_preflight_tools_cmd; remote hosts still unaudited.",
+    "note": "Local default comes from settings.workspace_dir and Git availability is probed via check_preflight_tools_cmd; remote hosts still unaudited."
    }
   },
   {
