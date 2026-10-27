@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 235 | 30.7% |
+| parity | 237 | 31.0% |
 | partial | 328 | 42.9% |
-| missing | 194 | 25.4% |
+| missing | 192 | 25.1% |
 | not-applicable | 7 | 0.9% |
 | out-of-scope | 1 | 0.1% |
 
@@ -32,5 +32,5 @@
 | D10-visibility-inbox-notices | 91 | 47 | 39 | 5 | 0 | 0 |
 | D11-lineage-grouping-model | 17 | 6 | 6 | 5 | 0 | 0 |
 | D12-markdown-inline-render | 14 | 3 | 1 | 10 | 0 | 0 |
-| D15-misc-a | 12 | 0 | 5 | 7 | 0 | 0 |
+| D15-misc-a | 12 | 2 | 5 | 5 | 0 | 0 |
 | D15-misc-b | 14 | 0 | 8 | 6 | 0 | 0 |

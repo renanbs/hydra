@@ -858,6 +858,17 @@ export function WorktreeList({
 
   const { rows } = rowModel;
   const pathByWorktreeId = rowModel.pathByWorktreeId;
+  const groupBadgeColorById = useMemo(() => {
+    const colors = new Map<string, string>();
+    for (const project of visibleProjects) {
+      const groupId = projectGroupMap?.[project.id];
+      if (groupId && project.color && !colors.has(groupId)) {
+        colors.set(groupId, project.color);
+      }
+    }
+    return colors;
+  }, [visibleProjects, projectGroupMap]);
+
   const headerSectionBounds = useMemo(() => {
     const firstHeaderIndex = rows.findIndex(
       (row) => row.type === "header" || row.type === "host-header"
@@ -1423,6 +1434,7 @@ export function WorktreeList({
           }
           isDropTarget={groupDropTargetId === group.id}
           sectionEnd={headerSectionBounds.projectGroupSectionEndByGroupId.get(group.id as string)}
+          badgeColor={groupBadgeColorById.get(group.id as string)}
           onDragOver={onGroupDragOver ? (e) => onGroupDragOver(e, group.id as string) : undefined}
           onDragLeave={
             onGroupDragLeave ? (e) => onGroupDragLeave(e, group.id as string) : undefined
@@ -1434,6 +1446,7 @@ export function WorktreeList({
     [
       isCollapsedKey,
       headerSectionBounds,
+      groupBadgeColorById,
       onGroupContextMenu,
       groupDropTargetId,
       onGroupDragOver,
