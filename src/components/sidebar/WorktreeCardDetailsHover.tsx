@@ -16,7 +16,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { DetailHeader, MetadataActionIcon } from "./worktree-card-detail-controls";
-import { CommentMarkdown } from "./comment-markdown";
+import { CommentMarkdownAsync, preloadCommentMarkdown } from "./comment-markdown-lazy";
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from "./types";
 import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
 
@@ -78,6 +78,9 @@ export function WorktreeCardDetailsHover({
   }, []);
 
   const handleMouseEnter = () => {
+    // Orca preloads the markdown chunk on hover-enter when there is a note, so the
+    // popover never flashes the raw-text fallback.
+    if (metadata?.comment?.trim()) preloadCommentMarkdown();
     if (closeTimerRef.current !== null) {
       window.clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
@@ -350,9 +353,10 @@ export function WorktreeCardDetailsHover({
                       ) : null
                     }
                   />
-                  <CommentMarkdown
-                    text={metadata.comment}
+                  <CommentMarkdownAsync
+                    content={metadata.comment}
                     className="text-[11px] leading-4 text-neutral-300"
+                    fallbackClassName="whitespace-pre-wrap"
                   />
                 </div>
               ) : null}

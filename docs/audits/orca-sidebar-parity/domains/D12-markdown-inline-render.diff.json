@@ -13,19 +13,14 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "src/components/sidebar/comment-markdown.tsx:1-150",
-     "src/components/sidebar/comment-markdown.parity.test.tsx:59-70"
+     "src/components/sidebar/comment-markdown.tsx:236-272",
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:77-100",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:18-26"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Substitui tags <p> por <span className='comment-md-p'> evitando margens verticais duplas no layout denso de cards",
-     "Aplica plugin remarkBreaks convertendo quebras de linha simples em <br> para compatibilidade com comentários em texto puro",
-     "Aplica contenção de layout com min-w-0, max-w-full e [overflow-wrap:anywhere]",
-     "Reseta estilos de pill de código inline em <code> filhos de <pre> via seletor descendente [&_pre_code]",
-     "Encaminha ref e props via React.forwardRef e React.memo permitindo composição transparente com Radix HoverCardTrigger asChild"
-    ],
-    "notes": "Compact variant renders line divs (no <p>), preserves line breaks and uses the card's own typography.",
-    "note": "Compact variant renders line divs (no <p>), preserves line breaks and uses the card's own typography."
+    "missing_behaviors": [],
+    "notes": "Compact variant renders paragraphs as spans, applies remark-breaks and the card typography; react-markdown is now the engine.",
+    "note": "Compact variant renders paragraphs as spans, applies remark-breaks and the card typography; react-markdown is now the engine."
    },
    "par": [
     "PAR-39"
@@ -41,16 +36,13 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "src/components/sidebar/comment-markdown.tsx:118-125",
-     "src/components/sidebar/comment-markdown.parity.test.tsx:59-70"
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:126-155",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:58-70"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Renderiza H1 a H6 como elementos <span> inline (classes comment-md-h, comment-md-h1 a h3, font-bold/font-semibold) preservando o fluxo inline do card",
-     "Atribui role='heading' e aria-level={1..6} aos spans para manter a hierarquia de navegação acessível por leitores de tela"
-    ],
-    "notes": "H1–H6 lines flatten to a semibold inline line instead of block headings.",
-    "note": "H1–H6 lines flatten to a semibold inline line instead of block headings."
+    "missing_behaviors": [],
+    "notes": "H1–H6 render as inline spans with role=heading and the original aria-level; no block heading tags.",
+    "note": "H1–H6 render as inline spans with role=heading and the original aria-level; no block heading tags."
    },
    "par": [
     "PAR-39"
@@ -66,14 +58,16 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:283"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Variante documental com headings em bloco, citações e espaçamento hierárquico"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/comment-markdown.tsx:236-272",
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:234-320",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:80-96"
     ],
-    "notes": "Only the compact sidebar variant exists.",
-    "note": "Only the compact sidebar variant exists."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Document variant renders block headings with hierarchy, paragraphs, quotes and rules; verified by render tests.",
+    "note": "Document variant renders block headings with hierarchy, paragraphs, quotes and rules; verified by render tests."
    },
    "par": [
     "PAR-39"
@@ -88,17 +82,15 @@
     "components/sidebar/CommentMarkdown.tsx:185"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/comment-markdown.tsx:1-30",
-     "src/components/sidebar/comment-markdown.parity.test.tsx:32-40"
+     "src/components/sidebar/comment-markdown.tsx:163-183",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:30-40"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Remoção de comentários HTML (hoje aparecem como texto literal)"
-    ],
-    "notes": "Raw HTML can never become markup and unsafe protocols stay literal; HTML comments are shown, not stripped.",
-    "note": "Raw HTML can never become markup and unsafe protocols stay literal; HTML comments are shown, not stripped."
+    "missing_behaviors": [],
+    "notes": "Raw HTML is parsed then sanitized with rehype-sanitize; event handlers and unsafe protocols cannot survive.",
+    "note": "Raw HTML is parsed then sanitized with rehype-sanitize; event handlers and unsafe protocols cannot survive."
    },
    "par": [
     "PAR-39"
@@ -115,22 +107,15 @@
     "components/sidebar/CommentMarkdown.tsx:238"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/shared/github/project-identity.ts:11",
-     "package.json:13"
+     "src/components/sidebar/comment-markdown.tsx:157-195",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:98-110"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Identifica referências via GITHUB_REFERENCE_PATTERN e converte nós de texto em links <a> apontando para https://github.com/{owner}/{repo}/issues/{number}",
-     "Para referências curtas #123, utiliza owner e repo fornecidos na prop githubRepo",
-     "Para referências qualificadas owner/repo#123, resolve o repositório de destino mantendo o rótulo original",
-     "Ignora referências embutidas em identificadores ou caminhos precedidos por caracteres alfanuméricos ou _.-/",
-     "Não autolinka referências situadas dentro de links <a> existentes ou blocos de código inline/fenced",
-     "Processa listas massivas de referências iterativamente evitando limites de recursão ou tamanho de argumentos da V8"
-    ],
-    "notes": "Sem renderer markdown inline.",
-    "note": "Sem renderer markdown inline."
+    "missing_behaviors": [],
+    "notes": "remarkGitHubReferences turns #N and owner/repo#N into issue links for the given default repo; covered by tests.",
+    "note": "remarkGitHubReferences turns #N and owner/repo#N into issue links for the given default repo; covered by tests."
    },
    "par": [
     "PAR-39"
@@ -180,19 +165,14 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "src/components/sidebar/comment-markdown.tsx:75-92",
-     "src/components/sidebar/comment-markdown.parity.test.tsx:42-55"
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:40-68",
+     "src/components/sidebar/comment-markdown.tsx:196-208",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:44-56"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Chama event.stopPropagation() impedindo que cliques em links disparem handlers de seleção ou foco do card ou linha pai",
-     "Executa event.preventDefault() automaticamente em links file: ou com prefixo #orca-native-file: prevenindo navegação indesejada do navegador",
-     "Encaminha evento e href para o callback onLinkClick fornecido pelo chamador",
-     "Intercepção de auxclick suporta clique com botão do meio (button 1); cliques com botão direito (button 2) não ativam interceptação",
-     "Quando allowFileUriLinks=true é informado, permite que o chamador intercepte URIs file:// explicitamente autorizadas"
-    ],
-    "notes": "Links preventDefault+stopPropagation and open via open_external_url_cmd; only http(s)/mailto linkify.",
-    "note": "Links preventDefault+stopPropagation and open via open_external_url_cmd; only http(s)/mailto linkify."
+    "missing_behaviors": [],
+    "notes": "Links preventDefault+stopPropagation and open via open_external_url_cmd; auxclick is routed the same way.",
+    "note": "Links preventDefault+stopPropagation and open via open_external_url_cmd; auxclick is routed the same way."
    },
    "par": [
     "PAR-39"
@@ -207,21 +187,16 @@
     "components/sidebar/CommentMarkdown.tsx:32"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-meta-row.tsx:1",
-     "package.json:13"
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:31-38",
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:195-230",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:112-126"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Valida fonte via isTrustedCompactImageSrc permitindo inline apenas protocolos blob: ou data:image/(png|jpeg|gif|webp);base64",
-     "Converte URLs remotas não confiáveis (http/https) em links textuais seguros <a> exibindo alt ou src para evitar requisições de rede automáticas ao listar cards",
-     "Exibe imagens confiáveis com thumbnail contido (max-h-32 rounded-sm outline outline-1 outline-border/70)",
-     "Quando expandImages=true, integra com ExpandableMarkdownImage abrindo lightbox ao clicar",
-     "Quando expandImages=false, envolve imagem em link <a> delegando clique para onLinkClick"
-    ],
-    "notes": "Sem renderer markdown inline.",
-    "note": "Sem renderer markdown inline."
+    "missing_behaviors": [],
+    "notes": "blob:/data:image sources render inline; other URLs degrade to an external link in compact cards.",
+    "note": "blob:/data:image sources render inline; other URLs degrade to an external link in compact cards."
    },
    "par": [
     "PAR-39"
@@ -236,23 +211,17 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:300"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/i18n/locales/en.json:6237",
-     "src/i18n/locales/en.json:6239"
+     "src/components/sidebar/MarkdownImageLightbox.tsx:1-78",
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:205-215"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Abre modal Radix Dialog ocupando 90vw x 90dvh (h-[90dvh] w-[90vw] max-w-[90vw]) com backdrop e overflow contido",
-     "Bloqueia propagação do clique com event.stopPropagation() no botão disparador para não selecionar o card pai",
-     "Exibe cabeçalho com título truncado, título para leitores de tela (DialogTitle sr-only) e botão de fechar acessível com aria-label='Close'",
-     "Mantém retenção e captura de foco (focus trap) dentro do modal e restaura o foco ao botão disparador após o fechamento",
-     "Permite fechar via tecla Escape ou botão fechar sem propagar evento para sheets/drawers pais (mantém drawer de issue Jira/Linear aberto)",
-     "Apresenta imagem centralizada com rolagem suave bg-muted/20 scrollbar-editor e max-h-full max-w-full object-contain",
-     "Na variante documental, se onLinkClick for fornecido, delega clique diretamente para o callback em vez de abrir lightbox interno"
+     "consumidor que passe expandImages=true (o hover do card usa a variante compacta sem lightbox)"
     ],
-    "notes": "Strings de markdown existem so no catalogo i18n importado; nenhum renderer.",
-    "note": "Strings de markdown existem so no catalogo i18n importado; nenhum renderer."
+    "notes": "Accessible dialog lightbox is ported and wired through expandImages; no surface enables it yet.",
+    "note": "Accessible dialog lightbox is ported and wired through expandImages; no surface enables it yet."
    },
    "par": [
     "PAR-39"
@@ -270,22 +239,17 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:288"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "package.json:13",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:276"
+     "src/components/sidebar/comment-markdown-github-attachment-media.tsx:1-100",
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:234-270"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Detecta URLs de anexo do GitHub via isGitHubUserAttachmentUrl",
-     "Detecta autolinks puros de vídeo via isGitHubUserAttachmentVideoLink e realiza upgrade automático para elemento <video> com controles, preload='metadata', playsInline e max-h-[28rem]",
-     "Em caso de falha de carregamento do vídeo (onError), substitui dinamicamente pelo fallback textual AttachmentFallbackLink",
-     "Imagens de anexo privado do GitHub (GitHubUserAttachmentImage) são encapsuladas em links <a> externos para abertura na sessão autenticada do usuário; em falha no <img onError>, degrada para link textual seguro",
-     "Aplica stopPropagation() nos cliques de mídia para evitar navegação de elementos pais",
-     "Links convencionais para URLs que não são anexos de vídeo continuam sendo renderizados como links normais"
+     "consumidor documental do card (issue/PR body) para attachments do GitHub"
     ],
-    "notes": "Sem renderer markdown inline.",
-    "note": "Sem renderer markdown inline."
+    "notes": "Attachment video/image upgrade with fallback links is ported into the document variant only.",
+    "note": "Attachment video/image upgrade with fallback links is ported into the document variant only."
    },
    "par": [
     "PAR-39"
@@ -301,22 +265,18 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:247"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/lib/language-detect.ts:32",
-     "src/lib/language-detect.ts:33",
-     "package.json:13"
+     "src/components/sidebar/comment-mermaid-fence.tsx:1-28",
+     "src/components/sidebar/CommentMermaidBlock.tsx:1-28",
+     "src/components/editor/MermaidBlock.tsx:10-116"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Identifica cercas mermaid via isMermaidFence e desempacota o <pre> externo via isMermaidPre",
-     "Renderiza componente CommentMermaidBlock reutilizando o renderer MermaidBlock em contêiner com rolagem horizontal (max-h-80 overflow-x-auto rounded-md border p-3)",
-     "Reatividade de tema: consulta useAppStore((s) => s.settings) para computar isDark com base em settings.theme === 'dark' ou theme === 'system' com matchMedia('(prefers-color-scheme: dark)')",
-     "Desativa labels HTML (htmlLabels={false}) para garantir que o SVG sanitizado não perca elementos foreignObject em certas plataformas",
-     "Isolamento compacto: na variante compacta (variant='compact'), cercas mermaid permanecem como blocos de código <pre> simples delimitados (max-h-32 font-mono) evitando mutações assíncronas de layout na lista do sidebar"
+     "consumidor documental (a variante compacta mantém a fence como fonte)"
     ],
-    "notes": "Deteccao de linguagem existe mas sem renderer de codigo inline.",
-    "note": "Deteccao de linguagem existe mas sem renderer de codigo inline."
+    "notes": "Mermaid fences render real SVG with theme + lazy import and a serialized render queue; only the document variant reaches it.",
+    "note": "Mermaid fences render real SVG with theme + lazy import and a serialized render queue; only the document variant reaches it."
    },
    "par": [
     "PAR-39"
@@ -331,14 +291,17 @@
     "components/sidebar/CommentMarkdown.tsx:203"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:18-30",
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:250-270"
+    ],
     "backend": [],
     "missing_behaviors": [
-     "Bloco de código com extração de linguagem e renderer customizado"
+     "consumidor que passe renderCodeBlock (nenhuma superfície do Hydra renderiza documento hoje)"
     ],
-    "notes": "Fenced blocks are not recognized; backticks render inline only.",
-    "note": "Fenced blocks are not recognized; backticks render inline only."
+    "notes": "Fenced blocks extract language-* and delegate to a custom renderer when provided; no caller supplies one yet.",
+    "note": "Fenced blocks extract language-* and delegate to a custom renderer when provided; no caller supplies one yet."
    },
    "par": [
     "PAR-39"
@@ -354,20 +317,16 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:319"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/truncated-sidebar-label.tsx:1",
-     "package.json:13"
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:220-232",
+     "src/components/sidebar/comment-markdown-element-renderers.tsx:310-330",
+     "src/components/sidebar/comment-markdown.parity.test.tsx:80-96"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Tabelas na variante compacta são envolvidas em contêiner max-w-full overflow-x-auto com fonte text-[10px] e bordas colapsadas para caber na largura de ~200px do sidebar",
-     "Tabelas na variante documental são envolvidas em contêiner max-w-full overflow-x-auto rounded-md border com min-w-full, text-[13px] e cabeçalhos bg-muted/60",
-     "Listas de tarefas GFM renderizam checkboxes <input type='checkbox' disabled> com pointer-events-none evitando acionamento acidental de abertura/edição do card pai",
-     "Listas ordenadas e não ordenadas renderizam com marcadores nativos (list-disc, list-decimal) e recuo ajustado (ml-3 em compact, ml-5 em document)"
-    ],
-    "notes": "Sem renderer markdown inline.",
-    "note": "Sem renderer markdown inline."
+    "missing_behaviors": [],
+    "notes": "GFM tables scroll inside a containment box in both variants and task-list checkboxes render disabled.",
+    "note": "GFM tables scroll inside a containment box in both variants and task-list checkboxes render disabled."
    },
    "par": [
     "PAR-39"
@@ -382,18 +341,15 @@
     "components/sidebar/comment-markdown-lazy.tsx:26"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/shared/mobile-markdown-document.ts:3",
-     "src/runtime/mobile-markdown-bridge.ts:3"
+     "src/components/sidebar/comment-markdown-lazy.tsx:1-45",
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx:78-88"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Isola o bundle pesado de ~356 KB (react-markdown, remark, rehype) em chunk dinâmico carregado via lazyWithRetry com chave 'comment-markdown'",
-     "preloadCommentMarkdown() aquece o chunk dinâmico antes da renderização para eliminar exibição de fallback visual durante a navegação",
-     "CommentMarkdownAsync utiliza React.Suspense com fallback de texto puro em contêiner com dimensões e quebra idênticas (min-w-0 max-w-full [overflow-wrap:anywhere], fallbackClassName, title) garantindo ausência de Cumulative Layout Shift (CLS)"
-    ],
-    "notes": "Busca em 5 passos: (1) CommentMarkdownAsync/preloadCommentMarkdown ausentes; (2) nenhum lazyWithRetry com chave 'comment-markdown'; (3) chunks markdown não existem (sem react-markdown); (4) sem backend; (5) módulos de documento markdown são stubs (src/shared/mobile-markdown-document.ts:1-5, src/runtime/mobile-markdown-bridge.ts:3). Não localizado."
+    "missing_behaviors": [],
+    "notes": "The renderer is a lazyWithRetry chunk with a same-class raw-text fallback and a hover-enter preload.",
+    "note": "The renderer is a lazyWithRetry chunk with a same-class raw-text fallback and a hover-enter preload."
    },
    "par": [
     "PAR-39"
