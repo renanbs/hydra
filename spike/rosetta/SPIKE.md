@@ -59,3 +59,63 @@ Referência: `~/src/orca` em `e49b3aa0bd`, React 19.2.8, Electron, `window.api` 
    port e usar o shim apenas em folhas.
 
 Nada deste diretório entra no bundle do app (`src` não importa `spike/`).
+
+---
+
+# Fase 2 — webview real (2026-10-27)
+
+Objetivo: sair do jsdom e rodar o sidebar do Orca **dentro do Tauri**, com a store
+do Orca e três grupos (`repos`, `ssh`, `ui`) ligados a comandos Hydra.
+
+## Arquitetura usada
+
+```
+janela "rosetta" (Tauri)
+└── http://localhost:1420/rosetta-host.html   ← origem local, IPC permitido
+    └── iframe → http://localhost:1421/spike/rosetta-webview/  ← renderer do Orca
+        (React único, '@' → Orca, store do Orca)
+    window.api → postMessage → host → invoke() → Rust
+```
+
+Por que o iframe: uma origem **remota** (`WebviewUrl::External`) não consegue chamar
+comandos Tauri mesmo com `remote.urls` na capability (`get_app_version not allowed.
+Plugin not found`). O host local faz o RPC; o iframe só desenha.
+
+## Medições (boot real)
+
+| métrica | valor |
+|---|---|
+| sidebar do Orca renderizado no Tauri | **sim** (window "Rosetta spike — Orca sidebar") |
+| store hidratada pelo catálogo Hydra | **repos=7, projects=7** |
+| worktrees carregadas | **0** (o sidebar sozinho não dispara scan) |
+| chamadas sem binding (órfãs) | **6 caminhos** |
+| grupos órfãos | `preflight`, `linear`, `jira`, `mobile`, `runtimeEnvironments`, `gh` |
+
+Órfãos exatos no boot: `preflight.check`, `linear.status`, `jira.status` (x6),
+`mobile.listDevices`, `runtimeEnvironments.list`,
+`gh.reportVisiblePRRefreshCandidates`.
+
+Ligados com sucesso: `repos.list`, `projects.list`, `projects.listHostSetups`,
+`platform.get`, `ui.onFileDrop`, `repos.*` (pick/create/clone), `ssh.listTargets`,
+`ssh.listRemovedTargetLabels`, `shell.*`.
+
+## Aprendizados de engenharia (custam tempo se descobertos tarde)
+
+1. **Origem remota não fala IPC**: host local + iframe é o caminho; `remote.urls`
+   não foi suficiente no Tauri 2.
+2. **Preload tem métodos síncronos** (`platform.get`, `e2e.getConfig`): promisificar
+   tudo gera loop de retry (foram 88 chamadas em ~1s antes do binding local).
+3. **React duplicado** quebra hooks quando Orca e Hydra dividem o mesmo grafo; o
+   iframe isola naturalmente.
+4. **lucide diverge** (Orca 0.577 ainda tem ícones de marca; Hydra 1.x não).
+5. O CSS do Orca não entra junto: a janela monta sem estilo (228 KB de tokens).
+
+## Leitura para a decisão
+
+Com 3 grupos ligados, sobraram **6 caminhos órfãos em 6 grupos**, todos de produto
+(Linear/Jira/Mobile/gh/preflight/runtime) — não de UI. `preflight.check` mapeia para
+um comando Hydra existente; os outros cinco exigem backend novo.
+
+Custo estimado para migrar a árvore inteira: implementar/estubar explicitamente os
+grupos de produto restantes e shipar a store (872 arquivos) + `listen` bridge. Ganho:
+cada correção do Orca entra por cópia; a auditoria deixa de cobrir componentes copiados.

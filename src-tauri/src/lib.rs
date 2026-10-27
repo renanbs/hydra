@@ -73,6 +73,14 @@ fn get_system_status() -> String {
 fn get_app_version(app: AppHandle) -> String {
     app.package_info().version.to_string()
 }
+/// Rosetta spike: receives the Orca sidebar's API ledger from the probe window.
+#[tauri::command]
+async fn rosetta_spike_log(entries: Vec<String>) {
+    for entry in entries {
+        eprintln!("[rosetta] {entry}");
+    }
+}
+
 #[tauri::command]
 async fn check_preflight_tools_cmd() -> PreflightStatus {
     tokio::task::spawn_blocking(check_preflight_tools).await.unwrap_or(PreflightStatus {
@@ -1514,9 +1522,33 @@ pub fn run() {
                     daemon_client::ensure_daemon_spawned();
                 }
             });
+            // Rosetta spike (env-gated): open the standalone Orca-sidebar window
+            // served by spike/rosetta-webview. Never active without the env var.
+            if let Ok(url) = std::env::var("HYDRA_ROSETTA_URL") {
+                if !url.trim().is_empty() {
+                    match url.parse() {
+                        Ok(parsed) => {
+                            let built = tauri::WebviewWindowBuilder::new(
+                                app,
+                                "rosetta",
+                                tauri::WebviewUrl::External(parsed),
+                            )
+                            .title("Rosetta spike — Orca sidebar")
+                            .inner_size(420.0, 900.0)
+                            .build();
+                            match built {
+                                Ok(_) => eprintln!("[rosetta] window opened at {url}"),
+                                Err(err) => eprintln!("[rosetta] window failed: {err}"),
+                            }
+                        }
+                        Err(err) => eprintln!("[rosetta] invalid HYDRA_ROSETTA_URL: {err}"),
+                    }
+                }
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            rosetta_spike_log,
             get_system_status,
             get_app_version,
             get_repo_git_status,
