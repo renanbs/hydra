@@ -1,0 +1,9 @@
+{
+ "group": "AP",
+ "generatedFrom": "2026-10-27 add-repo increment: clone destination derives from the configured workspace dir with Orca's sibling-of-workspaces rule, the dialog resets on open/close, and Git availability is probed before submit",
+ "rows": [
+  {"id":"D02a-013","status":"parity","evidence":["src/components/sidebar/clone-defaults.ts:1-33","src/components/sidebar/AddRepoDialog.tsx:22-40","src/components/sidebar/clone-defaults.parity.test.ts:4-18"],"missing_behaviors":[],"note":"Clone parent strips the trailing workspaces segment (POSIX, Windows drive and root cases) and fills only on the first local entry; covered by tests."},
+  {"id":"D02a-004","status":"partial","evidence":["src/components/sidebar/AddRepoDialog.tsx:38-66"],"missing_behaviors":["reset por troca de host (o diálogo ainda não tem seletor de host)"],"note":"Opening/closing the dialog now clears URL, project name, destinations and errors."},
+  {"id":"D02a-017","status":"partial","evidence":["src/components/sidebar/AddRepoDialog.tsx:56-66","src/components/sidebar/AddRepoDialog.parity.test.tsx:74-90"],"missing_behaviors":["pasta padrão por host de runtime (browseRuntimeServerDirectory) e sondagem de Git no host remoto"],"note":"Local default comes from settings.workspace_dir and Git availability is probed via check_preflight_tools_cmd; remote hosts still unaudited."}
+ ]
+}
