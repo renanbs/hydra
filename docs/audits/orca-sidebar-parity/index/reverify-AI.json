@@ -1,1 +1,778 @@
-{"group":"AI","generatedFrom":"2026-10-21 D04a card-surface re-verification of the 66 partial rows; ten rows already covered by earlier reverify files are omitted","rows":[{"id":"D04a-002","status":"partial","evidence":["src/components/sidebar/worktree-card-surface.tsx:62-80","src/components/sidebar/WorktreeList.tsx:1245-1279","src/components/sidebar/use-worktree-card-controller.ts:351"],"missing_behaviors":["Opacidade de host runtime desconectado (isRuntimeDisconnected é hardcoded false)"],"note":"Multi-select, active surface, lineage drop, reveal, rename and deleting classes are reached from the list. Only the runtime-disconnected dim is unreachable."},{"id":"D04a-004","status":"partial","evidence":["src/components/sidebar/worktree-card-surface.tsx:115-122"],"missing_behaviors":["lineageChildren nunca é fornecido — o container data-worktree-lineage-children nunca renderiza"],"note":"The nested-children container is implemented and gated on newCardStyle, but nothing feeds it."},{"id":"D04a-005","status":"partial","evidence":["src/components/sidebar/worktree-card-surface.tsx:88-91","src/components/sidebar/worktree-card-surface.tsx:129-140","src/components/sidebar/worktree-card-header.tsx:116-122","src/components/sidebar/use-worktree-card-controller.ts:124"],"missing_behaviors":["affiliateListMode nunca é produzido (default false no controller)","Hover de detalhes não desliga edição de issue/nota quando o modo estiver ativo"],"note":"The surface, header and drag honor the flag. There is still no producer, and the details hover does not."},{"id":"D04a-007","status":"partial","evidence":["src/components/sidebar/worktree-card-presentation.tsx:32","src/components/sidebar/worktree-card-presentation.tsx:147-190"],"missing_behaviors":["titleWrapper nunca é produzido (nem hover de identidade do novo estilo nem wrapper de detalhes compacto)"],"note":"Pinned-repo and cache-timer branches are reachable. The identity hover wrapper is never returned."},{"id":"D04a-008","status":"partial","evidence":["src/components/sidebar/worktree-card-presentation.tsx:166-179","src/components/sidebar/worktree-card-meta-row.tsx:102-104","src/components/sidebar/WorktreeList.tsx:1265"],"missing_behaviors":["Badge de review renderiza sempre que review está setado (o novo estilo do Orca omite o badge da fileira)","O mount passa prDisplay e não review, então o badge fica dormente"],"note":"Metadata badges and the ports trigger sit in the right-hand cluster. The review badge paints whenever review is set, and the list only passes prDisplay."},{"id":"D04a-010","status":"partial","evidence":["src/components/sidebar/worktree-card-meta-row.tsx:62-99","src/components/sidebar/use-worktree-card-controller.ts:148-154","src/components/sidebar/use-worktree-card-controller.ts:337"],"missing_behaviors":["hostContextLabel nunca é fornecido — o WorktreeHostContextBadge é dormente","conflictOperation fixo em '' — o badge de conflito nunca renderiza","Sem chips ahead/behind no card","Detached HEAD é um chip mono sem alerta âmbar/tooltip lateral"],"note":"The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not."},{"id":"D04a-011","status":"partial","evidence":["src/components/sidebar/worktree-card-header.tsx:13-33","src/components/sidebar/worktree-card-header.tsx:93-111"],"missing_behaviors":["Tooltip lateral do design system com o nome do repo (Hydra usa title/aria-label nativos)","resolveRepoHeaderColor inexistente: a cor cai em repo.color ou no foreground do sidebar"],"note":"The repo chip renders with a native title. The design-system tooltip and resolveRepoHeaderColor are absent."},{"id":"D04a-015","status":"parity","evidence":["src/components/sidebar/WorktreeList.tsx:1178-1188","src/components/sidebar/worktree-card-model.ts:145-154","src/components/sidebar/worktree-card-header.tsx:114-134"],"missing_behaviors":[],"note":"Double-click and workspace.rename both open the inline editor. Deleting and affiliate mode disable it, and drag locks while the title is being edited."},{"id":"D04a-018","status":"partial","evidence":["src/components/sidebar/worktree-card-header.tsx:159-170","src/components/sidebar/worktree-card-model.ts:156-159"],"missing_behaviors":["Tooltip rico (TooltipContent em fonte mono com a prévia) — o Hydra usa o atributo title nativo, onde mono não é expressável"],"note":"The sparse badge renders. The preview uses the native title attribute, so the mono tooltip is not expressible."},{"id":"D04a-019","status":"partial","evidence":["src/components/sidebar/worktree-card-header.tsx:175-205","src/components/sidebar/worktree-card-presentation.tsx:111-114"],"missing_behaviors":["Gate por modificador Option/Alt em showDeleteQuickAction","Botões de ação rápida Terminal/Diff no hover"],"note":"The star and the hover delete action render. The Option/Alt gate and the Terminal/Diff hover actions are absent."},{"id":"D04a-021","status":"partial","evidence":["src/components/sidebar/WorktreeCardStatusLane.tsx:30-75","src/components/sidebar/worktree-card-parent-content.tsx:83-94"],"missing_behaviors":["Composição do texto acessível com Unread quando não lido (o aria-label da lane é só reviewStatusLabel)"],"note":"Review, branch and the activity dot paint the new-style lane. The accessible name is only the review label, so unread is not announced there."},{"id":"D04a-024","status":"partial","evidence":["src/components/sidebar/pr-display.tsx:53-62","src/components/sidebar/WorktreeCardStatusLane.tsx:46-47"],"missing_behaviors":["Terminologia por provedor: GitLab deveria renderizar MR — reviewStatusLabel sempre usa PR"],"note":"Merged, Closed, Draft and check suffixes are wired. The label always says PR, never MR."},{"id":"D04a-032","status":"partial","evidence":["src/components/sidebar/pr-display.tsx:28-47","src/components/sidebar/pr-display.tsx:64-76","src/components/sidebar/WorktreeCardStatusLane.tsx:41-52"],"missing_behaviors":["Badge de estado (pílula State: Merged) — o Hydra só tem o glifo da lane","Ícone por provedor (GitMerge para MR GitLab vs PullRequestIcon para PR)"],"note":"The lane glyph follows review state. There is no state pill and no provider-specific icon."},{"id":"D04a-033","status":"partial","evidence":["src/components/sidebar/pr-display.tsx:19-26","src/components/sidebar/pr-display.tsx:53-62"],"missing_behaviors":["Badge de checks (Checks: Passing/Failing/Pending) — só existe no aria-label","Tom de checks no glifo só quando state === open"],"note":"Check tone colors the open-state glyph. There is no Checks pill."},{"id":"D04a-034","status":"partial","evidence":["src/components/sidebar/WorktreeCardPortsTrigger.tsx:11-41","src/components/sidebar/worktree-card-presentation.tsx:174-176"],"backend":["invoke('scan_workspace_ports') -> src-tauri/src/lib.rs:584"],"missing_behaviors":["recordFeatureInteraction(ports) não é chamado","Foco visível dedicado (só hover/transition no botão)"],"note":"The live-port trigger renders in the meta cluster. It does not record the feature interaction and has no dedicated focus ring."},{"id":"D04a-036","status":"partial","evidence":["src/components/sidebar/WorktreeCardDetailsHover.tsx:111-122","src/components/sidebar/WorktreeSidebar.tsx:260-263"],"backend":["invoke('kill_port_process') -> src-tauri/src/lib.rs:595"],"missing_behaviors":["Copiar endereço com feedback Copied","Toasts de sucesso/falha e Failed to refresh port scan","Abertura no browser do Orca por modificador","Gate canStopWorkspacePort"],"note":"Open and kill are reachable from the hover. Copy-address, toasts and the Orca-browser modifier path are not."},{"id":"D04a-037","status":"partial","evidence":["src/components/sidebar/worktree-card-presentation.tsx:149-151","src/components/sidebar/worktree-card-parent-content.tsx:55-67","src/components/sidebar/WorktreeCardDetailsHover.tsx:133-154"],"missing_behaviors":["SelectedTextCopyMenu e seções issue/Linear/Jira com menu de ações","Posicionamento Radix side=right largura 80 max-h com scroll","data-worktree-native-context-menu","Stop de clique dentro do conteúdo","Pré-carregamento do markdown no onPointerEnter"],"note":"The hover opens when there is something to show. Copy menu, anchored width, native-menu escape and click isolation are absent."},{"id":"D04a-038","status":"partial","evidence":["src/components/sidebar/WorktreeCardDetailsHover.tsx:33-57","src/components/sidebar/WorktreeCardDetailsHover.tsx:59-101"],"missing_behaviors":["pendingHoverCloseRef e closeHover ao abrir um menu interno","Interlock com menus internos"],"note":"Open and close use a 150ms timer. There is no interlock with an inner menu."},{"id":"D04a-039","status":"partial","evidence":["src/components/sidebar/WorktreeCardDetailsHover.tsx:155-188"],"missing_behaviors":["Título editável inline no painel","identityOrder workspace-first|branch-first","Branch em break-words","Manter o hover aberto enquanto o título está em edição"],"note":"The identity header shows title, project, branch and copy. It is not an inline editor."},{"id":"D04a-041","status":"partial","evidence":["src/components/sidebar/WorktreeCardDetailsHover.tsx:248-263"],"missing_behaviors":["Menu de ações More PR/MR actions e botões Open/View on provider","Terminologia MR/PR por provedor","Rodapé com ReviewStateBadge e ReviewChecksBadge","closeHover antes de cada ação"],"note":"The hover shows a Pull Request title. Action menu, provider terminology and the review footer badges are absent."},{"id":"D04a-051","status":"partial","evidence":["src/components/sidebar/WorktreeContextMenu.tsx:13-32","src/components/sidebar/worktree-card-surface.tsx:129-141","src/App.tsx:3771-3930"],"missing_behaviors":["Modelo de política useWorktreeContextMenuModel e view dedicada","Reexports de escopo, close-all e helpers de parent/deleção/status","Ações Git remotas no menu do card"],"note":"The card wrapper delegates the context menu. Policy model, re-exports and remote Git actions are absent."},{"id":"D04a-052","status":"partial","evidence":["src/components/sidebar/WorktreeContextMenu.tsx:19-31","src/components/sidebar/use-worktree-card-controller.ts:214-223","src/App.tsx:3771-3774"],"missing_behaviors":["Checagem de escopo por atributo WORKTREE_CONTEXT_MENU_SCOPE_ATTR","CLOSE_ALL_CONTEXT_MENUS_EVENT ao abrir","Supressão do clique fantasma (<=500ms)"],"note":"Status and sleep already use the selection batch. Scope attributes, the close-all event and ghost-click suppression are absent."},{"id":"D04a-053","status":"partial","evidence":["src/App.tsx:3778-3810"],"backend":["invoke('set_worktree_display_name') -> src-tauri/src/lib.rs:505"],"missing_behaviors":["Rótulo Update (Hydra usa Rename Worktree Display Name...)","Gate de contexto único e desabilitação durante exclusão","Abrir o rename inline em vez de PromptDialog"],"note":"The menu opens a prompt dialog titled Rename Worktree. It is not the inline editor, and it stays enabled while deleting."},{"id":"D04a-054","status":"partial","evidence":["src/App.tsx:3744-3768","src/App.tsx:3863-3867","src/components/sidebar/worktree-status-menu-items.tsx:16-35"],"missing_behaviors":["Rótulo plural Move Statuses To na multi-seleção (o item é sempre Move to Status)","Desabilitação durante exclusão"],"note":"Configured workspace statuses, the current-status check and batch assign are live. The label stays singular and the item is not disabled while deleting."},{"id":"D04a-055","status":"partial","evidence":["src/App.tsx:3485-3503","src/App.tsx:3857"],"missing_behaviors":["Metadado à direita (Remote SSH/Local only) por item","Gate de disponibilidade durante exclusão","Deep-link para a seção general-open-in-apps","Stops explícitos de clique/pointerdown no submenu"],"note":"Open in lists configured apps, Reveal in File Manager and Customize apps. Remote-only labels, a delete gate and a settings deep-link are absent."},{"id":"D04a-056","status":"partial","evidence":["src/App.tsx:3485-3503"],"backend":["invoke('open_in_external_editor') -> src-tauri/src/lib.rs:256","invoke('open_in_file_manager') -> src-tauri/src/lib.rs:242"],"missing_behaviors":["Bloqueio local-only com toast antes do IPC","Capability getExternalEditorOpenCapability e toasts de erro específicos","connectionId e validação de caminho absoluto"],"note":"The file manager invokes run with the worktree path and no preflight."},{"id":"D04a-057","status":"partial","evidence":["src/App.tsx:3858"],"missing_behaviors":["Gate de contexto único","Desabilitação durante exclusão do contexto"],"note":"Copy Path writes the absolute path through navigator.clipboard."},{"id":"D04a-058","status":"partial","evidence":["src/App.tsx:3861"],"missing_behaviors":["Desabilitação durante exclusão do contexto"],"note":"Pin and Unpin follow the pinned set."},{"id":"D04a-059","status":"partial","evidence":["src/App.tsx:3862"],"missing_behaviors":["Desabilitação durante exclusão do contexto"],"note":"Mark Read and Mark Unread follow the unread set."},{"id":"D04a-060","status":"partial","evidence":["src/App.tsx:3635","src/App.tsx:3775-3930"],"missing_behaviors":["Item no menu do card (New group from project só existe no menu do projeto)","Diálogo de criação semeado com o nome do repositório a partir do card"],"note":"Group creation is reachable from the project header menu only."},{"id":"D04a-061","status":"partial","evidence":["src/App.tsx:3775-3930"],"missing_behaviors":["Submenu de mover para grupo no menu do card","Gatilho desabilitado durante exclusão"],"note":"Move-to-group is not on the worktree card menu."},{"id":"D04a-062","status":"partial","evidence":["src/App.tsx:3775-3930"],"missing_behaviors":["Item no menu do card (remover do grupo só existe no menu do projeto)"],"note":"The card menu has no remove-from-group item."},{"id":"D04a-063","status":"partial","evidence":["src/App.tsx:3868-3898"],"missing_behaviors":["Desabilitação por isDeleting","Captura do anchor estável da linha antes do menu fechar"],"note":"Set/Change Parent opens the parent picker and persists lineage. It is not disabled while deleting."},{"id":"D04a-066","status":"partial","evidence":["src/App.tsx:3758","src/App.tsx:3910"],"missing_behaviors":["Item Park terminal","Ocultar o submenu em contexto múltiplo"],"note":"Alt on right-click reveals a Developer label with head/bare details, not the park action."},{"id":"D04a-067","status":"partial","evidence":["src/App.tsx:3505-3514","src/App.tsx:3911-3928"],"missing_behaviors":["Desabilitação por elegibilidade do worktree e da subárvore","Estado visual de dormindo (badge/opacidade) e despertar em um clique","Teardown real: sleepSessionsForPaths só fecha abas e marca sessões idle"],"note":"Sleep, Sleep N Workspaces and Sleep with Descendants are on the menu. They do not mark the workspace asleep."},{"id":"D04a-069","status":"partial","evidence":["src/App.tsx:3929","src/components/sidebar/WorktreeList.tsx:1178-1189","src/shared/keybindings/definitions-core-1.ts:84"],"backend":["invoke('delete_worktree') -> src-tauri/src/lib.rs:476"],"missing_behaviors":["Estado pendente Deleting... no item","Badge do atalho workspace.delete no item (o atalho dispara o diálogo, mas o item não declara shortcut)","Rótulo de multi-seleção e Remove Workspace para folder","Title The project could not be found","Toast com ação Re-add"],"note":"Delete Worktree and Delete with Descendants open the confirmation. The primary checkout stays disabled on D04a-068."},{"id":"D04a-070","status":"partial","evidence":["src/App.tsx:3868-3898"],"missing_behaviors":["ProjectGroupNameDialog disparado pelo menu do card, semeado com o nome do repositório","WorktreeParentPickerPopover ancorado na linha (o Hydra usa um modal global)"],"note":"The parent picker is a global modal, not an overlay anchored to the card menu."},{"id":"D04a-071","status":"partial","evidence":["src/components/sidebar/WorktreeContextMenu.tsx:13-31","src/App.tsx:3771-3774"],"missing_behaviors":["WorktreeContextMenuOverlays montado junto do card, com fragmento vazio quando não há diálogos"],"note":"Dialogs are owned by App, not by an overlay sibling of the card."},{"id":"D04a-073","status":"partial","evidence":["src/components/sidebar/WorktreeTitleInlineRename.tsx:154-176","src/components/sidebar/truncated-sidebar-label.tsx:4","src/components/sidebar/worktree-card-meta-row.tsx:80-85"],"missing_behaviors":["Medição de truncamento do título (scrollWidth > clientWidth), ResizeObserver e remount por displayName:unread|read","Tooltip do design system com o nome completo quando truncado","tabIndex=0 no span do título","Unread anunciado em sr-only quando showUnreadEmphasis"],"note":"The title is a span with native title, unread weight and double-click. Truncation measurement is used on the meta-row branch, not the title."},{"id":"D04a-074","status":"partial","evidence":["src/components/sidebar/WorktreeTitleInlineRename.tsx:62-125","src/components/sidebar/WorktreeTitleInlineRename.tsx:127-152","src/components/sidebar/WorktreeList.tsx:1178-1188"],"missing_behaviors":["Guarda de composição IME no Enter","Toast de erro no save (o catch faz console.error)","Popover de sugestão de emoji ancorado no input","Guardas de unmount (mountedRef/editingRef/savingRef) contra commit duplicado"],"note":"Focus-and-select, Enter/Escape/blur, blank cancel and the shortcut open path are wired. IME, error toast and emoji suggestions are not."},{"id":"D04a-075","status":"partial","evidence":["src/components/sidebar/WorktreeTitleInlineRename.tsx:8-17","src/components/sidebar/WorktreeTitleInlineRename.tsx:79-87"],"missing_behaviors":["O editor não chama getWorktreeTitleRenameCommit: a mesma regra está duplicada inline e o helper exportado não tem consumidor"],"note":"Blank or unchanged cancels and a changed value is trimmed, but that lives in commit(), not in the exported helper."},{"id":"D04a-076","status":"partial","evidence":["src/components/sidebar/truncated-sidebar-label.tsx:4","src/components/sidebar/worktree-card-meta-row.tsx:80-85","src/components/sidebar/WorktreeTitleInlineRename.tsx:171-172"],"missing_behaviors":["A medição por geometria não é aplicada ao título do card (o título usa title nativo sem scrollWidth)"],"note":"isSidebarLabelTruncated is wired for the meta-row branch label only."},{"id":"D04a-077","status":"partial","evidence":["src/components/sidebar/WorktreeTitleInlineRename.tsx:63-66","src/components/sidebar/WorktreeTitleInlineRename.tsx:154-161","src/components/sidebar/worktree-card-header.tsx:122","src/components/sidebar/worktree-card-surface.tsx:89"],"missing_behaviors":["Guardas que impedem notificação duplicada de onEditingChange quando o estado não muda, inclusive em StrictMode"],"note":"onEditingChange fires on the open and close paths and the card clears draggable while titleRenaming is set."},{"id":"D04a-080","status":"partial","evidence":["src/components/sidebar/worktree-card-compact-agents.tsx:176-232","src/components/sidebar/CompactAgentRow.tsx:87-180"],"missing_behaviors":["role=tree/group e aria-label Agents no container","Linhas diretas quando há um único agente raiz (o card sempre usa o botão de resumo)","Modo de envio a agente"],"note":"Compact rows show primary and secondary text, model and time. The container is not an agent tree."},{"id":"D04a-081","status":"partial","evidence":["src/components/sidebar/worktree-card-compact-agents.tsx:83-89","src/components/sidebar/worktree-card-compact-agents.tsx:125","src/components/sidebar/worktree-card-agent-summary.ts:48-97"],"missing_behaviors":["Rótulo consolidado de summarizeAgents (o resultado é descartado; o botão usa subjectLabel)","Identidades no aria-label quando colapsado","Ordem SUMMARY_STATE_ORDER do Orca"],"note":"The summary button groups dots and toggles expansion. The sentence label from summarizeAgents is not rendered."},{"id":"D04a-083","status":"partial","evidence":["src/components/sidebar/CompactAgentRow.tsx:70-76","src/components/sidebar/worktree-card-compact-agents.tsx:216-226"],"missing_behaviors":["activateAndRevealWorktree antes de focar, com histórico cross-repo","Validação de paneKey e descarte de linha obsoleta","ackPaneKeyOnSuccess, flash do pane e scroll da saída desde a última vista"],"note":"Clicking a compact row selects the session. Stale rows are not discarded."},{"id":"D04a-087","status":"partial","evidence":["src/components/sidebar/worktree-card-compact-agents.tsx:80-81","src/store/index.ts:699-704"],"missing_behaviors":["Limite LRU de 512 entradas com evicção e poda de entradas default","Estado de colapso de lineage por paneKey"],"note":"Compact-summary expansion is remembered in the in-memory store per worktree path."},{"id":"D04a-089","status":"partial","evidence":["src/components/sidebar/worktree-card-agent-summary.ts:32-46","src/components/sidebar/worktree-card-agent-summary.ts:100-132"],"missing_behaviors":["Ordem fixa waiting, blocked, working, monitoring, interrupted, done, unverifiable, idle","formatSummaryStateLabel (not reporting / needs attention) e summarizeAgentIdentities","Agrupamento de monitoring, interrupted e unverifiable"],"note":"Dot state, groups and summarizeAgents exist. The rank order and the identity sentence do not match Orca."},{"id":"D04a-090","status":"partial","evidence":["src/components/sidebar/compact-agent-row-labels.ts:130-161","src/components/sidebar/CompactAgentRow.tsx:52-63"],"missing_behaviors":["Retenção da última mensagem do assistente no mesmo turno (lastAssistantMessageOverride sem produtor)"],"note":"Interrupted, no-update, monitoring, tool preview, last message and subagent role are derived. The same-turn hold is not."},{"id":"D04a-100","status":"partial","evidence":["src/components/sidebar/use-worktree-card-controller.ts:184-189"],"missing_behaviors":["Fallback para títulos de issue, Linear, Jira e review quando o título salvo é igual-ish ao branch","Filtro de placeholders Loading ... / details unavailable","coerceWorktreeCardVisibleTitle"],"note":"The visible title is display name, then branch, then the directory name."},{"id":"D04a-101","status":"partial","evidence":["src/components/sidebar/WorktreeList.tsx:1265","src/components/sidebar/WorktreeCardStatusLane.tsx:64-65"],"backend":["invoke('pr_status') -> src-tauri/src/lib.rs:410"],"missing_behaviors":["Supressão de PR do GitHub por metadado, com exceção para link explícito","Fallbacks Loading PR/MR... e provedores gitlab, bitbucket, azure-devops e gitea","Validação de PR merged pelo head","Reconciliação de caches por chave"],"note":"The lane shows whatever prByPath already holds. Resolution is a single GitHub pr_status probe."},{"id":"D04a-103","status":"partial","evidence":["src/components/sidebar/pr-display.tsx:36-75","src/components/sidebar/WorktreeCardStatusLane.tsx:78"],"missing_behaviors":["Glifo por provedor (GitMerge para MR GitLab, variante generic)","getReviewLabel / getProviderName com MR para GitLab","Pílula com ícone de provedor (WorktreeCardReviewBadge não recebe review do mount)"],"note":"State icon and check tone paint the lane. Provider does not change the glyph or the word PR."},{"id":"D04a-104","status":"partial","evidence":["src/components/sidebar/WorktreeCardHelpers.tsx:4-39","src/components/sidebar/worktree-card-meta-row.tsx:95"],"missing_behaviors":["checksLabel (success/failure/pending/neutral) como helper; o texto só existe dentro de reviewStatusLabel","branchDisplayName, EMPTY_BROWSER_TABS, FilledBellIcon e PullRequestIcon sem consumidor fora do próprio arquivo"],"note":"Conflict-operation labels and EMPTY_TABS are used. The bell and pull-request icons are not."},{"id":"D04a-106","status":"partial","evidence":["src/components/sidebar/worktree-card-model.ts:14","src/components/sidebar/worktree-card-model.ts:145-169"],"missing_behaviors":["HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidor","EMPTY_WORKSPACE_PORTS sem consumidor","isWebClient sem consumidor no card"],"note":"Props, defaults, rename matching and the sparse-directory preview are used by the card."},{"id":"D04a-108","status":"partial","evidence":["src/components/sidebar/WorktreeHostContextBadge.tsx:4-15","src/components/sidebar/worktree-card-meta-row.tsx:62-64","src/components/sidebar/worktree-card-presentation.tsx:81","src/components/sidebar/WorktreeList.tsx:1259-1331"],"missing_behaviors":["Produtor de hostContextLabel no card (a prop não é passada no mount)","Modelo de host por worktree (Local Mac / host SSH) alimentando o chip"],"note":"The chip renders when a label is passed. The worktree card mount never passes one."},{"id":"D04a-109","status":"partial","evidence":["src/components/sidebar/WorkspaceOptionsMenu.tsx:630-652","src/components/sidebar/WorktreeSidebar.tsx:847"],"missing_behaviors":["Checkbox por propriedade do card (issue, linear, jira, pr, automation, comment, ports, inline-agents)","Submenu Show properties com contagem e Agent activity layout","Radio Compact/Default chamando setWorktreeCardMode","onSelect com preventDefault para manter o menu aberto"],"note":"Card display offers Detailed only, and points Compact at Settings -> Appearance."}]}
+{
+ "group": "AI",
+ "generatedFrom": "2026-10-21 D04a card-surface re-verification of the 66 partial rows; ten rows already covered by earlier reverify files are omitted",
+ "rows": [
+  {
+   "id": "D04a-002",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-surface.tsx:62-80",
+    "src/components/sidebar/WorktreeList.tsx:1245-1279",
+    "src/components/sidebar/use-worktree-card-controller.ts:351"
+   ],
+   "missing_behaviors": [
+    "Opacidade de host runtime desconectado (isRuntimeDisconnected é hardcoded false)"
+   ],
+   "note": "Multi-select, active surface, lineage drop, reveal, rename and deleting classes are reached from the list. Only the runtime-disconnected dim is unreachable."
+  },
+  {
+   "id": "D04a-004",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-surface.tsx:115-122"
+   ],
+   "missing_behaviors": [
+    "lineageChildren nunca é fornecido — o container data-worktree-lineage-children nunca renderiza"
+   ],
+   "note": "The nested-children container is implemented and gated on newCardStyle, but nothing feeds it."
+  },
+  {
+   "id": "D04a-005",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-surface.tsx:88-91",
+    "src/components/sidebar/worktree-card-surface.tsx:129-140",
+    "src/components/sidebar/worktree-card-header.tsx:116-122",
+    "src/components/sidebar/use-worktree-card-controller.ts:124"
+   ],
+   "missing_behaviors": [
+    "affiliateListMode nunca é produzido (default false no controller)",
+    "Hover de detalhes não desliga edição de issue/nota quando o modo estiver ativo"
+   ],
+   "note": "The surface, header and drag honor the flag. There is still no producer, and the details hover does not."
+  },
+  {
+   "id": "D04a-007",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-presentation.tsx:32",
+    "src/components/sidebar/worktree-card-presentation.tsx:147-190"
+   ],
+   "missing_behaviors": [
+    "titleWrapper nunca é produzido (nem hover de identidade do novo estilo nem wrapper de detalhes compacto)"
+   ],
+   "note": "Pinned-repo and cache-timer branches are reachable. The identity hover wrapper is never returned."
+  },
+  {
+   "id": "D04a-008",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-presentation.tsx:166-179",
+    "src/components/sidebar/worktree-card-meta-row.tsx:102-104",
+    "src/components/sidebar/WorktreeList.tsx:1265"
+   ],
+   "missing_behaviors": [
+    "Badge de review renderiza sempre que review está setado (o novo estilo do Orca omite o badge da fileira)",
+    "O mount passa prDisplay e não review, então o badge fica dormente"
+   ],
+   "note": "Metadata badges and the ports trigger sit in the right-hand cluster. The review badge paints whenever review is set, and the list only passes prDisplay."
+  },
+  {
+   "id": "D04a-010",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-meta-row.tsx:62-99",
+    "src/components/sidebar/use-worktree-card-controller.ts:148-154",
+    "src/components/sidebar/use-worktree-card-controller.ts:337"
+   ],
+   "missing_behaviors": [
+    "hostContextLabel nunca é fornecido — o WorktreeHostContextBadge é dormente",
+    "conflictOperation fixo em '' — o badge de conflito nunca renderiza",
+    "Sem chips ahead/behind no card",
+    "Detached HEAD é um chip mono sem alerta âmbar/tooltip lateral"
+   ],
+   "note": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not."
+  },
+  {
+   "id": "D04a-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:13-33",
+    "src/components/sidebar/worktree-card-header.tsx:93-111"
+   ],
+   "missing_behaviors": [
+    "Tooltip lateral do design system com o nome do repo (Hydra usa title/aria-label nativos)",
+    "resolveRepoHeaderColor inexistente: a cor cai em repo.color ou no foreground do sidebar"
+   ],
+   "note": "The repo chip renders with a native title. The design-system tooltip and resolveRepoHeaderColor are absent."
+  },
+  {
+   "id": "D04a-015",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:1178-1188",
+    "src/components/sidebar/worktree-card-model.ts:145-154",
+    "src/components/sidebar/worktree-card-header.tsx:114-134"
+   ],
+   "missing_behaviors": [],
+   "note": "Double-click and workspace.rename both open the inline editor. Deleting and affiliate mode disable it, and drag locks while the title is being edited."
+  },
+  {
+   "id": "D04a-018",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:159-170",
+    "src/components/sidebar/worktree-card-model.ts:156-159"
+   ],
+   "missing_behaviors": [
+    "Tooltip rico (TooltipContent em fonte mono com a prévia) — o Hydra usa o atributo title nativo, onde mono não é expressável"
+   ],
+   "note": "The sparse badge renders. The preview uses the native title attribute, so the mono tooltip is not expressible."
+  },
+  {
+   "id": "D04a-019",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:175-205",
+    "src/components/sidebar/worktree-card-presentation.tsx:111-114"
+   ],
+   "missing_behaviors": [
+    "Gate por modificador Option/Alt em showDeleteQuickAction",
+    "Botões de ação rápida Terminal/Diff no hover"
+   ],
+   "note": "The star and the hover delete action render. The Option/Alt gate and the Terminal/Diff hover actions are absent."
+  },
+  {
+   "id": "D04a-021",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:30-75",
+    "src/components/sidebar/worktree-card-parent-content.tsx:83-94"
+   ],
+   "missing_behaviors": [
+    "Composição do texto acessível com Unread quando não lido (o aria-label da lane é só reviewStatusLabel)"
+   ],
+   "note": "Review, branch and the activity dot paint the new-style lane. The accessible name is only the review label, so unread is not announced there."
+  },
+  {
+   "id": "D04a-024",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/pr-display.tsx:53-62",
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:46-47"
+   ],
+   "missing_behaviors": [
+    "Terminologia por provedor: GitLab deveria renderizar MR — reviewStatusLabel sempre usa PR"
+   ],
+   "note": "Merged, Closed, Draft and check suffixes are wired. The label always says PR, never MR."
+  },
+  {
+   "id": "D04a-032",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/pr-display.tsx:28-47",
+    "src/components/sidebar/pr-display.tsx:64-76",
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:41-52"
+   ],
+   "missing_behaviors": [
+    "Badge de estado (pílula State: Merged) — o Hydra só tem o glifo da lane",
+    "Ícone por provedor (GitMerge para MR GitLab vs PullRequestIcon para PR)"
+   ],
+   "note": "The lane glyph follows review state. There is no state pill and no provider-specific icon."
+  },
+  {
+   "id": "D04a-033",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/pr-display.tsx:19-26",
+    "src/components/sidebar/pr-display.tsx:53-62"
+   ],
+   "missing_behaviors": [
+    "Badge de checks (Checks: Passing/Failing/Pending) — só existe no aria-label",
+    "Tom de checks no glifo só quando state === open"
+   ],
+   "note": "Check tone colors the open-state glyph. There is no Checks pill."
+  },
+  {
+   "id": "D04a-034",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardPortsTrigger.tsx:11-41",
+    "src/components/sidebar/worktree-card-presentation.tsx:174-176"
+   ],
+   "backend": [
+    "invoke('scan_workspace_ports') -> src-tauri/src/lib.rs:584"
+   ],
+   "missing_behaviors": [
+    "recordFeatureInteraction(ports) não é chamado",
+    "Foco visível dedicado (só hover/transition no botão)"
+   ],
+   "note": "The live-port trigger renders in the meta cluster. It does not record the feature interaction and has no dedicated focus ring."
+  },
+  {
+   "id": "D04a-036",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:111-122",
+    "src/components/sidebar/WorktreeSidebar.tsx:260-263"
+   ],
+   "backend": [
+    "invoke('kill_port_process') -> src-tauri/src/lib.rs:595"
+   ],
+   "missing_behaviors": [
+    "Copiar endereço com feedback Copied",
+    "Toasts de sucesso/falha e Failed to refresh port scan",
+    "Abertura no browser do Orca por modificador",
+    "Gate canStopWorkspacePort"
+   ],
+   "note": "Open and kill are reachable from the hover. Copy-address, toasts and the Orca-browser modifier path are not."
+  },
+  {
+   "id": "D04a-037",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-presentation.tsx:149-151",
+    "src/components/sidebar/worktree-card-parent-content.tsx:55-67",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:133-154"
+   ],
+   "missing_behaviors": [
+    "SelectedTextCopyMenu e seções issue/Linear/Jira com menu de ações",
+    "Posicionamento Radix side=right largura 80 max-h com scroll",
+    "data-worktree-native-context-menu",
+    "Stop de clique dentro do conteúdo",
+    "Pré-carregamento do markdown no onPointerEnter"
+   ],
+   "note": "The hover opens when there is something to show. Copy menu, anchored width, native-menu escape and click isolation are absent."
+  },
+  {
+   "id": "D04a-038",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:33-57",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:59-101"
+   ],
+   "missing_behaviors": [
+    "pendingHoverCloseRef e closeHover ao abrir um menu interno",
+    "Interlock com menus internos"
+   ],
+   "note": "Open and close use a 150ms timer. There is no interlock with an inner menu."
+  },
+  {
+   "id": "D04a-039",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-188"
+   ],
+   "missing_behaviors": [
+    "Título editável inline no painel",
+    "identityOrder workspace-first|branch-first",
+    "Branch em break-words",
+    "Manter o hover aberto enquanto o título está em edição"
+   ],
+   "note": "The identity header shows title, project, branch and copy. It is not an inline editor."
+  },
+  {
+   "id": "D04a-041",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:248-263"
+   ],
+   "missing_behaviors": [
+    "Menu de ações More PR/MR actions e botões Open/View on provider",
+    "Terminologia MR/PR por provedor",
+    "Rodapé com ReviewStateBadge e ReviewChecksBadge",
+    "closeHover antes de cada ação"
+   ],
+   "note": "The hover shows a Pull Request title. Action menu, provider terminology and the review footer badges are absent."
+  },
+  {
+   "id": "D04a-051",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeContextMenu.tsx:13-32",
+    "src/components/sidebar/worktree-card-surface.tsx:129-141",
+    "src/App.tsx:3771-3930"
+   ],
+   "missing_behaviors": [
+    "Modelo de política useWorktreeContextMenuModel e view dedicada",
+    "Reexports de escopo, close-all e helpers de parent/deleção/status",
+    "Ações Git remotas no menu do card"
+   ],
+   "note": "The card wrapper delegates the context menu. Policy model, re-exports and remote Git actions are absent."
+  },
+  {
+   "id": "D04a-052",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeContextMenu.tsx:19-31",
+    "src/components/sidebar/use-worktree-card-controller.ts:214-223",
+    "src/App.tsx:3771-3774"
+   ],
+   "missing_behaviors": [
+    "Checagem de escopo por atributo WORKTREE_CONTEXT_MENU_SCOPE_ATTR",
+    "CLOSE_ALL_CONTEXT_MENUS_EVENT ao abrir",
+    "Supressão do clique fantasma (<=500ms)"
+   ],
+   "note": "Status and sleep already use the selection batch. Scope attributes, the close-all event and ghost-click suppression are absent."
+  },
+  {
+   "id": "D04a-053",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3778-3810"
+   ],
+   "backend": [
+    "invoke('set_worktree_display_name') -> src-tauri/src/lib.rs:505"
+   ],
+   "missing_behaviors": [
+    "Rótulo Update (Hydra usa Rename Worktree Display Name...)",
+    "Gate de contexto único e desabilitação durante exclusão",
+    "Abrir o rename inline em vez de PromptDialog"
+   ],
+   "note": "The menu opens a prompt dialog titled Rename Worktree. It is not the inline editor, and it stays enabled while deleting."
+  },
+  {
+   "id": "D04a-054",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-status-menu-items.tsx:16-46",
+    "src/App.tsx:3863-3874",
+    "src/components/sidebar/worktree-status-menu-items.parity.test.tsx:48-60"
+   ],
+   "missing_behaviors": [
+    "rótulo plural da multi-seleção (o item é sempre \"Move to Status\")"
+   ],
+   "note": "Submenu offers the user definitions, checks the current status and is disabled (trigger + children) while the workspace delete is running; only the plural label remains."
+  },
+  {
+   "id": "D04a-055",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3485-3503",
+    "src/App.tsx:3857"
+   ],
+   "missing_behaviors": [
+    "Metadado à direita (Remote SSH/Local only) por item",
+    "Gate de disponibilidade durante exclusão",
+    "Deep-link para a seção general-open-in-apps",
+    "Stops explícitos de clique/pointerdown no submenu"
+   ],
+   "note": "Open in lists configured apps, Reveal in File Manager and Customize apps. Remote-only labels, a delete gate and a settings deep-link are absent."
+  },
+  {
+   "id": "D04a-056",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3485-3503"
+   ],
+   "backend": [
+    "invoke('open_in_external_editor') -> src-tauri/src/lib.rs:256",
+    "invoke('open_in_file_manager') -> src-tauri/src/lib.rs:242"
+   ],
+   "missing_behaviors": [
+    "Bloqueio local-only com toast antes do IPC",
+    "Capability getExternalEditorOpenCapability e toasts de erro específicos",
+    "connectionId e validação de caminho absoluto"
+   ],
+   "note": "The file manager invokes run with the worktree path and no preflight."
+  },
+  {
+   "id": "D04a-057",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3858"
+   ],
+   "missing_behaviors": [
+    "Gate de contexto único",
+    "Desabilitação durante exclusão do contexto"
+   ],
+   "note": "Copy Path writes the absolute path through navigator.clipboard."
+  },
+  {
+   "id": "D04a-058",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3861"
+   ],
+   "missing_behaviors": [
+    "Desabilitação durante exclusão do contexto"
+   ],
+   "note": "Pin and Unpin follow the pinned set."
+  },
+  {
+   "id": "D04a-059",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3862"
+   ],
+   "missing_behaviors": [
+    "Desabilitação durante exclusão do contexto"
+   ],
+   "note": "Mark Read and Mark Unread follow the unread set."
+  },
+  {
+   "id": "D04a-060",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3635",
+    "src/App.tsx:3775-3930"
+   ],
+   "missing_behaviors": [
+    "Item no menu do card (New group from project só existe no menu do projeto)",
+    "Diálogo de criação semeado com o nome do repositório a partir do card"
+   ],
+   "note": "Group creation is reachable from the project header menu only."
+  },
+  {
+   "id": "D04a-061",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3775-3930"
+   ],
+   "missing_behaviors": [
+    "Submenu de mover para grupo no menu do card",
+    "Gatilho desabilitado durante exclusão"
+   ],
+   "note": "Move-to-group is not on the worktree card menu."
+  },
+  {
+   "id": "D04a-062",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3775-3930"
+   ],
+   "missing_behaviors": [
+    "Item no menu do card (remover do grupo só existe no menu do projeto)"
+   ],
+   "note": "The card menu has no remove-from-group item."
+  },
+  {
+   "id": "D04a-063",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3868-3898"
+   ],
+   "missing_behaviors": [
+    "Desabilitação por isDeleting",
+    "Captura do anchor estável da linha antes do menu fechar"
+   ],
+   "note": "Set/Change Parent opens the parent picker and persists lineage. It is not disabled while deleting."
+  },
+  {
+   "id": "D04a-066",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3758",
+    "src/App.tsx:3910"
+   ],
+   "missing_behaviors": [
+    "Item Park terminal",
+    "Ocultar o submenu em contexto múltiplo"
+   ],
+   "note": "Alt on right-click reveals a Developer label with head/bare details, not the park action."
+  },
+  {
+   "id": "D04a-067",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3505-3514",
+    "src/App.tsx:3911-3928"
+   ],
+   "missing_behaviors": [
+    "Desabilitação por elegibilidade do worktree e da subárvore",
+    "Estado visual de dormindo (badge/opacidade) e despertar em um clique",
+    "Teardown real: sleepSessionsForPaths só fecha abas e marca sessões idle"
+   ],
+   "note": "Sleep, Sleep N Workspaces and Sleep with Descendants are on the menu. They do not mark the workspace asleep."
+  },
+  {
+   "id": "D04a-069",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3929",
+    "src/components/sidebar/WorktreeList.tsx:1178-1189",
+    "src/shared/keybindings/definitions-core-1.ts:84"
+   ],
+   "backend": [
+    "invoke('delete_worktree') -> src-tauri/src/lib.rs:476"
+   ],
+   "missing_behaviors": [
+    "Estado pendente Deleting... no item",
+    "Badge do atalho workspace.delete no item (o atalho dispara o diálogo, mas o item não declara shortcut)",
+    "Rótulo de multi-seleção e Remove Workspace para folder",
+    "Title The project could not be found",
+    "Toast com ação Re-add"
+   ],
+   "note": "Delete Worktree and Delete with Descendants open the confirmation. The primary checkout stays disabled on D04a-068."
+  },
+  {
+   "id": "D04a-070",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3868-3898"
+   ],
+   "missing_behaviors": [
+    "ProjectGroupNameDialog disparado pelo menu do card, semeado com o nome do repositório",
+    "WorktreeParentPickerPopover ancorado na linha (o Hydra usa um modal global)"
+   ],
+   "note": "The parent picker is a global modal, not an overlay anchored to the card menu."
+  },
+  {
+   "id": "D04a-071",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeContextMenu.tsx:13-31",
+    "src/App.tsx:3771-3774"
+   ],
+   "missing_behaviors": [
+    "WorktreeContextMenuOverlays montado junto do card, com fragmento vazio quando não há diálogos"
+   ],
+   "note": "Dialogs are owned by App, not by an overlay sibling of the card."
+  },
+  {
+   "id": "D04a-073",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:154-176",
+    "src/components/sidebar/truncated-sidebar-label.tsx:4",
+    "src/components/sidebar/worktree-card-meta-row.tsx:80-85"
+   ],
+   "missing_behaviors": [
+    "Medição de truncamento do título (scrollWidth > clientWidth), ResizeObserver e remount por displayName:unread|read",
+    "Tooltip do design system com o nome completo quando truncado",
+    "tabIndex=0 no span do título",
+    "Unread anunciado em sr-only quando showUnreadEmphasis"
+   ],
+   "note": "The title is a span with native title, unread weight and double-click. Truncation measurement is used on the meta-row branch, not the title."
+  },
+  {
+   "id": "D04a-074",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:62-125",
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:127-152",
+    "src/components/sidebar/WorktreeList.tsx:1178-1188"
+   ],
+   "missing_behaviors": [
+    "Guarda de composição IME no Enter",
+    "Toast de erro no save (o catch faz console.error)",
+    "Popover de sugestão de emoji ancorado no input",
+    "Guardas de unmount (mountedRef/editingRef/savingRef) contra commit duplicado"
+   ],
+   "note": "Focus-and-select, Enter/Escape/blur, blank cancel and the shortcut open path are wired. IME, error toast and emoji suggestions are not."
+  },
+  {
+   "id": "D04a-075",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:8-17",
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:79-87"
+   ],
+   "missing_behaviors": [
+    "O editor não chama getWorktreeTitleRenameCommit: a mesma regra está duplicada inline e o helper exportado não tem consumidor"
+   ],
+   "note": "Blank or unchanged cancels and a changed value is trimmed, but that lives in commit(), not in the exported helper."
+  },
+  {
+   "id": "D04a-076",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/truncated-sidebar-label.tsx:4",
+    "src/components/sidebar/worktree-card-meta-row.tsx:80-85",
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:171-172"
+   ],
+   "missing_behaviors": [
+    "A medição por geometria não é aplicada ao título do card (o título usa title nativo sem scrollWidth)"
+   ],
+   "note": "isSidebarLabelTruncated is wired for the meta-row branch label only."
+  },
+  {
+   "id": "D04a-077",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:63-66",
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:154-161",
+    "src/components/sidebar/worktree-card-header.tsx:122",
+    "src/components/sidebar/worktree-card-surface.tsx:89"
+   ],
+   "missing_behaviors": [
+    "Guardas que impedem notificação duplicada de onEditingChange quando o estado não muda, inclusive em StrictMode"
+   ],
+   "note": "onEditingChange fires on the open and close paths and the card clears draggable while titleRenaming is set."
+  },
+  {
+   "id": "D04a-080",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:176-232",
+    "src/components/sidebar/CompactAgentRow.tsx:87-180"
+   ],
+   "missing_behaviors": [
+    "role=tree/group e aria-label Agents no container",
+    "Linhas diretas quando há um único agente raiz (o card sempre usa o botão de resumo)",
+    "Modo de envio a agente"
+   ],
+   "note": "Compact rows show primary and secondary text, model and time. The container is not an agent tree."
+  },
+  {
+   "id": "D04a-081",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:83-89",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:125",
+    "src/components/sidebar/worktree-card-agent-summary.ts:48-97"
+   ],
+   "missing_behaviors": [
+    "Rótulo consolidado de summarizeAgents (o resultado é descartado; o botão usa subjectLabel)",
+    "Identidades no aria-label quando colapsado",
+    "Ordem SUMMARY_STATE_ORDER do Orca"
+   ],
+   "note": "The summary button groups dots and toggles expansion. The sentence label from summarizeAgents is not rendered."
+  },
+  {
+   "id": "D04a-083",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/CompactAgentRow.tsx:70-76",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:216-226"
+   ],
+   "missing_behaviors": [
+    "activateAndRevealWorktree antes de focar, com histórico cross-repo",
+    "Validação de paneKey e descarte de linha obsoleta",
+    "ackPaneKeyOnSuccess, flash do pane e scroll da saída desde a última vista"
+   ],
+   "note": "Clicking a compact row selects the session. Stale rows are not discarded."
+  },
+  {
+   "id": "D04a-087",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:80-81",
+    "src/store/index.ts:699-704"
+   ],
+   "missing_behaviors": [
+    "Limite LRU de 512 entradas com evicção e poda de entradas default",
+    "Estado de colapso de lineage por paneKey"
+   ],
+   "note": "Compact-summary expansion is remembered in the in-memory store per worktree path."
+  },
+  {
+   "id": "D04a-089",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-agent-summary.ts:32-46",
+    "src/components/sidebar/worktree-card-agent-summary.ts:100-132"
+   ],
+   "missing_behaviors": [
+    "Ordem fixa waiting, blocked, working, monitoring, interrupted, done, unverifiable, idle",
+    "formatSummaryStateLabel (not reporting / needs attention) e summarizeAgentIdentities",
+    "Agrupamento de monitoring, interrupted e unverifiable"
+   ],
+   "note": "Dot state, groups and summarizeAgents exist. The rank order and the identity sentence do not match Orca."
+  },
+  {
+   "id": "D04a-090",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/compact-agent-row-labels.ts:130-161",
+    "src/components/sidebar/CompactAgentRow.tsx:52-63"
+   ],
+   "missing_behaviors": [
+    "Retenção da última mensagem do assistente no mesmo turno (lastAssistantMessageOverride sem produtor)"
+   ],
+   "note": "Interrupted, no-update, monitoring, tool preview, last message and subagent role are derived. The same-turn hold is not."
+  },
+  {
+   "id": "D04a-100",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:184-189"
+   ],
+   "missing_behaviors": [
+    "Fallback para títulos de issue, Linear, Jira e review quando o título salvo é igual-ish ao branch",
+    "Filtro de placeholders Loading ... / details unavailable",
+    "coerceWorktreeCardVisibleTitle"
+   ],
+   "note": "The visible title is display name, then branch, then the directory name."
+  },
+  {
+   "id": "D04a-101",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:1265",
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:64-65"
+   ],
+   "backend": [
+    "invoke('pr_status') -> src-tauri/src/lib.rs:410"
+   ],
+   "missing_behaviors": [
+    "Supressão de PR do GitHub por metadado, com exceção para link explícito",
+    "Fallbacks Loading PR/MR... e provedores gitlab, bitbucket, azure-devops e gitea",
+    "Validação de PR merged pelo head",
+    "Reconciliação de caches por chave"
+   ],
+   "note": "The lane shows whatever prByPath already holds. Resolution is a single GitHub pr_status probe."
+  },
+  {
+   "id": "D04a-103",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/pr-display.tsx:36-75",
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:78"
+   ],
+   "missing_behaviors": [
+    "Glifo por provedor (GitMerge para MR GitLab, variante generic)",
+    "getReviewLabel / getProviderName com MR para GitLab",
+    "Pílula com ícone de provedor (WorktreeCardReviewBadge não recebe review do mount)"
+   ],
+   "note": "State icon and check tone paint the lane. Provider does not change the glyph or the word PR."
+  },
+  {
+   "id": "D04a-104",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardHelpers.tsx:4-39",
+    "src/components/sidebar/worktree-card-meta-row.tsx:95"
+   ],
+   "missing_behaviors": [
+    "checksLabel (success/failure/pending/neutral) como helper; o texto só existe dentro de reviewStatusLabel",
+    "branchDisplayName, EMPTY_BROWSER_TABS, FilledBellIcon e PullRequestIcon sem consumidor fora do próprio arquivo"
+   ],
+   "note": "Conflict-operation labels and EMPTY_TABS are used. The bell and pull-request icons are not."
+  },
+  {
+   "id": "D04a-106",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-model.ts:14",
+    "src/components/sidebar/worktree-card-model.ts:145-169"
+   ],
+   "missing_behaviors": [
+    "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidor",
+    "EMPTY_WORKSPACE_PORTS sem consumidor",
+    "isWebClient sem consumidor no card"
+   ],
+   "note": "Props, defaults, rename matching and the sparse-directory preview are used by the card."
+  },
+  {
+   "id": "D04a-108",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeHostContextBadge.tsx:4-15",
+    "src/components/sidebar/worktree-card-meta-row.tsx:62-64",
+    "src/components/sidebar/worktree-card-presentation.tsx:81",
+    "src/components/sidebar/WorktreeList.tsx:1259-1331"
+   ],
+   "missing_behaviors": [
+    "Produtor de hostContextLabel no card (a prop não é passada no mount)",
+    "Modelo de host por worktree (Local Mac / host SSH) alimentando o chip"
+   ],
+   "note": "The chip renders when a label is passed. The worktree card mount never passes one."
+  },
+  {
+   "id": "D04a-109",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:630-652",
+    "src/components/sidebar/WorktreeSidebar.tsx:847"
+   ],
+   "missing_behaviors": [
+    "Checkbox por propriedade do card (issue, linear, jira, pr, automation, comment, ports, inline-agents)",
+    "Submenu Show properties com contagem e Agent activity layout",
+    "Radio Compact/Default chamando setWorktreeCardMode",
+    "onSelect com preventDefault para manter o menu aberto"
+   ],
+   "note": "Card display offers Detailed only, and points Compact at Settings -> Appearance."
+  }
+ ]
+}

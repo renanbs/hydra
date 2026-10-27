@@ -17,15 +17,22 @@ export function buildWorktreeStatusMenuItems(args: {
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
   currentStatus?: string | null
   onAssignStatus: (statusId: string) => void
+  /**
+   * Orca disables the whole submenu while the workspace is being deleted — a
+   * status write would race the removal and resurrect a row that is going away.
+   */
+  disabled?: boolean
 }): ContextMenuItem {
   return {
     label: translate('auto.components.sidebar.WorktreeContextMenu.84cdbb7e30', 'Move to Status'),
     icon: <Kanban className="w-3.5 h-3.5" />,
+    disabled: args.disabled,
     children: args.workspaceStatuses.map((status) => {
       const meta = getWorkspaceStatusVisualMeta(status)
       const StatusIcon = meta.icon
       return {
         label: status.label,
+        disabled: args.disabled,
         checked: status.id === args.currentStatus,
         icon: <StatusIcon className={`w-3.5 h-3.5 ${meta.tone}`} />,
         onClick: () => args.onAssignStatus(status.id),
