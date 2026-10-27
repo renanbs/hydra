@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand'
 import type { AppState } from '../types'
+import { uiPrefsBridge } from '../ui-prefs-bridge'
 import {
   createDefaultWorkspaceCleanupBrowseState,
   type WorkspaceCleanupBrowseState
@@ -40,7 +41,7 @@ export const createWorkspaceCleanupBrowseSlice: StateCreator<
       persistTimer = null
       // Why dismissals ride along: the legacy wire schema requires the field,
       // while `browse` stays optional for older clients.
-      window.api.ui
+      uiPrefsBridge
         .set({
           workspaceCleanup: {
             dismissals: get().workspaceCleanupDismissals,

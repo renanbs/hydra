@@ -8,6 +8,7 @@ import {
   type CustomPet
 } from '../../../shared/pet-types'
 import { clampPetSize } from './ui-slice-hydration-sanitizers'
+import { uiPrefsBridge } from '../../ui-prefs-bridge'
 
 export function createUiSurfaceActions(set: UISliceSet, _get: UISliceGet): Partial<UISlice> {
   return {
@@ -90,13 +91,13 @@ export function createUiSurfaceActions(set: UISliceSet, _get: UISliceGet): Parti
     // Why: default true so enabling experimentalPet shows the pet immediately (persisted; "Hide pet" flips it false).
     petVisible: true,
     setPetVisible: (v: any) => {
-      window.api.ui.set({ petVisible: v }).catch(console.error)
+      uiPrefsBridge.set({ petVisible: v }).catch(console.error)
       set({ petVisible: v })
     },
 
     petId: DEFAULT_PET_ID,
     setPetId: (id: any) => {
-      window.api.ui.set({ petId: id }).catch(console.error)
+      uiPrefsBridge.set({ petId: id }).catch(console.error)
       set({ petId: id })
     },
 
@@ -107,7 +108,7 @@ export function createUiSurfaceActions(set: UISliceSet, _get: UISliceGet): Parti
         max: PET_SIZE_MAX,
         fallback: PET_SIZE_DEFAULT
       })
-      window.api.ui.set({ petSize: clamped }).catch(console.error)
+      uiPrefsBridge.set({ petSize: clamped }).catch(console.error)
       set({ petSize: clamped })
     },
 
@@ -115,7 +116,7 @@ export function createUiSurfaceActions(set: UISliceSet, _get: UISliceGet): Parti
     addCustomPet: (model: any) =>
       set((s: any) => {
         const next = [...s.customPets.filter((m: any) => m.id !== model.id), model]
-        window.api.ui.set({ customPets: next }).catch(console.error)
+        uiPrefsBridge.set({ customPets: next }).catch(console.error)
         return { customPets: next }
       }),
     removeCustomPet: (id: any) =>
@@ -134,7 +135,7 @@ export function createUiSurfaceActions(set: UISliceSet, _get: UISliceGet): Parti
         if (fallback !== s.petId) {
           ipcPayload.petId = fallback
         }
-        window.api.ui.set(ipcPayload).catch(console.error)
+        uiPrefsBridge.set(ipcPayload).catch(console.error)
         // Why: revoke the cached blob: URL so the Blob is released, not leaked for the session.
         revokeCustomPetBlobUrl(id)
         // Why: best-effort delete — bytes owned by main; fresh-UUID imports mean an orphaned file is never re-referenced.

@@ -10,6 +10,7 @@ import {
 import { PER_REPO_FETCH_LIMIT } from '../../../shared/work-items'
 import { isGitRepoKind } from '../../../shared/repo-kind'
 import { presetToQuery } from './ui-slice-hydration-sanitizers'
+import { uiPrefsBridge } from '../../ui-prefs-bridge'
 
 const LINEAR_TASK_PREFETCH_LIMIT = 36
 
@@ -184,7 +185,7 @@ export function createUiTaskActions(set: UISliceSet, get: UISliceGet): Partial<U
     setTaskResumeState: (updates: any) =>
       set((s: any) => {
         const next = { ...s.taskResumeState, ...updates }
-        window.api.ui.set({ taskResumeState: next }).catch(console.error)
+        uiPrefsBridge.set({ taskResumeState: next }).catch(console.error)
         return { taskResumeState: next }
       }),
     setTaskListPosition: (taskListPosition: any) => set({ taskListPosition }),

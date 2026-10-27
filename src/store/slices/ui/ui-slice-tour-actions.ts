@@ -7,6 +7,7 @@ import {
   getPreviousVisibleContextualTourStepIndex
 } from '../../../components/contextual-tours/contextual-tour-gate'
 import { hasFeatureInteraction } from '../../../shared/feature-interactions'
+import { uiPrefsBridge } from '../../ui-prefs-bridge'
 
 export function createUiTourActions(set: UISliceSet, get: UISliceGet): Partial<UISlice> {
   return {
@@ -29,7 +30,7 @@ export function createUiTourActions(set: UISliceSet, get: UISliceGet): Partial<U
           return s
         }
         if (typeof window !== 'undefined') {
-          window.api.ui.set({ contextualToursAutoEligible: eligible }).catch(console.error)
+          uiPrefsBridge.set({ contextualToursAutoEligible: eligible }).catch(console.error)
         }
         return { contextualToursAutoEligible: eligible }
       }),
@@ -231,7 +232,7 @@ export function createUiTourActions(set: UISliceSet, get: UISliceGet): Partial<U
         }
         const next = [...current]
         if (typeof window !== 'undefined') {
-          window.api.ui.set({ contextualToursSeenIds: next }).catch(console.error)
+          uiPrefsBridge.set({ contextualToursSeenIds: next }).catch(console.error)
         }
         return { contextualToursSeenIds: next }
       })
