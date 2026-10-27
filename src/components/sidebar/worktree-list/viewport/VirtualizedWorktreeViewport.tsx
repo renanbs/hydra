@@ -4,10 +4,10 @@
 // The virtualized workspaces list: it owns the scroll container, the listbox semantics, the
 // row window and the jump-to-top affordance, and paints the row content the caller hands it.
 //
-// Adapted to Hydra: Orca's viewport also drives its drag runtime, sticky headers, lineage
-// folds, workspace board, PR refresh and reveal pipeline. Those live in Hydra's own drag
-// subsystem (`../drag`) and in the list's callbacks, so the port keeps the viewport to the
-// window + listbox + reveal + scroll-to-top, and takes the row content as a render prop.
+// Adapted to Hydra: Orca's viewport also drives its drag runtime, lineage folds, workspace board
+// and reveal pipeline. Those live in Hydra's own drag subsystem (`../drag`) and in the list's
+// callbacks, so the port keeps the viewport to the window + listbox + reveal + scroll-to-top +
+// sticky slots + visible-review reporting, and takes the row content as a render prop.
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
@@ -15,12 +15,17 @@ import { WorktreeListScrollToTopButton } from '../../WorktreeListScrollToTopButt
 import { getActiveDescendantOptionId, getRowOptionId, getWorktreeOptionId } from './option-id'
 import { useGroupToggleWithScrollAnchor } from './use-group-toggle'
 import { useVirtualRowMeasurementSync } from './use-row-measurement'
+import { useVisiblePrRefreshReporting } from './use-visible-review-refresh'
 import { useWorktreeListKeyboardNavigation } from './use-listbox-keyboard'
 import { useWorktreeListRevealScroll } from './use-reveal-scroll'
 import { useWorktreeListScrollToTop } from './use-scroll-to-top'
 import { useWorktreeSidebarScrollSuppression } from './use-scroll-suppression'
 import { useWorktreeListVirtualizer } from './use-virtualizer'
-import { getVirtualRowTransform, shouldUseHeaderTopSpacing } from './virtual-rows'
+import {
+  HOST_STICKY_PINNED_HEIGHT,
+  getVirtualRowTransform,
+  shouldUseHeaderTopSpacing
+} from './virtual-rows'
 import type { VirtualizedWorktreeViewportProps } from './viewport-props'
 import type { VirtualizedScrollAnchor } from '@/hooks/useVirtualizedScrollAnchor'
 
@@ -30,9 +35,13 @@ const WORKTREE_SIDEBAR_SCROLL_STYLE: React.CSSProperties = {
   overflowAnchor: 'none'
 }
 
+/** Top offset a pinned row paints at: one pixel above the slot so its edge covers the seam. */
+const STICKY_PIN_TOP_PX = -1
+
 export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktreeViewport({
   rows,
   activeRowKey,
+  groupBy,
   pinnedDisplayPolicy,
   revealPath,
   renderRow,
@@ -96,6 +105,8 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
     virtualizer: virtualization.virtualizer,
     markDirectScrollInput
   })
+
+  useVisiblePrRefreshReporting({ groupBy, rows, virtualItems, scrollRef: containerRef })
 
   const { showScrollToTop, scrollToTop } = useWorktreeListScrollToTop({
     scrollElement,
@@ -171,6 +182,23 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
               return null
             }
             const optionId = getRowOptionId(row)
+            const isStickyHost = virtualization.activeStickyHostIndexRef.current === virtualItem.index
+            const isStickyHeader =
+              virtualization.activeStickyHeaderIndexRef.current === virtualItem.index
+            const hasStickyHost = virtualization.activeStickyHostIndexRef.current !== null
+            // Why: the pinned host card is the outer tier, so the group tier pins below its
+            // bottom edge while the host card stays put. The pinned host always paints its 4px
+            // top margin, so the two tiers meet without a see-through slit.
+            const isStickyRow = row.type === 'header' || row.type === 'host-header'
+            const isSticky = isStickyHost || isStickyHeader
+            const stickyTopPx =
+              isStickyHost || !hasStickyHost ? STICKY_PIN_TOP_PX : HOST_STICKY_PINNED_HEIGHT - 1
+            const hasHeaderTopSpacing =
+              shouldUseHeaderTopSpacing({
+                rows,
+                index: virtualItem.index,
+                firstHeaderIndex
+              }) || isStickyHost
             return (
               <div
                 key={virtualItem.key}
@@ -179,13 +207,24 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
                 data-worktree-virtual-row-key={String(virtualItem.key)}
                 data-worktree-virtual-row-start={virtualItem.start}
                 data-index={virtualItem.index}
+                data-worktree-sticky-header={isStickyRow ? '' : undefined}
+                data-worktree-sticky-header-active={isSticky ? '' : undefined}
                 ref={measureVirtualRowElement}
                 className={cn(
-                  'absolute left-0 right-0 top-0',
-                  shouldUseHeaderTopSpacing({ rows, index: virtualItem.index, firstHeaderIndex }) &&
-                    'pt-1'
+                  'left-0 right-0',
+                  // Why Orca drops this spacer when a header pins and Hydra keeps it: Hydra
+                  // measures every header slot from the DOM, so removing the spacer would
+                  // shrink the measured slot by 4px and shift the list under the pin.
+                  hasHeaderTopSpacing && 'pt-1',
+                  isSticky
+                    ? cn('sticky bg-worktree-sidebar', isStickyHost ? 'z-30' : 'z-20')
+                    : 'absolute top-0'
                 )}
-                style={{ transform: getVirtualRowTransform(virtualItem.start) }}
+                style={
+                  isSticky
+                    ? { top: `${stickyTopPx}px` }
+                    : { transform: getVirtualRowTransform(virtualItem.start) }
+                }
               >
                 {renderRow(row, {
                   toggleCollapse: () => toggleGroupWithScrollAnchor(row),

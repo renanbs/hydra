@@ -4,16 +4,25 @@
 // The TanStack virtualizer plus the row-identity guards that stop a recycled DOM node from
 // writing a stale height into the wrong slot (D03a-099).
 //
-// Adapted to Hydra: no sticky headers (out of scope), so there is no range extractor or
-// sticky index ref — the default window plus overscan is the whole range policy.
-import { useCallback, useRef } from 'react'
+// Adapted to Hydra: Orca's estimate/measure callbacks also take the active sticky index; here
+// the estimate never depends on it (Hydra measures every header from the DOM), so only the
+// sticky index set, its refs and the range extractor are ported.
+import { useCallback, useMemo, useRef } from 'react'
 import type React from 'react'
 import {
   measureElement as measureVirtualElementSize,
   useVirtualizer,
+  type Range,
   type Virtualizer
 } from '@tanstack/react-virtual'
-import { estimateRenderRowSize, getVirtualRowIndex, WORKTREE_SIDEBAR_VIRTUAL_ROW_GAP } from './virtual-rows'
+import {
+  GROUP_HEADER_ROW_HEIGHT,
+  estimateRenderRowSize,
+  extractWorktreeVirtualRowIndexes,
+  getStickyHeaderIndexes,
+  getVirtualRowIndex,
+  WORKTREE_SIDEBAR_VIRTUAL_ROW_GAP
+} from './virtual-rows'
 import { getRenderRowKey } from '../listing/render-row'
 import type { HostSectionRow } from '../../host-section-rows'
 import {
@@ -28,6 +37,14 @@ export type WorktreeListVirtualizer = {
   virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>
   /** True while the node still belongs to the row its `data-index` names. */
   isCurrentVirtualRowElement: (element: Element) => boolean
+  /** Rows that can pin to the viewport top; the range extractor keeps them mounted. */
+  stickyHeaderIndexes: number[]
+  /** Index of the pinned group header (tier 2), written by the measurement sync each render. */
+  activeStickyHeaderIndexRef: React.MutableRefObject<number | null>
+  /** Index of the pinned host card (tier 1), written by the measurement sync each render. */
+  activeStickyHostIndexRef: React.MutableRefObject<number | null>
+  /** `range.startIndex` of the last painted window; the sticky resolver reads it. */
+  stickyRangeStartIndexRef: React.MutableRefObject<number>
 }
 
 export type WorktreeListVirtualizerArgs = {
@@ -45,6 +62,10 @@ export function useWorktreeListVirtualizer(
     args
   const firstHeaderIndexRef = useRef(firstHeaderIndex)
   firstHeaderIndexRef.current = firstHeaderIndex
+  const stickyHeaderIndexes = useMemo(() => getStickyHeaderIndexes(rows), [rows])
+  const activeStickyHeaderIndexRef = useRef<number | null>(null)
+  const activeStickyHostIndexRef = useRef<number | null>(null)
+  const stickyRangeStartIndexRef = useRef(0)
 
   const getVirtualItemKey = useCallback(
     (index: number) => {
@@ -101,8 +122,20 @@ export function useWorktreeListVirtualizer(
     getScrollElement: () => scrollRef.current,
     estimateSize: (index) => estimateRenderRowSize(rows, index, firstHeaderIndex),
     measureElement: measureCurrentVirtualRowElement,
+    // Why: TanStack memoizes the range extractor by identity, so the header indexes have to be
+    // deps — otherwise the sticky slots go stale and the pinned header unmounts.
+    rangeExtractor: useCallback(
+      (range: Range) => {
+        stickyRangeStartIndexRef.current = range.startIndex
+        return extractWorktreeVirtualRowIndexes({ range, stickyHeaderIndexes, rows })
+      },
+      [rows, stickyHeaderIndexes]
+    ),
     overscan: WORKTREE_SIDEBAR_OVERSCAN,
     gap: WORKTREE_SIDEBAR_VIRTUAL_ROW_GAP,
+    // Why: the pinned header occludes the top of the viewport, so a reveal scrolled to the top
+    // edge would land under it — pad the scroll-to-index offset by the pinned row's height.
+    scrollPaddingStart: GROUP_HEADER_ROW_HEIGHT,
     isScrollingResetDelay: USER_SCROLL_MEASUREMENT_ADJUSTMENT_SUPPRESS_MS,
     // Why: sync-flushing rich card renders in the scroll listener stalls wheel input;
     // async plus overscan keeps the window filled.
@@ -121,5 +154,12 @@ export function useWorktreeListVirtualizer(
       suppressUntil: suppressMeasurementAdjustmentUntilRef.current
     })
 
-  return { virtualizer, isCurrentVirtualRowElement }
+  return {
+    virtualizer,
+    isCurrentVirtualRowElement,
+    stickyHeaderIndexes,
+    activeStickyHeaderIndexRef,
+    activeStickyHostIndexRef,
+    stickyRangeStartIndexRef
+  }
 }

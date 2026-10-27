@@ -24,3 +24,12 @@ Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
     return 0;
   },
 });
+
+// jsdom implements no Web Animations API, and the sidebar's row-removal animation issues one
+// `Element.animate` per surviving row when a workspace is deleted. A no-op keeps component
+// tests able to render a removal; the motion itself is asserted on the pure builder.
+Object.defineProperty(Element.prototype, "animate", {
+  configurable: true,
+  writable: true,
+  value: (): undefined => undefined,
+});

@@ -1,6 +1,6 @@
 import type React from 'react'
 import type { HostSectionRow } from '../../host-section-rows'
-import type { PinnedWorktreeDisplayPolicy, WorktreeRow } from '../grouping/row-types'
+import type { PinnedWorktreeDisplayPolicy, WorktreeGroupBy, WorktreeRow } from '../grouping/row-types'
 
 /** What the virtual slot hands the row it wraps (D03a-103 — the viewport's props contract). */
 export type WorktreeVirtualRowSlot = {
@@ -25,6 +25,8 @@ export type VirtualizedWorktreeViewportProps = {
   rows: HostSectionRow[]
   /** Row key of the active workspace, i.e. the row `aria-activedescendant` points at. */
   activeRowKey: string | null
+  /** The grouping the rows were built with; the visible-review reporter tracks PR status lanes. */
+  groupBy: WorktreeGroupBy
   pinnedDisplayPolicy: PinnedWorktreeDisplayPolicy
   /** Workspace or folder path the list must bring into view; null when nothing is revealed. */
   revealPath: string | null

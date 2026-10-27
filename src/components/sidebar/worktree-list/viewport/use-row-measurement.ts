@@ -1,23 +1,29 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: orca/src/renderer/src/components/sidebar/worktree-list/viewport/use-row-measurement.ts
 //
-// Re-measures only the rows whose DOM node still matches its virtual key, and keeps the
-// scroll anchor pinned to a row identity across row churn.
+// Re-measures only the rows whose DOM node still matches its virtual key, keeps the scroll
+// anchor pinned to a row identity across row churn, publishes the sticky-header slots the
+// render pass reads out of refs, and animates the rows a removal pushed up.
 //
-// Adapted to Hydra: Orca also drives its row-removal animation and re-measures on its PR /
-// issue cache growth from here. Row-removal animation is out of scope for this PR and Hydra's
-// viewport has no equivalent cache subscription, so the port keeps pruning, re-measurement
-// and the anchor.
+// Adapted to Hydra: Orca also re-measures on its PR / issue cache growth from here, and its
+// rekey map follows `lineage-group` rows; Hydra's viewport has no equivalent cache
+// subscription and paints no lineage folds, so the port keeps pruning, re-measurement, the
+// anchor, the sticky slots and the removal animation.
 import { useCallback, useLayoutEffect, useMemo } from 'react'
 import type React from 'react'
 import {
   useVirtualizedScrollAnchor,
   type VirtualizedScrollAnchor
 } from '@/hooks/useVirtualizedScrollAnchor'
-import { getVirtualRowKey, pruneStaleVirtualRowElementCache } from './virtual-rows'
+import {
+  getActiveStickyIndexesForScroll,
+  getVirtualRowKey,
+  pruneStaleVirtualRowElementCache
+} from './virtual-rows'
 import { getRenderRowKey } from '../listing/render-row'
 import type { HostSectionRow } from '../../host-section-rows'
 import type { WorktreeListVirtualizer } from './use-virtualizer'
+import { useVirtualRowRemovalAnimation } from './use-row-removal-animation'
 
 export type VirtualRowMeasurementSync = {
   virtualItems: ReturnType<WorktreeListVirtualizer['virtualizer']['getVirtualItems']>
@@ -50,6 +56,17 @@ export function useVirtualRowMeasurementSync(
   const activeRenderRowKeys = useMemo(() => new Set(rows.map(getRenderRowKey)), [rows])
   const totalSize = virtualizer.getTotalSize()
   const virtualItems = virtualizer.getVirtualItems()
+  // Why: the pinned slots are resolved during render (not in an effect) so the row wrappers
+  // the same pass paints read the indexes that match the window it paints.
+  const activeStickyIndexes = getActiveStickyIndexesForScroll({
+    rows,
+    rangeStartIndex: virtualization.stickyRangeStartIndexRef.current,
+    scrollOffset: virtualizer.scrollOffset ?? scrollOffsetRef.current,
+    stickyHeaderIndexes: virtualization.stickyHeaderIndexes,
+    virtualItems
+  })
+  virtualization.activeStickyHeaderIndexRef.current = activeStickyIndexes.groupIndex
+  virtualization.activeStickyHostIndexRef.current = activeStickyIndexes.hostIndex
 
   const measureMountedRows = useCallback(() => {
     virtualizer.elementsCache.forEach((element) => {
@@ -96,6 +113,8 @@ export function useVirtualRowMeasurementSync(
     totalSize,
     virtualizer
   })
+
+  useVirtualRowRemovalAnimation({ rows, scrollRef, virtualItems })
 
   return { virtualItems, measureVirtualRowElement }
 }
