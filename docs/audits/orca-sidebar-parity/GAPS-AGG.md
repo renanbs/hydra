@@ -233,7 +233,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 302 capabilities
+## PARTIAL — 301 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -339,7 +339,7 @@
 - **D03a-100** — Reportar rows visíveis ao coordenador de refresh de PR/CI | falta: coordenador de refresh de PR/CI (findWorktreeById/buildPRRefreshCandidate são stubs null) | components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:11-134
 - **D03a-104** — Resolver a PR de um worktree para o lane de PR (escopo repo/repo-legado/path-legado/SSH/runtime) | falta: precedência repo-scoped sobre chaves legadas; respeitar isGitHubPRSuppressed; entradas escopadas por connectionId SSH | components/sidebar/worktree-list/grouping/group-keys.ts:108-167
 
-### D03b-sidebar-list-orchestration (20)
+### D03b-sidebar-list-orchestration (19)
 
 - **D03b-001** — Redimensionamento da largura do sidebar esquerdo com cursor interativo, limites mínimo/máximo e atualização de variável CSS em tempo real | falta: Limites 220–500px (Hydra usa 180–480: src/App.tsx:741-742); Variável CSS live --workspace-sidebar-live-width (Hydra escreve container.style.width: src/hooks/useSidebarResize.ts:70-85) | backend: invoke('save_layout_persistence') -> src/App.tsx:1029 | components/sidebar/index.tsx:33-40
 - **D03b-002** — Alternância de modo do corpo do sidebar entre Workspaces e Agents com preservação de estado de colapso e scroll | falta: lazy + fallback de carregamento do SidebarAgentsList (montagem síncrona direta); ActivityThreadCollapseContext / agentsCollapsedGroupKeys preservados fora do mount; preservação de scroll dos agentes (agentsScrollTopRef): filter/focusedSessionId/selectedSessions internos (SidebarAgentsList.tsx:49-52) são perdidos no unmount | components/sidebar/index.tsx:22-24
@@ -350,7 +350,6 @@
 - **D03b-013** — Filtragem de escopo de visibilidade por host e integração de cartões de worktrees externos/importados | falta: escopo de host na lista montada (useSidebarHostVisibleScope): getVisibleSidebarHostIdSet/filterProjectGroupsForVisibleHosts só são usados no pipeline de atalhos (rendered-sidebar-worktree-order.ts:41,63) | components/sidebar/WorktreeList.tsx:140-153
 - **D03b-014** — Geração do modelo de linhas de seção do sidebar com ordenação de projetos e políticas de fixação | falta: modelo de linhas consumido pela lista montada (só o caminho de sidebar fechado usa buildRows); handleReorderHostSections/setHostDragActive | components/sidebar/WorktreeList.tsx:154-177
 - **D03b-015** — Gerenciamento de seleção múltipla e mutações de status/pino/ordem de worktrees na lista | falta: seleção múltipla de worktrees (useSidebarWorktreeSelection); moveWorktreeToStatus/moveWorktreesToStatus/moveWorktreesToStatusAtIndex; pinWorktree/pinWorktrees em lote (Hydra só pin/unread por item: App.tsx:3135,3406); dropWorktreesOnWorkspaceBoard (sem Kanban) | components/sidebar/WorktreeList.tsx:178-187
-- **D03b-016** — Ativação visual imediata no DOM do card de worktree ao clique para eliminar latência perceptível | falta: markSidebarWorktreeActiveImmediately (mutação direta de data-worktree-card-active antes da reconciliação do store): o atributo deriva de isActiveSurface (React) e o caminho onImmediateActivate (controller:172) não é fornecido por nenhum caller; WorktreeList passa onSelect | components/sidebar/WorktreeList.tsx:23
 - **D03b-017** — Abertura de caixas de diálogo modais e configurações a partir de ações de repositório e grupos no sidebar | falta: handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings); confirmação 'confirm-remove-folder': App.tsx:1612 remove direto; handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500) | backend: invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181 | components/sidebar/WorktreeList.tsx:195-235
 - **D03b-018** — Processamento de requisições de reveal para rolagem e destaque de worktrees na lista virtualizada | falta: ajuste de filtros ativos para tornar a worktree visível; fila de requisição pendente no store (pendingRevealWorktree/pendingRevealSidebarRow + clear*) | components/sidebar/WorktreeList.tsx:31
 - **D03b-019** — Priorização do estado vazio 'Clear Filters' sobre cabeçalhos de grupos quando todos os itens são filtrados | falta: shouldFiltersHideAllRows: a decisão usa apenas visibleProjects (WorktreeList.tsx:588) e ignora contagens de placeholders/inbox, então um projeto vazio excluído por filtro de repo não preserva o cabeçalho antes do estado vazio | components/sidebar/WorktreeList.tsx:38

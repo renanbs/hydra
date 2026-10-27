@@ -6393,17 +6393,16 @@
    "components/sidebar/WorktreeList.tsx:328"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-card-surface.tsx:83",
-    "src/components/sidebar/WorktreeList.tsx:349"
+    "src/components/sidebar/worktree-list/rows/sidebar-worktree-active-dom.ts:36-88",
+    "src/components/sidebar/WorktreeList.tsx:1272-1281",
+    "src/components/sidebar/worktree-list/rows/sidebar-worktree-active-dom.parity.test.ts:33-90"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "markSidebarWorktreeActiveImmediately (mutação direta de data-worktree-card-active antes da reconciliação do store): o atributo deriva de isActiveSurface (React) e o caminho onImmediateActivate (controller:172) não é fornecido por nenhum caller; WorktreeList passa onSelect"
-   ],
-   "notes": "Ativação imediata parcial.",
-   "note": "Ativação imediata parcial."
+   "missing_behaviors": [],
+   "notes": "markSidebarWorktreeActiveImmediately moves aria-current and the primary/secondary surface marker in the same frame, keeps hosts apart by identity and survives virtualization.",
+   "note": "markSidebarWorktreeActiveImmediately moves aria-current and the primary/secondary surface marker in the same frame, keeps hosts apart by identity and survives virtualization."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
