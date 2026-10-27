@@ -20,7 +20,10 @@ type WorkspaceBoardCardProps = {
 
 /**
  * Ported from Orca `WorkspaceKanbanCard`: the sidebar's own card, framed with the
- * board's `data-workspace-board-card-*` hooks and the Pinned badge.
+ * board's `data-workspace-board-card-*` hooks and the Pinned badge. The frame is what
+ * the board's pointer drag lifts, and `data-workspace-board-worktree-path` is how a
+ * drop knows which worktree `set_worktree_status` must be written for (the id and the
+ * index on the same frame are display and lane-slot hooks).
  *
  * Why `affiliateListMode`: this card lives in another list, so the card's own
  * rename/delete/drag affordances must not render — they would be inert here. The
@@ -38,6 +41,7 @@ function WorkspaceBoardCard({
       className="relative rounded-lg"
       data-workspace-board-card-id={card.identity}
       data-workspace-board-worktree-id={card.worktree.id ?? card.worktree.path}
+      data-workspace-board-worktree-path={card.worktree.path}
       data-workspace-board-card-index={card.laneIndex}
       data-workspace-board-card-mode="detailed"
       onContextMenu={(event) => onContextMenu?.(event, card.worktree, card.project)}

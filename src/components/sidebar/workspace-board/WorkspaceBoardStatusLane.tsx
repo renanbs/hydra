@@ -12,6 +12,8 @@ type WorkspaceBoardStatusLaneProps = {
   cards: readonly WorkspaceBoardCardModel[]
   columnWidth: number
   compactCards: boolean
+  /** True while a card drag hovers this lane; the destination lane paints its own ring. */
+  isDropTarget?: boolean
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
   onContextMenu?: (
@@ -24,14 +26,17 @@ type WorkspaceBoardStatusLaneProps = {
 /**
  * Ported from Orca `WorkspaceKanbanStatusLane`: one lane per user-defined
  * `WorkspaceStatus`, with its icon, label, card counter and empty placeholder.
- * The column resize handle, the lane's create-workspace buttons and the drop
- * targets are not part of this increment, so they are absent rather than inert.
+ * The lane root is also the board's drop destination — its rect resolves the target
+ * lane and `isDropTarget` paints the highlight while a card hovers it. The column
+ * resize handle and the lane's create-workspace buttons are not part of this
+ * increment, so they are absent rather than inert.
  */
 function WorkspaceBoardStatusLane({
   status,
   cards,
   columnWidth,
   compactCards,
+  isDropTarget = false,
   onActivate,
   onSelectSession,
   onContextMenu,
@@ -40,10 +45,12 @@ function WorkspaceBoardStatusLane({
   return (
     <section
       data-workspace-status={status.id}
+      data-workspace-board-lane-drop-target={isDropTarget ? '' : undefined}
       className={cn(
         'flex h-full min-h-0 min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-t-2 border-worktree-sidebar-border',
         meta.border,
-        meta.laneTint
+        meta.laneTint,
+        isDropTarget && 'ring-1 ring-inset ring-worktree-sidebar-ring'
       )}
       style={{ width: `${columnWidth}px` }}
     >

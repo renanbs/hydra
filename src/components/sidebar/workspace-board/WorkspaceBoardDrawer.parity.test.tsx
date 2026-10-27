@@ -55,9 +55,10 @@ function drawerProps(overrides: Partial<WorkspaceBoardDrawerProps> = {}): Worksp
     sessions: [],
     displayOptions: DISPLAY_OPTIONS,
     compactCards: false,
+    onAssignWorktreeStatus: vi.fn(),
     onOpenChange: vi.fn(),
     onSelectWorktree: vi.fn(),
-    ...overrides,
+    ...overrides
   }
 }
 
