@@ -3409,21 +3409,20 @@
    "components/sidebar/ProjectGroupDeleteDialog.tsx:177"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/ProjectGroupDeleteDialog.tsx:14-116",
-    "src/store/project-groups/project-group-mutations.ts:139",
-    "src/components/sidebar/WorktreeSidebar.tsx:1188-1196"
+    "src/components/sidebar/ProjectGroupDeleteDialog.tsx:8-16",
+    "src/components/sidebar/ProjectGroupDeleteDialog.tsx:108-128",
+    "src/components/sidebar/WorktreeSidebar.tsx:1448-1466",
+    "src/App.tsx:1444-1460",
+    "src/components/sidebar/ProjectGroupDeleteDialog.parity.test.tsx:23-49"
    ],
    "backend": [
     "CustomEvent 'hydra:delete-project-group' -> src/components/sidebar/WorktreeSidebar.tsx:1134 -> src/App.tsx:1211 (estado local + 'hydra:refresh-projects')"
    ],
-   "missing_behaviors": [
-    "Checkbox opcional 'Remove N contained projects' e props removeContainedProjects/onRemoveContainedProjectsChange (store já suporta; UI não expõe)",
-    "content ref (mountedRef) para evitar mutações de estado após desmontagem"
-   ],
-   "notes": "Dialog portado e montado; segue sem checkbox 'Remove N contained projects' (store suporta, UI nao expoe).",
-   "note": "Dialog portado e montado; segue sem checkbox 'Remove N contained projects' (store suporta, UI nao expoe)."
+   "missing_behaviors": [],
+   "notes": "Checkbox (default off, hidden with no members) reports removeContained to onConfirm; the shell removes each member path via remove_project, and the mounted guard prevents post-close state writes.",
+   "note": "Checkbox (default off, hidden with no members) reports removeContained to onConfirm; the shell removes each member path via remove_project, and the mounted guard prevents post-close state writes."
   },
   "domain": "D02c-project-groups-scripts"
  },
