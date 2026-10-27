@@ -30,6 +30,14 @@ pub struct GitWorktreeInfo {
     pub is_sparse: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sparse_directories: Option<Vec<String>>,
+    /// Provenance kind for automation-created worktrees (`created-by-automation`),
+    /// read from `worktree_metadata.provenance_kind`. Omitted from the wire when NULL.
+    #[serde(rename = "automationProvenanceKind", default, skip_serializing_if = "Option::is_none")]
+    pub automation_provenance_kind: Option<String>,
+    /// Provenance kind for CLI-created worktrees (`created-by-cli`), read from the
+    /// same column. Omitted from the wire when NULL.
+    #[serde(rename = "cliProvenanceKind", default, skip_serializing_if = "Option::is_none")]
+    pub cli_provenance_kind: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -41,6 +49,10 @@ pub struct CreateWorktreeParams {
     /// Orca's `createdWithAgent`; `None` still records `created_at`.
     #[serde(default)]
     pub created_with_agent: Option<String>,
+    /// Creation provenance kind (`created-by-automation` | `created-by-cli`),
+    /// persisted to `worktree_metadata.provenance_kind`. `None` records none.
+    #[serde(default)]
+    pub provenance_kind: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -937,6 +949,8 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
                     is_unread: None,
                     is_sparse: None,
                     sparse_directories: None,
+                    automation_provenance_kind: None,
+                    cli_provenance_kind: None,
                 });
                 current_head = String::new();
                 current_branch = String::new();
@@ -974,6 +988,8 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
             is_unread: None,
             is_sparse: None,
             sparse_directories: None,
+            automation_provenance_kind: None,
+            cli_provenance_kind: None,
         });
     }
 
@@ -1014,6 +1030,7 @@ struct PersistedWorktreeMetadata {
     is_pinned: Option<bool>,
     is_unread: Option<bool>,
     provenance: WorktreeProvenance,
+    provenance_kind: Option<String>,
 }
 
 fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMetadata> {
@@ -1028,6 +1045,7 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
                     status TEXT,
                     created_at INTEGER,
                     created_with_agent TEXT,
+                    provenance_kind TEXT,
                     is_pinned INTEGER,
                     is_unread INTEGER,
                     updated_at INTEGER NOT NULL
@@ -1037,9 +1055,10 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", rusqlite::params![]);
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", rusqlite::params![]);
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", rusqlite::params![]);
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN provenance_kind TEXT", rusqlite::params![]);
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", rusqlite::params![]);
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", rusqlite::params![]);
-            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread FROM worktree_metadata") {
+            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, provenance_kind FROM worktree_metadata") {
                 if let Ok(rows) = stmt.query_map(rusqlite::params![], |row| {
                     Ok((
                         row.get::<_, String>(0)?,
@@ -1053,6 +1072,7 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
                                 created_at: row.get(4)?,
                                 created_with_agent: row.get(5)?,
                             },
+                            provenance_kind: row.get(8)?,
                         },
                     ))
                 }) {
@@ -1143,6 +1163,15 @@ fn fill_worktree_metadata(worktrees: &mut [GitWorktreeInfo]) {
             // the persisted value wins for both set and unset.
             wt.is_pinned = record.is_pinned;
             wt.is_unread = record.is_unread;
+            // Same for creation provenance kind: the persisted column is the only
+            // source, and an unrecognized/absent value paints neither field.
+            match record.provenance_kind.as_deref() {
+                Some("created-by-automation") => {
+                    wt.automation_provenance_kind = Some("created-by-automation".to_string())
+                }
+                Some("created-by-cli") => wt.cli_provenance_kind = Some("created-by-cli".to_string()),
+                _ => {}
+            }
         }
         check_sparse_checkout(wt);
     }
@@ -1212,7 +1241,12 @@ pub fn create_git_worktree(params: CreateWorktreeParams) -> Result<String, Strin
         // the worktree exists on disk either way, so a metadata write failure
         // must not turn a successful creation into an error.
         let created_at = chrono::Utc::now().timestamp_millis();
-        let _ = persist_worktree_creation(&path, created_at, params.created_with_agent.as_deref());
+        let _ = persist_worktree_creation(
+            &path,
+            created_at,
+            params.created_with_agent.as_deref(),
+            params.provenance_kind.as_deref(),
+        );
         Ok(path)
     } else {
         Err(String::from_utf8_lossy(&out.stderr).to_string())
@@ -1223,9 +1257,14 @@ fn persist_worktree_creation(
     worktree_path: &str,
     created_at: i64,
     created_with_agent: Option<&str>,
+    provenance_kind: Option<&str>,
 ) -> Result<(), String> {
     let db = crate::db::DatabaseManager::new()?;
-    db.set_worktree_provenance(worktree_path, created_at, created_with_agent)
+    db.set_worktree_provenance(worktree_path, created_at, created_with_agent)?;
+    if let Some(kind) = provenance_kind {
+        db.set_worktree_provenance_kind(worktree_path, Some(kind))?;
+    }
+    Ok(())
 }
 
 pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), String> {
@@ -1526,11 +1565,11 @@ branch refs/heads/feat/auth\n";
         let repo_path = "/home/user/src/my-repo";
         let history: Vec<OrcaWorkspaceLayout> = vec![];
         // Worktree inside nested workspaceDir should be External → visible
-        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None };
+        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None };
         // Worktree inside .claude/worktrees without configured base should be AgentScratch → hidden
-        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None };
+        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None };
         // Worktree outside any layout → UnknownLegacy → hidden
-        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None };
+        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None };
 
         let configured: Vec<String> = vec![];
         let known = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured);
@@ -1918,6 +1957,7 @@ branch refs/heads/feat/auth\n";
             branch_name: "feat/prov".to_string(),
             new_branch: true,
             created_with_agent: Some("claude".to_string()),
+            provenance_kind: Some("created-by-automation".to_string()),
         })
         .expect("create_git_worktree succeeds");
         assert!(Path::new(&path).exists(), "worktree must exist on disk");
@@ -1929,6 +1969,26 @@ branch refs/heads/feat/auth\n";
             "created_at must be stamped"
         );
         assert_eq!(record.provenance.created_with_agent.as_deref(), Some("claude"));
+        assert_eq!(
+            record.provenance_kind.as_deref(),
+            Some("created-by-automation"),
+            "provenance kind must be persisted"
+        );
+
+        // The scan payload carries the persisted kind in camelCase.
+        let scanned = list_git_worktrees(&repo.to_string_lossy()).expect("scan after create");
+        let scanned_entry = scanned.iter().find(|w| w.path == path).expect("worktree in scan");
+        assert_eq!(
+            scanned_entry.automation_provenance_kind.as_deref(),
+            Some("created-by-automation")
+        );
+        assert_eq!(scanned_entry.cli_provenance_kind, None);
+        let wire = serde_json::to_string(scanned_entry).expect("serialize");
+        assert!(
+            wire.contains("\"automationProvenanceKind\":\"created-by-automation\""),
+            "automation kind must reach the wire: {wire}"
+        );
+        assert!(!wire.contains("cliProvenanceKind"), "cli kind must be omitted: {wire}");
 
         // The persisted provenance is what makes the freshly created worktree visible
         // under the default `external: hide` policy.
@@ -1954,6 +2014,7 @@ branch refs/heads/feat/auth\n";
             branch_name: "feat/flags".to_string(),
             new_branch: true,
             created_with_agent: None,
+            provenance_kind: None,
         })
         .expect("create_git_worktree succeeds");
 
@@ -1978,6 +2039,8 @@ branch refs/heads/feat/auth\n";
         let wire = serde_json::to_string(entry).expect("serialize");
         assert!(wire.contains("\"is_pinned\":true"), "pin must reach the wire: {wire}");
         assert!(wire.contains("\"is_unread\":false"), "unread must reach the wire: {wire}");
+        assert!(!wire.contains("automationProvenanceKind"), "NULL kind must be omitted: {wire}");
+        assert!(!wire.contains("cliProvenanceKind"), "NULL kind must be omitted: {wire}");
         assert_eq!(entry.display_name.as_deref(), Some("Flags"), "unrelated metadata survives");
 
         let _ = Command::new("git").args(["worktree", "remove", "--force"]).arg(&path).current_dir(&repo).output();

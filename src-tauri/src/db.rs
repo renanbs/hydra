@@ -66,6 +66,9 @@ pub struct WorktreeMetadataRecord {
     /// Provenance (Orca `WorktreeMeta.createdWithAgent`): agent that requested
     /// the creation, when the caller informed one.
     pub created_with_agent: Option<String>,
+    /// Provenance kind: `created-by-automation` | `created-by-cli`, or `None`
+    /// when the worktree was not created through an automation/CLI path.
+    pub provenance_kind: Option<String>,
     /// D07: pin persistido (Orca `WorktreeMeta.isPinned`). `None` = nunca gravado
     /// (coluna NULL) — a UI trata ausência e `false` da mesma forma.
     pub is_pinned: Option<bool>,
@@ -698,6 +701,7 @@ impl DatabaseManager {
                  status TEXT,
                  created_at INTEGER,
                  created_with_agent TEXT,
+                 provenance_kind TEXT,
                  is_pinned INTEGER,
                  is_unread INTEGER,
                  updated_at INTEGER NOT NULL
@@ -708,6 +712,7 @@ impl DatabaseManager {
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN provenance_kind TEXT", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN project_path TEXT NOT NULL DEFAULT ''", params![]);
@@ -1144,7 +1149,7 @@ impl DatabaseManager {
     pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at FROM worktree_metadata WHERE worktree_path = ?1")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind FROM worktree_metadata WHERE worktree_path = ?1")
             .map_err(|e| format!("Error preparing worktree_metadata select: {e}"))?;
         let mut rows = stmt.query(params![worktree_path]).map_err(|e| e.to_string())?;
         if let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -1158,6 +1163,7 @@ impl DatabaseManager {
                 is_pinned: row.get(6).ok().flatten(),
                 is_unread: row.get(7).ok().flatten(),
                 updated_at: row.get(8).unwrap_or(0),
+                provenance_kind: row.get(9).ok().flatten(),
             }))
         } else {
             Ok(None)
@@ -1167,7 +1173,7 @@ impl DatabaseManager {
     pub fn get_all_worktree_metadata(&self) -> Result<std::collections::HashMap<String, WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at FROM worktree_metadata")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind FROM worktree_metadata")
             .map_err(|e| format!("Error preparing worktree_metadata select all: {e}"))?;
         let rows = stmt
             .query_map(params![], |row| {
@@ -1181,6 +1187,7 @@ impl DatabaseManager {
                     is_pinned: row.get(6).ok().flatten(),
                     is_unread: row.get(7).ok().flatten(),
                     updated_at: row.get(8).unwrap_or(0),
+                    provenance_kind: row.get(9).ok().flatten(),
                 })
             })
             .map_err(|e| format!("Query error: {e}"))?;
@@ -1287,6 +1294,31 @@ impl DatabaseManager {
         .map_err(|e| format!("Error setting worktree provenance: {e}"))?;
         Ok(())
     }
+
+    /// Records the creation provenance kind (`created-by-automation` |
+    /// `created-by-cli`) for a worktree, without touching any other field.
+    ///
+    /// Partial upsert mirroring `set_worktree_flags`: `None` preserves an
+    /// existing value (and writes NULL when creating the row); `Some(kind)`
+    /// writes it. `updated_at` is always renewed.
+    pub fn set_worktree_provenance_kind(
+        &self,
+        worktree_path: &str,
+        kind: Option<&str>,
+    ) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO worktree_metadata (worktree_path, display_name, first_agent_message_rename_error, provenance_kind, updated_at)
+             VALUES (?1, NULL, NULL, ?2, ?3)
+             ON CONFLICT(worktree_path) DO UPDATE SET
+                provenance_kind = COALESCE(excluded.provenance_kind, worktree_metadata.provenance_kind),
+                updated_at = excluded.updated_at",
+            params![worktree_path, kind, now],
+        )
+        .map_err(|e| format!("Error setting worktree provenance kind: {e}"))?;
+        Ok(())
+    }
     #[cfg(test)]
     pub fn new_in_memory() -> Result<Self, String> {
         let conn = Connection::open_in_memory().map_err(|e| format!("Error opening SQLite in memory: {e}"))?;
@@ -1340,6 +1372,7 @@ impl DatabaseManager {
                  status TEXT,
                  created_at INTEGER,
                  created_with_agent TEXT,
+                 provenance_kind TEXT,
                  is_pinned INTEGER,
                  is_unread INTEGER,
                  updated_at INTEGER NOT NULL
@@ -1349,6 +1382,7 @@ impl DatabaseManager {
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN status TEXT", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_at INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN created_with_agent TEXT", params![]);
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN provenance_kind TEXT", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", params![]);
 
@@ -1721,6 +1755,54 @@ mod tests {
         let listed = all.get(wt_path).expect("row present in map");
         assert_eq!(listed.is_pinned, Some(false));
         assert_eq!(listed.is_unread, Some(false));
+    }
+
+    #[test]
+    fn test_worktree_provenance_kind_persistence() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let wt_path = "/home/renan/src/hydra/.worktrees/prov-kind-test";
+
+        // No prior row: writing the kind creates one, leaving unrelated fields NULL.
+        db.set_worktree_provenance_kind(wt_path, Some("created-by-automation"))
+            .expect("set provenance kind");
+        let created = db.get_worktree_metadata(wt_path).expect("query created").expect("record exists");
+        assert_eq!(created.provenance_kind.as_deref(), Some("created-by-automation"));
+        assert!(created.display_name.is_none());
+        assert_eq!(created.is_pinned, None);
+        assert_eq!(created.created_at, None);
+
+        // A partial upsert with `None` preserves the stored kind; the map listing
+        // carries it too.
+        db.set_worktree_provenance_kind(wt_path, None).expect("no-op kind");
+        let preserved = db.get_worktree_metadata(wt_path).expect("query preserved").expect("record exists");
+        assert_eq!(
+            preserved.provenance_kind.as_deref(),
+            Some("created-by-automation"),
+            "None must preserve the stored kind"
+        );
+        let all = db.get_all_worktree_metadata().expect("query all");
+        assert_eq!(
+            all.get(wt_path).expect("row in map").provenance_kind.as_deref(),
+            Some("created-by-automation")
+        );
+
+        // The kind upsert preserves other metadata (display name, flags, provenance).
+        db.set_worktree_display_name(wt_path, Some("Prov Feature")).expect("set display name");
+        db.set_worktree_flags(wt_path, Some(true), Some(false)).expect("set flags");
+        db.set_worktree_provenance(wt_path, 1_700_000_000_000, Some("claude")).expect("set provenance");
+        db.set_worktree_provenance_kind(wt_path, Some("created-by-cli")).expect("switch kind");
+        let record = db.get_worktree_metadata(wt_path).expect("query after switch").expect("record exists");
+        assert_eq!(record.provenance_kind.as_deref(), Some("created-by-cli"));
+        assert_eq!(record.display_name.as_deref(), Some("Prov Feature"));
+        assert_eq!(record.is_pinned, Some(true));
+        assert_eq!(record.is_unread, Some(false));
+        assert_eq!(record.created_at, Some(1_700_000_000_000));
+        assert_eq!(record.created_with_agent.as_deref(), Some("claude"));
+
+        // An unrelated flags write must not clobber the stored kind.
+        db.set_worktree_flags(wt_path, Some(false), None).expect("unpin");
+        let after_flags = db.get_worktree_metadata(wt_path).expect("query after flags").expect("record exists");
+        assert_eq!(after_flags.provenance_kind.as_deref(), Some("created-by-cli"));
     }
 }
 

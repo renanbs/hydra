@@ -290,6 +290,17 @@ function toPipelineWorktree(args: {
     branch: worktree.branch,
     isBare: worktree.is_bare,
     isMainWorktree: worktree.is_main ?? worktree.isMainWorktree ?? false,
+    // Provenance only carries the KIND from the scan; the ported predicates
+    // (`visible-worktree-kinds.ts`) read `.kind` alone, so the minimal object is
+    // cast past the Orca snapshot fields the sidebar never renders.
+    automationProvenance:
+      worktree.automationProvenanceKind === "created-by-automation"
+        ? ({ kind: "created-by-automation" } as Worktree["automationProvenance"])
+        : undefined,
+    cliProvenance:
+      worktree.cliProvenanceKind === "created-by-cli"
+        ? ({ kind: "created-by-cli" } as Worktree["cliProvenance"])
+        : undefined,
     ...(hostId ? { hostId } : {}),
   };
 }

@@ -118,6 +118,13 @@ export interface GitWorktreeInfo {
   is_pinned?: boolean | null;
   /** D07 G7: não-lido persistido em `worktree_metadata.is_unread`; ausente/null = nunca gravado. */
   is_unread?: boolean | null;
+  /** Proveniência vinda do scan: `'created-by-automation'` quando a worktree foi
+   *  criada por automação; omitido quando não há proveniência. Projetado em
+   *  `Worktree.automationProvenance` para os filtros do menu (Orca `automationProvenance`). */
+  automationProvenanceKind?: string;
+  /** Proveniência vinda do scan: `'created-by-cli'` quando a worktree foi criada
+   *  via CLI; omitido quando não há proveniência. Projetado em `Worktree.cliProvenance`. */
+  cliProvenanceKind?: string;
 }
 
 export interface WorkspacePort {
