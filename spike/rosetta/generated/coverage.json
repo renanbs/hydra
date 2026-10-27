@@ -1,0 +1,338 @@
+{
+ "generatedAt": "2026-10-27T04:21:25.320Z",
+ "orca": {
+  "preloadGroups": 83,
+  "preloadMethods": 968,
+  "sidebarDistinctCalls": 39,
+  "sidebarGroups": {
+   "shell": 3,
+   "ssh": 7,
+   "ui": 2,
+   "repos": 11,
+   "cli": 2,
+   "runtimeEnvironments": 3,
+   "dashboard": 1,
+   "worktrees": 1,
+   "onboarding": 1,
+   "gh": 1,
+   "feedback": 1,
+   "app": 1,
+   "updater": 1,
+   "ephemeralVm": 1,
+   "fs": 2,
+   "workspaceCleanup": 1
+  }
+ },
+ "hydra": {
+  "tauriCommands": 110,
+  "names": [
+   "auto_rename_worktree",
+   "catalog_add_folder",
+   "catalog_get",
+   "catalog_remove_repo",
+   "catalog_set_worktree_visibility",
+   "catalog_set_worktree_visibility_sources",
+   "check_agent_detailed_status",
+   "check_agent_state",
+   "check_git_ignored_cmd",
+   "check_github_starred_cmd",
+   "check_preflight_tools_cmd",
+   "choose_warp_themes_file",
+   "clone_project",
+   "close_split_terminal",
+   "create_file_cmd",
+   "create_folder_cmd",
+   "create_project",
+   "create_split_terminal",
+   "create_tool_approval",
+   "create_worktree",
+   "delete_path_cmd",
+   "delete_session_record",
+   "delete_worktree",
+   "get_app_version",
+   "get_branch_commits_cmd",
+   "get_default_system_shell",
+   "get_detailed_git_status_cmd",
+   "get_diff_numstat_cmd",
+   "get_folded_logs",
+   "get_git_history_cmd",
+   "get_keep_awake_status",
+   "get_layout_persistence",
+   "get_pairing_qr",
+   "get_project_worktree_base",
+   "get_repo_git_status",
+   "get_repo_git_status_for_path",
+   "get_session_messages",
+   "get_session_state_history",
+   "get_settings",
+   "get_sidebar_pref",
+   "get_submodule_paths_cmd",
+   "get_system_status",
+   "get_terminal_snapshot",
+   "get_workbench_persistence",
+   "get_workbench_persistence_for_project",
+   "git_commit_amend_cmd",
+   "git_commit_cmd",
+   "git_diff_cmd",
+   "git_discard",
+   "git_pull_cmd",
+   "git_push_cmd",
+   "git_rename_branch_cmd",
+   "git_stage",
+   "git_stage_all_cmd",
+   "git_stage_paths_cmd",
+   "git_stash_list_cmd",
+   "git_stash_pop_cmd",
+   "git_stash_push_cmd",
+   "git_unstage",
+   "git_unstage_all_cmd",
+   "git_unstage_paths_cmd",
+   "import_worktree",
+   "is_daemon_available",
+   "kill_port_process",
+   "list_available_agents",
+   "list_available_shells",
+   "list_directory_cmd",
+   "list_persisted_sessions",
+   "list_projects",
+   "list_terminal_sessions",
+   "list_tool_approvals",
+   "list_worktrees",
+   "open_external_url_cmd",
+   "open_in_external_editor",
+   "open_in_file_manager",
+   "path_exists",
+   "poll_terminal_output",
+   "pr_status",
+   "preview_ghostty_import",
+   "preview_warp_themes",
+   "read_file_text_cmd",
+   "register_existing_project",
+   "remove_project",
+   "rename_path_cmd",
+   "resize_terminal",
+   "resolve_tool_approval",
+   "save_chat_message",
+   "save_layout_persistence",
+   "save_session_record",
+   "save_settings",
+   "save_sidebar_pref",
+   "save_workbench_persistence",
+   "save_workbench_persistence_for_project",
+   "scan_workspace_ports",
+   "scan_worktrees",
+   "search_files_cmd",
+   "send_terminal_input",
+   "set_keep_awake_working_count",
+   "set_project_worktree_base",
+   "set_worktree_display_name",
+   "set_worktree_rename_error",
+   "set_worktree_status",
+   "star_github_repo_cmd",
+   "start_agent_terminal",
+   "suppress_worktree_inbox",
+   "sync_keep_awake",
+   "window_close",
+   "window_minimize",
+   "window_start_dragging",
+   "window_toggle_maximize"
+  ]
+ },
+ "sidebarCalls": [
+  {
+   "key": "shell.openUrl",
+   "hits": 7,
+   "generated": true
+  },
+  {
+   "key": "ssh.*",
+   "hits": 6,
+   "generated": false
+  },
+  {
+   "key": "ui.writeClipboardText",
+   "hits": 5,
+   "generated": true
+  },
+  {
+   "key": "ssh.connect",
+   "hits": 4,
+   "generated": true
+  },
+  {
+   "key": "repos.addRemote",
+   "hits": 3,
+   "generated": true
+  },
+  {
+   "key": "ssh.listTargets",
+   "hits": 2,
+   "generated": true
+  },
+  {
+   "key": "ssh.getState",
+   "hits": 2,
+   "generated": true
+  },
+  {
+   "key": "cli.getWslInstallStatus",
+   "hits": 2,
+   "generated": true
+  },
+  {
+   "key": "repos.pickDirectory",
+   "hits": 2,
+   "generated": true
+  },
+  {
+   "key": "runtimeEnvironments.verifyAndAddFromPairingCode",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "runtimeEnvironments.list",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "repos.cloneAbort",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "ssh.onStateChanged",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "dashboard.openPopout",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "worktrees.*",
+   "hits": 1,
+   "generated": false
+  },
+  {
+   "key": "runtimeEnvironments.getStatus",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "cli.getInstallStatus",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "onboarding.get",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "gh.*",
+   "hits": 1,
+   "generated": false
+  },
+  {
+   "key": "feedback.submit",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "app.restart",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "updater.check",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "ssh.listRemovedTargetLabels",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "shell.openInFileManager",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "shell.openInExternalEditor",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "ephemeralVm.suspendWorkspace",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "ssh.browseDir",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "repos.onCloneProgress",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "repos.cloneRemote",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "repos.clone",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "repos.pickFolders",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "repos.*",
+   "hits": 1,
+   "generated": false
+  },
+  {
+   "key": "repos.isGitAvailable",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "repos.createRemote",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "repos.create",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "fs.authorizeExternalPath",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "fs.stat",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "ui.onFileDrop",
+   "hits": 1,
+   "generated": true
+  },
+  {
+   "key": "workspaceCleanup.*",
+   "hits": 1,
+   "generated": false
+  }
+ ]
+}

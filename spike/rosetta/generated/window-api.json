@@ -1,0 +1,4288 @@
+{
+ "generatedAt": "2026-10-27T04:21:25.308Z",
+ "groups": [
+  {
+   "name": "app",
+   "methods": [
+    {
+     "name": "getIdentity",
+     "signature": "() => Promise<AppIdentity>"
+    },
+    {
+     "name": "getFeatureWallAssetBaseUrl",
+     "signature": "() => Promise<string>"
+    },
+    {
+     "name": "relaunch",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "restart",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "reload",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "stageBeforeUnloadSync",
+     "signature": "(args: { sessions: { state: WorkspaceSessionState; hostId?: ExecutionHostId }[] ui: Partial<PersistedUIState> }) => void"
+    },
+    {
+     "name": "awaitBeforeUnloadCheckpoint",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "awaitFirstWindowStartupServices",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "awaitGitEnvironmentStartupBarrier",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "prepareTerminalStartupRestoration",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "recoverLegacyWorkerTerminalsForRendererStartup",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "startupDiagnostic",
+     "signature": "(event: string, details?: Record<string, unknown>) => Promise<void>"
+    },
+    {
+     "name": "getKeyboardInputSourceId",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "getMacCapturedDigitRowChords",
+     "signature": "() => Promise<MacCapturedDigitRowChord[]>"
+    },
+    {
+     "name": "getKeyboardLayoutSnapshot",
+     "signature": "() => Promise<KeyboardLayoutSnapshot | null>"
+    },
+    {
+     "name": "onKeyboardLayoutChanged",
+     "signature": "(callback: (event: KeyboardLayoutChangeEvent) => void) => () => void"
+    },
+    {
+     "name": "setUnreadDockBadgeCount",
+     "signature": "(count: number) => Promise<void>"
+    },
+    {
+     "name": "getFloatingTerminalCwd",
+     "signature": "(args?: FloatingTerminalCwdRequest) => Promise<string>"
+    },
+    {
+     "name": "getFloatingMarkdownDirectory",
+     "signature": "() => Promise<string>"
+    },
+    {
+     "name": "pickFloatingMarkdownDocument",
+     "signature": "() => Promise<MarkdownDocument | null>"
+    },
+    {
+     "name": "pickFloatingWorkspaceDirectory",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "writeTerminalRenderDesyncEvidence",
+     "signature": "( args: WriteTerminalRenderDesyncEvidenceArgs ) => Promise<WriteTerminalRenderDesyncEvidenceResult>"
+    }
+   ]
+  },
+  {
+   "name": "orcaProfiles",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "() => Promise<OrcaProfileListResult>"
+    },
+    {
+     "name": "authStatus",
+     "signature": "() => Promise<OrcaProfileAuthStatus>"
+    },
+    {
+     "name": "onAuthStatusChanged",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "createLocal",
+     "signature": "(args?: CreateLocalOrcaProfileArgs) => Promise<CreateLocalOrcaProfileResult>"
+    },
+    {
+     "name": "createCloudLinked",
+     "signature": "( args?: CreateCloudLinkedOrcaProfileArgs ) => Promise<CreateCloudLinkedOrcaProfileResult>"
+    },
+    {
+     "name": "switchProfile",
+     "signature": "(args: SwitchOrcaProfileArgs) => Promise<SwitchOrcaProfileResult>"
+    },
+    {
+     "name": "transferProject",
+     "signature": "( args: TransferOrcaProfileProjectArgs ) => Promise<TransferOrcaProfileProjectResult>"
+    },
+    {
+     "name": "findProjectProfiles",
+     "signature": "( args: FindOrcaProfileProjectsByPathArgs ) => Promise<FindOrcaProfileProjectsByPathResult>"
+    },
+    {
+     "name": "connectCurrent",
+     "signature": "() => Promise<ConnectCurrentOrcaProfileResult>"
+    },
+    {
+     "name": "refreshAuth",
+     "signature": "() => Promise<RefreshCurrentOrcaProfileAuthResult>"
+    },
+    {
+     "name": "signOutCurrent",
+     "signature": "() => Promise<SignOutCurrentOrcaProfileResult>"
+    },
+    {
+     "name": "selectOrg",
+     "signature": "(args: SelectOrcaProfileOrgArgs) => Promise<SelectOrcaProfileOrgResult>"
+    },
+    {
+     "name": "orgMembersList",
+     "signature": "(args: OrcaProfileOrgMembersListArgs) => Promise<OrcaProfileOrgMembersListResult>"
+    },
+    {
+     "name": "orgMemberInvite",
+     "signature": "( args: OrcaProfileOrgMemberInviteArgs ) => Promise<OrcaProfileOrgMemberMutationResult>"
+    },
+    {
+     "name": "orgInviteRevoke",
+     "signature": "( args: OrcaProfileOrgInviteRevokeArgs ) => Promise<OrcaProfileOrgMemberMutationResult>"
+    },
+    {
+     "name": "orgMemberChangeRole",
+     "signature": "( args: OrcaProfileOrgMemberChangeRoleArgs ) => Promise<OrcaProfileOrgMemberMutationResult>"
+    },
+    {
+     "name": "orgMemberRemove",
+     "signature": "( args: OrcaProfileOrgMemberRemoveArgs ) => Promise<OrcaProfileOrgMemberMutationResult>"
+    }
+   ]
+  },
+  {
+   "name": "platform",
+   "methods": [
+    {
+     "name": "get",
+     "signature": "() => { platform: NodeJS.Platform osRelease: string arch: string /** Login shell or ComSpec when available. */ shell: string displayServer: 'wayland' | 'x11' | null }"
+    }
+   ]
+  },
+  {
+   "name": "e2e",
+   "methods": [
+    {
+     "name": "getConfig",
+     "signature": "() => E2EConfig"
+    }
+   ]
+  },
+  {
+   "name": "repos",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "() => Promise<Repo[]>"
+    },
+    {
+     "name": "add",
+     "signature": "(args: { path: string kind?: 'git' | 'folder' displayName?: string }) => Promise<{ repo: Repo } | { error: string }>"
+    },
+    {
+     "name": "remove",
+     "signature": "(args: { repoId: string }) => Promise<void>"
+    },
+    {
+     "name": "removeForHost",
+     "signature": "(args: { repoId: string; hostId: string }) => Promise<void>"
+    },
+    {
+     "name": "reorder",
+     "signature": "(args: { orderedIds: string[] }) => Promise<{ status: 'applied' | 'rejected' }>"
+    },
+    {
+     "name": "reorderForHost",
+     "signature": "(args: { orderedIds: string[] hostId: string }) => Promise<{ status: 'applied' | 'rejected' }>"
+    },
+    {
+     "name": "update",
+     "signature": "(args: { repoId: string hostId?: ExecutionHostId updates: Partial< Pick< Repo, | 'displayName' | 'badgeColor' | 'repoIcon' | 'upstream' | 'hookSettings' | 'worktreeBaseRef' | 'worktreeBasePath' | 'kind' | 'issueSourcePreference' | 'externalWorktreeVisibilityPromptDismissedAt' | 'externalWorktreeInbo"
+    },
+    {
+     "name": "pickFolder",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "pickFolders",
+     "signature": "() => Promise<string[]>"
+    },
+    {
+     "name": "pickDirectory",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "clone",
+     "signature": "(args: { url: string; destination: string }) => Promise<Repo>"
+    },
+    {
+     "name": "cloneRemote",
+     "signature": "(args: { connectionId: string; url: string; destination: string }) => Promise<Repo>"
+    },
+    {
+     "name": "createRemote",
+     "signature": "(args: { connectionId: string parentPath: string name: string kind: 'git' | 'folder' }) => Promise<{ repo: Repo } | { error: string }>"
+    },
+    {
+     "name": "cloneAbort",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "addRemote",
+     "signature": "(args: { connectionId: string remotePath: string displayName?: string kind?: 'git' | 'folder' }) => Promise<{ repo: Repo } | { error: string }>"
+    },
+    {
+     "name": "create",
+     "signature": "(args: { parentPath: string name: string kind: 'git' | 'folder' }) => Promise<{ repo: Repo } | { error: string }>"
+    },
+    {
+     "name": "isGitAvailable",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "getDefaultCreateProjectParent",
+     "signature": "() => Promise<string>"
+    },
+    {
+     "name": "onCloneProgress",
+     "signature": "(callback: (data: { phase: string; percent: number }) => void) => () => void"
+    },
+    {
+     "name": "getGitUsername",
+     "signature": "(args: { repoId: string }) => Promise<string>"
+    },
+    {
+     "name": "getBaseRefDefault",
+     "signature": "(args: { repoId: string hostId?: ExecutionHostId }) => Promise<BaseRefDefaultResult>"
+    },
+    {
+     "name": "searchBaseRefs",
+     "signature": "(args: { repoId: string query: string limit?: number hostId?: ExecutionHostId }) => Promise<string[]>"
+    },
+    {
+     "name": "searchBaseRefDetails",
+     "signature": "(args: { repoId: string query: string limit?: number hostId?: ExecutionHostId }) => Promise<BaseRefSearchResult[]>"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: () => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "projects",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "() => Promise<Project[]>"
+    },
+    {
+     "name": "update",
+     "signature": "(args: ProjectUpdateArgs) => Promise<Project | null>"
+    },
+    {
+     "name": "listHostSetups",
+     "signature": "() => Promise<ProjectHostSetup[]>"
+    },
+    {
+     "name": "createHostSetup",
+     "signature": "(args: ProjectHostSetupCreateArgs) => Promise<ProjectHostSetupCreateResult>"
+    },
+    {
+     "name": "setupExistingFolder",
+     "signature": "(args: ProjectHostSetupExistingFolderArgs) => Promise<ProjectHostSetupResult>"
+    },
+    {
+     "name": "updateHostSetup",
+     "signature": "(args: ProjectHostSetupUpdateArgs) => Promise<ProjectHostSetupUpdateResult>"
+    },
+    {
+     "name": "deleteHostSetup",
+     "signature": "(args: ProjectHostSetupDeleteArgs) => Promise<ProjectHostSetupDeleteResult>"
+    }
+   ]
+  },
+  {
+   "name": "projectGroups",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "() => Promise<ProjectGroup[]>"
+    },
+    {
+     "name": "create",
+     "signature": "(args: { name: string parentPath?: string | null connectionId?: string | null parentGroupId?: string | null createdFrom?: ProjectGroup['createdFrom'] }) => Promise<ProjectGroup>"
+    },
+    {
+     "name": "update",
+     "signature": "(args: { groupId: string updates: Partial<Pick<ProjectGroup, 'name' | 'isCollapsed' | 'tabOrder' | 'color'>> }) => Promise<ProjectGroup | null>"
+    },
+    {
+     "name": "delete",
+     "signature": "(args: { groupId: string }) => Promise<boolean>"
+    },
+    {
+     "name": "moveProject",
+     "signature": "(args: { projectId: string groupId: string | null order?: number }) => Promise<Repo | null>"
+    },
+    {
+     "name": "scanNested",
+     "signature": "(args: { path: string connectionId?: string scanId?: string options?: Record<string, unknown> }) => Promise<NestedRepoScanResult>"
+    },
+    {
+     "name": "cancelNestedScan",
+     "signature": "(args: { scanId: string }) => Promise<boolean>"
+    },
+    {
+     "name": "onNestedScanProgress",
+     "signature": "( callback: (data: { scanId: string; scan: NestedRepoScanResult }) => void ) => () => void"
+    },
+    {
+     "name": "importNested",
+     "signature": "(args: { parentPath: string groupName: string projectPaths: string[] connectionId?: string scanId?: string mode: ProjectGroupImportMode }) => Promise<ProjectGroupImportResult>"
+    }
+   ]
+  },
+  {
+   "name": "folderWorkspaces",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "() => Promise<FolderWorkspace[]>"
+    },
+    {
+     "name": "getPathStatus",
+     "signature": "(args: FolderWorkspacePathStatusRequest) => Promise<FolderWorkspacePathStatus>"
+    },
+    {
+     "name": "create",
+     "signature": "(args: { projectGroupId: string name?: string folderPath?: string | null connectionId?: string | null linkedTask?: FolderWorkspace['linkedTask'] createdWithAgent?: FolderWorkspace['createdWithAgent'] pendingFirstAgentMessageRename?: boolean }) => Promise<FolderWorkspace>"
+    },
+    {
+     "name": "update",
+     "signature": "(args: { folderWorkspaceId: string updates: Partial< Pick< FolderWorkspace, | 'name' | 'folderPath' | 'linkedTask' | 'comment' | 'isArchived' | 'isUnread' | 'isPinned' | 'sortOrder' | 'manualOrder' | 'workspaceStatus' | 'createdWithAgent' | 'pendingFirstAgentMessageRename' | 'firstAgentMessageRename"
+    },
+    {
+     "name": "delete",
+     "signature": "(args: { folderWorkspaceId: string }) => Promise<boolean>"
+    }
+   ]
+  },
+  {
+   "name": "sparsePresets",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "(args: { repoId: string }) => Promise<SparsePreset[]>"
+    },
+    {
+     "name": "save",
+     "signature": "(args: { repoId: string id?: string name: string directories: string[] }) => Promise<SparsePreset>"
+    },
+    {
+     "name": "remove",
+     "signature": "(args: { repoId: string; presetId: string }) => Promise<void>"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: (data: { repoId: string }) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "worktrees",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "(args: { repoId: string }) => Promise<Worktree[]>"
+    },
+    {
+     "name": "listRetiredNames",
+     "signature": "(args: { repoId: string }) => Promise<RetiredNameRegistry>"
+    },
+    {
+     "name": "listDetected",
+     "signature": "( args: ListDetectedWorktreesArgs ): Promise<HostQualifiedDetectedWorktreeResult | DetectedWorktreeListResult>"
+    },
+    {
+     "name": "listAll",
+     "signature": "() => Promise<Worktree[]>"
+    },
+    {
+     "name": "create",
+     "signature": "(args: CreateWorktreeArgs) => Promise<CreateWorktreeResult>"
+    },
+    {
+     "name": "adoptProvisionedRoot",
+     "signature": "(args: AdoptProvisionedRootArgs) => Promise<CreateWorktreeResult>"
+    },
+    {
+     "name": "onCreateProgress",
+     "signature": "( callback: (data: { creationId?: string; phase: 'fetching' | 'creating' }) => void ) => () => void"
+    },
+    {
+     "name": "prefetchCreateBase",
+     "signature": "(args: { repoId: string; baseBranch?: string }) => Promise<void>"
+    },
+    {
+     "name": "resolvePrBase",
+     "signature": "(args: { repoId: string prNumber: number headRefName?: string baseRefName?: string isCrossRepository?: boolean }) => Promise<GitHubPrStartPoint | { error: string }>"
+    },
+    {
+     "name": "resolveMrBase",
+     "signature": "(args: { repoId: string mrIid: number sourceBranch?: string targetBranch?: string isCrossRepository?: boolean }) => Promise< { baseBranch: string; compareBaseRef?: string; pushTarget?: GitPushTarget } | { error: string } >"
+    },
+    {
+     "name": "remove",
+     "signature": "(args: { worktreeId: string hostId?: ExecutionHostId force?: boolean // Why (#11960): distinct from `force`, which the plain Delete confirmation // already sets to skip the dirty-file prompt. Only an explicit Force Delete // may waive the proof that every PTY stopped. allowUnverifiedPtyStop?: boolea"
+    },
+    {
+     "name": "forgetLocal",
+     "signature": "(args: { worktreeId: string hostId?: ExecutionHostId snapshotPruneBatchId?: string }) => Promise<RemoveWorktreeResult>"
+    },
+    {
+     "name": "forceDeletePreservedBranch",
+     "signature": "(args: { worktreeId: string branchName: string expectedHead: string hostId?: ExecutionHostId }) => Promise<ForceDeleteWorktreeBranchResult>"
+    },
+    {
+     "name": "updateMeta",
+     "signature": "(args: { worktreeId: string executionHostId?: ExecutionHostId updates: Partial<WorktreeMeta> }) => Promise<Worktree>"
+    },
+    {
+     "name": "listLineage",
+     "signature": "() => Promise<{ lineage: Record<string, WorktreeLineage> workspaceLineage?: Record<string, WorkspaceLineage> }>"
+    },
+    {
+     "name": "updateLineage",
+     "signature": "(args: { worktreeId: string parentWorktreeId?: string noParent?: boolean }) => Promise<WorktreeLineage | null>"
+    },
+    {
+     "name": "persistSortOrder",
+     "signature": "(args: { orderedIds: string[] }) => Promise<void>"
+    },
+    {
+     "name": "getBranchRenameFailureOutput",
+     "signature": "(args: { worktreeId: string }) => Promise<string | null>"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: (data: { repoId: string }) => void) => () => void"
+    },
+    {
+     "name": "onGitStatusMetadataChanged",
+     "signature": "(callback: (data: { repoId: string }) => void) => () => void"
+    },
+    {
+     "name": "onHeadIdentitiesChanged",
+     "signature": "( callback: (data: { repoId: string; identities: WorktreeHeadIdentity[] }) => void ) => () => void"
+    },
+    {
+     "name": "onBaseStatus",
+     "signature": "(callback: (data: WorktreeBaseStatusEvent) => void) => () => void"
+    },
+    {
+     "name": "onRemoteBranchConflict",
+     "signature": "( callback: (data: WorktreeRemoteBranchConflictEvent) => void ) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "workspaceCleanup",
+   "methods": [
+    {
+     "name": "scan",
+     "signature": "( args?: WorkspaceCleanupScanArgs, onProgress?: (progress: WorkspaceCleanupScanProgress) => void ) => Promise<WorkspaceCleanupScanResult>"
+    },
+    {
+     "name": "getCachedScan",
+     "signature": "() => Promise<WorkspaceCleanupScanResult | null>"
+    },
+    {
+     "name": "dismiss",
+     "signature": "(args: WorkspaceCleanupDismissArgs) => Promise<void>"
+    },
+    {
+     "name": "clearDismissals",
+     "signature": "() => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "workspaceSpace",
+   "methods": [
+    {
+     "name": "analyze",
+     "signature": "() => Promise<WorkspaceSpaceAnalyzeResult>"
+    },
+    {
+     "name": "getCachedAnalysis",
+     "signature": "() => Promise<WorkspaceSpaceAnalysis | null>"
+    },
+    {
+     "name": "cancel",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "onProgress",
+     "signature": "(callback: (progress: WorkspaceSpaceScanProgress) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "workspacePorts",
+   "methods": [
+    {
+     "name": "scan",
+     "signature": "(args: WorkspacePortScanRequest) => Promise<WorkspacePortScanResult>"
+    },
+    {
+     "name": "kill",
+     "signature": "(args: WorkspacePortKillRequest) => Promise<WorkspacePortKillResult>"
+    },
+    {
+     "name": "onAdvertisedUrlChanged",
+     "signature": "( callback: (event: WorkspacePortAdvertisedUrlChangedEvent) => void ) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "pty",
+   "methods": [
+    {
+     "name": "spawn",
+     "signature": "(opts: { cols: number rows: number cwd?: string cwdFallback?: 'worktree' env?: Record<string, string> envToDelete?: string[] command?: string commandDelivery?: 'renderer' | 'provider' launchConfig?: SleepingAgentLaunchConfig resumeProviderSession?: AgentProviderSessionMetadata launchToken?: string l"
+    },
+    {
+     "name": "write",
+     "signature": "(id: string, data: string) => void"
+    },
+    {
+     "name": "writeAccepted",
+     "signature": "(id: string, data: string) => Promise<boolean>"
+    },
+    {
+     "name": "resize",
+     "signature": "(id: string, cols: number, rows: number) => void"
+    },
+    {
+     "name": "claimViewport",
+     "signature": "(id: string, cols: number, rows: number) => void"
+    },
+    {
+     "name": "reportGeometry",
+     "signature": "(id: string, cols: number, rows: number) => void"
+    },
+    {
+     "name": "signal",
+     "signature": "(id: string, signal: string) => void"
+    },
+    {
+     "name": "clearBuffer",
+     "signature": "(id: string) => void"
+    },
+    {
+     "name": "kill",
+     "signature": "(id: string, opts?: { keepHistory?: boolean }) => Promise<void>"
+    },
+    {
+     "name": "ackColdRestore",
+     "signature": "(id: string) => void"
+    },
+    {
+     "name": "ackData",
+     "signature": "(id: string, charCount: number, processedChars?: number) => void"
+    },
+    {
+     "name": "onDeliveryResyncRequest",
+     "signature": "(callback: (payload: { requestId: number }) => void) => () => void"
+    },
+    {
+     "name": "respondDeliveryResync",
+     "signature": "(payload: { requestId: number processedCharsByPty: Record<string, number> }) => void"
+    },
+    {
+     "name": "reportRendererDeliveryState",
+     "signature": "( report: PtyRendererDeliveryStateReport ) => Promise<PtyRendererDeliveryHealthReply>"
+    },
+    {
+     "name": "getPtyDataListenerCount",
+     "signature": "() => number"
+    },
+    {
+     "name": "rendererDispatcherReady",
+     "signature": "() => void"
+    },
+    {
+     "name": "setActiveRendererPty",
+     "signature": "(id: string, active: boolean) => void"
+    },
+    {
+     "name": "setRendererPtyVisible",
+     "signature": "(id: string, visible: boolean) => void"
+    },
+    {
+     "name": "setHiddenRendererPty",
+     "signature": "(id: string, hidden: boolean) => void"
+    },
+    {
+     "name": "setPtyDeliveryInterest",
+     "signature": "(id: string, interested: boolean) => void"
+    },
+    {
+     "name": "publishTerminalViewAttributes",
+     "signature": "(attributes: TerminalViewAttributes) => void"
+    },
+    {
+     "name": "hasChildProcesses",
+     "signature": "(id: string) => Promise<boolean>"
+    },
+    {
+     "name": "getForegroundProcess",
+     "signature": "(id: string) => Promise<string | null>"
+    },
+    {
+     "name": "inspectProcess",
+     "signature": "( id: string, options?: { expectedIncarnationId?: string scanChildProcesses?: boolean steadyState?: boolean } ) => Promise<TerminalProcessInspection>"
+    },
+    {
+     "name": "confirmForegroundProcess",
+     "signature": "(id: string) => Promise<string | null>"
+    },
+    {
+     "name": "getCwd",
+     "signature": "(id: string) => Promise<string>"
+    },
+    {
+     "name": "getSize",
+     "signature": "(id: string) => Promise<{ cols: number; rows: number } | null>"
+    },
+    {
+     "name": "listSessions",
+     "signature": "(scope?: PtySessionListScope) => Promise<PtyListedSession[]>"
+    },
+    {
+     "name": "hasPty",
+     "signature": "(id: string) => Promise<boolean | null>"
+    },
+    {
+     "name": "getMainBufferSnapshot",
+     "signature": "( id: string, opts?: { scrollbackRows?: number } ) => Promise<{ data: string frameRestoreAnsi?: string cols: number rows: number cwd?: string | null seq?: number /** Start of main's pending renderer-delivery queue at snapshot time * (equals `seq` when empty) — bounds the renderer's post-restore * du"
+    },
+    {
+     "name": "getRendererDeliveryDebugSnapshot",
+     "signature": "() => Promise<{ pendingPtyCount: number pendingChars: number maxPendingCharsByPty: number rendererInFlightPtyCount: number rendererInFlightChars: number maxRendererInFlightCharsByPty: number activeRendererPtyCount: number flushScheduled: boolean peakPendingChars: number peakMaxPendingCharsByPty: num"
+    },
+    {
+     "name": "resetRendererDeliveryDebug",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "onData",
+     "signature": "( callback: (data: { id: string data: string seq?: number rawLength?: number transformed?: boolean background?: boolean droppedOutput?: boolean }) => void ) => () => void"
+    },
+    {
+     "name": "onReplay",
+     "signature": "(callback: (data: { id: string; data: string }) => void) => () => void"
+    },
+    {
+     "name": "onModelRestoreNeeded",
+     "signature": "(callback: (event: PtyModelRestoreNeededEvent) => void) => () => void"
+    },
+    {
+     "name": "onSideEffect",
+     "signature": "(callback: (batch: TerminalSideEffectBatch) => void) => () => void"
+    },
+    {
+     "name": "getSideEffectSnapshot",
+     "signature": "(id: string) => Promise<TerminalSideEffectBatch | null>"
+    },
+    {
+     "name": "onExit",
+     "signature": "( callback: (data: { id: string code: number preserveRendererBinding?: boolean /** Which lifetime of `id` died; absent when the execution host predates the field. */ incarnationId?: string /** Set only when the owning relay disowned this id; never a claim that the process died. */ ptySourceDisowned?"
+    },
+    {
+     "name": "onSpawned",
+     "signature": "(callback: (data: { id: string }) => void) => () => void"
+    },
+    {
+     "name": "onSerializeBufferRequest",
+     "signature": "( callback: (data: { requestId: string ptyId: string opts?: { scrollbackRows?: number } }) => void ) => () => void"
+    },
+    {
+     "name": "onClearBufferRequest",
+     "signature": "(callback: (data: { ptyId: string }) => void) => () => void"
+    },
+    {
+     "name": "sendSerializedBuffer",
+     "signature": "( requestId: string, snapshot: { data: string cols: number rows: number seq?: number lastTitle?: string kittyKeyboardFlags?: number } | null ) => void"
+    },
+    {
+     "name": "declarePendingPaneSerializer",
+     "signature": "(paneKey: string) => Promise<number>"
+    },
+    {
+     "name": "settlePaneSerializer",
+     "signature": "(paneKey: string, gen: number) => Promise<void>"
+    },
+    {
+     "name": "clearPendingPaneSerializer",
+     "signature": "(paneKey: string, gen: number) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "feedback",
+   "methods": [
+    {
+     "name": "submit",
+     "signature": "(args: { feedback: string submitAnonymously?: boolean githubLogin: string | null githubEmail: string | null images?: { contentType: string; data: Uint8Array }[] }) => Promise< { ok: true; imagesDelivered?: boolean } | { ok: false; status: number | null; error: string } >"
+    }
+   ]
+  },
+  {
+   "name": "crashReports",
+   "methods": [
+    {
+     "name": "getLatestPending",
+     "signature": "() => Promise<CrashReportRecord | null>"
+    },
+    {
+     "name": "getLatestReport",
+     "signature": "() => Promise<CrashReportRecord | null>"
+    },
+    {
+     "name": "dismiss",
+     "signature": "(args: { reportId: string }) => Promise<CrashReportRecord | null>"
+    },
+    {
+     "name": "recordRendererError",
+     "signature": "( args: ReactErrorBoundaryReportArgs ) => Promise<ReactErrorBoundaryReportResult>"
+    },
+    {
+     "name": "recordBreadcrumb",
+     "signature": "(args: { name: string; data?: CrashReportBreadcrumbData }) => void"
+    },
+    {
+     "name": "submit",
+     "signature": "(args: CrashReportSubmitArgs) => Promise<CrashReportSubmitResult>"
+    },
+    {
+     "name": "copyLatestDiagnostics",
+     "signature": "( args?: CrashReportCopyDiagnosticsArgs ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "readHeapStatistics",
+     "signature": "() => RendererHeapStatistics | null"
+    }
+   ]
+  },
+  {
+   "name": "export",
+   "methods": [
+    {
+     "name": "htmlToPdf",
+     "signature": "(args: { html: string title: string }) => Promise< { success: true; filePath: string } | { success: false; cancelled?: boolean; error?: string } >"
+    }
+   ]
+  },
+  {
+   "name": "gh",
+   "methods": [
+    {
+     "name": "viewer",
+     "signature": "() => Promise<GitHubViewer | null>"
+    },
+    {
+     "name": "repoSlug",
+     "signature": "(args: { repoPath: string repoId?: string }) => Promise<{ owner: string; repo: string; host?: string } | null>"
+    },
+    {
+     "name": "repoUpstream",
+     "signature": "(args: { repoPath: string repoId?: string }) => Promise<{ owner: string; repo: string; host?: string } | null>"
+    },
+    {
+     "name": "prForBranch",
+     "signature": "(args: { repoPath: string repoId?: string branch: string linkedPRNumber?: number | null fallbackPRNumber?: number | null acceptMergedFallbackPR?: boolean currentHeadOid?: string | null }) => Promise<PRInfo | null>"
+    },
+    {
+     "name": "refreshPRNow",
+     "signature": "(args: { candidate: GitHubPRRefreshCandidate reason?: GitHubPRRefreshReason }) => Promise<PRRefreshOutcome>"
+    },
+    {
+     "name": "enqueuePRRefresh",
+     "signature": "(args: { candidate: GitHubPRRefreshCandidate reason: GitHubPRRefreshReason priority?: number }) => Promise<GitHubPRRefreshEnqueueResult | false>"
+    },
+    {
+     "name": "reportVisiblePRRefreshCandidates",
+     "signature": "(args: { candidates: GitHubPRRefreshCandidate[] generation: number }) => Promise<boolean>"
+    },
+    {
+     "name": "onPRRefreshEvent",
+     "signature": "(callback: (event: GitHubPRRefreshEvent) => void) => () => void"
+    },
+    {
+     "name": "prFileContents",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number prRepo?: GitHubOwnerRepo | null path: string oldPath?: string status: GitHubPRFile['status'] headSha: string baseSha: string } ) => Promise<GitHubPRFileContents>"
+    },
+    {
+     "name": "prChecks",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number headSha?: string prRepo?: GitHubOwnerRepo | null noCache?: boolean } ) => Promise<PRCheckDetail[]>"
+    },
+    {
+     "name": "prCheckDetails",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null checkRunId?: number workflowRunId?: number checkName?: string url?: string | null prRepo?: GitHubOwnerRepo | null }) => Promise<PRCheckRunDetails | null>"
+    },
+    {
+     "name": "rerunPRChecks",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number headSha?: string failedOnly?: boolean prRepo?: GitHubOwnerRepo | null } ) => Promise<{ ok: true; count: number } | { ok: false; error: string }>"
+    },
+    {
+     "name": "prComments",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null prNumber: number prRepo?: GitHubOwnerRepo | null noCache?: boolean }) => Promise<PRComment[]>"
+    },
+    {
+     "name": "setPRCommentReaction",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null reactionSubjectId: string content: GitHubReactionContent reacted: boolean prRepo?: GitHubOwnerRepo | null }) => Promise<boolean>"
+    },
+    {
+     "name": "resolveReviewThread",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null threadId: string resolve: boolean prRepo?: GitHubOwnerRepo | null }) => Promise<boolean>"
+    },
+    {
+     "name": "setPRFileViewed",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number prRepo?: GitHubOwnerRepo | null pullRequestId: string path: string viewed: boolean } ) => Promise<boolean>"
+    },
+    {
+     "name": "updatePRTitle",
+     "signature": "(args: { repoPath: string repoId?: string prNumber: number title: string prRepo?: GitHubOwnerRepo | null }) => Promise<boolean>"
+    },
+    {
+     "name": "mergePR",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number method?: 'merge' | 'squash' | 'rebase' prRepo?: GitHubOwnerRepo | null } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "setPRAutoMerge",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number enabled: boolean method?: 'merge' | 'squash' | 'rebase' prRepo?: GitHubOwnerRepo | null } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "updatePRState",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number updates: { state: 'open' | 'closed' } prRepo?: GitHubOwnerRepo | null } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "markPRReadyForReview",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number prRepo?: GitHubOwnerRepo | null } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "requestPRReviewers",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number reviewers: string[] prRepo?: GitHubOwnerRepo | null } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "removePRReviewers",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number reviewers: string[] prRepo?: GitHubOwnerRepo | null } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "addPRReviewCommentReply",
+     "signature": "( args: GitHubRepoSelectorArgs & { prNumber: number commentId: number body: string threadId?: string path?: string line?: number prRepo?: GitHubOwnerRepo | null } ) => Promise<GitHubCommentResult>"
+    },
+    {
+     "name": "addPRReviewComment",
+     "signature": "( args: GitHubPRReviewCommentInput & { repoId?: string sourceContext?: TaskSourceContext | null } ) => Promise<GitHubCommentResult>"
+    },
+    {
+     "name": "checkOrcaStarred",
+     "signature": "() => Promise<boolean | null>"
+    },
+    {
+     "name": "starOrca",
+     "signature": "(source: AppStarSource) => Promise<boolean>"
+    },
+    {
+     "name": "rateLimit",
+     "signature": "(args?: { force?: boolean }) => Promise<GetRateLimitResult>"
+    },
+    {
+     "name": "diagnoseAuth",
+     "signature": "(args?: { host?: string }) => Promise<GhAuthDiagnostic>"
+    },
+    {
+     "name": "issue",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null number: number }) => Promise<IssueInfo | null>"
+    },
+    {
+     "name": "workItem",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null number: number type?: 'issue' | 'pr' }) => Promise<Omit<GitHubWorkItem, 'repoId'> | null>"
+    },
+    {
+     "name": "workItemByOwnerRepo",
+     "signature": "(args: { repoPath: string repoId?: string owner: string repo: string host?: string number: number type: 'issue' | 'pr' }) => Promise<Omit<GitHubWorkItem, 'repoId'> | null>"
+    },
+    {
+     "name": "workItemDetails",
+     "signature": "( args: GitHubRepoSelectorArgs & { number: number type?: 'issue' | 'pr' } ) => Promise<GitHubWorkItemDetails | null>"
+    },
+    {
+     "name": "notifyWorkItemMutated",
+     "signature": "(args: { repoPath: string repoId?: string type: 'issue' | 'pr' number: number }) => Promise<boolean>"
+    },
+    {
+     "name": "listIssues",
+     "signature": "(args: { repoPath: string; repoId?: string; limit?: number }) => Promise<IssueInfo[]>"
+    },
+    {
+     "name": "createIssue",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null title: string body: string labels?: string[] assignees?: string[] }) => Promise<GitHubCreateIssueResult>"
+    },
+    {
+     "name": "countWorkItems",
+     "signature": "(args: { repoPath: string; repoId?: string; query?: string }) => Promise<number>"
+    },
+    {
+     "name": "listWorkItems",
+     "signature": "(args: { repoPath: string repoId?: string limit?: number query?: string page?: number noCache?: boolean }) => Promise<ListWorkItemsResult<Omit<GitHubWorkItem, 'repoId'>>>"
+    },
+    {
+     "name": "updateIssue",
+     "signature": "( args: GitHubRepoSelectorArgs & { number: number updates: GitHubIssueUpdate } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "addIssueComment",
+     "signature": "( args: GitHubRepoSelectorArgs & { number: number body: string /** Why: scopes the cross-window cache invalidation so a PR and issue sharing the same number don't evict each other. */ type?: 'issue' | 'pr' prRepo?: GitHubOwnerRepo | null } ) => Promise<GitHubCommentResult>"
+    },
+    {
+     "name": "listLabels",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null }) => Promise<string[]>"
+    },
+    {
+     "name": "listAssignableUsers",
+     "signature": "(args: { repoPath: string repoId?: string sourceContext?: TaskSourceContext | null }) => Promise<GitHubAssignableUser[]>"
+    },
+    {
+     "name": "onWorkItemMutated",
+     "signature": "( callback: (payload: { repoPath: string repoId?: string type: 'issue' | 'pr' number: number }) => void ) => () => void"
+    },
+    {
+     "name": "listAccessibleProjects",
+     "signature": "( args?: ListAccessibleProjectsArgs ) => Promise<ListAccessibleProjectsResult>"
+    },
+    {
+     "name": "resolveProjectRef",
+     "signature": "(args: ResolveProjectRefArgs) => Promise<ResolveProjectRefResult>"
+    },
+    {
+     "name": "listProjectViews",
+     "signature": "(args: ListProjectViewsArgs) => Promise<ListProjectViewsResult>"
+    },
+    {
+     "name": "getProjectViewTable",
+     "signature": "(args: GetProjectViewTableArgs) => Promise<GetProjectViewTableResult>"
+    },
+    {
+     "name": "projectWorkItemDetailsBySlug",
+     "signature": "( args: ProjectWorkItemDetailsBySlugArgs ) => Promise<ProjectWorkItemDetailsBySlugResult>"
+    },
+    {
+     "name": "updateProjectItemField",
+     "signature": "(args: UpdateProjectItemFieldArgs) => Promise<GitHubProjectMutationResult>"
+    },
+    {
+     "name": "clearProjectItemField",
+     "signature": "(args: ClearProjectItemFieldArgs) => Promise<GitHubProjectMutationResult>"
+    },
+    {
+     "name": "updateIssueBySlug",
+     "signature": "(args: UpdateIssueBySlugArgs) => Promise<GitHubProjectMutationResult>"
+    },
+    {
+     "name": "updatePullRequestBySlug",
+     "signature": "( args: UpdatePullRequestBySlugArgs ) => Promise<GitHubProjectMutationResult>"
+    },
+    {
+     "name": "addIssueCommentBySlug",
+     "signature": "( args: AddIssueCommentBySlugArgs ) => Promise<GitHubProjectCommentMutationResult>"
+    },
+    {
+     "name": "updateIssueCommentBySlug",
+     "signature": "( args: UpdateIssueCommentBySlugArgs ) => Promise<GitHubProjectMutationResult>"
+    },
+    {
+     "name": "deleteIssueCommentBySlug",
+     "signature": "( args: DeleteIssueCommentBySlugArgs ) => Promise<GitHubProjectMutationResult>"
+    },
+    {
+     "name": "listLabelsBySlug",
+     "signature": "(args: ListLabelsBySlugArgs) => Promise<ListLabelsBySlugResult>"
+    },
+    {
+     "name": "listAssignableUsersBySlug",
+     "signature": "( args: ListAssignableUsersBySlugArgs ) => Promise<ListAssignableUsersBySlugResult>"
+    },
+    {
+     "name": "listIssueTypesBySlug",
+     "signature": "(args: ListIssueTypesBySlugArgs) => Promise<ListIssueTypesBySlugResult>"
+    },
+    {
+     "name": "updateIssueTypeBySlug",
+     "signature": "(args: UpdateIssueTypeBySlugArgs) => Promise<GitHubProjectMutationResult>"
+    },
+    {
+     "name": "listBindableAccounts",
+     "signature": "(args: { repoPath: string repoId?: string refreshCapability?: boolean }) => Promise<GhAccountBindingInventory>"
+    },
+    {
+     "name": "validateAccountBinding",
+     "signature": "(args: { repoPath: string repoId?: string host: string user: string }) => Promise<GhAccountBindingValidationResult>"
+    }
+   ]
+  },
+  {
+   "name": "hostedReview",
+   "methods": [
+    {
+     "name": "forBranch",
+     "signature": "(args: HostedReviewForBranchArgs) => Promise<HostedReviewInfo | null>"
+    },
+    {
+     "name": "getCreationEligibility",
+     "signature": "( args: HostedReviewCreationEligibilityArgs ) => Promise<HostedReviewCreationEligibility>"
+    },
+    {
+     "name": "create",
+     "signature": "(args: CreateHostedReviewArgs) => Promise<CreateHostedReviewResult>"
+    },
+    {
+     "name": "createStacked",
+     "signature": "(args: CreateStackedHostedReviewArgs) => Promise<CreateStackedHostedReviewResult>"
+    }
+   ]
+  },
+  {
+   "name": "gl",
+   "methods": [
+    {
+     "name": "viewer",
+     "signature": "() => Promise<GitLabViewer | null>"
+    },
+    {
+     "name": "diagnoseAuth",
+     "signature": "() => Promise<GitLabAuthDiagnostic>"
+    },
+    {
+     "name": "rateLimit",
+     "signature": "(args?: { force?: boolean; host?: string | null }) => Promise<GetGitLabRateLimitResult>"
+    },
+    {
+     "name": "projectSlug",
+     "signature": "(args: GitLabRepoSelectorArgs) => Promise<GitLabProjectRef | null>"
+    },
+    {
+     "name": "mrForBranch",
+     "signature": "( args: GitLabRepoSelectorArgs & { branch: string linkedMRIid?: number | null } ) => Promise<MRInfo | null>"
+    },
+    {
+     "name": "mr",
+     "signature": "(args: GitLabRepoSelectorArgs & { iid: number }) => Promise<MRInfo | null>"
+    },
+    {
+     "name": "listMRs",
+     "signature": "( args: GitLabRepoSelectorArgs & { state?: MRListState page?: number perPage?: number query?: string } ) => Promise<ListMergeRequestsResult>"
+    },
+    {
+     "name": "listWorkItems",
+     "signature": "( args: GitLabRepoSelectorArgs & { state?: MRListState page?: number perPage?: number query?: string } ) => Promise<ListMergeRequestsResult>"
+    },
+    {
+     "name": "issue",
+     "signature": "(args: GitLabRepoSelectorArgs & { number: number }) => Promise<GitLabIssueInfo | null>"
+    },
+    {
+     "name": "listIssues",
+     "signature": "( args: GitLabRepoSelectorArgs & { state?: 'opened' | 'closed' | 'all' assignee?: string limit?: number page?: number } ) => Promise<{ items: GitLabWorkItem[] /** Optional while paired with a host older than issue pagination. */ totalPages?: number error?: ClassifiedError }>"
+    },
+    {
+     "name": "createIssue",
+     "signature": "( args: GitLabRepoSelectorArgs & { title: string body: string } ) => Promise<{ ok: true; number: number; url: string } | { ok: false; error: string }>"
+    },
+    {
+     "name": "updateIssue",
+     "signature": "( args: GitLabRepoSelectorArgs & { number: number updates: GitLabIssueUpdate } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "addIssueComment",
+     "signature": "( args: GitLabRepoSelectorArgs & { number: number body: string } ) => Promise<GitLabCommentResult>"
+    },
+    {
+     "name": "listLabels",
+     "signature": "(args: GitLabRepoSelectorArgs) => Promise<string[]>"
+    },
+    {
+     "name": "listAssignableUsers",
+     "signature": "(args: GitLabRepoSelectorArgs) => Promise<GitLabAssignableUser[]>"
+    },
+    {
+     "name": "todos",
+     "signature": "(args: GitLabRepoSelectorArgs) => Promise<GitLabTodo[]>"
+    },
+    {
+     "name": "workItemDetails",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number type: 'issue' | 'mr' } ) => Promise<GitLabWorkItemDetails | null>"
+    },
+    {
+     "name": "closeMR",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "reopenMR",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "mergeMR",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number method?: 'merge' | 'squash' | 'rebase' } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "updateMR",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number updates: GitLabMRUpdate } ) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "updateMRReviewers",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number reviewerIds: number[] projectRef?: GitLabProjectRef | null } ) => Promise<GitLabMRReviewersUpdateResult>"
+    },
+    {
+     "name": "addMRComment",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number body: string } ) => Promise<GitLabCommentResult>"
+    },
+    {
+     "name": "addMRInlineComment",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number input: GitLabMRInlineCommentInput projectRef?: GitLabProjectRef | null } ) => Promise<GitLabCommentResult>"
+    },
+    {
+     "name": "resolveMRDiscussion",
+     "signature": "( args: GitLabRepoSelectorArgs & { iid: number discussionId: string resolved: boolean } ) => Promise<GitLabDiscussionResolveResult>"
+    },
+    {
+     "name": "jobTrace",
+     "signature": "( args: GitLabRepoSelectorArgs & { jobId: number projectRef?: GitLabProjectRef | null /** Bound the trace in main to a readable excerpt (see gitLabJobTraceToLogExcerpt). */ logExcerpt?: boolean } ) => Promise<GitLabJobTraceResult>"
+    },
+    {
+     "name": "retryJob",
+     "signature": "( args: GitLabRepoSelectorArgs & { jobId: number projectRef?: GitLabProjectRef | null } ) => Promise<GitLabRetryJobResult>"
+    },
+    {
+     "name": "workItemByPath",
+     "signature": "( args: GitLabRepoSelectorArgs & { host: string path: string iid: number type: 'issue' | 'mr' } ) => Promise<Omit<GitLabWorkItem, 'repoId'> | null>"
+    }
+   ]
+  },
+  {
+   "name": "bitbucket",
+   "methods": [
+    {
+     "name": "connect",
+     "signature": "( args: BitbucketConnectArgs ) => Promise<{ ok: true; account: string | null } | { ok: false; error: string }>"
+    },
+    {
+     "name": "disconnect",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "status",
+     "signature": "() => Promise<BitbucketConnectionStatus>"
+    }
+   ]
+  },
+  {
+   "name": "linear",
+   "methods": [
+    {
+     "name": "connect",
+     "signature": "(args: { apiKey: string }) => Promise<{ ok: true; viewer: LinearViewer } | { ok: false; error: string }>"
+    },
+    {
+     "name": "disconnect",
+     "signature": "(args?: { workspaceId?: string }) => Promise<void>"
+    },
+    {
+     "name": "selectWorkspace",
+     "signature": "(args: { workspaceId: LinearWorkspaceSelection }) => Promise<LinearConnectionStatus>"
+    },
+    {
+     "name": "status",
+     "signature": "() => Promise<LinearConnectionStatus>"
+    },
+    {
+     "name": "testConnection",
+     "signature": "(args?: { workspaceId?: string }) => Promise<{ ok: true; viewer: LinearViewer } | { ok: false; error: string }>"
+    },
+    {
+     "name": "searchIssues",
+     "signature": "(args: { query: string limit?: number workspaceId?: LinearWorkspaceSelection }) => Promise<LinearIssue[]>"
+    },
+    {
+     "name": "listIssues",
+     "signature": "(args?: { filter?: 'assigned' | 'created' | 'all' | 'completed' limit?: number workspaceId?: LinearWorkspaceSelection attributeFilter?: LinearIssueAttributeFilter }) => Promise<LinearCollectionResult<LinearIssue>>"
+    },
+    {
+     "name": "createIssue",
+     "signature": "(args: { teamId: string title: string description?: string workspaceId?: string parentIssueId?: string projectId?: string | null stateId?: string priority?: number assigneeId?: string | null labelIds?: string[] }) => Promise< | { ok: true; id: string; identifier: string; title: string; url: string }"
+    },
+    {
+     "name": "getIssue",
+     "signature": "(args: { id: string; workspaceId?: string }) => Promise<LinearIssue | null>"
+    },
+    {
+     "name": "updateIssue",
+     "signature": "(args: { id: string updates: LinearIssueUpdate workspaceId?: string }) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "addIssueComment",
+     "signature": "(args: { issueId: string body: string workspaceId?: string }) => Promise<{ ok: true; id: string } | { ok: false; error: string }>"
+    },
+    {
+     "name": "issueComments",
+     "signature": "(args: { issueId: string; workspaceId?: string }) => Promise<LinearComment[]>"
+    },
+    {
+     "name": "listTeams",
+     "signature": "(args?: { workspaceId?: LinearWorkspaceSelection }) => Promise<LinearTeam[]>"
+    },
+    {
+     "name": "listProjects",
+     "signature": "(args?: { query?: string limit?: number workspaceId?: LinearWorkspaceSelection force?: boolean }) => Promise<LinearCollectionResult<LinearProjectSummary>>"
+    },
+    {
+     "name": "createProject",
+     "signature": "(args: { name: string description?: string content?: string teamIds: string[] workspaceId?: string leadId?: string | null memberIds?: string[] labelIds?: string[] priority?: number startDate?: string targetDate?: string }) => Promise<{ ok: true; project: LinearProjectDetail } | { ok: false; error: s"
+    },
+    {
+     "name": "getProject",
+     "signature": "(args: { id: string workspaceId: string force?: boolean }) => Promise<LinearProjectDetail | null>"
+    },
+    {
+     "name": "listProjectIssues",
+     "signature": "(args: { projectId: string limit?: number workspaceId: string force?: boolean }) => Promise<LinearCollectionResult<LinearIssue>>"
+    },
+    {
+     "name": "listCustomViews",
+     "signature": "(args: { model: LinearCustomViewModel limit?: number workspaceId?: LinearWorkspaceSelection force?: boolean }) => Promise<LinearCollectionResult<LinearCustomViewSummary>>"
+    },
+    {
+     "name": "getCustomView",
+     "signature": "(args: { viewId: string model: LinearCustomViewModel workspaceId: string force?: boolean }) => Promise<LinearCustomViewSummary | null>"
+    },
+    {
+     "name": "listCustomViewIssues",
+     "signature": "(args: { viewId: string limit?: number workspaceId: string force?: boolean }) => Promise<LinearCollectionResult<LinearIssue>>"
+    },
+    {
+     "name": "listCustomViewProjects",
+     "signature": "(args: { viewId: string limit?: number workspaceId: string force?: boolean }) => Promise<LinearCollectionResult<LinearProjectSummary>>"
+    },
+    {
+     "name": "teamStates",
+     "signature": "(args: { teamId: string; workspaceId?: string }) => Promise<LinearWorkflowState[]>"
+    },
+    {
+     "name": "teamLabels",
+     "signature": "(args: { teamId: string; workspaceId?: string }) => Promise<LinearLabel[]>"
+    },
+    {
+     "name": "teamMembers",
+     "signature": "(args: { teamId: string; workspaceId?: string }) => Promise<LinearMember[]>"
+    }
+   ]
+  },
+  {
+   "name": "jira",
+   "methods": [
+    {
+     "name": "connect",
+     "signature": "(args: { siteUrl: string email: string apiToken: string authType?: 'cloud' | 'server' }) => Promise<{ ok: true; viewer: JiraViewer } | { ok: false; error: string }>"
+    },
+    {
+     "name": "disconnect",
+     "signature": "(args?: { siteId?: string }) => Promise<void>"
+    },
+    {
+     "name": "selectSite",
+     "signature": "(args: { siteId: JiraSiteSelection }) => Promise<JiraConnectionStatus>"
+    },
+    {
+     "name": "status",
+     "signature": "() => Promise<JiraConnectionStatus>"
+    },
+    {
+     "name": "readStatus",
+     "signature": "() => Promise<JiraConnectionStatus>"
+    },
+    {
+     "name": "testConnection",
+     "signature": "(args?: { siteId?: string }) => Promise<{ ok: true; viewer: JiraViewer } | { ok: false; error: string }>"
+    },
+    {
+     "name": "searchIssues",
+     "signature": "(args: { jql: string limit?: number siteId?: JiraSiteSelection requestId?: string }) => Promise<JiraIssue[]>"
+    },
+    {
+     "name": "cancelSearchIssues",
+     "signature": "(args: { requestId: string }) => Promise<void>"
+    },
+    {
+     "name": "listIssues",
+     "signature": "(args?: { filter?: JiraIssueFilter limit?: number siteId?: JiraSiteSelection }) => Promise<JiraIssue[]>"
+    },
+    {
+     "name": "getIssue",
+     "signature": "(args: { key: string; siteId?: string }) => Promise<JiraIssue | null>"
+    },
+    {
+     "name": "lookupIssueSummary",
+     "signature": "(args: { key: string siteId: string requestId?: string }) => Promise<JiraIssue | null>"
+    },
+    {
+     "name": "cancelIssueSummary",
+     "signature": "(args: { requestId: string }) => Promise<void>"
+    },
+    {
+     "name": "createIssue",
+     "signature": "( args: JiraCreateIssueArgs ) => Promise<{ ok: true; id: string; key: string; url: string } | { ok: false; error: string }>"
+    },
+    {
+     "name": "updateIssue",
+     "signature": "(args: { key: string updates: JiraIssueUpdate siteId?: string }) => Promise<{ ok: true } | { ok: false; error: string }>"
+    },
+    {
+     "name": "addIssueComment",
+     "signature": "(args: { key: string body: string siteId?: string }) => Promise<{ ok: true; id: string } | { ok: false; error: string }>"
+    },
+    {
+     "name": "issueComments",
+     "signature": "(args: { key: string; siteId?: string }) => Promise<JiraComment[]>"
+    },
+    {
+     "name": "listProjects",
+     "signature": "(args?: { siteId?: JiraSiteSelection }) => Promise<JiraProject[]>"
+    },
+    {
+     "name": "listIssueTypes",
+     "signature": "(args: { projectIdOrKey: string; siteId?: string }) => Promise<JiraIssueType[]>"
+    },
+    {
+     "name": "listCreateFields",
+     "signature": "(args: { projectIdOrKey: string issueTypeId: string siteId?: string }) => Promise<JiraCreateField[]>"
+    },
+    {
+     "name": "listPriorities",
+     "signature": "(args?: { siteId?: string }) => Promise<JiraPriority[]>"
+    },
+    {
+     "name": "listAssignableUsers",
+     "signature": "(args: { key: string query?: string siteId?: string }) => Promise<JiraUser[]>"
+    },
+    {
+     "name": "searchUsers",
+     "signature": "(args?: { query?: string; siteId?: string }) => Promise<JiraUser[]>"
+    },
+    {
+     "name": "listTransitions",
+     "signature": "(args: { key: string; siteId?: string }) => Promise<JiraTransition[]>"
+    },
+    {
+     "name": "getProjectStatusOrder",
+     "signature": "(args: { projectKey: string siteId?: string }) => Promise<JiraProjectStatusOrder>"
+    }
+   ]
+  },
+  {
+   "name": "starNag",
+   "methods": [
+    {
+     "name": "onShow",
+     "signature": "( callback: (payload?: { mode?: 'gh' | 'web'; surface?: 'card' | 'toast' }) => void ) => () => void"
+    },
+    {
+     "name": "onHide",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "dismiss",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "later",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "complete",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "disable",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "openWeb",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "starOrca",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "forceShow",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "agentValueMoment",
+     "signature": "() => Promise<{ status: 'ready'; mode: 'gh' | 'web' } | { status: 'skipped' }>"
+    },
+    {
+     "name": "showAgentValueMoment",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "onboardingCompleted",
+     "signature": "() => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "telemetryTrack",
+   "methods": []
+  },
+  {
+   "name": "telemetrySetOptIn",
+   "methods": []
+  },
+  {
+   "name": "diagnostics",
+   "methods": [
+    {
+     "name": "getStatus",
+     "signature": "() => Promise<DiagnosticsStatusPayload>"
+    },
+    {
+     "name": "collectBundle",
+     "signature": "(lookbackMinutes?: number) => Promise<DiagnosticsBundlePayload>"
+    },
+    {
+     "name": "openBundlePreview",
+     "signature": "(bundleSubmissionId: string) => Promise<void>"
+    },
+    {
+     "name": "discardBundlePreview",
+     "signature": "(bundleSubmissionId: string) => Promise<void>"
+    },
+    {
+     "name": "uploadBundle",
+     "signature": "(bundleSubmissionId: string) => Promise<DiagnosticsUploadPayload>"
+    },
+    {
+     "name": "deleteBundle",
+     "signature": "(ticketId: string) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "telemetryGetConsentState",
+   "methods": []
+  },
+  {
+   "name": "telemetryAcknowledgeBanner",
+   "methods": []
+  },
+  {
+   "name": "settings",
+   "methods": [
+    {
+     "name": "get",
+     "signature": "() => Promise<GlobalSettings>"
+    },
+    {
+     "name": "getSync",
+     "signature": "() => GlobalSettings | null"
+    },
+    {
+     "name": "set",
+     "signature": "(args: Partial<GlobalSettings>) => Promise<GlobalSettings>"
+    },
+    {
+     "name": "setActiveRuntimeEnvironmentPreference",
+     "signature": "(args: { environmentId: string | null }) => Promise<GlobalSettings>"
+    },
+    {
+     "name": "updatePRBotAuthorOverride",
+     "signature": "(args: { author: string; isBot: boolean }) => Promise<GlobalSettings>"
+    },
+    {
+     "name": "listFonts",
+     "signature": "() => Promise<string[]>"
+    },
+    {
+     "name": "previewGhosttyImport",
+     "signature": "() => Promise<GhosttyImportPreview>"
+    },
+    {
+     "name": "previewWarpThemeImport",
+     "signature": "(source: WarpThemeImportSource) => Promise<WarpThemeImportPreview>"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: (updates: Partial<GlobalSettings>) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "agentAwake",
+   "methods": [
+    {
+     "name": "getStatus",
+     "signature": "() => Promise<ComputerAwakeStatus>"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: (status: ComputerAwakeStatus) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "localhostWorktreeLabels",
+   "methods": [
+    {
+     "name": "register",
+     "signature": "(args: LocalhostWorktreeLabelRoute) => Promise<LocalhostWorktreeLabelResult>"
+    }
+   ]
+  },
+  {
+   "name": "keybindings",
+   "methods": [
+    {
+     "name": "get",
+     "signature": "() => Promise<KeybindingFileSnapshot>"
+    },
+    {
+     "name": "ensureFile",
+     "signature": "() => Promise<KeybindingFileSnapshot>"
+    },
+    {
+     "name": "setAction",
+     "signature": "(args: { actionId: KeybindingActionId bindings: string[] | null }) => Promise<KeybindingFileSnapshot>"
+    },
+    {
+     "name": "reload",
+     "signature": "() => Promise<KeybindingFileSnapshot>"
+    },
+    {
+     "name": "openFile",
+     "signature": "() => Promise<KeybindingFileSnapshot>"
+    },
+    {
+     "name": "revealFile",
+     "signature": "() => Promise<KeybindingFileSnapshot>"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: (snapshot: KeybindingFileSnapshot) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "codexAccounts",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "() => Promise<CodexRateLimitAccountsState>"
+    },
+    {
+     "name": "add",
+     "signature": "(args?: { runtime?: 'host' | 'wsl' wslDistro?: string | null }) => Promise<CodexRateLimitAccountsState>"
+    },
+    {
+     "name": "cancelPendingLogin",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "getPendingLoginUrl",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "onPendingLoginUrlChanged",
+     "signature": "(callback: (url: string | null) => void) => () => void"
+    },
+    {
+     "name": "reauthenticate",
+     "signature": "(args: { accountId: string /** Local-only: activate the re-authed account when its runtime lane had no selection. */ activateIfSelectionWasEmpty?: boolean }) => Promise<CodexRateLimitAccountsState>"
+    },
+    {
+     "name": "remove",
+     "signature": "(args: { accountId: string }) => Promise<CodexRateLimitAccountsState>"
+    },
+    {
+     "name": "select",
+     "signature": "(args: { accountId: string | null runtime?: 'host' | 'wsl' wslDistro?: string | null }) => Promise<CodexRateLimitAccountsState>"
+    },
+    {
+     "name": "listStalePanes",
+     "signature": "(args: { ptyIds: string[] }) => Promise< { ptyId: string launchAccountId: string | null activeAccountId: string | null /** Optional for compatibility with a pre-reason main process. */ reason?: 'account-change' | 'home-route-change' }[] >"
+    },
+    {
+     "name": "listRecordedPaneLanes",
+     "signature": "(args: { ptyIds: string[] }) => Promise<Record<string, string>>"
+    },
+    {
+     "name": "forgetStalePanes",
+     "signature": "(args: { ptyIds: string[] }) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "claudeAccounts",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "() => Promise<ClaudeRateLimitAccountsState>"
+    },
+    {
+     "name": "add",
+     "signature": "(args?: { runtime?: 'host' | 'wsl' wslDistro?: string | null }) => Promise<ClaudeRateLimitAccountsState>"
+    },
+    {
+     "name": "cancelPendingLogin",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "reauthenticate",
+     "signature": "(args: { accountId: string }) => Promise<ClaudeRateLimitAccountsState>"
+    },
+    {
+     "name": "remove",
+     "signature": "(args: { accountId: string }) => Promise<ClaudeRateLimitAccountsState>"
+    },
+    {
+     "name": "select",
+     "signature": "(args: { accountId: string | null runtime?: 'host' | 'wsl' wslDistro?: string | null }) => Promise<ClaudeRateLimitAccountsState>"
+    }
+   ]
+  },
+  {
+   "name": "cli",
+   "methods": [
+    {
+     "name": "getInstallStatus",
+     "signature": "() => Promise<CliInstallStatus>"
+    },
+    {
+     "name": "install",
+     "signature": "() => Promise<CliInstallStatus>"
+    },
+    {
+     "name": "remove",
+     "signature": "() => Promise<CliInstallStatus>"
+    },
+    {
+     "name": "getWslInstallStatus",
+     "signature": "(args?: { distro?: string | null }) => Promise<CliInstallStatus>"
+    },
+    {
+     "name": "installWsl",
+     "signature": "(args?: { distro?: string | null }) => Promise<CliInstallStatus>"
+    },
+    {
+     "name": "removeWsl",
+     "signature": "(args?: { distro?: string | null }) => Promise<CliInstallStatus>"
+    }
+   ]
+  },
+  {
+   "name": "codexConfigSync",
+   "methods": [
+    {
+     "name": "status",
+     "signature": "() => Promise<CodexConfigSyncStatus>"
+    }
+   ]
+  },
+  {
+   "name": "agentTrust",
+   "methods": [
+    {
+     "name": "markTrusted",
+     "signature": "(args: { preset: 'cursor' | 'copilot' | 'codex' workspacePath: string connectionId?: string }) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "preflight",
+   "methods": [
+    {
+     "name": "check",
+     "signature": "(args?: PreflightRuntimeContext & { force?: boolean }) => Promise<PreflightStatus>"
+    },
+    {
+     "name": "detectAgents",
+     "signature": "(args?: PreflightRuntimeContext) => Promise<string[]>"
+    },
+    {
+     "name": "refreshAgents",
+     "signature": "(args?: PreflightRuntimeContext) => Promise<RefreshAgentsResult>"
+    },
+    {
+     "name": "detectRemoteAgents",
+     "signature": "(args: { connectionId: string }) => Promise<string[]>"
+    },
+    {
+     "name": "detectRemoteWindowsTerminalCapabilities",
+     "signature": "(args: { connectionId: string }) => Promise<{ wslAvailable: boolean wslDistros: string[] pwshAvailable: boolean gitBashAvailable: boolean hostPlatform: NodeJS.Platform | null }>"
+    }
+   ]
+  },
+  {
+   "name": "notifications",
+   "methods": [
+    {
+     "name": "getDesktopAwayState",
+     "signature": "() => Promise<boolean | undefined>"
+    },
+    {
+     "name": "dispatch",
+     "signature": "(args: NotificationDispatchRequest) => Promise<NotificationDispatchResult>"
+    },
+    {
+     "name": "dismiss",
+     "signature": "(ids: string[]) => Promise<NotificationDismissResult>"
+    },
+    {
+     "name": "openSystemSettings",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "getPermissionStatus",
+     "signature": "() => Promise<NotificationPermissionStatusResult>"
+    },
+    {
+     "name": "probeDelivery",
+     "signature": "(args?: { force?: boolean }) => Promise<NotificationDeliveryProbeResult>"
+    },
+    {
+     "name": "playSound",
+     "signature": "(options?: { force?: boolean; volume?: number }) => Promise<NotificationSoundResult>"
+    }
+   ]
+  },
+  {
+   "name": "onboarding",
+   "methods": [
+    {
+     "name": "get",
+     "signature": "() => Promise<OnboardingState>"
+    },
+    {
+     "name": "update",
+     "signature": "( updates: Partial<Omit<OnboardingState, 'checklist'>> & { checklist?: Partial<OnboardingState['checklist']> } ) => Promise<OnboardingState>"
+    }
+   ]
+  },
+  {
+   "name": "dashboard",
+   "methods": [
+    {
+     "name": "openPopout",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "publishSnapshot",
+     "signature": "(snapshot: DashboardSnapshot) => Promise<void>"
+    },
+    {
+     "name": "getPopoutOpen",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "onPopoutOpenChanged",
+     "signature": "(callback: (open: boolean) => void) => () => void"
+    },
+    {
+     "name": "onSnapshotRequested",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onRevealAgent",
+     "signature": "(callback: (args: DashboardRevealAgentArgs) => void) => () => void"
+    },
+    {
+     "name": "onAckAgent",
+     "signature": "(callback: (paneKey: string) => void) => () => void"
+    },
+    {
+     "name": "onSpawnAgent",
+     "signature": "(callback: (args: DashboardSpawnAgentArgs) => void) => () => void"
+    },
+    {
+     "name": "onSleepWorkspace",
+     "signature": "(callback: (args: DashboardSleepWorkspaceArgs) => void) => () => void"
+    },
+    {
+     "name": "requestSnapshot",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "onSnapshot",
+     "signature": "(callback: (snapshot: DashboardSnapshot) => void) => () => void"
+    },
+    {
+     "name": "revealAgent",
+     "signature": "(args: DashboardRevealAgentArgs) => Promise<void>"
+    },
+    {
+     "name": "ackAgent",
+     "signature": "(paneKey: string) => Promise<void>"
+    },
+    {
+     "name": "spawnAgent",
+     "signature": "(args: DashboardSpawnAgentArgs) => Promise<void>"
+    },
+    {
+     "name": "sleepWorkspace",
+     "signature": "(args: DashboardSleepWorkspaceArgs) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "terminalPreview",
+   "methods": [
+    {
+     "name": "connect",
+     "signature": "( ptyId: string, opts?: { scrollbackRows?: number } ) => Promise<TerminalPreviewConnectResult>"
+    },
+    {
+     "name": "input",
+     "signature": "(ptyId: string, data: string) => Promise<boolean>"
+    },
+    {
+     "name": "fit",
+     "signature": "(ptyId: string, cols: number, rows: number) => Promise<{ cols: number; rows: number } | null>"
+    },
+    {
+     "name": "ack",
+     "signature": "(ptyId: string, bytes: number) => Promise<void>"
+    },
+    {
+     "name": "unsubscribe",
+     "signature": "(ptyId: string) => Promise<void>"
+    },
+    {
+     "name": "onData",
+     "signature": "(callback: (payload: TerminalPreviewDataPayload) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "macosTccPrompts",
+   "methods": [
+    {
+     "name": "onThreshold",
+     "signature": "(callback: (payload: { promptCount: number }) => void) => () => void"
+    },
+    {
+     "name": "consumePending",
+     "signature": "() => Promise<{ claimId: number; promptCount: number } | null>"
+    },
+    {
+     "name": "acknowledgePending",
+     "signature": "(claimId: number) => Promise<void>"
+    },
+    {
+     "name": "releasePending",
+     "signature": "(claimId: number) => Promise<void>"
+    },
+    {
+     "name": "dismiss",
+     "signature": "() => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "developerPermissions",
+   "methods": [
+    {
+     "name": "getStatus",
+     "signature": "() => Promise<DeveloperPermissionState[]>"
+    },
+    {
+     "name": "request",
+     "signature": "(args: { id: DeveloperPermissionId }) => Promise<DeveloperPermissionRequestResult>"
+    },
+    {
+     "name": "openSettings",
+     "signature": "(args: { id: DeveloperPermissionId }) => Promise<void>"
+    },
+    {
+     "name": "testLocalNetworkConnection",
+     "signature": "(args: { host: string port: number }) => Promise<LocalNetworkConnectionTestResult>"
+    }
+   ]
+  },
+  {
+   "name": "computerUsePermissions",
+   "methods": [
+    {
+     "name": "getStatus",
+     "signature": "() => Promise<ComputerUsePermissionStatusResult>"
+    },
+    {
+     "name": "openSetup",
+     "signature": "(args?: { id?: ComputerUsePermissionId }) => Promise<ComputerUsePermissionSetupResult>"
+    },
+    {
+     "name": "reset",
+     "signature": "() => Promise<ComputerUsePermissionResetResult>"
+    }
+   ]
+  },
+  {
+   "name": "shell",
+   "methods": [
+    {
+     "name": "openPath",
+     "signature": "(path: string) => Promise<void>"
+    },
+    {
+     "name": "openInFileManager",
+     "signature": "(path: string) => Promise<ShellOpenLocalPathResult>"
+    },
+    {
+     "name": "openInExternalEditor",
+     "signature": "( request: ShellOpenExternalEditorRequest ) => Promise<ShellOpenExternalEditorResult>"
+    },
+    {
+     "name": "openUrl",
+     "signature": "(url: string) => Promise<void>"
+    },
+    {
+     "name": "openFilePath",
+     "signature": "(path: string) => Promise<boolean>"
+    },
+    {
+     "name": "openFileUri",
+     "signature": "(uri: string) => Promise<void>"
+    },
+    {
+     "name": "pathExists",
+     "signature": "(path: string) => Promise<boolean>"
+    },
+    {
+     "name": "pickAttachment",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "pickImage",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "pickRepoIconImage",
+     "signature": "() => Promise<{ dataUrl: string fileName: string } | null>"
+    },
+    {
+     "name": "pickAudio",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "pickDirectory",
+     "signature": "(args: { defaultPath?: string }) => Promise<string | null>"
+    },
+    {
+     "name": "copyFile",
+     "signature": "(args: { srcPath: string; destPath: string }) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "skills",
+   "methods": [
+    {
+     "name": "discover",
+     "signature": "(target?: SkillDiscoveryTarget) => Promise<SkillDiscoveryResult>"
+    },
+    {
+     "name": "freshnessInventory",
+     "signature": "() => Promise<SkillFreshnessInventory>"
+    },
+    {
+     "name": "startUpdateRun",
+     "signature": "(names: string[]) => Promise<SkillUpdateStartResult>"
+    },
+    {
+     "name": "cancelUpdateRun",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "acknowledgeUpdateRun",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "getUpdateRun",
+     "signature": "() => Promise<SkillUpdateRun>"
+    },
+    {
+     "name": "prepareShare",
+     "signature": "(input: { skillIds: string[] bundleName: string target?: SkillDiscoveryTarget packageId?: string }) => Promise<SkillSharePreview>"
+    },
+    {
+     "name": "publishShare",
+     "signature": "(input: SkillSharePublishInput) => Promise<SkillSharePublishOperation>"
+    },
+    {
+     "name": "cancelShare",
+     "signature": "(preparationId: string) => Promise<void>"
+    },
+    {
+     "name": "releaseShare",
+     "signature": "(preparationId: string) => Promise<void>"
+    },
+    {
+     "name": "resolveShare",
+     "signature": "(shareId: string) => Promise<SkillShareResolvedOperation>"
+    },
+    {
+     "name": "installShare",
+     "signature": "(input: SkillShareInstallInput) => Promise<SkillShareInstallOperation>"
+    },
+    {
+     "name": "installBundleShare",
+     "signature": "( input: SkillBundleShareInstallInput ) => Promise<SkillBundleShareInstallOperation>"
+    },
+    {
+     "name": "installBundlePackageVersion",
+     "signature": "( input: SkillBundlePackageVersionInstallInput ) => Promise<SkillBundleShareInstallOperation>"
+    },
+    {
+     "name": "installPackageVersion",
+     "signature": "( input: SkillPackageVersionInstallInput ) => Promise<SkillShareInstallOperation>"
+    },
+    {
+     "name": "cancelInstall",
+     "signature": "(input: SkillInstallCancelInput) => Promise<{ cancelled: boolean }>"
+    },
+    {
+     "name": "previewInstall",
+     "signature": "(input: SkillInstallPreviewInput) => Promise<SkillInstallPreviewOperation>"
+    },
+    {
+     "name": "previewBundleInstall",
+     "signature": "( input: SkillBundleInstallPreviewInput ) => Promise<SkillBundleInstallPreviewOperation>"
+    },
+    {
+     "name": "removeInstall",
+     "signature": "(input: SkillRemoveInput) => Promise<SkillRemoveOperation>"
+    },
+    {
+     "name": "deleteSupported",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "previewDelete",
+     "signature": "(request: SkillDeleteRequest) => Promise<SkillDeletePlan>"
+    },
+    {
+     "name": "delete",
+     "signature": "(request: SkillDeleteRequest) => Promise<SkillDeleteResult>"
+    },
+    {
+     "name": "listManagedInstalls",
+     "signature": "(environmentId?: string) => Promise<ManagedSkillInstallListOperation>"
+    },
+    {
+     "name": "getPackage",
+     "signature": "(packageId: string) => Promise<SkillCloudOperation<SkillCloudPackageDetails>>"
+    },
+    {
+     "name": "listOwnedShares",
+     "signature": "() => Promise<SkillCloudOperation<SkillCloudOwnedShare[]>>"
+    },
+    {
+     "name": "revokeShare",
+     "signature": "(shareId: string) => Promise<SkillCloudOperation<void>>"
+    },
+    {
+     "name": "deletePackageVersion",
+     "signature": "(input: { packageId: string versionId: string }) => Promise<SkillCloudOperation<void>>"
+    },
+    {
+     "name": "deletePackage",
+     "signature": "(packageId: string) => Promise<SkillCloudOperation<void>>"
+    },
+    {
+     "name": "listWslDistros",
+     "signature": "(environmentId?: string) => Promise<string[]>"
+    },
+    {
+     "name": "onInstallProgress",
+     "signature": "(callback: (progress: SkillInstallProgress) => void) => () => void"
+    },
+    {
+     "name": "onShareProgress",
+     "signature": "(callback: (progress: SkillShareProgress) => void) => () => void"
+    },
+    {
+     "name": "onUpdateRun",
+     "signature": "(callback: (run: SkillUpdateRun) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "pet",
+   "methods": [
+    {
+     "name": "import",
+     "signature": "() => Promise<CustomPet | null>"
+    },
+    {
+     "name": "importPetBundle",
+     "signature": "() => Promise<CustomPet | null>"
+    },
+    {
+     "name": "read",
+     "signature": "(id: string, fileName: string, kind?: 'image' | 'bundle') => Promise<ArrayBuffer | null>"
+    },
+    {
+     "name": "delete",
+     "signature": "(id: string, fileName: string, kind?: 'image' | 'bundle') => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "browser",
+   "methods": [
+    {
+     "name": "registerGuest",
+     "signature": "(args: { browserPageId: string workspaceId: string worktreeId: string sessionProfileId?: string | null webContentsId: number }) => Promise<boolean>"
+    },
+    {
+     "name": "isGuestRegistered",
+     "signature": "(args: { browserPageId: string; webContentsId: number }) => Promise<boolean>"
+    },
+    {
+     "name": "repairGuestRegistration",
+     "signature": "(args: { browserPageId: string workspaceId: string worktreeId: string sessionProfileId?: string | null webContentsId: number }) => Promise<boolean>"
+    },
+    {
+     "name": "unregisterGuest",
+     "signature": "(args: { browserPageId: string }) => Promise<void>"
+    },
+    {
+     "name": "onWebAuthnAccountRequest",
+     "signature": "( callback: (request: BrowserWebAuthnAccountRequest) => void ) => () => void"
+    },
+    {
+     "name": "onWebAuthnAccountRequestClosed",
+     "signature": "(callback: (event: { requestId: string }) => void) => () => void"
+    },
+    {
+     "name": "respondWebAuthnAccount",
+     "signature": "(response: BrowserWebAuthnAccountResponse) => Promise<boolean>"
+    },
+    {
+     "name": "openDevTools",
+     "signature": "(args: { browserPageId: string }) => Promise<boolean>"
+    },
+    {
+     "name": "setViewportOverride",
+     "signature": "(args: { browserPageId: string override: BrowserViewportOverride | null }) => Promise<boolean>"
+    },
+    {
+     "name": "setAnnotationViewportBridge",
+     "signature": "(args: BrowserSetAnnotationViewportBridgeArgs) => Promise<boolean>"
+    },
+    {
+     "name": "publishClientPageMetadata",
+     "signature": "(args: { environmentId: string params: BrowserClientPageMetadataParams }) => Promise<BrowserClientPageMetadataPublishOutcome>"
+    },
+    {
+     "name": "onGuestLoadFailed",
+     "signature": "( callback: (args: { browserPageId: string; loadError: BrowserLoadError }) => void ) => () => void"
+    },
+    {
+     "name": "onCertificateFailureChanged",
+     "signature": "( callback: (event: { browserPageId: string; failure: BrowserCertificateFailure | null }) => void ) => () => void"
+    },
+    {
+     "name": "proceedCertificate",
+     "signature": "(args: { browserPageId: string challengeId: string }) => Promise<BrowserCertificateProceedResult>"
+    },
+    {
+     "name": "onPermissionDenied",
+     "signature": "(callback: (event: BrowserPermissionDeniedEvent) => void) => () => void"
+    },
+    {
+     "name": "onPopup",
+     "signature": "(callback: (event: BrowserPopupEvent) => void) => () => void"
+    },
+    {
+     "name": "onDownloadRequested",
+     "signature": "(callback: (event: BrowserDownloadRequestedEvent) => void) => () => void"
+    },
+    {
+     "name": "onDownloadProgress",
+     "signature": "(callback: (event: BrowserDownloadProgressEvent) => void) => () => void"
+    },
+    {
+     "name": "onDownloadFinished",
+     "signature": "(callback: (event: BrowserDownloadFinishedEvent) => void) => () => void"
+    },
+    {
+     "name": "onContextMenuRequested",
+     "signature": "( callback: (event: BrowserContextMenuRequestedEvent) => void ) => () => void"
+    },
+    {
+     "name": "onContextMenuDismissed",
+     "signature": "( callback: (event: BrowserContextMenuDismissedEvent) => void ) => () => void"
+    },
+    {
+     "name": "onNavigationUpdate",
+     "signature": "( callback: (event: { browserPageId: string; url: string; title: string }) => void ) => () => void"
+    },
+    {
+     "name": "onActivateView",
+     "signature": "( callback: (data: { worktreeId?: string; browserPageId?: string }) => void ) => () => void"
+    },
+    {
+     "name": "onPaneFocus",
+     "signature": "( callback: (data: { worktreeId: string | null; browserPageId: string }) => void ) => () => void"
+    },
+    {
+     "name": "onOpenLinkInOrcaTab",
+     "signature": "( callback: (event: { browserPageId: string; url: string; activate?: boolean }) => void ) => () => void"
+    },
+    {
+     "name": "cancelDownload",
+     "signature": "(args: { downloadId: string }) => Promise<boolean>"
+    },
+    {
+     "name": "setGrabMode",
+     "signature": "(args: BrowserSetGrabModeArgs) => Promise<BrowserSetGrabModeResult>"
+    },
+    {
+     "name": "awaitGrabSelection",
+     "signature": "(args: BrowserAwaitGrabSelectionArgs) => Promise<BrowserGrabResult>"
+    },
+    {
+     "name": "cancelGrab",
+     "signature": "(args: BrowserCancelGrabArgs) => Promise<boolean>"
+    },
+    {
+     "name": "captureSelectionScreenshot",
+     "signature": "( args: BrowserCaptureSelectionScreenshotArgs ) => Promise<BrowserCaptureSelectionScreenshotResult>"
+    },
+    {
+     "name": "extractHoverPayload",
+     "signature": "(args: BrowserExtractHoverArgs) => Promise<BrowserExtractHoverResult>"
+    },
+    {
+     "name": "onGrabModeToggle",
+     "signature": "(callback: (browserPageId: string) => void) => () => void"
+    },
+    {
+     "name": "onGrabActionShortcut",
+     "signature": "( callback: (args: { browserPageId: string; key: 'c' | 's' }) => void ) => () => void"
+    },
+    {
+     "name": "sessionListProfiles",
+     "signature": "() => Promise<BrowserSessionProfile[]>"
+    },
+    {
+     "name": "prepareSshWorkspacePartition",
+     "signature": "(args: { targetId: string browserProfileId?: string skipProbe?: boolean }) => Promise<{ partition: string }>"
+    },
+    {
+     "name": "sessionCreateProfile",
+     "signature": "(args: { scope: BrowserSessionProfileScope label: string }) => Promise<BrowserSessionProfile | null>"
+    },
+    {
+     "name": "identityGet",
+     "signature": "() => Promise<BrowserIdentityModeStatus | null>"
+    },
+    {
+     "name": "identitySet",
+     "signature": "(mode: BrowserUserAgentMode) => Promise<BrowserIdentityModeSetResult | null>"
+    },
+    {
+     "name": "sessionDeleteProfile",
+     "signature": "(args: { profileId: string }) => Promise<boolean>"
+    },
+    {
+     "name": "sessionImportCookies",
+     "signature": "(args: { profileId: string }) => Promise<BrowserCookieImportResult>"
+    },
+    {
+     "name": "sessionResolvePartition",
+     "signature": "(args: { profileId: string | null }) => Promise<string | null>"
+    },
+    {
+     "name": "sessionDetectBrowsers",
+     "signature": "() => Promise<DetectedBrowserInfo[]>"
+    },
+    {
+     "name": "sessionDetectBrowsersForClientHost",
+     "signature": "(args: { environmentId: string }) => Promise<DetectedBrowserInfo[] | null>"
+    },
+    {
+     "name": "sessionImportFromBrowser",
+     "signature": "(args: { profileId: string browserFamily: string browserProfile?: string }) => Promise<BrowserCookieImportResult>"
+    },
+    {
+     "name": "sessionImportFromBrowserForClientHost",
+     "signature": "(args: { environmentId: string profileId: string browserFamily: string browserProfile?: string }) => Promise<BrowserCookieImportResult | null>"
+    },
+    {
+     "name": "sessionClientRouteImportSources",
+     "signature": "(args: { environmentId: string }) => Promise<Record<string, BrowserSessionProfileSource>>"
+    },
+    {
+     "name": "sessionClearDefaultCookies",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "notifyActiveTabChanged",
+     "signature": "(args: { browserPageId: string }) => Promise<boolean>"
+    }
+   ]
+  },
+  {
+   "name": "emulator",
+   "methods": [
+    {
+     "name": "onPaneFocus",
+     "signature": "(callback: (data: { worktreeId: string }) => void) => () => void"
+    },
+    {
+     "name": "onAutoAttach",
+     "signature": "( callback: (data: { worktreeId: string info: { deviceUdid: string; streamUrl: string; wsUrl: string; axUrl?: string } }) => void ) => () => void"
+    },
+    {
+     "name": "startFrameStream",
+     "signature": "(args: { streamUrl: string; streamKey?: string }) => Promise<{ streamId: string }>"
+    },
+    {
+     "name": "stopFrameStream",
+     "signature": "(args: { streamId: string }) => Promise<void>"
+    },
+    {
+     "name": "onFrameStreamFrame",
+     "signature": "( callback: (data: { streamId: string; bytes: ArrayBuffer }) => void ) => () => void"
+    },
+    {
+     "name": "onFrameStreamError",
+     "signature": "( callback: (data: { streamId: string; message: string }) => void ) => () => void"
+    },
+    {
+     "name": "startVideoStream",
+     "signature": "(args: { deviceId: string; streamId: string }) => Promise<{ streamId: string }>"
+    },
+    {
+     "name": "stopVideoStream",
+     "signature": "(args: { streamId: string }) => Promise<void>"
+    },
+    {
+     "name": "onVideoStreamMeta",
+     "signature": "( callback: (data: { streamId: string deviceId: string meta: { codecId: string; width: number; height: number } }) => void ) => () => void"
+    },
+    {
+     "name": "onVideoStreamFrame",
+     "signature": "( callback: (data: { streamId: string deviceId: string config: boolean keyFrame: boolean bytes: ArrayBuffer }) => void ) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "hooks",
+   "methods": [
+    {
+     "name": "check",
+     "signature": "(args: { repoId: string; hostId?: ExecutionHostId }) => Promise<{ status?: 'ok' | 'error' hasHooks: boolean hooks: OrcaHooks | null mayNeedUpdate: boolean }>"
+    },
+    {
+     "name": "inspectSetupScriptImports",
+     "signature": "(args: { repoId: string hostId?: ExecutionHostId }) => Promise<SetupScriptImportCandidate[]>"
+    },
+    {
+     "name": "createIssueCommandRunner",
+     "signature": "(args: { repoId: string worktreePath: string command: string }) => Promise<WorktreeSetupLaunch>"
+    },
+    {
+     "name": "readIssueCommand",
+     "signature": "(args: { repoId: string; hostId?: ExecutionHostId }) => Promise<{ status?: 'ok' | 'error' localContent: string | null sharedContent: string | null effectiveContent: string | null localFilePath: string source: 'local' | 'shared' | 'none' }>"
+    },
+    {
+     "name": "writeIssueCommand",
+     "signature": "(args: { repoId: string content: string hostId?: ExecutionHostId }) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "ephemeralVm",
+   "methods": [
+    {
+     "name": "listRecipes",
+     "signature": "(args: { repoId: string }) => Promise<{ status: 'ok' | 'error' repoPath: string | null recipes: OrcaHooks['environmentRecipes'] diagnostics: NonNullable<OrcaHooks['environmentRecipeDiagnostics']> message?: string }>"
+    },
+    {
+     "name": "listRecipeCatalog",
+     "signature": "() => Promise< { repoId: string repoName: string repoPath: string recipes: NonNullable<OrcaHooks['environmentRecipes']> diagnostics: NonNullable<OrcaHooks['environmentRecipeDiagnostics']> }[] >"
+    },
+    {
+     "name": "doctor",
+     "signature": "(args: { repoId: string; recipeId: string }) => Promise<EphemeralVmRecipeDoctorResult>"
+    },
+    {
+     "name": "provision",
+     "signature": "(args: { repoId: string recipeId: string workspaceName?: string projectId?: string workspaceId?: string branch?: string ref?: string provisionId?: string }) => Promise< | { ok: true connectionType: 'orca-server' runtime: EphemeralVmRuntimeRecord environment: PublicKnownRuntimeEnvironment stderr: str"
+    },
+    {
+     "name": "cancelProvision",
+     "signature": "(args: { provisionId: string }) => Promise<{ cancelled: boolean }>"
+    },
+    {
+     "name": "onProvisionEvent",
+     "signature": "( callback: (event: { provisionId: string; stream: 'stdout' | 'stderr'; chunk: string }) => void ) => () => void"
+    },
+    {
+     "name": "listRuntimes",
+     "signature": "() => Promise<EphemeralVmRuntimeRecord[]>"
+    },
+    {
+     "name": "attachWorkspace",
+     "signature": "(args: { runtimeId: string workspaceId: string }) => Promise<EphemeralVmRuntimeRecord>"
+    },
+    {
+     "name": "suspendWorkspace",
+     "signature": "(args: { workspaceId: string }) => Promise<EphemeralVmRuntimeRecord | null>"
+    },
+    {
+     "name": "resumeWorkspace",
+     "signature": "(args: { workspaceId: string }) => Promise<EphemeralVmRuntimeRecord | null>"
+    },
+    {
+     "name": "cleanup",
+     "signature": "(args: { runtimeId: string }) => Promise<EphemeralVmRuntimeRecord>"
+    },
+    {
+     "name": "stopCleanup",
+     "signature": "(args: { runtimeId: string }) => Promise<EphemeralVmRuntimeRecord>"
+    },
+    {
+     "name": "getCleanupCommand",
+     "signature": "(args: { runtimeId: string }) => Promise<{ runtimeId: string command: string | null payloadJson: string cleanupDisabled: boolean message?: string }>"
+    }
+   ]
+  },
+  {
+   "name": "cache",
+   "methods": [
+    {
+     "name": "getGitHub",
+     "signature": "() => Promise<{ pr: Record<string, { data: PRInfo | null; fetchedAt: number }> issue: Record<string, { data: IssueInfo | null; fetchedAt: number }> }>"
+    },
+    {
+     "name": "setGitHub",
+     "signature": "(args: { cache: { pr: Record<string, { data: PRInfo | null; fetchedAt: number }> issue: Record<string, { data: IssueInfo | null; fetchedAt: number }> } }) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "session",
+   "methods": [
+    {
+     "name": "get",
+     "signature": "(hostId?: ExecutionHostId) => Promise<WorkspaceSessionState>"
+    },
+    {
+     "name": "listHostIds",
+     "signature": "() => Promise<ExecutionHostId[]>"
+    },
+    {
+     "name": "set",
+     "signature": "(args: WorkspaceSessionState, hostId?: ExecutionHostId) => Promise<void>"
+    },
+    {
+     "name": "patch",
+     "signature": "(args: WorkspaceSessionPatch, hostId?: ExecutionHostId) => Promise<void>"
+    },
+    {
+     "name": "flush",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "readTerminalScrollback",
+     "signature": "(args: { ref: string }) => string | null"
+    },
+    {
+     "name": "setSync",
+     "signature": "(args: WorkspaceSessionState, hostId?: ExecutionHostId) => void"
+    }
+   ]
+  },
+  {
+   "name": "remoteWorkspace",
+   "methods": [
+    {
+     "name": "get",
+     "signature": "(args: { targetId: string }) => Promise<RemoteWorkspaceObservedSnapshot | null>"
+    },
+    {
+     "name": "setForConnectedTargets",
+     "signature": "(args: { session?: WorkspaceSessionState hydratedTargetIds?: string[] expectedRevisionsByTargetId: Record<string, number> expectedHostObservationTokensByTargetId: Record<string, string> }) => Promise<{ targetId: string; result: RemoteWorkspaceObservedPatchResult }[]>"
+    },
+    {
+     "name": "listEnabledConnectedTargets",
+     "signature": "() => Promise<string[]>"
+    },
+    {
+     "name": "listConnectedClients",
+     "signature": "(args?: { targetIds?: string[] }) => Promise<{ targetId: string; clients: RemoteWorkspaceConnectedClient[] }[]>"
+    },
+    {
+     "name": "clientId",
+     "signature": "() => Promise<string>"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: (event: RemoteWorkspaceChangedEvent) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "updater",
+   "methods": [
+    {
+     "name": "getVersion",
+     "signature": "() => Promise<string>"
+    },
+    {
+     "name": "getStatus",
+     "signature": "() => Promise<UpdateStatus>"
+    },
+    {
+     "name": "check",
+     "signature": "(options?: UpdateCheckOptions) => Promise<void>"
+    },
+    {
+     "name": "download",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "quitAndInstall",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "dismissNudge",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "dismissAvailableUpdate",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "getLinuxPackageInstallInstructions",
+     "signature": "() => Promise<LinuxPackageInstallInstructions>"
+    },
+    {
+     "name": "showLinuxPackage",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "listBuilds",
+     "signature": "(channel: ReleaseChannel) => Promise<ReleaseBuildListResult>"
+    },
+    {
+     "name": "onStatus",
+     "signature": "(callback: (status: UpdateStatus) => void) => () => void"
+    },
+    {
+     "name": "onClearDismissal",
+     "signature": "(callback: () => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "notebook",
+   "methods": [
+    {
+     "name": "runPythonCell",
+     "signature": "(args: { filePath: string code: string preamble?: string connectionId?: string | null }) => Promise<{ stdout: string stderr: string exitCode: number | null error?: string }>"
+    }
+   ]
+  },
+  {
+   "name": "docPreview",
+   "methods": [
+    {
+     "name": "mintGrant",
+     "signature": "(request: DocPreviewGrantRequest) => Promise<{ grantId: string; url: string }>"
+    },
+    {
+     "name": "revokeGrant",
+     "signature": "(grantId: string) => Promise<boolean>"
+    },
+    {
+     "name": "authorizeDirectory",
+     "signature": "(grantId: string, relativePath: string) => Promise<boolean>"
+    },
+    {
+     "name": "onExternalLink",
+     "signature": "(callback: (payload: { url: string }) => void) => () => void"
+    },
+    {
+     "name": "onLoadFailure",
+     "signature": "(callback: (payload: DocPreviewFailure) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "stats",
+   "methods": [
+    {
+     "name": "getSummary",
+     "signature": "() => Promise<StatsSummary>"
+    }
+   ]
+  },
+  {
+   "name": "memory",
+   "methods": [
+    {
+     "name": "getSnapshot",
+     "signature": "() => Promise<MemorySnapshot>"
+    }
+   ]
+  },
+  {
+   "name": "claudeUsage",
+   "methods": [
+    {
+     "name": "getScanState",
+     "signature": "() => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "setEnabled",
+     "signature": "(args: { enabled: boolean }) => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "refresh",
+     "signature": "(args?: { force?: boolean }) => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "getSnapshot",
+     "signature": "(args: UsageQueryArgs<Snapshot> & { limit?: number }) => Promise<Snapshot>"
+    },
+    {
+     "name": "getSummary",
+     "signature": "(args: UsageQueryArgs<Snapshot>) => Promise<Snapshot['summary']>"
+    },
+    {
+     "name": "getDaily",
+     "signature": "(args: UsageQueryArgs<Snapshot>) => Promise<Snapshot['daily']>"
+    },
+    {
+     "name": "getBreakdown",
+     "signature": "( args: UsageQueryArgs<Snapshot> & { kind: BreakdownKind } ) => Promise<Snapshot['modelBreakdown']>"
+    },
+    {
+     "name": "getRecentSessions",
+     "signature": "( args: UsageQueryArgs<Snapshot> & { limit?: number } ) => Promise<Snapshot['recentSessions']>"
+    }
+   ]
+  },
+  {
+   "name": "codexUsage",
+   "methods": [
+    {
+     "name": "getScanState",
+     "signature": "() => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "setEnabled",
+     "signature": "(args: { enabled: boolean }) => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "refresh",
+     "signature": "(args?: { force?: boolean }) => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "getSnapshot",
+     "signature": "(args: UsageQueryArgs<Snapshot> & { limit?: number }) => Promise<Snapshot>"
+    },
+    {
+     "name": "getSummary",
+     "signature": "(args: UsageQueryArgs<Snapshot>) => Promise<Snapshot['summary']>"
+    },
+    {
+     "name": "getDaily",
+     "signature": "(args: UsageQueryArgs<Snapshot>) => Promise<Snapshot['daily']>"
+    },
+    {
+     "name": "getBreakdown",
+     "signature": "( args: UsageQueryArgs<Snapshot> & { kind: BreakdownKind } ) => Promise<Snapshot['modelBreakdown']>"
+    },
+    {
+     "name": "getRecentSessions",
+     "signature": "( args: UsageQueryArgs<Snapshot> & { limit?: number } ) => Promise<Snapshot['recentSessions']>"
+    }
+   ]
+  },
+  {
+   "name": "openCodeUsage",
+   "methods": [
+    {
+     "name": "getScanState",
+     "signature": "() => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "setEnabled",
+     "signature": "(args: { enabled: boolean }) => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "refresh",
+     "signature": "(args?: { force?: boolean }) => Promise<Snapshot['scanState']>"
+    },
+    {
+     "name": "getSnapshot",
+     "signature": "(args: UsageQueryArgs<Snapshot> & { limit?: number }) => Promise<Snapshot>"
+    },
+    {
+     "name": "getSummary",
+     "signature": "(args: UsageQueryArgs<Snapshot>) => Promise<Snapshot['summary']>"
+    },
+    {
+     "name": "getDaily",
+     "signature": "(args: UsageQueryArgs<Snapshot>) => Promise<Snapshot['daily']>"
+    },
+    {
+     "name": "getBreakdown",
+     "signature": "( args: UsageQueryArgs<Snapshot> & { kind: BreakdownKind } ) => Promise<Snapshot['modelBreakdown']>"
+    },
+    {
+     "name": "getRecentSessions",
+     "signature": "( args: UsageQueryArgs<Snapshot> & { limit?: number } ) => Promise<Snapshot['recentSessions']>"
+    }
+   ]
+  },
+  {
+   "name": "aiVault",
+   "methods": [
+    {
+     "name": "searchSessions",
+     "signature": "( request: AiVaultSearchRequest, executionHostScope?: ExecutionHostScope ) => Promise<AiVaultSearchResponse>"
+    },
+    {
+     "name": "searchStatus",
+     "signature": "(executionHostScope?: ExecutionHostId) => Promise<AiVaultSearchStatus>"
+    },
+    {
+     "name": "setSearchEnabled",
+     "signature": "( executionHostId: ExecutionHostId, enabled: boolean ) => Promise<AiVaultSearchStatus>"
+    },
+    {
+     "name": "clearSearchIndex",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "listSessions",
+     "signature": "(args?: AiVaultListArgs) => Promise<AiVaultListResult>"
+    },
+    {
+     "name": "resolveSessionTitles",
+     "signature": "(args: AiVaultSessionTitlesArgs) => Promise<AiVaultSessionTitlesResult>"
+    },
+    {
+     "name": "cancelListSessions",
+     "signature": "(args: { requestToken: string }) => Promise<void>"
+    },
+    {
+     "name": "prepareSessionResume",
+     "signature": "( args: AiVaultPrepareSessionResumeArgs ) => Promise<AiVaultPrepareSessionResumeResult>"
+    },
+    {
+     "name": "listSubagentSessions",
+     "signature": "(args: AiVaultSubagentListArgs) => Promise<AiVaultSubagentListResult>"
+    },
+    {
+     "name": "getFirstUserPrompt",
+     "signature": "(args: AiVaultFirstUserPromptArgs) => Promise<AiVaultFirstUserPromptResult>"
+    },
+    {
+     "name": "deleteSession",
+     "signature": "(args: AiVaultDeleteSessionArgs) => Promise<AiVaultDeleteSessionResult>"
+    },
+    {
+     "name": "onWindowFocused",
+     "signature": "(callback: () => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "nativeChat",
+   "methods": [
+    {
+     "name": "readSession",
+     "signature": "( agent: AgentType, sessionId: string, limit?: number, transcriptPath?: string ) => Promise<NativeChatReadSessionResult>"
+    },
+    {
+     "name": "subscribe",
+     "signature": "( args: NativeChatSubscribeArgs, onFrame: (frame: NativeChatSubscriptionFrame) => void ) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "fs",
+   "methods": [
+    {
+     "name": "readDir",
+     "signature": "(args: { dirPath: string; connectionId?: string }) => Promise<DirEntry[]>"
+    },
+    {
+     "name": "readFile",
+     "signature": "(args: { filePath: string connectionId?: string includeLocalLogMetadata?: boolean }) => Promise<{ content: string isBinary: boolean isImage?: boolean mimeType?: string fileIdentity?: string }>"
+    },
+    {
+     "name": "readLocalLogTail",
+     "signature": "(args: LocalLogTailReadArgs) => Promise<LocalLogTailReadResult>"
+    },
+    {
+     "name": "startLocalLogTail",
+     "signature": "(args: LocalLogTailWatchArgs) => Promise<void>"
+    },
+    {
+     "name": "stopLocalLogTail",
+     "signature": "(args: { subscriptionId: string }) => Promise<void>"
+    },
+    {
+     "name": "onLocalLogTailChanged",
+     "signature": "(callback: (payload: LocalLogTailChangedPayload) => void) => () => void"
+    },
+    {
+     "name": "downloadFile",
+     "signature": "(args: { filePath: string connectionId: string }) => Promise<{ canceled: true } | { canceled: false; destinationPath: string }>"
+    },
+    {
+     "name": "downloadFolder",
+     "signature": "(args: { dirPath: string connectionId: string }) => Promise<{ canceled: true } | { canceled: false; destinationPath: string }>"
+    },
+    {
+     "name": "saveDownloadedFile",
+     "signature": "(args: { suggestedName: string content: string encoding: 'utf8' | 'base64' }) => Promise<{ canceled: true } | { canceled: false; destinationPath: string }>"
+    },
+    {
+     "name": "startDownloadedFile",
+     "signature": "(args: { suggestedName: string }) => Promise< { canceled: true } | { canceled: false; transferId: string; destinationPath: string } >"
+    },
+    {
+     "name": "appendDownloadedFileChunk",
+     "signature": "(args: { transferId: string contentBase64: string }) => Promise<{ ok: true }>"
+    },
+    {
+     "name": "finishDownloadedFile",
+     "signature": "(args: { transferId: string }) => Promise<{ canceled: false; destinationPath: string }>"
+    },
+    {
+     "name": "cancelDownloadedFile",
+     "signature": "(args: { transferId: string }) => Promise<{ ok: true }>"
+    },
+    {
+     "name": "listMarkdownDocuments",
+     "signature": "(args: { rootPath: string connectionId?: string }) => Promise<MarkdownDocument[]>"
+    },
+    {
+     "name": "writeFile",
+     "signature": "( args: { filePath: string content: string connectionId?: string } & SshMutationExpectation ) => Promise<void>"
+    },
+    {
+     "name": "createFile",
+     "signature": "( args: { filePath: string connectionId?: string } & SshMutationExpectation ) => Promise<void>"
+    },
+    {
+     "name": "createDir",
+     "signature": "( args: { dirPath: string; connectionId?: string } & SshMutationExpectation ) => Promise<void>"
+    },
+    {
+     "name": "rename",
+     "signature": "( args: { oldPath: string newPath: string connectionId?: string } & SshMutationExpectation ) => Promise<void>"
+    },
+    {
+     "name": "copy",
+     "signature": "( args: { sourcePath: string destinationPath: string connectionId?: string } & SshMutationExpectation ) => Promise<void>"
+    },
+    {
+     "name": "deletePath",
+     "signature": "( args: { targetPath: string connectionId?: string recursive?: boolean } & SshMutationExpectation ) => Promise<void>"
+    },
+    {
+     "name": "authorizeExternalPath",
+     "signature": "(args: { targetPath: string }) => Promise<void>"
+    },
+    {
+     "name": "stat",
+     "signature": "(args: { filePath: string connectionId?: string }) => Promise<{ size: number; isDirectory: boolean; mtime: number }>"
+    },
+    {
+     "name": "pathExists",
+     "signature": "(args: { filePath: string; connectionId?: string }) => Promise<boolean>"
+    },
+    {
+     "name": "listFiles",
+     "signature": "(args: { rootPath: string connectionId?: string excludePaths?: string[] requestToken?: string maxResults?: number searchQuery?: string }) => Promise<string[]>"
+    },
+    {
+     "name": "cancelListFiles",
+     "signature": "(args: { requestToken: string }) => Promise<void>"
+    },
+    {
+     "name": "search",
+     "signature": "(args: SearchOptions & { connectionId?: string }) => Promise<SearchResult>"
+    },
+    {
+     "name": "importExternalPaths",
+     "signature": "( args: { sourcePaths: string[] destDir: string connectionId?: string ensureDir?: boolean } & SshMutationExpectation ) => Promise<{ results: ImportItemResult[] }>"
+    },
+    {
+     "name": "stageExternalPathsForRuntimeUpload",
+     "signature": "(args: { sourcePaths: string[] }) => Promise<{ sources: StagedExternalImportSource[] }>"
+    },
+    {
+     "name": "uploadExternalFileToRuntime",
+     "signature": "( args: RuntimeUploadFileStreamRequest ) => Promise<{ byteLength: number }>"
+    },
+    {
+     "name": "resolveDroppedPathsForAgent",
+     "signature": "( args: { paths: string[] worktreePath: string connectionId?: string } & SshMutationExpectation ) => Promise<ResolveDroppedPathsResult>"
+    },
+    {
+     "name": "watchWorktree",
+     "signature": "(args: { worktreePath: string; connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "unwatchWorktree",
+     "signature": "(args: { worktreePath: string; connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "onFsChanged",
+     "signature": "(callback: (payload: FsChangedPayload) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "git",
+   "methods": [
+    {
+     "name": "status",
+     "signature": "(args: { worktreePath: string connectionId?: string admissionTier?: 'interactive' | 'status' | 'background' includeIgnored?: boolean includeLineStats?: boolean bypassEffectiveUpstreamNegativeCache?: boolean reuseLineStats?: boolean /** Merge-base OID to measure the branch line total against; omit to"
+    },
+    {
+     "name": "cancelStatus",
+     "signature": "(args: { requestToken: string }) => Promise<void>"
+    },
+    {
+     "name": "setStatusUpstreamRefWatch",
+     "signature": "(args: { worktreeId: string worktreePath: string executionHostId: string connectionId?: string branch?: string upstreamName?: string }) => Promise<void>"
+    },
+    {
+     "name": "submoduleStatus",
+     "signature": "(args: { worktreePath: string submodulePath: string connectionId?: string area?: GitStagingArea }) => Promise<GitStatusResult>"
+    },
+    {
+     "name": "checkIgnored",
+     "signature": "(args: { worktreePath: string paths: string[] connectionId?: string }) => Promise<string[]>"
+    },
+    {
+     "name": "findHugeFoldersToIgnore",
+     "signature": "(args: { worktreePath: string }) => Promise<string[]>"
+    },
+    {
+     "name": "history",
+     "signature": "( args: { worktreePath: string; connectionId?: string } & GitHistoryOptions ) => Promise<GitHistoryResult>"
+    },
+    {
+     "name": "conflictOperation",
+     "signature": "(args: { worktreePath: string connectionId?: string }) => Promise<GitConflictOperation>"
+    },
+    {
+     "name": "diff",
+     "signature": "(args: { worktreePath: string filePath: string staged: boolean compareAgainstHead?: boolean connectionId?: string }) => Promise<GitDiffResult>"
+    },
+    {
+     "name": "branchCompare",
+     "signature": "(args: { worktreePath: string baseRef: string connectionId?: string admissionTier?: 'interactive' | 'status' | 'background' }) => Promise<GitBranchCompareResult>"
+    },
+    {
+     "name": "commitCompare",
+     "signature": "(args: { worktreePath: string commitId: string connectionId?: string }) => Promise<GitCommitCompareResult>"
+    },
+    {
+     "name": "upstreamStatus",
+     "signature": "(args: { worktreePath: string connectionId?: string pushTarget?: GitPushTarget }) => Promise<GitUpstreamStatus>"
+    },
+    {
+     "name": "branchDiff",
+     "signature": "(args: { worktreePath: string compare: { baseRef: string baseOid: string headOid: string mergeBase: string } filePath: string oldPath?: string connectionId?: string }) => Promise<GitDiffResult>"
+    },
+    {
+     "name": "commitDiff",
+     "signature": "(args: { worktreePath: string commitOid: string parentOid?: string | null filePath: string oldPath?: string connectionId?: string }) => Promise<GitDiffResult>"
+    },
+    {
+     "name": "discoverCommitMessageModels",
+     "signature": "(args: { agentId: string worktreePath?: string connectionId?: string }) => Promise< | { success: true capability: CommitMessageAgentCapability models: CommitMessageModelCapability[] defaultModelId: string catalogOrigin: 'probe' | 'spec' } | { success: false; error: string } >"
+    },
+    {
+     "name": "remoteFileUrl",
+     "signature": "(args: { worktreePath: string relativePath: string line: number connectionId?: string }) => Promise<string | null>"
+    },
+    {
+     "name": "remoteCommitUrl",
+     "signature": "(args: { worktreePath: string sha: string connectionId?: string }) => Promise<string | null>"
+    },
+    {
+     "name": "appendGitignore",
+     "signature": "(args: { worktreePath: string; folderName: string }) => Promise<boolean>"
+    },
+    {
+     "name": "abortMerge",
+     "signature": "(args: { worktreePath: string; connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "abortRebase",
+     "signature": "(args: { worktreePath: string; connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "fetch",
+     "signature": "(args: { worktreePath: string connectionId?: string pushTarget?: GitPushTarget }) => Promise<void>"
+    },
+    {
+     "name": "syncFork",
+     "signature": "(args: { worktreePath: string connectionId?: string expectedUpstream: GitForkSyncExpectedUpstream }) => Promise<GitForkSyncResult>"
+    },
+    {
+     "name": "push",
+     "signature": "(args: { worktreePath: string publish?: boolean forceWithLease?: boolean connectionId?: string pushTarget?: GitPushTarget }) => Promise<void>"
+    },
+    {
+     "name": "pull",
+     "signature": "(args: { worktreePath: string connectionId?: string pushTarget?: GitPushTarget }) => Promise<void>"
+    },
+    {
+     "name": "fastForward",
+     "signature": "(args: { worktreePath: string connectionId?: string pushTarget?: GitPushTarget }) => Promise<void>"
+    },
+    {
+     "name": "rebaseFromBase",
+     "signature": "(args: { worktreePath: string baseRef: string connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "commit",
+     "signature": "(args: { worktreePath: string message: string connectionId?: string }) => Promise<{ success: boolean; error?: string }>"
+    },
+    {
+     "name": "generateCommitMessage",
+     "signature": "(args: { worktreePath: string /** Raw (unstripped) worktree meta key; validated against worktreePath in main. */ worktreeId?: string repoId?: string connectionId?: string sourceControlAiResolvedParams?: ResolvedSourceControlAiGenerationParams sourceControlAi?: SourceControlAiSettings agentCmdOverrid"
+    },
+    {
+     "name": "cancelGenerateCommitMessage",
+     "signature": "(args: { worktreePath: string connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "generatePullRequestFields",
+     "signature": "(args: { worktreePath: string /** Raw (unstripped) worktree meta key; validated against worktreePath in main. */ worktreeId?: string repoId?: string base: string title: string body: string draft: boolean provider?: HostedReviewProvider useTemplate?: boolean connectionId?: string sourceControlAiResol"
+    },
+    {
+     "name": "cancelGeneratePullRequestFields",
+     "signature": "(args: { worktreePath: string connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "stage",
+     "signature": "(args: { worktreePath: string; filePath: string; connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "bulkStage",
+     "signature": "(args: { worktreePath: string filePaths: string[] connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "unstage",
+     "signature": "(args: { worktreePath: string filePath: string connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "bulkUnstage",
+     "signature": "(args: { worktreePath: string filePaths: string[] connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "discard",
+     "signature": "(args: { worktreePath: string filePath: string connectionId?: string }) => Promise<void>"
+    },
+    {
+     "name": "bulkDiscard",
+     "signature": "(args: { worktreePath: string filePaths: string[] connectionId?: string }) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "ui",
+   "methods": [
+    {
+     "name": "get",
+     "signature": "() => Promise<PersistedUIState>"
+    },
+    {
+     "name": "set",
+     "signature": "(args: Partial<PersistedUIState>) => Promise<void>"
+    },
+    {
+     "name": "recordFeatureInteraction",
+     "signature": "(id: FeatureInteractionId) => Promise<PersistedUIState>"
+    },
+    {
+     "name": "onStateChanged",
+     "signature": "(callback: (ui: PersistedUIState) => void) => () => void"
+    },
+    {
+     "name": "onOpenSettings",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "consumePendingOpenSettings",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "onOpenSkillShare",
+     "signature": "(callback: (shareId: string) => void) => () => void"
+    },
+    {
+     "name": "consumePendingSkillShare",
+     "signature": "() => Promise<string | null>"
+    },
+    {
+     "name": "onOpenMarkdownFiles",
+     "signature": "(callback: (documents: MarkdownDocument[]) => void) => () => void"
+    },
+    {
+     "name": "consumePendingMarkdownFileOpens",
+     "signature": "() => Promise<MarkdownDocument[]>"
+    },
+    {
+     "name": "onOpenSetupGuide",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onOpenFeatureTour",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onOpenCrashReport",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onToggleLeftSidebar",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onToggleRightSidebar",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onToggleWorktreePalette",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onToggleFloatingTerminal",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onTerminalShortcutCaptured",
+     "signature": "( callback: (data: { actionId: KeybindingActionId }) => void ) => () => void"
+    },
+    {
+     "name": "onOpenQuickOpen",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onToggleQuickCommandsMenu",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onOpenNewWorkspace",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onDeleteCurrentWorkspace",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onOpenWorkspaceBoard",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onOpenTasks",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onToggleAgentDashboard",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onJumpToWorktreeIndex",
+     "signature": "(callback: (index: number) => void) => () => void"
+    },
+    {
+     "name": "onJumpToTabIndex",
+     "signature": "(callback: (index: number) => void) => () => void"
+    },
+    {
+     "name": "onWorktreeHistoryNavigate",
+     "signature": "(callback: (direction: 'back' | 'forward') => void) => () => void"
+    },
+    {
+     "name": "onNewBrowserTab",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onNewMarkdownTab",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onNewSimulatorTab",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onRequestTabCreate",
+     "signature": "( callback: (data: { requestId: string url: string worktreeId?: string browserPageId?: string sessionProfileId?: string | null sessionPartition?: string activate?: boolean }) => void ) => () => void"
+    },
+    {
+     "name": "replyTabCreate",
+     "signature": "(reply: { requestId: string; browserPageId?: string; error?: string }) => void"
+    },
+    {
+     "name": "onRequestTabSetProfile",
+     "signature": "( callback: (data: { requestId: string browserPageId: string profileId: string sessionPartition?: string }) => void ) => () => void"
+    },
+    {
+     "name": "replyTabSetProfile",
+     "signature": "(reply: { requestId: string; error?: string }) => void"
+    },
+    {
+     "name": "onRequestTabClose",
+     "signature": "( callback: (data: { requestId: string; tabId: string | null; worktreeId?: string }) => void ) => () => void"
+    },
+    {
+     "name": "replyTabClose",
+     "signature": "(reply: { requestId: string error?: string code?: 'browser_tab_not_found' }) => void"
+    },
+    {
+     "name": "onNewTerminalTab",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onFocusBrowserAddressBar",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onFindInBrowserPage",
+     "signature": "(source: BrowserFindSource, callback: () => void) => () => void"
+    },
+    {
+     "name": "onReloadBrowserPage",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onBrowserHistoryNavigate",
+     "signature": "(callback: (direction: 'back' | 'forward') => void) => () => void"
+    },
+    {
+     "name": "onZoomBrowserPage",
+     "signature": "(callback: (direction: 'in' | 'out' | 'reset') => void) => () => void"
+    },
+    {
+     "name": "onHardReloadBrowserPage",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onCloseActiveTab",
+     "signature": "(callback: (payload?: CloseActiveTabPayload) => void) => () => void"
+    },
+    {
+     "name": "onCloseFloatingItem",
+     "signature": "(callback: (payload: { sourceId: string }) => void) => () => void"
+    },
+    {
+     "name": "onSelectFloatingIndex",
+     "signature": "(callback: (payload: { index: number }) => void) => () => void"
+    },
+    {
+     "name": "onSwitchTab",
+     "signature": "(callback: (direction: 1 | -1) => void) => () => void"
+    },
+    {
+     "name": "onSwitchTabAcrossAllTypes",
+     "signature": "(callback: (direction: 1 | -1) => void) => () => void"
+    },
+    {
+     "name": "onSwitchRecentTab",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onSwitchTerminalTab",
+     "signature": "(callback: (direction: 1 | -1) => void) => () => void"
+    },
+    {
+     "name": "onCtrlTabKeyDown",
+     "signature": "(callback: (data: { shiftKey: boolean }) => void) => () => void"
+    },
+    {
+     "name": "onCtrlTabKeyUp",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onToggleStatusBar",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onDictationKeyDown",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onExportPdfRequested",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onAppMenuPaste",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "onAppMenuSelectionAction",
+     "signature": "(callback: (action: 'copy' | 'select-all') => void) => () => void"
+    },
+    {
+     "name": "onEditableContextPaste",
+     "signature": "(callback: (data: { plainTextOnly: boolean }) => void) => () => void"
+    },
+    {
+     "name": "onActivateWorktree",
+     "signature": "( callback: (data: { repoId: string worktreeId: string setup?: WorktreeSetupLaunch startup?: WorktreeStartupLaunch defaultTabs?: WorktreeDefaultTabsLaunch }) => void ) => () => void"
+    },
+    {
+     "name": "onCreateTerminal",
+     "signature": "( callback: (data: { requestId?: string worktreeId: string command?: string cwd?: string env?: Record<string, string> launchConfig?: SleepingAgentLaunchConfig resumeProviderSession?: AgentProviderSessionMetadata launchToken?: string launchAgent?: TuiAgent viewMode?: 'terminal' | 'chat' title?: strin"
+    },
+    {
+     "name": "onRequestTerminalCreate",
+     "signature": "( callback: (data: RuntimeTerminalCreateRequestPayload) => void ) => () => void"
+    },
+    {
+     "name": "onRequestTerminalTabMount",
+     "signature": "( callback: (data: { worktreeId: string; tabId?: string; ptyId?: string }) => void ) => () => void"
+    },
+    {
+     "name": "replyTerminalCreate",
+     "signature": "(reply: TerminalTabCreateReply) => void"
+    },
+    {
+     "name": "onSplitTerminal",
+     "signature": "( callback: (data: { tabId: string paneRuntimeId: number direction: 'horizontal' | 'vertical' command?: string worktreeId?: string sourceLeafId?: string telemetrySource?: TerminalPaneSplitSource newLeafId?: string }) => void ) => () => void"
+    },
+    {
+     "name": "onRenameTerminal",
+     "signature": "( callback: (data: { tabId: string; title: string | null }) => void ) => () => void"
+    },
+    {
+     "name": "onFocusTerminal",
+     "signature": "( callback: (data: { tabId: string worktreeId: string leafId?: string | null ackPaneKeyOnSuccess?: string flashFocusedPane?: boolean scrollToBottomIfOutputSinceLastView?: boolean }) => void ) => () => void"
+    },
+    {
+     "name": "onFocusEditorTab",
+     "signature": "(callback: (data: { tabId: string; worktreeId: string }) => void) => () => void"
+    },
+    {
+     "name": "onCloseSessionTab",
+     "signature": "(callback: (data: { tabId: string; worktreeId: string }) => void) => () => void"
+    },
+    {
+     "name": "onSessionTabCloseRequest",
+     "signature": "(callback: (request: SessionTabCloseRequest) => void) => () => void"
+    },
+    {
+     "name": "respondSessionTabClose",
+     "signature": "(response: SessionTabCloseResponse) => void"
+    },
+    {
+     "name": "onMoveSessionTab",
+     "signature": "( callback: (data: { worktreeId: string } & RuntimeMobileSessionTabMove) => void ) => () => void"
+    },
+    {
+     "name": "onOpenFileFromMobile",
+     "signature": "( callback: (data: { worktreeId: string filePath: string relativePath: string runtimeEnvironmentId?: string }) => void ) => () => void"
+    },
+    {
+     "name": "onOpenDiffFromMobile",
+     "signature": "( callback: (data: { worktreeId: string filePath: string relativePath: string staged: boolean runtimeEnvironmentId?: string }) => void ) => () => void"
+    },
+    {
+     "name": "onMobileMarkdownRequest",
+     "signature": "(callback: (request: RuntimeMobileMarkdownRequest) => void) => () => void"
+    },
+    {
+     "name": "respondMobileMarkdownRequest",
+     "signature": "(response: RuntimeMobileMarkdownResponse) => void"
+    },
+    {
+     "name": "onCloseTerminal",
+     "signature": "( callback: (data: { tabId: string; paneRuntimeId?: number }) => void ) => () => void"
+    },
+    {
+     "name": "onTerminalTabCloseRequest",
+     "signature": "(callback: (request: TerminalTabCloseRequest) => void) => () => void"
+    },
+    {
+     "name": "respondTerminalTabClose",
+     "signature": "(response: TerminalTabCloseResponse) => void"
+    },
+    {
+     "name": "onSleepWorktree",
+     "signature": "(callback: (data: { worktreeId: string }) => void) => () => void"
+    },
+    {
+     "name": "onResumeSleepingAgents",
+     "signature": "(callback: (data: { worktreeId: string }) => void) => () => void"
+    },
+    {
+     "name": "onTerminalZoom",
+     "signature": "(callback: (direction: 'in' | 'out' | 'reset') => void) => () => void"
+    },
+    {
+     "name": "onSystemResumed",
+     "signature": "(callback: () => void) => () => void"
+    },
+    {
+     "name": "readClipboardText",
+     "signature": "(options?: ReadClipboardTextOptions) => Promise<string>"
+    },
+    {
+     "name": "readSelectionClipboardText",
+     "signature": "(options?: ReadClipboardTextOptions) => Promise<string>"
+    },
+    {
+     "name": "saveClipboardImageAsTempFile",
+     "signature": "(args?: { connectionId?: string | null runtimeEnvironmentId?: string | null }) => Promise<string | null>"
+    },
+    {
+     "name": "readClipboardImageThumbnail",
+     "signature": "() => Promise<ClipboardImageThumbnail | null>"
+    },
+    {
+     "name": "writeClipboardText",
+     "signature": "(text: string) => Promise<void>"
+    },
+    {
+     "name": "writeTerminalClipboardText",
+     "signature": "(text: string) => Promise<void>"
+    },
+    {
+     "name": "writeSelectionClipboardText",
+     "signature": "(text: string) => Promise<void>"
+    },
+    {
+     "name": "writeClipboardImage",
+     "signature": "(dataUrl: string) => Promise<void>"
+    },
+    {
+     "name": "performNativePaste",
+     "signature": "(options?: { mode?: 'paste' | 'paste-and-match-style' }) => void"
+    },
+    {
+     "name": "performNativeSelectionAction",
+     "signature": "(action: 'copy' | 'select-all') => void"
+    },
+    {
+     "name": "writeClipboardFile",
+     "signature": "( args: | { filePath: string connectionId?: string | null } | string ) => Promise<{ ok: boolean; reason?: string }>"
+    },
+    {
+     "name": "onFileDrop",
+     "signature": "(callback: (data: NativeFileDropPayload) => void) => () => void"
+    },
+    {
+     "name": "getZoomLevel",
+     "signature": "() => number"
+    },
+    {
+     "name": "setZoomLevel",
+     "signature": "(level: number) => void"
+    },
+    {
+     "name": "syncTrafficLights",
+     "signature": "(zoomFactor: number) => void"
+    },
+    {
+     "name": "setMarkdownEditorFocused",
+     "signature": "(focused: boolean) => void"
+    },
+    {
+     "name": "setRichMarkdownContextMenuTarget",
+     "signature": "(target: RichMarkdownContextMenuTableTarget | null) => void"
+    },
+    {
+     "name": "setTerminalInputFocused",
+     "signature": "(focused: boolean) => void"
+    },
+    {
+     "name": "setFloatingFocus",
+     "signature": "(state: { panelFocused: boolean; terminalFocused: boolean }) => void"
+    },
+    {
+     "name": "setShortcutRecorderFocused",
+     "signature": "(focused: boolean) => void"
+    },
+    {
+     "name": "onRichMarkdownContextCommand",
+     "signature": "( callback: (payload: RichMarkdownContextMenuCommandPayload) => void ) => () => void"
+    },
+    {
+     "name": "onFullscreenChanged",
+     "signature": "(callback: (isFullScreen: boolean) => void) => () => void"
+    },
+    {
+     "name": "minimize",
+     "signature": "() => void"
+    },
+    {
+     "name": "maximize",
+     "signature": "() => void"
+    },
+    {
+     "name": "isMaximized",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "onMaximizeChanged",
+     "signature": "(callback: (isMaximized: boolean) => void) => () => void"
+    },
+    {
+     "name": "requestClose",
+     "signature": "() => void"
+    },
+    {
+     "name": "popupMenu",
+     "signature": "() => void"
+    },
+    {
+     "name": "onWindowCloseRequested",
+     "signature": "(callback: (data: { isQuitting: boolean }) => void) => () => void"
+    },
+    {
+     "name": "confirmWindowClose",
+     "signature": "() => void"
+    },
+    {
+     "name": "notifyWindowRevealed",
+     "signature": "() => void"
+    }
+   ]
+  },
+  {
+   "name": "runtime",
+   "methods": [
+    {
+     "name": "syncWindowGraph",
+     "signature": "( graph: RuntimeRendererSyncWindowGraph ) => Promise<RuntimeSyncWindowGraphResult>"
+    },
+    {
+     "name": "getStatus",
+     "signature": "() => Promise<RuntimeStatus>"
+    },
+    {
+     "name": "call",
+     "signature": "(args: { method: string; params?: unknown }) => Promise<RuntimeRpcResponse<unknown>>"
+    },
+    {
+     "name": "subscribe",
+     "signature": "( args: { method: string; params?: unknown }, callback: (response: RuntimeRpcResponse<unknown>) => void ) => Promise<RuntimeEnvironmentSubscriptionHandle>"
+    },
+    {
+     "name": "getTerminalFitOverrides",
+     "signature": "() => Promise< { ptyId: string; mode: 'mobile-fit' | 'remote-desktop-fit'; cols: number; rows: number }[] >"
+    },
+    {
+     "name": "getTerminalDrivers",
+     "signature": "() => Promise< { ptyId: string driver: RuntimeTerminalDriverState }[] >"
+    },
+    {
+     "name": "getBrowserDrivers",
+     "signature": "() => Promise< { browserPageId: string driver: RuntimeBrowserDriverState }[] >"
+    },
+    {
+     "name": "getClientHostedBrowserRows",
+     "signature": "() => Promise<ClientHostedBrowserRowsEvent[]>"
+    },
+    {
+     "name": "restoreTerminalFit",
+     "signature": "(ptyId: string) => Promise<{ restored: boolean }>"
+    },
+    {
+     "name": "reclaimBrowserForDesktop",
+     "signature": "(browserPageId: string) => Promise<{ reclaimed: boolean }>"
+    },
+    {
+     "name": "onTerminalFitOverrideChanged",
+     "signature": "( callback: (event: { ptyId: string mode: 'mobile-fit' | 'remote-desktop-fit' | 'desktop-fit' cols: number rows: number }) => void ) => () => void"
+    },
+    {
+     "name": "onTerminalDriverChanged",
+     "signature": "( callback: (event: { ptyId: string; driver: RuntimeTerminalDriverState }) => void ) => () => void"
+    },
+    {
+     "name": "onBrowserDriverChanged",
+     "signature": "( callback: (event: { browserPageId: string; driver: RuntimeBrowserDriverState }) => void ) => () => void"
+    },
+    {
+     "name": "onClientHostedBrowserRowsChanged",
+     "signature": "( callback: (event: ClientHostedBrowserRowsEvent) => void ) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "runtimeEnvironments",
+   "methods": [
+    {
+     "name": "getStatusSnapshots",
+     "signature": "() => Promise<RuntimeHostStatusSnapshot[]>"
+    },
+    {
+     "name": "onStatusChanged",
+     "signature": "(callback: (snapshot: RuntimeHostStatusSnapshot) => void) => () => void"
+    },
+    {
+     "name": "list",
+     "signature": "() => Promise<PublicKnownRuntimeEnvironment[]>"
+    },
+    {
+     "name": "addFromPairingCode",
+     "signature": "(args: { name: string pairingCode: string }) => Promise<{ environment: PublicKnownRuntimeEnvironment }>"
+    },
+    {
+     "name": "verifyAndAddFromPairingCode",
+     "signature": "(args: { name: string pairingCode: string allowLoopback?: boolean }) => Promise<VerifyAndAddRuntimeEnvironmentResult>"
+    },
+    {
+     "name": "resolve",
+     "signature": "(args: { selector: string }) => Promise<PublicKnownRuntimeEnvironment>"
+    },
+    {
+     "name": "remove",
+     "signature": "(args: { selector: string }) => Promise<{ removed: PublicKnownRuntimeEnvironment }>"
+    },
+    {
+     "name": "disconnect",
+     "signature": "(args: { selector: string }) => Promise<{ disconnected: PublicKnownRuntimeEnvironment }>"
+    },
+    {
+     "name": "connect",
+     "signature": "(args: { selector: string timeoutMs?: number }) => Promise<RuntimeRpcResponse<RuntimeStatus>>"
+    },
+    {
+     "name": "getStatus",
+     "signature": "(args: { selector: string timeoutMs?: number observeOnly?: true }) => Promise<RuntimeRpcResponse<RuntimeStatus>>"
+    },
+    {
+     "name": "prepareBrowserClientHostPlacement",
+     "signature": "( args: BrowserClientHostPlacementPreparationRequest ) => Promise<BrowserPageCreationPlacement>"
+    },
+    {
+     "name": "call",
+     "signature": "(args: { selector: string method: string params?: unknown timeoutMs?: number expectedEnvironmentPairingRevision?: number expectedEnvironmentRuntimeId?: string }) => Promise<RuntimeRpcResponse<unknown>>"
+    },
+    {
+     "name": "subscribe",
+     "signature": "( args: { selector: string method: string params?: unknown timeoutMs?: number expectedEnvironmentPairingRevision?: number expectedEnvironmentRuntimeId?: string }, callbacks: { onResponse: (response: RuntimeRpcResponse<unknown>) => void onBinary?: (bytes: Uint8Array<ArrayBufferLike>) => void onError?"
+    }
+   ]
+  },
+  {
+   "name": "rateLimits",
+   "methods": [
+    {
+     "name": "get",
+     "signature": "() => Promise<RateLimitState>"
+    },
+    {
+     "name": "refresh",
+     "signature": "() => Promise<RateLimitState>"
+    },
+    {
+     "name": "refreshCodexForTarget",
+     "signature": "(target: RateLimitRuntimeTarget) => Promise<RateLimitState>"
+    },
+    {
+     "name": "consumeCodexResetCredit",
+     "signature": "() => Promise<CodexRateLimitResetResult>"
+    },
+    {
+     "name": "refreshClaudeForTarget",
+     "signature": "(target: RateLimitRuntimeTarget) => Promise<RateLimitState>"
+    },
+    {
+     "name": "setPollingInterval",
+     "signature": "(ms: number) => Promise<void>"
+    },
+    {
+     "name": "fetchInactiveClaudeAccounts",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "fetchInactiveCodexAccounts",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "refreshMiniMax",
+     "signature": "() => Promise<RateLimitState>"
+    },
+    {
+     "name": "refreshGrok",
+     "signature": "() => Promise<RateLimitState>"
+    },
+    {
+     "name": "onUpdate",
+     "signature": "(callback: (state: RateLimitState) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "minimaxCredentials",
+   "methods": [
+    {
+     "name": "getStatus",
+     "signature": "() => Promise<{ configured: boolean cookieConfigured: boolean apiKeyConfigured: boolean }>"
+    },
+    {
+     "name": "saveCookie",
+     "signature": "(cookie: string) => Promise<{ cookieConfigured: boolean }>"
+    },
+    {
+     "name": "clearCookie",
+     "signature": "() => Promise<{ cookieConfigured: boolean }>"
+    },
+    {
+     "name": "saveApiKey",
+     "signature": "(key: string) => Promise<{ apiKeyConfigured: boolean }>"
+    },
+    {
+     "name": "clearApiKey",
+     "signature": "() => Promise<{ apiKeyConfigured: boolean }>"
+    }
+   ]
+  },
+  {
+   "name": "grokAccounts",
+   "methods": [
+    {
+     "name": "getStatus",
+     "signature": "() => Promise<GrokAccountStatus>"
+    }
+   ]
+  },
+  {
+   "name": "ssh",
+   "methods": [
+    {
+     "name": "listTargets",
+     "signature": "() => Promise<SshTarget[]>"
+    },
+    {
+     "name": "listRemovedTargetLabels",
+     "signature": "() => Promise<Record<string, string>>"
+    },
+    {
+     "name": "addTarget",
+     "signature": "(args: { target: SshTargetCreateInput }) => Promise<SshTargetAddResult>"
+    },
+    {
+     "name": "updateTarget",
+     "signature": "(args: { id: string; updates: SshTargetUpdateInput }) => Promise<SshTarget>"
+    },
+    {
+     "name": "removeTarget",
+     "signature": "(args: { id: string }) => Promise<void>"
+    },
+    {
+     "name": "importConfig",
+     "signature": "(args?: { reAdopt?: boolean }) => Promise<SshConfigImportResult>"
+    },
+    {
+     "name": "listConfigHosts",
+     "signature": "(args?: SshConfigHostListArgs) => Promise<SshConfigHostListResult>"
+    },
+    {
+     "name": "resolveConfigHost",
+     "signature": "(args: { alias: string }) => Promise<SshConfigHostResolution | null>"
+    },
+    {
+     "name": "connect",
+     "signature": "(args: { targetId: string }) => Promise<SshConnectionState | null>"
+    },
+    {
+     "name": "disconnect",
+     "signature": "(args: { targetId: string }) => Promise<void>"
+    },
+    {
+     "name": "terminateSessions",
+     "signature": "(args: { targetId: string }) => Promise<SshTerminateSessionsResult>"
+    },
+    {
+     "name": "resetRelay",
+     "signature": "(args: { targetId: string }) => Promise<void>"
+    },
+    {
+     "name": "getState",
+     "signature": "(args: { targetId: string }) => Promise<SshConnectionState | null>"
+    },
+    {
+     "name": "needsPassphrasePrompt",
+     "signature": "(args: { targetId: string }) => Promise<boolean>"
+    },
+    {
+     "name": "testConnection",
+     "signature": "(args: { targetId: string }) => Promise<{ success: boolean; error?: string; state?: SshConnectionState }>"
+    },
+    {
+     "name": "onStateChanged",
+     "signature": "( callback: (data: { targetId: string; state: SshConnectionState }) => void ) => () => void"
+    },
+    {
+     "name": "addPortForward",
+     "signature": "(args: { targetId: string localPort: number remoteHost: string remotePort: number label?: string }) => Promise<PortForwardEntry>"
+    },
+    {
+     "name": "updatePortForward",
+     "signature": "(args: { id: string targetId: string localPort: number remoteHost: string remotePort: number label?: string }) => Promise<PortForwardEntry>"
+    },
+    {
+     "name": "removePortForward",
+     "signature": "(args: { id: string }) => Promise<PortForwardEntry | null>"
+    },
+    {
+     "name": "listPortForwards",
+     "signature": "(args?: { targetId?: string }) => Promise<PortForwardEntry[]>"
+    },
+    {
+     "name": "listDetectedPorts",
+     "signature": "(args: { targetId: string }) => Promise<EnrichedDetectedPort[]>"
+    },
+    {
+     "name": "onPortForwardsChanged",
+     "signature": "( callback: (data: { targetId: string; forwards: PortForwardEntry[] }) => void ) => () => void"
+    },
+    {
+     "name": "onDetectedPortsChanged",
+     "signature": "( callback: (data: { targetId: string; ports: EnrichedDetectedPort[] }) => void ) => () => void"
+    },
+    {
+     "name": "browseDir",
+     "signature": "(args: { targetId: string; dirPath: string }) => Promise<{ entries: { name: string; isDirectory: boolean }[] resolvedPath: string pathFlavor: FilesystemPathFlavor }>"
+    },
+    {
+     "name": "onCredentialRequest",
+     "signature": "( callback: (data: { requestId: string targetId: string kind: 'passphrase' | 'password' | 'keyboard-interactive' detail: string }) => void ) => () => void"
+    },
+    {
+     "name": "onCredentialResolved",
+     "signature": "(callback: (data: { requestId: string }) => void) => () => void"
+    },
+    {
+     "name": "submitCredential",
+     "signature": "(args: { requestId: string; value: string | null }) => Promise<void>"
+    }
+   ]
+  },
+  {
+   "name": "automations",
+   "methods": [
+    {
+     "name": "listExternalManagerForOwner",
+     "signature": "( request: ScopedExternalManagerListRequest ) => Promise<ExternalAutomationManagerResult>"
+    },
+    {
+     "name": "listExternalRunsForOwner",
+     "signature": "( request: ScopedExternalManagerRunsRequest ) => Promise<ExternalAutomationRunsPage>"
+    },
+    {
+     "name": "createExternalForOwner",
+     "signature": "(request: ScopedExternalManagerCreateRequest) => Promise<void>"
+    },
+    {
+     "name": "updateExternalForOwner",
+     "signature": "(request: ScopedExternalManagerUpdateRequest) => Promise<void>"
+    },
+    {
+     "name": "runExternalActionForOwner",
+     "signature": "(request: ScopedExternalManagerActionRequest) => Promise<void>"
+    },
+    {
+     "name": "retainExternalScopes",
+     "signature": "(request: { owners: readonly AutomationOwnerRef[] }) => Promise<void>"
+    },
+    {
+     "name": "runPrecheck",
+     "signature": "(args: { automationId: string runId: string }) => Promise<AutomationPrecheckResult | null>"
+    },
+    {
+     "name": "markDispatchResult",
+     "signature": "(result: AutomationDispatchResult) => Promise<AutomationRun>"
+    },
+    {
+     "name": "snapshotWorkspaceName",
+     "signature": "(args: { workspaceId: string; displayName: string }) => Promise<number>"
+    },
+    {
+     "name": "rendererReady",
+     "signature": "() => Promise<void>"
+    },
+    {
+     "name": "onDispatchRequested",
+     "signature": "(callback: (request: AutomationDispatchRequest) => void) => () => void"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: (payload: AutomationsChangedPayload) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "wsl",
+   "methods": [
+    {
+     "name": "isAvailable",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "listDistros",
+     "signature": "() => Promise<string[]>"
+    }
+   ]
+  },
+  {
+   "name": "pwsh",
+   "methods": [
+    {
+     "name": "isAvailable",
+     "signature": "() => Promise<boolean>"
+    }
+   ]
+  },
+  {
+   "name": "gitBash",
+   "methods": [
+    {
+     "name": "isAvailable",
+     "signature": "() => Promise<boolean>"
+    }
+   ]
+  },
+  {
+   "name": "plugins",
+   "methods": [
+    {
+     "name": "list",
+     "signature": "() => Promise<PluginHostListEntry[]>"
+    },
+    {
+     "name": "listLanguagePacks",
+     "signature": "() => Promise<PluginLanguagePackRegistration[]>"
+    },
+    {
+     "name": "consent",
+     "signature": "(args: PluginConsentRequest) => Promise<PluginHostListEntry[]>"
+    },
+    {
+     "name": "setEnabled",
+     "signature": "(args: { pluginKey: string; enabled: boolean }) => Promise<PluginHostListEntry[]>"
+    },
+    {
+     "name": "readPanelEntry",
+     "signature": "(args: { pluginKey: string; panelId: string }) => Promise<PluginPanelEntry | null>"
+    },
+    {
+     "name": "invokeCommand",
+     "signature": "(args: { pluginKey: string commandId: string args?: unknown }) => Promise<unknown>"
+    },
+    {
+     "name": "panelAction",
+     "signature": "(args: { sessionToken: string action: string params?: unknown }) => Promise<PluginPanelActionOutcome>"
+    },
+    {
+     "name": "install",
+     "signature": "(source: PluginHostInstallSource) => Promise<PluginHostInstallResult>"
+    },
+    {
+     "name": "listMarketplaces",
+     "signature": "() => Promise<PluginMarketplaceHostSourceState[]>"
+    },
+    {
+     "name": "addMarketplace",
+     "signature": "(source: PluginMarketplaceGitSource) => Promise<PluginMarketplaceHostSourceState>"
+    },
+    {
+     "name": "removeMarketplace",
+     "signature": "(args: { sourceId: string }) => Promise<PluginMarketplaceHostSourceState[]>"
+    },
+    {
+     "name": "refreshMarketplaces",
+     "signature": "(args?: { sourceId?: string }) => Promise<PluginMarketplaceHostSourceState[]>"
+    },
+    {
+     "name": "listMarketplacePlugins",
+     "signature": "() => Promise<PluginMarketplaceHostListing[]>"
+    },
+    {
+     "name": "previewMarketplacePlugin",
+     "signature": "(args: { marketplaceSourceId: string pluginKey: string }) => Promise<PluginMarketplaceHostInstallPreview>"
+    },
+    {
+     "name": "installMarketplacePlugin",
+     "signature": "( preview: Pick< PluginMarketplaceHostInstallPreview, 'marketplaceSourceId' | 'marketplaceCommit' | 'pluginKey' | 'resolvedCommit' > ) => Promise<PluginHostInstallResult>"
+    },
+    {
+     "name": "previewMarketplaceUpdate",
+     "signature": "(args: { pluginKey: string }) => Promise<PluginMarketplaceHostInstallPreview>"
+    },
+    {
+     "name": "rollbackMarketplacePlugin",
+     "signature": "(args: { pluginKey: string }) => Promise<PluginHostInstallResult>"
+    },
+    {
+     "name": "remove",
+     "signature": "(args: { pluginKey: string }) => Promise<PluginHostListEntry[]>"
+    },
+    {
+     "name": "getLogs",
+     "signature": "(args: { pluginKey: string }) => Promise<PluginHostLogLine[]>"
+    },
+    {
+     "name": "refresh",
+     "signature": "() => Promise<PluginHostListEntry[]>"
+    },
+    {
+     "name": "onChanged",
+     "signature": "(callback: (event: PluginChangeEvent) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "agentStatus",
+   "methods": [
+    {
+     "name": "onSet",
+     "signature": "(callback: (data: AgentStatusIpcPayload) => void) => () => void"
+    },
+    {
+     "name": "onClear",
+     "signature": "(callback: (data: AgentStatusClearIpcPayload) => void) => () => void"
+    },
+    {
+     "name": "getSnapshot",
+     "signature": "() => Promise<AgentStatusIpcPayload[]>"
+    },
+    {
+     "name": "inferInterrupt",
+     "signature": "(request: AgentInterruptInferenceRequest) => Promise<boolean>"
+    },
+    {
+     "name": "inferQuestionAnswered",
+     "signature": "(request: AgentQuestionAnsweredInferenceRequest) => Promise<boolean>"
+    },
+    {
+     "name": "onMigrationUnsupported",
+     "signature": "(callback: (entry: MigrationUnsupportedPtyEntry) => void) => () => void"
+    },
+    {
+     "name": "onMigrationUnsupportedClear",
+     "signature": "(callback: (data: { ptyId: string }) => void) => () => void"
+    },
+    {
+     "name": "onLegacyWorkerTerminalRecovery",
+     "signature": "( callback: (data: { paneKey: string resolution: 'adopted' | 'exited' | 'rolled_back' ptyId?: string }) => void ) => () => void"
+    },
+    {
+     "name": "getMigrationUnsupportedSnapshot",
+     "signature": "() => Promise<MigrationUnsupportedPtyEntry[]>"
+    },
+    {
+     "name": "drop",
+     "signature": "(paneKey: string) => void"
+    },
+    {
+     "name": "dropPersisted",
+     "signature": "(identity: AgentStatusCacheIdentity) => void"
+    },
+    {
+     "name": "reconcileEndedProcess",
+     "signature": "(paneKey: string) => void"
+    },
+    {
+     "name": "dropByTabPrefix",
+     "signature": "(tabId: string) => void"
+    },
+    {
+     "name": "retirePaneAuthority",
+     "signature": "(paneKey: string) => void"
+    },
+    {
+     "name": "restorePaneAuthority",
+     "signature": "(paneKey: string) => void"
+    },
+    {
+     "name": "transferPaneAuthority",
+     "signature": "(args: { fromPaneKey: string; toPaneKey: string; ptyId?: string }) => void"
+    }
+   ]
+  },
+  {
+   "name": "mobile",
+   "methods": [
+    {
+     "name": "listNetworkInterfaces",
+     "signature": "() => Promise<{ interfaces: { name: string; address: string; hasDefaultRoute?: boolean }[] }>"
+    },
+    {
+     "name": "getPairingQR",
+     "signature": "(args?: { address?: string connectionMode?: MobilePairingConnectionMode rotate?: boolean }) => Promise< | { available: false reason?: string guidance?: string relayFailure?: MobileRelayMintFailure } | { available: true qrDataUrl: string | null /** Natural bitmap width and height in pixels. */ qrSize"
+    },
+    {
+     "name": "getWindowsFirewallStatus",
+     "signature": "(args?: { address?: string }) => Promise< | { supported: false } | { supported: true port: number ruleAllowed: boolean blockingRuleDetected: boolean privateFirewallEnabled: boolean networkCategory: 'private' | 'public' | 'domain' | 'unknown' inspectionAvailable: boolean } >"
+    },
+    {
+     "name": "repairWindowsFirewall",
+     "signature": "() => Promise< { ok: true } | { ok: false; reason: 'cancelled' | 'failed' | 'unsupported' } >"
+    },
+    {
+     "name": "openWindowsNetworkSettings",
+     "signature": "() => Promise<boolean>"
+    },
+    {
+     "name": "getRuntimePairingUrl",
+     "signature": "(args?: { address?: string rotate?: boolean reach?: RuntimePairingReach }) => Promise< | { available: false reason?: 'network_exposure_failed' guidance?: string } | { available: true pairingUrl: string webClientUrl: string | null endpoint: string deviceId: string } >"
+    },
+    {
+     "name": "listDevices",
+     "signature": "() => Promise<{ devices: { deviceId: string name: string pairedAt: number lastSeenAt: number }[] }>"
+    },
+    {
+     "name": "revokeDevice",
+     "signature": "(args: { deviceId: string }) => Promise<{ revoked: boolean }>"
+    },
+    {
+     "name": "listRuntimeAccessGrants",
+     "signature": "() => Promise<{ grants: RuntimeAccessGrant[] }>"
+    },
+    {
+     "name": "revokeRuntimeAccess",
+     "signature": "(args: { deviceId: string }) => Promise<{ revoked: boolean }>"
+    },
+    {
+     "name": "isWebSocketReady",
+     "signature": "() => Promise<{ ready: boolean; endpoint: string | null }>"
+    },
+    {
+     "name": "getRelayStatus",
+     "signature": "() => Promise<MobileRelayStatusDetail>"
+    },
+    {
+     "name": "onRelayStatusChanged",
+     "signature": "(callback: (detail: MobileRelayStatusDetail) => void) => () => void"
+    }
+   ]
+  },
+  {
+   "name": "speech",
+   "methods": [
+    {
+     "name": "getCatalog",
+     "signature": "() => Promise<SpeechModelManifest[]>"
+    },
+    {
+     "name": "getModelStates",
+     "signature": "() => Promise<SpeechModelState[]>"
+    },
+    {
+     "name": "getOpenAiApiKeyStatus",
+     "signature": "() => Promise<{ configured: boolean }>"
+    },
+    {
+     "name": "saveOpenAiApiKey",
+     "signature": "(apiKey: string) => Promise<{ configured: boolean }>"
+    },
+    {
+     "name": "clearOpenAiApiKey",
+     "signature": "() => Promise<{ configured: boolean }>"
+    },
+    {
+     "name": "downloadModel",
+     "signature": "(modelId: string) => Promise<void>"
+    },
+    {
+     "name": "cancelDownload",
+     "signature": "(modelId: string) => Promise<void>"
+    },
+    {
+     "name": "deleteModel",
+     "signature": "(modelId: string) => Promise<void>"
+    },
+    {
+     "name": "startDictation",
+     "signature": "( modelId: string, hotwords: string[] | undefined, sessionId: string ) => Promise<void>"
+    },
+    {
+     "name": "feedAudio",
+     "signature": "(samples: Float32Array, sampleRate: number, sessionId?: string) => Promise<void>"
+    },
+    {
+     "name": "stopDictation",
+     "signature": "(sessionId?: string) => Promise<void>"
+    },
+    {
+     "name": "onPartialTranscript",
+     "signature": "(callback: (data: SpeechTranscriptEvent) => void) => () => void"
+    },
+    {
+     "name": "onFinalTranscript",
+     "signature": "(callback: (data: SpeechTranscriptEvent) => void) => () => void"
+    },
+    {
+     "name": "onDownloadProgress",
+     "signature": "( callback: (data: { modelId: string; progress: number }) => void ) => () => void"
+    },
+    {
+     "name": "onReady",
+     "signature": "(callback: (data: SpeechLifecycleEvent) => void) => () => void"
+    },
+    {
+     "name": "onStopped",
+     "signature": "(callback: (data: SpeechLifecycleEvent) => void) => () => void"
+    },
+    {
+     "name": "onError",
+     "signature": "(callback: (data: SpeechErrorEvent) => void) => () => void"
+    }
+   ]
+  }
+ ]
+}
