@@ -23,6 +23,7 @@ pub mod preflight;
 pub mod theme_import;
 pub mod port_scanner;
 pub mod hooks;
+pub mod ssh_hosts;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{fold_terminal_output, AgentState};
@@ -1571,6 +1572,15 @@ pub fn run() {
             check_github_starred_cmd,
             star_github_repo_cmd,
             open_external_url_cmd,
+            ssh_hosts::ssh_list_targets,
+            ssh_hosts::ssh_list_removed_target_labels,
+            ssh_hosts::ssh_list_suppressed_aliases,
+            ssh_hosts::ssh_add_target,
+            ssh_hosts::ssh_update_target,
+            ssh_hosts::ssh_remove_target,
+            ssh_hosts::ssh_import_config,
+            ssh_hosts::ssh_list_config_hosts,
+            ssh_hosts::ssh_resolve_config_host,
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");

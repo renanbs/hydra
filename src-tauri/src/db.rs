@@ -694,6 +694,10 @@ impl DatabaseManager {
                  key TEXT PRIMARY KEY,
                  json TEXT NOT NULL
              );
+             CREATE TABLE IF NOT EXISTS ssh_state (
+                 key TEXT PRIMARY KEY,
+                 json TEXT NOT NULL
+             );
              CREATE TABLE IF NOT EXISTS worktree_metadata (
                  worktree_path TEXT PRIMARY KEY,
                  display_name TEXT,
@@ -1145,6 +1149,32 @@ impl DatabaseManager {
             Ok(None)
         }
     }
+    pub fn save_ssh_state(&self, state: &crate::ssh_hosts::PersistedSshState) -> Result<(), String> {
+        let json_str = serde_json::to_string(state)
+            .map_err(|e| format!("Error serializing ssh state: {e}"))?;
+        let conn = self.conn.lock();
+        conn.execute(
+            "INSERT OR REPLACE INTO ssh_state (key, json) VALUES ('default', ?1)",
+            params![json_str],
+        )
+        .map_err(|e| format!("Error saving ssh state: {e}"))?;
+        Ok(())
+    }
+
+    pub fn get_ssh_state(&self) -> Result<crate::ssh_hosts::PersistedSshState, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT json FROM ssh_state WHERE key = 'default'")
+            .map_err(|e| format!("Error querying ssh state: {e}"))?;
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json_str: String = row.get(0).map_err(|e| e.to_string())?;
+            serde_json::from_str(&json_str)
+                .map_err(|e| format!("Error deserializing ssh state: {e}"))
+        } else {
+            Ok(crate::ssh_hosts::PersistedSshState::default())
+        }
+    }
 
     pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
@@ -1362,6 +1392,10 @@ impl DatabaseManager {
                  value TEXT NOT NULL
              );
              CREATE TABLE IF NOT EXISTS sidebar_prefs (
+                 key TEXT PRIMARY KEY,
+                 json TEXT NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS ssh_state (
                  key TEXT PRIMARY KEY,
                  json TEXT NOT NULL
              );
