@@ -1,0 +1,247 @@
+{
+ "domain": "D07-menus-actions",
+ "prod": [
+  {
+   "name": "DeleteWorktreeDirtyChangeHint.tsx",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "DeleteWorktreeLineageNotice.tsx",
+   "kind": "prod",
+   "loc": 73
+  },
+  {
+   "name": "DeleteWorktreeSkipConfirmOption.tsx",
+   "kind": "prod",
+   "loc": 41
+  },
+  {
+   "name": "DeleteWorktreeWarningPanels.tsx",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "SidebarWorkspaceOptionsMenu.tsx",
+   "kind": "prod",
+   "loc": 100
+  },
+  {
+   "name": "WorkspaceSleepMenuItems.tsx",
+   "kind": "prod",
+   "loc": 69
+  },
+  {
+   "name": "WorkspaceStatusAppearancePopover.tsx",
+   "kind": "prod",
+   "loc": 128
+  },
+  {
+   "name": "delete-worktree-dialog-copy.ts",
+   "kind": "prod",
+   "loc": 91
+  },
+  {
+   "name": "delete-worktree-dialog-force-delete.ts",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "delete-worktree-dirty-change-counts.ts",
+   "kind": "prod",
+   "loc": 69
+  },
+  {
+   "name": "delete-worktree-failure-toast.tsx",
+   "kind": "prod",
+   "loc": 132
+  },
+  {
+   "name": "delete-worktree-flow.ts",
+   "kind": "prod",
+   "loc": 200
+  },
+  {
+   "name": "delete-worktree-lineage-delete-all.ts",
+   "kind": "prod",
+   "loc": 43
+  },
+  {
+   "name": "delete-worktree-preference-toast.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "delete-worktree-toast.ts",
+   "kind": "prod",
+   "loc": 142
+  },
+  {
+   "name": "hovered-workspace-delete.ts",
+   "kind": "prod",
+   "loc": 133
+  },
+  {
+   "name": "sidebar-workspace-option-items.ts",
+   "kind": "prod",
+   "loc": 294
+  },
+  {
+   "name": "sleep-worktree-flow.ts",
+   "kind": "prod",
+   "loc": 234
+  },
+  {
+   "name": "use-worktree-context-menu-commands.ts",
+   "kind": "prod",
+   "loc": 182
+  },
+  {
+   "name": "use-worktree-context-menu-model.tsx",
+   "kind": "prod",
+   "loc": 426
+  },
+  {
+   "name": "use-worktree-context-menu-secondary-actions.ts",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "workspace-delete-lineage.ts",
+   "kind": "prod",
+   "loc": 75
+  },
+  {
+   "name": "workspace-delete-quick-action.ts",
+   "kind": "prod",
+   "loc": 99
+  },
+  {
+   "name": "workspace-lineage-menu-actions.ts",
+   "kind": "prod",
+   "loc": 70
+  },
+  {
+   "name": "workspace-options-menu-items.tsx",
+   "kind": "prod",
+   "loc": 240
+  },
+  {
+   "name": "workspace-status-icon-options.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "workspace-status-icons.tsx",
+   "kind": "prod",
+   "loc": 74
+  },
+  {
+   "name": "workspace-status.ts",
+   "kind": "prod",
+   "loc": 227
+  },
+  {
+   "name": "worktree-context-menu-delete-intent.ts",
+   "kind": "prod",
+   "loc": 80
+  },
+  {
+   "name": "worktree-context-menu-policy.ts",
+   "kind": "prod",
+   "loc": 249
+  },
+  {
+   "name": "worktree-delete-execution.ts",
+   "kind": "prod",
+   "loc": 205
+  },
+  {
+   "name": "worktree-delete-request.ts",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "worktree-delete-state-host-match.ts",
+   "kind": "prod",
+   "loc": 19
+  }
+ ],
+ "test": [
+  {
+   "name": "delete-worktree-dirty-change-counts.test.ts",
+   "kind": "test",
+   "loc": 47
+  },
+  {
+   "name": "delete-worktree-failure-toast.test.tsx",
+   "kind": "test",
+   "loc": 214
+  },
+  {
+   "name": "delete-worktree-flow.test.ts",
+   "kind": "test",
+   "loc": 675
+  },
+  {
+   "name": "delete-worktree-parallel-flow.test.ts",
+   "kind": "test",
+   "loc": 434
+  },
+  {
+   "name": "delete-worktree-toast.test.ts",
+   "kind": "test",
+   "loc": 179
+  },
+  {
+   "name": "hovered-workspace-delete.test.ts",
+   "kind": "test",
+   "loc": 223
+  },
+  {
+   "name": "sidebar-workspace-option-items.test.ts",
+   "kind": "test",
+   "loc": 67
+  },
+  {
+   "name": "sleep-worktree-flow.test.ts",
+   "kind": "test",
+   "loc": 331
+  },
+  {
+   "name": "workspace-delete-lineage.test.ts",
+   "kind": "test",
+   "loc": 219
+  },
+  {
+   "name": "workspace-lineage-menu-actions.test.ts",
+   "kind": "test",
+   "loc": 130
+  },
+  {
+   "name": "workspace-status.test.ts",
+   "kind": "test",
+   "loc": 119
+  },
+  {
+   "name": "worktree-context-menu-delete-intent.test.ts",
+   "kind": "test",
+   "loc": 134
+  },
+  {
+   "name": "worktree-delete-host-qualification.test.ts",
+   "kind": "test",
+   "loc": 274
+  },
+  {
+   "name": "worktree-delete-position-scaling.test.ts",
+   "kind": "test",
+   "loc": 68
+  },
+  {
+   "name": "worktree-delete-request.test.ts",
+   "kind": "test",
+   "loc": 130
+  }
+ ]
+}

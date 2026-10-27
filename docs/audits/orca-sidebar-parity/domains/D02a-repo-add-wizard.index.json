@@ -1,0 +1,2203 @@
+{
+ "exports": {
+  "components/sidebar/AddProjectFromFolderDialog.tsx": [
+   "default"
+  ],
+  "components/sidebar/AddRepoCloneStep.tsx": [
+   "CloneStep"
+  ],
+  "components/sidebar/AddRepoCreateStep.tsx": [
+   "CreateStep"
+  ],
+  "components/sidebar/AddRepoDialog.tsx": [
+   "default"
+  ],
+  "components/sidebar/AddRepoDialogChrome.tsx": [
+   "AddRepoDialogChrome"
+  ],
+  "components/sidebar/AddRepoDialogStepContent.tsx": [
+   "AddRepoDialogStepContent"
+  ],
+  "components/sidebar/AddRepoHostSelector.tsx": [
+   "AddRepoHostSelector"
+  ],
+  "components/sidebar/AddRepoHostSelectorSlot.tsx": [
+   "AddRepoHostSelectorSlot"
+  ],
+  "components/sidebar/AddRepoNestedImportStep.tsx": [
+   "AddRepoNestedImportStep"
+  ],
+  "components/sidebar/AddRepoRemoteStep.tsx": [
+   "RemoteStep"
+  ],
+  "components/sidebar/AddRepoServerStartStep.tsx": [
+   "AddRepoServerPathStartStep"
+  ],
+  "components/sidebar/AddRepoStartSteps.tsx": [
+   "AddRepoLocalStartStep"
+  ],
+  "components/sidebar/AddRepoStepIndicator.tsx": [
+   "AddRepoStepIndicator"
+  ],
+  "components/sidebar/AddRepoSteps.tsx": [
+   "useRemoteRepo"
+  ],
+  "components/sidebar/CreateProjectLocationField.tsx": [
+   "CreateProjectParentBrowser",
+   "CreateProjectLocationField"
+  ],
+  "components/sidebar/ProjectAddedDialog.tsx": [
+   "ProjectAddedDialog",
+   "default"
+  ],
+  "components/sidebar/add-repo-browse-authority.ts": [
+   "AddRepoBrowseAuthorityActions",
+   "routeAddRepoBrowse"
+  ],
+  "components/sidebar/add-repo-dialog-types.ts": [
+   "AddRepoDialogStep",
+   "defaultProjectGroupNameForPath",
+   "createNestedRepoScanId"
+  ],
+  "components/sidebar/add-repo-existing-workspaces-telemetry.ts": [
+   "buildAddRepoExistingWorkspacesTelemetry",
+   "buildAddRepoExistingWorkspacesDetectedEvent",
+   "shouldTrackAddRepoExistingWorkspacesDetected"
+  ],
+  "components/sidebar/add-repo-host-availability.ts": [
+   "canSelectAddRepoHost",
+   "canConnectAddRepoHost"
+  ],
+  "components/sidebar/add-repo-local-start-actions.ts": [
+   "AddRepoLocalStartActionHandlers",
+   "AddRepoLocalStartAction",
+   "getAddRepoLocalStartActions"
+  ],
+  "components/sidebar/add-repo-runtime-owner.ts": [
+   "CapturedRuntimeOwner",
+   "capturedAddRepoExecutionHostId",
+   "worktreeRefreshOptions"
+  ],
+  "components/sidebar/add-repo-skip-finalization.ts": [
+   "AddRepoSkipFinalizationState",
+   "finalizeImportedRepoAfterSkip"
+  ],
+  "components/sidebar/add-repo-store-upsert.ts": [
+   "upsertAddedRepoWithProjectHostSetup"
+  ],
+  "components/sidebar/clone-defaults.ts": [
+   "getDefaultCloneParent",
+   "getCloneDestinationAutoFill"
+  ],
+  "components/sidebar/create-project-defaults.ts": [
+   "GitAvailability",
+   "joinCreateProjectPath",
+   "getDefaultCreateProjectParent",
+   "getCreateProjectDefaultParentAutoFill",
+   "formatCreateProjectParentSummary"
+  ],
+  "components/sidebar/folder-workspace-agent-startup.ts": [
+   "getFolderWorkspaceAgentLaunchPlatform",
+   "resolveFolderWorkspaceLaunchDraft",
+   "buildFolderWorkspaceLinkedStartupPlan"
+  ],
+  "components/sidebar/folder-workspace-card-pr-display.ts": [
+   "getFolderWorkspaceCardPrDisplay"
+  ],
+  "components/sidebar/folder-workspace-composer-helpers.ts": [
+   "getFolderSourceRepos",
+   "toFolderWorkspaceLinkedTask",
+   "getSmartNameSelection",
+   "getLinkedItemDisplayName",
+   "toGitHubLinkedWorkItem",
+   "toGitLabLinkedWorkItem",
+   "toLinearLinkedWorkItem",
+   "getFolderWorkspacePrimaryActionLabel"
+  ],
+  "components/sidebar/folder-workspace-composer-path-status.ts": [
+   "useFolderWorkspaceComposerPathStatus"
+  ],
+  "components/sidebar/folder-workspace-composer-submit.ts": [
+   "submitFolderWorkspaceCreate"
+  ],
+  "components/sidebar/folder-workspace-host-id.ts": [
+   "getFolderWorkspaceHostId"
+  ],
+  "components/sidebar/project-added-default-checkout.ts": [
+   "getProjectDefaultCheckout",
+   "openProjectDefaultCheckout",
+   "finishProjectAddWithDefaultCheckout"
+  ],
+  "components/sidebar/use-add-repo-host-change-reset.ts": [
+   "useAddRepoHostChangeReset"
+  ],
+  "components/sidebar/use-add-repo-host-selection.ts": [
+   "useAddRepoHostSelection"
+  ],
+  "components/sidebar/use-add-repo-hosted-controller.ts": [
+   "AddRepoDialogHostedController",
+   "useAddRepoHostedController"
+  ],
+  "components/sidebar/use-add-repo-remote-nested-scan.ts": [
+   "useAddRepoRemoteNestedScan"
+  ],
+  "components/sidebar/use-complete-git-repo-add.ts": [
+   "useCompleteGitRepoAdd"
+  ],
+  "components/sidebar/useAddRepoCloneFlow.ts": [
+   "useAddRepoCloneFlow"
+  ],
+  "components/sidebar/useAddRepoLocalFolderFlow.ts": [
+   "useAddRepoLocalFolderFlow"
+  ],
+  "components/sidebar/useAddRepoNestedImportFlow.ts": [
+   "useAddRepoNestedImportFlow"
+  ],
+  "components/sidebar/useAddRepoNestedReviewController.ts": [
+   "useAddRepoNestedReviewController"
+  ],
+  "components/sidebar/useAddRepoNestedReviewState.ts": [
+   "useAddRepoNestedReviewState"
+  ],
+  "components/sidebar/useAddRepoServerPathFlow.ts": [
+   "useAddRepoServerPathFlow"
+  ],
+  "components/sidebar/useCreateProjectDefaults.ts": [
+   "CreateRuntimeParentStatus",
+   "useCreateProjectDefaults"
+  ],
+  "components/sidebar/useCreateRepo.ts": [
+   "useCreateRepo"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 7,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 79,
+   "text": "mocks.buttons.push({ label: textContent(children), onClick, disabled })"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 120,
+   "text": "function getButton(label: string): ButtonCapture {"
+  },
+  {
+   "file": "components/sidebar/AddRepoCloneStep.tsx",
+   "line": 121,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoCloneStep.tsx",
+   "line": 140,
+   "text": "placeholder={"
+  },
+  {
+   "file": "components/sidebar/AddRepoCloneStep.tsx",
+   "line": 166,
+   "text": "title={"
+  },
+  {
+   "file": "components/sidebar/AddRepoCloneStep.tsx",
+   "line": 174,
+   "text": "aria-label={"
+  },
+  {
+   "file": "components/sidebar/AddRepoCreateStep.test.tsx",
+   "line": 4,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/AddRepoCreateStep.test.tsx",
+   "line": 52,
+   "text": "expect(html).not.toContain('aria-label=\"Browse host filesystem\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoCreateStep.tsx",
+   "line": 160,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoCreateStep.tsx",
+   "line": 220,
+   "text": "title={targetPathPreview}"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 5,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 108,
+   "text": "expect(html).toContain('aria-label=\"Group name\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 118,
+   "text": "expect(html).toContain('aria-label=\"Group name\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 153,
+   "text": "expect(html).toContain('placeholder=\"/home/user/projects\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 154,
+   "text": "expect(html).toContain('aria-label=\"Browse host filesystem\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 155,
+   "text": "expect(html).not.toMatch(/<button[^>]*disabled=\"\"[^>]*aria-label=\"Browse host filesystem\"/)"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 167,
+   "text": "expect(html).toContain('aria-label=\"Browse host filesystem\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 180,
+   "text": "expect(html).toContain('aria-label=\"Browse host filesystem\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 181,
+   "text": "expect(html).not.toContain('aria-label=\"Choose folder\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 192,
+   "text": "label: 'github.com',"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 205,
+   "text": "label: 'openclaw 2',"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 235,
+   "text": "label: 'openclaw 2',"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 253,
+   "text": "expect(html).toContain('placeholder=\"/home/user/project\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 38,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 67,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 75,
+   "text": "label: 'Builder',"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 103,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 111,
+   "text": "label: 'Old server',"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.tsx",
+   "line": 69,
+   "text": "title={getHostStatusDetail(selectedHost)}"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 8,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 53,
+   "text": "function findButton(container: HTMLElement, label: string): HTMLButtonElement {"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 82,
+   "text": "expect(html).toContain('aria-label=\"Group name\"')"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+   "line": 7,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+   "line": 139,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+   "line": 147,
+   "text": "placeholder={folderName}"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+   "line": 212,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+   "line": 216,
+   "text": "title={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoRemoteStep.tsx",
+   "line": 182,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoServerStartStep.tsx",
+   "line": 6,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/AddRepoServerStartStep.tsx",
+   "line": 94,
+   "text": "title={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoServerStartStep.tsx",
+   "line": 107,
+   "text": "title={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoServerStartStep.tsx",
+   "line": 120,
+   "text": "title={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoServerStartStep.tsx",
+   "line": 192,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoServerStartStep.tsx",
+   "line": 210,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 8,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 97,
+   "text": "function findButton(container: HTMLElement, label: string): HTMLButtonElement {"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 329,
+   "text": "'button[aria-label=\"Stop scan\"]'"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 6,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 36,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 40,
+   "text": "title={translate("
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 178,
+   "text": "title={primaryAction.title}"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 200,
+   "text": "title={action.title}"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+   "line": 100,
+   "text": "{ id: 'ssh-1', label: 'Builder 1' },"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+   "line": 101,
+   "text": "{ id: 'ssh-2', label: 'Builder 2' }"
+  },
+  {
+   "file": "components/sidebar/CreateProjectLocationField.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/CreateProjectLocationField.tsx",
+   "line": 97,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/CreateProjectLocationField.tsx",
+   "line": 114,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/CreateProjectLocationField.tsx",
+   "line": 132,
+   "text": "<span className=\"flex-1 min-w-0 truncate font-mono text-[12px]\" title={createParent}>"
+  },
+  {
+   "file": "components/sidebar/CreateProjectLocationField.tsx",
+   "line": 140,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 82,
+   "text": "label: 'Local Mac',"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 90,
+   "text": "label: 'Builder',"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 98,
+   "text": "label: 'Server',"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 291,
+   "text": "label: 'orca VM abc12345',"
+  },
+  {
+   "file": "components/sidebar/useAddRepoLocalFolderFlow.ts",
+   "line": 68,
+   "text": "setAddProjectBusyLabel: (label: string | null) => void"
+  },
+  {
+   "file": "components/sidebar/useAddRepoServerPathFlow.ts",
+   "line": 68,
+   "text": "setAddProjectBusyLabel: (label: string | null) => void"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/AddRepoCloneStep.tsx",
+   "line": 44,
+   "text": "const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {"
+  },
+  {
+   "file": "components/sidebar/AddRepoRemoteStep.tsx",
+   "line": 175,
+   "text": "if (event.key === 'Enter' && !event.nativeEvent.isComposing) {"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 364,
+   "text": "new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 5,
+   "text": "import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 126,
+   "text": "const handleArrowNavigation = (event: React.KeyboardEvent<HTMLDivElement>): void => {"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 127,
+   "text": "if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 137,
+   "text": "const delta = event.key === 'ArrowDown' ? 1 : -1"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 243,
+   "text": "<ShortcutKeyCombo"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 59,
+   "text": "return new Promise((resolve) => setTimeout(resolve, 0))"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.ts",
+   "line": 26,
+   "text": "let timeout: ReturnType<typeof setTimeout> | null = null"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.ts",
+   "line": 28,
+   "text": "timeout = setTimeout(() => reject(new Error('Timed out')), timeoutMs)"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+   "line": 49,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.tsx",
+   "line": 119,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.tsx",
+   "line": 118,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.tsx",
+   "line": 33,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-path-status.ts",
+   "line": 74,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-change-reset.ts",
+   "line": 16,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-change-reset.ts",
+   "line": 23,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.ts",
+   "line": 82,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.ts",
+   "line": 65,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useAddRepoLocalFolderFlow.ts",
+   "line": 283,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.ts",
+   "line": 130,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.ts",
+   "line": 187,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.ts",
+   "line": 256,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.tsx",
+   "line": 77,
+   "text": "const result = await window.api.repos.addRemote({"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialog.tsx",
+   "line": 213,
+   "text": "void window.api.repos.cloneAbort()"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.tsx",
+   "line": 78,
+   "text": "const targets = (await window.api.ssh.listTargets()) as SshTarget[]"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.tsx",
+   "line": 84,
+   "text": "const state = (await window.api.ssh.getState({"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.tsx",
+   "line": 119,
+   "text": "const unsubscribe = window.api.ssh.onStateChanged(({ targetId, state }) => {"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.tsx",
+   "line": 130,
+   "text": "await window.api.ssh.connect({ targetId })"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.tsx",
+   "line": 185,
+   "text": "const result = await window.api.repos.addRemote({"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 316,
+   "text": "expect(window.api.agentTrust?.markTrusted).toHaveBeenCalledWith({"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 367,
+   "text": "expect(window.api.agentTrust?.markTrusted).toHaveBeenCalledWith({"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.ts",
+   "line": 132,
+   "text": "const connectResult = (await window.api.ssh.connect({"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.ts",
+   "line": 137,
+   "text": "((await window.api.ssh.getState({"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.ts",
+   "line": 69,
+   "text": "return window.api.repos.onCloneProgress(setCloneProgress)"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.ts",
+   "line": 111,
+   "text": "const dir = await window.api.repos.pickDirectory()"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.ts",
+   "line": 136,
+   "text": "? await window.api.repos.cloneRemote({"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.ts",
+   "line": 153,
+   "text": ": ((await window.api.repos.clone({"
+  },
+  {
+   "file": "components/sidebar/useAddRepoLocalFolderFlow.ts",
+   "line": 299,
+   "text": "const paths = await window.api.repos.pickFolders()"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.ts",
+   "line": 158,
+   "text": "void window.api.repos"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.ts",
+   "line": 276,
+   "text": ": window.api.repos.isGitAvailable()"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 157,
+   "text": "vi.mocked(window.api.repos.pickDirectory).mockResolvedValue(pickedDir)"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 174,
+   "text": "expect(window.api.repos.pickDirectory).not.toHaveBeenCalled()"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.ts",
+   "line": 77,
+   "text": "const dir = await window.api.repos.pickDirectory()"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.ts",
+   "line": 107,
+   "text": "? await window.api.repos.createRemote({"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.ts",
+   "line": 124,
+   "text": ": await window.api.repos.create({"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 128,
+   "kind": "plain",
+   "name": "AddProjectFromFolderDialog"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 145,
+   "kind": "plain",
+   "name": "adds a local Git folder and opens the default checkout"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 174,
+   "kind": "plain",
+   "name": "leaves local non-Git folders on the existing Open as Folder confirmation path"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 193,
+   "kind": "plain",
+   "name": "routes a runtime project"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 222,
+   "kind": "plain",
+   "name": "adds an SSH Git folder through the remote repo import path"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 256,
+   "kind": "plain",
+   "name": "falls back to completion when Git worktree refresh is not authoritative"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 279,
+   "kind": "plain",
+   "name": "does not finish the handoff after the user cancels during refresh"
+  },
+  {
+   "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+   "line": 304,
+   "kind": "plain",
+   "name": "sends SSH non-Git folders to the Open as Folder confirmation with the connection id"
+  },
+  {
+   "file": "components/sidebar/AddRepoCreateStep.test.tsx",
+   "line": 41,
+   "kind": "plain",
+   "name": "CreateStep"
+  },
+  {
+   "file": "components/sidebar/AddRepoCreateStep.test.tsx",
+   "line": 42,
+   "kind": "plain",
+   "name": "renders the name-first create UI with advanced controls collapsed"
+  },
+  {
+   "file": "components/sidebar/AddRepoCreateStep.test.tsx",
+   "line": 55,
+   "kind": "plain",
+   "name": "shows the Git-required explanation in the collapsed summary"
+  },
+  {
+   "file": "components/sidebar/AddRepoCreateStep.test.tsx",
+   "line": 66,
+   "kind": "plain",
+   "name": "disables create while an auto-filled parent belongs to a previous target"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialog.default-checkout.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "AddRepo completion owner routing"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialog.default-checkout.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "routes an explicitly local completion to the local host"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialog.default-checkout.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "routes an explicitly runtime completion to its captured runtime"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialog.default-checkout.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "leaves an absent owner distinguishable from explicit local ownership"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 103,
+   "kind": "plain",
+   "name": "AddRepoDialogStepContent nested imports"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 104,
+   "kind": "plain",
+   "name": "asks the grouping question when no repos exist yet"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 114,
+   "kind": "plain",
+   "name": "shows the same grouping import controls after a repo already exists"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 124,
+   "kind": "plain",
+   "name": "offers opening the parent folder when nested import selection is empty"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 133,
+   "kind": "plain",
+   "name": "offers host browsing for remote create project locations"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 144,
+   "kind": "plain",
+   "name": "uses manual path entry for SSH create project locations"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 159,
+   "kind": "plain",
+   "name": "offers host browsing for remote clone destinations"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 170,
+   "kind": "plain",
+   "name": "offers SSH browsing for selected-host clone destinations"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 184,
+   "kind": "plain",
+   "name": "hides the SSH target chooser after a host was already selected"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 227,
+   "kind": "plain",
+   "name": "shows a connect affordance for a selected disconnected SSH host"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 257,
+   "kind": "plain",
+   "name": "uses SSH-aware copy on the add step when an SSH host is selected"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 268,
+   "kind": "plain",
+   "name": "uses the standard add step for remote Orca server hosts"
+  },
+  {
+   "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+   "line": 285,
+   "kind": "plain",
+   "name": "opens the in-app filesystem browser for a paired runtime"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 31,
+   "kind": "plain",
+   "name": "AddRepoHostSelector"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 32,
+   "kind": "plain",
+   "name": "shows a remote host setup menu when Local Mac is the only host"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 61,
+   "kind": "plain",
+   "name": "shows disconnected SSH hosts with a connect action in Add Project"
+  },
+  {
+   "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+   "line": 97,
+   "kind": "plain",
+   "name": "shows exact update guidance for incompatible runtime hosts"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 63,
+   "kind": "plain",
+   "name": "AddRepoNestedImportStep"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 76,
+   "kind": "plain",
+   "name": "asks whether the selected folder should be grouped"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 96,
+   "kind": "plain",
+   "name": "disables both import actions while scanning"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 106,
+   "kind": "plain",
+   "name": "maps the group choice to grouped import and the separate choice to separate import"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 143,
+   "kind": "plain",
+   "name": "shows progress only on the clicked import action"
+  },
+  {
+   "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+   "line": 188,
+   "kind": "plain",
+   "name": "offers opening the parent folder when no repositories are selected"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 165,
+   "kind": "plain",
+   "name": "AddRepoLocalStartStep"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 170,
+   "kind": "plain",
+   "name": "promotes browse folder and keeps secondary actions always visible"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 181,
+   "kind": "plain",
+   "name": "orders secondary actions clone-first for default users"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 192,
+   "kind": "plain",
+   "name": "keeps Browse folder primary for SSH-likely users"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 201,
+   "kind": "plain",
+   "name": "orders secondary actions remote-first for SSH-likely users"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 212,
+   "kind": "plain",
+   "name": "lets host-aware Add Project replace the separate remote row"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 219,
+   "kind": "plain",
+   "name": "uses host-neutral browse copy for runtime hosts"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 226,
+   "kind": "plain",
+   "name": "focuses Browse folder when the default Add Project step opens"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 237,
+   "kind": "plain",
+   "name": "focuses Browse folder for SSH-likely users too"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 250,
+   "kind": "plain",
+   "name": "renders secondary actions as enabled buttons without a disclosure toggle"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 262,
+   "kind": "plain",
+   "name": "disables host-scoped actions until a host is selectable"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 276,
+   "kind": "plain",
+   "name": "marks the autofocused Browse action as selected with the \u23ce chip"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 287,
+   "kind": "plain",
+   "name": "moves the \u23ce selection to whichever action receives focus"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 303,
+   "kind": "plain",
+   "name": "clears the \u23ce selection when focus leaves the action list"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 321,
+   "kind": "plain",
+   "name": "does not show an \u23ce selection while add actions are busy"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 345,
+   "kind": "plain",
+   "name": "hides the visual \u23ce chip from assistive technology"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 359,
+   "kind": "plain",
+   "name": "roves selection down the action list with the ArrowDown key"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 379,
+   "kind": "plain",
+   "name": "AddRepoServerPathStartStep"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 380,
+   "kind": "plain",
+   "name": "uses native-style project entry cards in server mode"
+  },
+  {
+   "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+   "line": 392,
+   "kind": "plain",
+   "name": "disables server entry cards without an active runtime environment"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+   "line": 90,
+   "kind": "plain",
+   "name": "useRemoteRepo default-checkout handoff"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "requests an authoritative worktree refresh before handoff"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+   "line": 154,
+   "kind": "plain",
+   "name": "continues to completion when refresh is not authoritative after remote add"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+   "line": 179,
+   "kind": "plain",
+   "name": "preselects the preferred SSH target when opening Browse for a selected host"
+  },
+  {
+   "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+   "line": 198,
+   "kind": "plain",
+   "name": "pins SSH nested scans and cancellation to the local provider"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.test.tsx",
+   "line": 64,
+   "kind": "plain",
+   "name": "ProjectAddedDialog"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.test.tsx",
+   "line": 75,
+   "kind": "plain",
+   "name": "fetches worktrees and finishes by opening the default checkout for Git repos"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.test.tsx",
+   "line": 91,
+   "kind": "plain",
+   "name": "does not block the compatibility handoff during StrictMode effect replay"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.test.tsx",
+   "line": 123,
+   "kind": "plain",
+   "name": "accepts older onboarding modal data that uses projectId"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.test.tsx",
+   "line": 136,
+   "kind": "plain",
+   "name": "activates the synthetic folder workspace for folder repos"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.test.tsx",
+   "line": 155,
+   "kind": "plain",
+   "name": "closes malformed modal data without blocking the app invisibly"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.test.tsx",
+   "line": 167,
+   "kind": "plain",
+   "name": "refreshes repos before closing a stale repo id"
+  },
+  {
+   "file": "components/sidebar/ProjectAddedDialog.test.tsx",
+   "line": 181,
+   "kind": "plain",
+   "name": "waits for repo hydration and does not close when fetchRepos supplies the repo"
+  },
+  {
+   "file": "components/sidebar/add-repo-browse-authority.test.ts",
+   "line": 5,
+   "kind": "plain",
+   "name": "routeAddRepoBrowse"
+  },
+  {
+   "file": "components/sidebar/add-repo-browse-authority.test.ts",
+   "line": 6,
+   "kind": "plain",
+   "name": "opens paired host browsing without invoking native pickFolders"
+  },
+  {
+   "file": "components/sidebar/add-repo-browse-authority.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "preserves native folder browsing for desktop local hosts"
+  },
+  {
+   "file": "components/sidebar/add-repo-browse-authority.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "preserves SSH host browsing"
+  },
+  {
+   "file": "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "add repo existing workspace telemetry"
+  },
+  {
+   "file": "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts",
+   "line": 33,
+   "kind": "plain",
+   "name": "builds count-only payloads without raw workspace names"
+  },
+  {
+   "file": "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "tracks detection only for imported linked workspaces"
+  },
+  {
+   "file": "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts",
+   "line": 100,
+   "kind": "plain",
+   "name": "derives linked and detached counts before clamping reported values"
+  },
+  {
+   "file": "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts",
+   "line": 121,
+   "kind": "plain",
+   "name": "sorts without crashing when a detected worktree has no displayName (crash 99657ab1)"
+  },
+  {
+   "file": "components/sidebar/add-repo-skip-finalization.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "finalizeImportedRepoAfterSkip"
+  },
+  {
+   "file": "components/sidebar/add-repo-skip-finalization.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "keeps skipped imported worktrees visible without activating a worktree"
+  },
+  {
+   "file": "components/sidebar/add-repo-skip-finalization.test.ts",
+   "line": 69,
+   "kind": "plain",
+   "name": "leaves the project filter off when the import lands with no filter"
+  },
+  {
+   "file": "components/sidebar/add-repo-skip-finalization.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "clears default-branch hiding when it would hide every imported worktree"
+  },
+  {
+   "file": "components/sidebar/add-repo-skip-finalization.test.ts",
+   "line": 97,
+   "kind": "plain",
+   "name": "re-enables the default-branch exemption when the import would land asleep and hidden"
+  },
+  {
+   "file": "components/sidebar/add-repo-skip-finalization.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "leaves the default-branch exemption alone when sleeping workspaces are shown"
+  },
+  {
+   "file": "components/sidebar/add-repo-skip-finalization.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "still reveals the imported repo when it has no discovered worktrees yet"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 4,
+   "kind": "plain",
+   "name": "getDefaultCloneParent"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 5,
+   "kind": "plain",
+   "name": "strips a POSIX workspaces suffix"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "strips a POSIX workspaces suffix with a trailing slash"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "strips a Windows workspaces suffix"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "leaves input without a workspaces suffix unchanged"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "returns empty input unchanged"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 27,
+   "kind": "plain",
+   "name": "returns an empty parent for workspaces alone"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 31,
+   "kind": "plain",
+   "name": "returns root for an absolute root workspaces path"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "returns the drive root for a Windows root workspaces path"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "strips repeated trailing separators before matching the suffix"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "does not strip a similar-looking final segment"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "getCloneDestinationAutoFill"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 51,
+   "kind": "plain",
+   "name": "fills the local clone destination from the workspace directory"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "waits for a workspace directory before filling"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "does not overwrite typed destinations or repeat an auto-fill"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "does not fill server clone destinations for runtime environments"
+  },
+  {
+   "file": "components/sidebar/clone-defaults.test.ts",
+   "line": 108,
+   "kind": "plain",
+   "name": "does not fill SSH clone destinations from the local workspace directory"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "create project defaults"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "builds the POSIX default project parent"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 14,
+   "kind": "plain",
+   "name": "builds the Windows default project parent"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "derives the runtime project default from a resolved server home"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 24,
+   "kind": "plain",
+   "name": "joins path previews without mixing separators"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 33,
+   "kind": "plain",
+   "name": "auto-fills only the first empty local create step"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "does not apply a local default while a runtime environment is active"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "uses a short local summary only for the local default parent"
+  },
+  {
+   "file": "components/sidebar/create-project-defaults.test.ts",
+   "line": 117,
+   "kind": "plain",
+   "name": "keeps a configured Workspace Directory verbatim in the summary"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 73,
+   "kind": "plain",
+   "name": "getFolderWorkspaceCardPrDisplay"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 74,
+   "kind": "plain",
+   "name": "uses the existing repo lookup without enumerating all repos"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "uses failing attached PR status ahead of pending and passing PRs"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 122,
+   "kind": "plain",
+   "name": "uses pending attached PR status ahead of passing PRs"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 148,
+   "kind": "plain",
+   "name": "omits a matching suppressed branch PR from attached worktrees"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 168,
+   "kind": "plain",
+   "name": "includes nested attached worktree PRs"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 190,
+   "kind": "plain",
+   "name": "includes a nested PR from exact inline-only legacy lineage"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 211,
+   "kind": "plain",
+   "name": "keeps a stale side-map entry authoritative over valid inline lineage"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 241,
+   "kind": "each",
+   "name": "excludes nested PRs across a %s boundary"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 270,
+   "kind": "plain",
+   "name": "excludes nested PRs from cyclic projected lineage"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 293,
+   "kind": "plain",
+   "name": "uses branch-discovered PR cache for unlinked attached worktrees"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 311,
+   "kind": "plain",
+   "name": "uses the right-sidebar classified status for conflicting PRs"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-card-pr-display.test.ts",
+   "line": 332,
+   "kind": "plain",
+   "name": "does not use stale merged branch PR cache after the worktree advances"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-helpers.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "getFolderSourceRepos"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-helpers.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "only returns source repos from the same execution host as the folder group"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-helpers.test.ts",
+   "line": 59,
+   "kind": "plain",
+   "name": "returns runtime source repos for runtime-owned folder groups"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-helpers.test.ts",
+   "line": 83,
+   "kind": "plain",
+   "name": "getFolderWorkspacePrimaryActionLabel"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-helpers.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "uses a stable workspace creation label independent of quick agent selection"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-path-status.test.tsx",
+   "line": 38,
+   "kind": "plain",
+   "name": "useFolderWorkspaceComposerPathStatus"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-path-status.test.tsx",
+   "line": 52,
+   "kind": "plain",
+   "name": "blocks creation while an expired path status refresh is pending"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-path-status.test.tsx",
+   "line": 118,
+   "kind": "plain",
+   "name": "unblocks creation when the first path status check settles without cache"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-path-status.test.tsx",
+   "line": 157,
+   "kind": "plain",
+   "name": "blocks creation while the first path status check is unknown"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-path-status.test.tsx",
+   "line": 183,
+   "kind": "plain",
+   "name": "does not block creation for an unavailable path status"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-path-status.test.tsx",
+   "line": 220,
+   "kind": "plain",
+   "name": "blocks while refreshing after a cached blocking path status expires"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-path-status.test.tsx",
+   "line": 281,
+   "kind": "plain",
+   "name": "tracks settled path status refreshes by cache key and expiry generation"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 71,
+   "kind": "plain",
+   "name": "submitFolderWorkspaceCreate"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 90,
+   "kind": "plain",
+   "name": "closes the composer after creation even when reveal fails"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "marks a blank folder workspace for first-input rename when launching an agent with a note"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 176,
+   "kind": "plain",
+   "name": "does not mark first-input rename when the folder workspace has an explicit name"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 201,
+   "kind": "plain",
+   "name": "does not mark first-input rename when a linked work item owns the folder workspace name"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 234,
+   "kind": "plain",
+   "name": "creates a Jira folder workspace with its bound source context"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 280,
+   "kind": "plain",
+   "name": "keeps linked Codex context out of submitted startup and pastes it as a draft"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 332,
+   "kind": "plain",
+   "name": "pre-marks remote linked Codex folder workspaces trusted before draft paste"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 383,
+   "kind": "plain",
+   "name": "delivers non-linked follow-up prompts for agents that need stdin after launch"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 412,
+   "kind": "plain",
+   "name": "uses native draft launch for linked agents with prefill support"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 443,
+   "kind": "plain",
+   "name": "uses native prefill for link-only Linear folder workspace drafts"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 505,
+   "kind": "plain",
+   "name": "keeps explicit blank linked folder creates free of agent startup and draft paste"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 542,
+   "kind": "plain",
+   "name": "does not mark first-input rename without submitted first input"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 567,
+   "kind": "plain",
+   "name": "quotes quick-agent startup for POSIX when the folder group is a local WSL UNC path"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 599,
+   "kind": "plain",
+   "name": "quotes quick-agent startup for Windows when the remote folder group uses a Windows path"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 632,
+   "kind": "plain",
+   "name": "preserves SSH group ownership when creating and activating a folder workspace"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 669,
+   "kind": "plain",
+   "name": "returns false when folder workspace creation fails without returning a workspace"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 693,
+   "kind": "plain",
+   "name": "submitFolderWorkspaceCreate native-chat launch draft"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 724,
+   "kind": "plain",
+   "name": "mirrors a startup-paste draft into the chat composer"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 741,
+   "kind": "plain",
+   "name": "mirrors an argv-prefill draft, which never lands in startupPlan.draftPrompt"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 763,
+   "kind": "plain",
+   "name": "mirrors a multi-line draft into chat"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 787,
+   "kind": "plain",
+   "name": "does not mirror an unlinked note, which is submitted rather than drafted"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-composer-submit.test.ts",
+   "line": 805,
+   "kind": "plain",
+   "name": "folder-workspace draft: seeded set == chat-opening set"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-linked-startup-plan.test.ts",
+   "line": 4,
+   "kind": "plain",
+   "name": "buildFolderWorkspaceLinkedStartupPlan"
+  },
+  {
+   "file": "components/sidebar/folder-workspace-linked-startup-plan.test.ts",
+   "line": 5,
+   "kind": "plain",
+   "name": "uses cmd quoting for configured arguments on local Windows"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 106,
+   "kind": "plain",
+   "name": "getProjectDefaultCheckout"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "returns the main worktree rather than the first worktree"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "finishProjectAddWithDefaultCheckout"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 147,
+   "kind": "plain",
+   "name": "closes the modal and activates the default checkout"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 179,
+   "kind": "plain",
+   "name": "activates only the captured host default checkout when repo IDs collide"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 224,
+   "kind": "plain",
+   "name": "activates a runtime-owned checkout even when its physical host is private SSH"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 244,
+   "kind": "plain",
+   "name": "passes a contained selected path through as the initial terminal cwd"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 261,
+   "kind": "plain",
+   "name": "skips the initial cwd override when the selected path is the repo root"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 276,
+   "kind": "plain",
+   "name": "shows a hidden detected default checkout before activating it"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 320,
+   "kind": "plain",
+   "name": "reveals detected sibling external worktrees when the default checkout is already loaded"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 349,
+   "kind": "plain",
+   "name": "does not refresh already-visible sibling external worktrees"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 374,
+   "kind": "plain",
+   "name": "does not flip visibility when the only hidden siblings are agent scratch"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 394,
+   "kind": "plain",
+   "name": "does not repeat linked-worktree reveal after a hidden default checkout refresh"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 439,
+   "kind": "plain",
+   "name": "reveals the project if showing sibling external worktrees fails"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 464,
+   "kind": "plain",
+   "name": "reveals the project if sibling external worktree refresh is not authoritative"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 489,
+   "kind": "plain",
+   "name": "reveals the project if no default checkout is available"
+  },
+  {
+   "file": "components/sidebar/project-added-default-checkout.test.ts",
+   "line": 514,
+   "kind": "plain",
+   "name": "reveals the project even when no worktrees are loaded"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "useAddRepoHostSelection"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 122,
+   "kind": "plain",
+   "name": "exposes the selected SSH target id"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "selects a runtime host without changing the durable active server"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 146,
+   "kind": "plain",
+   "name": "uses the paired runtime as the only local filesystem authority in web clients"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 161,
+   "kind": "plain",
+   "name": "has no local fallback while a paired web runtime is loading"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 176,
+   "kind": "each",
+   "name": "has no paired-web fallback when the only host is %s"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 196,
+   "kind": "plain",
+   "name": "selects a local or SSH host without changing the durable active server"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 210,
+   "kind": "plain",
+   "name": "falls back from a disconnected selected SSH host to Local Mac"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 224,
+   "kind": "plain",
+   "name": "does not select a disconnected SSH host"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 241,
+   "kind": "plain",
+   "name": "connects and selects a disconnected SSH host from Add Project"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 273,
+   "kind": "plain",
+   "name": "does not auto-select the active runtime host while it is unavailable"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+   "line": 287,
+   "kind": "plain",
+   "name": "hides ephemeral VM runtime hosts from Add Project selection"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-hosted-controller.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "useAddRepoHostedController"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-hosted-controller.test.ts",
+   "line": 40,
+   "kind": "plain",
+   "name": "falls back to the store closeModal without a hosted controller"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-hosted-controller.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "closes only the hosted dialog, never the store modal slot"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-hosted-controller.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "folder handoffs close both the hosted dialog and the composer modal"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-hosted-controller.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "finishProjectAdd closes the hosted dialog and hands the repo to the host"
+  },
+  {
+   "file": "components/sidebar/use-add-repo-hosted-controller.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "SSH settings navigation closes both hosted dialog and composer modal"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "useAddRepoCloneFlow"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.test.ts",
+   "line": 115,
+   "kind": "plain",
+   "name": "clones through the selected SSH target"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.test.ts",
+   "line": 155,
+   "kind": "plain",
+   "name": "does not prefill SSH clone destinations from the local workspace directory"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.test.ts",
+   "line": 172,
+   "kind": "plain",
+   "name": "strips Electron IPC wrappers from clone errors"
+  },
+  {
+   "file": "components/sidebar/useAddRepoCloneFlow.test.ts",
+   "line": 193,
+   "kind": "plain",
+   "name": "clones through the selected runtime environment"
+  },
+  {
+   "file": "components/sidebar/useAddRepoLocalFolderFlow.test.ts",
+   "line": 58,
+   "kind": "plain",
+   "name": "useAddRepoLocalFolderFlow"
+  },
+  {
+   "file": "components/sidebar/useAddRepoLocalFolderFlow.test.ts",
+   "line": 86,
+   "kind": "plain",
+   "name": "adds every selected local folder and completes one default-checkout handoff"
+  },
+  {
+   "file": "components/sidebar/useAddRepoLocalFolderFlow.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "skips nested-review folders in a multi-folder add and continues with git folders"
+  },
+  {
+   "file": "components/sidebar/useAddRepoLocalFolderFlow.test.ts",
+   "line": 172,
+   "kind": "plain",
+   "name": "still completes handoff when a later selected folder is skipped"
+  },
+  {
+   "file": "components/sidebar/useAddRepoLocalFolderFlow.test.ts",
+   "line": 208,
+   "kind": "plain",
+   "name": "drops a local scan completion after host-scoped reset"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "useAddRepoNestedImportFlow open folder fallback"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "opens the scanned local root through the existing non-git folder flow"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "keeps runtime folder opens on the runtime that produced the scan"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 129,
+   "kind": "plain",
+   "name": "names the folder project after the edited group name"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 142,
+   "kind": "plain",
+   "name": "leaves host basename naming alone when the group name is untouched"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 154,
+   "kind": "plain",
+   "name": "carries the edited group name into the SSH folder confirmation"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 169,
+   "kind": "plain",
+   "name": "tracks the open-as-folder recovery action with zero selection"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 186,
+   "kind": "plain",
+   "name": "uses the existing SSH non-git folder confirmation for SSH scans"
+  },
+  {
+   "file": "components/sidebar/useAddRepoNestedImportFlow.test.ts",
+   "line": 202,
+   "kind": "plain",
+   "name": "keeps SSH import and completion pinned when repo hydration is missing"
+  },
+  {
+   "file": "components/sidebar/useAddRepoServerPathFlow.test.ts",
+   "line": 64,
+   "kind": "plain",
+   "name": "useAddRepoServerPathFlow"
+  },
+  {
+   "file": "components/sidebar/useAddRepoServerPathFlow.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "marks onboarding folder progress before closing server folder adds"
+  },
+  {
+   "file": "components/sidebar/useAddRepoServerPathFlow.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "routes the nested Git pre-scan and add through the selected runtime"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "useCreateProjectDefaults"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "auto-fills the local default parent and reports Git availability"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "auto-fills the local home default regardless of workspace directory settings"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "keeps the local default marker after the auto-filled parent rerenders the hook"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "reports unavailable Git without changing the fixed project kind"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 137,
+   "kind": "plain",
+   "name": "reports unknown availability when the Git probe fails"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 146,
+   "kind": "plain",
+   "name": "does not overwrite a parent the user already chose"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 155,
+   "kind": "plain",
+   "name": "resolves the runtime default parent from the host home directory"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 176,
+   "kind": "plain",
+   "name": "replaces an untouched local default when switching to a runtime target"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 207,
+   "kind": "plain",
+   "name": "does not replace a touched parent when switching to a runtime target"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 234,
+   "kind": "plain",
+   "name": "marks the runtime parent lookup failed without filling a parent"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 245,
+   "kind": "plain",
+   "name": "does not use client defaults or Git probing for SSH targets"
+  },
+  {
+   "file": "components/sidebar/useCreateProjectDefaults.test.ts",
+   "line": 258,
+   "kind": "plain",
+   "name": "does nothing outside the create step"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 101,
+   "kind": "plain",
+   "name": "useCreateRepo default-checkout handoff"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 129,
+   "kind": "plain",
+   "name": "requests an authoritative worktree refresh before handoff"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 155,
+   "kind": "plain",
+   "name": "returns the selected parent directory after the local picker applies it"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 166,
+   "kind": "plain",
+   "name": "does not return a parent path when the runtime target blocks the local picker"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 178,
+   "kind": "plain",
+   "name": "continues to completion when refresh is not authoritative after create"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 196,
+   "kind": "plain",
+   "name": "opens an existing folder project returned by create dedupe"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 224,
+   "kind": "plain",
+   "name": "creates projects through the SSH host when an SSH target is selected"
+  },
+  {
+   "file": "components/sidebar/useCreateRepo.default-checkout.test.ts",
+   "line": 253,
+   "kind": "plain",
+   "name": "creates projects through the selected runtime environment"
+  }
+ ]
+}

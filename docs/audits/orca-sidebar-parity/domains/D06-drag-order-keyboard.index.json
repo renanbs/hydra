@@ -1,0 +1,1308 @@
+{
+ "exports": {
+  "components/sidebar/WorktreeParentPickerPopover.tsx": [
+   "getWorktreeParentPickerFocusRestoreTarget",
+   "selectWorktreeParent",
+   "handleWorktreeParentPickerKeyDown",
+   "WorktreeParentPickerPopover"
+  ],
+  "components/sidebar/WorktreeParentPickerRow.tsx": [
+   "WorktreeParentPickerRow"
+  ],
+  "components/sidebar/workspace-status-drag-data.ts": [
+   "WORKSPACE_STATUS_DRAG_TYPE",
+   "WORKSPACE_STATUS_DRAG_IDS_TYPE",
+   "WORKSPACE_STATUS_DRAG_PAYLOAD_MAX_BYTES",
+   "WORKSPACE_STATUS_DRAG_ID_MAX_COUNT",
+   "writeWorkspaceDragData",
+   "readWorkspaceDragData",
+   "readWorkspaceDragDataIds",
+   "hasWorkspaceDragData"
+  ],
+  "components/sidebar/worktree-drag-preview-offsets.ts": [
+   "WorktreeDragPreviewRect",
+   "WorktreeDragPreviewLayout",
+   "buildWorktreeDragPreviewOffsets"
+  ],
+  "components/sidebar/worktree-drag-units.ts": [
+   "WorktreeDragUnitGroup",
+   "getWorktreeDragUnitGroups",
+   "getFullDropIndexForWorktreeDragUnit"
+  ],
+  "components/sidebar/worktree-keyboard-cycle.ts": [
+   "getCyclableRowIdentity",
+   "getCyclableWorktreeRows",
+   "resolveActiveCycleIdentity",
+   "getCyclableWorktreeIds",
+   "getCyclableWorktrees",
+   "resolveCycledWorktreeId"
+  ],
+  "components/sidebar/worktree-manual-order-catalog.ts": [
+   "WorktreeManualOrderCatalog",
+   "buildWorktreeManualOrderCatalog"
+  ],
+  "components/sidebar/worktree-manual-order-ranks.ts": [
+   "WorktreeManualOrderUpdate",
+   "buildSparseManualOrderUpdates"
+  ],
+  "components/sidebar/worktree-manual-order.ts": [
+   "WorktreeDragGroup",
+   "WorktreeDragLineageRow",
+   "expandDraggedWorktreeIdsForVisibleLineage",
+   "moveWorktreeIdsWithinGroup",
+   "buildManualOrderUpdatesForVisibleGroups",
+   "buildManualOrderUpdatesForGroupDrop",
+   "shouldWriteManualOrderForGroupDrop"
+  ],
+  "components/sidebar/worktree-multi-selection.ts": [
+   "WorktreeSelectionIntent",
+   "WorktreeSelectionResult",
+   "WorktreeAreaSelectionResult",
+   "getWorktreeSelectionIntent",
+   "updateWorktreeSelection",
+   "pruneWorktreeSelection",
+   "updateWorktreeAreaSelection",
+   "areWorktreeSelectionsEqual"
+  ],
+  "components/sidebar/worktree-parent-candidates.ts": [
+   "getEligibleWorktreeParents",
+   "isEligibleWorktreeParent"
+  ],
+  "components/sidebar/worktree-parent-eligibility.ts": [
+   "canAssignWorktreeParent"
+  ],
+  "components/sidebar/worktree-parent-picker-filtering.ts": [
+   "getWorktreeParentPickerItemValue",
+   "filterWorktreeParentCandidates",
+   "clampWorktreeParentPickerIndex"
+  ],
+  "components/sidebar/worktree-parent-picker-placement.ts": [
+   "PICKER_ROW_HEIGHT",
+   "PICKER_ROW_OVERSCAN",
+   "PICKER_LIST_MAX_HEIGHT",
+   "PICKER_VIEWPORT_PADDING",
+   "estimateWorktreeParentPickerHeight",
+   "clampWorktreeParentPickerAnchorTop"
+  ],
+  "components/sidebar/worktree-sidebar-drag-autoscroll.ts": [
+   "WorktreeSidebarDragPoint",
+   "WorktreeSidebarDragRect",
+   "WorktreeSidebarDragSession",
+   "WorktreeSidebarAutoscrollResult",
+   "WorktreeSidebarBoundaryDropResult",
+   "getWorktreeSidebarDragAutoscroll",
+   "getWorktreeSidebarBoundaryDrop",
+   "getWorktreeSidebarDragRectsForGroup",
+   "refreshWorktreeSidebarDragSession"
+  ],
+  "components/sidebar/worktree-sidebar-drag-geometry.ts": [
+   "WorktreeSidebarDragGrab",
+   "WorktreeSidebarDropAnchor",
+   "getWorktreeSidebarDragReferenceY",
+   "shouldReevaluateWorktreeSidebarDropAnchor",
+   "resolveWorktreeSidebarDropAnchorIndex",
+   "getWorktreeSidebarDropAnchorId",
+   "getWorktreeSidebarDragGrab"
+  ],
+  "components/sidebar/worktree-sidebar-pointer-drag-dom.ts": [
+   "isSidebarPointerDragBlocked",
+   "setSidebarPointerDragDocumentStyles",
+   "updateSidebarDragPreviewPosition",
+   "createSidebarDragPreview"
+  ],
+  "components/sidebar/worktree-sidebar-reveal-scroll-settle.ts": [
+   "PendingRevealScroll",
+   "REVEAL_SCROLL_SETTLE_TIMEOUT_MS",
+   "createPendingRevealScroll",
+   "isRevealScrollSettling"
+  ],
+  "components/sidebar/worktree-sidebar-reveal.ts": [
+   "WORKTREE_SIDEBAR_REVEAL_TOP_INSET",
+   "getScrollTopToRevealBounds",
+   "revealElementInScrollContainer"
+  ],
+  "components/sidebar/worktree-sidebar-row-preference.ts": [
+   "getPreferredWorktreeRows",
+   "getRenderedWorktreesInSidebarOrder"
+  ],
+  "components/sidebar/worktree-unnest.ts": [
+   "unnestWorktrees"
+  ],
+  "components/sidebar/worktree-visibility-source-provenance.ts": [
+   "WorktreeVisibilitySourceProvenance",
+   "globalWorktreeVisibilitySourceValue",
+   "getWorktreeVisibilitySourceProvenance",
+   "listInheritedWorktreeVisibilitySources",
+   "worktreeVisibilityValueLabel",
+   "getWorktreeVisibilityOverrideNotice",
+   "getWorktreeVisibilitySourceNote"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 358,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 142,
+   "text": "label: 'This computer',"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 225,
+   "text": "} as unknown as React.KeyboardEvent<HTMLInputElement>,"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 53,
+   "text": "event: React.KeyboardEvent<HTMLInputElement>"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 115,
+   "text": "if (event.key === 'ArrowDown') {"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 117,
+   "text": "} else if (event.key === 'ArrowUp') {"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 119,
+   "text": "} else if (event.key === 'Home') {"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 121,
+   "text": "} else if (event.key === 'End') {"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 123,
+   "text": "} else if (event.key === 'Enter') {"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 280,
+   "text": "(event: React.KeyboardEvent<HTMLInputElement>) => {"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 195,
+   "text": "const timerId = window.setTimeout(() => {"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 179,
+   "text": "window.addEventListener('resize', updateAnchorRect)"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 180,
+   "text": "window.addEventListener('scroll', updateAnchorRect, true)"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 187,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+   "line": 298,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [],
+ "tests": [
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "selectWorktreeParent"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "closes and assigns the selected parent to the captured child"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 68,
+   "kind": "plain",
+   "name": "shows sanitized failure copy after closing the picker"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 87,
+   "kind": "plain",
+   "name": "does nothing without a captured child id"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "getWorktreeParentPickerItemValue"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 105,
+   "kind": "plain",
+   "name": "includes workspace-facing fields used by command filtering"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 112,
+   "kind": "plain",
+   "name": "filterWorktreeParentCandidates"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 121,
+   "kind": "plain",
+   "name": "returns every candidate when the search is blank"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "drops non-matching candidates and ranks the closest match first"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 130,
+   "kind": "plain",
+   "name": "matches on branch and path, not just display name"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 136,
+   "kind": "plain",
+   "name": "estimateWorktreeParentPickerHeight"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 137,
+   "kind": "plain",
+   "name": "grows with the candidate count up to the list cap"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 144,
+   "kind": "plain",
+   "name": "reserves a single row when nothing is eligible"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 149,
+   "kind": "plain",
+   "name": "clampWorktreeParentPickerAnchorTop"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 150,
+   "kind": "plain",
+   "name": "leaves an anchor that already fits where it is"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 154,
+   "kind": "plain",
+   "name": "lifts an anchor whose popover would run off the bottom"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 158,
+   "kind": "plain",
+   "name": "keeps an anchor above the window from riding off the top"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 162,
+   "kind": "plain",
+   "name": "pins to the top padding when the window is shorter than the popover"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 167,
+   "kind": "plain",
+   "name": "clampWorktreeParentPickerIndex"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 168,
+   "kind": "plain",
+   "name": "keeps the highlight inside the filtered result window"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 174,
+   "kind": "plain",
+   "name": "collapses to zero when nothing matches"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 179,
+   "kind": "plain",
+   "name": "getWorktreeParentPickerFocusRestoreTarget"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 194,
+   "kind": "plain",
+   "name": "restores focus to the focusable container of the anchored row"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 201,
+   "kind": "plain",
+   "name": "skips a row whose sidebar was already unmounted or never anchored"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 209,
+   "kind": "plain",
+   "name": "parent picker keyboard input"
+  },
+  {
+   "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+   "line": 213,
+   "kind": "each",
+   "name": "leaves IME composition keys to the input method"
+  },
+  {
+   "file": "components/sidebar/worktree-drag-units.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "getWorktreeDragUnitGroups"
+  },
+  {
+   "file": "components/sidebar/worktree-drag-units.test.ts",
+   "line": 24,
+   "kind": "plain",
+   "name": "treats expanded lineage descendants as part of the parent drag unit"
+  },
+  {
+   "file": "components/sidebar/worktree-drag-units.test.ts",
+   "line": 45,
+   "kind": "plain",
+   "name": "ignores imported worktree card rows without splitting drag groups"
+  },
+  {
+   "file": "components/sidebar/worktree-drag-units.test.ts",
+   "line": 73,
+   "kind": "plain",
+   "name": "includes pinned rows when they are the only rendered copy"
+  },
+  {
+   "file": "components/sidebar/worktree-drag-units.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "uses natural drag units when pinned rows have duplicate natural copies"
+  },
+  {
+   "file": "components/sidebar/worktree-drag-units.test.ts",
+   "line": 114,
+   "kind": "plain",
+   "name": "getFullDropIndexForWorktreeDragUnit"
+  },
+  {
+   "file": "components/sidebar/worktree-drag-units.test.ts",
+   "line": 115,
+   "kind": "plain",
+   "name": "maps visual unit drop indexes back to full row indexes"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "resolveCycledWorktreeId"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 14,
+   "kind": "plain",
+   "name": "steps to the next and previous worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "wraps around at both ends"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "enters from the matching end when the active worktree is not cyclable"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "has nothing to cycle to when every group is collapsed"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 54,
+   "kind": "plain",
+   "name": "getCyclableWorktreeIds"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "keeps a pinned worktree cyclable when only its natural group is collapsed"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 86,
+   "kind": "plain",
+   "name": "counts a duplicated pinned worktree once"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "keeps same-id rows on different hosts independently cyclable"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 115,
+   "kind": "plain",
+   "name": "leaves folder workspaces out of the rotation"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "drops worktrees the sidebar elided inside a collapsed host section"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 155,
+   "kind": "plain",
+   "name": "WorktreeList keyboard cycling"
+  },
+  {
+   "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+   "line": 156,
+   "kind": "plain",
+   "name": "cycles over the rendered rows instead of rebuilding a parallel layout"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order-catalog.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "buildWorktreeManualOrderCatalog"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order-catalog.test.ts",
+   "line": 31,
+   "kind": "plain",
+   "name": "includes filtered-capable git and folder rows in fallback order"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order-catalog.test.ts",
+   "line": 41,
+   "kind": "plain",
+   "name": "treats a same-id host cluster as durable only when every owner agrees"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order-store-write.test.ts",
+   "line": 60,
+   "kind": "plain",
+   "name": "sidebar manual-order drop"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order-store-write.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "moves the dragged row past its neighbor in the store"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order-store-write.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "leaves the order alone when the drop lands where the row already is"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "buildSparseManualOrderUpdates durable migration"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "materializes filtered rows when the first drag creates Manual order"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 32,
+   "kind": "plain",
+   "name": "keeps sparse updates after every known row has a durable rank"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "never drops known rows when a stale visible sequence contains unknowns or duplicates"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 61,
+   "kind": "plain",
+   "name": "preserves hidden rows when dense ranks require a full reindex"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "preserves hidden rows when a stale neighbor requires a full reindex"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "expandDraggedWorktreeIdsForVisibleLineage"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "expands an expanded lineage parent to its visible descendants for reordering"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 110,
+   "kind": "plain",
+   "name": "keeps unrelated selected rows in visual order"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "keeps ancestor coverage when a nested descendant is selected too"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "restarts coverage for a later selected sibling after the previous run ends"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 153,
+   "kind": "plain",
+   "name": "emits each absent selected id once"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 163,
+   "kind": "plain",
+   "name": "moveWorktreeIdsWithinGroup"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 164,
+   "kind": "plain",
+   "name": "moves a worktree down using the original drop index"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 168,
+   "kind": "plain",
+   "name": "moves a worktree up"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 172,
+   "kind": "plain",
+   "name": "preserves selected order for multi-drag batches"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 181,
+   "kind": "plain",
+   "name": "moves a very large selected batch without overflowing argument limits"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 192,
+   "kind": "plain",
+   "name": "buildWorktreeDragPreviewOffsets"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 193,
+   "kind": "plain",
+   "name": "slides intervening rows up while dragging a row down"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 212,
+   "kind": "plain",
+   "name": "keeps downward offsets stable after virtualization unmounts the leading rows"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 234,
+   "kind": "plain",
+   "name": "slides intervening rows down while dragging a row up"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 252,
+   "kind": "plain",
+   "name": "returns no preview offsets for a no-op hover"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 266,
+   "kind": "plain",
+   "name": "uses the dragged unit height when previewing variable-height rows"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 280,
+   "kind": "plain",
+   "name": "uses the dragged unit height when previewing a short row above a tall row"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 294,
+   "kind": "plain",
+   "name": "reserves one card-height slot while previewing a multi-select batch"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 316,
+   "kind": "plain",
+   "name": "uses the grabbed selected card as the one preview placeholder"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 334,
+   "kind": "plain",
+   "name": "returns no preview offsets for a no-op multi-select hover"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 353,
+   "kind": "plain",
+   "name": "buildManualOrderUpdatesForVisibleGroups"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 354,
+   "kind": "plain",
+   "name": "updates every visible workspace order while only moving the source group"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 377,
+   "kind": "plain",
+   "name": "returns no updates for a no-op drop"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 391,
+   "kind": "plain",
+   "name": "only updates moved rows when current ranks leave room"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 411,
+   "kind": "plain",
+   "name": "moves an expanded lineage cluster as one ranked unit"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 433,
+   "kind": "plain",
+   "name": "reorders a very large visible group without overflowing argument limits"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 457,
+   "kind": "plain",
+   "name": "buildManualOrderUpdatesForGroupDrop"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 458,
+   "kind": "plain",
+   "name": "moves a selected batch across groups and stamps visible manual order"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 481,
+   "kind": "plain",
+   "name": "keeps visual order for multi-select batches spanning groups"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 497,
+   "kind": "plain",
+   "name": "returns no updates for a no-op same-group drop"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 511,
+   "kind": "plain",
+   "name": "uses sparse moved-row ranks for cross-lane manual drops"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 535,
+   "kind": "plain",
+   "name": "shouldWriteManualOrderForGroupDrop"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 536,
+   "kind": "plain",
+   "name": "writes order for any lane drop while Manual sort is active"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 546,
+   "kind": "plain",
+   "name": "writes order for same-lane drops outside Manual sort"
+  },
+  {
+   "file": "components/sidebar/worktree-manual-order.test.ts",
+   "line": 556,
+   "kind": "plain",
+   "name": "keeps cross-lane drops status-only outside Manual sort"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "worktree multi selection"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "uses Cmd on Mac and Ctrl elsewhere for toggle selection"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 24,
+   "kind": "plain",
+   "name": "replaces selection on plain click"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "toggles one worktree without dropping the rest"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "allows toggling the last selected worktree off"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "selects the visible range from the anchor to the target"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "prunes selection when filtering hides selected worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 83,
+   "kind": "plain",
+   "name": "replaces selection from an area in visible order"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "adds area selection to the existing batch with modifier keys"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 109,
+   "kind": "plain",
+   "name": "does not clear the existing batch for an empty additive area"
+  },
+  {
+   "file": "components/sidebar/worktree-multi-selection.test.ts",
+   "line": 122,
+   "kind": "plain",
+   "name": "clears the existing batch for an empty non-additive area"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 57,
+   "kind": "plain",
+   "name": "canAssignWorktreeParent"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 58,
+   "kind": "plain",
+   "name": "excludes self, valid current parent, and descendants"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "treats stale instance edges as broken during descendant traversal"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "allows a raw current parent candidate when the child lineage is stale"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 145,
+   "kind": "plain",
+   "name": "rejects candidates inside pre-existing lineage loops"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 164,
+   "kind": "plain",
+   "name": "stays repo-agnostic while the picker candidate filter is repo and host scoped"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 192,
+   "kind": "plain",
+   "name": "excludes same-repo candidates owned by a different runtime host"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 214,
+   "kind": "plain",
+   "name": "excludes a candidate across a known project boundary for picker and direct drop checks"
+  },
+  {
+   "file": "components/sidebar/worktree-parent-eligibility.test.ts",
+   "line": 242,
+   "kind": "plain",
+   "name": "excludes archived worktrees from picker candidates"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "getWorktreeSidebarDragAutoscroll"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "scrolls up near the top edge"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "scrolls down near the bottom edge"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "does nothing away from the vertical edge zones"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "does nothing when the pointer is outside horizontally"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 46,
+   "kind": "plain",
+   "name": "does not write past scroll bounds"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 51,
+   "kind": "plain",
+   "name": "allows capped scrolling slightly beyond the vertical edge"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "scales by elapsed frame time and clamps delayed frames"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 65,
+   "kind": "plain",
+   "name": "getWorktreeSidebarBoundaryDrop"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 66,
+   "kind": "plain",
+   "name": "clamps near the group start instead of clearing the edge preview"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "clamps near the group end instead of clearing the edge preview"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "still rejects gaps that are not the real group edge"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 101,
+   "kind": "plain",
+   "name": "keeps normal in-range hover handling unchanged"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 113,
+   "kind": "plain",
+   "name": "getWorktreeSidebarDragRectsForGroup"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 114,
+   "kind": "plain",
+   "name": "refreshes mounted rects for the source group only"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 127,
+   "kind": "plain",
+   "name": "anchors rects to virtual row slots so animated transforms do not perturb hit testing"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 140,
+   "kind": "plain",
+   "name": "refreshWorktreeSidebarDragSession"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 141,
+   "kind": "plain",
+   "name": "keeps the dragged set stable while refreshing rects"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 167,
+   "kind": "plain",
+   "name": "clears when the source group is missing"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 178,
+   "kind": "plain",
+   "name": "clears when the dragged worktree or reordered unit disappears"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 197,
+   "kind": "plain",
+   "name": "keeps a valid session when mounted rects are temporarily empty"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts",
+   "line": 208,
+   "kind": "plain",
+   "name": "keeps child-card reorder drags even when the child is not a top-level unit"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "worktree sidebar drag geometry under mid-drag card growth"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 82,
+   "kind": "plain",
+   "name": "keeps the drop target fixed while a card expands under a still pointer"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "never lets a growing card change the drop target across a whole expansion"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 111,
+   "kind": "plain",
+   "name": "slides the indicator with the gap it marks while geometry is held"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "still tracks the pointer normally once it moves again"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 131,
+   "kind": "plain",
+   "name": "re-evaluates on real pointer or scroll movement but not on jitter"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 155,
+   "kind": "plain",
+   "name": "falls back to a fresh decision when the anchored card disappears mid-drag"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 178,
+   "kind": "plain",
+   "name": "keeps one live coordinate space across a session refresh"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 207,
+   "kind": "plain",
+   "name": "grab-relative hit testing"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 208,
+   "kind": "plain",
+   "name": "projects the dragged card from the pointer instead of using the bare pointer"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 231,
+   "kind": "plain",
+   "name": "resolves the same slot wherever a tall card was grabbed"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-drag-geometry.test.ts",
+   "line": 251,
+   "kind": "plain",
+   "name": "clamps a grab offset that lands outside the card"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts",
+   "line": 6,
+   "kind": "plain",
+   "name": "worktree sidebar pointer drag DOM guards"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts",
+   "line": 7,
+   "kind": "plain",
+   "name": "allows plain row targets to start pointer drags"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "blocks portaled hover card targets outside the row"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts",
+   "line": 26,
+   "kind": "plain",
+   "name": "blocks interactive targets inside the row"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "blocks icon targets inside interactive row controls"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "isRevealScrollSettling"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "is not settling without a reveal scroll in flight"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "stays settling while a smooth reveal scroll is still animating"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts",
+   "line": 21,
+   "kind": "plain",
+   "name": "stops settling once the scroll reaches its target"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "stops settling after the timeout so an unreachable target cannot pin the guard open"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-reveal.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "revealElementInScrollContainer"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-reveal.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "reports the scroll target it issues so callers can guard the animation"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-reveal.test.ts",
+   "line": 40,
+   "kind": "plain",
+   "name": "does not report a scroll when the element is already in view"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-row-preference.test.ts",
+   "line": 83,
+   "kind": "plain",
+   "name": "getRenderedWorktreesInSidebarOrder"
+  },
+  {
+   "file": "components/sidebar/worktree-sidebar-row-preference.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "keeps folder workspaces in visual order while preferring natural pinned rows"
+  },
+  {
+   "file": "components/sidebar/worktree-unnest.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "unnestWorktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-unnest.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "clears the parent link on every requested worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-unnest.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "toasts instead of rejecting when the lineage update fails"
+  },
+  {
+   "file": "components/sidebar/worktree-unnest.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "toasts once when several worktrees fail together"
+  },
+  {
+   "file": "components/sidebar/worktree-unnest.test.ts",
+   "line": 46,
+   "kind": "plain",
+   "name": "does nothing for an empty selection"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "listInheritedWorktreeVisibilitySources"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "reports what each inheritable source is set to globally"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "keeps a source the project has overridden, since global is what it overrode"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "lists a global custom source but not one the project added itself"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 86,
+   "kind": "plain",
+   "name": "getWorktreeVisibilityOverrideNotice"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 87,
+   "kind": "plain",
+   "name": "names the global value a project override is ignoring"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 97,
+   "kind": "plain",
+   "name": "stays quiet for an override that agrees with global settings"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "stays quiet for a source that is still following global settings"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 110,
+   "kind": "plain",
+   "name": "stays quiet outside a project scope"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 115,
+   "kind": "plain",
+   "name": "getWorktreeVisibilitySourceNote"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "marks a source the project added itself"
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-source-provenance.test.ts",
+   "line": 126,
+   "kind": "plain",
+   "name": "says nothing for an inherited source"
+  }
+ ]
+}

@@ -1,0 +1,132 @@
+{
+ "domain": "D05-agents-rows",
+ "prod": [
+  {
+   "name": "SidebarAgentsList.tsx",
+   "kind": "prod",
+   "loc": 192
+  },
+  {
+   "name": "useWorktreeAgentRows.ts",
+   "kind": "prod",
+   "loc": 150
+  },
+  {
+   "name": "worktree-agent-activity-summary.ts",
+   "kind": "prod",
+   "loc": 307
+  },
+  {
+   "name": "worktree-agent-freshness-selector.ts",
+   "kind": "prod",
+   "loc": 53
+  },
+  {
+   "name": "worktree-agent-live-index-patch.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "worktree-agent-orchestration-batch.ts",
+   "kind": "prod",
+   "loc": 42
+  },
+  {
+   "name": "worktree-agent-orchestration-index.ts",
+   "kind": "prod",
+   "loc": 314
+  },
+  {
+   "name": "worktree-agent-row-fallback-tab.ts",
+   "kind": "prod",
+   "loc": 29
+  },
+  {
+   "name": "worktree-agent-row-orchestration.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "worktree-agent-row-order.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "worktree-agent-row-selectors.ts",
+   "kind": "prod",
+   "loc": 309
+  },
+  {
+   "name": "worktree-agent-row-type.ts",
+   "kind": "prod",
+   "loc": 30
+  },
+  {
+   "name": "worktree-agent-rows.ts",
+   "kind": "prod",
+   "loc": 275
+  },
+  {
+   "name": "worktree-subagent-child-rows.ts",
+   "kind": "prod",
+   "loc": 72
+  },
+  {
+   "name": "worktree-title-derived-agent-rows.ts",
+   "kind": "prod",
+   "loc": 330
+  }
+ ],
+ "test": [
+  {
+   "name": "SidebarAgentsList.test.tsx",
+   "kind": "test",
+   "loc": 65
+  },
+  {
+   "name": "stale-agent-row-unverifiable.test.ts",
+   "kind": "test",
+   "loc": 158
+  },
+  {
+   "name": "useWorktreeAgentRows.test.ts",
+   "kind": "test",
+   "loc": 817
+  },
+  {
+   "name": "worktree-agent-activity-summary.test.ts",
+   "kind": "test",
+   "loc": 506
+  },
+  {
+   "name": "worktree-agent-freshness-selector.test.ts",
+   "kind": "test",
+   "loc": 105
+  },
+  {
+   "name": "worktree-agent-orchestration-batch.test.ts",
+   "kind": "test",
+   "loc": 715
+  },
+  {
+   "name": "worktree-agent-orchestration-index.test.ts",
+   "kind": "test",
+   "loc": 522
+  },
+  {
+   "name": "worktree-agent-row-selectors.test.ts",
+   "kind": "test",
+   "loc": 528
+  },
+  {
+   "name": "worktree-subagent-child-rows.test.ts",
+   "kind": "test",
+   "loc": 55
+  },
+  {
+   "name": "worktree-title-derived-agent-rows.test.ts",
+   "kind": "test",
+   "loc": 404
+  }
+ ]
+}

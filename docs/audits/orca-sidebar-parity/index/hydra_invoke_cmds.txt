@@ -1,0 +1,13 @@
+catalog_add_folder
+catalog_set_worktree_visibility
+catalog_set_worktree_visibility_sources
+clone_project
+create_project
+get_app_version
+import_worktree
+kill_port_process
+save_session_record
+scan_workspace_ports
+scan_worktrees
+set_project_worktree_base
+suppress_worktree_inbox

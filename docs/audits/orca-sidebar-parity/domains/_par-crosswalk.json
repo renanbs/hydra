@@ -1,0 +1,253 @@
+{
+  "PAR-39": {
+    "orca_rows": [
+      "D12-001",
+      "D12-002",
+      "D12-003",
+      "D12-004",
+      "D12-005",
+      "D12-006",
+      "D12-007",
+      "D12-008",
+      "D12-009",
+      "D12-010",
+      "D12-011",
+      "D12-012",
+      "D12-013",
+      "D12-014",
+      "D15a-001",
+      "D15a-002",
+      "D04b-020"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-66": {
+    "orca_rows": [
+      "D05-010",
+      "D05-006",
+      "D04b-002",
+      "D04b-019"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-14": {
+    "orca_rows": [
+      "D08-001",
+      "D08-002",
+      "D08-003",
+      "D08-004",
+      "D08-005",
+      "D08-006",
+      "D08-007",
+      "D08-008",
+      "D08-009",
+      "D08-010",
+      "D08-011",
+      "D08-012",
+      "D08-013",
+      "D08-014",
+      "D08-015",
+      "D08-016",
+      "D08-017",
+      "D08-018",
+      "D08-019",
+      "D08-020",
+      "D08-021",
+      "D08-022",
+      "D08-023",
+      "D08-024",
+      "D08-025",
+      "D08-026",
+      "D08-027",
+      "D08-028",
+      "D08-029",
+      "D08-030",
+      "D08-031",
+      "D08-032",
+      "D08-033",
+      "D08-034",
+      "D08-035",
+      "D08-036",
+      "D08-037",
+      "D08-038",
+      "D08-039",
+      "D08-040",
+      "D08-041",
+      "D08-042",
+      "D08-043",
+      "D08-044",
+      "D08-045",
+      "D15a-012",
+      "D15b-001",
+      "D15b-002"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-15": {
+    "orca_rows": [
+      "D02c-019",
+      "D02c-020",
+      "D02c-021",
+      "D02c-022",
+      "D02c-023",
+      "D02c-024",
+      "D02c-025",
+      "D02c-026"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-73": {
+    "orca_rows": [
+      "D15b-006",
+      "D15b-007",
+      "D04b-010"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-88": {
+    "orca_rows": [
+      "D06-001",
+      "D06-002",
+      "D06-019",
+      "D08-002",
+      "D08-040",
+      "D08-041",
+      "D15b-004",
+      "D15b-005"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-08": {
+    "orca_rows": [
+      "D06-021",
+      "D06-022",
+      "D06-023"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-43": {
+    "orca_rows": [
+      "D06-003",
+      "D06-004",
+      "D06-005",
+      "D06-006",
+      "D06-024",
+      "D06-030"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-21": {
+    "orca_rows": [
+      "D15a-011"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-05": {
+    "orca_rows": [
+      "D04b-004",
+      "D04b-011",
+      "D04b-014"
+    ],
+    "hydra_status": "partial",
+    "escopo": "sidebar"
+  },
+  "PAR-34": {
+    "orca_rows": [
+      "D04b-005"
+    ],
+    "hydra_status": "partial",
+    "escopo": "sidebar"
+  },
+  "PAR-56": {
+    "orca_rows": [
+      "D04b-004",
+      "D04b-006",
+      "D04b-007"
+    ],
+    "hydra_status": "partial",
+    "escopo": "sidebar"
+  },
+  "PAR-60": {
+    "orca_rows": [
+      "D04b-016"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-62": {
+    "orca_rows": [
+      "D04b-014"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-67": {
+    "orca_rows": [
+      "D04b-011",
+      "D04b-017"
+    ],
+    "hydra_status": "partial",
+    "escopo": "sidebar"
+  },
+  "PAR-74": {
+    "orca_rows": [
+      "D04b-010"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-86": {
+    "orca_rows": [
+      "D04b-004"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-87": {
+    "orca_rows": [
+      "D04b-015",
+      "D04b-016"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-41": {
+    "orca_rows": [
+      "D02c-009",
+      "D02c-010"
+    ],
+    "hydra_status": "missing",
+    "escopo": "sidebar"
+  },
+  "PAR-26": {
+    "orca_rows": [
+      "D09-008",
+      "D09-009",
+      "D09-012",
+      "D09-013",
+      "D09-014",
+      "D09-015",
+      "D09-016"
+    ],
+    "hydra_status": "partial",
+    "escopo": "sidebar",
+    "nota": "Submenu 'Show → Projects' existe (WorkspaceOptionsMenu.tsx:143-262) mas sem checkbox por repo, sem cmdk/placeholder/estado vazio, sem teclado (Backspace/Enter/ArrowLeft), sem score de busca e sem auto-ocultar com <=1 projeto."
+  },
+  "PAR-44": {
+    "orca_rows": [
+      "D09-018"
+    ],
+    "hydra_status": "partial",
+    "escopo": "sidebar",
+    "nota": "revealRepoInProjectFilter portado (project-filter-reveal.ts:1-12) e chamado em worktree-activation.ts:279, mas muta store.filterRepoIds enquanto o sidebar montado filtra por displayOptions.filterProjectIds (WorktreeSidebar.tsx:510)."
+  }
+}

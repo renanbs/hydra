@@ -1,0 +1,21 @@
+{
+ "scope_files": 808,
+ "scope_prod": 503,
+ "scope_test": 305,
+ "scope_prod_loc": 70327,
+ "closure_total": 2319,
+ "ring2": 230,
+ "ring3plus": 1281,
+ "ring2_loc": 26251,
+ "exports": 2197,
+ "preload_hits": 136,
+ "preload_unique": 84,
+ "ipc_hits": 0,
+ "menu_label_hits": 968,
+ "shortcut_hits": 237,
+ "pref_hits": 34,
+ "timer_hits": 79,
+ "sub_hits": 193,
+ "tests": 2940,
+ "test_files": 305
+}

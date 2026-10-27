@@ -1,0 +1,2046 @@
+{
+ "domain": "D03a-worktree-list-module",
+ "rows": [
+  {
+   "id": "D03a-001",
+   "capability": "Arrastar card de worktree com o ponteiro para reordenar dentro do grupo",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-pointer-drag.ts:110-146",
+    "components/sidebar/worktree-list/drag/use-pointer-drag.ts:157-182",
+    "components/sidebar/worktree-list/drag/use-pointer-window-events.ts:10",
+    "components/sidebar/worktree-list/drag/use-pointer-window-events.ts:32-49",
+    "components/sidebar/worktree-list/drag/use-runtime.ts:39",
+    "components/sidebar/worktree-list/drag/use-runtime.ts:58-75"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "drag por ponteiro (pointerdown/pointermove/pointerup) com limiar de 4px",
+     "preview flutuante com draggedCount",
+     "setSidebarPointerDragDocumentStyles",
+     "supressão de clique de 500ms",
+     "frames RAF de atualização"
+    ],
+    "notes": "Hydra só tem drag nativo HTML5 (WorktreeSidebar.tsx:428-432). O sistema de pointer-drag do Orca não foi portado: src/components/sidebar/worktree-list/pointer-drag-dom.ts é órfão (reachable_depth=null) e não há worktree-list/drag/**. Buscas: use-pointer-drag, pointer-flush, row-state, SIDEBAR_POINTER_DRAG_THRESHOLD, pointer-drag-dom."
+   }
+  },
+  {
+   "id": "D03a-002",
+   "capability": "Arrastar vários cards selecionados em conjunto",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-pointer-drag.ts:183-186"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "multi-drag de cards selecionados",
+     "detecção host-qualified (getWorktreeHostIdentity)"
+    ],
+    "notes": "Sem multi-seleção e sem drag múltiplo no Hydra: handleWorktreeDragStart passa apenas o path do card (WorktreeSidebar.tsx:428-432)."
+   },
+   "par": [
+    "PAR-08"
+   ]
+  },
+  {
+   "id": "D03a-003",
+   "capability": "Reordenar com histerese de intenção (evita troca de slot ao cruzar gutter)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/pointer-flush.ts:23",
+    "components/sidebar/worktree-list/drag/pointer-flush.ts:183-207"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "REORDER_INTENT_DELAY_MS=160ms",
+     "preserveOffsets durante nova intenção",
+     "não renovar intenção por autoscroll"
+    ],
+    "notes": "Não localizado após busca em src/components/sidebar por REORDER_INTENT_DELAY_MS, pointer-flush, histerese de intenção de drop."
+   }
+  },
+  {
+   "id": "D03a-004",
+   "capability": "Mostrar linha/indicador de inserção e offsets de preview durante o drag",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/row-state.ts:9-29",
+    "components/sidebar/worktree-list/drag/row-state.ts:99-165"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-card-surface.tsx:95-105",
+     "src/components/sidebar/WorktreeSidebar.tsx:434-463",
+     "src/components/sidebar/worktree-card-surface.tsx:76-91"
+    ],
+    "missing_behaviors": [
+     "preview flutuante com offsets animados (previewOffsetsByWorktreeId)",
+     "WorktreeRowDragState (dropIndex/dropIndicatorY/pointerY/lineageDropTargetId)",
+     "atualizações idempotentes de estado de linha"
+    ],
+    "notes": "O Hydra desenha apenas uma linha de 2px no topo/base do card alvo (dropTarget top/bottom) e opacity-30 na row arrastada; não há estado de drag por linha nem preview de offsets."
+   }
+  },
+  {
+   "id": "D03a-005",
+   "capability": "Aninhar worktree sob outro arrastando sobre o card pai",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/pointer-flush.ts:145-163",
+    "components/sidebar/worktree-list/drag/row-state.ts:144-165"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "nesting por hover sobre card pai",
+     "dataset.worktreeSidebarNesting",
+     "applyWorktreeLineageDropPreview",
+     "hit test do card visível"
+    ],
+    "notes": "Não localizado após busca por worktreeSidebarNesting, applyWorktreeLineageDropPreview, lineage drop preview, isLineageDropTarget (o atributo data-worktree-lineage-drop-target existe em worktree-card-surface.tsx:85 mas nada o alimenta: onLineageDrop não é passado por WorktreeList)."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D03a-006",
+   "capability": "Validação de elegibilidade de parent no aninhamento por arraste",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:27-62"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "isEligibleWorktreeParent",
+     "getCyclicProjectedWorktreeLineageIds no drag",
+     "zera lineageParentId quando inelegível"
+    ],
+    "notes": "A projeção de linhagem existe (worktree-lineage-projection.ts:8/15) mas não há caminho de drag que a valide; ParentPickerModal (App-level) é o único setter de parent."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D03a-007",
+   "capability": "Confirmar aninhamento (nest) ao soltar",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:64-87",
+    "components/sidebar/worktree-list/drag/pointer-commit.ts:93-97",
+    "components/sidebar/worktree-list/drag/pointer-commit.ts:147-149"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "assignWorktreeParent em Promise.all",
+     "toast failedNestWorkspace"
+    ],
+    "notes": "Não há commit de nest por drop; não localizado 'Failed to nest workspace' nem failedNestWorkspace em src/."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D03a-008",
+   "capability": "Desaninhar (unnest) ao soltar um card aninhado numa linha de reorder",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:89-111"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "getReorderedWorktreeIdsToUnnest",
+     "unnestWorktrees via updateWorktreeLineage"
+    ],
+    "notes": "Não localizado após busca por getReorderedWorktreeIdsToUnnest, unnestWorktrees, unnest."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D03a-009",
+   "capability": "Mover worktree(s) para uma seção de status ao soltar",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/pointer-commit.ts:26-49",
+    "components/sidebar/worktree-list/drag/status-target.ts:39-53"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "drop sobre seção de status -> moveWorktreesToStatus(AtIndex)",
+     "shouldPreferSidebarStatusDropTarget"
+    ],
+    "notes": "O sidebar pintado não renderiza seções de status (groupBy=workspace-status só afeta indentação: WorktreeList.tsx:338); não há drop de status."
+   }
+  },
+  {
+   "id": "D03a-010",
+   "capability": "Fixar (pin) worktree(s) soltando sobre a seção Pinned",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/status-target.ts:19-22",
+    "components/sidebar/worktree-list/drag/pointer-commit.ts:32-34",
+    "components/sidebar/worktree-list/drag/pointer-commit.ts:68-69"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "drop sobre [data-workspace-pin-drop-target] -> onPinWorktrees",
+     "isPinDrop"
+    ],
+    "notes": "Não há seção Pinned nem alvo de drop de pin no Hydra; pin é só um Set de paths passado ao card (WorktreeList.tsx:374)."
+   }
+  },
+  {
+   "id": "D03a-011",
+   "capability": "Soltar cards sobre o quadro Kanban (board) movendo para lane/status",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/pointer-commit.ts:59-81",
+    "components/sidebar/worktree-list/drag/pointer-flush.ts:110-126"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "onWorkspaceBoardDragPreviewCommit",
+     "resolveWorkspaceKanbanSidebarFullLaneDropIndex",
+     "getWorkspaceKanbanSidebarDropGroups"
+    ],
+    "notes": "Kanban drawer inexistente no Hydra (D08 missing); não localizado WorkspaceKanbanSidebar."
+   },
+   "par": [
+    "PAR-88"
+   ]
+  },
+  {
+   "id": "D03a-012",
+   "capability": "Pré-visualizar o destino do board já no início do drag",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/pointer-flush.ts:101-118"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "workspaceBoardDragPreviewRequested",
+     "onWorkspaceBoardDragPreviewStart",
+     "shouldShowWorkspaceBoardDropIndicator"
+    ],
+    "notes": "Não localizado após busca por WorkspaceBoardDragPreview, shouldShowWorkspaceBoardDropIndicator."
+   }
+  },
+  {
+   "id": "D03a-013",
+   "capability": "Cancelar o drag com Escape ou pointercancel",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-pointer-window-events.ts:73-99"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "handler Escape em window com capture:true",
+     "clearWorktreeDrag",
+     "pointercancel por pointerId"
+    ],
+    "notes": "O drag nativo do Hydra depende do cancelamento implícito do browser; não há listener de Escape/pointercancel. handleWorktreeDragEnd só limpa estado (WorktreeSidebar.tsx:465-468)."
+   }
+  },
+  {
+   "id": "D03a-014",
+   "capability": "Autoscroll do sidebar enquanto o card arrastado se aproxima das bordas",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts:26-78",
+    "components/sidebar/worktree-list/drag/use-runtime.ts:41-47"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:53"
+    ],
+    "missing_behaviors": [
+     "getWorktreeSidebarDragAutoscroll com RAF/scrollTop",
+     "markScrollMovement/revalidação de sessão",
+     "cancelWorktreePointerAutoscroll"
+    ],
+    "notes": "getWorktreeSidebarDragAutoscroll é alcançável mas headless: consumido apenas por project-header-drop.ts:5 -> rendered-sidebar-worktree-order.ts:15 (ordenação de rank). Nenhum caminho de drag visível o invoca."
+   }
+  },
+  {
+   "id": "D03a-015",
+   "capability": "Transferência via drag nativo HTML5 entre board e sidebar",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-native-drag.ts:43-83",
+    "components/sidebar/worktree-list/drag/use-native-drag.ts:85-149",
+    "components/sidebar/worktree-list/drag/use-native-drag.ts:151-229"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:428-463",
+     "src/components/sidebar/WorktreeSidebar.tsx:470-506",
+     "src/components/sidebar/WorktreeList.tsx:379"
+    ],
+    "missing_behaviors": [
+     "dragover com seta de nesting/status + dropEffect=move",
+     "drop em board/lineage/status",
+     "captura de rects do grupo e grab por offset"
+    ],
+    "notes": "Existe drag nativo HTML5 para (a) reordenar worktrees dentro do projeto e (b) reordenar projetos/soltar em grupo, com indicador topo/base; faltam nesting, status e board."
+   },
+   "par": [
+    "PAR-88"
+   ]
+  },
+  {
+   "id": "D03a-016",
+   "capability": "Autoscroll no drag nativo re-derivando o preview a cada frame",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-native-autoscroll.ts:29-107"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "nativeLatestPointRef",
+     "autoscroll nativo recomputando preview por frame"
+    ],
+    "notes": "Não localizado após busca por use-native-autoscroll, nativeLatestPointRef."
+   }
+  },
+  {
+   "id": "D03a-017",
+   "capability": "Commit/abandono de drag fora do sidebar via listeners de documento em captura",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-document-drop.ts:18-115"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "listeners de drop/dragend/visibilitychange em documento (capture)",
+     "commit de status/nest sem slot"
+    ],
+    "notes": "Handlers de drop estão nos elementos (WorktreeList.tsx:274-286) e não em documento; não há visibilitychange. Não localizado use-document-drop."
+   }
+  },
+  {
+   "id": "D03a-018",
+   "capability": "Suprimir seleção/clique indesejado imediatamente após um drag",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-pointer-drag.ts:122",
+    "components/sidebar/worktree-list/drag/use-pointer-drag.ts:227-259"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "suppressWorktreeClickUntilRef (500ms)",
+     "captura de clique com stopImmediatePropagation"
+    ],
+    "notes": "Não localizado após busca por suppressWorktreeClickUntil, suppressUntil, performance.now em src/components/sidebar."
+   }
+  },
+  {
+   "id": "D03a-019",
+   "capability": "Arrastar cards sobre seções de status/pin com drop de documento como fallback",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-status-row-drag.ts:35-139"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "hasWorkspaceDragData",
+     "computeWorktreeStatusDrop",
+     "useWorkspaceStatusDocumentDrop",
+     "getReorderDraggedIds"
+    ],
+    "notes": "workspace-status-drag-data.ts é órfão (reachable_depth=null); não há drag de status."
+   }
+  },
+  {
+   "id": "D03a-020",
+   "capability": "Reordenar os três níveis de header do sidebar (host, grupo de projeto, projeto)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-header-drag.ts:45-235"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:250-285",
+     "src/components/sidebar/WorktreeSidebar.tsx:470-506",
+     "src/components/sidebar/WorktreeSidebar.tsx:820-840",
+     "src/components/sidebar/project-header-drop.ts:47"
+    ],
+    "missing_behaviors": [
+     "reorder de host sections",
+     "gating canReorderRepoHeaders (groupBy=repo + projectOrderBy=manual)",
+     "canReorderProjectGroupHeaders/ordem manual por host",
+     "supressão de correção de âncora"
+    ],
+    "notes": "Há drag de header de repo (SectionHeader recebe onDragStart/onDrop) e drop de projeto em grupo; não há reorder de host nem gating por modo de ordenação."
+   }
+  },
+  {
+   "id": "D03a-021",
+   "capability": "Persistir ordem manual e status resultantes de um drop",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-status-mutations.ts:35-199"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:1922-1943",
+     "src/components/sidebar/WorktreeSidebar.tsx:442-463"
+    ],
+    "missing_behaviors": [
+     "persistir workspaceStatus com executionHostId",
+     "moveWorktreesToStatusAtIndex (status+ordem)",
+     "forçar sortBy=manual",
+     "recordFeatureInteraction('workspace-board-actions')"
+    ],
+    "notes": "onReorderWorktrees persiste apenas a ordem manual em localStorage por projeto; não há persistência de status nem troca para sortBy=manual."
+   }
+  },
+  {
+   "id": "D03a-022",
+   "capability": "Derivar grupos de arraste e índices de linha a partir das rows do sidebar",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/groups.ts:6-63"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-drag-units.ts:1"
+    ],
+    "missing_behaviors": [
+     "getWorktreeDragGroups / getWorktreeDragIndexes"
+    ],
+    "notes": "worktree-drag-units.ts é órfão (reachable_depth=null; só é importado como `import type`). Sem grupos/índices de drag."
+   }
+  },
+  {
+   "id": "D03a-023",
+   "capability": "Encerrar o drag limpando preview, RAFs, estilos e âncoras",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-runtime.ts:58-88",
+    "components/sidebar/worktree-list/drag/use-runtime.ts:77-88"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:465-468",
+     "src/components/sidebar/WorktreeSidebar.tsx:441-463"
+    ],
+    "missing_behaviors": [
+     "remover preview flutuante",
+     "cancelar RAFs de autoscroll",
+     "restaurar estilos de documento",
+     "resetar WORKTREE_ROW_DRAG_INITIAL_STATE"
+    ],
+    "notes": "handleWorktreeDragEnd/HandleWorktreeDrop limpam draggedWorktreePath e worktreeDropTarget; não existem preview/RAF/estilos a limpar."
+   }
+  },
+  {
+   "id": "D03a-024",
+   "capability": "Empacotar contexto e sessão de commit do drop para os três caminhos de drag",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/drag/use-drop-commit-context.ts:8-63",
+    "components/sidebar/worktree-list/drag/use-session.ts:37-237",
+    "components/sidebar/worktree-list/drag/drop-commit-context.ts:12-51"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-drag-units.ts:1"
+    ],
+    "missing_behaviors": [
+     "useWorktreeDropCommitContext",
+     "useWorktreeDragSession",
+     "computeWorktreeDrop/StatusDrop com âncoras"
+    ],
+    "notes": "Não portado: worktree-list/drag/* inexistente; os únicos helpers (worktree-drag-units, worktree-manual-order) são órfãos."
+   }
+  },
+  {
+   "id": "D03a-025",
+   "capability": "Escolher o agrupamento da lista (Group by) e montar as rows",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/build-rows.ts:48-252"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:627-657 pipelineState+computeSidebarRows (groupBy real)",
+     "src/components/sidebar/WorktreeList.tsx:1056-1091 switch pinta header(item/lane)/item/folder/notice",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:48-252"
+    ],
+    "missing_behaviors": [],
+    "notes": "O sidebar pintado agora consome o modelo portado: groupBy (none/workspace-status/pr-status/repo) alimenta computeSidebarRows, que emite seções Pinned/lane/host e é pintado em WorktreeList. Colapso por chave de grupo via collapsedGroups/isCollapsedKey."
+   }
+  },
+  {
+   "id": "D03a-026",
+   "capability": "Modo \"All\" (groupBy=none): uma lane única com todos os workspaces",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/build-rows.ts:154-196",
+    "components/sidebar/worktree-list/grouping/group-keys.ts:88-96"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:140-172 lane All com header+count",
+     "src/components/sidebar/WorktreeList.tsx:374-414 LaneSectionHeader (label/ícone/tone/count)",
+     "src/components/sidebar/WorktreeList.tsx:1056-1060 header não-repo → LaneSectionHeader"
+    ],
+    "missing_behaviors": [],
+    "notes": "Lane 'All' pintada com header e contagem; colapso suprime as linhas (collapsedGroups.has(ALL_GROUP_KEY)); a ordem dos itens vem do sort do caller (getFilteredAndSortedWorktrees), aplicado antes de computeSidebarRows."
+   }
+  },
+  {
+   "id": "D03a-027",
+   "capability": "Modo \"Repo\": seções por projeto/repo com header contando itens",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/group-sections.ts:82-216",
+    "components/sidebar/worktree-list/grouping/section-order.ts:76-97",
+    "components/sidebar/worktree-list/grouping/section-order.ts:66-74"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:193 orderMainWorktreeFirst no modo repo",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:80-110 withRepoSectionDisplayLabels",
+     "src/components/sidebar/WorktreeList.tsx:992-998 renderRepoHeader"
+    ],
+    "missing_behaviors": [],
+    "notes": "Seções por repo com header+count; worktree principal primeiro (orderMainWorktreeFirst) e labels desambiguados por path (#16127) aplicados no caminho pintado."
+   }
+  },
+  {
+   "id": "D03a-028",
+   "capability": "Modo \"Workspace status\": lanes por status com rótulo/tone/ícone e omissão de lanes vazias",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/worktree-grouping.ts:216-225",
+    "components/sidebar/worktree-list/grouping/group-sections.ts:94-123"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:94-125 lane workspace-status com label/tone/ícone/count",
+     "src/components/sidebar/WorktreeList.tsx:374-414 LaneSectionHeader"
+    ],
+    "missing_behaviors": [],
+    "notes": "Lanes de status pintadas com metadado visual por definição; lanes vazias são omitidas pelo agrupador (buildOrderedGroups) e a contagem soma folder workspaces."
+   }
+  },
+  {
+   "id": "D03a-029",
+   "capability": "Modo \"PR status\": lanes Done / In review / In progress / Closed derivadas do estado da PR",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/group-keys.ts:21-67",
+    "components/sidebar/worktree-list/grouping/group-keys.ts:108-167",
+    "components/sidebar/worktree-list/grouping/worktree-grouping.ts:208-215"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/group-keys.ts:21-67,108-167 PR_GROUP_ORDER/getPRGroupKey",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:126-160 lane PR com PR_GROUP_META",
+     "src/components/sidebar/WorktreeList.tsx:648-657 prCache repo-scoped alimentado"
+    ],
+    "missing_behaviors": [],
+    "notes": "Lanes Done/In review/In progress/Closed pintadas com ícone/tone por lane; o cache de PR é computado por repo e entregue à pipeline."
+   }
+  },
+  {
+   "id": "D03a-030",
+   "capability": "Seção Pinned: worktrees fixados com política de duplicação configurável",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/pinned-group-rows.ts:17-115",
+    "components/sidebar/worktree-list/grouping/row-types.ts:11-15",
+    "components/sidebar/worktree-list/grouping/build-rows.ts:100-153"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:100-138 emitPinnedGroup",
+     "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts:17-115",
+     "src/components/sidebar/WorktreeList.tsx:374-414 LaneSectionHeader",
+     "src/components/sidebar/WorktreeList.tsx:814-824 isPinned no card"
+    ],
+    "missing_behaviors": [],
+    "notes": "Seção Pinned emitida antes das demais, com header/contagem por host e política single-location vs duplicate-in-groups (getPinnedWorktreeDisplayPolicy) aplicada no render."
+   },
+   "par": [
+    "PAR-35"
+   ]
+  },
+  {
+   "id": "D03a-031",
+   "capability": "Folder workspaces: membership única e lane por modo de agrupamento",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:19-77",
+    "components/sidebar/worktree-list/grouping/project-group-sections.ts:57-71"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:93-99 getRenderableFolderWorkspaces",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:107-115,200-202 folderPairs em cada lane",
+     "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:19-77"
+    ],
+    "missing_behaviors": [],
+    "notes": "Membership única decidida uma vez (getRenderableFolderWorkspaces) e folder workspaces distribuídos por lane/modo de agrupamento com ordenação manualOrder/sortOrder+nome."
+   }
+  },
+  {
+   "id": "D03a-032",
+   "capability": "Árvore de linhagem (pai/filho) com colapso e proteção contra ciclo",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/row-builders.ts:146-253",
+    "components/sidebar/worktree-list/grouping/group-keys.ts:98-106"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/row-builders.ts:146-253 (nestLineage depth/trail/collapse)",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:63 nestLineage=true no caminho pintado",
+     "src/components/sidebar/WorktreeList.tsx:792-799 cardContentIndent com lineageDepth:0"
+    ],
+    "missing_behaviors": [
+     "lineageTrail/isLastLineageChild não renderizados: renderWorktreeRow calcula a indentação com lineageDepth:0 (WorktreeList.tsx:792-799), então a árvore pai/filho não aparece aninhada visualmente"
+    ],
+    "notes": "As rows agora são emitidas aninhadas (appendWorktreeRows com nestLineage=true) e colapsam por lineageGroupKey com proteção de ciclo, mas o card pintado não consome lineageTrail/isLastLineageChild."
+   },
+   "par": [
+    "PAR-82"
+   ]
+  },
+  {
+   "id": "D03a-033",
+   "capability": "Card de imported worktrees (worktrees detectadas escondidas)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/row-builders.ts:34-49",
+    "components/sidebar/worktree-list/grouping/row-types.ts:49-63"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts:60-115 placement pinned-fallback",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:158-180 notice repo-group com hostContext",
+     "src/components/sidebar/WorktreeList.tsx:986-1030 renderNoticeRow (row.hostContextLabel/hostContextHostId)",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:136-224"
+    ],
+    "backend": [
+     "invoke('import_worktree') -> src-tauri (comando alcançável do sidebar)"
+    ],
+    "missing_behaviors": [],
+    "notes": "Linha de imported worktrees pintada com placement pinned-fallback e hostContext quando o repo está em >1 host (getNoticeHostContextLabels)."
+   }
+  },
+  {
+   "id": "D03a-034",
+   "capability": "Inbox de worktrees externas novas (New external worktrees)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/row-builders.ts:51-64",
+    "components/sidebar/worktree-list/grouping/worktree-grouping.ts:169-186"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:180-190 inbox row",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:262-292 placeholderRepoIds garante a seção do repo",
+     "src/components/sidebar/WorktreeList.tsx:986-1030 renderNoticeRow"
+    ],
+    "backend": [
+     "invoke('suppress_worktree_inbox') -> src-tauri (comando alcançável do sidebar)"
+    ],
+    "missing_behaviors": [],
+    "notes": "Inbox de worktrees externas pintada com Review/Suppress; a seção do repo é garantida mesmo quando a política Pinned remove os itens naturais (noticeRepoIds) e o hostContext é resolvido por buildExternalWorktreeNoticeCandidates."
+   }
+  },
+  {
+   "id": "D03a-035",
+   "capability": "Linha de criação em andamento (pending creation)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/row-builders.ts:22-32",
+    "components/sidebar/worktree-list/grouping/row-types.ts:96-100"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:73-80 buildPendingCreationRow",
+     "src/components/sidebar/WorktreeList.tsx:1089-1091 case \"pending-creation\" é no-op"
+    ],
+    "missing_behaviors": [
+     "row pending-creation renderizada",
+     "pending:<creationId> como tipo virtual"
+    ],
+    "notes": "O pipeline emite buildPendingCreationRow, mas o sidebar pintado descarta a linha (WorktreeList.tsx:1089-1091 sem ramo). Sem criação em andamento na lista."
+   }
+  },
+  {
+   "id": "D03a-036",
+   "capability": "Rótulos e contagens por host nos headers de seção",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/host-labels.ts:44-246"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:204-254 getLaneHostWorktreeCounts/Ids",
+     "src/components/sidebar/host-section-rows.ts:290-306 count/detail por host",
+     "src/components/sidebar/WorktreeList.tsx:417-465,1046-1053 HostSectionHeader"
+    ],
+    "missing_behaviors": [],
+    "notes": "HostSectionHeader pinta label/contagem por host (inclui folder workspaces) e o detalhe de contexto misto; notice host context labels alimentam as linhas de notice."
+   }
+  },
+  {
+   "id": "D03a-037",
+   "capability": "Ordenação de projetos: Manual vs Recent",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/section-order.ts:99-209",
+    "components/sidebar/worktree-list/grouping/worktree-grouping.ts:226-242",
+    "components/sidebar/worktree-list/grouping/project-group-sections.ts:41-55"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:648-657 computeSidebarRows usa projectOrderBy default manual",
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:514-535 submenu Project order (Manual fixo)",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:99-215 sortProjectEntries"
+    ],
+    "missing_behaviors": [
+     "alternância Manual vs Recent de ordem de projetos: o submenu mostra \"Manual\" fixo e nenhum caller passa projectOrderBy=\"recent\""
+    ],
+    "notes": "sortProjectEntries suporta Manual e Recent, mas a lista pintada usa o default manual e a UI não alterna."
+   }
+  },
+  {
+   "id": "D03a-038",
+   "capability": "Seções de project groups (aninhamento, contagem de subtree, órfãos)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/project-group-sections.ts:19-140",
+    "components/sidebar/worktree-list/grouping/group-keys.ts:69-76"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/project-group-sections.ts:71-140 nesting/subtree count/órfãos",
+     "src/components/sidebar/WorktreeList.tsx:1001-1030 renderGroupHeader (depth)"
+    ],
+    "missing_behaviors": [],
+    "notes": "Project groups aninhados por parentGroupId com contagem de subtree (repos diretos + folder workspaces + filhos) e órfãos sem metadata caindo no nível raiz."
+   }
+  },
+  {
+   "id": "D03a-039",
+   "capability": "Índice de project grouping e headers por checkout ambíguo",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/project-grouping.ts:14-165"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/project-grouping.ts:14-165 buildProjectGroupingIndex",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:176-250 computeSidebarRows não passa projectGrouping",
+     "src/components/sidebar/WorktreeList.tsx:992-998 header pintado usa project.id"
+    ],
+    "missing_behaviors": [
+     "headers por setup de checkout ambíguo no render (computeSidebarRows não passa projectGrouping, então buildProjectGroupingIndex fica vazio no caminho pintado)",
+     "surface key projectId::hostId::execução::path no header pintado"
+    ],
+    "notes": "O índice de project grouping (com WeakMap) existe, mas o caminho pintado não o alimenta; o header usa project.id sem desambiguar o setup de checkout."
+   }
+  },
+  {
+   "id": "D03a-040",
+   "capability": "Reveal/grupo keys de um worktree para navegação e expand",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12-80"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12-80 getGroupKeyForWorktree/getGroupKeysForWorktree",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:50 getGroupKeyForWorktree para ordenação"
+    ],
+    "missing_behaviors": [
+     "getGroupKeysForWorktree não alimenta nenhum caminho de reveal/expand no sidebar pintado"
+    ],
+    "notes": "getGroupKeyForWorktree é usado para ordenação; getGroupKeysForWorktree (keys de project groups ancestrais) não é consumido por reveal/expand."
+   }
+  },
+  {
+   "id": "D03a-041",
+   "capability": "Infra de tipos e keys de agrupamento",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/row-types.ts:8-108",
+    "components/sidebar/worktree-list/grouping/group-keys.ts:21-106"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/row-types.ts:8-108 row types/keys",
+     "src/components/sidebar/WorktreeList.tsx:1056-1091 consome header/item/folder/notice",
+     "src/components/sidebar/worktree-list/grouping/group-keys.ts:21-106 group keys"
+    ],
+    "missing_behaviors": [],
+    "notes": "Tipos e keys de agrupamento agora consumidos pelo render pintado (WorktreeList alterna pelos row types emitidos por computeSidebarRows)."
+   }
+  },
+  {
+   "id": "D03a-042",
+   "capability": "Empty state da lista: \"No workspaces found\" e botão \"Clear Filters\"",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/EmptyState.tsx:6-39"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:1120-1142 empty state (\"No workspaces matching\" + \"Clear filter\")",
+     "src/components/sidebar/WorktreeList.tsx:405-412 (sem data-attributes)"
+    ],
+    "missing_behaviors": [
+     "texto exato 'No workspaces found'",
+     "botão 'Clear Filters' com ícone CircleX (size xs)",
+     "data-worktree-sidebar-container / data-contextual-tour-target"
+    ],
+    "notes": "O empty state pintado usa textos/ações próprios ('No workspaces matching \"{filter}\"' + 'Clear filter') sem os data-attributes do Orca."
+   },
+   "par": [
+    "PAR-80"
+   ]
+  },
+  {
+   "id": "D03a-043",
+   "capability": "Filtros do sidebar de worktrees e escape hatch limpar tudo",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-filters.ts:33-220"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:602-621 hideAutomationCreated/hideCliCreated/hideSleeping aplicados ao caminho pintado",
+     "src/components/sidebar/WorktreeSidebar.tsx:534-558 hideDefaultBranch/hideDetachedHead + busca textual",
+     "src/components/sidebar/WorktreeList.tsx:1130-1142 onClearFilter só limpa a busca",
+     "src/components/sidebar/sidebar-filter-actions.ts:53 computeClearFilterActions (sem call-site no render)"
+    ],
+    "missing_behaviors": [
+     "Clear Filters reseta apenas a busca textual (onClearFilter → setFilter(\"\")); computeClearFilterActions (sidebar-filter-actions.ts:53) não tem call-site no render",
+     "hideWorkspacesFromOtherDevices (workspaces de outros clientes) não aplicado à lista pintada"
+    ],
+    "notes": "Os toggles hide sleeping/default branch/automation/CLI/detached e o filtro de host agora são aplicados ao caminho pintado; falta o escape hatch que reseta os filtros ativos."
+   },
+   "par": [
+    "PAR-26"
+   ]
+  },
+  {
+   "id": "D03a-044",
+   "capability": "Revelar um workspace desligando os filtros que o escondem",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-filters.ts:60-142"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/project-filter-reveal.ts:1"
+    ],
+    "missing_behaviors": [
+     "adicionar repo a filterRepoIds no reveal",
+     "adicionar host a visibleWorkspaceHostIds",
+     "desligar hide* aplicáveis",
+     "ligar showSleepingWorkspaces"
+    ],
+    "notes": "project-filter-reveal.ts é órfão (reachable_depth=null). handleRevealCurrent (WorktreeSidebar.tsx:382-418) só expande projeto/grupo colapsado; não ajusta filtros."
+   },
+   "par": [
+    "PAR-44"
+   ]
+  },
+  {
+   "id": "D03a-045",
+   "capability": "Filtrar a lista por hosts de execução visíveis",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/host-filtering.ts:13-97"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/listing/host-filtering.ts:14",
+     "src/components/sidebar/visible-worktree-host-scope.ts:14",
+     "src/components/sidebar/visible-worktrees.ts:367"
+    ],
+    "missing_behaviors": [
+     "filtro de host aplicado à lista pintada",
+     "filtro de project groups/folder workspaces por host efetivo no render"
+    ],
+    "notes": "A resolução de escopo de host é alcançável e usada pelo pipeline de atalhos, mas não há controles de escopo de host no sidebar pintado."
+   }
+  },
+  {
+   "id": "D03a-046",
+   "capability": "Restringir repos/grupos/folder workspaces ao escopo visível (host + dispositivo)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-host-visible-scope.ts:17-72"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/listing/host-filtering.ts:26-59",
+     "src/components/sidebar/visible-worktrees.ts:311-313"
+    ],
+    "missing_behaviors": [
+     "visibleReposForRows/visibleProjectGroupsForRows/visibleFolderWorkspacesForRows no render",
+     "filterFolderWorkspacesFromOtherDevices"
+    ],
+    "notes": "As funções de filtragem por host/dispositivo existem e são usadas no pipeline headless (rendered-sidebar-worktree-order.ts:21), não na lista pintada."
+   }
+  },
+  {
+   "id": "D03a-047",
+   "capability": "Derivar a lista visível de worktrees a partir das ids ordenadas",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-visible-worktrees.ts:23-138"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/visible-worktrees.ts:111",
+     "src/components/sidebar/visible-worktrees.ts:197",
+     "src/components/sidebar/visible-worktrees.ts:326",
+     "src/components/sidebar/WorktreeSidebar.tsx:533-599"
+    ],
+    "missing_behaviors": [
+     "computeVisibleWorktrees alimentando o render pintado",
+     "snapshot de worktreeIdsWithLiveAgent por epoch",
+     "agentSendTargetWorktreeId como forcedVisible"
+    ],
+    "notes": "computeVisibleWorktrees executa no fallback de atalhos (App.tsx:58->2456) e é um port fiel, mas o sidebar pintado usa getFilteredAndSortedWorktrees, não essa pipeline."
+   }
+  },
+  {
+   "id": "D03a-048",
+   "capability": "Forçar visível o alvo do seletor de envio de agente",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-agent-send-target.ts:6-64"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "use-agent-send-target",
+     "agentSendPopoverTargetMode",
+     "forcedVisibleWorktreeIds do alvo"
+    ],
+    "notes": "Não localizado após busca por use-agent-send-target, agentSendTargetWorktreeId, agentSendPopoverTargetMode."
+   }
+  },
+  {
+   "id": "D03a-049",
+   "capability": "Forçar expansão das seções que escondem o worktree alvo do seletor de agente",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-collapsed-groups.ts:17-121"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "use-collapsed-groups removendo group keys do alvo",
+     "getFolderWorkspaceRevealGroupKeys",
+     "panel pinned single-location"
+    ],
+    "notes": "Não localizado após busca por use-collapsed-groups, getFolderWorkspaceRevealGroupKeys."
+   }
+  },
+  {
+   "id": "D03a-050",
+   "capability": "Ordenação estável da lista (sort modes) com Smart, Recent e Manual",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-sort-order.ts:23-234"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:533-599",
+     "src/components/sidebar/smart-sort.ts:178",
+     "src/components/sidebar/visible-worktrees.ts:346-360"
+    ],
+    "missing_behaviors": [
+     "modo Smart com atenção por worktree",
+     "SORT_SETTLE_MS=3000 de debounce",
+     "persistência de ordem Smart por host",
+     "telemetria smart_sort_*",
+     "identidade estável dos ids"
+    ],
+    "notes": "O Hydra oferece sortBy name/recent/agent-activity (WorkspaceOptionsMenu 315-338) e smart-sort.ts existe no pipeline de atalhos, mas sem debounce de settle, telemetria ou persistência por host."
+   }
+  },
+  {
+   "id": "D03a-051",
+   "capability": "Preservar identidade de arrays iguais entre recomputos",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-reused-array-identity.ts:4-13"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/visible-worktrees.ts:266"
+    ],
+    "missing_behaviors": [
+     "reuseArrayIfEqual",
+     "identidade de array preservada entre recomputos"
+    ],
+    "notes": "Não localizado após busca por use-reused-array-identity, reuseArrayIfEqual. (O cache de ids publicados em visible-worktrees é outro mecanismo.)"
+   }
+  },
+  {
+   "id": "D03a-052",
+   "capability": "Montar o modelo completo de linhas do sidebar (grupos + seções de host)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-section-rows.ts:24-255"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:48",
+     "src/components/sidebar/host-section-rows.ts:166",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:56-104",
+     "src/components/sidebar/WorktreeList.tsx:463-556"
+    ],
+    "missing_behaviors": [
+     "addHostSectionRows envoltas no render",
+     "pending creations por useShallow",
+     "renderedSidebarRowKeys",
+     "handleReorderHostSections"
+    ],
+    "notes": "buildRows/addHostSectionRows existem e são usados pelo pipeline headless (ordenação Cmd+1-9), mas o modelo de linhas não é o que o sidebar pintado renderiza (WorktreeList monta nós de projeto)."
+   }
+  },
+  {
+   "id": "D03a-053",
+   "capability": "Emissão de chaves estáveis de linha para virtualização",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/render-row.ts:3-31",
+    "components/sidebar/worktree-list/listing/renderable-rows.ts:16-50"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-list/buildSidebarRows.ts:1"
+    ],
+    "missing_behaviors": [
+     "getRenderRowKey (host:/hdr:/lineage-group:/imported:/inbox:/pending:/folder-workspace:/wt:)",
+     "buildRenderableRows colapsando linhagem em lineage-group",
+     "rekey wt:<rowKey> <-> lineage-group"
+    ],
+    "notes": "buildSidebarRows.ts é órfão (reachable_depth=null) e não há buildRenderableRows/render-row.ts. WorktreeList usa key={wt.path}."
+   }
+  },
+  {
+   "id": "D03a-054",
+   "capability": "Ações dos cards de worktrees externas (importar/mostrar, manter escondido, silenciar inbox)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-external-worktree-cards.ts:21-206"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:761-799",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:40-45",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:31-35"
+    ],
+    "backend": [
+     "invoke('import_worktree') -> src-tauri/src",
+     "invoke('catalog_set_worktree_visibility') -> src-tauri/src",
+     "invoke('suppress_worktree_inbox') -> src-tauri/src"
+    ],
+    "missing_behaviors": [
+     "estado por repo pending/error/forceVisible",
+     "snapshot autoritativo com requireAuthoritative",
+     "confirmação de suppress por dialog"
+    ],
+    "notes": "As três ações existem com estados pending/error nas linhas de notice, mas sem forceVisible/snapshot autoritativo; o suppress é direto (sem SuppressExternalWorktreeInboxDialog)."
+   }
+  },
+  {
+   "id": "D03a-055",
+   "capability": "Chaves de criações pendentes com identidade cacheada",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts:3-39"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "selectPendingWorktreeCreationKeys",
+     "EMPTY_PENDING_WORKTREE_CREATION_KEYS congelado",
+     "cache WeakMap por slice"
+    ],
+    "notes": "Não localizado após busca por pending-worktree-creation-keys, selectPendingWorktreeCreationKeys."
+   }
+  },
+  {
+   "id": "D03a-056",
+   "capability": "Seleção dos caches de review necessários à lista",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/review-cache-inputs.ts:5-44"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/listing/review-cache-inputs.ts:15",
+     "src/components/sidebar/worktree-list/listing/review-cache-inputs.ts:22",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:52"
+    ],
+    "missing_behaviors": [
+     "caches de PR/hosted review alimentando o render dos cards"
+    ],
+    "notes": "selectWorktreeListReviewCacheInputs é um port fiel e alcançável, mas alimenta só o pipeline de ordenação de atalhos; os cards pintados recebem prByPath calculado em App.tsx."
+   }
+  },
+  {
+   "id": "D03a-057",
+   "capability": "Manter fresco o status de caminho de folder workspaces/project groups",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/listing/use-folder-path-statuses.ts:13-128"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:2063-2080",
+     "src/components/sidebar/WorktreeList.tsx:525"
+    ],
+    "backend": [
+     "invoke('path_exists') -> src-tauri/src"
+    ],
+    "missing_behaviors": [
+     "efeito sempre-montado useFolderWorkspacePathStatuses",
+     "cache key + rota por runtime environment",
+     "getFreshFolderWorkspacePathStatus ignorando negativo expirado",
+     "re-execução em mudança de repos/ssh/runtime"
+    ],
+    "notes": "O Hydra faz um probe one-shot path_exists por folder workspace em App.tsx:2063-2080 e passa missingFolderPaths como prop; não há o hook de frescor do Orca (cache key/expiração/rota por runtime) no sidebar."
+   }
+  },
+  {
+   "id": "D03a-058",
+   "capability": "Atalhos de teclado da lista: focar, navegar para cima/baixo, entrar no terminal",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-keyboard.ts:20-168"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:2633-2641"
+    ],
+    "missing_behaviors": [
+     "'sidebar.focusWorktreeList' focar o container de scroll",
+     "'worktree.navigateUp'/'worktree.navigateDown' keybindings",
+     "ignorar campos editáveis exceto .xterm-helper-textarea",
+     "no container: ArrowUp/Down/Enter/PageUp/Down/Home/End/espaço"
+    ],
+    "notes": "App.tsx tem Cmd+Shift+ArrowUp/Down = handleNavigateWorkspace(up/down), mas não há foco do container, keybindings configuráveis nem as teclas de container. keyboard-cycle.ts é órfão."
+   },
+   "par": [
+    "PAR-22"
+   ]
+  },
+  {
+   "id": "D03a-059",
+   "capability": "Navegação por teclado percorre apenas as rows realmente renderizadas",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-keyboard.ts:64-112"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-list/keyboard-cycle.ts:1"
+    ],
+    "missing_behaviors": [
+     "getCyclableWorktreeRows respeitando grupos/host/pinned/folder",
+     "activateAndRevealWorktree com histórico",
+     "rolar ao índice preferido da row"
+    ],
+    "notes": "keyboard-cycle.ts é órfão (reachable_depth=null); não há navegação por teclado pelas rows renderizadas."
+   }
+  },
+  {
+   "id": "D03a-060",
+   "capability": "Seleção múltipla de worktrees (clique, Cmd/Ctrl, Shift, prune e limpeza)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-selection.ts:17-156"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-card-model.ts:22-25"
+    ],
+    "missing_behaviors": [
+     "getWorktreeSelectionIntent (Cmd/Ctrl/Shift)",
+     "prune por render",
+     "limpar seleção por clique fora do container",
+     "selectForContextMenu preservando seleção",
+     "atalhos host-qualified para ids colididos"
+    ],
+    "notes": "Existe o tipo isMultiSelected e onSelectionGesture no controller do card (use-worktree-card-controller.ts:186-196), mas WorktreeList não passa onSelectionGesture: a seleção múltipla não está ligada ao sidebar pintado."
+   },
+   "par": [
+    "PAR-08"
+   ]
+  },
+  {
+   "id": "D03a-061",
+   "capability": "Publicar a ordem visível para atalhos Cmd/Ctrl+1–9",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-selection.ts:24-43",
+    "components/sidebar/worktree-list/navigation/use-selection.ts:132-146"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:216-246",
+     "src/components/sidebar/visible-worktrees.ts:273-277",
+     "src/components/sidebar/visible-worktrees.ts:380",
+     "src/App.tsx:2456"
+    ],
+    "notes": "WorktreeList publica setVisibleWorktreeIds/ShortcutTargets num layout effect e null no unmount; App.tsx:2456 consome getVisibleWorktreeShortcutTargets para Cmd/Ctrl+1-9. Ordem derivada das rows renderizadas."
+   }
+  },
+  {
+   "id": "D03a-062",
+   "capability": "Reveal de worktree: expandir ancestrais, rolar, destacar e iniciar rename",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-pending-reveal.ts:22-188",
+    "components/sidebar/worktree-list/navigation/pending-reveal-inputs.ts:22",
+    "components/sidebar/worktree-list/navigation/pending-reveal-inputs.ts:54-145",
+    "components/sidebar/worktree-list/navigation/pending-reveal-inputs.ts:147-155"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:382-418",
+     "src/components/sidebar/WorktreeSidebar.tsx:367-378"
+    ],
+    "missing_behaviors": [
+     "MAX_REVEAL_RETRIES=8 com scrollToIndex virtual",
+     "iniciar rename (setRenamingWorktreeId)",
+     "resolver outcome keep-pending quando o alvo some",
+     "expandir grupos de linhagem ancestrais"
+    ],
+    "notes": "handleRevealCurrent expande projeto/grupo colapsado, rola (scrollIntoView) e dá glow; não há retry virtual, rename nem expansão de linhagem."
+   }
+  },
+  {
+   "id": "D03a-063",
+   "capability": "Reveal de uma row arbitrária do sidebar (inclusive headers)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-pending-reveal.ts:190-304"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "reveal de headers (project-group:/project:/repo:)",
+     "toast 'Target no longer exists'",
+     "scrollToIndex + retry"
+    ],
+    "notes": "Não localizado após busca por revealSidebarRow, use-pending-reveal, sidebarRowMissing, 'Target no longer exists'."
+   }
+  },
+  {
+   "id": "D03a-064",
+   "capability": "Destaque temporário (glow) da row revelada",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts:5-63"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:367-378",
+     "src/components/sidebar/WorktreeList.tsx:373",
+     "src/components/sidebar/worktree-card-surface.tsx:83-86"
+    ],
+    "notes": "flashRevealedWorktree limpa timeout, seta null, reaplica no próximo rAF e remove após 1500ms; highlightedRevealPath chega ao card como revealHighlight (classes de glow). Mesmo efeito observável do Orca."
+   }
+  },
+  {
+   "id": "D03a-065",
+   "capability": "Pedido de \"revelar workspace atual\" e diálogo de confirmação de filtros",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-reveal-requests.ts:30-218"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SidebarFooter.tsx:40-51",
+     "src/components/sidebar/WorktreeSidebar.tsx:382-418"
+    ],
+    "missing_behaviors": [
+     "diálogo de confirmação 'Reveal hidden workspace?' quando filtros escondem o alvo",
+     "alternar groupBy para 'repo' quando a row é header",
+     "getKnownSidebarWorktreeById / reveal checks por identidade host-qualified",
+     "revalidação do alvo após await"
+    ],
+    "notes": "Há 'Reveal current' no footer que chama handleRevealCurrent (expande+rola+glow), sem diálogo de filtros."
+   },
+   "par": [
+    "PAR-44"
+   ]
+  },
+  {
+   "id": "D03a-066",
+   "capability": "aria-activedescendant apontando para a row ativa",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/active-descendant-option.ts:12-103"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "getActiveDescendantOptionId",
+     "preferência pela cópia fora do Pinned",
+     "mapeamento lineage-group/folder-workspace"
+    ],
+    "notes": "Não localizado após busca por active-descendant-option, getActiveDescendantOptionId, aria-activedescendant em src/components/sidebar."
+   }
+  },
+  {
+   "id": "D03a-067",
+   "capability": "Lookups de render rows (key, contenção, índice preferido)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/render-row-lookup.ts:10-135"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "getRenderRowSidebarKey",
+     "rowKeyMatchesRenderRow",
+     "renderRowContainsWorktree",
+     "findPreferredRenderRowIndexForWorktree"
+    ],
+    "notes": "Não localizado após busca por render-row-lookup, getRenderRowSidebarKey, findPreferredRenderRowIndex."
+   }
+  },
+  {
+   "id": "D03a-068",
+   "capability": "Rolar um elemento já montado até a área visível do container",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/mounted-row-reveal.ts:4-35"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:410-415"
+    ],
+    "missing_behaviors": [
+     "revealMountedWorktreeElement/SidebarRowElement com optionId",
+     "reportar o scroll emitido"
+    ],
+    "notes": "O reveal rola via document.querySelector('[data-worktree-path]').scrollIntoView — só funciona com o elemento montado e não usa option ids."
+   }
+  },
+  {
+   "id": "D03a-069",
+   "capability": "Superfície ativa primária vs secundária quando o worktree renderiza em duas seções",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/use-active-row.ts:9-101"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "use-active-row primário/secundário",
+     "invalidação do primário quando a row some"
+    ],
+    "notes": "Não localizado após busca por use-active-row, primaryActiveRowKey, ActiveSurfaceVariant. (O card tem data-worktree-card-active mas nada o marca como primary/secondary — worktree-card-surface.tsx:82-84.)"
+   }
+  },
+  {
+   "id": "D03a-070",
+   "capability": "Resolver worktree/folder workspace conhecido e sua existência",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/folder-reveal.ts:12-108"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "getKnownSidebarWorktreeById",
+     "sidebarWorkspaceStillExists",
+     "getFolderWorkspaceRevealGroupKeys"
+    ],
+    "notes": "Não localizado após busca por folder-reveal, getKnownSidebarWorktreeById, sidebarWorkspaceStillExists."
+   }
+  },
+  {
+   "id": "D03a-071",
+   "capability": "Keys de ancestrais que escondem uma row (project groups, repos, pinned)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/navigation/reveal-ancestors.ts:7-111"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "getProjectGroupRevealAncestorKeys",
+     "getPinnedWorktreeRevealCollapsedGroupKeys"
+    ],
+    "notes": "Não localizado após busca por reveal-ancestors, getPinnedWorktreeRevealCollapsedGroupKeys."
+   }
+  },
+  {
+   "id": "D03a-072",
+   "capability": "Linhas de aviso: criação em andamento, worktrees importadas escondidas, inbox de worktrees externas",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/notice-rows.tsx:11-126"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:287-325",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:130",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:39"
+    ],
+    "missing_behaviors": [
+     "PendingWorktreeRow(creationId)",
+     "canKeepImportedWorktreesHidden (placement repo-group e sem forceVisible)",
+     "frame virtual absoluto data-worktree-virtual-row*"
+    ],
+    "notes": "Duas das três linhas de notice são renderizadas (imported card e inbox externa) com pending/error; falta a row de criação pendente e a semântica de placement/forceVisible."
+   }
+  },
+  {
+   "id": "D03a-073",
+   "capability": "Indicador de path inexistente de folder workspace/project group",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx:14-47"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/FolderWorkspaceRow.tsx:44-58",
+     "src/components/sidebar/WorktreeList.tsx:525",
+     "src/App.tsx:2063-2080"
+    ],
+    "backend": [
+     "invoke('path_exists') -> src-tauri/src"
+    ],
+    "missing_behaviors": [
+     "isConfirmedStaleFolderPathStatus (cor destructive)",
+     "tooltip com título + descrição detalhada",
+     "rota por host/SSH/runtime do status"
+    ],
+    "notes": "O badge FolderX existe com title/aria-label 'Folder not found' e cor destructive, mas sem a distinção confirmed-stale/ambiguous-connection nem tooltip de descrição do Orca."
+   }
+  },
+  {
+   "id": "D03a-074",
+   "capability": "Header de seção de host com saúde, contagem e menu",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/HostSectionHeader.tsx:35-161"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/host-section-rows.ts:166"
+    ],
+    "missing_behaviors": [
+     "HostSectionHeader (ícone Server/ServerOff, saúde, chevron, menu)",
+     "badge de contagem por host com aria-label",
+     "alça de drag data-host-header-drag-id"
+    ],
+    "notes": "Não existe componente HostSectionHeader; addHostSectionRows é headless (ordenação). host-section-order.ts e sidebar-host-options.ts são alcançáveis mas nenhum header de host é renderizado."
+   }
+  },
+  {
+   "id": "D03a-075",
+   "capability": "Indicador de falha de scan de worktrees com retry e cópia de diagnóstico",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx:18-153"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [
+     "window.api.ui.writeClipboardText (Orca; equivalente Tauri: clipboard do webview)"
+    ],
+    "missing_behaviors": [
+     "RepoScanUnavailableIndicator com retry de fetchWorktrees",
+     "tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch)",
+     "Copy command / Copy diagnostics"
+    ],
+    "notes": "Não localizado após busca por RepoScanUnavailable, failureKind, xcode-license, 'Existing worktrees are kept until a scan succeeds'."
+   }
+  },
+  {
+   "id": "D03a-076",
+   "capability": "Header de seção (repo, project group, status, Pinned) com colapso, drag e ações",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/SectionHeader.tsx:46-403"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SectionHeader.tsx:68-203",
+     "src/components/sidebar/SectionHeader.tsx:208-370",
+     "src/components/sidebar/WorktreeList.tsx:250-285"
+    ],
+    "missing_behaviors": [
+     "sticky (z-20/z-30) nos headers",
+     "variantes status/Pinned",
+     "data-workspace-status-drop-target / data-workspace-pin-drop-target",
+     "RepoIconGlyph com cor do projeto / RepoForkIndicator",
+     "FolderPathStatusIndicator/RepoScanUnavailableIndicator",
+     "shouldIgnoreRepoHeaderToggle"
+    ],
+    "notes": "SectionHeader tem headers repo/group com colapso (data-repo-header-collapse-affordance), drag e ações, mas não há sticky, variantes status/Pinned, alvos de drop nem indicadores."
+   }
+  },
+  {
+   "id": "D03a-077",
+   "capability": "Card de folder workspace como linha virtual",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/folder-row.tsx:23-132"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/FolderWorkspaceRow.tsx:20-70",
+     "src/components/sidebar/WorktreeList.tsx:511-534"
+    ],
+    "missing_behaviors": [
+     "role=option com aria-selected/aria-current",
+     "PR display sintético (getFolderWorkspaceCardPrDisplay)",
+     "geometria por groupDepth/lineageDepth",
+     "desabilitar ativação quando path stale/ambiguous"
+    ],
+    "notes": "FolderWorkspaceRow é renderizado com status dot + path + badge de path ausente, mas usa role=button e não tem PR display nem geometria de indent por profundidade."
+   }
+  },
+  {
+   "id": "D03a-078",
+   "capability": "Guardas de evento dos headers (não armar drag/colapso por engano)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/header-event-guards.ts:4-31"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SectionHeader.tsx:110-165",
+     "src/components/sidebar/SectionHeader.tsx:284-306"
+    ],
+    "missing_behaviors": [
+     "stopRepoHeaderKeyboardToggle / shouldIgnoreRepoHeaderToggle como módulo",
+     "stopRepoHeaderMenuEvent do menu portalizado",
+     "stopNestedWorktreeCardBubble"
+    ],
+    "notes": "SectionHeader chama stopPropagation nos handlers de ação/collapse e o menu de contexto é portalizado, mas não há o módulo header-event-guards nem as guardas nomeadas."
+   }
+  },
+  {
+   "id": "D03a-079",
+   "capability": "Geometria de indentação e superfícies da árvore do sidebar",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/indentation.ts:1-243"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/indentation.ts:1",
+     "src/components/sidebar/WorktreeList.tsx:334-341",
+     "src/components/sidebar/SectionHeader.tsx:36-38",
+     "src/components/sidebar/worktree-card-presentation.tsx:6"
+    ],
+    "missing_behaviors": [
+     "LINEAGE_IMMEDIATE_PARENT_STEP / LINEAGE_CHILDREN_INLINE_OFFSET",
+     "NEW_CARD_STYLE_STATUS_LANE_EXTRA_PULLBACK / FLUSH_CARD_MIN_CONTENT_INSET",
+     "MAX_PROJECT_GROUP_HEADER_DEPTH=6",
+     "surface inset para folder-backed repo"
+    ],
+    "notes": "indentation.ts é usado pelo render pintado (surfaceInset/contentIndent/margins), mas faltam os passos de linhagem e as constantes de fold/scanned repo."
+   }
+  },
+  {
+   "id": "D03a-080",
+   "capability": "Linha de card de worktree com linhagem inline e estados visuais",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/item-row.tsx:28-262"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:347-410",
+     "src/components/sidebar/worktree-card-surface.tsx:62-105"
+    ],
+    "missing_behaviors": [
+     "linhagem inline (renderWorktreeLineageDescendants)",
+     "data-worktree-drag-id/group-key/group-index",
+     "data-scroll-reveal-highlight",
+     "onLineageToggle/hideRepoBadge (este último passa a true)",
+     "geometria de filho de linhagem/folder-backed"
+    ],
+    "notes": "O card pintado tem role/aria-selected via contexto, drag nativo (draggable), drop line, revealHighlight e isDragged opacity-30; faltam os atributos data-worktree-drag-* e a renderização inline de linhagem."
+   }
+  },
+  {
+   "id": "D03a-081",
+   "capability": "IDs de opção DOM e marcação imediata de ativo",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/option-dom.ts:1-67"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-card-surface.tsx:80-84",
+     "src/components/sidebar/use-worktree-card-controller.ts:164-180"
+    ],
+    "missing_behaviors": [
+     "getWorktreeOptionId (worktree-list-option-*)",
+     "getMountedWorktreeOptions",
+     "markSidebarWorktreeActiveImmediately (marcar cópias da mesma identidade de host)"
+    ],
+    "notes": "Há data-worktree-card-active primary/secondary atualizado no DOM e ativação imediata no clique (onImmediateActivate), mas não há option ids nem marcação multi-cópia host-qualified."
+   }
+  },
+  {
+   "id": "D03a-082",
+   "capability": "Menu de ações do project group (renomear/excluir)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/project-group-header-actions.tsx:24-80"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:1024-1075",
+     "src/components/sidebar/SectionHeader.tsx:172-183"
+    ],
+    "missing_behaviors": [
+     "stopRepoHeaderMenuEvent no menu portalizado",
+     "hostId do dono do grupo repassado a rename/delete"
+    ],
+    "notes": "O menu de contexto do grupo (rename/delete) é renderizado com overlay outside-dismiss e o click é contido; falta o bloqueio por tipo de evento do menu portalizado e o roteamento por host dono."
+   }
+  },
+  {
+   "id": "D03a-083",
+   "capability": "Botão de criar workspace em project group folder-backed",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/project-group-header-actions.tsx:82-136"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SectionHeader.tsx:185-198",
+     "src/components/sidebar/WorktreeList.tsx:495-511"
+    ],
+    "missing_behaviors": [
+     "aria-disabled/disabled quando o path do grupo é confirmed-stale ou ambiguous-connection",
+     "tooltip com a descrição do path status"
+    ],
+    "notes": "O botão + de criar workspace existe no header de grupo (onOpenNewWorkspace), habilitado sempre; não há bloqueio por path status."
+   }
+  },
+  {
+   "id": "D03a-084",
+   "capability": "Menu de ações de projeto no header de repo",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx:48-176"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:889-1022",
+     "src/components/sidebar/SectionHeader.tsx:157-170"
+    ],
+    "missing_behaviors": [
+     "Change Project Icon",
+     "Hide/Show non-Hydra worktrees no menu",
+     "submenu 'Move to group' com grupo atual desabilitado",
+     "separador antes de Remove Project"
+    ],
+    "notes": "O menu de projeto tem Project Settings, Set Base Worktrees Path, Copy Project Path, Manage Worktree Visibility, New Workspace, Move to (New) Group, Remove from Group e Remove Project — conjunto diferente do Orca."
+   }
+  },
+  {
+   "id": "D03a-085",
+   "capability": "Botão de criar workspace no header de repo (com estado desabilitado)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx:178-246"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/SectionHeader.tsx:200-215",
+     "src/components/sidebar/WorktreeList.tsx:250-285"
+    ],
+    "missing_behaviors": [
+     "estado desabilitado com span tabIndex=0 + botão interno disabled",
+     "tooltip com createState.tooltip"
+    ],
+    "notes": "O botão + do header de repo existe (onOpenNewWorkspace) mas não tem estado desabilitado nem tooltip de estado de criação."
+   }
+  },
+  {
+   "id": "D03a-086",
+   "capability": "Diálogos de project group e de supressão do inbox externo",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/ProjectGroupDialogs.tsx:12-118"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:1152-1170",
+     "src/components/sidebar/ProjectGroupNameDialog.tsx:1",
+     "src/components/sidebar/ProjectGroupDeleteDialog.tsx:1"
+    ],
+    "missing_behaviors": [
+     "SuppressExternalWorktreeInboxDialog (confirmação de suppress com onOpenRecovery)",
+     "toggle removeContainedProjects com contagem/nomes"
+    ],
+    "notes": "Nome/delete de grupo usam dialog; o suppress de inbox é invocado direto (WorktreeSidebar.tsx:792-799) sem dialog de confirmação."
+   }
+  },
+  {
+   "id": "D03a-087",
+   "capability": "Fluxos de criação/renomeação/exclusão de project groups",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/use-project-group-dialogs.ts:10-206"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:1220-1230",
+     "src/components/sidebar/WorktreeSidebar.tsx:1152-1170"
+    ],
+    "missing_behaviors": [
+     "toasts de falha (Failed to rename/delete group etc.)",
+     "deleteProjectGroupWithContainedProjects com removeContainedProjects",
+     "roteamento por host dono do grupo"
+    ],
+    "notes": "Os fluxos create/move/remove/rename/delete são despachados por CustomEvent e tratados em App.tsx:1223-1277, mas sem os toasts/contagem de remoção nem roteamento por host do Orca."
+   }
+  },
+  {
+   "id": "D03a-088",
+   "capability": "Dispatch de renderização por tipo de linha virtual",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/rows/virtual-row-dispatch.tsx:34-258"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "renderWorktreeVirtualRow por tipo (host-header/header/lineage-group/notices/folder-workspace/item)",
+     "frames virtuais com transform de preview offset"
+    ],
+    "notes": "Não existe dispatch de linhas virtuais; WorktreeList monta JSX por tipo de nó. virtual-row-dispatch.tsx não existe."
+   }
+  },
+  {
+   "id": "D03a-089",
+   "capability": "Viewport virtualizado da lista com semântica de listbox e teclado",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:32-373"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "viewport role=listbox/aria-multiselectable/aria-activedescendant",
+     "overflowAnchor:none + TanStack Virtual",
+     "onTouchMove/onWheel/onPointerDown de scrollbar",
+     "WorktreeListScrollToTopButton"
+    ],
+    "notes": "A lista pintada é um <div className='space-y-1'> dentro de um container overflow-y-auto (WorktreeSidebar.tsx:700-705); não há virtualização nem semântica de listbox. Não há @tanstack/react-virtual no sidebar."
+   }
+  },
+  {
+   "id": "D03a-090",
+   "capability": "Limpeza do viewport ao desmontar o scroll root",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:255-278"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "cancelar frames de reveal/highlight e clearWorktreeDrag no unmount do scroll root"
+    ],
+    "notes": "Não há viewport virtual a limpar; nenhum efeito de unmount de scroll root. Não localizado VirtualizedWorktreeViewport."
+   }
+  },
+  {
+   "id": "D03a-091",
+   "capability": "Distinguir input direto do usuário de scroll programático",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:279-294"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "detecção de pointerdown na faixa da scrollbar",
+     "markDirectScrollInput em onScroll/touch/wheel"
+    ],
+    "notes": "Não localizado após busca por markDirectScrollInput, scrollbar width input, offsetWidth-clientWidth em src/components/sidebar."
+   }
+  },
+  {
+   "id": "D03a-092",
+   "capability": "Indicadores de drop flutuantes (linha de inserção)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/drop-indicators.tsx:5-36"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-card-surface.tsx:95-105",
+     "src/components/sidebar/SectionHeader.tsx:254-263"
+    ],
+    "missing_behaviors": [
+     "linhas de indicador para reorder de repo header (dragIndicatorY)",
+     "linha para project group header",
+     "linha para host section (z-40)"
+    ],
+    "notes": "O Hydra só desenha linhas de 2px no card alvo de worktree e no header de repo (data-hydra-drop-indicator); não há indicadores de host/group header dedicados."
+   }
+  },
+  {
+   "id": "D03a-093",
+   "capability": "Alternar grupo preservando a âncora de scroll",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/use-group-toggle.ts:6-30"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:326-343"
+    ],
+    "missing_behaviors": [
+     "VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT antes do toggle",
+     "getLineageToggleHandler estável por groupKey"
+    ],
+    "notes": "toggleProjectCollapse/toggleGroupCollapse só alternam o Set de colapso, sem registrar âncora de scroll (necessário só com virtualização)."
+   },
+   "par": [
+    "PAR-82"
+   ]
+  },
+  {
+   "id": "D03a-094",
+   "capability": "Detecção de \"hard scroll up\" para oferecer o botão de ir ao topo",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/hard-scroll-up.ts:6-338"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-list/hard-scroll-up.ts:1"
+    ],
+    "missing_behaviors": [
+     "HARD_SCROLL_UP thresholds",
+     "normalizeWheelDeltaY",
+     "reducers de wheel/scroll/idle"
+    ],
+    "notes": "hard-scroll-up.ts é órfão (reachable_depth=null); não há detecção de scroll-up forte."
+   }
+  },
+  {
+   "id": "D03a-095",
+   "capability": "Botão \"ir ao topo\" com escuta de wheel/scroll/ponteiro e auto-hide",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts:12-231"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "useWorktreeListScrollToTop",
+     "listeners wheel/scroll/pointerdown + idle auto-hide",
+     "scrollToTop com supressão de 120ms"
+    ],
+    "notes": "Não localizado após busca por use-scroll-to-top, ScrollToTopButton, showScrollToTop em src/components/sidebar."
+   }
+  },
+  {
+   "id": "D03a-096",
+   "capability": "Sincronizar medição das rows montadas e publicar slots sticky",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/use-row-measurement.ts:19-124"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "pruneStaleVirtualRowElementCache",
+     "activeStickyHeaderIndex/activeStickyHostIndex",
+     "useVirtualizedScrollAnchor",
+     "useVirtualRowRemovalAnimation"
+    ],
+    "notes": "Não localizado após busca por use-row-measurement, useVirtualizedScrollAnchor, activeStickyHeaderIndex."
+   }
+  },
+  {
+   "id": "D03a-097",
+   "capability": "Animação de remoção/reordenação de rows virtuais",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/use-row-removal-animation.ts:7-121"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "WORKTREE_ROW_REMOVAL_ANIMATION_MS=180",
+     "buildVirtualRowRemovalMotions",
+     "element.animate translate + prefers-reduced-motion"
+    ],
+    "notes": "Não localizado após busca por use-row-removal-animation, buildVirtualRowRemovalMotions, WORKTREE_ROW_REMOVAL_ANIMATION_MS."
+   },
+   "par": [
+    "PAR-52"
+   ]
+  },
+  {
+   "id": "D03a-098",
+   "capability": "Janelas de supressão de correção de scroll",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:10-90"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "USER_SCROLL_MEASUREMENT_ADJUSTMENT_SUPPRESS_MS=500 / EXPANDING=300",
+     "markScrollMovement/markRevealScroll/shouldSkipScrollAnchorRestore",
+     "SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT"
+    ],
+    "notes": "Não localizado após busca por use-scroll-suppression, markRevealScroll, SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT."
+   }
+  },
+  {
+   "id": "D03a-099",
+   "capability": "Configuração do virtualizer TanStack com guardas de identidade de row",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/use-virtualizer.ts:23-157"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "useVirtualizer TanStack (overscan=10, gap, scrollPaddingStart, isScrollingResetDelay)",
+     "getItemKey/getRenderRowKey, measureElement, rangeExtractor"
+    ],
+    "notes": "Não há TanStack Virtual no sidebar; a lista é mapeada diretamente. Não localizado use-virtualizer."
+   }
+  },
+  {
+   "id": "D03a-100",
+   "capability": "Reportar rows visíveis ao coordenador de refresh de PR/CI",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:11-134"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "reportVisibleGitHubPRRefreshCandidates",
+     "janela start/end do viewport",
+     "dedupe por geração + DOCUMENT_HIDDEN_KEY"
+    ],
+    "notes": "Não localizado após busca por use-visible-review-refresh, reportVisibleGitHubPRRefreshCandidates. (App.tsx:2005-2023 faz pr_status por repo/branch, não por rows visíveis.)"
+   }
+  },
+  {
+   "id": "D03a-101",
+   "capability": "Métricas, keys e sticky headers das rows virtuais",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/virtual-rows.ts:7-334"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "constantes de altura por tipo de row",
+     "buildLineageRowRekeyMap",
+     "getStickyHeaderIndexes com dois tiers",
+     "extractWorktreeVirtualRowIndexes/getWorktreeVirtualRowTransform"
+    ],
+    "notes": "Não localizado após busca por virtual-rows, getStickyHeaderIndexes, buildLineageRowRekeyMap, HOST_STICKY_PINNED_HEIGHT."
+   }
+  },
+  {
+   "id": "D03a-102",
+   "capability": "Montar o contexto de render das rows virtuais",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/virtual-row-context.ts:20-158"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "virtual-row-context empacotando renderRows/refs/actions",
+     "getWorktreeVisibilityDefaults por host dono"
+    ],
+    "notes": "Não localizado após busca por virtual-row-context, getWorktreeVisibilityDefaults, worktreeCardProperties."
+   }
+  },
+  {
+   "id": "D03a-103",
+   "capability": "Contrato de props do viewport virtualizado",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/viewport/viewport-props.ts:27-106"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "missing_behaviors": [
+     "viewport-props.ts contrato de props do viewport virtualizado"
+    ],
+    "notes": "Não localizado após busca por viewport-props, VirtualizedWorktreeViewport em src/components/sidebar."
+   }
+  },
+  {
+   "id": "D03a-104",
+   "capability": "Resolver a PR de um worktree para o lane de PR (escopo repo/repo-legado/path-legado/SSH/runtime)",
+   "orca_evidence": [
+    "components/sidebar/worktree-list/grouping/group-keys.ts:108-167"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/grouping/group-keys.ts:108",
+     "src/components/sidebar/pr-display.tsx:1",
+     "src/components/sidebar/WorktreeList.tsx:351-353"
+    ],
+    "missing_behaviors": [
+     "precedência repo-scoped sobre chaves legadas",
+     "respeitar isGitHubPRSuppressed",
+     "entradas escopadas por connectionId SSH"
+    ],
+    "notes": "getPRGroupKey (estado merged/closed/draft/sem PR) é um port alcançável, mas só alimenta a ordenação headless; o card pintado recebe prByPath calculado em App.tsx (pr_status por repo/branch, sem supressão/escopo SSH)."
+   }
+  }
+ ],
+ "summary": {
+  "parity": 14,
+  "partial": 39,
+  "missing": 51,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
+}

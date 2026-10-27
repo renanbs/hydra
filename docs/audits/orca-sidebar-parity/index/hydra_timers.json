@@ -1,0 +1,67 @@
+[
+ {
+  "file": "src/components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 49,
+  "text": "copiedResetTimerRef.current = window.setTimeout(() => {"
+ },
+ {
+  "file": "src/components/sidebar/CacheTimer.tsx",
+  "line": 18,
+  "text": "const interval = window.setInterval(() => {"
+ },
+ {
+  "file": "src/components/sidebar/ParentPickerModal.tsx",
+  "line": 37,
+  "text": "requestAnimationFrame(() => {"
+ },
+ {
+  "file": "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
+  "line": 28,
+  "text": "requestAnimationFrame(() => {"
+ },
+ {
+  "file": "src/components/sidebar/ProjectGroupNameDialog.tsx",
+  "line": 33,
+  "text": "requestAnimationFrame(() => {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "line": 65,
+  "text": "openTimerRef.current = window.setTimeout(() => {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "line": 97,
+  "text": "closeTimerRef.current = window.setTimeout(() => {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "line": 107,
+  "text": "setTimeout(() => setCopied(false), 1500);"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 259,
+  "text": "const timer = setInterval(scanPorts, 8000);"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 373,
+  "text": "requestAnimationFrame(() => {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 375,
+  "text": "highlightTimerRef.current = window.setTimeout(() => {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 410,
+  "text": "requestAnimationFrame(() => {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 72,
+  "text": "requestAnimationFrame(() => {"
+ }
+]

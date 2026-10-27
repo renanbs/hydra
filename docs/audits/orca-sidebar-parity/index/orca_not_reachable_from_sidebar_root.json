@@ -1,0 +1,670 @@
+[
+ {
+  "file": "components/sidebar/DeleteWorktreeDialog.tsx",
+  "loc": 427,
+  "importers": [
+   "app-shell/AppRootSurfaces.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoDialog.tsx",
+  "loc": 406,
+  "importers": [
+   "app-shell/AppRootSurfaces.tsx",
+   "components/NewWorkspaceComposerModal.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostDialog.tsx",
+  "loc": 374,
+  "importers": [
+   "components/NewWorkspaceComposerCard.tsx",
+   "components/sidebar/AddRepoHostSelectorSlot.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "loc": 343,
+  "importers": [
+   "components/sidebar/AddRepoDialogStepContent.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "loc": 325,
+  "importers": [
+   "components/sidebar/AddRepoCloneStep.tsx",
+   "components/sidebar/AddRepoRemoteStep.tsx",
+   "components/sidebar/AddRepoServerStartStep.tsx",
+   "components/sidebar/CreateProjectLocationField.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/useAddRepoLocalFolderFlow.ts",
+  "loc": 314,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoServerStartStep.tsx",
+  "loc": 306,
+  "importers": [
+   "components/sidebar/AddRepoDialogStepContent.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/useCreateProjectDefaults.ts",
+  "loc": 304,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/useAddRepoNestedImportFlow.ts",
+  "loc": 298,
+  "importers": [
+   "components/sidebar/useAddRepoNestedReviewController.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/remote-file-browser-helpers.ts",
+  "loc": 296,
+  "importers": [
+   "components/sidebar/RemoteFileBrowser.tsx",
+   "components/sidebar/RemoteFileBrowserEntryList.tsx",
+   "components/sidebar/remote-file-browser-path-preview-resolver.ts",
+   "components/sidebar/use-remote-file-browser-filter-key-commands.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+  "loc": 276,
+  "importers": [
+   "components/sidebar/AddRemoteHostDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.tsx",
+  "loc": 274,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/project-added-default-checkout.ts",
+  "loc": 274,
+  "importers": [
+   "components/sidebar/AddProjectFromFolderDialog.tsx",
+   "components/sidebar/ProjectAddedDialog.tsx",
+   "components/sidebar/use-complete-git-repo-add.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "loc": 271,
+  "importers": [
+   "components/sidebar/AddRemoteHostServerFormPanel.tsx",
+   "components/sidebar/AddRemoteHostSshFormPanel.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoCreateStep.tsx",
+  "loc": 271,
+  "importers": [
+   "components/sidebar/AddRepoDialogStepContent.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/useCreateRepo.ts",
+  "loc": 268,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/add-remote-host-ssh-actions.ts",
+  "loc": 267,
+  "importers": [
+   "components/sidebar/AddRemoteHostDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/folder-workspace-composer-submit.ts",
+  "loc": 267,
+  "importers": [
+   "hooks/composer-state/folder-submit-orchestration.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.tsx",
+  "loc": 265,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/worktree-list-lineage-card-test-harness.ts",
+  "loc": 253,
+  "importers": [
+   "components/sidebar/worktree-list-lineage-store-state.ts",
+   "components/sidebar/worktree-list-pinned-store-state.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoHostSelector.tsx",
+  "loc": 235,
+  "importers": [
+   "components/sidebar/AddRepoHostSelectorSlot.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+  "loc": 234,
+  "importers": [
+   "components/sidebar/AddRepoDialogStepContent.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoRemoteStep.tsx",
+  "loc": 226,
+  "importers": [
+   "components/sidebar/AddRepoDialogStepContent.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddProjectFromFolderDialog.tsx",
+  "loc": 220,
+  "importers": [
+   "app-shell/AppRootSurfaces.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoCloneStep.tsx",
+  "loc": 219,
+  "importers": [
+   "components/sidebar/AddRepoDialogStepContent.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/useAddRepoCloneFlow.ts",
+  "loc": 209,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-path-preview.ts",
+  "loc": 208,
+  "importers": [
+   "components/sidebar/RemoteFileBrowser.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/useAddRepoServerPathFlow.ts",
+  "loc": 208,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/PreservedBranchBatchReviewDialog.tsx",
+  "loc": 188,
+  "importers": [
+   "components/sidebar/PreservedBranchBatchReviewModal.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-selection.ts",
+  "loc": 188,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx",
+   "components/sidebar/AddRepoHostSelectorSlot.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/NonGitFolderDialog.tsx",
+  "loc": 170,
+  "importers": [
+   "app-shell/AppRootSurfaces.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/CreateProjectLocationField.tsx",
+  "loc": 168,
+  "importers": [
+   "components/new-workspace/SetProjectLocationDialog.tsx",
+   "components/sidebar/AddRepoCreateStep.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/remote-file-browser-path-preview-resolver.ts",
+  "loc": 164,
+  "importers": [
+   "components/sidebar/RemoteFileBrowserEntryList.tsx",
+   "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+   "components/sidebar/use-remote-file-browser-path-preview.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/worktree-list-lineage-store-state.ts",
+  "loc": 160,
+  "importers": []
+ },
+ {
+  "file": "components/sidebar/useAddRepoNestedReviewState.ts",
+  "loc": 151,
+  "importers": [
+   "components/sidebar/useAddRepoNestedReviewController.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeTargetPreview.tsx",
+  "loc": 146,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/folder-workspace-composer-path-status.ts",
+  "loc": 138,
+  "importers": [
+   "hooks/composer-state/runtime-target-selection.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/hovered-workspace-delete.ts",
+  "loc": 133,
+  "importers": [
+   "app-shell/app-command-handlers.ts",
+   "hooks/ipc-events/workspace-shortcut-ipc-bridge.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowserEntryList.tsx",
+  "loc": 126,
+  "importers": [
+   "components/sidebar/RemoteFileBrowser.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/ProjectAddedDialog.tsx",
+  "loc": 123,
+  "importers": [
+   "app-shell/AppRootSurfaces.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/add-repo-local-start-actions.ts",
+  "loc": 121,
+  "importers": [
+   "components/sidebar/AddRepoStartSteps.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+  "loc": 120,
+  "importers": [
+   "components/sidebar/RemoteFileBrowser.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/folder-workspace-composer-helpers.ts",
+  "loc": 107,
+  "importers": [
+   "components/NewWorkspaceComposerModal.tsx",
+   "components/sidebar/folder-workspace-composer-submit.ts",
+   "hooks/composer-state/full-creation-execution.ts",
+   "hooks/composer-state/github-provider-selection.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/SshTargetRow.tsx",
+  "loc": 103,
+  "importers": [
+   "components/sidebar/AddRepoRemoteStep.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/create-project-defaults.ts",
+  "loc": 103,
+  "importers": [
+   "components/sidebar/AddRepoCreateStep.tsx",
+   "components/sidebar/AddRepoDialogStepContent.tsx",
+   "components/sidebar/useCreateProjectDefaults.ts",
+   "web/preload-api/web-repositories-api.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-test-fixtures.ts",
+  "loc": 102,
+  "importers": []
+ },
+ {
+  "file": "components/sidebar/use-delete-worktree-status-hydration.ts",
+  "loc": 101,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowserBreadcrumbs.tsx",
+  "loc": 93,
+  "importers": [
+   "components/sidebar/RemoteFileBrowser.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/add-repo-existing-workspaces-telemetry.ts",
+  "loc": 93,
+  "importers": [
+   "components/sidebar/use-complete-git-repo-add.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/folder-workspace-agent-startup.ts",
+  "loc": 92,
+  "importers": [
+   "components/sidebar/folder-workspace-composer-submit.ts",
+   "components/sidebar/folder-workspace-composer-submit.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/delete-worktree-dialog-copy.ts",
+  "loc": 91,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx",
+   "components/sidebar/delete-worktree-dirty-change-counts.ts",
+   "components/sidebar/use-delete-worktree-status-hydration.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/delete-worktree-dialog-force-delete.ts",
+  "loc": 82,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/useAddRepoNestedReviewController.ts",
+  "loc": 82,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/worktree-list-pinned-store-state.ts",
+  "loc": 82,
+  "importers": []
+ },
+ {
+  "file": "components/sidebar/use-complete-git-repo-add.ts",
+  "loc": 81,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostServerFormPanel.tsx",
+  "loc": 76,
+  "importers": [
+   "components/sidebar/AddRemoteHostDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostSshFormPanel.tsx",
+  "loc": 75,
+  "importers": [
+   "components/sidebar/AddRemoteHostDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeLineageNotice.tsx",
+  "loc": 73,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/use-add-repo-hosted-controller.ts",
+  "loc": 72,
+  "importers": [
+   "components/NewWorkspaceComposerModal.tsx",
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/delete-worktree-dirty-change-counts.ts",
+  "loc": 69,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx",
+   "components/sidebar/use-delete-worktree-status-hydration.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeDialogFooter.tsx",
+  "loc": 63,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/remote-file-browser-drive-paths.ts",
+  "loc": 62,
+  "importers": [
+   "components/sidebar/RemoteFileBrowserBreadcrumbs.tsx",
+   "components/sidebar/remote-file-browser-helpers.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/use-add-repo-remote-nested-scan.ts",
+  "loc": 62,
+  "importers": [
+   "components/sidebar/useAddRepoNestedReviewController.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/worktree-list-lineage-card-test-fixtures.ts",
+  "loc": 62,
+  "importers": [
+   "components/sidebar/worktree-list-lineage-store-state.ts",
+   "components/sidebar/worktree-list-pinned-store-state.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-listing.ts",
+  "loc": 58,
+  "importers": [
+   "components/sidebar/RemoteFileBrowser.tsx",
+   "components/sidebar/remote-file-browser-path-preview-resolver.ts",
+   "components/sidebar/use-remote-file-browser-path-preview.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/worktree-list-card-markup-queries.ts",
+  "loc": 57,
+  "importers": []
+ },
+ {
+  "file": "components/sidebar/worktree-name-suggestions.ts",
+  "loc": 56,
+  "importers": [
+   "hooks/composer-state/derived-composer-state.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/complete-nested-folder-open.ts",
+  "loc": 55,
+  "importers": [
+   "components/sidebar/useAddRepoNestedImportFlow.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/add-repo-store-upsert.ts",
+  "loc": 54,
+  "importers": [
+   "components/sidebar/AddProjectFromFolderDialog.tsx",
+   "components/sidebar/AddRepoSteps.tsx",
+   "components/sidebar/NonGitFolderDialog.tsx",
+   "components/sidebar/useAddRepoCloneFlow.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/PreservedBranchBatchReviewModal.tsx",
+  "loc": 52,
+  "importers": [
+   "app-shell/AppRootSurfaces.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeWarningPanels.tsx",
+  "loc": 51,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/clone-defaults.ts",
+  "loc": 51,
+  "importers": [
+   "components/sidebar/useAddRepoCloneFlow.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/add-repo-skip-finalization.ts",
+  "loc": 50,
+  "importers": [
+   "components/sidebar/project-added-default-checkout.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/delete-worktree-preference-toast.ts",
+  "loc": 50,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/use-confirmed-worktree-delete-targets.ts",
+  "loc": 45,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/delete-worktree-lineage-delete-all.ts",
+  "loc": 43,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx",
+  "loc": 41,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoStepIndicator.tsx",
+  "loc": 39,
+  "importers": [
+   "components/sidebar/AddRepoDialogChrome.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogChrome.tsx",
+  "loc": 36,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx",
+  "loc": 36,
+  "importers": [
+   "components/sidebar/DeleteWorktreeLineageNotice.tsx",
+   "components/sidebar/DeleteWorktreeTargetPreview.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/add-repo-runtime-owner.ts",
+  "loc": 35,
+  "importers": [
+   "components/sidebar/AddProjectFromFolderDialog.tsx",
+   "components/sidebar/AddRepoSteps.tsx",
+   "components/sidebar/NonGitFolderDialog.tsx",
+   "components/sidebar/complete-nested-folder-open.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeDialogDescription.tsx",
+  "loc": 33,
+  "importers": [
+   "components/sidebar/DeleteWorktreeDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.ts",
+  "loc": 33,
+  "importers": [
+   "components/sidebar/add-remote-host-ssh-actions.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-change-reset.ts",
+  "loc": 32,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/track-nested-folder-open.ts",
+  "loc": 30,
+  "importers": [
+   "components/sidebar/complete-nested-folder-open.ts"
+  ]
+ },
+ {
+  "file": "components/sidebar/AddRepoHostSelectorSlot.tsx",
+  "loc": 28,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/add-repo-browse-authority.ts",
+  "loc": 24,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/sidebar-count-badge.tsx",
+  "loc": 24,
+  "importers": []
+ },
+ {
+  "file": "components/sidebar/project-order-manual-default-notice-visibility.ts",
+  "loc": 15,
+  "importers": []
+ },
+ {
+  "file": "components/sidebar/add-repo-dialog-types.ts",
+  "loc": 14,
+  "importers": [
+   "components/sidebar/AddRepoDialog.tsx",
+   "components/sidebar/AddRepoDialogChrome.tsx",
+   "components/sidebar/AddRepoDialogStepContent.tsx",
+   "components/sidebar/AddRepoStepIndicator.tsx"
+  ]
+ },
+ {
+  "file": "components/sidebar/add-repo-host-availability.ts",
+  "loc": 12,
+  "importers": [
+   "components/sidebar/AddRepoHostSelector.tsx",
+   "components/sidebar/use-add-repo-host-selection.ts"
+  ]
+ }
+]

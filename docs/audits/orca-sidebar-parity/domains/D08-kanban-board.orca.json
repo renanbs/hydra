@@ -1,0 +1,2148 @@
+{
+  "domain": "D08-kanban-board",
+  "rows": [
+    {
+      "id": "D08-001",
+      "capability": "Alternar abertura e fechamento do painel Kanban via evento global ou ação de UI com telemetria",
+      "surface": "painel Kanban / companion drawer",
+      "trigger": "evento de janela orca:toggle-workspace-board, botão de abertura ou toggleWorkspaceBoard()",
+      "behaviors": [
+        "Gerencia o estado de abertura workspaceBoardOpen e renderedOpen",
+        "Registra interação com a feature workspace-board no store ao abrir",
+        "Fecha e limpa estados de pré-visualização de drag e menus ativos",
+        "Escuta evento global orca:toggle-workspace-board na janela"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.recordFeatureInteraction"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useWorkspaceBoardPanel.ts:50",
+        "components/sidebar/useWorkspaceBoardPanel.ts:63",
+        "components/sidebar/useWorkspaceBoardPanel.ts:79",
+        "components/sidebar/useWorkspaceBoardPanel.ts:160"
+      ],
+      "tests": [
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:72 :: [describe] useWorkspaceBoardPanel",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:85 :: [it] toggles the board and records the feature interaction when opened",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:102 :: [it] toggles the board from the shortcut bridge event"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-002",
+      "capability": "Pré-visualização e solidificação do painel Kanban a partir de drag da barra lateral",
+      "surface": "painel Kanban / companion drawer",
+      "trigger": "arrasto de worktree da sidebar sobre o Kanban (previewWorkspaceBoardFromDrag / solidifyWorkspaceBoardFromDrag / cancelWorkspaceBoardDragPreview)",
+      "behaviors": [
+        "Ativa workspaceBoardDragPreviewOpen sem registrar interação de feature no store até que seja solidificado",
+        "Solidifica a abertura do painel quando o drag é completado, convertendo preview em abertura definitiva e gravando telemetria",
+        "Cancela a pré-visualização se o drag for abortado ou sair da área sem drop"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.recordFeatureInteraction"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useWorkspaceBoardPanel.ts:87",
+        "components/sidebar/useWorkspaceBoardPanel.ts:95",
+        "components/sidebar/useWorkspaceBoardPanel.ts:109"
+      ],
+      "tests": [
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:122 :: [it] renders a drag preview without recording an open interaction",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:133 :: [it] cancels an uncommitted drag preview",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:144 :: [it] solidifies a drag preview and keeps the board open after drag cleanup",
+        "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:248 :: [it] preserves drag preview presentation when the preview becomes a full board"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-003",
+      "capability": "Fechamento por tecla Escape no nível do documento com respeito a overlays e campos editáveis",
+      "surface": "document / painel Kanban",
+      "trigger": "tecla Escape no documento em fase de captura (true)",
+      "behaviors": [
+        "Intercepta Escape em fase de captura no document quando o board está aberto",
+        "Ignora Escape quando o menu do board estiver aberto (workspaceBoardMenuOpen)",
+        "Ignora Escape quando o foco estiver em campo editável interno do sheet (isWorkspaceBoardEditableTarget)",
+        "Ignora Escape quando houver overlays bloqueantes abertos (dropdown-menu, context-menu, popover, dialog, alertdialog, menu, listbox)",
+        "Não é bloqueado por tooltips não-interativos (data-slot=tooltip-content)",
+        "Fecha o painel e previne o evento padrão quando elegível"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useWorkspaceBoardPanel.ts:18",
+        "components/sidebar/useWorkspaceBoardPanel.ts:130",
+        "components/sidebar/useWorkspaceBoardPanel.ts:135"
+      ],
+      "tests": [
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:157 :: [it] keeps the board open on Escape while a nested board menu is open",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:172 :: [it] lets Escape close the board while non-interactive tooltip content is open",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:185 :: [it] lets Escape close the board when the board sheet itself is the open dialog",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:199 :: [it] keeps the board open on Escape while an interactive popover is open",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:212 :: [it] defers Escape to a text field inside the board",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:226 :: [it] still closes the board on Escape from a text field outside it",
+        "components/sidebar/useWorkspaceBoardPanel.test.tsx:236 :: [it] keeps the board open on Escape while a nested dialog is open"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-004",
+      "capability": "Descarte do board por interação fora da área (outside dismiss) preservando aberturas de menus e modais",
+      "surface": "document / Sheet content do Kanban",
+      "trigger": "evento pointerdown no documento fora do sheet content",
+      "behaviors": [
+        "Calcula o bounding rect do sheet content e descarta o board se o clique ocorrer à direita do painel",
+        "Preserva abertura se preserveOpenForMenu for verdadeiro",
+        "Preserva abertura para elementos declarados em isWorkspaceBoardKeepOpenTarget (gatilhos, popovers, context menus, dropdowns, dialogs, Sonner toasts e contextual tour panels)",
+        "Ignora cliques à esquerda da borda viva do sheet"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-outside-dismiss.ts:4",
+        "components/sidebar/use-workspace-kanban-outside-dismiss.ts:24",
+        "components/sidebar/use-workspace-kanban-outside-dismiss.ts:33",
+        "components/sidebar/WorkspaceKanbanSheet.tsx:30"
+      ],
+      "tests": [
+        "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts:32 :: [describe] workspace kanban outside dismiss keep-open targets",
+        "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts:42 :: [it] keeps the board open when a Sonner toast action is clicked",
+        "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts:49 :: [it] keeps the board open when the contextual tour panel is clicked",
+        "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts:56 :: [it] does not keep the board open for generic outside content"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-005",
+      "capability": "Retenção temporária do drawer (lingering de 300ms) para conclusão suave da animação de fechamento",
+      "surface": "WorkspaceKanbanDrawer",
+      "trigger": "mudança da prop open de true para false",
+      "behaviors": [
+        "Mantém o estado lingering como true por 300ms (WORKSPACE_BOARD_CLOSE_LINGER_MS) após open mudar para false",
+        "Permite que a animação de saída do Radix Sheet seja executada sem desmontar abruptamente os componentes",
+        "Cancela o timer de unmount e restaura lingering se o board for reaberto antes do término (ex: em 299ms)",
+        "Desmonta o conteúdo pesado após os 300ms isolando churn de estado em background"
+      ],
+      "background_activity": "setTimeout (300ms) para transição de fechamento do drawer",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-drawer-lingering.ts:3",
+        "components/sidebar/use-workspace-kanban-drawer-lingering.ts:5",
+        "components/sidebar/WorkspaceKanbanDrawer.tsx:37"
+      ],
+      "tests": [
+        "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx:7 :: [describe] workspace board close linger",
+        "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx:10 :: [it] keeps drawer state through the close animation, then releases it at 300 ms",
+        "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx:23 :: [it] cancels the pending release when reopened",
+        "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:175 :: [describe] WorkspaceKanbanDrawer mount gating",
+        "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:197 :: [it] unmounts heavy content after the close animation and isolates closed churn",
+        "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:236 :: [it] cancels the pending unmount when reopened at 299 ms"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-006",
+      "capability": "Ciclo de renderização diferido dos cards e descarte de seleção externa",
+      "surface": "WorkspaceKanbanDrawerContent",
+      "trigger": "abertura do drawer ou clique fora com itens selecionados",
+      "behaviors": [
+        "Diferimento da renderização de cards com requestAnimationFrame + startTransition para garantir abertura fluida",
+        "Cancela a animação se o drawer fechar antes do frame disparar",
+        "Limpa seleção de cards quando ocorrer pointerdown fora do sheet content e fora de keep-open targets"
+      ],
+      "background_activity": "requestAnimationFrame para diferir montagem de cards",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-render-lifecycle.ts:4",
+        "components/sidebar/use-workspace-kanban-render-lifecycle.ts:12",
+        "components/sidebar/use-workspace-kanban-render-lifecycle.ts:30"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-007",
+      "capability": "Container e layout do Kanban Sheet com posicionamento e reserva de barra de status",
+      "surface": "WorkspaceKanbanSheet (Sheet / SheetContent)",
+      "trigger": "renderização do painel Kanban",
+      "behaviors": [
+        "Renderiza Sheet não-modal (modal={false}) no lado esquerdo com largura calculada min(calc(100vw - sidebarWidth), 1294px)",
+        "Posiciona o topo abaixo do chrome superior (WORKSPACE_TOP_CHROME_HEIGHT) e ajusta a base conforme visibilidade da barra de status (STATUS_BAR_RESERVE_HEIGHT)",
+        "Impede auto-focus e desativa close button nativo do Radix Sheet",
+        "Configura overlay sem interação de ponteiro (pointerEvents: none) alinhado à largura da barra lateral",
+        "Expõe data-attributes para tour contextual (workspace-board-surface) e pré-visualização de drag"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanSheet.tsx:18",
+        "components/sidebar/WorkspaceKanbanSheet.tsx:50",
+        "components/sidebar/WorkspaceKanbanSheet.tsx:60"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:286 :: [describe] WorkspaceKanbanDrawer task status sync wiring",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:287 :: [it] reserves the status bar row in the board sheet and overlay when visible",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:301 :: [it] keeps the board sheet and overlay flush to the viewport bottom when status bar is hidden"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-008",
+      "capability": "Header do drawer Kanban com contagem de seleção, campo de busca, filtro, configurações e botão fechar",
+      "surface": "WorkspaceKanbanDrawerHeader",
+      "trigger": "renderização do cabeçalho do Kanban",
+      "behaviors": [
+        "Exibe SheetTitle com label Workspace board e badge de contagem de seleção quando > 1 ({selectedCount} selected)",
+        "Renderiza campo de busca como irmão do título dentro de SheetHeader",
+        "Fornece descrição oculta para leitores de tela em SheetDescription",
+        "Agrupa botão de filtro (SidebarFilter), menu de configurações (WorkspaceKanbanSettingsMenu) e botão fechar com ícone X no canto direito",
+        "Encaminha clique no botão de fechar para o callback onClose explícito do drawer"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:29",
+        "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:49",
+        "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:88",
+        "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:112"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:81 :: [describe] WorkspaceKanbanDrawerHeader",
+        "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:82 :: [it] routes the close button through the explicit drawer close callback",
+        "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:96 :: [it] renders the search field as a sibling of the sheet title, not inside it",
+        "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:117 :: [it] keeps the filter, settings, and close cluster reachable alongside the field",
+        "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:130 :: [it] keeps the selected-count badge and the field clear of the control cluster"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-009",
+      "capability": "Superfície de seleção, overlay de área, alvo central de contextual tour e container de raias do Drawer View",
+      "surface": "WorkspaceKanbanDrawerView",
+      "trigger": "renderização da view do drawer",
+      "behaviors": [
+        "Estrutura o layout interno combinando Header, overlay de seleção de área, target de tour contextual central e drop target de Pin",
+        "Define superfície de seleção via atributo data-workspace-board-selection-surface",
+        "Encapsula listeners de pointerdown capture para cards e pointerdown para seleção por área",
+        "Fornece container com rolagem horizontal personalizada (scrollbar-sleek) para a grade de raias"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanDrawerView.tsx:21",
+        "components/sidebar/WorkspaceKanbanDrawerView.tsx:43",
+        "components/sidebar/WorkspaceKanbanDrawerView.tsx:50"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-010",
+      "capability": "Campo de busca de workspaces com input em tempo real, ícone e botão de limpeza que preserva foco",
+      "surface": "WorkspaceKanbanSearchField",
+      "trigger": "digitação no input de busca ou clique no botão de limpar",
+      "behaviors": [
+        "Recebe query controlada e notifica onQueryChange a cada caractere sem debounce",
+        "Exibe ícone de busca e placeholder Search workspaces",
+        "Exibe botão de limpar com ícone X e aria-label Clear search quando há texto",
+        "Previne perda de foco para o body ao clicar no botão de limpar via onMouseDown.preventDefault() e refocus imediato no input",
+        "Calcula preenchimento à direita dinamicamente via overlayReserve para acomodar o contador sem sobrepor o texto digitado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:34",
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:50",
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:98",
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:150"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:75 :: [describe] WorkspaceKanbanSearchField",
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:76 :: [it] reports every keystroke without debouncing",
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:89 :: [it] only offers the clear affordance for a non-empty query",
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:198 :: [it] keeps focus in the field after the clear button unmounts itself",
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:209 :: [it] reserves overlay width in font-relative units, capped so text stays visible"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-011",
+      "capability": "Tratamento de tecla Escape no campo de busca para limpar texto ou fechar o board respeitando IME",
+      "surface": "WorkspaceKanbanSearchField",
+      "trigger": "tecla Escape no input de busca",
+      "behaviors": [
+        "Ignora tecla Escape se estiver em composição de caractere (event.nativeEvent.isComposing)",
+        "Limpa o texto da busca (onClear) se houver texto presente no campo",
+        "Aciona o fechamento do painel Kanban (onClose) se o campo já estiver vazio",
+        "Previne a propagação do evento para evitar duplo acionamento"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:120"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:141 :: [it] clears a non-empty query on Escape and closes the board on an empty one",
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:180 :: [it] leaves Escape to the IME while a composition is in progress"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-012",
+      "capability": "Live region acessível debouncada e badges de contagem/aviso de texto muito longo no campo de busca",
+      "surface": "WorkspaceKanbanSearchField",
+      "trigger": "atualização de matchCount/totalCount ou query muito longa",
+      "behaviors": [
+        "Exibe badge visual tabular-nums com contagem {matchCount} / {totalCount} oculta para leitores de tela (aria-hidden)",
+        "Exibe aviso visual Too long com estilo destrutivo e tooltip quando o texto excede o limite de bytes",
+        "Atualiza live region acessível (role=status, aria-live=polite) com debounce de 400ms (ANNOUNCE_DEBOUNCE_MS) para evitar leituras excessivas a cada tecla",
+        "Anuncia No workspaces match ou {matchCount} of {totalCount} workspaces match quando filtrado",
+        "Omite contagens na live region e badges visuais quando a busca for somente espaços em branco ou não filtrante"
+      ],
+      "background_activity": "setTimeout (400ms) para debounce da live region de acessibilidade",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:7",
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:42",
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:80",
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:135",
+        "components/sidebar/WorkspaceKanbanSearchField.tsx:170"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:101 :: [it] hides the visual match count from assistive tech but keeps the clear button named",
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:110 :: [it] withholds counts for text that never narrows the board",
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:122 :: [it] announces match counts only after the query settles",
+        "components/sidebar/WorkspaceKanbanSearchField.test.tsx:166 :: [it] says so when a query was discarded for length instead of silently not filtering"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-013",
+      "capability": "Indexação e correspondência de busca de workspaces no Kanban com suporte a host-qualified identities",
+      "surface": "useWorkspaceKanbanSearch / workspace-kanban-search.ts",
+      "trigger": "alteração de query ou lista de worktrees/repos",
+      "behaviors": [
+        "Constrói índice de documentos palette com política board (apenas texto impresso nos cards, excluindo portas, reviews e automações)",
+        "Usa useDeferredValue para manter responsividade do input e permitir interrupção do re-render",
+        "Busca correspondências por display name, branch, nome do repositório e comentários",
+        "Retorna null para queries vazias ou excedendo o limite de tamanho (isWorktreePaletteQueryTooLarge) em vez de zerar o board",
+        "Identifica resultados por chave qualificada por host (composeWorktreeHostIdentity) para diferenciar worktrees com mesmo ID em hosts remotos",
+        "Mantém estabilidade de referência de matchingWorktreeIds para evitar re-render de cards em ticks de status de agente",
+        "Reseta a query para vazio ao fechar o drawer"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-search.ts:24",
+        "components/sidebar/use-workspace-kanban-search.ts:46",
+        "components/sidebar/use-workspace-kanban-search.ts:54",
+        "components/sidebar/workspace-kanban-search.ts:26",
+        "components/sidebar/workspace-kanban-search.ts:43"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-search.test.ts:38 :: [describe] matchWorkspaceBoardWorktrees",
+        "components/sidebar/workspace-kanban-search.test.ts:39 :: [it] treats blank and whitespace-only queries as no filtering",
+        "components/sidebar/workspace-kanban-search.test.ts:45 :: [it] matches display name, branch, and repo display name",
+        "components/sidebar/workspace-kanban-search.test.ts:57 :: [it] matches the workspace comment",
+        "components/sidebar/workspace-kanban-search.test.ts:66 :: [it] excludes worktrees that only match on PR, issue, or port",
+        "components/sidebar/workspace-kanban-search.test.ts:75 :: [it] matches composite repo/branch queries",
+        "components/sidebar/workspace-kanban-search.test.ts:84 :: [it] is case-insensitive",
+        "components/sidebar/workspace-kanban-search.test.ts:90 :: [it] treats regex metacharacters as literal text",
+        "components/sidebar/workspace-kanban-search.test.ts:102 :: [it] matches non-ASCII display names and comments",
+        "components/sidebar/workspace-kanban-search.test.ts:113 :: [it] treats an over-bound query as no filtering rather than zero matches",
+        "components/sidebar/workspace-kanban-search.test.ts:121 :: [it] separates two same-id host rows",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:266 :: [describe] WorkspaceKanbanDrawer search",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:281 :: [it] restores every lane when the query is cleared",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:294 :: [it] drops the query when the board closes so a reopen starts unfiltered",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:373 :: [it] reports a non-filtering query so the header withholds match counts",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:382 :: [it] leaves the whole board unfiltered for an over-bound query"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-014",
+      "capability": "Projeção de visualização das raias sob filtro de busca preservando ordem e contagens totais",
+      "surface": "buildWorkspaceKanbanLaneViews / WorkspaceKanbanLaneGrid",
+      "trigger": "avaliação de visualização de raias com ou sem query de busca",
+      "behaviors": [
+        "Reutiliza arrays de itens originais quando não houver query ativa para evitar alocações desnecessárias",
+        "Filtra itens por matchingWorktreeIds mantendo a ordem original de ordenação de cada raia",
+        "Preserva totalCount original de cada raia antes da filtragem",
+        "Garante que raias completamente filtradas mantenham lista vazia e total correto"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-kanban-search.ts:15",
+        "components/sidebar/workspace-kanban-search.ts:74"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-search.test.ts:136 :: [describe] buildWorkspaceKanbanLaneViews",
+        "components/sidebar/workspace-kanban-search.test.ts:144 :: [it] reuses the input arrays when no query is active",
+        "components/sidebar/workspace-kanban-search.test.ts:152 :: [it] preserves lane order and per-lane sort order",
+        "components/sidebar/workspace-kanban-search.test.ts:162 :: [it] keeps a fully filtered lane with an empty item list and its real total",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:267 :: [it] filters every lane in place and reports lane totals"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-015",
+      "capability": "Menu de configurações do Kanban em dropdown com toggle de sincronização de tarefas e listagem de status",
+      "surface": "WorkspaceKanbanSettingsMenu",
+      "trigger": "clique no botão de engrenagem / configurações do board",
+      "behaviors": [
+        "Abre dropdown não-modal (modal={false}) com tooltip Board settings",
+        "Exibe toggle Switch para ativação da sincronização de status de issue (Sync board and issue status)",
+        "Preserva abertura ao interagir com o popover aninhado de aparência de status (WorkspaceStatusAppearancePopover)",
+        "Renderiza lista de todos os status configurados com seus respectivos ícones, cores e inputs de renomeação inline",
+        "Permite renomear status ao desfocar o input ou ao pressionar Enter"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:33",
+        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:58",
+        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:75",
+        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:112"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:67 :: [describe] WorkspaceKanbanSettingsMenu",
+        "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:68 :: [it] renders the task status sync switch and forwards changes"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-016",
+      "capability": "Reordenação e remoção de status no menu de configurações com migração automática de worktrees",
+      "surface": "WorkspaceKanbanSettingsMenu / useWorkspaceKanbanStatusActions",
+      "trigger": "clique nos botões de mover para cima/baixo ou excluir status",
+      "behaviors": [
+        "Botão de mover status para a esquerda (Move {label} left) desabilitado no primeiro índice",
+        "Botão de mover status para a direita (Move {label} right) desabilitado no último índice",
+        "Botão de excluir status (Remove {label}) desabilitado quando restar apenas 1 status",
+        "Ao remover um status, migra automaticamente todos os worktrees pertencentes a ele para o status adjacente/fallback e atualiza seus metadados"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.updateWorktreeMeta",
+        "useAppStore.setWorkspaceStatuses"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:143",
+        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:158",
+        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:173",
+        "components/sidebar/use-workspace-kanban-status-actions.ts:50",
+        "components/sidebar/use-workspace-kanban-status-actions.ts:74"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-017",
+      "capability": "Adição de novos status no Kanban com geração dinâmica de ID único",
+      "surface": "WorkspaceKanbanSettingsMenu / useWorkspaceKanbanStatusActions",
+      "trigger": "clique no botão Add status no menu de configurações",
+      "behaviors": [
+        "Adiciona novo status ao final da lista com label Status N",
+        "Gera ID único derivado do label usando makeWorkspaceStatusId",
+        "Suporta expansão para workflows além dos limites padrão prévios",
+        "Registra interação de feature workspace-board-actions no store"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.setWorkspaceStatuses",
+        "useAppStore.recordFeatureInteraction"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:191",
+        "components/sidebar/use-workspace-kanban-status-actions.ts:65"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:86 :: [it] keeps adding available for workflows above the former board limit"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-018",
+      "capability": "Ações e persistência de alterações de status (renomear, cor, ícone) com registro de telemetria",
+      "surface": "useWorkspaceKanbanStatusActions",
+      "trigger": "callbacks de edição de status (handleRenameStatus, handleChangeStatusColor, handleChangeStatusIcon)",
+      "behaviors": [
+        "Renomeia status aplicando trim e ignorando entradas vazias",
+        "Atualiza cor personalizada do status mantendo integridade visual",
+        "Atualiza ícone do status",
+        "Persiste a lista atualizada no store do app e registra interação workspace-board-actions"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.setWorkspaceStatuses",
+        "useAppStore.recordFeatureInteraction"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-status-actions.ts:13",
+        "components/sidebar/use-workspace-kanban-status-actions.ts:18",
+        "components/sidebar/use-workspace-kanban-status-actions.ts:32",
+        "components/sidebar/use-workspace-kanban-status-actions.ts:41"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-019",
+      "capability": "Grade virtualizada de raias horizontais com medição de colunas, overscan e retenção de raia focada",
+      "surface": "WorkspaceKanbanLaneGrid",
+      "trigger": "renderização e rolagem horizontal da grade de raias",
+      "behaviors": [
+        "Virtualiza colunas horizontalmente usando @tanstack/react-virtual com overscan de 1 raia e gap de 12px",
+        "Reserva largura total do workflow via getTotalSize()",
+        "Mede dinamicamente o tamanho das raias conforme columnWidth",
+        "Mantém a raia focada pelo teclado montada mesmo fora do viewport visível via extractWorkspaceKanbanLaneRange",
+        "Rastreia foco por onFocusCapture e onBlurCapture nas raias"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:82",
+        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:102",
+        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:173",
+        "components/sidebar/workspace-kanban-lane-range.ts:3"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:167 :: [describe] WorkspaceKanbanLaneGrid",
+        "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:168 :: [it] reserves the full workflow width while mounting only the horizontal window",
+        "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:183 :: [it] mounts later ordered lanes and releases distant lanes after horizontal scroll",
+        "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:198 :: [it] keeps one focused lane mounted without unbounding the virtual window",
+        "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:215 :: [it] adds only the focused lane to the normal overscanned range"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-020",
+      "capability": "Hidratação progressiva de raias a no máximo uma raia por quadro de animação",
+      "surface": "WorkspaceKanbanLaneGrid",
+      "trigger": "montagem inicial do board ou rolagem horizontal para novas raias",
+      "behaviors": [
+        "Executa hidratação escalonada adicionando no máximo uma raia por requestAnimationFrame via startTransition",
+        "Retém apenas raias atualmente montadas no virtualizador",
+        "Cancela animação pendente se o componente desmontar ou se a renderização for cancelada",
+        "Evita gargalo de renderização e travamento da UI ao carregar fluxos de trabalho com múltiplas raias pesadas"
+      ],
+      "background_activity": "requestAnimationFrame encadeado para hidratação progressiva de raias",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:128",
+        "components/sidebar/WorkspaceKanbanLaneGrid.tsx:142"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:221 :: [it] hydrates at most one mounted lane per animation frame"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-021",
+      "capability": "Raia de status do Kanban com contadores de itens, botão de criação de workspace e placeholder vazio",
+      "surface": "WorkspaceKanbanStatusLane",
+      "trigger": "renderização de uma raia de status individual",
+      "behaviors": [
+        "Exibe ícone estilizado e cor da borda/fundo conforme metadados visuais do status (getWorkspaceStatusVisualMeta)",
+        "Exibe contador de cards com formato {count} ou {items.length} / {totalCount} quando sob busca ativa",
+        "Fornece botões no header e no rodapé para criação rápida de workspace (New workspace in {status.label})",
+        "Exibe placeholder estilizado Empty quando não há itens ou No matches quando todos os itens foram filtrados pela busca",
+        "Destaca visualmente a raia como alvo de drag quando isDragTarget ou data-workspace-board-external-drag-target for ativo",
+        "Passa identidade qualificada do workspace ativo para a lista de cards"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanStatusLane.tsx:55",
+        "components/sidebar/WorkspaceKanbanStatusLane.tsx:75",
+        "components/sidebar/WorkspaceKanbanStatusLane.tsx:112",
+        "components/sidebar/WorkspaceKanbanStatusLane.tsx:165",
+        "components/sidebar/WorkspaceKanbanStatusLane.tsx:185"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:103 :: [describe] WorkspaceKanbanStatusLane",
+        "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:104 :: [it] shows a plain count without a query and a matches/total count with one",
+        "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:113 :: [it] keeps a fully filtered lane as a labeled drop target",
+        "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:120 :: [it] shows the empty placeholder when there is no query",
+        "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:127 :: [it] leaves an already-empty lane as Empty under a query rather than ",
+        "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:160 :: [it] passes the host-qualified active workspace through to the card list",
+        "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:233 :: [it] passes the host-qualified active workspace through virtualized lanes"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-022",
+      "capability": "Redimensionamento de largura de coluna por arraste de alça e atalhos de teclado",
+      "surface": "WorkspaceKanbanStatusLane / useWorkspaceKanbanColumnResize",
+      "trigger": "pointerdown na alça de resize ou teclas ArrowLeft/ArrowRight na alça focada",
+      "behaviors": [
+        "Alça de redimensionamento acessível com role=separator, aria-orientation=vertical e valores min/max/now",
+        "Arrasto por ponteiro com cursor col-resize e desativação temporária de seleção de texto (userSelect: none)",
+        "Atualização de rascunho em requestAnimationFrame com clamp entre WORKSPACE_BOARD_COLUMN_WIDTH_MIN e MAX",
+        "Navegação por teclado: ArrowLeft diminui e ArrowRight aumenta a largura (passo padrão ou duplicado com ShiftKey)",
+        "Persiste a largura final no store (setWorkspaceBoardColumnWidth) ao soltar o ponteiro ou ao pressionar teclado"
+      ],
+      "background_activity": "requestAnimationFrame para throttling do rascunho de largura durante resize",
+      "state_inputs": [
+        "useAppStore.workspaceBoardColumnWidth",
+        "useAppStore.setWorkspaceBoardColumnWidth"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanStatusLane.tsx:108",
+        "components/sidebar/use-workspace-kanban-column-resize.ts:18",
+        "components/sidebar/use-workspace-kanban-column-resize.ts:49",
+        "components/sidebar/use-workspace-kanban-column-resize.ts:114",
+        "components/sidebar/use-workspace-kanban-column-resize.ts:130"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-023",
+      "capability": "Rolagem horizontal acelerada com Shift + roda do mouse durante drag no board",
+      "surface": "useWorkspaceKanbanShiftWheelScroll",
+      "trigger": "evento wheel com ShiftKey durante drag ativo sobre o Kanban",
+      "behaviors": [
+        "Detecta início e término de drag nativo (dragstart/dragover/drop/dragend/blur) ou pointer drag",
+        "Calcula delta de rolagem convertendo linhas para pixels quando deltaMode for DOM_DELTA_LINE ou janela quando DOM_DELTA_PIXEL",
+        "Intercepta o evento wheel em fase de captura (capture: true, passive: false) e cancela propagação imediata",
+        "Aplica delta diretamente no scrollLeft do scroller de raias para evitar cancelamento de drag pelo navegador"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:5",
+        "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:40",
+        "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:70"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-024",
+      "capability": "Lista virtualizada vertical de cards dentro da raia com estimativa de altura e renderização assíncrona",
+      "surface": "WorkspaceKanbanLaneCardList",
+      "trigger": "renderização da lista de cards de uma raia de status",
+      "behaviors": [
+        "Virtualiza cards verticalmente com @tanstack/react-virtual usando estimativa de 36px, gap de 8px e overscan de 6 cards",
+        "Usa useFlushSync: false para evitar bloqueio da thread principal durante rolagem",
+        "Reserva a altura total da raia no elemento espaçador para barra de rolagem nativa suave",
+        "Associa chaves únicas qualificadas por host (getWorktreeHostIdentity) para cada item virtual",
+        "Registra o layout virtual no módulo de layout de raia para suporte a operações de drag"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanLaneCardList.tsx:10",
+        "components/sidebar/WorkspaceKanbanLaneCardList.tsx:43",
+        "components/sidebar/WorkspaceKanbanLaneCardList.tsx:64",
+        "components/sidebar/WorkspaceKanbanLaneCardList.tsx:80"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:112 :: [describe] WorkspaceKanbanLaneCardList",
+        "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:113 :: [it] mounts only the virtual window, not the whole lane",
+        "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:129 :: [it] gives every rendered card its lane index, not its rendered position",
+        "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:138 :: [it] reserves the full lane height so the scrollbar spans the whole list",
+        "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:146 :: [it] positions each card at its virtual offset",
+        "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:155 :: [it] renders nothing for an empty lane and a single card at index 0",
+        "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:165 :: [it] gives same-id cards unique host-qualified virtual and DOM identities"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-025",
+      "capability": "Registro e consulta de layout virtual das raias para hit-testing, índice e indicador de drop",
+      "surface": "workspace-kanban-virtual-lane-layout.ts",
+      "trigger": "operações de drag de cards, medição de layout ou seleção por área",
+      "behaviors": [
+        "Armazena registros de layout virtual em WeakMap associado ao elemento de scroll da raia",
+        "Fornece snapshot dos itens lógicos e medições do virtualizador",
+        "Calcula coordenadas de retângulos virtuais para cada item (WorkspaceKanbanVirtualLaneItemRect)",
+        "Resolve índice de drop via busca binária baseada nas posições dos itens (resolveWorkspaceKanbanVirtualLaneDropIndex)",
+        "Calcula a posição vertical Y exata para o indicador de drop mesmo para itens fora da janela montada (resolveWorkspaceKanbanVirtualLaneDropIndicatorY)",
+        "Garante desregistro seguro sem remover instâncias mais recentes"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-kanban-virtual-lane-layout.ts:25",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.ts:54",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.ts:83",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.ts:109"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:57 :: [describe] workspace kanban virtual lane layout",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:58 :: [it] resolves mid-lane and bottom drops immediately after a large scroll jump",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:69 :: [it] exposes every logical item even when no card is mounted",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:85 :: [it] selects intermediate never-mounted cards across a jumped lane range",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:110 :: [it] does not let stale cleanup remove a newer lane registration",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:133 :: [it] places empty-lane and boundary drop indicators from the spacer",
+        "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:152 :: [it] returns null when measurements are incomplete or mismatched"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-026",
+      "capability": "Publicação e serialização de IDs completos da raia via canal DOM com delimitador NUL",
+      "surface": "WorkspaceKanbanStatusLane / workspace-kanban-filtered-drop-index.ts",
+      "trigger": "renderização de raia filtrada ou leitura de IDs em operações de drop",
+      "behaviors": [
+        "Serializa lista de IDs completos de worktrees usando delimitador NUL (WORKSPACE_LANE_FULL_IDS_DELIMITER = \u0000)",
+        "Publica no atributo data-workspace-lane-full-ids da raia apenas quando houver busca ativa para evitar peso desnecessário no DOM",
+        "Permite que operações de drop da sidebar para o board conheçam a lista completa de IDs da raia mesmo sob busca",
+        "Faz parsing seguro e distingue raia não publicada de raia vazia"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanStatusLane.tsx:68",
+        "components/sidebar/WorkspaceKanbanStatusLane.tsx:88",
+        "components/sidebar/workspace-kanban-filtered-drop-index.ts:8",
+        "components/sidebar/workspace-kanban-filtered-drop-index.ts:16",
+        "components/sidebar/workspace-kanban-filtered-drop-index.ts:25"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:135 :: [it] publishes the full lane membership even when the rendered set is a subset",
+        "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:147 :: [it] stays off the full-id channel when nothing is filtered",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:124 :: [describe] workspace lane full-id channel",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:125 :: [it] round-trips lane membership through the delimiter",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:133 :: [it] distinguishes an unpublished lane from an empty one",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:139 :: [it] survives ids holding every character a path can legally contain"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-027",
+      "capability": "Card de workspace no Kanban integrando WorktreeCard, badge de fixado e atributos host-qualified",
+      "surface": "WorkspaceKanbanCard",
+      "trigger": "renderização de um card no Kanban",
+      "behaviors": [
+        "Renderiza wrapper com atributos data-workspace-board-card-id, data-workspace-board-worktree-id, data-workspace-board-card-index, data-workspace-board-card-mode=detailed e data-workspace-board-card-selected",
+        "Exibe badge de fixado (Pinned) no canto superior direito quando worktree.isPinned for verdadeiro",
+        "Encapsula WorktreeCard com suporte a estado ativo, seleção múltipla e callbacks de ativação e contexto",
+        "Aplica destaque de seleção por área via data-workspace-board-card-area-selected"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanCard.tsx:24",
+        "components/sidebar/WorkspaceKanbanCard.tsx:41",
+        "components/sidebar/WorkspaceKanbanCard.tsx:50"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanCard.host-identity.test.tsx:31 :: [describe] WorkspaceKanbanCard host identity",
+        "components/sidebar/WorkspaceKanbanCard.host-identity.test.tsx:32 :: [it] keeps the DOM and selection gesture scoped to one host"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-028",
+      "capability": "Alvo de drop para fixação de cards (Pin Drop Target) com feedback visual de hover",
+      "surface": "WorkspaceKanbanPinDropTarget",
+      "trigger": "arrasto de card sobre a área superior de fixação",
+      "behaviors": [
+        "Exibe área tracejada acima das raias com ícone de Pin e texto explicativo (Pinned - Drop here to pin without changing status.)",
+        "Destaca borda e cor de fundo quando isDragOver ou data-workspace-board-external-drag-target for ativo",
+        "Encaminha eventos onDragOver e onDragLeave para o manipulador de drag"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceKanbanPinDropTarget.tsx:12",
+        "components/sidebar/WorkspaceKanbanPinDropTarget.tsx:18"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-029",
+      "capability": "Projeção de dados e agrupamento de worktrees no Kanban com ordenação manual ou recente/fixada",
+      "surface": "useWorkspaceKanbanBoardProjection / workspace-kanban-worktree-groups.ts",
+      "trigger": "mudança na lista de worktrees, repositórios, visibilidade, statuses ou modo de ordenação",
+      "behaviors": [
+        "Filtra worktrees visíveis respeitando filtros globais e de repositório",
+        "Agrupa worktrees em raias por status do workspace",
+        "Aplica ordenação manual (sortManualBoardWorktrees por manualOrder/sortOrder) quando sortBy === manual",
+        "Aplica ordenação recente com fixados no topo (sortBoardWorktrees por isPinned, lastActivityAt e displayName) quando sortBy !== manual",
+        "Constrói grupos de drag (boardDragGroups) e registra para drop da barra lateral",
+        "Constrói índice inequívoco de worktrees (buildUnambiguousWorktreeIdIndex) e identidade ativa qualificada por host"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sortBy",
+        "useAppStore.workspaceStatuses",
+        "useAppStore.activeWorktreeId",
+        "useAppStore.activeWorkspaceExecutionHostId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-board-projection.ts:16",
+        "components/sidebar/use-workspace-kanban-board-projection.ts:40",
+        "components/sidebar/workspace-kanban-worktree-groups.ts:10",
+        "components/sidebar/workspace-kanban-worktree-groups.ts:22"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-worktree-groups.test.ts:42 :: [describe] groupWorkspaceKanbanWorktrees",
+        "components/sidebar/workspace-kanban-worktree-groups.test.ts:43 :: [it] uses manualOrder inside lanes when Manual sort is active",
+        "components/sidebar/workspace-kanban-worktree-groups.test.ts:77 :: [it] does not crash when a worktree is missing its displayName under Manual sort",
+        "components/sidebar/workspace-kanban-worktree-groups.test.ts:105 :: [it] does not crash when a worktree is missing its displayName outside Manual sort",
+        "components/sidebar/workspace-kanban-worktree-groups.test.ts:130 :: [it] keeps pinned then recent ordering outside Manual sort",
+        "components/sidebar/workspace-kanban-worktree-groups.test.ts:157 :: [it] does not admit another host row that shares the visible workspace id"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-030",
+      "capability": "Criação rápida de worktree a partir do Kanban disparando o modal compositor com status pré-configurado",
+      "surface": "useWorkspaceKanbanCreateWorktree",
+      "trigger": "clique no botão de novo workspace em uma raia de status",
+      "behaviors": [
+        "Abre o modal new-workspace-composer via store",
+        "Define telemetrySource como sidebar",
+        "Pré-configura o status inicial do novo workspace como o statusId da raia selecionada"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.openModal"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-create-worktree.ts:5",
+        "components/sidebar/use-workspace-kanban-create-worktree.ts:11"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-031",
+      "capability": "Seleção múltipla por clique, modificadores e teclado escopada aos cards visíveis com re-ancoragem",
+      "surface": "useWorkspaceKanbanSelection",
+      "trigger": "clique em card, Cmd/Ctrl+clique, Shift+clique, clique com botão direito ou tecla de seleção",
+      "behaviors": [
+        "Gerencia conjunto de IDs selecionados e ID da âncora",
+        "Reseta seleção ao fechar o drawer",
+        "Poda seleções de worktrees que não existem mais no board",
+        "Re-ancora seleção no primeiro card visível ainda selecionado quando a busca ocultar a âncora original",
+        "Escopa seleções por range aos cards visíveis/renderizados na tela",
+        "Trata seleção para menu de contexto (selectForContextMenu): preserva seleção se o card clicado já estiver selecionado, ou seleciona apenas ele se não estiver"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-selection.ts:10",
+        "components/sidebar/use-workspace-kanban-selection.ts:25",
+        "components/sidebar/use-workspace-kanban-selection.ts:63",
+        "components/sidebar/use-workspace-kanban-selection.ts:93"
+      ],
+      "tests": [
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:92 :: [describe] useWorkspaceKanbanSelection",
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:93 :: [it] ranges across the whole board when nothing is filtered",
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:102 :: [it] never ranges through cards a search has hidden",
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:111 :: [it] keeps a hidden card selected so clearing the search restores the selection",
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:124 :: [it] extends the range from a visible card when a search hides the anchor",
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:140 :: [it] replaces a hidden selection on every replace-shaped gesture alike",
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:155 :: [it] lets a plain click clear a selection the search is hiding",
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:166 :: [it] still prunes ids that leave the board entirely",
+        "components/sidebar/use-workspace-kanban-selection.test.tsx:176 :: [it] selects same-id cards independently by host",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:345 :: [it] keeps selection highlighting unfiltered while a query is active",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:354 :: [it] counts only the rendered cards in the header selection badge",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:364 :: [it] scopes selection gestures to the rendered cards"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-032",
+      "capability": "Seleção por área / marquee no Kanban com botão primário, overlay visual e threshold de 4px",
+      "surface": "useWorkspaceKanbanAreaSelection / WorkspaceKanbanAreaSelectionOverlay",
+      "trigger": "pointerdown na superfície vazia do Kanban e arrasto",
+      "behaviors": [
+        "Inicia seleção por área somente com botão primário (button 0), ignorando touch, scrollbars e elementos interativos (shouldIgnoreAreaSelectionStart)",
+        "Determina modo aditivo baseado em ShiftKey ou Cmd/CtrlKey conforme o sistema operacional (macOS vs Windows/Linux)",
+        "Exige deslocamento mínimo de 4px (AREA_SELECTION_DRAG_THRESHOLD) antes de ativar o retângulo visual",
+        "Atualiza dimensões e posição do overlay imperativamente via transform translate3d sem re-renderizar componentes React",
+        "Recorta o retângulo visual dentro dos limites da área do board"
+      ],
+      "background_activity": "requestAnimationFrame para renderização imperativa do retângulo de seleção",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-area-selection.ts:40",
+        "components/sidebar/use-workspace-kanban-area-selection.ts:200",
+        "components/sidebar/workspace-kanban-area-selection-state.ts:38",
+        "components/sidebar/workspace-kanban-area-selection-dom.ts:43",
+        "components/sidebar/WorkspaceKanbanAreaSelectionOverlay.tsx:5"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-area-selection.test.ts:11 :: [describe] workspace kanban area selection finish",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:30 :: [it] commits marquee drags even when additive"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-033",
+      "capability": "Auto-scroll suave durante seleção por área ao aproximar das bordas superior/inferior da raia",
+      "surface": "useWorkspaceKanbanAreaSelection",
+      "trigger": "movimento de ponteiro próximo às bordas de um container de raia durante seleção por área",
+      "behaviors": [
+        "Detecta o container de rolagem mais próximo do ponteiro X/Y (getAreaSelectionScrollContainer)",
+        "Calcula velocidade e direção de auto-scroll (getAreaSelectionAutoScrollDelta) dentro de zona de borda de 48px com delta máximo de 22px",
+        "Executa rolagem vertical contínua via requestAnimationFrame enquanto o ponteiro permanecer na zona limite",
+        "Atualiza medições e recalcula o hit-testing dos cards a cada frame de rolagem"
+      ],
+      "background_activity": "requestAnimationFrame contínuo para auto-scroll de raia durante marquee",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-area-selection.ts:145",
+        "components/sidebar/workspace-kanban-area-selection-dom.ts:109",
+        "components/sidebar/workspace-kanban-area-selection-dom.ts:139"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-area-selection.test.ts:40 :: [describe] workspace kanban area selection auto-scroll",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:41 :: [it] scrolls down near the bottom edge while more lane content is available",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:54 :: [it] scrolls up near the top edge while content exists above",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:67 :: [it] does not scroll when the pointer is away from the edges or at scroll limits"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-034",
+      "capability": "Cálculo de retângulos e hit-testing de cards sob rolagem de raia com preview imperativo sem re-render",
+      "surface": "workspace-kanban-area-selection-card-rects.ts / workspace-kanban-area-selection-dom.ts",
+      "trigger": "arrasto de seleção por área interceptando cards",
+      "behaviors": [
+        "Coleta retângulos de todos os cards a partir do layout virtual e elementos DOM presentes",
+        "Calcula interseção espacial horizontal e vertical compensando a posição inicial do scroll (scrollStartContentYByElement)",
+        "Mantém cards selecionados mesmo se a rolagem da raia os mover para fora do viewport visível do marquee",
+        "Aplica o atributo data-workspace-board-card-area-selected diretamente nos elementos DOM dos cards para feedback visual instantâneo",
+        "Re-aplica o atributo de preview quando cards virtuais forem desmontados e remontados durante a rolagem"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-kanban-area-selection-card-rects.ts:25",
+        "components/sidebar/workspace-kanban-area-selection-dom.ts:68",
+        "components/sidebar/workspace-kanban-area-selection-dom.ts:182",
+        "components/sidebar/workspace-kanban-area-selection-dom.ts:192"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-area-selection.test.ts:91 :: [describe] workspace kanban area selection scrolled content hit-testing",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:92 :: [it] keeps cards selected after lane scroll moves them above the viewport marquee",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:138 :: [it] falls back to viewport hit-testing for cards outside lane scrollers",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:175 :: [describe] workspace kanban area selection preview remount",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:176 :: [it] re-applies the preview attribute when a card remounts under the same id"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-035",
+      "capability": "Commit e cancelamento de seleção por área respeitando modo aditivo e clique em espaço vazio",
+      "surface": "useWorkspaceKanbanAreaSelection / workspace-kanban-area-selection-state.ts",
+      "trigger": "pointerup, pointercancel ou blur ao finalizar seleção por área",
+      "behaviors": [
+        "Um clique simples em espaço vazio (sem arrasto e não aditivo) limpa toda a seleção existente",
+        "Um clique com modificador (aditivo) em espaço vazio não limpa a seleção existente",
+        "Ao soltar o ponteiro após arrasto (started === true), comita a lista final de IDs selecionados via updateSelectionForArea",
+        "Limpa atributos de preview de todos os cards e oculta o overlay visual",
+        "Cancela frames pendentes de animação e auto-scroll"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-area-selection.ts:167",
+        "components/sidebar/workspace-kanban-area-selection-state.ts:40"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-area-selection.test.ts:12 :: [it] commits an empty non-additive surface click so selection clears",
+        "components/sidebar/workspace-kanban-area-selection.test.ts:21 :: [it] ignores empty additive surface clicks so modifier-click off does not clear"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-036",
+      "capability": "Drag de cards via ponteiro no Kanban com threshold de 5px e supressão de clique pós-arrasto",
+      "surface": "useWorkspaceKanbanCardPointerDrag / workspace-kanban-card-pointer-drag-start.ts",
+      "trigger": "pointerdown e arrasto sobre um card do Kanban",
+      "behaviors": [
+        "Inicia captura apenas para botão primário sem teclas modificadoras (Shift/Cmd/Ctrl são reservadas para seleção)",
+        "Ignora cliques em controles interativos internos do card (links, inputs, botões, alça de resize)",
+        "Resolve a lista de worktrees a serem arrastados (single card ou lote de selecionados) preservando host identity",
+        "Exige threshold de 5px (POINTER_DRAG_THRESHOLD) antes de ativar o modo de drag",
+        "Define isPointerDragActiveRef como true durante o arrasto",
+        "Suprime eventos de clique subsequentes por 250ms após o término do drag para evitar ativação acidental do card"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:20",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:114",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:215",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:270",
+        "components/sidebar/workspace-kanban-card-pointer-drag-start.ts:1",
+        "components/sidebar/workspace-kanban-card-pointer-drag-start.ts:11",
+        "components/sidebar/workspace-kanban-pointer-drag-selection.ts:9",
+        "components/sidebar/workspace-kanban-pointer-drag-selection.ts:16",
+        "components/sidebar/workspace-kanban-pointer-drag-selection.ts:24"
+      ],
+      "tests": [
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:19 :: [describe] workspace kanban card pointer drag start",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:20 :: [it] starts for plain primary mouse drags",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:24 :: [it] does not steal modifier gestures from selection",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:30 :: [it] ignores touch and non-primary buttons",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:38 :: [describe] workspace kanban pointer drag selection identity",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:39 :: [it] does not expand a same-id drag to the unselected host",
+        "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:56 :: [it] drags the selected host-qualified batch when the source row is selected",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:326 :: [it] narrows the pointer-drag payload to the rendered cards"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-037",
+      "capability": "Preview visual de drag e multi-drag com clonagem de elemento, cursor grabbing e badge de contagem",
+      "surface": "workspace-kanban-card-drag-preview-dom.ts",
+      "trigger": "ativação do drag de cards por ponteiro",
+      "behaviors": [
+        "Define estilos no documento (cursor grabbing, userSelect none e data-workspace-board-pointer-dragging no html)",
+        "Marca os cards originais arrastados com data-workspace-board-card-pointer-dragging",
+        "Clona o nó do card de origem, remove atributos duplicados de IDs/acessibilidade e anexa elemento flutuante fixed no body",
+        "Exibe badge de contagem empilhada (data-workspace-board-card-drag-count) quando mais de 1 card for arrastado",
+        "Atualiza a posição do preview via transform translate3d acompanhando as coordenadas do ponteiro"
+      ],
+      "background_activity": "requestAnimationFrame para atualização fluida da posição do preview de drag",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:22",
+        "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:28",
+        "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:63",
+        "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:70"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-038",
+      "capability": "Resolução de alvo de drop, tolerância de gaps e linha indicadora de inserção",
+      "surface": "workspace-kanban-card-pointer-drag-dom.ts",
+      "trigger": "movimento do ponteiro com cards arrastados sobre o board",
+      "behaviors": [
+        "Resolve o status da raia sob o ponteiro com tolerância a espaços vazios/gaps entre colunas de 24px (STATUS_DROP_GAP_TOLERANCE_PX)",
+        "Detecta drop target na área de fixação de pins (data-workspace-pin-drop-target)",
+        "Calcula o índice de inserção na raia comparando o ponto Y com os pontos médios dos cards existentes",
+        "Renderiza linha indicadora de drop horizontal (data-workspace-board-card-drop-indicator) com largura e Y calculados",
+        "Mantém o último alvo rastreado com tolerância de 6px (COMMIT_TARGET_FALLBACK_TOLERANCE_PX) para garantir drop bem-sucedido mesmo se o cursor escapar no momento da soltura"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:49",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:71",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:88",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:133",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:172",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:243"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:15 :: [describe] workspace kanban pointer drag drop target",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:16 :: [it] uses the containing lane when the pointer is inside one",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:20 :: [it] falls back to the nearest lane when the pointer is in a lane gap",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:25 :: [it] does not resolve a lane outside the lane row",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:30 :: [describe] workspace kanban pointer drag card drop index",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:37 :: [it] inserts before the first card whose midpoint is below the pointer",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:42 :: [it] inserts at the end when the pointer is below every card midpoint",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:49 :: [it] uses the lane index of a rendered card rather than its rendered position",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:61 :: [describe] workspace kanban drop indicator placement",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:67 :: [it] places the line above, between, and below rendered cards",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:73 :: [it] falls back to the lane top when the lane renders no cards",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:77 :: [it] anchors to the rendered card that owns the lane index",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:88 :: [describe] workspace kanban pointer drag commit target",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:89 :: [it] uses the current target when release hit-testing succeeds",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:104 :: [it] reuses the latest tracked target when release hit-testing blanks at the same point",
+        "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:119 :: [it] does not reuse a tracked target after the pointer has moved away"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-039",
+      "capability": "Tradução de índice de drop sob filtro de busca para a lista completa da raia",
+      "surface": "workspace-kanban-filtered-drop-index.ts",
+      "trigger": "drop de cards em raias sob busca ativa",
+      "behaviors": [
+        "Mapeia o índice derivado dos cards renderizados visíveis para a posição correspondente na lista completa de membros da raia",
+        "Retorna o índice direto quando a raia não estiver filtrada (isSameLane)",
+        "Faz append ao final da raia completa quando todos os cards da raia estiverem filtrados",
+        "Mapeia inserção antes do primeiro item visível para antes do primeiro item correspondente na raia cheia",
+        "Mapeia inserção após o último item visível para após o último item correspondente na raia cheia",
+        "Garante que ordenação manual não seja corrompida por filtros de texto parciais"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-kanban-filtered-drop-index.ts:33"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:10 :: [describe] resolveFullLaneDropIndex",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:11 :: [it] is the identity when nothing is filtered",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:23 :: [it] maps the first filtered slot onto the first match position",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:33 :: [it] maps the end of a filtered lane one past the last match",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:43 :: [it] maps a slot between two matches onto the following match",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:53 :: [it] appends into a lane whose cards are all filtered away",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:68 :: [it] falls back toward the end of the lane the branch was aiming at",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:94 :: [it] still translates when a stale lane has the same length but different members",
+        "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:106 :: [it] clamps out-of-range filtered indices to the first and last branches",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:400 :: [it] ranks a drop into a filtered lane against the full lane, not the rendered one"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-040",
+      "capability": "Integração de drop vindo da barra lateral para o Kanban com registro de grupos e destaque visual",
+      "surface": "workspace-kanban-sidebar-drop.ts",
+      "trigger": "arrasto de worktrees da barra lateral sobre o painel Kanban aberto",
+      "behaviors": [
+        "Registra grupos lógicos de drop (registerWorkspaceKanbanSidebarDropGroups) enquanto o drawer estiver aberto",
+        "Verifica se o ponto do ponteiro está dentro da superfície do sheet do Kanban (isWorkspaceKanbanSidebarDropPointInBoard)",
+        "Destaca visualmente a raia alvo com data-workspace-board-external-drag-target e posiciona a linha indicadora",
+        "Traduz índices de drop virtuais e filtrados na fronteira de commit (resolveWorkspaceKanbanSidebarFullLaneDropIndex)",
+        "Constrói atualizações em lote de metadados e calcula necessidade de comutação para ordenação manual (buildWorkspaceKanbanSidebarDropUpdates)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-kanban-sidebar-drop.ts:32",
+        "components/sidebar/workspace-kanban-sidebar-drop.ts:91",
+        "components/sidebar/workspace-kanban-sidebar-drop.ts:100",
+        "components/sidebar/workspace-kanban-sidebar-drop.ts:133",
+        "components/sidebar/workspace-kanban-sidebar-drop.ts:153",
+        "components/sidebar/workspace-kanban-sidebar-drop.ts:182"
+      ],
+      "tests": [
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:328 :: [describe] workspace kanban sidebar drop DOM bridge",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:329 :: [it] resolves the board lane and rendered card index under a sidebar pointer drag",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:343 :: [it] prefers complete registered groups and restores the DOM fallback on cleanup",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:360 :: [it] uses the full virtual layout when the mounted card window is stale",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:408 :: [it] prefers the published full lane membership over the rendered card scan",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:419 :: [it] keeps the tracked drop target in the rendered index space of the indicator",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:431 :: [it] translates a rendered drop index onto the full lane at the commit boundary",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:444 :: [it] lands a virtualized searched lane drop where the indicator pointed",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:462 :: [it] translates virtualized searched lane drops above and below the mounted window",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:479 :: [it] passes a virtualized unfiltered lane drop index through untranslated",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:496 :: [it] still counts unlaid-out cards as lane members without a virtual layout",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:512 :: [it] passes the drop index through for a lane it cannot find",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:518 :: [it] marks and clears the external board hover target",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:537 :: [it] detects pointer entry across the whole board sheet",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:553 :: [describe] workspace kanban sidebar drop updates",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:554 :: [it] writes a status-only update for cross-lane drops outside Manual sort",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:582 :: [it] keeps the dropped board position when Manual sort is active",
+        "components/sidebar/workspace-kanban-sidebar-drop.test.ts:618 :: [it] keeps board drops sparse when filtered rows already have durable ranks"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-041",
+      "capability": "Drag and drop nativo HTML5 no Kanban com detecção de dados de workspace e inserção no fim da raia",
+      "surface": "useWorkspaceKanbanNativeDrag / useWorkspaceStatusDocumentDrop",
+      "trigger": "arrasto nativo HTML5 com dataTransfer contendo IDs de workspace",
+      "behaviors": [
+        "Valida presença de dados de workspace via hasWorkspaceDragData e extrai IDs com readWorkspaceDragDataIds",
+        "Define dropEffect como move durante dragover",
+        "Destaca a raia ou o alvo de pin durante o arraste e limpa em dragleave/dragend",
+        "Insere os worktrees soltos ao final da raia de status de destino"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-native-drag.ts:5",
+        "components/sidebar/use-workspace-kanban-native-drag.ts:10",
+        "components/sidebar/use-workspace-kanban-native-drag.ts:44"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-042",
+      "capability": "Ações de reordenação, movimentação e fixação de worktrees com comutação automática para ordenação manual",
+      "surface": "useWorkspaceKanbanWorktreeActions",
+      "trigger": "soltura de cards, menu de contexto de mover status, ou fixar cards",
+      "behaviors": [
+        "Atualiza metadados individuais (moveWorktreeToStatus) ou em lote (moveWorktreesToStatus) com hostId qualificado",
+        "Calcula nova ordenação manual com buildManualOrderUpdatesForGroupDrop ao soltar cards em posições específicas",
+        "Comuta automaticamente a ordenação do workspace para sortBy: 'manual' quando uma reordenação intencional ocorrer",
+        "Dispara a sincronização opcional de status de tarefa com Linear (maybeSyncTaskStatuses) para os IDs alterados",
+        "Fixa worktree individual (pinWorktree) ou lote selecionado (pinWorktrees) com isPinned: true",
+        "Registra interação de telemetria workspace-board-actions no store"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.updateWorktreeMeta",
+        "useAppStore.updateWorktreesMeta",
+        "useAppStore.setSortBy",
+        "useAppStore.sortBy",
+        "useAppStore.recordFeatureInteraction"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-kanban-worktree-actions.ts:20",
+        "components/sidebar/use-workspace-kanban-worktree-actions.ts:44",
+        "components/sidebar/use-workspace-kanban-worktree-actions.ts:60",
+        "components/sidebar/use-workspace-kanban-worktree-actions.ts:85",
+        "components/sidebar/use-workspace-kanban-worktree-actions.ts:172",
+        "components/sidebar/use-workspace-kanban-worktree-actions.ts:183"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:306 :: [it] still runs the Linear status sync for a drop made under an active query",
+        "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:336 :: [it] narrows the context-menu ",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:315 :: [it] syncs Linear after a document-drop status move when the setting is enabled",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:333 :: [it] does not sync when a document-drop status move happens while disabled",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:344 :: [it] syncs pointer-drop status changes through the board callback",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:364 :: [it] does not sync manual-order-only drops that keep the same board status",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:379 :: [it] does not sync pin-only paths",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:415 :: [it] syncs Linear when the board context-menu ",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:431 :: [it] does not sync a context-menu status move when the setting is disabled",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:442 :: [it] does not sync a context-menu status move that keeps the same board status"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-043",
+      "capability": "Sincronização de status de tarefas com Linear via hook com notificações toast de sucesso/aviso/erro",
+      "surface": "useWorkspaceBoardTaskStatusSync",
+      "trigger": "movimentação de worktree para outro status com a sincronização habilitada",
+      "behaviors": [
+        "Valida habilitação da preferência syncTaskStatusFromWorkspaceBoard e monta requisição de sincronização",
+        "Executa sincronização assíncrona em background sem travar a interface",
+        "Exibe toast de aviso (Task status sync skipped) quando a sincronização for ignorada com mensagem explicativa (issue não lida, estado não encontrado, múltiplos estados correspondentes)",
+        "Exibe toast de erro (Task status sync failed) quando ocorrer falha na mutação da issue ou erro inesperado do provedor",
+        "Formata detalhes com contadores de atualizados, ignorados e falhados"
+      ],
+      "background_activity": "chamada assíncrona em background para API do Linear com debounce e filas",
+      "state_inputs": [
+        "useAppStore.syncTaskStatusFromWorkspaceBoard"
+      ],
+      "backend_contract": [
+        "Linear GraphQL API -> issue read/update via @/runtime/runtime-linear-issue-mutations"
+      ],
+      "orca_evidence": [
+        "components/sidebar/use-workspace-board-task-status-sync.ts:13",
+        "components/sidebar/use-workspace-board-task-status-sync.ts:51",
+        "components/sidebar/use-workspace-board-task-status-sync.ts:74",
+        "components/sidebar/use-workspace-board-task-status-sync.ts:98"
+      ],
+      "tests": [
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:392 :: [it] shows a warning toast when task status sync is skipped with a message",
+        "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:453 :: [it] shows an error toast when task status sync unexpectedly rejects"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-044",
+      "capability": "Motor de sincronização com Linear com fila por worktree, normalização de estados e consistência local",
+      "surface": "workspace-board-task-status-sync.ts",
+      "trigger": "execução de syncWorkspaceBoardTaskStatuses",
+      "behaviors": [
+        "Serializa requisições por worktree usando fila encadeada de Promises (enqueueWorktreeSync) para evitar corridas assíncronas",
+        "Resolve configurações de Linear por dono de runtime do worktree (getSettingsForWorktreeRuntimeOwner)",
+        "Lê issue e busca workflow states do time Linear correspondente",
+        "Faz correspondência normalizada case-insensitive (normalizeStateName) entre o label do status do board e o nome do estado do Linear",
+        "Ignora se a issue já estiver no estado de destino",
+        "Garante consistência local-first: aborta se o status local do workspace tiver mudado novamente antes da resposta do servidor",
+        "Atualiza a issue via linearUpdateIssue e agrega resultados em lote sem lançar exceções não tratadas"
+      ],
+      "background_activity": "chamadas assíncronas serializadas por fila de Promise para API do Linear",
+      "state_inputs": [],
+      "backend_contract": [
+        "Linear API -> linearGetIssue, linearTeamStates, linearUpdateIssue"
+      ],
+      "orca_evidence": [
+        "components/sidebar/workspace-board-task-status-sync.ts:68",
+        "components/sidebar/workspace-board-task-status-sync.ts:130",
+        "components/sidebar/workspace-board-task-status-sync.ts:143",
+        "components/sidebar/workspace-board-task-status-sync.ts:241"
+      ],
+      "tests": [
+        "components/sidebar/workspace-board-task-status-sync.test.ts:95 :: [describe] syncWorkspaceBoardTaskStatuses",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:96 :: [it] updates Linear when exactly one workflow state matches the board status",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:119 :: [it] uses the fetched issue workspace for state reads and writes when the link lacks one",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:144 :: [it] routes each Linear update through the moved worktree owner settings",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:201 :: [it] preserves null settings from the moved worktree resolver",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:226 :: [it] skips worktrees without linked Linear issues",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:244 :: [it] skips when the Linear issue is already in the matching state",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:255 :: [it] skips missing or ambiguous workflow state matches",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:282 :: [it] skips stale async writes when the local workspace status changed again",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:298 :: [it] serializes repeated moves for the same worktree so the latest status wins",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:353 :: [it] aggregates provider write failures without throwing"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D08-045",
+      "capability": "Construção e filtragem de requisições de sincronização de tarefas evitando no-ops e redundâncias",
+      "surface": "workspace-board-task-status-sync.ts",
+      "trigger": "chamada a getWorkspaceBoardTaskStatusSyncRequest",
+      "behaviors": [
+        "Retorna null imediatamente se a sincronização estiver desabilitada ou a lista de IDs for vazia",
+        "Localiza a definição do status alvo na lista de workspaceStatuses do store",
+        "Filtra IDs duplicados e worktrees que já se encontram no status alvo (evita sincronização para drops de ordenação manual interna)",
+        "Retorna lista limpa de changedWorktreeIds e targetStatus para execução"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-board-task-status-sync.ts:46"
+      ],
+      "tests": [
+        "components/sidebar/workspace-board-task-status-sync.test.ts:372 :: [describe] getWorkspaceBoardTaskStatusSyncRequest",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:378 :: [it] builds a sync request for enabled status moves",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:393 :: [it] does not build a sync request while the board setting is disabled",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:405 :: [it] skips same-status and duplicate ids so manual-order-only drops do not sync",
+        "components/sidebar/workspace-board-task-status-sync.test.ts:417 :: [it] does not build a sync request without a board status target"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "WorkspaceKanbanAreaSelectionOverlay.tsx": [
+        "D08-032"
+      ],
+      "WorkspaceKanbanCard.tsx": [
+        "D08-027"
+      ],
+      "WorkspaceKanbanDrawer.tsx": [
+        "D08-005",
+        "D08-006",
+        "D08-008",
+        "D08-009"
+      ],
+      "WorkspaceKanbanDrawerHeader.tsx": [
+        "D08-008"
+      ],
+      "WorkspaceKanbanDrawerView.tsx": [
+        "D08-009"
+      ],
+      "WorkspaceKanbanLaneCardList.tsx": [
+        "D08-024"
+      ],
+      "WorkspaceKanbanLaneGrid.tsx": [
+        "D08-019",
+        "D08-020"
+      ],
+      "WorkspaceKanbanPinDropTarget.tsx": [
+        "D08-028"
+      ],
+      "WorkspaceKanbanSearchField.tsx": [
+        "D08-010",
+        "D08-011",
+        "D08-012"
+      ],
+      "WorkspaceKanbanSettingsMenu.tsx": [
+        "D08-015",
+        "D08-016",
+        "D08-017"
+      ],
+      "WorkspaceKanbanSheet.tsx": [
+        "D08-007"
+      ],
+      "WorkspaceKanbanStatusLane.tsx": [
+        "D08-021",
+        "D08-022",
+        "D08-026"
+      ],
+      "use-workspace-board-task-status-sync.ts": [
+        "D08-043"
+      ],
+      "use-workspace-kanban-area-selection.ts": [
+        "D08-032",
+        "D08-033",
+        "D08-035"
+      ],
+      "use-workspace-kanban-board-projection.ts": [
+        "D08-029"
+      ],
+      "use-workspace-kanban-card-pointer-drag.ts": [
+        "D08-036"
+      ],
+      "use-workspace-kanban-column-resize.ts": [
+        "D08-022"
+      ],
+      "use-workspace-kanban-create-worktree.ts": [
+        "D08-030"
+      ],
+      "use-workspace-kanban-drawer-lingering.ts": [
+        "D08-005"
+      ],
+      "use-workspace-kanban-native-drag.ts": [
+        "D08-041"
+      ],
+      "use-workspace-kanban-outside-dismiss.ts": [
+        "D08-004"
+      ],
+      "use-workspace-kanban-render-lifecycle.ts": [
+        "D08-006"
+      ],
+      "use-workspace-kanban-search.ts": [
+        "D08-013"
+      ],
+      "use-workspace-kanban-selection.ts": [
+        "D08-031"
+      ],
+      "use-workspace-kanban-shift-wheel-scroll.ts": [
+        "D08-023"
+      ],
+      "use-workspace-kanban-status-actions.ts": [
+        "D08-016",
+        "D08-018"
+      ],
+      "use-workspace-kanban-worktree-actions.ts": [
+        "D08-042"
+      ],
+      "useWorkspaceBoardPanel.ts": [
+        "D08-001",
+        "D08-002",
+        "D08-003"
+      ],
+      "workspace-board-task-status-sync.ts": [
+        "D08-044",
+        "D08-045"
+      ],
+      "workspace-kanban-area-selection-card-rects.ts": [
+        "D08-034"
+      ],
+      "workspace-kanban-area-selection-dom.ts": [
+        "D08-032",
+        "D08-033",
+        "D08-034"
+      ],
+      "workspace-kanban-area-selection-state.ts": [
+        "D08-032",
+        "D08-035"
+      ],
+      "workspace-kanban-card-drag-preview-dom.ts": [
+        "D08-037"
+      ],
+      "workspace-kanban-card-pointer-drag-dom.ts": [
+        "D08-038"
+      ],
+      "workspace-kanban-card-pointer-drag-start.ts": [
+        "D08-036"
+      ],
+      "workspace-kanban-filtered-drop-index.ts": [
+        "D08-026",
+        "D08-039"
+      ],
+      "workspace-kanban-lane-range.ts": [
+        "D08-019"
+      ],
+      "workspace-kanban-pointer-drag-selection.ts": [
+        "D08-036"
+      ],
+      "workspace-kanban-search.ts": [
+        "D08-013",
+        "D08-014"
+      ],
+      "workspace-kanban-sidebar-drop.ts": [
+        "D08-040"
+      ],
+      "workspace-kanban-virtual-lane-layout.ts": [
+        "D08-025"
+      ],
+      "workspace-kanban-worktree-groups.ts": [
+        "D08-029"
+      ]
+    },
+    "symbols": {
+      "WorkspaceKanbanAreaSelectionOverlay.tsx:default": [
+        "D08-032"
+      ],
+      "WorkspaceKanbanCard.tsx:default": [
+        "D08-027"
+      ],
+      "WorkspaceKanbanDrawer.tsx:default": [
+        "D08-005"
+      ],
+      "WorkspaceKanbanDrawerHeader.tsx:default": [
+        "D08-008"
+      ],
+      "WorkspaceKanbanDrawerView.tsx:default": [
+        "D08-009"
+      ],
+      "WorkspaceKanbanLaneCardList.tsx:default": [
+        "D08-024"
+      ],
+      "WorkspaceKanbanLaneGrid.tsx:default": [
+        "D08-019"
+      ],
+      "WorkspaceKanbanPinDropTarget.tsx:default": [
+        "D08-028"
+      ],
+      "WorkspaceKanbanSearchField.tsx:default": [
+        "D08-010"
+      ],
+      "WorkspaceKanbanSettingsMenu.tsx:default": [
+        "D08-015"
+      ],
+      "WorkspaceKanbanSheet.tsx:default": [
+        "D08-007"
+      ],
+      "WorkspaceKanbanStatusLane.tsx:default": [
+        "D08-021"
+      ],
+      "WorkspaceKanbanDrawer": [
+        "D08-005",
+        "D08-006",
+        "D08-008",
+        "D08-009",
+        "D08-042"
+      ],
+      "WorkspaceKanbanDrawerHeader": [
+        "D08-008"
+      ],
+      "WorkspaceKanbanDrawerView": [
+        "D08-009"
+      ],
+      "WorkspaceKanbanLaneGrid": [
+        "D08-019",
+        "D08-020"
+      ],
+      "WorkspaceKanbanPinDropTarget": [
+        "D08-028"
+      ],
+      "overlayReserve": [
+        "D08-010"
+      ],
+      "WorkspaceKanbanSearchField": [
+        "D08-010",
+        "D08-011",
+        "D08-012"
+      ],
+      "WorkspaceKanbanSettingsMenu": [
+        "D08-015",
+        "D08-016",
+        "D08-017"
+      ],
+      "WorkspaceKanbanSheet": [
+        "D08-007"
+      ],
+      "useWorkspaceBoardTaskStatusSync": [
+        "D08-043"
+      ],
+      "useWorkspaceKanbanAreaSelection": [
+        "D08-032",
+        "D08-033",
+        "D08-035"
+      ],
+      "useWorkspaceKanbanBoardProjection": [
+        "D08-029"
+      ],
+      "useWorkspaceKanbanCardPointerDrag": [
+        "D08-036"
+      ],
+      "useWorkspaceKanbanColumnResize": [
+        "D08-022"
+      ],
+      "useWorkspaceKanbanCreateWorktree": [
+        "D08-030"
+      ],
+      "useWorkspaceKanbanDrawerLingering": [
+        "D08-005"
+      ],
+      "useWorkspaceKanbanNativeDrag": [
+        "D08-041"
+      ],
+      "isWorkspaceBoardKeepOpenTarget": [
+        "D08-004"
+      ],
+      "useWorkspaceKanbanOutsideDismiss": [
+        "D08-004"
+      ],
+      "useWorkspaceKanbanRenderLifecycle": [
+        "D08-006"
+      ],
+      "useWorkspaceKanbanSearch": [
+        "D08-013"
+      ],
+      "useWorkspaceKanbanSelection": [
+        "D08-031"
+      ],
+      "useWorkspaceKanbanShiftWheelScroll": [
+        "D08-023"
+      ],
+      "useWorkspaceKanbanStatusActions": [
+        "D08-016",
+        "D08-018"
+      ],
+      "useWorkspaceKanbanWorktreeActions": [
+        "D08-042"
+      ],
+      "TOGGLE_WORKSPACE_BOARD_EVENT": [
+        "D08-001"
+      ],
+      "WorkspaceBoardPanelState": "INFRA: TypeScript type definition for panel hook return state",
+      "useWorkspaceBoardPanel": [
+        "D08-001",
+        "D08-002",
+        "D08-003"
+      ],
+      "WorkspaceBoardTaskStatusSyncResult": "INFRA: TypeScript type definition for task sync result shape",
+      "WorkspaceBoardTaskStatusSyncMessage": "INFRA: TypeScript union type for task sync outcome messages",
+      "SyncWorkspaceBoardTaskStatusesArgs": "INFRA: TypeScript argument interface for task status sync runner",
+      "WorkspaceBoardTaskStatusSyncRequest": "INFRA: TypeScript request interface for task status sync",
+      "getWorkspaceBoardTaskStatusSyncRequest": [
+        "D08-045"
+      ],
+      "syncWorkspaceBoardTaskStatuses": [
+        "D08-044"
+      ],
+      "AreaSelectionViewportRect": "INFRA: TypeScript type definition for viewport rectangle coordinates",
+      "AreaSelectionCardRect": "INFRA: TypeScript type definition for area selection card rectangle metrics",
+      "AREA_SELECTION_SCROLL_CONTAINER_SELECTOR": "INFRA: CSS selector constant for lane scroll container",
+      "getAreaSelectionCardRects": [
+        "D08-034"
+      ],
+      "AreaSelectionRect": "INFRA: TypeScript type definition for area selection rectangle",
+      "AREA_SELECTION_AUTO_SCROLL_EDGE_SIZE": "INFRA: Constant defining auto-scroll edge detection boundary in pixels (48px)",
+      "AREA_SELECTION_AUTO_SCROLL_MAX_DELTA": "INFRA: Constant defining maximum auto-scroll velocity step in pixels (22px)",
+      "getAreaSelectionRect": [
+        "D08-032"
+      ],
+      "shouldIgnoreAreaSelectionStart": [
+        "D08-032"
+      ],
+      "isScrollbarPointerDown": [
+        "D08-032"
+      ],
+      "getAreaSelectionCardIds": [
+        "D08-034"
+      ],
+      "getAreaSelectionScrollStartContentYByElement": [
+        "D08-034"
+      ],
+      "getAreaSelectionAutoScrollDelta": [
+        "D08-033"
+      ],
+      "getAreaSelectionScrollContainer": [
+        "D08-033"
+      ],
+      "setOverlayRect": [
+        "D08-032"
+      ],
+      "clearPreviewSelection": [
+        "D08-034"
+      ],
+      "updatePreviewSelection": [
+        "D08-034"
+      ],
+      "AreaSelectionDragState": "INFRA: TypeScript state interface for area selection drag state tracking",
+      "UseWorkspaceKanbanAreaSelectionParams": "INFRA: TypeScript parameter interface for area selection hook",
+      "AREA_SELECTION_DRAG_THRESHOLD": "INFRA: Constant defining minimal pointer displacement (4px) to initiate marquee drag",
+      "shouldCommitWorkspaceKanbanAreaSelection": [
+        "D08-035"
+      ],
+      "setDragDocumentStyles": [
+        "D08-037"
+      ],
+      "setDraggedCardsDragging": [
+        "D08-037"
+      ],
+      "updateDragPreviewPosition": [
+        "D08-037"
+      ],
+      "createDragPreview": [
+        "D08-037"
+      ],
+      "CARD_SELECTOR": "INFRA: CSS selector constant for workspace board cards",
+      "STATUS_DROP_TARGET": "INFRA: CSS selector constant for status lane drop targets",
+      "PIN_DROP_TARGET": "INFRA: CSS selector constant for pin drop target",
+      "WorkspaceKanbanStatusDropRect": "INFRA: TypeScript type definition for status lane drop rectangles",
+      "WorkspaceKanbanCardDropRect": "INFRA: TypeScript type definition for card drop rectangles",
+      "WorkspaceKanbanLaneDropRect": "INFRA: TypeScript type definition for lane drop bounding rectangles",
+      "WorkspaceKanbanCardDropTarget": "INFRA: TypeScript type definition for resolved card drop target",
+      "WorkspaceKanbanCardTrackedDropTarget": "INFRA: TypeScript type definition for tracked pointer drop target",
+      "resolveWorkspaceStatusDropTargetFromRects": [
+        "D08-038"
+      ],
+      "resolveWorkspaceCardDropIndexFromRects": [
+        "D08-038"
+      ],
+      "resolveWorkspaceCardDropIndicatorY": [
+        "D08-038"
+      ],
+      "resolveWorkspaceKanbanCardDropCommitTarget": [
+        "D08-038"
+      ],
+      "getDropTarget": [
+        "D08-038"
+      ],
+      "getCardDropTarget": [
+        "D08-038"
+      ],
+      "removeCardDropIndicator": [
+        "D08-038"
+      ],
+      "updateCardDropIndicator": [
+        "D08-038"
+      ],
+      "shouldStartWorkspaceKanbanCardPointerDrag": [
+        "D08-036"
+      ],
+      "shouldIgnoreWorkspaceKanbanCardPointerDown": [
+        "D08-036"
+      ],
+      "WORKSPACE_LANE_FULL_IDS_DELIMITER": "INFRA: Constant defining NUL character delimiter for serialized lane IDs",
+      "serializeWorkspaceLaneFullIds": [
+        "D08-026"
+      ],
+      "parseWorkspaceLaneFullIds": [
+        "D08-026"
+      ],
+      "resolveFullLaneDropIndex": [
+        "D08-039"
+      ],
+      "extractWorkspaceKanbanLaneRange": [
+        "D08-019"
+      ],
+      "resolveWorkspaceKanbanPointerDragSelection": [
+        "D08-036"
+      ],
+      "UseWorkspaceKanbanCardPointerDragParams": "INFRA: TypeScript parameter interface for card pointer drag hook",
+      "WorkspaceKanbanLaneView": "INFRA: TypeScript type definition for lane items and total count view",
+      "buildWorkspaceBoardPaletteDocuments": [
+        "D08-013"
+      ],
+      "matchWorkspaceBoardWorktrees": [
+        "D08-013"
+      ],
+      "buildWorkspaceKanbanLaneViews": [
+        "D08-014"
+      ],
+      "hasWorkspaceKanbanSidebarDropBoard": [
+        "D08-040"
+      ],
+      "isWorkspaceKanbanSidebarDropPointInBoard": [
+        "D08-040"
+      ],
+      "clearWorkspaceKanbanSidebarDropTargetVisual": [
+        "D08-040"
+      ],
+      "registerWorkspaceKanbanSidebarDropGroups": [
+        "D08-040"
+      ],
+      "getWorkspaceKanbanSidebarDropGroups": [
+        "D08-040"
+      ],
+      "getWorkspaceKanbanSidebarDropTarget": [
+        "D08-040"
+      ],
+      "resolveWorkspaceKanbanSidebarFullLaneDropIndex": [
+        "D08-040"
+      ],
+      "updateWorkspaceKanbanSidebarDropTargetVisual": [
+        "D08-040"
+      ],
+      "buildWorkspaceKanbanSidebarDropUpdates": [
+        "D08-040"
+      ],
+      "WorkspaceKanbanVirtualLaneItemRect": "INFRA: TypeScript type definition for virtual lane item rectangle metrics",
+      "registerWorkspaceKanbanVirtualLaneLayout": [
+        "D08-025"
+      ],
+      "getWorkspaceKanbanVirtualLaneItemIds": [
+        "D08-025"
+      ],
+      "getWorkspaceKanbanVirtualLaneItemRects": [
+        "D08-025"
+      ],
+      "resolveWorkspaceKanbanVirtualLaneDropIndex": [
+        "D08-025"
+      ],
+      "resolveWorkspaceKanbanVirtualLaneDropIndicatorY": [
+        "D08-025"
+      ],
+      "groupWorkspaceKanbanWorktrees": [
+        "D08-029"
+      ]
+    },
+    "tests": {
+      "components/sidebar/WorkspaceKanbanCard.host-identity.test.tsx:31 :: WorkspaceKanbanCard host identity": "INFRA: describe block grouping tests in WorkspaceKanbanCard.host-identity.test.tsx",
+      "components/sidebar/WorkspaceKanbanCard.host-identity.test.tsx:32 :: keeps the DOM and selection gesture scoped to one host": "D08-027",
+      "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:175 :: WorkspaceKanbanDrawer mount gating": "INFRA: describe block grouping tests in WorkspaceKanbanDrawer.mount-gating.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:197 :: unmounts heavy content after the close animation and isolates closed churn": "D08-005",
+      "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:236 :: cancels the pending unmount when reopened at 299 ms": "D08-005",
+      "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:248 :: preserves drag preview presentation when the preview becomes a full board": "D08-005",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:266 :: WorkspaceKanbanDrawer search": "INFRA: describe block grouping tests in WorkspaceKanbanDrawer.search.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:267 :: filters every lane in place and reports lane totals": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:281 :: restores every lane when the query is cleared": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:294 :: drops the query when the board closes so a reopen starts unfiltered": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:306 :: still runs the Linear status sync for a drop made under an active query": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:326 :: narrows the pointer-drag payload to the rendered cards": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:336 :: narrows the context-menu ": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:345 :: keeps selection highlighting unfiltered while a query is active": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:354 :: counts only the rendered cards in the header selection badge": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:364 :: scopes selection gestures to the rendered cards": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:373 :: reports a non-filtering query so the header withholds match counts": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:382 :: leaves the whole board unfiltered for an over-bound query": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:400 :: ranks a drop into a filtered lane against the full lane, not the rendered one": "D08-013",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:286 :: WorkspaceKanbanDrawer task status sync wiring": "INFRA: describe block grouping tests in WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:287 :: reserves the status bar row in the board sheet and overlay when visible": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:301 :: keeps the board sheet and overlay flush to the viewport bottom when status bar is hidden": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:315 :: syncs Linear after a document-drop status move when the setting is enabled": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:333 :: does not sync when a document-drop status move happens while disabled": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:344 :: syncs pointer-drop status changes through the board callback": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:364 :: does not sync manual-order-only drops that keep the same board status": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:379 :: does not sync pin-only paths": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:392 :: shows a warning toast when task status sync is skipped with a message": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:415 :: syncs Linear when the board context-menu ": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:431 :: does not sync a context-menu status move when the setting is disabled": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:442 :: does not sync a context-menu status move that keeps the same board status": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:453 :: shows an error toast when task status sync unexpectedly rejects": "D08-042",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:81 :: WorkspaceKanbanDrawerHeader": "INFRA: describe block grouping tests in WorkspaceKanbanDrawerHeader.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:82 :: routes the close button through the explicit drawer close callback": "D08-008",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:96 :: renders the search field as a sibling of the sheet title, not inside it": "D08-008",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:117 :: keeps the filter, settings, and close cluster reachable alongside the field": "D08-008",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:130 :: keeps the selected-count badge and the field clear of the control cluster": "D08-008",
+      "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:112 :: WorkspaceKanbanLaneCardList": "INFRA: describe block grouping tests in WorkspaceKanbanLaneCardList.test.tsx",
+      "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:113 :: mounts only the virtual window, not the whole lane": "D08-024",
+      "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:129 :: gives every rendered card its lane index, not its rendered position": "D08-024",
+      "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:138 :: reserves the full lane height so the scrollbar spans the whole list": "D08-024",
+      "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:146 :: positions each card at its virtual offset": "D08-024",
+      "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:155 :: renders nothing for an empty lane and a single card at index 0": "D08-024",
+      "components/sidebar/WorkspaceKanbanLaneCardList.test.tsx:165 :: gives same-id cards unique host-qualified virtual and DOM identities": "D08-024",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:167 :: WorkspaceKanbanLaneGrid": "INFRA: describe block grouping tests in WorkspaceKanbanLaneGrid.test.tsx",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:168 :: reserves the full workflow width while mounting only the horizontal window": "D08-019",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:183 :: mounts later ordered lanes and releases distant lanes after horizontal scroll": "D08-019",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:198 :: keeps one focused lane mounted without unbounding the virtual window": "D08-019",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:215 :: adds only the focused lane to the normal overscanned range": "D08-019",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:221 :: hydrates at most one mounted lane per animation frame": "D08-019",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:233 :: passes the host-qualified active workspace through virtualized lanes": "D08-019",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:75 :: WorkspaceKanbanSearchField": "INFRA: describe block grouping tests in WorkspaceKanbanSearchField.test.tsx",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:76 :: reports every keystroke without debouncing": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:89 :: only offers the clear affordance for a non-empty query": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:101 :: hides the visual match count from assistive tech but keeps the clear button named": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:110 :: withholds counts for text that never narrows the board": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:122 :: announces match counts only after the query settles": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:141 :: clears a non-empty query on Escape and closes the board on an empty one": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:166 :: says so when a query was discarded for length instead of silently not filtering": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:180 :: leaves Escape to the IME while a composition is in progress": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:198 :: keeps focus in the field after the clear button unmounts itself": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:209 :: reserves overlay width in font-relative units, capped so text stays visible": "D08-010",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:67 :: WorkspaceKanbanSettingsMenu": "INFRA: describe block grouping tests in WorkspaceKanbanSettingsMenu.test.tsx",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:68 :: renders the task status sync switch and forwards changes": "D08-015",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:86 :: keeps adding available for workflows above the former board limit": "D08-015",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:103 :: WorkspaceKanbanStatusLane": "INFRA: describe block grouping tests in WorkspaceKanbanStatusLane.test.tsx",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:104 :: shows a plain count without a query and a matches/total count with one": "D08-021",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:113 :: keeps a fully filtered lane as a labeled drop target": "D08-021",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:120 :: shows the empty placeholder when there is no query": "D08-021",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:127 :: leaves an already-empty lane as Empty under a query rather than ": "D08-021",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:135 :: publishes the full lane membership even when the rendered set is a subset": "D08-021",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:147 :: stays off the full-id channel when nothing is filtered": "D08-021",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:160 :: passes the host-qualified active workspace through to the card list": "D08-021",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:19 :: workspace kanban card pointer drag start": "INFRA: describe block grouping tests in use-workspace-kanban-card-pointer-drag.test.ts",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:20 :: starts for plain primary mouse drags": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:24 :: does not steal modifier gestures from selection": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:30 :: ignores touch and non-primary buttons": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:38 :: workspace kanban pointer drag selection identity": "INFRA: describe block grouping tests in use-workspace-kanban-card-pointer-drag.test.ts",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:39 :: does not expand a same-id drag to the unselected host": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.test.ts:56 :: drags the selected host-qualified batch when the source row is selected": "D08-036",
+      "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx:7 :: workspace board close linger": "INFRA: describe block grouping tests in use-workspace-kanban-drawer-lingering.test.tsx",
+      "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx:10 :: keeps drawer state through the close animation, then releases it at 300 ms": "D08-005",
+      "components/sidebar/use-workspace-kanban-drawer-lingering.test.tsx:23 :: cancels the pending release when reopened": "D08-005",
+      "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts:32 :: workspace kanban outside dismiss keep-open targets": "INFRA: describe block grouping tests in use-workspace-kanban-outside-dismiss.test.ts",
+      "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts:42 :: keeps the board open when a Sonner toast action is clicked": "D08-004",
+      "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts:49 :: keeps the board open when the contextual tour panel is clicked": "D08-004",
+      "components/sidebar/use-workspace-kanban-outside-dismiss.test.ts:56 :: does not keep the board open for generic outside content": "D08-004",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:92 :: useWorkspaceKanbanSelection": "INFRA: describe block grouping tests in use-workspace-kanban-selection.test.tsx",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:93 :: ranges across the whole board when nothing is filtered": "D08-031",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:102 :: never ranges through cards a search has hidden": "D08-031",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:111 :: keeps a hidden card selected so clearing the search restores the selection": "D08-031",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:124 :: extends the range from a visible card when a search hides the anchor": "D08-031",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:140 :: replaces a hidden selection on every replace-shaped gesture alike": "D08-031",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:155 :: lets a plain click clear a selection the search is hiding": "D08-031",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:166 :: still prunes ids that leave the board entirely": "D08-031",
+      "components/sidebar/use-workspace-kanban-selection.test.tsx:176 :: selects same-id cards independently by host": "D08-031",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:72 :: useWorkspaceBoardPanel": "INFRA: describe block grouping tests in useWorkspaceBoardPanel.test.tsx",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:85 :: toggles the board and records the feature interaction when opened": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:102 :: toggles the board from the shortcut bridge event": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:122 :: renders a drag preview without recording an open interaction": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:133 :: cancels an uncommitted drag preview": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:144 :: solidifies a drag preview and keeps the board open after drag cleanup": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:157 :: keeps the board open on Escape while a nested board menu is open": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:172 :: lets Escape close the board while non-interactive tooltip content is open": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:185 :: lets Escape close the board when the board sheet itself is the open dialog": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:199 :: keeps the board open on Escape while an interactive popover is open": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:212 :: defers Escape to a text field inside the board": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:226 :: still closes the board on Escape from a text field outside it": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:236 :: keeps the board open on Escape while a nested dialog is open": "D08-001",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:95 :: syncWorkspaceBoardTaskStatuses": "INFRA: describe block grouping tests in workspace-board-task-status-sync.test.ts",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:96 :: updates Linear when exactly one workflow state matches the board status": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:119 :: uses the fetched issue workspace for state reads and writes when the link lacks one": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:144 :: routes each Linear update through the moved worktree owner settings": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:201 :: preserves null settings from the moved worktree resolver": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:226 :: skips worktrees without linked Linear issues": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:244 :: skips when the Linear issue is already in the matching state": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:255 :: skips missing or ambiguous workflow state matches": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:282 :: skips stale async writes when the local workspace status changed again": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:298 :: serializes repeated moves for the same worktree so the latest status wins": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:353 :: aggregates provider write failures without throwing": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:372 :: getWorkspaceBoardTaskStatusSyncRequest": "INFRA: describe block grouping tests in workspace-board-task-status-sync.test.ts",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:378 :: builds a sync request for enabled status moves": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:393 :: does not build a sync request while the board setting is disabled": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:405 :: skips same-status and duplicate ids so manual-order-only drops do not sync": "D08-044",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:417 :: does not build a sync request without a board status target": "D08-044",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:11 :: workspace kanban area selection finish": "INFRA: describe block grouping tests in workspace-kanban-area-selection.test.ts",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:12 :: commits an empty non-additive surface click so selection clears": "D08-032",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:21 :: ignores empty additive surface clicks so modifier-click off does not clear": "D08-032",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:30 :: commits marquee drags even when additive": "D08-032",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:40 :: workspace kanban area selection auto-scroll": "INFRA: describe block grouping tests in workspace-kanban-area-selection.test.ts",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:41 :: scrolls down near the bottom edge while more lane content is available": "D08-032",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:54 :: scrolls up near the top edge while content exists above": "D08-032",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:67 :: does not scroll when the pointer is away from the edges or at scroll limits": "D08-032",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:91 :: workspace kanban area selection scrolled content hit-testing": "INFRA: describe block grouping tests in workspace-kanban-area-selection.test.ts",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:92 :: keeps cards selected after lane scroll moves them above the viewport marquee": "D08-032",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:138 :: falls back to viewport hit-testing for cards outside lane scrollers": "D08-032",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:175 :: workspace kanban area selection preview remount": "INFRA: describe block grouping tests in workspace-kanban-area-selection.test.ts",
+      "components/sidebar/workspace-kanban-area-selection.test.ts:176 :: re-applies the preview attribute when a card remounts under the same id": "D08-032",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:15 :: workspace kanban pointer drag drop target": "INFRA: describe block grouping tests in workspace-kanban-card-pointer-drag-dom.test.ts",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:16 :: uses the containing lane when the pointer is inside one": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:20 :: falls back to the nearest lane when the pointer is in a lane gap": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:25 :: does not resolve a lane outside the lane row": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:30 :: workspace kanban pointer drag card drop index": "INFRA: describe block grouping tests in workspace-kanban-card-pointer-drag-dom.test.ts",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:37 :: inserts before the first card whose midpoint is below the pointer": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:42 :: inserts at the end when the pointer is below every card midpoint": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:49 :: uses the lane index of a rendered card rather than its rendered position": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:61 :: workspace kanban drop indicator placement": "INFRA: describe block grouping tests in workspace-kanban-card-pointer-drag-dom.test.ts",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:67 :: places the line above, between, and below rendered cards": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:73 :: falls back to the lane top when the lane renders no cards": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:77 :: anchors to the rendered card that owns the lane index": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:88 :: workspace kanban pointer drag commit target": "INFRA: describe block grouping tests in workspace-kanban-card-pointer-drag-dom.test.ts",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:89 :: uses the current target when release hit-testing succeeds": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:104 :: reuses the latest tracked target when release hit-testing blanks at the same point": "D08-038",
+      "components/sidebar/workspace-kanban-card-pointer-drag-dom.test.ts:119 :: does not reuse a tracked target after the pointer has moved away": "D08-038",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:10 :: resolveFullLaneDropIndex": "INFRA: describe block grouping tests in workspace-kanban-filtered-drop-index.test.ts",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:11 :: is the identity when nothing is filtered": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:23 :: maps the first filtered slot onto the first match position": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:33 :: maps the end of a filtered lane one past the last match": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:43 :: maps a slot between two matches onto the following match": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:53 :: appends into a lane whose cards are all filtered away": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:68 :: falls back toward the end of the lane the branch was aiming at": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:94 :: still translates when a stale lane has the same length but different members": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:106 :: clamps out-of-range filtered indices to the first and last branches": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:124 :: workspace lane full-id channel": "INFRA: describe block grouping tests in workspace-kanban-filtered-drop-index.test.ts",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:125 :: round-trips lane membership through the delimiter": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:133 :: distinguishes an unpublished lane from an empty one": "D08-039",
+      "components/sidebar/workspace-kanban-filtered-drop-index.test.ts:139 :: survives ids holding every character a path can legally contain": "D08-039",
+      "components/sidebar/workspace-kanban-search.test.ts:38 :: matchWorkspaceBoardWorktrees": "INFRA: describe block grouping tests in workspace-kanban-search.test.ts",
+      "components/sidebar/workspace-kanban-search.test.ts:39 :: treats blank and whitespace-only queries as no filtering": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:45 :: matches display name, branch, and repo display name": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:57 :: matches the workspace comment": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:66 :: excludes worktrees that only match on PR, issue, or port": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:75 :: matches composite repo/branch queries": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:84 :: is case-insensitive": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:90 :: treats regex metacharacters as literal text": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:102 :: matches non-ASCII display names and comments": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:113 :: treats an over-bound query as no filtering rather than zero matches": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:121 :: separates two same-id host rows": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:136 :: buildWorkspaceKanbanLaneViews": "INFRA: describe block grouping tests in workspace-kanban-search.test.ts",
+      "components/sidebar/workspace-kanban-search.test.ts:144 :: reuses the input arrays when no query is active": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:152 :: preserves lane order and per-lane sort order": "D08-013",
+      "components/sidebar/workspace-kanban-search.test.ts:162 :: keeps a fully filtered lane with an empty item list and its real total": "D08-013",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:328 :: workspace kanban sidebar drop DOM bridge": "INFRA: describe block grouping tests in workspace-kanban-sidebar-drop.test.ts",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:329 :: resolves the board lane and rendered card index under a sidebar pointer drag": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:343 :: prefers complete registered groups and restores the DOM fallback on cleanup": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:360 :: uses the full virtual layout when the mounted card window is stale": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:408 :: prefers the published full lane membership over the rendered card scan": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:419 :: keeps the tracked drop target in the rendered index space of the indicator": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:431 :: translates a rendered drop index onto the full lane at the commit boundary": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:444 :: lands a virtualized searched lane drop where the indicator pointed": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:462 :: translates virtualized searched lane drops above and below the mounted window": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:479 :: passes a virtualized unfiltered lane drop index through untranslated": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:496 :: still counts unlaid-out cards as lane members without a virtual layout": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:512 :: passes the drop index through for a lane it cannot find": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:518 :: marks and clears the external board hover target": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:537 :: detects pointer entry across the whole board sheet": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:553 :: workspace kanban sidebar drop updates": "INFRA: describe block grouping tests in workspace-kanban-sidebar-drop.test.ts",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:554 :: writes a status-only update for cross-lane drops outside Manual sort": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:582 :: keeps the dropped board position when Manual sort is active": "D08-040",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:618 :: keeps board drops sparse when filtered rows already have durable ranks": "D08-040",
+      "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:57 :: workspace kanban virtual lane layout": "INFRA: describe block grouping tests in workspace-kanban-virtual-lane-layout.test.ts",
+      "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:58 :: resolves mid-lane and bottom drops immediately after a large scroll jump": "D08-025",
+      "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:69 :: exposes every logical item even when no card is mounted": "D08-025",
+      "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:85 :: selects intermediate never-mounted cards across a jumped lane range": "D08-025",
+      "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:110 :: does not let stale cleanup remove a newer lane registration": "D08-025",
+      "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:133 :: places empty-lane and boundary drop indicators from the spacer": "D08-025",
+      "components/sidebar/workspace-kanban-virtual-lane-layout.test.ts:152 :: returns null when measurements are incomplete or mismatched": "D08-025",
+      "components/sidebar/workspace-kanban-worktree-groups.test.ts:42 :: groupWorkspaceKanbanWorktrees": "INFRA: describe block grouping tests in workspace-kanban-worktree-groups.test.ts",
+      "components/sidebar/workspace-kanban-worktree-groups.test.ts:43 :: uses manualOrder inside lanes when Manual sort is active": "D08-029",
+      "components/sidebar/workspace-kanban-worktree-groups.test.ts:77 :: does not crash when a worktree is missing its displayName under Manual sort": "D08-029",
+      "components/sidebar/workspace-kanban-worktree-groups.test.ts:105 :: does not crash when a worktree is missing its displayName outside Manual sort": "D08-029",
+      "components/sidebar/workspace-kanban-worktree-groups.test.ts:130 :: keeps pinned then recent ordering outside Manual sort": "D08-029",
+      "components/sidebar/workspace-kanban-worktree-groups.test.ts:157 :: does not admit another host row that shares the visible workspace id": "D08-029"
+    },
+    "labels": {
+      "components/sidebar/WorkspaceKanbanCard.tsx:60 :: aria-label={translate('auto.components.sidebar.WorkspaceKanbanCard.cefae8983e', 'Pinned')}": "D08-027",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:172 :: { id: 'todo', label: 'Todo' },": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawer.search.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:173 :: { id: 'in-review', label: 'In review' }": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawer.search.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx:321 :: targetStatus: { id: 'todo', label: 'Todo' }": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawer.search.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:195 :: { id: 'todo', label: 'Todo' },": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:196 :: { id: 'in-review', label: 'In review' }": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:326 :: targetStatus: { id: 'in-review', label: 'In review' },": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:359 :: targetStatus: { id: 'in-review', label: 'In review' }": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx:426 :: targetStatus: { id: 'in-review', label: 'In review' }": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx:17 :: const statuses: WorkspaceStatusDefinition[] = [{ id: 'todo', label: 'Todo' }]": "INFRA: test fixture / helper declaration in WorkspaceKanbanDrawerHeader.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:23 :: onRenameStatus: (statusId: string, label: string) => void": "INFRA: TypeScript callback prop type in header",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:99 :: tooltipSide=\"top\"": "D08-008",
+      "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:117 :: aria-label={translate(": "D08-008",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:94 :: label: `State ${index + 1}`": "INFRA: test fixture / helper declaration in WorkspaceKanbanLaneGrid.test.tsx",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:48 :: return container.querySelector<HTMLButtonElement>('button[aria-label=\"Clear search\"]')": "INFRA: test fixture / helper declaration in WorkspaceKanbanSearchField.test.tsx",
+      "components/sidebar/WorkspaceKanbanSearchField.tsx:105 :: aria-label={translate(": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.tsx:109 :: placeholder={translate(": "D08-010",
+      "components/sidebar/WorkspaceKanbanSearchField.tsx:140 :: title={tooLargeMessage ?? undefined}": "D08-012",
+      "components/sidebar/WorkspaceKanbanSearchField.tsx:154 :: aria-label={translate(": "D08-010",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:7 :: const statuses: WorkspaceStatusDefinition[] = [{ id: 'todo', label: 'Todo' }]": "INFRA: test fixture / helper declaration in WorkspaceKanbanSettingsMenu.test.tsx",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:17 :: vi.mock('@/components/ui/tooltip', () => ({": "INFRA: test fixture / helper declaration in WorkspaceKanbanSettingsMenu.test.tsx",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:73 :: 'button[role=\"switch\"][aria-label=\"Sync board and issue status\"]'": "INFRA: test fixture / helper declaration in WorkspaceKanbanSettingsMenu.test.tsx",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx:91 :: label: `State ${index + 1}`": "INFRA: test fixture / helper declaration in WorkspaceKanbanSettingsMenu.test.tsx",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:10 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "INFRA: UI import for tooltip in settings menu",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:22 :: onRenameStatus: (statusId: string, label: string) => void": "INFRA: TypeScript callback prop type in settings menu",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:49 :: aria-label={translate(": "D08-015",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:133 :: aria-label={translate(": "D08-015",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:151 :: aria-label={translate(": "D08-016",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:166 :: aria-label={translate(": "D08-016",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:181 :: aria-label={translate(": "D08-016",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:29 :: vi.mock('@/components/ui/tooltip', () => ({": "INFRA: test fixture / helper declaration in WorkspaceKanbanStatusLane.test.tsx",
+      "components/sidebar/WorkspaceKanbanStatusLane.test.tsx:35 :: const status = { id: 'todo', label: 'Todo' }": "INFRA: test fixture / helper declaration in WorkspaceKanbanStatusLane.test.tsx",
+      "components/sidebar/WorkspaceKanbanStatusLane.tsx:15 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "INFRA: UI import for tooltip in status lane",
+      "components/sidebar/WorkspaceKanbanStatusLane.tsx:102 :: aria-label={createTooltip}": "D08-021",
+      "components/sidebar/WorkspaceKanbanStatusLane.tsx:137 :: aria-label={translate(": "D08-022",
+      "components/sidebar/WorkspaceKanbanStatusLane.tsx:221 :: aria-label={createTooltip}": "D08-021",
+      "components/sidebar/use-workspace-kanban-status-actions.ts:19 :: (statusId: string, label: string) => {": "INFRA: callback parameter signature for handleRenameStatus",
+      "components/sidebar/use-workspace-kanban-status-actions.ts:26 :: status.id === statusId ? { ...status, label: trimmed } : status": "D08-018",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:172 :: it('lets Escape close the board while non-interactive tooltip content is open', async () => {": "INFRA: test fixture / helper declaration in useWorkspaceBoardPanel.test.tsx",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:174 :: const tooltip = document.createElement('div')": "INFRA: test fixture / helper declaration in useWorkspaceBoardPanel.test.tsx",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:175 :: tooltip.setAttribute('data-slot', 'tooltip-content')": "INFRA: test fixture / helper declaration in useWorkspaceBoardPanel.test.tsx",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:176 :: tooltip.setAttribute('data-state', 'open')": "INFRA: test fixture / helper declaration in useWorkspaceBoardPanel.test.tsx",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:177 :: document.body.appendChild(tooltip)": "INFRA: test fixture / helper declaration in useWorkspaceBoardPanel.test.tsx",
+      "components/sidebar/useWorkspaceBoardPanel.ts:146 :: // companion panel, but non-interactive tooltips should not trap it.": "D08-003",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:51 :: return { id: 'in-review', label: 'In review', ...overrides }": "INFRA: test fixture / helper declaration in workspace-board-task-status-sync.test.ts",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:324 :: targetStatus: targetStatus({ id: 'done', label: 'Done' }),": "INFRA: test fixture / helper declaration in workspace-board-task-status-sync.test.ts",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:374 :: { id: 'todo', label: 'Todo' },": "INFRA: test fixture / helper declaration in workspace-board-task-status-sync.test.ts",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:375 :: { id: 'in-review', label: 'In review' }": "INFRA: test fixture / helper declaration in workspace-board-task-status-sync.test.ts",
+      "components/sidebar/workspace-board-task-status-sync.test.ts:389 :: targetStatus: { id: 'in-review', label: 'In review' }": "INFRA: test fixture / helper declaration in workspace-board-task-status-sync.test.ts",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:17 :: { id: 'todo', label: 'Todo' },": "INFRA: test fixture / helper declaration in workspace-kanban-sidebar-drop.test.ts",
+      "components/sidebar/workspace-kanban-sidebar-drop.test.ts:18 :: { id: 'doing', label: 'Doing' }": "INFRA: test fixture / helper declaration in workspace-kanban-sidebar-drop.test.ts",
+      "components/sidebar/workspace-kanban-worktree-groups.test.ts:34 :: { id: 'todo', label: 'Todo' },": "INFRA: test fixture / helper declaration in workspace-kanban-worktree-groups.test.ts",
+      "components/sidebar/workspace-kanban-worktree-groups.test.ts:35 :: { id: 'doing', label: 'Doing' }": "INFRA: test fixture / helper declaration in workspace-kanban-worktree-groups.test.ts"
+    },
+    "hotkeys": {
+      "components/sidebar/WorkspaceKanbanLaneGrid.tsx:53 :: onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void": "D08-022",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:150 :: new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })": "INFRA: simulated keydown event in WorkspaceKanbanSearchField.test.tsx",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:159 :: new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })": "INFRA: simulated keydown event in WorkspaceKanbanSearchField.test.tsx",
+      "components/sidebar/WorkspaceKanbanSearchField.test.tsx:185 :: new KeyboardEvent('keydown', {": "INFRA: simulated keydown event in WorkspaceKanbanSearchField.test.tsx",
+      "components/sidebar/WorkspaceKanbanSearchField.tsx:122 :: if (event.key !== 'Escape' || event.nativeEvent.isComposing) {": "D08-011",
+      "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:128 :: if (event.key === 'Enter') {": "D08-015",
+      "components/sidebar/WorkspaceKanbanStatusLane.tsx:49 :: onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void": "D08-022",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:12 :: onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void": "D08-022",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:133 :: (event: React.KeyboardEvent<HTMLElement>) => {": "D08-022",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:134 :: if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {": "D08-022",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:139 :: const direction = event.key === 'ArrowRight' ? 1 : -1": "D08-022",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:57 :: from.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))": "INFRA: simulated keydown event in useWorkspaceBoardPanel.test.tsx",
+      "components/sidebar/useWorkspaceBoardPanel.test.tsx:102 :: it('toggles the board from the shortcut bridge event', async () => {": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.ts:135 :: const handleKeyDown = (event: KeyboardEvent): void => {": "D08-003",
+      "components/sidebar/useWorkspaceBoardPanel.ts:136 :: if (event.key !== 'Escape') {": "D08-003"
+    },
+    "prefs": {},
+    "timers": {
+      "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:178 :: vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })": "INFRA: fake timer / rAF spy setup in WorkspaceKanbanDrawer.mount-gating.test.tsx",
+      "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx:150 :: vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {": "INFRA: fake timer / rAF spy setup in WorkspaceKanbanLaneGrid.test.tsx",
+      "components/sidebar/WorkspaceKanbanLaneGrid.tsx:158 :: frameId = window.requestAnimationFrame(renderNextLane)": "D08-020",
+      "components/sidebar/WorkspaceKanbanLaneGrid.tsx:162 :: frameId = window.requestAnimationFrame(renderNextLane)": "D08-020",
+      "components/sidebar/WorkspaceKanbanSearchField.tsx:92 :: const timer = window.setTimeout(": "D08-012",
+      "components/sidebar/use-workspace-kanban-area-selection.ts:147 :: state.frameId = window.requestAnimationFrame(flushAreaSelectionDrag)": "D08-032",
+      "components/sidebar/use-workspace-kanban-area-selection.ts:179 :: state.scrollFrameId = window.requestAnimationFrame(runAreaSelectionAutoScroll)": "D08-033",
+      "components/sidebar/use-workspace-kanban-area-selection.ts:187 :: state.scrollFrameId = window.requestAnimationFrame(runAreaSelectionAutoScroll)": "D08-033",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:202 :: state.frameId = window.requestAnimationFrame(flushPointerDragFrame)": "D08-037",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:59 :: frameRef.current = window.requestAnimationFrame(() => {": "D08-022",
+      "components/sidebar/use-workspace-kanban-drawer-lingering.ts:12 :: const timer = window.setTimeout(() => setLingering(false), WORKSPACE_BOARD_CLOSE_LINGER_MS)": "D08-005",
+      "components/sidebar/use-workspace-kanban-render-lifecycle.ts:18 :: const frameId = window.requestAnimationFrame(() => {": "D08-006"
+    },
+    "subscriptions": {
+      "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:62 :: React.useEffect(() => {": "INFRA: test observer / spy subscription in WorkspaceKanbanDrawer.mount-gating.test.tsx",
+      "components/sidebar/WorkspaceKanbanDrawer.mount-gating.test.tsx:64 :: const unsubscribe = useAppStore.subscribe(() => contentProbe.storeNotifications())": "INFRA: test observer / spy subscription in WorkspaceKanbanDrawer.mount-gating.test.tsx",
+      "components/sidebar/WorkspaceKanbanLaneGrid.tsx:131 :: useEffect(() => {": "D08-020",
+      "components/sidebar/WorkspaceKanbanSearchField.tsx:83 :: useEffect(() => {": "D08-012",
+      "components/sidebar/use-workspace-kanban-area-selection.ts:268 :: useEffect(() => {": "D08-032",
+      "components/sidebar/use-workspace-kanban-area-selection.ts:311 :: document.addEventListener('pointermove', handlePointerMove, true)": "D08-032",
+      "components/sidebar/use-workspace-kanban-area-selection.ts:312 :: document.addEventListener('pointerup', handlePointerUp, true)": "D08-035",
+      "components/sidebar/use-workspace-kanban-area-selection.ts:313 :: document.addEventListener('pointercancel', handlePointerUp, true)": "D08-035",
+      "components/sidebar/use-workspace-kanban-area-selection.ts:314 :: document.addEventListener('scroll', handleScroll, true)": "D08-034",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:207 :: useEffect(() => {": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:255 :: document.addEventListener('pointermove', handlePointerMove, true)": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:256 :: document.addEventListener('pointerup', handlePointerUp, true)": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:257 :: document.addEventListener('pointercancel', handlePointerUp, true)": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:258 :: document.addEventListener('click', handleClick, true)": "D08-036",
+      "components/sidebar/use-workspace-kanban-card-pointer-drag.ts:259 :: window.addEventListener('blur', handleBlur)": "D08-036",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:98 :: useEffect(() => {": "D08-022",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:99 :: window.addEventListener('pointermove', handlePointerMove)": "D08-022",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:100 :: window.addEventListener('pointerup', stopResize)": "D08-022",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:101 :: window.addEventListener('pointercancel', stopResize)": "D08-022",
+      "components/sidebar/use-workspace-kanban-column-resize.ts:102 :: window.addEventListener('blur', stopResize)": "D08-022",
+      "components/sidebar/use-workspace-kanban-drawer-lingering.ts:7 :: useEffect(() => {": "D08-005",
+      "components/sidebar/use-workspace-kanban-outside-dismiss.ts:38 :: useEffect(() => {": "D08-004",
+      "components/sidebar/use-workspace-kanban-outside-dismiss.ts:60 :: document.addEventListener('pointerdown', handlePointerDown, true)": "D08-004",
+      "components/sidebar/use-workspace-kanban-render-lifecycle.ts:12 :: useEffect(() => {": "D08-006",
+      "components/sidebar/use-workspace-kanban-render-lifecycle.ts:30 :: useEffect(() => {": "D08-006",
+      "components/sidebar/use-workspace-kanban-render-lifecycle.ts:45 :: document.addEventListener('pointerdown', clearSelectionOutsideBoard, true)": "D08-006",
+      "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:46 :: useEffect(() => {": "D08-023",
+      "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:95 :: document.addEventListener('dragstart', handleDragStart, true)": "D08-023",
+      "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:96 :: document.addEventListener('dragover', handleDragOver, true)": "D08-023",
+      "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:97 :: document.addEventListener('drop', stopTrackingDrag, true)": "D08-023",
+      "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:98 :: document.addEventListener('dragend', stopTrackingDrag, true)": "D08-023",
+      "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:99 :: window.addEventListener('blur', stopTrackingDrag)": "D08-023",
+      "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts:102 :: document.addEventListener('wheel', handleWheel, { capture: true, passive: false })": "D08-023",
+      "components/sidebar/useWorkspaceBoardPanel.ts:130 :: useEffect(() => {": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.ts:156 :: document.addEventListener('keydown', handleKeyDown, true)": "D08-003",
+      "components/sidebar/useWorkspaceBoardPanel.ts:160 :: useEffect(() => {": "D08-001",
+      "components/sidebar/useWorkspaceBoardPanel.ts:161 :: window.addEventListener(TOGGLE_WORKSPACE_BOARD_EVENT, toggleWorkspaceBoard)": "D08-001"
+    },
+    "preload": {}
+  }
+}

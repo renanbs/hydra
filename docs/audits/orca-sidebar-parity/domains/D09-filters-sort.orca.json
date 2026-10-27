@@ -1,0 +1,1345 @@
+{
+  "domain": "D09-filters-sort",
+  "rows": [
+    {
+      "id": "D09-001",
+      "capability": "Renderização de linha de alternância (switch toggle) padronizada para menus de filtros de workspaces",
+      "surface": "Menu suspenso de filtros do sidebar (SidebarFilter) e menu de opções de workspaces (SidebarWorkspaceFilterSection)",
+      "trigger": "Renderização dos menus de filtros; clique do usuário para alternar estado",
+      "behaviors": [
+        "Renderiza elemento button nativo com role='switch' e atributo aria-checked refletindo o estado booleano do filtro",
+        "Suporta aria-label explícito para leitores de tela quando o label visual for contextual",
+        "Apresenta ícone temático em text-muted-foreground e label textual em tipografia 12px font-medium",
+        "Renderiza indicador de switch compacto (SwitchIndicator) com transição de cor para bg-primary quando ativado",
+        "Invoca callback onChange com a negação do valor booleano atual ao ser clicado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: icon, label, ariaLabel, checked, onChange"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/FilterToggleRow.tsx:11",
+        "components/sidebar/FilterToggleRow.tsx:28",
+        "components/sidebar/FilterToggleRow.tsx:35"
+      ],
+      "tests": [
+        "components/sidebar/FilterToggleRow.test.tsx:50 :: FilterToggleRow"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-002",
+      "capability": "Suporte a indentação visual de sub-opções de filtros sem conflito de especificidade com Tailwind v4",
+      "surface": "Linha de filtro sub-opção nos menus de filtro (ex.: 'Except default branch')",
+      "trigger": "Propriedade indented=true passada ao componente FilterToggleRow",
+      "behaviors": [
+        "Aplica classe pl-7 quando indented=true (em vez de pl-2 no modo padrão), deslocando a linha horizontalmente para indicar hierarquia",
+        "Evita utilitários px-* (padding-inline) do Tailwind v4 que sobrescreveriam o padding-left físico e achatariam a indentação",
+        "Altera a cor do texto do label para text-muted-foreground em itens indentados para reforço visual de subordinação"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: indented"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/FilterToggleRow.tsx:38",
+        "components/sidebar/FilterToggleRow.tsx:43"
+      ],
+      "tests": [
+        "components/sidebar/FilterToggleRow.test.tsx:51 :: indents a sub-option past the row above it",
+        "components/sidebar/FilterToggleRow.test.tsx:58 :: never pairs the indent with a padding-inline utility that would outrank it"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-003",
+      "capability": "Exibição de badge de atalho de teclado na linha de alternância de filtro",
+      "surface": "Linha de filtro nos menus suspensos (FilterToggleRow)",
+      "trigger": "Passagem da prop shortcutLabel com string de atalho definida (ex.: quando atalho configurado pelo usuário)",
+      "behaviors": [
+        "Renderiza DropdownMenuShortcut ao lado do indicador de switch quando shortcutLabel está presente",
+        "Oculta o elemento de atalho quando shortcutLabel é indefinido ou vazio"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: shortcutLabel"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/FilterToggleRow.tsx:54"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-004",
+      "capability": "Botão de gatilho do menu de filtros do sidebar com badge de contagem de filtros ativos e tooltip dinâmico",
+      "surface": "Cabeçalho do sidebar esquerdo (SidebarFilter trigger button)",
+      "trigger": "Clique no botão de filtro ou hover para tooltip",
+      "behaviors": [
+        "Renderiza botão com ícone ListFilter (strokeWidth 2.25, size 3.5)",
+        "Calcula o número total de filtros ativos (filtros booleanos ativos + contagem de projetos selecionados + exceção de default branch se restringir)",
+        "Exibe badge numérico circular absoluto no canto superior direito (-top-0.5 -right-0.5) com cor bg-primary e texto primary-foreground quando há filtros ativos",
+        "Formata o badge como '9+' quando activeFilterCount > 9",
+        "Exibe tooltip contextual: 'Filter workspaces' quando sem filtros, ou 'Edit filters' quando há filtros ativos",
+        "Define aria-label descritivo: 'Filter workspaces' ou 'Edit filters (N active)' com contagem interpolada",
+        "Aplica data-workspace-board-preserve-open para coordenar abertura com o workspace board"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.showSleepingWorkspaces",
+        "useAppStore.hideDefaultBranchWorkspace",
+        "useAppStore.hideAutomationGeneratedWorkspaces",
+        "useAppStore.hideCliCreatedWorkspaces",
+        "useAppStore.hideDetachedHeadWorkspaces",
+        "useAppStore.alwaysShowDefaultBranchWorkspace",
+        "useAppStore.filterRepoIds",
+        "useAppStore.repos"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarFilter.tsx:41",
+        "components/sidebar/SidebarFilter.tsx:117",
+        "components/sidebar/SidebarFilter.tsx:173",
+        "components/sidebar/SidebarFilter.tsx:180",
+        "components/sidebar/SidebarFilter.tsx:197",
+        "components/sidebar/SidebarFilter.tsx:209"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-005",
+      "capability": "Alternância de filtro para ocultar/exibir workspaces inativos (sleeping) com descoberta de atalho",
+      "surface": "Menu suspenso de filtros do sidebar (SidebarFilter) e menu de opções (SidebarWorkspaceFilterSection)",
+      "trigger": "Clique no switch 'Hide sleeping' ou acionamento do atalho global 'sidebar.sleepingWorkspaces.toggle'",
+      "behaviors": [
+        "Inverte o valor booleano de showSleepingWorkspaces na store global (useAppStore.setShowSleepingWorkspaces)",
+        "Lê atalho configurado via useShortcutLabel('sidebar.sleepingWorkspaces.toggle') e exibe na linha de filtro (omitindo se for 'Unassigned')",
+        "Serve como ponto de descoberta de atalhos para o usuário"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.showSleepingWorkspaces",
+        "useShortcutLabel('sidebar.sleepingWorkspaces.toggle')"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarFilter.tsx:54",
+        "components/sidebar/SidebarFilter.tsx:222"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-filter-state.test.ts:108 :: returns true when sleeping workspaces are hidden"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-006",
+      "capability": "Sub-filtro condicional de exceção para manter visível a branch padrão ao ocultar workspaces inativos",
+      "surface": "Menu suspenso de filtros do sidebar (SidebarFilter) e menu de opções (SidebarWorkspaceFilterSection)",
+      "trigger": "Exibido somente quando 'Hide sleeping' está ativo (!showSleepingWorkspaces); clique no switch 'Except default branch'",
+      "behaviors": [
+        "Permanece oculto enquanto workspaces inativos estiverem sendo exibidos (showSleepingWorkspaces === true)",
+        "Quando visível, permite alternar alwaysShowDefaultBranchWorkspace na store",
+        "Mantém a branch padrão visível mesmo quando o workspace correspondente estiver inativo/dormindo",
+        "Avalia restrição via isSleepingSweepExemptionNarrowingList: desativar a exceção restringe a lista abaixo do padrão apenas enquanto o sweep de inativos estiver ativo"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.showSleepingWorkspaces",
+        "useAppStore.alwaysShowDefaultBranchWorkspace"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarFilter.tsx:112",
+        "components/sidebar/SidebarFilter.tsx:230",
+        "components/sidebar/SidebarWorkspaceFilterSection.tsx:47"
+      ],
+      "tests": [
+        "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:73 :: hides the default-branch exemption row while sleeping workspaces are shown",
+        "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:79 :: shows the exemption row once ",
+        "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:85 :: keeps the exemption row hidden even when it is switched off",
+        "components/sidebar/sidebar-filter-state.test.ts:116 :: counts an opted-out default-branch exemption as an active filter",
+        "components/sidebar/sidebar-filter-state.test.ts:122 :: treats a missing default-branch exemption as the default, not a filter",
+        "components/sidebar/sidebar-filter-state.test.ts:132 :: isSleepingSweepExemptionNarrowingList",
+        "components/sidebar/sidebar-filter-state.test.ts:133 :: is false while sleeping workspaces are shown, even when opted out",
+        "components/sidebar/sidebar-filter-state.test.ts:137 :: is true only when the sweep is on and the exemption is opted out",
+        "components/sidebar/sidebar-filter-state.test.ts:142 :: treats a missing flag as the on default"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-007",
+      "capability": "Filtros de ocultação por tipo e origem de workspace (default branch, automação, CLI, detached HEAD)",
+      "surface": "Menu suspenso de filtros do sidebar (SidebarFilter) e menu de opções (SidebarWorkspaceFilterSection)",
+      "trigger": "Clique do usuário nos switches de tipo de workspace",
+      "behaviors": [
+        "Toggle 'Hide default branch': muta hideDefaultBranchWorkspace na store, ocultando worktree da branch principal (exceto quando mantido por provisão de receita)",
+        "Toggle 'Hide automation-created': muta hideAutomationGeneratedWorkspaces na store, ocultando workspaces criados por automações de branch/PR",
+        "Toggle 'Hide CLI-created': muta hideCliCreatedWorkspaces na store, ocultando workspaces iniciados via linha de comando",
+        "Toggle 'Hide detached HEAD': muta hideDetachedHeadWorkspaces na store, ocultando workspaces em estado de HEAD desanexado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.hideDefaultBranchWorkspace",
+        "useAppStore.hideAutomationGeneratedWorkspaces",
+        "useAppStore.hideCliCreatedWorkspaces",
+        "useAppStore.hideDetachedHeadWorkspaces"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarFilter.tsx:246",
+        "components/sidebar/SidebarFilter.tsx:255",
+        "components/sidebar/SidebarFilter.tsx:264",
+        "components/sidebar/SidebarFilter.tsx:270"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-filter-state.test.ts:49 :: isDefaultBranchWorkspace",
+        "components/sidebar/sidebar-filter-state.test.ts:50 :: returns true for a branch-backed main worktree",
+        "components/sidebar/sidebar-filter-state.test.ts:56 :: returns false for folder-mode main worktrees (empty branch)",
+        "components/sidebar/sidebar-filter-state.test.ts:63 :: returns false for non-main worktrees even on the default branch",
+        "components/sidebar/sidebar-filter-state.test.ts:68 :: keeps a provisioned root visible as the recipe-created workspace"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-008",
+      "capability": "Seção de filtragem por projetos com busca integrada, listagem de repositórios e indicação de servidor SSH",
+      "surface": "Seção inferior do menu suspenso SidebarFilter (visível quando repos.length > 1)",
+      "trigger": "Abertura do menu de filtros; digitação no campo de busca de projetos; clique em itens da lista",
+      "behaviors": [
+        "Exibe cabeçalho 'PROJECTS' com indicador de contagem de projetos selecionados ('· N')",
+        "Apresenta campo de busca CommandInput com placeholder 'Search projects...' e autofoco",
+        "Ao digitar nova query, reseta a seleção de teclado para o primeiro resultado correspondente",
+        "Interrompe a propagação do evento onKeyDown no input para evitar que o typeahead do menu Radix capture caracteres",
+        "Renderiza lista de projetos via CommandList com suporte a estado vazio 'No projects match'",
+        "Exibe cada projeto com RepoBadgeLabel (nome e cor de badge), badge 'SSH' com ícone Server quando connectionId presente, e ícone Check quando selecionado",
+        "Alterna a inclusão/remoção do repoId em filterRepoIds ao selecionar um item"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.filterRepoIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarFilter.tsx:279",
+        "components/sidebar/SidebarFilter.tsx:312",
+        "components/sidebar/SidebarFilter.tsx:340",
+        "components/sidebar/SidebarFilter.tsx:361"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-009",
+      "capability": "Ações de seleção em lote ('Select all' e 'Clear') para projetos no menu de filtros",
+      "surface": "Cabeçalho da seção de projetos do menu SidebarFilter",
+      "trigger": "Clique nos botões 'Select all' ou 'Clear'",
+      "behaviors": [
+        "Botão 'Select all': define filterRepoIds com todos os IDs de repos atuais (derivados no momento do clique); desabilitado quando todos já estão selecionados",
+        "Botão 'Clear': reseta filterRepoIds para array vazio ([]); desabilitado quando nenhum projeto está filtrado",
+        "Estilizado com pills arredondados (rounded-full text-[11px]) com opacidade reduzida quando desabilitados"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.filterRepoIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarFilter.tsx:158",
+        "components/sidebar/SidebarFilter.tsx:162",
+        "components/sidebar/SidebarFilter.tsx:288",
+        "components/sidebar/SidebarFilter.tsx:300"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-010",
+      "capability": "Rodapé de ações do menu de filtros com botão de reset global e adição de projeto",
+      "surface": "Rodapé do menu suspenso SidebarFilter",
+      "trigger": "Clique em 'Reset filters' ou 'Add project'",
+      "behaviors": [
+        "Botão 'Reset filters': visível apenas quando hasAnyFilter === true; restaura showSleepingWorkspaces, desativa todos os filtros booleanos de ocultação, restaura alwaysShowDefaultBranchWorkspace para true e limpa filterRepoIds",
+        "Botão 'Add project': sempre visível para permitir recuperação do estado de 0/1 projeto; dispara ação addRepo() da store global"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.showSleepingWorkspaces",
+        "useAppStore.hideDefaultBranchWorkspace",
+        "useAppStore.hideAutomationGeneratedWorkspaces",
+        "useAppStore.hideCliCreatedWorkspaces",
+        "useAppStore.hideDetachedHeadWorkspaces",
+        "useAppStore.alwaysShowDefaultBranchWorkspace",
+        "useAppStore.filterRepoIds",
+        "useAppStore.addRepo"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarFilter.tsx:141",
+        "components/sidebar/SidebarFilter.tsx:376",
+        "components/sidebar/SidebarFilter.tsx:389"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-011",
+      "capability": "Alternância de modo de agrupamento de worktrees no sidebar (none, repo, project-group)",
+      "surface": "Menu de opções do sidebar / workspace options (SidebarGroupByToggle)",
+      "trigger": "Clique no item de ToggleGroup para modo de agrupamento",
+      "behaviors": [
+        "Renderiza ToggleGroup single-select de tamanho compacto com opções id='none', 'repo', 'project-group'",
+        "Utiliza manipulador onPointerDownCapture para garantir que o Radix DropdownMenu não descarte a seleção via roving focus",
+        "Aplica estilo visual ativo data-[state=on]:bg-foreground/10 data-[state=on]:font-semibold data-[state=on]:text-foreground",
+        "Dispara callback setGroupBy ao alterar o modo de agrupamento"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: groupBy, setGroupBy"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarGroupByToggle.tsx:10",
+        "components/sidebar/SidebarGroupByToggle.tsx:25"
+      ],
+      "tests": [
+        "components/sidebar/SidebarGroupByToggle.test.tsx:27 :: SidebarGroupByToggle",
+        "components/sidebar/SidebarGroupByToggle.test.tsx:40 :: commits the pointer-selected grouping mode"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-012",
+      "capability": "Painel de busca e seleção de projetos em submenu com foco resiliente via requestAnimationFrame",
+      "surface": "Submenu de filtros de projetos (SidebarProjectFilterPanel)",
+      "trigger": "Abertura do submenu de projetos na sidebar ou na visualização de agentes",
+      "behaviors": [
+        "Monta e desmonta com o submenu, garantindo reinicialização do estado da query de busca",
+        "Executa foco no input através de requestAnimationFrame em useEffect para escapar da armadilha de foco (trapped focus scope) do menu raiz Radix",
+        "Cancela a animação agendada no unmount (cancelAnimationFrame)",
+        "Alterna placeholder entre 'Filter projects...' (quando nenhum selecionado) e 'Add project...' (quando há projetos selecionados)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: availableRepos, selectedRepos, hasRepoFilter, filterRepoIds, setFilterRepoIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarProjectFilterPanel.tsx:50",
+        "components/sidebar/SidebarProjectFilterPanel.tsx:65",
+        "components/sidebar/SidebarProjectFilterPanel.tsx:139"
+      ],
+      "tests": [
+        "components/sidebar/SidebarRepositoryFilterSection.test.tsx:137 :: focuses the search input when the submenu opens",
+        "components/sidebar/SidebarRepositoryFilterSection.test.tsx:155 :: resets the query when the panel is reopened"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-013",
+      "capability": "Exibição de pills com badges e botão de remoção para projetos selecionados no filtro",
+      "surface": "Painel de filtro de projetos (SelectedProjectPills dentro de SidebarProjectFilterPanel)",
+      "trigger": "Presença de projetos em selectedRepos; clique no botão 'X' de um pill",
+      "behaviors": [
+        "Renderiza container com scroll vertical (max-h-16 overflow-y-auto scrollbar-sleek) contendo Badges compactos (h-5)",
+        "Cada Badge exibe RepoBadgeLabel com nome truncado (max-w-[8rem]) e indicador colorido",
+        "Botão 'X' com aria-label internacionalizado ('Remove {displayName} filter') e onMouseDown preventDefault para evitar perda de foco do input",
+        "Remove o repo correspondente de filterRepoIds ao clicar no botão de remoção"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: selectedRepos, onRemoveProject"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarProjectFilterPanel.tsx:192",
+        "components/sidebar/SidebarProjectFilterPanel.tsx:205",
+        "components/sidebar/SidebarProjectFilterPanel.tsx:220"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-014",
+      "capability": "Algoritmo de pontuação e ranking de busca de projetos por nome de exibição e caminho",
+      "surface": "Filtro de busca em Command (projectCommandFilter em SidebarProjectFilterPanel)",
+      "trigger": "Digitação no campo CommandInput do painel de projetos",
+      "behaviors": [
+        "Normaliza query para minúsculas e remove espaços das extremidades; query vazia pontua 1",
+        "Compara contra displayName e path dos repositórios",
+        "Prioriza correspondência em displayName com score 2 + 1 / (index + 1), favorecendo matches no início do nome",
+        "Correspondência em path recebe score 1 + 1 / (index + 1)",
+        "Retorna 0 para itens sem correspondência"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "search query",
+        "keywords [displayName, path]"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarProjectFilterPanel.tsx:15"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-015",
+      "capability": "Navegação e atalhos de teclado inteligentes no input de busca do filtro de projetos",
+      "surface": "Campo de busca CommandInput em SidebarProjectFilterPanel",
+      "trigger": "Pressionamento de teclas (Backspace, Enter, ArrowLeft, ArrowUp, ArrowDown) no input",
+      "behaviors": [
+        "Backspace com query vazia e projetos selecionados: remove o último projeto selecionado da lista e impede ação padrão",
+        "Enter: seleciona o projeto atualmente destacado ou o primeiro resultado da busca e limpa o texto de busca",
+        "ArrowLeft: interrompe a propagação para manter o cursor no campo de texto se o cursor puder se mover; quando o cursor está no início (posição 0,0), permite que o evento suba para que o Radix feche o submenu e retorne ao menu pai",
+        "Isola eventos de teclado gerais (exceto ArrowUp/ArrowDown) para impedir que acionem o typeahead do menu Dropdown"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "query",
+        "selectedRepos",
+        "highlightedRepoId",
+        "availableRepos"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarProjectFilterPanel.tsx:87",
+        "components/sidebar/SidebarProjectFilterPanel.tsx:91",
+        "components/sidebar/SidebarProjectFilterPanel.tsx:101",
+        "components/sidebar/SidebarProjectFilterPanel.tsx:115",
+        "components/sidebar/SidebarProjectFilterPanel.tsx:124"
+      ],
+      "tests": [
+        "components/sidebar/SidebarRepositoryFilterSection.test.tsx:146 :: routes typing into the search box rather than menu typeahead",
+        "components/sidebar/SidebarRepositoryFilterSection.test.tsx:170 :: keeps ArrowLeft in the text field while the caret can still move",
+        "components/sidebar/SidebarRepositoryFilterSection.test.tsx:187 :: lets ArrowLeft close the panel once the caret is at the start"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-016",
+      "capability": "Submenu de filtro de projetos com resumo dinâmico de visibilidade e botão de limpeza",
+      "surface": "Seção de filtro de repositório no menu de contexto / opções (SidebarRepositoryFilterSection)",
+      "trigger": "Renderização do menu quando repos.length > 1; clique no trigger do submenu 'Projects'",
+      "behaviors": [
+        "Oculta-se completamente quando repos.length <= 1",
+        "Exibe no trigger o label 'Projects' e o resumo de visibilidade: 'All projects' (0 selecionados), displayName (1 selecionado) ou 'N projects' (2+ selecionados)",
+        "Suporta props customizadas filterRepoIds e setFilterRepoIds para reutilização pela visão de agentes, com fallback para o estado da store",
+        "Gera conjuntos selectedRepos e availableRepos filtrados e seguros contra IDs obsoletos",
+        "Cabeçalho do submenu exibe botão 'Clear' (desabilitado quando nenhum projeto selecionado) e contagem ativa ('· N')",
+        "Incorpora SidebarProjectFilterPanel para gerenciamento de seleção"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.filterRepoIds (ou props equivalentes)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarRepositoryFilterSection.tsx:14",
+        "components/sidebar/SidebarRepositoryFilterSection.tsx:42",
+        "components/sidebar/SidebarRepositoryFilterSection.tsx:69",
+        "components/sidebar/SidebarRepositoryFilterSection.tsx:86"
+      ],
+      "tests": [
+        "components/sidebar/SidebarRepositoryFilterSection.test.tsx:136 :: SidebarRepositoryFilterSection",
+        "components/sidebar/SidebarRepositoryFilterSection.test.tsx:203 :: hides itself when only one project exists"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-017",
+      "capability": "Seção de filtros no menu de opções de workspaces com toggle condicional para workspaces de outros dispositivos",
+      "surface": "Menu de opções da lista de workspaces (SidebarWorkspaceFilterSection)",
+      "trigger": "Abertura do menu de opções de workspaces; clique nos toggles de filtro",
+      "behaviors": [
+        "Renderiza cabeçalho 'Filters' e linhas de alternância para sleeping, default branch, automação, CLI e detached HEAD",
+        "Exibe condicionalmente o toggle 'Hide other-client workspaces' (hideWorkspacesFromOtherDevices) apenas quando houver ambientes remotos configurados, o catálogo remoto estiver carregando, ou o filtro já estiver ativo",
+        "Oculta o filtro de outros clientes para clientes estritamente locais (sem servidores remotos configurados)",
+        "Permite que um filtro de outros clientes ativado permaneça visível para poder ser desativado pelo usuário"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.showSleepingWorkspaces",
+        "useAppStore.hideDefaultBranchWorkspace",
+        "useAppStore.hideAutomationGeneratedWorkspaces",
+        "useAppStore.hideCliCreatedWorkspaces",
+        "useAppStore.hideDetachedHeadWorkspaces",
+        "useAppStore.hideWorkspacesFromOtherDevices",
+        "useAppStore.runtimeEnvironments",
+        "useAppStore.runtimeEnvironmentCatalogHydrated",
+        "useAppStore.alwaysShowDefaultBranchWorkspace"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarWorkspaceFilterSection.tsx:16",
+        "components/sidebar/SidebarWorkspaceFilterSection.tsx:32",
+        "components/sidebar/SidebarWorkspaceFilterSection.tsx:75"
+      ],
+      "tests": [
+        "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:72 :: SidebarWorkspaceFilterSection",
+        "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:91 :: shows the other-client filter when a remote server is configured",
+        "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:100 :: keeps the other-client filter visible while the remote catalog loads",
+        "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:107 :: hides the other-client filter for local-only clients",
+        "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:114 :: keeps an enabled other-client filter available to turn off"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-018",
+      "capability": "Revelação automática de repositório no filtro ativo de projetos ao interagir com workspace",
+      "surface": "Ações de foco/seleção de workspace via comando ou paleta (project-filter-reveal)",
+      "trigger": "Invocação de revealRepoInProjectFilter com o estado do filtro e o repoId alvo",
+      "behaviors": [
+        "Verifica se há um filtro de projetos ativo (filterRepoIds.length > 0)",
+        "Se o filtro estiver inativo ([]), não faz nada (para não restringir a visualização irrestrita)",
+        "Se o repositório já estiver incluído em filterRepoIds, mantém a seleção inalterada",
+        "Se houver filtro ativo e o repoId não estiver na lista, adiciona o repoId ao array mantendo os projetos existentes, permitindo que o workspace fique visível"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "ProjectFilterRevealState: filterRepoIds, setFilterRepoIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-filter-reveal.ts:6"
+      ],
+      "tests": [
+        "components/sidebar/project-filter-reveal.test.ts:8 :: revealRepoInProjectFilter",
+        "components/sidebar/project-filter-reveal.test.ts:9 :: keeps the existing selection and adds the revealed project",
+        "components/sidebar/project-filter-reveal.test.ts:17 :: does nothing when no project filter is active",
+        "components/sidebar/project-filter-reveal.test.ts:25 :: does nothing when the project is already selected"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-019",
+      "capability": "Avaliação abrangente de estado de filtros ativos na sidebar",
+      "surface": "Lógica pura de detecção de filtros (sidebarHasActiveFilters)",
+      "trigger": "Verificação síncrona pelo botão de filtro, indicador visual e atalhos globais",
+      "behaviors": [
+        "Retorna true se qualquer um dos seguintes critérios for atendido:",
+        "1. showSleepingWorkspaces for diferente de DEFAULT_SHOW_SLEEPING_WORKSPACES",
+        "2. filterRepoIds contiver pelo menos um repositório",
+        "3. hideDefaultBranchWorkspace for verdadeiro",
+        "4. hideAutomationGeneratedWorkspaces for verdadeiro",
+        "5. hideCliCreatedWorkspaces for verdadeiro",
+        "6. hideDetachedHeadWorkspaces for verdadeiro",
+        "7. hideWorkspacesFromOtherDevices for verdadeiro",
+        "8. alwaysShowDefaultBranchWorkspace for false (desativação explícita da exceção)",
+        "9. visibleWorkspaceHostIds for diferente de null (filtro de host ativo)",
+        "10. workspaceHostScope estiver configurado para escopo diferente de ALL_EXECUTION_HOSTS_SCOPE"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "SidebarFilterState: showSleepingWorkspaces, filterRepoIds, hideDefaultBranchWorkspace, hideAutomationGeneratedWorkspaces, hideCliCreatedWorkspaces, hideDetachedHeadWorkspaces, hideWorkspacesFromOtherDevices, alwaysShowDefaultBranchWorkspace, visibleWorkspaceHostIds, workspaceHostScope"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-filter-actions.ts:11"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-filter-state.test.ts:76 :: sidebarHasActiveFilters",
+        "components/sidebar/sidebar-filter-state.test.ts:77 :: returns false when no filters are active",
+        "components/sidebar/sidebar-filter-state.test.ts:81 :: returns true when only hideDefaultBranchWorkspace is active",
+        "components/sidebar/sidebar-filter-state.test.ts:88 :: returns true when only automation-created workspaces are hidden",
+        "components/sidebar/sidebar-filter-state.test.ts:94 :: returns true when only CLI-created workspaces are hidden",
+        "components/sidebar/sidebar-filter-state.test.ts:98 :: returns true when only detached-HEAD workspaces are hidden",
+        "components/sidebar/sidebar-filter-state.test.ts:102 :: returns true when workspaces from other devices are hidden",
+        "components/sidebar/sidebar-filter-state.test.ts:108 :: returns true when sleeping workspaces are hidden",
+        "components/sidebar/sidebar-filter-state.test.ts:112 :: returns true when only filterRepoIds is non-empty",
+        "components/sidebar/sidebar-filter-state.test.ts:116 :: counts an opted-out default-branch exemption as an active filter",
+        "components/sidebar/sidebar-filter-state.test.ts:122 :: treats a missing default-branch exemption as the default, not a filter",
+        "components/sidebar/sidebar-filter-state.test.ts:127 :: returns true when only host visibility is narrowed"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-020",
+      "capability": "Cálculo puro do plano de ação para limpeza de filtros ativos sem churn de estado",
+      "surface": "Função utilitária pura de decisão (computeClearFilterActions)",
+      "trigger": "Acionamento do botão 'Clear Filters' / 'Reset filters'",
+      "behaviors": [
+        "Determina flags booleanas precisas de mutação (ClearFilterActions) para cada seletor de filtro",
+        "Sinaliza para reset apenas os filtros que estão de fato ativos, evitando chamadas desnecessárias a setters de estado e gravação em disco (debounced ui.set write-back)",
+        "Mapeia resets para: resetShowSleepingWorkspaces, resetFilterRepoIds, resetHideDefaultBranchWorkspace, resetHideAutomationGeneratedWorkspaces, resetHideCliCreatedWorkspaces, resetHideDetachedHeadWorkspaces, resetHideWorkspacesFromOtherDevices, resetAlwaysShowDefaultBranchWorkspace, resetVisibleWorkspaceHostIds"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "SidebarFilterState"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-filter-actions.ts:39"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-filter-state.test.ts:147 :: computeClearFilterActions",
+        "components/sidebar/sidebar-filter-state.test.ts:148 :: returns no-op actions when nothing is set",
+        "components/sidebar/sidebar-filter-state.test.ts:162 :: flags only hideDefaultBranchWorkspace for reset when it is the sole filter",
+        "components/sidebar/sidebar-filter-state.test.ts:179 :: flags only hideAutomationGeneratedWorkspaces for reset when it is the sole filter",
+        "components/sidebar/sidebar-filter-state.test.ts:195 :: flags only hideCliCreatedWorkspaces for reset when it is the sole filter",
+        "components/sidebar/sidebar-filter-state.test.ts:209 :: flags only hideDetachedHeadWorkspaces for reset when it is the sole filter",
+        "components/sidebar/sidebar-filter-state.test.ts:223 :: does not flag hideDefaultBranchWorkspace when it is already off",
+        "components/sidebar/sidebar-filter-state.test.ts:236 :: flags legacy single-host scope for reset even without visible host ids",
+        "components/sidebar/sidebar-filter-state.test.ts:250 :: flags only the default-branch exemption for reset when it is the sole filter",
+        "components/sidebar/sidebar-filter-state.test.ts:266 :: flags every active filter simultaneously"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-021",
+      "capability": "Predicado de visibilidade isolada de filtros para um worktree com resolução de host qualificado",
+      "surface": "Verificação de visibilidade para navegação e atalhos (worktreePassesSidebarFilters)",
+      "trigger": "Consulta programática se determinado worktree passaria pelos filtros ativos",
+      "behaviors": [
+        "Executa pipeline computeVisibleWorktrees sem aplicar elisão por colapso de grupos ou ordenação renderizada",
+        "Garante que um worktree dentro de grupo colapsado não seja reportado incorretamente como filtrado",
+        "Resolve qualificação de host de execução (STA-4343): impede que um gêmeo local visível valide falsamente um worktree remoto com mesmo ID que esteja fora do escopo de host filtrado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreesByRepo",
+        "useAppStore.settings",
+        "repoMap via getRepoMapFromState"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-filter-visibility.ts:18"
+      ],
+      "tests": [
+        "components/sidebar/worktree-filter-visibility.test.ts:61 :: worktreePassesSidebarFilters",
+        "components/sidebar/worktree-filter-visibility.test.ts:62 :: does not let a visible local twin vouch for a host-filtered remote target",
+        "components/sidebar/worktree-filter-visibility.test.ts:71 :: reports the remote twin visible when its host is in scope"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-022",
+      "capability": "Classificação ordinal de atenção de agentes (SmartClass 1 a 5) para ordenação inteligente",
+      "surface": "Motor de atenção de agentes (smart-attention)",
+      "trigger": "Processamento de status de agentes de terminais e heurísticas de título",
+      "behaviors": [
+        "Class 1 (Needs you): status de hook 'blocked' ou 'waiting', ou heurística de título 'permission'; define cause ('blocked'|'waiting'|'title-heuristic')",
+        "Class 2 (Done): status de hook 'done' (não interrompido por Ctrl+C, completado dentro da janela de frescor AGENT_STATUS_STALE_AFTER_MS = 30min); grava completion time",
+        "Class 3 (Working): status de hook 'working' (utiliza timestamp do evento anterior mais recente de atenção, ou fallback para stateStartedAt; para Command Code, usa Math.max(prior, stateStartedAt)), ou heurística de título 'working' (timestamped com lastActivityAt)",
+        "Class 4 (Unverifiable): entrada stale não-done em aba cujo PTY ainda está vivo no Orca; ordenado por observedAt",
+        "Class 5 (Idle): sem entradas ativas, 'done' interrompido (Ctrl+C), 'done' expirado (>30min), entrada stale sem PTY vivo, ou título idle/null; timestamp 0",
+        "Ignora entradas com stateStartedAt não-finito (NaN/Infinity)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "AgentStatusEntry: state, stateStartedAt, updatedAt, stateHistory, agentType",
+        "title: classifyTitleActivity"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-attention.ts:25",
+        "components/sidebar/smart-attention.ts:40",
+        "components/sidebar/smart-attention.ts:98",
+        "components/sidebar/smart-attention.ts:121"
+      ],
+      "tests": [
+        "components/sidebar/smart-attention.test.ts:134 :: classifies a blocked pane as Class 1 with stateStartedAt",
+        "components/sidebar/smart-attention.test.ts:148 :: classifies a waiting pane as Class 1",
+        "components/sidebar/smart-attention.test.ts:158 :: classifies a done pane as Class 2",
+        "components/sidebar/smart-attention.test.ts:171 :: treats interrupted done as idle",
+        "components/sidebar/smart-attention.test.ts:182 :: treats a session boundary as idle unless it displaced a real completion",
+        "components/sidebar/smart-attention.test.ts:199 :: drops a done pane out of Class 2 once the completion itself ages out",
+        "components/sidebar/smart-attention.test.ts:220 :: does not let same-state done writes extend Class 2 eligibility",
+        "components/sidebar/smart-attention.test.ts:251 :: ages out a session-boundary completion from its real completion time",
+        "components/sidebar/smart-attention.test.ts:263 :: classifies a working pane with prior done as Class 3 with the prior timestamp",
+        "components/sidebar/smart-attention.test.ts:277 :: uses a reset stateStartedAt for Command Code new prompts while still working",
+        "components/sidebar/smart-attention.test.ts:292 :: falls back to current stateStartedAt when working has no prior attention history",
+        "components/sidebar/smart-attention.test.ts:306 :: falls back when history contains only interrupted done rows",
+        "components/sidebar/smart-attention.test.ts:320 :: skips stale entries (updatedAt older than the freshness window)",
+        "components/sidebar/smart-attention.test.ts:372 :: skips entries with non-finite stateStartedAt",
+        "components/sidebar/smart-attention.test.ts:384 :: title-heuristic permission maps to Class 1 with ts = now",
+        "components/sidebar/smart-attention.test.ts:393 :: title-heuristic working maps to Class 3 with ts = worktree.lastActivityAt",
+        "components/sidebar/smart-attention.test.ts:402 :: title-heuristic idle / null contributes nothing (Class 4)"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-023",
+      "capability": "Resolução de atenção entre múltiplos painéis com precedência de menor classe e desempate por recência",
+      "surface": "Função pura de resolução multi-painel (resolveAttention)",
+      "trigger": "Processamento de lista de PaneInput de um worktree com múltiplas abas/splits",
+      "behaviors": [
+        "Determina a classe de atenção do worktree como o mínimo entre todos os painéis (o painel mais prioritário/urgente vence)",
+        "Dentro da mesma classe, desempata pelo maior timestamp de atenção (o evento de atenção mais recente vence)",
+        "Propaga a causa de atenção (cause) apenas quando a classe resolvida for Class 1",
+        "Retorna IDLE ({ cls: 5, attentionTimestamp: 0 }) quando a lista de painéis for vazia ou todos os painéis forem inativos",
+        "Garante que um painel 'done' expirado não mascare outro painel ativo em 'working'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "PaneInput[]",
+        "now timestamp"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-attention.ts:98",
+        "components/sidebar/smart-attention.ts:210"
+      ],
+      "tests": [
+        "components/sidebar/smart-attention.test.ts:129 :: resolveAttention",
+        "components/sidebar/smart-attention.test.ts:130 :: returns idle when there are no panes",
+        "components/sidebar/smart-attention.test.ts:232 :: keeps an expired done pane from masking a live working sibling",
+        "components/sidebar/smart-attention.test.ts:330 :: takes the most attention-demanding class across multiple panes",
+        "components/sidebar/smart-attention.test.ts:352 :: within the resolved class, takes the freshest attention timestamp across panes",
+        "components/sidebar/smart-attention.test.ts:435 :: per-pane authority across panes: pane A hook=done, pane B title=permission → Class 1"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-024",
+      "capability": "Extração do timestamp mais recente de atenção a partir do histórico de estados do agente",
+      "surface": "Motor de histórico de agentes (mostRecentAttentionInHistory)",
+      "trigger": "Cálculo de ranking de atenção para agentes no estado 'working'",
+      "behaviors": [
+        "Varre o array de histórico de estados (AgentStateHistoryEntry[]) em busca de entradas 'done', 'blocked' ou 'waiting'",
+        "Ignora entradas 'done' com flag interrupted=true (interrupções por Ctrl+C)",
+        "Ignora entradas com startedAt inválido ou não-finito (NaN/Infinity) para evitar fixação indevida no topo da classe",
+        "Retorna o maior startedAt encontrado entre as entradas qualificadas, ou null se nenhuma entrada válida existir"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "AgentStateHistoryEntry[]"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-attention.ts:69"
+      ],
+      "tests": [
+        "components/sidebar/smart-attention.test.ts:78 :: mostRecentAttentionInHistory",
+        "components/sidebar/smart-attention.test.ts:79 :: returns null on an empty history",
+        "components/sidebar/smart-attention.test.ts:83 :: returns the latest done/blocked/waiting startedAt",
+        "components/sidebar/smart-attention.test.ts:94 :: skips interrupted done rows",
+        "components/sidebar/smart-attention.test.ts:103 :: returns null when only interrupted dones exist",
+        "components/sidebar/smart-attention.test.ts:107 :: ignores working rows entirely",
+        "components/sidebar/smart-attention.test.ts:116 :: skips history rows with non-finite startedAt"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-025",
+      "capability": "Coleta e resolução de entradas de atenção por aba de terminal com suporte a splits e supressão de títulos",
+      "surface": "Coletor de fontes de painéis de terminais (collectTabPaneInputs)",
+      "trigger": "Processamento de abas de um worktree durante ordenação inteligente",
+      "behaviors": [
+        "Verifica liveness de PTY na aba via tabHasLivePty; se a aba estiver dormente/sem PTY, descarta heurísticas de título para evitar vazamento de títulos obsoletos pós-sleep",
+        "Mapeia entradas de hook por tabId através de entriesByTabId",
+        "Identifica leafIds cobertos por hooks e suprime o título correspondente para evitar contagem duplicada",
+        "Suprime títulos sintéticos de permissão através de hooks de permissão (permissionHookLeafIds)",
+        "Para abas divididas (split panes), resolve leafId de cada painel via resolveRuntimePaneTitleLeafId e classifica título individualmente via classifyTitleActivity",
+        "Permite que abas não visitadas/restauradas utilizem o título herdado da aba quando não houver títulos de painel detalhados"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "TerminalTab",
+        "TabPaneInputSources: entriesByTabId, ptyIdsByTabId, runtimePaneTitlesByTabId, terminalLayoutsByTabId",
+        "tabHasLivePty"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-attention.ts:258",
+        "components/sidebar/smart-attention.ts:271"
+      ],
+      "tests": [
+        "components/sidebar/smart-attention.test.ts:414 :: hook entry overrides title heuristic on the same pane (hook wins when fresh)",
+        "components/sidebar/smart-attention.test.ts:560 :: aggregates entries across multiple panes on the same tab",
+        "components/sidebar/smart-attention.test.ts:606 :: title-heuristic Class 1: hookless pane with permission title → Class 1 with ts = now",
+        "components/sidebar/smart-attention.test.ts:624 :: title-heuristic Class 3: hookless pane with working title → ts = worktree.lastActivityAt",
+        "components/sidebar/smart-attention.test.ts:638 :: hook overrides title on the same pane (hook=done + working-style title stays Class 2)",
+        "components/sidebar/smart-attention.test.ts:663 :: keeps a restored row idle while allowing an independently live sibling title",
+        "components/sidebar/smart-attention.test.ts:691 :: does not revive a restored row from one title before layout hydration",
+        "components/sidebar/smart-attention.test.ts:713 :: still uses one unmapped title when the hook is only age-stale",
+        "components/sidebar/smart-attention.test.ts:739 :: per-pane authority across panes: pane A fresh hook=done, pane B no hook + permission title → Class 1",
+        "components/sidebar/smart-attention.test.ts:768 :: does not fire title fallback for tabs without a live PTY"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-026",
+      "capability": "Construção do mapa de atenção por worktree e indexação por abas com suporte a abas headless",
+      "surface": "Mapeamento em lote de atenção (buildAttentionByWorktree, buildExplicitEntriesByTabId)",
+      "trigger": "Início do cálculo de ordenação inteligente para todos os worktrees",
+      "behaviors": [
+        "Gera índice Map<tabId, AgentStatusEntry[]> em O(T) via buildExplicitEntriesByTabId, convertendo também entradas legado (migrationUnsupportedByPtyId)",
+        "Descarta paneKeys malformados ou numéricos legado sem prefixo válido de tabId",
+        "Processa atribuição direta de worktree (byAttributedWorktree) para suportar abas headless antes que sejam espelhadas na UI",
+        "Dá precedência a abas espelhadas quando disponíveis, evitando promoção duplicada de worktree",
+        "Retorna Map<worktreeId, WorktreeAttention> consolidado para consumo do comparador"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "worktrees: Worktree[]",
+        "tabsByWorktree",
+        "agentStatusByPaneKey",
+        "runtimePaneTitlesByTabId",
+        "ptyIdsByTabId",
+        "migrationUnsupportedByPtyId",
+        "terminalLayoutsByTabId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-attention.ts:219",
+        "components/sidebar/smart-attention.ts:239",
+        "components/sidebar/smart-attention.ts:327"
+      ],
+      "tests": [
+        "components/sidebar/smart-attention.test.ts:456 :: buildAttentionByWorktree",
+        "components/sidebar/smart-attention.test.ts:500 :: returns IDLE for worktrees with no tabs",
+        "components/sidebar/smart-attention.test.ts:506 :: uses fresh worktree attribution before a headless tab is mirrored",
+        "components/sidebar/smart-attention.test.ts:527 :: prefers mirrored tab ownership over a stale worktree stamp",
+        "components/sidebar/smart-attention.test.ts:585 :: skips malformed paneKeys (no colon)"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-027",
+      "capability": "Detecção de status de agentes atribuídos e frescos para transição de cold-start",
+      "surface": "Verificador de status de agentes em inicialização (hasFreshAttributedAgentStatus)",
+      "trigger": "Avaliação do estado do app na inicialização para decidir se o Smart Sort sai do modo cold start",
+      "behaviors": [
+        "Examina entradas em agentStatusByPaneKey e valida frescor via isExplicitAgentStatusFresh",
+        "Retorna true se qualquer entrada fresca tiver worktreeId explícito",
+        "Para entradas frescas sem worktreeId explícito, verifica se o tabId da paneKey corresponde a uma aba espelhada em tabsByWorktree",
+        "Permite que agentes em execução retirem o sidebar do modo de restauração de cold-start antes do primeiro evento PTY"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "agentStatusByPaneKey",
+        "tabsByWorktree",
+        "now timestamp"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-attention.ts:45"
+      ],
+      "tests": [
+        "components/sidebar/smart-sort.test.ts:529 :: uses fresh attributed agents before their headless tabs are mirrored",
+        "components/sidebar/smart-sort.test.ts:553 :: uses a fresh agent resolved through its mirrored tab without a worktree stamp"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-028",
+      "capability": "Janela de tolerância de criação (grace period de 5 minutos) e cálculo de atividade recente efetiva",
+      "surface": "Ordenador de recência de worktrees (effectiveRecentActivity, CREATE_GRACE_MS)",
+      "trigger": "Ordenação por modo 'recent' ou ordenação de worktrees Class 5 (idle) no modo 'smart'",
+      "behaviors": [
+        "Define constante CREATE_GRACE_MS = 5 * 60 * 1000 (5 minutos)",
+        "Para worktrees recém-criados onde now < createdAt + CREATE_GRACE_MS, estabelece piso de recência como Math.max(lastActivityAt, createdAt + CREATE_GRACE_MS)",
+        "Garante que eventos de PTY em outros worktrees existentes não desloquem para baixo o novo workspace enquanto o usuário ainda o observa",
+        "Limita o benefício estritamente à janela temporal inicial, retornando lastActivityAt original após o término da janela",
+        "Retorna lastActivityAt inalterado para worktrees sem timestamp createdAt definido"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "worktree: createdAt, lastActivityAt",
+        "now timestamp"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-sort.ts:16",
+        "components/sidebar/smart-sort.ts:32"
+      ],
+      "tests": [
+        "components/sidebar/smart-sort.test.ts:464 :: honors the create-grace floor for new worktrees in Class 4",
+        "components/sidebar/smart-sort.test.ts:767 :: effectiveRecentActivity — create-grace floor",
+        "components/sidebar/smart-sort.test.ts:768 :: returns lastActivityAt when createdAt is absent",
+        "components/sidebar/smart-sort.test.ts:773 :: returns createdAt + CREATE_GRACE_MS when grace window exceeds lastActivityAt",
+        "components/sidebar/smart-sort.test.ts:778 :: returns lastActivityAt when grace window has elapsed",
+        "components/sidebar/smart-sort.test.ts:787 :: returns lastActivityAt when real activity has surpassed the grace floor",
+        "components/sidebar/smart-sort.test.ts:793 :: returns lastActivityAt once the grace window has elapsed even when no other activity has occurred",
+        "components/sidebar/smart-sort.test.ts:830 :: buildWorktreeComparator — recent with createdAt grace window",
+        "components/sidebar/smart-sort.test.ts:831 :: keeps a newly-created worktree on top even when another worktree bumps lastActivityAt",
+        "components/sidebar/smart-sort.test.ts:850 :: falls through to normal recency once the grace window has elapsed",
+        "components/sidebar/smart-sort.test.ts:869 :: does not disturb ranking for worktrees without createdAt"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-029",
+      "capability": "Derivação e pré-computação em lote de labels de ordenação imunes a colisão de IDs multi-host",
+      "surface": "Mecanismo de labels para comparador de ordenação (getWorktreeSortLabel, buildWorktreeSortLabels, compareWorktreeSortLabel)",
+      "trigger": "Execução de ordenação alfabética ou desempates em qualquer modo de sort",
+      "behaviors": [
+        "Deriva label do worktree priorizando displayName (trimmed); se ausente, extrai basename do caminho path; se ausente, utiliza o id como fallback seguro",
+        "Pré-computa Map<WorktreeSortLabelInput, string> em O(N) antes do sort para permitir lookups O(1) no comparador O(N log N)",
+        "Chaveia o mapa de labels na referência do objeto em vez do id simples, evitando que colisões de id entre hosts locais e remotos (STA-4343) atribuam o label errado",
+        "Executa comparação alfabética segura com localeCompare"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "worktree: displayName, path, id"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-sort.ts:43",
+        "components/sidebar/smart-sort.ts:58",
+        "components/sidebar/smart-sort.ts:68"
+      ],
+      "tests": [
+        "components/sidebar/smart-sort.test.ts:585 :: falls back to the path label when a persisted worktree has no displayName"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-030",
+      "capability": "Comparador unificado de ordenação de worktrees para todos os modos suportados",
+      "surface": "Função geradora de comparador (buildWorktreeComparator)",
+      "trigger": "Invocação para ordenação de arrays de worktrees",
+      "behaviors": [
+        "Modo 'name': ordena por label alfabético (localeCompare)",
+        "Modo 'smart': ordena por classe de atenção (aw.cls - bw.cls), depois por recência de atenção (bw.attentionTimestamp - aw.attentionTimestamp), depois por atividade recente efetiva com grace window, e por fim desempata por label alfabético",
+        "Modo 'recent': ordena por atividade recente efetiva (effectiveRecentActivity descending), ignorando sortOrder congelado; desempata por label alfabético",
+        "Modo 'repo': agrupa e ordena alfabeticamente por displayName do repositório no repoMap; desempata por label alfabético",
+        "Modo 'manual': ordena por manualOrder descending (com fallback para sortOrder snapshot persistido se manualOrder ainda não existir); desempata por label alfabético"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "SortBy: 'name' | 'smart' | 'recent' | 'repo' | 'manual'",
+        "repoMap: Map<string, Repo>",
+        "now timestamp",
+        "attentionByWorktree: Map<string, WorktreeAttention>",
+        "labels: WorktreeSortLabels"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-sort.ts:80"
+      ],
+      "tests": [
+        "components/sidebar/smart-sort.test.ts:139 :: smart sort — class invariants",
+        "components/sidebar/smart-sort.test.ts:140 :: ranks blocked above done regardless of which stateStartedAt is newer",
+        "components/sidebar/smart-sort.test.ts:167 :: ranks done above working",
+        "components/sidebar/smart-sort.test.ts:193 :: ranks working above idle",
+        "components/sidebar/smart-sort.test.ts:219 :: smart sort — within-class recency",
+        "components/sidebar/smart-sort.test.ts:220 :: orders two blocked worktrees by stateStartedAt (newer first)",
+        "components/sidebar/smart-sort.test.ts:245 :: ranks a working worktree with prior done above one with no history",
+        "components/sidebar/smart-sort.test.ts:274 :: falls back to current stateStartedAt when history is only interrupted dones",
+        "components/sidebar/smart-sort.test.ts:306 :: smart sort — interrupted and stale handling",
+        "components/sidebar/smart-sort.test.ts:307 :: interrupted done worktrees fall to Class 4 (idle), not Class 2",
+        "components/sidebar/smart-sort.test.ts:337 :: stale entries fall to Class 4",
+        "components/sidebar/smart-sort.test.ts:368 :: smart sort — completed-agent eligibility clock",
+        "components/sidebar/smart-sort.test.ts:407 :: ranks the two spinners above the 32-minute-old completion",
+        "components/sidebar/smart-sort.test.ts:417 :: still ranks that completion above the spinners inside its own window",
+        "components/sidebar/smart-sort.test.ts:424 :: smart sort — Class 4 ordering",
+        "components/sidebar/smart-sort.test.ts:425 :: breaks ties on effectiveRecentActivity, then displayName",
+        "components/sidebar/smart-sort.test.ts:445 :: falls back to displayName when recency is identical",
+        "components/sidebar/smart-sort.test.ts:486 :: smart sort — multi-pane resolution",
+        "components/sidebar/smart-sort.test.ts:487 :: any blocked pane promotes the whole worktree to Class 1",
+        "components/sidebar/smart-sort.test.ts:691 :: buildWorktreeComparator — recent (lastActivityAt)",
+        "components/sidebar/smart-sort.test.ts:692 :: sorts by lastActivityAt descending (most recent first)",
+        "components/sidebar/smart-sort.test.ts:710 :: sorts worktrees with lastActivityAt 0 to the bottom",
+        "components/sidebar/smart-sort.test.ts:728 :: falls back to alphabetical when lastActivityAt is equal",
+        "components/sidebar/smart-sort.test.ts:746 :: ignores sortOrder entirely — activity alone determines the order",
+        "components/sidebar/smart-sort.test.ts:800 :: buildWorktreeComparator — manual order",
+        "components/sidebar/smart-sort.test.ts:801 :: orders by persisted manualOrder with higher values first",
+        "components/sidebar/smart-sort.test.ts:811 :: falls back to sortOrder before a workspace has manualOrder"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D09-031",
+      "capability": "Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido",
+      "surface": "Função principal de ordenação inteligente (sortWorktreesSmart)",
+      "trigger": "Renderização do sidebar, paleta de comandos e cálculo de worktrees visíveis",
+      "behaviors": [
+        "Verifica se há qualquer PTY vivo nas abas via tabHasLivePty (evitando falsos positivos de abas dormindo com tab.ptyId residual)",
+        "Detecção de Cold Start: se não houver PTY vivo nem status de agente atribuído fresco, ordena pelo snapshot persistido b.sortOrder - a.sortOrder, restaurando a ordem exata pré-fechamento do Orca",
+        "Ordenação Warm: constrói mapa de atenção via buildAttentionByWorktree e executa o comparador inteligente com classes de status de agentes e heurísticas",
+        "Consumido de forma idêntica tanto pela lista de worktrees quanto pela paleta de comandos para consistência de ranking"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "worktrees: Worktree[]",
+        "tabsByWorktree",
+        "repoMap",
+        "agentStatusByPaneKey",
+        "runtimePaneTitlesByTabId",
+        "ptyIdsByTabId",
+        "migrationUnsupportedByPtyId",
+        "terminalLayoutsByTabId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/smart-sort.ts:167"
+      ],
+      "tests": [
+        "components/sidebar/smart-sort.test.ts:519 :: sortWorktreesSmart — cold start fallback",
+        "components/sidebar/smart-sort.test.ts:520 :: falls back to persisted sortOrder when no PTY is alive",
+        "components/sidebar/smart-sort.test.ts:601 :: treats slept tabs (tab.ptyId without live entry) as cold start",
+        "components/sidebar/smart-sort.test.ts:615 :: uses the smart comparator once a PTY is alive",
+        "components/sidebar/smart-sort.test.ts:649 :: sortWorktreesSmart — palette caller regression",
+        "components/sidebar/smart-sort.test.ts:653 :: palette ranks blocked above working when both flow through sortWorktreesSmart"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "FilterToggleRow.tsx": [
+        "D09-001",
+        "D09-002",
+        "D09-003"
+      ],
+      "SidebarFilter.tsx": [
+        "D09-004",
+        "D09-005",
+        "D09-006",
+        "D09-007",
+        "D09-008",
+        "D09-009",
+        "D09-010"
+      ],
+      "SidebarGroupByToggle.tsx": [
+        "D09-011"
+      ],
+      "SidebarProjectFilterPanel.tsx": [
+        "D09-012",
+        "D09-013",
+        "D09-014",
+        "D09-015"
+      ],
+      "SidebarRepositoryFilterSection.tsx": [
+        "D09-016"
+      ],
+      "SidebarWorkspaceFilterSection.tsx": [
+        "D09-006",
+        "D09-007",
+        "D09-017"
+      ],
+      "project-filter-reveal.ts": [
+        "D09-018"
+      ],
+      "sidebar-filter-actions.ts": [
+        "D09-019",
+        "D09-020"
+      ],
+      "smart-attention.ts": [
+        "D09-022",
+        "D09-023",
+        "D09-024",
+        "D09-025",
+        "D09-026",
+        "D09-027"
+      ],
+      "smart-sort.ts": [
+        "D09-028",
+        "D09-029",
+        "D09-030",
+        "D09-031"
+      ],
+      "worktree-filter-visibility.ts": [
+        "D09-021"
+      ]
+    },
+    "symbols": {
+      "SidebarFilter.tsx:default": [
+        "D09-004"
+      ],
+      "SidebarRepositoryFilterSection.tsx:default": [
+        "D09-016"
+      ],
+      "SidebarWorkspaceFilterSection.tsx:default": [
+        "D09-017"
+      ],
+      "FilterToggleRow": [
+        "D09-001"
+      ],
+      "SidebarGroupByToggle": [
+        "D09-011"
+      ],
+      "SidebarProjectFilterPanel": [
+        "D09-012"
+      ],
+      "ProjectFilterRevealState": [
+        "D09-018"
+      ],
+      "revealRepoInProjectFilter": [
+        "D09-018"
+      ],
+      "sidebarHasActiveFilters": [
+        "D09-019"
+      ],
+      "ClearFilterActions": [
+        "D09-020"
+      ],
+      "computeClearFilterActions": [
+        "D09-020"
+      ],
+      "SmartClass": [
+        "D09-022"
+      ],
+      "AttentionCause": [
+        "D09-022"
+      ],
+      "WorktreeAttention": [
+        "D09-022"
+      ],
+      "IDLE": [
+        "D09-022"
+      ],
+      "hasFreshAttributedAgentStatus": [
+        "D09-027"
+      ],
+      "mostRecentAttentionInHistory": [
+        "D09-024"
+      ],
+      "PaneInput": [
+        "D09-025"
+      ],
+      "resolveAttention": [
+        "D09-023"
+      ],
+      "buildExplicitEntriesByTabId": [
+        "D09-026"
+      ],
+      "TabPaneInputSources": [
+        "D09-025"
+      ],
+      "collectTabPaneInputs": [
+        "D09-025"
+      ],
+      "buildAttentionByWorktree": [
+        "D09-026"
+      ],
+      "SortBy": [
+        "D09-030"
+      ],
+      "CREATE_GRACE_MS": [
+        "D09-028"
+      ],
+      "effectiveRecentActivity": [
+        "D09-028"
+      ],
+      "WorktreeSortLabelInput": [
+        "D09-029"
+      ],
+      "getWorktreeSortLabel": [
+        "D09-029"
+      ],
+      "WorktreeSortLabels": [
+        "D09-029"
+      ],
+      "buildWorktreeSortLabels": [
+        "D09-029"
+      ],
+      "compareWorktreeSortLabel": [
+        "D09-029"
+      ],
+      "buildWorktreeComparator": [
+        "D09-030"
+      ],
+      "sortWorktreesSmart": [
+        "D09-031"
+      ],
+      "worktreePassesSidebarFilters": [
+        "D09-021"
+      ]
+    },
+    "tests": {
+      "components/sidebar/FilterToggleRow.test.tsx:50 :: FilterToggleRow": "D09-001",
+      "components/sidebar/FilterToggleRow.test.tsx:51 :: indents a sub-option past the row above it": "D09-002",
+      "components/sidebar/FilterToggleRow.test.tsx:58 :: never pairs the indent with a padding-inline utility that would outrank it": "D09-002",
+      "components/sidebar/SidebarGroupByToggle.test.tsx:27 :: SidebarGroupByToggle": "D09-011",
+      "components/sidebar/SidebarGroupByToggle.test.tsx:40 :: commits the pointer-selected grouping mode": "D09-011",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:136 :: SidebarRepositoryFilterSection": "D09-016",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:137 :: focuses the search input when the submenu opens": "D09-012",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:146 :: routes typing into the search box rather than menu typeahead": "D09-015",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:155 :: resets the query when the panel is reopened": "D09-012",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:170 :: keeps ArrowLeft in the text field while the caret can still move": "D09-015",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:187 :: lets ArrowLeft close the panel once the caret is at the start": "D09-015",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:203 :: hides itself when only one project exists": "D09-016",
+      "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:72 :: SidebarWorkspaceFilterSection": "D09-017",
+      "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:73 :: hides the default-branch exemption row while sleeping workspaces are shown": "D09-006",
+      "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:79 :: shows the exemption row once ": "D09-006",
+      "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:85 :: keeps the exemption row hidden even when it is switched off": "D09-006",
+      "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:91 :: shows the other-client filter when a remote server is configured": "D09-017",
+      "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:100 :: keeps the other-client filter visible while the remote catalog loads": "D09-017",
+      "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:107 :: hides the other-client filter for local-only clients": "D09-017",
+      "components/sidebar/SidebarWorkspaceFilterSection.test.tsx:114 :: keeps an enabled other-client filter available to turn off": "D09-017",
+      "components/sidebar/project-filter-reveal.test.ts:8 :: revealRepoInProjectFilter": "D09-018",
+      "components/sidebar/project-filter-reveal.test.ts:9 :: keeps the existing selection and adds the revealed project": "D09-018",
+      "components/sidebar/project-filter-reveal.test.ts:17 :: does nothing when no project filter is active": "D09-018",
+      "components/sidebar/project-filter-reveal.test.ts:25 :: does nothing when the project is already selected": "D09-018",
+      "components/sidebar/sidebar-filter-state.test.ts:49 :: isDefaultBranchWorkspace": "D09-007",
+      "components/sidebar/sidebar-filter-state.test.ts:50 :: returns true for a branch-backed main worktree": "D09-007",
+      "components/sidebar/sidebar-filter-state.test.ts:56 :: returns false for folder-mode main worktrees (empty branch)": "D09-007",
+      "components/sidebar/sidebar-filter-state.test.ts:63 :: returns false for non-main worktrees even on the default branch": "D09-007",
+      "components/sidebar/sidebar-filter-state.test.ts:68 :: keeps a provisioned root visible as the recipe-created workspace": "D09-007",
+      "components/sidebar/sidebar-filter-state.test.ts:76 :: sidebarHasActiveFilters": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:77 :: returns false when no filters are active": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:81 :: returns true when only hideDefaultBranchWorkspace is active": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:88 :: returns true when only automation-created workspaces are hidden": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:94 :: returns true when only CLI-created workspaces are hidden": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:98 :: returns true when only detached-HEAD workspaces are hidden": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:102 :: returns true when workspaces from other devices are hidden": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:108 :: returns true when sleeping workspaces are hidden": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:112 :: returns true when only filterRepoIds is non-empty": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:116 :: counts an opted-out default-branch exemption as an active filter": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:122 :: treats a missing default-branch exemption as the default, not a filter": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:127 :: returns true when only host visibility is narrowed": "D09-019",
+      "components/sidebar/sidebar-filter-state.test.ts:132 :: isSleepingSweepExemptionNarrowingList": "D09-006",
+      "components/sidebar/sidebar-filter-state.test.ts:133 :: is false while sleeping workspaces are shown, even when opted out": "D09-006",
+      "components/sidebar/sidebar-filter-state.test.ts:137 :: is true only when the sweep is on and the exemption is opted out": "D09-006",
+      "components/sidebar/sidebar-filter-state.test.ts:142 :: treats a missing flag as the on default": "D09-006",
+      "components/sidebar/sidebar-filter-state.test.ts:147 :: computeClearFilterActions": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:148 :: returns no-op actions when nothing is set": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:162 :: flags only hideDefaultBranchWorkspace for reset when it is the sole filter": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:179 :: flags only hideAutomationGeneratedWorkspaces for reset when it is the sole filter": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:195 :: flags only hideCliCreatedWorkspaces for reset when it is the sole filter": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:209 :: flags only hideDetachedHeadWorkspaces for reset when it is the sole filter": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:223 :: does not flag hideDefaultBranchWorkspace when it is already off": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:236 :: flags legacy single-host scope for reset even without visible host ids": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:250 :: flags only the default-branch exemption for reset when it is the sole filter": "D09-020",
+      "components/sidebar/sidebar-filter-state.test.ts:266 :: flags every active filter simultaneously": "D09-020",
+      "components/sidebar/smart-attention.test.ts:78 :: mostRecentAttentionInHistory": "D09-024",
+      "components/sidebar/smart-attention.test.ts:79 :: returns null on an empty history": "D09-024",
+      "components/sidebar/smart-attention.test.ts:83 :: returns the latest done/blocked/waiting startedAt": "D09-024",
+      "components/sidebar/smart-attention.test.ts:94 :: skips interrupted done rows": "D09-024",
+      "components/sidebar/smart-attention.test.ts:103 :: returns null when only interrupted dones exist": "D09-024",
+      "components/sidebar/smart-attention.test.ts:107 :: ignores working rows entirely": "D09-024",
+      "components/sidebar/smart-attention.test.ts:116 :: skips history rows with non-finite startedAt": "D09-024",
+      "components/sidebar/smart-attention.test.ts:129 :: resolveAttention": "D09-023",
+      "components/sidebar/smart-attention.test.ts:130 :: returns idle when there are no panes": "D09-023",
+      "components/sidebar/smart-attention.test.ts:134 :: classifies a blocked pane as Class 1 with stateStartedAt": "D09-022",
+      "components/sidebar/smart-attention.test.ts:148 :: classifies a waiting pane as Class 1": "D09-022",
+      "components/sidebar/smart-attention.test.ts:158 :: classifies a done pane as Class 2": "D09-022",
+      "components/sidebar/smart-attention.test.ts:171 :: treats interrupted done as idle": "D09-022",
+      "components/sidebar/smart-attention.test.ts:182 :: treats a session boundary as idle unless it displaced a real completion": "D09-022",
+      "components/sidebar/smart-attention.test.ts:199 :: drops a done pane out of Class 2 once the completion itself ages out": "D09-022",
+      "components/sidebar/smart-attention.test.ts:220 :: does not let same-state done writes extend Class 2 eligibility": "D09-022",
+      "components/sidebar/smart-attention.test.ts:232 :: keeps an expired done pane from masking a live working sibling": "D09-023",
+      "components/sidebar/smart-attention.test.ts:251 :: ages out a session-boundary completion from its real completion time": "D09-022",
+      "components/sidebar/smart-attention.test.ts:263 :: classifies a working pane with prior done as Class 3 with the prior timestamp": "D09-022",
+      "components/sidebar/smart-attention.test.ts:277 :: uses a reset stateStartedAt for Command Code new prompts while still working": "D09-022",
+      "components/sidebar/smart-attention.test.ts:292 :: falls back to current stateStartedAt when working has no prior attention history": "D09-022",
+      "components/sidebar/smart-attention.test.ts:306 :: falls back when history contains only interrupted done rows": "D09-022",
+      "components/sidebar/smart-attention.test.ts:320 :: skips stale entries (updatedAt older than the freshness window)": "D09-022",
+      "components/sidebar/smart-attention.test.ts:330 :: takes the most attention-demanding class across multiple panes": "D09-023",
+      "components/sidebar/smart-attention.test.ts:352 :: within the resolved class, takes the freshest attention timestamp across panes": "D09-023",
+      "components/sidebar/smart-attention.test.ts:372 :: skips entries with non-finite stateStartedAt": "D09-022",
+      "components/sidebar/smart-attention.test.ts:384 :: title-heuristic permission maps to Class 1 with ts = now": "D09-022",
+      "components/sidebar/smart-attention.test.ts:393 :: title-heuristic working maps to Class 3 with ts = worktree.lastActivityAt": "D09-022",
+      "components/sidebar/smart-attention.test.ts:402 :: title-heuristic idle / null contributes nothing (Class 4)": "D09-022",
+      "components/sidebar/smart-attention.test.ts:414 :: hook entry overrides title heuristic on the same pane (hook wins when fresh)": "D09-025",
+      "components/sidebar/smart-attention.test.ts:435 :: per-pane authority across panes: pane A hook=done, pane B title=permission → Class 1": "D09-023",
+      "components/sidebar/smart-attention.test.ts:456 :: buildAttentionByWorktree": "D09-026",
+      "components/sidebar/smart-attention.test.ts:500 :: returns IDLE for worktrees with no tabs": "D09-026",
+      "components/sidebar/smart-attention.test.ts:506 :: uses fresh worktree attribution before a headless tab is mirrored": "D09-026",
+      "components/sidebar/smart-attention.test.ts:527 :: prefers mirrored tab ownership over a stale worktree stamp": "D09-026",
+      "components/sidebar/smart-attention.test.ts:560 :: aggregates entries across multiple panes on the same tab": "D09-025",
+      "components/sidebar/smart-attention.test.ts:585 :: skips malformed paneKeys (no colon)": "D09-026",
+      "components/sidebar/smart-attention.test.ts:606 :: title-heuristic Class 1: hookless pane with permission title → Class 1 with ts = now": "D09-025",
+      "components/sidebar/smart-attention.test.ts:624 :: title-heuristic Class 3: hookless pane with working title → ts = worktree.lastActivityAt": "D09-025",
+      "components/sidebar/smart-attention.test.ts:638 :: hook overrides title on the same pane (hook=done + working-style title stays Class 2)": "D09-025",
+      "components/sidebar/smart-attention.test.ts:663 :: keeps a restored row idle while allowing an independently live sibling title": "D09-025",
+      "components/sidebar/smart-attention.test.ts:691 :: does not revive a restored row from one title before layout hydration": "D09-025",
+      "components/sidebar/smart-attention.test.ts:713 :: still uses one unmapped title when the hook is only age-stale": "D09-025",
+      "components/sidebar/smart-attention.test.ts:739 :: per-pane authority across panes: pane A fresh hook=done, pane B no hook + permission title → Class 1": "D09-025",
+      "components/sidebar/smart-attention.test.ts:768 :: does not fire title fallback for tabs without a live PTY": "D09-025",
+      "components/sidebar/smart-sort.test.ts:139 :: smart sort — class invariants": "D09-030",
+      "components/sidebar/smart-sort.test.ts:140 :: ranks blocked above done regardless of which stateStartedAt is newer": "D09-030",
+      "components/sidebar/smart-sort.test.ts:167 :: ranks done above working": "D09-030",
+      "components/sidebar/smart-sort.test.ts:193 :: ranks working above idle": "D09-030",
+      "components/sidebar/smart-sort.test.ts:219 :: smart sort — within-class recency": "D09-030",
+      "components/sidebar/smart-sort.test.ts:220 :: orders two blocked worktrees by stateStartedAt (newer first)": "D09-030",
+      "components/sidebar/smart-sort.test.ts:245 :: ranks a working worktree with prior done above one with no history": "D09-030",
+      "components/sidebar/smart-sort.test.ts:274 :: falls back to current stateStartedAt when history is only interrupted dones": "D09-030",
+      "components/sidebar/smart-sort.test.ts:306 :: smart sort — interrupted and stale handling": "D09-030",
+      "components/sidebar/smart-sort.test.ts:307 :: interrupted done worktrees fall to Class 4 (idle), not Class 2": "D09-030",
+      "components/sidebar/smart-sort.test.ts:337 :: stale entries fall to Class 4": "D09-030",
+      "components/sidebar/smart-sort.test.ts:368 :: smart sort — completed-agent eligibility clock": "D09-030",
+      "components/sidebar/smart-sort.test.ts:407 :: ranks the two spinners above the 32-minute-old completion": "D09-030",
+      "components/sidebar/smart-sort.test.ts:417 :: still ranks that completion above the spinners inside its own window": "D09-030",
+      "components/sidebar/smart-sort.test.ts:424 :: smart sort — Class 4 ordering": "D09-030",
+      "components/sidebar/smart-sort.test.ts:425 :: breaks ties on effectiveRecentActivity, then displayName": "D09-030",
+      "components/sidebar/smart-sort.test.ts:445 :: falls back to displayName when recency is identical": "D09-030",
+      "components/sidebar/smart-sort.test.ts:464 :: honors the create-grace floor for new worktrees in Class 4": "D09-028",
+      "components/sidebar/smart-sort.test.ts:486 :: smart sort — multi-pane resolution": "D09-030",
+      "components/sidebar/smart-sort.test.ts:487 :: any blocked pane promotes the whole worktree to Class 1": "D09-030",
+      "components/sidebar/smart-sort.test.ts:519 :: sortWorktreesSmart — cold start fallback": "D09-031",
+      "components/sidebar/smart-sort.test.ts:520 :: falls back to persisted sortOrder when no PTY is alive": "D09-031",
+      "components/sidebar/smart-sort.test.ts:529 :: uses fresh attributed agents before their headless tabs are mirrored": "D09-027",
+      "components/sidebar/smart-sort.test.ts:553 :: uses a fresh agent resolved through its mirrored tab without a worktree stamp": "D09-027",
+      "components/sidebar/smart-sort.test.ts:585 :: falls back to the path label when a persisted worktree has no displayName": "D09-029",
+      "components/sidebar/smart-sort.test.ts:601 :: treats slept tabs (tab.ptyId without live entry) as cold start": "D09-031",
+      "components/sidebar/smart-sort.test.ts:615 :: uses the smart comparator once a PTY is alive": "D09-031",
+      "components/sidebar/smart-sort.test.ts:649 :: sortWorktreesSmart — palette caller regression": "D09-031",
+      "components/sidebar/smart-sort.test.ts:653 :: palette ranks blocked above working when both flow through sortWorktreesSmart": "D09-031",
+      "components/sidebar/smart-sort.test.ts:691 :: buildWorktreeComparator — recent (lastActivityAt)": "D09-030",
+      "components/sidebar/smart-sort.test.ts:692 :: sorts by lastActivityAt descending (most recent first)": "D09-030",
+      "components/sidebar/smart-sort.test.ts:710 :: sorts worktrees with lastActivityAt 0 to the bottom": "D09-030",
+      "components/sidebar/smart-sort.test.ts:728 :: falls back to alphabetical when lastActivityAt is equal": "D09-030",
+      "components/sidebar/smart-sort.test.ts:746 :: ignores sortOrder entirely — activity alone determines the order": "D09-030",
+      "components/sidebar/smart-sort.test.ts:767 :: effectiveRecentActivity — create-grace floor": "D09-028",
+      "components/sidebar/smart-sort.test.ts:768 :: returns lastActivityAt when createdAt is absent": "D09-028",
+      "components/sidebar/smart-sort.test.ts:773 :: returns createdAt + CREATE_GRACE_MS when grace window exceeds lastActivityAt": "D09-028",
+      "components/sidebar/smart-sort.test.ts:778 :: returns lastActivityAt when grace window has elapsed": "D09-028",
+      "components/sidebar/smart-sort.test.ts:787 :: returns lastActivityAt when real activity has surpassed the grace floor": "D09-028",
+      "components/sidebar/smart-sort.test.ts:793 :: returns lastActivityAt once the grace window has elapsed even when no other activity has occurred": "D09-028",
+      "components/sidebar/smart-sort.test.ts:800 :: buildWorktreeComparator — manual order": "D09-030",
+      "components/sidebar/smart-sort.test.ts:801 :: orders by persisted manualOrder with higher values first": "D09-030",
+      "components/sidebar/smart-sort.test.ts:811 :: falls back to sortOrder before a workspace has manualOrder": "D09-030",
+      "components/sidebar/smart-sort.test.ts:830 :: buildWorktreeComparator — recent with createdAt grace window": "D09-028",
+      "components/sidebar/smart-sort.test.ts:831 :: keeps a newly-created worktree on top even when another worktree bumps lastActivityAt": "D09-028",
+      "components/sidebar/smart-sort.test.ts:850 :: falls through to normal recency once the grace window has elapsed": "D09-028",
+      "components/sidebar/smart-sort.test.ts:869 :: does not disturb ranking for worktrees without createdAt": "D09-028",
+      "components/sidebar/worktree-filter-visibility.test.ts:61 :: worktreePassesSidebarFilters": "D09-021",
+      "components/sidebar/worktree-filter-visibility.test.ts:62 :: does not let a visible local twin vouch for a host-filtered remote target": "D09-021",
+      "components/sidebar/worktree-filter-visibility.test.ts:71 :: reports the remote twin visible when its host is in scope": "D09-021"
+    },
+    "labels": {
+      "components/sidebar/FilterToggleRow.tsx:21 :: label: string": "D09-001",
+      "components/sidebar/FilterToggleRow.tsx:35 :: aria-label={ariaLabel}": "D09-001",
+      "components/sidebar/SidebarFilter.tsx:28 :: import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'": "D09-004",
+      "components/sidebar/SidebarFilter.tsx:39 :: tooltipSide?: 'top' | 'right' | 'bottom' | 'left'": "D09-004",
+      "components/sidebar/SidebarFilter.tsx:46 :: tooltipSide = 'bottom',": "D09-004",
+      "components/sidebar/SidebarFilter.tsx:180 :: aria-label={": "D09-004",
+      "components/sidebar/SidebarFilter.tsx:209 :: <TooltipContent side={tooltipSide} sideOffset={6}>": "D09-004",
+      "components/sidebar/SidebarFilter.tsx:321 :: placeholder={translate(": "D09-008",
+      "components/sidebar/SidebarProjectFilterPanel.tsx:140 :: placeholder={": "D09-012",
+      "components/sidebar/SidebarProjectFilterPanel.tsx:230 :: aria-label={translate(": "D09-013",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:25 :: DropdownMenuItem,": "INFRA: import de componente UI em arquivo de teste",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:56 :: <DropdownMenuItem>Sort by</DropdownMenuItem>": "INFRA: mock de menu wrapper no teste de integração",
+      "components/sidebar/smart-attention.test.ts:435 :: it('per-pane authority across panes: pane A hook=done, pane B title=permission → Class 1', () => {": "D09-023"
+    },
+    "hotkeys": {
+      "components/sidebar/FilterToggleRow.tsx:2 :: import { DropdownMenuShortcut } from '@/components/ui/dropdown-menu'": "D09-003",
+      "components/sidebar/FilterToggleRow.tsx:17 :: shortcutLabel,": "D09-003",
+      "components/sidebar/FilterToggleRow.tsx:26 :: shortcutLabel?: string": "D09-003",
+      "components/sidebar/FilterToggleRow.tsx:54 :: {shortcutLabel ? <DropdownMenuShortcut>{shortcutLabel}</DropdownMenuShortcut> : null}": "D09-003",
+      "components/sidebar/SidebarFilter.tsx:31 :: import { useShortcutLabel } from '@/hooks/useShortcutLabel'": "D09-005",
+      "components/sidebar/SidebarFilter.tsx:52 :: // Surface the user-assigned shortcut here so the filter menu doubles as its": "D09-005",
+      "components/sidebar/SidebarFilter.tsx:53 :: // discovery point ('Unassigned' until they bind one in Settings → Shortcuts).": "D09-005",
+      "components/sidebar/SidebarFilter.tsx:54 :: const sleepingShortcut = useShortcutLabel('sidebar.sleepingWorkspaces.toggle')": "D09-005",
+      "components/sidebar/SidebarFilter.tsx:227 :: shortcutLabel={sleepingShortcut === 'Unassigned' ? undefined : sleepingShortcut}": "D09-005",
+      "components/sidebar/SidebarProjectFilterPanel.tsx:88 :: (event: React.KeyboardEvent<HTMLInputElement>) => {": "D09-015",
+      "components/sidebar/SidebarProjectFilterPanel.tsx:91 :: if (event.key === 'Backspace' && query === '' && selectedRepos.length > 0) {": "D09-015",
+      "components/sidebar/SidebarProjectFilterPanel.tsx:101 :: if (event.key === 'Enter') {": "D09-015",
+      "components/sidebar/SidebarProjectFilterPanel.tsx:115 :: if (event.key === 'ArrowLeft') {": "D09-015",
+      "components/sidebar/SidebarProjectFilterPanel.tsx:124 :: if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {": "D09-015",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:84 :: new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })": "D09-015",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:180 :: new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })": "D09-015",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:196 :: new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })": "D09-015",
+      "components/sidebar/sidebar-filter-actions.ts:77 :: * between badge numbers and the Cmd+N shortcut target.": "D09-019"
+    },
+    "prefs": {},
+    "timers": {
+      "components/sidebar/SidebarProjectFilterPanel.tsx:66 :: const frame = requestAnimationFrame(() => inputRef.current?.focus())": "D09-012",
+      "components/sidebar/SidebarRepositoryFilterSection.test.tsx:96 :: await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))": "INFRA: helper assíncrono de espera no teste de foco"
+    },
+    "subscriptions": {
+      "components/sidebar/SidebarProjectFilterPanel.tsx:65 :: useEffect(() => {": "D09-012"
+    },
+    "preload": {}
+  }
+}

@@ -1,0 +1,18 @@
+{
+ "domain": "D07-menus-actions",
+ "status": "ok",
+ "rows": 45,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "33/33",
+  "symbols": "97/97",
+  "tests": "139/139",
+  "labels": "49/49",
+  "hotkeys": "6/6",
+  "prefs": "0/0",
+  "timers": "16/16",
+  "subscriptions": "8/8",
+  "preload": "3/3"
+ }
+}

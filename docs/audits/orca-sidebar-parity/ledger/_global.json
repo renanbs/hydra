@@ -1,0 +1,329 @@
+{
+ "domains": [
+  {
+   "domain": "D01-shell-chrome",
+   "status": "ok",
+   "rows": 52,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 117,
+    "files": "25/25",
+    "symbols": "50/50",
+    "tests": "164/164",
+    "labels": "181/181",
+    "hotkeys": "62/62",
+    "prefs": "0/0",
+    "timers": "1/1",
+    "subscriptions": "6/6",
+    "preload": "7/7"
+   }
+  },
+  {
+   "domain": "D02a-repo-add-wizard",
+   "status": "ok",
+   "rows": 42,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "46/46",
+    "symbols": "77/77",
+    "tests": "242/242",
+    "labels": "66/66",
+    "hotkeys": "8/8",
+    "prefs": "0/0",
+    "timers": "3/3",
+    "subscriptions": "13/13",
+    "preload": "23/23"
+   }
+  },
+  {
+   "domain": "D02b-hosts-ssh-remote",
+   "status": "ok",
+   "rows": 30,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 64,
+    "files": "26/26",
+    "symbols": "74/74",
+    "tests": "128/128",
+    "labels": "48/48",
+    "hotkeys": "4/4",
+    "prefs": "0/0",
+    "timers": "10/10",
+    "subscriptions": "3/3",
+    "preload": "11/11"
+   }
+  },
+  {
+   "domain": "D02c-project-groups-scripts",
+   "status": "ok",
+   "rows": 26,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "28/28",
+    "symbols": "71/71",
+    "tests": "115/115",
+    "labels": "33/33",
+    "hotkeys": "1/1",
+    "prefs": "0/0",
+    "timers": "0/0",
+    "subscriptions": "11/11",
+    "preload": "5/5"
+   }
+  },
+  {
+   "domain": "D03a-worktree-list-module",
+   "status": "ok",
+   "rows": 104,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 142,
+    "files": "88/88",
+    "symbols": "279/279",
+    "tests": "254/254",
+    "labels": "95/95",
+    "hotkeys": "25/25",
+    "prefs": "0/0",
+    "timers": "15/15",
+    "subscriptions": "43/43",
+    "preload": "1/1"
+   }
+  },
+  {
+   "domain": "D03b-sidebar-list-orchestration",
+   "status": "ok",
+   "rows": 50,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 108,
+    "files": "31/31",
+    "symbols": "114/114",
+    "tests": "321/321",
+    "labels": "61/61",
+    "hotkeys": "13/13",
+    "prefs": "0/0",
+    "timers": "9/9",
+    "subscriptions": "29/29",
+    "preload": "4/4"
+   }
+  },
+  {
+   "domain": "D04a-worktree-card-surface",
+   "status": "ok",
+   "rows": 111,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "50/50",
+    "symbols": "119/119",
+    "tests": "433/433",
+    "labels": "260/260",
+    "hotkeys": "64/64",
+    "prefs": "0/0",
+    "timers": "1/1",
+    "subscriptions": "5/5",
+    "preload": "7/7"
+   }
+  },
+  {
+   "domain": "D04b-worktree-card-controllers",
+   "status": "ok",
+   "rows": 23,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "22/22",
+    "symbols": "43/43",
+    "tests": "117/117",
+    "labels": "21/21",
+    "hotkeys": "0/0",
+    "prefs": "0/0",
+    "timers": "2/2",
+    "subscriptions": "11/11",
+    "preload": "5/5"
+   }
+  },
+  {
+   "domain": "D05-agents-rows",
+   "status": "ok",
+   "rows": 23,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "15/15",
+    "symbols": "45/45",
+    "tests": "129/129",
+    "labels": "5/5",
+    "hotkeys": "1/1",
+    "prefs": "0/0",
+    "timers": "1/1",
+    "subscriptions": "1/1",
+    "preload": "2/2"
+   }
+  },
+  {
+   "domain": "D06-drag-order-keyboard",
+   "status": "ok",
+   "rows": 35,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 45,
+    "files": "22/22",
+    "symbols": "93/93",
+    "tests": "180/180",
+    "labels": "2/2",
+    "hotkeys": "8/8",
+    "prefs": "0/0",
+    "timers": "1/1",
+    "subscriptions": "4/4",
+    "preload": "0/0"
+   }
+  },
+  {
+   "domain": "D07-menus-actions",
+   "status": "ok",
+   "rows": 45,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "33/33",
+    "symbols": "97/97",
+    "tests": "139/139",
+    "labels": "49/49",
+    "hotkeys": "6/6",
+    "prefs": "0/0",
+    "timers": "16/16",
+    "subscriptions": "8/8",
+    "preload": "3/3"
+   }
+  },
+  {
+   "domain": "D08-kanban-board",
+   "status": "ok",
+   "rows": 45,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "42/42",
+    "symbols": "116/116",
+    "tests": "213/213",
+    "labels": "53/53",
+    "hotkeys": "15/15",
+    "prefs": "0/0",
+    "timers": "12/12",
+    "subscriptions": "37/37",
+    "preload": "0/0"
+   }
+  },
+  {
+   "domain": "D09-filters-sort",
+   "status": "ok",
+   "rows": 31,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "11/11",
+    "symbols": "34/34",
+    "tests": "150/150",
+    "labels": "13/13",
+    "hotkeys": "18/18",
+    "prefs": "0/0",
+    "timers": "2/2",
+    "subscriptions": "1/1",
+    "preload": "0/0"
+   }
+  },
+  {
+   "domain": "D10-visibility-inbox-notices",
+   "status": "ok",
+   "rows": 91,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "30/30",
+    "symbols": "66/66",
+    "tests": "164/164",
+    "labels": "57/57",
+    "hotkeys": "1/1",
+    "prefs": "0/0",
+    "timers": "4/4",
+    "subscriptions": "13/13",
+    "preload": "2/2"
+   }
+  },
+  {
+   "domain": "D11-lineage-grouping-model",
+   "status": "ok",
+   "rows": 17,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "15/15",
+    "symbols": "47/47",
+    "tests": "115/115",
+    "labels": "13/13",
+    "hotkeys": "10/10",
+    "prefs": "0/0",
+    "timers": "0/0",
+    "subscriptions": "0/0",
+    "preload": "0/0"
+   }
+  },
+  {
+   "domain": "D12-markdown-inline-render",
+   "status": "ok",
+   "rows": 14,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "7/7",
+    "symbols": "19/19",
+    "tests": "55/55",
+    "labels": "8/8",
+    "hotkeys": "0/0",
+    "prefs": "0/0",
+    "timers": "0/0",
+    "subscriptions": "0/0",
+    "preload": "0/0"
+   }
+  },
+  {
+   "domain": "D15-misc-a",
+   "status": "ok",
+   "rows": 12,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 0,
+    "files": "4/4",
+    "symbols": "7/7",
+    "tests": "37/37",
+    "labels": "3/3",
+    "hotkeys": "0/0",
+    "prefs": "0/0",
+    "timers": "0/0",
+    "subscriptions": "0/0",
+    "preload": "0/0"
+   }
+  },
+  {
+   "domain": "D15-misc-b",
+   "status": "ok",
+   "rows": 14,
+   "violations": [],
+   "counts": {
+    "bad_evidence": 17,
+    "files": "8/8",
+    "symbols": "12/12",
+    "tests": "12/12",
+    "labels": "0/0",
+    "hotkeys": "1/1",
+    "prefs": "0/0",
+    "timers": "2/2",
+    "subscriptions": "8/8",
+    "preload": "0/0"
+   }
+  }
+ ],
+ "total_violations": 0
+}

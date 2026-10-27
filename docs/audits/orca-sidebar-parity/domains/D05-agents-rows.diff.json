@@ -1,0 +1,648 @@
+{
+  "domain": "D05-agents-rows",
+  "rows": [
+    {
+      "id": "D05-001",
+      "capability": "Navegação e visualização de lista de threads de agentes no sidebar em modo navegador",
+      "orca_evidence": [
+        "components/sidebar/SidebarAgentsList.tsx:20",
+        "components/sidebar/SidebarAgentsList.tsx:31",
+        "components/sidebar/SidebarAgentsList.tsx:138"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/components/sidebar/WorktreeSidebar.tsx:647",
+          "src/components/sidebar/WorktreeSidebar.tsx:648",
+          "src/components/sidebar/SidebarAgentsList.tsx:22",
+          "src/components/sidebar/SidebarAgentsList.tsx:60",
+          "src/components/sidebar/SidebarAgentsList.tsx:242"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Hospeda ActivityThreadListPane em modo navegador; selecionar uma linha revela o painel do agente no workbench",
+          "Mantém listadas threads cujo painel já foi fechado/destruído, permanecendo inertes",
+          "Suporta agentsCompactMode (o card de agente é sempre a variante compacta; a pref agentsCompactMode é persistida e nunca lida)",
+          "Suporta agentsShowChildAgents (listagem de agentes filhos na view de agentes)",
+          "Filtragem de leitura agentsReadFilter (Hydra só tem filtro de status all/blocked/waiting/working/done/idle)",
+          "Recebe e repassa query/readFilter/groupBy/scroll ref do shell para sincronização (Hydra guarda filter/groupBy/statusFilter em estado local do componente)"
+        ],
+        "notes": "Alcançável: WorktreeSidebar.tsx:647 monta SidebarAgentsList no body \"agents\" (SidebarAgentsList:22-51 props sessions/projects/onSelectSession/groupBy/statusFilter). O componente do Hydra é a view agregada de WorktreeSession (cards planos), não a lista de threads do Orca: não existe ActivityThreadListPane em src/** (busca por nome: 0 hits) nem retenção de threads de painel fechado. Prefs agentsShowChildAgents/agentsCompactMode/agentsReadFilter existem no store (src/store/slices/ui/ui-slice-preference-actions.ts:167-194) mas nenhum consumidor em src/**/*.tsx."
+      }
+    },
+    {
+      "id": "D05-002",
+      "capability": "Barra de busca e filtragem interativa de threads com autofocus e atalho Escape",
+      "orca_evidence": [
+        "components/sidebar/SidebarAgentsList.tsx:45",
+        "components/sidebar/SidebarAgentsList.tsx:52",
+        "components/sidebar/SidebarAgentsList.tsx:60",
+        "components/sidebar/SidebarAgentsList.tsx:115",
+        "components/sidebar/SidebarAgentsList.tsx:122",
+        "components/sidebar/SidebarAgentsList.tsx:126",
+        "components/sidebar/SidebarAgentsList.tsx:131"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/components/sidebar/SidebarAgentsList.tsx:52",
+          "src/components/sidebar/SidebarAgentsList.tsx:438",
+          "src/components/sidebar/SidebarAgentsList.tsx:403",
+          "src/store/slices/ui/ui-slice-preference-actions.ts:177",
+          "src/store/slices/ui/ui-slice-preference-actions.ts:180"
+        ],
+        "backend": [
+          "window.api.ui.set({ agentsShowSearch }) -> src/store/slices/ui/ui-slice-preference-actions.ts:180 (pref persistida; nenhum consumidor na barra de agentes)"
+        ],
+        "missing_behaviors": [
+          "Renderiza o input de busca condicionado a agentsShowSearch (Hydra renderiza sempre)",
+          "Foco automático via requestAnimationFrame quando a busca é aberta explicitamente (0 hits para requestAnimationFrame em src/components/sidebar/SidebarAgentsList.tsx)",
+          "Escape oculta a barra, limpa a query para \"\" e persiste agentsShowSearch:false",
+          "Preserva o foco do workspace na montagem inicial sem roubar foco"
+        ],
+        "notes": "O filtro em tempo real existe e é funcional (SidebarAgentsList.tsx:60-77 filtra por title/branch/agentName/projeto; input em :438 e no empty-state :403). O store tem agentsShowSearch (ui-slice-preference-actions.ts:177-181) mas o input não é gated por ela e não há handler de Escape no input da lista de agentes (o Escape de WorktreeSidebar.tsx:697 pertence ao filtro de workspaces). Não há teste equivalente."
+      }
+    },
+    {
+      "id": "D05-003",
+      "capability": "Desmarcação automática de seleção de painel inativo na lista de threads de agentes",
+      "orca_evidence": [
+        "components/sidebar/SidebarAgentsList.tsx:49",
+        "components/sidebar/SidebarAgentsList.tsx:67",
+        "components/sidebar/SidebarAgentsList.tsx:74"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/components/sidebar/SidebarAgentsList.tsx:53",
+          "src/components/sidebar/SidebarAgentsList.tsx:54"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Monitora selectedPaneKeyIsLive via useEffect",
+          "Reseta selectedPaneKey para null quando o painel correspondente não está mais vivo, impedindo seleção fantasma"
+        ],
+        "notes": "Busca em 5 passos: (1) nome selectedPaneKeyIsLive/selectedPaneKey ausente de todo src/** (0 hits); (2) nenhum efeito de liveness na seleção; (3) os únicos estados de seleção são locais, focusedSessionId e selectedSessions (SidebarAgentsList.tsx:53-54), sem assinatura de store; (4) sem backend; (5) nenhuma referência a \"fantasma\"/liveness de painel no componente. Não localizado."
+      }
+    },
+    {
+      "id": "D05-004",
+      "capability": "Portal de menu de opções de controle de threads e ações em lote de agentes",
+      "orca_evidence": [
+        "components/sidebar/SidebarAgentsList.tsx:38",
+        "components/sidebar/SidebarAgentsList.tsx:166"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/components/sidebar/SidebarAgentsList.tsx:459",
+          "src/components/sidebar/SidebarAgentsList.tsx:492",
+          "src/components/sidebar/SidebarAgentsList.tsx:654"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Renderiza ActivityThreadOptionsMenu via createPortal no container DOM optionsTarget (0 hits para optionsTarget/createPortal em src/components/sidebar/**)",
+          "Alternar modo compacto pela barra de opções",
+          "Alternar visibilidade de subagentes/filhos pela barra de opções",
+          "onMarkAllThreadsRead (marcar todos como lidos)",
+          "onClearCompleted (limpar concluídos)",
+          "Alternar visibilidade da busca pela barra de opções",
+          "Alternar filtro somente não-lidos (o filtro existente é por status, não por não-lido)"
+        ],
+        "notes": "Existe apenas um subconjunto inline: pills de status (SidebarAgentsList.tsx:459), toggle groupBy state/project (:492) e footer de ação em lote para seleção múltipla (>1) que apaga sessões (:654). Não há menu/portal, nem mark-all-read/clear-completed, nem os toggles de compacto/filhos/busca."
+      }
+    },
+    {
+      "id": "D05-005",
+      "capability": "Hook reativo de linhas de agentes por worktree com assinatura granular de store e cache",
+      "orca_evidence": [
+        "components/sidebar/useWorktreeAgentRows.ts:47",
+        "components/sidebar/useWorktreeAgentRows.ts:100",
+        "components/sidebar/useWorktreeAgentRows.ts:119"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/components/sidebar/WorktreeCardAgents.tsx:28",
+          "src/components/sidebar/WorktreeCardAgents.tsx:29",
+          "src/components/sidebar/WorktreeCardAgents.tsx:32",
+          "src/components/sidebar/WorktreeCardAgents.tsx:199",
+          "src/components/sidebar/worktree-card-parent-content.tsx:114"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Assinatura granular das fatias (tabs, live, migrações, retidos, títulos, PTYs, layouts, orquestração) — Hydra assina apenas tabsByWorktree e agentStatusByPaneKey",
+          "Constante imutável compartilhada EMPTY_AGENT_ROWS para card inativo (0 hits)",
+          "Seletor de frescor createWorktreeAgentFreshnessSelector (0 hits; src/store/slices/agent-status-freshness-scheduler.ts:10-11 é auto-stub)",
+          "Converte registros de migração não suportada em entradas de status via migrationUnsupportedToAgentStatusEntry (src/lib/migration-unsupported-agent-entry.ts existe mas sem consumidor)",
+          "Aplica estruturação hierárquica e linhagem via applyAgentRowLineage (buildAgentRowLineageTree em src/components/sidebar/agent-row-lineage-model.ts:61 sem callers)"
+        ],
+        "notes": "Alcançável do mount: WorktreeSidebar → WorktreeList → WorktreeCard → worktree-card-parent-content.tsx:114 → WorktreeCardAgents (reachable_depth 5 em index/hydra_scope.json). A derivação de linhas por worktree existe mas inline em useMemo (WorktreeCardAgents.tsx:32-199), sem o hook, sem constantes vazias compartilhadas e sem os seletores de contenção de re-render."
+      }
+    },
+    {
+      "id": "D05-006",
+      "capability": "Construção e unificação de linhas de agentes live, derivadas de título e retidas",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-rows.ts:133",
+        "components/sidebar/worktree-agent-rows.ts:167",
+        "components/sidebar/worktree-agent-rows.ts:212",
+        "components/sidebar/worktree-agent-rows.ts:236",
+        "components/sidebar/worktree-agent-rows.ts:268"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/components/sidebar/WorktreeCardAgents.tsx:38",
+          "src/components/sidebar/WorktreeCardAgents.tsx:71",
+          "src/components/sidebar/WorktreeCardAgents.tsx:95",
+          "src/components/sidebar/WorktreeCardAgents.tsx:121",
+          "src/components/sidebar/WorktreeCardAgents.tsx:165",
+          "src/components/sidebar/WorktreeCardAgents.tsx:198"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Mescla snapshots retidos (retainedAgentsByPaneKey) fixando estado 'done' e preservando timestamp original",
+          "Descarta snapshots retidos que coincidam com chaves de painéis live (isRetainedLegacyAliasOfSeenStablePane) e deduplica entradas numéricas legadas",
+          "Gera aba de fallback sintetizada via tabFromWorktreeAttributedStatusEntry para entradas atribuídas ao worktree sem aba no renderer",
+          "Ordenação determinística final via compareWorktreeAgentRows",
+          "Linhas filhas de subagentes em processo (buildSubagentChildRows)",
+          "Converte entradas de migração não suportada em linhas de agente",
+          "Descarta/oculta linhas concluídas cuja aba já não existe no renderer (liveEntryWorktreeId)"
+        ],
+        "notes": "Hydra constrói linhas a partir de abas do worktree (WorktreeCardAgents.tsx:38-113) e de sessões headless ativas (:121-163), depois consolida por agente numa Map por ordem de inserção (:165-198). Não cobre retidos, aliases legados, abas sintéticas, ordenação determinística nem subagentes; o backend_contract do Orca é vazio (tudo renderer), logo não há backend a verificar."
+      }
+    },
+    {
+      "id": "D05-007",
+      "capability": "Decaimento de estado estagnado para unverifiable ou idle com base na presença de PTY live",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-rows.ts:175",
+        "components/sidebar/worktree-agent-rows.ts:225"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src-tauri/src/agent_state.rs:14",
+          "src-tauri/src/agent_state.rs:69",
+          "src-tauri/src/agent_state.rs:79",
+          "src-tauri/src/lib.rs:866",
+          "src-tauri/src/lib.rs:883",
+          "src/shared/agent-status-freshness.ts:37",
+          "src/lib/agent-row-decay-state.ts:24",
+          "src/components/AgentStateDot.tsx:15"
+        ],
+        "backend": [
+          "check_agent_state -> src-tauri/src/lib.rs:906 (resolve_agent_state :866-896, decay_state :883, insert_state_transition persistido)",
+          "check_agent_detailed_status -> src-tauri/src/lib.rs:918 (reusa resolve_agent_state)",
+          "AgentState::decay_state -> src-tauri/src/agent_state.rs:79-93",
+          "invoke('check_agent_detailed_status') chamado do renderer -> src/App.tsx:1505"
+        ],
+        "missing_behaviors": [
+          "Done é terminal/permanente no Orca; no Herdr um Done além do TTL decai para Idle (src-tauri/src/agent_state.rs:88-90) — divergência direta de comportamento",
+          "Orca decai estado ativo estagnado com PTY vivo para 'unverifiable'; o Herdr mapeia para 'unknown' (agent_state.rs:69-77) e o sidebar nunca deriva 'unverifiable' para linhas de agente (resolveDecayedAgentRowState em src/lib/agent-row-decay-state.ts:24 sem callers)",
+          "Orca mede o gap pelo relógio de observação (evidenceObservedAt); decay_state mede por state_started_at (src-tauri/src/lib.rs:883)",
+          "restoredUnconfirmed decai imediatamente para idle no Orca; não existe no decay_state (só no gate isFreshNonDoneAgentStatus, src/shared/agent-status-freshness.ts:37-52)"
+        ],
+        "notes": "Paridade de threshold: AGENT_STATE_STALE_AFTER_MS = 30*60*1000 (agent_state.rs:14) pina explicitamente o AGENT_STATUS_STALE_AFTER_MS do Orca; a divisão ativo-estagnado → (vivo ⇒ unverifiable/unknown, morto ⇒ idle) coincide (agent_state.rs:82-87). As diferenças estão no destino do Done, no vocabulário 'unknown' vs 'unverifiable' (que quebra o visual de linha do sidebar) e no relógio de medição."
+      }
+    },
+    {
+      "id": "D05-008",
+      "capability": "Projeção de linhas de agente derivadas de título de terminal para abas sem hook explícito",
+      "orca_evidence": [
+        "components/sidebar/worktree-title-derived-agent-rows.ts:22",
+        "components/sidebar/worktree-title-derived-agent-rows.ts:51",
+        "components/sidebar/worktree-title-derived-agent-rows.ts:121",
+        "components/sidebar/worktree-title-derived-agent-rows.ts:219",
+        "components/sidebar/worktree-title-derived-agent-rows.ts:269",
+        "components/sidebar/worktree-title-derived-agent-rows.ts:291"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/components/sidebar/WorktreeCardAgents.tsx:63",
+          "src/lib/agent-status.ts:44",
+          "src/lib/agent-status.ts:61",
+          "src/lib/agent-status.ts:75",
+          "src/lib/pane-agent-evidence.ts:29",
+          "src/lib/pane-agent-evidence.ts:36",
+          "src/components/sidebar/worktree-title-derived-agent-rows.ts:3"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Constrói linhas de agente derivadas de título (o módulo homônimo é auto-stub: resolveAgentTypeFromTerminalTitle = null, worktree-title-derived-agent-rows.ts:3-4)",
+          "Autoridade fixa TITLE_DERIVED_AGENT_ROW_AUTHORITY_ID = 'renderer-title-projection' e startedAt: 0 (0 hits)",
+          "Mapeia status de título para estado de linha: 'permission' -> 'waiting' e 'idle' -> 'idle' (Hydra só emite agentes 'working' em getWorkingAgentsPerWorktree)",
+          "Trata telas de gerenciamento 'claude agents' e o título nativo 'cursor agent' como idle",
+          "Resolve folha de layout em abas divididas (resolveLeafIdForTitleFallback; src/lib/runtime-pane-title-leaf-id.ts é auto-stub)",
+          "Guarda CLAUDE_AGENT_TOKEN_RE contra spinners genéricos sem menção a 'claude'"
+        ],
+        "notes": "Existe classificação de atividade por título real e alcançável (classifyTitleActivity/resolveTitleActivityLabel em src/lib/pane-agent-evidence.ts:29-41 → agent-title-detection) e um query de agentes por worktree (getWorkingAgentsPerWorktree, src/lib/agent-status.ts:44-84) que só produz linhas 'working' e não constrói entradas AgentStatusEntry. WorktreeCardAgents usa getAgentLabelFromTitle como último fallback de tipo (:63-72)."
+      }
+    },
+    {
+      "id": "D05-009",
+      "capability": "Resolução e normalização do tipo de agente com base no launchAgent da aba e título",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-row-type.ts:11",
+        "components/sidebar/worktree-title-derived-agent-rows.ts:269"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/components/sidebar/WorktreeCardAgents.tsx:58",
+          "src/components/sidebar/WorktreeCardAgents.tsx:63",
+          "src/components/sidebar/WorktreeCardAgents.tsx:77"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "resolveCompatibleAgentTypeForOwner (normalização de compatibilidade OMP/Pi) — ausente",
+          "resolveTitleDerivedPaneOwner: launchAgent aplica-se apenas a abas com folha única de layout, não marcando subpainéis em split — ausente",
+          "resolveAgentTypeFromTerminalTitle (src/components/sidebar/worktree-title-derived-agent-rows.ts:3 é auto-stub null)"
+        ],
+        "notes": "Hydra resolve o tipo inline: tab.agentName/agentId → agentName da sessão de backing → getAgentLabelFromTitle(tab.title), com normalizeAgentId (WorktreeCardAgents.tsx:58-77). Não há restrição de proprietário para painéis em split nem camada de resolução nomeada."
+      }
+    },
+    {
+      "id": "D05-010",
+      "capability": "Derivação de linhas filhas para subagentes em processo com propagação de frescor do pai",
+      "orca_evidence": [
+        "components/sidebar/worktree-subagent-child-rows.ts:18",
+        "components/sidebar/worktree-subagent-child-rows.ts:31"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/components/sidebar/WorktreeCardAgents.tsx:111",
+          "src/components/sidebar/CompactAgentRow.tsx:64",
+          "src/components/sidebar/agent-row-lineage-model.ts:61"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Gera linhas filhas indentadas para subagentes/teammates em processo",
+          "Chaves sintéticas com NUL (parentPaneKey\\u0000subagent:id)",
+          "activationPaneKey apontando para o painel pai",
+          "Frescor do filho via resolveAgentChildWorkFreshness (pai estagnado ⇒ active decai para unverifiable)",
+          "Não deriva filhas para snapshots retidos"
+        ],
+        "notes": "Busca em 5 passos: (1) buildSubagentChildRows ausente de todo src/** (0 hits); (2) nenhum construtor de linhas 'subagent' (0 hits para rowSource:'subagent' fora de consumidores de display); (3) WorktreeCardAgents.tsx:111-113 só registra childAgentCount e CompactAgentRow.tsx:64-68 só renderiza o chevron de disclosure — nenhuma linha filha é construída; (4) sem backend; (5) agent-row-lineage-model.ts:61 (buildAgentRowLineageTree) existe mas sem callers. Não localizado."
+      },
+      "par": [
+        "PAR-66"
+      ]
+    },
+    {
+      "id": "D05-011",
+      "capability": "Supressão de títulos de spinners estagnados em painéis pai de workers concluídos",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-rows.ts:98",
+        "components/sidebar/worktree-agent-rows.ts:192",
+        "components/sidebar/worktree-agent-activity-summary.ts:171",
+        "components/sidebar/worktree-agent-activity-summary.ts:257"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/components/sidebar/WorktreeCardAgents.tsx:165",
+          "src/components/sidebar/agent-row-lineage-model.ts:61"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "markCompletedWorkerParentPaneKeysSeen para chaves pai de workers concluídos (live e retidos)",
+          "Suprimir linhas de trabalho/spinners derivados de título num painel pai visível cujo worker filho terminou",
+          "Agrupar filhos de orquestração sob o painel pai mais próximo (e manter órfãos planos)"
+        ],
+        "notes": "Busca em 5 passos: (1) markCompletedWorkerParentPaneKeysSeen ausente (0 hits); (2) nenhuma supressão de título por worker concluído; (3) WorktreeCardAgents agrupa apenas por agente, não por parentPaneKey (:165-198); (4) sem backend; (5) agent-row-lineage-model.ts:61 resolve parentes mas não é chamado por nenhum pipeline. Não localizado."
+      }
+    },
+    {
+      "id": "D05-012",
+      "capability": "Mescla de metadados de orquestração de runtime com proteção contra herança de despacho anterior",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-row-orchestration.ts:19"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/store/slices/agent-status-orchestration-actions.ts:1",
+          "src/store/slices/agent-status-orchestration-actions.ts:43",
+          "src/store/slices/agent-status-orchestration-context.ts:3",
+          "src/lib/agent-status-worktree-attribution.ts:38"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "entryWithRuntimeOrchestration: mescla AgentStatusOrchestrationContext na entrada com correspondência estrita de taskId/dispatchId",
+          "Preservar a referência original quando os contextos são idênticos (orchestrationContextsEqual)"
+        ],
+        "notes": "Arquivo existir não é funcionalidade: a semântica do Orca existe em src/lib/agent-status-worktree-attribution.ts:38-53 (mergeAgentStatusOrchestration — mesma checagem taskId/dispatchId, morta, 0 callers) e o caminho de store (agent-status-orchestration-actions.ts:43,63) chama mergeCurrentOrchestrationContext/orchestrationMapsEqual de src/store/slices/agent-status-orchestration-context.ts:3-8, que é auto-stub (ambos null). setRuntimeAgentOrchestrationByPaneKey não tem nenhum caller externo (só a assinatura em agent-status-slice-contract.ts:120). Sem efeito observável alcançável do mount."
+      }
+    },
+    {
+      "id": "D05-013",
+      "capability": "Sumário agregado e cacheado de atividade de agentes por worktree para indicadores de status",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-activity-summary.ts:13",
+        "components/sidebar/worktree-agent-activity-summary.ts:57",
+        "components/sidebar/worktree-agent-activity-summary.ts:62",
+        "components/sidebar/worktree-agent-activity-summary.ts:187"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/lib/worktree-activity-state.ts:32",
+          "src/lib/worktree-activity-state.ts:38",
+          "src/lib/worktree-activity-state.ts:51",
+          "src/lib/worktree-activity-state.ts:78",
+          "src/components/sidebar/visible-worktrees.ts:293",
+          "src/components/sidebar/smart-attention.ts:19"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Flags hasPermission/hasLiveWorking/hasLiveMonitoring/hasInterrupted/hasLiveDone/hasRetainedDone (Hydra colapsa tudo num único status working|monitoring|permission por worktree)",
+          "Estados 'done' e 'interrupted' no sumário (não existem no índice do Hydra) e separação de finalização limpa vs interrompida",
+          "Mapas agentStatusPaneIdsByTabId e stalePaneIdsByTabId (supressão de títulos action-required de painéis estagnados)",
+          "Reuso de objetos de sumário estruturalmente iguais (summariesEqual) e cache por agentStatusEpoch",
+          "Participação de migrationUnsupportedByPtyId no sumário"
+        ],
+        "notes": "Existe um índice real e alcançável por worktree: getLiveAgentStatusByWorktreeId (src/lib/worktree-activity-state.ts:32-81) filtra por frescor (isFreshNonDoneAgentStatus) e resolve o worktree via resolveAgentStatusWorktreeId, consumido pelo filtro de sleeping (visible-worktrees.ts:293-297). As peças de atenção do sidebar (buildAttentionByWorktree/hasFreshAttributedAgentStatus em src/components/sidebar/smart-attention.ts:19-26) são auto-stubs null importados por smart-sort.ts:197-215."
+      }
+    },
+    {
+      "id": "D05-014",
+      "capability": "Seletor de assinatura de frescor de agentes por worktree para contenção de re-renders",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-freshness-selector.ts:6",
+        "components/sidebar/worktree-agent-freshness-selector.ts:33"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/store/slices/agent-status-freshness-scheduler.ts:10",
+          "src/store/slices/agent-status-runtime.ts:173"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Assinatura compacta por worktree refletindo se cada agente ativo está fresco ou estagnado",
+          "Curto-circuito quando agentStatusEpoch não mudou",
+          "Re-render restrito ao card cujo agente cruzou o limiar de 30 minutos"
+        ],
+        "notes": "Busca em 5 passos: (1) createWorktreeAgentFreshnessSelector/EMPTY_WORKTREE_AGENT_FRESHNESS_SIGNATURE ausentes (0 hits); (2) nenhuma assinatura de frescor em string; (3) o scheduler que deveria bumpar os epochs no limiar é auto-stub (agent-status-freshness-scheduler.ts:10 createFreshnessScheduler = null) e é chamado em agent-status-runtime.ts:173-181; (4) sem backend; (5) agentStatusEpoch existe e é bumpado por ações de drop/authority, mas sem seletor de contenção por worktree. Não localizado."
+      }
+    },
+    {
+      "id": "D05-015",
+      "capability": "Patch in-place de índice de entradas live por worktree para pings de mesmo estado",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-live-index-patch.ts:13",
+        "components/sidebar/worktree-agent-live-index-patch.ts:16",
+        "components/sidebar/worktree-agent-live-index-patch.ts:21",
+        "components/sidebar/worktree-agent-live-index-patch.ts:46"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/components/sidebar/visible-worktrees.ts:56",
+          "src/lib/worktree-activity-state.ts:32"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Detecção de ping de mesmo estado (mesmas chaves, mesma atribuição, mesmo done) para patch O(alterados)",
+          "Preservação da ordem de iteração dos buckets",
+          "Rebuild completo apenas em adição/remoção de chave ou mudança de atribuição/conclusão (recordLiveEntriesFullRebuild)"
+        ],
+        "notes": "Busca em 5 passos: (1) patchLiveEntriesByWorktree/LiveEntriesByWorktreeCache/recordLiveEntriesFullRebuild ausentes (0 hits); (2) nenhum índice live por worktree; (3) o consumo reconstrói por consulta (visible-worktrees.ts:56-73 monta o mapa compartilhado a cada leitura; worktree-activity-state.ts:32-81 percorre os mapas inteiros); (4) sem backend; (5) nenhuma noção de bucket/ordem de iteração. Não localizado."
+      }
+    },
+    {
+      "id": "D05-016",
+      "capability": "Seletores otimizados de entradas de agentes, migrações e layouts por worktree",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-row-selectors.ts:20",
+        "components/sidebar/worktree-agent-row-selectors.ts:55",
+        "components/sidebar/worktree-agent-row-selectors.ts:66",
+        "components/sidebar/worktree-agent-row-selectors.ts:80",
+        "components/sidebar/worktree-agent-row-selectors.ts:183",
+        "components/sidebar/worktree-agent-row-selectors.ts:219",
+        "components/sidebar/worktree-agent-row-selectors.ts:226",
+        "components/sidebar/worktree-agent-row-selectors.ts:233",
+        "components/sidebar/worktree-agent-row-selectors.ts:250"
+      ],
+      "hydra": {
+        "status": "partial",
+        "evidence": [
+          "src/lib/agent-status-worktree-attribution.ts:23",
+          "src/lib/agent-status-worktree-attribution.ts:38",
+          "src/lib/worktree-activity-state.ts:32",
+          "src/components/sidebar/visible-worktrees.ts:56"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "selectLiveAgentStatusEntriesForWorktree / selectMigrationUnsupportedEntriesForWorktree / selectRetainedAgentEntriesForWorktree / selectTerminalLayoutsForWorktree (0 hits)",
+          "Constantes imutáveis compartilhadas EMPTY_LIVE_ENTRIES/EMPTY_MIGRATION_UNSUPPORTED_ENTRIES/EMPTY_RETAINED/EMPTY_TERMINAL_LAYOUTS (0 hits)",
+          "reuseArrayIfEqual para reutilização referencial entre publicações",
+          "getTabIdToWorktreeId com inclusão de abas unificadas agent-session",
+          "liveEntryWorktreeId/ocultar linhas concluídas cuja aba sumiu do renderer"
+        ],
+        "notes": "Existe atribuição de pane→worktree real (resolveAgentStatusWorktreeId, par de parentPaneKey, agent-status-worktree-attribution.ts:23-36) e um índice por worktree de status live (worktree-activity-state.ts:32), mas nenhum seletor de entradas/migrações/layouts com reuso referencial ou vazios congelados; a conversão para o tipo compartilhado é local e recriada a cada leitura (visible-worktrees.ts:56-73)."
+      }
+    },
+    {
+      "id": "D05-017",
+      "capability": "Índice compartilhado de orquestração de runtime por worktree com projeção imune a churn de pings",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-orchestration-index.ts:36",
+        "components/sidebar/worktree-agent-orchestration-index.ts:46",
+        "components/sidebar/worktree-agent-orchestration-index.ts:56",
+        "components/sidebar/worktree-agent-orchestration-index.ts:60",
+        "components/sidebar/worktree-agent-orchestration-index.ts:74",
+        "components/sidebar/worktree-agent-orchestration-index.ts:168",
+        "components/sidebar/worktree-agent-orchestration-index.ts:241",
+        "components/sidebar/worktree-agent-orchestration-index.ts:291"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/store/slices/agent-status-orchestration-actions.ts:27",
+          "src/store/slices/agent-status-orchestration-actions.ts:63",
+          "src/lib/agent-status-worktree-attribution.ts:23"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "selectWorktreeAgentOrchestration / selectWorktreeAgentOrchestrationIndex (0 hits)",
+          "Projeção ordenada projectPaneWorktreeIds para não reconstruir em pings de painéis não-orquestrados",
+          "Atribuição de contexto de filho ao worktree da aba do pai quando a aba do filho falta",
+          "Registros com Object.create(null) para tratar chaves __proto__ como dados e reuso via reuseRecordIfOrderedEqual",
+          "Constante congelada EMPTY_WORKTREE_AGENT_ORCHESTRATION e releaseWorktreeAgentOrchestrationIndexCache"
+        ],
+        "notes": "Busca em 5 passos: (1) nomes selectWorktreeAgentOrchestration*/EMPTY_WORKTREE_AGENT_ORCHESTRATION ausentes (0 hits); (2) nenhum índice por worktree; (3) o store mantém apenas o mapa plano runtimeAgentOrchestrationByPaneKey e a mescla nas entradas usa stub (agent-status-orchestration-actions.ts:27-63 → orchestration-context.ts nulls), sem nenhum caller externo; (4) sem backend; (5) atribuição pane→worktree existe isolada (agent-status-worktree-attribution.ts:23). Não localizado."
+      }
+    },
+    {
+      "id": "D05-018",
+      "capability": "Seleção em lote de orquestração de runtime para múltiplos worktrees no dashboard",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-orchestration-batch.ts:8",
+        "components/sidebar/worktree-agent-orchestration-batch.ts:22",
+        "components/sidebar/worktree-agent-orchestration-batch.ts:35"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/store/slices/agent-status-orchestration-actions.ts:27"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "selectRuntimeAgentOrchestrationBatch (consulta em lote com cache compartilhado) — 0 hits",
+          "Short-circuit EMPTY_WORKTREE_AGENT_ORCHESTRATION_INDEX para worktreeIds.length === 0 — 0 hits",
+          "releaseRuntimeAgentOrchestrationBatchCache (no-op de ciclo de vida do índice compartilhado) — 0 hits"
+        ],
+        "notes": "Busca em 5 passos: (1) os três símbolos ausentes de src/** (0 hits); (2) nenhuma API de orquestração em lote; (3) só existe o setter por publicação no store, ele mesmo dependente de stub (agent-status-orchestration-actions.ts:27); (4) sem backend; (5) nenhum consumidor de dashboard equivalente (src/components/dashboard/DashboardAgentRow.tsx não recebe orquestração por lote). Não localizado."
+      }
+    },
+    {
+      "id": "D05-019",
+      "capability": "Sintetização de aba de fallback e timestamp inicial efetivo para agentes sem aba no renderer",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-row-fallback-tab.ts:5",
+        "components/sidebar/worktree-agent-row-fallback-tab.ts:9"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/components/sidebar/WorktreeCardAgents.tsx:82",
+          "src/components/sidebar/WorktreeCardAgents.tsx:121",
+          "src/components/sidebar/WorktreeCardAgents.tsx:135"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "effectiveWorktreeAgentRowStartedAt ancorando em entry.stateHistory[0]?.startedAt ?? entry.stateStartedAt — 0 hits",
+          "tabFromWorktreeAttributedStatusEntry sintetizando TerminalTab (ptyId null, sortOrder MAX_SAFE_INTEGER, createdAt efetivo) — 0 hits",
+          "Renderizar entradas atribuídas ao worktree cuja aba não existe no renderer (Hydra só cobre sessões headless, não entradas de status órfãs de aba)"
+        ],
+        "notes": "Busca em 5 passos: (1) tabFromWorktreeAttributedStatusEntry/effectiveWorktreeAgentRowStartedAt ausentes (0 hits); (2) nenhuma TerminalTab sintética; (3) WorktreeCardAgents.tsx:82-84 usa startedAt = backingSession.state_started_at ?? created_at ?? Date.now() e :135 o mesmo para sessões, sem ancorar em stateHistory; (4) sem backend; (5) nenhum uso de worktreePath/entry.worktreeId para incluir linhas sem aba. Não localizado."
+      }
+    },
+    {
+      "id": "D05-020",
+      "capability": "Ordenação comparativa determinística de linhas de agentes por timestamp, aba e chave ordinal",
+      "orca_evidence": [
+        "components/sidebar/worktree-agent-row-order.ts:7",
+        "components/sidebar/worktree-agent-row-order.ts:16"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/components/sidebar/WorktreeCardAgents.tsx:165",
+          "src/components/sidebar/WorktreeCardAgents.tsx:198",
+          "src/components/sidebar/worktree-card-agent-summary.ts:23"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "compareWorktreeAgentRows com desempate startedAt → tab.sortOrder → tab.createdAt → comparePaneKeysOrdinal (0 hits para os dois símbolos)",
+          "comparableNumber para fallback zero seguro de valores indefinidos",
+          "Estabilidade visual contra 'pulos' de linha em atualizações concorrentes"
+        ],
+        "notes": "Busca em 5 passos: (1) compareWorktreeAgentRows/comparePaneKeysOrdinal ausentes (0 hits); (2) nenhum comparador de linha; (3) a ordem sai da iteração de Map (inserção) em WorktreeCardAgents.tsx:165-198; (4) sem backend; (5) worktree-card-agent-summary.ts:23 agentStatusOrder é uma prioridade de sumário, não a ordenação de linhas. Não localizado."
+      }
+    },
+    {
+      "id": "D05-021",
+      "capability": "Marcar thread individual como lida a partir da linha da lista de Agentes (Mark thread as read)",
+      "orca_evidence": [
+        "components/sidebar/SidebarAgentsList.tsx:159",
+        "components/activity/activity-thread-actions.ts:69",
+        "components/activity/activity-thread-actions.ts:70",
+        "components/activity/activity-thread-row.tsx:190",
+        "components/activity/activity-thread-row.tsx:196",
+        "components/activity/activity-thread-row.tsx:208",
+        "components/activity/activity-thread-virtual-row.tsx:63"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/store/slices/ui/ui-slice-agent-actions.ts:36",
+          "src/hooks/agent-auto-ack-surfaces.ts:86",
+          "src/components/sidebar/CompactAgentRow.tsx:66",
+          "src/components/sidebar/CompactAgentRow.tsx:103",
+          "src/components/sidebar/WorktreeCardAgents.tsx:28"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Botão de sino por linha de agente com aria-label/tooltip 'Mark thread as read' (CompactAgentRow não renderiza nenhuma ação de leitura; só ativação e disclosure de filhos)",
+          "Wiring do clique da linha para acknowledgeAgents (a única chamada externa de acknowledgeAgents é o auto-ack ao visualizar o painel, agent-auto-ack-surfaces.ts:86)",
+          "Emphasia de não-lido na linha do agente (o Hydra só tem showUnreadEmphasis no cabeçalho do card de worktree, D04a-024)"
+        ],
+        "notes": "Busca em 5 passos: (1) nomes markThreadRead/onMarkRead/'Mark thread as read' ausentes de src/components/sidebar/** (0 hits); (2) nenhum aria-label/tooltip de leitura por linha; (3) CompactAgentRow.tsx:66-71 só tem handleActivate e :103-171 só o disclosure de subagentes; a linha de agente do Hydra (WorktreeCardAgents→WorktreeCompactAgentsList→CompactAgentRow) não recebe campo de unread; (4) sem backend; (5) o primitivo de store acknowledgeAgents existe (ui-slice-agent-actions.ts:36) mas seu único caller é o auto-ack em agent-auto-ack-surfaces.ts:86/useAutoAckViewedAgent — não há affordance manual por linha. Não localizado."
+      }
+    },
+    {
+      "id": "D05-022",
+      "capability": "Marcar thread individual como não-lida a partir da linha da lista de Agentes (Mark thread unread)",
+      "orca_evidence": [
+        "components/sidebar/SidebarAgentsList.tsx:160",
+        "components/sidebar/SidebarAgentsList.tsx:162",
+        "components/activity/activity-thread-actions.ts:73",
+        "components/activity/activity-thread-actions.ts:74",
+        "components/activity/activity-thread-row.tsx:217",
+        "components/activity/activity-thread-row.tsx:220",
+        "components/activity/activity-thread-row.tsx:231",
+        "components/activity/activity-thread-virtual-row.tsx:64",
+        "components/activity/activity-thread-virtual-row.tsx:68"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/store/slices/ui/ui-slice-agent-actions.ts:37",
+          "src/store/slices/agent-status-authority-actions.ts:80",
+          "src/components/sidebar/CompactAgentRow.tsx:66",
+          "src/components/sidebar/worktree-card-presentation.tsx:88"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Botão de sino por linha com aria-label/tooltip 'Mark thread unread' e estado hover-only (ausente em CompactAgentRow)",
+          "Wiring do clique para unacknowledgeAgents (unacknowledgeAgents não tem nenhum caller fora do store/testes)",
+          "Gate disableMarkUnread/allowMarkUnreadWhenSelected por linha selecionada"
+        ],
+        "notes": "Busca em 5 passos: (1) 'Mark thread unread'/markThreadUnread/onMarkUnread ausentes de src/components/sidebar/** (0 hits); (2) nenhum rótulo correspondente; (3) a linha de agente só ativa o painel; (4) sem backend; (5) o Hydra rastreia manuallyUnreadTurnsByPaneKey (agent-status-authority-actions.ts:80) e tem um quick action de 'Mark as unread' no CABEÇALHO do worktree card (worktree-card-presentation.tsx:88 showUnreadQuickAction → D04a-024), superfície diferente da linha de agente; unacknowledgeAgents (ui-slice-agent-actions.ts:37) não tem caller externo. Não localizado para a superfície de linha de agente."
+      }
+    },
+    {
+      "id": "D05-023",
+      "capability": "Limpar notificação de uma thread concluída individual na linha da lista de Agentes (Clear notification)",
+      "orca_evidence": [
+        "components/activity/activity-thread-virtual-row.tsx:65",
+        "components/activity/activity-thread-row.tsx:170",
+        "components/activity/activity-thread-row.tsx:174",
+        "components/activity/activity-thread-row.tsx:177",
+        "components/activity/activity-clear-completed.ts:23",
+        "components/activity/activity-clear-completed.ts:118",
+        "components/activity/activity-clear-completed.ts:124",
+        "components/activity/activity-clear-completed.ts:125"
+      ],
+      "hydra": {
+        "status": "missing",
+        "evidence": [
+          "src/store/slices/ui/ui-slice-agent-actions.ts:39",
+          "src/store/slices/agent-status-retention-actions.ts:74",
+          "src/components/sidebar/CompactAgentRow.tsx:66",
+          "src/components/sidebar/SidebarAgentsList.tsx:662"
+        ],
+        "backend": [],
+        "missing_behaviors": [
+          "Botão X por linha de thread concluída com aria-label/tooltip 'Clear notification' e keyboardReachable",
+          "Gate isClearableActivityThread (done/interrupted) para exibir a ação",
+          "Wiring para applyActivityClearedAt + dismissRetainedAgents + evicção do cache persistido de status (dropPersistedBatch) — nenhum desses tem caller externo no Hydra"
+        ],
+        "notes": "Busca em 5 passos: (1) clearActivityThread/isClearableActivityThread/'Clear notification' ausentes de src/** (0 hits); (2) nenhum rótulo/ação por linha de agente; (3) CompactAgentRow.tsx:66-171 só ativa e faz disclosure; o único 'Clear' do sidebar de agentes (SidebarAgentsList.tsx:662) limpa a seleção múltipla (não uma notificação de thread); (4) sem backend (dismissRetainedAgents/applyActivityClearedAt existem no store — ui-slice-agent-actions.ts:39, agent-status-retention-actions.ts:74 — mas sem consumidores externos); (5) evicção dropPersistedBatch não é chamada por nenhum caminho do sidebar. Não localizado."
+      }
+    }
+  ],
+  "summary": {
+    "parity": 0,
+    "partial": 10,
+    "missing": 13,
+    "not-applicable": 0,
+    "out-of-scope": 0
+  }
+}

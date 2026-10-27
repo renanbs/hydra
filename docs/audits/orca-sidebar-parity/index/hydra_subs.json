@@ -1,0 +1,67 @@
+[
+ {
+  "file": "src/components/sidebar/AddRepoDialog.tsx",
+  "line": 42,
+  "text": "window.addEventListener(\"keydown\", handleKeyDown);"
+ },
+ {
+  "file": "src/components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 38,
+  "text": "window.addEventListener(\"keydown\", handleKeyDown);"
+ },
+ {
+  "file": "src/components/sidebar/ParentPickerModal.tsx",
+  "line": 51,
+  "text": "window.addEventListener(\"keydown\", handleKeyDown);"
+ },
+ {
+  "file": "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
+  "line": 42,
+  "text": "window.addEventListener(\"keydown\", handleKeyDown);"
+ },
+ {
+  "file": "src/components/sidebar/ProjectGroupNameDialog.tsx",
+  "line": 48,
+  "text": "window.addEventListener(\"keydown\", handleKeyDown);"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 390,
+  "text": "window.addEventListener(\"keydown\", handleKeyDown);"
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 71,
+  "text": "window.addEventListener(\"mousedown\", handleOutside);"
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 72,
+  "text": "window.addEventListener(\"keydown\", handleKeyDown);"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 263,
+  "text": "window.addEventListener(\"hydra:refresh-ports\", handleImmediateRefresh);"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 290,
+  "text": "window.addEventListener(\"hydra:open-new-group-dialog\", handleOpenNewGroup);"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 300,
+  "text": "window.addEventListener(\"click\", handleClickOutside);"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 150,
+  "text": "window.addEventListener(\"keydown\", handleKeyDown);"
+ },
+ {
+  "file": "src/components/sidebar/truncated-sidebar-label.tsx",
+  "line": 49,
+  "text": "window.addEventListener('resize', updateTruncated)"
+ }
+]

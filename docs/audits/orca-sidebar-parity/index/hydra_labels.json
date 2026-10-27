@@ -1,0 +1,687 @@
+[
+ {
+  "file": "src/components/sidebar/AddRepoDialog.tsx",
+  "line": 212,
+  "text": "placeholder=\"https://github.com/user/repo.git or git@github.com:...\""
+ },
+ {
+  "file": "src/components/sidebar/AddRepoDialog.tsx",
+  "line": 258,
+  "text": "placeholder=\"e.g. my-awesome-project\""
+ },
+ {
+  "file": "src/components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 80,
+  "text": "title=\"Close\""
+ },
+ {
+  "file": "src/components/sidebar/CacheTimer.tsx",
+  "line": 37,
+  "text": "title={`Prompt cache active (~${formatted} remaining)`}"
+ },
+ {
+  "file": "src/components/sidebar/CompactAgentRow.tsx",
+  "line": 126,
+  "text": "<span className=\"inline-flex shrink-0\" title={formatAgentTypeLabel(agentType)}>"
+ },
+ {
+  "file": "src/components/sidebar/CompactAgentRow.tsx",
+  "line": 131,
+  "text": "<span className=\"min-w-0 flex-1 truncate\" title={rowTitle}>"
+ },
+ {
+  "file": "src/components/sidebar/CompactAgentRow.tsx",
+  "line": 151,
+  "text": "title={model}"
+ },
+ {
+  "file": "src/components/sidebar/FolderWorkspaceRow.tsx",
+  "line": 53,
+  "text": "title={`Folder not found: ${folderPath}`}"
+ },
+ {
+  "file": "src/components/sidebar/FolderWorkspaceRow.tsx",
+  "line": 62,
+  "text": "title={folderPath}"
+ },
+ {
+  "file": "src/components/sidebar/ParentPickerModal.tsx",
+  "line": 107,
+  "text": "placeholder=\"Search workspaces...\""
+ },
+ {
+  "file": "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
+  "line": 97,
+  "text": "title={projectName}"
+ },
+ {
+  "file": "src/components/sidebar/ProjectGroupNameDialog.tsx",
+  "line": 105,
+  "text": "placeholder=\"e.g. MELI, Platform, Infrastructure\""
+ },
+ {
+  "file": "src/components/sidebar/SectionHeader.tsx",
+  "line": 144,
+  "text": "title=\"Unread activity in group\""
+ },
+ {
+  "file": "src/components/sidebar/SectionHeader.tsx",
+  "line": 176,
+  "text": "title=\"Group options\""
+ },
+ {
+  "file": "src/components/sidebar/SectionHeader.tsx",
+  "line": 188,
+  "text": "title=\"New workspace in this group\""
+ },
+ {
+  "file": "src/components/sidebar/SectionHeader.tsx",
+  "line": 353,
+  "text": "title=\"Project options\""
+ },
+ {
+  "file": "src/components/sidebar/SectionHeader.tsx",
+  "line": 365,
+  "text": "title=\"New workspace in this project\""
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 115,
+  "text": "label: projectName,"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 150,
+  "text": "label:"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 170,
+  "text": "| { type: \"group-header\"; label: string; state: string; count: number }"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 176,
+  "text": "rows.push({ type: \"group-header\", label: group.label, state: group.state, count: group.sessions.length });"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 260,
+  "text": "<span className={`w-2 h-2 rounded-full shrink-0 ${getStateBadge(session.state)}`} title={`Herdr State: ${getStateLabel(session.state)}`} />"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 403,
+  "text": "placeholder=\"Filter agents...\""
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 438,
+  "text": "placeholder=\"Filter agents...\""
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 449,
+  "text": "{ value: \"all\", label: \"All\" },"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 450,
+  "text": "{ value: \"blocked\", label: \"Blocked\" },"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 451,
+  "text": "{ value: \"waiting\", label: \"Waiting\" },"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 452,
+  "text": "{ value: \"working\", label: \"Working\" },"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 453,
+  "text": "{ value: \"done\", label: \"Done\" },"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 454,
+  "text": "{ value: \"idle\", label: \"Idle\" },"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 609,
+  "text": "title={`Herdr State: ${getStateLabel(session.state)}`}"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 683,
+  "text": "title={promptDialog.title}"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 686,
+  "text": "placeholder={promptDialog.placeholder}"
+ },
+ {
+  "file": "src/components/sidebar/SidebarFooter.tsx",
+  "line": 21,
+  "text": "title=\"Open Settings (Ctrl+,)\""
+ },
+ {
+  "file": "src/components/sidebar/SidebarFooter.tsx",
+  "line": 32,
+  "text": "title=\"Reveal active workspace\""
+ },
+ {
+  "file": "src/components/sidebar/SidebarFooter.tsx",
+  "line": 40,
+  "text": "<span className=\"text-[10px] text-neutral-500\" title={`Hydra v${appVersion}`}>v{appVersion}</span>"
+ },
+ {
+  "file": "src/components/sidebar/SidebarHeader.tsx",
+  "line": 54,
+  "text": "data-sidebar-section-title=\"projects\""
+ },
+ {
+  "file": "src/components/sidebar/SidebarHeader.tsx",
+  "line": 73,
+  "text": "title={activityLabel}"
+ },
+ {
+  "file": "src/components/sidebar/SidebarHeader.tsx",
+  "line": 89,
+  "text": "title=\"Workspace display options\""
+ },
+ {
+  "file": "src/components/sidebar/SidebarHeader.tsx",
+  "line": 107,
+  "text": "title=\"Add project (Folder / Clone)\""
+ },
+ {
+  "file": "src/components/sidebar/SidebarHeader.tsx",
+  "line": 129,
+  "text": "title=\"New workspace (Mod+N)\""
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 216,
+  "text": "placeholder=\"Add project...\""
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 232,
+  "text": "title=\"Clear project search\""
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 285,
+  "text": "{ id: \"none\", label: \"None\" },"
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 286,
+  "text": "{ id: \"workspace-status\", label: \"Status\" },"
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 287,
+  "text": "{ id: \"repo\", label: \"Project\" },"
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 324,
+  "text": "{ id: \"agent-activity\", label: \"Agent Activity\" },"
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 325,
+  "text": "{ id: \"name\", label: \"Name\" },"
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 326,
+  "text": "{ id: \"recent\", label: \"Recent\" },"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "line": 179,
+  "text": "title=\"Copy branch name\""
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "line": 225,
+  "text": "title={`Open ${url} in browser`}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "line": 235,
+  "text": "title={`Stop process (PID ${p.pid})`}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardDetailsHover.tsx",
+  "line": 292,
+  "text": "title={worktree.path}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardPortsTrigger.tsx",
+  "line": 32,
+  "text": "title={tooltipText}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardReviewBadge.tsx",
+  "line": 47,
+  "text": "title={tooltip}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardStatusLane.tsx",
+  "line": 47,
+  "text": "title={reviewStatusLabel(prDisplay)}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeCardStatusLane.tsx",
+  "line": 60,
+  "text": "title=\"Branch\""
+ },
+ {
+  "file": "src/components/sidebar/WorktreeHostContextBadge.tsx",
+  "line": 8,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeHostContextBadge.tsx",
+  "line": 14,
+  "text": "title={label}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 680,
+  "text": "placeholder=\"Filter projects and workspaces...\""
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 1117,
+  "text": "title={groupNameDialog.title}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 1157,
+  "text": "title={promptDialog.title}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeSidebar.tsx",
+  "line": 1160,
+  "text": "placeholder={promptDialog.placeholder}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeStatusIndicator.tsx",
+  "line": 88,
+  "text": "<span title={label ?? undefined} aria-label={label ?? undefined} role=\"img\">"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 172,
+  "text": "title={displayName}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx",
+  "line": 55,
+  "text": "function sourceToggle(region: HTMLElement, label: string, action: \"Show\" | \"Hide\") {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 473,
+  "text": "placeholder=\"/path/to/worktrees\""
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 575,
+  "text": "placeholder={`Search ${recoveredWorktrees.length} hidden worktrees...`}"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 599,
+  "text": "title={wt.path}"
+ },
+ {
+  "file": "src/components/sidebar/host-section-rows.ts",
+  "line": 23,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/host-section-rows.ts",
+  "line": 39,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/host-section-rows.ts",
+  "line": 78,
+  "text": "label: isLocal ? getLocalExecutionHostLabel() : hostId,"
+ },
+ {
+  "file": "src/components/sidebar/host-section-rows.ts",
+  "line": 294,
+  "text": "label: host.label,"
+ },
+ {
+  "file": "src/components/sidebar/sidebar-host-options.ts",
+  "line": 21,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/sidebar-host-options.ts",
+  "line": 34,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/sidebar-host-options.ts",
+  "line": 107,
+  "text": "label: translate('auto.components.sidebar.sidebarHostOptions.3e102f111c', 'All hosts'),"
+ },
+ {
+  "file": "src/components/sidebar/sidebar-host-options.ts",
+  "line": 113,
+  "text": "label: host.label,"
+ },
+ {
+  "file": "src/components/sidebar/truncated-sidebar-label.tsx",
+  "line": 70,
+  "text": "title={tooltipEnabled && truncated ? text : undefined}"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 24,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 32,
+  "text": "label: translate('auto.components.sidebar.workspace.status.b4a7101fe1', 'Circle'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 37,
+  "text": "label: translate('auto.components.sidebar.workspace.status.a702bc08d4', 'Dot'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 42,
+  "text": "label: translate('auto.components.sidebar.workspace.status.226d1e7773', 'Progress'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 47,
+  "text": "label: translate('auto.components.sidebar.workspace.status.821d156f54', 'Dashed'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 52,
+  "text": "label: translate('auto.components.sidebar.workspace.status.5f9ca31a84', 'Waiting'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 57,
+  "text": "label: translate('auto.components.sidebar.workspace.status.409528031f', 'Review'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 62,
+  "text": "label: translate('auto.components.sidebar.workspace.status.251c817bdd', 'Timer'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 67,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6380517b10', 'Flag'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 72,
+  "text": "label: translate('auto.components.sidebar.workspace.status.642da473f2', 'Alert'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 77,
+  "text": "label: translate('auto.components.sidebar.workspace.status.111db162bf', 'Paused'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 82,
+  "text": "label: translate('auto.components.sidebar.workspace.status.2c19d1db33', 'Play'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 87,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6b8285b8dd', 'Done'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 92,
+  "text": "label: translate('auto.components.sidebar.workspace.status.93ac840dcb', 'Blocked'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 97,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6b8285b8dd', 'Done'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 102,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6c1efa2cf8', 'In review'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status-icon-options.ts",
+  "line": 107,
+  "text": "label: translate('auto.components.sidebar.workspace.status.cb387159f6', 'In progress'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 51,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 61,
+  "text": "label: translate('auto.components.sidebar.workspace.status.52e3c6e2a4', 'Neutral'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 69,
+  "text": "label: translate('auto.components.sidebar.workspace.status.fc3b92756c', 'Blue'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 77,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6437a8c253', 'Sky'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 85,
+  "text": "label: translate('auto.components.sidebar.workspace.status.1b81da243a', 'Violet'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 93,
+  "text": "label: translate('auto.components.sidebar.workspace.status.7cebab6d4a', 'Amber'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 101,
+  "text": "label: translate('auto.components.sidebar.workspace.status.ddf25b6262', 'Emerald'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 109,
+  "text": "label: translate('auto.components.sidebar.workspace.status.7adb43ecf0', 'Rose'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 117,
+  "text": "label: translate('auto.components.sidebar.workspace.status.caabd5ca85', 'Zinc'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 125,
+  "text": "label: translate('auto.components.sidebar.workspace.status.895f381714', 'Conductor Done'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 133,
+  "text": "label: translate('auto.components.sidebar.workspace.status.caebe3c10f', 'Conductor Review'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 141,
+  "text": "label: translate('auto.components.sidebar.workspace.status.1a9383112b', 'Conductor Progress'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 153,
+  "text": "label: translate('auto.components.sidebar.workspace.status.52e3c6e2a4', 'Neutral'),"
+ },
+ {
+  "file": "src/components/sidebar/workspace-status.ts",
+  "line": 166,
+  "text": "label: translate('auto.components.sidebar.workspace.status.a702bc08d4', 'Dot'),"
+ },
+ {
+  "file": "src/components/sidebar/worktree-card-header.tsx",
+  "line": 23,
+  "text": "title={`Project ${repo.displayName || repo.name}`}"
+ },
+ {
+  "file": "src/components/sidebar/worktree-card-header.tsx",
+  "line": 143,
+  "text": "title=\"Auto-name failed. Click to see details.\""
+ },
+ {
+  "file": "src/components/sidebar/worktree-card-header.tsx",
+  "line": 153,
+  "text": "title=\"Primary worktree (original clone directory)\""
+ },
+ {
+  "file": "src/components/sidebar/worktree-card-header.tsx",
+  "line": 162,
+  "text": "title={"
+ },
+ {
+  "file": "src/components/sidebar/worktree-card-header.tsx",
+  "line": 181,
+  "text": "title=\"Primary worktree (original clone directory)\""
+ },
+ {
+  "file": "src/components/sidebar/worktree-card-header.tsx",
+  "line": 199,
+  "text": "title=\"Delete workspace\""
+ },
+ {
+  "file": "src/components/sidebar/worktree-card-meta-row.tsx",
+  "line": 75,
+  "text": "title={worktree.path}"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/build-rows.ts",
+  "line": 161,
+  "text": "label: ALL_GROUP_META.label,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/group-keys.ts",
+  "line": 34,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/group-sections.ts",
+  "line": 87,
+  "text": "label: group.label,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/group-sections.ts",
+  "line": 105,
+  "text": "label: definition?.label ?? workspaceStatus,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/group-sections.ts",
+  "line": 130,
+  "text": "label: meta.label,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/host-labels.ts",
+  "line": 83,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts",
+  "line": 55,
+  "text": "label: PINNED_GROUP_META.label,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/project-group-sections.ts",
+  "line": 103,
+  "text": "label: projectGroup.name,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 20,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 117,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 133,
+  "text": "label: repo?.displayName ?? 'Unknown',"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 144,
+  "text": "label: repo?.displayName ?? setup.displayName,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 153,
+  "text": "label: project.displayName,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/row-types.ts",
+  "line": 20,
+  "text": "label: string"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/section-order.ts",
+  "line": 94,
+  "text": "? { ...group, label: labelsByPath.get(getRepoDisplayLabelKey(group.repo)) ?? group.label }"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 84,
+  "text": "let label: string"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 116,
+  "text": "label: getLaneLabelForKey(key, groupBy, workspaceStatuses),"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 143,
+  "text": "label: grouping.label,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 159,
+  "text": "label: grouping.label,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 177,
+  "text": "label: grouping.label,"
+ },
+ {
+  "file": "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 196,
+  "text": "label: grouping.label,"
+ }
+]

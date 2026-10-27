@@ -1,0 +1,1299 @@
+{
+  "domain": "D02c-project-groups-scripts",
+  "rows": [
+    {
+      "id": "D02c-001",
+      "capability": "Recuperação de worktrees externos ocultos em lista virtualizada com busca e reexibição individual",
+      "surface": "Dialog de visibilidade de worktrees / seção de worktrees ocultas (HiddenWorktreeRecoveryList)",
+      "trigger": "Abertura da seção de recuperação de worktrees ocultos no diálogo de visibilidade",
+      "behaviors": [
+        "Exibe contagem de worktrees ocultos no cabeçalho: 'Hidden worktrees (N)'",
+        "Exibe campo de busca por texto com ícone Search quando há 10 ou mais worktrees ocultos",
+        "Filtra dinamicamente worktrees por displayName ou path (busca case-insensitive normalizada)",
+        "Virtualiza a renderização da lista com @tanstack/react-virtual (estimateSize: 56px, overscan: 3, max-h-56) para performance em repositórios com muitos worktrees",
+        "Renderiza cada item com displayName, caminho relativo ao repositório via relativePathInsideRoot e atributos de acessibilidade aria-posinset / aria-setsize",
+        "Botão 'Show' / 'Showing…' para reexibir worktree individual desabilitado durante verificação ou transição",
+        "Exibe empty state amigável com ícone FolderMinus quando não há correspondências de busca, todos estão exibidos ou nenhum worktree foi encontrado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: repo, detected, listState, busyPath, toggling, onShow"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/HiddenWorktreeRecoveryList.tsx:23",
+        "components/sidebar/HiddenWorktreeRecoveryList.tsx:47",
+        "components/sidebar/HiddenWorktreeRecoveryList.tsx:58",
+        "components/sidebar/HiddenWorktreeRecoveryList.tsx:83",
+        "components/sidebar/HiddenWorktreeRecoveryList.tsx:119",
+        "components/sidebar/HiddenWorktreeRecoveryList.tsx:146"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-002",
+      "capability": "Dialog de confirmação para supressão da caixa de entrada de worktrees externos do repositório",
+      "surface": "Dialog modal SuppressExternalWorktreeInboxDialog",
+      "trigger": "Ação do usuário para ocultar a caixa de entrada de worktrees externos de um repositório específico",
+      "behaviors": [
+        "Exibe título 'Hide external worktrees?' e descrição avisando que worktrees externos não serão mais exibidos na barra lateral ou na lista para o repositório",
+        "Exibe caixa explicativa informando que a funcionalidade pode ser reativada nas configurações do projeto com link 'Open Non-Orca worktrees settings'",
+        "Botões de rodapé: 'Cancel' (variante secondary) e 'Hide external worktrees' (default), ambos desabilitados durante estado pending"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: open, repoDisplayName, pending, onOpenChange, onConfirm, onOpenRecovery"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:19",
+        "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:32",
+        "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:46",
+        "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:62"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-003",
+      "capability": "Dialog modal para instalação e configuração do skill de agente Linear com terminal integrado",
+      "surface": "Dialog modal LinearAgentSkillSetupDialog",
+      "trigger": "Ação 'Set up' no prompt inline/toast ou abertura automática do modal de setup",
+      "behaviors": [
+        "Estado de sucesso (showSuccess): exibe título 'Linear ticket access is ready', descrição contextual, pílula de status conectada (IntegrationStatusPill tone='connected') e botão 'Done'",
+        "Estado de instalação: exibe prompt descritivo com ícone Info ('Enable agents to read and edit the attached Linear ticket.')",
+        "Embute painel AgentSkillSetupPanel com terminal embutido (terminalHeightPx: 240), comando de instalação/atualização e botão 'Install CLI & Skill'",
+        "Executa verificação e pré-instalação do CLI do Orca (isOrcaCliAvailableOnPath, AGENT_SKILL_CLI_PREREQUISITE_NOTICE)",
+        "Botão discreto 'Don't show again' com ícone EyeOff e tooltip no canto superior direito alinhado ao botão de fechar para dispensa permanente",
+        "Permite fechamento via botão 'Done', botão de fechar, tecla Escape ou clique fora sem dispensa permanente se já em estado de sucesso"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: open, showSuccess, successDescription, missingLabel, command, installedCommand, terminalShellOverride, terminalRuntime, installed, loading, error, getPrerequisiteStatus, onBeforeOpenTerminal, onRecheck, onOpenChange, onDismissPermanently, onDone"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/LinearAgentSkillSetupDialog.tsx:36",
+        "components/sidebar/LinearAgentSkillSetupDialog.tsx:47",
+        "components/sidebar/LinearAgentSkillSetupDialog.tsx:77",
+        "components/sidebar/LinearAgentSkillSetupDialog.tsx:107",
+        "components/sidebar/LinearAgentSkillSetupDialog.tsx:157"
+      ],
+      "tests": [
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:485 :: keeps the modal open with success copy after a modal Re-check succeeds",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:498 :: closes success with Done without permanent dismissal or session snooze",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:526 :: closes success with the dialog close button without permanent dismissal or session snooze",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:554 :: closes success with Escape without permanent dismissal or session snooze",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:566 :: closes success with outside click without permanent dismissal or session snooze",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:916 :: permanently dismisses the modal-only prompt when requested"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-004",
+      "capability": "Prompt inline e modal para detecção, verificação e setup de skill do agente Linear",
+      "surface": "Card inline em item de worktree na sidebar ou overlay modal (LinearAgentSkillSetupPrompt)",
+      "trigger": "Worktree vinculado ao Linear ativo com CLI do Orca ou skill do Linear ausente",
+      "behaviors": [
+        "Detecta status de instalação do CLI via window.api.cli.getInstallStatus ou getWslInstallStatus para WSL",
+        "Consulta skills globais instaladas via hook useInstalledAgentSkillNames com LINEAR_AGENT_SKILL_NAMES",
+        "Suporta verificação manual via botão 'Re-check' com ícone RefreshCw revalidando CLI e skills",
+        "Gerencia concorrência de verificações com requestGeneration e setupCheckIdentity para descartar respostas defasadas de CLI/runtime",
+        "Dispensa permanente salva '1' no localStorage sob chave de storage específica do runtime e fecha toasts ativos",
+        "Monta lazy dialog LinearAgentSkillSetupDialog sob demanda via lazyWithRetry",
+        "Modo inline renderiza card compacto com ícone TicketCheck, cópia contextual de runtime e botões 'Set up' e 'Re-check'",
+        "Gera comandos de instalação e atualização dinâmicos via buildSkillCommandForRuntime e getLinearAgentSkillUpdateCommand"
+      ],
+      "background_activity": "Verificação assíncrona de status do CLI do Orca e descoberta de skills ao montar ou alterar runtime",
+      "state_inputs": [
+        "props: linked, remote, surface, settings, projectRuntime, currentPlatform, className",
+        "localStorage (chave de dispensa por runtime)"
+      ],
+      "backend_contract": [
+        "window.api.cli.getInstallStatus -> orca CLI install check handler",
+        "window.api.cli.getWslInstallStatus -> WSL orca CLI install check handler"
+      ],
+      "orca_evidence": [
+        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:46",
+        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:140",
+        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:173",
+        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:224",
+        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:287",
+        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:352"
+      ],
+      "tests": [
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:238 :: shows a compact setup prompt when a linked Linear worktree is missing CLI or skill setup",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:250 :: hides when the prompt is not linked or both prerequisites are ready",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:263 :: persists host dismissal forever for the host setup target",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:276 :: persists remote dismissal and uses remote-safe copy",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:311 :: uses WSL discovery, status, command, and prerequisite setup together",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:371 :: persists WSL dismissal by selected distro",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:395 :: omits the WSL CLI distro request for default WSL setup",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:425 :: keeps the prompt usable and loads the lazy setup dialog only when requested",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:581 :: still removes the inline prompt after an inline Re-check succeeds",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:600 :: keeps the missing setup modal visible after a partial Re-check",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:617 :: keeps the modal mounted and the Re-check action loading during a slow modal check",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:648 :: ignores stale CLI success after the runtime context changes during Re-check",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:700 :: ignores stale prerequisite CLI status callbacks after the runtime context changes",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:743 :: accepts same-context prerequisite CLI status callbacks after a newer Re-check",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:782 :: ignores older same-context CLI refreshes that finish after a newer Re-check",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:812 :: uses WSL-specific success copy for a selected WSL runtime",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:898 :: uses remote-safe success copy for remote workspaces",
+        "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx:153 :: uses the canonical update command when the canonical Linear skill is installed",
+        "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx:163 :: uses the legacy update command when only the legacy Linear skill is installed",
+        "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx:173 :: prefers the canonical update command when both Linear skill names are installed"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-005",
+      "capability": "Resolução de runtime local/WSL/remoto e chave de persistência para setup de skill do Linear",
+      "surface": "Módulo utilitário linear-agent-skill-runtime",
+      "trigger": "Avaliação de ambiente de execução (host, WSL ou remoto) e preferências de plataforma para agentes",
+      "behaviors": [
+        "Identifica plataforma corrente (win32, linux, darwin) a partir do navigator.userAgent",
+        "Resolve runtime do agente (LocalAgentRuntime) forçando host para ambientes remotos e WSL para distros configuradas",
+        "Preserva a distribuição preferida mesmo em estado repair-required para evitar poluição entre Windows e WSL",
+        "Calcula chave de persistência de dispensa: 'orca.linearTicketsSkill.setupDismissed.host' ou 'orca.linearTicketsSkill.setupDismissed.wsl.<distro>'",
+        "Determina target de descoberta de skills (SkillDiscoveryTarget) e override de terminal para shells POSIX no Windows (forçando PowerShell)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "navigator.userAgent",
+        "GlobalSettings: localAgentRuntime, localAgentWslDistro, terminalWindowsShell, activeRuntimeEnvironmentId",
+        "ProjectExecutionRuntimeResolution"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/linear-agent-skill-runtime.ts:18",
+        "components/sidebar/linear-agent-skill-runtime.ts:25",
+        "components/sidebar/linear-agent-skill-runtime.ts:63",
+        "components/sidebar/linear-agent-skill-runtime.ts:98",
+        "components/sidebar/linear-agent-skill-runtime.ts:124",
+        "components/sidebar/linear-agent-skill-runtime.ts:131"
+      ],
+      "tests": [
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:410 :: keeps stale terminal WSL settings on host when project runtime is absent",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:841 :: uses project host runtime for skill discovery when legacy settings still point at WSL",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:865 :: uses selected project WSL runtime for skill discovery and CLI status",
+        "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts:17 :: leaves cmd and PowerShell shells alone, and never overrides off Windows",
+        "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts:9 :: forces PowerShell for POSIX-family Windows shells"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-006",
+      "capability": "Geração de textos e internacionalização para o fluxo de setup do skill do Linear",
+      "surface": "Módulo utilitário linear-agent-skill-setup-copy",
+      "trigger": "Renderização de labels, toasts e textos informativos do fluxo de setup do Linear",
+      "behaviors": [
+        "Gera rótulo de pré-requisitos ausentes: CLI ausente, skill ausente ou ambos ausentes",
+        "Gera títulos e descrições para toasts de aviso diferenciando host local, ambientes WSL e conexões remotas",
+        "Gera texto explicativo inline detalhando o escopo da instalação (host, WSL ou remoto)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "cliAvailable, skillInstalled, remote, LocalAgentRuntime"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/linear-agent-skill-setup-copy.ts:4",
+        "components/sidebar/linear-agent-skill-setup-copy.ts:23",
+        "components/sidebar/linear-agent-skill-setup-copy.ts:44",
+        "components/sidebar/linear-agent-skill-setup-copy.ts:91"
+      ],
+      "tests": [
+        "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:234 :: does not repeat the Orca CLI in CLI-only reminder toast copy",
+        "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:247 :: keeps remote setup nuance in reminder toast copy",
+        "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:260 :: keeps WSL target nuance in reminder toast copy"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-007",
+      "capability": "Lembretes e notificações toast de setup do skill do Linear com limite de repetições",
+      "surface": "Hook useLinearAgentSkillSetupReminderToast e toasts Sonner",
+      "trigger": "Ativação de worktree vinculado ao Linear em modo modal ou reaparição pós-snooze",
+      "behaviors": [
+        "Abre automaticamente o modal de setup na primeira ativação elegível do runtime",
+        "Dispara toast de aviso com botão 'Set up' em ativações subsequentes caso o modal anterior tenha sido fechado informalmente",
+        "Limita os lembretes via toast a LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT (máximo 3 vezes)",
+        "Descarta o toast ativo e atualiza estado ao dispensar permanentemente ou ao concluir a instalação",
+        "Limpa o toast ao desmontar a visualização modal"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "localDismissStorageKey, missingSetup, setupDialogOpen, surface, toastDescription, toastTitle, openSetupDialog"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:26",
+        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:31",
+        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:54",
+        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:71",
+        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:85",
+        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:134"
+      ],
+      "tests": [
+        "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:209 :: shows a warning toast on a later modal-only activation after a casual close",
+        "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:285 :: opens the setup dialog from the reminder toast action",
+        "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:322 :: does not recreate missing reminder state during toast cleanup",
+        "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:331 :: does not create missing reminder state when resetting a runtime",
+        "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:337 :: dismisses an active reminder toast on permanent dismissal",
+        "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:453 :: auto-opens as a modal-only prompt and treats the × close as a casual snooze"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-008",
+      "capability": "Gerenciamento de cache em memória e retenção LRU para lembretes de setup do Linear",
+      "surface": "Módulo linear-agent-skill-setup-reminders",
+      "trigger": "Acesso e atualização de estado de lembretes para chaves de runtime",
+      "behaviors": [
+        "Armazena em memória o estado de exibição (modalShown, toastCount, snoozed, activeToastId) por chave de runtime",
+        "Aplica política de despejo LRU limitando o cache a MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS = 256 entradas",
+        "Preserva entradas com activeToastId ativo antes de despejar chaves inativas",
+        "Gera identificadores de ativação sequenciais únicos (createLinearAgentSkillSetupActivationId)",
+        "Suporta redefinição completa de estado em testes (resetLinearAgentSkillSetupReminderState)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "reminderStateByRuntimeKey Map"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/linear-agent-skill-setup-reminders.ts:1",
+        "components/sidebar/linear-agent-skill-setup-reminders.ts:15",
+        "components/sidebar/linear-agent-skill-setup-reminders.ts:34",
+        "components/sidebar/linear-agent-skill-setup-reminders.ts:40",
+        "components/sidebar/linear-agent-skill-setup-reminders.ts:63"
+      ],
+      "tests": [
+        "components/sidebar/linear-agent-skill-setup-reminders.test.ts:17 :: bounds runtime reminder state through prolonged key churn",
+        "components/sidebar/linear-agent-skill-setup-reminders.test.ts:32 :: retains recently reused keys while trimming",
+        "components/sidebar/linear-agent-skill-setup-reminders.test.ts:49 :: keeps active toast state ahead of inactive stale entries when trimming",
+        "components/sidebar/linear-agent-skill-setup-reminders.test.ts:62 :: retains a new key when every existing entry has an active toast",
+        "components/sidebar/linear-agent-skill-setup-reminders.test.ts:76 :: does not create reminder state when peeking at a missing key",
+        "components/sidebar/linear-agent-skill-setup-reminders.test.ts:81 :: resets activation ids with reminder state for tests"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-009",
+      "capability": "Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git",
+      "surface": "Dialog modal NonGitFolderDialog",
+      "trigger": "Modal 'confirm-non-git-folder' disparado ao tentar adicionar pasta sem repositório Git",
+      "behaviors": [
+        "Exibe aviso esclarecendo que a pasta não é um repositório Git (editor, terminal e busca funcionam; recursos Git ficam indisponíveis)",
+        "Informa o host onde o caminho foi verificado: host SSH, ambiente de runtime específico ou local",
+        "Exibe o caminho da pasta em bloco destacado com quebra de linha",
+        "Ao confirmar pasta em host SSH: invoca window.api.repos.addRemote, atualiza store via upsertAddedRepoWithProjectHostSetup, marca onboarding (addedFolder), busca worktrees e ativa agente/chat se aplicável",
+        "Ao confirmar pasta local: invoca useAppStore.addNonGitFolder com caminho, displayName e runtimeEnvironmentId",
+        "Trata erros de adição remota exibindo toast com mensagem de falha"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore: activeModal, modalData, closeModal, addNonGitFolder, runtimeEnvironments, repos, worktreesByRepo"
+      ],
+      "backend_contract": [
+        "window.api.repos.addRemote -> add remote non-git folder repo handler",
+        "window.api.onboarding.get -> onboarding preferences fetcher"
+      ],
+      "orca_evidence": [
+        "components/sidebar/NonGitFolderDialog.tsx:21",
+        "components/sidebar/NonGitFolderDialog.tsx:38",
+        "components/sidebar/NonGitFolderDialog.tsx:53",
+        "components/sidebar/NonGitFolderDialog.tsx:112",
+        "components/sidebar/NonGitFolderDialog.tsx:136",
+        "components/sidebar/NonGitFolderDialog.tsx:154"
+      ],
+      "tests": [
+        "components/sidebar/NonGitFolderDialog.test.tsx:140 :: shows the checked host in the folder confirmation",
+        "components/sidebar/NonGitFolderDialog.test.tsx:147 :: confirms runtime folder imports on the checked host",
+        "components/sidebar/NonGitFolderDialog.test.tsx:159 :: names the runtime folder project after the requested display name",
+        "components/sidebar/NonGitFolderDialog.test.tsx:176 :: names the SSH folder project after the requested display name",
+        "components/sidebar/NonGitFolderDialog.test.tsx:208 :: activates only the selected SSH folder when repo IDs collide"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-010",
+      "capability": "Fluxo de conclusão e telemetria para abertura de pastas aninhadas não-git",
+      "surface": "Módulos complete-nested-folder-open e track-nested-folder-open",
+      "trigger": "Conclusão do assistente de abertura de pastas aninhadas quando o usuário opta por abrir como pasta comum",
+      "behaviors": [
+        "Rastreia telemetria de importação (add_repo_nested_import_action com action: 'open_as_folder')",
+        "Para pastas em host SSH: abre modal 'confirm-non-git-folder' repassando caminho, connectionId e runtimeEnvironmentId",
+        "Para pastas locais: invoca addNonGitFolder gerenciando estado de geração (generation) e fechando modal ao concluir",
+        "Trata erros capturados exibindo toast de erro se a geração do fluxo ainda for a corrente"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore: getState, openModal, addNonGitFolder"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/complete-nested-folder-open.ts:7",
+        "components/sidebar/complete-nested-folder-open.ts:22",
+        "components/sidebar/complete-nested-folder-open.ts:26",
+        "components/sidebar/complete-nested-folder-open.ts:35",
+        "components/sidebar/track-nested-folder-open.ts:8",
+        "components/sidebar/track-nested-folder-open.ts:18"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-011",
+      "capability": "Dialog modal para confiança e aprovação de execução de hooks do orca.yaml",
+      "surface": "Dialog modal OrcaYamlTrustDialog",
+      "trigger": "Modal 'confirm-orca-yaml-hooks' disparado ao tentar executar hooks de setup, archive, issueCommand ou vmRecipe",
+      "behaviors": [
+        "Diferencia quatro tipos de script: 'setup script', 'archive script', 'issue command' e 'VM recipe' com gatilhos explicativos",
+        "Adapta título e descrição para script novo vs script modificado desde última aprovação (previouslyApproved)",
+        "Exibe pré-visualização formatada do conteúdo do script em container monospace com rolagem",
+        "Opção de checkbox 'Always trust orca.yaml in <repo>' com estilo destacado para confiar permanentemente no repositório",
+        "Ações no rodapé: 'Don't run' (cancela/ignora) e 'Run hooks' (executa e registra aprovação pontual ou permanente)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore: activeModal, modalData, closeModal, markOrcaHookScriptConfirmed, markOrcaHookRepoAlwaysTrusted"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/OrcaYamlTrustDialog.tsx:16",
+        "components/sidebar/OrcaYamlTrustDialog.tsx:31",
+        "components/sidebar/OrcaYamlTrustDialog.tsx:57",
+        "components/sidebar/OrcaYamlTrustDialog.tsx:109",
+        "components/sidebar/OrcaYamlTrustDialog.tsx:160",
+        "components/sidebar/OrcaYamlTrustDialog.tsx:180",
+        "components/sidebar/OrcaYamlTrustDialog.tsx:199"
+      ],
+      "tests": [
+        "components/sidebar/OrcaYamlTrustDialog.test.tsx:72 :: keeps spaces around orca.yaml and the repo name in the first-run copy",
+        "components/sidebar/OrcaYamlTrustDialog.test.tsx:85 :: keeps spaces around orca.yaml when the script changed since last approval"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-012",
+      "capability": "Dialog modal para revisão e exclusão forçada em lote de branches preservadas",
+      "surface": "Dialog modal PreservedBranchBatchReviewDialog e PreservedBranchBatchReviewModal",
+      "trigger": "Modal 'preserved-branch-review' ou clique em 'Review N Branches' no toast de exclusão em lote",
+      "behaviors": [
+        "Filtra branches acionáveis que possuem expectedHead válido",
+        "Controle de seleção em lote via checkbox 'Select all' com suporte a estado indeterminado e contador 'N of M selected'",
+        "Lista cada branch com nome, repositório de origem, prefixo do hash de commit (7 caracteres) e aviso 'May be unmerged' ou 'Head unavailable'",
+        "Desabilita checkbox para branches sem head disponível",
+        "Botão de exclusão destrutivo 'Force Delete N Branches' com ícone Trash2, desabilitado quando nenhuma branch está selecionada",
+        "Executa exclusão em lote ao confirmar delegando para forceDeletePreservedBranchBatch"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore: activeModal, modalData, closeModal, repos",
+        "branches: PreservedBranchCleanup[]"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:31",
+        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:38",
+        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:88",
+        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:113",
+        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:171",
+        "components/sidebar/PreservedBranchBatchReviewModal.tsx:25"
+      ],
+      "tests": [
+        "components/sidebar/preserved-branch-batch-toast.test.tsx:130 :: force-deletes only the branches selected in review",
+        "components/sidebar/preserved-branch-batch-toast.test.tsx:190 :: shows an unavailable branch without blocking review of actionable branches"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-013",
+      "capability": "Notificação toast e exclusão concorrente em lote para múltiplas branches preservadas",
+      "surface": "Toasts Sonner e executor forceDeletePreservedBranchBatch",
+      "trigger": "Exclusão em lote de múltiplos workspaces que mantiveram branches locais não mescladas",
+      "behaviors": [
+        "Exibe toast de aviso inicial com contagem de workspaces removidos e branches mantidas, explicando que o espaço em disco continuará sendo liberado",
+        "Botão 'Review N Branches' abre o modal de revisão em lote com duração infinita no toast",
+        "Agrupa branches por repositório e executa forceDeletePreservedBranch concorrente com limite BRANCH_REPO_DELETE_CONCURRENCY = 4",
+        "Exibe toast de carregamento durante a operação, toast de sucesso quando todas são excluídas ou toast de erro persistente com lista de falhas e botão 'Retry N Branches'"
+      ],
+      "background_activity": "Exclusão concorrente assíncrona de branches preservadas com controle de taxa",
+      "state_inputs": [
+        "useAppStore: getState, openModal, forceDeletePreservedBranch"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/preserved-branch-batch-toast.tsx:20",
+        "components/sidebar/preserved-branch-batch-toast.tsx:45",
+        "components/sidebar/preserved-branch-batch-toast.tsx:88",
+        "components/sidebar/preserved-branch-batch-toast.tsx:109",
+        "components/sidebar/preserved-branch-batch-toast.tsx:157"
+      ],
+      "tests": [
+        "components/sidebar/preserved-branch-batch-toast.test.tsx:108 :: explains disk cleanup and opens one review dialog for the batch",
+        "components/sidebar/preserved-branch-batch-toast.test.tsx:158 :: keeps older-server branches visible without offering an unsafe delete",
+        "components/sidebar/preserved-branch-batch-toast.test.tsx:169 :: serializes branch deletion within one repository"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-014",
+      "capability": "Notificação toast e exclusão forçada individual de branch preservada após remoção de worktree",
+      "surface": "Toast Sonner de aviso e ação showPreservedBranchToast",
+      "trigger": "Remoção de worktree individual que manteve branch local com commits não mesclados",
+      "behaviors": [
+        "Título do toast diferencia remoção de workspace principal ('Workspace deleted, branch kept') de worktree secundário ('Worktree deleted, branch kept')",
+        "Descrição detalha que o Git não pôde deletar a branch com segurança para não perder commits locais",
+        "Corpo personalizado do toast renderiza botão 'Force Delete Branch' com ícone Trash2 quando o expectedHead está disponível",
+        "Duração do toast definida como Infinity quando há botão de exclusão forçada disponível",
+        "Invoca callback onForceDelete e descarta o toast ao clicar"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "RemoveWorktreeResult, Worktree"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/preserved-branch-toast.tsx:19",
+        "components/sidebar/preserved-branch-toast.tsx:22",
+        "components/sidebar/preserved-branch-toast.tsx:28",
+        "components/sidebar/preserved-branch-toast.tsx:52",
+        "components/sidebar/preserved-branch-toast.tsx:75"
+      ],
+      "tests": [
+        "components/sidebar/preserved-branch-toast.test.tsx:51 :: renders the branch recovery action below the long description",
+        "components/sidebar/preserved-branch-toast.test.tsx:89 :: does not show the force-delete action without the preserved head"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-015",
+      "capability": "Dialog modal para exclusão de grupo de projetos e opção de remoção de projetos contidos",
+      "surface": "Dialog modal ProjectGroupDeleteDialog",
+      "trigger": "Ação de exclusão de grupo de projetos no sidebar",
+      "behaviors": [
+        "Exibe título 'Delete Project Group' e nome do grupo a ser excluído",
+        "Para grupos não vazios: exibe painel 'Contained projects' com até 4 nomes e indicador '+N more'",
+        "Checkbox opcional 'Remove N contained projects' informando que as pastas no disco não serão deletadas",
+        "Foco automático no botão de exclusão ao abrir (onOpenAutoFocus)",
+        "Desabilita ações e exibe 'Deleting...' durante a execução da exclusão, prevenindo cliques duplos",
+        "Utiliza content ref (mountedRef) para evitar mutações de estado após desmontagem do modal"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: open, groupName, projectCount, projectNames, removeContainedProjects, onRemoveContainedProjectsChange, onOpenChange, onConfirm"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/ProjectGroupDeleteDialog.tsx:23",
+        "components/sidebar/ProjectGroupDeleteDialog.tsx:88",
+        "components/sidebar/ProjectGroupDeleteDialog.tsx:94",
+        "components/sidebar/ProjectGroupDeleteDialog.tsx:107",
+        "components/sidebar/ProjectGroupDeleteDialog.tsx:140",
+        "components/sidebar/ProjectGroupDeleteDialog.tsx:177"
+      ],
+      "tests": [
+        "components/sidebar/ProjectGroupDeleteDialog.test.tsx:109 :: disables project choices, cancel, and delete actions while deleting",
+        "components/sidebar/ProjectGroupDeleteDialog.test.tsx:63 :: omits the contained project panel for empty groups",
+        "components/sidebar/ProjectGroupDeleteDialog.test.tsx:70 :: renders compact contained project handling and reports remove intent",
+        "components/sidebar/ProjectGroupDeleteDialog.test.tsx:91 :: focuses the delete group action when opened",
+        "components/sidebar/ProjectGroupDeleteDialog.test.tsx:97 :: keeps the panel copy and destructive action label stable when project removal is selected"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-016",
+      "capability": "Dialog modal para criação e renomeação de grupos de projeto",
+      "surface": "Dialog modal ProjectGroupNameDialog",
+      "trigger": "Ação de criar novo grupo de projeto ou renomear grupo existente no sidebar",
+      "behaviors": [
+        "Exibe campo de texto 'Group Name' com foco automático e seleção do texto inicial ao abrir (onOpenAutoFocus)",
+        "Botão de confirmação com rótulo configurável (confirmLabel) desabilitado quando o nome está vazio ou em submissão",
+        "Estado de loading 'Saving...' desabilita submissões repetidas durante execução assíncrona",
+        "Hidratação de estado inicial síncrona na renderização para evitar cintilação de rascunhos anteriores"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: open, title, description, initialName, confirmLabel, onOpenChange, onSubmit"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/ProjectGroupNameDialog.tsx:21",
+        "components/sidebar/ProjectGroupNameDialog.tsx:64",
+        "components/sidebar/ProjectGroupNameDialog.tsx:76",
+        "components/sidebar/ProjectGroupNameDialog.tsx:96"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-017",
+      "capability": "Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados",
+      "surface": "Algoritmo getEmptyProjectPlaceholderRepoIds",
+      "trigger": "Agrupamento por repositório (groupBy === 'repo') durante filtragem e renderização da lista de worktrees",
+      "behaviors": [
+        "Identifica repositórios sem worktrees no estado atual para renderização de placeholders",
+        "Preserva a visibilidade de membros de grupos de projetos persistidos quando filtros de workspace ocultam todos os seus itens individuais",
+        "Respeita filtros explícitos de repositório (filterRepoIds)",
+        "Retorna conjunto vazio quando a visualização não utiliza agrupamento por repositório"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "groupBy, repos, worktreesByRepo, visibleWorktrees, filterRepoIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/empty-project-placeholder-repos.ts:5",
+        "components/sidebar/empty-project-placeholder-repos.ts:12",
+        "components/sidebar/empty-project-placeholder-repos.ts:18",
+        "components/sidebar/empty-project-placeholder-repos.ts:21"
+      ],
+      "tests": [
+        "components/sidebar/empty-project-placeholder-repos.test.ts:104 :: keeps grouped repos visible when workspace filters hide all of their rows",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:121 :: does not create a grouped repo placeholder when one of its workspaces is visible",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:136 :: still respects explicit project filters for sleep-filtered grouped members",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:160 :: placeholders only the fully-filtered members of a multi-project group",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:182 :: does not placeholder ungrouped neighbors of a filtered grouped member",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:35 :: returns empty repo placeholders in repo grouping without project groups",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:49 :: treats missing worktreesByRepo keys as empty for the current render",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:63 :: applies repo filters to empty placeholder candidates",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:80 :: does not create placeholders outside repo grouping",
+        "components/sidebar/empty-project-placeholder-repos.test.ts:92 :: does not treat non-empty repos as empty when workspace filters hide their rows"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-018",
+      "capability": "Dialog modal para confirmação de remoção de projeto/pasta do Orca com aviso contextual de host",
+      "surface": "Dialog modal RemoveFolderDialog",
+      "trigger": "Modal 'confirm-remove-folder' acionado ao solicitar remoção de repositório ou pasta do Orca",
+      "behaviors": [
+        "Exibe título 'Remove Project' e adapta a mensagem ao tipo de host e projeto",
+        "Para receitas de VM: alerta que a receita de VM determina se ambiente e arquivos serão excluídos permanentemente",
+        "Para projetos SSH: esclarece que os arquivos continuam no host remoto e podem ser recuperados ao reconectar o host",
+        "Para projetos locais: esclarece que os arquivos continuam no disco local",
+        "Botão 'Remove' destrutivo invoca removeProject no store com feedback de toast em caso de erro"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore: activeModal, modalData, closeModal, removeProject, repos, sshTargetLabels, removedSshTargetLabels"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/RemoveFolderDialog.tsx:20",
+        "components/sidebar/RemoveFolderDialog.tsx:46",
+        "components/sidebar/RemoveFolderDialog.tsx:52",
+        "components/sidebar/RemoveFolderDialog.tsx:58",
+        "components/sidebar/RemoveFolderDialog.tsx:65",
+        "components/sidebar/RemoveFolderDialog.tsx:87"
+      ],
+      "tests": [
+        "components/sidebar/RemoveFolderDialog.test.tsx:75 :: warns that VM recipe cleanup controls file deletion",
+        "components/sidebar/RemoveFolderDialog.test.tsx:86 :: keeps the file-preservation promise for ordinary SSH projects"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-019",
+      "capability": "Card orquestrador para sugestão, inspeção e salvamento de setup scripts do projeto",
+      "surface": "SetupScriptPromptCard (acima do rodapé da barra lateral)",
+      "trigger": "Repositório Git ativo sem setup script efetivo configurado",
+      "behaviors": [
+        "Inspeciona assincronamente hooks de runtime e candidatos de importação (checkRuntimeHooks, inspectRuntimeSetupScriptImports)",
+        "Suporta edição de setup detectado de package manager antes de salvar",
+        "Botão 'Configure' navega diretamente para as configurações de comandos locais do repositório",
+        "Botão de dispensa persiste a recusa para a identidade de host do repositório no store (dismissSetupScriptPrompt)",
+        "Salva comando detectado via updateRepo (hookSettings) e emite telemetria de ação (setup_script_prompt_action)",
+        "Exibe toast de confirmação com link para reabrir as configurações do projeto após salvar",
+        "Suporta re-tentativa manual de inspeção em caso de erro"
+      ],
+      "background_activity": "Inspeção assíncrona de hooks de runtime ao selecionar ou revalidar repositório ativo",
+      "state_inputs": [
+        "useAppStore: sidebarOpen, repos, activeRepoId, activeWorktreeId, settings, updateRepo, openSettingsPage, openSettingsTarget, setSettingsSearchQuery, setupScriptPromptDismissedRepoIds, dismissSetupScriptPrompt",
+        "useWorktreeById(activeWorktreeId)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SetupScriptPromptCard.tsx:32",
+        "components/sidebar/SetupScriptPromptCard.tsx:63",
+        "components/sidebar/SetupScriptPromptCard.tsx:94",
+        "components/sidebar/SetupScriptPromptCard.tsx:156",
+        "components/sidebar/SetupScriptPromptCard.tsx:175",
+        "components/sidebar/SetupScriptPromptCard.tsx:288"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-020",
+      "capability": "Shell visual e contenção flutuante do card de sugestão de setup script",
+      "surface": "Container flutuante SetupScriptPromptCardShell",
+      "trigger": "Renderização do card de sugestão de setup script sobre a barra lateral",
+      "behaviors": [
+        "Posicionamento flutuante com sombra (shadow-[0_10px_24px_rgba(0,0,0,0.18)]) sem reservar espaço estático na sidebar",
+        "Exibe título 'Add a setup script', botão de fechar/dispensa com tooltip, badge de cor do repositório e nome de exibição",
+        "Orquestra o corpo do texto e os botões de ação correspondentes ao estado atual (erro, package manager, candidato ou configuração)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props: repoBadgeColor, repoDisplayName, isInspectionError, sharedSetupIgnored, isPackageManagerSuggestion, hasCandidate, candidateSource, candidateProvenance, detectedSetupDraft, isImporting, renderedStateOk, onDismiss, onRetryInspection, onConfigure, onImport, onSetupDraftChange"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SetupScriptPromptCardShell.tsx:35",
+        "components/sidebar/SetupScriptPromptCardShell.tsx:37",
+        "components/sidebar/SetupScriptPromptCardShell.tsx:42",
+        "components/sidebar/SetupScriptPromptCardShell.tsx:48",
+        "components/sidebar/SetupScriptPromptCardShell.tsx:66"
+      ],
+      "tests": [
+        "components/sidebar/SetupScriptPromptCardShell.test.tsx:9 :: floats above its anchor without reserving a sidebar background panel"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-021",
+      "capability": "Componentes visuais e ações para o card de setup script (edição, ações de package manager e erros)",
+      "surface": "Componentes de visualização SetupScriptPromptCardViews",
+      "trigger": "Renderização e interação nas sub-seções do card de setup script",
+      "behaviors": [
+        "DismissButton: botão de ícone 'X' com tooltip 'Dismiss'",
+        "DetectedSetupPreview: caixa de texto editável com número dinâmico de linhas (getDetectedSetupScriptTextareaRows) e proveniência do comando",
+        "PackageManagerActions: botão primário 'Save' (com spinner durante salvamento) e botão secundário 'Configure manually'",
+        "SetupScriptPromptBody: mensagens contextuais para erro de inspeção, orca.yaml compartilhado ignorado, package manager ou sugestão geral",
+        "InspectionErrorActions: botões 'Retry' com ícone RefreshCw e 'Settings' com ícone Settings",
+        "ConfigureOnlyAction: botão 'Configure' com ícone Settings",
+        "SaveLocalSetupAction: botão 'Save local setup' com ícone Download ou spinner de salvamento"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "props de cada componente de visualização"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SetupScriptPromptCardViews.tsx:14",
+        "components/sidebar/SetupScriptPromptCardViews.tsx:44",
+        "components/sidebar/SetupScriptPromptCardViews.tsx:85",
+        "components/sidebar/SetupScriptPromptCardViews.tsx:126",
+        "components/sidebar/SetupScriptPromptCardViews.tsx:198",
+        "components/sidebar/SetupScriptPromptCardViews.tsx:229",
+        "components/sidebar/SetupScriptPromptCardViews.tsx:249"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-022",
+      "capability": "Toast de confirmação e atalho de configurações ao salvar setup script no projeto",
+      "surface": "Toast Sonner showSavedInProjectSettingsToast",
+      "trigger": "Salvamento bem-sucedido de setup script a partir do prompt da sidebar",
+      "behaviors": [
+        "Exibe toast de sucesso com mensagem 'Saved in this project's settings'",
+        "Inclui link clicável sublinhado no texto do toast para navegar instantaneamente até as configurações do repositório",
+        "Suporta descrição detalhando execução na criação de worktrees ou campos não suportados ignorados"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "onOpenSettings callback, description"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SetupScriptPromptToast.tsx:9",
+        "components/sidebar/SetupScriptPromptToast.tsx:12",
+        "components/sidebar/SetupScriptPromptToast.tsx:27"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-023",
+      "capability": "Navegação direta para a seção de comandos locais nas configurações do repositório",
+      "surface": "Função openSetupScriptSettings",
+      "trigger": "Clique em 'Configure' no card de setup script ou no link do toast de confirmação",
+      "behaviors": [
+        "Limpa qualquer filtro de busca ativo nas configurações (setSettingsSearchQuery('')) para evitar ocultação acidental da seção",
+        "Define o alvo de navegação para o painel 'repo', host específico e seção de comandos locais do repositório",
+        "Abre a página de configurações (openSettingsPage())"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "repoId, hostId, setSettingsSearchQuery, openSettingsTarget, openSettingsPage"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/open-setup-script-settings.ts:4",
+        "components/sidebar/open-setup-script-settings.ts:18",
+        "components/sidebar/open-setup-script-settings.ts:19",
+        "components/sidebar/open-setup-script-settings.ts:25"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-024",
+      "capability": "Telemetria de exposição do card de setup script com deduplicação por chave composta",
+      "surface": "Função trackSetupScriptPromptExposure",
+      "trigger": "Exibição de um prompt de setup script visível e válido na barra lateral",
+      "behaviors": [
+        "Constrói payload de telemetria com buildSetupScriptPromptTelemetry contendo modo, provedor e contagem de arquivos/campos",
+        "Deduplica emissões por chave composta (repoHostIdentity, mode, provider, file_count_bucket, unsupported_field_count_bucket, has_shared_hooks)",
+        "Dispara evento 'setup_script_prompt_shown' apenas na primeira ocorrência de cada chave"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "repoId, repoHostIdentity, promptState, trackedPromptKeys Set"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/setup-script-prompt-exposure-telemetry.ts:5",
+        "components/sidebar/setup-script-prompt-exposure-telemetry.ts:18",
+        "components/sidebar/setup-script-prompt-exposure-telemetry.ts:24",
+        "components/sidebar/setup-script-prompt-exposure-telemetry.ts:36"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-025",
+      "capability": "Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup",
+      "surface": "Módulo setup-script-prompt-render-state",
+      "trigger": "Resolução de repositório ativo por host, marcação de prompt salvo e retenção durante revalidações",
+      "behaviors": [
+        "findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay",
+        "markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório",
+        "getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "repos, activeRepoId, activeWorktree, settings, promptState, lastVisiblePrompt"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/setup-script-prompt-render-state.ts:15",
+        "components/sidebar/setup-script-prompt-render-state.ts:37",
+        "components/sidebar/setup-script-prompt-render-state.ts:46"
+      ],
+      "tests": [
+        "components/sidebar/SetupScriptPromptCard.test.ts:103 :: keeps the previous visible prompt during same-host inspection refresh",
+        "components/sidebar/SetupScriptPromptCard.test.ts:116 :: does not keep a stale prompt when switching hosts in the same project",
+        "components/sidebar/SetupScriptPromptCard.test.ts:129 :: does not reuse a matching repo id from a different host",
+        "components/sidebar/SetupScriptPromptCard.test.ts:140 :: does not keep a stale prompt when switching to a different project",
+        "components/sidebar/SetupScriptPromptCard.test.ts:155 :: does not apply a completed save to the same repo id on another host",
+        "components/sidebar/SetupScriptPromptCard.test.ts:161 :: marks the prompt for the saved host effective",
+        "components/sidebar/SetupScriptPromptCard.test.ts:30 :: uses the active direct-SSH worktree host when repo ids collide",
+        "components/sidebar/SetupScriptPromptCard.test.ts:56 :: uses the runtime owner for a relayed SSH worktree",
+        "components/sidebar/SetupScriptPromptCard.test.ts:88 :: uses the current inspection when it belongs to the active repo and host"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02c-026",
+      "capability": "Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime",
+      "surface": "Hook useSetupScriptPromptRevalidation",
+      "trigger": "Foco na janela do Orca, alteração de worktree ativo no repositório ou reconexão do runtime do repositório",
+      "behaviors": [
+        "Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco",
+        "Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes",
+        "Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota",
+        "Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar"
+      ],
+      "background_activity": "Listener de foco na janela do navegador e observador de conexão do runtime",
+      "state_inputs": [
+        "useAppStore: activeWorktreeId, runtimeStatusByEnvironmentId",
+        "props: activeRepo, isDismissed, sidebarOpen, promptState, requestRevalidation"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useSetupScriptPromptRevalidation.ts:14",
+        "components/sidebar/useSetupScriptPromptRevalidation.ts:48",
+        "components/sidebar/useSetupScriptPromptRevalidation.ts:58",
+        "components/sidebar/useSetupScriptPromptRevalidation.ts:68",
+        "components/sidebar/useSetupScriptPromptRevalidation.ts:76"
+      ],
+      "tests": [
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:109 :: re-inspects on window focus while the prompt shows no effective setup",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:124 :: does not re-inspect on window focus once setup is effective",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:139 :: does not listen for focus while the sidebar is closed",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:154 :: does not re-inspect when prompt state belongs to another host with the same repo id",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:170 :: re-inspects when a worktree activates while the prompt shows no effective setup",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:195 :: does not re-inspect on worktree activation once setup is effective",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:217 :: re-inspects on window focus after a failed inspection",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:232 :: replays a worktree activation that landed while the prompt state was unsettled",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:264 :: re-inspects when the repo runtime reconnects",
+        "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:281 :: ignores a reconnect of a runtime that does not own the repo"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "HiddenWorktreeRecoveryList.tsx": [
+        "D02c-001"
+      ],
+      "LinearAgentSkillSetupDialog.tsx": [
+        "D02c-003"
+      ],
+      "LinearAgentSkillSetupPrompt.tsx": [
+        "D02c-004"
+      ],
+      "NonGitFolderDialog.tsx": [
+        "D02c-009"
+      ],
+      "OrcaYamlTrustDialog.tsx": [
+        "D02c-011"
+      ],
+      "PreservedBranchBatchReviewDialog.tsx": [
+        "D02c-012"
+      ],
+      "PreservedBranchBatchReviewModal.tsx": [
+        "D02c-012"
+      ],
+      "ProjectGroupDeleteDialog.tsx": [
+        "D02c-015"
+      ],
+      "ProjectGroupNameDialog.tsx": [
+        "D02c-016"
+      ],
+      "RemoveFolderDialog.tsx": [
+        "D02c-018"
+      ],
+      "SetupScriptPromptCard.tsx": [
+        "D02c-019"
+      ],
+      "SetupScriptPromptCardShell.tsx": [
+        "D02c-020"
+      ],
+      "SetupScriptPromptCardViews.tsx": [
+        "D02c-021"
+      ],
+      "SetupScriptPromptToast.tsx": [
+        "D02c-022"
+      ],
+      "SuppressExternalWorktreeInboxDialog.tsx": [
+        "D02c-002"
+      ],
+      "complete-nested-folder-open.ts": [
+        "D02c-010"
+      ],
+      "empty-project-placeholder-repos.ts": [
+        "D02c-017"
+      ],
+      "linear-agent-skill-runtime.ts": [
+        "D02c-005"
+      ],
+      "linear-agent-skill-setup-copy.ts": [
+        "D02c-006"
+      ],
+      "linear-agent-skill-setup-reminder-toast.ts": [
+        "D02c-007"
+      ],
+      "linear-agent-skill-setup-reminders.ts": [
+        "D02c-008"
+      ],
+      "open-setup-script-settings.ts": [
+        "D02c-023"
+      ],
+      "preserved-branch-batch-toast.tsx": [
+        "D02c-013"
+      ],
+      "preserved-branch-toast.tsx": [
+        "D02c-014"
+      ],
+      "setup-script-prompt-exposure-telemetry.ts": [
+        "D02c-024"
+      ],
+      "setup-script-prompt-render-state.ts": [
+        "D02c-025"
+      ],
+      "track-nested-folder-open.ts": [
+        "D02c-010"
+      ],
+      "useSetupScriptPromptRevalidation.ts": [
+        "D02c-026"
+      ]
+    },
+    "symbols": {
+      "HiddenWorktreeRecoveryList": [
+        "D02c-001"
+      ],
+      "LinearAgentSkillSetupDialog": [
+        "D02c-003"
+      ],
+      "_linearAgentSkillSetupPromptInternalsForTests": "INFRA: Test helper exposing resetSessionReminders for unit test isolation",
+      "LinearAgentSkillSetupPrompt": [
+        "D02c-004"
+      ],
+      "PreservedBranchBatchReviewDialog": [
+        "D02c-012"
+      ],
+      "PreservedBranchBatchReviewModal": [
+        "D02c-012"
+      ],
+      "ProjectGroupDeleteDialog": [
+        "D02c-015"
+      ],
+      "ProjectGroupNameDialog": [
+        "D02c-016"
+      ],
+      "SetupScriptPromptCardShell": [
+        "D02c-020"
+      ],
+      "DetectedSetupPreviewProps": "INFRA: TypeScript interface for DetectedSetupPreview component props",
+      "DetectedSetupPreview": [
+        "D02c-021"
+      ],
+      "PackageManagerActionsProps": "INFRA: TypeScript interface for PackageManagerActions component props",
+      "PackageManagerActions": [
+        "D02c-021"
+      ],
+      "SetupScriptPromptBodyProps": "INFRA: TypeScript interface for SetupScriptPromptBody component props",
+      "SetupScriptPromptBody": [
+        "D02c-021"
+      ],
+      "InspectionErrorActionsProps": "INFRA: TypeScript interface for InspectionErrorActions component props",
+      "InspectionErrorActions": [
+        "D02c-021"
+      ],
+      "ConfigureOnlyActionProps": "INFRA: TypeScript interface for ConfigureOnlyAction component props",
+      "ConfigureOnlyAction": [
+        "D02c-021"
+      ],
+      "SaveLocalSetupActionProps": "INFRA: TypeScript interface for SaveLocalSetupAction component props",
+      "SaveLocalSetupAction": [
+        "D02c-021"
+      ],
+      "showSavedInProjectSettingsToast": [
+        "D02c-022"
+      ],
+      "SuppressExternalWorktreeInboxDialog": [
+        "D02c-002"
+      ],
+      "completeNestedFolderOpen": [
+        "D02c-010"
+      ],
+      "getEmptyProjectPlaceholderRepoIds": [
+        "D02c-017"
+      ],
+      "LinearAgentSkillPromptSettings": "INFRA: TypeScript type definition for Linear prompt settings slice",
+      "getCurrentPlatform": [
+        "D02c-005"
+      ],
+      "getLinearPromptAgentRuntime": [
+        "D02c-005"
+      ],
+      "getLinearPromptTerminalShellOverride": [
+        "D02c-005"
+      ],
+      "getLinearPromptSetupCheckIdentity": [
+        "D02c-005"
+      ],
+      "getLinearPromptSkillDiscoveryTarget": [
+        "D02c-005"
+      ],
+      "getLocalDismissStorageKey": [
+        "D02c-005"
+      ],
+      "readLocalDismissed": [
+        "D02c-005"
+      ],
+      "getLinearAgentSkillSetupMissingLabel": [
+        "D02c-006"
+      ],
+      "getLinearAgentSkillSetupToastTitle": [
+        "D02c-006"
+      ],
+      "getLinearAgentSkillSetupToastDescription": [
+        "D02c-006"
+      ],
+      "getLinearAgentSkillSetupInlineRuntimeCopy": [
+        "D02c-006"
+      ],
+      "resetLinearAgentSkillSetupReminderToastState": [
+        "D02c-007"
+      ],
+      "snoozeLinearAgentSkillSetupReminderToast": [
+        "D02c-007"
+      ],
+      "dismissLinearAgentSkillSetupReminderToast": [
+        "D02c-007"
+      ],
+      "resetLinearAgentSkillSetupReminderToastForRuntime": [
+        "D02c-007"
+      ],
+      "useLinearAgentSkillSetupReminderToast": [
+        "D02c-007"
+      ],
+      "LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT": [
+        "D02c-008"
+      ],
+      "MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS": [
+        "D02c-008"
+      ],
+      "createLinearAgentSkillSetupActivationId": [
+        "D02c-008"
+      ],
+      "getLinearAgentSkillSetupReminderState": [
+        "D02c-008"
+      ],
+      "getExistingLinearAgentSkillSetupReminderState": [
+        "D02c-008"
+      ],
+      "resetLinearAgentSkillSetupReminderState": [
+        "D02c-008"
+      ],
+      "getLinearAgentSkillSetupReminderStateCountForTests": [
+        "D02c-008"
+      ],
+      "hasLinearAgentSkillSetupReminderStateForTests": [
+        "D02c-008"
+      ],
+      "openSetupScriptSettings": [
+        "D02c-023"
+      ],
+      "ActionablePreservedBranch": "INFRA: TypeScript type for preserved branch with expected head",
+      "showPreservedBranchBatchToast": [
+        "D02c-013"
+      ],
+      "forceDeletePreservedBranchBatch": [
+        "D02c-013"
+      ],
+      "showPreservedBranchToast": [
+        "D02c-014"
+      ],
+      "trackSetupScriptPromptExposure": [
+        "D02c-024"
+      ],
+      "SetupScriptPromptState": "INFRA: TypeScript type for prompt inspection state with host identity",
+      "LastVisibleSetupScriptPrompt": "INFRA: TypeScript type for last visible prompt wrapper",
+      "findSetupScriptPromptRepo": [
+        "D02c-025"
+      ],
+      "markSetupScriptPromptSaved": [
+        "D02c-025"
+      ],
+      "getRenderedSetupScriptPromptState": [
+        "D02c-025"
+      ],
+      "trackNestedFolderOpen": [
+        "D02c-010"
+      ],
+      "useSetupScriptPromptRevalidation": [
+        "D02c-026"
+      ],
+      "components/sidebar/HiddenWorktreeRecoveryList.tsx:default": "D02c-001",
+      "components/sidebar/LinearAgentSkillSetupDialog.tsx:default": "D02c-003",
+      "components/sidebar/NonGitFolderDialog.tsx:default": "D02c-009",
+      "components/sidebar/OrcaYamlTrustDialog.tsx:default": "D02c-011",
+      "components/sidebar/PreservedBranchBatchReviewModal.tsx:default": "D02c-012",
+      "components/sidebar/RemoveFolderDialog.tsx:default": "D02c-018",
+      "components/sidebar/SetupScriptPromptCard.tsx:default": "D02c-019",
+      "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:default": "D02c-002"
+    },
+    "tests": {
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:165 :: LinearAgentSkillSetupPrompt reminder toast": "INFRA: describe block grouping LinearAgentSkillSetupPrompt reminder toast tests",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:209 :: shows a warning toast on a later modal-only activation after a casual close": "D02c-007",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:234 :: does not repeat the Orca CLI in CLI-only reminder toast copy": "D02c-006",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:247 :: keeps remote setup nuance in reminder toast copy": "D02c-006",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:260 :: keeps WSL target nuance in reminder toast copy": "D02c-006",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:285 :: opens the setup dialog from the reminder toast action": "D02c-007",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:322 :: does not recreate missing reminder state during toast cleanup": "D02c-007",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:331 :: does not create missing reminder state when resetting a runtime": "D02c-007",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:337 :: dismisses an active reminder toast on permanent dismissal": "D02c-007",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:200 :: LinearAgentSkillSetupPrompt": "INFRA: describe block grouping LinearAgentSkillSetupPrompt tests",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:238 :: shows a compact setup prompt when a linked Linear worktree is missing CLI or skill setup": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:250 :: hides when the prompt is not linked or both prerequisites are ready": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:263 :: persists host dismissal forever for the host setup target": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:276 :: persists remote dismissal and uses remote-safe copy": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:311 :: uses WSL discovery, status, command, and prerequisite setup together": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:371 :: persists WSL dismissal by selected distro": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:395 :: omits the WSL CLI distro request for default WSL setup": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:410 :: keeps stale terminal WSL settings on host when project runtime is absent": "D02c-005",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:425 :: keeps the prompt usable and loads the lazy setup dialog only when requested": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:453 :: auto-opens as a modal-only prompt and treats the × close as a casual snooze": "D02c-007",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:485 :: keeps the modal open with success copy after a modal Re-check succeeds": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:498 :: closes success with Done without permanent dismissal or session snooze": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:526 :: closes success with the dialog close button without permanent dismissal or session snooze": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:554 :: closes success with Escape without permanent dismissal or session snooze": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:566 :: closes success with outside click without permanent dismissal or session snooze": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:581 :: still removes the inline prompt after an inline Re-check succeeds": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:600 :: keeps the missing setup modal visible after a partial Re-check": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:617 :: keeps the modal mounted and the Re-check action loading during a slow modal check": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:648 :: ignores stale CLI success after the runtime context changes during Re-check": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:700 :: ignores stale prerequisite CLI status callbacks after the runtime context changes": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:743 :: accepts same-context prerequisite CLI status callbacks after a newer Re-check": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:782 :: ignores older same-context CLI refreshes that finish after a newer Re-check": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:812 :: uses WSL-specific success copy for a selected WSL runtime": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:841 :: uses project host runtime for skill discovery when legacy settings still point at WSL": "D02c-005",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:865 :: uses selected project WSL runtime for skill discovery and CLI status": "D02c-005",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:898 :: uses remote-safe success copy for remote workspaces": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:916 :: permanently dismisses the modal-only prompt when requested": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx:113 :: LinearAgentSkillSetupPrompt update command": "INFRA: describe block grouping LinearAgentSkillSetupPrompt update command tests",
+      "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx:153 :: uses the canonical update command when the canonical Linear skill is installed": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx:163 :: uses the legacy update command when only the legacy Linear skill is installed": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.update-command.test.tsx:173 :: prefers the canonical update command when both Linear skill names are installed": "D02c-004",
+      "components/sidebar/NonGitFolderDialog.test.tsx:116 :: NonGitFolderDialog": "INFRA: describe block grouping NonGitFolderDialog tests",
+      "components/sidebar/NonGitFolderDialog.test.tsx:140 :: shows the checked host in the folder confirmation": "D02c-009",
+      "components/sidebar/NonGitFolderDialog.test.tsx:147 :: confirms runtime folder imports on the checked host": "D02c-009",
+      "components/sidebar/NonGitFolderDialog.test.tsx:159 :: names the runtime folder project after the requested display name": "D02c-009",
+      "components/sidebar/NonGitFolderDialog.test.tsx:176 :: names the SSH folder project after the requested display name": "D02c-009",
+      "components/sidebar/NonGitFolderDialog.test.tsx:208 :: activates only the selected SSH folder when repo IDs collide": "D02c-009",
+      "components/sidebar/OrcaYamlTrustDialog.test.tsx:58 :: OrcaYamlTrustDialog": "INFRA: describe block grouping OrcaYamlTrustDialog tests",
+      "components/sidebar/OrcaYamlTrustDialog.test.tsx:72 :: keeps spaces around orca.yaml and the repo name in the first-run copy": "D02c-011",
+      "components/sidebar/OrcaYamlTrustDialog.test.tsx:85 :: keeps spaces around orca.yaml when the script changed since last approval": "D02c-011",
+      "components/sidebar/ProjectGroupDeleteDialog.test.tsx:62 :: ProjectGroupDeleteDialog": "INFRA: describe block grouping ProjectGroupDeleteDialog tests",
+      "components/sidebar/ProjectGroupDeleteDialog.test.tsx:63 :: omits the contained project panel for empty groups": "D02c-015",
+      "components/sidebar/ProjectGroupDeleteDialog.test.tsx:70 :: renders compact contained project handling and reports remove intent": "D02c-015",
+      "components/sidebar/ProjectGroupDeleteDialog.test.tsx:91 :: focuses the delete group action when opened": "D02c-015",
+      "components/sidebar/ProjectGroupDeleteDialog.test.tsx:97 :: keeps the panel copy and destructive action label stable when project removal is selected": "D02c-015",
+      "components/sidebar/ProjectGroupDeleteDialog.test.tsx:109 :: disables project choices, cancel, and delete actions while deleting": "D02c-015",
+      "components/sidebar/RemoveFolderDialog.test.tsx:63 :: RemoveFolderDialog": "INFRA: describe block grouping RemoveFolderDialog tests",
+      "components/sidebar/RemoveFolderDialog.test.tsx:75 :: warns that VM recipe cleanup controls file deletion": "D02c-018",
+      "components/sidebar/RemoveFolderDialog.test.tsx:86 :: keeps the file-preservation promise for ordinary SSH projects": "D02c-018",
+      "components/sidebar/SetupScriptPromptCard.test.ts:29 :: findSetupScriptPromptRepo": "INFRA: describe block grouping findSetupScriptPromptRepo tests",
+      "components/sidebar/SetupScriptPromptCard.test.ts:30 :: uses the active direct-SSH worktree host when repo ids collide": "D02c-025",
+      "components/sidebar/SetupScriptPromptCard.test.ts:56 :: uses the runtime owner for a relayed SSH worktree": "D02c-025",
+      "components/sidebar/SetupScriptPromptCard.test.ts:87 :: getRenderedSetupScriptPromptState": "INFRA: describe block grouping getRenderedSetupScriptPromptState tests",
+      "components/sidebar/SetupScriptPromptCard.test.ts:88 :: uses the current inspection when it belongs to the active repo and host": "D02c-025",
+      "components/sidebar/SetupScriptPromptCard.test.ts:103 :: keeps the previous visible prompt during same-host inspection refresh": "D02c-025",
+      "components/sidebar/SetupScriptPromptCard.test.ts:116 :: does not keep a stale prompt when switching hosts in the same project": "D02c-025",
+      "components/sidebar/SetupScriptPromptCard.test.ts:129 :: does not reuse a matching repo id from a different host": "D02c-025",
+      "components/sidebar/SetupScriptPromptCard.test.ts:140 :: does not keep a stale prompt when switching to a different project": "D02c-025",
+      "components/sidebar/SetupScriptPromptCard.test.ts:154 :: markSetupScriptPromptSaved": "INFRA: describe block grouping markSetupScriptPromptSaved tests",
+      "components/sidebar/SetupScriptPromptCard.test.ts:155 :: does not apply a completed save to the same repo id on another host": "D02c-025",
+      "components/sidebar/SetupScriptPromptCard.test.ts:161 :: marks the prompt for the saved host effective": "D02c-025",
+      "components/sidebar/SetupScriptPromptCardShell.test.tsx:8 :: SetupScriptPromptCardShell": "INFRA: describe block grouping SetupScriptPromptCardShell tests",
+      "components/sidebar/SetupScriptPromptCardShell.test.tsx:9 :: floats above its anchor without reserving a sidebar background panel": "D02c-020",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:34 :: getEmptyProjectPlaceholderRepoIds": "INFRA: describe block grouping getEmptyProjectPlaceholderRepoIds tests",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:35 :: returns empty repo placeholders in repo grouping without project groups": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:49 :: treats missing worktreesByRepo keys as empty for the current render": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:63 :: applies repo filters to empty placeholder candidates": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:80 :: does not create placeholders outside repo grouping": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:92 :: does not treat non-empty repos as empty when workspace filters hide their rows": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:104 :: keeps grouped repos visible when workspace filters hide all of their rows": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:121 :: does not create a grouped repo placeholder when one of its workspaces is visible": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:136 :: still respects explicit project filters for sleep-filtered grouped members": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:160 :: placeholders only the fully-filtered members of a multi-project group": "D02c-017",
+      "components/sidebar/empty-project-placeholder-repos.test.ts:182 :: does not placeholder ungrouped neighbors of a filtered grouped member": "D02c-017",
+      "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts:6 :: getLinearPromptTerminalShellOverride": "INFRA: describe block grouping getLinearPromptTerminalShellOverride tests",
+      "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts:9 :: forces PowerShell for POSIX-family Windows shells": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts:17 :: leaves cmd and PowerShell shells alone, and never overrides off Windows": "D02c-005",
+      "components/sidebar/linear-agent-skill-setup-reminders.test.ts:16 :: linear agent skill setup reminders": "INFRA: describe block grouping linear agent skill setup reminders tests",
+      "components/sidebar/linear-agent-skill-setup-reminders.test.ts:17 :: bounds runtime reminder state through prolonged key churn": "D02c-008",
+      "components/sidebar/linear-agent-skill-setup-reminders.test.ts:32 :: retains recently reused keys while trimming": "D02c-008",
+      "components/sidebar/linear-agent-skill-setup-reminders.test.ts:49 :: keeps active toast state ahead of inactive stale entries when trimming": "D02c-008",
+      "components/sidebar/linear-agent-skill-setup-reminders.test.ts:62 :: retains a new key when every existing entry has an active toast": "D02c-008",
+      "components/sidebar/linear-agent-skill-setup-reminders.test.ts:76 :: does not create reminder state when peeking at a missing key": "D02c-008",
+      "components/sidebar/linear-agent-skill-setup-reminders.test.ts:81 :: resets activation ids with reminder state for tests": "D02c-008",
+      "components/sidebar/preserved-branch-batch-toast.test.tsx:107 :: showPreservedBranchBatchToast": "INFRA: describe block grouping showPreservedBranchBatchToast tests",
+      "components/sidebar/preserved-branch-batch-toast.test.tsx:108 :: explains disk cleanup and opens one review dialog for the batch": "D02c-013",
+      "components/sidebar/preserved-branch-batch-toast.test.tsx:130 :: force-deletes only the branches selected in review": "D02c-012",
+      "components/sidebar/preserved-branch-batch-toast.test.tsx:158 :: keeps older-server branches visible without offering an unsafe delete": "D02c-013",
+      "components/sidebar/preserved-branch-batch-toast.test.tsx:169 :: serializes branch deletion within one repository": "D02c-013",
+      "components/sidebar/preserved-branch-batch-toast.test.tsx:190 :: shows an unavailable branch without blocking review of actionable branches": "D02c-012",
+      "components/sidebar/preserved-branch-toast.test.tsx:50 :: showPreservedBranchToast": "INFRA: describe block grouping showPreservedBranchToast tests",
+      "components/sidebar/preserved-branch-toast.test.tsx:51 :: renders the branch recovery action below the long description": "D02c-014",
+      "components/sidebar/preserved-branch-toast.test.tsx:89 :: does not show the force-delete action without the preserved head": "D02c-014",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:96 :: useSetupScriptPromptRevalidation": "INFRA: describe block grouping useSetupScriptPromptRevalidation tests",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:109 :: re-inspects on window focus while the prompt shows no effective setup": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:124 :: does not re-inspect on window focus once setup is effective": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:139 :: does not listen for focus while the sidebar is closed": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:154 :: does not re-inspect when prompt state belongs to another host with the same repo id": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:170 :: re-inspects when a worktree activates while the prompt shows no effective setup": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:195 :: does not re-inspect on worktree activation once setup is effective": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:217 :: re-inspects on window focus after a failed inspection": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:232 :: replays a worktree activation that landed while the prompt state was unsettled": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:264 :: re-inspects when the repo runtime reconnects": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.test.tsx:281 :: ignores a reconnect of a runtime that does not own the repo": "D02c-026",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:306 :: clears active reminder state after %s": "D02c-004"
+    },
+    "labels": {
+      "components/sidebar/HiddenWorktreeRecoveryList.tsx:83 :: aria-label={translate(": "D02c-001",
+      "components/sidebar/HiddenWorktreeRecoveryList.tsx:87 :: placeholder={translate(": "D02c-001",
+      "components/sidebar/HiddenWorktreeRecoveryList.tsx:135 :: aria-label={translate(": "D02c-001",
+      "components/sidebar/LinearAgentSkillSetupDialog.tsx:6 :: import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupDialog.tsx:124 :: title={translate(": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupDialog.tsx:171 :: aria-label={translate(": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:137 :: function findBodyButton(label: string): HTMLButtonElement | undefined {": "INFRA: Test helper in reminder toast unit tests",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:227 :: label: 'Set up',": "D02c-007",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:351 :: .querySelector<HTMLButtonElement>('button[aria-label=\"Don\\'t show again\"]')": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:174 :: function findBodyButton(label: string): HTMLButtonElement | undefined {": "INFRA: Test helper in Linear agent skill setup prompt unit tests",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:268 :: .querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:303 :: .querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:386 :: .querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:921 :: 'button[aria-label=\"Don\\'t show again\"]'": "D02c-003",
+      "components/sidebar/LinearAgentSkillSetupPrompt.tsx:383 :: aria-label={translate(": "D02c-004",
+      "components/sidebar/NonGitFolderDialog.test.tsx:8 :: label: string": "INFRA: Test helper/mock interface in NonGitFolderDialog unit tests",
+      "components/sidebar/NonGitFolderDialog.test.tsx:76 :: mocks.buttons.push({ label: textContent(children), onClick })": "INFRA: Test helper/mock interface in NonGitFolderDialog unit tests",
+      "components/sidebar/ProjectGroupDeleteDialog.test.tsx:44 :: function findButton(label: string): HTMLButtonElement {": "INFRA: Test helper in ProjectGroupDeleteDialog unit tests",
+      "components/sidebar/ProjectGroupDeleteDialog.tsx:133 :: aria-label={translate(": "D02c-015",
+      "components/sidebar/ProjectGroupDeleteDialog.tsx:139 :: <li key={`${projectName}:${index}`} className=\"truncate\" title={projectName}>": "D02c-015",
+      "components/sidebar/SetupScriptPromptCardShell.test.tsx:5 :: import { TooltipProvider } from '@/components/ui/tooltip'": "D02c-020",
+      "components/sidebar/SetupScriptPromptCardViews.tsx:4 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D02c-021",
+      "components/sidebar/SetupScriptPromptCardViews.tsx:21 :: aria-label={translate(": "D02c-021",
+      "components/sidebar/SetupScriptPromptCardViews.tsx:60 :: aria-label={translate(": "D02c-021",
+      "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts:4 :: const hostRuntime = { runtime: 'host', label: 'Windows' } as const": "INFRA: Test fixture in shell-override unit tests",
+      "components/sidebar/linear-agent-skill-runtime.ts:36 :: label: currentPlatform === 'win32' ? 'Windows' : 'This device'": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.ts:49 :: label: selectedDistro": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.ts:56 :: label: currentPlatform === 'win32' ? 'Windows' : 'This device'": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.ts:77 :: label: currentPlatform === 'win32' ? 'Windows' : 'This device'": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.ts:85 :: label: distro": "D02c-005",
+      "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:120 :: label: translate('auto.components.sidebar.LinearAgentSkillSetupPrompt.setup', 'Set up'),": "D02c-007",
+      "components/sidebar/preserved-branch-batch-toast.test.tsx:69 :: async function clickButton(container: HTMLElement, label: string): Promise<void> {": "INFRA: Test helper in preserved branch batch toast unit tests",
+      "components/sidebar/preserved-branch-toast.test.tsx:32 :: function clickButton(container: HTMLElement, label: string): void {": "INFRA: Test helper in preserved branch toast unit tests"
+    },
+    "hotkeys": {
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:558 :: document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))": "D02c-003"
+    },
+    "prefs": {
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:19 :: const HOST_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.host'": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:317 :: getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)?.activeToastId": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:323 :: dismissLinearAgentSkillSetupReminderToast(HOST_DISMISS_STORAGE_KEY)": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:325 :: expect(getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)).toBeUndefined()": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:332 :: resetLinearAgentSkillSetupReminderToastForRuntime(HOST_DISMISS_STORAGE_KEY)": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:334 :: expect(getExistingLinearAgentSkillSetupReminderState(HOST_DISMISS_STORAGE_KEY)).toBeUndefined()": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx:355 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:14 :: const HOST_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.host'": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:15 :: const FEDORA_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.wsl.Fedora'": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:272 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:307 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:390 :: expect(window.localStorage.getItem(FEDORA_DISMISS_STORAGE_KEY)).toBe('1')": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:391 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:479 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:505 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:533 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:562 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:577 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx:927 :: expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBe('1')": "INFRA: Test verification of localStorage dismissal preference key",
+      "components/sidebar/LinearAgentSkillSetupPrompt.tsx:225 :: localStorage.setItem(localDismissStorageKey, '1')": "D02c-004",
+      "components/sidebar/linear-agent-skill-runtime.ts:8 :: const LOCAL_DISMISS_STORAGE_KEY_PREFIX = 'orca.linearTicketsSkill.setupDismissed'": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.ts:126 :: return `${LOCAL_DISMISS_STORAGE_KEY_PREFIX}.host`": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.ts:128 :: return `${LOCAL_DISMISS_STORAGE_KEY_PREFIX}.wsl.${runtime.wslDistro?.trim() || 'default'}`": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.ts:131 :: export function readLocalDismissed(storageKey: string): boolean {": "D02c-005",
+      "components/sidebar/linear-agent-skill-runtime.ts:135 :: return localStorage.getItem(storageKey) === '1'": "D02c-005"
+    },
+    "timers": {},
+    "subscriptions": {
+      "components/sidebar/LinearAgentSkillSetupPrompt.tsx:185 :: useEffect(() => {": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.tsx:205 :: useEffect(() => {": "D02c-004",
+      "components/sidebar/SetupScriptPromptCard.tsx:63 :: useEffect(() => {": "D02c-019",
+      "components/sidebar/SetupScriptPromptCard.tsx:126 :: useEffect(() => {": "D02c-019",
+      "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:71 :: useEffect(() => {": "D02c-007",
+      "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:85 :: useEffect(() => {": "D02c-007",
+      "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:134 :: useEffect(() => {": "D02c-007",
+      "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:140 :: useEffect(() => {": "D02c-007",
+      "components/sidebar/useSetupScriptPromptRevalidation.ts:48 :: useEffect(() => {": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.ts:58 :: window.addEventListener('focus', requestRevalidation)": "D02c-026",
+      "components/sidebar/useSetupScriptPromptRevalidation.ts:76 :: useEffect(() => {": "D02c-026"
+    },
+    "preload": {
+      "components/sidebar/LinearAgentSkillSetupPrompt.tsx:175 :: ? window.api.cli.getWslInstallStatus(getWslCliDistroRequest(agentRuntime))": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.tsx:176 :: : window.api.cli.getInstallStatus())": "D02c-004",
+      "components/sidebar/LinearAgentSkillSetupPrompt.tsx:301 :: ? () => window.api.cli.getWslInstallStatus(getWslCliDistroRequest(agentRuntime))": "D02c-004",
+      "components/sidebar/NonGitFolderDialog.tsx:61 :: const result = await window.api.repos.addRemote({": "D02c-009",
+      "components/sidebar/NonGitFolderDialog.tsx:88 :: const onboarding = await window.api.onboarding.get().catch(() => null)": "D02c-009"
+    }
+  }
+}

@@ -1,0 +1,102 @@
+[
+ {
+  "file": "src/components/sidebar/AddRepoDialog.tsx",
+  "line": 39,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "src/components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 32,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "src/components/sidebar/CompactAgentRow.tsx",
+  "line": 32,
+  "text": "function stopActivationKeyPropagation(e: React.KeyboardEvent): void {"
+ },
+ {
+  "file": "src/components/sidebar/ParentPickerModal.tsx",
+  "line": 45,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
+  "line": 36,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "src/components/sidebar/ProjectGroupNameDialog.tsx",
+  "line": 42,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "src/components/sidebar/SidebarAgentsList.tsx",
+  "line": 316,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "src/components/sidebar/SidebarFooter.tsx",
+  "line": 21,
+  "text": "title=\"Open Settings (Ctrl+,)\""
+ },
+ {
+  "file": "src/components/sidebar/WorkspaceOptionsMenu.tsx",
+  "line": 67,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeList.tsx",
+  "line": 216,
+  "text": "const shortcutTargets = useMemo("
+ },
+ {
+  "file": "src/components/sidebar/WorktreeList.tsx",
+  "line": 241,
+  "text": "setVisibleWorktreeIds(shortcutTargets.map((target) => target.id));"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeList.tsx",
+  "line": 242,
+  "text": "setVisibleWorktreeShortcutTargets(shortcutTargets);"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeList.tsx",
+  "line": 247,
+  "text": "}, [shortcutTargets]);"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 102,
+  "text": "const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {"
+ },
+ {
+  "file": "src/components/sidebar/WorktreeVisibilityDialog.tsx",
+  "line": 144,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "src/components/sidebar/rendered-sidebar-worktree-order.ts",
+  "line": 34,
+  "text": "* hoisting and collapse elision, so the shortcut numbered the wrong card."
+ },
+ {
+  "file": "src/components/sidebar/sidebar-filter-actions.ts",
+  "line": 77,
+  "text": "* between badge numbers and the Cmd+N shortcut target."
+ },
+ {
+  "file": "src/components/sidebar/visible-worktrees.ts",
+  "line": 258,
+  "text": "* recomputes sort order from a live Zustand snapshot, the Cmd+1\u20139 shortcut"
+ },
+ {
+  "file": "src/components/sidebar/visible-worktrees.ts",
+  "line": 261,
+  "text": "* shortcut numbering always matches the sidebar card order."
+ },
+ {
+  "file": "src/components/sidebar/worktree-card-compact-agents.tsx",
+  "line": 15,
+  "text": "function stopActivationKeyPropagation(e: React.KeyboardEvent): void {"
+ }
+]

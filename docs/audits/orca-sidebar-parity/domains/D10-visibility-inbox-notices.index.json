@@ -1,0 +1,1512 @@
+{
+ "exports": {
+  "components/sidebar/AutoRenameFailedDialog.tsx": [
+   "AutoRenameFailedDialog"
+  ],
+  "components/sidebar/DeleteWorktreeDialog.tsx": [
+   "default"
+  ],
+  "components/sidebar/DeleteWorktreeDialogDescription.tsx": [
+   "DeleteWorktreeDialogDescription"
+  ],
+  "components/sidebar/DeleteWorktreeDialogFooter.tsx": [
+   "DeleteWorktreeDialogFooter"
+  ],
+  "components/sidebar/DeleteWorktreeTargetPreview.tsx": [
+   "DeleteWorktreeTargetPreview"
+  ],
+  "components/sidebar/ImportedWorktreesVisibilityLine.tsx": [
+   "ImportedWorktreesVisibilityPlacement",
+   "ImportedWorktreeVisibilityPreview",
+   "groupWorktreesByParentPath",
+   "ImportedWorktreesVisibilityLine",
+   "default"
+  ],
+  "components/sidebar/NewExternalWorktreesInboxLine.tsx": [
+   "NewExternalWorktreesInboxLine",
+   "default"
+  ],
+  "components/sidebar/NoticeHostGlyph.tsx": [
+   "NoticeHostGlyph",
+   "default"
+  ],
+  "components/sidebar/WorktreeVisibilityDialog.tsx": [
+   "WorktreeVisibilityDialog",
+   "default"
+  ],
+  "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx": [
+   "WorktreeVisibilityGlobalSettingsLink"
+  ],
+  "components/sidebar/WorktreeVisibilityHelpPopover.tsx": [
+   "WorktreeVisibilityHelpPopover",
+   "default"
+  ],
+  "components/sidebar/WorktreeVisibilityScanStatus.tsx": [
+   "WorktreeVisibilityScanStatus"
+  ],
+  "components/sidebar/WorktreeVisibilitySourceAddForm.tsx": [
+   "WorktreeVisibilitySourceAddResult",
+   "WorktreeVisibilitySourceAddForm"
+  ],
+  "components/sidebar/WorktreeVisibilitySourceList.tsx": [
+   "WorktreeVisibilitySourceRow",
+   "getWorktreeVisibilitySourceLabel",
+   "worktreeVisibilitySourceRowKey",
+   "WorktreeVisibilitySourceList",
+   "default"
+  ],
+  "components/sidebar/imported-worktrees-card-actions.ts": [
+   "ImportedWorktreeCardActionState",
+   "IMPORTED_WORKTREES_SHOW_ERROR",
+   "IMPORTED_WORKTREES_KEEP_HIDDEN_ERROR",
+   "showImportedWorktreesCard",
+   "keepImportedWorktreesHiddenCard"
+  ],
+  "components/sidebar/imported-worktrees-card-candidates.ts": [
+   "getHiddenImportedWorktrees",
+   "buildImportedWorktreesCardCandidates"
+  ],
+  "components/sidebar/new-external-worktrees-inbox-actions.ts": [
+   "NewExternalWorktreesInboxActionState",
+   "keepNewExternalWorktreeInboxHidden",
+   "importNewExternalWorktreeInboxPaths",
+   "suppressNewExternalWorktreeInbox"
+  ],
+  "components/sidebar/new-external-worktrees-inbox-candidates.ts": [
+   "buildNewExternalWorktreesInboxCandidates"
+  ],
+  "components/sidebar/prompt-cache-countdown-clock.ts": [
+   "subscribePromptCacheCountdownClock",
+   "usePromptCacheCountdownNow"
+  ],
+  "components/sidebar/prompt-cache-timer-selection.ts": [
+   "PromptCacheCountdownSelection",
+   "getMostUrgentPromptCacheStartedAt",
+   "getPromptCacheCountdownForPane"
+  ],
+  "components/sidebar/stale-workspace-list-toast.ts": [
+   "showWorkspaceListChangedToast",
+   "showNoDeletableWorkspacesToast"
+  ],
+  "components/sidebar/use-feedback-image-drop.ts": [
+   "FeedbackImageDrop",
+   "useFeedbackImageDrop"
+  ],
+  "components/sidebar/use-sidebar-feedback-environment-prefill.ts": [
+   "useSidebarFeedbackEnvironmentPrefill"
+  ],
+  "components/sidebar/use-sidebar-feedback-images.ts": [
+   "useSidebarFeedbackImages"
+  ],
+  "components/sidebar/worktree-visibility-host-target.ts": [
+   "resolveWorktreeVisibilityHostTarget",
+   "useWorktreeVisibilityHostActions"
+  ],
+  "components/sidebar/worktree-visibility-mutation-fence.ts": [
+   "ActiveVisibilityMutation",
+   "getActiveVisibilityMutation",
+   "startVisibilityMutation",
+   "subscribeToVisibilityMutation",
+   "finishVisibilityMutation",
+   "useVisibilityMutationFence"
+  ],
+  "components/sidebar/worktree-visibility-repo-sources.ts": [
+   "getLatestRepoForVisibilityScope",
+   "getRepoCustomWorktreeVisibilitySourceIds",
+   "isDuplicateWorktreeVisibilitySource"
+  ],
+  "components/sidebar/worktree-visibility-source-mutation.ts": [
+   "WorktreeVisibilitySourceMutation",
+   "createWorktreeVisibilitySourceMutation"
+  ],
+  "components/sidebar/worktree-visibility-update-error.ts": [
+   "worktreeVisibilityUpdateError"
+  ],
+  "components/sidebar/worktree-visibility-use-global.ts": [
+   "shouldUseGlobalWorktreeVisibility",
+   "createWorktreeVisibilityUseGlobalMutation"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+   "line": 28,
+   "text": "* dedicated scrollable surface rather than a tooltip \u2014 see the sibling"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+   "line": 133,
+   "text": "aria-label={"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 95,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 8,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+   "line": 145,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+   "line": 181,
+   "text": "aria-label={keepHiddenAriaLabel}"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+   "line": 198,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+   "line": 225,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 9,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 13,
+   "text": "<span data-testid=\"tooltip-content\">{children}</span>"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 121,
+   "text": "'button[aria-label=\"Hide external worktrees permanently for orca on openclaw\"]'"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 140,
+   "text": "'button[aria-label=\"Hide external worktrees permanently for orca\"]'"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 161,
+   "text": "'button[aria-label=\"Hide external worktrees permanently for orca\"]'"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.tsx",
+   "line": 89,
+   "text": "aria-label={reviewAriaLabel}"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.tsx",
+   "line": 135,
+   "text": "aria-label={suppressAriaLabel}"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 5,
+   "text": "* with the worktree card's \"Project on \u2026\" tooltip copy."
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 24,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 27,
+   "text": "cloneElement(children, { 'data-testid': 'tooltip-trigger' }),"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 29,
+   "text": "<span data-testid=\"tooltip\">{children}</span>"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 71,
+   "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 81,
+   "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 90,
+   "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 100,
+   "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 110,
+   "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 117,
+   "text": "const trigger = container.querySelector('[data-testid=\"tooltip-trigger\"]')"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 128,
+   "text": "container.querySelector('[data-testid=\"tooltip-trigger\"]')?.hasAttribute('tabindex')"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.tsx",
+   "line": 3,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.tsx",
+   "line": 24,
+   "text": "* remote), plus the worktree card's \"Project on \u2026\" tooltip. Every row gets one,"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.tsx",
+   "line": 48,
+   "text": "const tooltip = isDisconnected"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.tsx",
+   "line": 75,
+   "text": "aria-label={keyboardFocusable ? tooltip : undefined}"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.tsx",
+   "line": 90,
+   "text": "{tooltip}"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 49,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 200,
+   "text": "function sourceSegment(label: string, visibility: 'show' | 'hide'): HTMLButtonElement {"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 202,
+   "text": "`[aria-label=\"Visibility for ${label}\"] [data-visibility=\"${visibility}\"]`"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 213,
+   "text": "function sourceRow(label: string): HTMLElement {"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 272,
+   "text": "document.querySelector('button[aria-label=\"Which worktrees are hidden by default?\"]')"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 291,
+   "text": "'input[aria-label=\"Search hidden worktrees\"]'"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 317,
+   "text": "document.querySelector('button[aria-label=\"Show scratch-a at .claude/worktrees/scratch-a\"]')"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 320,
+   "text": "document.querySelector('button[aria-label=\"Show scratch-b at .claude/worktrees/scratch-b\"]')"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 853,
+   "text": "'button[aria-label=\"Remove /srv/team-worktrees\"]'"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 883,
+   "text": "await click(document.querySelector('button[aria-label=\"Remove /srv/team-worktrees\"]')!)"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 905,
+   "text": "expect(document.querySelector('button[aria-label=\"Remove /srv/alpha/team\"]')).not.toBeNull()"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 906,
+   "text": "expect(document.querySelector('button[aria-label=\"Remove /srv/beta/team\"]')).not.toBeNull()"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 921,
+   "text": "expect(document.querySelector('button[aria-label=\"Remove /srv/global-team\"]')).toBeNull()"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+   "line": 32,
+   "text": "'button[aria-label=\"Which worktrees are hidden by default?\"]'"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.tsx",
+   "line": 27,
+   "text": "aria-label={title}"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.tsx",
+   "line": 35,
+   "text": "aria-label={title}"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceAddForm.tsx",
+   "line": 56,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.test.tsx",
+   "line": 11,
+   "text": "vi.mock('@/components/ui/tooltip', () => ({"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.test.tsx",
+   "line": 97,
+   "text": "'button[aria-label=\"Use global for Claude Code\"]'"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+   "line": 5,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+   "line": 141,
+   "text": "function getAccessibleSourceLabel(source: WorktreeVisibilitySourceRow, label: string): string {"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+   "line": 276,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+   "line": 301,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+   "line": 320,
+   "text": "aria-label={translate("
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+   "line": 97,
+   "text": "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+   "line": 85,
+   "text": "copiedResetTimerRef.current = window.setTimeout(() => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+   "line": 108,
+   "text": "await act(async () => new Promise((resolve) => setTimeout(resolve, 0)))"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-countdown-clock.ts",
+   "line": 7,
+   "text": "let timer: ReturnType<typeof setInterval> | null = null"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-countdown-clock.ts",
+   "line": 30,
+   "text": "timer = setInterval(publishTick, 1000)"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+   "line": 42,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+   "line": 50,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts",
+   "line": 26,
+   "text": "const effect = sourceBetween(SOURCE, 'useEffect(() => {', '}, [')"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.tsx",
+   "line": 201,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.tsx",
+   "line": 117,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-countdown-clock.ts",
+   "line": 48,
+   "text": "document.addEventListener('visibilitychange', reconcileVisibility)"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 32,
+   "text": "document.addEventListener('drop', preloadDropListener, true)"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.ts",
+   "line": 67,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.ts",
+   "line": 90,
+   "text": "window.addEventListener('drop', handleDrop, true)"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.ts",
+   "line": 91,
+   "text": "window.addEventListener('dragend', reset, true)"
+  },
+  {
+   "file": "components/sidebar/use-sidebar-feedback-environment-prefill.ts",
+   "line": 53,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/use-sidebar-feedback-images.ts",
+   "line": 43,
+   "text": "useEffect("
+  },
+  {
+   "file": "components/sidebar/worktree-visibility-mutation-fence.ts",
+   "line": 58,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+   "line": 56,
+   "text": "window.api.worktrees"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+   "line": 80,
+   "text": "await window.api.ui.writeClipboardText(detailText)"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.test.tsx",
+   "line": 50,
+   "kind": "plain",
+   "name": "AutoRenameFailedDialog full output"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.test.tsx",
+   "line": 51,
+   "kind": "plain",
+   "name": "shows the full CLI output fetched from main when available"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.test.tsx",
+   "line": 61,
+   "kind": "plain",
+   "name": "falls back to the persisted excerpt when main holds no capture"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.test.tsx",
+   "line": 67,
+   "kind": "plain",
+   "name": "falls back to the persisted excerpt when the fetch rejects"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.test.tsx",
+   "line": 73,
+   "kind": "plain",
+   "name": "refetches full output when a retry changes the persisted error"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.test.tsx",
+   "line": 89,
+   "kind": "plain",
+   "name": "AutoRenameFailedDialog unbroken output containment"
+  },
+  {
+   "file": "components/sidebar/AutoRenameFailedDialog.test.tsx",
+   "line": 90,
+   "kind": "plain",
+   "name": "keeps the output surface shrinkable and breakable mid-token"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts",
+   "line": 15,
+   "kind": "plain",
+   "name": "DeleteWorktreeDialog host-context boundaries"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "preloads git status from the selected worktree owner instead of the focused host"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.host-context-boundary.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "does not restart pending status requests when one target hydrates"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 166,
+   "kind": "plain",
+   "name": "DeleteWorktreeDialog lineage copy"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 185,
+   "kind": "plain",
+   "name": "labels the confirmed single-host target when workspace ids collide"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 216,
+   "kind": "plain",
+   "name": "keeps Space safety-checked confirmation non-force"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 238,
+   "kind": "plain",
+   "name": "shows child-delete copy and only a delete-all action when the workspace has children"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 280,
+   "kind": "plain",
+   "name": "keeps long child workspace paths constrained inside the lineage notice"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 300,
+   "kind": "plain",
+   "name": "uses non-destructive disk copy for folder workspace deletes"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 325,
+   "kind": "plain",
+   "name": "keeps a space between remove copy and the workspace name"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 339,
+   "kind": "plain",
+   "name": "shows an inline warning when the workspace has uncommitted or untracked changes"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 358,
+   "kind": "plain",
+   "name": "shows locked and known dirty details without offering a lock override"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 384,
+   "kind": "plain",
+   "name": "notifies the dialog caller after a toast force delete succeeds"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 415,
+   "kind": "plain",
+   "name": "rejects confirmation when the workspace instance changed after the dialog opened"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+   "line": 439,
+   "kind": "plain",
+   "name": "rejects lineage confirmation when a descendant instance changed"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeTargetPreview.test.tsx",
+   "line": 66,
+   "kind": "plain",
+   "name": "DeleteWorktreeTargetPreview host labels"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeTargetPreview.test.tsx",
+   "line": 67,
+   "kind": "plain",
+   "name": "binds saved SSH and runtime host names to their colliding batch rows"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeTargetPreview.test.tsx",
+   "line": 85,
+   "kind": "plain",
+   "name": "uses configured display-label overrides for colliding hosts"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeTargetPreview.test.tsx",
+   "line": 106,
+   "kind": "plain",
+   "name": "keeps an unqualified colliding target distinct from local"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeTargetPreview.test.tsx",
+   "line": 116,
+   "kind": "plain",
+   "name": "omits host metadata from every ordinary batch row"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeTargetPreview.test.tsx",
+   "line": 130,
+   "kind": "plain",
+   "name": "includes the host in a colliding single target region and its accessible name"
+  },
+  {
+   "file": "components/sidebar/DeleteWorktreeTargetPreview.test.tsx",
+   "line": 146,
+   "kind": "plain",
+   "name": "omits the host from an ordinary single target region"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 56,
+   "kind": "plain",
+   "name": "ImportedWorktreesVisibilityLine"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 57,
+   "kind": "plain",
+   "name": "renders the compact repo-group line with expand and dismiss actions"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 76,
+   "kind": "plain",
+   "name": "names the host when the project is checked out on more than one"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 86,
+   "kind": "plain",
+   "name": "folds the host into pinned fallback copy, which already names the repo"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 96,
+   "kind": "plain",
+   "name": "scopes pinned fallback copy to the repo name without a dismiss action"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 104,
+   "kind": "plain",
+   "name": "normalizes Windows parent path separators in preview groups"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 117,
+   "kind": "plain",
+   "name": "keeps Windows drive roots as parent path labels"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 129,
+   "kind": "plain",
+   "name": "keeps UNC share roots as parent path labels"
+  },
+  {
+   "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+   "line": 151,
+   "kind": "plain",
+   "name": "disables actions while pending and renders inline errors"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 55,
+   "kind": "plain",
+   "name": "NewExternalWorktreesInboxLine"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 68,
+   "kind": "plain",
+   "name": "states the count without naming any worktree"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 78,
+   "kind": "plain",
+   "name": "opens review from a single card-wide button"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 92,
+   "kind": "plain",
+   "name": "uses the singular noun for one worktree"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 102,
+   "kind": "plain",
+   "name": "names the host so two checkouts of one project are distinguishable"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 116,
+   "kind": "plain",
+   "name": "host-qualifies the suppress control, which writes to that host alone"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 126,
+   "kind": "plain",
+   "name": "stays unqualified when the project has a single checkout"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 134,
+   "kind": "plain",
+   "name": "keeps suppress as a hover-revealed control that does not trigger review"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 155,
+   "kind": "plain",
+   "name": "disables both actions while a mutation is pending"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 167,
+   "kind": "plain",
+   "name": "renders nothing when the inbox is empty"
+  },
+  {
+   "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+   "line": 173,
+   "kind": "plain",
+   "name": "surfaces the action error as an alert"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 56,
+   "kind": "plain",
+   "name": "NoticeHostGlyph"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 67,
+   "kind": "plain",
+   "name": "names the SSH host it would act on"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 76,
+   "kind": "plain",
+   "name": "names the paired runtime separately from the SSH host of the same name"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 86,
+   "kind": "plain",
+   "name": "marks a paired runtime a probe found unreachable as disconnected"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 95,
+   "kind": "plain",
+   "name": "does not call a host disconnected before its first probe answers"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 106,
+   "kind": "plain",
+   "name": "gives the local host the monitor glyph the run-target rows use"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 115,
+   "kind": "plain",
+   "name": "makes a passive row glyph keyboard reachable with an accessible name"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 124,
+   "kind": "plain",
+   "name": "does not add a nested tab stop when the glyph is inside a button"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 132,
+   "kind": "plain",
+   "name": "draws one glyph vocabulary: a monitor for local, a server for remote"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 147,
+   "kind": "plain",
+   "name": "keeps its copy in the English catalog"
+  },
+  {
+   "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+   "line": 159,
+   "kind": "each",
+   "name": "keeps its copy in the %s catalog"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 246,
+   "kind": "plain",
+   "name": "WorktreeVisibilityDialog"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 247,
+   "kind": "plain",
+   "name": "links directly to the global visibility defaults"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 263,
+   "kind": "plain",
+   "name": "lists a hidden agent worktree with a repo-relative path"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 276,
+   "kind": "plain",
+   "name": "bounds rendered rows for repositories with many hidden worktrees"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 306,
+   "kind": "plain",
+   "name": "gives each hidden worktree action a distinct accessible name"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 324,
+   "kind": "plain",
+   "name": "recovers a hidden worktree per path through the existing import exception"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 340,
+   "kind": "plain",
+   "name": "omits the hidden list when nothing is recoverable"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 348,
+   "kind": "plain",
+   "name": "says it is checking instead of claiming nothing is hidden on a fallback snapshot"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 362,
+   "kind": "plain",
+   "name": "offers a retry instead of a dead end when the list cannot be read"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 384,
+   "kind": "plain",
+   "name": "keeps rows visible but not actionable until the open-time scan settles"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 395,
+   "kind": "plain",
+   "name": "locks the repo-wide toggle until the open-time scan settles"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 403,
+   "kind": "plain",
+   "name": "reports a failed refresh even while an older trusted snapshot is on screen"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 415,
+   "kind": "plain",
+   "name": "locks retry while a row import is in flight, so it cannot race the write"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 427,
+   "kind": "plain",
+   "name": "locks the repo-wide toggle while a row import is in flight"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 437,
+   "kind": "plain",
+   "name": "locks row actions and retry while the repo-wide toggle is in flight"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 448,
+   "kind": "plain",
+   "name": "clears a stale failure once a row import refreshes the list successfully"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 459,
+   "kind": "plain",
+   "name": "does not leak an old repo action failure into a newly opened repo"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 476,
+   "kind": "plain",
+   "name": "keeps a remounted repo locked until its earlier row action settles"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 498,
+   "kind": "plain",
+   "name": "keeps a remounted repo locked until its earlier toggle settles"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 520,
+   "kind": "plain",
+   "name": "does not carry a mutation fence across same-id repos on different hosts"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 571,
+   "kind": "plain",
+   "name": "reports a failed persistent visibility update without starting a refresh"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 584,
+   "kind": "plain",
+   "name": "does not report success when an older host strips additive source settings (STA-4092)"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 598,
+   "kind": "plain",
+   "name": "reports a failed authoritative refresh after updating persistent visibility"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 612,
+   "kind": "plain",
+   "name": "toggles built-in sources independently"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 628,
+   "kind": "plain",
+   "name": "shows when source visibility is inherited from the global default"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 641,
+   "kind": "plain",
+   "name": "lists what each inheritable source is set to in global settings"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 657,
+   "kind": "plain",
+   "name": "names the global value an override is ignoring and reverts on the same control"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 682,
+   "kind": "plain",
+   "name": "materializes the remaining legacy source override when one source reverts to global"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 695,
+   "kind": "plain",
+   "name": "migrates legacy Always show to both built-in source rows"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 718,
+   "kind": "plain",
+   "name": "keeps ordinary non-Orca visibility on its own source row"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 732,
+   "kind": "plain",
+   "name": "adds custom locations disabled by default"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 766,
+   "kind": "plain",
+   "name": "keeps source matching stable while typing in the inline form"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 784,
+   "kind": "plain",
+   "name": "distinguishes invalid, duplicate, limit, and save failures when adding a source"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 824,
+   "kind": "plain",
+   "name": "reports only unsupported-host copy when an older host strips an added source"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 842,
+   "kind": "plain",
+   "name": "removes custom locations without changing other source preferences"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 870,
+   "kind": "plain",
+   "name": "rejects removal success when an older host leaves the custom preference behind"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 891,
+   "kind": "plain",
+   "name": "uses full paths to distinguish custom source controls with the same basename"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 909,
+   "kind": "plain",
+   "name": "shows inherited global locations without repository removal controls"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+   "line": 928,
+   "kind": "plain",
+   "name": "resets global custom and Other locations without changing their global defaults"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+   "line": 48,
+   "kind": "plain",
+   "name": "WorktreeVisibilityHelpPopover"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+   "line": 49,
+   "kind": "plain",
+   "name": "stays closed when the trigger receives initial dialog focus"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+   "line": 58,
+   "kind": "plain",
+   "name": "opens on pointer hover and closes when the pointer leaves"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+   "line": 86,
+   "kind": "plain",
+   "name": "opens without moving focus and dismisses with Escape"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+   "line": 104,
+   "kind": "plain",
+   "name": "dismisses when the user clicks outside"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.test.tsx",
+   "line": 31,
+   "kind": "plain",
+   "name": "WorktreeVisibilitySourceList"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.test.tsx",
+   "line": 32,
+   "kind": "plain",
+   "name": "counts a configured built-in base as another external location"
+  },
+  {
+   "file": "components/sidebar/WorktreeVisibilitySourceList.test.tsx",
+   "line": 69,
+   "kind": "plain",
+   "name": "offers a reset when a project override already matches the global value"
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 69,
+   "kind": "plain",
+   "name": "#8873 default-branch workspace under "
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 70,
+   "kind": "plain",
+   "name": "is genuinely the default-branch row the "
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 74,
+   "kind": "plain",
+   "name": "stays in the sidebar when it is sleeping and "
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "exposes an opt-in that keeps the default branch visible under "
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 113,
+   "kind": "plain",
+   "name": "the "
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 122,
+   "kind": "plain",
+   "name": "re-hides the sleeping default branch when the user opts out"
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "keeps the sleeping default branch when the option is explicitly on"
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 134,
+   "kind": "plain",
+   "name": "lets an explicit "
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 145,
+   "kind": "plain",
+   "name": "still sweeps sleeping non-main workspaces"
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 156,
+   "kind": "plain",
+   "name": "keeps a sleeping folder workspace, which has no sibling row to fall back to"
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 170,
+   "kind": "plain",
+   "name": "keeps a sleeping detached-HEAD main worktree"
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 178,
+   "kind": "plain",
+   "name": "lets "
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 189,
+   "kind": "plain",
+   "name": "keeps every project\u2019s entry point, not just the first"
+  },
+  {
+   "file": "components/sidebar/default-branch-visible-under-hide-sleeping.test.ts",
+   "line": 196,
+   "kind": "plain",
+   "name": "does not flicker out while an SSH host is offline"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-actions.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "imported worktrees card actions"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-actions.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "shows discovered worktrees after visibility update and refresh succeed"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-actions.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "rolls visibility back when refresh fails after showing"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-actions.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "preserves force-visible state during a retry after rollback failure"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-actions.test.ts",
+   "line": 74,
+   "kind": "plain",
+   "name": "keeps the card force-visible when rollback fails after a refresh failure"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-actions.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "dismisses the card when keep-hidden update succeeds"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-actions.test.ts",
+   "line": 105,
+   "kind": "plain",
+   "name": "leaves the card visible when keep-hidden update fails"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 70,
+   "kind": "plain",
+   "name": "getHiddenImportedWorktrees"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 71,
+   "kind": "plain",
+   "name": "returns only authoritative hidden external worktrees"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 90,
+   "kind": "plain",
+   "name": "suppresses non-authoritative results"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 97,
+   "kind": "plain",
+   "name": "buildImportedWorktreesCardCandidates"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 98,
+   "kind": "plain",
+   "name": "builds a candidate for hidden imported worktrees in a visible repo"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 111,
+   "kind": "plain",
+   "name": "builds no candidate when the only hidden worktrees are agent scratch"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 129,
+   "kind": "plain",
+   "name": "suppresses candidates after show, dismissal, folder repos, or repo filters exclude the repo"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 162,
+   "kind": "plain",
+   "name": "keeps candidates visible after a rollback failure forces a shown repo to render the card"
+  },
+  {
+   "file": "components/sidebar/imported-worktrees-card-candidates.test.ts",
+   "line": 176,
+   "kind": "plain",
+   "name": "builds candidates even when workspace-row filters hide every visible worktree"
+  },
+  {
+   "file": "components/sidebar/new-external-worktrees-inbox-actions.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "new external worktree inbox actions"
+  },
+  {
+   "file": "components/sidebar/new-external-worktrees-inbox-actions.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "imports inbox worktrees into the sidebar allowlist"
+  },
+  {
+   "file": "components/sidebar/new-external-worktrees-inbox-actions.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "rolls import path lists back with explicit empty arrays when refresh fails"
+  },
+  {
+   "file": "components/sidebar/new-external-worktrees-inbox-actions.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "extends the inbox baseline when keeping a batch hidden"
+  },
+  {
+   "file": "components/sidebar/new-external-worktrees-inbox-actions.test.ts",
+   "line": 83,
+   "kind": "plain",
+   "name": "permanently suppresses the inbox and baselines the current batch"
+  },
+  {
+   "file": "components/sidebar/new-external-worktrees-inbox-candidates.test.ts",
+   "line": 65,
+   "kind": "plain",
+   "name": "buildNewExternalWorktreesInboxCandidates"
+  },
+  {
+   "file": "components/sidebar/new-external-worktrees-inbox-candidates.test.ts",
+   "line": 66,
+   "kind": "plain",
+   "name": "builds inbox candidates only after the initial prompt is dismissed"
+  },
+  {
+   "file": "components/sidebar/new-external-worktrees-inbox-candidates.test.ts",
+   "line": 91,
+   "kind": "plain",
+   "name": "suppresses inbox candidates when discovery is permanently hidden or visibility is show"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-countdown-clock.test.ts",
+   "line": 4,
+   "kind": "plain",
+   "name": "subscribePromptCacheCountdownClock"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-countdown-clock.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "uses one interval for all prompt-cache countdown subscribers"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-countdown-clock.test.ts",
+   "line": 41,
+   "kind": "plain",
+   "name": "pauses the interval while the document is hidden"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-timer-selection.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "getMostUrgentPromptCacheStartedAt"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-timer-selection.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "selects the oldest non-null timer for the worktree tabs in one cache pass"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-timer-selection.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "does not match tab id prefixes or malformed keys"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-timer-selection.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "getPromptCacheCountdownForPane"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-timer-selection.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "selects the exact pane timer with the ttl used for gating"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-timer-selection.test.ts",
+   "line": 51,
+   "kind": "plain",
+   "name": "does not fall back to seed timers for per-pane row ownership"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-timer-selection.test.ts",
+   "line": 57,
+   "kind": "plain",
+   "name": "rejects malformed pane keys and null timer values"
+  },
+  {
+   "file": "components/sidebar/prompt-cache-timer-selection.test.ts",
+   "line": 64,
+   "kind": "plain",
+   "name": "requires a positive ttl"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 86,
+   "kind": "plain",
+   "name": "useFeedbackImageDrop"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 87,
+   "kind": "plain",
+   "name": "claims an image dropped on the dialog before preload can route it away"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 102,
+   "kind": "plain",
+   "name": "leaves drops outside the dialog to the existing native lane"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 116,
+   "kind": "plain",
+   "name": "ignores non-image drops so they keep their existing behavior"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 132,
+   "kind": "plain",
+   "name": "stops listening once the dialog is closed"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 147,
+   "kind": "plain",
+   "name": "accepts the drag on dragover so the drop can fire without preload"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 159,
+   "kind": "plain",
+   "name": "leaves in-app drags alone on dragover"
+  },
+  {
+   "file": "components/sidebar/use-feedback-image-drop.test.tsx",
+   "line": 170,
+   "kind": "plain",
+   "name": "highlights from the advertised drag types, which is all a dragenter exposes"
+  }
+ ]
+}

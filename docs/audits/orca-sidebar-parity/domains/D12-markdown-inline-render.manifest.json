@@ -1,0 +1,62 @@
+{
+ "domain": "D12-markdown-inline-render",
+ "prod": [
+  {
+   "name": "CommentMarkdown.tsx",
+   "kind": "prod",
+   "loc": 263
+  },
+  {
+   "name": "CommentMermaidBlock.tsx",
+   "kind": "prod",
+   "loc": 28
+  },
+  {
+   "name": "MarkdownImageLightbox.tsx",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "comment-markdown-element-renderers.tsx",
+   "kind": "prod",
+   "loc": 355
+  },
+  {
+   "name": "comment-markdown-github-attachment-media.tsx",
+   "kind": "prod",
+   "loc": 116
+  },
+  {
+   "name": "comment-markdown-lazy.tsx",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "comment-markdown-native-chat-file-links.ts",
+   "kind": "prod",
+   "loc": 243
+  }
+ ],
+ "test": [
+  {
+   "name": "CommentMarkdown.github-attachment-image.test.tsx",
+   "kind": "test",
+   "loc": 64
+  },
+  {
+   "name": "CommentMarkdown.link-click.test.tsx",
+   "kind": "test",
+   "loc": 603
+  },
+  {
+   "name": "CommentMarkdown.test.tsx",
+   "kind": "test",
+   "loc": 303
+  },
+  {
+   "name": "MarkdownImageLightbox.test.tsx",
+   "kind": "test",
+   "loc": 68
+  }
+ ]
+}

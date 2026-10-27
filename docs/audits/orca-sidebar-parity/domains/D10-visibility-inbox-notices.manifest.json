@@ -1,0 +1,247 @@
+{
+ "domain": "D10-visibility-inbox-notices",
+ "prod": [
+  {
+   "name": "AutoRenameFailedDialog.tsx",
+   "kind": "prod",
+   "loc": 162
+  },
+  {
+   "name": "DeleteWorktreeDialog.tsx",
+   "kind": "prod",
+   "loc": 427
+  },
+  {
+   "name": "DeleteWorktreeDialogDescription.tsx",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "DeleteWorktreeDialogFooter.tsx",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "DeleteWorktreeTargetPreview.tsx",
+   "kind": "prod",
+   "loc": 146
+  },
+  {
+   "name": "ImportedWorktreesVisibilityLine.tsx",
+   "kind": "prod",
+   "loc": 335
+  },
+  {
+   "name": "NewExternalWorktreesInboxLine.tsx",
+   "kind": "prod",
+   "loc": 156
+  },
+  {
+   "name": "NoticeHostGlyph.tsx",
+   "kind": "prod",
+   "loc": 94
+  },
+  {
+   "name": "WorktreeVisibilityDialog.tsx",
+   "kind": "prod",
+   "loc": 394
+  },
+  {
+   "name": "WorktreeVisibilityGlobalSettingsLink.tsx",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "WorktreeVisibilityHelpPopover.tsx",
+   "kind": "prod",
+   "loc": 67
+  },
+  {
+   "name": "WorktreeVisibilityScanStatus.tsx",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "WorktreeVisibilitySourceAddForm.tsx",
+   "kind": "prod",
+   "loc": 100
+  },
+  {
+   "name": "WorktreeVisibilitySourceList.tsx",
+   "kind": "prod",
+   "loc": 364
+  },
+  {
+   "name": "imported-worktrees-card-actions.ts",
+   "kind": "prod",
+   "loc": 92
+  },
+  {
+   "name": "imported-worktrees-card-candidates.ts",
+   "kind": "prod",
+   "loc": 68
+  },
+  {
+   "name": "new-external-worktrees-inbox-actions.ts",
+   "kind": "prod",
+   "loc": 148
+  },
+  {
+   "name": "new-external-worktrees-inbox-candidates.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "prompt-cache-countdown-clock.ts",
+   "kind": "prod",
+   "loc": 97
+  },
+  {
+   "name": "prompt-cache-timer-selection.ts",
+   "kind": "prod",
+   "loc": 48
+  },
+  {
+   "name": "stale-workspace-list-toast.ts",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "use-feedback-image-drop.ts",
+   "kind": "prod",
+   "loc": 101
+  },
+  {
+   "name": "use-sidebar-feedback-environment-prefill.ts",
+   "kind": "prod",
+   "loc": 84
+  },
+  {
+   "name": "use-sidebar-feedback-images.ts",
+   "kind": "prod",
+   "loc": 129
+  },
+  {
+   "name": "worktree-visibility-host-target.ts",
+   "kind": "prod",
+   "loc": 56
+  },
+  {
+   "name": "worktree-visibility-mutation-fence.ts",
+   "kind": "prod",
+   "loc": 92
+  },
+  {
+   "name": "worktree-visibility-repo-sources.ts",
+   "kind": "prod",
+   "loc": 31
+  },
+  {
+   "name": "worktree-visibility-source-mutation.ts",
+   "kind": "prod",
+   "loc": 64
+  },
+  {
+   "name": "worktree-visibility-update-error.ts",
+   "kind": "prod",
+   "loc": 19
+  },
+  {
+   "name": "worktree-visibility-use-global.ts",
+   "kind": "prod",
+   "loc": 90
+  }
+ ],
+ "test": [
+  {
+   "name": "AutoRenameFailedDialog.test.tsx",
+   "kind": "test",
+   "loc": 110
+  },
+  {
+   "name": "DeleteWorktreeDialog.host-context-boundary.test.ts",
+   "kind": "test",
+   "loc": 34
+  },
+  {
+   "name": "DeleteWorktreeDialog.test.tsx",
+   "kind": "test",
+   "loc": 467
+  },
+  {
+   "name": "DeleteWorktreeTargetPreview.test.tsx",
+   "kind": "test",
+   "loc": 154
+  },
+  {
+   "name": "ImportedWorktreesVisibilityLine.test.tsx",
+   "kind": "test",
+   "loc": 159
+  },
+  {
+   "name": "NewExternalWorktreesInboxLine.test.tsx",
+   "kind": "test",
+   "loc": 179
+  },
+  {
+   "name": "NoticeHostGlyph.test.tsx",
+   "kind": "test",
+   "loc": 169
+  },
+  {
+   "name": "WorktreeVisibilityDialog.test.tsx",
+   "kind": "test",
+   "loc": 956
+  },
+  {
+   "name": "WorktreeVisibilityHelpPopover.test.tsx",
+   "kind": "test",
+   "loc": 122
+  },
+  {
+   "name": "WorktreeVisibilitySourceList.test.tsx",
+   "kind": "test",
+   "loc": 108
+  },
+  {
+   "name": "default-branch-visible-under-hide-sleeping.test.ts",
+   "kind": "test",
+   "loc": 206
+  },
+  {
+   "name": "imported-worktrees-card-actions.test.ts",
+   "kind": "test",
+   "loc": 115
+  },
+  {
+   "name": "imported-worktrees-card-candidates.test.ts",
+   "kind": "test",
+   "loc": 184
+  },
+  {
+   "name": "new-external-worktrees-inbox-actions.test.ts",
+   "kind": "test",
+   "loc": 102
+  },
+  {
+   "name": "new-external-worktrees-inbox-candidates.test.ts",
+   "kind": "test",
+   "loc": 107
+  },
+  {
+   "name": "prompt-cache-countdown-clock.test.ts",
+   "kind": "test",
+   "loc": 81
+  },
+  {
+   "name": "prompt-cache-timer-selection.test.ts",
+   "kind": "test",
+   "loc": 69
+  },
+  {
+   "name": "use-feedback-image-drop.test.tsx",
+   "kind": "test",
+   "loc": 185
+  }
+ ]
+}

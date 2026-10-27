@@ -1,0 +1,1142 @@
+{
+ "exports": {
+  "components/sidebar/FilterToggleRow.tsx": [
+   "FilterToggleRow"
+  ],
+  "components/sidebar/SidebarFilter.tsx": [
+   "default"
+  ],
+  "components/sidebar/SidebarGroupByToggle.tsx": [
+   "SidebarGroupByToggle"
+  ],
+  "components/sidebar/SidebarProjectFilterPanel.tsx": [
+   "SidebarProjectFilterPanel"
+  ],
+  "components/sidebar/SidebarRepositoryFilterSection.tsx": [
+   "default"
+  ],
+  "components/sidebar/SidebarWorkspaceFilterSection.tsx": [
+   "default"
+  ],
+  "components/sidebar/project-filter-reveal.ts": [
+   "ProjectFilterRevealState",
+   "revealRepoInProjectFilter"
+  ],
+  "components/sidebar/sidebar-filter-actions.ts": [
+   "sidebarHasActiveFilters",
+   "ClearFilterActions",
+   "computeClearFilterActions"
+  ],
+  "components/sidebar/smart-attention.ts": [
+   "SmartClass",
+   "AttentionCause",
+   "WorktreeAttention",
+   "IDLE",
+   "hasFreshAttributedAgentStatus",
+   "mostRecentAttentionInHistory",
+   "PaneInput",
+   "resolveAttention",
+   "buildExplicitEntriesByTabId",
+   "TabPaneInputSources",
+   "collectTabPaneInputs",
+   "buildAttentionByWorktree"
+  ],
+  "components/sidebar/smart-sort.ts": [
+   "SortBy",
+   "CREATE_GRACE_MS",
+   "effectiveRecentActivity",
+   "WorktreeSortLabelInput",
+   "getWorktreeSortLabel",
+   "WorktreeSortLabels",
+   "buildWorktreeSortLabels",
+   "compareWorktreeSortLabel",
+   "buildWorktreeComparator",
+   "sortWorktreesSmart"
+  ],
+  "components/sidebar/worktree-filter-visibility.ts": [
+   "worktreePassesSidebarFilters"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/FilterToggleRow.tsx",
+   "line": 21,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/FilterToggleRow.tsx",
+   "line": 35,
+   "text": "aria-label={ariaLabel}"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 28,
+   "text": "import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 39,
+   "text": "tooltipSide?: 'top' | 'right' | 'bottom' | 'left'"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 46,
+   "text": "tooltipSide = 'bottom',"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 180,
+   "text": "aria-label={"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 209,
+   "text": "<TooltipContent side={tooltipSide} sideOffset={6}>"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 321,
+   "text": "placeholder={translate("
+  },
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 140,
+   "text": "placeholder={"
+  },
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 230,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 25,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 56,
+   "text": "<DropdownMenuItem>Sort by</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 435,
+   "text": "it('per-pane authority across panes: pane A hook=done, pane B title=permission \u2192 Class 1', () => {"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/FilterToggleRow.tsx",
+   "line": 2,
+   "text": "import { DropdownMenuShortcut } from '@/components/ui/dropdown-menu'"
+  },
+  {
+   "file": "components/sidebar/FilterToggleRow.tsx",
+   "line": 17,
+   "text": "shortcutLabel,"
+  },
+  {
+   "file": "components/sidebar/FilterToggleRow.tsx",
+   "line": 26,
+   "text": "shortcutLabel?: string"
+  },
+  {
+   "file": "components/sidebar/FilterToggleRow.tsx",
+   "line": 54,
+   "text": "{shortcutLabel ? <DropdownMenuShortcut>{shortcutLabel}</DropdownMenuShortcut> : null}"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 31,
+   "text": "import { useShortcutLabel } from '@/hooks/useShortcutLabel'"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 52,
+   "text": "// Surface the user-assigned shortcut here so the filter menu doubles as its"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 53,
+   "text": "// discovery point ('Unassigned' until they bind one in Settings \u2192 Shortcuts)."
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 54,
+   "text": "const sleepingShortcut = useShortcutLabel('sidebar.sleepingWorkspaces.toggle')"
+  },
+  {
+   "file": "components/sidebar/SidebarFilter.tsx",
+   "line": 227,
+   "text": "shortcutLabel={sleepingShortcut === 'Unassigned' ? undefined : sleepingShortcut}"
+  },
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 88,
+   "text": "(event: React.KeyboardEvent<HTMLInputElement>) => {"
+  },
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 91,
+   "text": "if (event.key === 'Backspace' && query === '' && selectedRepos.length > 0) {"
+  },
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 101,
+   "text": "if (event.key === 'Enter') {"
+  },
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 115,
+   "text": "if (event.key === 'ArrowLeft') {"
+  },
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 124,
+   "text": "if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 84,
+   "text": "new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 180,
+   "text": "new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 196,
+   "text": "new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-actions.ts",
+   "line": 77,
+   "text": "* between badge numbers and the Cmd+N shortcut target."
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 66,
+   "text": "const frame = requestAnimationFrame(() => inputRef.current?.focus())"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 96,
+   "text": "await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+   "line": 65,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [],
+ "tests": [
+  {
+   "file": "components/sidebar/FilterToggleRow.test.tsx",
+   "line": 50,
+   "kind": "plain",
+   "name": "FilterToggleRow"
+  },
+  {
+   "file": "components/sidebar/FilterToggleRow.test.tsx",
+   "line": 51,
+   "kind": "plain",
+   "name": "indents a sub-option past the row above it"
+  },
+  {
+   "file": "components/sidebar/FilterToggleRow.test.tsx",
+   "line": 58,
+   "kind": "plain",
+   "name": "never pairs the indent with a padding-inline utility that would outrank it"
+  },
+  {
+   "file": "components/sidebar/SidebarGroupByToggle.test.tsx",
+   "line": 27,
+   "kind": "plain",
+   "name": "SidebarGroupByToggle"
+  },
+  {
+   "file": "components/sidebar/SidebarGroupByToggle.test.tsx",
+   "line": 40,
+   "kind": "plain",
+   "name": "commits the pointer-selected grouping mode"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 136,
+   "kind": "plain",
+   "name": "SidebarRepositoryFilterSection"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 137,
+   "kind": "plain",
+   "name": "focuses the search input when the submenu opens"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 146,
+   "kind": "plain",
+   "name": "routes typing into the search box rather than menu typeahead"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 155,
+   "kind": "plain",
+   "name": "resets the query when the panel is reopened"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 170,
+   "kind": "plain",
+   "name": "keeps ArrowLeft in the text field while the caret can still move"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 187,
+   "kind": "plain",
+   "name": "lets ArrowLeft close the panel once the caret is at the start"
+  },
+  {
+   "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+   "line": 203,
+   "kind": "plain",
+   "name": "hides itself when only one project exists"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+   "line": 72,
+   "kind": "plain",
+   "name": "SidebarWorkspaceFilterSection"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+   "line": 73,
+   "kind": "plain",
+   "name": "hides the default-branch exemption row while sleeping workspaces are shown"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+   "line": 79,
+   "kind": "plain",
+   "name": "shows the exemption row once "
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+   "line": 85,
+   "kind": "plain",
+   "name": "keeps the exemption row hidden even when it is switched off"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+   "line": 91,
+   "kind": "plain",
+   "name": "shows the other-client filter when a remote server is configured"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+   "line": 100,
+   "kind": "plain",
+   "name": "keeps the other-client filter visible while the remote catalog loads"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+   "line": 107,
+   "kind": "plain",
+   "name": "hides the other-client filter for local-only clients"
+  },
+  {
+   "file": "components/sidebar/SidebarWorkspaceFilterSection.test.tsx",
+   "line": 114,
+   "kind": "plain",
+   "name": "keeps an enabled other-client filter available to turn off"
+  },
+  {
+   "file": "components/sidebar/project-filter-reveal.test.ts",
+   "line": 8,
+   "kind": "plain",
+   "name": "revealRepoInProjectFilter"
+  },
+  {
+   "file": "components/sidebar/project-filter-reveal.test.ts",
+   "line": 9,
+   "kind": "plain",
+   "name": "keeps the existing selection and adds the revealed project"
+  },
+  {
+   "file": "components/sidebar/project-filter-reveal.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "does nothing when no project filter is active"
+  },
+  {
+   "file": "components/sidebar/project-filter-reveal.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "does nothing when the project is already selected"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "isDefaultBranchWorkspace"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "returns true for a branch-backed main worktree"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 56,
+   "kind": "plain",
+   "name": "returns false for folder-mode main worktrees (empty branch)"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "returns false for non-main worktrees even on the default branch"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 68,
+   "kind": "plain",
+   "name": "keeps a provisioned root visible as the recipe-created workspace"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "sidebarHasActiveFilters"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "returns false when no filters are active"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "returns true when only hideDefaultBranchWorkspace is active"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "returns true when only automation-created workspaces are hidden"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "returns true when only CLI-created workspaces are hidden"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 98,
+   "kind": "plain",
+   "name": "returns true when only detached-HEAD workspaces are hidden"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "returns true when workspaces from other devices are hidden"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 108,
+   "kind": "plain",
+   "name": "returns true when sleeping workspaces are hidden"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 112,
+   "kind": "plain",
+   "name": "returns true when only filterRepoIds is non-empty"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "counts an opted-out default-branch exemption as an active filter"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 122,
+   "kind": "plain",
+   "name": "treats a missing default-branch exemption as the default, not a filter"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 127,
+   "kind": "plain",
+   "name": "returns true when only host visibility is narrowed"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 132,
+   "kind": "plain",
+   "name": "isSleepingSweepExemptionNarrowingList"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 133,
+   "kind": "plain",
+   "name": "is false while sleeping workspaces are shown, even when opted out"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 137,
+   "kind": "plain",
+   "name": "is true only when the sweep is on and the exemption is opted out"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 142,
+   "kind": "plain",
+   "name": "treats a missing flag as the on default"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 147,
+   "kind": "plain",
+   "name": "computeClearFilterActions"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 148,
+   "kind": "plain",
+   "name": "returns no-op actions when nothing is set"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 162,
+   "kind": "plain",
+   "name": "flags only hideDefaultBranchWorkspace for reset when it is the sole filter"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 179,
+   "kind": "plain",
+   "name": "flags only hideAutomationGeneratedWorkspaces for reset when it is the sole filter"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 195,
+   "kind": "plain",
+   "name": "flags only hideCliCreatedWorkspaces for reset when it is the sole filter"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 209,
+   "kind": "plain",
+   "name": "flags only hideDetachedHeadWorkspaces for reset when it is the sole filter"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 223,
+   "kind": "plain",
+   "name": "does not flag hideDefaultBranchWorkspace when it is already off"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 236,
+   "kind": "plain",
+   "name": "flags legacy single-host scope for reset even without visible host ids"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 250,
+   "kind": "plain",
+   "name": "flags only the default-branch exemption for reset when it is the sole filter"
+  },
+  {
+   "file": "components/sidebar/sidebar-filter-state.test.ts",
+   "line": 266,
+   "kind": "plain",
+   "name": "flags every active filter simultaneously"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 78,
+   "kind": "plain",
+   "name": "mostRecentAttentionInHistory"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 79,
+   "kind": "plain",
+   "name": "returns null on an empty history"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 83,
+   "kind": "plain",
+   "name": "returns the latest done/blocked/waiting startedAt"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 94,
+   "kind": "plain",
+   "name": "skips interrupted done rows"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 103,
+   "kind": "plain",
+   "name": "returns null when only interrupted dones exist"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "ignores working rows entirely"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "skips history rows with non-finite startedAt"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 129,
+   "kind": "plain",
+   "name": "resolveAttention"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 130,
+   "kind": "plain",
+   "name": "returns idle when there are no panes"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 134,
+   "kind": "plain",
+   "name": "classifies a blocked pane as Class 1 with stateStartedAt"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 148,
+   "kind": "plain",
+   "name": "classifies a waiting pane as Class 1"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 158,
+   "kind": "plain",
+   "name": "classifies a done pane as Class 2"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 171,
+   "kind": "plain",
+   "name": "treats interrupted done as idle"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 182,
+   "kind": "plain",
+   "name": "treats a session boundary as idle unless it displaced a real completion"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 199,
+   "kind": "plain",
+   "name": "drops a done pane out of Class 2 once the completion itself ages out"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 220,
+   "kind": "plain",
+   "name": "does not let same-state done writes extend Class 2 eligibility"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 232,
+   "kind": "plain",
+   "name": "keeps an expired done pane from masking a live working sibling"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 251,
+   "kind": "plain",
+   "name": "ages out a session-boundary completion from its real completion time"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 263,
+   "kind": "plain",
+   "name": "classifies a working pane with prior done as Class 3 with the prior timestamp"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 277,
+   "kind": "plain",
+   "name": "uses a reset stateStartedAt for Command Code new prompts while still working"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 292,
+   "kind": "plain",
+   "name": "falls back to current stateStartedAt when working has no prior attention history"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 306,
+   "kind": "plain",
+   "name": "falls back when history contains only interrupted done rows"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 320,
+   "kind": "plain",
+   "name": "skips stale entries (updatedAt older than the freshness window)"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 330,
+   "kind": "plain",
+   "name": "takes the most attention-demanding class across multiple panes"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 352,
+   "kind": "plain",
+   "name": "within the resolved class, takes the freshest attention timestamp across panes"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 372,
+   "kind": "plain",
+   "name": "skips entries with non-finite stateStartedAt"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 384,
+   "kind": "plain",
+   "name": "title-heuristic permission maps to Class 1 with ts = now"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 393,
+   "kind": "plain",
+   "name": "title-heuristic working maps to Class 3 with ts = worktree.lastActivityAt"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 402,
+   "kind": "plain",
+   "name": "title-heuristic idle / null contributes nothing (Class 4)"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 414,
+   "kind": "plain",
+   "name": "hook entry overrides title heuristic on the same pane (hook wins when fresh)"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 435,
+   "kind": "plain",
+   "name": "per-pane authority across panes: pane A hook=done, pane B title=permission \u2192 Class 1"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 456,
+   "kind": "plain",
+   "name": "buildAttentionByWorktree"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 500,
+   "kind": "plain",
+   "name": "returns IDLE for worktrees with no tabs"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 506,
+   "kind": "plain",
+   "name": "uses fresh worktree attribution before a headless tab is mirrored"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 527,
+   "kind": "plain",
+   "name": "prefers mirrored tab ownership over a stale worktree stamp"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 560,
+   "kind": "plain",
+   "name": "aggregates entries across multiple panes on the same tab"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 585,
+   "kind": "plain",
+   "name": "skips malformed paneKeys (no colon)"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 606,
+   "kind": "plain",
+   "name": "title-heuristic Class 1: hookless pane with permission title \u2192 Class 1 with ts = now"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 624,
+   "kind": "plain",
+   "name": "title-heuristic Class 3: hookless pane with working title \u2192 ts = worktree.lastActivityAt"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 638,
+   "kind": "plain",
+   "name": "hook overrides title on the same pane (hook=done + working-style title stays Class 2)"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 663,
+   "kind": "plain",
+   "name": "keeps a restored row idle while allowing an independently live sibling title"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 691,
+   "kind": "plain",
+   "name": "does not revive a restored row from one title before layout hydration"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 713,
+   "kind": "plain",
+   "name": "still uses one unmapped title when the hook is only age-stale"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 739,
+   "kind": "plain",
+   "name": "per-pane authority across panes: pane A fresh hook=done, pane B no hook + permission title \u2192 Class 1"
+  },
+  {
+   "file": "components/sidebar/smart-attention.test.ts",
+   "line": 768,
+   "kind": "plain",
+   "name": "does not fire title fallback for tabs without a live PTY"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "smart sort \u2014 class invariants"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 140,
+   "kind": "plain",
+   "name": "ranks blocked above done regardless of which stateStartedAt is newer"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 167,
+   "kind": "plain",
+   "name": "ranks done above working"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 193,
+   "kind": "plain",
+   "name": "ranks working above idle"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 219,
+   "kind": "plain",
+   "name": "smart sort \u2014 within-class recency"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 220,
+   "kind": "plain",
+   "name": "orders two blocked worktrees by stateStartedAt (newer first)"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 245,
+   "kind": "plain",
+   "name": "ranks a working worktree with prior done above one with no history"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 274,
+   "kind": "plain",
+   "name": "falls back to current stateStartedAt when history is only interrupted dones"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 306,
+   "kind": "plain",
+   "name": "smart sort \u2014 interrupted and stale handling"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 307,
+   "kind": "plain",
+   "name": "interrupted done worktrees fall to Class 4 (idle), not Class 2"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 337,
+   "kind": "plain",
+   "name": "stale entries fall to Class 4"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 368,
+   "kind": "plain",
+   "name": "smart sort \u2014 completed-agent eligibility clock"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 407,
+   "kind": "plain",
+   "name": "ranks the two spinners above the 32-minute-old completion"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 417,
+   "kind": "plain",
+   "name": "still ranks that completion above the spinners inside its own window"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 424,
+   "kind": "plain",
+   "name": "smart sort \u2014 Class 4 ordering"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 425,
+   "kind": "plain",
+   "name": "breaks ties on effectiveRecentActivity, then displayName"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 445,
+   "kind": "plain",
+   "name": "falls back to displayName when recency is identical"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 464,
+   "kind": "plain",
+   "name": "honors the create-grace floor for new worktrees in Class 4"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 486,
+   "kind": "plain",
+   "name": "smart sort \u2014 multi-pane resolution"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 487,
+   "kind": "plain",
+   "name": "any blocked pane promotes the whole worktree to Class 1"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 519,
+   "kind": "plain",
+   "name": "sortWorktreesSmart \u2014 cold start fallback"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 520,
+   "kind": "plain",
+   "name": "falls back to persisted sortOrder when no PTY is alive"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 529,
+   "kind": "plain",
+   "name": "uses fresh attributed agents before their headless tabs are mirrored"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 553,
+   "kind": "plain",
+   "name": "uses a fresh agent resolved through its mirrored tab without a worktree stamp"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 585,
+   "kind": "plain",
+   "name": "falls back to the path label when a persisted worktree has no displayName"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 601,
+   "kind": "plain",
+   "name": "treats slept tabs (tab.ptyId without live entry) as cold start"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 615,
+   "kind": "plain",
+   "name": "uses the smart comparator once a PTY is alive"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 649,
+   "kind": "plain",
+   "name": "sortWorktreesSmart \u2014 palette caller regression"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 653,
+   "kind": "plain",
+   "name": "palette ranks blocked above working when both flow through sortWorktreesSmart"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 691,
+   "kind": "plain",
+   "name": "buildWorktreeComparator \u2014 recent (lastActivityAt)"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 692,
+   "kind": "plain",
+   "name": "sorts by lastActivityAt descending (most recent first)"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 710,
+   "kind": "plain",
+   "name": "sorts worktrees with lastActivityAt 0 to the bottom"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 728,
+   "kind": "plain",
+   "name": "falls back to alphabetical when lastActivityAt is equal"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 746,
+   "kind": "plain",
+   "name": "ignores sortOrder entirely \u2014 activity alone determines the order"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 767,
+   "kind": "plain",
+   "name": "effectiveRecentActivity \u2014 create-grace floor"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 768,
+   "kind": "plain",
+   "name": "returns lastActivityAt when createdAt is absent"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 773,
+   "kind": "plain",
+   "name": "returns createdAt + CREATE_GRACE_MS when grace window exceeds lastActivityAt"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 778,
+   "kind": "plain",
+   "name": "returns lastActivityAt when grace window has elapsed"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 787,
+   "kind": "plain",
+   "name": "returns lastActivityAt when real activity has surpassed the grace floor"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 793,
+   "kind": "plain",
+   "name": "returns lastActivityAt once the grace window has elapsed even when no other activity has occurred"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 800,
+   "kind": "plain",
+   "name": "buildWorktreeComparator \u2014 manual order"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 801,
+   "kind": "plain",
+   "name": "orders by persisted manualOrder with higher values first"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 811,
+   "kind": "plain",
+   "name": "falls back to sortOrder before a workspace has manualOrder"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 830,
+   "kind": "plain",
+   "name": "buildWorktreeComparator \u2014 recent with createdAt grace window"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 831,
+   "kind": "plain",
+   "name": "keeps a newly-created worktree on top even when another worktree bumps lastActivityAt"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 850,
+   "kind": "plain",
+   "name": "falls through to normal recency once the grace window has elapsed"
+  },
+  {
+   "file": "components/sidebar/smart-sort.test.ts",
+   "line": 869,
+   "kind": "plain",
+   "name": "does not disturb ranking for worktrees without createdAt"
+  },
+  {
+   "file": "components/sidebar/worktree-filter-visibility.test.ts",
+   "line": 61,
+   "kind": "plain",
+   "name": "worktreePassesSidebarFilters"
+  },
+  {
+   "file": "components/sidebar/worktree-filter-visibility.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "does not let a visible local twin vouch for a host-filtered remote target"
+  },
+  {
+   "file": "components/sidebar/worktree-filter-visibility.test.ts",
+   "line": 71,
+   "kind": "plain",
+   "name": "reports the remote twin visible when its host is in scope"
+  }
+ ]
+}

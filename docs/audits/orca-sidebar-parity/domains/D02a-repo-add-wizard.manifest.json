@@ -1,0 +1,377 @@
+{
+ "domain": "D02a-repo-add-wizard",
+ "prod": [
+  {
+   "name": "AddProjectFromFolderDialog.tsx",
+   "kind": "prod",
+   "loc": 220
+  },
+  {
+   "name": "AddRepoCloneStep.tsx",
+   "kind": "prod",
+   "loc": 219
+  },
+  {
+   "name": "AddRepoCreateStep.tsx",
+   "kind": "prod",
+   "loc": 271
+  },
+  {
+   "name": "AddRepoDialog.tsx",
+   "kind": "prod",
+   "loc": 406
+  },
+  {
+   "name": "AddRepoDialogChrome.tsx",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "AddRepoDialogStepContent.tsx",
+   "kind": "prod",
+   "loc": 274
+  },
+  {
+   "name": "AddRepoHostSelector.tsx",
+   "kind": "prod",
+   "loc": 235
+  },
+  {
+   "name": "AddRepoHostSelectorSlot.tsx",
+   "kind": "prod",
+   "loc": 28
+  },
+  {
+   "name": "AddRepoNestedImportStep.tsx",
+   "kind": "prod",
+   "loc": 234
+  },
+  {
+   "name": "AddRepoRemoteStep.tsx",
+   "kind": "prod",
+   "loc": 226
+  },
+  {
+   "name": "AddRepoServerStartStep.tsx",
+   "kind": "prod",
+   "loc": 306
+  },
+  {
+   "name": "AddRepoStartSteps.tsx",
+   "kind": "prod",
+   "loc": 343
+  },
+  {
+   "name": "AddRepoStepIndicator.tsx",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "AddRepoSteps.tsx",
+   "kind": "prod",
+   "loc": 265
+  },
+  {
+   "name": "CreateProjectLocationField.tsx",
+   "kind": "prod",
+   "loc": 168
+  },
+  {
+   "name": "ProjectAddedDialog.tsx",
+   "kind": "prod",
+   "loc": 123
+  },
+  {
+   "name": "add-repo-browse-authority.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "add-repo-dialog-types.ts",
+   "kind": "prod",
+   "loc": 14
+  },
+  {
+   "name": "add-repo-existing-workspaces-telemetry.ts",
+   "kind": "prod",
+   "loc": 93
+  },
+  {
+   "name": "add-repo-host-availability.ts",
+   "kind": "prod",
+   "loc": 12
+  },
+  {
+   "name": "add-repo-local-start-actions.ts",
+   "kind": "prod",
+   "loc": 121
+  },
+  {
+   "name": "add-repo-runtime-owner.ts",
+   "kind": "prod",
+   "loc": 35
+  },
+  {
+   "name": "add-repo-skip-finalization.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "add-repo-store-upsert.ts",
+   "kind": "prod",
+   "loc": 54
+  },
+  {
+   "name": "clone-defaults.ts",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "create-project-defaults.ts",
+   "kind": "prod",
+   "loc": 103
+  },
+  {
+   "name": "folder-workspace-agent-startup.ts",
+   "kind": "prod",
+   "loc": 92
+  },
+  {
+   "name": "folder-workspace-card-pr-display.ts",
+   "kind": "prod",
+   "loc": 137
+  },
+  {
+   "name": "folder-workspace-composer-helpers.ts",
+   "kind": "prod",
+   "loc": 107
+  },
+  {
+   "name": "folder-workspace-composer-path-status.ts",
+   "kind": "prod",
+   "loc": 138
+  },
+  {
+   "name": "folder-workspace-composer-submit.ts",
+   "kind": "prod",
+   "loc": 267
+  },
+  {
+   "name": "folder-workspace-host-id.ts",
+   "kind": "prod",
+   "loc": 21
+  },
+  {
+   "name": "project-added-default-checkout.ts",
+   "kind": "prod",
+   "loc": 274
+  },
+  {
+   "name": "use-add-repo-host-change-reset.ts",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "use-add-repo-host-selection.ts",
+   "kind": "prod",
+   "loc": 188
+  },
+  {
+   "name": "use-add-repo-hosted-controller.ts",
+   "kind": "prod",
+   "loc": 72
+  },
+  {
+   "name": "use-add-repo-remote-nested-scan.ts",
+   "kind": "prod",
+   "loc": 62
+  },
+  {
+   "name": "use-complete-git-repo-add.ts",
+   "kind": "prod",
+   "loc": 81
+  },
+  {
+   "name": "useAddRepoCloneFlow.ts",
+   "kind": "prod",
+   "loc": 209
+  },
+  {
+   "name": "useAddRepoLocalFolderFlow.ts",
+   "kind": "prod",
+   "loc": 314
+  },
+  {
+   "name": "useAddRepoNestedImportFlow.ts",
+   "kind": "prod",
+   "loc": 298
+  },
+  {
+   "name": "useAddRepoNestedReviewController.ts",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "useAddRepoNestedReviewState.ts",
+   "kind": "prod",
+   "loc": 151
+  },
+  {
+   "name": "useAddRepoServerPathFlow.ts",
+   "kind": "prod",
+   "loc": 208
+  },
+  {
+   "name": "useCreateProjectDefaults.ts",
+   "kind": "prod",
+   "loc": 304
+  },
+  {
+   "name": "useCreateRepo.ts",
+   "kind": "prod",
+   "loc": 268
+  }
+ ],
+ "test": [
+  {
+   "name": "AddProjectFromFolderDialog.test.tsx",
+   "kind": "test",
+   "loc": 328
+  },
+  {
+   "name": "AddRepoCreateStep.test.tsx",
+   "kind": "test",
+   "loc": 74
+  },
+  {
+   "name": "AddRepoDialog.default-checkout.test.ts",
+   "kind": "test",
+   "loc": 27
+  },
+  {
+   "name": "AddRepoDialogStepContent.test.tsx",
+   "kind": "test",
+   "loc": 296
+  },
+  {
+   "name": "AddRepoHostSelector.test.tsx",
+   "kind": "test",
+   "loc": 137
+  },
+  {
+   "name": "AddRepoNestedImportStep.test.tsx",
+   "kind": "test",
+   "loc": 227
+  },
+  {
+   "name": "AddRepoStartSteps.test.tsx",
+   "kind": "test",
+   "loc": 397
+  },
+  {
+   "name": "AddRepoSteps.default-checkout.test.ts",
+   "kind": "test",
+   "loc": 229
+  },
+  {
+   "name": "ProjectAddedDialog.test.tsx",
+   "kind": "test",
+   "loc": 195
+  },
+  {
+   "name": "add-repo-browse-authority.test.ts",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "add-repo-existing-workspaces-telemetry.test.ts",
+   "kind": "test",
+   "loc": 137
+  },
+  {
+   "name": "add-repo-skip-finalization.test.ts",
+   "kind": "test",
+   "loc": 155
+  },
+  {
+   "name": "clone-defaults.test.ts",
+   "kind": "test",
+   "loc": 120
+  },
+  {
+   "name": "create-project-defaults.test.ts",
+   "kind": "test",
+   "loc": 137
+  },
+  {
+   "name": "folder-workspace-card-pr-display.test.ts",
+   "kind": "test",
+   "loc": 371
+  },
+  {
+   "name": "folder-workspace-composer-helpers.test.ts",
+   "kind": "test",
+   "loc": 92
+  },
+  {
+   "name": "folder-workspace-composer-path-status.test.tsx",
+   "kind": "test",
+   "loc": 292
+  },
+  {
+   "name": "folder-workspace-composer-submit.test.ts",
+   "kind": "test",
+   "loc": 872
+  },
+  {
+   "name": "folder-workspace-linked-startup-plan.test.ts",
+   "kind": "test",
+   "loc": 26
+  },
+  {
+   "name": "project-added-default-checkout.test.ts",
+   "kind": "test",
+   "loc": 535
+  },
+  {
+   "name": "use-add-repo-host-selection.test.ts",
+   "kind": "test",
+   "loc": 313
+  },
+  {
+   "name": "use-add-repo-hosted-controller.test.ts",
+   "kind": "test",
+   "loc": 113
+  },
+  {
+   "name": "useAddRepoCloneFlow.test.ts",
+   "kind": "test",
+   "loc": 237
+  },
+  {
+   "name": "useAddRepoLocalFolderFlow.test.ts",
+   "kind": "test",
+   "loc": 242
+  },
+  {
+   "name": "useAddRepoNestedImportFlow.test.ts",
+   "kind": "test",
+   "loc": 249
+  },
+  {
+   "name": "useAddRepoServerPathFlow.test.ts",
+   "kind": "test",
+   "loc": 141
+  },
+  {
+   "name": "useCreateProjectDefaults.test.ts",
+   "kind": "test",
+   "loc": 266
+  },
+  {
+   "name": "useCreateRepo.default-checkout.test.ts",
+   "kind": "test",
+   "loc": 287
+  }
+ ]
+}

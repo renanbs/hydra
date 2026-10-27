@@ -1,0 +1,2143 @@
+{
+  "domain": "D02a-repo-add-wizard",
+  "rows": [
+    {
+      "id": "D02a-001",
+      "capability": "Gerencia o ciclo de vida, abertura, fechamento e cancelamento do modal principal de adição de projeto",
+      "surface": "modal AddRepoDialog (shell principal) e AddRepoDialogChrome",
+      "trigger": "clique no botão '+' de adicionar projeto no sidebar, comando de teclado ou chamada programática",
+      "behaviors": [
+        "Abre o diálogo com base em activeModal === 'add-repo' ou na prop 'hosted' fornecida pelo workspace composer",
+        "Processa caminhos arrastados recebidos via modalData.droppedLocalPath para instâncias não hospedadas",
+        "Reseta estados locais (clone, criação, caminhos de servidor, review aninhado) ao fechar ou voltar",
+        "Aborta qualquer processo ativo de git clone via window.api.repos.cloneAbort() ao fechar ou resetar o diálogo",
+        "Utiliza ref de geração monotônica para descartar resultados assíncronos obsoletos",
+        "Suporta onCloseAutoFocus para redirecionar o foco ao fechar em modo hospedado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeModal",
+        "useAppStore.modalData.droppedLocalPath",
+        "useAppStore.repos",
+        "useAppStore.settings"
+      ],
+      "backend_contract": [
+        "window.api.repos.cloneAbort -> repos:clone-abort IPC handler"
+      ],
+      "orca_evidence": [
+        "components/sidebar/AddRepoDialog.tsx:23",
+        "components/sidebar/AddRepoDialog.tsx:213",
+        "components/sidebar/AddRepoDialogChrome.tsx:6"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoDialog.default-checkout.test.ts:8 :: AddRepo completion owner routing",
+        "components/sidebar/AddRepoDialog.default-checkout.test.ts:9 :: routes an explicitly local completion to the local host",
+        "components/sidebar/AddRepoDialog.default-checkout.test.ts:16 :: routes an explicitly runtime completion to its captured runtime",
+        "components/sidebar/AddRepoDialog.default-checkout.test.ts:23 :: leaves an absent owner distinguishable from explicit local ownership"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-002",
+      "capability": "Exibe indicador de etapa com navegação de retorno e controle de bloqueio durante operações",
+      "surface": "topo do modal AddRepoDialog (AddRepoStepIndicator)",
+      "trigger": "mudança de etapa do wizard ou clique no botão Back",
+      "behaviors": [
+        "Exibe botão 'Back' para as etapas 'clone', 'remote', 'server-path', 'create' e 'nested'",
+        "Oculta o indicador na etapa inicial 'add'",
+        "Desabilita o botão 'Back' durante importação ativa na etapa 'nested' (step === 'nested' && isAdding)",
+        "Emite telemetria de ação de retorno ao voltar a partir da etapa de revisão aninhada ('nested')"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "step state",
+        "isAdding state"
+      ],
+      "backend_contract": [
+        "window.api.repos.cloneAbort -> src/main/ipc/repos/repo-clone-lifecycle.ts:101"
+      ],
+      "orca_evidence": [
+        "components/sidebar/AddRepoStepIndicator.tsx:11",
+        "components/sidebar/AddRepoDialog.tsx:261",
+        "components/sidebar/AddRepoDialogChrome.tsx:31"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoStartSteps.test.tsx:165 :: AddRepoLocalStartStep"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-003",
+      "capability": "Permite selecionar o host de execução (Local, SSH ou Runtime) com status de conectividade e compatibilidade",
+      "surface": "popover / combobox de seleção de host no AddRepoDialog (AddRepoHostSelector)",
+      "trigger": "clique no trigger de host ou seleção de item no menu de hosts",
+      "behaviors": [
+        "Exibe host selecionado com label, badge de saúde (health) e detalhes de compatibilidade",
+        "Filtra hosts de VM efêmera e o host local em sessões de cliente web",
+        "Permite conectar hosts SSH desconectados diretamente pelo popover com indicador Loader2 e feedback de erro via toast",
+        "Atualiza o estado otimista da conexão SSH no store antes da confirmação do backend",
+        "Exibe orientações detalhadas de atualização para hosts de runtime incompatíveis (protocol compat)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings",
+        "useAppStore.sshConnectionStates",
+        "useAppStore.runtimeEnvironments",
+        "useSidebarHostScopeOptions.hostOptions"
+      ],
+      "backend_contract": [
+        "window.api.ssh.connect -> ssh:connect IPC handler",
+        "window.api.ssh.getState -> ssh:get-state IPC handler"
+      ],
+      "orca_evidence": [
+        "components/sidebar/AddRepoHostSelector.tsx:32",
+        "components/sidebar/use-add-repo-host-selection.ts:18",
+        "components/sidebar/add-repo-host-availability.ts:3"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoHostSelector.test.tsx:31 :: AddRepoHostSelector",
+        "components/sidebar/AddRepoHostSelector.test.tsx:32 :: shows a remote host setup menu when Local Mac is the only host",
+        "components/sidebar/AddRepoHostSelector.test.tsx:61 :: shows disconnected SSH hosts with a connect action in Add Project",
+        "components/sidebar/AddRepoHostSelector.test.tsx:97 :: shows exact update guidance for incompatible runtime hosts",
+        "components/sidebar/use-add-repo-host-selection.test.ts:72 :: useAddRepoHostSelection",
+        "components/sidebar/use-add-repo-host-selection.test.ts:122 :: exposes the selected SSH target id",
+        "components/sidebar/use-add-repo-host-selection.test.ts:133 :: selects a runtime host without changing the durable active server",
+        "components/sidebar/use-add-repo-host-selection.test.ts:146 :: uses the paired runtime as the only local filesystem authority in web clients",
+        "components/sidebar/use-add-repo-host-selection.test.ts:161 :: has no local fallback while a paired web runtime is loading",
+        "components/sidebar/use-add-repo-host-selection.test.ts:196 :: selects a local or SSH host without changing the durable active server",
+        "components/sidebar/use-add-repo-host-selection.test.ts:210 :: falls back from a disconnected selected SSH host to Local Mac",
+        "components/sidebar/use-add-repo-host-selection.test.ts:224 :: does not select a disconnected SSH host",
+        "components/sidebar/use-add-repo-host-selection.test.ts:241 :: connects and selects a disconnected SSH host from Add Project",
+        "components/sidebar/use-add-repo-host-selection.test.ts:273 :: does not auto-select the active runtime host while it is unavailable",
+        "components/sidebar/use-add-repo-host-selection.test.ts:287 :: hides ephemeral VM runtime hosts from Add Project selection"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-004",
+      "capability": "Reseta formulários e estados escopados por host ao trocar de host ou fechar o diálogo",
+      "surface": "hook useAddRepoHostChangeReset integrado ao AddRepoDialog",
+      "trigger": "mudança no selectedHostId ou fechamento do diálogo (isOpen === false)",
+      "behaviors": [
+        "Detecta alteração do selectedHostId através de ref de host anterior",
+        "Executa onResetClosed quando o modal fecha para limpar dados residuais",
+        "Executa onResetHostScopedState ao alternar entre hosts para limpar caminhos digitados, erros e scans pendentes",
+        "Evita submissão acidental de caminhos pertencentes a outro host"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "isOpen prop",
+        "selectedHostId"
+      ],
+      "backend_contract": [
+        "window.api.repos.cloneAbort -> src/main/ipc/repos/repo-clone-lifecycle.ts:101"
+      ],
+      "orca_evidence": [
+        "components/sidebar/use-add-repo-host-change-reset.ts:3",
+        "components/sidebar/AddRepoDialog.tsx:254"
+      ],
+      "tests": [
+        "components/sidebar/useAddRepoLocalFolderFlow.test.ts:208 :: drops a local scan completion after host-scoped reset"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-005",
+      "capability": "Oferece submenu para adicionar novo host SSH ou parear servidor Orca remoto diretamente do seletor de host",
+      "surface": "item 'Add remote host' no popover do AddRepoHostSelector e AddRepoHostSelectorSlot",
+      "trigger": "clique no item 'Add remote host' no seletor de host",
+      "behaviors": [
+        "Abre sub-popover lateral com opções 'Add SSH host' e 'Add remote server'",
+        "Ao selecionar 'Add SSH host', fecha o seletor e abre o modal de adição de host SSH em modo 'ssh'",
+        "Ao selecionar 'Add remote server', fecha o seletor e abre o modal de adição de servidor em modo 'server'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "addRemoteHostMode local state"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/AddRepoHostSelector.tsx:83",
+        "components/sidebar/AddRepoHostSelectorSlot.tsx:6"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoHostSelector.test.tsx:32 :: shows a remote host setup menu when Local Mac is the only host"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-006",
+      "capability": "Apresenta a tela inicial de adição de projeto com navegação por teclado (setas e Enter) e ações primária/secundárias",
+      "surface": "etapa inicial 'add' do AddRepoDialog (AddRepoLocalStartStep)",
+      "trigger": "abertura do diálogo ou retorno à etapa inicial",
+      "behaviors": [
+        "Renderiza card primário 'Browse folder' com autofoco inicial e chip visual de Enter ⏎",
+        "Renderiza lista de ações secundárias ('Clone from URL', 'Project on SSH host', 'Create new project')",
+        "Rove de seleção por teclado com ArrowDown e ArrowUp entre botões com data-add-repo-action",
+        "Atualiza indicador de seleção para acompanhar o foco do teclado e remove o chip no blur",
+        "Oculta chip de ⏎ para tecnologias assistivas via aria-hidden",
+        "Ajusta ordem das ações secundárias com base em isSshLikely (remote-first para usuários de SSH)",
+        "Exibe descrição 'Add a project to get started with Orca.' quando não há repositórios no app"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "repoCount",
+        "isSshLikely",
+        "isAdding",
+        "addProjectBusyLabel"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/AddRepoStartSteps.tsx:81",
+        "components/sidebar/add-repo-local-start-actions.ts:24"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoStartSteps.test.tsx:165 :: AddRepoLocalStartStep",
+        "components/sidebar/AddRepoStartSteps.test.tsx:170 :: promotes browse folder and keeps secondary actions always visible",
+        "components/sidebar/AddRepoStartSteps.test.tsx:181 :: orders secondary actions clone-first for default users",
+        "components/sidebar/AddRepoStartSteps.test.tsx:192 :: keeps Browse folder primary for SSH-likely users",
+        "components/sidebar/AddRepoStartSteps.test.tsx:201 :: orders secondary actions remote-first for SSH-likely users",
+        "components/sidebar/AddRepoStartSteps.test.tsx:212 :: lets host-aware Add Project replace the separate remote row",
+        "components/sidebar/AddRepoStartSteps.test.tsx:219 :: uses host-neutral browse copy for runtime hosts",
+        "components/sidebar/AddRepoStartSteps.test.tsx:226 :: focuses Browse folder when the default Add Project step opens",
+        "components/sidebar/AddRepoStartSteps.test.tsx:237 :: focuses Browse folder for SSH-likely users too",
+        "components/sidebar/AddRepoStartSteps.test.tsx:250 :: renders secondary actions as enabled buttons without a disclosure toggle",
+        "components/sidebar/AddRepoStartSteps.test.tsx:262 :: disables host-scoped actions until a host is selectable",
+        "components/sidebar/AddRepoStartSteps.test.tsx:276 :: marks the autofocused Browse action as selected with the ⏎ chip",
+        "components/sidebar/AddRepoStartSteps.test.tsx:287 :: moves the ⏎ selection to whichever action receives focus",
+        "components/sidebar/AddRepoStartSteps.test.tsx:303 :: clears the ⏎ selection when focus leaves the action list",
+        "components/sidebar/AddRepoStartSteps.test.tsx:321 :: does not show an ⏎ selection while add actions are busy",
+        "components/sidebar/AddRepoStartSteps.test.tsx:345 :: hides the visual ⏎ chip from assistive technology",
+        "components/sidebar/AddRepoStartSteps.test.tsx:359 :: roves selection down the action list with the ArrowDown key"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-007",
+      "capability": "Roteia a autoridade de navegação e busca de arquivos conforme o tipo do host selecionado",
+      "surface": "módulo routeAddRepoBrowse invocado na ação de Browse",
+      "trigger": "clique na ação primária 'Browse' ou atalho Enter",
+      "behaviors": [
+        "Para host 'runtime': navega para a etapa 'server-path'",
+        "Para host 'ssh': invoca navegação para a etapa remota com targetId específico",
+        "Para host 'local': dispara a seleção de pastas locais através do picker nativo do sistema"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "hostSelection.selectedParsedHost"
+      ],
+      "backend_contract": [
+        "window.api.repos.pickFolders -> src/main/ipc/repos/repo-folder-picker-handlers.ts:15",
+        "window.api.ssh.listTargets -> src/main/ipc/ssh-target-crud-handlers.ts:43",
+        "window.api.ssh.connect -> src/main/ipc/ssh-connection-handlers.ts:111"
+      ],
+      "orca_evidence": [
+        "components/sidebar/add-repo-browse-authority.ts:9",
+        "components/sidebar/AddRepoDialog.tsx:335"
+      ],
+      "tests": [
+        "components/sidebar/add-repo-browse-authority.test.ts:5 :: routeAddRepoBrowse",
+        "components/sidebar/add-repo-browse-authority.test.ts:6 :: opens paired host browsing without invoking native pickFolders",
+        "components/sidebar/add-repo-browse-authority.test.ts:20 :: preserves native folder browsing for desktop local hosts",
+        "components/sidebar/add-repo-browse-authority.test.ts:32 :: preserves SSH host browsing"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-008",
+      "capability": "Seleciona pastas locais via diálogo nativo ou drag-and-drop e inicia escaneamento de repositórios",
+      "surface": "hook useAddRepoLocalFolderFlow integrado ao AddRepoDialog",
+      "trigger": "clique no botão Browse ou recepção de droppedLocalPath",
+      "behaviors": [
+        "Abre diálogo nativo de seleção de diretórios via window.api.repos.pickFolders()",
+        "Bloqueia seleção local se um runtime remoto estiver ativo, exibindo toast de erro",
+        "Dispara escaneamento assíncrono de repositórios aninhados via scanNestedRepos",
+        "Exibe label de progresso 'Scanning for repositories...' e 'Opening project...'",
+        "Redireciona para revisão aninhada caso múltiplos repositórios sejam encontrados em pasta não-git",
+        "Adiciona repositório Git diretamente e dispara atualização autoritativa de worktrees",
+        "Processa caminhos arrastados recebidos via droppedLocalPath automaticamente"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.addRepoPath",
+        "useAppStore.scanNestedRepos",
+        "droppedLocalPath"
+      ],
+      "backend_contract": [
+        "window.api.repos.pickFolders -> repos:pick-folders IPC handler"
+      ],
+      "orca_evidence": [
+        "components/sidebar/useAddRepoLocalFolderFlow.ts:38",
+        "components/sidebar/useAddRepoLocalFolderFlow.ts:299",
+        "components/sidebar/AddRepoDialog.tsx:173"
+      ],
+      "tests": [
+        "components/sidebar/useAddRepoLocalFolderFlow.test.ts:58 :: useAddRepoLocalFolderFlow",
+        "components/sidebar/useAddRepoLocalFolderFlow.test.ts:86 :: adds every selected local folder and completes one default-checkout handoff",
+        "components/sidebar/useAddRepoLocalFolderFlow.test.ts:208 :: drops a local scan completion after host-scoped reset"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-009",
+      "capability": "Executa adição em lote de múltiplas pastas locais com adiamento da navegação e descarte de pastas complexas",
+      "surface": "hook useAddRepoLocalFolderFlow (função handleAddLocalPaths)",
+      "trigger": "seleção de múltiplas pastas no diálogo nativo pickFolders",
+      "behaviors": [
+        "Itera sobre os caminhos em modo 'batch'",
+        "Pula pastas não-git com sub-repositórios durante lote e contabiliza skippedCount",
+        "Exibe toast informativo ao final se alguma pasta foi ignorada com orientação para adicionar individualmente",
+        "Adia o handoff de onGitRepoReady até que todas as pastas do lote sejam processadas, ativando o primeiro repositório"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "paths array from pickFolders"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useAddRepoLocalFolderFlow.ts:246"
+      ],
+      "tests": [
+        "components/sidebar/useAddRepoLocalFolderFlow.test.ts:86 :: adds every selected local folder and completes one default-checkout handoff",
+        "components/sidebar/useAddRepoLocalFolderFlow.test.ts:133 :: skips nested-review folders in a multi-folder add and continues with git folders",
+        "components/sidebar/useAddRepoLocalFolderFlow.test.ts:172 :: still completes handoff when a later selected folder is skipped"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-010",
+      "capability": "Fornece interface para entrada manual de caminho no host remoto e navegação por explorador de arquivos integrado",
+      "surface": "etapa 'server-path' do AddRepoDialog (AddRepoServerPathStartStep)",
+      "trigger": "seleção de host de runtime ou clique em 'Browse host'",
+      "behaviors": [
+        "Exibe cards de ação rápida ('Browse host', 'Clone from URL', 'Create on host')",
+        "Integra RemoteFileBrowser para navegação direta no sistema de arquivos do runtime server",
+        "Permite entrada manual de caminho no input monospaçado com placeholder '/home/user/project'",
+        "Exibe dica para importação de múltiplos repositórios a partir de pasta pai",
+        "Disponibiliza botões de ação 'Add Git Project' e 'Open as Folder'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "serverPath",
+        "runtimeEnvironmentId",
+        "isAddingServerPath",
+        "addProjectBusyLabel"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/AddRepoServerStartStep.tsx:23",
+        "components/sidebar/AddRepoDialogStepContent.tsx:175"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoStartSteps.test.tsx:379 :: AddRepoServerPathStartStep",
+        "components/sidebar/AddRepoStartSteps.test.tsx:380 :: uses native-style project entry cards in server mode",
+        "components/sidebar/AddRepoStartSteps.test.tsx:392 :: disables server entry cards without an active runtime environment",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:285 :: opens the in-app filesystem browser for a paired runtime"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-011",
+      "capability": "Processa o fluxo de adição de caminho de servidor com escaneamento assíncrono e suporte a pastas não-git",
+      "surface": "hook useAddRepoServerPathFlow integrado ao AddRepoDialog",
+      "trigger": "clique em 'Add Git Project' ou 'Open as Folder' na etapa server-path",
+      "behaviors": [
+        "Dispara escaneamento de repositórios aninhados no caminho do servidor com geração de attemptId de telemetria",
+        "Exibe labels de progresso 'Scanning for repositories...' e 'Opening project... / Opening folder...'",
+        "Abre tela de revisão aninhada se sub-repositórios forem encontrados em pasta não-git",
+        "Adiciona o projeto via addRepoPath e executa fetchWorktrees com ownerOptions do runtime",
+        "Para pastas puras (não-git), registra checklist de onboarding 'addedFolder' e fecha o diálogo",
+        "Para repositórios Git, dispara onGitRepoReady com source 'runtime_server_path'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.addRepoPath",
+        "useAppStore.scanNestedRepos",
+        "activeRuntimeEnvironmentId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useAddRepoServerPathFlow.ts:29",
+        "components/sidebar/useAddRepoServerPathFlow.ts:50"
+      ],
+      "tests": [
+        "components/sidebar/useAddRepoServerPathFlow.test.ts:64 :: useAddRepoServerPathFlow",
+        "components/sidebar/useAddRepoServerPathFlow.test.ts:72 :: marks onboarding folder progress before closing server folder adds",
+        "components/sidebar/useAddRepoServerPathFlow.test.ts:102 :: routes the nested Git pre-scan and add through the selected runtime"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-012",
+      "capability": "Configura os parâmetros de clonagem de repositório Git com barra de progresso em tempo real e seleção de destino",
+      "surface": "etapa 'clone' do AddRepoDialog (AddRepoCloneStep)",
+      "trigger": "clique em 'Clone from URL' na etapa inicial",
+      "behaviors": [
+        "Campos para URL do Git (placeholder 'https://github.com/user/repo.git') e pasta de destino",
+        "Atalho Enter em qualquer input para submeter o clone quando os campos estiverem preenchidos",
+        "Botão de pasta para acionar o seletor nativo (local) ou abrir o RemoteFileBrowser (SSH / runtime)",
+        "Exibe mensagem de erro de clone em destaque vermelho quando houver falha",
+        "Exibe barra de progresso animada com nome da fase e percentual durante a clonagem (isCloning && cloneProgress)",
+        "Adapta a descrição do diálogo com base no nome do host de destino selecionado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "cloneUrl",
+        "cloneDestination",
+        "cloneError",
+        "cloneProgress",
+        "isCloning"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/AddRepoCloneStep.tsx:28",
+        "components/sidebar/AddRepoDialogStepContent.tsx:212"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:159 :: offers host browsing for remote clone destinations",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:170 :: offers SSH browsing for selected-host clone destinations"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-013",
+      "capability": "Calcula a pasta pai padrão para clonagem a partir do diretório de workspace configurado",
+      "surface": "módulo clone-defaults.ts (getDefaultCloneParent e getCloneDestinationAutoFill)",
+      "trigger": "entrada na etapa 'clone' ou hidratação de settings.workspaceDir",
+      "behaviors": [
+        "Remove o segmento final 'workspaces' do workspaceDir para posicionar clones como irmãos dos workspaces",
+        "Trata caminhos POSIX, Windows e raízes absolutas (/ ou C:\\)",
+        "Auto-preenche a pasta de destino apenas na primeira entrada na etapa clone sem sobrescrever dados digitados",
+        "Não auto-preenche destinos locais quando um host de runtime ou SSH estiver selecionado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings.workspaceDir"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/clone-defaults.ts:1",
+        "components/sidebar/clone-defaults.ts:30",
+        "components/sidebar/useAddRepoCloneFlow.ts:46"
+      ],
+      "tests": [
+        "components/sidebar/clone-defaults.test.ts:4 :: getDefaultCloneParent",
+        "components/sidebar/clone-defaults.test.ts:5 :: strips a POSIX workspaces suffix",
+        "components/sidebar/clone-defaults.test.ts:9 :: strips a POSIX workspaces suffix with a trailing slash",
+        "components/sidebar/clone-defaults.test.ts:13 :: strips a Windows workspaces suffix",
+        "components/sidebar/clone-defaults.test.ts:19 :: leaves input without a workspaces suffix unchanged",
+        "components/sidebar/clone-defaults.test.ts:23 :: returns empty input unchanged",
+        "components/sidebar/clone-defaults.test.ts:27 :: returns an empty parent for workspaces alone",
+        "components/sidebar/clone-defaults.test.ts:31 :: returns root for an absolute root workspaces path",
+        "components/sidebar/clone-defaults.test.ts:35 :: returns the drive root for a Windows root workspaces path",
+        "components/sidebar/clone-defaults.test.ts:39 :: strips repeated trailing separators before matching the suffix",
+        "components/sidebar/clone-defaults.test.ts:43 :: does not strip a similar-looking final segment",
+        "components/sidebar/clone-defaults.test.ts:50 :: getCloneDestinationAutoFill",
+        "components/sidebar/clone-defaults.test.ts:51 :: fills the local clone destination from the workspace directory",
+        "components/sidebar/clone-defaults.test.ts:63 :: waits for a workspace directory before filling",
+        "components/sidebar/clone-defaults.test.ts:75 :: does not overwrite typed destinations or repeat an auto-fill",
+        "components/sidebar/clone-defaults.test.ts:96 :: does not fill server clone destinations for runtime environments",
+        "components/sidebar/clone-defaults.test.ts:108 :: does not fill SSH clone destinations from the local workspace directory"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-014",
+      "capability": "Executa a clonagem de repositório Git nos modos Local, SSH ou Runtime RPC com assinatura de progresso",
+      "surface": "hook useAddRepoCloneFlow integrado ao AddRepoDialog",
+      "trigger": "clique no botão 'Clone' na etapa clone",
+      "behaviors": [
+        "Assina eventos de progresso via window.api.repos.onCloneProgress durante a clonagem",
+        "Roteia a chamada de clonagem: window.api.repos.cloneRemote para SSH, callRuntimeRpc ('repo.clone') com timeout de 10 min para Runtime, ou window.api.repos.clone para Local",
+        "Upserta o repositório clonado no store associando runtimeEnvironmentId / sshConnectionId",
+        "Exibe toast de sucesso 'Repository cloned' com nome do repositório",
+        "Atualiza worktrees do repositório clonado e conclui o fluxo via onGitRepoReady ('clone_url')",
+        "Trata e limpa wrappers de erro IPC com extractIpcErrorMessage"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings",
+        "activeRuntimeEnvironmentId",
+        "sshTargetId"
+      ],
+      "backend_contract": [
+        "window.api.repos.onCloneProgress -> repos:on-clone-progress event listener",
+        "window.api.repos.pickDirectory -> repos:pick-directory IPC handler",
+        "window.api.repos.cloneRemote -> repos:clone-remote IPC handler",
+        "window.api.repos.clone -> repos:clone IPC handler",
+        "runtimeRpc:repo.clone -> runtime daemon RPC"
+      ],
+      "orca_evidence": [
+        "components/sidebar/useAddRepoCloneFlow.ts:24",
+        "components/sidebar/useAddRepoCloneFlow.ts:69",
+        "components/sidebar/useAddRepoCloneFlow.ts:111",
+        "components/sidebar/useAddRepoCloneFlow.ts:136",
+        "components/sidebar/useAddRepoCloneFlow.ts:153"
+      ],
+      "tests": [
+        "components/sidebar/useAddRepoCloneFlow.test.ts:92 :: useAddRepoCloneFlow",
+        "components/sidebar/useAddRepoCloneFlow.test.ts:115 :: clones through the selected SSH target",
+        "components/sidebar/useAddRepoCloneFlow.test.ts:155 :: does not prefill SSH clone destinations from the local workspace directory",
+        "components/sidebar/useAddRepoCloneFlow.test.ts:172 :: strips Electron IPC wrappers from clone errors",
+        "components/sidebar/useAddRepoCloneFlow.test.ts:193 :: clones through the selected runtime environment"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-015",
+      "capability": "Fornece interface para criação de novo projeto com visualização colapsável de configurações avançadas e preview do caminho final",
+      "surface": "etapa 'create' do AddRepoDialog (AddRepoCreateStep)",
+      "trigger": "clique em 'Create new project' na etapa inicial",
+      "behaviors": [
+        "Input para nome do projeto (com fonte mono e autofoco)",
+        "Card de resumo com disclosure colapsável para configurações avançadas (localização e branch)",
+        "Preview em tempo real do caminho completo onde o projeto será criado",
+        "Exibe aviso de verificação de Git ('Checking Git on this host...') ou erro se o Git for obrigatório e estiver ausente",
+        "Exibe aviso caso a pasta pai no host remoto ainda não tenha sido escolhida",
+        "Mantém configurações avançadas abertas por padrão para hosts SSH / runtime que exigem entrada manual"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "createName",
+        "createParent",
+        "createError",
+        "isCreating",
+        "gitAvailability",
+        "runtimeParentStatus"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/AddRepoCreateStep.tsx:38",
+        "components/sidebar/create-project-defaults.ts:27"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoCreateStep.test.tsx:41 :: CreateStep",
+        "components/sidebar/AddRepoCreateStep.test.tsx:42 :: renders the name-first create UI with advanced controls collapsed",
+        "components/sidebar/AddRepoCreateStep.test.tsx:55 :: shows the Git-required explanation in the collapsed summary",
+        "components/sidebar/AddRepoCreateStep.test.tsx:66 :: disables create while an auto-filled parent belongs to a previous target"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-016",
+      "capability": "Gerencia o campo de localização do novo projeto com suporte a seletor nativo, input manual e navegador remoto",
+      "surface": "sub-componentes CreateProjectLocationField e CreateProjectParentBrowser",
+      "trigger": "clique em alterar pasta pai ou botão de navegação remota",
+      "behaviors": [
+        "Permite digitação manual do caminho em hosts SSH e runtime",
+        "Exibe botão com ícone de pasta/lápis para alterar a pasta pai em ambiente local",
+        "Abre CreateProjectParentBrowser em tela cheia do diálogo com RemoteFileBrowser para navegação remota",
+        "Apresenta tooltip 'Browse host filesystem' no botão de navegação remota"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "createParent",
+        "manualParentEntry",
+        "runtimeEnvironmentId",
+        "sshTargetId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/CreateProjectLocationField.tsx:17",
+        "components/sidebar/CreateProjectLocationField.tsx:63"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoCreateStep.test.tsx:52 :: CreateStep",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:133 :: offers host browsing for remote create project locations",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:144 :: uses manual path entry for SSH create project locations"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-017",
+      "capability": "Resolve a pasta padrão para novos projetos (~/orca/projects) e sonda disponibilidade de Git com timeout",
+      "surface": "hook useCreateProjectDefaults e módulo create-project-defaults.ts",
+      "trigger": "entrada na etapa 'create'",
+      "behaviors": [
+        "Obtém o diretório padrão local via window.api.repos.getDefaultCreateProjectParent()",
+        "Obtém o diretório padrão no host de runtime via browseRuntimeServerDirectory(runtimeEnvironmentId, '~')",
+        "Aplica timeout de 1500ms para sonda local de Git e 3000ms para sonda de runtime",
+        "Sonda disponibilidade de Git via window.api.repos.isGitAvailable() ou RPC 'repo.gitAvailable'",
+        "Formata resumo com shorthand '~/orca/projects' para caminhos padrão locais",
+        "Marca o campo como 'touched' para nunca sobrescrever caminhos inseridos manualmente pelo usuário",
+        "Impede submissão enquanto a pasta padrão pertencer a um host anterior"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "activeRuntimeEnvironmentId",
+        "sshTargetId",
+        "createParent"
+      ],
+      "backend_contract": [
+        "window.api.repos.getDefaultCreateProjectParent -> repos:get-default-create-project-parent IPC handler",
+        "window.api.repos.isGitAvailable -> repos:is-git-available IPC handler",
+        "runtimeRpc:repo.gitAvailable -> runtime daemon RPC"
+      ],
+      "orca_evidence": [
+        "components/sidebar/useCreateProjectDefaults.ts:39",
+        "components/sidebar/useCreateProjectDefaults.ts:158",
+        "components/sidebar/useCreateProjectDefaults.ts:276",
+        "components/sidebar/create-project-defaults.ts:40"
+      ],
+      "tests": [
+        "components/sidebar/create-project-defaults.test.ts:9 :: create project defaults",
+        "components/sidebar/create-project-defaults.test.ts:10 :: builds the POSIX default project parent",
+        "components/sidebar/create-project-defaults.test.ts:14 :: builds the Windows default project parent",
+        "components/sidebar/create-project-defaults.test.ts:20 :: derives the runtime project default from a resolved server home",
+        "components/sidebar/create-project-defaults.test.ts:24 :: joins path previews without mixing separators",
+        "components/sidebar/create-project-defaults.test.ts:33 :: auto-fills only the first empty local create step",
+        "components/sidebar/create-project-defaults.test.ts:63 :: does not apply a local default while a runtime environment is active",
+        "components/sidebar/create-project-defaults.test.ts:75 :: uses a short local summary only for the local default parent",
+        "components/sidebar/create-project-defaults.test.ts:117 :: keeps a configured Workspace Directory verbatim in the summary",
+        "components/sidebar/useCreateProjectDefaults.test.ts:76 :: useCreateProjectDefaults",
+        "components/sidebar/useCreateProjectDefaults.test.ts:94 :: auto-fills the local default parent and reports Git availability",
+        "components/sidebar/useCreateProjectDefaults.test.ts:107 :: auto-fills the local home default regardless of workspace directory settings",
+        "components/sidebar/useCreateProjectDefaults.test.ts:118 :: keeps the local default marker after the auto-filled parent rerenders the hook",
+        "components/sidebar/useCreateProjectDefaults.test.ts:128 :: reports unavailable Git without changing the fixed project kind",
+        "components/sidebar/useCreateProjectDefaults.test.ts:137 :: reports unknown availability when the Git probe fails",
+        "components/sidebar/useCreateProjectDefaults.test.ts:146 :: does not overwrite a parent the user already chose",
+        "components/sidebar/useCreateProjectDefaults.test.ts:155 :: resolves the runtime default parent from the host home directory",
+        "components/sidebar/useCreateProjectDefaults.test.ts:176 :: replaces an untouched local default when switching to a runtime target",
+        "components/sidebar/useCreateProjectDefaults.test.ts:207 :: does not replace a touched parent when switching to a runtime target",
+        "components/sidebar/useCreateProjectDefaults.test.ts:234 :: marks the runtime parent lookup failed without filling a parent",
+        "components/sidebar/useCreateProjectDefaults.test.ts:245 :: does not use client defaults or Git probing for SSH targets",
+        "components/sidebar/useCreateProjectDefaults.test.ts:258 :: does nothing outside the create step"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-018",
+      "capability": "Executa a criação física de novo projeto Git local, remoto SSH ou em servidor runtime",
+      "surface": "hook useCreateRepo integrado ao AddRepoDialog",
+      "trigger": "clique no botão 'Create project' na etapa create",
+      "behaviors": [
+        "Abre diálogo nativo para escolher pasta pai via window.api.repos.pickDirectory()",
+        "Executa criação via window.api.repos.createRemote (SSH), runtime RPC 'repo.create' (Runtime, timeout 60s) ou window.api.repos.create (Local)",
+        "Trata desduplicação: exibe toast informativo 'Project already added' se o projeto já existia, ou 'Project created' para novo projeto",
+        "Atualiza worktrees autoritativamente e executa onGitRepoReady para repositórios Git",
+        "Para projetos de pasta, ativa workspace sintético via activateAndRevealWorktree e fecha o modal",
+        "Guarda de cancelamento com ref de montagem e geração monotônica para evitar efeitos colaterais de submissões obsoletas"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "createName",
+        "createParent",
+        "options.hostId",
+        "options.runtimeEnvironmentId",
+        "options.sshTargetId"
+      ],
+      "backend_contract": [
+        "window.api.repos.pickDirectory -> repos:pick-directory IPC handler",
+        "window.api.repos.createRemote -> repos:create-remote IPC handler",
+        "window.api.repos.create -> repos:create IPC handler",
+        "runtimeRpc:repo.create -> runtime daemon RPC"
+      ],
+      "orca_evidence": [
+        "components/sidebar/useCreateRepo.ts:18",
+        "components/sidebar/useCreateRepo.ts:77",
+        "components/sidebar/useCreateRepo.ts:107",
+        "components/sidebar/useCreateRepo.ts:124"
+      ],
+      "tests": [
+        "components/sidebar/useCreateRepo.default-checkout.test.ts:101 :: useCreateRepo default-checkout handoff",
+        "components/sidebar/useCreateRepo.default-checkout.test.ts:129 :: requests an authoritative worktree refresh before handoff",
+        "components/sidebar/useCreateRepo.default-checkout.test.ts:155 :: returns the selected parent directory after the local picker applies it",
+        "components/sidebar/useCreateRepo.default-checkout.test.ts:166 :: does not return a parent path when the runtime target blocks the local picker",
+        "components/sidebar/useCreateRepo.default-checkout.test.ts:178 :: continues to completion when refresh is not authoritative after create",
+        "components/sidebar/useCreateRepo.default-checkout.test.ts:196 :: opens an existing folder project returned by create dedupe",
+        "components/sidebar/useCreateRepo.default-checkout.test.ts:224 :: creates projects through the SSH host when an SSH target is selected",
+        "components/sidebar/useCreateRepo.default-checkout.test.ts:253 :: creates projects through the selected runtime environment"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-019",
+      "capability": "Configura a adição de projeto em host SSH listando targets, estado de conexão e permitindo navegação remota",
+      "surface": "etapa 'remote' do AddRepoDialog (AddRepoRemoteStep)",
+      "trigger": "clique em 'Project on SSH host' ou navegação via autoridade SSH",
+      "behaviors": [
+        "Lista targets SSH configurados com status em tempo real via SshTargetRow",
+        "Exibe botão 'Add in Settings' se nenhum target SSH estiver configurado",
+        "Exibe banner com botão de conexão se o host SSH selecionado estiver desconectado",
+        "Permite navegação remota pelo sistema de arquivos via RemoteFileBrowser com targetId",
+        "Input de caminho do host (placeholder '/home/user/project' ou '~/' padrão)",
+        "Atalho Enter no input para submeter a adição do projeto SSH",
+        "Exibe botão de interrupção de escaneamento quando isScanningNested estiver ativo"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "sshTargets",
+        "selectedTargetId",
+        "remotePath",
+        "remoteError",
+        "isAddingRemote",
+        "isScanningNested"
+      ],
+      "backend_contract": [
+        "window.api.ssh.listTargets -> src/main/ipc/ssh-target-crud-handlers.ts:43",
+        "window.api.ssh.getState -> src/main/ipc/ssh-connection-handlers.ts:224",
+        "window.api.ssh.onStateChanged -> src/main/ipc/ssh-renderer-broadcast.ts:40",
+        "window.api.ssh.connect -> src/main/ipc/ssh-connection-handlers.ts:111",
+        "window.api.repos.addRemote -> src/main/ipc/repos/repo-creation-handlers.ts:87"
+      ],
+      "orca_evidence": [
+        "components/sidebar/AddRepoRemoteStep.tsx:28",
+        "components/sidebar/AddRepoSteps.tsx:39"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:184 :: hides the SSH target chooser after a host was already selected",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:227 :: shows a connect affordance for a selected disconnected SSH host",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:257 :: uses SSH-aware copy on the add step when an SSH host is selected"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-020",
+      "capability": "Gerencia o fluxo de adição de repositório remoto SSH, escaneamento de diretório e tratamento de pastas não-git",
+      "surface": "hook useRemoteRepo (AddRepoSteps.tsx)",
+      "trigger": "clique em 'Add project on SSH host' na etapa remote",
+      "behaviors": [
+        "Carrega targets SSH e seus estados via window.api.ssh.listTargets() e window.api.ssh.getState()",
+        "Assina alterações de estado de conexão SSH em tempo real via window.api.ssh.onStateChanged",
+        "Dispara conexão SSH via window.api.ssh.connect()",
+        "Inicia escaneamento assíncrono de repositórios aninhados via scanNestedRepos com ID de escaneamento",
+        "Chama window.api.repos.addRemote para adicionar o repositório remoto",
+        "Detecta erro 'Not a valid git repository' e redireciona automaticamente para o modal confirm-non-git-folder",
+        "Limpa orca hook trust para repositórios já presentes no store"
+      ],
+      "background_activity": "window.api.ssh.onStateChanged subscription",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.sshConnectionStates"
+      ],
+      "backend_contract": [
+        "window.api.ssh.listTargets -> ssh:list-targets IPC handler",
+        "window.api.ssh.getState -> ssh:get-state IPC handler",
+        "window.api.ssh.onStateChanged -> ssh:on-state-changed event subscription",
+        "window.api.ssh.connect -> ssh:connect IPC handler",
+        "window.api.repos.addRemote -> repos:add-remote IPC handler"
+      ],
+      "orca_evidence": [
+        "components/sidebar/AddRepoSteps.tsx:39",
+        "components/sidebar/AddRepoSteps.tsx:78",
+        "components/sidebar/AddRepoSteps.tsx:119",
+        "components/sidebar/AddRepoSteps.tsx:130",
+        "components/sidebar/AddRepoSteps.tsx:185"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoSteps.default-checkout.test.ts:90 :: useRemoteRepo default-checkout handoff",
+        "components/sidebar/AddRepoSteps.default-checkout.test.ts:118 :: requests an authoritative worktree refresh before handoff",
+        "components/sidebar/AddRepoSteps.default-checkout.test.ts:154 :: continues to completion when refresh is not authoritative after remote add",
+        "components/sidebar/AddRepoSteps.default-checkout.test.ts:179 :: preselects the preferred SSH target when opening Browse for a selected host",
+        "components/sidebar/AddRepoSteps.default-checkout.test.ts:198 :: pins SSH nested scans and cancellation to the local provider"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-021",
+      "capability": "Rastreia e telemetra resultados de escaneamento aninhado em conexões remotas SSH",
+      "surface": "hook useAddRepoRemoteNestedScan",
+      "trigger": "conclusão ou progresso de escaneamento aninhado em host SSH",
+      "behaviors": [
+        "Encaminha resultados de scan remoto para a tela de revisão aninhada definindo runtimeKind como 'ssh'",
+        "Gerencia o ID ativo de escaneamento aninhado para permitir cancelamento pontual",
+        "Emite evento de telemetria 'add_repo_nested_scan_result' com attemptId, runtimeKind: 'ssh' e payload estruturado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-add-repo-remote-nested-scan.ts:6"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoSteps.default-checkout.test.ts:198 :: pins SSH nested scans and cancellation to the local provider"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-022",
+      "capability": "Apresenta lista de repositórios descobertos em pasta pai com controles de seleção, nome de grupo e opções de importação",
+      "surface": "etapa 'nested' do AddRepoDialog (AddRepoNestedImportStep)",
+      "trigger": "descoberta de 1+ repositórios Git durante escaneamento de pasta pai",
+      "behaviors": [
+        "Exibe resumo 'Found N repositories in /path/to/folder.' com contagem singular/plural",
+        "Lista repositórios com checklist selecionável via NestedRepoChecklist",
+        "Exibe aviso de limite de scan (NestedRepoScanLimitNotice) se o scan foi truncado, atingiu timeout ou foi interrompido",
+        "Input para nome do grupo pré-preenchido com o nome da pasta pai",
+        "Botão 'Yes, import as group' para importar projetos agrupados em monorepo/grupo",
+        "Botão 'No, import separately' para importar cada repositório como projeto individual",
+        "Botão 'Open as Folder' exibido quando nenhum repositório está selecionado",
+        "Botão de parada de escaneamento com Tooltip quando o scan ainda estiver em andamento"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "scan (NestedRepoScanResult)",
+        "groupName",
+        "selectedPaths",
+        "isAdding",
+        "scanInProgress"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/AddRepoNestedImportStep.tsx:27",
+        "components/sidebar/AddRepoDialogStepContent.tsx:234"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoNestedImportStep.test.tsx:63 :: AddRepoNestedImportStep",
+        "components/sidebar/AddRepoNestedImportStep.test.tsx:76 :: asks whether the selected folder should be grouped",
+        "components/sidebar/AddRepoNestedImportStep.test.tsx:96 :: disables both import actions while scanning",
+        "components/sidebar/AddRepoNestedImportStep.test.tsx:106 :: maps the group choice to grouped import and the separate choice to separate import",
+        "components/sidebar/AddRepoNestedImportStep.test.tsx:143 :: shows progress only on the clicked import action",
+        "components/sidebar/AddRepoNestedImportStep.test.tsx:188 :: offers opening the parent folder when no repositories are selected",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:103 :: AddRepoDialogStepContent nested imports",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:104 :: asks the grouping question when no repos exist yet",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:114 :: shows the same grouping import controls after a repo already exists",
+        "components/sidebar/AddRepoDialogStepContent.test.tsx:124 :: offers opening the parent folder when nested import selection is empty"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-023",
+      "capability": "Controla o estado de revisão aninhada, seleção de repositórios, nome de grupo e cancelamento de escaneamento",
+      "surface": "hooks useAddRepoNestedReviewController e useAddRepoNestedReviewState",
+      "trigger": "transição para etapa 'nested' e interação com checklist",
+      "behaviors": [
+        "Inicializa conjunto de caminhos selecionados com todos os repositórios descobertos",
+        "Calcula nome de grupo padrão com defaultProjectGroupNameForPath",
+        "Gerencia ID de escaneamento e executa cancelamento via cancelNestedRepoScan",
+        "Determina o tipo de runtime da telemetria ('local', 'ssh' ou 'runtime')",
+        "Reseta todo o estado de revisão ao retroceder ou fechar o diálogo"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "activeRuntimeEnvironmentId",
+        "useAppStore.cancelNestedRepoScan"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useAddRepoNestedReviewController.ts:11",
+        "components/sidebar/useAddRepoNestedReviewState.ts:17"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoNestedImportStep.test.tsx:96 :: disables both import actions while scanning",
+        "components/sidebar/AddRepoNestedImportStep.test.tsx:106 :: maps the group choice to grouped import and the separate choice to separate import"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-024",
+      "capability": "Executa a importação em lote dos repositórios selecionados como grupo ou avulsos com telemetria e tratamento de falhas parciais",
+      "surface": "hook useAddRepoNestedImportFlow (função handleImportNestedRepos)",
+      "trigger": "clique em 'Yes, import as group' ou 'No, import separately'",
+      "behaviors": [
+        "Preserva a ordem dos repositórios conforme a ordem do scan via getSelectedNestedRepoPathsInScanOrder",
+        "Emite telemetria 'add_repo_nested_import_action' com modo de importação ('import_group' ou 'import_separate')",
+        "Executa importNestedRepos com parentPath, groupName, projectPaths e connectionId/runtimeEnvironmentId",
+        "Emite telemetria 'add_repo_nested_import_result' com dados detalhados do resultado",
+        "Executa fetchWorktrees para todos os projetos importados com sucesso",
+        "Exibe toast de aviso caso alguns repositórios tenham falhado na importação ('N failed')",
+        "Conclui o fluxo ativando o primeiro repositório importado via onGitRepoReady"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.importNestedRepos",
+        "useAppStore.repos"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useAddRepoNestedImportFlow.ts:70"
+      ],
+      "tests": [
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:202 :: keeps SSH import and completion pinned when repo hydration is missing"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-025",
+      "capability": "Permite abrir a pasta raiz do escaneamento como projeto não-git quando nenhum repositório for selecionado",
+      "surface": "hook useAddRepoNestedImportFlow (função handleOpenNestedRootFolder)",
+      "trigger": "clique em 'Open as Folder' na tela de revisão aninhada",
+      "behaviors": [
+        "Utiliza o nome editado do grupo como displayName caso seja diferente do padrão do caminho",
+        "Executa completeNestedFolderOpen para adicionar a pasta raiz",
+        "Emite telemetria de ação e resultado associada à recuperação de pasta não-git com seleção zerada",
+        "Fecha o diálogo e ativa o workspace sintético de pasta"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "nestedScan",
+        "nestedGroupName"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/useAddRepoNestedImportFlow.ts:223"
+      ],
+      "tests": [
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:95 :: useAddRepoNestedImportFlow open folder fallback",
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:102 :: opens the scanned local root through the existing non-git folder flow",
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:116 :: keeps runtime folder opens on the runtime that produced the scan",
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:129 :: names the folder project after the edited group name",
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:142 :: leaves host basename naming alone when the group name is untouched",
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:154 :: carries the edited group name into the SSH folder confirmation",
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:169 :: tracks the open-as-folder recovery action with zero selection",
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:186 :: uses the existing SSH non-git folder confirmation for SSH scans"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-026",
+      "capability": "Exibe diálogo de confirmação para adicionar pasta específica como projeto separado (AddProjectFromFolderDialog)",
+      "surface": "modal AddProjectFromFolderDialog (confirm-add-project-from-folder)",
+      "trigger": "abertura do modal com folderPath e connectionId/runtimeEnvironmentId opcionais",
+      "behaviors": [
+        "Exibe caminho da pasta formatado em bloco mono",
+        "Ao confirmar, adiciona projeto Git via addRepoPath ou addRemote (para SSH)",
+        "Redireciona para o modal 'confirm-non-git-folder' caso a pasta não seja um repositório Git válido",
+        "Executa upsertAddedRepoWithProjectHostSetup para sincronizar o store com o host do projeto",
+        "Conclui com finishProjectAddWithDefaultCheckout para repositórios Git válidos"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeModal",
+        "useAppStore.modalData"
+      ],
+      "backend_contract": [
+        "window.api.repos.addRemote -> repos:add-remote IPC handler"
+      ],
+      "orca_evidence": [
+        "components/sidebar/AddProjectFromFolderDialog.tsx:24",
+        "components/sidebar/AddProjectFromFolderDialog.tsx:77"
+      ],
+      "tests": [
+        "components/sidebar/AddProjectFromFolderDialog.test.tsx:128 :: AddProjectFromFolderDialog",
+        "components/sidebar/AddProjectFromFolderDialog.test.tsx:145 :: adds a local Git folder and opens the default checkout",
+        "components/sidebar/AddProjectFromFolderDialog.test.tsx:174 :: leaves local non-Git folders on the existing Open as Folder confirmation path",
+        "components/sidebar/AddProjectFromFolderDialog.test.tsx:193 :: routes a runtime project",
+        "components/sidebar/AddProjectFromFolderDialog.test.tsx:222 :: adds an SSH Git folder through the remote repo import path",
+        "components/sidebar/AddProjectFromFolderDialog.test.tsx:256 :: falls back to completion when Git worktree refresh is not authoritative",
+        "components/sidebar/AddProjectFromFolderDialog.test.tsx:279 :: does not finish the handoff after the user cancels during refresh",
+        "components/sidebar/AddProjectFromFolderDialog.test.tsx:304 :: sends SSH non-Git folders to the Open as Folder confirmation with the connection id"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-027",
+      "capability": "Processa modal de compatibilidade para handoff pós-adição de projeto (ProjectAddedDialog)",
+      "surface": "componente invisível ProjectAddedDialog (activeModal === 'project-added')",
+      "trigger": "abertura do modal 'project-added' com repoId ou projectId legado",
+      "behaviors": [
+        "Aceita tanto `repoId` quanto `projectId` legado para compatibilidade com versões antigas de onboarding",
+        "Aguarda hidratação do repositório via fetchRepos se o repositório ainda não estiver no store",
+        "Para projetos de pasta, atualiza worktrees e ativa o workspace sintético de pasta",
+        "Para repositórios Git, executa finishProjectAddWithDefaultCheckout com source 'project_added_compat'",
+        "Protegido contra execução duplicada em React StrictMode via handoffRunRef"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeModal",
+        "useAppStore.modalData",
+        "useAppStore.repos"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/ProjectAddedDialog.tsx:11",
+        "components/sidebar/ProjectAddedDialog.tsx:33"
+      ],
+      "tests": [
+        "components/sidebar/ProjectAddedDialog.test.tsx:64 :: ProjectAddedDialog",
+        "components/sidebar/ProjectAddedDialog.test.tsx:75 :: fetches worktrees and finishes by opening the default checkout for Git repos",
+        "components/sidebar/ProjectAddedDialog.test.tsx:91 :: does not block the compatibility handoff during StrictMode effect replay",
+        "components/sidebar/ProjectAddedDialog.test.tsx:123 :: accepts older onboarding modal data that uses projectId",
+        "components/sidebar/ProjectAddedDialog.test.tsx:136 :: activates the synthetic folder workspace for folder repos",
+        "components/sidebar/ProjectAddedDialog.test.tsx:155 :: closes malformed modal data without blocking the app invisibly",
+        "components/sidebar/ProjectAddedDialog.test.tsx:167 :: refreshes repos before closing a stale repo id",
+        "components/sidebar/ProjectAddedDialog.test.tsx:181 :: waits for repo hydration and does not close when fetchRepos supplies the repo"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-028",
+      "capability": "Localiza e ativa o checkout padrão (main branch) do projeto com suporte a cwd inicial customizado",
+      "surface": "módulo project-added-default-checkout.ts (getProjectDefaultCheckout e openProjectDefaultCheckout)",
+      "trigger": "conclusão da adição de um repositório Git",
+      "behaviors": [
+        "Identifica o worktree principal (isMainWorktree === true) filtrado pelo executionHostId",
+        "Localiza checkout padrão detectado em detectedWorktreesByRepo caso ainda não esteja carregado no store",
+        "Torna visível o checkout padrão caso tenha sido detectado como worktree oculto",
+        "Calcula o cwd relativo para o terminal caso o caminho selecionado esteja contido no checkout",
+        "Desativa temporariamente a preferência hideDefaultBranchWorkspace para garantir que o projeto seja visível no sidebar",
+        "Ativa e revela o worktree no sidebar via activateAndRevealWorktree",
+        "Emite evento de telemetria 'add_repo_default_checkout_handoff' com resultado ('opened_default_checkout' ou 'revealed_project')"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreesByRepo",
+        "useAppStore.detectedWorktreesByRepo",
+        "useAppStore.hideDefaultBranchWorkspace"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-added-default-checkout.ts:25",
+        "components/sidebar/project-added-default-checkout.ts:167",
+        "components/sidebar/project-added-default-checkout.ts:244"
+      ],
+      "tests": [
+        "components/sidebar/project-added-default-checkout.test.ts:106 :: getProjectDefaultCheckout",
+        "components/sidebar/project-added-default-checkout.test.ts:107 :: returns the main worktree rather than the first worktree",
+        "components/sidebar/project-added-default-checkout.test.ts:123 :: finishProjectAddWithDefaultCheckout",
+        "components/sidebar/project-added-default-checkout.test.ts:147 :: closes the modal and activates the default checkout",
+        "components/sidebar/project-added-default-checkout.test.ts:179 :: activates only the captured host default checkout when repo IDs collide",
+        "components/sidebar/project-added-default-checkout.test.ts:224 :: activates a runtime-owned checkout even when its physical host is private SSH",
+        "components/sidebar/project-added-default-checkout.test.ts:244 :: passes a contained selected path through as the initial terminal cwd",
+        "components/sidebar/project-added-default-checkout.test.ts:261 :: skips the initial cwd override when the selected path is the repo root",
+        "components/sidebar/project-added-default-checkout.test.ts:276 :: shows a hidden detected default checkout before activating it",
+        "components/sidebar/project-added-default-checkout.test.ts:489 :: reveals the project if no default checkout is available",
+        "components/sidebar/project-added-default-checkout.test.ts:514 :: reveals the project even when no worktrees are loaded"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-029",
+      "capability": "Detecta e revela worktrees externos vinculados ocultos ao importar um projeto existente",
+      "surface": "módulo project-added-default-checkout.ts (revealDetectedHiddenLinkedExternalWorktrees)",
+      "trigger": "ativação de checkout padrão com worktrees externos detectados",
+      "behaviors": [
+        "Verifica se há worktrees externos não gerenciados pelo Orca e não-visíveis (excluindo agent-scratch)",
+        "Atualiza a configuração do repositório para externalWorktreeVisibility: 'show'",
+        "Executa atualização autoritativa dos worktrees com requireAuthoritative: true",
+        "Retorna motivo de falha para telemetria caso a atualização ou o refresh falhem"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.detectedWorktreesByRepo"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/project-added-default-checkout.ts:73"
+      ],
+      "tests": [
+        "components/sidebar/project-added-default-checkout.test.ts:320 :: reveals detected sibling external worktrees when the default checkout is already loaded",
+        "components/sidebar/project-added-default-checkout.test.ts:349 :: does not refresh already-visible sibling external worktrees",
+        "components/sidebar/project-added-default-checkout.test.ts:374 :: does not flip visibility when the only hidden siblings are agent scratch",
+        "components/sidebar/project-added-default-checkout.test.ts:394 :: does not repeat linked-worktree reveal after a hidden default checkout refresh",
+        "components/sidebar/project-added-default-checkout.test.ts:439 :: reveals the project if showing sibling external worktrees fails",
+        "components/sidebar/project-added-default-checkout.test.ts:464 :: reveals the project if sibling external worktree refresh is not authoritative"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-030",
+      "capability": "Finaliza a importação de projeto quando o usuário opta por não abrir worktree imediatamente (Skip)",
+      "surface": "módulo add-repo-skip-finalization.ts (finalizeImportedRepoAfterSkip)",
+      "trigger": "opção Skip ou fallback quando não há checkout padrão disponível",
+      "behaviors": [
+        "Define o repositório recém-importado como activeRepoId",
+        "Revela o repositório nos filtros de projeto do sidebar via revealRepoInProjectFilter",
+        "Desativa o filtro showActiveOnly para não esconder o projeto recém-adicionado",
+        "Desativa hideDefaultBranchWorkspace caso todos os worktrees importados sejam da branch padrão",
+        "Garante a isenção de alwaysShowDefaultBranchWorkspace para projetos sem PTY ativo com showSleepingWorkspaces desligado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeRepoId",
+        "useAppStore.showActiveOnly",
+        "useAppStore.hideDefaultBranchWorkspace",
+        "useAppStore.showSleepingWorkspaces",
+        "useAppStore.alwaysShowDefaultBranchWorkspace",
+        "useAppStore.worktreesByRepo"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/add-repo-skip-finalization.ts:18"
+      ],
+      "tests": [
+        "components/sidebar/add-repo-skip-finalization.test.ts:49 :: finalizeImportedRepoAfterSkip",
+        "components/sidebar/add-repo-skip-finalization.test.ts:50 :: keeps skipped imported worktrees visible without activating a worktree",
+        "components/sidebar/add-repo-skip-finalization.test.ts:69 :: leaves the project filter off when the import lands with no filter",
+        "components/sidebar/add-repo-skip-finalization.test.ts:77 :: clears default-branch hiding when it would hide every imported worktree",
+        "components/sidebar/add-repo-skip-finalization.test.ts:97 :: re-enables the default-branch exemption when the import would land asleep and hidden",
+        "components/sidebar/add-repo-skip-finalization.test.ts:118 :: leaves the default-branch exemption alone when sleeping workspaces are shown",
+        "components/sidebar/add-repo-skip-finalization.test.ts:139 :: still reveals the imported repo when it has no discovered worktrees yet"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-031",
+      "capability": "Gera e emite telemetria de descoberta de worktrees pré-existentes durante a adição de projetos",
+      "surface": "módulo add-repo-existing-workspaces-telemetry.ts e hook useCompleteGitRepoAdd",
+      "trigger": "adição de repositório Git via pasta local, servidor runtime ou caminho SSH",
+      "behaviors": [
+        "Agrupa contagens anônimas de workspaces (main, vinculados, nomeados por branch, detached, customizados, sparse) limitadas a 50",
+        "Emite o evento 'add_repo_existing_workspaces_detected' apenas quando há worktrees vinculados pré-existentes",
+        "Descarta eventos para fontes de clone ou criação de novos projetos vazios",
+        "Ordena worktrees de forma segura tratando casos sem displayName (prevenção de crash)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreesByRepo"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/add-repo-existing-workspaces-telemetry.ts:36",
+        "components/sidebar/use-complete-git-repo-add.ts:22"
+      ],
+      "tests": [
+        "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:32 :: add repo existing workspace telemetry",
+        "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:33 :: builds count-only payloads without raw workspace names",
+        "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:67 :: tracks detection only for imported linked workspaces",
+        "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:100 :: derives linked and detached counts before clamping reported values",
+        "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:121 :: sorts without crashing when a detected worktree has no displayName (crash 99657ab1)"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-032",
+      "capability": "Sincroniza o store de repositórios, projetos e configurações de host durante adições diretas por IPC",
+      "surface": "módulo add-repo-store-upsert.ts (upsertAddedRepoWithProjectHostSetup)",
+      "trigger": "conclusão de IPC de clone, criação ou adição remota de repositório",
+      "behaviors": [
+        "Captura e injeta executionHostId no objeto de repositório (SSH connection ID ou runtime environment ID)",
+        "Verifica duplicidade baseada em getRepoHostIdentity",
+        "Gera projeção compatível de projetos e configurações de host com projectHostSetupProjectionFromRepos",
+        "Atualiza atomicamente as fatias repos, projects e projectHostSetups no store"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.repos"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/add-repo-store-upsert.ts:28"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoSteps.default-checkout.test.ts:90 :: useRemoteRepo default-checkout handoff"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-033",
+      "capability": "Resolve o proprietário de runtime e opções de atualização autoritativa de worktrees",
+      "surface": "módulo add-repo-runtime-owner.ts (capturedAddRepoExecutionHostId e worktreeRefreshOptions)",
+      "trigger": "chamadas de fetchWorktrees após adição de projeto",
+      "behaviors": [
+        "Converte proprietário de runtime ou conexão SSH no executionHostId correspondente",
+        "Gera objeto de opções com requireAuthoritative: true e executionHostId para direcionar a busca ao host correto"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/add-repo-runtime-owner.ts:6",
+        "components/sidebar/add-repo-runtime-owner.ts:19"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoDialog.default-checkout.test.ts:8 :: AddRepo completion owner routing"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-034",
+      "capability": "Submete a criação de workspace de pasta com vinculação de tarefas (GitHub/GitLab/Linear/Jira) e inicialização de agente",
+      "surface": "módulo folder-workspace-composer-submit.ts (submitFolderWorkspaceCreate)",
+      "trigger": "submissão no compositor de workspace de pasta",
+      "behaviors": [
+        "Gera nome automático baseado na tarefa vinculada ou fallback '<grupo> workspace'",
+        "Executa preflight de confiança do agente (preflightAgentTrust) para caminhos de pasta",
+        "Planeja inicialização de agente TUI ou sessão estruturada de native chat (planAgentSessionLaunch)",
+        "Cria o workspace de pasta com conexão SSH e tarefa vinculada preservadas",
+        "Marca o workspace para auto-renomeação pela primeira mensagem do agente se aplicável",
+        "Ativa e revela o novo workspace de pasta via activateAndRevealFolderWorkspace",
+        "Entrega prompts de rascunho (draft) ou follow-up no terminal do agente"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore"
+      ],
+      "backend_contract": [
+        "window.api.agentTrust.markTrusted -> agent-trust IPC handler"
+      ],
+      "orca_evidence": [
+        "components/sidebar/folder-workspace-composer-submit.ts:47"
+      ],
+      "tests": [
+        "components/sidebar/folder-workspace-composer-submit.test.ts:71 :: submitFolderWorkspaceCreate",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:90 :: closes the composer after creation even when reveal fails",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:128 :: marks a blank folder workspace for first-input rename when launching an agent with a note",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:176 :: does not mark first-input rename when the folder workspace has an explicit name",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:201 :: does not mark first-input rename when a linked work item owns the folder workspace name",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:234 :: creates a Jira folder workspace with its bound source context",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:280 :: keeps linked Codex context out of submitted startup and pastes it as a draft",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:332 :: pre-marks remote linked Codex folder workspaces trusted before draft paste",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:383 :: delivers non-linked follow-up prompts for agents that need stdin after launch",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:412 :: uses native draft launch for linked agents with prefill support",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:443 :: uses native prefill for link-only Linear folder workspace drafts",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:505 :: keeps explicit blank linked folder creates free of agent startup and draft paste",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:542 :: does not mark first-input rename without submitted first input",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:567 :: quotes quick-agent startup for POSIX when the folder group is a local WSL UNC path",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:599 :: quotes quick-agent startup for Windows when the remote folder group uses a Windows path",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:632 :: preserves SSH group ownership when creating and activating a folder workspace",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:669 :: returns false when folder workspace creation fails without returning a workspace",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:693 :: submitFolderWorkspaceCreate native-chat launch draft",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:724 :: mirrors a startup-paste draft into the chat composer",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:741 :: mirrors an argv-prefill draft, which never lands in startupPlan.draftPrompt",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:763 :: mirrors a multi-line draft into chat",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:787 :: does not mirror an unlinked note, which is submitted rather than drafted",
+        "components/sidebar/folder-workspace-composer-submit.test.ts:805 :: folder-workspace draft: seeded set == chat-opening set"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-035",
+      "capability": "Configura plataforma de execução, rascunho de prompt e quoting de shell para inicialização de agentes em pastas",
+      "surface": "módulo folder-workspace-agent-startup.ts",
+      "trigger": "preparação de inicialização de agente para workspace de pasta",
+      "behaviors": [
+        "Determina plataforma correta ('win32' vs 'linux') para caminhos remotos SSH e caminhos WSL UNC",
+        "Resolve o rascunho de prompt vinculado à tarefa (resolveFolderWorkspaceLaunchDraft)",
+        "Monta plano de inicialização de agente com suporte a draft launch e escape adequado para Windows/POSIX"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/folder-workspace-agent-startup.ts:15",
+        "components/sidebar/folder-workspace-agent-startup.ts:26",
+        "components/sidebar/folder-workspace-agent-startup.ts:34"
+      ],
+      "tests": [
+        "components/sidebar/folder-workspace-linked-startup-plan.test.ts:4 :: buildFolderWorkspaceLinkedStartupPlan",
+        "components/sidebar/folder-workspace-linked-startup-plan.test.ts:5 :: uses cmd quoting for configured arguments on local Windows"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-036",
+      "capability": "Verifica a validade do caminho de workspace de pasta com cache e bloqueia criação em caminhos inexistentes ou obsoletos",
+      "surface": "hook useFolderWorkspaceComposerPathStatus",
+      "trigger": "abertura do compositor de workspace de pasta ou expiração do cache TTL",
+      "behaviors": [
+        "Consulta status de caminho via fetchFolderWorkspacePathStatus com chave cacheExpiryTick",
+        "Bloqueia o botão de criação (pathStatusBlocksCreate) enquanto a verificação estiver pendente ou o caminho for confirmado como inexistente/ambíguo",
+        "Exibe mensagem detalhada de erro (pathStatusProjectError) quando o status do caminho for negativo"
+      ],
+      "background_activity": "TTL cache expiry tick (useFolderWorkspacePathStatusCacheExpiryTick)",
+      "state_inputs": [
+        "useAppStore.folderWorkspacePathStatuses"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/folder-workspace-composer-path-status.ts:12",
+        "components/sidebar/folder-workspace-composer-path-status.ts:74"
+      ],
+      "tests": [
+        "components/sidebar/folder-workspace-composer-path-status.test.tsx:38 :: useFolderWorkspaceComposerPathStatus",
+        "components/sidebar/folder-workspace-composer-path-status.test.tsx:52 :: blocks creation while an expired path status refresh is pending",
+        "components/sidebar/folder-workspace-composer-path-status.test.tsx:118 :: unblocks creation when the first path status check settles without cache",
+        "components/sidebar/folder-workspace-composer-path-status.test.tsx:157 :: blocks creation while the first path status check is unknown",
+        "components/sidebar/folder-workspace-composer-path-status.test.tsx:183 :: does not block creation for an unavailable path status",
+        "components/sidebar/folder-workspace-composer-path-status.test.tsx:220 :: blocks while refreshing after a cached blocking path status expires",
+        "components/sidebar/folder-workspace-composer-path-status.test.tsx:281 :: tracks settled path status refreshes by cache key and expiry generation"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-037",
+      "capability": "Mapeia repositórios de origem do grupo e converte itens de trabalho vinculados (GitHub, GitLab, Linear)",
+      "surface": "módulo folder-workspace-composer-helpers.ts",
+      "trigger": "renderização do compositor de workspace de pasta",
+      "behaviors": [
+        "Filtra repositórios pertencentes à pasta pai ou ao grupo de projetos garantindo mesmo executionHostId",
+        "Converte itens do GitHub, GitLab e Linear em estruturas padronizadas LinkedWorkItemSummary",
+        "Gera seleção inteligente de nome do workspace com getSmartNameSelection",
+        "Fornece label estável 'Create workspace' para o botão de ação primária"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/folder-workspace-composer-helpers.ts:31",
+        "components/sidebar/folder-workspace-composer-helpers.ts:47",
+        "components/sidebar/folder-workspace-composer-helpers.ts:88"
+      ],
+      "tests": [
+        "components/sidebar/folder-workspace-composer-helpers.test.ts:38 :: getFolderSourceRepos",
+        "components/sidebar/folder-workspace-composer-helpers.test.ts:39 :: only returns source repos from the same execution host as the folder group",
+        "components/sidebar/folder-workspace-composer-helpers.test.ts:59 :: returns runtime source repos for runtime-owned folder groups",
+        "components/sidebar/folder-workspace-composer-helpers.test.ts:83 :: getFolderWorkspacePrimaryActionLabel",
+        "components/sidebar/folder-workspace-composer-helpers.test.ts:84 :: uses a stable workspace creation label independent of quick agent selection"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-038",
+      "capability": "Calcula e exibe badge de status de PR e revisões para cards de workspace de pasta",
+      "surface": "módulo folder-workspace-card-pr-display.ts (getFolderWorkspaceCardPrDisplay)",
+      "trigger": "renderização de card de workspace de pasta no sidebar",
+      "behaviors": [
+        "Coleta worktrees filhos diretos e aninhados vinculados ao workspace de pasta por lineage",
+        "Previne recursão infinita descartando ciclos de lineage projetada",
+        "Agrega status de PRs via buildParentPrChecksRows",
+        "Ordena e prioriza o status de revisão mais crítico: failure (0) > pending (1) > success (2) > neutral (3)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.hostedReviewCache",
+        "useAppStore.prCache",
+        "useAppStore.settings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/folder-workspace-card-pr-display.ts:29"
+      ],
+      "tests": [
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:73 :: getFolderWorkspaceCardPrDisplay",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:74 :: uses the existing repo lookup without enumerating all repos",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:92 :: uses failing attached PR status ahead of pending and passing PRs",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:122 :: uses pending attached PR status ahead of passing PRs",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:148 :: omits a matching suppressed branch PR from attached worktrees",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:168 :: includes nested attached worktree PRs",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:190 :: includes a nested PR from exact inline-only legacy lineage",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:211 :: keeps a stale side-map entry authoritative over valid inline lineage",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:270 :: excludes nested PRs from cyclic projected lineage",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:293 :: uses branch-discovered PR cache for unlinked attached worktrees",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:311 :: uses the right-sidebar classified status for conflicting PRs",
+        "components/sidebar/folder-workspace-card-pr-display.test.ts:332 :: does not use stale merged branch PR cache after the worktree advances"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-039",
+      "capability": "Resolve a seção de host correta para exibição e agrupamento do workspace de pasta no sidebar",
+      "surface": "módulo folder-workspace-host-id.ts (getFolderWorkspaceHostId)",
+      "trigger": "contagem de header, agrupamento de hosts e revelação de workspace de pasta",
+      "behaviors": [
+        "Identifica se o workspace de pasta ou o grupo de projetos possui connectionId para associar a SSH host",
+        "Retorna o ExecutionHostId SSH correspondente ou o host padrão para garantir alinhamento visual no sidebar"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/folder-workspace-host-id.ts:14"
+      ],
+      "tests": [
+        "components/sidebar/folder-workspace-composer-submit.test.ts:632 :: preserves SSH group ownership when creating and activating a folder workspace"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-040",
+      "capability": "Integra o diálogo AddRepoDialog como modal aninhado dentro do workspace composer",
+      "surface": "hook useAddRepoHostedController",
+      "trigger": "abertura do AddRepoDialog a partir do compositor de novos workspaces",
+      "behaviors": [
+        "Fecha apenas o diálogo aninhado em cancelamentos mantendo o modal do compositor aberto",
+        "Ao adicionar repositório Git, fecha o diálogo aninhado e seleciona o novo projeto no compositor via onProjectAdded",
+        "Para handoffs de pasta ou navegação para Configurações SSH, fecha tanto o diálogo aninhado quanto o modal do compositor"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeModal"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-add-repo-hosted-controller.ts:19"
+      ],
+      "tests": [
+        "components/sidebar/use-add-repo-hosted-controller.test.ts:35 :: useAddRepoHostedController",
+        "components/sidebar/use-add-repo-hosted-controller.test.ts:40 :: falls back to the store closeModal without a hosted controller",
+        "components/sidebar/use-add-repo-hosted-controller.test.ts:50 :: closes only the hosted dialog, never the store modal slot",
+        "components/sidebar/use-add-repo-hosted-controller.test.ts:62 :: folder handoffs close both the hosted dialog and the composer modal",
+        "components/sidebar/use-add-repo-hosted-controller.test.ts:77 :: finishProjectAdd closes the hosted dialog and hands the repo to the host",
+        "components/sidebar/use-add-repo-hosted-controller.test.ts:96 :: SSH settings navigation closes both hosted dialog and composer modal"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-041",
+      "capability": "Exibe aviso de escaneamento em andamento com botão de parada para interromper a busca de repositórios",
+      "surface": "AddRepoNestedScanProgressNotice (AddRepoStartSteps.tsx) e AddRepoNestedImportStopButton (AddRepoNestedImportStep.tsx)",
+      "trigger": "escaneamento de repositórios aninhados em andamento (nestedScanInProgress)",
+      "behaviors": [
+        "Exibe spinner animado Loader2 e mensagem informativa do scan",
+        "Botão de parada com ícone CircleStop no hover e tooltip 'Scanning repositories. Click to stop.'",
+        "Dispara cancelamento do scan pelo ID de escaneamento ativo ao clicar em Stop"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "nestedScanInProgress",
+        "nestedScanId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/AddRepoStartSteps.tsx:18",
+        "components/sidebar/AddRepoNestedImportStep.tsx:197"
+      ],
+      "tests": [
+        "components/sidebar/AddRepoStartSteps.test.tsx:329 :: AddRepoLocalStartStep"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D02a-042",
+      "capability": "Fornece utilitários de nomeação de grupo por caminho e geração de identificadores únicos de escaneamento",
+      "surface": "módulo add-repo-dialog-types.ts",
+      "trigger": "início de escaneamento de pasta ou derivação de nome de grupo",
+      "behaviors": [
+        "defaultProjectGroupNameForPath extrai o último segmento de diretório normalizando barras '/' e '\\'",
+        "createNestedRepoScanId gera strings únicas baseadas em timestamp e aleatoriedade ('nested-repo-scan-...')"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/add-repo-dialog-types.ts:3",
+        "components/sidebar/add-repo-dialog-types.ts:12"
+      ],
+      "tests": [
+        "components/sidebar/useAddRepoNestedImportFlow.test.ts:142 :: leaves host basename naming alone when the group name is untouched"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "AddProjectFromFolderDialog.tsx": [
+        "D02a-026"
+      ],
+      "AddRepoCloneStep.tsx": [
+        "D02a-012"
+      ],
+      "AddRepoCreateStep.tsx": [
+        "D02a-015"
+      ],
+      "AddRepoDialog.tsx": [
+        "D02a-001"
+      ],
+      "AddRepoDialogChrome.tsx": [
+        "D02a-001"
+      ],
+      "AddRepoDialogStepContent.tsx": [
+        "D02a-002",
+        "D02a-010",
+        "D02a-012",
+        "D02a-015",
+        "D02a-019",
+        "D02a-022"
+      ],
+      "AddRepoHostSelector.tsx": [
+        "D02a-003",
+        "D02a-005"
+      ],
+      "AddRepoHostSelectorSlot.tsx": [
+        "D02a-003",
+        "D02a-005"
+      ],
+      "AddRepoNestedImportStep.tsx": [
+        "D02a-022",
+        "D02a-041"
+      ],
+      "AddRepoRemoteStep.tsx": [
+        "D02a-019"
+      ],
+      "AddRepoServerStartStep.tsx": [
+        "D02a-010"
+      ],
+      "AddRepoStartSteps.tsx": [
+        "D02a-006",
+        "D02a-041"
+      ],
+      "AddRepoStepIndicator.tsx": [
+        "D02a-002"
+      ],
+      "AddRepoSteps.tsx": [
+        "D02a-019",
+        "D02a-020"
+      ],
+      "CreateProjectLocationField.tsx": [
+        "D02a-016"
+      ],
+      "ProjectAddedDialog.tsx": [
+        "D02a-027"
+      ],
+      "add-repo-browse-authority.ts": [
+        "D02a-007"
+      ],
+      "add-repo-dialog-types.ts": [
+        "D02a-042"
+      ],
+      "add-repo-existing-workspaces-telemetry.ts": [
+        "D02a-031"
+      ],
+      "add-repo-host-availability.ts": [
+        "D02a-003"
+      ],
+      "add-repo-local-start-actions.ts": [
+        "D02a-006"
+      ],
+      "add-repo-runtime-owner.ts": [
+        "D02a-033"
+      ],
+      "add-repo-skip-finalization.ts": [
+        "D02a-030"
+      ],
+      "add-repo-store-upsert.ts": [
+        "D02a-032"
+      ],
+      "clone-defaults.ts": [
+        "D02a-013"
+      ],
+      "create-project-defaults.ts": [
+        "D02a-015",
+        "D02a-017"
+      ],
+      "folder-workspace-agent-startup.ts": [
+        "D02a-035"
+      ],
+      "folder-workspace-card-pr-display.ts": [
+        "D02a-038"
+      ],
+      "folder-workspace-composer-helpers.ts": [
+        "D02a-037"
+      ],
+      "folder-workspace-composer-path-status.ts": [
+        "D02a-036"
+      ],
+      "folder-workspace-composer-submit.ts": [
+        "D02a-034"
+      ],
+      "folder-workspace-host-id.ts": [
+        "D02a-039"
+      ],
+      "project-added-default-checkout.ts": [
+        "D02a-028",
+        "D02a-029"
+      ],
+      "use-add-repo-host-change-reset.ts": [
+        "D02a-004"
+      ],
+      "use-add-repo-host-selection.ts": [
+        "D02a-003"
+      ],
+      "use-add-repo-hosted-controller.ts": [
+        "D02a-040"
+      ],
+      "use-add-repo-remote-nested-scan.ts": [
+        "D02a-021"
+      ],
+      "use-complete-git-repo-add.ts": [
+        "D02a-031"
+      ],
+      "useAddRepoCloneFlow.ts": [
+        "D02a-013",
+        "D02a-014"
+      ],
+      "useAddRepoLocalFolderFlow.ts": [
+        "D02a-008",
+        "D02a-009"
+      ],
+      "useAddRepoNestedImportFlow.ts": [
+        "D02a-024",
+        "D02a-025"
+      ],
+      "useAddRepoNestedReviewController.ts": [
+        "D02a-023"
+      ],
+      "useAddRepoNestedReviewState.ts": [
+        "D02a-023"
+      ],
+      "useAddRepoServerPathFlow.ts": [
+        "D02a-011"
+      ],
+      "useCreateProjectDefaults.ts": [
+        "D02a-017"
+      ],
+      "useCreateRepo.ts": [
+        "D02a-018"
+      ]
+    },
+    "symbols": {
+      "CloneStep": [
+        "D02a-012"
+      ],
+      "CreateStep": [
+        "D02a-015"
+      ],
+      "AddRepoDialogChrome": [
+        "D02a-001"
+      ],
+      "AddRepoDialogStepContent": [
+        "D02a-002"
+      ],
+      "AddRepoHostSelector": [
+        "D02a-003"
+      ],
+      "AddRepoHostSelectorSlot": [
+        "D02a-003",
+        "D02a-005"
+      ],
+      "AddRepoNestedImportStep": [
+        "D02a-022"
+      ],
+      "RemoteStep": [
+        "D02a-019"
+      ],
+      "AddRepoServerPathStartStep": [
+        "D02a-010"
+      ],
+      "AddRepoLocalStartStep": [
+        "D02a-006"
+      ],
+      "AddRepoStepIndicator": [
+        "D02a-002"
+      ],
+      "useRemoteRepo": [
+        "D02a-019",
+        "D02a-020"
+      ],
+      "CreateProjectParentBrowser": [
+        "D02a-016"
+      ],
+      "CreateProjectLocationField": [
+        "D02a-016"
+      ],
+      "ProjectAddedDialog": [
+        "D02a-027"
+      ],
+      "AddRepoBrowseAuthorityActions": "INFRA: type-only contract for browse routing callbacks",
+      "routeAddRepoBrowse": [
+        "D02a-007"
+      ],
+      "AddRepoDialogStep": "INFRA: type-only union of wizard step identifiers ('add' | 'clone' | 'remote' | 'server-path' | 'create' | 'nested')",
+      "defaultProjectGroupNameForPath": [
+        "D02a-042"
+      ],
+      "createNestedRepoScanId": [
+        "D02a-042"
+      ],
+      "buildAddRepoExistingWorkspacesTelemetry": [
+        "D02a-031"
+      ],
+      "buildAddRepoExistingWorkspacesDetectedEvent": [
+        "D02a-031"
+      ],
+      "shouldTrackAddRepoExistingWorkspacesDetected": [
+        "D02a-031"
+      ],
+      "canSelectAddRepoHost": [
+        "D02a-003"
+      ],
+      "canConnectAddRepoHost": [
+        "D02a-003"
+      ],
+      "AddRepoLocalStartActionHandlers": "INFRA: type-only callback interface for start step actions",
+      "AddRepoLocalStartAction": "INFRA: type-only definition for start step action item",
+      "getAddRepoLocalStartActions": [
+        "D02a-006"
+      ],
+      "CapturedRuntimeOwner": "INFRA: type-only alias for string | null | undefined runtime owner id",
+      "capturedAddRepoExecutionHostId": [
+        "D02a-033"
+      ],
+      "worktreeRefreshOptions": [
+        "D02a-033"
+      ],
+      "AddRepoSkipFinalizationState": "INFRA: type-only state interface for skip finalization",
+      "finalizeImportedRepoAfterSkip": [
+        "D02a-030"
+      ],
+      "upsertAddedRepoWithProjectHostSetup": [
+        "D02a-032"
+      ],
+      "getDefaultCloneParent": [
+        "D02a-013"
+      ],
+      "getCloneDestinationAutoFill": [
+        "D02a-013"
+      ],
+      "GitAvailability": "INFRA: type-only union of git probe states ('checking' | 'available' | 'unavailable' | 'unknown')",
+      "joinCreateProjectPath": [
+        "D02a-015"
+      ],
+      "getDefaultCreateProjectParent": [
+        "D02a-017"
+      ],
+      "getCreateProjectDefaultParentAutoFill": [
+        "D02a-017"
+      ],
+      "formatCreateProjectParentSummary": [
+        "D02a-015"
+      ],
+      "getFolderWorkspaceAgentLaunchPlatform": [
+        "D02a-035"
+      ],
+      "resolveFolderWorkspaceLaunchDraft": [
+        "D02a-035"
+      ],
+      "buildFolderWorkspaceLinkedStartupPlan": [
+        "D02a-035"
+      ],
+      "getFolderWorkspaceCardPrDisplay": [
+        "D02a-038"
+      ],
+      "getFolderSourceRepos": [
+        "D02a-037"
+      ],
+      "toFolderWorkspaceLinkedTask": [
+        "D02a-037"
+      ],
+      "getSmartNameSelection": [
+        "D02a-037"
+      ],
+      "getLinkedItemDisplayName": [
+        "D02a-037"
+      ],
+      "toGitHubLinkedWorkItem": [
+        "D02a-037"
+      ],
+      "toGitLabLinkedWorkItem": [
+        "D02a-037"
+      ],
+      "toLinearLinkedWorkItem": [
+        "D02a-037"
+      ],
+      "getFolderWorkspacePrimaryActionLabel": [
+        "D02a-037"
+      ],
+      "useFolderWorkspaceComposerPathStatus": [
+        "D02a-036"
+      ],
+      "submitFolderWorkspaceCreate": [
+        "D02a-034"
+      ],
+      "getFolderWorkspaceHostId": [
+        "D02a-039"
+      ],
+      "getProjectDefaultCheckout": [
+        "D02a-028"
+      ],
+      "openProjectDefaultCheckout": [
+        "D02a-028"
+      ],
+      "finishProjectAddWithDefaultCheckout": [
+        "D02a-028"
+      ],
+      "useAddRepoHostChangeReset": [
+        "D02a-004"
+      ],
+      "useAddRepoHostSelection": [
+        "D02a-003"
+      ],
+      "AddRepoDialogHostedController": "INFRA: type-only contract for hosted dialog controller",
+      "useAddRepoHostedController": [
+        "D02a-040"
+      ],
+      "useAddRepoRemoteNestedScan": [
+        "D02a-021"
+      ],
+      "useCompleteGitRepoAdd": [
+        "D02a-031"
+      ],
+      "useAddRepoCloneFlow": [
+        "D02a-012",
+        "D02a-014"
+      ],
+      "useAddRepoLocalFolderFlow": [
+        "D02a-008",
+        "D02a-009"
+      ],
+      "useAddRepoNestedImportFlow": [
+        "D02a-024",
+        "D02a-025"
+      ],
+      "useAddRepoNestedReviewController": [
+        "D02a-023"
+      ],
+      "useAddRepoNestedReviewState": [
+        "D02a-023"
+      ],
+      "useAddRepoServerPathFlow": [
+        "D02a-010",
+        "D02a-011"
+      ],
+      "useCreateProjectDefaults": [
+        "D02a-017"
+      ],
+      "CreateRuntimeParentStatus": "INFRA: type-only union of runtime parent probe states ('idle' | 'checking' | 'failed')",
+      "useCreateRepo": [
+        "D02a-018"
+      ],
+      "components/sidebar/AddProjectFromFolderDialog.tsx:default": "D02a-026",
+      "components/sidebar/AddRepoDialog.tsx:default": "D02a-001",
+      "components/sidebar/ProjectAddedDialog.tsx:default": "D02a-027"
+    },
+    "tests": {
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:128 :: AddProjectFromFolderDialog": "INFRA: describe block grouping AddProjectFromFolderDialog test suite",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:145 :: adds a local Git folder and opens the default checkout": "D02a-026",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:174 :: leaves local non-Git folders on the existing Open as Folder confirmation path": "D02a-026",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:193 :: routes a runtime project": "D02a-026",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:222 :: adds an SSH Git folder through the remote repo import path": "D02a-026",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:256 :: falls back to completion when Git worktree refresh is not authoritative": "D02a-026",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:279 :: does not finish the handoff after the user cancels during refresh": "D02a-026",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:304 :: sends SSH non-Git folders to the Open as Folder confirmation with the connection id": "D02a-026",
+      "components/sidebar/AddRepoCreateStep.test.tsx:41 :: CreateStep": "INFRA: describe block grouping CreateStep test suite",
+      "components/sidebar/AddRepoCreateStep.test.tsx:42 :: renders the name-first create UI with advanced controls collapsed": "D02a-015",
+      "components/sidebar/AddRepoCreateStep.test.tsx:55 :: shows the Git-required explanation in the collapsed summary": "D02a-015",
+      "components/sidebar/AddRepoCreateStep.test.tsx:66 :: disables create while an auto-filled parent belongs to a previous target": "D02a-015",
+      "components/sidebar/AddRepoDialog.default-checkout.test.ts:8 :: AddRepo completion owner routing": "INFRA: describe block grouping AddRepo completion owner routing test suite",
+      "components/sidebar/AddRepoDialog.default-checkout.test.ts:9 :: routes an explicitly local completion to the local host": "D02a-001",
+      "components/sidebar/AddRepoDialog.default-checkout.test.ts:16 :: routes an explicitly runtime completion to its captured runtime": "D02a-001",
+      "components/sidebar/AddRepoDialog.default-checkout.test.ts:23 :: leaves an absent owner distinguishable from explicit local ownership": "D02a-001",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:103 :: AddRepoDialogStepContent nested imports": "INFRA: describe block grouping AddRepoDialogStepContent nested imports test suite",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:104 :: asks the grouping question when no repos exist yet": "D02a-022",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:114 :: shows the same grouping import controls after a repo already exists": "D02a-022",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:124 :: offers opening the parent folder when nested import selection is empty": "D02a-022",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:133 :: offers host browsing for remote create project locations": "D02a-016",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:144 :: uses manual path entry for SSH create project locations": "D02a-016",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:159 :: offers host browsing for remote clone destinations": "D02a-012",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:170 :: offers SSH browsing for selected-host clone destinations": "D02a-012",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:184 :: hides the SSH target chooser after a host was already selected": "D02a-019",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:227 :: shows a connect affordance for a selected disconnected SSH host": "D02a-019",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:257 :: uses SSH-aware copy on the add step when an SSH host is selected": "D02a-019",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:268 :: uses the standard add step for remote Orca server hosts": "D02a-002",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:285 :: opens the in-app filesystem browser for a paired runtime": "D02a-010",
+      "components/sidebar/AddRepoHostSelector.test.tsx:31 :: AddRepoHostSelector": "INFRA: describe block grouping AddRepoHostSelector test suite",
+      "components/sidebar/AddRepoHostSelector.test.tsx:32 :: shows a remote host setup menu when Local Mac is the only host": "D02a-005",
+      "components/sidebar/AddRepoHostSelector.test.tsx:61 :: shows disconnected SSH hosts with a connect action in Add Project": "D02a-003",
+      "components/sidebar/AddRepoHostSelector.test.tsx:97 :: shows exact update guidance for incompatible runtime hosts": "D02a-003",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:63 :: AddRepoNestedImportStep": "INFRA: describe block grouping AddRepoNestedImportStep test suite",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:76 :: asks whether the selected folder should be grouped": "D02a-022",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:96 :: disables both import actions while scanning": "D02a-022",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:106 :: maps the group choice to grouped import and the separate choice to separate import": "D02a-022",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:143 :: shows progress only on the clicked import action": "D02a-022",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:188 :: offers opening the parent folder when no repositories are selected": "D02a-022",
+      "components/sidebar/AddRepoStartSteps.test.tsx:165 :: AddRepoLocalStartStep": "INFRA: describe block grouping AddRepoLocalStartStep test suite",
+      "components/sidebar/AddRepoStartSteps.test.tsx:170 :: promotes browse folder and keeps secondary actions always visible": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:181 :: orders secondary actions clone-first for default users": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:192 :: keeps Browse folder primary for SSH-likely users": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:201 :: orders secondary actions remote-first for SSH-likely users": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:212 :: lets host-aware Add Project replace the separate remote row": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:219 :: uses host-neutral browse copy for runtime hosts": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:226 :: focuses Browse folder when the default Add Project step opens": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:237 :: focuses Browse folder for SSH-likely users too": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:250 :: renders secondary actions as enabled buttons without a disclosure toggle": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:262 :: disables host-scoped actions until a host is selectable": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:276 :: marks the autofocused Browse action as selected with the ⏎ chip": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:287 :: moves the ⏎ selection to whichever action receives focus": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:303 :: clears the ⏎ selection when focus leaves the action list": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:321 :: does not show an ⏎ selection while add actions are busy": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:345 :: hides the visual ⏎ chip from assistive technology": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:359 :: roves selection down the action list with the ArrowDown key": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.test.tsx:379 :: AddRepoServerPathStartStep": "INFRA: describe block grouping AddRepoServerPathStartStep test suite",
+      "components/sidebar/AddRepoStartSteps.test.tsx:380 :: uses native-style project entry cards in server mode": "D02a-010",
+      "components/sidebar/AddRepoStartSteps.test.tsx:392 :: disables server entry cards without an active runtime environment": "D02a-010",
+      "components/sidebar/AddRepoSteps.default-checkout.test.ts:90 :: useRemoteRepo default-checkout handoff": "INFRA: describe block grouping useRemoteRepo default-checkout handoff test suite",
+      "components/sidebar/AddRepoSteps.default-checkout.test.ts:118 :: requests an authoritative worktree refresh before handoff": "D02a-020",
+      "components/sidebar/AddRepoSteps.default-checkout.test.ts:154 :: continues to completion when refresh is not authoritative after remote add": "D02a-020",
+      "components/sidebar/AddRepoSteps.default-checkout.test.ts:179 :: preselects the preferred SSH target when opening Browse for a selected host": "D02a-020",
+      "components/sidebar/AddRepoSteps.default-checkout.test.ts:198 :: pins SSH nested scans and cancellation to the local provider": "D02a-021",
+      "components/sidebar/ProjectAddedDialog.test.tsx:64 :: ProjectAddedDialog": "INFRA: describe block grouping ProjectAddedDialog test suite",
+      "components/sidebar/ProjectAddedDialog.test.tsx:75 :: fetches worktrees and finishes by opening the default checkout for Git repos": "D02a-027",
+      "components/sidebar/ProjectAddedDialog.test.tsx:91 :: does not block the compatibility handoff during StrictMode effect replay": "D02a-027",
+      "components/sidebar/ProjectAddedDialog.test.tsx:123 :: accepts older onboarding modal data that uses projectId": "D02a-027",
+      "components/sidebar/ProjectAddedDialog.test.tsx:136 :: activates the synthetic folder workspace for folder repos": "D02a-027",
+      "components/sidebar/ProjectAddedDialog.test.tsx:155 :: closes malformed modal data without blocking the app invisibly": "D02a-027",
+      "components/sidebar/ProjectAddedDialog.test.tsx:167 :: refreshes repos before closing a stale repo id": "D02a-027",
+      "components/sidebar/ProjectAddedDialog.test.tsx:181 :: waits for repo hydration and does not close when fetchRepos supplies the repo": "D02a-027",
+      "components/sidebar/add-repo-browse-authority.test.ts:5 :: routeAddRepoBrowse": "INFRA: describe block grouping routeAddRepoBrowse test suite",
+      "components/sidebar/add-repo-browse-authority.test.ts:6 :: opens paired host browsing without invoking native pickFolders": "D02a-007",
+      "components/sidebar/add-repo-browse-authority.test.ts:20 :: preserves native folder browsing for desktop local hosts": "D02a-007",
+      "components/sidebar/add-repo-browse-authority.test.ts:32 :: preserves SSH host browsing": "D02a-007",
+      "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:32 :: add repo existing workspace telemetry": "INFRA: describe block grouping add repo existing workspace telemetry test suite",
+      "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:33 :: builds count-only payloads without raw workspace names": "D02a-031",
+      "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:67 :: tracks detection only for imported linked workspaces": "D02a-031",
+      "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:100 :: derives linked and detached counts before clamping reported values": "D02a-031",
+      "components/sidebar/add-repo-existing-workspaces-telemetry.test.ts:121 :: sorts without crashing when a detected worktree has no displayName (crash 99657ab1)": "D02a-031",
+      "components/sidebar/add-repo-skip-finalization.test.ts:49 :: finalizeImportedRepoAfterSkip": "INFRA: describe block grouping finalizeImportedRepoAfterSkip test suite",
+      "components/sidebar/add-repo-skip-finalization.test.ts:50 :: keeps skipped imported worktrees visible without activating a worktree": "D02a-030",
+      "components/sidebar/add-repo-skip-finalization.test.ts:69 :: leaves the project filter off when the import lands with no filter": "D02a-030",
+      "components/sidebar/add-repo-skip-finalization.test.ts:77 :: clears default-branch hiding when it would hide every imported worktree": "D02a-030",
+      "components/sidebar/add-repo-skip-finalization.test.ts:97 :: re-enables the default-branch exemption when the import would land asleep and hidden": "D02a-030",
+      "components/sidebar/add-repo-skip-finalization.test.ts:118 :: leaves the default-branch exemption alone when sleeping workspaces are shown": "D02a-030",
+      "components/sidebar/add-repo-skip-finalization.test.ts:139 :: still reveals the imported repo when it has no discovered worktrees yet": "D02a-030",
+      "components/sidebar/clone-defaults.test.ts:4 :: getDefaultCloneParent": "INFRA: describe block grouping getDefaultCloneParent test suite",
+      "components/sidebar/clone-defaults.test.ts:5 :: strips a POSIX workspaces suffix": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:9 :: strips a POSIX workspaces suffix with a trailing slash": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:13 :: strips a Windows workspaces suffix": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:19 :: leaves input without a workspaces suffix unchanged": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:23 :: returns empty input unchanged": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:27 :: returns an empty parent for workspaces alone": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:31 :: returns root for an absolute root workspaces path": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:35 :: returns the drive root for a Windows root workspaces path": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:39 :: strips repeated trailing separators before matching the suffix": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:43 :: does not strip a similar-looking final segment": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:50 :: getCloneDestinationAutoFill": "INFRA: describe block grouping getCloneDestinationAutoFill test suite",
+      "components/sidebar/clone-defaults.test.ts:51 :: fills the local clone destination from the workspace directory": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:63 :: waits for a workspace directory before filling": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:75 :: does not overwrite typed destinations or repeat an auto-fill": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:96 :: does not fill server clone destinations for runtime environments": "D02a-013",
+      "components/sidebar/clone-defaults.test.ts:108 :: does not fill SSH clone destinations from the local workspace directory": "D02a-013",
+      "components/sidebar/create-project-defaults.test.ts:9 :: create project defaults": "INFRA: describe block grouping create project defaults test suite",
+      "components/sidebar/create-project-defaults.test.ts:10 :: builds the POSIX default project parent": "D02a-017",
+      "components/sidebar/create-project-defaults.test.ts:14 :: builds the Windows default project parent": "D02a-017",
+      "components/sidebar/create-project-defaults.test.ts:20 :: derives the runtime project default from a resolved server home": "D02a-017",
+      "components/sidebar/create-project-defaults.test.ts:24 :: joins path previews without mixing separators": "D02a-017",
+      "components/sidebar/create-project-defaults.test.ts:33 :: auto-fills only the first empty local create step": "D02a-017",
+      "components/sidebar/create-project-defaults.test.ts:63 :: does not apply a local default while a runtime environment is active": "D02a-017",
+      "components/sidebar/create-project-defaults.test.ts:75 :: uses a short local summary only for the local default parent": "D02a-017",
+      "components/sidebar/create-project-defaults.test.ts:117 :: keeps a configured Workspace Directory verbatim in the summary": "D02a-017",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:73 :: getFolderWorkspaceCardPrDisplay": "INFRA: describe block grouping getFolderWorkspaceCardPrDisplay test suite",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:74 :: uses the existing repo lookup without enumerating all repos": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:92 :: uses failing attached PR status ahead of pending and passing PRs": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:122 :: uses pending attached PR status ahead of passing PRs": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:148 :: omits a matching suppressed branch PR from attached worktrees": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:168 :: includes nested attached worktree PRs": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:190 :: includes a nested PR from exact inline-only legacy lineage": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:211 :: keeps a stale side-map entry authoritative over valid inline lineage": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:270 :: excludes nested PRs from cyclic projected lineage": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:293 :: uses branch-discovered PR cache for unlinked attached worktrees": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:311 :: uses the right-sidebar classified status for conflicting PRs": "D02a-038",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:332 :: does not use stale merged branch PR cache after the worktree advances": "D02a-038",
+      "components/sidebar/folder-workspace-composer-helpers.test.ts:38 :: getFolderSourceRepos": "INFRA: describe block grouping getFolderSourceRepos test suite",
+      "components/sidebar/folder-workspace-composer-helpers.test.ts:39 :: only returns source repos from the same execution host as the folder group": "D02a-037",
+      "components/sidebar/folder-workspace-composer-helpers.test.ts:59 :: returns runtime source repos for runtime-owned folder groups": "D02a-037",
+      "components/sidebar/folder-workspace-composer-helpers.test.ts:83 :: getFolderWorkspacePrimaryActionLabel": "INFRA: describe block grouping getFolderWorkspacePrimaryActionLabel test suite",
+      "components/sidebar/folder-workspace-composer-helpers.test.ts:84 :: uses a stable workspace creation label independent of quick agent selection": "D02a-037",
+      "components/sidebar/folder-workspace-composer-path-status.test.tsx:38 :: useFolderWorkspaceComposerPathStatus": "INFRA: describe block grouping useFolderWorkspaceComposerPathStatus test suite",
+      "components/sidebar/folder-workspace-composer-path-status.test.tsx:52 :: blocks creation while an expired path status refresh is pending": "D02a-036",
+      "components/sidebar/folder-workspace-composer-path-status.test.tsx:118 :: unblocks creation when the first path status check settles without cache": "D02a-036",
+      "components/sidebar/folder-workspace-composer-path-status.test.tsx:157 :: blocks creation while the first path status check is unknown": "D02a-036",
+      "components/sidebar/folder-workspace-composer-path-status.test.tsx:183 :: does not block creation for an unavailable path status": "D02a-036",
+      "components/sidebar/folder-workspace-composer-path-status.test.tsx:220 :: blocks while refreshing after a cached blocking path status expires": "D02a-036",
+      "components/sidebar/folder-workspace-composer-path-status.test.tsx:281 :: tracks settled path status refreshes by cache key and expiry generation": "D02a-036",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:71 :: submitFolderWorkspaceCreate": "INFRA: describe block grouping submitFolderWorkspaceCreate test suite",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:90 :: closes the composer after creation even when reveal fails": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:128 :: marks a blank folder workspace for first-input rename when launching an agent with a note": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:176 :: does not mark first-input rename when the folder workspace has an explicit name": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:201 :: does not mark first-input rename when a linked work item owns the folder workspace name": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:234 :: creates a Jira folder workspace with its bound source context": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:280 :: keeps linked Codex context out of submitted startup and pastes it as a draft": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:332 :: pre-marks remote linked Codex folder workspaces trusted before draft paste": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:383 :: delivers non-linked follow-up prompts for agents that need stdin after launch": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:412 :: uses native draft launch for linked agents with prefill support": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:443 :: uses native prefill for link-only Linear folder workspace drafts": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:505 :: keeps explicit blank linked folder creates free of agent startup and draft paste": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:542 :: does not mark first-input rename without submitted first input": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:567 :: quotes quick-agent startup for POSIX when the folder group is a local WSL UNC path": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:599 :: quotes quick-agent startup for Windows when the remote folder group uses a Windows path": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:632 :: preserves SSH group ownership when creating and activating a folder workspace": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:669 :: returns false when folder workspace creation fails without returning a workspace": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:693 :: submitFolderWorkspaceCreate native-chat launch draft": "INFRA: describe block grouping submitFolderWorkspaceCreate native-chat launch draft test suite",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:724 :: mirrors a startup-paste draft into the chat composer": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:741 :: mirrors an argv-prefill draft, which never lands in startupPlan.draftPrompt": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:763 :: mirrors a multi-line draft into chat": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:787 :: does not mirror an unlinked note, which is submitted rather than drafted": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:805 :: folder-workspace draft: seeded set == chat-opening set": "INFRA: describe block grouping folder-workspace draft: seeded set == chat-opening set test suite",
+      "components/sidebar/folder-workspace-linked-startup-plan.test.ts:4 :: buildFolderWorkspaceLinkedStartupPlan": "INFRA: describe block grouping buildFolderWorkspaceLinkedStartupPlan test suite",
+      "components/sidebar/folder-workspace-linked-startup-plan.test.ts:5 :: uses cmd quoting for configured arguments on local Windows": "D02a-035",
+      "components/sidebar/project-added-default-checkout.test.ts:106 :: getProjectDefaultCheckout": "INFRA: describe block grouping getProjectDefaultCheckout test suite",
+      "components/sidebar/project-added-default-checkout.test.ts:107 :: returns the main worktree rather than the first worktree": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:123 :: finishProjectAddWithDefaultCheckout": "INFRA: describe block grouping finishProjectAddWithDefaultCheckout test suite",
+      "components/sidebar/project-added-default-checkout.test.ts:147 :: closes the modal and activates the default checkout": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:179 :: activates only the captured host default checkout when repo IDs collide": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:224 :: activates a runtime-owned checkout even when its physical host is private SSH": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:244 :: passes a contained selected path through as the initial terminal cwd": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:261 :: skips the initial cwd override when the selected path is the repo root": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:276 :: shows a hidden detected default checkout before activating it": "D02a-029",
+      "components/sidebar/project-added-default-checkout.test.ts:320 :: reveals detected sibling external worktrees when the default checkout is already loaded": "D02a-029",
+      "components/sidebar/project-added-default-checkout.test.ts:349 :: does not refresh already-visible sibling external worktrees": "D02a-029",
+      "components/sidebar/project-added-default-checkout.test.ts:374 :: does not flip visibility when the only hidden siblings are agent scratch": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:394 :: does not repeat linked-worktree reveal after a hidden default checkout refresh": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:439 :: reveals the project if showing sibling external worktrees fails": "D02a-029",
+      "components/sidebar/project-added-default-checkout.test.ts:464 :: reveals the project if sibling external worktree refresh is not authoritative": "D02a-029",
+      "components/sidebar/project-added-default-checkout.test.ts:489 :: reveals the project if no default checkout is available": "D02a-028",
+      "components/sidebar/project-added-default-checkout.test.ts:514 :: reveals the project even when no worktrees are loaded": "D02a-028",
+      "components/sidebar/use-add-repo-host-selection.test.ts:72 :: useAddRepoHostSelection": "INFRA: describe block grouping useAddRepoHostSelection test suite",
+      "components/sidebar/use-add-repo-host-selection.test.ts:122 :: exposes the selected SSH target id": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:133 :: selects a runtime host without changing the durable active server": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:146 :: uses the paired runtime as the only local filesystem authority in web clients": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:161 :: has no local fallback while a paired web runtime is loading": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:196 :: selects a local or SSH host without changing the durable active server": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:210 :: falls back from a disconnected selected SSH host to Local Mac": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:224 :: does not select a disconnected SSH host": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:241 :: connects and selects a disconnected SSH host from Add Project": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:273 :: does not auto-select the active runtime host while it is unavailable": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:287 :: hides ephemeral VM runtime hosts from Add Project selection": "D02a-003",
+      "components/sidebar/use-add-repo-hosted-controller.test.ts:35 :: useAddRepoHostedController": "INFRA: describe block grouping useAddRepoHostedController test suite",
+      "components/sidebar/use-add-repo-hosted-controller.test.ts:40 :: falls back to the store closeModal without a hosted controller": "D02a-040",
+      "components/sidebar/use-add-repo-hosted-controller.test.ts:50 :: closes only the hosted dialog, never the store modal slot": "D02a-040",
+      "components/sidebar/use-add-repo-hosted-controller.test.ts:62 :: folder handoffs close both the hosted dialog and the composer modal": "D02a-040",
+      "components/sidebar/use-add-repo-hosted-controller.test.ts:77 :: finishProjectAdd closes the hosted dialog and hands the repo to the host": "D02a-040",
+      "components/sidebar/use-add-repo-hosted-controller.test.ts:96 :: SSH settings navigation closes both hosted dialog and composer modal": "D02a-040",
+      "components/sidebar/useAddRepoCloneFlow.test.ts:92 :: useAddRepoCloneFlow": "INFRA: describe block grouping useAddRepoCloneFlow test suite",
+      "components/sidebar/useAddRepoCloneFlow.test.ts:115 :: clones through the selected SSH target": "D02a-014",
+      "components/sidebar/useAddRepoCloneFlow.test.ts:155 :: does not prefill SSH clone destinations from the local workspace directory": "D02a-014",
+      "components/sidebar/useAddRepoCloneFlow.test.ts:172 :: strips Electron IPC wrappers from clone errors": "D02a-014",
+      "components/sidebar/useAddRepoCloneFlow.test.ts:193 :: clones through the selected runtime environment": "D02a-014",
+      "components/sidebar/useAddRepoLocalFolderFlow.test.ts:58 :: useAddRepoLocalFolderFlow": "INFRA: describe block grouping useAddRepoLocalFolderFlow test suite",
+      "components/sidebar/useAddRepoLocalFolderFlow.test.ts:86 :: adds every selected local folder and completes one default-checkout handoff": "D02a-008",
+      "components/sidebar/useAddRepoLocalFolderFlow.test.ts:133 :: skips nested-review folders in a multi-folder add and continues with git folders": "D02a-009",
+      "components/sidebar/useAddRepoLocalFolderFlow.test.ts:172 :: still completes handoff when a later selected folder is skipped": "D02a-008",
+      "components/sidebar/useAddRepoLocalFolderFlow.test.ts:208 :: drops a local scan completion after host-scoped reset": "D02a-008",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:95 :: useAddRepoNestedImportFlow open folder fallback": "INFRA: describe block grouping useAddRepoNestedImportFlow open folder fallback test suite",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:102 :: opens the scanned local root through the existing non-git folder flow": "D02a-025",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:116 :: keeps runtime folder opens on the runtime that produced the scan": "D02a-025",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:129 :: names the folder project after the edited group name": "D02a-025",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:142 :: leaves host basename naming alone when the group name is untouched": "D02a-025",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:154 :: carries the edited group name into the SSH folder confirmation": "D02a-025",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:169 :: tracks the open-as-folder recovery action with zero selection": "D02a-025",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:186 :: uses the existing SSH non-git folder confirmation for SSH scans": "D02a-024",
+      "components/sidebar/useAddRepoNestedImportFlow.test.ts:202 :: keeps SSH import and completion pinned when repo hydration is missing": "D02a-024",
+      "components/sidebar/useAddRepoServerPathFlow.test.ts:64 :: useAddRepoServerPathFlow": "INFRA: describe block grouping useAddRepoServerPathFlow test suite",
+      "components/sidebar/useAddRepoServerPathFlow.test.ts:72 :: marks onboarding folder progress before closing server folder adds": "D02a-011",
+      "components/sidebar/useAddRepoServerPathFlow.test.ts:102 :: routes the nested Git pre-scan and add through the selected runtime": "D02a-011",
+      "components/sidebar/useCreateProjectDefaults.test.ts:76 :: useCreateProjectDefaults": "INFRA: describe block grouping useCreateProjectDefaults test suite",
+      "components/sidebar/useCreateProjectDefaults.test.ts:94 :: auto-fills the local default parent and reports Git availability": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:107 :: auto-fills the local home default regardless of workspace directory settings": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:118 :: keeps the local default marker after the auto-filled parent rerenders the hook": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:128 :: reports unavailable Git without changing the fixed project kind": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:137 :: reports unknown availability when the Git probe fails": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:146 :: does not overwrite a parent the user already chose": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:155 :: resolves the runtime default parent from the host home directory": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:176 :: replaces an untouched local default when switching to a runtime target": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:207 :: does not replace a touched parent when switching to a runtime target": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:234 :: marks the runtime parent lookup failed without filling a parent": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:245 :: does not use client defaults or Git probing for SSH targets": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.test.ts:258 :: does nothing outside the create step": "D02a-017",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:101 :: useCreateRepo default-checkout handoff": "INFRA: describe block grouping useCreateRepo default-checkout handoff test suite",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:129 :: requests an authoritative worktree refresh before handoff": "D02a-018",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:155 :: returns the selected parent directory after the local picker applies it": "D02a-018",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:166 :: does not return a parent path when the runtime target blocks the local picker": "D02a-018",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:178 :: continues to completion when refresh is not authoritative after create": "D02a-018",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:196 :: opens an existing folder project returned by create dedupe": "D02a-018",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:224 :: creates projects through the SSH host when an SSH target is selected": "D02a-018",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:253 :: creates projects through the selected runtime environment": "D02a-018",
+      "components/sidebar/folder-workspace-card-pr-display.test.ts:241 :: excludes nested PRs across a %s boundary": "D02a-038",
+      "components/sidebar/use-add-repo-host-selection.test.ts:176 :: has no paired-web fallback when the only host is %s": "D02a-003"
+    },
+    "labels": {
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:7 :: label: string": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:79 :: mocks.buttons.push({ label: textContent(children), onClick, disabled })": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddProjectFromFolderDialog.test.tsx:120 :: function getButton(label: string): ButtonCapture {": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddRepoCloneStep.tsx:121 :: placeholder={translate(": "D02a-012",
+      "components/sidebar/AddRepoCloneStep.tsx:140 :: placeholder={": "D02a-012",
+      "components/sidebar/AddRepoCloneStep.tsx:166 :: title={": "D02a-012",
+      "components/sidebar/AddRepoCloneStep.tsx:174 :: aria-label={": "D02a-012",
+      "components/sidebar/AddRepoCreateStep.test.tsx:4 :: import { TooltipProvider } from '@/components/ui/tooltip'": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddRepoCreateStep.test.tsx:52 :: expect(html).not.toContain('aria-label=\"Browse host filesystem\"')": "D02a-016",
+      "components/sidebar/AddRepoCreateStep.tsx:160 :: placeholder={translate(": "D02a-015",
+      "components/sidebar/AddRepoCreateStep.tsx:220 :: title={targetPathPreview}": "D02a-015",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:5 :: import { TooltipProvider } from '@/components/ui/tooltip'": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:108 :: expect(html).toContain('aria-label=\"Group name\"')": "D02a-022",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:118 :: expect(html).toContain('aria-label=\"Group name\"')": "D02a-022",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:153 :: expect(html).toContain('placeholder=\"/home/user/projects\"')": "D02a-016",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:154 :: expect(html).toContain('aria-label=\"Browse host filesystem\"')": "D02a-016",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:155 :: expect(html).not.toMatch(/<button[^>]*disabled=\"\"[^>]*aria-label=\"Browse host filesystem\"/)": "D02a-016",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:167 :: expect(html).toContain('aria-label=\"Browse host filesystem\"')": "D02a-016",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:180 :: expect(html).toContain('aria-label=\"Browse host filesystem\"')": "D02a-016",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:181 :: expect(html).not.toContain('aria-label=\"Choose folder\"')": "INFRA: test assertion or label fixture in unit test",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:192 :: label: 'github.com',": "D02a-003",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:205 :: label: 'openclaw 2',": "D02a-003",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:235 :: label: 'openclaw 2',": "D02a-003",
+      "components/sidebar/AddRepoDialogStepContent.test.tsx:253 :: expect(html).toContain('placeholder=\"/home/user/project\"')": "INFRA: test assertion or label fixture in unit test",
+      "components/sidebar/AddRepoHostSelector.test.tsx:38 :: label: 'Local Mac',": "D02a-003",
+      "components/sidebar/AddRepoHostSelector.test.tsx:67 :: label: 'Local Mac',": "D02a-003",
+      "components/sidebar/AddRepoHostSelector.test.tsx:75 :: label: 'Builder',": "D02a-003",
+      "components/sidebar/AddRepoHostSelector.test.tsx:103 :: label: 'Local Mac',": "D02a-003",
+      "components/sidebar/AddRepoHostSelector.test.tsx:111 :: label: 'Old server',": "INFRA: test assertion or label fixture in unit test",
+      "components/sidebar/AddRepoHostSelector.tsx:69 :: title={getHostStatusDetail(selectedHost)}": "D02a-003",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:8 :: import { TooltipProvider } from '@/components/ui/tooltip'": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:53 :: function findButton(container: HTMLElement, label: string): HTMLButtonElement {": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddRepoNestedImportStep.test.tsx:82 :: expect(html).toContain('aria-label=\"Group name\"')": "D02a-022",
+      "components/sidebar/AddRepoNestedImportStep.tsx:7 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D02a-041",
+      "components/sidebar/AddRepoNestedImportStep.tsx:139 :: aria-label={translate(": "D02a-022",
+      "components/sidebar/AddRepoNestedImportStep.tsx:147 :: placeholder={folderName}": "D02a-022",
+      "components/sidebar/AddRepoNestedImportStep.tsx:212 :: aria-label={translate(": "D02a-022",
+      "components/sidebar/AddRepoNestedImportStep.tsx:216 :: title={translate(": "D02a-022",
+      "components/sidebar/AddRepoRemoteStep.tsx:182 :: placeholder={translate(": "D02a-019",
+      "components/sidebar/AddRepoServerStartStep.tsx:6 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D02a-010",
+      "components/sidebar/AddRepoServerStartStep.tsx:94 :: title={translate(": "D02a-010",
+      "components/sidebar/AddRepoServerStartStep.tsx:107 :: title={translate(": "D02a-010",
+      "components/sidebar/AddRepoServerStartStep.tsx:120 :: title={translate(": "D02a-010",
+      "components/sidebar/AddRepoServerStartStep.tsx:192 :: placeholder={translate(": "D02a-010",
+      "components/sidebar/AddRepoServerStartStep.tsx:210 :: aria-label={translate(": "D02a-010",
+      "components/sidebar/AddRepoStartSteps.test.tsx:8 :: import { TooltipProvider } from '@/components/ui/tooltip'": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddRepoStartSteps.test.tsx:97 :: function findButton(container: HTMLElement, label: string): HTMLButtonElement {": "INFRA: test mock/helper/type definition for button/label capture",
+      "components/sidebar/AddRepoStartSteps.test.tsx:329 :: 'button[aria-label=\"Stop scan\"]'": "D02a-041",
+      "components/sidebar/AddRepoStartSteps.tsx:6 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D02a-041",
+      "components/sidebar/AddRepoStartSteps.tsx:36 :: aria-label={translate(": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.tsx:40 :: title={translate(": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.tsx:178 :: title={primaryAction.title}": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.tsx:200 :: title={action.title}": "D02a-006",
+      "components/sidebar/AddRepoSteps.default-checkout.test.ts:100 :: { id: 'ssh-1', label: 'Builder 1' },": "D02a-003",
+      "components/sidebar/AddRepoSteps.default-checkout.test.ts:101 :: { id: 'ssh-2', label: 'Builder 2' }": "D02a-003",
+      "components/sidebar/CreateProjectLocationField.tsx:5 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D02a-016",
+      "components/sidebar/CreateProjectLocationField.tsx:97 :: placeholder={translate(": "D02a-016",
+      "components/sidebar/CreateProjectLocationField.tsx:114 :: aria-label={translate(": "D02a-016",
+      "components/sidebar/CreateProjectLocationField.tsx:132 :: <span className=\"flex-1 min-w-0 truncate font-mono text-[12px]\" title={createParent}>": "D02a-016",
+      "components/sidebar/CreateProjectLocationField.tsx:140 :: aria-label={translate(": "D02a-016",
+      "components/sidebar/use-add-repo-host-selection.test.ts:82 :: label: 'Local Mac',": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:90 :: label: 'Builder',": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.test.ts:98 :: label: 'Server',": "INFRA: test assertion or label fixture in unit test",
+      "components/sidebar/use-add-repo-host-selection.test.ts:291 :: label: 'orca VM abc12345',": "INFRA: test assertion or label fixture in unit test",
+      "components/sidebar/useAddRepoLocalFolderFlow.ts:68 :: setAddProjectBusyLabel: (label: string | null) => void": "INFRA: callback type signature for setting busy label",
+      "components/sidebar/useAddRepoServerPathFlow.ts:68 :: setAddProjectBusyLabel: (label: string | null) => void": "INFRA: callback type signature for setting busy label"
+    },
+    "hotkeys": {
+      "components/sidebar/AddRepoCloneStep.tsx:44 :: const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {": "D02a-012",
+      "components/sidebar/AddRepoRemoteStep.tsx:175 :: if (event.key === 'Enter' && !event.nativeEvent.isComposing) {": "D02a-019",
+      "components/sidebar/AddRepoStartSteps.test.tsx:364 :: new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })": "INFRA: simulated keydown event in arrow navigation unit test",
+      "components/sidebar/AddRepoStartSteps.tsx:5 :: import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.tsx:126 :: const handleArrowNavigation = (event: React.KeyboardEvent<HTMLDivElement>): void => {": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.tsx:127 :: if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.tsx:137 :: const delta = event.key === 'ArrowDown' ? 1 : -1": "D02a-006",
+      "components/sidebar/AddRepoStartSteps.tsx:243 :: <ShortcutKeyCombo": "D02a-006"
+    },
+    "prefs": {},
+    "timers": {
+      "components/sidebar/useCreateProjectDefaults.test.ts:59 :: return new Promise((resolve) => setTimeout(resolve, 0))": "INFRA: async test helper tick for promise resolution",
+      "components/sidebar/useCreateProjectDefaults.ts:26 :: let timeout: ReturnType<typeof setTimeout> | null = null": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.ts:28 :: timeout = setTimeout(() => reject(new Error('Timed out')), timeoutMs)": "D02a-017"
+    },
+    "subscriptions": {
+      "components/sidebar/AddRepoNestedImportStep.tsx:49 :: useEffect(() => {": "D02a-022",
+      "components/sidebar/AddRepoStartSteps.tsx:119 :: useEffect(() => {": "D02a-006",
+      "components/sidebar/AddRepoSteps.tsx:118 :: useEffect(() => {": "D02a-020",
+      "components/sidebar/ProjectAddedDialog.tsx:33 :: useEffect(() => {": "D02a-027",
+      "components/sidebar/folder-workspace-composer-path-status.ts:74 :: useEffect(() => {": "D02a-036",
+      "components/sidebar/use-add-repo-host-change-reset.ts:16 :: useEffect(() => {": "D02a-004",
+      "components/sidebar/use-add-repo-host-change-reset.ts:23 :: useEffect(() => {": "D02a-004",
+      "components/sidebar/use-add-repo-host-selection.ts:82 :: useEffect(() => {": "D02a-003",
+      "components/sidebar/useAddRepoCloneFlow.ts:65 :: useEffect(() => {": "D02a-014",
+      "components/sidebar/useAddRepoLocalFolderFlow.ts:283 :: useEffect(() => {": "D02a-008",
+      "components/sidebar/useCreateProjectDefaults.ts:130 :: useEffect(() => {": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.ts:187 :: useEffect(() => {": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.ts:256 :: useEffect(() => {": "D02a-017"
+    },
+    "preload": {
+      "components/sidebar/AddProjectFromFolderDialog.tsx:77 :: const result = await window.api.repos.addRemote({": "D02a-026",
+      "components/sidebar/AddRepoDialog.tsx:213 :: void window.api.repos.cloneAbort()": "D02a-001",
+      "components/sidebar/AddRepoSteps.tsx:78 :: const targets = (await window.api.ssh.listTargets()) as SshTarget[]": "D02a-020",
+      "components/sidebar/AddRepoSteps.tsx:84 :: const state = (await window.api.ssh.getState({": "D02a-020",
+      "components/sidebar/AddRepoSteps.tsx:119 :: const unsubscribe = window.api.ssh.onStateChanged(({ targetId, state }) => {": "D02a-020",
+      "components/sidebar/AddRepoSteps.tsx:130 :: await window.api.ssh.connect({ targetId })": "D02a-020",
+      "components/sidebar/AddRepoSteps.tsx:185 :: const result = await window.api.repos.addRemote({": "D02a-020",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:316 :: expect(window.api.agentTrust?.markTrusted).toHaveBeenCalledWith({": "D02a-034",
+      "components/sidebar/folder-workspace-composer-submit.test.ts:367 :: expect(window.api.agentTrust?.markTrusted).toHaveBeenCalledWith({": "D02a-034",
+      "components/sidebar/use-add-repo-host-selection.ts:132 :: const connectResult = (await window.api.ssh.connect({": "D02a-003",
+      "components/sidebar/use-add-repo-host-selection.ts:137 :: ((await window.api.ssh.getState({": "D02a-003",
+      "components/sidebar/useAddRepoCloneFlow.ts:69 :: return window.api.repos.onCloneProgress(setCloneProgress)": "D02a-014",
+      "components/sidebar/useAddRepoCloneFlow.ts:111 :: const dir = await window.api.repos.pickDirectory()": "D02a-014",
+      "components/sidebar/useAddRepoCloneFlow.ts:136 :: ? await window.api.repos.cloneRemote({": "D02a-014",
+      "components/sidebar/useAddRepoCloneFlow.ts:153 :: : ((await window.api.repos.clone({": "D02a-014",
+      "components/sidebar/useAddRepoLocalFolderFlow.ts:299 :: const paths = await window.api.repos.pickFolders()": "D02a-008",
+      "components/sidebar/useCreateProjectDefaults.ts:158 :: void window.api.repos": "D02a-017",
+      "components/sidebar/useCreateProjectDefaults.ts:276 :: : window.api.repos.isGitAvailable()": "D02a-017",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:157 :: vi.mocked(window.api.repos.pickDirectory).mockResolvedValue(pickedDir)": "D02a-018",
+      "components/sidebar/useCreateRepo.default-checkout.test.ts:174 :: expect(window.api.repos.pickDirectory).not.toHaveBeenCalled()": "D02a-018",
+      "components/sidebar/useCreateRepo.ts:77 :: const dir = await window.api.repos.pickDirectory()": "D02a-018",
+      "components/sidebar/useCreateRepo.ts:107 :: ? await window.api.repos.createRemote({": "D02a-018",
+      "components/sidebar/useCreateRepo.ts:124 :: : await window.api.repos.create({": "D02a-018"
+    }
+  }
+}

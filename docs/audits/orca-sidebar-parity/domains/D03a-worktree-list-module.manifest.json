@@ -1,0 +1,592 @@
+{
+ "domain": "D03a-worktree-list-module",
+ "prod": [
+  {
+   "name": "worktree-list/drag/drop-commit-context.ts",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "worktree-list/drag/groups.ts",
+   "kind": "prod",
+   "loc": 64
+  },
+  {
+   "name": "worktree-list/drag/pointer-commit.ts",
+   "kind": "prod",
+   "loc": 155
+  },
+  {
+   "name": "worktree-list/drag/pointer-flush.ts",
+   "kind": "prod",
+   "loc": 215
+  },
+  {
+   "name": "worktree-list/drag/row-state.ts",
+   "kind": "prod",
+   "loc": 165
+  },
+  {
+   "name": "worktree-list/drag/status-target.ts",
+   "kind": "prod",
+   "loc": 53
+  },
+  {
+   "name": "worktree-list/drag/use-document-drop.ts",
+   "kind": "prod",
+   "loc": 115
+  },
+  {
+   "name": "worktree-list/drag/use-drop-commit-context.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "worktree-list/drag/use-header-drag.ts",
+   "kind": "prod",
+   "loc": 235
+  },
+  {
+   "name": "worktree-list/drag/use-lineage-drop-commit.ts",
+   "kind": "prod",
+   "loc": 118
+  },
+  {
+   "name": "worktree-list/drag/use-native-autoscroll.ts",
+   "kind": "prod",
+   "loc": 108
+  },
+  {
+   "name": "worktree-list/drag/use-native-drag.ts",
+   "kind": "prod",
+   "loc": 232
+  },
+  {
+   "name": "worktree-list/drag/use-pointer-autoscroll.ts",
+   "kind": "prod",
+   "loc": 79
+  },
+  {
+   "name": "worktree-list/drag/use-pointer-drag.ts",
+   "kind": "prod",
+   "loc": 262
+  },
+  {
+   "name": "worktree-list/drag/use-pointer-window-events.ts",
+   "kind": "prod",
+   "loc": 109
+  },
+  {
+   "name": "worktree-list/drag/use-runtime.ts",
+   "kind": "prod",
+   "loc": 123
+  },
+  {
+   "name": "worktree-list/drag/use-session.ts",
+   "kind": "prod",
+   "loc": 237
+  },
+  {
+   "name": "worktree-list/drag/use-status-mutations.ts",
+   "kind": "prod",
+   "loc": 211
+  },
+  {
+   "name": "worktree-list/drag/use-status-row-drag.ts",
+   "kind": "prod",
+   "loc": 148
+  },
+  {
+   "name": "worktree-list/grouping/build-rows.ts",
+   "kind": "prod",
+   "loc": 252
+  },
+  {
+   "name": "worktree-list/grouping/folder-workspace-lanes.ts",
+   "kind": "prod",
+   "loc": 77
+  },
+  {
+   "name": "worktree-list/grouping/group-keys.ts",
+   "kind": "prod",
+   "loc": 174
+  },
+  {
+   "name": "worktree-list/grouping/group-sections.ts",
+   "kind": "prod",
+   "loc": 218
+  },
+  {
+   "name": "worktree-list/grouping/host-labels.ts",
+   "kind": "prod",
+   "loc": 246
+  },
+  {
+   "name": "worktree-list/grouping/pinned-group-rows.ts",
+   "kind": "prod",
+   "loc": 115
+  },
+  {
+   "name": "worktree-list/grouping/project-group-sections.ts",
+   "kind": "prod",
+   "loc": 140
+  },
+  {
+   "name": "worktree-list/grouping/project-grouping.ts",
+   "kind": "prod",
+   "loc": 169
+  },
+  {
+   "name": "worktree-list/grouping/row-builders.ts",
+   "kind": "prod",
+   "loc": 269
+  },
+  {
+   "name": "worktree-list/grouping/row-types.ts",
+   "kind": "prod",
+   "loc": 108
+  },
+  {
+   "name": "worktree-list/grouping/section-order.ts",
+   "kind": "prod",
+   "loc": 214
+  },
+  {
+   "name": "worktree-list/grouping/worktree-group-keys.ts",
+   "kind": "prod",
+   "loc": 80
+  },
+  {
+   "name": "worktree-list/grouping/worktree-grouping.ts",
+   "kind": "prod",
+   "loc": 244
+  },
+  {
+   "name": "worktree-list/listing/EmptyState.tsx",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "worktree-list/listing/host-filtering.ts",
+   "kind": "prod",
+   "loc": 146
+  },
+  {
+   "name": "worktree-list/listing/pending-worktree-creation-keys.ts",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "worktree-list/listing/render-row.ts",
+   "kind": "prod",
+   "loc": 31
+  },
+  {
+   "name": "worktree-list/listing/renderable-rows.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "worktree-list/listing/review-cache-inputs.ts",
+   "kind": "prod",
+   "loc": 44
+  },
+  {
+   "name": "worktree-list/listing/use-agent-send-target.ts",
+   "kind": "prod",
+   "loc": 64
+  },
+  {
+   "name": "worktree-list/listing/use-collapsed-groups.ts",
+   "kind": "prod",
+   "loc": 121
+  },
+  {
+   "name": "worktree-list/listing/use-external-worktree-cards.ts",
+   "kind": "prod",
+   "loc": 206
+  },
+  {
+   "name": "worktree-list/listing/use-filters.ts",
+   "kind": "prod",
+   "loc": 220
+  },
+  {
+   "name": "worktree-list/listing/use-folder-path-statuses.ts",
+   "kind": "prod",
+   "loc": 128
+  },
+  {
+   "name": "worktree-list/listing/use-host-visible-scope.ts",
+   "kind": "prod",
+   "loc": 72
+  },
+  {
+   "name": "worktree-list/listing/use-reused-array-identity.ts",
+   "kind": "prod",
+   "loc": 13
+  },
+  {
+   "name": "worktree-list/listing/use-section-rows.ts",
+   "kind": "prod",
+   "loc": 255
+  },
+  {
+   "name": "worktree-list/listing/use-sort-order.ts",
+   "kind": "prod",
+   "loc": 234
+  },
+  {
+   "name": "worktree-list/listing/use-visible-worktrees.ts",
+   "kind": "prod",
+   "loc": 138
+  },
+  {
+   "name": "worktree-list/navigation/active-descendant-option.ts",
+   "kind": "prod",
+   "loc": 103
+  },
+  {
+   "name": "worktree-list/navigation/folder-reveal.ts",
+   "kind": "prod",
+   "loc": 108
+  },
+  {
+   "name": "worktree-list/navigation/mounted-row-reveal.ts",
+   "kind": "prod",
+   "loc": 35
+  },
+  {
+   "name": "worktree-list/navigation/pending-reveal-inputs.ts",
+   "kind": "prod",
+   "loc": 155
+  },
+  {
+   "name": "worktree-list/navigation/render-row-lookup.ts",
+   "kind": "prod",
+   "loc": 135
+  },
+  {
+   "name": "worktree-list/navigation/reveal-ancestors.ts",
+   "kind": "prod",
+   "loc": 111
+  },
+  {
+   "name": "worktree-list/navigation/use-active-row.ts",
+   "kind": "prod",
+   "loc": 101
+  },
+  {
+   "name": "worktree-list/navigation/use-keyboard.ts",
+   "kind": "prod",
+   "loc": 168
+  },
+  {
+   "name": "worktree-list/navigation/use-pending-reveal.ts",
+   "kind": "prod",
+   "loc": 305
+  },
+  {
+   "name": "worktree-list/navigation/use-reveal-highlight.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "worktree-list/navigation/use-reveal-requests.ts",
+   "kind": "prod",
+   "loc": 218
+  },
+  {
+   "name": "worktree-list/navigation/use-selection.ts",
+   "kind": "prod",
+   "loc": 156
+  },
+  {
+   "name": "worktree-list/rows/FolderPathStatusIndicator.tsx",
+   "kind": "prod",
+   "loc": 47
+  },
+  {
+   "name": "worktree-list/rows/HostSectionHeader.tsx",
+   "kind": "prod",
+   "loc": 161
+  },
+  {
+   "name": "worktree-list/rows/ProjectGroupDialogs.tsx",
+   "kind": "prod",
+   "loc": 118
+  },
+  {
+   "name": "worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+   "kind": "prod",
+   "loc": 153
+  },
+  {
+   "name": "worktree-list/rows/SectionHeader.tsx",
+   "kind": "prod",
+   "loc": 403
+  },
+  {
+   "name": "worktree-list/rows/folder-row.tsx",
+   "kind": "prod",
+   "loc": 132
+  },
+  {
+   "name": "worktree-list/rows/header-event-guards.ts",
+   "kind": "prod",
+   "loc": 31
+  },
+  {
+   "name": "worktree-list/rows/indentation.ts",
+   "kind": "prod",
+   "loc": 243
+  },
+  {
+   "name": "worktree-list/rows/item-row.tsx",
+   "kind": "prod",
+   "loc": 262
+  },
+  {
+   "name": "worktree-list/rows/notice-rows.tsx",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "worktree-list/rows/option-dom.ts",
+   "kind": "prod",
+   "loc": 67
+  },
+  {
+   "name": "worktree-list/rows/project-group-header-actions.tsx",
+   "kind": "prod",
+   "loc": 136
+  },
+  {
+   "name": "worktree-list/rows/repo-header-project-actions.tsx",
+   "kind": "prod",
+   "loc": 246
+  },
+  {
+   "name": "worktree-list/rows/use-project-group-dialogs.ts",
+   "kind": "prod",
+   "loc": 206
+  },
+  {
+   "name": "worktree-list/rows/virtual-row-dispatch.tsx",
+   "kind": "prod",
+   "loc": 258
+  },
+  {
+   "name": "worktree-list/viewport/VirtualizedWorktreeViewport.tsx",
+   "kind": "prod",
+   "loc": 373
+  },
+  {
+   "name": "worktree-list/viewport/drop-indicators.tsx",
+   "kind": "prod",
+   "loc": 36
+  },
+  {
+   "name": "worktree-list/viewport/hard-scroll-up.ts",
+   "kind": "prod",
+   "loc": 338
+  },
+  {
+   "name": "worktree-list/viewport/use-group-toggle.ts",
+   "kind": "prod",
+   "loc": 30
+  },
+  {
+   "name": "worktree-list/viewport/use-row-measurement.ts",
+   "kind": "prod",
+   "loc": 124
+  },
+  {
+   "name": "worktree-list/viewport/use-row-removal-animation.ts",
+   "kind": "prod",
+   "loc": 121
+  },
+  {
+   "name": "worktree-list/viewport/use-scroll-suppression.ts",
+   "kind": "prod",
+   "loc": 90
+  },
+  {
+   "name": "worktree-list/viewport/use-scroll-to-top.ts",
+   "kind": "prod",
+   "loc": 231
+  },
+  {
+   "name": "worktree-list/viewport/use-virtualizer.ts",
+   "kind": "prod",
+   "loc": 157
+  },
+  {
+   "name": "worktree-list/viewport/use-visible-review-refresh.ts",
+   "kind": "prod",
+   "loc": 134
+  },
+  {
+   "name": "worktree-list/viewport/viewport-props.ts",
+   "kind": "prod",
+   "loc": 106
+  },
+  {
+   "name": "worktree-list/viewport/virtual-row-context.ts",
+   "kind": "prod",
+   "loc": 158
+  },
+  {
+   "name": "worktree-list/viewport/virtual-rows.ts",
+   "kind": "prod",
+   "loc": 334
+  }
+ ],
+ "test": [
+  {
+   "name": "worktree-list/drag/pointer-flush.test.ts",
+   "kind": "test",
+   "loc": 259
+  },
+  {
+   "name": "worktree-list/drag/row-state.test.ts",
+   "kind": "test",
+   "loc": 59
+  },
+  {
+   "name": "worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "kind": "test",
+   "loc": 246
+  },
+  {
+   "name": "worktree-list/grouping/build-rows.test.ts",
+   "kind": "test",
+   "loc": 421
+  },
+  {
+   "name": "worktree-list/grouping/host-labels.test.ts",
+   "kind": "test",
+   "loc": 62
+  },
+  {
+   "name": "worktree-list/grouping/imported-rows.test.ts",
+   "kind": "test",
+   "loc": 134
+  },
+  {
+   "name": "worktree-list/listing/host-filtering.test.ts",
+   "kind": "test",
+   "loc": 129
+  },
+  {
+   "name": "worktree-list/listing/pending-worktree-creation-keys.test.ts",
+   "kind": "test",
+   "loc": 53
+  },
+  {
+   "name": "worktree-list/listing/review-cache-inputs.test.ts",
+   "kind": "test",
+   "loc": 86
+  },
+  {
+   "name": "worktree-list/listing/use-visible-worktrees.test.tsx",
+   "kind": "test",
+   "loc": 162
+  },
+  {
+   "name": "worktree-list/navigation/active-descendant-option.test.ts",
+   "kind": "test",
+   "loc": 37
+  },
+  {
+   "name": "worktree-list/navigation/folder-reveal.test.ts",
+   "kind": "test",
+   "loc": 157
+  },
+  {
+   "name": "worktree-list/navigation/render-row-lookup.folder-workspace.test.ts",
+   "kind": "test",
+   "loc": 82
+  },
+  {
+   "name": "worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "kind": "test",
+   "loc": 122
+  },
+  {
+   "name": "worktree-list/navigation/use-reveal-requests.test.tsx",
+   "kind": "test",
+   "loc": 240
+  },
+  {
+   "name": "worktree-list/navigation/use-selection-host-collision.test.tsx",
+   "kind": "test",
+   "loc": 81
+  },
+  {
+   "name": "worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "kind": "test",
+   "loc": 65
+  },
+  {
+   "name": "worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+   "kind": "test",
+   "loc": 102
+  },
+  {
+   "name": "worktree-list/rows/indentation.test.ts",
+   "kind": "test",
+   "loc": 299
+  },
+  {
+   "name": "worktree-list/rows/option-dom-host-collision.test.ts",
+   "kind": "test",
+   "loc": 29
+  },
+  {
+   "name": "worktree-list/rows/use-project-group-dialogs-owner-host.test.tsx",
+   "kind": "test",
+   "loc": 136
+  },
+  {
+   "name": "worktree-list/viewport/hard-scroll-up.test.ts",
+   "kind": "test",
+   "loc": 262
+  },
+  {
+   "name": "worktree-list/viewport/scroll-adjustment.test.ts",
+   "kind": "test",
+   "loc": 252
+  },
+  {
+   "name": "worktree-list/viewport/sticky-headers.test.ts",
+   "kind": "test",
+   "loc": 138
+  },
+  {
+   "name": "worktree-list/viewport/use-row-removal-animation.test.ts",
+   "kind": "test",
+   "loc": 99
+  },
+  {
+   "name": "worktree-list/viewport/use-scroll-to-top.test.ts",
+   "kind": "test",
+   "loc": 175
+  },
+  {
+   "name": "worktree-list/viewport/use-scroll-to-top.test.tsx",
+   "kind": "test",
+   "loc": 102
+  },
+  {
+   "name": "worktree-list/viewport/virtual-rows.test.ts",
+   "kind": "test",
+   "loc": 345
+  },
+  {
+   "name": "worktree-list/viewport/visible-refresh.test.ts",
+   "kind": "test",
+   "loc": 32
+  }
+ ]
+}

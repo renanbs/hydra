@@ -1,0 +1,18 @@
+{
+ "domain": "D12-markdown-inline-render",
+ "status": "ok",
+ "rows": 14,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "7/7",
+  "symbols": "19/19",
+  "tests": "55/55",
+  "labels": "8/8",
+  "hotkeys": "0/0",
+  "prefs": "0/0",
+  "timers": "0/0",
+  "subscriptions": "0/0",
+  "preload": "0/0"
+ }
+}

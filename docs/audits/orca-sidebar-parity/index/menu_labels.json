@@ -1,0 +1,4842 @@
+[
+ {
+  "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+  "line": 7,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+  "line": 79,
+  "text": "mocks.buttons.push({ label: textContent(children), onClick, disabled })"
+ },
+ {
+  "file": "components/sidebar/AddProjectFromFolderDialog.test.tsx",
+  "line": 120,
+  "text": "function getButton(label: string): ButtonCapture {"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "line": 49,
+  "text": "onChange={(event) => onFormChange((draft) => ({ ...draft, label: event.target.value }))}"
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "line": 50,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "line": 67,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "line": 84,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "line": 102,
+  "text": "placeholder=\"22\""
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "line": 116,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "line": 189,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostFields.tsx",
+  "line": 206,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+  "line": 90,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+  "line": 96,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/AddRemoteHostSshConfigPicker.tsx",
+  "line": 156,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoCloneStep.tsx",
+  "line": 121,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoCloneStep.tsx",
+  "line": 140,
+  "text": "placeholder={"
+ },
+ {
+  "file": "components/sidebar/AddRepoCloneStep.tsx",
+  "line": 166,
+  "text": "title={"
+ },
+ {
+  "file": "components/sidebar/AddRepoCloneStep.tsx",
+  "line": 174,
+  "text": "aria-label={"
+ },
+ {
+  "file": "components/sidebar/AddRepoCreateStep.test.tsx",
+  "line": 4,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/AddRepoCreateStep.test.tsx",
+  "line": 52,
+  "text": "expect(html).not.toContain('aria-label=\"Browse host filesystem\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoCreateStep.tsx",
+  "line": 160,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoCreateStep.tsx",
+  "line": 220,
+  "text": "title={targetPathPreview}"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 5,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 108,
+  "text": "expect(html).toContain('aria-label=\"Group name\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 118,
+  "text": "expect(html).toContain('aria-label=\"Group name\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 153,
+  "text": "expect(html).toContain('placeholder=\"/home/user/projects\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 154,
+  "text": "expect(html).toContain('aria-label=\"Browse host filesystem\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 155,
+  "text": "expect(html).not.toMatch(/<button[^>]*disabled=\"\"[^>]*aria-label=\"Browse host filesystem\"/)"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 167,
+  "text": "expect(html).toContain('aria-label=\"Browse host filesystem\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 180,
+  "text": "expect(html).toContain('aria-label=\"Browse host filesystem\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 181,
+  "text": "expect(html).not.toContain('aria-label=\"Choose folder\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 192,
+  "text": "label: 'github.com',"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 205,
+  "text": "label: 'openclaw 2',"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 235,
+  "text": "label: 'openclaw 2',"
+ },
+ {
+  "file": "components/sidebar/AddRepoDialogStepContent.test.tsx",
+  "line": 253,
+  "text": "expect(html).toContain('placeholder=\"/home/user/project\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+  "line": 38,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+  "line": 67,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+  "line": 75,
+  "text": "label: 'Builder',"
+ },
+ {
+  "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+  "line": 103,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/AddRepoHostSelector.test.tsx",
+  "line": 111,
+  "text": "label: 'Old server',"
+ },
+ {
+  "file": "components/sidebar/AddRepoHostSelector.tsx",
+  "line": 69,
+  "text": "title={getHostStatusDetail(selectedHost)}"
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+  "line": 8,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+  "line": 53,
+  "text": "function findButton(container: HTMLElement, label: string): HTMLButtonElement {"
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.test.tsx",
+  "line": 82,
+  "text": "expect(html).toContain('aria-label=\"Group name\"')"
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+  "line": 7,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+  "line": 139,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+  "line": 147,
+  "text": "placeholder={folderName}"
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+  "line": 212,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoNestedImportStep.tsx",
+  "line": 216,
+  "text": "title={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoRemoteStep.tsx",
+  "line": 182,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoServerStartStep.tsx",
+  "line": 6,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/AddRepoServerStartStep.tsx",
+  "line": 94,
+  "text": "title={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoServerStartStep.tsx",
+  "line": 107,
+  "text": "title={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoServerStartStep.tsx",
+  "line": 120,
+  "text": "title={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoServerStartStep.tsx",
+  "line": 192,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoServerStartStep.tsx",
+  "line": 210,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+  "line": 8,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+  "line": 97,
+  "text": "function findButton(container: HTMLElement, label: string): HTMLButtonElement {"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+  "line": 329,
+  "text": "'button[aria-label=\"Stop scan\"]'"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 6,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 36,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 40,
+  "text": "title={translate("
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 178,
+  "text": "title={primaryAction.title}"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 200,
+  "text": "title={action.title}"
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+  "line": 100,
+  "text": "{ id: 'ssh-1', label: 'Builder 1' },"
+ },
+ {
+  "file": "components/sidebar/AddRepoSteps.default-checkout.test.ts",
+  "line": 101,
+  "text": "{ id: 'ssh-2', label: 'Builder 2' }"
+ },
+ {
+  "file": "components/sidebar/AgentDashboardSidebarEntry.tsx",
+  "line": 46,
+  "text": "aria-label={`${dashboardBucketLabel(bucket)}: ${counts[bucket]}`}"
+ },
+ {
+  "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 28,
+  "text": "* dedicated scrollable surface rather than a tooltip \u2014 see the sibling"
+ },
+ {
+  "file": "components/sidebar/AutoRenameFailedDialog.tsx",
+  "line": 133,
+  "text": "aria-label={"
+ },
+ {
+  "file": "components/sidebar/CacheTimer.tsx",
+  "line": 4,
+  "text": "import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/CacheTimer.tsx",
+  "line": 88,
+  "text": "const tooltipText = expired"
+ },
+ {
+  "file": "components/sidebar/CacheTimer.tsx",
+  "line": 108,
+  "text": "<span>{tooltipText}</span>"
+ },
+ {
+  "file": "components/sidebar/CommentMarkdown.test.tsx",
+  "line": 104,
+  "text": "expect(markup).toContain('aria-label=\"Expand image\"')"
+ },
+ {
+  "file": "components/sidebar/CommentMarkdown.test.tsx",
+  "line": 113,
+  "text": "expect(markup).toContain('aria-label=\"Expand image\"')"
+ },
+ {
+  "file": "components/sidebar/CommentMarkdown.test.tsx",
+  "line": 237,
+  "text": "expect(markup).toContain('aria-label=\"Copy code\"')"
+ },
+ {
+  "file": "components/sidebar/CommentMarkdown.test.tsx",
+  "line": 251,
+  "text": "expect(markup).toContain('aria-label=\"Copy code\"')"
+ },
+ {
+  "file": "components/sidebar/CommentMarkdown.tsx",
+  "line": 81,
+  "text": "label: string,"
+ },
+ {
+  "file": "components/sidebar/CreateProjectLocationField.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/CreateProjectLocationField.tsx",
+  "line": 97,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/CreateProjectLocationField.tsx",
+  "line": 114,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/CreateProjectLocationField.tsx",
+  "line": 132,
+  "text": "<span className=\"flex-1 min-w-0 truncate font-mono text-[12px]\" title={createParent}>"
+ },
+ {
+  "file": "components/sidebar/CreateProjectLocationField.tsx",
+  "line": 140,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeDialog.test.tsx",
+  "line": 95,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx",
+  "line": 3,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/FilterToggleRow.tsx",
+  "line": 21,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/FilterToggleRow.tsx",
+  "line": 35,
+  "text": "aria-label={ariaLabel}"
+ },
+ {
+  "file": "components/sidebar/HiddenWorktreeRecoveryList.tsx",
+  "line": 83,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/HiddenWorktreeRecoveryList.tsx",
+  "line": 87,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/HiddenWorktreeRecoveryList.tsx",
+  "line": 135,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/HostRemoveDialog.tsx",
+  "line": 30,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/HostRenameDialog.tsx",
+  "line": 78,
+  "text": "placeholder={derivedLabel}"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 18,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 23,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 186,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 213,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 219,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 232,
+  "text": "<DropdownMenuItem onSelect={() => setRenameOpen(true)}>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 235,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 238,
+  "text": "<DropdownMenuItem onSelect={() => void runSshAction('connect')}>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 241,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 244,
+  "text": "<DropdownMenuItem onSelect={() => void runSshAction('disconnect')}>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 247,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 250,
+  "text": "<DropdownMenuItem onSelect={() => void handleCheckConnection()}>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 256,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 259,
+  "text": "<DropdownMenuItem onSelect={handleManage}>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 262,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 266,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/HostSectionHeaderMenu.tsx",
+  "line": 275,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/ImportedWorktreesVisibilityLine.test.tsx",
+  "line": 8,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+  "line": 145,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+  "line": 181,
+  "text": "aria-label={keepHiddenAriaLabel}"
+ },
+ {
+  "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+  "line": 198,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/ImportedWorktreesVisibilityLine.tsx",
+  "line": 225,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupDialog.tsx",
+  "line": 6,
+  "text": "import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupDialog.tsx",
+  "line": 124,
+  "text": "title={translate("
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupDialog.tsx",
+  "line": 171,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 137,
+  "text": "function findBodyButton(label: string): HTMLButtonElement | undefined {"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 227,
+  "text": "label: 'Set up',"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+  "line": 351,
+  "text": ".querySelector<HTMLButtonElement>('button[aria-label=\"Don\\'t show again\"]')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 174,
+  "text": "function findBodyButton(label: string): HTMLButtonElement | undefined {"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 268,
+  "text": ".querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 303,
+  "text": ".querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 386,
+  "text": ".querySelector<HTMLButtonElement>('button[aria-label=\"Dismiss Linear agent skill setup\"]')"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 921,
+  "text": "'button[aria-label=\"Don\\'t show again\"]'"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+  "line": 383,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/MarkdownImageLightbox.tsx",
+  "line": 49,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/MarkdownImageLightbox.tsx",
+  "line": 70,
+  "text": "aria-label={translate('auto.components.sidebar.MarkdownImageLightbox.close', 'Close')}"
+ },
+ {
+  "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+  "line": 9,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+  "line": 13,
+  "text": "<span data-testid=\"tooltip-content\">{children}</span>"
+ },
+ {
+  "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+  "line": 121,
+  "text": "'button[aria-label=\"Hide external worktrees permanently for orca on openclaw\"]'"
+ },
+ {
+  "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+  "line": 140,
+  "text": "'button[aria-label=\"Hide external worktrees permanently for orca\"]'"
+ },
+ {
+  "file": "components/sidebar/NewExternalWorktreesInboxLine.test.tsx",
+  "line": 161,
+  "text": "'button[aria-label=\"Hide external worktrees permanently for orca\"]'"
+ },
+ {
+  "file": "components/sidebar/NewExternalWorktreesInboxLine.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/NewExternalWorktreesInboxLine.tsx",
+  "line": 89,
+  "text": "aria-label={reviewAriaLabel}"
+ },
+ {
+  "file": "components/sidebar/NewExternalWorktreesInboxLine.tsx",
+  "line": 135,
+  "text": "aria-label={suppressAriaLabel}"
+ },
+ {
+  "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+  "line": 8,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/NonGitFolderDialog.test.tsx",
+  "line": 76,
+  "text": "mocks.buttons.push({ label: textContent(children), onClick })"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 5,
+  "text": "* with the worktree card's \"Project on \u2026\" tooltip copy."
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 24,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 27,
+  "text": "cloneElement(children, { 'data-testid': 'tooltip-trigger' }),"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 29,
+  "text": "<span data-testid=\"tooltip\">{children}</span>"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 71,
+  "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 81,
+  "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 90,
+  "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 100,
+  "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 110,
+  "text": "expect(container.querySelector('[data-testid=\"tooltip\"]')?.textContent).toBe("
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 117,
+  "text": "const trigger = container.querySelector('[data-testid=\"tooltip-trigger\"]')"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.test.tsx",
+  "line": 128,
+  "text": "container.querySelector('[data-testid=\"tooltip-trigger\"]')?.hasAttribute('tabindex')"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.tsx",
+  "line": 3,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.tsx",
+  "line": 24,
+  "text": "* remote), plus the worktree card's \"Project on \u2026\" tooltip. Every row gets one,"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.tsx",
+  "line": 48,
+  "text": "const tooltip = isDisconnected"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.tsx",
+  "line": 75,
+  "text": "aria-label={keyboardFocusable ? tooltip : undefined}"
+ },
+ {
+  "file": "components/sidebar/NoticeHostGlyph.tsx",
+  "line": 90,
+  "text": "{tooltip}"
+ },
+ {
+  "file": "components/sidebar/PendingWorktreeRow.tsx",
+  "line": 79,
+  "text": "title={translate('auto.components.sidebar.PendingWorktreeRow.188f6922a0', 'Cancel')}"
+ },
+ {
+  "file": "components/sidebar/PendingWorktreeRow.tsx",
+  "line": 80,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/ProjectGroupDeleteDialog.test.tsx",
+  "line": 44,
+  "text": "function findButton(label: string): HTMLButtonElement {"
+ },
+ {
+  "file": "components/sidebar/ProjectGroupDeleteDialog.tsx",
+  "line": 133,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/ProjectGroupDeleteDialog.tsx",
+  "line": 139,
+  "text": "<li key={`${projectName}:${index}`} className=\"truncate\" title={projectName}>"
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "line": 256,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "line": 299,
+  "text": "title={fileHint ? undefined : resolvedPath}"
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.tsx",
+  "line": 318,
+  "text": "title={resolvedPath}"
+ },
+ {
+  "file": "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx",
+  "line": 4,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx",
+  "line": 16,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SetupGuideSidebarEntry.test.tsx",
+  "line": 39,
+  "text": "ContextMenuItem: ({ children }: { children: ReactNode }) => <>{children}</>,"
+ },
+ {
+  "file": "components/sidebar/SetupGuideSidebarEntry.tsx",
+  "line": 8,
+  "text": "ContextMenuItem,"
+ },
+ {
+  "file": "components/sidebar/SetupGuideSidebarEntry.tsx",
+  "line": 114,
+  "text": "<ContextMenuItem onSelect={handleHideSetupGuide}>"
+ },
+ {
+  "file": "components/sidebar/SetupGuideSidebarEntry.tsx",
+  "line": 120,
+  "text": "</ContextMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SetupScriptPromptCardShell.test.tsx",
+  "line": 5,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SetupScriptPromptCardViews.tsx",
+  "line": 4,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SetupScriptPromptCardViews.tsx",
+  "line": 21,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SetupScriptPromptCardViews.tsx",
+  "line": 60,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/Sidebar.test.tsx",
+  "line": 34,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/SidebarAgentsList.test.tsx",
+  "line": 5,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SidebarAgentsList.tsx",
+  "line": 126,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarAgentsList.tsx",
+  "line": 131,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarFeedbackDialog.tsx",
+  "line": 299,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarFeedbackImageAttachments.tsx",
+  "line": 87,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 28,
+  "text": "import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 39,
+  "text": "tooltipSide?: 'top' | 'right' | 'bottom' | 'left'"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 46,
+  "text": "tooltipSide = 'bottom',"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 180,
+  "text": "aria-label={"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 209,
+  "text": "<TooltipContent side={tooltipSide} sideOffset={6}>"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 321,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 51,
+  "text": "default: () => <button aria-label=\"Workspace options\" type=\"button\" />"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 68,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 96,
+  "text": "function headerButton(label: string): HTMLButtonElement {"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 97,
+  "text": "const button = container.querySelector<HTMLButtonElement>(`[aria-label=\"${label}\"]`)"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 190,
+  "text": "it('advertises the workspace shortcut on the create tooltip, and omits it when unassigned', () => {"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 209,
+  "text": "'[aria-label=\"View activity\"]'"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 244,
+  "text": "'[aria-label=\"Turn off activity view\"]'"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 260,
+  "text": "expect(container.querySelector('[data-sidebar-section-title=\"projects\"]')?.textContent).toBe("
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 268,
+  "text": "expect(container.querySelector('[data-sidebar-section-title=\"workspaces\"]')?.textContent).toBe("
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 279,
+  "text": "expect(container.querySelector('[aria-label=\"Turn off activity view\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 280,
+  "text": "expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 281,
+  "text": "expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 282,
+  "text": "expect(container.querySelector('[aria-label=\"Add project\"]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 294,
+  "text": "expect(container.querySelector('[aria-label=\"View activity\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 295,
+  "text": "expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 296,
+  "text": "expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 305,
+  "text": "expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 306,
+  "text": "expect(container.querySelector('[aria-label=\"View activity\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 307,
+  "text": "expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 308,
+  "text": "expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 309,
+  "text": "expect(container.querySelector('[aria-label=\"More workspace actions\"]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 334,
+  "text": "expect(container.querySelector('[aria-label=\"Open full Agents view\"]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 345,
+  "text": "expect(container.querySelector('[aria-label=\"More workspace actions\"]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 346,
+  "text": "expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 347,
+  "text": "expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 348,
+  "text": "expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeTruthy()"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.tsx",
+  "line": 8,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.tsx",
+  "line": 55,
+  "text": "data-sidebar-section-title={groupBy === 'repo' ? 'projects' : 'workspaces'}"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.tsx",
+  "line": 81,
+  "text": "aria-label={activityLabel}"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 7,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 83,
+  "text": "ContextMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 253,
+  "text": "expect(container.querySelector('[aria-label=\"Needs You: 2\"]')).not.toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 255,
+  "text": "const attention = container.querySelector('[aria-label=\"Needs You: 2\"]')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 256,
+  "text": "const working = container.querySelector('[aria-label=\"Working: 3\"]')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 257,
+  "text": "const done = container.querySelector('[aria-label=\"Done: 1\"]')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 258,
+  "text": "const idle = container.querySelector('[aria-label=\"Idle: 4\"]')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 336,
+  "text": "expect(beforePairing.querySelector('button[aria-label=\"Hide from sidebar\"]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 341,
+  "text": "'button[aria-label=\"Hide from sidebar\"]'"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 406,
+  "text": "'button[aria-label=\"Search worktrees and browser tabs\"]'"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 423,
+  "text": "'button[aria-label=\"Search worktrees and browser tabs\"]'"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 442,
+  "text": "'button[aria-label=\"Open GitHub tasks\"]'"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 475,
+  "text": "tasksButton.parentElement?.querySelector('button[aria-label=\"Open GitHub tasks\"]')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.tsx",
+  "line": 11,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.tsx",
+  "line": 96,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarNav.tsx",
+  "line": 268,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 140,
+  "text": "placeholder={"
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 230,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+  "line": 25,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+  "line": 56,
+  "text": "<DropdownMenuItem>Sort by</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 74,
+  "text": "DropdownMenuItem: ({"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 92,
+  "text": "title={title}"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 101,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 117,
+  "text": "<button data-testid=\"trigger-button\" aria-label={ariaLabel} onClick={onClick}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 164,
+  "text": "function findMenuItem(container: HTMLElement, label: string): HTMLButtonElement {"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 201,
+  "text": "expect(html).toContain('aria-label=\"Settings\"')"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 344,
+  "text": "it('renders shortcut keys in the settings tooltip', () => {"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 20,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 24,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 87,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 92,
+  "text": "<DropdownMenuItem onSelect={() => openExternalUrl(url)}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 96,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 202,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 233,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 248,
+  "text": "<DropdownMenuItem onSelect={openShortcutsSettings}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 254,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 256,
+  "text": "<DropdownMenuItem onSelect={handleOpenFeedback}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 262,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 264,
+  "text": "<DropdownMenuItem onSelect={openMilestones}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 281,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 283,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 293,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 319,
+  "text": "<DropdownMenuItem onSelect={() => openExternalUrl(DISCORD_URL)}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 323,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 324,
+  "text": "<DropdownMenuItem onSelect={() => openExternalUrl(X_URL)}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 328,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 330,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 334,
+  "text": "title={updateCheckHint}"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 345,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 347,
+  "text": "<DropdownMenuItem onSelect={handleRestartOrca} disabled={isRestartingOrca}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 353,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 8,
+  "text": "ContextMenuItem,"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 28,
+  "text": "<ContextMenuItem onSelect={onHide}>"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 31,
+  "text": "</ContextMenuItem>"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 41,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 50,
+  "text": "aria-label={label}"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.test.tsx",
+  "line": 23,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.test.tsx",
+  "line": 104,
+  "text": "'button[aria-label=\"Workspace board\"]'"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.test.tsx",
+  "line": 137,
+  "text": "expect(container.querySelector('button[aria-label=\"Workspace board\"]')).not.toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.test.tsx",
+  "line": 148,
+  "text": "expect(container.querySelector(`button[aria-label=\"${localized}\"]`)).not.toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SidebarToolbar.tsx",
+  "line": 90,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/SidebarWorkspaceOptionsMenu.tsx",
+  "line": 9,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/SidebarWorkspaceOptionsMenu.tsx",
+  "line": 46,
+  "text": "aria-label={"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 13,
+  "text": "label: string | null"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 18,
+  "text": ": createElement('span', { 'data-state-indicator-tooltip': label }, children)"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 53,
+  "text": "expect(markup).toContain('data-state-indicator-tooltip=\"Monitoring background tasks\"')"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 54,
+  "text": "expect(markup).not.toContain(' title=')"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 97,
+  "text": "expect(markup).toContain(`data-state-indicator-tooltip=\"${label}\"`)"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 98,
+  "text": "expect(markup).not.toContain(' title=')"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 106,
+  "text": "expect(markup).not.toContain('data-state-indicator-tooltip')"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 107,
+  "text": "expect(markup).not.toContain(' title=')"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 111,
+  "text": "it('lets an enclosing action own the tooltip', () => {"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.test.ts",
+  "line": 116,
+  "text": "expect(markup).not.toContain('data-state-indicator-tooltip')"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.tsx",
+  "line": 21,
+  "text": "tooltipSide?: StateIndicatorTooltipSide"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.tsx",
+  "line": 36,
+  "text": "tooltipSide,"
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.tsx",
+  "line": 39,
+  "text": "const tooltipLabel ="
+ },
+ {
+  "file": "components/sidebar/StatusIndicator.tsx",
+  "line": 101,
+  "text": "<StateIndicatorTooltip label={tooltipLabel} side={tooltipSide}>"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanCard.tsx",
+  "line": 60,
+  "text": "aria-label={translate('auto.components.sidebar.WorkspaceKanbanCard.cefae8983e', 'Pinned')}"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+  "line": 172,
+  "text": "{ id: 'todo', label: 'Todo' },"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+  "line": 173,
+  "text": "{ id: 'in-review', label: 'In review' }"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.search.test.tsx",
+  "line": 321,
+  "text": "targetStatus: { id: 'todo', label: 'Todo' }"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+  "line": 195,
+  "text": "{ id: 'todo', label: 'Todo' },"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+  "line": 196,
+  "text": "{ id: 'in-review', label: 'In review' }"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+  "line": 326,
+  "text": "targetStatus: { id: 'in-review', label: 'In review' },"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+  "line": 359,
+  "text": "targetStatus: { id: 'in-review', label: 'In review' }"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawer.task-status-sync.test.tsx",
+  "line": 426,
+  "text": "targetStatus: { id: 'in-review', label: 'In review' }"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawerHeader.test.tsx",
+  "line": 17,
+  "text": "const statuses: WorkspaceStatusDefinition[] = [{ id: 'todo', label: 'Todo' }]"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawerHeader.tsx",
+  "line": 23,
+  "text": "onRenameStatus: (statusId: string, label: string) => void"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawerHeader.tsx",
+  "line": 99,
+  "text": "tooltipSide=\"top\""
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanDrawerHeader.tsx",
+  "line": 117,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanLaneGrid.test.tsx",
+  "line": 94,
+  "text": "label: `State ${index + 1}`"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+  "line": 48,
+  "text": "return container.querySelector<HTMLButtonElement>('button[aria-label=\"Clear search\"]')"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+  "line": 105,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+  "line": 109,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+  "line": 140,
+  "text": "title={tooLargeMessage ?? undefined}"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+  "line": 154,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+  "line": 7,
+  "text": "const statuses: WorkspaceStatusDefinition[] = [{ id: 'todo', label: 'Todo' }]"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+  "line": 17,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+  "line": 73,
+  "text": "'button[role=\"switch\"][aria-label=\"Sync board and issue status\"]'"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.test.tsx",
+  "line": 91,
+  "text": "label: `State ${index + 1}`"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "line": 10,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "line": 22,
+  "text": "onRenameStatus: (statusId: string, label: string) => void"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "line": 49,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "line": 133,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "line": 151,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "line": 166,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "line": 181,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+  "line": 29,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanStatusLane.test.tsx",
+  "line": 35,
+  "text": "const status = { id: 'todo', label: 'Todo' }"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+  "line": 15,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+  "line": 102,
+  "text": "aria-label={createTooltip}"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+  "line": 137,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+  "line": 221,
+  "text": "aria-label={createTooltip}"
+ },
+ {
+  "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+  "line": 3,
+  "text": "import { DropdownMenuItem } from '@/components/ui/dropdown-menu'"
+ },
+ {
+  "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+  "line": 4,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+  "line": 30,
+  "text": "<DropdownMenuItem onSelect={onSleep} disabled={sleepDisabled}>"
+ },
+ {
+  "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+  "line": 33,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+  "line": 50,
+  "text": "<DropdownMenuItem onSelect={onSleepSubtree} disabled={subtreeSleepDisabled}>"
+ },
+ {
+  "file": "components/sidebar/WorkspaceSleepMenuItems.tsx",
+  "line": 57,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+  "line": 4,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+  "line": 37,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+  "line": 81,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorkspaceStatusAppearancePopover.tsx",
+  "line": 110,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.affiliate-list-mode.test.tsx",
+  "line": 59,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+  "line": 84,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+  "line": 246,
+  "text": "expect(markup).toContain('aria-label=\"1 live port\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.compact-hover.test.tsx",
+  "line": 628,
+  "text": "it('keeps status and agent tooltip targets outside the worktree details hover trigger', async () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.compact-ports-hover-independence.test.tsx",
+  "line": 99,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.compact-ports-hover-independence.test.tsx",
+  "line": 240,
+  "text": "const portsRoot = rootContaining('[aria-label=\"1 live port\"]')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.hosted-review-refresh.test.tsx",
+  "line": 53,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.lineage.test.tsx",
+  "line": 43,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.lineage.test.tsx",
+  "line": 138,
+  "text": "expect(markup).toContain('aria-label=\"Hide 1 child workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.merged-pr-display.test.tsx",
+  "line": 50,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.pinned-repo-icon.test.tsx",
+  "line": 46,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+  "line": 54,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+  "line": 200,
+  "text": "expect(unreadMarkup).toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.pr-display.test.tsx",
+  "line": 229,
+  "text": "expect(unreadMarkup).not.toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 54,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 152,
+  "text": "expect(markup).toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 161,
+  "text": "expect(markup).not.toContain('aria-label=\"Project orca\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 264,
+  "text": "'aria-label=\"This worktree will be renamed from the first agent message\"'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 279,
+  "text": "expect(markup).toContain('aria-label=\"Auto-rename failed: view error\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 295,
+  "text": "expect(markup).toContain('aria-label=\"Auto-rename failed: view error\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 394,
+  "text": "expect(markup).not.toContain('aria-label=\"Primary worktree\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 415,
+  "text": "expect(markup).toContain('aria-label=\"Primary worktree\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 425,
+  "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 435,
+  "text": "expect(markup).toContain('aria-label=\"Delete workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 453,
+  "text": "expect(markup).toContain('aria-label=\"Delete workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 464,
+  "text": "expect(markup).toContain('aria-label=\"Delete workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 478,
+  "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 490,
+  "text": "expect(markup).not.toContain('aria-label=\"Sleep workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 491,
+  "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 503,
+  "text": "expect(markup).not.toContain('aria-label=\"Sleep workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 504,
+  "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.quick-actions.test.tsx",
+  "line": 514,
+  "text": "expect(markup).not.toContain('aria-label=\"Delete workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCard.ssh-reconnect-prompt.test.tsx",
+  "line": 57,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.activation.test.tsx",
+  "line": 8,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.expansion-remount.test.tsx",
+  "line": 77,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+  "line": 48,
+  "text": "label: 'Send',"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+  "line": 142,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.send-target.test.tsx",
+  "line": 236,
+  "text": "expect(markup).not.toContain('title=\"Agent is working\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 164,
+  "text": "aria-label={`${childAgentsExpanded ? 'Hide' : 'Show'} ${childAgentCount} child ${"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 182,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 207,
+  "text": "expect(markup).toContain('aria-label=\"Agents\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 221,
+  "text": "expect(markup).toContain('title=\"Codex\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 442,
+  "text": "expect(markup).toContain('aria-label=\"Hide 1 child agent\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 467,
+  "text": "expect(markup).toContain('aria-label=\"Hide 1 child agent\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 491,
+  "text": "expect(markup).toContain('aria-label=\"Hide 1 child agent\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 529,
+  "text": "expect(markup).not.toContain('aria-label=\"Show 1 child agent\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 559,
+  "text": "expect(markup).not.toContain('title=\"Codex done\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 560,
+  "text": "expect(markup).not.toContain('title=\"Claude done\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 723,
+  "text": "expect(markup).not.toContain('title=\"Codex waiting\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 724,
+  "text": "expect(markup).not.toContain('title=\"Claude working\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 725,
+  "text": "expect(markup).not.toContain('title=\"Gemini done\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 772,
+  "text": "const iconTitles = [...markup.matchAll(/title=\"([^\"]+)\"/g)].map((match) => match[1])"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 774,
+  "text": "// Variety icons stay identity-free; the state label belongs to the shared tooltip."
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 893,
+  "text": "expect(markup).not.toContain('title=\"Gemini waiting\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 894,
+  "text": "expect(markup).not.toContain('title=\"Codex working\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.test.tsx",
+  "line": 895,
+  "text": "expect(markup).not.toContain('title=\"Codex done\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.tsx",
+  "line": 377,
+  "text": "aria-label={translate('auto.components.sidebar.WorktreeCardAgents.1b0a156717', 'Agents')}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAgents.tsx",
+  "line": 419,
+  "text": "aria-label={translate('auto.components.sidebar.WorktreeCardAgents.1b0a156717', 'Agents')}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+  "line": 13,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+  "line": 122,
+  "text": "expect(container.querySelector('[aria-label=\"Open automation\"]')).not.toBeNull()"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardAutomationDetailSection.test.tsx",
+  "line": 123,
+  "text": "expect(container.querySelector('[aria-label=\"Open run\"]')).not.toBeNull()"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+  "line": 6,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+  "line": 9,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+  "line": 55,
+  "text": "aria-label={moreActionsLabel}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+  "line": 90,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+  "line": 100,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+  "line": 103,
+  "text": "<DropdownMenuItem onSelect={onCopyIssueLink}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardIssueDetailSection.tsx",
+  "line": 106,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+  "line": 43,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+  "line": 45,
+  "text": "<div data-tooltip-open={open === false ? 'false' : 'default'}>{children}</div>"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+  "line": 69,
+  "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+  "line": 194,
+  "text": "it('omits the review trigger tooltip while the review menu is open', () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 12,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 24,
+  "text": "DropdownMenuItem: ({ children }: { children: ReactNode; onSelect?: () => void }) => ("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 140,
+  "text": "const moreActionsIndex = markup.indexOf('aria-label=\"More PR actions\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 141,
+  "text": "const openInOrcaIndex = markup.indexOf('aria-label=\"Open in Orca\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 142,
+  "text": "const viewOnGitHubIndex = markup.indexOf('aria-label=\"View on GitHub\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 156,
+  "text": "expect(markup).not.toContain('aria-label=\"Unlink PR from workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 181,
+  "text": "const moreActionsIndex = markup.indexOf('aria-label=\"More issue actions\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 183,
+  "text": "const editIssueIndex = markup.indexOf('aria-label=\"Edit issue\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 184,
+  "text": "const openInOrcaIndex = markup.indexOf('aria-label=\"Open in Orca\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 185,
+  "text": "const viewOnGitHubIndex = markup.indexOf('aria-label=\"View on GitHub\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.test.tsx",
+  "line": 221,
+  "text": "expect(markup).toContain('aria-label=\"More MR actions\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.tsx",
+  "line": 126,
+  "text": "const copyLinkedWorkItemLink = React.useCallback(async (url: string, label: string) => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetaBadges.tsx",
+  "line": 76,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+  "line": 2,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+  "line": 8,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+  "line": 25,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+  "line": 45,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+  "line": 56,
+  "text": "aria-label={label}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetadataControls.tsx",
+  "line": 68,
+  "text": "aria-label={label}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetadataStatusBadges.tsx",
+  "line": 15,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMetadataStatusBadges.tsx",
+  "line": 94,
+  "text": "label: 'MR' | 'PR'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.test.tsx",
+  "line": 17,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.test.tsx",
+  "line": 49,
+  "text": "expect(markup).toContain('aria-label=\"Copy dev.preview.localhost:58941\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 6,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 42,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 59,
+  "text": "tooltipLabel = label,"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 64,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 65,
+  "text": "tooltipLabel?: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 86,
+  "text": "aria-label={label}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 93,
+  "text": "{tooltipLabel}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardPorts.tsx",
+  "line": 256,
+  "text": "tooltipLabel={getPortOpenBrowserTooltipLabel(openBrowserLabel)}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+  "line": 6,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+  "line": 9,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+  "line": 61,
+  "text": "aria-label={moreActionsLabel}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+  "line": 102,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+  "line": 113,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+  "line": 116,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardReviewDetailSection.tsx",
+  "line": 127,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+  "line": 29,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+  "line": 32,
+  "text": "<span data-tooltip=\"\">{children}</span>"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+  "line": 103,
+  "text": "it('distinguishes an auth failure from a generic connection failure in the tooltip', () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+  "line": 105,
+  "text": "expect(container.querySelector('[data-tooltip]')).toHaveTextContent("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+  "line": 111,
+  "text": "expect(retry.container.querySelector('[data-tooltip]')).toHaveTextContent("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+  "line": 132,
+  "text": "// through to the card and would kill the tooltip for the whole in-flight window."
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.test.tsx",
+  "line": 222,
+  "text": "{ id: 'ssh-live', label: 'devbox', host: 'devbox', port: 22, username: 'me' }"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 32,
+  "text": "/** True when the row cannot afford a visible label: icon-only with an sr-only label. */"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 48,
+  "text": "tooltip,"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 53,
+  "text": "tooltip: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 66,
+  "text": "{tooltip}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 145,
+  "text": "tooltip={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 166,
+  "text": "tooltip={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 212,
+  "text": "const tooltip = connecting"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 241,
+  "text": "aria-label={accessibleName}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 247,
+  "text": "// tooltip for the entire in-flight window."
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 279,
+  "text": "{tooltip}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 11,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 12,
+  "text": "Tooltip: ({ children }: { children: ReactNode }) => <span data-tooltip-root=\"\">{children}</span>,"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 14,
+  "text": "<span data-tooltip-content=\"\">{children}</span>"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 56,
+  "text": "expect(markup).toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 78,
+  "text": "expect(markup).not.toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 109,
+  "text": "expect(markup).not.toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 135,
+  "text": "expect(markup).not.toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 153,
+  "text": "expect(markup).toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 176,
+  "text": "expect(markup.match(/data-tooltip-root/g)).toHaveLength(1)"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 218,
+  "text": "expect(markup).not.toContain('data-tooltip-root')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 305,
+  "text": "expect(markup).not.toContain('data-tooltip-root')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 326,
+  "text": "expect(markup).not.toContain('data-tooltip-root')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 347,
+  "text": "expect(markup).not.toContain('data-tooltip-root')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 369,
+  "text": "expect(markup).toContain('data-tooltip-root')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 370,
+  "text": "expect(markup).toContain('data-tooltip-content=\"\">Working')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 393,
+  "text": "expect(markup).toContain('data-tooltip-root')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 394,
+  "text": "expect(markup).toContain('data-tooltip-content=\"\">Needs permission')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 412,
+  "text": "expect(markup).toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 435,
+  "text": "expect(markup).not.toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 447,
+  "text": "expect(markup).not.toContain('data-tooltip-root')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.test.tsx",
+  "line": 476,
+  "text": "expect(markup).not.toContain('data-tooltip-root')"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+  "line": 3,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+  "line": 144,
+  "text": "<StatusIndicator status={status} aria-hidden=\"true\" tooltipSide=\"right\" />"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+  "line": 154,
+  "text": "tooltipSide=\"right\""
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+  "line": 171,
+  "text": "const tooltip ="
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+  "line": 190,
+  "text": "aria-label={actionLabel}"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardStatusSlot.tsx",
+  "line": 228,
+  "text": "<span>{tooltip}</span>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 27,
+  "text": "DropdownMenuItem: function DropdownMenuItem(props: {"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 71,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+  "line": 6,
+  "text": "* DropdownMenuItem inside the worktree row's context menu)."
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+  "line": 19,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+  "line": 28,
+  "text": "{ id: 'todo', label: 'Todo' },"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.react185-bystander.test.tsx",
+  "line": 29,
+  "text": "{ id: 'doing', label: 'Doing' }"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.test.ts",
+  "line": 277,
+  "text": "{ id: 'todo', label: 'Todo' },"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.test.ts",
+  "line": 278,
+  "text": "{ id: 'in-review', label: 'In review' }"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuOverlays.tsx",
+  "line": 11,
+  "text": "title={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 4,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 13,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 160,
+  "text": "<DropdownMenuItem onSelect={handleRename} disabled={isDeleting}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 163,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 180,
+  "text": "<DropdownMenuItem onSelect={handleCopyPath} disabled={isDeleting}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 183,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 185,
+  "text": "<DropdownMenuItem onSelect={handleTogglePin} disabled={isDeleting}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 190,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 191,
+  "text": "<DropdownMenuItem onSelect={handleToggleRead} disabled={isDeleting}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 203,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 207,
+  "text": "<DropdownMenuItem onSelect={handleCreateGroupFromRepo} disabled={isDeleting}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 213,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 225,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 231,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 237,
+  "text": "<DropdownMenuItem onSelect={handleRemoveProjectFromGroup} disabled={isDeleting}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 243,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 248,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 254,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 258,
+  "text": "<DropdownMenuItem onSelect={handleOpenParent} disabled={isDeleting}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 264,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 267,
+  "text": "<DropdownMenuItem onSelect={handleRemoveParentLink} disabled={isDeleting}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 273,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 282,
+  "text": "<DropdownMenuItem onSelect={handleRemoveParentLink} disabled={deletingContext}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 288,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 315,
+  "text": "<DropdownMenuItem variant=\"destructive\" disabled>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 321,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 336,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 344,
+  "text": "title={"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 380,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeDeveloperMenu.test.tsx",
+  "line": 22,
+  "text": "DropdownMenuItem: (props: MenuItemProps) => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeDeveloperMenu.tsx",
+  "line": 2,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/WorktreeDeveloperMenu.tsx",
+  "line": 25,
+  "text": "<DropdownMenuItem onSelect={() => requestManualTerminalWorktreePark(worktreeId)}>"
+ },
+ {
+  "file": "components/sidebar/WorktreeDeveloperMenu.tsx",
+  "line": 28,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+  "line": 48,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+  "line": 61,
+  "text": "DropdownMenuItem: passthrough,"
+ },
+ {
+  "file": "components/sidebar/WorktreeDisplayNameField.tsx",
+  "line": 53,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeHostContextBadge.tsx",
+  "line": 21,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+  "line": 11,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+  "line": 178,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+  "line": 195,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+  "line": 223,
+  "text": "aria-label={openIssueLabel}"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+  "line": 84,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.card-memo-stability.test.tsx",
+  "line": 93,
+  "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+ },
+ {
+  "file": "components/sidebar/WorktreeList.empty-project-rows.test.ts",
+  "line": 32,
+  "text": "vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.folder-workspace-rows.test.ts",
+  "line": 40,
+  "text": "vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.group-headers.test.ts",
+  "line": 37,
+  "text": "vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+  "line": 109,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.lineage-agent-expansion-coupling.test.tsx",
+  "line": 118,
+  "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+ },
+ {
+  "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+  "line": 36,
+  "text": "vi.mock('@/components/ui/tooltip', () => createTooltipModuleMock())"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+  "line": 110,
+  "text": "expect(childMarkup).toContain('aria-label=\"Mark as read\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.lineage-child-card.test.ts",
+  "line": 111,
+  "text": "expect(childMarkup).not.toContain('aria-label=\"Mark as unread\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+  "line": 103,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.lineage-child-real-card.test.tsx",
+  "line": 112,
+  "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+ },
+ {
+  "file": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+  "line": 104,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeList.status-lane-lineage-drop.test.tsx",
+  "line": 113,
+  "text": "DropdownMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => ("
+ },
+ {
+  "file": "components/sidebar/WorktreeListScrollToTopButton.tsx",
+  "line": 4,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeListScrollToTopButton.tsx",
+  "line": 33,
+  "text": "aria-label={label}"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+  "line": 15,
+  "text": "// Why: Radix tooltips need a provider the dialog does not own, and the menu's"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.test.tsx",
+  "line": 17,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.tsx",
+  "line": 394,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+  "line": 29,
+  "text": "openInApplications: [] as { id: string; label: string; command: string }[]"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+  "line": 179,
+  "text": "{ id: 'vscode', label: 'VS Code', command: 'code' },"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+  "line": 180,
+  "text": "{ id: 'cursor', label: 'Cursor', command: 'cursor' },"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+  "line": 181,
+  "text": "{ id: 'zed', label: 'Zed', command: 'zed' }"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+  "line": 233,
+  "text": "{ id: 'renamed', label: 'My Remote Editor', command: 'code-insiders' },"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+  "line": 234,
+  "text": "{ id: 'fake', label: 'VS Code', command: 'cursor' },"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.test.tsx",
+  "line": 235,
+  "text": "{ id: 'compound', label: 'VS Code Reuse', command: 'code --reuse-window' }"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 5,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 33,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 45,
+  "text": "label: application.label,"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 49,
+  "text": "{ id: 'file-manager', label: fileManagerLabel, target: 'file-manager' }"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 319,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 343,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 372,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/WorktreeOpenInMenu.tsx",
+  "line": 378,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 358,
+  "text": "placeholder={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeReviewLinkField.tsx",
+  "line": 34,
+  "text": "placeholder={"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.begin-editing.test.tsx",
+  "line": 50,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+  "line": 3,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.test.tsx",
+  "line": 47,
+  "text": "expect(markup).not.toContain('title=\"Feature workspace\"')"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 118,
+  "text": "// clipped; the tooltip should track the rendered geometry, not just text."
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 290,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 49,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 200,
+  "text": "function sourceSegment(label: string, visibility: 'show' | 'hide'): HTMLButtonElement {"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 202,
+  "text": "`[aria-label=\"Visibility for ${label}\"] [data-visibility=\"${visibility}\"]`"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 213,
+  "text": "function sourceRow(label: string): HTMLElement {"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 272,
+  "text": "document.querySelector('button[aria-label=\"Which worktrees are hidden by default?\"]')"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 291,
+  "text": "'input[aria-label=\"Search hidden worktrees\"]'"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 317,
+  "text": "document.querySelector('button[aria-label=\"Show scratch-a at .claude/worktrees/scratch-a\"]')"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 320,
+  "text": "document.querySelector('button[aria-label=\"Show scratch-b at .claude/worktrees/scratch-b\"]')"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 853,
+  "text": "'button[aria-label=\"Remove /srv/team-worktrees\"]'"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 883,
+  "text": "await click(document.querySelector('button[aria-label=\"Remove /srv/team-worktrees\"]')!)"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 905,
+  "text": "expect(document.querySelector('button[aria-label=\"Remove /srv/alpha/team\"]')).not.toBeNull()"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 906,
+  "text": "expect(document.querySelector('button[aria-label=\"Remove /srv/beta/team\"]')).not.toBeNull()"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityDialog.test.tsx",
+  "line": 921,
+  "text": "expect(document.querySelector('button[aria-label=\"Remove /srv/global-team\"]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+  "line": 32,
+  "text": "'button[aria-label=\"Which worktrees are hidden by default?\"]'"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityHelpPopover.tsx",
+  "line": 27,
+  "text": "aria-label={title}"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityHelpPopover.tsx",
+  "line": 35,
+  "text": "aria-label={title}"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilitySourceAddForm.tsx",
+  "line": 56,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilitySourceList.test.tsx",
+  "line": 11,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilitySourceList.test.tsx",
+  "line": 97,
+  "text": "'button[aria-label=\"Use global for Claude Code\"]'"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+  "line": 141,
+  "text": "function getAccessibleSourceLabel(source: WorktreeVisibilitySourceRow, label: string): string {"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+  "line": 276,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+  "line": 301,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilitySourceList.tsx",
+  "line": 320,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+  "line": 77,
+  "text": "label: 'prod',"
+ },
+ {
+  "file": "components/sidebar/add-remote-host-ssh-actions.test.ts",
+  "line": 129,
+  "text": "targets: [{ id: 'ssh-1', label: 'prod', host: 'prod', port: 22, username: '' }],"
+ },
+ {
+  "file": "components/sidebar/add-remote-host-ssh-actions.ts",
+  "line": 87,
+  "text": "label: form.label.trim() || (username ? `${username}@${host}` : configHost || host),"
+ },
+ {
+  "file": "components/sidebar/add-remote-host-ssh-actions.ts",
+  "line": 106,
+  "text": "label: target.label,"
+ },
+ {
+  "file": "components/sidebar/comment-markdown-lazy.tsx",
+  "line": 40,
+  "text": "title={props.title}"
+ },
+ {
+  "file": "components/sidebar/delete-worktree-failure-toast.test.tsx",
+  "line": 32,
+  "text": "function clickButton(container: HTMLElement, label: string): void {"
+ },
+ {
+  "file": "components/sidebar/delete-worktree-preference-toast.ts",
+  "line": 35,
+  "text": "label: translate("
+ },
+ {
+  "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+  "line": 37,
+  "text": "{ id: 'local', kind: 'local', label: 'Local', detail: 'This computer', health: 'local' },"
+ },
+ {
+  "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+  "line": 38,
+  "text": "{ id: 'ssh:builder', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-folder-workspace-counts.test.ts",
+  "line": 115,
+  "text": "label: 'In progress',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 154,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 158,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 179,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 201,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 205,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 220,
+  "text": "{ label: 'Local Mac', count: 1 },"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 221,
+  "text": "{ label: 'Builder', count: 1 }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 236,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 240,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 261,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 265,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 294,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 298,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 337,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 341,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 360,
+  "text": "{ label: 'Local Mac', count: 2 },"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 361,
+  "text": "{ label: 'Builder', count: 2 }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 389,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 393,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 427,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 431,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 468,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 472,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 504,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 508,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 546,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 553,
+  "text": "label: 'env-1',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 560,
+  "text": "label: 'env-2',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 589,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 593,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 619,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 626,
+  "text": "label: 'Builder',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 661,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 668,
+  "text": "label: 'env-1',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 681,
+  "text": "label: 'env-1'"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 701,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 708,
+  "text": "label: 'env-1',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 743,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 747,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'disconnected' },"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 751,
+  "text": "label: 'env-1',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 776,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 780,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 805,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 809,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 839,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.test.ts",
+  "line": 843,
+  "text": "{ id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.ts",
+  "line": 23,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.ts",
+  "line": 39,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.ts",
+  "line": 78,
+  "text": "label: isLocal ? getLocalExecutionHostLabel() : hostId,"
+ },
+ {
+  "file": "components/sidebar/host-section-rows.ts",
+  "line": 294,
+  "text": "label: host.label,"
+ },
+ {
+  "file": "components/sidebar/index.tsx",
+  "line": 3,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.shell-override.test.ts",
+  "line": 4,
+  "text": "const hostRuntime = { runtime: 'host', label: 'Windows' } as const"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 36,
+  "text": "label: currentPlatform === 'win32' ? 'Windows' : 'This device'"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 49,
+  "text": "label: selectedDistro"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 56,
+  "text": "label: currentPlatform === 'win32' ? 'Windows' : 'This device'"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 77,
+  "text": "label: currentPlatform === 'win32' ? 'Windows' : 'This device'"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-runtime.ts",
+  "line": 85,
+  "text": "label: distro"
+ },
+ {
+  "file": "components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+  "line": 120,
+  "text": "label: translate('auto.components.sidebar.LinearAgentSkillSetupPrompt.setup', 'Set up'),"
+ },
+ {
+  "file": "components/sidebar/local-base-ref-suggestion-toast.test.tsx",
+  "line": 59,
+  "text": "function clickButton(container: HTMLElement, label: string): void {"
+ },
+ {
+  "file": "components/sidebar/preserved-branch-batch-toast.test.tsx",
+  "line": 69,
+  "text": "async function clickButton(container: HTMLElement, label: string): Promise<void> {"
+ },
+ {
+  "file": "components/sidebar/preserved-branch-toast.test.tsx",
+  "line": 32,
+  "text": "function clickButton(container: HTMLElement, label: string): void {"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drop.test.ts",
+  "line": 69,
+  "text": "label: 'A',"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drop.test.ts",
+  "line": 74,
+  "text": "{ type: 'header', key: 'repo:repo-a', label: 'repo', count: 0, tone: '', repo },"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drop.test.ts",
+  "line": 78,
+  "text": "label: 'A child',"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drop.test.ts",
+  "line": 86,
+  "text": "label: 'B',"
+ },
+ {
+  "file": "components/sidebar/project-header-drop.test.ts",
+  "line": 33,
+  "text": "label: 'A',"
+ },
+ {
+  "file": "components/sidebar/project-header-drop.test.ts",
+  "line": 41,
+  "text": "label: 'B',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.test.ts",
+  "line": 22,
+  "text": "label: 'orca',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.test.ts",
+  "line": 27,
+  "text": "tooltip: 'Create new worktree for orca',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.test.ts",
+  "line": 37,
+  "text": "label: 'docs',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.test.ts",
+  "line": 42,
+  "text": "tooltip: 'Create workspace for docs',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.test.ts",
+  "line": 51,
+  "text": "label: 'remote',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.test.ts",
+  "line": 56,
+  "text": "tooltip: 'Create new worktree for remote',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.test.ts",
+  "line": 73,
+  "text": "label: 'remote',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.test.ts",
+  "line": 78,
+  "text": "tooltip: 'Reconnect SSH target before creating workspaces',"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.ts",
+  "line": 9,
+  "text": "tooltip: string"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.ts",
+  "line": 16,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.ts",
+  "line": 22,
+  "text": "tooltip: translate("
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.ts",
+  "line": 43,
+  "text": "tooltip: translate("
+ },
+ {
+  "file": "components/sidebar/repo-header-create-state.ts",
+  "line": 58,
+  "text": "tooltip: translate("
+ },
+ {
+  "file": "components/sidebar/run-worktree-delete-with-toast.ts",
+  "line": 89,
+  "text": "label: translate('auto.components.sidebar.delete.worktree.flow.7488ed8711', 'View'),"
+ },
+ {
+  "file": "components/sidebar/sidebar-header-actions.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/sidebar-header-actions.tsx",
+  "line": 27,
+  "text": "aria-label={label}"
+ },
+ {
+  "file": "components/sidebar/sidebar-header-actions.tsx",
+  "line": 48,
+  "text": "// every alias in a one-line tooltip reads as noise rather than help."
+ },
+ {
+  "file": "components/sidebar/sidebar-header-actions.tsx",
+  "line": 66,
+  "text": "aria-label={label}"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.test.ts",
+  "line": 24,
+  "text": "label: LOCAL_HOST_LABEL,"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.test.ts",
+  "line": 67,
+  "text": "label: 'Builder',"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.test.ts",
+  "line": 101,
+  "text": "label: 'dev box',"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.test.ts",
+  "line": 180,
+  "text": "{ id: 'all', label: 'All hosts', detail: `${LOCAL_HOST_LABEL}, Builder`, health: 'mixed' },"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.test.ts",
+  "line": 181,
+  "text": "{ id: 'local', label: LOCAL_HOST_LABEL, health: 'local' },"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.test.ts",
+  "line": 182,
+  "text": "{ id: 'ssh:ssh-1', label: 'Builder', health: 'disconnected' }"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.ts",
+  "line": 21,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.ts",
+  "line": 34,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.ts",
+  "line": 107,
+  "text": "label: translate('auto.components.sidebar.sidebarHostOptions.3e102f111c', 'All hosts'),"
+ },
+ {
+  "file": "components/sidebar/sidebar-host-options.ts",
+  "line": 113,
+  "text": "label: host.label,"
+ },
+ {
+  "file": "components/sidebar/sidebar-nav-controls.tsx",
+  "line": 3,
+  "text": "import { ContextMenuContent, ContextMenuItem } from '@/components/ui/context-menu'"
+ },
+ {
+  "file": "components/sidebar/sidebar-nav-controls.tsx",
+  "line": 9,
+  "text": "<ContextMenuItem onSelect={onHide}>"
+ },
+ {
+  "file": "components/sidebar/sidebar-nav-controls.tsx",
+  "line": 12,
+  "text": "</ContextMenuItem>"
+ },
+ {
+  "file": "components/sidebar/sidebar-project-drop.ts",
+  "line": 11,
+  "text": "| { visible: true; tone: 'ready' | 'blocked' | 'busy'; label: string; description: string }"
+ },
+ {
+  "file": "components/sidebar/sidebar-project-drop.ts",
+  "line": 44,
+  "text": "label: translate("
+ },
+ {
+  "file": "components/sidebar/sidebar-project-drop.ts",
+  "line": 58,
+  "text": "label: translate("
+ },
+ {
+  "file": "components/sidebar/sidebar-project-drop.ts",
+  "line": 71,
+  "text": "label: translate("
+ },
+ {
+  "file": "components/sidebar/sidebar-workspace-option-items.ts",
+  "line": 52,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/sidebar-workspace-option-items.ts",
+  "line": 74,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/smart-attention.test.ts",
+  "line": 435,
+  "text": "it('per-pane authority across panes: pane A hook=done, pane B title=permission \u2192 Class 1', () => {"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 8,
+  "text": "existingTargets: [{ configHost: 'staging', label: 'Staging', host: '10.0.0.1' }],"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 10,
+  "text": "label: 'Staging box',"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 19,
+  "text": "existingTargets: [{ label: 'prod-box', host: 'prod-box' }],"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 21,
+  "text": "label: 'prod-box',"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 30,
+  "text": "existingTargets: [{ configHost: 'Staging', label: 'Staging', host: '10.0.0.1' }],"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 32,
+  "text": "label: 'staging',"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 43,
+  "text": "existingTargets: [{ configHost: 'box1', label: 'prod', host: '10.0.0.1' }],"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 45,
+  "text": "label: 'Prod',"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 54,
+  "text": "existingTargets: [{ configHost: 'staging', label: 'staging', host: 's.example' }],"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.test.ts",
+  "line": 56,
+  "text": "label: 'prod',"
+ },
+ {
+  "file": "components/sidebar/ssh-target-duplicate.ts",
+  "line": 13,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "line": 8,
+  "text": "vi.mock('@/components/ui/tooltip', () => ({"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "line": 11,
+  "text": "<div className={className} data-tooltip-content=\"\">"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "line": 80,
+  "text": "expect(container.querySelector('[data-tooltip-content]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "line": 86,
+  "text": "const longTooltip = container.querySelector('[data-tooltip-content]')"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "line": 95,
+  "text": "expect(container.querySelector('[data-tooltip-content]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "line": 98,
+  "text": "it('keeps the nested tooltip disabled when a parent hover owns the full identity', async () => {"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "line": 101,
+  "text": "<TruncatedSidebarLabel text=\"feature/really-long-branch-name\" tooltipEnabled={false} />"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.test.tsx",
+  "line": 106,
+  "text": "expect(container.querySelector('[data-tooltip-content]')).toBeNull()"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 2,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 14,
+  "text": "tooltipEnabled?: boolean"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 15,
+  "text": "tooltipSide?: 'top' | 'right' | 'bottom' | 'left'"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 16,
+  "text": "tooltipSideOffset?: number"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 22,
+  "text": "tooltipEnabled = true,"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 23,
+  "text": "tooltipSide = 'right',"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 24,
+  "text": "tooltipSideOffset = 8"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 78,
+  "text": "if (!tooltipEnabled || !truncated) {"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 86,
+  "text": "side={tooltipSide}"
+ },
+ {
+  "file": "components/sidebar/truncated-sidebar-label.tsx",
+  "line": 87,
+  "text": "sideOffset={tooltipSideOffset}"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+  "line": 82,
+  "text": "label: 'Local Mac',"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+  "line": 90,
+  "text": "label: 'Builder',"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+  "line": 98,
+  "text": "label: 'Server',"
+ },
+ {
+  "file": "components/sidebar/use-add-repo-host-selection.test.ts",
+  "line": 291,
+  "text": "label: 'orca VM abc12345',"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-status-actions.ts",
+  "line": 19,
+  "text": "(statusId: string, label: string) => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-status-actions.ts",
+  "line": 26,
+  "text": "status.id === statusId ? { ...status, label: trimmed } : status"
+ },
+ {
+  "file": "components/sidebar/useAddRepoLocalFolderFlow.ts",
+  "line": 68,
+  "text": "setAddProjectBusyLabel: (label: string | null) => void"
+ },
+ {
+  "file": "components/sidebar/useAddRepoServerPathFlow.ts",
+  "line": 68,
+  "text": "setAddProjectBusyLabel: (label: string | null) => void"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+  "line": 172,
+  "text": "it('lets Escape close the board while non-interactive tooltip content is open', async () => {"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+  "line": 174,
+  "text": "const tooltip = document.createElement('div')"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+  "line": 175,
+  "text": "tooltip.setAttribute('data-slot', 'tooltip-content')"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+  "line": 176,
+  "text": "tooltip.setAttribute('data-state', 'open')"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+  "line": 177,
+  "text": "document.body.appendChild(tooltip)"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+  "line": 146,
+  "text": "// companion panel, but non-interactive tooltips should not trap it."
+ },
+ {
+  "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+  "line": 51,
+  "text": "return { id: 'in-review', label: 'In review', ...overrides }"
+ },
+ {
+  "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+  "line": 324,
+  "text": "targetStatus: targetStatus({ id: 'done', label: 'Done' }),"
+ },
+ {
+  "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+  "line": 374,
+  "text": "{ id: 'todo', label: 'Todo' },"
+ },
+ {
+  "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+  "line": 375,
+  "text": "{ id: 'in-review', label: 'In review' }"
+ },
+ {
+  "file": "components/sidebar/workspace-board-task-status-sync.test.ts",
+  "line": 389,
+  "text": "targetStatus: { id: 'in-review', label: 'In review' }"
+ },
+ {
+  "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+  "line": 17,
+  "text": "{ id: 'todo', label: 'Todo' },"
+ },
+ {
+  "file": "components/sidebar/workspace-kanban-sidebar-drop.test.ts",
+  "line": 18,
+  "text": "{ id: 'doing', label: 'Doing' }"
+ },
+ {
+  "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+  "line": 34,
+  "text": "{ id: 'todo', label: 'Todo' },"
+ },
+ {
+  "file": "components/sidebar/workspace-kanban-worktree-groups.test.ts",
+  "line": 35,
+  "text": "{ id: 'doing', label: 'Doing' }"
+ },
+ {
+  "file": "components/sidebar/workspace-options-menu-items.tsx",
+  "line": 12,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 24,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 32,
+  "text": "label: translate('auto.components.sidebar.workspace.status.b4a7101fe1', 'Circle'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 37,
+  "text": "label: translate('auto.components.sidebar.workspace.status.a702bc08d4', 'Dot'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 42,
+  "text": "label: translate('auto.components.sidebar.workspace.status.226d1e7773', 'Progress'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 47,
+  "text": "label: translate('auto.components.sidebar.workspace.status.821d156f54', 'Dashed'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 52,
+  "text": "label: translate('auto.components.sidebar.workspace.status.5f9ca31a84', 'Waiting'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 57,
+  "text": "label: translate('auto.components.sidebar.workspace.status.409528031f', 'Review'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 62,
+  "text": "label: translate('auto.components.sidebar.workspace.status.251c817bdd', 'Timer'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 67,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6380517b10', 'Flag'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 72,
+  "text": "label: translate('auto.components.sidebar.workspace.status.642da473f2', 'Alert'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 77,
+  "text": "label: translate('auto.components.sidebar.workspace.status.111db162bf', 'Paused'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 82,
+  "text": "label: translate('auto.components.sidebar.workspace.status.2c19d1db33', 'Play'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 87,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6b8285b8dd', 'Done'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 92,
+  "text": "label: translate('auto.components.sidebar.workspace.status.93ac840dcb', 'Blocked'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 97,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6b8285b8dd', 'Done'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 102,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6c1efa2cf8', 'In review'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status-icon-options.ts",
+  "line": 107,
+  "text": "label: translate('auto.components.sidebar.workspace.status.cb387159f6', 'In progress'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 51,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 61,
+  "text": "label: translate('auto.components.sidebar.workspace.status.52e3c6e2a4', 'Neutral'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 69,
+  "text": "label: translate('auto.components.sidebar.workspace.status.fc3b92756c', 'Blue'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 77,
+  "text": "label: translate('auto.components.sidebar.workspace.status.6437a8c253', 'Sky'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 85,
+  "text": "label: translate('auto.components.sidebar.workspace.status.1b81da243a', 'Violet'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 93,
+  "text": "label: translate('auto.components.sidebar.workspace.status.7cebab6d4a', 'Amber'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 101,
+  "text": "label: translate('auto.components.sidebar.workspace.status.ddf25b6262', 'Emerald'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 109,
+  "text": "label: translate('auto.components.sidebar.workspace.status.7adb43ecf0', 'Rose'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 117,
+  "text": "label: translate('auto.components.sidebar.workspace.status.caabd5ca85', 'Zinc'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 125,
+  "text": "label: translate('auto.components.sidebar.workspace.status.895f381714', 'Conductor Done'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 133,
+  "text": "label: translate('auto.components.sidebar.workspace.status.caebe3c10f', 'Conductor Review'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 141,
+  "text": "label: translate('auto.components.sidebar.workspace.status.1a9383112b', 'Conductor Progress'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 153,
+  "text": "label: translate('auto.components.sidebar.workspace.status.52e3c6e2a4', 'Neutral'),"
+ },
+ {
+  "file": "components/sidebar/workspace-status.ts",
+  "line": 166,
+  "text": "label: translate('auto.components.sidebar.workspace.status.a702bc08d4', 'Dot'),"
+ },
+ {
+  "file": "components/sidebar/worktree-agent-row-selectors.test.ts",
+  "line": 180,
+  "text": "label: 'Codex Chat',"
+ },
+ {
+  "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+  "line": 4,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+  "line": 38,
+  "text": "return [...markup.matchAll(/\\stitle=\"([^\"]*)\"/g)].map((match) => match[1])"
+ },
+ {
+  "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+  "line": 62,
+  "text": "expect(markup).toContain('title=\"Monitoring background tasks - Run background checks\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-card-agent-summary.test.ts",
+  "line": 89,
+  "text": "expect(eligible).toContain('data-slot=\"tooltip-trigger\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.stable-message.test.tsx",
+  "line": 6,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 194,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 222,
+  "text": "title={sendTargetDisabledReason ? null : undefined}"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 223,
+  "text": "tooltipSide=\"right\""
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 226,
+  "text": "<span className=\"inline-flex shrink-0\" title={formatAgentTypeLabel(agent.agentType)}>"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 232,
+  "text": "title={sendTargetDisabledReason ? undefined : rowTitle}"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 252,
+  "text": "title={model}"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 305,
+  "text": "title={sendTargetDisabledReason}"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agents.tsx",
+  "line": 118,
+  "text": "aria-label={"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agents.tsx",
+  "line": 153,
+  "text": "<AgentStateDot state={group.state} size=\"sm\" tooltipSide=\"right\" />"
+ },
+ {
+  "file": "components/sidebar/worktree-card-display-property-options.ts",
+  "line": 4,
+  "text": "export const PROPERTY_OPTIONS: { id: WorktreeCardProperty; label: string }[] = ["
+ },
+ {
+  "file": "components/sidebar/worktree-card-header.tsx",
+  "line": 7,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-card-header.tsx",
+  "line": 31,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/worktree-card-header.tsx",
+  "line": 190,
+  "text": "// Why: the error can be raw agent CLI output, so the badge opens a dialog rather than a tooltip."
+ },
+ {
+  "file": "components/sidebar/worktree-card-header.tsx",
+  "line": 200,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/worktree-card-header.tsx",
+  "line": 274,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/worktree-card-header.tsx",
+  "line": 304,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/worktree-card-meta-row.tsx",
+  "line": 65,
+  "text": "tooltipEnabled={!hasHoverDetails}"
+ },
+ {
+  "file": "components/sidebar/worktree-card-meta-row.tsx",
+  "line": 70,
+  "text": "title={worktree.path}"
+ },
+ {
+  "file": "components/sidebar/worktree-card-meta-row.tsx",
+  "line": 78,
+  "text": "// Why: whole-card details hover already shows full identity; a nested tooltip would compete for it."
+ },
+ {
+  "file": "components/sidebar/worktree-card-meta-row.tsx",
+  "line": 79,
+  "text": "tooltipEnabled={!hasHoverDetails}"
+ },
+ {
+  "file": "components/sidebar/worktree-card-parent-content.tsx",
+  "line": 76,
+  "text": "// Why: status glyphs and agent rows own their tooltips; only identity content should open the larger details card."
+ },
+ {
+  "file": "components/sidebar/worktree-card-presentation.tsx",
+  "line": 143,
+  "text": "// Why: the parent row owns metadata hover; don't stack the title's truncation tooltip on the details popover."
+ },
+ {
+  "file": "components/sidebar/worktree-card-secondary-rows.tsx",
+  "line": 5,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-card-secondary-rows.tsx",
+  "line": 89,
+  "text": "aria-label={lineageChildAriaLabel}"
+ },
+ {
+  "file": "components/sidebar/worktree-card-send-target-inputs.test.ts",
+  "line": 29,
+  "text": "label: 'Send',"
+ },
+ {
+  "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+  "line": 10,
+  "text": "({ type: 'header', key: `repo:${id}`, label: id, count: 1, tone: '', repo: { id } }) as RenderRow"
+ },
+ {
+  "file": "components/sidebar/worktree-header-section-boundaries.test.ts",
+  "line": 15,
+  "text": "label: id,"
+ },
+ {
+  "file": "components/sidebar/worktree-keyboard-cycle.test.ts",
+  "line": 142,
+  "text": "label: 'This computer',"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 130,
+  "text": "expect(rows[0]).toMatchObject({ type: 'header', key: 'pinned', label: 'Pinned' })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 132,
+  "text": "expect(rows[2]).toMatchObject({ type: 'header', key: 'all', label: 'All', count: 2 })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 169,
+  "text": "{ type: 'header', key: 'all', label: 'All' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 234,
+  "text": "label: 'In progress',"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 283,
+  "text": "label: 'In progress'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 313,
+  "text": "expect(rows[0]).toMatchObject({ type: 'header', label: 'c15t' })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 344,
+  "text": "label: 'design-assets',"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 355,
+  "text": "rows.filter((r) => r.type === 'header').map((r) => ({ key: r.key, label: r.label }))"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 356,
+  "text": ").toEqual([{ key: 'workspace-status:in-review', label: 'In review' }])"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 361,
+  "text": "{ id: 'blocked', label: 'Blocked' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 362,
+  "text": "{ id: 'todo', label: 'Ready' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 363,
+  "text": "{ id: 'in-progress', label: 'Doing' }"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 378,
+  "text": "rows.filter((r) => r.type === 'header').map((r) => ({ key: r.key, label: r.label }))"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 380,
+  "text": "{ key: 'workspace-status:blocked', label: 'Blocked' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+  "line": 381,
+  "text": "{ key: 'workspace-status:in-progress', label: 'Doing' }"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/build-rows.ts",
+  "line": 161,
+  "text": "label: ALL_GROUP_META.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/group-keys.ts",
+  "line": 34,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/group-sections.ts",
+  "line": 87,
+  "text": "label: group.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/group-sections.ts",
+  "line": 105,
+  "text": "label: definition?.label ?? workspaceStatus,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/group-sections.ts",
+  "line": 130,
+  "text": "label: meta.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/host-labels.ts",
+  "line": 83,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/host-labels.ts",
+  "line": 85,
+  "text": "*  tooltip worktree cards use, which the label alone cannot select. */"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+  "line": 21,
+  "text": "label: key,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/pinned-group-rows.ts",
+  "line": 55,
+  "text": "label: PINNED_GROUP_META.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/project-group-sections.ts",
+  "line": 103,
+  "text": "label: projectGroup.name,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 20,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 117,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 133,
+  "text": "label: repo?.displayName ?? 'Unknown',"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 144,
+  "text": "label: repo?.displayName ?? setup.displayName,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+  "line": 153,
+  "text": "label: project.displayName,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/row-types.ts",
+  "line": 20,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/section-order.ts",
+  "line": 94,
+  "text": "? { ...group, label: labelsByPath.get(getRepoDisplayLabelKey(group.repo)) ?? group.label }"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 84,
+  "text": "let label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 116,
+  "text": "label: getLaneLabelForKey(key, groupBy, workspaceStatuses),"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 143,
+  "text": "label: grouping.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 159,
+  "text": "label: grouping.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 177,
+  "text": "label: grouping.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+  "line": 196,
+  "text": "label: grouping.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+  "line": 47,
+  "text": "async function click(label: string): Promise<void> {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "line": 5,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "line": 28,
+  "text": "expect(markup).toContain('aria-label=\"Folder not found\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "line": 38,
+  "text": "expect(markup).toContain('aria-label=\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "line": 39,
+  "text": "expect(markup).not.toContain('aria-label=\"\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "line": 41,
+  "text": "expect(markup).not.toContain('aria-label=\"Folder not found\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "line": 50,
+  "text": "expect(markup).toContain('aria-label=\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "line": 51,
+  "text": "expect(markup).not.toContain('aria-label=\"\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+  "line": 53,
+  "text": "expect(markup).not.toContain('aria-label=\"Folder not found\"')"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx",
+  "line": 3,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx",
+  "line": 32,
+  "text": "aria-label={title}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/HostSectionHeader.tsx",
+  "line": 3,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/HostSectionHeader.tsx",
+  "line": 9,
+  "text": "function formatSectionActivityLabel(count: number, label: string): string {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/HostSectionHeader.tsx",
+  "line": 19,
+  "text": "aria-label={totalLabel}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/ProjectGroupDialogs.tsx",
+  "line": 36,
+  "text": "title={"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+  "line": 6,
+  "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+  "line": 3,
+  "text": "import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+  "line": 90,
+  "text": "aria-label={`${title}. ${retryLabel}`}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/SectionHeader.tsx",
+  "line": 154,
+  "text": "label: row.label,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 4,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 8,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 34,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 47,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 71,
+  "text": "<DropdownMenuItem onSelect={() => onRename(groupId, label, hostId)}>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 73,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 74,
+  "text": "<DropdownMenuItem variant=\"destructive\" onSelect={() => onDelete(groupId, label, hostId)}>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 76,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 90,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+  "line": 113,
+  "text": "aria-label={createLabel}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 15,
+  "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 19,
+  "text": "DropdownMenuItem,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 78,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 93,
+  "text": "aria-label={translate("
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 122,
+  "text": "<DropdownMenuItem onSelect={() => actions.onOpenRepoSettings(repo.id)}>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 125,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 126,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 131,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 133,
+  "text": "<DropdownMenuItem onSelect={() => actions.onOpenWorktreeVisibility(repo)}>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 136,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 138,
+  "text": "<DropdownMenuItem onSelect={() => actions.onCreateGroupFromRepo(repo)}>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 142,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 151,
+  "text": "<DropdownMenuItem"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 157,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 163,
+  "text": "<DropdownMenuItem onSelect={() => actions.onRemoveProjectFromGroup(repo)}>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 166,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 169,
+  "text": "<DropdownMenuItem variant=\"destructive\" onSelect={() => actions.onRemoveProject(repo)}>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 172,
+  "text": "</DropdownMenuItem>"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 185,
+  "text": "label: string"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 205,
+  "text": "aria-label={createState.ariaLabel}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 215,
+  "text": "aria-label={createState.ariaLabel}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 228,
+  "text": "aria-label={createState?.ariaLabel ?? fallbackLabel}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+  "line": 242,
+  "text": "{createState?.tooltip ?? fallbackLabel}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx",
+  "line": 333,
+  "text": "aria-label={translate('auto.components.sidebar.WorktreeList.bfbedc547b', 'Worktrees')}"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+  "line": 32,
+  "text": "label: key,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/sticky-headers.test.ts",
+  "line": 23,
+  "text": "label: key,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+  "line": 21,
+  "text": "label: hostId,"
+ },
+ {
+  "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+  "line": 33,
+  "text": "label: key,"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+  "line": 93,
+  "text": "label: 'Orca',"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+  "line": 152,
+  "text": "{ type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-host-labels.test.ts",
+  "line": 298,
+  "text": "{ type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-imported-worktrees.test.ts",
+  "line": 116,
+  "text": "{ type: 'header', key: 'repo:repo-1', label: 'orca' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "line": 26,
+  "text": "/** Both twins display the same label: the reporting account's shape. */"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "line": 129,
+  "text": "): { repoId: string; label: string | undefined; hostId: string | undefined; count: number }[] {"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "line": 132,
+  "text": "label: row.hostContextLabel,"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "line": 160,
+  "text": "{ repoId: sshTwin.id, label: 'openclaw', hostId: SSH_HOST_ID, count: 61 },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "line": 161,
+  "text": "{ repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "line": 169,
+  "text": "{ repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "line": 177,
+  "text": "{ repoId: sshTwin.id, label: 'openclaw', hostId: SSH_HOST_ID, count: 61 }"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-notice-host-labels.test.ts",
+  "line": 180,
+  "text": "{ repoId: envTwin.id, label: 'openclaw', hostId: ENV_HOST_ID, count: 134 }"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-pending-creations.test.ts",
+  "line": 89,
+  "text": "{ type: 'header', key: `repo:${repo.id}`, label: 'Unknown' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+  "line": 43,
+  "text": "label: 'Platform',"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-groups.test.ts",
+  "line": 126,
+  "text": "expect(rows[0]).toMatchObject({ label: 'Platform' })"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 49,
+  "text": "{ type: 'header', key: 'project:github:stablyai/orca', label: 'Orca', count: 2 },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 102,
+  "text": "{ key: 'project:github:stablyai/orca', label: 'Orca' }"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 105,
+  "text": "{ key: 'project:github:stablyai/orca', label: 'Orca' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 106,
+  "text": "{ key: 'repo:repo-other', label: 'design-assets' }"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 201,
+  "text": "label: 'sample-app',"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 428,
+  "text": "label: 'orca'"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 432,
+  "text": "label: 'orca-2'"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 691,
+  "text": "label: 'Orca',"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-project-host-setups.test.ts",
+  "line": 787,
+  "text": "label: 'Orca',"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+  "line": 72,
+  "text": "{ key: 'project:github:acme/api', label: 'work/api' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+  "line": 73,
+  "text": "{ key: 'project:gitlab:me/api', label: 'oss/api' }"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+  "line": 84,
+  "text": ").toMatchObject([{ key: 'project:github:acme/api', label: 'api' }])"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+  "line": 89,
+  "text": "{ key: 'repo:repo-work', label: 'work/api' },"
+ },
+ {
+  "file": "components/sidebar/worktree-list-groups-section-label-disambiguation.test.ts",
+  "line": 90,
+  "text": "{ key: 'repo:repo-oss', label: 'oss/api' }"
+ },
+ {
+  "file": "components/sidebar/worktree-list-lineage-card-test-harness.ts",
+  "line": 239,
+  "text": "DropdownMenuItem: ({ children }: { children: React.ReactNode }) =>"
+ },
+ {
+  "file": "components/sidebar/worktree-review-helpers.tsx",
+  "line": 29,
+  "text": "// their state tone so the glyph agrees with its tooltip. A stateless row (folder"
+ },
+ {
+  "file": "components/sidebar/worktree-title-derived-agent-rows.ts",
+  "line": 230,
+  "text": "label: string,"
+ }
+]

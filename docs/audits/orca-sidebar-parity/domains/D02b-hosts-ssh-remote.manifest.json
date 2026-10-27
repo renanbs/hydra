@@ -1,0 +1,192 @@
+{
+ "domain": "D02b-hosts-ssh-remote",
+ "prod": [
+  {
+   "name": "AddRemoteHostDialog.tsx",
+   "kind": "prod",
+   "loc": 374
+  },
+  {
+   "name": "AddRemoteHostFields.tsx",
+   "kind": "prod",
+   "loc": 271
+  },
+  {
+   "name": "AddRemoteHostServerFormPanel.tsx",
+   "kind": "prod",
+   "loc": 76
+  },
+  {
+   "name": "AddRemoteHostSshConfigPicker.tsx",
+   "kind": "prod",
+   "loc": 276
+  },
+  {
+   "name": "AddRemoteHostSshFormPanel.tsx",
+   "kind": "prod",
+   "loc": 75
+  },
+  {
+   "name": "ForgetSshWorkspaceDialog.tsx",
+   "kind": "prod",
+   "loc": 204
+  },
+  {
+   "name": "HostRemoveDialog.tsx",
+   "kind": "prod",
+   "loc": 299
+  },
+  {
+   "name": "HostRenameDialog.tsx",
+   "kind": "prod",
+   "loc": 104
+  },
+  {
+   "name": "HostSectionHeaderMenu.tsx",
+   "kind": "prod",
+   "loc": 296
+  },
+  {
+   "name": "RemoteFileBrowser.tsx",
+   "kind": "prod",
+   "loc": 325
+  },
+  {
+   "name": "RemoteFileBrowserBreadcrumbs.tsx",
+   "kind": "prod",
+   "loc": 93
+  },
+  {
+   "name": "RemoteFileBrowserEntryList.tsx",
+   "kind": "prod",
+   "loc": 126
+  },
+  {
+   "name": "SshTargetRow.tsx",
+   "kind": "prod",
+   "loc": 103
+  },
+  {
+   "name": "add-remote-host-ssh-actions.ts",
+   "kind": "prod",
+   "loc": 267
+  },
+  {
+   "name": "host-header-menu-items.ts",
+   "kind": "prod",
+   "loc": 73
+  },
+  {
+   "name": "host-rename-remove.ts",
+   "kind": "prod",
+   "loc": 57
+  },
+  {
+   "name": "remote-file-browser-drive-paths.ts",
+   "kind": "prod",
+   "loc": 62
+  },
+  {
+   "name": "remote-file-browser-helpers.ts",
+   "kind": "prod",
+   "loc": 296
+  },
+  {
+   "name": "remote-file-browser-path-preview-resolver.ts",
+   "kind": "prod",
+   "loc": 164
+  },
+  {
+   "name": "ssh-host-remove-resolution.ts",
+   "kind": "prod",
+   "loc": 56
+  },
+  {
+   "name": "ssh-host-remove-workspaces.ts",
+   "kind": "prod",
+   "loc": 73
+  },
+  {
+   "name": "ssh-target-duplicate.ts",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "ssh-workspace-forget-resolution.ts",
+   "kind": "prod",
+   "loc": 50
+  },
+  {
+   "name": "use-remote-file-browser-filter-key-commands.ts",
+   "kind": "prod",
+   "loc": 120
+  },
+  {
+   "name": "use-remote-file-browser-listing.ts",
+   "kind": "prod",
+   "loc": 58
+  },
+  {
+   "name": "use-remote-file-browser-path-preview.ts",
+   "kind": "prod",
+   "loc": 208
+  }
+ ],
+ "test": [
+  {
+   "name": "AddRemoteHostDialog.config-picker.test.tsx",
+   "kind": "test",
+   "loc": 211
+  },
+  {
+   "name": "AddRemoteHostFields.test.tsx",
+   "kind": "test",
+   "loc": 38
+  },
+  {
+   "name": "RemoteFileBrowser.paste.test.tsx",
+   "kind": "test",
+   "loc": 165
+  },
+  {
+   "name": "add-remote-host-ssh-actions.test.ts",
+   "kind": "test",
+   "loc": 211
+  },
+  {
+   "name": "host-header-menu-items.test.ts",
+   "kind": "test",
+   "loc": 92
+  },
+  {
+   "name": "host-rename-remove.test.ts",
+   "kind": "test",
+   "loc": 54
+  },
+  {
+   "name": "remote-file-browser-drive-paths.test.ts",
+   "kind": "test",
+   "loc": 86
+  },
+  {
+   "name": "remote-file-browser-helpers.test.ts",
+   "kind": "test",
+   "loc": 407
+  },
+  {
+   "name": "ssh-host-remove-resolution.test.ts",
+   "kind": "test",
+   "loc": 90
+  },
+  {
+   "name": "ssh-target-duplicate.test.ts",
+   "kind": "test",
+   "loc": 61
+  },
+  {
+   "name": "ssh-workspace-forget-resolution.test.ts",
+   "kind": "test",
+   "loc": 70
+  }
+ ]
+}

@@ -1,0 +1,12 @@
+[
+ {
+  "file": "src/components/sidebar/SidebarHeader.tsx",
+  "line": 34,
+  "text": "const introShown = localStorage.getItem(introShownKey) === \"true\";"
+ },
+ {
+  "file": "src/components/sidebar/SidebarHeader.tsx",
+  "line": 41,
+  "text": "localStorage.setItem(introShownKey, \"true\");"
+ }
+]

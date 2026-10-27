@@ -1,0 +1,809 @@
+{
+ "unreachable": [
+  "src/components/sidebar/AddRepoDialog.tsx",
+  "src/components/sidebar/CompactAgentRow.tsx",
+  "src/components/sidebar/ParentPickerModal.tsx",
+  "src/components/sidebar/WorktreeSidebar.tsx",
+  "src/components/sidebar/agent-finished-timestamp.ts",
+  "src/components/sidebar/agent-row-lineage-model.ts",
+  "src/components/sidebar/build-rows.ts",
+  "src/components/sidebar/compact-agent-row-labels.ts",
+  "src/components/sidebar/group-keys.ts",
+  "src/components/sidebar/natural-worktree-ids.ts",
+  "src/components/sidebar/project-filter-reveal.ts",
+  "src/components/sidebar/project-group-sections.ts",
+  "src/components/sidebar/row-types.ts",
+  "src/components/sidebar/workspace-status-drag-data.ts",
+  "src/components/sidebar/workspace-status-icon-options.ts",
+  "src/components/sidebar/worktree-drag-units.ts",
+  "src/components/sidebar/worktree-list/buildSidebarRows.ts",
+  "src/components/sidebar/worktree-list/hard-scroll-up.ts",
+  "src/components/sidebar/worktree-list/keyboard-cycle.ts",
+  "src/components/sidebar/worktree-list/pointer-drag-dom.ts",
+  "src/components/sidebar/worktree-list/rows/SectionHeader.tsx",
+  "src/components/sidebar/worktree-manual-order-ranks.ts",
+  "src/components/sidebar/worktree-manual-order.ts",
+  "src/components/sidebar/worktree-sidebar-drag-geometry.ts",
+  "src/components/sidebar/worktree-title-derived-agent-rows.ts"
+ ],
+ "invoke_sites": {
+  "sync_keep_awake": [
+   "src/App.tsx:382",
+   "src/components/status-bar/CaffeinateStatusSegment.tsx:51"
+  ],
+  "save_sidebar_pref": [
+   "src/App.tsx:448",
+   "src/App.tsx:834"
+  ],
+  "save_settings": [
+   "src/App.tsx:4088",
+   "src/App.tsx:571",
+   "src/components/SettingsModal.tsx:152",
+   "src/components/SettingsModal.tsx:157"
+  ],
+  "save_session_record": [
+   "src/App.tsx:1832",
+   "src/App.tsx:2102",
+   "src/App.tsx:2907",
+   "src/App.tsx:2940",
+   "src/App.tsx:2989",
+   "src/App.tsx:2999",
+   "src/App.tsx:3524",
+   "src/App.tsx:3553",
+   "src/App.tsx:616",
+   "src/App.tsx:639",
+   "src/components/sidebar/SidebarAgentsList.tsx:349"
+  ],
+  "create_split_terminal": [
+   "src/App.tsx:2909",
+   "src/App.tsx:2942",
+   "src/App.tsx:653",
+   "src/App.tsx:661"
+  ],
+  "delete_session_record": [
+   "src/App.tsx:1903",
+   "src/App.tsx:2246",
+   "src/App.tsx:2257",
+   "src/App.tsx:2360",
+   "src/App.tsx:2383",
+   "src/App.tsx:2403",
+   "src/App.tsx:695",
+   "src/components/SettingsModal.tsx:1084"
+  ],
+  "close_split_terminal": [
+   "src/App.tsx:2247",
+   "src/App.tsx:2258",
+   "src/App.tsx:2361",
+   "src/App.tsx:2384",
+   "src/App.tsx:2404",
+   "src/App.tsx:696"
+  ],
+  "get_layout_persistence": [
+   "src/App.tsx:756"
+  ],
+  "get_sidebar_pref": [
+   "src/App.tsx:773"
+  ],
+  "get_workbench_persistence": [
+   "src/App.tsx:861"
+  ],
+  "save_workbench_persistence": [
+   "src/App.tsx:1054",
+   "src/App.tsx:887",
+   "src/App.tsx:895"
+  ],
+  "save_workbench_persistence_for_project": [
+   "src/App.tsx:1052",
+   "src/App.tsx:1662",
+   "src/App.tsx:1729",
+   "src/App.tsx:1874",
+   "src/App.tsx:927",
+   "src/App.tsx:962"
+  ],
+  "get_workbench_persistence_for_project": [
+   "src/App.tsx:1679",
+   "src/App.tsx:930"
+  ],
+  "save_layout_persistence": [
+   "src/App.tsx:1009",
+   "src/App.tsx:1029",
+   "src/App.tsx:997"
+  ],
+  "scan_worktrees": [
+   "src/App.tsx:1064",
+   "src/App.tsx:1084",
+   "src/components/sidebar/WorktreeVisibilityDialog.tsx:112"
+  ],
+  "list_worktrees": [
+   "src/App.tsx:1071",
+   "src/App.tsx:1087"
+  ],
+  "get_system_status": [
+   "src/App.tsx:1112"
+  ],
+  "catalog_get": [
+   "src/App.tsx:1116",
+   "src/App.tsx:1150",
+   "src/App.tsx:1615",
+   "src/App.tsx:4030"
+  ],
+  "list_available_agents": [
+   "src/App.tsx:1233",
+   "src/components/SettingsModal.tsx:126",
+   "src/components/SettingsModal.tsx:613"
+  ],
+  "get_default_system_shell": [
+   "src/App.tsx:1236",
+   "src/components/SettingsModal.tsx:129"
+  ],
+  "get_settings": [
+   "src/App.tsx:1245",
+   "src/App.tsx:1260",
+   "src/components/SettingsModal.tsx:124"
+  ],
+  "get_repo_git_status": [
+   "src/App.tsx:1269"
+  ],
+  "list_persisted_sessions": [
+   "src/App.tsx:1284",
+   "src/App.tsx:1350"
+  ],
+  "check_agent_state": [
+   "src/App.tsx:1534",
+   "src/App.tsx:2324",
+   "src/components/right-sidebar/AgentFeed.tsx:223"
+  ],
+  "get_keep_awake_status": [
+   "src/App.tsx:1554",
+   "src/App.tsx:1558"
+  ],
+  "catalog_remove_repo": [
+   "src/App.tsx:1613"
+  ],
+  "delete_worktree": [
+   "src/App.tsx:1776",
+   "src/components/DeleteWorktreeDialog.tsx:106"
+  ],
+  "pr_status": [
+   "src/App.tsx:2023"
+  ],
+  "path_exists": [
+   "src/App.tsx:2071"
+  ],
+  "read_file_text_cmd": [
+   "src/App.tsx:2171",
+   "src/App.tsx:2192",
+   "src/App.tsx:3876"
+  ],
+  "write_terminal": [
+   "src/App.tsx:2224",
+   "src/App.tsx:2231"
+  ],
+  "send_terminal_input": [
+   "src/App.tsx:2768",
+   "src/App.tsx:2780",
+   "src/App.tsx:2783",
+   "src/App.tsx:2794",
+   "src/App.tsx:2849",
+   "src/components/TerminalDrawer.tsx:350",
+   "src/components/TerminalDrawer.tsx:516",
+   "src/components/TerminalDrawer.tsx:532",
+   "src/components/TerminalDrawer.tsx:538",
+   "src/components/right-sidebar/PromptBar.tsx:36"
+  ],
+  "open_in_external_editor": [
+   "src/App.tsx:3107",
+   "src/components/right-sidebar/WorktreeOpenInMenu.tsx:29"
+  ],
+  "open_in_file_manager": [
+   "src/App.tsx:3112",
+   "src/App.tsx:3274",
+   "src/App.tsx:3483",
+   "src/components/right-sidebar/WorktreeOpenInMenu.tsx:26"
+  ],
+  "set_worktree_status": [
+   "src/App.tsx:3303"
+  ],
+  "set_worktree_display_name": [
+   "src/App.tsx:3342"
+  ],
+  "git_rename_branch_cmd": [
+   "src/App.tsx:3378"
+  ],
+  "git_diff_cmd": [
+   "src/App.tsx:3896"
+  ],
+  "create_worktree": [
+   "src/components/AddProjectOrWorktreeModal.tsx:52",
+   "src/components/NewWorkspaceComposer.tsx:112"
+  ],
+  "create_project": [
+   "src/components/AddProjectOrWorktreeModal.tsx:74",
+   "src/components/sidebar/AddRepoDialog.tsx:98"
+  ],
+  "open_external_url_cmd": [
+   "src/components/Landing.tsx:141",
+   "src/components/Landing.tsx:71"
+  ],
+  "check_github_starred_cmd": [
+   "src/components/Landing.tsx:107"
+  ],
+  "star_github_repo_cmd": [
+   "src/components/Landing.tsx:148"
+  ],
+  "check_preflight_tools_cmd": [
+   "src/components/Landing.tsx:236"
+  ],
+  "get_pairing_qr": [
+   "src/components/PairingModal.tsx:24"
+  ],
+  "list_terminal_sessions": [
+   "src/components/SettingsModal.tsx:120"
+  ],
+  "list_available_shells": [
+   "src/components/SettingsModal.tsx:127",
+   "src/components/SettingsModal.tsx:902"
+  ],
+  "get_app_version": [
+   "src/components/SettingsModal.tsx:128",
+   "src/components/sidebar/WorktreeSidebar.tsx:197"
+  ],
+  "preview_ghostty_import": [
+   "src/components/SettingsModal.tsx:182"
+  ],
+  "preview_warp_themes": [
+   "src/components/SettingsModal.tsx:206",
+   "src/components/SettingsModal.tsx:226",
+   "src/components/SettingsModal.tsx:233"
+  ],
+  "resize_terminal": [
+   "src/components/TerminalDrawer.tsx:322"
+  ],
+  "start_agent_terminal": [
+   "src/components/TerminalDrawer.tsx:463"
+  ],
+  "get_terminal_snapshot": [
+   "src/components/TerminalDrawer.tsx:470",
+   "src/components/right-sidebar/AgentFeed.tsx:228"
+  ],
+  "window_minimize": [
+   "src/components/WindowTitlebar.tsx:11"
+  ],
+  "window_toggle_maximize": [
+   "src/components/WindowTitlebar.tsx:16"
+  ],
+  "window_close": [
+   "src/components/WindowTitlebar.tsx:23"
+  ],
+  "window_start_dragging": [
+   "src/components/WindowTitlebar.tsx:98"
+  ],
+  "list_directory_cmd": [
+   "src/components/right-sidebar/FileExplorer.tsx:134",
+   "src/components/right-sidebar/FileExplorer.tsx:76"
+  ],
+  "check_git_ignored_cmd": [
+   "src/components/right-sidebar/FileExplorer.tsx:116",
+   "src/components/right-sidebar/FileExplorer.tsx:86"
+  ],
+  "rename_path_cmd": [
+   "src/components/right-sidebar/FileExplorer.tsx:216",
+   "src/components/right-sidebar/FileExplorer.tsx:257",
+   "src/components/right-sidebar/FileExplorer.tsx:518"
+  ],
+  "create_file_cmd": [
+   "src/components/right-sidebar/FileExplorer.tsx:219"
+  ],
+  "create_folder_cmd": [
+   "src/components/right-sidebar/FileExplorer.tsx:223"
+  ],
+  "delete_path_cmd": [
+   "src/components/right-sidebar/FileExplorer.tsx:233"
+  ],
+  "search_files_cmd": [
+   "src/components/right-sidebar/FileExplorer.tsx:266"
+  ],
+  "auto_rename_worktree": [
+   "src/components/right-sidebar/PromptBar.tsx:46"
+  ],
+  "list_tool_approvals": [
+   "src/components/right-sidebar/RightSidebar.tsx:47",
+   "src/components/right-sidebar/RightSidebar.tsx:52"
+  ],
+  "get_detailed_git_status_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:121"
+  ],
+  "get_diff_numstat_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:125",
+   "src/components/right-sidebar/SourceControl.tsx:126"
+  ],
+  "get_submodule_paths_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:134"
+  ],
+  "get_git_history_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:148"
+  ],
+  "get_branch_commits_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:159"
+  ],
+  "git_stash_list_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:192"
+  ],
+  "git_stage": [
+   "src/components/right-sidebar/SourceControl.tsx:206"
+  ],
+  "git_unstage": [
+   "src/components/right-sidebar/SourceControl.tsx:210"
+  ],
+  "git_discard": [
+   "src/components/right-sidebar/SourceControl.tsx:215"
+  ],
+  "git_stage_paths_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:219"
+  ],
+  "git_unstage_paths_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:223"
+  ],
+  "git_push_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:228"
+  ],
+  "git_pull_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:233"
+  ],
+  "git_commit_amend_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:242"
+  ],
+  "git_commit_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:243"
+  ],
+  "git_stash_pop_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:257"
+  ],
+  "git_stash_push_cmd": [
+   "src/components/right-sidebar/SourceControl.tsx:601"
+  ],
+  "resolve_tool_approval": [
+   "src/components/right-sidebar/ToolCard.tsx:48",
+   "src/components/right-sidebar/ToolCard.tsx:52"
+  ],
+  "catalog_add_folder": [
+   "src/components/sidebar/AddRepoDialog.tsx:60"
+  ],
+  "clone_project": [
+   "src/components/sidebar/AddRepoDialog.tsx:77"
+  ],
+  "kill_port_process": [
+   "src/components/sidebar/WorktreeCardDetailsHover.tsx:114"
+  ],
+  "catalog_set_worktree_visibility": [
+   "src/components/sidebar/WorktreeSidebar.tsx:181",
+   "src/components/sidebar/WorktreeSidebar.tsx:775"
+  ],
+  "scan_workspace_ports": [
+   "src/components/sidebar/WorktreeSidebar.tsx:239"
+  ],
+  "import_worktree": [
+   "src/components/sidebar/WorktreeSidebar.tsx:763",
+   "src/components/sidebar/WorktreeVisibilityDialog.tsx:317"
+  ],
+  "suppress_worktree_inbox": [
+   "src/components/sidebar/WorktreeSidebar.tsx:794"
+  ],
+  "set_project_worktree_base": [
+   "src/components/sidebar/WorktreeSidebar.tsx:912"
+  ],
+  "catalog_set_worktree_visibility_sources": [
+   "src/components/sidebar/WorktreeVisibilityDialog.tsx:204"
+  ]
+ },
+ "stores": [
+  "src/components/skills/skill-update-run-store.ts",
+  "src/components/terminal-pane/agent-completion-identity-store.ts",
+  "src/hooks/agent-hook-completion-store-sync.test.ts",
+  "src/hooks/agent-hook-completion-store-sync.ts",
+  "src/hooks/composer-state/composer-target-store.ts",
+  "src/hooks/ipc-events-agent-status-store-test-fixtures.ts",
+  "src/hooks/ipc-events-harness-store-state.ts",
+  "src/hooks/useVirtualizedScrollAnchor.marks-restore-signal.test.ts",
+  "src/hooks/virtualized-scroll-anchor-restore.ts",
+  "src/hooks/virtualizedScrollOffsetRestore.ts",
+  "src/lib/worktree-activation-store-contract.ts",
+  "src/runtime/restored-client-hosted-browser-host-attach.ts",
+  "src/runtime/web-session-tabs-sync/store-patch.ts",
+  "src/store/agent-status-types.ts",
+  "src/store/catalog-identity.ts",
+  "src/store/folder-workspaces/folder-path-status-actions.ts",
+  "src/store/folder-workspaces/folder-path-status.ts",
+  "src/store/folder-workspaces/folder-workspace-catalog-actions.ts",
+  "src/store/folder-workspaces/folder-workspace-catalog.ts",
+  "src/store/folder-workspaces/folder-workspace-mutations.ts",
+  "src/store/folder-workspaces/folder-workspace-routing.ts",
+  "src/store/github/cache-identity.ts",
+  "src/store/github/cache-model.ts",
+  "src/store/github/cache-persistence.ts",
+  "src/store/github/cache-policy.ts",
+  "src/store/github/check-actions.ts",
+  "src/store/github/comment-fetch-actions.ts",
+  "src/store/github/comment-mutation-actions.ts",
+  "src/store/github/conversation-comment-actions.ts",
+  "src/store/github/issue-actions.ts",
+  "src/store/github/pr-check-status-cache.ts",
+  "src/store/github/pr-comment-cache.ts",
+  "src/store/github/pr-refresh-state.ts",
+  "src/store/github/pr-result-cache.ts",
+  "src/store/github/pr-result-routing.ts",
+  "src/store/github/project-actions.ts",
+  "src/store/github/project-cache.ts",
+  "src/store/github/project-row-actions.ts",
+  "src/store/github/pull-request-actions.ts",
+  "src/store/github/pull-request-execution.ts",
+  "src/store/github/refresh-event-actions.ts",
+  "src/store/github/refresh-routing-actions.ts",
+  "src/store/github/refresh-sweep-actions.ts",
+  "src/store/github/repository-routing.ts",
+  "src/store/github/request-coordination.ts",
+  "src/store/github/review-thread-actions.ts",
+  "src/store/github/slice-types.ts",
+  "src/store/github/stale-worktree-refresh-actions.ts",
+  "src/store/github/work-item-aggregate-actions.ts",
+  "src/store/github/work-item-fetch-actions.ts",
+  "src/store/github/work-item-mutation-actions.ts",
+  "src/store/github/work-item-routing.ts",
+  "src/store/github/worktree-refresh.ts",
+  "src/store/host-catalog-fencing.ts",
+  "src/store/index.ts",
+  "src/store/pinned-tab-close-guard.ts",
+  "src/store/plugin-language-packs.ts",
+  "src/store/project-groups/nested-repository-operations.ts",
+  "src/store/project-groups/project-group-catalog-actions.ts",
+  "src/store/project-groups/project-group-catalog.ts",
+  "src/store/project-groups/project-group-mutations.ts",
+  "src/store/project-groups/project-group-owner-stamping.ts",
+  "src/store/project-groups/project-group-removal-state.ts",
+  "src/store/project-host-setup-selector-normalization.ts",
+  "src/store/project-host-setup-selector.ts",
+  "src/store/projects/project-compatibility-core.ts",
+  "src/store/projects/project-compatibility-host-merge.ts",
+  "src/store/projects/project-host-routing.ts",
+  "src/store/projects/project-host-setup-actions.ts",
+  "src/store/projects/project-profile-presence.ts",
+  "src/store/projects/project-update.ts",
+  "src/store/projects/project-wsl-filesystem-boundary-advisory.ts",
+  "src/store/repos/all-host-repo-catalog-actions.ts",
+  "src/store/repos/owner-routing.ts",
+  "src/store/repos/repo-add-actions.ts",
+  "src/store/repos/repo-catalog-actions.ts",
+  "src/store/repos/repo-catalog-fencing.ts",
+  "src/store/repos/repo-catalog-identity.ts",
+  "src/store/repos/repo-catalog-merge.ts",
+  "src/store/repos/repo-ordering.ts",
+  "src/store/repos/repo-removal.ts",
+  "src/store/repos/repo-state.ts",
+  "src/store/repos/repo-update.ts",
+  "src/store/repos/runtime-repo-catalog-actions.ts",
+  "src/store/repos/safe-auto-fork-sync.ts",
+  "src/store/right-sidebar-route.ts",
+  "src/store/running-terminal-close-confirm.ts",
+  "src/store/runtime-catalog-hosts.ts",
+  "src/store/runtime-target-host.ts",
+  "src/store/selectors.ts",
+  "src/store/shared/api-types.ts",
+  "src/store/slices/active-tab-owner-worktree.ts",
+  "src/store/slices/agent-pane-authority.ts",
+  "src/store/slices/agent-status-authority-actions.ts",
+  "src/store/slices/agent-status-capacity-eviction.ts",
+  "src/store/slices/agent-status-cleanup-actions.ts",
+  "src/store/slices/agent-status-connection-worktree-scope.ts",
+  "src/store/slices/agent-status-contract.ts",
+  "src/store/slices/agent-status-drop-actions.ts",
+  "src/store/slices/agent-status-drop-reducer.ts",
+  "src/store/slices/agent-status-freshness-scheduler.ts",
+  "src/store/slices/agent-status-launch-actions.ts",
+  "src/store/slices/agent-status-launch-config.ts",
+  "src/store/slices/agent-status-live-actions.ts",
+  "src/store/slices/agent-status-live-entry-builder.ts",
+  "src/store/slices/agent-status-live-reducer.ts",
+  "src/store/slices/agent-status-migration-unsupported-entries.ts",
+  "src/store/slices/agent-status-orchestration-actions.ts",
+  "src/store/slices/agent-status-orchestration-context.ts",
+  "src/store/slices/agent-status-pane-key-tab-binding.ts",
+  "src/store/slices/agent-status-pane-keyed-records.ts",
+  "src/store/slices/agent-status-provider-session-actions.ts",
+  "src/store/slices/agent-status-recovery-actions.ts",
+  "src/store/slices/agent-status-recovery-collection.ts",
+  "src/store/slices/agent-status-recovery-equivalence.ts",
+  "src/store/slices/agent-status-retention-actions.ts",
+  "src/store/slices/agent-status-runtime.ts",
+  "src/store/slices/agent-status-sleeping-records.ts",
+  "src/store/slices/agent-status-slice-contract.ts",
+  "src/store/slices/agent-status-worktree-drop-actions.ts",
+  "src/store/slices/agent-status.ts",
+  "src/store/slices/browser-page-conversion.ts",
+  "src/store/slices/browser-page-records.ts",
+  "src/store/slices/browser-webview-cleanup.ts",
+  "src/store/slices/browser.ts",
+  "src/store/slices/browser/browser-close-actions.ts",
+  "src/store/slices/browser/browser-cookie-import-actions.ts",
+  "src/store/slices/browser/browser-history-actions.ts",
+  "src/store/slices/browser/browser-host-actions.ts",
+  "src/store/slices/browser/browser-host-state.ts",
+  "src/store/slices/browser/browser-hydration-actions.ts",
+  "src/store/slices/browser/browser-page-annotation.ts",
+  "src/store/slices/browser/browser-page-conversion-actions.ts",
+  "src/store/slices/browser/browser-page-create-actions.ts",
+  "src/store/slices/browser/browser-page-focus-actions.ts",
+  "src/store/slices/browser/browser-page-metadata-actions.ts",
+  "src/store/slices/browser/browser-page-state-actions.ts",
+  "src/store/slices/browser/browser-profile-import-actions.ts",
+  "src/store/slices/browser/browser-profile-list-actions.ts",
+  "src/store/slices/browser/browser-remote-close.ts",
+  "src/store/slices/browser/browser-slice-contract.ts",
+  "src/store/slices/browser/browser-tab-actions.ts",
+  "src/store/slices/browser/browser-tab-focus-actions.ts",
+  "src/store/slices/browser/create-browser-slice.ts",
+  "src/store/slices/codex-restart-notice-account-identity.ts",
+  "src/store/slices/commit-message-generation.ts",
+  "src/store/slices/degraded-repo-worktree-validity.ts",
+  "src/store/slices/detected-agents.ts",
+  "src/store/slices/detected-worktree-refresh-leases.ts",
+  "src/store/slices/dictation.ts",
+  "src/store/slices/diff-comment-persistence.ts",
+  "src/store/slices/diffComments.ts",
+  "src/store/slices/direct-ssh-pane-retry-ledger.ts",
+  "src/store/slices/direct-ssh-terminal-authority-ledger.ts",
+  "src/store/slices/direct-ssh-terminal-recovery-types.ts",
+  "src/store/slices/direct-ssh-terminal-recovery.ts",
+  "src/store/slices/editor.ts",
+  "src/store/slices/editor/actions/check-run-details-actions.ts",
+  "src/store/slices/editor/actions/close-file-action.ts",
+  "src/store/slices/editor/actions/editor-cursor-line.ts",
+  "src/store/slices/editor/actions/editor-draft-state.ts",
+  "src/store/slices/editor/actions/editor-reveal-focus-state.ts",
+  "src/store/slices/editor/actions/explorer-dir-state.ts",
+  "src/store/slices/editor/actions/file-search-actions.ts",
+  "src/store/slices/editor/actions/git-branch-compare-actions.ts",
+  "src/store/slices/editor/actions/git-remote-push-pull.ts",
+  "src/store/slices/editor/actions/git-remote-status.ts",
+  "src/store/slices/editor/actions/git-remote-sync.ts",
+  "src/store/slices/editor/actions/git-status-actions.ts",
+  "src/store/slices/editor/actions/hydrate-editor-session.ts",
+  "src/store/slices/editor/actions/markdown-link-action.ts",
+  "src/store/slices/editor/actions/markdown-preview-actions.ts",
+  "src/store/slices/editor/actions/open-combined-diff.ts",
+  "src/store/slices/editor/actions/open-conflict-file.ts",
+  "src/store/slices/editor/actions/open-conflict-review.ts",
+  "src/store/slices/editor/actions/open-file-action.ts",
+  "src/store/slices/editor/actions/open-file-mutations.ts",
+  "src/store/slices/editor/actions/open-file-state.ts",
+  "src/store/slices/editor/actions/open-history-diff.ts",
+  "src/store/slices/editor/actions/open-unstaged-diff.ts",
+  "src/store/slices/editor/actions/recently-closed-editor-tabs.ts",
+  "src/store/slices/editor/actions/rekey-open-files-action.ts",
+  "src/store/slices/editor/actions/restored-editor-owner.ts",
+  "src/store/slices/editor/actions/right-sidebar-state.ts",
+  "src/store/slices/editor/create-editor-slice.ts",
+  "src/store/slices/editor/file-ids/editor-file-ids.ts",
+  "src/store/slices/editor/search/file-search-state.ts",
+  "src/store/slices/editor/types/editor-files-slice.ts",
+  "src/store/slices/editor/types/editor-git-slice.ts",
+  "src/store/slices/editor/types/editor-set-get.ts",
+  "src/store/slices/editor/types/editor-slice.ts",
+  "src/store/slices/editor/types/open-file-path-rekey.ts",
+  "src/store/slices/editor/types/open-file.ts",
+  "src/store/slices/editor/types/pending-editor-reveal.ts",
+  "src/store/slices/editor/types/restored-editor-owner.ts",
+  "src/store/slices/folder-workspace-update-coordinator.ts",
+  "src/store/slices/github-cache-key.ts",
+  "src/store/slices/github-checks.ts",
+  "src/store/slices/github-project-row-owner.ts",
+  "src/store/slices/github-repo-lookup-index.ts",
+  "src/store/slices/github-work-items-query-bounds.ts",
+  "src/store/slices/github.ts",
+  "src/store/slices/hosted-review-cache-identity.ts",
+  "src/store/slices/hosted-review-cache-state.ts",
+  "src/store/slices/hosted-review-pr-cache.ts",
+  "src/store/slices/hosted-review-request-state.ts",
+  "src/store/slices/hosted-review.ts",
+  "src/store/slices/jira-collection-read-actions.ts",
+  "src/store/slices/jira-connection-actions.ts",
+  "src/store/slices/jira-issue-patch-action.ts",
+  "src/store/slices/jira-issue-read-actions.ts",
+  "src/store/slices/jira-slice-contract.ts",
+  "src/store/slices/jira.ts",
+  "src/store/slices/keybindings.ts",
+  "src/store/slices/linear.ts",
+  "src/store/slices/linear/linear-cache.ts",
+  "src/store/slices/linear/linear-custom-view-detail-actions.ts",
+  "src/store/slices/linear/linear-custom-view-issue-actions.ts",
+  "src/store/slices/linear/linear-custom-view-list-actions.ts",
+  "src/store/slices/linear/linear-custom-view-project-actions.ts",
+  "src/store/slices/linear/linear-invalidation-actions.ts",
+  "src/store/slices/linear/linear-issue-cache-actions.ts",
+  "src/store/slices/linear/linear-issue-detail-actions.ts",
+  "src/store/slices/linear/linear-issue-list-actions.ts",
+  "src/store/slices/linear/linear-project-detail-actions.ts",
+  "src/store/slices/linear/linear-project-issue-actions.ts",
+  "src/store/slices/linear/linear-project-list-actions.ts",
+  "src/store/slices/linear/linear-slice-connection-actions.ts",
+  "src/store/slices/linear/linear-slice-contract.ts",
+  "src/store/slices/linear/linear-slice-status-actions.ts",
+  "src/store/slices/linear/linear-team-actions.ts",
+  "src/store/slices/local-detected-agent-state.ts",
+  "src/store/slices/local-detected-agent-store-state.ts",
+  "src/store/slices/memory.ts",
+  "src/store/slices/modal-slot-dismissal.ts",
+  "src/store/slices/new-issue-draft.ts",
+  "src/store/slices/orca-profiles-auth-actions.ts",
+  "src/store/slices/orca-profiles.ts",
+  "src/store/slices/pane-foreground-agent.ts",
+  "src/store/slices/persisted-ui-write-baseline.ts",
+  "src/store/slices/pinned-tab-close-confirm.ts",
+  "src/store/slices/preflight.ts",
+  "src/store/slices/project-group-owner-routing.ts",
+  "src/store/slices/project-group-removal-targets.ts",
+  "src/store/slices/pull-request-generation.ts",
+  "src/store/slices/rate-limits.ts",
+  "src/store/slices/recently-closed-tab-position.ts",
+  "src/store/slices/recently-closed-tabs.ts",
+  "src/store/slices/remote-server-updates.ts",
+  "src/store/slices/renderer-remove-worktree-result.ts",
+  "src/store/slices/repo-filter-selection.ts",
+  "src/store/slices/repo-host-identity.ts",
+  "src/store/slices/repo-identity-reconcile.ts",
+  "src/store/slices/repo-reorder-host-split.ts",
+  "src/store/slices/repos.ts",
+  "src/store/slices/retired-terminal-tab-state-sweep.ts",
+  "src/store/slices/runtime-detected-agents.ts",
+  "src/store/slices/runtime-environment-disconnect-toast.ts",
+  "src/store/slices/runtime-environment-ssh-selectors.ts",
+  "src/store/slices/runtime-environment-ssh.ts",
+  "src/store/slices/runtime-environment-status-equality.ts",
+  "src/store/slices/runtime-status-connection-generation.ts",
+  "src/store/slices/runtime-status-hydration.ts",
+  "src/store/slices/runtime-status-refresh.ts",
+  "src/store/slices/runtime-status-snapshot.ts",
+  "src/store/slices/runtime-status-types.ts",
+  "src/store/slices/runtime-status.ts",
+  "src/store/slices/settings-owner-hydration-publication.ts",
+  "src/store/slices/settings-search-state.ts",
+  "src/store/slices/settings.ts",
+  "src/store/slices/sparse-presets.ts",
+  "src/store/slices/ssh-target-cleanup.ts",
+  "src/store/slices/ssh.ts",
+  "src/store/slices/stale-runtime-host-rows.ts",
+  "src/store/slices/stats.ts",
+  "src/store/slices/store-test-helpers.ts",
+  "src/store/slices/superseded-ssh-repo-rows.ts",
+  "src/store/slices/tab-group-state.ts",
+  "src/store/slices/tabs.ts",
+  "src/store/slices/tabs/create-tabs-slice.ts",
+  "src/store/slices/tabs/tabs-focus-actions.ts",
+  "src/store/slices/tabs/tabs-layout.ts",
+  "src/store/slices/tabs/tabs-reconciliation.ts",
+  "src/store/slices/tabs/tabs-slice-contract.ts",
+  "src/store/slices/tabs/tabs-surface.ts",
+  "src/store/slices/task-creation-drafts.ts",
+  "src/store/slices/terminal-helpers.ts",
+  "src/store/slices/terminal-orphan-helpers.ts",
+  "src/store/slices/terminal-quick-command-hosts.ts",
+  "src/store/slices/terminal-retirement-teardown-reservation.ts",
+  "src/store/slices/terminal-tab-owner-index.ts",
+  "src/store/slices/terminal-tab-retirement.ts",
+  "src/store/slices/terminal-tab-title-batch.ts",
+  "src/store/slices/terminals.ts",
+  "src/store/slices/ui.ts",
+  "src/store/slices/ui/ui-slice-activity-actions.ts",
+  "src/store/slices/ui/ui-slice-agent-actions.ts",
+  "src/store/slices/ui/ui-slice-contextual-tour-progression.ts",
+  "src/store/slices/ui/ui-slice-contract-contextual.ts",
+  "src/store/slices/ui/ui-slice-contract-core.ts",
+  "src/store/slices/ui/ui-slice-contract-preferences.ts",
+  "src/store/slices/ui/ui-slice-contract.ts",
+  "src/store/slices/ui/ui-slice-feature-actions.ts",
+  "src/store/slices/ui/ui-slice-hydration-actions.ts",
+  "src/store/slices/ui/ui-slice-hydration-sanitizers.ts",
+  "src/store/slices/ui/ui-slice-hydration-values.ts",
+  "src/store/slices/ui/ui-slice-modal-actions.ts",
+  "src/store/slices/ui/ui-slice-persistence-actions.ts",
+  "src/store/slices/ui/ui-slice-preference-actions.ts",
+  "src/store/slices/ui/ui-slice-settings-actions.ts",
+  "src/store/slices/ui/ui-slice-surface-actions.ts",
+  "src/store/slices/ui/ui-slice-task-actions.ts",
+  "src/store/slices/ui/ui-slice-tour-actions.ts",
+  "src/store/slices/ui/ui-slice-trust-actions.ts",
+  "src/store/slices/ui/ui-slice-update-actions.ts",
+  "src/store/slices/ui/ui-slice-view-actions.ts",
+  "src/store/slices/usage-provider-slices.ts",
+  "src/store/slices/workspace-cleanup-browse.ts",
+  "src/store/slices/workspace-cleanup-cache-hydration.ts",
+  "src/store/slices/workspace-cleanup-candidate-enrichment.ts",
+  "src/store/slices/workspace-cleanup-removal.ts",
+  "src/store/slices/workspace-cleanup-scan-lifecycle.ts",
+  "src/store/slices/workspace-cleanup.ts",
+  "src/store/slices/workspace-space.ts",
+  "src/store/slices/worktree-by-id-index.ts",
+  "src/store/slices/worktree-delete-state-types.ts",
+  "src/store/slices/worktree-helpers.ts",
+  "src/store/slices/worktree-meta-update-application.ts",
+  "src/store/slices/worktree-nav-history.ts",
+  "src/store/slices/worktree-purge-target.ts",
+  "src/store/slices/worktree-refresh-options.ts",
+  "src/store/slices/worktree-removal-options.ts",
+  "src/store/slices/worktree-visibility-owner-settings.ts",
+  "src/store/slices/worktree-visibility-settings-write.ts",
+  "src/store/slices/worktrees.ts",
+  "src/store/slices/worktrees/create/create-worktree.ts",
+  "src/store/slices/worktrees/create/pending-worktree-creation.ts",
+  "src/store/slices/worktrees/create/prefetch-worktree-create-base.ts",
+  "src/store/slices/worktrees/create/worktree-create-payload.ts",
+  "src/store/slices/worktrees/listing/authoritative-worktree-removal-memory.ts",
+  "src/store/slices/worktrees/listing/detected-worktree-refresh.ts",
+  "src/store/slices/worktrees/listing/fetch-all-worktrees.ts",
+  "src/store/slices/worktrees/listing/fetch-detected-worktrees.ts",
+  "src/store/slices/worktrees/listing/fetch-worktrees.ts",
+  "src/store/slices/worktrees/listing/known-ssh-worktree-fetch.ts",
+  "src/store/slices/worktrees/listing/worktree-host-ownership.ts",
+  "src/store/slices/worktrees/listing/worktree-meta-host-match.ts",
+  "src/store/slices/worktrees/listing/worktree-slice-constants.ts",
+  "src/store/slices/worktrees/metadata/detached-head-display-name.ts",
+  "src/store/slices/worktrees/metadata/hosted-review-link-mutation.ts",
+  "src/store/slices/worktrees/metadata/hosted-review-push-target-ensure.ts",
+  "src/store/slices/worktrees/metadata/update-worktree-meta.ts",
+  "src/store/slices/worktrees/metadata/update-worktrees-meta.ts",
+  "src/store/slices/worktrees/metadata/worktree-base-status.ts",
+  "src/store/slices/worktrees/metadata/worktree-git-identity-update.ts",
+  "src/store/slices/worktrees/metadata/worktree-lineage-actions.ts",
+  "src/store/slices/worktrees/session/migrate-worktree-identity.ts",
+  "src/store/slices/worktrees/session/set-active-folder-workspace.ts",
+  "src/store/slices/worktrees/session/set-active-worktree.ts",
+  "src/store/slices/worktrees/session/worktree-pin-reveal.ts",
+  "src/store/slices/worktrees/session/worktree-slice-initial-state.ts",
+  "src/store/slices/worktrees/session/worktree-slice-lookups.ts",
+  "src/store/slices/worktrees/session/worktree-unread-activity.ts",
+  "src/store/slices/worktrees/session/worktree-visit-recency.ts",
+  "src/store/slices/worktrees/teardown/force-delete-preserved-branch.ts",
+  "src/store/slices/worktrees/teardown/purge-stale-runtime-host-state.ts",
+  "src/store/slices/worktrees/teardown/record-key-omission.ts",
+  "src/store/slices/worktrees/teardown/remove-worktree.ts",
+  "src/store/slices/worktrees/teardown/worktree-delete-state.ts",
+  "src/store/tab-types.ts",
+  "src/store/terminals/direct-ssh-terminal-bindings.ts",
+  "src/store/terminals/renamable-unified-tab.ts",
+  "src/store/terminals/terminal-actions.ts",
+  "src/store/terminals/terminal-active-workspace-creation.ts",
+  "src/store/terminals/terminal-contracts.ts",
+  "src/store/terminals/terminal-disowned-pty-sources.ts",
+  "src/store/terminals/terminal-ephemeral-state.ts",
+  "src/store/terminals/terminal-layout-state.ts",
+  "src/store/terminals/terminal-pane-hibernation.ts",
+  "src/store/terminals/terminal-pty-bindings.ts",
+  "src/store/terminals/terminal-pty-identities.ts",
+  "src/store/terminals/terminal-pty-release.ts",
+  "src/store/terminals/terminal-restart-state.ts",
+  "src/store/terminals/terminal-shutdown-guards.ts",
+  "src/store/terminals/terminal-shutdown-state.ts",
+  "src/store/terminals/terminal-shutdown.ts",
+  "src/store/terminals/terminal-startup-queues.ts",
+  "src/store/terminals/terminal-state.ts",
+  "src/store/terminals/terminal-tab-attention.ts",
+  "src/store/terminals/terminal-tab-close-providers.ts",
+  "src/store/terminals/terminal-tab-close.ts",
+  "src/store/terminals/terminal-tab-creation.ts",
+  "src/store/terminals/terminal-tab-location.ts",
+  "src/store/terminals/terminal-tab-navigation.ts",
+  "src/store/terminals/terminal-tab-presentation.ts",
+  "src/store/terminals/terminal-tab-recovery-ledger.ts",
+  "src/store/terminals/terminal-unverified-pty-loss.ts",
+  "src/store/terminals/terminal-workspace-routing.ts",
+  "src/store/terminals/workspace-terminal-hydration-patch.ts",
+  "src/store/terminals/workspace-terminal-hydration.ts",
+  "src/store/terminals/workspace-terminal-layout-plan.ts",
+  "src/store/terminals/workspace-terminal-placeholders.ts",
+  "src/store/terminals/workspace-terminal-reconnect-plan.ts",
+  "src/store/terminals/workspace-terminal-reconnect.ts",
+  "src/store/terminals/workspace-terminal-row-plan.ts",
+  "src/store/terminals/workspace-terminal-ssh-placeholders.ts",
+  "src/store/types.ts",
+  "src/store/worktree-repo-index.ts"
+ ]
+}

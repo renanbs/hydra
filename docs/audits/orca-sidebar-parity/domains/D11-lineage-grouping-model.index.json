@@ -1,0 +1,896 @@
+{
+ "exports": {
+  "components/sidebar/default-branch-workspace.ts": [
+   "isDefaultBranchWorkspace"
+  ],
+  "components/sidebar/natural-worktree-ids.ts": [
+   "getNaturalWorktreeIds"
+  ],
+  "components/sidebar/pinned-section-worktrees.ts": [
+   "getPinnedSectionWorktrees",
+   "isPinnedSectionWorktree"
+  ],
+  "components/sidebar/repo-header-create-state.ts": [
+   "RepoHeaderCreateState",
+   "getRepoHeaderCreateState"
+  ],
+  "components/sidebar/use-repo-owner-visibility-defaults.ts": [
+   "useRepoOwnerVisibilityDefaults"
+  ],
+  "components/sidebar/visible-worktree-activity-inputs.ts": [
+   "TerminalActivityTab",
+   "BrowserActivityTab",
+   "createVisibleWorktreeTerminalActivityProjection",
+   "getVisibleWorktreeTerminalActivityTabs",
+   "getVisibleWorktreeBrowserActivityTabs"
+  ],
+  "components/sidebar/visible-worktree-host-scope.ts": [
+   "getVisibleWorkspaceHostIdSet",
+   "worktreeMatchesVisibleHost"
+  ],
+  "components/sidebar/visible-worktree-indexes.ts": [
+   "getLineageAncestorIndex",
+   "getSortedWorktreeRankIndex"
+  ],
+  "components/sidebar/visible-worktree-kinds.ts": [
+   "isSleepingSweepExemptWorkspace",
+   "isSleepingSweepExemptionNarrowingList",
+   "isAutomationGeneratedWorkspace",
+   "isCliCreatedWorkspace",
+   "isDetachedHeadWorkspace",
+   "SidebarFilterState"
+  ],
+  "components/sidebar/visible-worktrees.ts": [
+   "computeVisibleWorktrees",
+   "computeVisibleWorktreeIds",
+   "VisibleWorktreeShortcutTarget",
+   "setVisibleWorktreeIds",
+   "setVisibleWorktreeShortcutTargets",
+   "buildVisibleWorktreeOptionsFromState",
+   "getVisibleWorktreeIds",
+   "getVisibleWorktreeShortcutTargets"
+  ],
+  "components/sidebar/workspace-creator-visibility.ts": [
+   "EMPTY_PAIRED_DEVICE_IDS_BY_ENVIRONMENT",
+   "getPairedDeviceIdsByEnvironment",
+   "isWorkspaceFromOtherDevice",
+   "isFolderWorkspaceFromOtherDevice",
+   "filterFolderWorkspacesFromOtherDevices"
+  ],
+  "components/sidebar/worktree-lineage-drag-drop.ts": [
+   "isWorktreeLineageDropZoneHit",
+   "getWorktreeLineageDropTargetId",
+   "getReorderedWorktreeIdsToUnnest"
+  ],
+  "components/sidebar/worktree-lineage-projection.ts": [
+   "LineageRenderInfo",
+   "getProjectedWorktreeLineage",
+   "getCyclicProjectedWorktreeLineageIds",
+   "getLineageRenderInfo",
+   "getProjectedWorktreeLineageChildrenByParentId",
+   "getWorktreeLineageAncestors"
+  ],
+  "components/sidebar/worktree-lineage-toggle-handler-cache.ts": [
+   "LineageToggleHandler",
+   "createLineageToggleHandlerCache"
+  ],
+  "components/sidebar/worktree-unambiguous-id-index.ts": [
+   "buildUnambiguousWorktreeIdIndex"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 22,
+   "text": "label: 'orca',"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 27,
+   "text": "tooltip: 'Create new worktree for orca',"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 37,
+   "text": "label: 'docs',"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 42,
+   "text": "tooltip: 'Create workspace for docs',"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 51,
+   "text": "label: 'remote',"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 56,
+   "text": "tooltip: 'Create new worktree for remote',"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 73,
+   "text": "label: 'remote',"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 78,
+   "text": "tooltip: 'Reconnect SSH target before creating workspaces',"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.ts",
+   "line": 9,
+   "text": "tooltip: string"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.ts",
+   "line": 16,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.ts",
+   "line": 22,
+   "text": "tooltip: translate("
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.ts",
+   "line": 43,
+   "text": "tooltip: translate("
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.ts",
+   "line": 58,
+   "text": "tooltip: translate("
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 235,
+   "text": "* recomputes sort order from a live Zustand snapshot, the Cmd+1\u20139 shortcut"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 238,
+   "text": "* shortcut numbering always matches the sidebar card order."
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 244,
+   "text": "export type VisibleWorktreeShortcutTarget = {"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 248,
+   "text": "let _publishedVisibleShortcutTargets: VisibleWorktreeShortcutTarget[] | null = null"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 254,
+   "text": "export function setVisibleWorktreeShortcutTargets("
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 255,
+   "text": "targets: VisibleWorktreeShortcutTarget[] | null"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 257,
+   "text": "_publishedVisibleShortcutTargets = targets"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 358,
+   "text": "export function getVisibleWorktreeShortcutTargets(): VisibleWorktreeShortcutTarget[] {"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 359,
+   "text": "if (_publishedVisibleShortcutTargets) {"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.ts",
+   "line": 360,
+   "text": "return _publishedVisibleShortcutTargets"
+  }
+ ],
+ "prefs": [],
+ "timers": [],
+ "subscriptions": [],
+ "preload": [],
+ "tests": [
+  {
+   "file": "components/sidebar/natural-worktree-ids.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "getNaturalWorktreeIds"
+  },
+  {
+   "file": "components/sidebar/natural-worktree-ids.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "collects item rows outside the pinned section"
+  },
+  {
+   "file": "components/sidebar/natural-worktree-ids.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "excludes a pinned duplicate that also renders in its natural group"
+  },
+  {
+   "file": "components/sidebar/natural-worktree-ids.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "ignores every non-item row type"
+  },
+  {
+   "file": "components/sidebar/natural-worktree-ids.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "returns an empty set for no rows"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "getPinnedSectionWorktrees"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 46,
+   "kind": "plain",
+   "name": "includes only explicitly pinned rows when there is no lineage"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "does not include an unpinned row with the same id on another host"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 71,
+   "kind": "plain",
+   "name": "includes visible descendants of a pinned parent"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 83,
+   "kind": "plain",
+   "name": "does not pull a pinned child"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "keeps a visible grandchild when the middle parent is absent from the visible list"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "does not collect descendants of a pinned parent that is not itself visible"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 117,
+   "kind": "plain",
+   "name": "handles a deep pinned lineage without overflowing the renderer stack"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "builds rows for a deep expanded pinned lineage without overflowing the renderer stack"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 170,
+   "kind": "plain",
+   "name": "isPinnedSectionWorktree"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 179,
+   "kind": "plain",
+   "name": "treats an unpinned child of a visible pinned parent as pinned-section membership"
+  },
+  {
+   "file": "components/sidebar/pinned-section-worktrees.test.ts",
+   "line": 183,
+   "kind": "plain",
+   "name": "does not treat an unrelated unpinned workspace as pinned-section membership"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "repo header create state"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 18,
+   "kind": "plain",
+   "name": "allows local git repos"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 33,
+   "kind": "plain",
+   "name": "allows folder repos as workspace creates"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "allows connected SSH repos"
+  },
+  {
+   "file": "components/sidebar/repo-header-create-state.test.ts",
+   "line": 61,
+   "kind": "plain",
+   "name": "disables SSH repos while relay providers are unavailable"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 40,
+   "kind": "plain",
+   "name": "visible worktree activity inputs"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 41,
+   "kind": "plain",
+   "name": "preserves terminal activity projection when only tab metadata changes"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 53,
+   "kind": "plain",
+   "name": "inspects only the changed bucket in a 300-worktree title publication"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "updates terminal activity projection when tab ids change"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "reuses unchanged terminal worktree arrays when a sibling worktree changes"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 106,
+   "kind": "plain",
+   "name": "drops terminal projections for removed worktrees"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 121,
+   "kind": "plain",
+   "name": "preserves browser activity projection when only browser metadata changes"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 134,
+   "kind": "plain",
+   "name": "updates browser activity projection when browser ids change"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-activity-inputs.test.ts",
+   "line": 147,
+   "kind": "plain",
+   "name": "drops browser projections for removed worktrees"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-indexes.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "visible worktree indexes"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-indexes.test.ts",
+   "line": 108,
+   "kind": "plain",
+   "name": "reuses the lineage projection instead of rebuilding it on every store write"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-indexes.test.ts",
+   "line": 126,
+   "kind": "plain",
+   "name": "returns identity-stable index maps for unchanged store inputs"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-indexes.test.ts",
+   "line": 147,
+   "kind": "plain",
+   "name": "keeps archived parents out of the cached ancestor index"
+  },
+  {
+   "file": "components/sidebar/visible-worktree-indexes.test.ts",
+   "line": 169,
+   "kind": "plain",
+   "name": "keeps the last row for a two-host id collision, as the per-call map did"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "computeVisibleWorktreeIds"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 97,
+   "kind": "plain",
+   "name": "prefers the authenticated live device id over cached pairing metadata"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 113,
+   "kind": "plain",
+   "name": "hides only known workspaces created by another device"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 143,
+   "kind": "plain",
+   "name": "fails open when an older host does not publish the requester device id"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 159,
+   "kind": "plain",
+   "name": "keeps browser-tab worktrees visible when sleeping workspaces are hidden"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 174,
+   "kind": "plain",
+   "name": "hides sleeping worktrees when show sleeping is off"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 188,
+   "kind": "plain",
+   "name": "hides automation-created workspaces when the automation filter is enabled"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 218,
+   "kind": "plain",
+   "name": "hides CLI-created workspaces when the CLI filter is enabled"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 239,
+   "kind": "plain",
+   "name": "keeps CLI-created workspaces visible while the CLI filter is off"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 255,
+   "kind": "plain",
+   "name": "keeps workspaces without CLI provenance visible when the CLI filter is enabled"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 269,
+   "kind": "plain",
+   "name": "hides detached-HEAD workspaces when the detached filter is enabled"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 282,
+   "kind": "plain",
+   "name": "keeps detached-HEAD workspaces visible while the detached filter is off"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 295,
+   "kind": "plain",
+   "name": "keeps headless workspaces visible when the detached filter is enabled"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 309,
+   "kind": "plain",
+   "name": "does not treat slept wake-hint tabs as live surfaces"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 326,
+   "kind": "plain",
+   "name": "keeps a running-agent worktree visible without a live pty when sleeping is hidden (#7197)"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 344,
+   "kind": "plain",
+   "name": "hides paired web host terminal mirrors while their stream handle is pending"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 360,
+   "kind": "plain",
+   "name": "keeps paired web host terminal mirrors visible after their stream handle is ready"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 376,
+   "kind": "plain",
+   "name": "hides branch-backed main worktrees when default branch workspaces are hidden"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 392,
+   "kind": "plain",
+   "name": "keeps folder-mode main worktrees visible when default branch workspaces are hidden"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 406,
+   "kind": "plain",
+   "name": "filters worktrees to a selected SSH host scope"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 427,
+   "kind": "plain",
+   "name": "filters non-SSH worktrees to the focused runtime host compatibility scope"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 449,
+   "kind": "plain",
+   "name": "filters explicit runtime-owned repos independently of the focused default host"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 475,
+   "kind": "plain",
+   "name": "uses explicit worktree ownership when it differs from the repo host"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 494,
+   "kind": "plain",
+   "name": "keeps every host visible when workspace host scope is all"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 515,
+   "kind": "plain",
+   "name": "filters worktrees to a selected set of visible hosts"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 541,
+   "kind": "plain",
+   "name": "hides branch-backed mains across every repo in a multi-repo workspace"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 558,
+   "kind": "plain",
+   "name": "composes with sleeping visibility: hidden mains stay hidden while live features remain"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 580,
+   "kind": "plain",
+   "name": "composes with filterRepoIds: hides mains only within the selected repos"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 605,
+   "kind": "plain",
+   "name": "includes valid lineage parents even when another filter would hide the parent"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 624,
+   "kind": "plain",
+   "name": "gives a sleeping-exempt main its cached-sort slot, not a position at the end"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 659,
+   "kind": "plain",
+   "name": "leaves lineage ordering untouched when the exempted main is also a parent"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 687,
+   "kind": "plain",
+   "name": "includes a filtered parent from resolved inline lineage when hydration has no side-map entry"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 706,
+   "kind": "plain",
+   "name": "keeps inline parents out of non-nested board results across parent filters"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 759,
+   "kind": "plain",
+   "name": "includes inline lineage ancestors when send-target mode forces a filtered child visible"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 777,
+   "kind": "plain",
+   "name": "keeps the hydrated side-map authoritative over disagreeing inline lineage"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 799,
+   "kind": "plain",
+   "name": "does not resurrect stale lineage parents"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 820,
+   "kind": "plain",
+   "name": "does not resurrect archived lineage parents"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 840,
+   "kind": "plain",
+   "name": "includes default-branch parents hidden by the explicit setting when a visible child needs them"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 858,
+   "kind": "plain",
+   "name": "does not include a cross-repo parent when repo filtering leaves the child visible"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 875,
+   "kind": "plain",
+   "name": "does not include a known cross-host parent after host filtering"
+  },
+  {
+   "file": "components/sidebar/visible-worktrees.test.ts",
+   "line": 892,
+   "kind": "plain",
+   "name": "does not include a known cross-project parent hidden by another filter"
+  },
+  {
+   "file": "components/sidebar/workspace-creator-visibility.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "filterFolderWorkspacesFromOtherDevices"
+  },
+  {
+   "file": "components/sidebar/workspace-creator-visibility.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "uses the same client ownership rules as git workspaces"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 13,
+   "kind": "plain",
+   "name": "isWorktreeLineageDropZoneHit"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 14,
+   "kind": "plain",
+   "name": "keeps the top and bottom of a card available for reorder drops"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "makes most of tall cards available for nesting"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "scales down reorder gutters for compact cards"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 42,
+   "kind": "each",
+   "name": "rejects empty and inverted rectangles"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 47,
+   "kind": "plain",
+   "name": "getWorktreeLineageDropTargetId"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "returns the row id only when the pointer is away from the reorder gutters"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "ignores content targets outside the sidebar container"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 67,
+   "kind": "each",
+   "name": "keeps the %s region in the lineage nesting hit zone"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 80,
+   "kind": "plain",
+   "name": "accepts horizontal card padding outside the content element"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 94,
+   "kind": "each",
+   "name": "keeps descendants out of the ancestor hit zone (inline content: %s)"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "does not use a descendant content element for a row without its own content"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 137,
+   "kind": "plain",
+   "name": "getReorderedWorktreeIdsToUnnest"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 138,
+   "kind": "plain",
+   "name": "clears parents only for directly dragged nested cards"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 160,
+   "kind": "plain",
+   "name": "does not clear selected nested cards outside the reordered source group"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 181,
+   "kind": "plain",
+   "name": "clears an exact inline-only legacy parent"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-drag-drop.test.ts",
+   "line": 198,
+   "kind": "plain",
+   "name": "does not fall back to inline lineage when the side-map has a stale child entry"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-expansion.performance.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "visible lineage expansion scaling"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-expansion.performance.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "reads each depth once even when every ancestor is selected"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-expansion.performance.test.ts",
+   "line": 55,
+   "kind": "plain",
+   "name": "deduplicates many absent selected rows without searching the growing result"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-expansion.performance.test.ts",
+   "line": 70,
+   "kind": "plain",
+   "name": "matches the previous algorithm across duplicate rows, missing IDs and depth boundaries"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-projection.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "worktree lineage projection cache"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-projection.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "reuses the cyclic-id scan for an unchanged input pair"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-projection.test.ts",
+   "line": 57,
+   "kind": "plain",
+   "name": "reuses the children projection for an unchanged input pair"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-projection.test.ts",
+   "line": 74,
+   "kind": "plain",
+   "name": "rescans when either input is replaced"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-projection.test.ts",
+   "line": 89,
+   "kind": "plain",
+   "name": "reflects a removed lineage edge as soon as the record is replaced"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-projection.test.ts",
+   "line": 112,
+   "kind": "plain",
+   "name": "still reports cycles from the cached scan"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-toggle-handler-cache.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "createLineageToggleHandlerCache"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-toggle-handler-cache.test.ts",
+   "line": 12,
+   "kind": "plain",
+   "name": "returns a referentially stable handler for the same group key across calls"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-toggle-handler-cache.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "returns distinct handlers for distinct group keys"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-toggle-handler-cache.test.ts",
+   "line": 28,
+   "kind": "plain",
+   "name": "prevents default, stops propagation, and toggles the bound group key"
+  },
+  {
+   "file": "components/sidebar/worktree-lineage-toggle-handler-cache.test.ts",
+   "line": 40,
+   "kind": "plain",
+   "name": "keeps each cached handler bound to its own group key"
+  },
+  {
+   "file": "components/sidebar/worktree-unambiguous-id-index.test.ts",
+   "line": 16,
+   "kind": "plain",
+   "name": "buildUnambiguousWorktreeIdIndex"
+  },
+  {
+   "file": "components/sidebar/worktree-unambiguous-id-index.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "keeps unique bare ids"
+  },
+  {
+   "file": "components/sidebar/worktree-unambiguous-id-index.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "drops bare ids claimed by multiple hosts"
+  },
+  {
+   "file": "components/sidebar/worktree-unambiguous-id-index.test.ts",
+   "line": 36,
+   "kind": "plain",
+   "name": "keeps later unique ids after an ambiguity is found"
+  }
+ ]
+}

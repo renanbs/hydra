@@ -1,0 +1,2891 @@
+{
+ "exports": {
+  "components/sidebar/worktree-list/drag/drop-commit-context.ts": [
+   "NOOP_WORKSPACE_BOARD_DRAG_PREVIEW_CALLBACK",
+   "WorktreeStatusDropAtIndexArgs",
+   "WorktreeDropCommitContext"
+  ],
+  "components/sidebar/worktree-list/drag/groups.ts": [
+   "getWorktreeDragGroups",
+   "getWorktreeDragIndexes"
+  ],
+  "components/sidebar/worktree-list/drag/pointer-commit.ts": [
+   "commitWorktreePointerDrop"
+  ],
+  "components/sidebar/worktree-list/drag/pointer-flush.ts": [
+   "WorktreePointerDragFrameArgs",
+   "flushWorktreePointerDragFrame"
+  ],
+  "components/sidebar/worktree-list/drag/row-state.ts": [
+   "WorktreeRowDragState",
+   "EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS",
+   "WORKTREE_ROW_DRAG_INITIAL_STATE",
+   "WorktreePointerDrag",
+   "WorktreeSidebarLineageDropTarget",
+   "NO_WORKTREE_SIDEBAR_DROP_TARGET",
+   "areWorktreeDragPreviewOffsetsEqual",
+   "updateLatestWorktreeStatusDropTarget",
+   "clearWorktreeDropPreview",
+   "applyWorktreeDropPreview",
+   "applyWorktreeLineageDropPreview"
+  ],
+  "components/sidebar/worktree-list/drag/status-target.ts": [
+   "getPointerDropStatusTarget",
+   "shouldPreferSidebarStatusDropTarget"
+  ],
+  "components/sidebar/worktree-list/drag/use-document-drop.ts": [
+   "useWorktreeDocumentDrop"
+  ],
+  "components/sidebar/worktree-list/drag/use-drop-commit-context.ts": [
+   "useWorktreeDropCommitContext"
+  ],
+  "components/sidebar/worktree-list/drag/use-header-drag.ts": [
+   "WorktreeSidebarHeaderDrag",
+   "useWorktreeSidebarHeaderDrag"
+  ],
+  "components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts": [
+   "WorktreeLineageDropCommit",
+   "useWorktreeLineageDropCommit"
+  ],
+  "components/sidebar/worktree-list/drag/use-native-autoscroll.ts": [
+   "useWorktreeNativeDragAutoscroll"
+  ],
+  "components/sidebar/worktree-list/drag/use-native-drag.ts": [
+   "useWorktreeNativeDrag"
+  ],
+  "components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts": [
+   "useWorktreePointerDragAutoscroll"
+  ],
+  "components/sidebar/worktree-list/drag/use-pointer-drag.ts": [
+   "useWorktreePointerDrag"
+  ],
+  "components/sidebar/worktree-list/drag/use-pointer-window-events.ts": [
+   "useWorktreePointerDragWindowEvents"
+  ],
+  "components/sidebar/worktree-list/drag/use-runtime.ts": [
+   "WorktreeDragRuntime",
+   "useWorktreeDragRuntime"
+  ],
+  "components/sidebar/worktree-list/drag/use-session.ts": [
+   "WorktreeStatusDropRequest",
+   "WorktreeDragSession",
+   "useWorktreeDragSession"
+  ],
+  "components/sidebar/worktree-list/drag/use-status-mutations.ts": [
+   "useWorktreeStatusMutations"
+  ],
+  "components/sidebar/worktree-list/drag/use-status-row-drag.ts": [
+   "useWorkspaceStatusRowDrag"
+  ],
+  "components/sidebar/worktree-list/grouping/build-rows.ts": [
+   "buildRows"
+  ],
+  "components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts": [
+   "RenderableFolderWorkspace",
+   "getRenderableFolderWorkspaces",
+   "getFolderWorkspaceLaneKey",
+   "compareFolderWorkspacesForDisplay"
+  ],
+  "components/sidebar/worktree-list/grouping/group-keys.ts": [
+   "PRGroupKey",
+   "PR_GROUP_ORDER",
+   "getPRLaneKey",
+   "PR_GROUP_META",
+   "PROJECT_GROUP_META",
+   "getProjectGroupHeaderKey",
+   "PINNED_GROUP_KEY",
+   "PINNED_GROUP_META",
+   "ALL_GROUP_KEY",
+   "ALL_GROUP_META",
+   "LINEAGE_GROUP_PREFIX",
+   "getLineageGroupKey",
+   "getWorktreeLineageGroupKey",
+   "getPRGroupKey"
+  ],
+  "components/sidebar/worktree-list/grouping/group-sections.ts": [
+   "SectionAppendContext",
+   "appendOrderedGroups"
+  ],
+  "components/sidebar/worktree-list/grouping/host-labels.ts": [
+   "getMixedHostContextLabels",
+   "NoticeHostContext",
+   "getNoticeHostContextLabels",
+   "getMixedWorktreeHostContextLabels",
+   "getHostWorktreeCounts",
+   "getHostWorktreeIds",
+   "getLaneHostWorktreeCounts",
+   "getLaneHostWorktreeIds"
+  ],
+  "components/sidebar/worktree-list/grouping/pinned-group-rows.ts": [
+   "emitPinnedGroup"
+  ],
+  "components/sidebar/worktree-list/grouping/project-group-sections.ts": [
+   "appendProjectGroupSections"
+  ],
+  "components/sidebar/worktree-list/grouping/project-grouping.ts": [
+   "OrderedGroupEntry",
+   "ProjectGroupingModel",
+   "WorktreeGroupEntry",
+   "ProjectGroupingIndex",
+   "buildProjectGroupingIndex",
+   "ProjectHeaderRevealTarget",
+   "getProjectGroupingForRepo",
+   "getProjectHeaderRevealTarget",
+   "addRepoIdToGroup"
+  ],
+  "components/sidebar/worktree-list/grouping/row-builders.ts": [
+   "buildPendingCreationRow",
+   "buildImportedWorktreesCardRow",
+   "buildNewExternalWorktreesInboxRow",
+   "appendWorktreeRows",
+   "buildFolderWorkspaceRow"
+  ],
+  "components/sidebar/worktree-list/grouping/row-types.ts": [
+   "WorktreeGroupBy",
+   "PinnedWorktreeDisplayPolicy",
+   "getPinnedWorktreeDisplayPolicy",
+   "GroupHeaderRow",
+   "WorktreeRow",
+   "ImportedWorktreesCardCandidate",
+   "ImportedWorktreesCardRow",
+   "NewExternalWorktreesInboxCandidate",
+   "NewExternalWorktreesInboxRow",
+   "PendingCreationRow",
+   "FolderWorkspaceRow",
+   "PendingCreationRef",
+   "Row"
+  ],
+  "components/sidebar/worktree-list/grouping/section-order.ts": [
+   "getRenderedNaturalAnchorRepoIds",
+   "orderMainWorktreeFirst",
+   "withRepoSectionDisplayLabels",
+   "recentRankForEntry",
+   "compareRecentRank",
+   "getManualOrderAnchorRepo",
+   "sortProjectEntries"
+  ],
+  "components/sidebar/worktree-list/grouping/worktree-group-keys.ts": [
+   "getGroupKeyForWorktree",
+   "getGroupKeysForWorktree"
+  ],
+  "components/sidebar/worktree-list/grouping/worktree-grouping.ts": [
+   "buildOrderedGroups"
+  ],
+  "components/sidebar/worktree-list/listing/EmptyState.tsx": [
+   "SidebarWorktreeListEmptyState"
+  ],
+  "components/sidebar/worktree-list/listing/host-filtering.ts": [
+   "getVisibleSidebarHostIdSet",
+   "filterProjectGroupsForVisibleHosts",
+   "filterFolderWorkspacesForVisibleHosts",
+   "getProjectGroupExecutionHostIdForRows",
+   "getFolderWorkspaceExecutionHostIdForRows",
+   "getRuntimeEnvironmentIdForFolderPathStatusHost",
+   "getFolderPathStatusRouteOptionsForRows"
+  ],
+  "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts": [
+   "EMPTY_PENDING_WORKTREE_CREATION_KEYS",
+   "selectPendingWorktreeCreationKeys"
+  ],
+  "components/sidebar/worktree-list/listing/render-row.ts": [
+   "RenderRow",
+   "getRenderRowKey"
+  ],
+  "components/sidebar/worktree-list/listing/renderable-rows.ts": [
+   "WorktreeItemRow",
+   "FolderWorkspaceItemRow",
+   "isWorktreeItemRow",
+   "isPinnedWorktreeRow",
+   "buildRenderableRows"
+  ],
+  "components/sidebar/worktree-list/listing/review-cache-inputs.ts": [
+   "WorktreeListReviewCacheState",
+   "WorktreeListReviewCacheInputs",
+   "EMPTY_WORKTREE_LIST_REVIEW_CACHE_INPUTS",
+   "selectWorktreeListReviewCacheInputs"
+  ],
+  "components/sidebar/worktree-list/listing/use-agent-send-target.ts": [
+   "useAgentSendTargetWorktreeId"
+  ],
+  "components/sidebar/worktree-list/listing/use-collapsed-groups.ts": [
+   "useEffectiveCollapsedGroups"
+  ],
+  "components/sidebar/worktree-list/listing/use-external-worktree-cards.ts": [
+   "useSidebarExternalWorktreeCards"
+  ],
+  "components/sidebar/worktree-list/listing/use-filters.ts": [
+   "SidebarWorktreeFilters",
+   "useSidebarWorktreeFilters"
+  ],
+  "components/sidebar/worktree-list/listing/use-folder-path-statuses.ts": [
+   "useFolderWorkspacePathStatusRows"
+  ],
+  "components/sidebar/worktree-list/listing/use-host-visible-scope.ts": [
+   "useSidebarHostVisibleScope"
+  ],
+  "components/sidebar/worktree-list/listing/use-reused-array-identity.ts": [
+   "useReusedArrayIdentity"
+  ],
+  "components/sidebar/worktree-list/listing/use-section-rows.ts": [
+   "useSidebarSectionRows"
+  ],
+  "components/sidebar/worktree-list/listing/use-sort-order.ts": [
+   "useSidebarWorktreeSortOrder"
+  ],
+  "components/sidebar/worktree-list/listing/use-visible-worktrees.ts": [
+   "useVisibleSidebarWorktrees"
+  ],
+  "components/sidebar/worktree-list/navigation/active-descendant-option.ts": [
+   "getRenderRowOptionId",
+   "getActiveDescendantOptionId"
+  ],
+  "components/sidebar/worktree-list/navigation/folder-reveal.ts": [
+   "getKnownSidebarWorktreeById",
+   "sidebarWorkspaceStillExists",
+   "getFolderWorkspaceRevealGroupKeys"
+  ],
+  "components/sidebar/worktree-list/navigation/mounted-row-reveal.ts": [
+   "revealMountedWorktreeElement",
+   "revealMountedSidebarRowElement"
+  ],
+  "components/sidebar/worktree-list/navigation/pending-reveal-inputs.ts": [
+   "MAX_REVEAL_RETRIES",
+   "PendingSidebarRevealArgs",
+   "expandGroupsForWorktreeReveal",
+   "resolvePendingSidebarReveal"
+  ],
+  "components/sidebar/worktree-list/navigation/render-row-lookup.ts": [
+   "getRenderRowSidebarKey",
+   "rowKeyMatchesRenderRow",
+   "renderRowContainsWorktree",
+   "getRenderRowWorktreeItem",
+   "findPreferredRenderRowIndexForWorktree",
+   "findPreferredRenderRowIndexForWorktreeIdentity"
+  ],
+  "components/sidebar/worktree-list/navigation/reveal-ancestors.ts": [
+   "getSidebarRowRevealAncestorKeys",
+   "getPinnedWorktreeRevealCollapsedGroupKeys"
+  ],
+  "components/sidebar/worktree-list/navigation/use-active-row.ts": [
+   "usePrimaryActiveWorktreeRow"
+  ],
+  "components/sidebar/worktree-list/navigation/use-keyboard.ts": [
+   "useWorktreeListKeyboardNavigation"
+  ],
+  "components/sidebar/worktree-list/navigation/use-pending-reveal.ts": [
+   "usePendingSidebarReveal"
+  ],
+  "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts": [
+   "SidebarRevealHighlight",
+   "useSidebarRevealHighlight"
+  ],
+  "components/sidebar/worktree-list/navigation/use-reveal-requests.ts": [
+   "useSidebarRevealRequests"
+  ],
+  "components/sidebar/worktree-list/navigation/use-selection.ts": [
+   "useSidebarWorktreeSelection"
+  ],
+  "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx": [
+   "FolderPathStatusIndicator"
+  ],
+  "components/sidebar/worktree-list/rows/HostSectionHeader.tsx": [
+   "HostSectionHeader"
+  ],
+  "components/sidebar/worktree-list/rows/ProjectGroupDialogs.tsx": [
+   "SidebarWorktreeListDialogs"
+  ],
+  "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx": [
+   "RepoScanUnavailableIndicator"
+  ],
+  "components/sidebar/worktree-list/rows/SectionHeader.tsx": [
+   "SectionHeaderRowContext",
+   "renderWorktreeSectionHeaderRow"
+  ],
+  "components/sidebar/worktree-list/rows/folder-row.tsx": [
+   "FolderWorkspaceRowContext",
+   "renderFolderWorkspaceVirtualRow"
+  ],
+  "components/sidebar/worktree-list/rows/header-event-guards.ts": [
+   "stopRepoHeaderKeyboardToggle",
+   "stopNestedWorktreeCardBubble",
+   "handleRepoHeaderActionPointerDown",
+   "handleRepoHeaderCollapseAffordancePointerDown",
+   "stopRepoHeaderMenuEvent",
+   "shouldIgnoreRepoHeaderToggle"
+  ],
+  "components/sidebar/worktree-list/rows/indentation.ts": [
+   "SIDEBAR_TREE_INDENT",
+   "FLUSH_CARD_CONTENT_PULLBACK",
+   "NEW_CARD_STYLE_STATUS_LANE_EXTRA_PULLBACK",
+   "FLUSH_CARD_MIN_CONTENT_INSET",
+   "WORKTREE_CARD_SURFACE_MARGIN",
+   "LINEAGE_IMMEDIATE_PARENT_STEP",
+   "LINEAGE_NESTED_ROW_SURFACE_INSET",
+   "LINEAGE_CHILDREN_INLINE_OFFSET",
+   "PROJECT_GROUP_HEADER_BASE_PADDING",
+   "WORKTREE_SECTION_HEADER_PADDING_LEFT",
+   "PROJECT_GROUP_HEADER_INDENT",
+   "MAX_PROJECT_GROUP_HEADER_DEPTH",
+   "getProjectGroupHeaderPaddingLeft",
+   "getWorktreeCardContentIndent",
+   "getFolderBackedRepoWorktreeCardContentIndent",
+   "getFolderBackedRepoWorktreeCardSurfaceInset",
+   "getFolderWorkspaceCardContentIndent",
+   "getFolderWorkspaceCardSurfaceInset",
+   "getFolderWorkspaceRowGeometry",
+   "getWorktreeCardSurfaceInset",
+   "getFlushWorktreeCardPaddingLeft",
+   "getNewCardStyleParentContentMarginLeft",
+   "getLineageNestedRowGeometry",
+   "getLineageChildrenInlineStyle",
+   "getLineageEffectiveChildStart"
+  ],
+  "components/sidebar/worktree-list/rows/item-row.tsx": [
+   "WorktreeItemRowContext",
+   "renderWorktreeItemRow",
+   "renderWorktreeLineageDescendants"
+  ],
+  "components/sidebar/worktree-list/rows/notice-rows.tsx": [
+   "canKeepImportedWorktreesHidden",
+   "renderImportedWorktreesVirtualRow",
+   "renderNewExternalWorktreesInboxVirtualRow",
+   "renderPendingCreationVirtualRow"
+  ],
+  "components/sidebar/worktree-list/rows/option-dom.ts": [
+   "getWorktreeOptionId",
+   "getMountedWorktreeOptions",
+   "markSidebarWorktreeActiveImmediately"
+  ],
+  "components/sidebar/worktree-list/rows/project-group-header-actions.tsx": [
+   "ProjectGroupHeaderMenu",
+   "ProjectGroupCreateWorkspaceButton"
+  ],
+  "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx": [
+   "RepoHeaderProjectActions",
+   "RepoHeaderProjectActionsMenu",
+   "RepoHeaderCreateWorkspaceButton"
+  ],
+  "components/sidebar/worktree-list/rows/use-project-group-dialogs.ts": [
+   "ProjectGroupNameDialogState",
+   "ProjectGroupDeleteDialogState",
+   "ProjectGroupDialogs",
+   "useProjectGroupDialogs"
+  ],
+  "components/sidebar/worktree-list/rows/virtual-row-dispatch.tsx": [
+   "WorktreeVirtualRowContext",
+   "renderWorktreeVirtualRow"
+  ],
+  "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx": [
+   "VirtualizedWorktreeViewport"
+  ],
+  "components/sidebar/worktree-list/viewport/drop-indicators.tsx": [
+   "renderWorktreeSidebarDropIndicators"
+  ],
+  "components/sidebar/worktree-list/viewport/hard-scroll-up.ts": [
+   "HARD_SCROLL_UP",
+   "HardScrollUpWheelSample",
+   "HardScrollUpScrollSample",
+   "HardScrollUpDetectorState",
+   "HardScrollUpViewport",
+   "createHardScrollUpDetectorState",
+   "normalizeWheelDeltaY",
+   "reduceHardScrollUpOnWheel",
+   "reduceHardScrollUpOnScroll",
+   "reduceHardScrollUpOnIdle",
+   "reduceHardScrollUpOnDismiss"
+  ],
+  "components/sidebar/worktree-list/viewport/use-group-toggle.ts": [
+   "useGroupToggleWithScrollAnchor"
+  ],
+  "components/sidebar/worktree-list/viewport/use-row-measurement.ts": [
+   "countRecordKeysByReference",
+   "useVirtualRowMeasurementSync"
+  ],
+  "components/sidebar/worktree-list/viewport/use-row-removal-animation.ts": [
+   "WORKTREE_ROW_REMOVAL_ANIMATION_MS",
+   "VirtualRowLayoutSnapshot",
+   "VirtualRowRemovalMotion",
+   "getSidebarRowIdentityKeys",
+   "buildVirtualRowRemovalMotions",
+   "useVirtualRowRemovalAnimation"
+  ],
+  "components/sidebar/worktree-list/viewport/use-scroll-suppression.ts": [
+   "USER_SCROLL_MEASUREMENT_ADJUSTMENT_SUPPRESS_MS",
+   "EXPANDING_CARD_MEASUREMENT_ADJUSTMENT_SUPPRESS_MS",
+   "shouldAdjustWorktreeSidebarMeasuredRowScroll",
+   "WorktreeSidebarScrollSuppression",
+   "useWorktreeSidebarScrollSuppression"
+  ],
+  "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts": [
+   "useWorktreeListScrollToTop"
+  ],
+  "components/sidebar/worktree-list/viewport/use-virtualizer.ts": [
+   "WorktreeListVirtualizer",
+   "useWorktreeListVirtualizer"
+  ],
+  "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts": [
+   "installWorktreeVisibleRefreshVisibilityListener",
+   "useVisiblePrRefreshReporting"
+  ],
+  "components/sidebar/worktree-list/viewport/viewport-props.ts": [
+   "EMPTY_PROJECT_GROUPS",
+   "VirtualizedWorktreeViewportProps"
+  ],
+  "components/sidebar/worktree-list/viewport/virtual-row-context.ts": [
+   "buildWorktreeVirtualRowContext"
+  ],
+  "components/sidebar/worktree-list/viewport/virtual-rows.ts": [
+   "GROUP_HEADER_ROW_HEIGHT",
+   "HOST_HEADER_ROW_HEIGHT",
+   "WORKTREE_SIDEBAR_VIRTUAL_ROW_GAP",
+   "buildLineageRowRekeyMap",
+   "shouldUseHeaderTopSpacing",
+   "estimateRenderRowSize",
+   "getVirtualRowTransform",
+   "getVirtualRowIndex",
+   "getVirtualRowKey",
+   "getWorktreeVirtualRowTransform",
+   "pruneStaleVirtualRowElementCache",
+   "getStickyHeaderIndexes",
+   "HOST_STICKY_PINNED_HEIGHT",
+   "ActiveStickyIndexes",
+   "getActiveStickyIndexesForScroll",
+   "getActiveStickyHeaderIndex",
+   "getPreviousStickyHeaderIndex",
+   "extractWorktreeVirtualRowIndexes",
+   "getActiveStickyHeaderIndexForScroll"
+  ]
+ },
+ "menu_labels": [
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 130,
+   "text": "expect(rows[0]).toMatchObject({ type: 'header', key: 'pinned', label: 'Pinned' })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 132,
+   "text": "expect(rows[2]).toMatchObject({ type: 'header', key: 'all', label: 'All', count: 2 })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 169,
+   "text": "{ type: 'header', key: 'all', label: 'All' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 234,
+   "text": "label: 'In progress',"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 283,
+   "text": "label: 'In progress'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 313,
+   "text": "expect(rows[0]).toMatchObject({ type: 'header', label: 'c15t' })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 344,
+   "text": "label: 'design-assets',"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 355,
+   "text": "rows.filter((r) => r.type === 'header').map((r) => ({ key: r.key, label: r.label }))"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 356,
+   "text": ").toEqual([{ key: 'workspace-status:in-review', label: 'In review' }])"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 361,
+   "text": "{ id: 'blocked', label: 'Blocked' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 362,
+   "text": "{ id: 'todo', label: 'Ready' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 363,
+   "text": "{ id: 'in-progress', label: 'Doing' }"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 378,
+   "text": "rows.filter((r) => r.type === 'header').map((r) => ({ key: r.key, label: r.label }))"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 380,
+   "text": "{ key: 'workspace-status:blocked', label: 'Blocked' },"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 381,
+   "text": "{ key: 'workspace-status:in-progress', label: 'Doing' }"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.ts",
+   "line": 161,
+   "text": "label: ALL_GROUP_META.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/group-keys.ts",
+   "line": 34,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/group-sections.ts",
+   "line": 87,
+   "text": "label: group.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/group-sections.ts",
+   "line": 105,
+   "text": "label: definition?.label ?? workspaceStatus,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/group-sections.ts",
+   "line": 130,
+   "text": "label: meta.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/host-labels.ts",
+   "line": 83,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/host-labels.ts",
+   "line": 85,
+   "text": "*  tooltip worktree cards use, which the label alone cannot select. */"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+   "line": 21,
+   "text": "label: key,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/pinned-group-rows.ts",
+   "line": 55,
+   "text": "label: PINNED_GROUP_META.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/project-group-sections.ts",
+   "line": 103,
+   "text": "label: projectGroup.name,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+   "line": 20,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+   "line": 117,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+   "line": 133,
+   "text": "label: repo?.displayName ?? 'Unknown',"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+   "line": 144,
+   "text": "label: repo?.displayName ?? setup.displayName,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/project-grouping.ts",
+   "line": 153,
+   "text": "label: project.displayName,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/row-types.ts",
+   "line": 20,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/section-order.ts",
+   "line": 94,
+   "text": "? { ...group, label: labelsByPath.get(getRepoDisplayLabelKey(group.repo)) ?? group.label }"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+   "line": 84,
+   "text": "let label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+   "line": 116,
+   "text": "label: getLaneLabelForKey(key, groupBy, workspaceStatuses),"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+   "line": 143,
+   "text": "label: grouping.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+   "line": 159,
+   "text": "label: grouping.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+   "line": 177,
+   "text": "label: grouping.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/worktree-grouping.ts",
+   "line": 196,
+   "text": "label: grouping.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 47,
+   "text": "async function click(label: string): Promise<void> {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 5,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 28,
+   "text": "expect(markup).toContain('aria-label=\"Folder not found\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 38,
+   "text": "expect(markup).toContain('aria-label=\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 39,
+   "text": "expect(markup).not.toContain('aria-label=\"\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 41,
+   "text": "expect(markup).not.toContain('aria-label=\"Folder not found\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 50,
+   "text": "expect(markup).toContain('aria-label=\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 51,
+   "text": "expect(markup).not.toContain('aria-label=\"\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 53,
+   "text": "expect(markup).not.toContain('aria-label=\"Folder not found\"')"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx",
+   "line": 3,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx",
+   "line": 32,
+   "text": "aria-label={title}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/HostSectionHeader.tsx",
+   "line": 3,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/HostSectionHeader.tsx",
+   "line": 9,
+   "text": "function formatSectionActivityLabel(count: number, label: string): string {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/HostSectionHeader.tsx",
+   "line": 19,
+   "text": "aria-label={totalLabel}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/ProjectGroupDialogs.tsx",
+   "line": 36,
+   "text": "title={"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+   "line": 6,
+   "text": "import { TooltipProvider } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+   "line": 3,
+   "text": "import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+   "line": 90,
+   "text": "aria-label={`${title}. ${retryLabel}`}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/SectionHeader.tsx",
+   "line": 154,
+   "text": "label: row.label,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 4,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 8,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 34,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 47,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 71,
+   "text": "<DropdownMenuItem onSelect={() => onRename(groupId, label, hostId)}>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 73,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 74,
+   "text": "<DropdownMenuItem variant=\"destructive\" onSelect={() => onDelete(groupId, label, hostId)}>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 76,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 90,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/project-group-header-actions.tsx",
+   "line": 113,
+   "text": "aria-label={createLabel}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 15,
+   "text": "import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 19,
+   "text": "DropdownMenuItem,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 78,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 93,
+   "text": "aria-label={translate("
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 122,
+   "text": "<DropdownMenuItem onSelect={() => actions.onOpenRepoSettings(repo.id)}>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 125,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 126,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 131,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 133,
+   "text": "<DropdownMenuItem onSelect={() => actions.onOpenWorktreeVisibility(repo)}>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 136,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 138,
+   "text": "<DropdownMenuItem onSelect={() => actions.onCreateGroupFromRepo(repo)}>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 142,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 151,
+   "text": "<DropdownMenuItem"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 157,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 163,
+   "text": "<DropdownMenuItem onSelect={() => actions.onRemoveProjectFromGroup(repo)}>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 166,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 169,
+   "text": "<DropdownMenuItem variant=\"destructive\" onSelect={() => actions.onRemoveProject(repo)}>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 172,
+   "text": "</DropdownMenuItem>"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 185,
+   "text": "label: string"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 205,
+   "text": "aria-label={createState.ariaLabel}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 215,
+   "text": "aria-label={createState.ariaLabel}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 228,
+   "text": "aria-label={createState?.ariaLabel ?? fallbackLabel}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx",
+   "line": 242,
+   "text": "{createState?.tooltip ?? fallbackLabel}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx",
+   "line": 333,
+   "text": "aria-label={translate('auto.components.sidebar.WorktreeList.bfbedc547b', 'Worktrees')}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 32,
+   "text": "label: key,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/sticky-headers.test.ts",
+   "line": 23,
+   "text": "label: key,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 21,
+   "text": "label: hostId,"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 33,
+   "text": "label: key,"
+  }
+ ],
+ "shortcuts": [
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 224,
+   "text": "const escape = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 239,
+   "text": "const enter = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 244,
+   "text": "const escape = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 253,
+   "text": "const escape = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+   "line": 81,
+   "text": "const handleKeyDown = (event: KeyboardEvent): void => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+   "line": 82,
+   "text": "if (event.key !== 'Escape' || !worktreePointerDragRef.current) {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "line": 9,
+   "text": "import { getShortcutPlatform } from '@/lib/shortcut-platform'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "line": 51,
+   "text": "const mod = getShortcutPlatform() === 'darwin' ? { metaKey: true } : { ctrlKey: true }"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "line": 54,
+   "text": "new KeyboardEvent('keydown', {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+   "line": 7,
+   "text": "import { getShortcutPlatform } from '@/lib/shortcut-platform'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+   "line": 25,
+   "text": "// xterm's hidden input textarea isn't a real text field; treating it as one would block sidebar shortcuts."
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+   "line": 115,
+   "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+   "line": 120,
+   "text": "const platform = getShortcutPlatform()"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+   "line": 144,
+   "text": "(e: React.KeyboardEvent) => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+   "line": 9,
+   "text": "import { getVisibleWorktreeShortcutTargets } from '../../visible-worktrees'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+   "line": 58,
+   "text": "it('publishes both rows as separate shortcut targets', () => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+   "line": 59,
+   "text": "expect(getVisibleWorktreeShortcutTargets()).toEqual(["
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+   "line": 8,
+   "text": "import { setVisibleWorktreeIds, setVisibleWorktreeShortcutTargets } from '../../visible-worktrees'"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+   "line": 18,
+   "text": "// the Cmd+1\u20139 shortcut cache all agree on one order."
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+   "line": 132,
+   "text": "// Why layout effect: the Cmd/Ctrl+1\u20139 handler can fire right after commit; publishing after paint would leave the shortcut cache stale."
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+   "line": 135,
+   "text": "setVisibleWorktreeShortcutTargets("
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+   "line": 141,
+   "text": "// Why null, not []: [] is a real rendered order (all collapsed/filtered); null tells shortcuts the list is unmounted."
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+   "line": 144,
+   "text": "setVisibleWorktreeShortcutTargets(null)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/header-event-guards.ts",
+   "line": 4,
+   "text": "export function stopRepoHeaderKeyboardToggle(event: React.KeyboardEvent<HTMLElement>): void {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/header-event-guards.ts",
+   "line": 5,
+   "text": "if (event.key === 'Enter' || event.key === ' ') {"
+  }
+ ],
+ "prefs": [],
+ "timers": [
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 28,
+   "text": "vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 157,
+   "text": "const frames = vi.mocked(window.requestAnimationFrame).mock.calls.length"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 159,
+   "text": "expect(vi.mocked(window.requestAnimationFrame).mock.calls).toHaveLength(frames)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.ts",
+   "line": 205,
+   "text": "drag.frameId = window.requestAnimationFrame(() => flushWorktreePointerDragFrame(args))"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-native-autoscroll.ts",
+   "line": 85,
+   "text": "nativeAutoscrollFrameIdRef.current = window.requestAnimationFrame(runFrame)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-native-autoscroll.ts",
+   "line": 106,
+   "text": "nativeAutoscrollFrameIdRef.current = window.requestAnimationFrame(runFrame)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts",
+   "line": 57,
+   "text": "pointerAutoscrollFrameIdRef.current = window.requestAnimationFrame(runFrame)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts",
+   "line": 77,
+   "text": "pointerAutoscrollFrameIdRef.current = window.requestAnimationFrame(runFrame)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-drag.ts",
+   "line": 97,
+   "text": "drag.frameId = window.requestAnimationFrame(flushWorktreePointerDrag)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+   "line": 75,
+   "text": "const timer = setTimeout(() => setDebouncedSortEpoch(sortEpoch), SORT_SETTLE_MS)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts",
+   "line": 19,
+   "text": "const frameId = window.requestAnimationFrame((time) => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts",
+   "line": 43,
+   "text": "revealHighlightFrameIdRef.current = window.requestAnimationFrame(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts",
+   "line": 46,
+   "text": "revealHighlightTimeoutRef.current = window.setTimeout(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-row-measurement.ts",
+   "line": 97,
+   "text": "const frameId = window.requestAnimationFrame(measureMountedRows)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+   "line": 77,
+   "text": "idleTimerRef.current = window.setTimeout(() => {"
+  }
+ ],
+ "subscriptions": [
+  {
+   "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+   "line": 18,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+   "line": 90,
+   "text": "document.addEventListener('drop', handleDocumentDrop, true)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+   "line": 94,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+   "line": 101,
+   "text": "document.addEventListener('dragend', handleDocumentDragEnd, true)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+   "line": 105,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-document-drop.ts",
+   "line": 112,
+   "text": "document.addEventListener('visibilitychange', handleVisibilityChange)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-header-drag.ts",
+   "line": 123,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-header-drag.ts",
+   "line": 126,
+   "text": "useEffect(() => () => onHostDragActiveChange(false), [onHostDragActiveChange])"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-drag.ts",
+   "line": 247,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-drag.ts",
+   "line": 257,
+   "text": "document.addEventListener('click', handleClick, true)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+   "line": 31,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+   "line": 90,
+   "text": "window.addEventListener('keydown', handleKeyDown, { capture: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+   "line": 91,
+   "text": "window.addEventListener('pointermove', handlePointerMove, { capture: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+   "line": 92,
+   "text": "window.addEventListener('pointerup', handlePointerUp, { capture: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+   "line": 93,
+   "text": "window.addEventListener('pointercancel', handlePointerCancel, { capture: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-folder-path-statuses.ts",
+   "line": 76,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-reused-array-identity.ts",
+   "line": 9,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+   "line": 61,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+   "line": 167,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+   "line": 178,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+   "line": 201,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+   "line": 216,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-sort-order.ts",
+   "line": 225,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+   "line": 114,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+   "line": 139,
+   "text": "window.addEventListener('keydown', handleKeyDown, { capture: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-pending-reveal.ts",
+   "line": 59,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-pending-reveal.ts",
+   "line": 190,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.ts",
+   "line": 69,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.ts",
+   "line": 206,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.ts",
+   "line": 207,
+   "text": "window.addEventListener("
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+   "line": 79,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+   "line": 94,
+   "text": "document.addEventListener('pointerdown', clearSelectionOutsideSidebar, { capture: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-suppression.ts",
+   "line": 69,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-suppression.ts",
+   "line": 75,
+   "text": "window.addEventListener(SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT, handleSuppress)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+   "line": 122,
+   "text": "useEffect(() => {"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+   "line": 198,
+   "text": "scrollElement.addEventListener('wheel', onWheel, { passive: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+   "line": 199,
+   "text": "scrollElement.addEventListener('scroll', onScroll, { passive: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+   "line": 200,
+   "text": "scrollElement.addEventListener('pointerdown', onPointerDown, { passive: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+   "line": 201,
+   "text": "window.addEventListener('pointerup', onPointerEnd, { passive: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts",
+   "line": 202,
+   "text": "window.addEventListener('pointercancel', onPointerEnd, { passive: true })"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts",
+   "line": 12,
+   "text": "document.addEventListener('visibilitychange', onChange)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts",
+   "line": 49,
+   "text": "useEffect("
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts",
+   "line": 62,
+   "text": "useEffect(() => {"
+  }
+ ],
+ "preload": [
+  {
+   "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx",
+   "line": 77,
+   "text": "await window.api.ui.writeClipboardText(value)"
+  }
+ ],
+ "tests": [
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 107,
+   "kind": "plain",
+   "name": "combined nesting and animated reordering"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 108,
+   "kind": "plain",
+   "name": "lets the pointer cross an edge into nesting without moving the destination"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 121,
+   "kind": "plain",
+   "name": "opens the reorder gap, holds it during nesting, then restores the edge preview"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 140,
+   "kind": "plain",
+   "name": "clears the old line during a new intent and stops scheduling after settling"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 163,
+   "kind": "plain",
+   "name": "stationary pointer autoscroll"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 164,
+   "kind": "each",
+   "name": "keeps the gap tracking slots while scrolling in direction %s"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 192,
+   "kind": "plain",
+   "name": "Escape during pointer dragging"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 219,
+   "kind": "plain",
+   "name": "removes the preview and cancels frames without committing on pointer release"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 237,
+   "kind": "plain",
+   "name": "leaves other keys and Escape without a drag available to the app"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+   "line": 250,
+   "kind": "plain",
+   "name": "removes its Escape listener on unmount"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/row-state.test.ts",
+   "line": 24,
+   "kind": "plain",
+   "name": "lineage drop preview"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/row-state.test.ts",
+   "line": 25,
+   "kind": "plain",
+   "name": "keeps the hovered card in place while replacing the reorder line with nesting"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/row-state.test.ts",
+   "line": 35,
+   "kind": "plain",
+   "name": "repaints a target change even when the pointer stays at the same height"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/row-state.test.ts",
+   "line": 42,
+   "kind": "plain",
+   "name": "clears nesting feedback when returning to a reorder edge at the same height"
+  },
+  {
+   "file": "components/sidebar/worktree-list/drag/row-state.test.ts",
+   "line": 52,
+   "kind": "plain",
+   "name": "clears nesting when leaving the sidebar even without pointer Y movement or offsets"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 86,
+   "kind": "plain",
+   "name": "folder workspaces render under every Group by mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 90,
+   "kind": "plain",
+   "name": "emits the folder-workspace row when groupBy is ${groupBy}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "does not duplicate the row under repo grouping"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 101,
+   "kind": "plain",
+   "name": "a folder workspace can be the only member of a lane"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 102,
+   "kind": "plain",
+   "name": "creates its status lane with no worktrees present"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 110,
+   "kind": "plain",
+   "name": "renders in flat mode with no worktrees present"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "lane assignment"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 119,
+   "kind": "plain",
+   "name": "routes to the same PR lane as a worktree with no PR"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 132,
+   "kind": "plain",
+   "name": "ordering"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 140,
+   "kind": "plain",
+   "name": "orders by manualOrder then sortOrder under ${groupBy}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 145,
+   "kind": "plain",
+   "name": "prefers manualOrder over sortOrder under ${groupBy}"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 158,
+   "kind": "plain",
+   "name": "membership is decided once, not per mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 161,
+   "kind": "plain",
+   "name": "renders nothing when the owning project group is not visible"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 166,
+   "kind": "plain",
+   "name": "renders under a non-repo mode when the owning group is visible"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 171,
+   "kind": "plain",
+   "name": "keeps archived folder workspaces behaving identically in every mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 182,
+   "kind": "plain",
+   "name": "host bookkeeping for lanes containing folder workspaces"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 185,
+   "kind": "plain",
+   "name": "scopes a collapsed folder-only lane header to its host"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.folder-workspace-lanes.test.ts",
+   "line": 216,
+   "kind": "plain",
+   "name": "gives a folder-only host an explicit empty id array"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "getPRGroupKey"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 24,
+   "kind": "plain",
+   "name": "puts merged PRs in the done group"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 34,
+   "kind": "plain",
+   "name": "treats a matching suppressed PR as in progress"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 46,
+   "kind": "plain",
+   "name": "keeps a different PR in its review-status group"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 58,
+   "kind": "plain",
+   "name": "prefers repo-scoped PR status over stale legacy path-scoped status"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 71,
+   "kind": "plain",
+   "name": "falls back to legacy path-scoped PR status when no repo-scoped entry exists"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "uses local PR cache for a known local repo while a runtime is focused"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "uses SSH-scoped PR cache entries instead of local entries for SSH repos"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 111,
+   "kind": "plain",
+   "name": "getGroupKeyForWorktree"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 112,
+   "kind": "plain",
+   "name": "returns the all group key for the ungrouped mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "returns a workspace-status key only in status grouping mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "buildRows with pinned worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "emits Pinned and All headers in groupBy none"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 136,
+   "kind": "plain",
+   "name": "uses worktree host ownership for pinned header host counts"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 165,
+   "kind": "plain",
+   "name": "groups all worktrees under All in groupBy none"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 175,
+   "kind": "plain",
+   "name": "moves pinned worktrees out of the All group"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 187,
+   "kind": "plain",
+   "name": "duplicates pinned worktrees into All when the policy allows it"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 213,
+   "kind": "plain",
+   "name": "collapses the All group in groupBy none"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 223,
+   "kind": "plain",
+   "name": "emits status headers for unpinned matching worktrees in groupBy workspace-status"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 241,
+   "kind": "plain",
+   "name": "duplicates pinned worktrees into status groups when the policy allows it"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 266,
+   "kind": "plain",
+   "name": "moves pinned items out of regular groups in pr-status mode"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 278,
+   "kind": "plain",
+   "name": "omits empty pinned sections in groupBy workspace-status"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 289,
+   "kind": "plain",
+   "name": "collapses pinned group when in collapsedGroups"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 302,
+   "kind": "plain",
+   "name": "omits status sections when all matching worktrees are pinned"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 309,
+   "kind": "plain",
+   "name": "preserves repo display casing in group labels"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 316,
+   "kind": "plain",
+   "name": "groups folder-mode workspaces under their folder name"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 350,
+   "kind": "plain",
+   "name": "emits assigned workspace statuses as sections in groupBy workspace-status"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 359,
+   "kind": "plain",
+   "name": "uses customized workspace status labels and order"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 386,
+   "kind": "plain",
+   "name": "WorktreeList header styles"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 387,
+   "kind": "plain",
+   "name": "does not title-case workspace group labels"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 393,
+   "kind": "plain",
+   "name": "collapses repo header actions without reserving title width"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 407,
+   "kind": "plain",
+   "name": "resolves repo header color from project group headers only"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/build-rows.test.ts",
+   "line": 415,
+   "kind": "plain",
+   "name": "adapts projected setup rows for sidebar project grouping"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/host-labels.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "host worktree counts and ids"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/host-labels.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "reports a count equal to the length of each host id list"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/host-labels.test.ts",
+   "line": 45,
+   "kind": "plain",
+   "name": "counts a repeated host identity once"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/host-labels.test.ts",
+   "line": 57,
+   "kind": "plain",
+   "name": "returns undefined for an empty lane"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "imported worktree virtual rows"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "uses stable imported row keys and does not match worktree ids"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+   "line": 84,
+   "kind": "plain",
+   "name": "keeps imported card rows out of worktree drag groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "indexes pinned rows for sidebar drag when they are the only rendered copy"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "uses natural drag metadata when pinned rows have duplicate natural copies"
+  },
+  {
+   "file": "components/sidebar/worktree-list/grouping/imported-rows.test.ts",
+   "line": 118,
+   "kind": "plain",
+   "name": "only allows keep-hidden actions for repo-group cards that are not forced visible"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "WorktreeList host filtering ownership"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "uses runtime execution host stamps before SSH/default fallbacks for project groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 59,
+   "kind": "plain",
+   "name": "uses the project group runtime owner for folder workspaces in that group"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 69,
+   "kind": "plain",
+   "name": "keeps explicit runtime group ownership when the focused runtime is the same host"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 79,
+   "kind": "plain",
+   "name": "extracts runtime route ids for folder path status requests"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 85,
+   "kind": "plain",
+   "name": "routes project-group path status through the owning runtime"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 96,
+   "kind": "plain",
+   "name": "routes folder-workspace path status through its project group runtime owner"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 108,
+   "kind": "plain",
+   "name": "forces local path status routing for local project groups while a runtime is focused"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/host-filtering.test.ts",
+   "line": 119,
+   "kind": "plain",
+   "name": "forces local path status routing for SSH-owned project groups while a runtime is focused"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.test.ts",
+   "line": 17,
+   "kind": "plain",
+   "name": "selectPendingWorktreeCreationKeys"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "returns the shared frozen empty when nothing is pending"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.test.ts",
+   "line": 29,
+   "kind": "plain",
+   "name": "builds the key list once per slice identity"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.test.ts",
+   "line": 39,
+   "kind": "plain",
+   "name": "rebuilds when the slice is replaced"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/review-cache-inputs.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "selectWorktreeListReviewCacheInputs"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/review-cache-inputs.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "ignores cache churn for ordinary cards outside PR-status grouping"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/review-cache-inputs.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "keeps the PR cache live for PR-status grouping"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/review-cache-inputs.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "keeps the PR cache live for legacy folder-card review displays"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/review-cache-inputs.test.ts",
+   "line": 59,
+   "kind": "plain",
+   "name": "keeps both caches live for new-style folder status displays"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/review-cache-inputs.test.ts",
+   "line": 77,
+   "kind": "plain",
+   "name": "ignores both caches when folder cards hide review presentation"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-visible-worktrees.test.tsx",
+   "line": 28,
+   "kind": "plain",
+   "name": "useVisibleSidebarWorktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-visible-worktrees.test.tsx",
+   "line": 38,
+   "kind": "plain",
+   "name": "projects both host rows through the primary sidebar pipeline"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-visible-worktrees.test.tsx",
+   "line": 73,
+   "kind": "plain",
+   "name": "does not expand one host-filtered collision into both rows"
+  },
+  {
+   "file": "components/sidebar/worktree-list/listing/use-visible-worktrees.test.tsx",
+   "line": 106,
+   "kind": "plain",
+   "name": "does not rescan every worktree when a settings write leaves the focused host unchanged"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/active-descendant-option.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "getActiveDescendantOptionId"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/active-descendant-option.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "announces the active host row when workspace ids collide"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "worktree list folder reveal"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+   "line": 73,
+   "kind": "plain",
+   "name": "resolves synthetic folder workspace ids as known sidebar worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+   "line": 88,
+   "kind": "plain",
+   "name": "keeps pending reveals alive for folder workspaces missing from raw git worktrees"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "returns project group keys from root to nested folder workspace owner"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "reveal keys under non-repo grouping"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+   "line": 128,
+   "kind": "plain",
+   "name": "returns the status lane key so a collapsed lane can be expanded"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "returns the host key so a collapsed host can be expanded too"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/folder-reveal.test.ts",
+   "line": 148,
+   "kind": "plain",
+   "name": "still returns project-group keys under repo grouping"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/render-row-lookup.folder-workspace.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "host-qualified reveal lookup finds folder workspaces"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/render-row-lookup.folder-workspace.test.ts",
+   "line": 38,
+   "kind": "plain",
+   "name": "returns the folder row index instead of -1"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/render-row-lookup.folder-workspace.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "does not match a different folder workspace"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "line": 96,
+   "kind": "plain",
+   "name": "worktree keyboard cycling with a resolved active host"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "line": 97,
+   "kind": "plain",
+   "name": "steps to the next row when the active host resolved to local but rows are unqualified"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "line": 107,
+   "kind": "plain",
+   "name": "steps to the previous row when the active host resolved to local"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+   "line": 115,
+   "kind": "plain",
+   "name": "still steps normally when the active host is unqualified"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 103,
+   "kind": "plain",
+   "name": "revealing a filtered workspace"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 104,
+   "kind": "plain",
+   "name": "explains the filter reset and leaves filters intact when dismissed"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 115,
+   "kind": "plain",
+   "name": "delegates to the minimal filter revealer when provided"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 124,
+   "kind": "plain",
+   "name": "adjusts blocking filters and reveals on the original execution host only after confirmation"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 142,
+   "kind": "each",
+   "name": "reveals immediately when filter adjustment is unnecessary (%s)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 157,
+   "kind": "each",
+   "name": "reveals a collapsed workspace that passes filters with active host %s"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 171,
+   "kind": "plain",
+   "name": "does not let a visible same-id workspace on another host bypass confirmation"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 180,
+   "kind": "plain",
+   "name": "preserves filters when the target becomes included while confirmation is open"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 189,
+   "kind": "plain",
+   "name": "does not apply a stale confirmation after switching workspaces"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-reveal-requests.test.tsx",
+   "line": 199,
+   "kind": "each",
+   "name": "reveals folder workspaces and preserves rename (filtered: %s)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+   "line": 57,
+   "kind": "plain",
+   "name": "sidebar selection host collisions"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+   "line": 58,
+   "kind": "plain",
+   "name": "publishes both rows as separate shortcut targets"
+  },
+  {
+   "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+   "line": 65,
+   "kind": "plain",
+   "name": "selects both same-id host rows independently"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 24,
+   "kind": "plain",
+   "name": "FolderPathStatusIndicator"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 25,
+   "kind": "plain",
+   "name": "marks a folder missing for a declared reason"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 34,
+   "kind": "plain",
+   "name": "still renders the marker when a newer host sends an undeclared reason"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 46,
+   "kind": "plain",
+   "name": "still renders the marker when the wire carries a non-string reason"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.test.tsx",
+   "line": 56,
+   "kind": "plain",
+   "name": "renders nothing for a healthy folder"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+   "line": 38,
+   "kind": "plain",
+   "name": "RepoScanUnavailableIndicator"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+   "line": 52,
+   "kind": "plain",
+   "name": "renders nothing for an authoritative listing"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+   "line": 64,
+   "kind": "plain",
+   "name": "renders nothing for a non-authoritative listing that carries no reason"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.test.tsx",
+   "line": 79,
+   "kind": "plain",
+   "name": "marks a failed scan and re-runs it on click"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 36,
+   "kind": "plain",
+   "name": "worktree list indentation"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 37,
+   "kind": "plain",
+   "name": "keeps ungrouped workspaces flush with the list"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 43,
+   "kind": "plain",
+   "name": "keeps ungrouped lineage indentation on the base tree step"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "indents workspace content one step deeper than its containing project header"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 58,
+   "kind": "plain",
+   "name": "adds lineage depth after project/group depth"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 64,
+   "kind": "plain",
+   "name": "uses compact header rhythm for folder-scanned repo worktree content"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "caps folder-scanned repo worktree surfaces before they overshoot the compact anchor"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 82,
+   "kind": "plain",
+   "name": "keeps folder workspace content one step under its owning group"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 87,
+   "kind": "plain",
+   "name": "caps folder workspace surfaces before they overshoot the compact content anchor"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 93,
+   "kind": "plain",
+   "name": "preserves legacy folder-scanned folder workspace row geometry"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 109,
+   "kind": "plain",
+   "name": "preserves legacy nested folder-scanned folder workspace row geometry"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 125,
+   "kind": "plain",
+   "name": "preserves legacy manual grouped folder workspace row geometry"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 141,
+   "kind": "plain",
+   "name": "uses comparable repo worktree geometry for experimental folder-scanned folder workspaces"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 157,
+   "kind": "plain",
+   "name": "uses comparable repo worktree geometry for experimental nested folder workspaces"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 173,
+   "kind": "plain",
+   "name": "keeps experimental manual grouped folder workspaces on normal worktree geometry"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 189,
+   "kind": "plain",
+   "name": "keeps experimental flat folder workspaces on normal worktree geometry"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 205,
+   "kind": "plain",
+   "name": "caps header indentation separately from workspace content indentation"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 209,
+   "kind": "plain",
+   "name": "aligns flat section headers with top-level project headers"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 213,
+   "kind": "plain",
+   "name": "keeps root repo cards flush but insets cards inside project groups"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 218,
+   "kind": "plain",
+   "name": "does not inset card surfaces outside grouped views"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 222,
+   "kind": "plain",
+   "name": "pulls flush card content back by the tuned inset gap"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 226,
+   "kind": "plain",
+   "name": "pulls experimental flush cards back further for the fixed status lane"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 232,
+   "kind": "plain",
+   "name": "keeps flush card content off the sidebar edge without indentation"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 237,
+   "kind": "plain",
+   "name": "derives the lineage parent-child step from the pre-refactor grouped-card anchor"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 244,
+   "kind": "plain",
+   "name": "keeps experimental lineage nested rows from accumulating global depth"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 262,
+   "kind": "plain",
+   "name": "preserves legacy nested row geometry for non-experimental cards"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 279,
+   "kind": "plain",
+   "name": "keeps each experimental lineage boundary at one immediate-parent step"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/indentation.test.ts",
+   "line": 293,
+   "kind": "plain",
+   "name": "expresses lineage child wrapper width from the resolved inline offset"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/option-dom-host-collision.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "immediate sidebar activation host identity"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/option-dom-host-collision.test.ts",
+   "line": 11,
+   "kind": "plain",
+   "name": "marks only the clicked host copies active when workspace ids collide"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/use-project-group-dialogs-owner-host.test.tsx",
+   "line": 88,
+   "kind": "plain",
+   "name": "project group dialogs carry the owner host"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/use-project-group-dialogs-owner-host.test.tsx",
+   "line": 89,
+   "kind": "plain",
+   "name": "renames through the host that owns the group row"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/use-project-group-dialogs-owner-host.test.tsx",
+   "line": 106,
+   "kind": "plain",
+   "name": "surfaces an unconfirmed-rename toast when the owner host does not answer"
+  },
+  {
+   "file": "components/sidebar/worktree-list/rows/use-project-group-dialogs-owner-host.test.tsx",
+   "line": 122,
+   "kind": "plain",
+   "name": "deletes through the host that owns the group row"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 22,
+   "kind": "plain",
+   "name": "normalizeWheelDeltaY"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 23,
+   "kind": "plain",
+   "name": "keeps pixel mode and expands line/page modes"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 30,
+   "kind": "plain",
+   "name": "reduceHardScrollUpOnWheel"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 31,
+   "kind": "plain",
+   "name": "stays hidden for short lists and near-top viewports"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 54,
+   "kind": "plain",
+   "name": "does not show on gentle upward scrolling"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 67,
+   "kind": "plain",
+   "name": "shows after a sustained hard upward wheel burst"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 82,
+   "kind": "plain",
+   "name": "shows after a trackpad fling (high peak + enough total)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "hides on significant downward scroll"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 116,
+   "kind": "plain",
+   "name": "hides after cumulative small downward wheel events"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 135,
+   "kind": "plain",
+   "name": "clears when the user reaches the top"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 156,
+   "kind": "plain",
+   "name": "reduceHardScrollUpOnScroll"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 157,
+   "kind": "plain",
+   "name": "shows when scrollbar drag velocity is hard upward"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 173,
+   "kind": "plain",
+   "name": "ignores slow scrollbar movement"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 188,
+   "kind": "plain",
+   "name": "hides after cumulative small downward scrollbar movement"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 204,
+   "kind": "plain",
+   "name": "reduceHardScrollUpOnIdle / dismiss"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 205,
+   "kind": "plain",
+   "name": "auto-hides after idle while still deep"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 229,
+   "kind": "plain",
+   "name": "hides on later non-intent scroll after the idle deadline (scroll spam must not extend)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/hard-scroll-up.test.ts",
+   "line": 250,
+   "kind": "plain",
+   "name": "dismiss resets state"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 49,
+   "kind": "plain",
+   "name": "shouldAdjustWorktreeSidebarMeasuredRowScroll"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 50,
+   "kind": "plain",
+   "name": "counts record keys once per object reference"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 65,
+   "kind": "plain",
+   "name": "suppresses measured-row scroll correction while TanStack is scrolling"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 75,
+   "kind": "plain",
+   "name": "suppresses measured-row scroll correction during direct scroll input grace period"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 85,
+   "kind": "plain",
+   "name": "allows measured-row scroll correction after direct scrolling settles"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "keeps pending reveal requests when the worktree still exists but the row is unresolved"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "clears pending reveal requests once the target disappears"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 113,
+   "kind": "plain",
+   "name": "scrolls and clears once the target row is resolvable"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 123,
+   "kind": "plain",
+   "name": "getScrollTopToRevealBounds"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 124,
+   "kind": "plain",
+   "name": "treats the sticky header as occluding the viewport top"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 139,
+   "kind": "plain",
+   "name": "includes extra reveal clearance for the highlight ring"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 154,
+   "kind": "plain",
+   "name": "does not scroll when the bounds are below the sticky header"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 169,
+   "kind": "plain",
+   "name": "keeps the viewport bottom independent of the sticky header inset"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 185,
+   "kind": "plain",
+   "name": "extractWorktreeVirtualRowIndexes"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 186,
+   "kind": "plain",
+   "name": "extracts the active and previous sticky headers with the visible range"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 195,
+   "kind": "plain",
+   "name": "falls back to the default range when no sticky header is active"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 205,
+   "kind": "plain",
+   "name": "estimateRenderRowSize"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 206,
+   "kind": "plain",
+   "name": "keeps secondary group header size stable while it is the active sticky header"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 222,
+   "kind": "plain",
+   "name": "estimates imported worktree line rows with a stable compact height"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 228,
+   "kind": "plain",
+   "name": "keeps the previous header active until the secondary header row reaches the top"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/scroll-adjustment.test.ts",
+   "line": 239,
+   "kind": "plain",
+   "name": "activates a secondary header as soon as its row reaches the top (no spacer dead zone)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/sticky-headers.test.ts",
+   "line": 64,
+   "kind": "plain",
+   "name": "getStickyHeaderIndexes"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/sticky-headers.test.ts",
+   "line": 65,
+   "kind": "plain",
+   "name": "keeps nested project rows from replacing their top-level project group header"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/sticky-headers.test.ts",
+   "line": 76,
+   "kind": "plain",
+   "name": "uses the real project-group hierarchy when choosing sticky headers"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-row-removal-animation.test.ts",
+   "line": 19,
+   "kind": "plain",
+   "name": "buildVirtualRowRemovalMotions"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-row-removal-animation.test.ts",
+   "line": 20,
+   "kind": "plain",
+   "name": "moves surviving rows from their pre-delete viewport positions"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-row-removal-animation.test.ts",
+   "line": 45,
+   "kind": "plain",
+   "name": "does not double-move rows when anchor restoration offsets a deletion above the viewport"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-row-removal-animation.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "follows a surviving row through a lineage rekey"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-row-removal-animation.test.ts",
+   "line": 81,
+   "kind": "plain",
+   "name": "ignores additions and measurement-only movement"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.ts",
+   "line": 48,
+   "kind": "plain",
+   "name": "useWorktreeListScrollToTop"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.ts",
+   "line": 61,
+   "kind": "plain",
+   "name": "shows on a hard upward wheel gesture and hides on the idle deadline"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "does not extend the idle deadline on non-intent scroll noise"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.ts",
+   "line": 95,
+   "kind": "plain",
+   "name": "re-arms the idle timer when intent is refreshed"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.ts",
+   "line": 111,
+   "kind": "plain",
+   "name": "suppresses detection for the post-jump window after scrollToTop"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.ts",
+   "line": 138,
+   "kind": "plain",
+   "name": "force-hides when the list stops being scrollable, even mid-gesture"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.ts",
+   "line": 156,
+   "kind": "plain",
+   "name": "clears the timer and detaches listeners when the scroll element goes away"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.tsx",
+   "line": 38,
+   "kind": "plain",
+   "name": "useWorktreeListScrollToTop"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.tsx",
+   "line": 39,
+   "kind": "plain",
+   "name": "ignores fast programmatic scrolling"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.tsx",
+   "line": 58,
+   "kind": "plain",
+   "name": "detects velocity while the scrollbar is actively dragged"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/use-scroll-to-top.test.tsx",
+   "line": 80,
+   "kind": "plain",
+   "name": "returns focus to the list after jumping to the top"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 62,
+   "kind": "plain",
+   "name": "getRenderRowKey"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 63,
+   "kind": "plain",
+   "name": "scopes repeated group headers to their host section"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 72,
+   "kind": "plain",
+   "name": "preserves unsectioned group header keys"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 79,
+   "kind": "plain",
+   "name": "getActiveStickyIndexesForScroll"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 80,
+   "kind": "plain",
+   "name": "pins the host and its inner group while scrolled inside a section"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 92,
+   "kind": "plain",
+   "name": "hands the host tier off when the next host card reaches the top"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 104,
+   "kind": "plain",
+   "name": "never pins the previous host group beneath the next host card"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 117,
+   "kind": "plain",
+   "name": "offsets the group handoff by the pinned host height"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 138,
+   "kind": "plain",
+   "name": "degrades to single-tier rules when no host sections exist"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 158,
+   "kind": "plain",
+   "name": "does not pin a Project header whose virtual item is not mounted yet (#10088)"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 175,
+   "kind": "plain",
+   "name": "keeps the previous mounted Project sticky when the next group is unmounted"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 198,
+   "kind": "plain",
+   "name": "extractWorktreeVirtualRowIndexes"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 199,
+   "kind": "plain",
+   "name": "keeps the pinned host mounted even when scrolled out of range"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 215,
+   "kind": "plain",
+   "name": "buildLineageRowRekeyMap"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 241,
+   "kind": "plain",
+   "name": "folds every lineage-group member onto the group key"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 253,
+   "kind": "plain",
+   "name": "dissolves a group key back onto the plain item row"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 261,
+   "kind": "plain",
+   "name": "round-trips the fold and dissolve directions for the same worktree"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 268,
+   "kind": "plain",
+   "name": "keeps the same worktree distinct across sections"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 289,
+   "kind": "plain",
+   "name": "contributes nothing for non-lineage row types"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 296,
+   "kind": "plain",
+   "name": "is empty for an empty row list"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 301,
+   "kind": "plain",
+   "name": "pruneStaleVirtualRowElementCache"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/virtual-rows.test.ts",
+   "line": 302,
+   "kind": "plain",
+   "name": "removes stale measured row elements before they retain old WorktreeCard scopes"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/visible-refresh.test.ts",
+   "line": 4,
+   "kind": "plain",
+   "name": "installWorktreeVisibleRefreshVisibilityListener"
+  },
+  {
+   "file": "components/sidebar/worktree-list/viewport/visible-refresh.test.ts",
+   "line": 10,
+   "kind": "plain",
+   "name": "subscribes to document visibility changes so visible PR refresh can rerun on return"
+  }
+ ]
+}

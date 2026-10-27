@@ -1,0 +1,923 @@
+{
+ "labels_checked": 94,
+ "covered": 42,
+ "uncovered": 52,
+ "uncovered_items": [
+  {
+   "label": ".gitignore",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Activemasterprimarymaster",
+   "seen_in": [
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "static_sidebar"
+   ],
+   "rows": []
+  },
+  {
+   "label": "CLAUDE.md",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Clear Screen",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Collapse All",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Copy Context",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Copy Pane ID",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Copy Terminal ID",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "CopyCtrl+Shift+C",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Explorer (Ctrl+Shift+E)",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Explorer search mode",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "File Manager",
+   "seen_in": [
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Filter files by name",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Find files",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Fork Agent Session…",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Go back",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Go forward",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Inactivee2e-secondarye2e-secondary",
+   "seen_in": [
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Inactivemasterprimarymaster",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Keep computer awake, Off · Inactive",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Match Case",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Match Whole Word",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Maximize",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Minimize",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "More Explorer Actions",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Notifications alt+T",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Orca MobileNew",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": []
+  },
+  {
+   "label": "PasteCtrl+V",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Quick Commands",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "README.md",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Refresh Explorer",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Refresh rate limits",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Resource Manager, 0 terminal sessions",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Search file contents",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Search files",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Select AllCtrl+Shift+A",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Set Title…",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Show floating workspace",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Source Control (Ctrl+Shift+G)",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Split Terminal DownAlt+Shift+D",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Split Terminal RightCtrl+Shift+D",
+   "seen_in": [
+    "keyboard_probe/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "Use Regular Expression",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "VS Code",
+   "seen_in": [
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu"
+   ],
+   "rows": []
+  },
+  {
+   "label": "files to exclude (e.g. *.min.js, dist/**)",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "files to include (e.g. *.ts, src/**)",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "master",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": []
+  },
+  {
+   "label": "orca-e2e-repo-26neOz",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "orca-e2e-repo-26neOzInactivemasterprimarymasterInactivee2e-secondarye2e-secondary",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "orca-e2e-repo-m2AEyd",
+   "seen_in": [
+    "static_sidebar"
+   ],
+   "rows": []
+  },
+  {
+   "label": "orca-e2e-repo-m2AEydActivemasterprimarymasterInactivee2e-secondarye2e-secondary",
+   "seen_in": [
+    "static_sidebar"
+   ],
+   "rows": []
+  },
+  {
+   "label": "package.json",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  },
+  {
+   "label": "src.gitignoreCLAUDE.mdpackage.jsonREADME.md",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": []
+  }
+ ],
+ "covered_items": [
+  {
+   "label": "Add project",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-004",
+    "D01-011",
+    "D02a-020",
+    "D02a-026"
+   ]
+  },
+  {
+   "label": "Agents",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D01-005",
+    "D01-008",
+    "D01-009",
+    "D01-010"
+   ]
+  },
+  {
+   "label": "Application menu",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D04a-028"
+   ]
+  },
+  {
+   "label": "Automations",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-023",
+    "D01-026",
+    "D04a-021",
+    "D04b-012"
+   ]
+  },
+  {
+   "label": "Checks",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D02a-038",
+    "D04a-020"
+   ]
+  },
+  {
+   "label": "Close",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D01-029",
+    "D01-032",
+    "D02a-001",
+    "D02a-004"
+   ]
+  },
+  {
+   "label": "Copy Path",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D04a-024",
+    "D07-020"
+   ]
+  },
+  {
+   "label": "Create new worktree for orca-e2e-repo-26neOz",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D04a-021",
+    "D07-026",
+    "D11-010",
+    "D15b-001"
+   ]
+  },
+  {
+   "label": "Create new worktree for orca-e2e-repo-m2AEyd",
+   "seen_in": [
+    "static_sidebar"
+   ],
+   "rows": [
+    "D04a-021",
+    "D07-026",
+    "D11-010",
+    "D15b-001"
+   ]
+  },
+  {
+   "label": "Customize apps...",
+   "seen_in": [
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu"
+   ],
+   "rows": [
+    "D04a-028"
+   ]
+  },
+  {
+   "label": "Delete Worktree",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D04a-026",
+    "D07-028",
+    "D07-029",
+    "D07-031"
+   ]
+  },
+  {
+   "label": "Help",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-030",
+    "D01-034",
+    "D01-035",
+    "D01-036"
+   ]
+  },
+  {
+   "label": "Mark Read",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D04a-024"
+   ]
+  },
+  {
+   "label": "Mark Unread",
+   "seen_in": [
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu"
+   ],
+   "rows": [
+    "D04a-024"
+   ]
+  },
+  {
+   "label": "Mark as unread",
+   "seen_in": [
+    "all_sidebar_buttons",
+    "header_actions",
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D04a-024",
+    "D07-020"
+   ]
+  },
+  {
+   "label": "Move to Status",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D04a-027",
+    "D07-022"
+   ]
+  },
+  {
+   "label": "New group from project",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D03a-046",
+    "D04a-025"
+   ]
+  },
+  {
+   "label": "New workspace",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-012",
+    "D03b-017",
+    "D08-021",
+    "D08-030"
+   ]
+  },
+  {
+   "label": "Open GitHub tasks",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-019"
+   ]
+  },
+  {
+   "label": "Open Jira tasks",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-019"
+   ]
+  },
+  {
+   "label": "Open in",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D04a-004",
+    "D04a-018",
+    "D04a-028"
+   ]
+  },
+  {
+   "label": "Pin",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D01-038",
+    "D01-047",
+    "D01-048",
+    "D02a-002"
+   ]
+  },
+  {
+   "label": "Ports, 0 workspace ports",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D04a-023",
+    "D04a-034",
+    "D04b-011",
+    "D04b-012"
+   ]
+  },
+  {
+   "label": "Project actions for orca-e2e-repo-26neOz",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D03a-046"
+   ]
+  },
+  {
+   "label": "Project actions for orca-e2e-repo-m2AEyd",
+   "seen_in": [
+    "static_sidebar"
+   ],
+   "rows": [
+    "D03a-046"
+   ]
+  },
+  {
+   "label": "Remove Project from Orca",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D04a-026"
+   ]
+  },
+  {
+   "label": "Reveal active workspace",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-031"
+   ]
+  },
+  {
+   "label": "Search worktrees and browser tabs",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-016"
+   ]
+  },
+  {
+   "label": "Set Parent Worktree...",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D04a-025",
+    "D06-028",
+    "D07-023"
+   ]
+  },
+  {
+   "label": "Settings",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-002",
+    "D01-018",
+    "D01-021",
+    "D01-022"
+   ]
+  },
+  {
+   "label": "Sleep",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D02a-030",
+    "D03a-033",
+    "D03b-050",
+    "D04a-026"
+   ]
+  },
+  {
+   "label": "Tasks",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-018",
+    "D01-019",
+    "D03b-020",
+    "D07-015"
+   ]
+  },
+  {
+   "label": "Toggle right sidebar",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D01-050"
+   ]
+  },
+  {
+   "label": "Toggle sidebar",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D01-032",
+    "D01-050",
+    "D03a-037",
+    "D04a-011"
+   ]
+  },
+  {
+   "label": "Update",
+   "seen_in": [
+    "all_sidebar_buttons/menu",
+    "card_context_menu/menu",
+    "card_workspace_options/menu",
+    "footer_help/menu",
+    "footer_settings/menu",
+    "header_actions/menu",
+    "keyboard_probe/menu"
+   ],
+   "rows": [
+    "D01-021",
+    "D01-022",
+    "D01-023",
+    "D01-024"
+   ]
+  },
+  {
+   "label": "View activity",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-008"
+   ]
+  },
+  {
+   "label": "Workspace board",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-011",
+    "D01-029",
+    "D01-032",
+    "D01-033"
+   ]
+  },
+  {
+   "label": "Workspace board moved to the bottom bar",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-033"
+   ]
+  },
+  {
+   "label": "Workspace options",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D07-010",
+    "D07-011",
+    "D07-012",
+    "D07-013"
+   ]
+  },
+  {
+   "label": "Worktrees",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-006",
+    "D01-016",
+    "D01-047",
+    "D02a-008"
+   ]
+  },
+  {
+   "label": "e2e-secondary",
+   "seen_in": [
+    "static_all",
+    "static_sidebar"
+   ],
+   "rows": [
+    "D01-032",
+    "D02c-002",
+    "D03a-041",
+    "D04a-001"
+   ]
+  },
+  {
+   "label": "src",
+   "seen_in": [
+    "static_all"
+   ],
+   "rows": [
+    "D12-004",
+    "D12-006",
+    "D12-008"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,142 @@
+{
+ "domain": "D11-lineage-grouping-model",
+ "prod": [
+  {
+   "name": "default-branch-workspace.ts",
+   "kind": "prod",
+   "loc": 10
+  },
+  {
+   "name": "natural-worktree-ids.ts",
+   "kind": "prod",
+   "loc": 24
+  },
+  {
+   "name": "pinned-section-worktrees.ts",
+   "kind": "prod",
+   "loc": 56
+  },
+  {
+   "name": "repo-header-create-state.ts",
+   "kind": "prod",
+   "loc": 70
+  },
+  {
+   "name": "use-repo-owner-visibility-defaults.ts",
+   "kind": "prod",
+   "loc": 12
+  },
+  {
+   "name": "visible-worktree-activity-inputs.ts",
+   "kind": "prod",
+   "loc": 35
+  },
+  {
+   "name": "visible-worktree-host-scope.ts",
+   "kind": "prod",
+   "loc": 42
+  },
+  {
+   "name": "visible-worktree-indexes.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "visible-worktree-kinds.ts",
+   "kind": "prod",
+   "loc": 74
+  },
+  {
+   "name": "visible-worktrees.ts",
+   "kind": "prod",
+   "loc": 380
+  },
+  {
+   "name": "workspace-creator-visibility.ts",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "worktree-lineage-drag-drop.ts",
+   "kind": "prod",
+   "loc": 86
+  },
+  {
+   "name": "worktree-lineage-projection.ts",
+   "kind": "prod",
+   "loc": 147
+  },
+  {
+   "name": "worktree-lineage-toggle-handler-cache.ts",
+   "kind": "prod",
+   "loc": 26
+  },
+  {
+   "name": "worktree-unambiguous-id-index.ts",
+   "kind": "prod",
+   "loc": 17
+  }
+ ],
+ "test": [
+  {
+   "name": "natural-worktree-ids.test.ts",
+   "kind": "test",
+   "loc": 45
+  },
+  {
+   "name": "pinned-section-worktrees.test.ts",
+   "kind": "test",
+   "loc": 189
+  },
+  {
+   "name": "repo-header-create-state.test.ts",
+   "kind": "test",
+   "loc": 84
+  },
+  {
+   "name": "visible-worktree-activity-inputs.test.ts",
+   "kind": "test",
+   "loc": 161
+  },
+  {
+   "name": "visible-worktree-indexes.test.ts",
+   "kind": "test",
+   "loc": 180
+  },
+  {
+   "name": "visible-worktrees.test.ts",
+   "kind": "test",
+   "loc": 911
+  },
+  {
+   "name": "workspace-creator-visibility.test.ts",
+   "kind": "test",
+   "loc": 48
+  },
+  {
+   "name": "worktree-lineage-drag-drop.test.ts",
+   "kind": "test",
+   "loc": 285
+  },
+  {
+   "name": "worktree-lineage-expansion.performance.test.ts",
+   "kind": "test",
+   "loc": 88
+  },
+  {
+   "name": "worktree-lineage-projection.test.ts",
+   "kind": "test",
+   "loc": 126
+  },
+  {
+   "name": "worktree-lineage-toggle-handler-cache.test.ts",
+   "kind": "test",
+   "loc": 48
+  },
+  {
+   "name": "worktree-unambiguous-id-index.test.ts",
+   "kind": "test",
+   "loc": 43
+  }
+ ]
+}

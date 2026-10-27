@@ -1,0 +1,462 @@
+{
+ "domain": "D04a-worktree-card-surface",
+ "prod": [
+  {
+   "name": "WorktreeCard.tsx",
+   "kind": "prod",
+   "loc": 82
+  },
+  {
+   "name": "WorktreeCardAgents.tsx",
+   "kind": "prod",
+   "loc": 426
+  },
+  {
+   "name": "WorktreeCardAutomationDetailSection.tsx",
+   "kind": "prod",
+   "loc": 153
+  },
+  {
+   "name": "WorktreeCardCliDetailSection.tsx",
+   "kind": "prod",
+   "loc": 51
+  },
+  {
+   "name": "WorktreeCardDetailSection.tsx",
+   "kind": "prod",
+   "loc": 23
+  },
+  {
+   "name": "WorktreeCardDisplayMenuSection.tsx",
+   "kind": "prod",
+   "loc": 200
+  },
+  {
+   "name": "WorktreeCardHelpers.tsx",
+   "kind": "prod",
+   "loc": 60
+  },
+  {
+   "name": "WorktreeCardHoverIdentityHeader.tsx",
+   "kind": "prod",
+   "loc": 77
+  },
+  {
+   "name": "WorktreeCardIssueDetailSection.tsx",
+   "kind": "prod",
+   "loc": 164
+  },
+  {
+   "name": "WorktreeCardMeta.tsx",
+   "kind": "prod",
+   "loc": 381
+  },
+  {
+   "name": "WorktreeCardMetaBadges.tsx",
+   "kind": "prod",
+   "loc": 157
+  },
+  {
+   "name": "WorktreeCardMetadataControls.tsx",
+   "kind": "prod",
+   "loc": 86
+  },
+  {
+   "name": "WorktreeCardMetadataStatusBadges.tsx",
+   "kind": "prod",
+   "loc": 197
+  },
+  {
+   "name": "WorktreeCardPorts.tsx",
+   "kind": "prod",
+   "loc": 314
+  },
+  {
+   "name": "WorktreeCardReviewDetailSection.tsx",
+   "kind": "prod",
+   "loc": 182
+  },
+  {
+   "name": "WorktreeCardSshHostControl.tsx",
+   "kind": "prod",
+   "loc": 283
+  },
+  {
+   "name": "WorktreeCardStatusSlot.tsx",
+   "kind": "prod",
+   "loc": 234
+  },
+  {
+   "name": "WorktreeContextMenu.tsx",
+   "kind": "prod",
+   "loc": 34
+  },
+  {
+   "name": "WorktreeContextMenuOverlays.tsx",
+   "kind": "prod",
+   "loc": 34
+  },
+  {
+   "name": "WorktreeContextMenuView.tsx",
+   "kind": "prod",
+   "loc": 386
+  },
+  {
+   "name": "WorktreeDeveloperMenu.tsx",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "WorktreeDisplayNameField.tsx",
+   "kind": "prod",
+   "loc": 79
+  },
+  {
+   "name": "WorktreeHostContextBadge.tsx",
+   "kind": "prod",
+   "loc": 29
+  },
+  {
+   "name": "WorktreeIssueLinkField.tsx",
+   "kind": "prod",
+   "loc": 260
+  },
+  {
+   "name": "WorktreeMetaDialog.tsx",
+   "kind": "prod",
+   "loc": 441
+  },
+  {
+   "name": "WorktreeOpenInMenu.tsx",
+   "kind": "prod",
+   "loc": 382
+  },
+  {
+   "name": "WorktreeReviewLinkField.tsx",
+   "kind": "prod",
+   "loc": 60
+  },
+  {
+   "name": "WorktreeStatusMenuItems.tsx",
+   "kind": "prod",
+   "loc": 48
+  },
+  {
+   "name": "WorktreeTitleInlineRename.tsx",
+   "kind": "prod",
+   "loc": 385
+  },
+  {
+   "name": "worktree-card-agent-summary.ts",
+   "kind": "prod",
+   "loc": 130
+  },
+  {
+   "name": "worktree-card-agents-expansion-state.ts",
+   "kind": "prod",
+   "loc": 130
+  },
+  {
+   "name": "worktree-card-compact-agent-row.tsx",
+   "kind": "prod",
+   "loc": 310
+  },
+  {
+   "name": "worktree-card-compact-agents.tsx",
+   "kind": "prod",
+   "loc": 191
+  },
+  {
+   "name": "worktree-card-details-hover-state.ts",
+   "kind": "prod",
+   "loc": 49
+  },
+  {
+   "name": "worktree-card-display-property-options.ts",
+   "kind": "prod",
+   "loc": 71
+  },
+  {
+   "name": "worktree-card-dom-events.ts",
+   "kind": "prod",
+   "loc": 9
+  },
+  {
+   "name": "worktree-card-header.tsx",
+   "kind": "prod",
+   "loc": 321
+  },
+  {
+   "name": "worktree-card-jira-issue-display.ts",
+   "kind": "prod",
+   "loc": 33
+  },
+  {
+   "name": "worktree-card-meta-row.tsx",
+   "kind": "prod",
+   "loc": 108
+  },
+  {
+   "name": "worktree-card-meta-types.ts",
+   "kind": "prod",
+   "loc": 68
+  },
+  {
+   "name": "worktree-card-model.ts",
+   "kind": "prod",
+   "loc": 117
+  },
+  {
+   "name": "worktree-card-parent-content.tsx",
+   "kind": "prod",
+   "loc": 171
+  },
+  {
+   "name": "worktree-card-pr-display.ts",
+   "kind": "prod",
+   "loc": 163
+  },
+  {
+   "name": "worktree-card-presentation.tsx",
+   "kind": "prod",
+   "loc": 293
+  },
+  {
+   "name": "worktree-card-secondary-rows.tsx",
+   "kind": "prod",
+   "loc": 122
+  },
+  {
+   "name": "worktree-card-status-inputs.ts",
+   "kind": "prod",
+   "loc": 87
+  },
+  {
+   "name": "worktree-card-surface.tsx",
+   "kind": "prod",
+   "loc": 138
+  },
+  {
+   "name": "worktree-card-title-display.ts",
+   "kind": "prod",
+   "loc": 71
+  },
+  {
+   "name": "worktree-issue-displacement.ts",
+   "kind": "prod",
+   "loc": 48
+  },
+  {
+   "name": "worktree-review-helpers.tsx",
+   "kind": "prod",
+   "loc": 80
+  }
+ ],
+ "test": [
+  {
+   "name": "WorktreeCard.affiliate-list-mode.test.tsx",
+   "kind": "test",
+   "loc": 231
+  },
+  {
+   "name": "WorktreeCard.compact-hover.test.tsx",
+   "kind": "test",
+   "loc": 838
+  },
+  {
+   "name": "WorktreeCard.compact-ports-hover-independence.test.tsx",
+   "kind": "test",
+   "loc": 256
+  },
+  {
+   "name": "WorktreeCard.hosted-review-refresh.test.tsx",
+   "kind": "test",
+   "loc": 172
+  },
+  {
+   "name": "WorktreeCard.lineage.test.tsx",
+   "kind": "test",
+   "loc": 144
+  },
+  {
+   "name": "WorktreeCard.merged-pr-display.test.tsx",
+   "kind": "test",
+   "loc": 249
+  },
+  {
+   "name": "WorktreeCard.pinned-repo-icon.test.tsx",
+   "kind": "test",
+   "loc": 176
+  },
+  {
+   "name": "WorktreeCard.pr-display.test.tsx",
+   "kind": "test",
+   "loc": 886
+  },
+  {
+   "name": "WorktreeCard.quick-actions.test.tsx",
+   "kind": "test",
+   "loc": 540
+  },
+  {
+   "name": "WorktreeCard.ssh-reconnect-prompt.test.tsx",
+   "kind": "test",
+   "loc": 304
+  },
+  {
+   "name": "WorktreeCard.test.ts",
+   "kind": "test",
+   "loc": 72
+  },
+  {
+   "name": "WorktreeCardAgents.activation.test.tsx",
+   "kind": "test",
+   "loc": 463
+  },
+  {
+   "name": "WorktreeCardAgents.expansion-remount.test.tsx",
+   "kind": "test",
+   "loc": 223
+  },
+  {
+   "name": "WorktreeCardAgents.send-target.test.tsx",
+   "kind": "test",
+   "loc": 238
+  },
+  {
+   "name": "WorktreeCardAgents.test.tsx",
+   "kind": "test",
+   "loc": 900
+  },
+  {
+   "name": "WorktreeCardAutomationDetailSection.test.tsx",
+   "kind": "test",
+   "loc": 126
+  },
+  {
+   "name": "WorktreeCardDisplayMenuSection.test.tsx",
+   "kind": "test",
+   "loc": 180
+  },
+  {
+   "name": "WorktreeCardMeta.interaction.test.tsx",
+   "kind": "test",
+   "loc": 399
+  },
+  {
+   "name": "WorktreeCardMeta.test.tsx",
+   "kind": "test",
+   "loc": 383
+  },
+  {
+   "name": "WorktreeCardPorts.test.tsx",
+   "kind": "test",
+   "loc": 56
+  },
+  {
+   "name": "WorktreeCardSshHostControl.test.tsx",
+   "kind": "test",
+   "loc": 377
+  },
+  {
+   "name": "WorktreeCardStatusSlot.test.tsx",
+   "kind": "test",
+   "loc": 478
+  },
+  {
+   "name": "WorktreeContextMenu.delete-shortcut.test.tsx",
+   "kind": "test",
+   "loc": 244
+  },
+  {
+   "name": "WorktreeContextMenu.react185-bystander.test.tsx",
+   "kind": "test",
+   "loc": 234
+  },
+  {
+   "name": "WorktreeContextMenu.test.ts",
+   "kind": "test",
+   "loc": 316
+  },
+  {
+   "name": "WorktreeDeveloperMenu.test.tsx",
+   "kind": "test",
+   "loc": 58
+  },
+  {
+   "name": "WorktreeDeveloperMenuReveal.test.tsx",
+   "kind": "test",
+   "loc": 140
+  },
+  {
+   "name": "WorktreeMetaDialog.test.tsx",
+   "kind": "test",
+   "loc": 636
+  },
+  {
+   "name": "WorktreeOpenInMenu.test.tsx",
+   "kind": "test",
+   "loc": 310
+  },
+  {
+   "name": "WorktreeTitleInlineRename.begin-editing.test.tsx",
+   "kind": "test",
+   "loc": 227
+  },
+  {
+   "name": "WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+   "kind": "test",
+   "loc": 200
+  },
+  {
+   "name": "WorktreeTitleInlineRename.test.tsx",
+   "kind": "test",
+   "loc": 80
+  },
+  {
+   "name": "worktree-card-agent-summary.test.ts",
+   "kind": "test",
+   "loc": 105
+  },
+  {
+   "name": "worktree-card-compact-agent-row.stable-message.test.tsx",
+   "kind": "test",
+   "loc": 112
+  },
+  {
+   "name": "worktree-card-details-hover-state.test.tsx",
+   "kind": "test",
+   "loc": 108
+  },
+  {
+   "name": "worktree-card-dom-events.test.ts",
+   "kind": "test",
+   "loc": 29
+  },
+  {
+   "name": "worktree-card-jira-issue-display.test.ts",
+   "kind": "test",
+   "loc": 60
+  },
+  {
+   "name": "worktree-card-pr-display.test.ts",
+   "kind": "test",
+   "loc": 211
+  },
+  {
+   "name": "worktree-card-status-inputs.test.ts",
+   "kind": "test",
+   "loc": 222
+  },
+  {
+   "name": "worktree-card-title-display.test.ts",
+   "kind": "test",
+   "loc": 132
+  },
+  {
+   "name": "worktree-review-helpers.test.tsx",
+   "kind": "test",
+   "loc": 128
+  }
+ ]
+}

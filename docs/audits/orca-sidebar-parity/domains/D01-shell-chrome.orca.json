@@ -1,0 +1,2291 @@
+{
+  "domain": "D01-shell-chrome",
+  "rows": [
+    {
+      "id": "D01-001",
+      "capability": "Renderização e controle de dimensão da casca do sidebar com persistência de largura e limites de redimensionamento",
+      "surface": "casca externa do sidebar (Sidebar Root Shell)",
+      "trigger": "montagem do sidebar, alteração de sidebarOpen no store, redimensionamento via drag",
+      "behaviors": [
+        "Renderiza container raiz com data-sidebar condicionado a sidebarOpen",
+        "Aplica largura persistida useAppStore.sidebarWidth (default 320px)",
+        "Sincroniza variável CSS --workspace-sidebar-live-width durante o drag",
+        "Impõe limites estritos de largura mínima (220px) e máxima (500px)",
+        "Atualiza largura persistida ao finalizar redimensionamento via setSidebarWidth"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sidebarOpen",
+        "useAppStore.sidebarWidth",
+        "useAppStore.setSidebarWidth"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/Sidebar.tsx:1",
+        "components/sidebar/index.tsx:33-35",
+        "components/sidebar/index.tsx:51-53",
+        "components/sidebar/index.tsx:112-114",
+        "components/sidebar/index.tsx:242"
+      ],
+      "tests": [
+        "components/sidebar/Sidebar.test.tsx:143 :: describe Sidebar",
+        "components/sidebar/SidebarHeader.test.tsx:285 :: keeps the activity bell and actions on one row at the default sidebar width",
+        "components/sidebar/SidebarHeader.test.tsx:299 :: keeps the same actions on one row at compact width",
+        "components/sidebar/SidebarHeader.test.tsx:339 :: renders the same actions on both sides of the old wide-layout breakpoint"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-002",
+      "capability": "Customização temática visual do sidebar com adaptação ao terminal e suporte a tema claro/escuro",
+      "surface": "superfície do sidebar e gavetas adjacentes (WorkspaceKanbanDrawer, AgentDashboardDrawer)",
+      "trigger": "carregamento de configurações de aparência ou alternância dark/light do sistema",
+      "behaviors": [
+        "Calcula variáveis CSS via resolveLeftSidebarStyleVariables(settings, systemPrefersDark)",
+        "Injeta custom properties --worktree-sidebar, --worktree-sidebar-foreground e --worktree-sidebar-border quando no modo match-terminal",
+        "Propaga leftSidebarStyle para gavetas acopladas (Kanban Drawer e Agent Dashboard Drawer)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings.leftSidebarAppearanceMode",
+        "useAppStore.settings.terminalColorOverrides",
+        "useSystemPrefersDark()"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:18-19",
+        "components/sidebar/index.tsx:93-96",
+        "components/sidebar/index.tsx:243"
+      ],
+      "tests": [
+        "components/sidebar/Sidebar.test.tsx:155 :: applies left sidebar appearance variables to the workspace sidebar surface"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-003",
+      "capability": "Alça de redimensionamento horizontal do sidebar com feedback de hover/active e cursor dedicado",
+      "surface": "borda direita do sidebar",
+      "trigger": "hover do mouse, mousedown, drag ou duplo clique na borda de redimensionamento",
+      "behaviors": [
+        "Renderiza alça absoluta sobreposta à junção com o terminal (WORKTREE_SIDEBAR_RESIZE_HANDLE_CLASS_NAME)",
+        "Aplica linha de feedback com transição de cor (WORKTREE_SIDEBAR_RESIZE_HANDLE_LINE_CLASS_NAME, group-hover:bg-ring/50, group-active:bg-ring)",
+        "Utiliza cursor col-resize e gerencia captura de pointer através de useSidebarResize",
+        "Suporta reset para largura padrão ao receber duplo clique"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarResize"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:4",
+        "components/sidebar/index.tsx:37-40",
+        "components/sidebar/index.tsx:245"
+      ],
+      "tests": [
+        "components/sidebar/Sidebar.test.tsx:26 :: vi.mock('@/hooks/useSidebarResize')"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-004",
+      "capability": "Drop de diretórios nativos sobre a superfície do sidebar para adição direta de projeto",
+      "surface": "superfície completa do sidebar",
+      "trigger": "drag & drop de pastas do sistema de arquivos sobre o sidebar",
+      "behaviors": [
+        "Captura eventos de drag nativo através de useSidebarProjectDrop",
+        "Exibe overlay translúcido com borda tracejada e ícone FolderPlus ('Drop folder to add project') quando affordance.visible é true",
+        "Inicia fluxo de importação e criação de projeto ao soltar a pasta"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarProjectDrop"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:13",
+        "components/sidebar/index.tsx:15",
+        "components/sidebar/index.tsx:97",
+        "components/sidebar/index.tsx:250-258"
+      ],
+      "tests": [
+        "components/sidebar/Sidebar.test.tsx:81 :: vi.mock('./useSidebarProjectDrop')"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-005",
+      "capability": "Comutação de corpo principal do sidebar entre Workspaces e Activity de Agentes",
+      "surface": "área central do sidebar (Sidebar Body Switcher)",
+      "trigger": "clique no botão de atividades (sino) ou chamada programática de setSidebarBody",
+      "behaviors": [
+        "Renderiza WorktreeList quando sidebarBody === 'workspaces'",
+        "Carrega sob demanda (lazy chunk) e renderiza SidebarAgentsList quando sidebarBody === 'agents'",
+        "Preserva estado de colapso de grupos (agentsCollapsedGroupKeys) e posição de rolagem (agentsScrollTopRef) durante a troca de abas",
+        "Não redefine visualização de agentes durante a hidratação de configurações do app"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sidebarBody",
+        "useAppStore.setSidebarBody",
+        "useAppStore.settings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:24",
+        "components/sidebar/index.tsx:57",
+        "components/sidebar/index.tsx:65-88",
+        "components/sidebar/index.tsx:262-273",
+        "components/sidebar/SidebarHeader.tsx:23-27,83"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:203 :: opens agent activity from the bell button",
+        "components/sidebar/SidebarHeader.test.tsx:237 :: turns off agent activity from the active bell button",
+        "components/sidebar/SidebarHeader.test.tsx:317 :: does not reset a persisted agents body before settings hydrate"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-006",
+      "capability": "Gating de inicialização para varredura de repositórios e proteção contra oscilação de status de runtime",
+      "surface": "orquestrador de dados do sidebar",
+      "trigger": "alteração na lista de repositórios ou alteração no status de ambientes de execução",
+      "behaviors": [
+        "Bloqueia fetchAllWorktrees durante o processo inicial de startup hydration (startupWorktreeRefreshCompleted = false)",
+        "Dispara varredura total somente quando a quantidade de repositórios realmente é modificada após a inicialização",
+        "Não dispara varreduras desnecessárias quando o status de conexão de runtimes oscila rapidamente"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.startupWorktreeRefreshCompleted",
+        "useAppStore.fetchAllWorktrees",
+        "useAppStore.runtimeStatusByEnvironmentId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/index.tsx:54-55",
+        "components/sidebar/index.tsx:89",
+        "components/sidebar/index.tsx:116-125"
+      ],
+      "tests": [
+        "components/sidebar/Sidebar.test.tsx:182 :: does not start a full worktree scan while the startup session is hydrating",
+        "components/sidebar/Sidebar.test.tsx:206 :: does not scan all hosts when runtime connection status flaps"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-007",
+      "capability": "Exibição do título localizado da seção no cabeçalho conforme modo de agrupamento",
+      "surface": "cabeçalho do sidebar (SidebarHeader)",
+      "trigger": "renderização do cabeçalho ou alteração do store groupBy",
+      "behaviors": [
+        "Renderiza 'Projects' (dashboard.sidebar.projects) quando groupBy === 'repo'",
+        "Renderiza 'Workspaces' (dashboard.sidebar.workspaces) nos demais modos de agrupamento",
+        "Aplica truncamento de texto para suportar localizações longas sem quebrar o layout da linha",
+        "Define data-sidebar-section-title ('projects' ou 'workspaces')"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.groupBy",
+        "useTranslation()"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarHeader.tsx:2-4",
+        "components/sidebar/SidebarHeader.tsx:22",
+        "components/sidebar/SidebarHeader.tsx:24",
+        "components/sidebar/SidebarHeader.tsx:39-42",
+        "components/sidebar/SidebarHeader.tsx:50-59"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:255 :: uses the legacy title based on workspace grouping"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-008",
+      "capability": "Botão de alternância da visualização de atividades com indicação de estado e tooltip dinâmico",
+      "surface": "cabeçalho do sidebar (SidebarHeader)",
+      "trigger": "clique no botão de sino (Bell)",
+      "behaviors": [
+        "Exibe botão ghost icon-xs com ícone Bell",
+        "Apresenta tooltip e aria-label 'View activity' ou 'Turn off activity view' conforme estado ativo",
+        "Aplica aria-pressed={agentsViewActive} e destaque visual 'bg-primary/15 text-primary'",
+        "Comuta o estado de sidebarBody entre 'workspaces' e 'agents'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sidebarBody",
+        "useAppStore.setSidebarBody"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarHeader.tsx:9",
+        "components/sidebar/SidebarHeader.tsx:27",
+        "components/sidebar/SidebarHeader.tsx:43-46",
+        "components/sidebar/SidebarHeader.tsx:73-93"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:203 :: opens agent activity from the bell button",
+        "components/sidebar/SidebarHeader.test.tsx:237 :: turns off agent activity from the active bell button"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-009",
+      "capability": "Popover introdutório para usuários migrados da visualização experimental de Agents",
+      "surface": "cabeçalho do sidebar ancorado ao botão de sino",
+      "trigger": "renderização para usuários com agentsSidebarMigratedFromExperimental === true e agentsSidebarIntroShown === false",
+      "behaviors": [
+        "Abre popover com título 'Agents are easier to find' e ícone Sparkles",
+        "Explica a transição para aba dedicada preservando filtros e atividades",
+        "Ao clicar em 'Got it' ou fechar o popover, persiste agentsSidebarIntroShown = true",
+        "Impede auto-focus agressivo para não roubar o foco do usuário (onOpenAutoFocus preventDefault)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings.agentsSidebarIntroShown",
+        "useAppStore.settings.agentsSidebarMigratedFromExperimental",
+        "useAppStore.updateSettings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarHeader.tsx:7",
+        "components/sidebar/SidebarHeader.tsx:9",
+        "components/sidebar/SidebarHeader.tsx:28-38",
+        "components/sidebar/SidebarHeader.tsx:61-68",
+        "components/sidebar/SidebarHeader.tsx:94-124"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:220 :: shows the Agents introduction only for migrated users and never offers a hide action"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-010",
+      "capability": "Alvo de teletransporte (Portal Target) para controles da visualização de atividades de agentes",
+      "surface": "cabeçalho do sidebar (SidebarHeader)",
+      "trigger": "renderização do cabeçalho quando a visualização de agentes está ativa",
+      "behaviors": [
+        "Monta container div com ref={activityOptionsTarget} ao lado dos botões de ação",
+        "Permite que o componente filho SidebarAgentsList injete filtros de agentes no cabeçalho",
+        "Desmonta o alvo quando em modo workspaces"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sidebarBody"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarHeader.tsx:14",
+        "components/sidebar/SidebarHeader.tsx:19",
+        "components/sidebar/SidebarHeader.tsx:125-127"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:133 :: describe SidebarHeader"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-011",
+      "capability": "Botão 'Add project' com abertura de modal e preservação do Workspace Board",
+      "surface": "cluster de ações do cabeçalho do sidebar (SidebarHeaderActions)",
+      "trigger": "clique no botão com ícone FolderPlus",
+      "behaviors": [
+        "Renderiza botão com ícone FolderPlus e tooltip 'Add project'",
+        "Aciona useAppStore.openModal('add-repo') ao clicar",
+        "Define data-workspace-board-preserve-open para manter gaveta do board aberta",
+        "Omitido da interface quando a visualização de agentes está ativa"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.openModal"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-header-actions.tsx:2",
+        "components/sidebar/sidebar-header-actions.tsx:11-39",
+        "components/sidebar/sidebar-header-actions.tsx:98"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:162 :: reaches Add project and New workspace in one click each, with no menu",
+        "components/sidebar/SidebarHeader.test.tsx:179 :: keeps the create button rightmost so the frequent action stays where it was"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-012",
+      "capability": "Botão 'New workspace' com atalho primário de teclado e integração com tour contextual",
+      "surface": "cluster de ações do cabeçalho do sidebar (SidebarHeaderActions)",
+      "trigger": "clique no botão com ícone Plus ou atalho workspace.create (Mod+N)",
+      "behaviors": [
+        "Renderiza botão com ícone Plus e tooltip 'New workspace'",
+        "Exibe label do atalho primário formatado (formatOptionalPrimaryShortcutLabel('workspace.create'))",
+        "Aciona openWorkspaceCreationComposerWithTourHandoff()",
+        "Define data-contextual-tour-target='workspace-create-control'",
+        "Permanece clicável e funcional mesmo com zero repositórios cadastrados"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.keybindings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-header-actions.tsx:2",
+        "components/sidebar/sidebar-header-actions.tsx:6",
+        "components/sidebar/sidebar-header-actions.tsx:8",
+        "components/sidebar/sidebar-header-actions.tsx:41-80",
+        "components/sidebar/sidebar-header-actions.tsx:101"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:134 :: keeps New workspace clickable with zero projects, since the composer adds the first one",
+        "components/sidebar/SidebarHeader.test.tsx:148 :: opens the composer the same way once projects exist",
+        "components/sidebar/SidebarHeader.test.tsx:190 :: advertises the workspace shortcut on the create tooltip, and omits it when unassigned"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-013",
+      "capability": "Layout e agrupamento de ações do cabeçalho com acomodação de larguras compactas",
+      "surface": "cabeçalho do sidebar (SidebarHeaderActions)",
+      "trigger": "renderização do cabeçalho em diferentes larguras de sidebar",
+      "behaviors": [
+        "Agrupa SidebarWorkspaceOptionsMenu, AddProjectButton e NewWorkspaceButton em container shrink-0",
+        "Mantém layout em linha única sem quebra (flex-nowrap) tanto na largura padrão quanto na compacta (220-235px)",
+        "Oculta opções de workspace e adição de projeto quando agentsViewActive é true"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-header-actions.tsx:82-104"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:273 :: drops both project actions in the agents view, which lists activity, not projects",
+        "components/sidebar/SidebarHeader.test.tsx:285 :: keeps the activity bell and actions on one row at the default sidebar width",
+        "components/sidebar/SidebarHeader.test.tsx:299 :: keeps the same actions on one row at compact width",
+        "components/sidebar/SidebarHeader.test.tsx:339 :: renders the same actions on both sides of the old wide-layout breakpoint"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-014",
+      "capability": "Overlay flutuante de ações de cabeçalho de projeto com supressão de cursor drag",
+      "surface": "cabeçalho de projeto na lista de workspaces (ProjectHeaderActions)",
+      "trigger": "hover sobre a linha de projeto, foco via teclado ou menu acionado",
+      "behaviors": [
+        "Aplica posicionamento absoluto flutuante no desktop (PROJECT_HEADER_ACTIONS_CLASS_NAME) para não reservar largura de título",
+        "Ativa pointer-events apenas em group-hover, focus-visible ou quando botão tem data-state=open",
+        "Aplica cursor pointer e self-stretch para evitar que gaps entre botões mostrem o cursor de drag do projeto"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/ProjectHeaderActions.tsx:9-30"
+      ],
+      "tests": [
+        "components/sidebar/ProjectHeaderActions.test.tsx:22 :: overlays hover-only controls instead of reserving project title width"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-015",
+      "capability": "Classes de animação e revelação de largura zero para botões de cabeçalho de repositório",
+      "surface": "botões de ação nos cabeçalhos de repositório",
+      "trigger": "hover sobre o grupo de repositório, foco de teclado ou menu aberto",
+      "behaviors": [
+        "Define REPO_HEADER_ACTION_REVEAL_CLASS com max-width 0 e opacidade 0 por padrão",
+        "Expande para max-w-5 e opacidade 100 em focus, group-hover ou data-state=open",
+        "Combina transição de margem, opacidade, cor de fundo e tamanho em REPO_HEADER_ACTION_BUTTON_CLASS"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/repo-header-action-button-class.ts:1-4"
+      ],
+      "tests": [
+        "components/sidebar/ProjectHeaderActions.test.tsx:9 :: describe ProjectHeaderActions"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-016",
+      "capability": "Botão de busca de worktrees e abas no SidebarNav com revelação de atalho em hover/foco",
+      "surface": "topo da barra de navegação do sidebar (SidebarNav)",
+      "trigger": "clique no botão Search ou acionamento do atalho worktree.palette",
+      "behaviors": [
+        "Renderiza botão com ícone Search, label 'Search' e aria-label 'Search worktrees and browser tabs'",
+        "Abre modal 'worktree-palette' ao clicar",
+        "Exibe chips de atalho de teclado (useShortcutKeyComboDetails('worktree.palette')) revelados apenas em hover ou focus-within",
+        "Define target de tour contextual data-contextual-tour-target='sidebar-navigation'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.openModal",
+        "useShortcutKeyComboDetails('worktree.palette')"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarNav.tsx:2",
+        "components/sidebar/SidebarNav.tsx:6-7",
+        "components/sidebar/SidebarNav.tsx:57",
+        "components/sidebar/SidebarNav.tsx:90-121"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:402 :: places the worktree palette search above the sidebar nav rows",
+        "components/sidebar/SidebarNav.test.tsx:419 :: hides the worktree palette shortcut until the search field is hovered or focused"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-017",
+      "capability": "Entrada do checklist de Onboarding (Setup Guide) com anel de progresso e persistência",
+      "surface": "barra de navegação do sidebar (SetupGuideSidebarEntry)",
+      "trigger": "montagem quando critérios de visibilidade são atendidos; clique do usuário",
+      "behaviors": [
+        "Verifica visibilidade via shouldShowSetupGuideEntry (ready && !setupComplete && !dismissed)",
+        "Garante prontidão via getSetupGuideSidebarEntryReady(persistedUIReady, setupProgress.ready)",
+        "Renderiza anel de progresso SetupGuideProgressRing com contagem de etapas concluídas",
+        "Abre modal 'setup-guide' focado na primeira etapa incompleta com telemetrySource='sidebar'",
+        "Menu de contexto permite ocultar a entrada persistindo setupGuideSidebarDismissed = true",
+        "Mantém o elemento montado durante atualizações transitórias de sondagem de setup (lastVisibleProgressRef)",
+        "Define target de tour data-contextual-tour-target='setup-guide-entry'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.openModal",
+        "useAppStore.activeModal",
+        "useAppStore.persistedUIReady",
+        "useAppStore.setupGuideSidebarDismissed",
+        "useAppStore.setSetupGuideSidebarDismissed",
+        "useSetupGuideProgress(true, false, false)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SetupGuideSidebarEntry.tsx:20-124",
+        "components/sidebar/SidebarNav.tsx:12",
+        "components/sidebar/SidebarNav.tsx:19",
+        "components/sidebar/SidebarNav.tsx:122"
+      ],
+      "tests": [
+        "components/sidebar/SetupGuideSidebarEntry.test.tsx:135 :: does not render before persisted UI hydration is ready",
+        "components/sidebar/SetupGuideSidebarEntry.test.tsx:141 :: does not render before setup progress readiness settles",
+        "components/sidebar/SetupGuideSidebarEntry.test.tsx:147 :: does not flash when agent capability completion is still unresolved",
+        "components/sidebar/SetupGuideSidebarEntry.test.tsx:162 :: does not render after setup is complete and progress is ready",
+        "components/sidebar/SetupGuideSidebarEntry.test.tsx:168 :: renders for fresh active users when only the browser step is incomplete",
+        "components/sidebar/SetupGuideSidebarEntry.test.tsx:174 :: does not render when the sidebar entry was dismissed with only browser incomplete",
+        "components/sidebar/SetupGuideSidebarEntry.test.tsx:181 :: renders after persisted UI and setup progress are ready when setup is incomplete",
+        "components/sidebar/SetupGuideSidebarEntry.test.tsx:185 :: keeps the visible entry mounted during transient setup progress refreshes",
+        "components/sidebar/SidebarNav.test.tsx:488 :: shows the setup guide entry only after readiness, before completion, and before explicit hide",
+        "components/sidebar/SidebarNav.test.tsx:503 :: requires both persisted UI and setup progress readiness before showing setup guide entry"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-018",
+      "capability": "Botão de navegação para Tarefas com prefetch antecipado e tolerância a estado vazio",
+      "surface": "barra de navegação do sidebar (SidebarTaskNavButton)",
+      "trigger": "hover/foco no botão Tasks, clique do usuário ou menu de contexto",
+      "behaviors": [
+        "Exibe botão com ícone List e rótulo 'Tasks' quando settings.showTasksButton !== false",
+        "Dispara prefetchWorkItems em pointerEnter ou focus para o primeiro repositório git ativo",
+        "Abre a página de tarefas ao clicar (openTaskPage())",
+        "Permanece habilitado mesmo com zero repositórios git para permitir explicação na página de tarefas",
+        "Menu de contexto permite ocultar o botão persistindo showTasksButton = false",
+        "Define target de tour data-contextual-tour-target='sidebar-tasks'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeView",
+        "useAppStore.settings.showTasksButton",
+        "useAppStore.repos",
+        "useRepoMap()",
+        "useAppStore.activeRepoId",
+        "useAppStore.prefetchWorkItems",
+        "useAppStore.openTaskPage",
+        "useAppStore.updateSettings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarTaskNavButton.tsx:25-34",
+        "components/sidebar/SidebarTaskNavButton.tsx:57-78",
+        "components/sidebar/SidebarTaskNavButton.tsx:122-186",
+        "components/sidebar/SidebarTaskNavButton.tsx:233-236",
+        "components/sidebar/SidebarNav.tsx:13",
+        "components/sidebar/SidebarNav.tsx:123"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:454 :: hides available Tasks from its sidebar context menu",
+        "components/sidebar/SidebarNav.test.tsx:466 :: keeps Tasks enabled with no git repos so the page can explain the empty state"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-019",
+      "capability": "Atalhos diretos para provedores de tarefas (GitHub, GitLab, Linear, Jira) revelados em hover",
+      "surface": "lateral direita do botão Tasks (SidebarTaskNavButton)",
+      "trigger": "hover do mouse sobre a linha de tarefas ou foco de teclado",
+      "behaviors": [
+        "Renderiza botões de atalho individuais (TaskProviderShortcut) para provedores habilitados em visibleTaskProviders",
+        "Suporta ícones de GitHub (Github), GitLab (Gitlab), Linear (LinearIcon) e Jira (JiraIcon)",
+        "Ao clicar, abre a página de tarefas filtrada diretamente para a fonte correspondente (openTaskPage({ taskSource }))",
+        "Posicionado fora do elemento button pai para manter acessibilidade e navegabilidade via teclado (tabIndex 0)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "visibleTaskProviders",
+        "useAppStore.openTaskPage"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarTaskNavButton.tsx:2-4",
+        "components/sidebar/SidebarTaskNavButton.tsx:36-55",
+        "components/sidebar/SidebarTaskNavButton.tsx:186-231"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:437 :: keeps task source shortcuts keyboard-reachable and revealed on Tasks row hover or focus"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-020",
+      "capability": "Detecção de disponibilidade de provedores de tarefas via preflight e status Linear",
+      "surface": "controlador de estado de provedores (SidebarTaskNavButton)",
+      "trigger": "montagem do botão de tarefas ou alteração de contexto de preflight",
+      "behaviors": [
+        "Dispara refreshPreflightStatus() e checkLinearConnection() se os status não estiverem checados ou atualizados",
+        "Normaliza configurações do usuário (normalizeVisibleTaskProviders)",
+        "Restaura provedor default disponível considerando instalação do CLI glab e conexão Linear",
+        "Resolve provedor de tarefas padrão efetivo (resolveVisibleTaskProvider)"
+      ],
+      "background_activity": "verificação assíncrona sob demanda no mount se preflightStatus ou linearStatus estiverem desatualizados",
+      "state_inputs": [
+        "useAppStore.preflightStatus",
+        "useAppStore.preflightStatusChecked",
+        "useAppStore.preflightStatusContextKey",
+        "useAppStore.refreshPreflightStatus",
+        "useAppStore.linearStatus",
+        "useAppStore.linearStatusChecked",
+        "useAppStore.checkLinearConnection",
+        "useAppStore.settings.visibleTaskProviders",
+        "useAppStore.settings.defaultTaskSource"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarTaskNavButton.tsx:11-12",
+        "components/sidebar/SidebarTaskNavButton.tsx:20-23",
+        "components/sidebar/SidebarTaskNavButton.tsx:79-120"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:203 :: describe SidebarNav"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-021",
+      "capability": "Botão de navegação para Artifacts com destaque ativo e menu de contexto",
+      "surface": "barra de navegação do sidebar (SidebarNav)",
+      "trigger": "clique no botão Artifacts ou menu de contexto",
+      "behaviors": [
+        "Exibe botão condicionado a shouldShowArtifactsButton (settings.showArtifactsButton === true, default false)",
+        "Exibe ícone Files e label 'Artifacts'",
+        "Aplica estilo ativo e aria-current='page' quando activeView === 'artifacts'",
+        "Aciona openArtifactsPage() ao clicar",
+        "Menu de contexto permite ocultar via updateSettings({ showArtifactsButton: false })"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeView",
+        "useAppStore.settings.showArtifactsButton",
+        "useAppStore.openArtifactsPage",
+        "useAppStore.updateSettings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarNav.tsx:2",
+        "components/sidebar/SidebarNav.tsx:33-37",
+        "components/sidebar/SidebarNav.tsx:60",
+        "components/sidebar/SidebarNav.tsx:68",
+        "components/sidebar/SidebarNav.tsx:72",
+        "components/sidebar/SidebarNav.tsx:81-83",
+        "components/sidebar/SidebarNav.tsx:124-152"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:273 :: hides the Artifacts entry by default for older settings",
+        "components/sidebar/SidebarNav.test.tsx:280 :: opens Artifacts from the sidebar",
+        "components/sidebar/SidebarNav.test.tsx:291 :: hides Artifacts from its context menu"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-022",
+      "capability": "Botão de navegação para Skills com destaque ativo e menu de contexto",
+      "surface": "barra de navegação do sidebar (SidebarNav)",
+      "trigger": "clique no botão Skills ou menu de contexto",
+      "behaviors": [
+        "Exibe botão condicionado a shouldShowSkillsButton (settings.showSkillsButton === true, default false)",
+        "Exibe ícone BookOpen e label 'Skills'",
+        "Aplica estilo ativo e aria-current='page' quando activeView === 'skills'",
+        "Aciona openSkillsPage() ao clicar",
+        "Menu de contexto permite ocultar via updateSettings({ showSkillsButton: false })"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeView",
+        "useAppStore.settings.showSkillsButton",
+        "useAppStore.openSkillsPage",
+        "useAppStore.updateSettings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarNav.tsx:2",
+        "components/sidebar/SidebarNav.tsx:39-43",
+        "components/sidebar/SidebarNav.tsx:61",
+        "components/sidebar/SidebarNav.tsx:69",
+        "components/sidebar/SidebarNav.tsx:73",
+        "components/sidebar/SidebarNav.tsx:84-86",
+        "components/sidebar/SidebarNav.tsx:153-181"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:203 :: describe SidebarNav"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-023",
+      "capability": "Botão de navegação para Automations com destaque ativo e menu de contexto",
+      "surface": "barra de navegação do sidebar (SidebarNav)",
+      "trigger": "clique no botão Automations ou menu de contexto",
+      "behaviors": [
+        "Exibe botão condicionado a shouldShowAutomationsButton (settings.showAutomationsButton !== false, default true)",
+        "Exibe ícone CalendarClock e label 'Automations'",
+        "Aplica estilo ativo e aria-current='page' quando activeView === 'automations'",
+        "Aciona openAutomationsPage() ao clicar",
+        "Menu de contexto permite ocultar via updateSettings({ showAutomationsButton: false })"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeView",
+        "useAppStore.settings.showAutomationsButton",
+        "useAppStore.openAutomationsPage",
+        "useAppStore.updateSettings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarNav.tsx:2",
+        "components/sidebar/SidebarNav.tsx:27-31",
+        "components/sidebar/SidebarNav.tsx:58",
+        "components/sidebar/SidebarNav.tsx:66",
+        "components/sidebar/SidebarNav.tsx:70",
+        "components/sidebar/SidebarNav.tsx:75-77",
+        "components/sidebar/SidebarNav.tsx:182-210"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:354 :: shows the Automations entry by default for older settings",
+        "components/sidebar/SidebarNav.test.tsx:359 :: hides the Automations entry when the sidebar setting is off",
+        "components/sidebar/SidebarNav.test.tsx:363 :: omits the Automations row when the sidebar setting is off",
+        "components/sidebar/SidebarNav.test.tsx:376 :: hides Automations from its sidebar context menu"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-024",
+      "capability": "Botão de navegação para Orca Mobile com badge onboarding e controle rápido de ocultação",
+      "surface": "barra de navegação do sidebar (SidebarNav)",
+      "trigger": "clique no botão Mobile, clique no botão inline de ocultar ou menu de contexto",
+      "behaviors": [
+        "Exibe botão condicionado a shouldShowMobileButton (settings.showMobileButton !== false, default true)",
+        "Exibe ícone Smartphone e label 'Orca Mobile'",
+        "Apresenta badge 'New' para usuários sem dispositivos pareados até a primeira visualização",
+        "Exibe botão inline EyeOff 'Hide from sidebar' com tooltip somente após o pareamento de ao menos 1 dispositivo",
+        "Ao clicar, descarta badge onboarding e aciona openMobilePage()",
+        "Menu de contexto permite ocultar via updateSettings({ showMobileButton: false })"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeView",
+        "useAppStore.settings.showMobileButton",
+        "useAppStore.openMobilePage",
+        "useAppStore.updateSettings",
+        "useMobileSidebarOnboardingBadge"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarNav.tsx:2",
+        "components/sidebar/SidebarNav.tsx:8",
+        "components/sidebar/SidebarNav.tsx:21-25",
+        "components/sidebar/SidebarNav.tsx:59",
+        "components/sidebar/SidebarNav.tsx:67",
+        "components/sidebar/SidebarNav.tsx:71",
+        "components/sidebar/SidebarNav.tsx:74",
+        "components/sidebar/SidebarNav.tsx:78-80",
+        "components/sidebar/SidebarNav.tsx:216-288",
+        "components/sidebar/mobile-sidebar-onboarding-badge.ts:1-55"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:268 :: shows the Mobile entry by default for older settings",
+        "components/sidebar/SidebarNav.test.tsx:304 :: hides the Mobile entry when the sidebar setting is off",
+        "components/sidebar/SidebarNav.test.tsx:333 :: shows the inline hide control only once a device is paired",
+        "components/sidebar/SidebarNav.test.tsx:389 :: hides Mobile from its sidebar context menu",
+        "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:64 :: does not show when the sidebar button is hidden",
+        "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:68 :: shows only while enabled and undismissed",
+        "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:73 :: marks a paired device after shared mobile devices load",
+        "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:84 :: shows the badge after shared mobile devices load empty",
+        "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:93 :: does not show the badge on a failed load and recovers on window focus"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-025",
+      "capability": "Menu de contexto reutilizável para ocultação de entradas do sidebar",
+      "surface": "menu de contexto de itens do SidebarNav (HideSidebarMenu)",
+      "trigger": "clique com botão direito em itens configuráveis de navegação",
+      "behaviors": [
+        "Renderiza ContextMenuContent contendo ContextMenuItem com ícone EyeOff",
+        "Apresenta texto localizado 'Hide from sidebar' (auto.components.sidebar.SidebarNav.d599269755)",
+        "Aciona callback onHide ao selecionar"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-nav-controls.tsx:1-15"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:376 :: hides Automations from its sidebar context menu",
+        "components/sidebar/SidebarNav.test.tsx:389 :: hides Mobile from its sidebar context menu"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-026",
+      "capability": "Atualização reativa de internacionalização e pseudo-localização na barra de navegação",
+      "surface": "componente SidebarNav",
+      "trigger": "alteração de idioma em tempo de execução via i18n ou ativação de pseudo-localização",
+      "behaviors": [
+        "Assina hook useTranslation() para reagir instantaneamente a mudanças de locale",
+        "Atualiza textos de navegação (Automations, Orca Mobile, etc.) sem exigir remontagem da interface"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useTranslation()"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarNav.tsx:3",
+        "components/sidebar/SidebarNav.tsx:15",
+        "components/sidebar/SidebarNav.tsx:54-56"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:308 :: updates localized labels when the language changes after mount",
+        "components/sidebar/SidebarNav.test.tsx:322 :: updates labels when pseudo-localization is enabled after mount"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-027",
+      "capability": "Entrada do Agent Dashboard com contadores agregados por bucket de estado",
+      "surface": "barra de navegação do sidebar (AgentDashboardSidebarEntry)",
+      "trigger": "renderização quando experimentalAgentDashboardPopout === true",
+      "behaviors": [
+        "Renderiza botão com ícone LayoutDashboard e label 'Agent Dashboard'",
+        "Exibe contadores visuais por bucket via useAgentBucketCounts:",
+        "  - Attention: ícone AgentQuestionIcon com contagem tabular",
+        "  - Working: ponto amarelo (bg-yellow-500) com contagem",
+        "  - Done: ponto esmeralda (bg-emerald-500) com contagem",
+        "  - Idle: ponto cinza (bg-neutral-500/50), exibido condicionado a experimentalAgentDashboardShowIdle",
+        "Define target de tour contextual data-contextual-tour-target='agents-sidebar'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings.experimentalAgentDashboardPopout",
+        "useAppStore.settings.experimentalAgentDashboardShowIdle",
+        "useAgentBucketCounts()"
+      ],
+      "backend_contract": [
+        "window.api.dashboard.openPopout -> src/main/ipc/dashboard-popout.ts:60"
+      ],
+      "orca_evidence": [
+        "components/sidebar/AgentDashboardSidebarEntry.tsx:1-60,91-94",
+        "components/sidebar/SidebarNav.tsx:45-49,51,65,211-215"
+      ],
+      "tests": [
+        "components/sidebar/SidebarNav.test.tsx:221 :: keeps the Agent Dashboard row unmounted while its experiment is off",
+        "components/sidebar/SidebarNav.test.tsx:228 :: mounts the Agent Dashboard row only when its experiment is enabled",
+        "components/sidebar/SidebarNav.test.tsx:241 :: uses a question glyph only for the Needs You count"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-028",
+      "capability": "Abertura do Agent Dashboard em janela destacada (Popout) ou gaveta lateral",
+      "surface": "botão do Agent Dashboard no sidebar (AgentDashboardSidebarEntry)",
+      "trigger": "clique no botão do Agent Dashboard",
+      "behaviors": [
+        "Quando experimentalAgentDashboardMode === 'popout', dispara IPC window.api.dashboard.openPopout()",
+        "Caso contrário, alterna a visibilidade da gaveta lateral setAgentDashboardDrawerOpen(!agentDashboardDrawerOpen)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings.experimentalAgentDashboardMode",
+        "useAppStore.agentDashboardDrawerOpen",
+        "useAppStore.setAgentDashboardDrawerOpen"
+      ],
+      "backend_contract": [
+        "window.api.dashboard.openPopout -> dashboardPopoutManager.openPopout"
+      ],
+      "orca_evidence": [
+        "components/sidebar/AgentDashboardSidebarEntry.tsx:64-78"
+      ],
+      "tests": [
+        "components/sidebar/Sidebar.test.tsx:230 :: closes the dashboard drawer when the dashboard experiment is disabled"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-029",
+      "capability": "Coordenação de visibilidade do Agent Dashboard Host e exclusividade mútua com Kanban",
+      "surface": "host do Agent Dashboard Drawer (AgentDashboardSidebarHost)",
+      "trigger": "fechamento do sidebar, abertura do Workspace Board ou abertura da gaveta do Dashboard",
+      "behaviors": [
+        "Fecha a gaveta do dashboard (setDrawerOpen(false)) quando sidebarOpen torna-se false",
+        "Fecha o Workspace Board (closeWorkspaceBoard()) quando a gaveta do dashboard abre",
+        "Fecha a gaveta do dashboard (setDrawerOpen(false)) quando o Workspace Board abre",
+        "Renderiza AgentDashboardDrawer acoplado ao sidebar apenas quando sidebarOpen === true"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.agentDashboardDrawerOpen",
+        "useAppStore.setAgentDashboardDrawerOpen",
+        "sidebarOpen",
+        "workspaceBoardOpen"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/AgentDashboardSidebarHost.tsx:1-43"
+      ],
+      "tests": [
+        "components/sidebar/AgentDashboardSidebarHost.test.tsx:24 :: closes the dashboard when the workspace board opens",
+        "components/sidebar/AgentDashboardSidebarHost.test.tsx:38 :: closes the workspace board when the dashboard opens",
+        "components/sidebar/AgentDashboardSidebarHost.test.tsx:62 :: clears an open dashboard when the sidebar closes"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-030",
+      "capability": "Container da barra de ferramentas inferior do sidebar com subscrição individual de i18n",
+      "surface": "rodapé do sidebar (SidebarToolbar)",
+      "trigger": "renderização do rodapé; alteração de idioma do app",
+      "behaviors": [
+        "Renderiza container fixo no rodapé com borda superior border-worktree-sidebar-border",
+        "Agrupa SidebarSettingsHelpMenu à esquerda e ScrollToCurrentWorkspaceToolbarButton / WorkspaceBoardButton à direita",
+        "Possui subscrição individual useTranslation() para garantir tradução imediata dos botões filhos"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useTranslation()"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarToolbar.tsx:1-31",
+        "components/sidebar/SidebarToolbar.tsx:72-126"
+      ],
+      "tests": [
+        "components/sidebar/SidebarToolbar.test.tsx:135 :: relabels itself when the UI language changes after mount",
+        "components/sidebar/SidebarToolbar.test.tsx:151 :: keeps account controls out of the sidebar footer",
+        "components/sidebar/Sidebar.test.tsx:144 :: anchors the setup script popup to the bottom toolbar"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-031",
+      "capability": "Botão de revelação e foco no workspace ativo da lista",
+      "surface": "barra de ferramentas inferior (ScrollToCurrentWorkspaceToolbarButton)",
+      "trigger": "clique no botão com ícone Crosshair",
+      "behaviors": [
+        "Renderiza botão ghost com ícone Crosshair e tooltip 'Reveal active workspace'",
+        "Aciona requestScrollToCurrentWorkspaceReveal() para rolar e destacar o workspace selecionado na lista"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx:1-34"
+      ],
+      "tests": [
+        "components/sidebar/SidebarToolbar.test.tsx:33 :: vi.mock('./ScrollToCurrentWorkspaceToolbarButton')"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-032",
+      "capability": "Botão de alternância e pré-visualização por drag do Workspace Board (Kanban)",
+      "surface": "barra de ferramentas inferior (SidebarToolbar)",
+      "trigger": "clique no botão Kanban ou arraste de card sobre o botão",
+      "behaviors": [
+        "Renderiza botão com ícone Kanban e aria-label 'Workspace board'",
+        "Exibe tooltip 'Workspace board' ou 'Close workspace board' conforme o estado",
+        "Aplica variante secondary quando o board está aberto ou em modo drag preview",
+        "Define data-workspace-board-trigger e data-workspace-board-preview",
+        "Aciona onWorkspaceBoardToggle() ao clicar"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "workspaceBoardOpen",
+        "workspaceBoardDragPreviewOpen"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarToolbar.tsx:2",
+        "components/sidebar/SidebarToolbar.tsx:16-19",
+        "components/sidebar/SidebarToolbar.tsx:67-70",
+        "components/sidebar/SidebarToolbar.tsx:80-120"
+      ],
+      "tests": [
+        "components/sidebar/SidebarToolbar.test.tsx:90 :: does not show the moved hint to brand-new users after their first board click"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-033",
+      "capability": "Tooltip temporário de aviso de realocação do Workspace Board para usuários antigos",
+      "surface": "tooltip do botão Kanban na barra inferior (SidebarToolbar)",
+      "trigger": "inicialização da UI após hidratação para usuários com histórico prévio de interação com o board",
+      "behaviors": [
+        "Verifica hasFeatureInteraction(featureInteractions, 'workspace-board')",
+        "Para usuários elegíveis que ainda não viram a dica, exibe automaticamente tooltip 'Workspace board moved to the bottom bar'",
+        "Persiste orca.workspaceBoardMovedHintSeen.v1 = 'true' no localStorage",
+        "Mantém tooltip aberto por 12 segundos (WORKSPACE_BOARD_MOVED_HINT_DURATION_MS) via setTimeout",
+        "Fecha o tooltip imediatamente se o usuário clicar no botão Kanban"
+      ],
+      "background_activity": "timer de 12 segundos via window.setTimeout",
+      "state_inputs": [
+        "useAppStore.persistedUIReady",
+        "useAppStore.featureInteractions"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarToolbar.tsx:10",
+        "components/sidebar/SidebarToolbar.tsx:12-13",
+        "components/sidebar/SidebarToolbar.tsx:32-65",
+        "components/sidebar/SidebarToolbar.tsx:80",
+        "components/sidebar/SidebarToolbar.tsx:104-108"
+      ],
+      "tests": [
+        "components/sidebar/SidebarToolbar.test.tsx:90 :: does not show the moved hint to brand-new users after their first board click",
+        "components/sidebar/SidebarToolbar.test.tsx:117 :: shows the moved hint once to users who had already used the workspace board"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-034",
+      "capability": "Botão de Configurações no rodapé com indicador de atalho de teclado",
+      "surface": "canto inferior esquerdo da barra de ferramentas (SidebarSettingsHelpMenu)",
+      "trigger": "clique no botão Settings ou atalho app.settings (Mod+,)",
+      "behaviors": [
+        "Renderiza botão ghost com ícone Settings e aria-label 'Settings'",
+        "Exibe tooltip com rótulo 'Settings' e componente ShortcutKeyCombo exibindo as teclas configuradas (useShortcutKeyDetails('app.settings'))",
+        "Aciona useAppStore.openSettingsPage() ao clicar"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.openSettingsPage",
+        "useShortcutKeyDetails('app.settings')"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:14",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:29-30",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:102",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:107",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:196-224"
+      ],
+      "tests": [
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:199 :: renders the settings button with correct aria-label",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:204 :: renders the settings button before the help button",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:344 :: renders shortcut keys in the settings tooltip"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-035",
+      "capability": "Menu Dropdown de Ajuda e Recursos com pré-carregamento de chunk de Feedback",
+      "surface": "canto inferior esquerdo da barra de ferramentas (SidebarSettingsHelpMenu)",
+      "trigger": "clique no botão Help (CircleHelp)",
+      "behaviors": [
+        "Renderiza botão com ícone CircleHelp e tooltip 'Help'",
+        "Abre DropdownMenu posicionado acima (side='top' align='start')",
+        "Ao abrir o menu (onOpenChange(true)), dispara preload assíncrono do módulo SidebarFeedbackDialog"
+      ],
+      "background_activity": "pré-carregamento dinâmico assíncrono de módulo ao abrir dropdown",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:4",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:42-48",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:108",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:121-129",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:225-247"
+      ],
+      "tests": [
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:194 :: renders the help button with correct aria-label",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:331 :: warms the feedback chunk when the menu opens, before Send Feedback is selected"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-036",
+      "capability": "Itens de navegação interna do menu de ajuda: Atalhos, Feedback, Marcos e Onboarding",
+      "surface": "menu de ajuda do sidebar (SidebarSettingsHelpMenu)",
+      "trigger": "seleção de itens no DropdownMenu de ajuda",
+      "behaviors": [
+        "Keyboard Shortcuts: navega para configurações de atalhos (openSettingsTarget({ pane: 'shortcuts' }), openSettingsPage())",
+        "Send Feedback: monta e exibe o modal SidebarFeedbackDialog",
+        "Milestones: exibido quando coreDoneCount < coreTotal com SetupGuideProgressRing; abre modal 'setup-guide'",
+        "Onboarding: re-executa onboarding via showOnboardingFromRenderer() com throttle de 500ms"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.openSettingsTarget",
+        "useAppStore.openSettingsPage",
+        "useAppStore.openModal",
+        "useSetupGuideProgress()"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:7",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:9",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:12",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:17",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:31-33",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:101-105",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:118-120",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:131-143",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:169-172",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:189-191",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:248-293"
+      ],
+      "tests": [
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:212 :: renders Send Feedback menu item",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:217 :: renders Keyboard Shortcuts menu item",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:222 :: renders Milestones with progress when setup is incomplete",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:228 :: hides Milestones when setup is complete",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:239 :: renders the Onboarding menu item by default"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-037",
+      "capability": "Links externos de documentação e comunidade no menu de ajuda",
+      "surface": "menu de ajuda do sidebar (SidebarSettingsHelpMenu)",
+      "trigger": "clique nos itens de links externos (Docs, Changelog, GitHub, Discord, X)",
+      "behaviors": [
+        "Abre URLs através do IPC window.api.shell.openUrl:",
+        "  - Docs: https://www.onorca.dev/docs (ícone BookOpen)",
+        "  - Changelog: https://onorca.dev/changelog (ícone ScrollText)",
+        "  - GitHub: https://github.com/stablyai/orca (ícone Github)",
+        "  - Discord: https://discord.gg/fzjDKHxv8Q (ícone Discord)",
+        "  - X: https://x.com/orca_build (ícone X)",
+        "Renderiza ícone ExternalLink à direita em cada link externo"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [
+        "window.api.shell.openUrl -> main process shell.openExternal"
+      ],
+      "orca_evidence": [
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:3",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:5-6",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:13",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:50-54",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:62-64",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:66-98",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:294-328"
+      ],
+      "tests": [
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:249 :: renders Docs link",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:254 :: renders Changelog link",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:259 :: renders GitHub link",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:264 :: renders Discord link",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:271 :: opens Discord invite through the shell bridge",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:282 :: renders X link"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-038",
+      "capability": "Verificação de atualizações com suporte a canais RC e Performance via modificadores",
+      "surface": "menu de ajuda do sidebar (SidebarSettingsHelpMenu)",
+      "trigger": "clique no item 'Check for Updates' (com suporte a Shift+clique e Cmd/Ctrl+clique)",
+      "behaviors": [
+        "Captura teclas modificadoras no evento pointerdown",
+        "Dispara window.api.updater.check(getUpdateCheckClickOptions(modifiers)):",
+        "  - Padrão: canal estável",
+        "  - Shift + clique: canal RC / prerelease (includePrerelease = true)",
+        "  - Cmd/Ctrl + clique: canal de performance (includePerfPrerelease = true)",
+        "Exibe spinner animado Loader2 durante o estado checking",
+        "Desabilita o item durante os estados checking ou downloading",
+        "Apresenta tooltip informativo de dicas de atalho no item"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.updateStatus"
+      ],
+      "backend_contract": [
+        "window.api.updater.check -> updaterManager.check"
+      ],
+      "orca_evidence": [
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:8",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:10",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:37",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:55-60",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:104",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:114",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:116",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:174-187",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:330-345"
+      ],
+      "tests": [
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:287 :: renders Check for Updates menu item",
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:294 :: passes update-check modifier options through the updater bridge"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-039",
+      "capability": "Reinicialização da aplicação (Restart Orca) com feedback visual de toast",
+      "surface": "menu de ajuda do sidebar (SidebarSettingsHelpMenu)",
+      "trigger": "clique no item 'Restart Orca'",
+      "behaviors": [
+        "Exibe toast informativo 'Restarting Orca…'",
+        "Invoca IPC window.api.app.restart()",
+        "Em caso de falha, restaura o estado e exibe toast de erro 'Couldn't restart Orca.' com a mensagem de erro",
+        "Desabilita o item enquanto o reinício está em processamento"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "isRestartingOrca"
+      ],
+      "backend_contract": [
+        "window.api.app.restart -> app.relaunch and exit"
+      ],
+      "orca_evidence": [
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:11",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:16",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:112",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:145-167",
+        "components/sidebar/SidebarSettingsHelpMenu.tsx:347-353"
+      ],
+      "tests": [
+        "components/sidebar/SidebarSettingsHelpMenu.test.tsx:244 :: renders Restart Orca by default"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-040",
+      "capability": "Diálogo modal de feedback com preenchimento automático de ambiente e validação de texto",
+      "surface": "modal de feedback (SidebarFeedbackDialog)",
+      "trigger": "abertura através do item 'Send Feedback' do menu de ajuda",
+      "behaviors": [
+        "Renderiza modal Dialog com título 'Send Feedback' e botões rápidos para GitHub Issues, Discord e X",
+        "Pré-preenche rodapé técnico assincronamente via window.api.updater.getVersion() e window.api.platform.get() (Orca version, OS, Arch, Shell)",
+        "Preserva qualquer texto digitado pelo usuário antes do carregamento da versão",
+        "Valida que existe texto digitado pelo usuário além do rodapé técnico (stripClientEnvironmentFooter) para habilitar botão Send",
+        "Permite scroll suave no diálogo em telas com altura reduzida (max-h-[calc(100vh-3rem)] overflow-y-auto)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [
+        "window.api.updater.getVersion -> getVersion",
+        "window.api.platform.get -> platformInfo",
+        "window.api.shell.openUrl -> shell.openExternal"
+      ],
+      "orca_evidence": [
+        "components/sidebar/SidebarFeedbackDialog.tsx:22",
+        "components/sidebar/SidebarFeedbackDialog.tsx:24",
+        "components/sidebar/SidebarFeedbackDialog.tsx:27-30",
+        "components/sidebar/SidebarFeedbackDialog.tsx:41-43",
+        "components/sidebar/SidebarFeedbackDialog.tsx:59-64",
+        "components/sidebar/SidebarFeedbackDialog.tsx:69",
+        "components/sidebar/SidebarFeedbackDialog.tsx:83-89",
+        "components/sidebar/SidebarFeedbackDialog.tsx:201-294",
+        "components/sidebar/SidebarFeedbackDialog.tsx:295-305",
+        "components/sidebar/SidebarFeedbackDialog.tsx:357-374"
+      ],
+      "tests": [
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:93 :: pre-inserts Orca version and OS info when the dialog opens",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:105 :: keeps version info when the user types above the prefilled block",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:121 :: preserves early typing and appends the footer after version loading finishes",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:141 :: enables Send when the user types below the prefilled footer",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:153 :: keeps Send disabled for an edited footer with no user text",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:165 :: allows a real report after the prefilled footer is deleted",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:177 :: still prefills best-effort details when preload lookups fail",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:193 :: keeps the dialog scrollable within short windows"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-041",
+      "capability": "Resolução de identidade do GitHub e opção de submissão anônima no feedback",
+      "surface": "modal de feedback (SidebarFeedbackDialog)",
+      "trigger": "abertura do modal de feedback",
+      "behaviors": [
+        "Consulta identidade do usuário logado via window.api.gh.viewer()",
+        "Exibe login e email autenticados com checkbox 'Submit anonymously'",
+        "Exibe mensagem de carregamento durante a verificação ou instruções para conectar o `gh` caso não autenticado",
+        "Ao marcar envio anônimo, omite os dados de login/email no payload enviado"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [
+        "window.api.gh.viewer -> ghCli.getViewer"
+      ],
+      "orca_evidence": [
+        "components/sidebar/SidebarFeedbackDialog.tsx:16",
+        "components/sidebar/SidebarFeedbackDialog.tsx:31-34",
+        "components/sidebar/SidebarFeedbackDialog.tsx:45-57",
+        "components/sidebar/SidebarFeedbackDialog.tsx:65-67",
+        "components/sidebar/SidebarFeedbackDialog.tsx:91-120",
+        "components/sidebar/SidebarFeedbackDialog.tsx:140",
+        "components/sidebar/SidebarFeedbackDialog.tsx:315-356"
+      ],
+      "tests": [
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:92 :: describe SidebarFeedbackDialog environment prefill"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-042",
+      "capability": "Anexo de capturas de tela e imagens no diálogo de feedback via arquivo, drag ou clipboard",
+      "surface": "modal de feedback (SidebarFeedbackDialog, SidebarFeedbackImageAttachments)",
+      "trigger": "seleção em input de arquivo, drag & drop de imagem no diálogo ou colagem via paste (⌘V)",
+      "behaviors": [
+        "Permite anexar até 5 imagens (MAX_FEEDBACK_IMAGE_COUNT = 5)",
+        "Trata evento onPaste no nível do diálogo evitando consumir texto não-imagem",
+        "Exibe lista de miniaturas com tamanho formatado em bytes e botão de remoção individual",
+        "Revoga object URLs de pré-visualização ao desmontar o componente",
+        "Aguarda a conclusão da leitura de imagens em voo antes de habilitar o botão Send",
+        "Rejeita novas imagens se a submissão já tiver sido iniciada"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useSidebarFeedbackImages"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarFeedbackDialog.tsx:18-21",
+        "components/sidebar/SidebarFeedbackDialog.tsx:23",
+        "components/sidebar/SidebarFeedbackDialog.tsx:25",
+        "components/sidebar/SidebarFeedbackDialog.tsx:70-81",
+        "components/sidebar/SidebarFeedbackDialog.tsx:210-227",
+        "components/sidebar/SidebarFeedbackDialog.tsx:307-313",
+        "components/sidebar/SidebarFeedbackImageAttachments.tsx:1-107"
+      ],
+      "tests": [
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:201 :: waits for in-flight image reads before enabling Send",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:285 :: releases image previews when the sidebar unmounts the dialog",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:311 :: does not consume text when the pasted image cannot be attached",
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:331 :: rejects images added after submission starts instead of clearing them unsent"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-043",
+      "capability": "Submissão de feedback via IPC e tratamento de confirmação de entrega de imagens",
+      "surface": "modal de feedback (SidebarFeedbackDialog)",
+      "trigger": "clique no botão 'Send' do diálogo de feedback",
+      "behaviors": [
+        "Encaminha submissão através de IPC window.api.feedback.submit para contornar restrições de CORS no Electron",
+        "Se o backend reportar imagesDelivered === false, emite toast de aviso 'Feedback sent, but image delivery could not be confirmed.'",
+        "Em caso de entrega bem-sucedida, emite toast de sucesso 'Thanks for the feedback.', reseta campos e fecha modal",
+        "Em caso de falha de rede/IPC, emite toast de erro 'Failed to submit feedback. Please try again.'"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "isSubmitting"
+      ],
+      "backend_contract": [
+        "window.api.feedback.submit -> feedbackHandler.submitFeedback"
+      ],
+      "orca_evidence": [
+        "components/sidebar/SidebarFeedbackDialog.tsx:4",
+        "components/sidebar/SidebarFeedbackDialog.tsx:122-199",
+        "components/sidebar/SidebarFeedbackDialog.tsx:358-373"
+      ],
+      "tests": [
+        "components/sidebar/SidebarFeedbackDialog.test.tsx:249 :: warns when the server cannot confirm image delivery"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-044",
+      "capability": "Construção do registro de hosts de execução com rastreamento de saúde e compatibilidade",
+      "surface": "gerador de opções de hosts (sidebar-host-options.ts)",
+      "trigger": "montagem ou alteração de repositórios, configurações de SSH ou runtimes",
+      "behaviors": [
+        "Constrói catálogo de hosts via buildSidebarHostOptions combinando host local, SSH configurados, SSH referenciados por projetos e runtimes ativos",
+        "Determina presença: 'local', 'configured', 'project' ou 'active'",
+        "Propaga status de saúde: 'local', 'available', 'connecting', 'blocked', 'disconnected', 'error'",
+        "Anexa veredicto de compatibilidade de protocolo (RuntimeCompatVerdict) e status de conexão SSH (SshConnectionStatus)",
+        "Suporta sobrescrita de rótulos por host (hostLabelOverrides)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "repos",
+        "sshTargetLabels",
+        "sshConnectionStates",
+        "settings.activeRuntimeEnvironmentId",
+        "runtimeStatusByEnvironmentId",
+        "runtimeEnvironments",
+        "hostLabelOverrides"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-host-options.ts:1-95"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-host-options.test.ts:14 :: hides host controls for local-only workspaces",
+        "components/sidebar/sidebar-host-options.test.ts:34 :: includes SSH hosts from labels and repos",
+        "components/sidebar/sidebar-host-options.test.ts:48 :: includes SSH health in options",
+        "components/sidebar/sidebar-host-options.test.ts:72 :: includes the focused runtime compatibility host",
+        "components/sidebar/sidebar-host-options.test.ts:87 :: uses saved runtime environment names for runtime host labels",
+        "components/sidebar/sidebar-host-options.test.ts:106 :: marks a runtime host blocked when its live status fails compat",
+        "components/sidebar/sidebar-host-options.test.ts:142 :: leaves a runtime host available when its live status is compatible",
+        "components/sidebar/sidebar-host-options.test.ts:198 :: carries host kind so the header menu can pick lifecycle actions"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-045",
+      "capability": "Submenu de escopo e visibilidade multi-host com garantia de seleção mínima",
+      "surface": "submenu de opções do workspace (SidebarHostScopeMenuSection)",
+      "trigger": "abertura do submenu 'Hosts' dentro do menu de opções do workspace",
+      "behaviors": [
+        "Exibe trigger com resumo de visibilidade formatado via getSidebarHostVisibilityLabel ('All hosts', nome do host ou 'N hosts')",
+        "Permite alternar escopo global ('All hosts') ou seleção múltipla de hosts específicos",
+        "Exibe metadados de presença e saúde formatados via getSidebarHostHealthLabel",
+        "Impede desmarcar o último host ativo (disabled quando visibleHostIdSet.size <= 1)",
+        "Preserva abertura do workspace board (data-workspace-board-preserve-open)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "visibleWorkspaceHostIds",
+        "setWorkspaceHostScope",
+        "setVisibleWorkspaceHostIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarHostScopeMenuSection.tsx:1-151",
+        "components/sidebar/sidebar-host-options.ts:97-154"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-host-options.test.ts:172 :: builds all-host plus focused-host scope options",
+        "components/sidebar/sidebar-host-options.test.ts:186 :: labels visible host selections for the workspace options menu",
+        "components/sidebar/sidebar-host-options.test.ts:210 :: labels host health for compact sidebar UI"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-046",
+      "capability": "Ordenação de seções de hosts respeitando preferências do usuário e anexando novos hosts",
+      "surface": "algoritmo de ordenação de hosts (host-section-order.ts)",
+      "trigger": "cálculo da ordem de seções de hosts no sidebar",
+      "behaviors": [
+        "Aplica ordem persistida workspaceHostOrder",
+        "Ignora identificadores de hosts obsoletos ou não mais existentes",
+        "Anexa automaticamente novos hosts SSH ou runtime descobertos ao final da lista"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "workspaceHostOrder"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/host-section-order.ts:1-32"
+      ],
+      "tests": [
+        "components/sidebar/host-section-order.test.ts:14 :: applies persisted host order and appends newly discovered hosts",
+        "components/sidebar/host-section-order.test.ts:23 :: ignores stale host ids in the persisted order"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-047",
+      "capability": "Agrupamento hierárquico e injeção de cabeçalhos de host na lista de workspaces",
+      "surface": "transformador de linhas da lista de workspaces (host-section-rows.ts)",
+      "trigger": "renderização da lista de worktrees em contexto multi-host",
+      "behaviors": [
+        "Insere linhas de cabeçalho HostHeaderRow (type: 'host-header', key: 'host:<id>') agrupando worktrees, pastas e repositórios",
+        "Suprime cabeçalhos de host quando preferProjectGrouping é true em escopo total de hosts ou quando apenas 1 host possui workspaces",
+        "Duplica cabeçalhos globais (ex.: Pinned, All) em cada seção de host sem duplicar os itens pinados",
+        "Calcula contagem agregada de workspaces mesmo para repositórios com grupos colapsados",
+        "Suporta colapso individual persistido (collapsedHostKeys) ou colapso temporário forçado (forceCollapseHosts)",
+        "Carrega status SSH e veredicto de compatibilidade para a linha de cabeçalho"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "workspaceHostScope",
+        "visibleWorkspaceHostIds",
+        "collapsedHostKeys",
+        "forceCollapseHosts",
+        "preferProjectGrouping"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/host-section-rows.ts:1-308"
+      ],
+      "tests": [
+        "components/sidebar/host-section-rows.test.ts:144 :: does not add host headers for a specific host scope",
+        "components/sidebar/host-section-rows.test.ts:168 :: does not add host headers when only the local host exists",
+        "components/sidebar/host-section-rows.test.ts:190 :: groups rows under host headers in all-host scope",
+        "components/sidebar/host-section-rows.test.ts:225 :: keeps project grouping outermost in the default Projects view",
+        "components/sidebar/host-section-rows.test.ts:250 :: keeps host headers for a custom multi-host visibility filter",
+        "components/sidebar/host-section-rows.test.ts:283 :: keeps non-repo group headers with the following host-owned rows",
+        "components/sidebar/host-section-rows.test.ts:314 :: copies global pinned and all headers into each mixed-host section without duplicating pins",
+        "components/sidebar/host-section-rows.test.ts:373 :: keeps collapsed pinned rows attributable to their owning hosts",
+        "components/sidebar/host-section-rows.test.ts:410 :: keeps a pinned row with its explicit worktree host",
+        "components/sidebar/host-section-rows.test.ts:451 :: does not double-count a collapsed pinned header and its natural duplicate row",
+        "components/sidebar/host-section-rows.test.ts:483 :: localizes collapsed natural headers even when the hidden rows are owned by one host",
+        "components/sidebar/host-section-rows.test.ts:530 :: groups explicitly runtime-owned repos under their owner host, not the focused host",
+        "components/sidebar/host-section-rows.test.ts:579 :: groups SSH folder workspace rows under their connection host",
+        "components/sidebar/host-section-rows.test.ts:608 :: carries the SSH connection status through to the host header row",
+        "components/sidebar/host-section-rows.test.ts:645 :: uses the focused runtime as the owner for non-SSH repos",
+        "components/sidebar/host-section-rows.test.ts:685 :: passes host kind and blocked compatibility through to the header row",
+        "components/sidebar/host-section-rows.test.ts:733 :: suppresses host headers when only one host has visible workspaces",
+        "components/sidebar/host-section-rows.test.ts:763 :: counts a collapsed repo group via its header count instead of zero",
+        "components/sidebar/host-section-rows.test.ts:794 :: keeps a collapsed host header but hides its rows",
+        "components/sidebar/host-section-rows.test.ts:828 :: can temporarily collapse every host without mutating persisted collapse keys"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-048",
+      "capability": "Indicador visual de estado e status do agente/workspace com tooltip informativo",
+      "surface": "cards de worktree e linhas do sidebar (StatusIndicator)",
+      "trigger": "renderização de status de worktree ou agente",
+      "behaviors": [
+        "Renderiza representação visual conforme status:",
+        "  - working: anel giratório amarelo animado (AgentWorkingSpinner)",
+        "  - monitoring: glifo estático de batimento cardíaco amarelo (Activity)",
+        "  - interrupted: ponto vermelho (bg-red-500)",
+        "  - permission: ícone de interrogação do agente (AgentQuestionIcon)",
+        "  - done / active: ponto verde esmeralda (bg-emerald-500)",
+        "  - inactive: ponto cinza translúcido (bg-neutral-500/40)",
+        "Envolve o indicador em StateIndicatorTooltip com rótulo localizado para status de agente",
+        "Permite suprimir tooltip (showTooltip = false) quando o container pai gerencia seu próprio hover"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "status: WorktreeStatus"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/StatusIndicator.tsx:1-107"
+      ],
+      "tests": [
+        "components/sidebar/StatusIndicator.test.ts:36 :: renders working as a yellow spinner ring",
+        "components/sidebar/StatusIndicator.test.ts:50 :: renders monitoring as a static heartbeat glyph",
+        "components/sidebar/StatusIndicator.test.ts:60 :: renders permission as the shared question glyph",
+        "components/sidebar/StatusIndicator.test.ts:69 :: renders active as full emerald dot",
+        "components/sidebar/StatusIndicator.test.ts:75 :: renders done as an emerald dot",
+        "components/sidebar/StatusIndicator.test.ts:81 :: renders interrupted distinctly from done",
+        "components/sidebar/StatusIndicator.test.ts:111 :: lets an enclosing action own the tooltip"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-049",
+      "capability": "Contagem regressiva de cache de prompt (Prompt Cache Timer) com alerta de expiração",
+      "surface": "metadados do card de worktree no sidebar (CacheTimer)",
+      "trigger": "ativo quando o worktree possui abas com prompt caching habilitado",
+      "behaviors": [
+        "Calcula tempo restante a partir de startedAt e ttlMs via hook usePromptCacheCountdownNow",
+        "Formata tempo em minutos e segundos (M:SS)",
+        "Exibe cor vermelha quando expirado e amarelo de alerta quando restam <= 60 segundos",
+        "Tooltip detalha tempo restante ou alerta que a próxima mensagem re-enviará contexto não-cacheado",
+        "Fornece hooks usePromptCacheCountdownStartedAt e usePromptCacheCountdownForPane para resolução eficiente sem duplicação de subscrição"
+      ],
+      "background_activity": "relógio de contagem regressiva via usePromptCacheCountdownNow",
+      "state_inputs": [
+        "useAppStore.settings.promptCacheTimerEnabled",
+        "useAppStore.settings.promptCacheTtlMs",
+        "useAppStore.tabsByWorktree",
+        "useAppStore.cacheTimerByKey"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/CacheTimer.tsx:1-112"
+      ],
+      "tests": [
+        "components/sidebar/CacheTimer.test.tsx:49 :: does not scan aggregate cache timers while inactive",
+        "components/sidebar/CacheTimer.test.tsx:56 :: does not scan aggregate cache timers while disabled",
+        "components/sidebar/CacheTimer.test.tsx:68 :: does not scan aggregate cache timers when ttl is zero",
+        "components/sidebar/CacheTimer.test.tsx:80 :: scans aggregate cache timers only when the timer can render"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-050",
+      "capability": "Badge numérico de contagem em pílula sobreposta absoluta para superfícies de largura fixa",
+      "surface": "botões, toggles e cabeçalhos do sidebar (SidebarCountBadge)",
+      "trigger": "renderização de contadores numéricos de filtros ou itens",
+      "behaviors": [
+        "Renderiza pílula absoluta (-top-0.5 -right-0.5) sem afetar o fluxo de layout do elemento pai",
+        "Exibe valor numérico exato até 9 e '9+' para valores maiores"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-count-badge.tsx:1-24"
+      ],
+      "tests": [
+        "components/sidebar/SidebarHeader.test.tsx:133 :: describe SidebarHeader"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-051",
+      "capability": "Gate de estado vazio para proteção de contas baseadas em pastas sob filtros ativos",
+      "surface": "motor de filtragem de linhas da lista de workspaces (sidebar-empty-state-gate.ts)",
+      "trigger": "aplicação de filtros de busca, status ou escopo de hosts",
+      "behaviors": [
+        "Função shouldFiltersHideAllRows avalia se filtros ocultaram todas as linhas possíveis",
+        "Leva em conta visibleWorktreeCount, visibleFolderWorkspaceCount, placeholderRepoCount e importedWorktreeCardCount",
+        "Garante que contas contendo apenas workspaces baseados em pasta não mostrem 'Clear Filters' indevidamente ao ativar filtros"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-empty-state-gate.ts:1-24"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-empty-state-gate.test.ts:11 :: does not replace a folder-only sidebar when a filter is active",
+        "components/sidebar/sidebar-empty-state-gate.test.ts:24 :: still wins when filters hid every row kind",
+        "components/sidebar/sidebar-empty-state-gate.test.ts:34 :: never wins without active filters",
+        "components/sidebar/sidebar-empty-state-gate.test.ts:44 :: defers to worktrees, placeholders and imported cards as before"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D01-052",
+      "capability": "Alternância do sidebar esquerdo por comando/atalho global (sidebar.left.toggle, Cmd+B)",
+      "surface": "command registry / titlebar / casca do sidebar",
+      "trigger": "comando 'sidebar.left.toggle' (atalho global Mod+B) ou clique no controle de alternância da titlebar",
+      "behaviors": [
+        "Registra o comando 'sidebar.left.toggle' no command registry como claim('sidebar.left.toggle', ...) delegando a actions.toggleSidebar()",
+        "toggleSidebar inverte useAppStore.sidebarOpen (action do slice de UI)",
+        "Exibe o rótulo do atalho (useShortcutLabel 'sidebar.left.toggle') no controle esquerdo da titlebar",
+        "Mod+B é roteado pelo window-shortcut-policy para o comando, ignorando superfícies editáveis"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sidebarOpen",
+        "useAppStore.toggleSidebar"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "app-shell/app-command-handlers.ts:168",
+        "store/slices/ui/ui-slice-agent-actions.ts:46",
+        "app-shell/TitlebarLeftControls.tsx:31"
+      ],
+      "tests": [
+        "tests/e2e/tab-sidebar-closed-overlap.spec.ts:36"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "components/Sidebar.tsx": [
+        "D01-001"
+      ],
+      "components/sidebar/AgentDashboardSidebarEntry.tsx": [
+        "D01-027",
+        "D01-028"
+      ],
+      "components/sidebar/AgentDashboardSidebarHost.tsx": [
+        "D01-029"
+      ],
+      "components/sidebar/CacheTimer.tsx": [
+        "D01-049"
+      ],
+      "components/sidebar/ProjectHeaderActions.tsx": [
+        "D01-014"
+      ],
+      "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx": [
+        "D01-031"
+      ],
+      "components/sidebar/SetupGuideSidebarEntry.tsx": [
+        "D01-017"
+      ],
+      "components/sidebar/SidebarFeedbackDialog.tsx": [
+        "D01-040",
+        "D01-041",
+        "D01-042",
+        "D01-043"
+      ],
+      "components/sidebar/SidebarFeedbackImageAttachments.tsx": [
+        "D01-042"
+      ],
+      "components/sidebar/SidebarHeader.tsx": [
+        "D01-005",
+        "D01-007",
+        "D01-008",
+        "D01-009",
+        "D01-010"
+      ],
+      "components/sidebar/SidebarHostScopeMenuSection.tsx": [
+        "D01-045"
+      ],
+      "components/sidebar/SidebarNav.tsx": [
+        "D01-016",
+        "D01-021",
+        "D01-022",
+        "D01-023",
+        "D01-024",
+        "D01-026"
+      ],
+      "components/sidebar/SidebarSettingsHelpMenu.tsx": [
+        "D01-034",
+        "D01-035",
+        "D01-036",
+        "D01-037",
+        "D01-038",
+        "D01-039"
+      ],
+      "components/sidebar/SidebarTaskNavButton.tsx": [
+        "D01-018",
+        "D01-019",
+        "D01-020"
+      ],
+      "components/sidebar/SidebarToolbar.tsx": [
+        "D01-030",
+        "D01-032",
+        "D01-033"
+      ],
+      "components/sidebar/StatusIndicator.tsx": [
+        "D01-048"
+      ],
+      "components/sidebar/host-section-order.ts": [
+        "D01-046"
+      ],
+      "components/sidebar/host-section-rows.ts": [
+        "D01-047"
+      ],
+      "components/sidebar/mobile-sidebar-onboarding-badge.ts": [
+        "D01-024"
+      ],
+      "components/sidebar/repo-header-action-button-class.ts": [
+        "D01-015"
+      ],
+      "components/sidebar/sidebar-count-badge.tsx": [
+        "D01-050"
+      ],
+      "components/sidebar/sidebar-empty-state-gate.ts": [
+        "D01-051"
+      ],
+      "components/sidebar/sidebar-header-actions.tsx": [
+        "D01-011",
+        "D01-012",
+        "D01-013"
+      ],
+      "components/sidebar/sidebar-host-options.ts": [
+        "D01-044",
+        "D01-045"
+      ],
+      "components/sidebar/sidebar-nav-controls.tsx": [
+        "D01-025"
+      ]
+    },
+    "symbols": {
+      "AgentDashboardSidebarEntry": [
+        "D01-027",
+        "D01-028"
+      ],
+      "AgentDashboardSidebarHost": [
+        "D01-029"
+      ],
+      "usePromptCacheCountdownStartedAt": [
+        "D01-049"
+      ],
+      "usePromptCacheCountdownForPane": [
+        "D01-049"
+      ],
+      "CacheTimer": [
+        "D01-049"
+      ],
+      "PROJECT_HEADER_ACTIONS_CLASS_NAME": [
+        "D01-014"
+      ],
+      "ProjectHeaderActions": [
+        "D01-014"
+      ],
+      "ScrollToCurrentWorkspaceToolbarButton": [
+        "D01-031"
+      ],
+      "SetupGuideEntryVisibilityInput": "INFRA: type-only visibility input contract",
+      "shouldShowSetupGuideEntry": [
+        "D01-017"
+      ],
+      "getSetupGuideSidebarEntryReady": [
+        "D01-017"
+      ],
+      "SetupGuideSidebarEntry": [
+        "D01-017"
+      ],
+      "SidebarFeedbackDialog": [
+        "D01-040",
+        "D01-041",
+        "D01-042",
+        "D01-043"
+      ],
+      "SidebarFeedbackImageAttachments": [
+        "D01-042"
+      ],
+      "SidebarHostScopeMenuSection": [
+        "D01-045"
+      ],
+      "shouldShowMobileButton": [
+        "D01-024"
+      ],
+      "shouldShowAutomationsButton": [
+        "D01-023"
+      ],
+      "shouldShowArtifactsButton": [
+        "D01-021"
+      ],
+      "shouldShowSkillsButton": [
+        "D01-022"
+      ],
+      "shouldShowAgentDashboardButton": [
+        "D01-027"
+      ],
+      "SidebarSettingsHelpMenu": [
+        "D01-034",
+        "D01-035",
+        "D01-036",
+        "D01-037",
+        "D01-038",
+        "D01-039"
+      ],
+      "SidebarTaskNavButton": [
+        "D01-018",
+        "D01-019",
+        "D01-020"
+      ],
+      "Status": [
+        "D01-048"
+      ],
+      "orderHostSectionOptions": [
+        "D01-046"
+      ],
+      "HostHeaderRow": "INFRA: type-only row definition for host section headers",
+      "HostSectionRow": "INFRA: type-only union of list Row and HostHeaderRow",
+      "HostSectionOption": "INFRA: type-only host metadata option contract",
+      "addHostSectionRows": [
+        "D01-047"
+      ],
+      "shouldShowMobileSidebarOnboardingBadge": [
+        "D01-024"
+      ],
+      "useMobileSidebarOnboardingBadge": [
+        "D01-024"
+      ],
+      "REPO_HEADER_ACTION_REVEAL_CLASS": [
+        "D01-015"
+      ],
+      "REPO_HEADER_ACTION_BUTTON_CLASS": [
+        "D01-015"
+      ],
+      "SidebarCountBadge": [
+        "D01-050"
+      ],
+      "shouldFiltersHideAllRows": [
+        "D01-051"
+      ],
+      "SidebarHeaderActions": [
+        "D01-011",
+        "D01-012",
+        "D01-013"
+      ],
+      "SidebarHostOption": "INFRA: type-only host registry option model",
+      "SidebarHostScopeOption": "INFRA: type-only host scope option model",
+      "buildSidebarHostOptions": [
+        "D01-044"
+      ],
+      "shouldShowHostScopeControls": [
+        "D01-044",
+        "D01-045"
+      ],
+      "buildSidebarHostScopeOptions": [
+        "D01-045"
+      ],
+      "getSidebarHostVisibilityLabel": [
+        "D01-045"
+      ],
+      "getSidebarHostHealthLabel": [
+        "D01-045"
+      ],
+      "HideSidebarMenu": [
+        "D01-025"
+      ],
+      "components/sidebar/AgentDashboardSidebarEntry.tsx:default": "D01-027",
+      "components/sidebar/AgentDashboardSidebarHost.tsx:default": "D01-029",
+      "components/sidebar/CacheTimer.tsx:default": "D01-049",
+      "components/sidebar/SidebarHeader.tsx:default": "D01-007",
+      "components/sidebar/SidebarNav.tsx:default": "D01-016",
+      "components/sidebar/SidebarToolbar.tsx:default": "D01-030",
+      "components/sidebar/StatusIndicator.tsx:default": "D01-048"
+    },
+    "tests": {
+      "components/sidebar/AgentDashboardSidebarHost.test.tsx:23 :: AgentDashboardSidebarHost": "INFRA: test suite describe container",
+      "components/sidebar/AgentDashboardSidebarHost.test.tsx:24 :: closes the dashboard when the workspace board opens": "D01-029",
+      "components/sidebar/AgentDashboardSidebarHost.test.tsx:38 :: closes the workspace board when the dashboard opens": "D01-029",
+      "components/sidebar/AgentDashboardSidebarHost.test.tsx:62 :: clears an open dashboard when the sidebar closes": "D01-029",
+      "components/sidebar/CacheTimer.test.tsx:34 :: usePromptCacheCountdownStartedAt": "INFRA: test suite describe container",
+      "components/sidebar/CacheTimer.test.tsx:49 :: does not scan aggregate cache timers while inactive": "D01-049",
+      "components/sidebar/CacheTimer.test.tsx:56 :: does not scan aggregate cache timers while disabled": "D01-049",
+      "components/sidebar/CacheTimer.test.tsx:68 :: does not scan aggregate cache timers when ttl is zero": "D01-049",
+      "components/sidebar/CacheTimer.test.tsx:80 :: scans aggregate cache timers only when the timer can render": "D01-049",
+      "components/sidebar/ProjectHeaderActions.test.tsx:9 :: ProjectHeaderActions": "INFRA: test suite describe container",
+      "components/sidebar/ProjectHeaderActions.test.tsx:22 :: overlays hover-only controls instead of reserving project title width": "D01-014",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:116 :: SetupGuideSidebarEntry": "INFRA: test suite describe container",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:135 :: does not render before persisted UI hydration is ready": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:141 :: does not render before setup progress readiness settles": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:147 :: does not flash when agent capability completion is still unresolved": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:162 :: does not render after setup is complete and progress is ready": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:168 :: renders for fresh active users when only the browser step is incomplete": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:174 :: does not render when the sidebar entry was dismissed with only browser incomplete": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:181 :: renders after persisted UI and setup progress are ready when setup is incomplete": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:185 :: keeps the visible entry mounted during transient setup progress refreshes": "D01-017",
+      "components/sidebar/Sidebar.test.tsx:143 :: Sidebar": "INFRA: test suite describe container",
+      "components/sidebar/Sidebar.test.tsx:144 :: anchors the setup script popup to the bottom toolbar": "D01-030",
+      "components/sidebar/Sidebar.test.tsx:155 :: applies left sidebar appearance variables to the workspace sidebar surface": "D01-002",
+      "components/sidebar/Sidebar.test.tsx:173 :: passes status bar visibility into the workspace board drawer": "D01-002",
+      "components/sidebar/Sidebar.test.tsx:182 :: does not start a full worktree scan while the startup session is hydrating": "D01-006",
+      "components/sidebar/Sidebar.test.tsx:206 :: does not scan all hosts when runtime connection status flaps": "D01-006",
+      "components/sidebar/Sidebar.test.tsx:230 :: closes the dashboard drawer when the dashboard experiment is disabled": "D01-028",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:92 :: SidebarFeedbackDialog environment prefill": "INFRA: test suite describe container",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:93 :: pre-inserts Orca version and OS info when the dialog opens": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:105 :: keeps version info when the user types above the prefilled block": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:121 :: preserves early typing and appends the footer after version loading finishes": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:141 :: enables Send when the user types below the prefilled footer": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:153 :: keeps Send disabled for an edited footer with no user text": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:165 :: allows a real report after the prefilled footer is deleted": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:177 :: still prefills best-effort details when preload lookups fail": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:192 :: SidebarFeedbackDialog image submission": "INFRA: test suite describe container",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:193 :: keeps the dialog scrollable within short windows": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:201 :: waits for in-flight image reads before enabling Send": "D01-042",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:249 :: warns when the server cannot confirm image delivery": "D01-042",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:285 :: releases image previews when the sidebar unmounts the dialog": "D01-042",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:311 :: does not consume text when the pasted image cannot be attached": "D01-042",
+      "components/sidebar/SidebarFeedbackDialog.test.tsx:331 :: rejects images added after submission starts instead of clearing them unsent": "D01-042",
+      "components/sidebar/SidebarHeader.test.tsx:133 :: SidebarHeader": "INFRA: test suite describe container",
+      "components/sidebar/SidebarHeader.test.tsx:134 :: keeps New workspace clickable with zero projects, since the composer adds the first one": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:148 :: opens the composer the same way once projects exist": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:162 :: reaches Add project and New workspace in one click each, with no menu": "D01-011",
+      "components/sidebar/SidebarHeader.test.tsx:179 :: keeps the create button rightmost so the frequent action stays where it was": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:190 :: advertises the workspace shortcut on the create tooltip, and omits it when unassigned": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:203 :: opens agent activity from the bell button": "D01-008",
+      "components/sidebar/SidebarHeader.test.tsx:220 :: shows the Agents introduction only for migrated users and never offers a hide action": "D01-009",
+      "components/sidebar/SidebarHeader.test.tsx:237 :: turns off agent activity from the active bell button": "D01-008",
+      "components/sidebar/SidebarHeader.test.tsx:255 :: uses the legacy title based on workspace grouping": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:273 :: drops both project actions in the agents view, which lists activity, not projects": "D01-013",
+      "components/sidebar/SidebarHeader.test.tsx:285 :: keeps the activity bell and actions on one row at the default sidebar width": "D01-008",
+      "components/sidebar/SidebarHeader.test.tsx:299 :: keeps the same actions on one row at compact width": "D01-013",
+      "components/sidebar/SidebarHeader.test.tsx:317 :: does not reset a persisted agents body before settings hydrate": "D01-005",
+      "components/sidebar/SidebarHeader.test.tsx:327 :: does not expose the deprecated full Agents view in agents mode": "D01-005",
+      "components/sidebar/SidebarHeader.test.tsx:339 :: renders the same actions on both sides of the old wide-layout breakpoint": "D01-013",
+      "components/sidebar/SidebarNav.test.tsx:203 :: SidebarNav": "INFRA: test suite describe container",
+      "components/sidebar/SidebarNav.test.tsx:221 :: keeps the Agent Dashboard row unmounted while its experiment is off": "D01-027",
+      "components/sidebar/SidebarNav.test.tsx:228 :: mounts the Agent Dashboard row only when its experiment is enabled": "D01-027",
+      "components/sidebar/SidebarNav.test.tsx:241 :: uses a question glyph only for the Needs You count": "D01-027",
+      "components/sidebar/SidebarNav.test.tsx:268 :: shows the Mobile entry by default for older settings": "D01-024",
+      "components/sidebar/SidebarNav.test.tsx:273 :: hides the Artifacts entry by default for older settings": "D01-021",
+      "components/sidebar/SidebarNav.test.tsx:280 :: opens Artifacts from the sidebar": "D01-021",
+      "components/sidebar/SidebarNav.test.tsx:291 :: hides Artifacts from its context menu": "D01-021",
+      "components/sidebar/SidebarNav.test.tsx:304 :: hides the Mobile entry when the sidebar setting is off": "D01-024",
+      "components/sidebar/SidebarNav.test.tsx:308 :: updates localized labels when the language changes after mount": "D01-026",
+      "components/sidebar/SidebarNav.test.tsx:322 :: updates labels when pseudo-localization is enabled after mount": "D01-026",
+      "components/sidebar/SidebarNav.test.tsx:333 :: shows the inline hide control only once a device is paired": "D01-024",
+      "components/sidebar/SidebarNav.test.tsx:354 :: shows the Automations entry by default for older settings": "D01-023",
+      "components/sidebar/SidebarNav.test.tsx:359 :: hides the Automations entry when the sidebar setting is off": "D01-023",
+      "components/sidebar/SidebarNav.test.tsx:363 :: omits the Automations row when the sidebar setting is off": "D01-023",
+      "components/sidebar/SidebarNav.test.tsx:376 :: hides Automations from its sidebar context menu": "D01-023",
+      "components/sidebar/SidebarNav.test.tsx:389 :: hides Mobile from its sidebar context menu": "D01-024",
+      "components/sidebar/SidebarNav.test.tsx:402 :: places the worktree palette search above the sidebar nav rows": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:419 :: hides the worktree palette shortcut until the search field is hovered or focused": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:437 :: keeps task source shortcuts keyboard-reachable and revealed on Tasks row hover or focus": "D01-019",
+      "components/sidebar/SidebarNav.test.tsx:454 :: hides available Tasks from its sidebar context menu": "D01-018",
+      "components/sidebar/SidebarNav.test.tsx:466 :: keeps Tasks enabled with no git repos so the page can explain the empty state": "D01-018",
+      "components/sidebar/SidebarNav.test.tsx:488 :: shows the setup guide entry only after readiness, before completion, and before explicit hide": "D01-017",
+      "components/sidebar/SidebarNav.test.tsx:503 :: requires both persisted UI and setup progress readiness before showing setup guide entry": "D01-017",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:172 :: SidebarSettingsHelpMenu": "INFRA: test suite describe container",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:194 :: renders the help button with correct aria-label": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:199 :: renders the settings button with correct aria-label": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:204 :: renders the settings button before the help button": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:212 :: renders Send Feedback menu item": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:217 :: renders Keyboard Shortcuts menu item": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:222 :: renders Milestones with progress when setup is incomplete": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:228 :: hides Milestones when setup is complete": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:239 :: renders the Onboarding menu item by default": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:244 :: renders Restart Orca by default": "D01-039",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:249 :: renders Docs link": "D01-037",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:254 :: renders Changelog link": "D01-037",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:259 :: renders GitHub link": "D01-037",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:264 :: renders Discord link": "D01-037",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:271 :: opens Discord invite through the shell bridge": "D01-037",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:282 :: renders X link": "D01-037",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:287 :: renders Check for Updates menu item": "D01-038",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:294 :: passes update-check modifier options through the updater bridge": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:331 :: warms the feedback chunk when the menu opens, before Send Feedback is selected": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:344 :: renders shortcut keys in the settings tooltip": "D01-034",
+      "components/sidebar/SidebarToolbar.test.tsx:68 :: SidebarToolbar moved workspace board hint": "INFRA: test suite describe container",
+      "components/sidebar/SidebarToolbar.test.tsx:90 :: does not show the moved hint to brand-new users after their first board click": "D01-033",
+      "components/sidebar/SidebarToolbar.test.tsx:117 :: shows the moved hint once to users who had already used the workspace board": "D01-033",
+      "components/sidebar/SidebarToolbar.test.tsx:135 :: relabels itself when the UI language changes after mount": "D01-030",
+      "components/sidebar/SidebarToolbar.test.tsx:151 :: keeps account controls out of the sidebar footer": "D01-030",
+      "components/sidebar/StatusIndicator.test.ts:35 :: StatusIndicator": "INFRA: test suite describe container",
+      "components/sidebar/StatusIndicator.test.ts:36 :: renders working as a yellow spinner ring": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:50 :: renders monitoring as a static heartbeat glyph": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:60 :: renders permission as the shared question glyph": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:69 :: renders active as full emerald dot": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:75 :: renders done as an emerald dot": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:81 :: renders interrupted distinctly from done": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:111 :: lets an enclosing action own the tooltip": "D01-048",
+      "components/sidebar/host-section-order.test.ts:13 :: orderHostSectionOptions": "INFRA: test suite describe container",
+      "components/sidebar/host-section-order.test.ts:14 :: applies persisted host order and appends newly discovered hosts": "D01-046",
+      "components/sidebar/host-section-order.test.ts:23 :: ignores stale host ids in the persisted order": "D01-046",
+      "components/sidebar/host-section-rows.test.ts:143 :: addHostSectionRows": "INFRA: test suite describe container",
+      "components/sidebar/host-section-rows.test.ts:144 :: does not add host headers for a specific host scope": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:168 :: does not add host headers when only the local host exists": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:190 :: groups rows under host headers in all-host scope": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:225 :: keeps project grouping outermost in the default Projects view": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:250 :: keeps host headers for a custom multi-host visibility filter": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:283 :: keeps non-repo group headers with the following host-owned rows": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:314 :: copies global pinned and all headers into each mixed-host section without duplicating pins": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:373 :: keeps collapsed pinned rows attributable to their owning hosts": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:410 :: keeps a pinned row with its explicit worktree host": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:451 :: does not double-count a collapsed pinned header and its natural duplicate row": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:483 :: localizes collapsed natural headers even when the hidden rows are owned by one host": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:530 :: groups explicitly runtime-owned repos under their owner host, not the focused host": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:579 :: groups SSH folder workspace rows under their connection host": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:608 :: carries the SSH connection status through to the host header row": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:645 :: uses the focused runtime as the owner for non-SSH repos": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:685 :: passes host kind and blocked compatibility through to the header row": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:733 :: suppresses host headers when only one host has visible workspaces": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:763 :: counts a collapsed repo group via its header count instead of zero": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:794 :: keeps a collapsed host header but hides its rows": "D01-047",
+      "components/sidebar/host-section-rows.test.ts:828 :: can temporarily collapse every host without mutating persisted collapse keys": "D01-047",
+      "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:37 :: mobile sidebar onboarding badge": "INFRA: test suite describe container",
+      "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:64 :: does not show when the sidebar button is hidden": "D01-024",
+      "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:68 :: shows only while enabled and undismissed": "D01-024",
+      "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:73 :: marks a paired device after shared mobile devices load": "D01-024",
+      "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:84 :: shows the badge after shared mobile devices load empty": "D01-024",
+      "components/sidebar/mobile-sidebar-onboarding-badge.test.ts:93 :: does not show the badge on a failed load and recovers on window focus": "D01-024",
+      "components/sidebar/sidebar-empty-state-gate.test.ts:10 :: Clear Filters empty state": "INFRA: test suite describe container",
+      "components/sidebar/sidebar-empty-state-gate.test.ts:11 :: does not replace a folder-only sidebar when a filter is active": "D01-051",
+      "components/sidebar/sidebar-empty-state-gate.test.ts:24 :: still wins when filters hid every row kind": "D01-051",
+      "components/sidebar/sidebar-empty-state-gate.test.ts:34 :: never wins without active filters": "D01-051",
+      "components/sidebar/sidebar-empty-state-gate.test.ts:44 :: defers to worktrees, placeholders and imported cards as before": "D01-051",
+      "components/sidebar/sidebar-host-options.test.ts:13 :: sidebar host options": "INFRA: test suite describe container",
+      "components/sidebar/sidebar-host-options.test.ts:14 :: hides host controls for local-only workspaces": "D01-044",
+      "components/sidebar/sidebar-host-options.test.ts:34 :: includes SSH hosts from labels and repos": "D01-044",
+      "components/sidebar/sidebar-host-options.test.ts:48 :: includes SSH health in options": "D01-044",
+      "components/sidebar/sidebar-host-options.test.ts:72 :: includes the focused runtime compatibility host": "D01-044",
+      "components/sidebar/sidebar-host-options.test.ts:87 :: uses saved runtime environment names for runtime host labels": "D01-044",
+      "components/sidebar/sidebar-host-options.test.ts:106 :: marks a runtime host blocked when its live status fails compat": "D01-044",
+      "components/sidebar/sidebar-host-options.test.ts:142 :: leaves a runtime host available when its live status is compatible": "D01-044",
+      "components/sidebar/sidebar-host-options.test.ts:172 :: builds all-host plus focused-host scope options": "D01-045",
+      "components/sidebar/sidebar-host-options.test.ts:186 :: labels visible host selections for the workspace options menu": "D01-045",
+      "components/sidebar/sidebar-host-options.test.ts:198 :: carries host kind so the header menu can pick lifecycle actions": "D01-044",
+      "components/sidebar/sidebar-host-options.test.ts:210 :: labels host health for compact sidebar UI": "D01-045",
+      "components/sidebar/StatusIndicator.test.ts:94 :: labels the agent-derived %s workspace state": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:102 :: does not label the passive %s workspace state": "D01-048"
+    },
+    "labels": {
+      "components/sidebar/AgentDashboardSidebarEntry.tsx:46 :: aria-label={`${dashboardBucketLabel(bucket)}: ${counts[bucket]}`}": "D01-027",
+      "components/sidebar/CacheTimer.tsx:4 :: import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'": "D01-049",
+      "components/sidebar/CacheTimer.tsx:88 :: const tooltipText = expired": "D01-049",
+      "components/sidebar/CacheTimer.tsx:108 :: <span>{tooltipText}</span>": "D01-049",
+      "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx:4 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D01-031",
+      "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx:16 :: aria-label={translate(": "D01-031",
+      "components/sidebar/SetupGuideSidebarEntry.test.tsx:39 :: ContextMenuItem: ({ children }: { children: ReactNode }) => <>{children}</>,": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.tsx:8 :: ContextMenuItem,": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.tsx:114 :: <ContextMenuItem onSelect={handleHideSetupGuide}>": "D01-017",
+      "components/sidebar/SetupGuideSidebarEntry.tsx:120 :: </ContextMenuItem>": "D01-017",
+      "components/sidebar/Sidebar.test.tsx:34 :: vi.mock('@/components/ui/tooltip', () => ({": "D01-001",
+      "components/sidebar/SidebarFeedbackDialog.tsx:299 :: placeholder={translate(": "D01-040",
+      "components/sidebar/SidebarFeedbackImageAttachments.tsx:87 :: aria-label={translate(": "D01-042",
+      "components/sidebar/SidebarHeader.test.tsx:51 :: default: () => <button aria-label=\"Workspace options\" type=\"button\" />": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:68 :: vi.mock('@/components/ui/tooltip', () => ({": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:96 :: function headerButton(label: string): HTMLButtonElement {": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:97 :: const button = container.querySelector<HTMLButtonElement>(`[aria-label=\"${label}\"]`)": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:190 :: it('advertises the workspace shortcut on the create tooltip, and omits it when unassigned', () => {": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:209 :: '[aria-label=\"View activity\"]'": "D01-008",
+      "components/sidebar/SidebarHeader.test.tsx:244 :: '[aria-label=\"Turn off activity view\"]'": "D01-008",
+      "components/sidebar/SidebarHeader.test.tsx:260 :: expect(container.querySelector('[data-sidebar-section-title=\"projects\"]')?.textContent).toBe(": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:268 :: expect(container.querySelector('[data-sidebar-section-title=\"workspaces\"]')?.textContent).toBe(": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:279 :: expect(container.querySelector('[aria-label=\"Turn off activity view\"]')).toBeTruthy()": "D01-008",
+      "components/sidebar/SidebarHeader.test.tsx:280 :: expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:281 :: expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeNull()": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:282 :: expect(container.querySelector('[aria-label=\"Add project\"]')).toBeNull()": "D01-011",
+      "components/sidebar/SidebarHeader.test.tsx:294 :: expect(container.querySelector('[aria-label=\"View activity\"]')).toBeTruthy()": "D01-008",
+      "components/sidebar/SidebarHeader.test.tsx:295 :: expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()": "D01-011",
+      "components/sidebar/SidebarHeader.test.tsx:296 :: expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:305 :: expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()": "D01-011",
+      "components/sidebar/SidebarHeader.test.tsx:306 :: expect(container.querySelector('[aria-label=\"View activity\"]')).toBeTruthy()": "D01-008",
+      "components/sidebar/SidebarHeader.test.tsx:307 :: expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:308 :: expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeTruthy()": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:309 :: expect(container.querySelector('[aria-label=\"More workspace actions\"]')).toBeNull()": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:334 :: expect(container.querySelector('[aria-label=\"Open full Agents view\"]')).toBeNull()": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:345 :: expect(container.querySelector('[aria-label=\"More workspace actions\"]')).toBeNull()": "D01-007",
+      "components/sidebar/SidebarHeader.test.tsx:346 :: expect(container.querySelector('[aria-label=\"Add project\"]')).toBeTruthy()": "D01-011",
+      "components/sidebar/SidebarHeader.test.tsx:347 :: expect(container.querySelector('[aria-label=\"New workspace\"]')).toBeTruthy()": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:348 :: expect(container.querySelector('[aria-label=\"Workspace options\"]')).toBeTruthy()": "D01-007",
+      "components/sidebar/SidebarHeader.tsx:8 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D01-007",
+      "components/sidebar/SidebarHeader.tsx:55 :: data-sidebar-section-title={groupBy === 'repo' ? 'projects' : 'workspaces'}": "D01-007",
+      "components/sidebar/SidebarHeader.tsx:81 :: aria-label={activityLabel}": "D01-008",
+      "components/sidebar/SidebarNav.test.tsx:7 :: import { TooltipProvider } from '@/components/ui/tooltip'": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:83 :: ContextMenuItem: ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => (": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:253 :: expect(container.querySelector('[aria-label=\"Needs You: 2\"]')).not.toBeNull()": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:255 :: const attention = container.querySelector('[aria-label=\"Needs You: 2\"]')": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:256 :: const working = container.querySelector('[aria-label=\"Working: 3\"]')": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:257 :: const done = container.querySelector('[aria-label=\"Done: 1\"]')": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:258 :: const idle = container.querySelector('[aria-label=\"Idle: 4\"]')": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:336 :: expect(beforePairing.querySelector('button[aria-label=\"Hide from sidebar\"]')).toBeNull()": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:341 :: 'button[aria-label=\"Hide from sidebar\"]'": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:406 :: 'button[aria-label=\"Search worktrees and browser tabs\"]'": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:423 :: 'button[aria-label=\"Search worktrees and browser tabs\"]'": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:442 :: 'button[aria-label=\"Open GitHub tasks\"]'": "D01-025",
+      "components/sidebar/SidebarNav.test.tsx:475 :: tasksButton.parentElement?.querySelector('button[aria-label=\"Open GitHub tasks\"]')": "D01-025",
+      "components/sidebar/SidebarNav.tsx:11 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D01-025",
+      "components/sidebar/SidebarNav.tsx:96 :: aria-label={translate(": "D01-025",
+      "components/sidebar/SidebarNav.tsx:268 :: aria-label={translate(": "D01-025",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:74 :: DropdownMenuItem: ({": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:92 :: title={title}": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:101 :: vi.mock('@/components/ui/tooltip', () => ({": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:117 :: <button data-testid=\"trigger-button\" aria-label={ariaLabel} onClick={onClick}>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:164 :: function findMenuItem(container: HTMLElement, label: string): HTMLButtonElement {": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:201 :: expect(html).toContain('aria-label=\"Settings\"')": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:344 :: it('renders shortcut keys in the settings tooltip', () => {": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:20 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:24 :: DropdownMenuItem,": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:87 :: label: string": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:92 :: <DropdownMenuItem onSelect={() => openExternalUrl(url)}>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:96 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:202 :: aria-label={translate(": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:233 :: aria-label={translate(": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:248 :: <DropdownMenuItem onSelect={openShortcutsSettings}>": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:254 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:256 :: <DropdownMenuItem onSelect={handleOpenFeedback}>": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:262 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:264 :: <DropdownMenuItem onSelect={openMilestones}>": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:281 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:283 :: <DropdownMenuItem": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:293 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:319 :: <DropdownMenuItem onSelect={() => openExternalUrl(DISCORD_URL)}>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:323 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:324 :: <DropdownMenuItem onSelect={() => openExternalUrl(X_URL)}>": "D01-037",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:328 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:330 :: <DropdownMenuItem": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:334 :: title={updateCheckHint}": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:345 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:347 :: <DropdownMenuItem onSelect={handleRestartOrca} disabled={isRestartingOrca}>": "D01-039",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:353 :: </DropdownMenuItem>": "D01-035",
+      "components/sidebar/SidebarTaskNavButton.tsx:8 :: ContextMenuItem,": "D01-018",
+      "components/sidebar/SidebarTaskNavButton.tsx:28 :: <ContextMenuItem onSelect={onHide}>": "D01-018",
+      "components/sidebar/SidebarTaskNavButton.tsx:31 :: </ContextMenuItem>": "D01-018",
+      "components/sidebar/SidebarTaskNavButton.tsx:41 :: label: string": "D01-018",
+      "components/sidebar/SidebarTaskNavButton.tsx:50 :: aria-label={label}": "D01-018",
+      "components/sidebar/SidebarToolbar.test.tsx:23 :: vi.mock('@/components/ui/tooltip', () => ({": "D01-032",
+      "components/sidebar/SidebarToolbar.test.tsx:104 :: 'button[aria-label=\"Workspace board\"]'": "D01-032",
+      "components/sidebar/SidebarToolbar.test.tsx:137 :: expect(container.querySelector('button[aria-label=\"Workspace board\"]')).not.toBeNull()": "D01-032",
+      "components/sidebar/SidebarToolbar.test.tsx:148 :: expect(container.querySelector(`button[aria-label=\"${localized}\"]`)).not.toBeNull()": "D01-032",
+      "components/sidebar/SidebarToolbar.tsx:5 :: import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'": "D01-032",
+      "components/sidebar/SidebarToolbar.tsx:90 :: aria-label={translate(": "D01-032",
+      "components/sidebar/StatusIndicator.test.ts:13 :: label: string | null": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:18 :: : createElement('span', { 'data-state-indicator-tooltip': label }, children)": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:53 :: expect(markup).toContain('data-state-indicator-tooltip=\"Monitoring background tasks\"')": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:54 :: expect(markup).not.toContain(' title=')": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:97 :: expect(markup).toContain(`data-state-indicator-tooltip=\"${label}\"`)": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:98 :: expect(markup).not.toContain(' title=')": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:106 :: expect(markup).not.toContain('data-state-indicator-tooltip')": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:107 :: expect(markup).not.toContain(' title=')": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:111 :: it('lets an enclosing action own the tooltip', () => {": "D01-048",
+      "components/sidebar/StatusIndicator.test.ts:116 :: expect(markup).not.toContain('data-state-indicator-tooltip')": "D01-048",
+      "components/sidebar/StatusIndicator.tsx:21 :: tooltipSide?: StateIndicatorTooltipSide": "D01-048",
+      "components/sidebar/StatusIndicator.tsx:36 :: tooltipSide,": "D01-048",
+      "components/sidebar/StatusIndicator.tsx:39 :: const tooltipLabel =": "D01-048",
+      "components/sidebar/StatusIndicator.tsx:101 :: <StateIndicatorTooltip label={tooltipLabel} side={tooltipSide}>": "D01-048",
+      "components/sidebar/host-section-rows.test.ts:154 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:158 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:179 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:201 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:205 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:220 :: { label: 'Local Mac', count: 1 },": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:221 :: { label: 'Builder', count: 1 }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:236 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:240 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:261 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:265 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:294 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:298 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:337 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:341 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:360 :: { label: 'Local Mac', count: 2 },": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:361 :: { label: 'Builder', count: 2 }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:389 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:393 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:427 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:431 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:468 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:472 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:504 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:508 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:546 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:553 :: label: 'env-1',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:560 :: label: 'env-2',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:589 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:593 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:619 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:626 :: label: 'Builder',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:661 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:668 :: label: 'env-1',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:681 :: label: 'env-1'": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:701 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:708 :: label: 'env-1',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:743 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:747 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'disconnected' },": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:751 :: label: 'env-1',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:776 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:780 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:805 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:809 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:839 :: label: 'Local Mac',": "D01-001",
+      "components/sidebar/host-section-rows.test.ts:843 :: { id: 'ssh:ssh-1', kind: 'ssh', label: 'Builder', detail: 'SSH', health: 'available' }": "D01-001",
+      "components/sidebar/host-section-rows.ts:23 :: label: string": "D01-001",
+      "components/sidebar/host-section-rows.ts:39 :: label: string": "D01-001",
+      "components/sidebar/host-section-rows.ts:78 :: label: isLocal ? getLocalExecutionHostLabel() : hostId,": "D01-001",
+      "components/sidebar/host-section-rows.ts:294 :: label: host.label,": "D01-001",
+      "components/sidebar/sidebar-header-actions.tsx:5 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D01-012",
+      "components/sidebar/sidebar-header-actions.tsx:27 :: aria-label={label}": "D01-012",
+      "components/sidebar/sidebar-header-actions.tsx:48 :: // every alias in a one-line tooltip reads as noise rather than help.": "D01-012",
+      "components/sidebar/sidebar-header-actions.tsx:66 :: aria-label={label}": "D01-012",
+      "components/sidebar/sidebar-host-options.test.ts:24 :: label: LOCAL_HOST_LABEL,": "D01-045",
+      "components/sidebar/sidebar-host-options.test.ts:67 :: label: 'Builder',": "D01-045",
+      "components/sidebar/sidebar-host-options.test.ts:101 :: label: 'dev box',": "D01-045",
+      "components/sidebar/sidebar-host-options.test.ts:180 :: { id: 'all', label: 'All hosts', detail: `${LOCAL_HOST_LABEL}, Builder`, health: 'mixed' },": "D01-045",
+      "components/sidebar/sidebar-host-options.test.ts:181 :: { id: 'local', label: LOCAL_HOST_LABEL, health: 'local' },": "D01-045",
+      "components/sidebar/sidebar-host-options.test.ts:182 :: { id: 'ssh:ssh-1', label: 'Builder', health: 'disconnected' }": "D01-045",
+      "components/sidebar/sidebar-host-options.ts:21 :: label: string": "D01-045",
+      "components/sidebar/sidebar-host-options.ts:34 :: label: string": "D01-045",
+      "components/sidebar/sidebar-host-options.ts:107 :: label: translate('auto.components.sidebar.sidebarHostOptions.3e102f111c', 'All hosts'),": "D01-045",
+      "components/sidebar/sidebar-host-options.ts:113 :: label: host.label,": "D01-045",
+      "components/sidebar/sidebar-nav-controls.tsx:3 :: import { ContextMenuContent, ContextMenuItem } from '@/components/ui/context-menu'": "D01-025",
+      "components/sidebar/sidebar-nav-controls.tsx:9 :: <ContextMenuItem onSelect={onHide}>": "D01-025",
+      "components/sidebar/sidebar-nav-controls.tsx:12 :: </ContextMenuItem>": "D01-025",
+      "Toggle Sidebar": "D01-052"
+    },
+    "hotkeys": {
+      "components/sidebar/SidebarHeader.test.tsx:12 :: const shortcutLabel: { current: string | null } = { current: '⌘N' }": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:17 :: shortcutLabel,": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:63 :: vi.mock('@/hooks/useShortcutLabel', () => ({": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:64 :: useShortcutLabel: () => '⌘N',": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:65 :: formatOptionalPrimaryShortcutLabel: () => mocks.shortcutLabel.current": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:111 :: mocks.shortcutLabel.current = '⌘N'": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:190 :: it('advertises the workspace shortcut on the create tooltip, and omits it when unassigned', () => {": "D01-012",
+      "components/sidebar/SidebarHeader.test.tsx:196 :: mocks.shortcutLabel.current = null": "D01-012",
+      "components/sidebar/SidebarNav.test.tsx:54 :: vi.mock('@/hooks/useShortcutLabel', () => ({": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:55 :: useShortcutKeyComboDetails: () => [{ keys: ['⌘', 'J'], doubleTap: false }]": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:419 :: it('hides the worktree palette shortcut until the search field is hovered or focused', async () => {": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:428 :: const shortcuts = searchButton?.querySelector('span.hidden')": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:429 :: expect(shortcuts?.className).toContain('hidden')": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:430 :: expect(shortcuts?.className).toContain('group-hover:flex')": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:431 :: expect(shortcuts?.className).toContain('group-focus-within:flex')": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:432 :: expect(shortcuts?.textContent).toContain('⌘')": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:433 :: expect(shortcuts?.textContent).toContain('J')": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:437 :: it('keeps task source shortcuts keyboard-reachable and revealed on Tasks row hover or focus', async () => {": "D01-019",
+      "components/sidebar/SidebarNav.test.tsx:441 :: const githubShortcut = tasksButton.parentElement?.querySelector<HTMLButtonElement>(": "D01-019",
+      "components/sidebar/SidebarNav.test.tsx:444 :: expect(githubShortcut).not.toBeNull()": "D01-019",
+      "components/sidebar/SidebarNav.test.tsx:445 :: expect(githubShortcut?.tabIndex).toBe(0)": "D01-019",
+      "components/sidebar/SidebarNav.test.tsx:446 :: expect(tasksButton.contains(githubShortcut ?? null)).toBe(false)": "D01-019",
+      "components/sidebar/SidebarNav.test.tsx:448 :: const shortcuts = githubShortcut?.parentElement": "D01-019",
+      "components/sidebar/SidebarNav.test.tsx:449 :: expect(shortcuts?.className).toContain('can-hover:opacity-0')": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:450 :: expect(shortcuts?.className).toContain('can-hover:group-hover:opacity-100')": "D01-016",
+      "components/sidebar/SidebarNav.test.tsx:451 :: expect(shortcuts?.className).toContain('can-hover:group-focus-within:opacity-100')": "D01-016",
+      "components/sidebar/SidebarNav.tsx:6 :: import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'": "D01-016",
+      "components/sidebar/SidebarNav.tsx:7 :: import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'": "D01-016",
+      "components/sidebar/SidebarNav.tsx:57 :: const worktreePaletteShortcutCombos = useShortcutKeyComboDetails('worktree.palette')": "D01-016",
+      "components/sidebar/SidebarNav.tsx:110 :: {worktreePaletteShortcutCombos.map((combo) => (": "D01-016",
+      "components/sidebar/SidebarNav.tsx:111 :: <ShortcutKeyCombo": "D01-016",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:16 :: useShortcutKeyDetails: vi.fn(),": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:40 :: vi.mock('@/hooks/useShortcutLabel', () => ({": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:41 :: useShortcutKeyDetails: mocks.useShortcutKeyDetails": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:177 :: mocks.useShortcutKeyDetails.mockReturnValue({ keys: ['⌘', ','], doubleTap: false })": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:217 :: it('renders Keyboard Shortcuts menu item', () => {": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:219 :: expect(html).toContain('Keyboard Shortcuts')": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.test.tsx:344 :: it('renders shortcut keys in the settings tooltip', () => {": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:29 :: import { useShortcutKeyDetails } from '@/hooks/useShortcutLabel'": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:30 :: import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:107 :: const settingsShortcut = useShortcutKeyDetails('app.settings')": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:169 :: const openShortcutsSettings = (): void => {": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:170 :: openSettingsTarget({ pane: 'shortcuts', repoId: null })": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:214 :: {settingsShortcut.keys.length > 0 ? (": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:215 :: <ShortcutKeyCombo": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:216 :: keys={settingsShortcut.keys}": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:217 :: doubleTap={settingsShortcut.doubleTap}": "D01-034",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:248 :: <DropdownMenuItem onSelect={openShortcutsSettings}>": "D01-036",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:252 :: 'Keyboard Shortcuts'": "D01-036",
+      "components/sidebar/SidebarTaskNavButton.tsx:36 :: function TaskProviderShortcut({": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:159 :: {/* Why: shortcuts sit beside the Tasks button, not inside it, so each stays keyboard-reachable. */}": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:188 :: <TaskProviderShortcut": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:196 :: </TaskProviderShortcut>": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:199 :: <TaskProviderShortcut": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:207 :: </TaskProviderShortcut>": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:210 :: <TaskProviderShortcut": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:218 :: </TaskProviderShortcut>": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:221 :: <TaskProviderShortcut": "D01-019",
+      "components/sidebar/SidebarTaskNavButton.tsx:229 :: </TaskProviderShortcut>": "D01-019",
+      "components/sidebar/sidebar-header-actions.tsx:6 :: import { formatOptionalPrimaryShortcutLabel } from '@/hooks/useShortcutLabel'": "D01-012",
+      "components/sidebar/sidebar-header-actions.tsx:49 :: const shortcutLabel = formatOptionalPrimaryShortcutLabel('workspace.create', keybindings)": "D01-012",
+      "components/sidebar/sidebar-header-actions.tsx:76 :: {shortcutLabel ? <span className=\"ml-1.5 text-background/60\">{shortcutLabel}</span> : null}": "D01-012",
+      "Mod+B (sidebar.left.toggle)": "D01-052"
+    },
+    "prefs": {
+      "components/sidebar/SidebarToolbar.test.tsx:114 :: expect(window.localStorage.getItem('orca.workspaceBoardMovedHintSeen.v1')).toBeNull()": "D01-033",
+      "components/sidebar/SidebarToolbar.test.tsx:128 :: expect(window.localStorage.getItem('orca.workspaceBoardMovedHintSeen.v1')).toBe('true')": "D01-033",
+      "components/sidebar/SidebarToolbar.tsx:12 :: const WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY = 'orca.workspaceBoardMovedHintSeen.v1'": "D01-033",
+      "components/sidebar/SidebarToolbar.tsx:52 :: if (window.localStorage.getItem(WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY) === 'true') {": "D01-033",
+      "components/sidebar/SidebarToolbar.tsx:55 :: window.localStorage.setItem(WORKSPACE_BOARD_MOVED_HINT_STORAGE_KEY, 'true')": "D01-033",
+      "components/sidebar/mobile-sidebar-onboarding-badge.ts:8 :: return window.localStorage.getItem(DISMISS_KEY) === '1'": "D01-024",
+      "components/sidebar/mobile-sidebar-onboarding-badge.ts:37 :: window.localStorage.setItem(DISMISS_KEY, '1')": "D01-024"
+    },
+    "timers": {
+      "components/sidebar/SidebarToolbar.tsx:61 :: const timeoutId = window.setTimeout(() => {": "D01-033"
+    },
+    "subscriptions": {
+      "components/sidebar/AgentDashboardSidebarHost.tsx:24 :: useEffect(() => {": "D01-029",
+      "components/sidebar/AgentDashboardSidebarHost.tsx:29 :: useEffect(() => {": "D01-029",
+      "components/sidebar/AgentDashboardSidebarHost.tsx:34 :: useEffect(() => {": "D01-029",
+      "components/sidebar/SidebarFeedbackDialog.tsx:91 :: React.useEffect(() => {": "D01-041",
+      "components/sidebar/SidebarTaskNavButton.tsx:107 :: React.useEffect(() => {": "D01-020",
+      "components/sidebar/SidebarToolbar.tsx:39 :: React.useEffect(() => {": "D01-033"
+    },
+    "preload": {
+      "components/sidebar/AgentDashboardSidebarEntry.tsx:74 :: void window.api.dashboard.openPopout()": "D01-028",
+      "components/sidebar/SidebarFeedbackDialog.tsx:42 :: void window.api.shell.openUrl(url)": "D01-040",
+      "components/sidebar/SidebarFeedbackDialog.tsx:98 :: void window.api.gh": "D01-041",
+      "components/sidebar/SidebarFeedbackDialog.tsx:146 :: const result = await window.api.feedback.submit({": "D01-043",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:63 :: void window.api.shell.openUrl(url)": "D01-037",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:153 :: void window.api.app.restart().catch((error) => {": "D01-039",
+      "components/sidebar/SidebarSettingsHelpMenu.tsx:186 :: void window.api.updater.check(getUpdateCheckClickOptions(modifiers))": "D01-038"
+    }
+  }
+}

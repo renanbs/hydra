@@ -1,0 +1,107 @@
+{
+ "domain": "D09-filters-sort",
+ "prod": [
+  {
+   "name": "FilterToggleRow.tsx",
+   "kind": "prod",
+   "loc": 63
+  },
+  {
+   "name": "SidebarFilter.tsx",
+   "kind": "prod",
+   "loc": 407
+  },
+  {
+   "name": "SidebarGroupByToggle.tsx",
+   "kind": "prod",
+   "loc": 39
+  },
+  {
+   "name": "SidebarProjectFilterPanel.tsx",
+   "kind": "prod",
+   "loc": 245
+  },
+  {
+   "name": "SidebarRepositoryFilterSection.tsx",
+   "kind": "prod",
+   "loc": 140
+  },
+  {
+   "name": "SidebarWorkspaceFilterSection.tsx",
+   "kind": "prod",
+   "loc": 129
+  },
+  {
+   "name": "project-filter-reveal.ts",
+   "kind": "prod",
+   "loc": 12
+  },
+  {
+   "name": "sidebar-filter-actions.ts",
+   "kind": "prod",
+   "loc": 78
+  },
+  {
+   "name": "smart-attention.ts",
+   "kind": "prod",
+   "loc": 416
+  },
+  {
+   "name": "smart-sort.ts",
+   "kind": "prod",
+   "loc": 219
+  },
+  {
+   "name": "worktree-filter-visibility.ts",
+   "kind": "prod",
+   "loc": 43
+  }
+ ],
+ "test": [
+  {
+   "name": "FilterToggleRow.test.tsx",
+   "kind": "test",
+   "loc": 61
+  },
+  {
+   "name": "SidebarGroupByToggle.test.tsx",
+   "kind": "test",
+   "loc": 54
+  },
+  {
+   "name": "SidebarRepositoryFilterSection.test.tsx",
+   "kind": "test",
+   "loc": 209
+  },
+  {
+   "name": "SidebarWorkspaceFilterSection.test.tsx",
+   "kind": "test",
+   "loc": 120
+  },
+  {
+   "name": "project-filter-reveal.test.ts",
+   "kind": "test",
+   "loc": 32
+  },
+  {
+   "name": "sidebar-filter-state.test.ts",
+   "kind": "test",
+   "loc": 289
+  },
+  {
+   "name": "smart-attention.test.ts",
+   "kind": "test",
+   "loc": 785
+  },
+  {
+   "name": "smart-sort.test.ts",
+   "kind": "test",
+   "loc": 878
+  },
+  {
+   "name": "worktree-filter-visibility.test.ts",
+   "kind": "test",
+   "loc": 79
+  }
+ ]
+}

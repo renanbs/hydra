@@ -1,0 +1,1187 @@
+[
+ {
+  "file": "components/sidebar/AddRepoCloneStep.tsx",
+  "line": 44,
+  "text": "const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {"
+ },
+ {
+  "file": "components/sidebar/AddRepoRemoteStep.tsx",
+  "line": 175,
+  "text": "if (event.key === 'Enter' && !event.nativeEvent.isComposing) {"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.test.tsx",
+  "line": 364,
+  "text": "new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 5,
+  "text": "import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 126,
+  "text": "const handleArrowNavigation = (event: React.KeyboardEvent<HTMLDivElement>): void => {"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 127,
+  "text": "if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 137,
+  "text": "const delta = event.key === 'ArrowDown' ? 1 : -1"
+ },
+ {
+  "file": "components/sidebar/AddRepoStartSteps.tsx",
+  "line": 243,
+  "text": "<ShortcutKeyCombo"
+ },
+ {
+  "file": "components/sidebar/FilterToggleRow.tsx",
+  "line": 2,
+  "text": "import { DropdownMenuShortcut } from '@/components/ui/dropdown-menu'"
+ },
+ {
+  "file": "components/sidebar/FilterToggleRow.tsx",
+  "line": 17,
+  "text": "shortcutLabel,"
+ },
+ {
+  "file": "components/sidebar/FilterToggleRow.tsx",
+  "line": 26,
+  "text": "shortcutLabel?: string"
+ },
+ {
+  "file": "components/sidebar/FilterToggleRow.tsx",
+  "line": 54,
+  "text": "{shortcutLabel ? <DropdownMenuShortcut>{shortcutLabel}</DropdownMenuShortcut> : null}"
+ },
+ {
+  "file": "components/sidebar/LinearAgentSkillSetupPrompt.test.tsx",
+  "line": 558,
+  "text": "document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"
+ },
+ {
+  "file": "components/sidebar/RemoteFileBrowser.paste.test.tsx",
+  "line": 121,
+  "text": "input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))"
+ },
+ {
+  "file": "components/sidebar/SidebarAgentsList.tsx",
+  "line": 122,
+  "text": "if (event.key === 'Escape') {"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 31,
+  "text": "import { useShortcutLabel } from '@/hooks/useShortcutLabel'"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 52,
+  "text": "// Surface the user-assigned shortcut here so the filter menu doubles as its"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 53,
+  "text": "// discovery point ('Unassigned' until they bind one in Settings \u2192 Shortcuts)."
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 54,
+  "text": "const sleepingShortcut = useShortcutLabel('sidebar.sleepingWorkspaces.toggle')"
+ },
+ {
+  "file": "components/sidebar/SidebarFilter.tsx",
+  "line": 227,
+  "text": "shortcutLabel={sleepingShortcut === 'Unassigned' ? undefined : sleepingShortcut}"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 12,
+  "text": "const shortcutLabel: { current: string | null } = { current: '\u2318N' }"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 17,
+  "text": "shortcutLabel,"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 63,
+  "text": "vi.mock('@/hooks/useShortcutLabel', () => ({"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 64,
+  "text": "useShortcutLabel: () => '\u2318N',"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 65,
+  "text": "formatOptionalPrimaryShortcutLabel: () => mocks.shortcutLabel.current"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 111,
+  "text": "mocks.shortcutLabel.current = '\u2318N'"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 190,
+  "text": "it('advertises the workspace shortcut on the create tooltip, and omits it when unassigned', () => {"
+ },
+ {
+  "file": "components/sidebar/SidebarHeader.test.tsx",
+  "line": 196,
+  "text": "mocks.shortcutLabel.current = null"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 54,
+  "text": "vi.mock('@/hooks/useShortcutLabel', () => ({"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 55,
+  "text": "useShortcutKeyComboDetails: () => [{ keys: ['\u2318', 'J'], doubleTap: false }]"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 419,
+  "text": "it('hides the worktree palette shortcut until the search field is hovered or focused', async () => {"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 428,
+  "text": "const shortcuts = searchButton?.querySelector('span.hidden')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 429,
+  "text": "expect(shortcuts?.className).toContain('hidden')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 430,
+  "text": "expect(shortcuts?.className).toContain('group-hover:flex')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 431,
+  "text": "expect(shortcuts?.className).toContain('group-focus-within:flex')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 432,
+  "text": "expect(shortcuts?.textContent).toContain('\u2318')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 433,
+  "text": "expect(shortcuts?.textContent).toContain('J')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 437,
+  "text": "it('keeps task source shortcuts keyboard-reachable and revealed on Tasks row hover or focus', async () => {"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 441,
+  "text": "const githubShortcut = tasksButton.parentElement?.querySelector<HTMLButtonElement>("
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 444,
+  "text": "expect(githubShortcut).not.toBeNull()"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 445,
+  "text": "expect(githubShortcut?.tabIndex).toBe(0)"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 446,
+  "text": "expect(tasksButton.contains(githubShortcut ?? null)).toBe(false)"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 448,
+  "text": "const shortcuts = githubShortcut?.parentElement"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 449,
+  "text": "expect(shortcuts?.className).toContain('can-hover:opacity-0')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 450,
+  "text": "expect(shortcuts?.className).toContain('can-hover:group-hover:opacity-100')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.test.tsx",
+  "line": 451,
+  "text": "expect(shortcuts?.className).toContain('can-hover:group-focus-within:opacity-100')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.tsx",
+  "line": 6,
+  "text": "import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.tsx",
+  "line": 7,
+  "text": "import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.tsx",
+  "line": 57,
+  "text": "const worktreePaletteShortcutCombos = useShortcutKeyComboDetails('worktree.palette')"
+ },
+ {
+  "file": "components/sidebar/SidebarNav.tsx",
+  "line": 110,
+  "text": "{worktreePaletteShortcutCombos.map((combo) => ("
+ },
+ {
+  "file": "components/sidebar/SidebarNav.tsx",
+  "line": 111,
+  "text": "<ShortcutKeyCombo"
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 88,
+  "text": "(event: React.KeyboardEvent<HTMLInputElement>) => {"
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 91,
+  "text": "if (event.key === 'Backspace' && query === '' && selectedRepos.length > 0) {"
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 101,
+  "text": "if (event.key === 'Enter') {"
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 115,
+  "text": "if (event.key === 'ArrowLeft') {"
+ },
+ {
+  "file": "components/sidebar/SidebarProjectFilterPanel.tsx",
+  "line": 124,
+  "text": "if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {"
+ },
+ {
+  "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+  "line": 84,
+  "text": "new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+  "line": 180,
+  "text": "new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/SidebarRepositoryFilterSection.test.tsx",
+  "line": 196,
+  "text": "new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 16,
+  "text": "useShortcutKeyDetails: vi.fn(),"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 40,
+  "text": "vi.mock('@/hooks/useShortcutLabel', () => ({"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 41,
+  "text": "useShortcutKeyDetails: mocks.useShortcutKeyDetails"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 177,
+  "text": "mocks.useShortcutKeyDetails.mockReturnValue({ keys: ['\u2318', ','], doubleTap: false })"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 217,
+  "text": "it('renders Keyboard Shortcuts menu item', () => {"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 219,
+  "text": "expect(html).toContain('Keyboard Shortcuts')"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.test.tsx",
+  "line": 344,
+  "text": "it('renders shortcut keys in the settings tooltip', () => {"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 29,
+  "text": "import { useShortcutKeyDetails } from '@/hooks/useShortcutLabel'"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 30,
+  "text": "import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 107,
+  "text": "const settingsShortcut = useShortcutKeyDetails('app.settings')"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 169,
+  "text": "const openShortcutsSettings = (): void => {"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 170,
+  "text": "openSettingsTarget({ pane: 'shortcuts', repoId: null })"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 214,
+  "text": "{settingsShortcut.keys.length > 0 ? ("
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 215,
+  "text": "<ShortcutKeyCombo"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 216,
+  "text": "keys={settingsShortcut.keys}"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 217,
+  "text": "doubleTap={settingsShortcut.doubleTap}"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 248,
+  "text": "<DropdownMenuItem onSelect={openShortcutsSettings}>"
+ },
+ {
+  "file": "components/sidebar/SidebarSettingsHelpMenu.tsx",
+  "line": 252,
+  "text": "'Keyboard Shortcuts'"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 36,
+  "text": "function TaskProviderShortcut({"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 159,
+  "text": "{/* Why: shortcuts sit beside the Tasks button, not inside it, so each stays keyboard-reachable. */}"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 188,
+  "text": "<TaskProviderShortcut"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 196,
+  "text": "</TaskProviderShortcut>"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 199,
+  "text": "<TaskProviderShortcut"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 207,
+  "text": "</TaskProviderShortcut>"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 210,
+  "text": "<TaskProviderShortcut"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 218,
+  "text": "</TaskProviderShortcut>"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 221,
+  "text": "<TaskProviderShortcut"
+ },
+ {
+  "file": "components/sidebar/SidebarTaskNavButton.tsx",
+  "line": 229,
+  "text": "</TaskProviderShortcut>"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanLaneGrid.tsx",
+  "line": 53,
+  "text": "onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+  "line": 150,
+  "text": "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+  "line": 159,
+  "text": "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.test.tsx",
+  "line": 185,
+  "text": "new KeyboardEvent('keydown', {"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSearchField.tsx",
+  "line": 122,
+  "text": "if (event.key !== 'Escape' || event.nativeEvent.isComposing) {"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanSettingsMenu.tsx",
+  "line": 128,
+  "text": "if (event.key === 'Enter') {"
+ },
+ {
+  "file": "components/sidebar/WorkspaceKanbanStatusLane.tsx",
+  "line": 49,
+  "text": "onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardMeta.interaction.test.tsx",
+  "line": 233,
+  "text": "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/WorktreeCardSshHostControl.tsx",
+  "line": 254,
+  "text": "if (event.key === 'Enter' || event.key === ' ') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 12,
+  "text": "const shortcutLabelMock = vi.hoisted(() => vi.fn())"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 14,
+  "text": "vi.mock('@/hooks/useShortcutLabel', () => ({"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 15,
+  "text": "useOptionalShortcutLabel: shortcutLabelMock,"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 16,
+  "text": "formatShortcutLabel: () => '',"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 17,
+  "text": "formatOptionalShortcutLabel: () => null"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 45,
+  "text": "DropdownMenuShortcut: function DropdownMenuShortcut(props: { children?: React.ReactNode }) {"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 46,
+  "text": "return <span data-testid=\"dropdown-menu-shortcut\">{props.children}</span>"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 158,
+  "text": "describe('WorktreeContextMenu delete shortcut display', () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 160,
+  "text": "shortcutLabelMock.mockImplementation((action: string) => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 178,
+  "text": "it('renders the delete shortcut badge for standard worktree delete', () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 196,
+  "text": "const shortcuts = container.querySelectorAll('[data-testid=\"dropdown-menu-shortcut\"]')"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 197,
+  "text": "const deleteShortcuts = Array.from(shortcuts).filter((el) => el.textContent === '\u2318\u21e7\u232b')"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 198,
+  "text": "expect(deleteShortcuts.length).toBe(1)"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 201,
+  "text": "it('omits the delete shortcut on disabled Delete Worktree for primary checkout', () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 218,
+  "text": "const shortcuts = container.querySelectorAll('[data-testid=\"dropdown-menu-shortcut\"]')"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 219,
+  "text": "const deleteShortcuts = Array.from(shortcuts).filter((el) => el.textContent === '\u2318\u21e7\u232b')"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 220,
+  "text": "expect(deleteShortcuts.length).toBe(0)"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 223,
+  "text": "it('omits the shortcut badge when the action is unassigned', () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 224,
+  "text": "shortcutLabelMock.mockReturnValue(null)"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 241,
+  "text": "const shortcuts = container.querySelectorAll('[data-testid=\"dropdown-menu-shortcut\"]')"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenu.delete-shortcut.test.tsx",
+  "line": 242,
+  "text": "expect(shortcuts.length).toBe(0)"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 7,
+  "text": "DropdownMenuShortcut,"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 35,
+  "text": "import { useOptionalShortcutLabel } from '@/hooks/useShortcutLabel'"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 103,
+  "text": "const deleteShortcut = useOptionalShortcutLabel('workspace.delete')"
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 377,
+  "text": "{!isMultiContext && !removesProject && deleteShortcut ? ("
+ },
+ {
+  "file": "components/sidebar/WorktreeContextMenuView.tsx",
+  "line": 378,
+  "text": "<DropdownMenuShortcut>{deleteShortcut}</DropdownMenuShortcut>"
+ },
+ {
+  "file": "components/sidebar/WorktreeDeveloperMenuReveal.test.tsx",
+  "line": 70,
+  "text": "DropdownMenuShortcut: passthrough"
+ },
+ {
+  "file": "components/sidebar/WorktreeDisplayNameField.tsx",
+  "line": 47,
+  "text": "if (emojiInput.handleKeyDown(event) || event.key !== 'Enter') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeIssueLinkField.tsx",
+  "line": 71,
+  "text": "onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.tsx",
+  "line": 25,
+  "text": "import { getScreenSubmitShortcutLabel, isScreenSubmitShortcut } from '@/lib/screen-submit-shortcut'"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.tsx",
+  "line": 57,
+  "text": "const submitShortcutLabel = getScreenSubmitShortcutLabel()"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.tsx",
+  "line": 292,
+  "text": "(e: React.KeyboardEvent<HTMLTextAreaElement>) => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.tsx",
+  "line": 294,
+  "text": "if (isPlainEnter || isScreenSubmitShortcut(e)) {"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.tsx",
+  "line": 304,
+  "text": "(e: React.KeyboardEvent<HTMLInputElement>) => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeMetaDialog.tsx",
+  "line": 406,
+  "text": "{submitShortcutLabel}{' '}"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.test.ts",
+  "line": 225,
+  "text": "} as unknown as React.KeyboardEvent<HTMLInputElement>,"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 53,
+  "text": "event: React.KeyboardEvent<HTMLInputElement>"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 115,
+  "text": "if (event.key === 'ArrowDown') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 117,
+  "text": "} else if (event.key === 'ArrowUp') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 119,
+  "text": "} else if (event.key === 'Home') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 121,
+  "text": "} else if (event.key === 'End') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 123,
+  "text": "} else if (event.key === 'Enter') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeParentPickerPopover.tsx",
+  "line": 280,
+  "text": "(event: React.KeyboardEvent<HTMLInputElement>) => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeReviewLinkField.tsx",
+  "line": 8,
+  "text": "onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 55,
+  "text": "function ShortcutRenameHarness({"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 74,
+  "text": "function openEditorByShortcut(props: HarnessProps = {}): {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 79,
+  "text": "const { rerender } = render(<ShortcutRenameHarness {...props} />)"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 82,
+  "text": "throw new Error('the rename shortcut did not open an editor')"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 86,
+  "text": "markUnread: () => rerender(<ShortcutRenameHarness {...props} showUnreadEmphasis={true} />),"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 88,
+  "text": "rerender(<ShortcutRenameHarness {...props} displayName={displayName} />)"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 93,
+  "text": "it('closes the shortcut-opened editor on Escape', () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 94,
+  "text": "const { input } = openEditorByShortcut()"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 101,
+  "text": "it('closes the shortcut-opened editor once the rename commits', async () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 103,
+  "text": "const { input } = openEditorByShortcut({ onRename })"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 112,
+  "text": "it('closes the shortcut-opened editor when it loses focus', async () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 113,
+  "text": "const { input } = openEditorByShortcut()"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 124,
+  "text": "const { input } = openEditorByShortcut({ onEditingChange })"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 133,
+  "text": "it('reports the shortcut-open transition once in Strict Mode', () => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 138,
+  "text": "<ShortcutRenameHarness onEditingChange={onEditingChange} />"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 165,
+  "text": "const { input } = openEditorByShortcut()"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 174,
+  "text": "const { input, renameElsewhere } = openEditorByShortcut()"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.editor-lifecycle.test.tsx",
+  "line": 187,
+  "text": "const { input, markUnread } = openEditorByShortcut()"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 44,
+  "text": "// Why: lets a parent (e.g. the workspace.rename shortcut via WorktreeCard)"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 154,
+  "text": "// Why: double-click and the shortcut both open here, so neither can skip a step."
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 171,
+  "text": "// shortcut). Always consume the request so the parent's trigger can't linger;"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 244,
+  "text": "(event: React.KeyboardEvent<HTMLInputElement>) => {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 254,
+  "text": "if (event.key === 'Enter') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeTitleInlineRename.tsx",
+  "line": 257,
+  "text": "} else if (event.key === 'Escape') {"
+ },
+ {
+  "file": "components/sidebar/WorktreeVisibilityHelpPopover.test.tsx",
+  "line": 97,
+  "text": "new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/delete-worktree-flow.test.ts",
+  "line": 535,
+  "text": "// Why: the delete-current-workspace shortcut (useIpcEvents) forwards whatever workspace is"
+ },
+ {
+  "file": "components/sidebar/host-header-drag.ts",
+  "line": 252,
+  "text": "const onKeyDown = (e: KeyboardEvent): void => {"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 236,
+  "text": "const onKeyDown = (event: KeyboardEvent): void => {"
+ },
+ {
+  "file": "components/sidebar/project-group-header-drag.ts",
+  "line": 237,
+  "text": "if (event.key === 'Escape') {"
+ },
+ {
+  "file": "components/sidebar/project-header-drag.ts",
+  "line": 250,
+  "text": "const onKeyDown = (e: KeyboardEvent): void => {"
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "line": 5,
+  "text": "getVisibleWorktreeShortcutTargets,"
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "line": 7,
+  "text": "setVisibleWorktreeShortcutTargets"
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "line": 112,
+  "text": "setVisibleWorktreeShortcutTargets(null)"
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "line": 118,
+  "text": "setVisibleWorktreeShortcutTargets(null)"
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "line": 273,
+  "text": "it('keeps same-id hosts as separate closed-sidebar shortcut positions', () => {"
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "line": 280,
+  "text": "expect(getVisibleWorktreeShortcutTargets()).toEqual(["
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "line": 286,
+  "text": "it('does not reconstruct a filtered same-id host in closed-sidebar shortcuts', () => {"
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.test.ts",
+  "line": 296,
+  "text": "expect(getVisibleWorktreeShortcutTargets()).toEqual(["
+ },
+ {
+  "file": "components/sidebar/rendered-sidebar-worktree-order.ts",
+  "line": 34,
+  "text": "* hoisting and collapse elision, so the shortcut numbered the wrong card."
+ },
+ {
+  "file": "components/sidebar/sidebar-filter-actions.ts",
+  "line": 77,
+  "text": "* between badge numbers and the Cmd+N shortcut target."
+ },
+ {
+  "file": "components/sidebar/sidebar-header-actions.tsx",
+  "line": 6,
+  "text": "import { formatOptionalPrimaryShortcutLabel } from '@/hooks/useShortcutLabel'"
+ },
+ {
+  "file": "components/sidebar/sidebar-header-actions.tsx",
+  "line": 49,
+  "text": "const shortcutLabel = formatOptionalPrimaryShortcutLabel('workspace.create', keybindings)"
+ },
+ {
+  "file": "components/sidebar/sidebar-header-actions.tsx",
+  "line": 76,
+  "text": "{shortcutLabel ? <span className=\"ml-1.5 text-background/60\">{shortcutLabel}</span> : null}"
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+  "line": 1,
+  "text": "import { useCallback, type Dispatch, type KeyboardEvent, type SetStateAction } from 'react'"
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+  "line": 43,
+  "text": "}: RemoteFileBrowserFilterKeyCommandsArgs): (e: KeyboardEvent<HTMLInputElement>) => void {"
+ },
+ {
+  "file": "components/sidebar/use-remote-file-browser-filter-key-commands.ts",
+  "line": 45,
+  "text": "(e: KeyboardEvent<HTMLInputElement>) => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 12,
+  "text": "onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 133,
+  "text": "(event: React.KeyboardEvent<HTMLElement>) => {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 134,
+  "text": "if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {"
+ },
+ {
+  "file": "components/sidebar/use-workspace-kanban-column-resize.ts",
+  "line": 139,
+  "text": "const direction = event.key === 'ArrowRight' ? 1 : -1"
+ },
+ {
+  "file": "components/sidebar/use-workspace-reveal-body-redirect.ts",
+  "line": 6,
+  "text": "* Reveal requests (rename shortcut, reveal-active-workspace button) are handled inside the"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+  "line": 57,
+  "text": "from.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.test.tsx",
+  "line": 102,
+  "text": "it('toggles the board from the shortcut bridge event', async () => {"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+  "line": 135,
+  "text": "const handleKeyDown = (event: KeyboardEvent): void => {"
+ },
+ {
+  "file": "components/sidebar/useWorkspaceBoardPanel.ts",
+  "line": 136,
+  "text": "if (event.key !== 'Escape') {"
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 235,
+  "text": "* recomputes sort order from a live Zustand snapshot, the Cmd+1\u20139 shortcut"
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 238,
+  "text": "* shortcut numbering always matches the sidebar card order."
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 244,
+  "text": "export type VisibleWorktreeShortcutTarget = {"
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 248,
+  "text": "let _publishedVisibleShortcutTargets: VisibleWorktreeShortcutTarget[] | null = null"
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 254,
+  "text": "export function setVisibleWorktreeShortcutTargets("
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 255,
+  "text": "targets: VisibleWorktreeShortcutTarget[] | null"
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 257,
+  "text": "_publishedVisibleShortcutTargets = targets"
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 358,
+  "text": "export function getVisibleWorktreeShortcutTargets(): VisibleWorktreeShortcutTarget[] {"
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 359,
+  "text": "if (_publishedVisibleShortcutTargets) {"
+ },
+ {
+  "file": "components/sidebar/visible-worktrees.ts",
+  "line": 360,
+  "text": "return _publishedVisibleShortcutTargets"
+ },
+ {
+  "file": "components/sidebar/workspace-delete-quick-action.ts",
+  "line": 21,
+  "text": "function onKeyDown(event: KeyboardEvent): void {"
+ },
+ {
+  "file": "components/sidebar/workspace-delete-quick-action.ts",
+  "line": 22,
+  "text": "if (event.altKey || event.key === 'Alt') {"
+ },
+ {
+  "file": "components/sidebar/workspace-delete-quick-action.ts",
+  "line": 27,
+  "text": "function onKeyUp(event: KeyboardEvent): void {"
+ },
+ {
+  "file": "components/sidebar/workspace-delete-quick-action.ts",
+  "line": 28,
+  "text": "if (event.key === 'Alt' || !event.altKey) {"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agent-row.tsx",
+  "line": 68,
+  "text": "function stopActivationKeyPropagation(e: React.KeyboardEvent): void {"
+ },
+ {
+  "file": "components/sidebar/worktree-card-compact-agents.tsx",
+  "line": 18,
+  "text": "function stopActivationKeyPropagation(e: React.KeyboardEvent): void {"
+ },
+ {
+  "file": "components/sidebar/worktree-delete-request.test.ts",
+  "line": 5,
+  "text": "* Both the delete-confirmation dialog and the batch shortcut funnel through"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+  "line": 224,
+  "text": "const escape = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+  "line": 239,
+  "text": "const enter = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+  "line": 244,
+  "text": "const escape = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/pointer-flush.test.ts",
+  "line": 253,
+  "text": "const escape = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+  "line": 81,
+  "text": "const handleKeyDown = (event: KeyboardEvent): void => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/drag/use-pointer-window-events.ts",
+  "line": 82,
+  "text": "if (event.key !== 'Escape' || !worktreePointerDragRef.current) {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+  "line": 9,
+  "text": "import { getShortcutPlatform } from '@/lib/shortcut-platform'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+  "line": 51,
+  "text": "const mod = getShortcutPlatform() === 'darwin' ? { metaKey: true } : { ctrlKey: true }"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.host-identity.test.tsx",
+  "line": 54,
+  "text": "new KeyboardEvent('keydown', {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+  "line": 7,
+  "text": "import { getShortcutPlatform } from '@/lib/shortcut-platform'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+  "line": 25,
+  "text": "// xterm's hidden input textarea isn't a real text field; treating it as one would block sidebar shortcuts."
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+  "line": 115,
+  "text": "const handleKeyDown = (e: KeyboardEvent) => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+  "line": 120,
+  "text": "const platform = getShortcutPlatform()"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-keyboard.ts",
+  "line": 144,
+  "text": "(e: React.KeyboardEvent) => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+  "line": 9,
+  "text": "import { getVisibleWorktreeShortcutTargets } from '../../visible-worktrees'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+  "line": 58,
+  "text": "it('publishes both rows as separate shortcut targets', () => {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection-host-collision.test.tsx",
+  "line": 59,
+  "text": "expect(getVisibleWorktreeShortcutTargets()).toEqual(["
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "line": 8,
+  "text": "import { setVisibleWorktreeIds, setVisibleWorktreeShortcutTargets } from '../../visible-worktrees'"
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "line": 18,
+  "text": "// the Cmd+1\u20139 shortcut cache all agree on one order."
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "line": 132,
+  "text": "// Why layout effect: the Cmd/Ctrl+1\u20139 handler can fire right after commit; publishing after paint would leave the shortcut cache stale."
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "line": 135,
+  "text": "setVisibleWorktreeShortcutTargets("
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "line": 141,
+  "text": "// Why null, not []: [] is a real rendered order (all collapsed/filtered); null tells shortcuts the list is unmounted."
+ },
+ {
+  "file": "components/sidebar/worktree-list/navigation/use-selection.ts",
+  "line": 144,
+  "text": "setVisibleWorktreeShortcutTargets(null)"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/header-event-guards.ts",
+  "line": 4,
+  "text": "export function stopRepoHeaderKeyboardToggle(event: React.KeyboardEvent<HTMLElement>): void {"
+ },
+ {
+  "file": "components/sidebar/worktree-list/rows/header-event-guards.ts",
+  "line": 5,
+  "text": "if (event.key === 'Enter' || event.key === ' ') {"
+ }
+]

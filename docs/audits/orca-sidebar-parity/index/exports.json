@@ -1,0 +1,3676 @@
+{
+ "components/sidebar/AddProjectFromFolderDialog.tsx": [
+  "default"
+ ],
+ "components/sidebar/AddRemoteHostDialog.tsx": [
+  "AddRemoteHostMode",
+  "AddRemoteHostDialog"
+ ],
+ "components/sidebar/AddRemoteHostFields.tsx": [
+  "SshHostFields",
+  "RemoteServerFields"
+ ],
+ "components/sidebar/AddRemoteHostServerFormPanel.tsx": [
+  "AddRemoteHostServerFormPanel"
+ ],
+ "components/sidebar/AddRemoteHostSshConfigPicker.tsx": [
+  "AddRemoteHostSshConfigPicker"
+ ],
+ "components/sidebar/AddRemoteHostSshFormPanel.tsx": [
+  "AddRemoteHostSshFormPanel"
+ ],
+ "components/sidebar/AddRepoCloneStep.tsx": [
+  "CloneStep"
+ ],
+ "components/sidebar/AddRepoCreateStep.tsx": [
+  "CreateStep"
+ ],
+ "components/sidebar/AddRepoDialog.tsx": [
+  "default"
+ ],
+ "components/sidebar/AddRepoDialogChrome.tsx": [
+  "AddRepoDialogChrome"
+ ],
+ "components/sidebar/AddRepoDialogStepContent.tsx": [
+  "AddRepoDialogStepContent"
+ ],
+ "components/sidebar/AddRepoHostSelector.tsx": [
+  "AddRepoHostSelector"
+ ],
+ "components/sidebar/AddRepoHostSelectorSlot.tsx": [
+  "AddRepoHostSelectorSlot"
+ ],
+ "components/sidebar/AddRepoNestedImportStep.tsx": [
+  "AddRepoNestedImportStep"
+ ],
+ "components/sidebar/AddRepoRemoteStep.tsx": [
+  "RemoteStep"
+ ],
+ "components/sidebar/AddRepoServerStartStep.tsx": [
+  "AddRepoServerPathStartStep"
+ ],
+ "components/sidebar/AddRepoStartSteps.tsx": [
+  "AddRepoLocalStartStep"
+ ],
+ "components/sidebar/AddRepoStepIndicator.tsx": [
+  "AddRepoStepIndicator"
+ ],
+ "components/sidebar/AddRepoSteps.tsx": [
+  "useRemoteRepo"
+ ],
+ "components/sidebar/AgentDashboardSidebarEntry.tsx": [
+  "AgentDashboardSidebarEntry",
+  "default"
+ ],
+ "components/sidebar/AgentDashboardSidebarHost.tsx": [
+  "AgentDashboardSidebarHost",
+  "default"
+ ],
+ "components/sidebar/AutoRenameFailedDialog.tsx": [
+  "AutoRenameFailedDialog"
+ ],
+ "components/sidebar/CacheTimer.tsx": [
+  "usePromptCacheCountdownStartedAt",
+  "usePromptCacheCountdownForPane",
+  "CacheTimer",
+  "default"
+ ],
+ "components/sidebar/CommentMarkdown.tsx": [
+  "remarkGitHubReferences",
+  "default"
+ ],
+ "components/sidebar/CommentMermaidBlock.tsx": [
+  "CommentMermaidBlock",
+  "default"
+ ],
+ "components/sidebar/CreateProjectLocationField.tsx": [
+  "CreateProjectParentBrowser",
+  "CreateProjectLocationField"
+ ],
+ "components/sidebar/DeleteWorktreeDialog.tsx": [
+  "default"
+ ],
+ "components/sidebar/DeleteWorktreeDialogDescription.tsx": [
+  "DeleteWorktreeDialogDescription"
+ ],
+ "components/sidebar/DeleteWorktreeDialogFooter.tsx": [
+  "DeleteWorktreeDialogFooter"
+ ],
+ "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx": [
+  "DeleteWorktreeDirtyChangeHint"
+ ],
+ "components/sidebar/DeleteWorktreeLineageNotice.tsx": [
+  "DeleteWorktreeLineageNotice"
+ ],
+ "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx": [
+  "DeleteWorktreeSkipConfirmOption"
+ ],
+ "components/sidebar/DeleteWorktreeTargetPreview.tsx": [
+  "DeleteWorktreeTargetPreview"
+ ],
+ "components/sidebar/DeleteWorktreeWarningPanels.tsx": [
+  "DeleteWorktreeWarningPanels"
+ ],
+ "components/sidebar/FilterToggleRow.tsx": [
+  "FilterToggleRow"
+ ],
+ "components/sidebar/ForgetSshWorkspaceDialog.tsx": [
+  "ForgetSshWorkspaceDialog",
+  "default"
+ ],
+ "components/sidebar/HiddenWorktreeRecoveryList.tsx": [
+  "HiddenWorktreeRecoveryList",
+  "default"
+ ],
+ "components/sidebar/HostRemoveDialog.tsx": [
+  "HostRemoveDialog"
+ ],
+ "components/sidebar/HostRenameDialog.tsx": [
+  "HostRenameDialog"
+ ],
+ "components/sidebar/HostSectionHeaderMenu.tsx": [
+  "HostSectionHeaderMenu"
+ ],
+ "components/sidebar/ImportedWorktreesVisibilityLine.tsx": [
+  "ImportedWorktreesVisibilityPlacement",
+  "ImportedWorktreeVisibilityPreview",
+  "groupWorktreesByParentPath",
+  "ImportedWorktreesVisibilityLine",
+  "default"
+ ],
+ "components/sidebar/LinearAgentSkillSetupDialog.tsx": [
+  "LinearAgentSkillSetupDialog",
+  "default"
+ ],
+ "components/sidebar/LinearAgentSkillSetupPrompt.tsx": [
+  "_linearAgentSkillSetupPromptInternalsForTests",
+  "LinearAgentSkillSetupPrompt"
+ ],
+ "components/sidebar/MarkdownImageLightbox.tsx": [
+  "ExpandableMarkdownImage"
+ ],
+ "components/sidebar/NewExternalWorktreesInboxLine.tsx": [
+  "NewExternalWorktreesInboxLine",
+  "default"
+ ],
+ "components/sidebar/NonGitFolderDialog.tsx": [
+  "default"
+ ],
+ "components/sidebar/NoticeHostGlyph.tsx": [
+  "NoticeHostGlyph",
+  "default"
+ ],
+ "components/sidebar/OrcaYamlTrustDialog.tsx": [
+  "default"
+ ],
+ "components/sidebar/PendingWorktreeRow.tsx": [
+  "PendingWorktreeRow"
+ ],
+ "components/sidebar/PreservedBranchBatchReviewDialog.tsx": [
+  "PreservedBranchBatchReviewDialog"
+ ],
+ "components/sidebar/PreservedBranchBatchReviewModal.tsx": [
+  "PreservedBranchBatchReviewModal",
+  "default"
+ ],
+ "components/sidebar/ProjectAddedDialog.tsx": [
+  "ProjectAddedDialog",
+  "default"
+ ],
+ "components/sidebar/ProjectGroupDeleteDialog.tsx": [
+  "ProjectGroupDeleteDialog"
+ ],
+ "components/sidebar/ProjectGroupNameDialog.tsx": [
+  "ProjectGroupNameDialog"
+ ],
+ "components/sidebar/ProjectHeaderActions.tsx": [
+  "PROJECT_HEADER_ACTIONS_CLASS_NAME",
+  "ProjectHeaderActions"
+ ],
+ "components/sidebar/RemoteFileBrowser.tsx": [
+  "RemoteFileBrowser"
+ ],
+ "components/sidebar/RemoteFileBrowserBreadcrumbs.tsx": [
+  "RemoteFileBrowserBreadcrumbs"
+ ],
+ "components/sidebar/RemoteFileBrowserEntryList.tsx": [
+  "RemoteFileBrowserEntryList"
+ ],
+ "components/sidebar/RemoveFolderDialog.tsx": [
+  "default"
+ ],
+ "components/sidebar/ScrollToCurrentWorkspaceToolbarButton.tsx": [
+  "ScrollToCurrentWorkspaceToolbarButton"
+ ],
+ "components/sidebar/SetupGuideSidebarEntry.tsx": [
+  "SetupGuideEntryVisibilityInput",
+  "shouldShowSetupGuideEntry",
+  "getSetupGuideSidebarEntryReady",
+  "SetupGuideSidebarEntry"
+ ],
+ "components/sidebar/SetupScriptPromptCard.tsx": [
+  "default"
+ ],
+ "components/sidebar/SetupScriptPromptCardShell.tsx": [
+  "SetupScriptPromptCardShell"
+ ],
+ "components/sidebar/SetupScriptPromptCardViews.tsx": [
+  "DetectedSetupPreviewProps",
+  "DetectedSetupPreview",
+  "PackageManagerActionsProps",
+  "PackageManagerActions",
+  "SetupScriptPromptBodyProps",
+  "SetupScriptPromptBody",
+  "InspectionErrorActionsProps",
+  "InspectionErrorActions",
+  "ConfigureOnlyActionProps",
+  "ConfigureOnlyAction",
+  "SaveLocalSetupActionProps",
+  "SaveLocalSetupAction"
+ ],
+ "components/sidebar/SetupScriptPromptToast.tsx": [
+  "showSavedInProjectSettingsToast"
+ ],
+ "components/sidebar/SidebarAgentsList.tsx": [
+  "SidebarAgentsListProps",
+  "SidebarAgentsList",
+  "default"
+ ],
+ "components/sidebar/SidebarFeedbackDialog.tsx": [
+  "SidebarFeedbackDialog"
+ ],
+ "components/sidebar/SidebarFeedbackImageAttachments.tsx": [
+  "SidebarFeedbackImageAttachments"
+ ],
+ "components/sidebar/SidebarFilter.tsx": [
+  "default"
+ ],
+ "components/sidebar/SidebarGroupByToggle.tsx": [
+  "SidebarGroupByToggle"
+ ],
+ "components/sidebar/SidebarHeader.tsx": [
+  "default"
+ ],
+ "components/sidebar/SidebarHostScopeMenuSection.tsx": [
+  "SidebarHostScopeMenuSection"
+ ],
+ "components/sidebar/SidebarNav.tsx": [
+  "shouldShowMobileButton",
+  "shouldShowAutomationsButton",
+  "shouldShowArtifactsButton",
+  "shouldShowSkillsButton",
+  "shouldShowAgentDashboardButton",
+  "default"
+ ],
+ "components/sidebar/SidebarProjectFilterPanel.tsx": [
+  "SidebarProjectFilterPanel"
+ ],
+ "components/sidebar/SidebarRepositoryFilterSection.tsx": [
+  "default"
+ ],
+ "components/sidebar/SidebarSettingsHelpMenu.tsx": [
+  "SidebarSettingsHelpMenu"
+ ],
+ "components/sidebar/SidebarTaskNavButton.tsx": [
+  "SidebarTaskNavButton"
+ ],
+ "components/sidebar/SidebarToolbar.tsx": [
+  "default"
+ ],
+ "components/sidebar/SidebarWorkspaceFilterSection.tsx": [
+  "default"
+ ],
+ "components/sidebar/SidebarWorkspaceOptionsMenu.tsx": [
+  "default"
+ ],
+ "components/sidebar/SshTargetRow.tsx": [
+  "SshTargetRow"
+ ],
+ "components/sidebar/StatusIndicator.tsx": [
+  "Status",
+  "default"
+ ],
+ "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx": [
+  "SuppressExternalWorktreeInboxDialog",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanAreaSelectionOverlay.tsx": [
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanCard.tsx": [
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanDrawer.tsx": [
+  "WorkspaceKanbanDrawer",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanDrawerHeader.tsx": [
+  "WorkspaceKanbanDrawerHeader",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanDrawerView.tsx": [
+  "WorkspaceKanbanDrawerView",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanLaneCardList.tsx": [
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanLaneGrid.tsx": [
+  "WorkspaceKanbanLaneGrid",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanPinDropTarget.tsx": [
+  "WorkspaceKanbanPinDropTarget",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanSearchField.tsx": [
+  "overlayReserve",
+  "WorkspaceKanbanSearchField",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanSettingsMenu.tsx": [
+  "WorkspaceKanbanSettingsMenu",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanSheet.tsx": [
+  "WorkspaceKanbanSheet",
+  "default"
+ ],
+ "components/sidebar/WorkspaceKanbanStatusLane.tsx": [
+  "default"
+ ],
+ "components/sidebar/WorkspaceSleepMenuItems.tsx": [
+  "WorkspaceSleepMenuItems"
+ ],
+ "components/sidebar/WorkspaceStatusAppearancePopover.tsx": [
+  "WorkspaceStatusAppearancePopover",
+  "default"
+ ],
+ "components/sidebar/WorktreeCard.tsx": [
+  "default"
+ ],
+ "components/sidebar/WorktreeCardAgents.tsx": [
+  "SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT",
+  "default"
+ ],
+ "components/sidebar/WorktreeCardAutomationDetailSection.tsx": [
+  "WorktreeCardAutomationDetailSection"
+ ],
+ "components/sidebar/WorktreeCardCliDetailSection.tsx": [
+  "WorktreeCardCliDetailSection"
+ ],
+ "components/sidebar/WorktreeCardDetailSection.tsx": [
+  "WorktreeCardDetailSection",
+  "WorktreeCardDetailSectionContent"
+ ],
+ "components/sidebar/WorktreeCardDisplayMenuSection.tsx": [
+  "WorktreeCardDisplayMenuSection"
+ ],
+ "components/sidebar/WorktreeCardHelpers.tsx": [
+  "branchDisplayName",
+  "checksLabel",
+  "CONFLICT_OPERATION_LABELS",
+  "EMPTY_TABS",
+  "EMPTY_BROWSER_TABS",
+  "FilledBellIcon",
+  "PullRequestIcon"
+ ],
+ "components/sidebar/WorktreeCardHoverIdentityHeader.tsx": [
+  "WorktreeCardHoverIdentityHeader"
+ ],
+ "components/sidebar/WorktreeCardIssueDetailSection.tsx": [
+  "WorktreeCardIssueDetailSection"
+ ],
+ "components/sidebar/WorktreeCardMeta.tsx": [
+  "WorktreeCardDetailsHover"
+ ],
+ "components/sidebar/WorktreeCardMetaBadges.tsx": [
+  "hasWorktreeCardDetails",
+  "WorktreeCardMetaBadges"
+ ],
+ "components/sidebar/WorktreeCardMetadataControls.tsx": [
+  "MetaIconBadge",
+  "DetailHeader",
+  "MetadataActionIcon"
+ ],
+ "components/sidebar/WorktreeCardMetadataStatusBadges.tsx": [
+  "IssueStateBadge",
+  "LinearStateBadge",
+  "ReviewStateBadge",
+  "ReviewChecksBadge"
+ ],
+ "components/sidebar/WorktreeCardPorts.tsx": [
+  "WorktreeCardPortsTrigger",
+  "WorktreeCardPortsDetails"
+ ],
+ "components/sidebar/WorktreeCardReviewDetailSection.tsx": [
+  "WorktreeCardReviewDetailSection"
+ ],
+ "components/sidebar/WorktreeCardSshHostControl.tsx": [
+  "WorktreeCardSshHostControl"
+ ],
+ "components/sidebar/WorktreeCardStatusSlot.tsx": [
+  "WorktreeCardStatusSlot"
+ ],
+ "components/sidebar/WorktreeContextMenu.tsx": [
+  "default"
+ ],
+ "components/sidebar/WorktreeContextMenuOverlays.tsx": [
+  "WorktreeContextMenuOverlays"
+ ],
+ "components/sidebar/WorktreeContextMenuView.tsx": [
+  "WorktreeContextMenuView",
+  "default"
+ ],
+ "components/sidebar/WorktreeDeveloperMenu.tsx": [
+  "WorktreeDeveloperMenu"
+ ],
+ "components/sidebar/WorktreeDisplayNameField.tsx": [
+  "WorktreeDisplayNameField"
+ ],
+ "components/sidebar/WorktreeHostContextBadge.tsx": [
+  "WorktreeHostContextBadge"
+ ],
+ "components/sidebar/WorktreeIssueLinkField.tsx": [
+  "issueAdornmentReserve",
+  "WorktreeIssueLinkFieldProps",
+  "WorktreeIssueLinkField"
+ ],
+ "components/sidebar/WorktreeList.tsx": [
+  "default"
+ ],
+ "components/sidebar/WorktreeListScrollToTopButton.tsx": [
+  "WorktreeListScrollToTopButton"
+ ],
+ "components/sidebar/WorktreeMetaDialog.tsx": [
+  "default"
+ ],
+ "components/sidebar/WorktreeOpenInMenu.tsx": [
+  "OpenInMenuEntry",
+  "getWorktreeOpenInEntries",
+  "getOpenInEntryAvailability",
+  "openOpenInAppsSettings",
+  "openWorktreePath",
+  "WorktreeOpenInMenuItems",
+  "WorktreeOpenInSubMenu"
+ ],
+ "components/sidebar/WorktreeParentPickerPopover.tsx": [
+  "getWorktreeParentPickerFocusRestoreTarget",
+  "selectWorktreeParent",
+  "handleWorktreeParentPickerKeyDown",
+  "WorktreeParentPickerPopover"
+ ],
+ "components/sidebar/WorktreeParentPickerRow.tsx": [
+  "WorktreeParentPickerRow"
+ ],
+ "components/sidebar/WorktreeReviewLinkField.tsx": [
+  "WorktreeReviewLinkField"
+ ],
+ "components/sidebar/WorktreeSidebarDropIndicator.tsx": [
+  "WorktreeSidebarDropIndicator"
+ ],
+ "components/sidebar/WorktreeStatusMenuItems.tsx": [
+  "WorktreeStatusMenuItems"
+ ],
+ "components/sidebar/WorktreeTitleInlineRename.tsx": [
+  "WorktreeTitleRenameCommit",
+  "getWorktreeTitleRenameCommit",
+  "isWorktreeTitleTruncated",
+  "WorktreeTitleInlineRename"
+ ],
+ "components/sidebar/WorktreeVisibilityDialog.tsx": [
+  "WorktreeVisibilityDialog",
+  "default"
+ ],
+ "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx": [
+  "WorktreeVisibilityGlobalSettingsLink"
+ ],
+ "components/sidebar/WorktreeVisibilityHelpPopover.tsx": [
+  "WorktreeVisibilityHelpPopover",
+  "default"
+ ],
+ "components/sidebar/WorktreeVisibilityScanStatus.tsx": [
+  "WorktreeVisibilityScanStatus"
+ ],
+ "components/sidebar/WorktreeVisibilitySourceAddForm.tsx": [
+  "WorktreeVisibilitySourceAddResult",
+  "WorktreeVisibilitySourceAddForm"
+ ],
+ "components/sidebar/WorktreeVisibilitySourceList.tsx": [
+  "WorktreeVisibilitySourceRow",
+  "getWorktreeVisibilitySourceLabel",
+  "worktreeVisibilitySourceRowKey",
+  "WorktreeVisibilitySourceList",
+  "default"
+ ],
+ "components/sidebar/active-worktree-focus-after-delete.ts": [
+  "prepareActiveWorktreeFocusAfterDelete"
+ ],
+ "components/sidebar/add-remote-host-ssh-actions.ts": [
+  "saveNewSshHostFromForm",
+  "prefillFormFromSshConfigHost",
+  "addAllSshConfigHostsToOrca",
+  "loadSshConfigHostsForPicker"
+ ],
+ "components/sidebar/add-repo-browse-authority.ts": [
+  "AddRepoBrowseAuthorityActions",
+  "routeAddRepoBrowse"
+ ],
+ "components/sidebar/add-repo-dialog-types.ts": [
+  "AddRepoDialogStep",
+  "defaultProjectGroupNameForPath",
+  "createNestedRepoScanId"
+ ],
+ "components/sidebar/add-repo-existing-workspaces-telemetry.ts": [
+  "buildAddRepoExistingWorkspacesTelemetry",
+  "buildAddRepoExistingWorkspacesDetectedEvent",
+  "shouldTrackAddRepoExistingWorkspacesDetected"
+ ],
+ "components/sidebar/add-repo-host-availability.ts": [
+  "canSelectAddRepoHost",
+  "canConnectAddRepoHost"
+ ],
+ "components/sidebar/add-repo-local-start-actions.ts": [
+  "AddRepoLocalStartActionHandlers",
+  "AddRepoLocalStartAction",
+  "getAddRepoLocalStartActions"
+ ],
+ "components/sidebar/add-repo-runtime-owner.ts": [
+  "CapturedRuntimeOwner",
+  "capturedAddRepoExecutionHostId",
+  "worktreeRefreshOptions"
+ ],
+ "components/sidebar/add-repo-skip-finalization.ts": [
+  "AddRepoSkipFinalizationState",
+  "finalizeImportedRepoAfterSkip"
+ ],
+ "components/sidebar/add-repo-store-upsert.ts": [
+  "upsertAddedRepoWithProjectHostSetup"
+ ],
+ "components/sidebar/clone-defaults.ts": [
+  "getDefaultCloneParent",
+  "getCloneDestinationAutoFill"
+ ],
+ "components/sidebar/comment-markdown-element-renderers.tsx": [
+  "CommentMarkdownLinkClickHandler",
+  "DocumentCodeBlockRenderer",
+  "isTrustedCompactImageSrc",
+  "createCompactCommentMarkdownComponents",
+  "createDocumentCommentMarkdownComponents",
+  "compactCommentMarkdownComponents",
+  "documentCommentMarkdownComponents"
+ ],
+ "components/sidebar/comment-markdown-github-attachment-media.tsx": [
+  "isGitHubUserAttachmentUrl",
+  "isGitHubUserAttachmentVideoLink",
+  "GitHubUserAttachmentVideo",
+  "GitHubUserAttachmentImage"
+ ],
+ "components/sidebar/comment-markdown-lazy.tsx": [
+  "preloadCommentMarkdown",
+  "CommentMarkdownAsync"
+ ],
+ "components/sidebar/comment-markdown-native-chat-file-links.ts": [
+  "remarkNativeChatFileLinks"
+ ],
+ "components/sidebar/comment-mermaid-fence.tsx": [
+  "isMermaidFence",
+  "renderMermaidFence",
+  "isMermaidPre"
+ ],
+ "components/sidebar/complete-nested-folder-open.ts": [
+  "completeNestedFolderOpen"
+ ],
+ "components/sidebar/create-project-defaults.ts": [
+  "GitAvailability",
+  "joinCreateProjectPath",
+  "getDefaultCreateProjectParent",
+  "getCreateProjectDefaultParentAutoFill",
+  "formatCreateProjectParentSummary"
+ ],
+ "components/sidebar/default-branch-workspace.ts": [
+  "isDefaultBranchWorkspace"
+ ],
+ "components/sidebar/delete-worktree-dialog-copy.ts": [
+  "isFolderWorkspaceDelete",
+  "countFolderWorkspaceDeletes",
+  "getDeleteWorktreeDialogCopy",
+  "getDeleteWorktreeLineageDialogCopy"
+ ],
+ "components/sidebar/delete-worktree-dialog-force-delete.ts": [
+  "runDialogForceDelete"
+ ],
+ "components/sidebar/delete-worktree-dirty-change-counts.ts": [
+  "orderDeleteWorktreeStatusHydrationTargets",
+  "getDeleteWorktreeDirtyChangeCounts"
+ ],
+ "components/sidebar/delete-worktree-failure-toast.tsx": [
+  "showDeleteWorktreeFailureToast"
+ ],
+ "components/sidebar/delete-worktree-flow.ts": [
+  "runWorktreeDelete",
+  "runWorktreeBatchDelete"
+ ],
+ "components/sidebar/delete-worktree-lineage-delete-all.ts": [
+  "runLineageDeleteAll"
+ ],
+ "components/sidebar/delete-worktree-preference-toast.ts": [
+  "persistDeleteWorktreeConfirmSkipPreference"
+ ],
+ "components/sidebar/delete-worktree-toast.ts": [
+  "DeleteWorktreeToastCopy",
+  "getDeleteWorktreeToastCopy"
+ ],
+ "components/sidebar/empty-project-placeholder-repos.ts": [
+  "getEmptyProjectPlaceholderRepoIds"
+ ],
+ "components/sidebar/focused-agent-row-highlight.ts": [
+  "FocusedAgentRowHighlightState",
+  "getFocusedAgentPaneKeyForWorktree",
+  "useFocusedAgentPaneKey"
+ ],
+ "components/sidebar/folder-workspace-agent-startup.ts": [
+  "getFolderWorkspaceAgentLaunchPlatform",
+  "resolveFolderWorkspaceLaunchDraft",
+  "buildFolderWorkspaceLinkedStartupPlan"
+ ],
+ "components/sidebar/folder-workspace-card-pr-display.ts": [
+  "getFolderWorkspaceCardPrDisplay"
+ ],
+ "components/sidebar/folder-workspace-composer-helpers.ts": [
+  "getFolderSourceRepos",
+  "toFolderWorkspaceLinkedTask",
+  "getSmartNameSelection",
+  "getLinkedItemDisplayName",
+  "toGitHubLinkedWorkItem",
+  "toGitLabLinkedWorkItem",
+  "toLinearLinkedWorkItem",
+  "getFolderWorkspacePrimaryActionLabel"
+ ],
+ "components/sidebar/folder-workspace-composer-path-status.ts": [
+  "useFolderWorkspaceComposerPathStatus"
+ ],
+ "components/sidebar/folder-workspace-composer-submit.ts": [
+  "submitFolderWorkspaceCreate"
+ ],
+ "components/sidebar/folder-workspace-host-id.ts": [
+  "getFolderWorkspaceHostId"
+ ],
+ "components/sidebar/header-drag-click-swallow.ts": [
+  "swallowNextClickOnDragHandle"
+ ],
+ "components/sidebar/header-drag-pointer-release.ts": [
+  "hasPointerBeenReleased"
+ ],
+ "components/sidebar/host-header-drag-dom.ts": [
+  "HostHeaderRect",
+  "isHostHeaderActionTarget",
+  "readHostHeaderRects"
+ ],
+ "components/sidebar/host-header-drag.ts": [
+  "HostDragState",
+  "UseHostHeaderDragArgs",
+  "HostHeaderDragController",
+  "useHostHeaderDrag"
+ ],
+ "components/sidebar/host-header-menu-items.ts": [
+  "HostHeaderMenuAction",
+  "HostHeaderMenuModel",
+  "HostHeaderMenuInput",
+  "buildHostHeaderMenuModel"
+ ],
+ "components/sidebar/host-rename-remove.ts": [
+  "getHostDisplayLabelOverride",
+  "applyHostRename",
+  "clearHostRename",
+  "HostRemovalTarget",
+  "resolveHostRemoval"
+ ],
+ "components/sidebar/host-section-order.ts": [
+  "orderHostSectionOptions"
+ ],
+ "components/sidebar/host-section-rows.ts": [
+  "HostHeaderRow",
+  "HostSectionRow",
+  "HostSectionOption",
+  "addHostSectionRows"
+ ],
+ "components/sidebar/hovered-workspace-delete.ts": [
+  "HoveredWorkspaceDeleteTarget",
+  "getHoveredWorkspaceIdentity",
+  "resolveHoveredWorkspaceDeleteTarget",
+  "deleteHoveredWorkspaceImmediately"
+ ],
+ "components/sidebar/imported-worktrees-card-actions.ts": [
+  "ImportedWorktreeCardActionState",
+  "IMPORTED_WORKTREES_SHOW_ERROR",
+  "IMPORTED_WORKTREES_KEEP_HIDDEN_ERROR",
+  "showImportedWorktreesCard",
+  "keepImportedWorktreesHiddenCard"
+ ],
+ "components/sidebar/imported-worktrees-card-candidates.ts": [
+  "getHiddenImportedWorktrees",
+  "buildImportedWorktreesCardCandidates"
+ ],
+ "components/sidebar/index.tsx": [
+  "WORKTREE_SIDEBAR_RESIZE_HANDLE_CLASS_NAME",
+  "WORKTREE_SIDEBAR_RESIZE_HANDLE_LINE_CLASS_NAME",
+  "default"
+ ],
+ "components/sidebar/linear-agent-skill-runtime.ts": [
+  "LinearAgentSkillPromptSettings",
+  "getCurrentPlatform",
+  "getLinearPromptAgentRuntime",
+  "getLinearPromptTerminalShellOverride",
+  "getLinearPromptSetupCheckIdentity",
+  "getLinearPromptSkillDiscoveryTarget",
+  "getLocalDismissStorageKey",
+  "readLocalDismissed"
+ ],
+ "components/sidebar/linear-agent-skill-setup-copy.ts": [
+  "getLinearAgentSkillSetupMissingLabel",
+  "getLinearAgentSkillSetupToastTitle",
+  "getLinearAgentSkillSetupToastDescription",
+  "getLinearAgentSkillSetupInlineRuntimeCopy"
+ ],
+ "components/sidebar/linear-agent-skill-setup-reminder-toast.ts": [
+  "resetLinearAgentSkillSetupReminderToastState",
+  "snoozeLinearAgentSkillSetupReminderToast",
+  "dismissLinearAgentSkillSetupReminderToast",
+  "resetLinearAgentSkillSetupReminderToastForRuntime",
+  "useLinearAgentSkillSetupReminderToast"
+ ],
+ "components/sidebar/linear-agent-skill-setup-reminders.ts": [
+  "LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT",
+  "MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS",
+  "createLinearAgentSkillSetupActivationId",
+  "getLinearAgentSkillSetupReminderState",
+  "getExistingLinearAgentSkillSetupReminderState",
+  "resetLinearAgentSkillSetupReminderState",
+  "getLinearAgentSkillSetupReminderStateCountForTests",
+  "hasLinearAgentSkillSetupReminderStateForTests"
+ ],
+ "components/sidebar/local-base-ref-suggestion-toast.tsx": [
+  "showLocalBaseRefUpdateSuggestionToast"
+ ],
+ "components/sidebar/mobile-sidebar-onboarding-badge.ts": [
+  "shouldShowMobileSidebarOnboardingBadge",
+  "useMobileSidebarOnboardingBadge"
+ ],
+ "components/sidebar/natural-worktree-ids.ts": [
+  "getNaturalWorktreeIds"
+ ],
+ "components/sidebar/new-external-worktrees-inbox-actions.ts": [
+  "NewExternalWorktreesInboxActionState",
+  "keepNewExternalWorktreeInboxHidden",
+  "importNewExternalWorktreeInboxPaths",
+  "suppressNewExternalWorktreeInbox"
+ ],
+ "components/sidebar/new-external-worktrees-inbox-candidates.ts": [
+  "buildNewExternalWorktreesInboxCandidates"
+ ],
+ "components/sidebar/open-setup-script-settings.ts": [
+  "openSetupScriptSettings"
+ ],
+ "components/sidebar/pinned-section-worktrees.ts": [
+  "getPinnedSectionWorktrees",
+  "isPinnedSectionWorktree"
+ ],
+ "components/sidebar/preserved-branch-batch-toast.tsx": [
+  "ActionablePreservedBranch",
+  "showPreservedBranchBatchToast",
+  "forceDeletePreservedBranchBatch"
+ ],
+ "components/sidebar/preserved-branch-toast.tsx": [
+  "showPreservedBranchToast"
+ ],
+ "components/sidebar/project-added-default-checkout.ts": [
+  "getProjectDefaultCheckout",
+  "openProjectDefaultCheckout",
+  "finishProjectAddWithDefaultCheckout"
+ ],
+ "components/sidebar/project-filter-reveal.ts": [
+  "ProjectFilterRevealState",
+  "revealRepoInProjectFilter"
+ ],
+ "components/sidebar/project-group-header-drag-commit.ts": [
+  "commitProjectGroupHeaderDragDrop"
+ ],
+ "components/sidebar/project-group-header-drag-contract.ts": [
+  "ProjectGroupDragState",
+  "INITIAL_PROJECT_GROUP_DRAG_STATE",
+  "UseProjectGroupHeaderDragArgs",
+  "ProjectGroupHeaderDragController",
+  "ProjectGroupHeaderDragSession",
+  "PROJECT_GROUP_HEADER_DRAG_THRESHOLD_PX",
+  "isProjectGroupHeaderDragHandleTarget",
+  "isProjectGroupHeaderActionTarget"
+ ],
+ "components/sidebar/project-group-header-drag-start.ts": [
+  "createProjectGroupHeaderDragSession"
+ ],
+ "components/sidebar/project-group-header-drag.ts": [
+  "useProjectGroupHeaderDrag"
+ ],
+ "components/sidebar/project-group-header-drop.ts": [
+  "ProjectGroupHeaderDragBucketKey",
+  "ProjectGroupHeaderDragRect",
+  "ProjectGroupHeaderDropPreview",
+  "ProjectGroupTabOrderUpdate",
+  "getProjectGroupHeaderDragBucketKey",
+  "getSidebarOrderedProjectGroupHeaderIdsByBucket",
+  "mapSidebarProjectGroupDropIndexToSiblingInsertIndex",
+  "getProjectGroupTabOrderUpdatesForSidebarDrop",
+  "measureProjectGroupHeaderDragRects",
+  "computeProjectGroupHeaderDropPreview"
+ ],
+ "components/sidebar/project-header-color.ts": [
+  "resolveRepoHeaderColor",
+  "resolveProjectGroupHeaderColor"
+ ],
+ "components/sidebar/project-header-drag-commit.ts": [
+  "commitProjectHeaderDragDrop"
+ ],
+ "components/sidebar/project-header-drag-contract.ts": [
+  "RepoDragState",
+  "INITIAL_REPO_DRAG_STATE",
+  "UseRepoHeaderDragArgs",
+  "RepoHeaderDragController",
+  "ProjectHeaderDragSession",
+  "PROJECT_HEADER_DRAG_THRESHOLD_PX",
+  "REPO_HEADER_ACTION_SELECTOR",
+  "isProjectHeaderDragHandleTarget",
+  "isRepoHeaderActionTarget"
+ ],
+ "components/sidebar/project-header-drag-start.ts": [
+  "createProjectHeaderDragSession"
+ ],
+ "components/sidebar/project-header-drag.ts": [
+  "useRepoHeaderDrag"
+ ],
+ "components/sidebar/project-header-drop.ts": [
+  "ProjectHeaderDragBucketKey",
+  "ProjectHeaderDragRect",
+  "ProjectHeaderDropPreview",
+  "getProjectHeaderDragBucketKey",
+  "getSidebarOrderedRepoHeaderIdsByBucket",
+  "getLogicalRepoOrderRankById",
+  "getProjectGroupOrderForSidebarDrop",
+  "mapSidebarProjectHeaderDropIndexToSiblingInsertIndex",
+  "measureProjectHeaderDragRects",
+  "mapSidebarRepoDropIndexToAllRepoInsertAt",
+  "computeProjectHeaderDropPreview",
+  "applyAllRepoInsertAt"
+ ],
+ "components/sidebar/project-order-manual-default-notice-visibility.ts": [
+  "shouldShowProjectOrderManualDefaultNotice"
+ ],
+ "components/sidebar/prompt-cache-countdown-clock.ts": [
+  "subscribePromptCacheCountdownClock",
+  "usePromptCacheCountdownNow"
+ ],
+ "components/sidebar/prompt-cache-timer-selection.ts": [
+  "PromptCacheCountdownSelection",
+  "getMostUrgentPromptCacheStartedAt",
+  "getPromptCacheCountdownForPane"
+ ],
+ "components/sidebar/remote-file-browser-drive-paths.ts": [
+  "BrowsePathParts",
+  "isDrivePath",
+  "isDriveRoot",
+  "driveRootOf",
+  "splitBrowsePath",
+  "joinDrivePath",
+  "parentOfDrivePath",
+  "driveBreadcrumbPath"
+ ],
+ "components/sidebar/remote-file-browser-helpers.ts": [
+  "DirEntry",
+  "REMOTE_FILE_BROWSER_FILTER_QUERY_MAX_BYTES",
+  "isRemoteFileBrowserFilterQueryTooLarge",
+  "filterEntries",
+  "EnterAction",
+  "decideEnterAction",
+  "EscAction",
+  "decideEscAction",
+  "joinPath",
+  "parentPath",
+  "ParsedInput",
+  "isPathMode",
+  "isRemoteFileBrowserPathResolveTextTooLarge",
+  "shouldDeferRemoteFileBrowserPasteResolve",
+  "parsePathInput",
+  "SegmentOutcome",
+  "resolveSegmentStep"
+ ],
+ "components/sidebar/remote-file-browser-path-preview-resolver.ts": [
+  "PreviewState",
+  "ResolvePathInputArgs",
+  "resolvePathInput",
+  "committedPrefix"
+ ],
+ "components/sidebar/rendered-sidebar-worktree-order.ts": [
+  "computeRenderedSidebarWorktrees",
+  "computeRenderedSidebarWorktreeOrder"
+ ],
+ "components/sidebar/repo-header-action-button-class.ts": [
+  "REPO_HEADER_ACTION_REVEAL_CLASS",
+  "REPO_HEADER_ACTION_BUTTON_CLASS"
+ ],
+ "components/sidebar/repo-header-create-state.ts": [
+  "RepoHeaderCreateState",
+  "getRepoHeaderCreateState"
+ ],
+ "components/sidebar/run-worktree-delete-with-toast.ts": [
+  "runWorktreeDeleteWithToast"
+ ],
+ "components/sidebar/setup-script-prompt-exposure-telemetry.ts": [
+  "trackSetupScriptPromptExposure"
+ ],
+ "components/sidebar/setup-script-prompt-render-state.ts": [
+  "SetupScriptPromptState",
+  "LastVisibleSetupScriptPrompt",
+  "findSetupScriptPromptRepo",
+  "markSetupScriptPromptSaved",
+  "getRenderedSetupScriptPromptState"
+ ],
+ "components/sidebar/sidebar-count-badge.tsx": [
+  "SidebarCountBadge"
+ ],
+ "components/sidebar/sidebar-empty-state-gate.ts": [
+  "shouldFiltersHideAllRows"
+ ],
+ "components/sidebar/sidebar-filter-actions.ts": [
+  "sidebarHasActiveFilters",
+  "ClearFilterActions",
+  "computeClearFilterActions"
+ ],
+ "components/sidebar/sidebar-header-actions.tsx": [
+  "SidebarHeaderActions"
+ ],
+ "components/sidebar/sidebar-host-options.ts": [
+  "SidebarHostOption",
+  "SidebarHostScopeOption",
+  "buildSidebarHostOptions",
+  "shouldShowHostScopeControls",
+  "buildSidebarHostScopeOptions",
+  "getSidebarHostVisibilityLabel",
+  "getSidebarHostHealthLabel"
+ ],
+ "components/sidebar/sidebar-nav-controls.tsx": [
+  "HideSidebarMenu"
+ ],
+ "components/sidebar/sidebar-project-drop.ts": [
+  "SidebarProjectDropPathResolution",
+  "SidebarProjectDropAffordance",
+  "resolveSidebarProjectDropPath",
+  "isRemoteRuntimeActive",
+  "getSidebarProjectDropAffordance"
+ ],
+ "components/sidebar/sidebar-workspace-option-items.ts": [
+  "GROUP_BY_OPTIONS",
+  "CARD_LAYOUT_OPTIONS",
+  "AGENT_ACTIVITY_DISPLAY_OPTIONS",
+  "WorktreeCardPropertyOption",
+  "getWorktreeCardPropertyOptions",
+  "WORKTREE_CARD_PROPERTY_OPTIONS",
+  "SORT_OPTIONS",
+  "PROJECT_ORDER_OPTIONS"
+ ],
+ "components/sidebar/sleep-worktree-flow.ts": [
+  "runSleepWorktree",
+  "runSleepWorktrees"
+ ],
+ "components/sidebar/smart-attention.ts": [
+  "SmartClass",
+  "AttentionCause",
+  "WorktreeAttention",
+  "IDLE",
+  "hasFreshAttributedAgentStatus",
+  "mostRecentAttentionInHistory",
+  "PaneInput",
+  "resolveAttention",
+  "buildExplicitEntriesByTabId",
+  "TabPaneInputSources",
+  "collectTabPaneInputs",
+  "buildAttentionByWorktree"
+ ],
+ "components/sidebar/smart-sort.ts": [
+  "SortBy",
+  "CREATE_GRACE_MS",
+  "effectiveRecentActivity",
+  "WorktreeSortLabelInput",
+  "getWorktreeSortLabel",
+  "WorktreeSortLabels",
+  "buildWorktreeSortLabels",
+  "compareWorktreeSortLabel",
+  "buildWorktreeComparator",
+  "sortWorktreesSmart"
+ ],
+ "components/sidebar/ssh-host-remove-resolution.ts": [
+  "SshHostRemoveResolution",
+  "resolveSshHostRemoval"
+ ],
+ "components/sidebar/ssh-host-remove-workspaces.ts": [
+  "ClearSshHostWorkspacesResult",
+  "clearSshHostWorkspaces"
+ ],
+ "components/sidebar/ssh-target-duplicate.ts": [
+  "isDuplicateSshTargetAlias"
+ ],
+ "components/sidebar/ssh-workspace-forget-resolution.ts": [
+  "SshWorkspaceForgetResolution",
+  "resolveSshWorkspaceForget"
+ ],
+ "components/sidebar/stale-workspace-list-toast.ts": [
+  "showWorkspaceListChangedToast",
+  "showNoDeletableWorkspacesToast"
+ ],
+ "components/sidebar/track-nested-folder-open.ts": [
+  "trackNestedFolderOpen"
+ ],
+ "components/sidebar/truncated-sidebar-label.tsx": [
+  "isSidebarLabelTruncated",
+  "TruncatedSidebarLabel"
+ ],
+ "components/sidebar/use-add-repo-host-change-reset.ts": [
+  "useAddRepoHostChangeReset"
+ ],
+ "components/sidebar/use-add-repo-host-selection.ts": [
+  "useAddRepoHostSelection"
+ ],
+ "components/sidebar/use-add-repo-hosted-controller.ts": [
+  "AddRepoDialogHostedController",
+  "useAddRepoHostedController"
+ ],
+ "components/sidebar/use-add-repo-remote-nested-scan.ts": [
+  "useAddRepoRemoteNestedScan"
+ ],
+ "components/sidebar/use-complete-git-repo-add.ts": [
+  "useCompleteGitRepoAdd"
+ ],
+ "components/sidebar/use-confirmed-worktree-delete-targets.ts": [
+  "useConfirmedWorktreeDeleteTargets"
+ ],
+ "components/sidebar/use-delete-worktree-status-hydration.ts": [
+  "useDeleteWorktreeStatusHydration"
+ ],
+ "components/sidebar/use-feedback-image-drop.ts": [
+  "FeedbackImageDrop",
+  "useFeedbackImageDrop"
+ ],
+ "components/sidebar/use-remote-file-browser-filter-key-commands.ts": [
+  "RemoteFileBrowserFilterKeyCommandsArgs",
+  "useRemoteFileBrowserFilterKeyCommands"
+ ],
+ "components/sidebar/use-remote-file-browser-listing.ts": [
+  "BrowseResult",
+  "FetchListing",
+  "RemoteFileBrowserListing",
+  "useRemoteFileBrowserListing"
+ ],
+ "components/sidebar/use-remote-file-browser-path-preview.ts": [
+  "RemoteFileBrowserPathPreviewArgs",
+  "RemoteFileBrowserPathPreview",
+  "useRemoteFileBrowserPathPreview"
+ ],
+ "components/sidebar/use-repo-owner-visibility-defaults.ts": [
+  "useRepoOwnerVisibilityDefaults"
+ ],
+ "components/sidebar/use-sidebar-feedback-environment-prefill.ts": [
+  "useSidebarFeedbackEnvironmentPrefill"
+ ],
+ "components/sidebar/use-sidebar-feedback-images.ts": [
+  "useSidebarFeedbackImages"
+ ],
+ "components/sidebar/use-sidebar-host-scope-options.ts": [
+  "useSidebarHostScopeOptions"
+ ],
+ "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts": [
+  "useVisibleWorkspaceKanbanWorktreeIds"
+ ],
+ "components/sidebar/use-workspace-board-task-status-sync.ts": [
+  "useWorkspaceBoardTaskStatusSync"
+ ],
+ "components/sidebar/use-workspace-kanban-area-selection.ts": [
+  "useWorkspaceKanbanAreaSelection"
+ ],
+ "components/sidebar/use-workspace-kanban-board-projection.ts": [
+  "useWorkspaceKanbanBoardProjection"
+ ],
+ "components/sidebar/use-workspace-kanban-card-pointer-drag.ts": [
+  "useWorkspaceKanbanCardPointerDrag"
+ ],
+ "components/sidebar/use-workspace-kanban-column-resize.ts": [
+  "useWorkspaceKanbanColumnResize"
+ ],
+ "components/sidebar/use-workspace-kanban-create-worktree.ts": [
+  "useWorkspaceKanbanCreateWorktree"
+ ],
+ "components/sidebar/use-workspace-kanban-drawer-lingering.ts": [
+  "useWorkspaceKanbanDrawerLingering"
+ ],
+ "components/sidebar/use-workspace-kanban-native-drag.ts": [
+  "useWorkspaceKanbanNativeDrag"
+ ],
+ "components/sidebar/use-workspace-kanban-outside-dismiss.ts": [
+  "isWorkspaceBoardKeepOpenTarget",
+  "useWorkspaceKanbanOutsideDismiss"
+ ],
+ "components/sidebar/use-workspace-kanban-render-lifecycle.ts": [
+  "useWorkspaceKanbanRenderLifecycle"
+ ],
+ "components/sidebar/use-workspace-kanban-search.ts": [
+  "useWorkspaceKanbanSearch"
+ ],
+ "components/sidebar/use-workspace-kanban-selection.ts": [
+  "useWorkspaceKanbanSelection"
+ ],
+ "components/sidebar/use-workspace-kanban-shift-wheel-scroll.ts": [
+  "useWorkspaceKanbanShiftWheelScroll"
+ ],
+ "components/sidebar/use-workspace-kanban-status-actions.ts": [
+  "useWorkspaceKanbanStatusActions"
+ ],
+ "components/sidebar/use-workspace-kanban-worktree-actions.ts": [
+  "useWorkspaceKanbanWorktreeActions"
+ ],
+ "components/sidebar/use-workspace-reveal-body-redirect.ts": [
+  "useWorkspaceRevealBodyRedirect"
+ ],
+ "components/sidebar/use-workspace-status-drop.ts": [
+  "commitWorkspaceStatusDocumentDrop",
+  "useWorkspaceStatusDocumentDrop"
+ ],
+ "components/sidebar/use-worktree-activity-status.ts": [
+  "useWorktreeActivityStatus"
+ ],
+ "components/sidebar/use-worktree-activity-statuses.ts": [
+  "selectWorktreeActivityStatuses",
+  "useWorktreeActivityStatuses"
+ ],
+ "components/sidebar/use-worktree-card-activation-actions.ts": [
+  "useWorktreeCardActivationActions"
+ ],
+ "components/sidebar/use-worktree-card-controller.ts": [
+  "useWorktreeCardController",
+  "WorktreeCardController"
+ ],
+ "components/sidebar/use-worktree-card-foundation.ts": [
+  "useWorktreeCardFoundation"
+ ],
+ "components/sidebar/use-worktree-card-lifecycle-effects.ts": [
+  "useWorktreeCardLifecycleEffects"
+ ],
+ "components/sidebar/use-worktree-card-linked-details.ts": [
+  "useWorktreeCardLinkedDetails"
+ ],
+ "components/sidebar/use-worktree-card-review-details.ts": [
+  "useWorktreeCardReviewDetails"
+ ],
+ "components/sidebar/use-worktree-card-secondary-details.ts": [
+  "useWorktreeCardSecondaryDetails"
+ ],
+ "components/sidebar/use-worktree-card-workspace-actions.ts": [
+  "useWorktreeCardWorkspaceActions"
+ ],
+ "components/sidebar/use-worktree-context-menu-commands.ts": [
+  "useWorktreeContextMenuCommands"
+ ],
+ "components/sidebar/use-worktree-context-menu-model.tsx": [
+  "WorktreeContextMenuProps",
+  "useWorktreeContextMenuModel",
+  "WorktreeContextMenuModel"
+ ],
+ "components/sidebar/use-worktree-context-menu-secondary-actions.ts": [
+  "useWorktreeContextMenuSecondaryActions"
+ ],
+ "components/sidebar/use-worktree-issue-link.ts": [
+  "useWorktreeIssueLink"
+ ],
+ "components/sidebar/use-worktree-meta-workspace.ts": [
+  "useWorktreeMetaWorkspace"
+ ],
+ "components/sidebar/use-worktree-parent-picker-transition.ts": [
+  "useWorktreeParentPickerTransition"
+ ],
+ "components/sidebar/useAddRepoCloneFlow.ts": [
+  "useAddRepoCloneFlow"
+ ],
+ "components/sidebar/useAddRepoLocalFolderFlow.ts": [
+  "useAddRepoLocalFolderFlow"
+ ],
+ "components/sidebar/useAddRepoNestedImportFlow.ts": [
+  "useAddRepoNestedImportFlow"
+ ],
+ "components/sidebar/useAddRepoNestedReviewController.ts": [
+  "useAddRepoNestedReviewController"
+ ],
+ "components/sidebar/useAddRepoNestedReviewState.ts": [
+  "useAddRepoNestedReviewState"
+ ],
+ "components/sidebar/useAddRepoServerPathFlow.ts": [
+  "useAddRepoServerPathFlow"
+ ],
+ "components/sidebar/useCreateProjectDefaults.ts": [
+  "CreateRuntimeParentStatus",
+  "useCreateProjectDefaults"
+ ],
+ "components/sidebar/useCreateRepo.ts": [
+  "useCreateRepo"
+ ],
+ "components/sidebar/useRenderedSetupScriptPromptState.ts": [
+  "useRenderedSetupScriptPromptState"
+ ],
+ "components/sidebar/useSetupScriptPromptRevalidation.ts": [
+  "useSetupScriptPromptRevalidation"
+ ],
+ "components/sidebar/useSidebarProjectDrop.ts": [
+  "useSidebarProjectDrop"
+ ],
+ "components/sidebar/useWorkspaceBoardPanel.ts": [
+  "TOGGLE_WORKSPACE_BOARD_EVENT",
+  "WorkspaceBoardPanelState",
+  "useWorkspaceBoardPanel"
+ ],
+ "components/sidebar/useWorktreeAgentRows.ts": [
+  "useWorktreeAgentRows"
+ ],
+ "components/sidebar/visible-worktree-activity-inputs.ts": [
+  "TerminalActivityTab",
+  "BrowserActivityTab",
+  "createVisibleWorktreeTerminalActivityProjection",
+  "getVisibleWorktreeTerminalActivityTabs",
+  "getVisibleWorktreeBrowserActivityTabs"
+ ],
+ "components/sidebar/visible-worktree-host-scope.ts": [
+  "getVisibleWorkspaceHostIdSet",
+  "worktreeMatchesVisibleHost"
+ ],
+ "components/sidebar/visible-worktree-indexes.ts": [
+  "getLineageAncestorIndex",
+  "getSortedWorktreeRankIndex"
+ ],
+ "components/sidebar/visible-worktree-kinds.ts": [
+  "isSleepingSweepExemptWorkspace",
+  "isSleepingSweepExemptionNarrowingList",
+  "isAutomationGeneratedWorkspace",
+  "isCliCreatedWorkspace",
+  "isDetachedHeadWorkspace",
+  "SidebarFilterState"
+ ],
+ "components/sidebar/visible-worktrees.ts": [
+  "computeVisibleWorktrees",
+  "computeVisibleWorktreeIds",
+  "VisibleWorktreeShortcutTarget",
+  "setVisibleWorktreeIds",
+  "setVisibleWorktreeShortcutTargets",
+  "buildVisibleWorktreeOptionsFromState",
+  "getVisibleWorktreeIds",
+  "getVisibleWorktreeShortcutTargets"
+ ],
+ "components/sidebar/workspace-board-task-status-sync.ts": [
+  "WorkspaceBoardTaskStatusSyncResult",
+  "WorkspaceBoardTaskStatusSyncMessage",
+  "SyncWorkspaceBoardTaskStatusesArgs",
+  "WorkspaceBoardTaskStatusSyncRequest",
+  "getWorkspaceBoardTaskStatusSyncRequest",
+  "syncWorkspaceBoardTaskStatuses"
+ ],
+ "components/sidebar/workspace-chrome-metrics.ts": [
+  "WORKSPACE_TOP_CHROME_HEIGHT",
+  "STATUS_BAR_RESERVE_HEIGHT"
+ ],
+ "components/sidebar/workspace-creator-visibility.ts": [
+  "EMPTY_PAIRED_DEVICE_IDS_BY_ENVIRONMENT",
+  "getPairedDeviceIdsByEnvironment",
+  "isWorkspaceFromOtherDevice",
+  "isFolderWorkspaceFromOtherDevice",
+  "filterFolderWorkspacesFromOtherDevices"
+ ],
+ "components/sidebar/workspace-delete-lineage.ts": [
+  "getWorkspaceDeleteLineage"
+ ],
+ "components/sidebar/workspace-delete-quick-action.ts": [
+  "useWorkspaceDeleteModifierPressed",
+  "canShowWorkspaceDeleteQuickAction"
+ ],
+ "components/sidebar/workspace-kanban-area-selection-card-rects.ts": [
+  "AreaSelectionViewportRect",
+  "AreaSelectionCardRect",
+  "AREA_SELECTION_SCROLL_CONTAINER_SELECTOR",
+  "getAreaSelectionCardRects"
+ ],
+ "components/sidebar/workspace-kanban-area-selection-dom.ts": [
+  "AreaSelectionRect",
+  "AREA_SELECTION_AUTO_SCROLL_EDGE_SIZE",
+  "AREA_SELECTION_AUTO_SCROLL_MAX_DELTA",
+  "getAreaSelectionRect",
+  "shouldIgnoreAreaSelectionStart",
+  "isScrollbarPointerDown",
+  "getAreaSelectionCardIds",
+  "getAreaSelectionScrollStartContentYByElement",
+  "getAreaSelectionAutoScrollDelta",
+  "getAreaSelectionScrollContainer",
+  "setOverlayRect",
+  "clearPreviewSelection",
+  "updatePreviewSelection"
+ ],
+ "components/sidebar/workspace-kanban-area-selection-state.ts": [
+  "AreaSelectionDragState",
+  "UseWorkspaceKanbanAreaSelectionParams",
+  "AREA_SELECTION_DRAG_THRESHOLD",
+  "shouldCommitWorkspaceKanbanAreaSelection"
+ ],
+ "components/sidebar/workspace-kanban-card-drag-preview-dom.ts": [
+  "setDragDocumentStyles",
+  "setDraggedCardsDragging",
+  "updateDragPreviewPosition",
+  "createDragPreview"
+ ],
+ "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts": [
+  "CARD_SELECTOR",
+  "STATUS_DROP_TARGET",
+  "PIN_DROP_TARGET",
+  "WorkspaceKanbanStatusDropRect",
+  "WorkspaceKanbanCardDropRect",
+  "WorkspaceKanbanLaneDropRect",
+  "WorkspaceKanbanCardDropTarget",
+  "WorkspaceKanbanCardTrackedDropTarget",
+  "resolveWorkspaceStatusDropTargetFromRects",
+  "resolveWorkspaceCardDropIndexFromRects",
+  "resolveWorkspaceCardDropIndicatorY",
+  "resolveWorkspaceKanbanCardDropCommitTarget",
+  "getDropTarget",
+  "getCardDropTarget",
+  "removeCardDropIndicator",
+  "updateCardDropIndicator"
+ ],
+ "components/sidebar/workspace-kanban-card-pointer-drag-start.ts": [
+  "shouldStartWorkspaceKanbanCardPointerDrag",
+  "shouldIgnoreWorkspaceKanbanCardPointerDown"
+ ],
+ "components/sidebar/workspace-kanban-filtered-drop-index.ts": [
+  "WORKSPACE_LANE_FULL_IDS_DELIMITER",
+  "serializeWorkspaceLaneFullIds",
+  "parseWorkspaceLaneFullIds",
+  "resolveFullLaneDropIndex"
+ ],
+ "components/sidebar/workspace-kanban-lane-range.ts": [
+  "extractWorkspaceKanbanLaneRange"
+ ],
+ "components/sidebar/workspace-kanban-pointer-drag-selection.ts": [
+  "resolveWorkspaceKanbanPointerDragSelection",
+  "UseWorkspaceKanbanCardPointerDragParams"
+ ],
+ "components/sidebar/workspace-kanban-search.ts": [
+  "WorkspaceKanbanLaneView",
+  "buildWorkspaceBoardPaletteDocuments",
+  "matchWorkspaceBoardWorktrees",
+  "buildWorkspaceKanbanLaneViews"
+ ],
+ "components/sidebar/workspace-kanban-sidebar-drop.ts": [
+  "hasWorkspaceKanbanSidebarDropBoard",
+  "isWorkspaceKanbanSidebarDropPointInBoard",
+  "clearWorkspaceKanbanSidebarDropTargetVisual",
+  "registerWorkspaceKanbanSidebarDropGroups",
+  "getWorkspaceKanbanSidebarDropGroups",
+  "getWorkspaceKanbanSidebarDropTarget",
+  "resolveWorkspaceKanbanSidebarFullLaneDropIndex",
+  "updateWorkspaceKanbanSidebarDropTargetVisual",
+  "buildWorkspaceKanbanSidebarDropUpdates"
+ ],
+ "components/sidebar/workspace-kanban-virtual-lane-layout.ts": [
+  "WorkspaceKanbanVirtualLaneItemRect",
+  "registerWorkspaceKanbanVirtualLaneLayout",
+  "getWorkspaceKanbanVirtualLaneItemIds",
+  "getWorkspaceKanbanVirtualLaneItemRects",
+  "resolveWorkspaceKanbanVirtualLaneDropIndex",
+  "resolveWorkspaceKanbanVirtualLaneDropIndicatorY"
+ ],
+ "components/sidebar/workspace-kanban-worktree-groups.ts": [
+  "groupWorkspaceKanbanWorktrees"
+ ],
+ "components/sidebar/workspace-lineage-menu-actions.ts": [
+  "WorkspaceLineageMenuActions",
+  "hasSleepableWorkspaceActivity",
+  "getWorkspaceLineageMenuActions",
+  "useWorkspaceLineageMenuActions"
+ ],
+ "components/sidebar/workspace-options-menu-items.tsx": [
+  "useWorkspaceOptionsFilterBadge",
+  "WorkspaceOptionsMenuItems"
+ ],
+ "components/sidebar/workspace-status-drag-data.ts": [
+  "WORKSPACE_STATUS_DRAG_TYPE",
+  "WORKSPACE_STATUS_DRAG_IDS_TYPE",
+  "WORKSPACE_STATUS_DRAG_PAYLOAD_MAX_BYTES",
+  "WORKSPACE_STATUS_DRAG_ID_MAX_COUNT",
+  "writeWorkspaceDragData",
+  "readWorkspaceDragData",
+  "readWorkspaceDragDataIds",
+  "hasWorkspaceDragData"
+ ],
+ "components/sidebar/workspace-status-icon-options.ts": [
+  "WorkspaceStatusIconOption",
+  "getWorkspaceStatusIconOptions"
+ ],
+ "components/sidebar/workspace-status-icons.tsx": [
+  "ConductorDoneIcon",
+  "ConductorReviewIcon",
+  "ConductorProgressIcon"
+ ],
+ "components/sidebar/workspace-status.ts": [
+  "getWorkspaceStatusColorOptions",
+  "getWorkspaceStatusVisualMeta"
+ ],
+ "components/sidebar/worktree-agent-activity-summary.ts": [
+  "WorktreeAgentActivitySummary",
+  "AgentActivityInput",
+  "selectWorktreeAgentActivitySummary"
+ ],
+ "components/sidebar/worktree-agent-freshness-selector.ts": [
+  "EMPTY_WORKTREE_AGENT_FRESHNESS_SIGNATURE",
+  "createWorktreeAgentFreshnessSelector"
+ ],
+ "components/sidebar/worktree-agent-live-index-patch.ts": [
+  "LiveEntriesByWorktreeCache",
+  "getLiveEntriesFullRebuildCountForTests",
+  "recordLiveEntriesFullRebuild",
+  "liveEntryWorktreeId",
+  "patchLiveEntriesByWorktree"
+ ],
+ "components/sidebar/worktree-agent-orchestration-batch.ts": [
+  "releaseRuntimeAgentOrchestrationBatchCache",
+  "selectRuntimeAgentOrchestrationBatch"
+ ],
+ "components/sidebar/worktree-agent-orchestration-index.ts": [
+  "EMPTY_WORKTREE_AGENT_ORCHESTRATION",
+  "EMPTY_WORKTREE_AGENT_ORCHESTRATION_INDEX",
+  "releaseWorktreeAgentOrchestrationIndexCache",
+  "_getWorktreeAgentOrchestrationIndexBuildCountForTest",
+  "selectWorktreeAgentOrchestrationIndex",
+  "selectWorktreeAgentOrchestration"
+ ],
+ "components/sidebar/worktree-agent-row-fallback-tab.ts": [
+  "effectiveWorktreeAgentRowStartedAt",
+  "tabFromWorktreeAttributedStatusEntry"
+ ],
+ "components/sidebar/worktree-agent-row-orchestration.ts": [
+  "entryWithRuntimeOrchestration"
+ ],
+ "components/sidebar/worktree-agent-row-order.ts": [
+  "comparePaneKeysOrdinal",
+  "compareWorktreeAgentRows"
+ ],
+ "components/sidebar/worktree-agent-row-selectors.ts": [
+  "EMPTY_LIVE_ENTRIES",
+  "EMPTY_MIGRATION_UNSUPPORTED_ENTRIES",
+  "EMPTY_RETAINED",
+  "EMPTY_TERMINAL_LAYOUTS",
+  "reuseArrayIfEqual",
+  "getTabIdToWorktreeId",
+  "selectLiveAgentStatusEntriesForWorktree",
+  "selectMigrationUnsupportedEntriesForWorktree",
+  "selectRetainedAgentEntriesForWorktree",
+  "selectRuntimeAgentOrchestrationForWorktree",
+  "selectTerminalLayoutsForWorktree"
+ ],
+ "components/sidebar/worktree-agent-row-type.ts": [
+  "resolveRowAgentType"
+ ],
+ "components/sidebar/worktree-agent-rows.ts": [
+  "buildWorktreeAgentRows"
+ ],
+ "components/sidebar/worktree-card-agent-ack-inputs.ts": [
+  "selectAcknowledgedAgentTimes"
+ ],
+ "components/sidebar/worktree-card-agent-summary.ts": [
+  "SummaryAgentGroup",
+  "getAgentDotState",
+  "formatSummaryStateLabel",
+  "buildSummaryAgentGroups",
+  "summarizeAgents",
+  "summarizeAgentIdentities",
+  "selectSummaryGroupIconAgents"
+ ],
+ "components/sidebar/worktree-card-agents-expansion-state.ts": [
+  "WorktreeAgentExpansionState",
+  "MAX_PERSISTED_WORKTREE_AGENT_EXPANSIONS",
+  "WorktreeAgentExpansionControls",
+  "useWorktreeAgentExpansionState",
+  "clearWorktreeAgentExpansionStateForTests",
+  "getWorktreeAgentExpansionCountForTests",
+  "seedWorktreeAgentExpansionStateForTests"
+ ],
+ "components/sidebar/worktree-card-compact-agent-row.tsx": [
+  "getCompactAgentSecondary",
+  "CompactAgentRow"
+ ],
+ "components/sidebar/worktree-card-compact-agents.tsx": [
+  "CompactAgentExpansion",
+  "CompactAgentSummaryButton"
+ ],
+ "components/sidebar/worktree-card-details-hover-state.ts": [
+  "useWorktreeCardDetailsHoverControl",
+  "WorktreeCardDetailsHoverControl"
+ ],
+ "components/sidebar/worktree-card-display-property-options.ts": [
+  "PROPERTY_OPTIONS"
+ ],
+ "components/sidebar/worktree-card-dom-events.ts": [
+  "isEventTargetInsideCurrentTarget"
+ ],
+ "components/sidebar/worktree-card-header.tsx": [
+  "WorktreeCardHeader"
+ ],
+ "components/sidebar/worktree-card-jira-issue-display.ts": [
+  "getWorktreeCardJiraIssueDisplay",
+  "getConfiguredWorktreeCardJiraIssueDisplay"
+ ],
+ "components/sidebar/worktree-card-meta-row.tsx": [
+  "WorktreeCardMetaRow"
+ ],
+ "components/sidebar/worktree-card-meta-types.ts": [
+  "WorktreeCardIssueDisplay",
+  "WorktreeCardLinearIssueDisplay",
+  "WorktreeCardJiraIssueDisplay",
+  "WorktreeCardMetaBadgesProps",
+  "WorktreeCardMetaBadgesRootProps",
+  "WorktreeCardDetailsHoverProps"
+ ],
+ "components/sidebar/worktree-card-model.ts": [
+  "WorktreeRenameRequest",
+  "ActiveSurfaceVariant",
+  "WorktreeCardProps",
+  "ResolvedWorktreeCardProps",
+  "EMPTY_WORKSPACE_PORTS",
+  "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS",
+  "shouldBeginWorktreeRename",
+  "formatSparseDirectoryPreview",
+  "isWebClient",
+  "getDirectoryName"
+ ],
+ "components/sidebar/worktree-card-parent-content.tsx": [
+  "WorktreeCardParentContent"
+ ],
+ "components/sidebar/worktree-card-pr-display.ts": [
+  "isCachedMergedBranchPRCurrentForWorktree",
+  "WorktreeCardPrDisplay",
+  "getWorktreeCardPrDisplay"
+ ],
+ "components/sidebar/worktree-card-presentation.tsx": [
+  "buildWorktreeCardPresentation",
+  "WorktreeCardPresentation"
+ ],
+ "components/sidebar/worktree-card-secondary-rows.tsx": [
+  "WorktreeCardSecondaryRows"
+ ],
+ "components/sidebar/worktree-card-send-target-inputs.ts": [
+  "SendTargetInputsState",
+  "SendTargetControlInputsState",
+  "SendTargetControlInputs",
+  "EMPTY_SEND_TARGET_INPUTS",
+  "EMPTY_SEND_TARGET_CONTROL_INPUTS",
+  "selectSendTargetInputs",
+  "selectSendTargetControlInputs"
+ ],
+ "components/sidebar/worktree-card-status-inputs.ts": [
+  "EMPTY_RUNTIME_PANE_TITLES",
+  "EMPTY_LIVE_PTY_IDS",
+  "EMPTY_TERMINAL_LAYOUT_ROOTS",
+  "selectRuntimePaneTitlesForWorktree",
+  "selectLivePtyIdsForWorktree",
+  "selectTerminalLayoutRootsForWorktree",
+  "selectTerminalLayoutRootsForWorktrees"
+ ],
+ "components/sidebar/worktree-card-surface.tsx": [
+  "WorktreeCardSurface"
+ ],
+ "components/sidebar/worktree-card-title-display.ts": [
+  "coerceWorktreeCardVisibleTitle",
+  "getWorktreeCardTitleDisplay"
+ ],
+ "components/sidebar/worktree-context-menu-delete-intent.ts": [
+  "WorktreeContextMenuDeleteIntent",
+  "createWorktreeContextMenuDeleteIntent",
+  "runWorktreeContextMenuDeleteIntent",
+  "deferWorktreeContextMenuDeleteIntent"
+ ],
+ "components/sidebar/worktree-context-menu-policy.ts": [
+  "CLOSE_ALL_CONTEXT_MENUS_EVENT",
+  "WORKTREE_CONTEXT_MENU_SCOPE_ATTR",
+  "WORKTREE_NATIVE_CONTEXT_MENU_ATTR",
+  "PARENT_PICKER_EXIT_ANIMATION_MS",
+  "EMPTY_TABS_BY_WORKTREE",
+  "EMPTY_PTY_IDS_BY_TAB_ID",
+  "EMPTY_BROWSER_TABS_BY_WORKTREE",
+  "EMPTY_DELETE_STATE_BY_WORKTREE_ID",
+  "EMPTY_WORKTREE_LINEAGE_BY_ID",
+  "EMPTY_WORKSPACE_LINEAGE_BY_CHILD_KEY",
+  "EMPTY_CYCLIC_LINEAGE_IDS",
+  "selectMenuScopedMap",
+  "shouldRevealWorktreeDeveloperMenu",
+  "hasWorktreeParentLink",
+  "shouldUseNativeContextMenu",
+  "shouldIgnoreNestedWorktreeContextMenuScope",
+  "shouldSuppressContextMenuFollowUpClick",
+  "getWorktreeParentPickerLabel",
+  "isWorktreeParentPickerDisabled",
+  "getWorktreeParentPickerAnchor",
+  "shouldRemoveProjectFromContextMenu",
+  "isContextWorktreeDeletable",
+  "shouldContinueDeleteSiblingPositionRestore",
+  "preserveDeleteSiblingPosition",
+  "WorkspaceStatusAssignmentPlan",
+  "planWorkspaceStatusAssignment"
+ ],
+ "components/sidebar/worktree-delete-execution.ts": [
+  "runWorktreeDeletesInParallel"
+ ],
+ "components/sidebar/worktree-delete-request.ts": [
+  "WorktreeBatchDeleteOptions",
+  "WorktreeDeleteIdentity",
+  "WorktreeDeleteOptions",
+  "WorktreeDeleteWithToastOptions",
+  "toWorktreeDeleteIdentities",
+  "WorktreeDeleteTargetLookup",
+  "resolveWorktreeBatchDeleteTargets",
+  "readWorktreeDeleteIdentities"
+ ],
+ "components/sidebar/worktree-delete-state-host-match.ts": [
+  "getDeleteStateForWorktreeHost"
+ ],
+ "components/sidebar/worktree-drag-preview-offsets.ts": [
+  "WorktreeDragPreviewRect",
+  "WorktreeDragPreviewLayout",
+  "buildWorktreeDragPreviewOffsets"
+ ],
+ "components/sidebar/worktree-drag-units.ts": [
+  "WorktreeDragUnitGroup",
+  "getWorktreeDragUnitGroups",
+  "getFullDropIndexForWorktreeDragUnit"
+ ],
+ "components/sidebar/worktree-filter-visibility.ts": [
+  "worktreePassesSidebarFilters"
+ ],
+ "components/sidebar/worktree-header-section-boundaries.ts": [
+  "getRepoHeaderSectionEndByRepoId",
+  "getProjectGroupHeaderSectionEndByGroupId"
+ ],
+ "components/sidebar/worktree-issue-displacement.ts": [
+  "getDisplacedLinkLabels"
+ ],
+ "components/sidebar/worktree-keyboard-cycle.ts": [
+  "getCyclableRowIdentity",
+  "getCyclableWorktreeRows",
+  "resolveActiveCycleIdentity",
+  "getCyclableWorktreeIds",
+  "getCyclableWorktrees",
+  "resolveCycledWorktreeId"
+ ],
+ "components/sidebar/worktree-lineage-drag-drop.ts": [
+  "isWorktreeLineageDropZoneHit",
+  "getWorktreeLineageDropTargetId",
+  "getReorderedWorktreeIdsToUnnest"
+ ],
+ "components/sidebar/worktree-lineage-projection.ts": [
+  "LineageRenderInfo",
+  "getProjectedWorktreeLineage",
+  "getCyclicProjectedWorktreeLineageIds",
+  "getLineageRenderInfo",
+  "getProjectedWorktreeLineageChildrenByParentId",
+  "getWorktreeLineageAncestors"
+ ],
+ "components/sidebar/worktree-lineage-toggle-handler-cache.ts": [
+  "LineageToggleHandler",
+  "createLineageToggleHandlerCache"
+ ],
+ "components/sidebar/worktree-list/drag/drop-commit-context.ts": [
+  "NOOP_WORKSPACE_BOARD_DRAG_PREVIEW_CALLBACK",
+  "WorktreeStatusDropAtIndexArgs",
+  "WorktreeDropCommitContext"
+ ],
+ "components/sidebar/worktree-list/drag/groups.ts": [
+  "getWorktreeDragGroups",
+  "getWorktreeDragIndexes"
+ ],
+ "components/sidebar/worktree-list/drag/pointer-commit.ts": [
+  "commitWorktreePointerDrop"
+ ],
+ "components/sidebar/worktree-list/drag/pointer-flush.ts": [
+  "WorktreePointerDragFrameArgs",
+  "flushWorktreePointerDragFrame"
+ ],
+ "components/sidebar/worktree-list/drag/row-state.ts": [
+  "WorktreeRowDragState",
+  "EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS",
+  "WORKTREE_ROW_DRAG_INITIAL_STATE",
+  "WorktreePointerDrag",
+  "WorktreeSidebarLineageDropTarget",
+  "NO_WORKTREE_SIDEBAR_DROP_TARGET",
+  "areWorktreeDragPreviewOffsetsEqual",
+  "updateLatestWorktreeStatusDropTarget",
+  "clearWorktreeDropPreview",
+  "applyWorktreeDropPreview",
+  "applyWorktreeLineageDropPreview"
+ ],
+ "components/sidebar/worktree-list/drag/status-target.ts": [
+  "getPointerDropStatusTarget",
+  "shouldPreferSidebarStatusDropTarget"
+ ],
+ "components/sidebar/worktree-list/drag/use-document-drop.ts": [
+  "useWorktreeDocumentDrop"
+ ],
+ "components/sidebar/worktree-list/drag/use-drop-commit-context.ts": [
+  "useWorktreeDropCommitContext"
+ ],
+ "components/sidebar/worktree-list/drag/use-header-drag.ts": [
+  "WorktreeSidebarHeaderDrag",
+  "useWorktreeSidebarHeaderDrag"
+ ],
+ "components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts": [
+  "WorktreeLineageDropCommit",
+  "useWorktreeLineageDropCommit"
+ ],
+ "components/sidebar/worktree-list/drag/use-native-autoscroll.ts": [
+  "useWorktreeNativeDragAutoscroll"
+ ],
+ "components/sidebar/worktree-list/drag/use-native-drag.ts": [
+  "useWorktreeNativeDrag"
+ ],
+ "components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts": [
+  "useWorktreePointerDragAutoscroll"
+ ],
+ "components/sidebar/worktree-list/drag/use-pointer-drag.ts": [
+  "useWorktreePointerDrag"
+ ],
+ "components/sidebar/worktree-list/drag/use-pointer-window-events.ts": [
+  "useWorktreePointerDragWindowEvents"
+ ],
+ "components/sidebar/worktree-list/drag/use-runtime.ts": [
+  "WorktreeDragRuntime",
+  "useWorktreeDragRuntime"
+ ],
+ "components/sidebar/worktree-list/drag/use-session.ts": [
+  "WorktreeStatusDropRequest",
+  "WorktreeDragSession",
+  "useWorktreeDragSession"
+ ],
+ "components/sidebar/worktree-list/drag/use-status-mutations.ts": [
+  "useWorktreeStatusMutations"
+ ],
+ "components/sidebar/worktree-list/drag/use-status-row-drag.ts": [
+  "useWorkspaceStatusRowDrag"
+ ],
+ "components/sidebar/worktree-list/grouping/build-rows.ts": [
+  "buildRows"
+ ],
+ "components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts": [
+  "RenderableFolderWorkspace",
+  "getRenderableFolderWorkspaces",
+  "getFolderWorkspaceLaneKey",
+  "compareFolderWorkspacesForDisplay"
+ ],
+ "components/sidebar/worktree-list/grouping/group-keys.ts": [
+  "PRGroupKey",
+  "PR_GROUP_ORDER",
+  "getPRLaneKey",
+  "PR_GROUP_META",
+  "PROJECT_GROUP_META",
+  "getProjectGroupHeaderKey",
+  "PINNED_GROUP_KEY",
+  "PINNED_GROUP_META",
+  "ALL_GROUP_KEY",
+  "ALL_GROUP_META",
+  "LINEAGE_GROUP_PREFIX",
+  "getLineageGroupKey",
+  "getWorktreeLineageGroupKey",
+  "getPRGroupKey"
+ ],
+ "components/sidebar/worktree-list/grouping/group-sections.ts": [
+  "SectionAppendContext",
+  "appendOrderedGroups"
+ ],
+ "components/sidebar/worktree-list/grouping/host-labels.ts": [
+  "getMixedHostContextLabels",
+  "NoticeHostContext",
+  "getNoticeHostContextLabels",
+  "getMixedWorktreeHostContextLabels",
+  "getHostWorktreeCounts",
+  "getHostWorktreeIds",
+  "getLaneHostWorktreeCounts",
+  "getLaneHostWorktreeIds"
+ ],
+ "components/sidebar/worktree-list/grouping/pinned-group-rows.ts": [
+  "emitPinnedGroup"
+ ],
+ "components/sidebar/worktree-list/grouping/project-group-sections.ts": [
+  "appendProjectGroupSections"
+ ],
+ "components/sidebar/worktree-list/grouping/project-grouping.ts": [
+  "OrderedGroupEntry",
+  "ProjectGroupingModel",
+  "WorktreeGroupEntry",
+  "ProjectGroupingIndex",
+  "buildProjectGroupingIndex",
+  "ProjectHeaderRevealTarget",
+  "getProjectGroupingForRepo",
+  "getProjectHeaderRevealTarget",
+  "addRepoIdToGroup"
+ ],
+ "components/sidebar/worktree-list/grouping/row-builders.ts": [
+  "buildPendingCreationRow",
+  "buildImportedWorktreesCardRow",
+  "buildNewExternalWorktreesInboxRow",
+  "appendWorktreeRows",
+  "buildFolderWorkspaceRow"
+ ],
+ "components/sidebar/worktree-list/grouping/row-types.ts": [
+  "WorktreeGroupBy",
+  "PinnedWorktreeDisplayPolicy",
+  "getPinnedWorktreeDisplayPolicy",
+  "GroupHeaderRow",
+  "WorktreeRow",
+  "ImportedWorktreesCardCandidate",
+  "ImportedWorktreesCardRow",
+  "NewExternalWorktreesInboxCandidate",
+  "NewExternalWorktreesInboxRow",
+  "PendingCreationRow",
+  "FolderWorkspaceRow",
+  "PendingCreationRef",
+  "Row"
+ ],
+ "components/sidebar/worktree-list/grouping/section-order.ts": [
+  "getRenderedNaturalAnchorRepoIds",
+  "orderMainWorktreeFirst",
+  "withRepoSectionDisplayLabels",
+  "recentRankForEntry",
+  "compareRecentRank",
+  "getManualOrderAnchorRepo",
+  "sortProjectEntries"
+ ],
+ "components/sidebar/worktree-list/grouping/worktree-group-keys.ts": [
+  "getGroupKeyForWorktree",
+  "getGroupKeysForWorktree"
+ ],
+ "components/sidebar/worktree-list/grouping/worktree-grouping.ts": [
+  "buildOrderedGroups"
+ ],
+ "components/sidebar/worktree-list/listing/EmptyState.tsx": [
+  "SidebarWorktreeListEmptyState"
+ ],
+ "components/sidebar/worktree-list/listing/host-filtering.ts": [
+  "getVisibleSidebarHostIdSet",
+  "filterProjectGroupsForVisibleHosts",
+  "filterFolderWorkspacesForVisibleHosts",
+  "getProjectGroupExecutionHostIdForRows",
+  "getFolderWorkspaceExecutionHostIdForRows",
+  "getRuntimeEnvironmentIdForFolderPathStatusHost",
+  "getFolderPathStatusRouteOptionsForRows"
+ ],
+ "components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts": [
+  "EMPTY_PENDING_WORKTREE_CREATION_KEYS",
+  "selectPendingWorktreeCreationKeys"
+ ],
+ "components/sidebar/worktree-list/listing/render-row.ts": [
+  "RenderRow",
+  "getRenderRowKey"
+ ],
+ "components/sidebar/worktree-list/listing/renderable-rows.ts": [
+  "WorktreeItemRow",
+  "FolderWorkspaceItemRow",
+  "isWorktreeItemRow",
+  "isPinnedWorktreeRow",
+  "buildRenderableRows"
+ ],
+ "components/sidebar/worktree-list/listing/review-cache-inputs.ts": [
+  "WorktreeListReviewCacheState",
+  "WorktreeListReviewCacheInputs",
+  "EMPTY_WORKTREE_LIST_REVIEW_CACHE_INPUTS",
+  "selectWorktreeListReviewCacheInputs"
+ ],
+ "components/sidebar/worktree-list/listing/use-agent-send-target.ts": [
+  "useAgentSendTargetWorktreeId"
+ ],
+ "components/sidebar/worktree-list/listing/use-collapsed-groups.ts": [
+  "useEffectiveCollapsedGroups"
+ ],
+ "components/sidebar/worktree-list/listing/use-external-worktree-cards.ts": [
+  "useSidebarExternalWorktreeCards"
+ ],
+ "components/sidebar/worktree-list/listing/use-filters.ts": [
+  "SidebarWorktreeFilters",
+  "useSidebarWorktreeFilters"
+ ],
+ "components/sidebar/worktree-list/listing/use-folder-path-statuses.ts": [
+  "useFolderWorkspacePathStatusRows"
+ ],
+ "components/sidebar/worktree-list/listing/use-host-visible-scope.ts": [
+  "useSidebarHostVisibleScope"
+ ],
+ "components/sidebar/worktree-list/listing/use-reused-array-identity.ts": [
+  "useReusedArrayIdentity"
+ ],
+ "components/sidebar/worktree-list/listing/use-section-rows.ts": [
+  "useSidebarSectionRows"
+ ],
+ "components/sidebar/worktree-list/listing/use-sort-order.ts": [
+  "useSidebarWorktreeSortOrder"
+ ],
+ "components/sidebar/worktree-list/listing/use-visible-worktrees.ts": [
+  "useVisibleSidebarWorktrees"
+ ],
+ "components/sidebar/worktree-list/navigation/active-descendant-option.ts": [
+  "getRenderRowOptionId",
+  "getActiveDescendantOptionId"
+ ],
+ "components/sidebar/worktree-list/navigation/folder-reveal.ts": [
+  "getKnownSidebarWorktreeById",
+  "sidebarWorkspaceStillExists",
+  "getFolderWorkspaceRevealGroupKeys"
+ ],
+ "components/sidebar/worktree-list/navigation/mounted-row-reveal.ts": [
+  "revealMountedWorktreeElement",
+  "revealMountedSidebarRowElement"
+ ],
+ "components/sidebar/worktree-list/navigation/pending-reveal-inputs.ts": [
+  "MAX_REVEAL_RETRIES",
+  "PendingSidebarRevealArgs",
+  "expandGroupsForWorktreeReveal",
+  "resolvePendingSidebarReveal"
+ ],
+ "components/sidebar/worktree-list/navigation/render-row-lookup.ts": [
+  "getRenderRowSidebarKey",
+  "rowKeyMatchesRenderRow",
+  "renderRowContainsWorktree",
+  "getRenderRowWorktreeItem",
+  "findPreferredRenderRowIndexForWorktree",
+  "findPreferredRenderRowIndexForWorktreeIdentity"
+ ],
+ "components/sidebar/worktree-list/navigation/reveal-ancestors.ts": [
+  "getSidebarRowRevealAncestorKeys",
+  "getPinnedWorktreeRevealCollapsedGroupKeys"
+ ],
+ "components/sidebar/worktree-list/navigation/use-active-row.ts": [
+  "usePrimaryActiveWorktreeRow"
+ ],
+ "components/sidebar/worktree-list/navigation/use-keyboard.ts": [
+  "useWorktreeListKeyboardNavigation"
+ ],
+ "components/sidebar/worktree-list/navigation/use-pending-reveal.ts": [
+  "usePendingSidebarReveal"
+ ],
+ "components/sidebar/worktree-list/navigation/use-reveal-highlight.ts": [
+  "SidebarRevealHighlight",
+  "useSidebarRevealHighlight"
+ ],
+ "components/sidebar/worktree-list/navigation/use-reveal-requests.ts": [
+  "useSidebarRevealRequests"
+ ],
+ "components/sidebar/worktree-list/navigation/use-selection.ts": [
+  "useSidebarWorktreeSelection"
+ ],
+ "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx": [
+  "FolderPathStatusIndicator"
+ ],
+ "components/sidebar/worktree-list/rows/HostSectionHeader.tsx": [
+  "HostSectionHeader"
+ ],
+ "components/sidebar/worktree-list/rows/ProjectGroupDialogs.tsx": [
+  "SidebarWorktreeListDialogs"
+ ],
+ "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx": [
+  "RepoScanUnavailableIndicator"
+ ],
+ "components/sidebar/worktree-list/rows/SectionHeader.tsx": [
+  "SectionHeaderRowContext",
+  "renderWorktreeSectionHeaderRow"
+ ],
+ "components/sidebar/worktree-list/rows/folder-row.tsx": [
+  "FolderWorkspaceRowContext",
+  "renderFolderWorkspaceVirtualRow"
+ ],
+ "components/sidebar/worktree-list/rows/header-event-guards.ts": [
+  "stopRepoHeaderKeyboardToggle",
+  "stopNestedWorktreeCardBubble",
+  "handleRepoHeaderActionPointerDown",
+  "handleRepoHeaderCollapseAffordancePointerDown",
+  "stopRepoHeaderMenuEvent",
+  "shouldIgnoreRepoHeaderToggle"
+ ],
+ "components/sidebar/worktree-list/rows/indentation.ts": [
+  "SIDEBAR_TREE_INDENT",
+  "FLUSH_CARD_CONTENT_PULLBACK",
+  "NEW_CARD_STYLE_STATUS_LANE_EXTRA_PULLBACK",
+  "FLUSH_CARD_MIN_CONTENT_INSET",
+  "WORKTREE_CARD_SURFACE_MARGIN",
+  "LINEAGE_IMMEDIATE_PARENT_STEP",
+  "LINEAGE_NESTED_ROW_SURFACE_INSET",
+  "LINEAGE_CHILDREN_INLINE_OFFSET",
+  "PROJECT_GROUP_HEADER_BASE_PADDING",
+  "WORKTREE_SECTION_HEADER_PADDING_LEFT",
+  "PROJECT_GROUP_HEADER_INDENT",
+  "MAX_PROJECT_GROUP_HEADER_DEPTH",
+  "getProjectGroupHeaderPaddingLeft",
+  "getWorktreeCardContentIndent",
+  "getFolderBackedRepoWorktreeCardContentIndent",
+  "getFolderBackedRepoWorktreeCardSurfaceInset",
+  "getFolderWorkspaceCardContentIndent",
+  "getFolderWorkspaceCardSurfaceInset",
+  "getFolderWorkspaceRowGeometry",
+  "getWorktreeCardSurfaceInset",
+  "getFlushWorktreeCardPaddingLeft",
+  "getNewCardStyleParentContentMarginLeft",
+  "getLineageNestedRowGeometry",
+  "getLineageChildrenInlineStyle",
+  "getLineageEffectiveChildStart"
+ ],
+ "components/sidebar/worktree-list/rows/item-row.tsx": [
+  "WorktreeItemRowContext",
+  "renderWorktreeItemRow",
+  "renderWorktreeLineageDescendants"
+ ],
+ "components/sidebar/worktree-list/rows/notice-rows.tsx": [
+  "canKeepImportedWorktreesHidden",
+  "renderImportedWorktreesVirtualRow",
+  "renderNewExternalWorktreesInboxVirtualRow",
+  "renderPendingCreationVirtualRow"
+ ],
+ "components/sidebar/worktree-list/rows/option-dom.ts": [
+  "getWorktreeOptionId",
+  "getMountedWorktreeOptions",
+  "markSidebarWorktreeActiveImmediately"
+ ],
+ "components/sidebar/worktree-list/rows/project-group-header-actions.tsx": [
+  "ProjectGroupHeaderMenu",
+  "ProjectGroupCreateWorkspaceButton"
+ ],
+ "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx": [
+  "RepoHeaderProjectActions",
+  "RepoHeaderProjectActionsMenu",
+  "RepoHeaderCreateWorkspaceButton"
+ ],
+ "components/sidebar/worktree-list/rows/use-project-group-dialogs.ts": [
+  "ProjectGroupNameDialogState",
+  "ProjectGroupDeleteDialogState",
+  "ProjectGroupDialogs",
+  "useProjectGroupDialogs"
+ ],
+ "components/sidebar/worktree-list/rows/virtual-row-dispatch.tsx": [
+  "WorktreeVirtualRowContext",
+  "renderWorktreeVirtualRow"
+ ],
+ "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx": [
+  "VirtualizedWorktreeViewport"
+ ],
+ "components/sidebar/worktree-list/viewport/drop-indicators.tsx": [
+  "renderWorktreeSidebarDropIndicators"
+ ],
+ "components/sidebar/worktree-list/viewport/hard-scroll-up.ts": [
+  "HARD_SCROLL_UP",
+  "HardScrollUpWheelSample",
+  "HardScrollUpScrollSample",
+  "HardScrollUpDetectorState",
+  "HardScrollUpViewport",
+  "createHardScrollUpDetectorState",
+  "normalizeWheelDeltaY",
+  "reduceHardScrollUpOnWheel",
+  "reduceHardScrollUpOnScroll",
+  "reduceHardScrollUpOnIdle",
+  "reduceHardScrollUpOnDismiss"
+ ],
+ "components/sidebar/worktree-list/viewport/use-group-toggle.ts": [
+  "useGroupToggleWithScrollAnchor"
+ ],
+ "components/sidebar/worktree-list/viewport/use-row-measurement.ts": [
+  "countRecordKeysByReference",
+  "useVirtualRowMeasurementSync"
+ ],
+ "components/sidebar/worktree-list/viewport/use-row-removal-animation.ts": [
+  "WORKTREE_ROW_REMOVAL_ANIMATION_MS",
+  "VirtualRowLayoutSnapshot",
+  "VirtualRowRemovalMotion",
+  "getSidebarRowIdentityKeys",
+  "buildVirtualRowRemovalMotions",
+  "useVirtualRowRemovalAnimation"
+ ],
+ "components/sidebar/worktree-list/viewport/use-scroll-suppression.ts": [
+  "USER_SCROLL_MEASUREMENT_ADJUSTMENT_SUPPRESS_MS",
+  "EXPANDING_CARD_MEASUREMENT_ADJUSTMENT_SUPPRESS_MS",
+  "shouldAdjustWorktreeSidebarMeasuredRowScroll",
+  "WorktreeSidebarScrollSuppression",
+  "useWorktreeSidebarScrollSuppression"
+ ],
+ "components/sidebar/worktree-list/viewport/use-scroll-to-top.ts": [
+  "useWorktreeListScrollToTop"
+ ],
+ "components/sidebar/worktree-list/viewport/use-virtualizer.ts": [
+  "WorktreeListVirtualizer",
+  "useWorktreeListVirtualizer"
+ ],
+ "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts": [
+  "installWorktreeVisibleRefreshVisibilityListener",
+  "useVisiblePrRefreshReporting"
+ ],
+ "components/sidebar/worktree-list/viewport/viewport-props.ts": [
+  "EMPTY_PROJECT_GROUPS",
+  "VirtualizedWorktreeViewportProps"
+ ],
+ "components/sidebar/worktree-list/viewport/virtual-row-context.ts": [
+  "buildWorktreeVirtualRowContext"
+ ],
+ "components/sidebar/worktree-list/viewport/virtual-rows.ts": [
+  "GROUP_HEADER_ROW_HEIGHT",
+  "HOST_HEADER_ROW_HEIGHT",
+  "WORKTREE_SIDEBAR_VIRTUAL_ROW_GAP",
+  "buildLineageRowRekeyMap",
+  "shouldUseHeaderTopSpacing",
+  "estimateRenderRowSize",
+  "getVirtualRowTransform",
+  "getVirtualRowIndex",
+  "getVirtualRowKey",
+  "getWorktreeVirtualRowTransform",
+  "pruneStaleVirtualRowElementCache",
+  "getStickyHeaderIndexes",
+  "HOST_STICKY_PINNED_HEIGHT",
+  "ActiveStickyIndexes",
+  "getActiveStickyIndexesForScroll",
+  "getActiveStickyHeaderIndex",
+  "getPreviousStickyHeaderIndex",
+  "extractWorktreeVirtualRowIndexes",
+  "getActiveStickyHeaderIndexForScroll"
+ ],
+ "components/sidebar/worktree-list-card-markup-queries.ts": [
+  "getCardOpeningTag",
+  "getOptionOpeningTag",
+  "getFolderWorkspaceSurfaceOpeningTag",
+  "getDataNumber",
+  "getPaddingLeft",
+  "getFlushCardContentStart"
+ ],
+ "components/sidebar/worktree-list-groups-host-collision.test.ts": [
+  "SSH_REPO_FIXTURE"
+ ],
+ "components/sidebar/worktree-list-groups-test-fixtures.ts": [
+  "LOCAL_HOST_LABEL",
+  "repo",
+  "worktree",
+  "repoMap",
+  "remoteRepo",
+  "remoteWorktree",
+  "project",
+  "projectHostSetups",
+  "makeDetectedWorktree"
+ ],
+ "components/sidebar/worktree-list-lineage-card-test-fixtures.ts": [
+  "makeFolderWorkspacePathStatusMockState",
+  "makeRepo",
+  "makeWorktree",
+  "makeFolderWorkspacePathStatusState"
+ ],
+ "components/sidebar/worktree-list-lineage-card-test-harness.ts": [
+  "mockStore",
+  "WorktreeListComponent",
+  "loadWorktreeList",
+  "renderWorktreeListMarkup",
+  "createAppStoreModuleMock",
+  "createReactVirtualModuleMock",
+  "createVirtualizedScrollAnchorModuleMock",
+  "createProjectHeaderDragModuleMock",
+  "createWorktreeCardModuleMock",
+  "createWorktreeCardAgentsModuleMock",
+  "createWorktreeTitleInlineRenameModuleMock",
+  "createWorktreeContextMenuModuleMock",
+  "createTooltipModuleMock",
+  "createDropdownMenuModuleMock"
+ ],
+ "components/sidebar/worktree-list-lineage-store-state.ts": [
+  "setLineageFixtureState"
+ ],
+ "components/sidebar/worktree-list-pinned-store-state.ts": [
+  "setPinnedFixtureState"
+ ],
+ "components/sidebar/worktree-manual-order-catalog.ts": [
+  "WorktreeManualOrderCatalog",
+  "buildWorktreeManualOrderCatalog"
+ ],
+ "components/sidebar/worktree-manual-order-ranks.ts": [
+  "WorktreeManualOrderUpdate",
+  "buildSparseManualOrderUpdates"
+ ],
+ "components/sidebar/worktree-manual-order.ts": [
+  "WorktreeDragGroup",
+  "WorktreeDragLineageRow",
+  "expandDraggedWorktreeIdsForVisibleLineage",
+  "moveWorktreeIdsWithinGroup",
+  "buildManualOrderUpdatesForVisibleGroups",
+  "buildManualOrderUpdatesForGroupDrop",
+  "shouldWriteManualOrderForGroupDrop"
+ ],
+ "components/sidebar/worktree-meta-updates.ts": [
+  "WorktreeReviewProvider",
+  "WorktreeMetaSavedPayload",
+  "WorktreeMetaDraft",
+  "WorktreeMetaSnapshot",
+  "WorktreeMetaLiveLinks",
+  "parseExplicitGitHubIssueUrl",
+  "parseGitHubWorkItemNumberForMetaField",
+  "parseGitLabMergeRequestNumberForMetaField",
+  "isIssueFieldDirty",
+  "buildWorktreeMetaUpdates"
+ ],
+ "components/sidebar/worktree-multi-selection.ts": [
+  "WorktreeSelectionIntent",
+  "WorktreeSelectionResult",
+  "WorktreeAreaSelectionResult",
+  "getWorktreeSelectionIntent",
+  "updateWorktreeSelection",
+  "pruneWorktreeSelection",
+  "updateWorktreeAreaSelection",
+  "areWorktreeSelectionsEqual"
+ ],
+ "components/sidebar/worktree-name-suggestions.ts": [
+  "getSuggestedCreatureName",
+  "shouldApplySuggestedName"
+ ],
+ "components/sidebar/worktree-parent-candidates.ts": [
+  "getEligibleWorktreeParents",
+  "isEligibleWorktreeParent"
+ ],
+ "components/sidebar/worktree-parent-eligibility.ts": [
+  "canAssignWorktreeParent"
+ ],
+ "components/sidebar/worktree-parent-picker-filtering.ts": [
+  "getWorktreeParentPickerItemValue",
+  "filterWorktreeParentCandidates",
+  "clampWorktreeParentPickerIndex"
+ ],
+ "components/sidebar/worktree-parent-picker-placement.ts": [
+  "PICKER_ROW_HEIGHT",
+  "PICKER_ROW_OVERSCAN",
+  "PICKER_LIST_MAX_HEIGHT",
+  "PICKER_VIEWPORT_PADDING",
+  "estimateWorktreeParentPickerHeight",
+  "clampWorktreeParentPickerAnchorTop"
+ ],
+ "components/sidebar/worktree-review-helpers.tsx": [
+  "getReviewLabel",
+  "getProviderName",
+  "ReviewIcon"
+ ],
+ "components/sidebar/worktree-sidebar-drag-autoscroll.ts": [
+  "WorktreeSidebarDragPoint",
+  "WorktreeSidebarDragRect",
+  "WorktreeSidebarDragSession",
+  "WorktreeSidebarAutoscrollResult",
+  "WorktreeSidebarBoundaryDropResult",
+  "getWorktreeSidebarDragAutoscroll",
+  "getWorktreeSidebarBoundaryDrop",
+  "getWorktreeSidebarDragRectsForGroup",
+  "refreshWorktreeSidebarDragSession"
+ ],
+ "components/sidebar/worktree-sidebar-drag-geometry.ts": [
+  "WorktreeSidebarDragGrab",
+  "WorktreeSidebarDropAnchor",
+  "getWorktreeSidebarDragReferenceY",
+  "shouldReevaluateWorktreeSidebarDropAnchor",
+  "resolveWorktreeSidebarDropAnchorIndex",
+  "getWorktreeSidebarDropAnchorId",
+  "getWorktreeSidebarDragGrab"
+ ],
+ "components/sidebar/worktree-sidebar-drop-preview.ts": [
+  "WorktreeSidebarDropPreview",
+  "WorktreeSidebarStatusDropTarget",
+  "WorktreeSidebarTrackedStatusDropTarget",
+  "resolveWorktreeSidebarStatusDropCommitTarget",
+  "computeWorktreeSidebarDropPreview"
+ ],
+ "components/sidebar/worktree-sidebar-header-drop-preview.ts": [
+  "WorktreeSidebarHeaderDragRect",
+  "WorktreeSidebarHeaderDropPreview",
+  "computeWorktreeSidebarHeaderDropPreview"
+ ],
+ "components/sidebar/worktree-sidebar-pointer-drag-dom.ts": [
+  "isSidebarPointerDragBlocked",
+  "setSidebarPointerDragDocumentStyles",
+  "updateSidebarDragPreviewPosition",
+  "createSidebarDragPreview"
+ ],
+ "components/sidebar/worktree-sidebar-reveal-scroll-settle.ts": [
+  "PendingRevealScroll",
+  "REVEAL_SCROLL_SETTLE_TIMEOUT_MS",
+  "createPendingRevealScroll",
+  "isRevealScrollSettling"
+ ],
+ "components/sidebar/worktree-sidebar-reveal.ts": [
+  "WORKTREE_SIDEBAR_REVEAL_TOP_INSET",
+  "getScrollTopToRevealBounds",
+  "revealElementInScrollContainer"
+ ],
+ "components/sidebar/worktree-sidebar-row-preference.ts": [
+  "getPreferredWorktreeRows",
+  "getRenderedWorktreesInSidebarOrder"
+ ],
+ "components/sidebar/worktree-snapshot-prune-batch.ts": [
+  "WorktreeSnapshotPruneBatch",
+  "beginWorktreeSnapshotPruneBatch"
+ ],
+ "components/sidebar/worktree-subagent-child-rows.ts": [
+  "buildSubagentChildRows"
+ ],
+ "components/sidebar/worktree-title-derived-agent-rows.ts": [
+  "TITLE_DERIVED_AGENT_ROW_AUTHORITY_ID",
+  "buildTitleDerivedAgentRows",
+  "resolveTitleDerivedAgentType",
+  "resolveAgentTypeFromTerminalTitle"
+ ],
+ "components/sidebar/worktree-unambiguous-id-index.ts": [
+  "buildUnambiguousWorktreeIdIndex"
+ ],
+ "components/sidebar/worktree-unnest.ts": [
+  "unnestWorktrees"
+ ],
+ "components/sidebar/worktree-visibility-host-target.ts": [
+  "resolveWorktreeVisibilityHostTarget",
+  "useWorktreeVisibilityHostActions"
+ ],
+ "components/sidebar/worktree-visibility-mutation-fence.ts": [
+  "ActiveVisibilityMutation",
+  "getActiveVisibilityMutation",
+  "startVisibilityMutation",
+  "subscribeToVisibilityMutation",
+  "finishVisibilityMutation",
+  "useVisibilityMutationFence"
+ ],
+ "components/sidebar/worktree-visibility-repo-sources.ts": [
+  "getLatestRepoForVisibilityScope",
+  "getRepoCustomWorktreeVisibilitySourceIds",
+  "isDuplicateWorktreeVisibilitySource"
+ ],
+ "components/sidebar/worktree-visibility-source-mutation.ts": [
+  "WorktreeVisibilitySourceMutation",
+  "createWorktreeVisibilitySourceMutation"
+ ],
+ "components/sidebar/worktree-visibility-source-provenance.ts": [
+  "WorktreeVisibilitySourceProvenance",
+  "globalWorktreeVisibilitySourceValue",
+  "getWorktreeVisibilitySourceProvenance",
+  "listInheritedWorktreeVisibilitySources",
+  "worktreeVisibilityValueLabel",
+  "getWorktreeVisibilityOverrideNotice",
+  "getWorktreeVisibilitySourceNote"
+ ],
+ "components/sidebar/worktree-visibility-update-error.ts": [
+  "worktreeVisibilityUpdateError"
+ ],
+ "components/sidebar/worktree-visibility-use-global.ts": [
+  "shouldUseGlobalWorktreeVisibility",
+  "createWorktreeVisibilityUseGlobalMutation"
+ ],
+ "components/AgentQuestionIcon.tsx": [
+  "AgentQuestionIcon"
+ ],
+ "components/AgentStateDot.tsx": [
+  "AgentDotState",
+  "agentStateLabel",
+  "AgentStateDot"
+ ],
+ "components/AgentWorkingSpinner.tsx": [
+  "AgentWorkingSpinner"
+ ],
+ "components/DetachedHeadBadge.tsx": [
+  "DetachedHeadBadge"
+ ],
+ "components/HostedReviewUnlinkMenuItem.tsx": [
+  "HostedReviewUnlinkMenuItem"
+ ],
+ "components/SelectedTextCopyMenu.tsx": [
+  "SelectedTextCopyMenu"
+ ],
+ "components/ShortcutKeyCombo.tsx": [
+  "ShortcutKeyCombo"
+ ],
+ "components/StateIndicatorTooltip.tsx": [
+  "STATE_INDICATOR_TOOLTIP_DELAY_MS",
+  "StateIndicatorTooltipSide",
+  "StateIndicatorTooltip"
+ ],
+ "components/activity/activity-thread-actions.ts": [
+  "hasActivityThreadWorkspace",
+  "createActivityThreadActions"
+ ],
+ "components/activity/activity-thread-collapse-context.ts": [
+  "ActivityThreadCollapseState",
+  "ActivityThreadCollapseContext"
+ ],
+ "components/activity/activity-thread-controls.tsx": [
+  "EventTime",
+  "ActivityProjectLabel",
+  "EventRepoBadge",
+  "ThreadAgentStateIndicator",
+  "ActivityStatusGroupHeader"
+ ],
+ "components/activity/activity-thread-list-pane.tsx": [
+  "ActivityThreadListPane"
+ ],
+ "components/activity/activity-thread-types.ts": [
+  "ActivityEventState",
+  "ActivityHookLiveAgentState",
+  "ActivityLiveAgentState",
+  "ActivityEvent",
+  "ActivityLiveAgentSnapshot",
+  "AgentPaneThread",
+  "ActivityThreadGroup",
+  "ActivityTerminalPortalReadiness",
+  "ActivityTerminalPortalDomStatus",
+  "ActivityTerminalPortalSlotId"
+ ],
+ "components/activity/use-activity-thread-action-bindings.ts": [
+  "useActivityThreadActionBindings"
+ ],
+ "components/activity/use-agent-pane-threads.ts": [
+  "AgentPaneThreadsStoreData",
+  "useAgentPaneThreads"
+ ],
+ "components/automations/automation-host-client.ts": [
+  "AutomationHostTarget",
+  "getAutomationHostTargetKey",
+  "getAutomationHostTargetFromKey",
+  "getAutomationTargetFromHostId",
+  "getAutomationAuthorityTarget",
+  "getAutomationListTarget",
+  "getAutomationOwnerTarget",
+  "toRuntimeAutomationCreateInput",
+  "toRuntimeAutomationUpdateInput",
+  "listAutomationsForTarget",
+  "listAutomationRunsForTarget",
+  "listAutomationRunsPageForTarget",
+  "updateAutomationForTarget",
+  "deleteAutomationForTarget",
+  "runAutomationNowForTarget"
+ ],
+ "components/confirmation-dialog-context.ts": [
+  "ConfirmationDialogOptions",
+  "ConfirmationDialogContextValue",
+  "ConfirmationDialogContext",
+  "useConfirmationDialog"
+ ],
+ "components/confirmation-dialog.tsx": [
+  "ConfirmationDialogProvider"
+ ],
+ "components/contextual-tours/use-contextual-tour.ts": [
+  "UseContextualTourOptions",
+  "createContextualTourInteractionSnapshot",
+  "shouldRequestContextualTourAfterInteraction",
+  "useContextualTour"
+ ],
+ "components/contextual-tours/workspace-creation-tour-handoff.ts": [
+  "openWorkspaceCreationComposerWithTourHandoff"
+ ],
+ "components/dashboard/AgentDashboardDrawer.tsx": [
+  "AgentDashboardDrawer"
+ ],
+ "components/dashboard/DashboardAgentRow.tsx": [
+  "default"
+ ],
+ "components/dashboard/agent-finished-timestamp.ts": [
+  "lastEnteredDoneAt"
+ ],
+ "components/dashboard/agent-row-lineage-model.ts": [
+  "AgentLineageSourceRow",
+  "AgentRowLineageTree",
+  "resolveAgentRowParentPaneKey",
+  "buildAgentRowLineageTree"
+ ],
+ "components/dashboard/agent-row-lineage.ts": [
+  "AgentRowLineagePresentation",
+  "DashboardAgentRowWithLineage",
+  "applyAgentRowLineage",
+  "dashboardCardParentPaneKey"
+ ],
+ "components/dashboard/use-agent-row-conversation-name.ts": [
+  "useAgentRowConversationName"
+ ],
+ "components/dashboard/useAgentBucketCounts.ts": [
+  "AgentBucketCounts",
+  "AgentBucketCountState",
+  "resetAgentBucketCountStateForTests",
+  "selectAgentBucketCountState",
+  "useAgentBucketCounts"
+ ],
+ "components/dashboard/useDashboardData.ts": [
+  "DashboardAgentRow"
+ ],
+ "components/editor/MermaidBlock.tsx": [
+  "MermaidBlock",
+  "default"
+ ],
+ "components/feature-wall/feature-wall-setup-progress.ts": [
+  "FeatureWallSetupProgressInput",
+  "FeatureWallSetupProgress",
+  "getFeatureWallSetupProgress"
+ ],
+ "components/github/review-state-presentation.ts": [
+  "ReviewStateForDisplay",
+  "OPEN_REVIEW_STATE_TONE",
+  "getReviewStateTone",
+  "getReviewStateIcon"
+ ],
+ "components/host-row-icon.tsx": [
+  "HostRowIcon"
+ ],
+ "components/icons/JiraIcon.tsx": [
+  "JiraIcon"
+ ],
+ "components/icons/LinearIcon.tsx": [
+  "LinearIcon"
+ ],
+ "components/integration-status-pill.tsx": [
+  "IntegrationStatusTone",
+  "IntegrationStatusPill"
+ ],
+ "components/mobile/paired-mobile-devices.ts": [
+  "PairedMobileDevice",
+  "getPairedMobileDevicesSnapshot",
+  "replacePairedMobileDevices",
+  "refreshPairedMobileDevices",
+  "usePairedMobileDevices",
+  "_resetPairedMobileDevicesCacheForTests"
+ ],
+ "components/native-chat/NativeChatCodeBlock.tsx": [
+  "NativeChatCodeBlock"
+ ],
+ "components/new-workspace/SmartWorkspaceNameField.tsx": [
+  "SmartWorkspaceNameField",
+  "default"
+ ],
+ "components/onboarding/show-onboarding-event.ts": [
+  "showOnboardingFromRenderer",
+  "onOnboardingReopened"
+ ],
+ "components/repo/NestedRepoChecklist.tsx": [
+  "NestedRepoChecklist"
+ ],
+ "components/repo/NestedRepoScanLimitNotice.tsx": [
+  "nestedRepoScanLimitText",
+  "NestedRepoScanLimitNotice"
+ ],
+ "components/repo/RepoBadgeLabel.tsx": [
+  "RepoBadgeMark",
+  "default"
+ ],
+ "components/repo/repo-fork-indicator.tsx": [
+  "RepoForkIndicator"
+ ],
+ "components/repo/repo-icon.tsx": [
+  "getRepoLucideIconOptions",
+  "getRepoLucideIcon",
+  "RepoIconGlyph"
+ ],
+ "components/right-sidebar/parent-pr-checks-row-types.ts": [
+  "ParentPrChecksCacheEntry",
+  "ParentPrChecksRefreshOutcome",
+  "ParentPrChecksRowStatus",
+  "ParentPrChecksGroupKey",
+  "ParentPrChecksRow",
+  "ParentPrChecksSummary",
+  "ParentPrChecksProjection",
+  "BuildParentPrChecksRowsArgs",
+  "PARENT_PR_CHECKS_GROUP_LABELS",
+  "PARENT_PR_CHECKS_GROUP_ORDER"
+ ],
+ "components/right-sidebar/parent-pr-checks-rows.ts": [
+  "buildParentPrChecksProjection",
+  "buildParentPrChecksRows",
+  "summarizeParentPrChecksRows",
+  "getParentPrChecksRefreshIdentity"
+ ],
+ "components/settings/AgentSkillSetupPanel.tsx": [
+  "AgentSkillSetupPanel"
+ ],
+ "components/settings/CliSkillRuntimeSetup.tsx": [
+  "LocalAgentRuntime",
+  "getHostRuntimeLabel",
+  "getSelectedAgentRuntime",
+  "getWslCliDistroRequest",
+  "buildSkillCommandForRuntime",
+  "buildSkillSetupTerminalCommand",
+  "buildSkillInstallCommandForRuntime",
+  "getSkillDiscoveryTargetForRuntime",
+  "getAgentSkillTerminalShellOverride",
+  "ensureWslCliAvailableForAgentSkillTerminal"
+ ],
+ "components/settings/SettingsFormControls.tsx": [
+  "SettingsSwitch",
+  "SettingsRow",
+  "SettingsSwitchRow",
+  "SettingsSegmentedControl",
+  "SettingsBadge",
+  "SettingsSubsectionHeader",
+  "ColorField",
+  "NumberField"
+ ],
+ "components/settings/SshHostAdvancedFields.tsx": [
+  "SshHostAdvancedFields"
+ ],
+ "components/settings/keep-local-main-up-to-date-setting.ts": [
+  "getKeepLocalMainUpToDateTitle",
+  "KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID"
+ ],
+ "components/settings/repository-settings-targets.ts": [
+  "getRepositoryLocalCommandsSectionId",
+  "getRepositoryIconSectionId",
+  "getRepositorySourceControlAiSectionId",
+  "getRepositorySourceControlAiActionRecipeSectionId"
+ ],
+ "components/settings/ssh-target-draft.ts": [
+  "EditingTarget",
+  "EMPTY_FORM",
+  "getEditingTargetForSshTarget",
+  "getEditingTargetFromSshConfigHost",
+  "ParsedSshHostInput",
+  "parseSshHostInput",
+  "applyParsedSshHostInput",
+  "getSshTargetDraftConnectionFields",
+  "hasAdvancedConnectionValues",
+  "isSshTargetFormDirty",
+  "parseRelayGracePeriodSeconds",
+  "isRelayGracePeriodValid"
+ ],
+ "components/settings/ssh-target-remove.ts": [
+  "SshTargetRemoveApi",
+  "removeSshTargetWithBestEffortCleanup"
+ ],
+ "components/setup-guide/SetupGuideProgressRing.tsx": [
+  "SetupGuideProgressRing"
+ ],
+ "components/setup-guide/use-setup-guide-progress.ts": [
+  "useSetupGuideProgress"
+ ],
+ "components/tab-bar/lucide-icon-stub-fixture.ts": [
+  "stubEveryIcon"
+ ],
+ "components/terminal-pane/stale-agent-row.ts": [
+  "dismissStaleAgentRowByKey",
+  "surfaceStaleAgentRow"
+ ],
+ "components/terminal-pane/use-system-prefers-dark.ts": [
+  "getSystemPrefersDarkSnapshot",
+  "subscribeToSystemPrefersDarkChange",
+  "useSystemPrefersDark",
+  "resetSystemPrefersDarkSubscriptionForTests"
+ ],
+ "components/workspace-emoji/WorkspaceEmojiSuggestionPopover.tsx": [
+  "WorkspaceEmojiSuggestionPopover"
+ ],
+ "components/workspace-emoji/useWorkspaceEmojiShortcodeInput.ts": [
+  "useWorkspaceEmojiShortcodeInput"
+ ],
+ "components/worktree-jump-palette-test-fixtures.ts": [
+  "makeRepo",
+  "makeWorktree",
+  "makeTerminalTab",
+  "makeUnifiedTab",
+  "makeGroup",
+  "LEAF_ID",
+  "makeAgentEntry",
+  "makeRecentTabState",
+  "makeDuplicateRecentTabState",
+  "makeManyTabState"
+ ],
+ "hooks/use-now.ts": [
+  "createSharedNowClock",
+  "useNow"
+ ],
+ "hooks/useInstalledAgentSkills.ts": [
+  "GLOBAL_AGENT_SKILL_SOURCE_KINDS",
+  "InstalledAgentSkillState",
+  "hasInstalledAgentSkill",
+  "hasInstalledAgentSkillNamed",
+  "notifyInstalledAgentSkillsRefreshed",
+  "_installedAgentSkillDiscoveryInternalsForTests",
+  "useInstalledAgentSkill",
+  "useInstalledAgentSkillNames"
+ ],
+ "hooks/useMountedRef.ts": [
+  "useMountedRef"
+ ],
+ "hooks/useShortcutLabel.ts": [
+  "ShortcutKeyComboDetails",
+  "formatShortcutLabel",
+  "formatPrimaryShortcutLabel",
+  "useShortcutLabel",
+  "formatOptionalShortcutLabel",
+  "formatOptionalPrimaryShortcutLabel",
+  "useOptionalShortcutLabel",
+  "formatShortcutKeyComboDetails",
+  "useShortcutKeyComboDetails",
+  "useShortcutKeyDetails"
+ ],
+ "hooks/useSidebarResize.ts": [
+  "clampSidebarResizeWidth",
+  "getRenderedSidebarWidthCssValue",
+  "getNextSidebarResizeWidth",
+  "useSidebarResize"
+ ],
+ "hooks/useVirtualizedScrollAnchor.ts": [
+  "VirtualizedScrollAnchor",
+  "VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT",
+  "useVirtualizedScrollAnchor"
+ ],
+ "i18n/i18n.ts": [
+  "i18n",
+  "translate",
+  "setRendererUiLanguage",
+  "getIntlLocale",
+  "resolveRendererResourceLanguage",
+  "setRendererPluginLanguagePacks"
+ ],
+ "i18n/localized-catalog.ts": [
+  "createLocalizedCatalog"
+ ],
+ "lib/activate-tab-and-focus-pane.ts": [
+  "activateTabAndFocusPane"
+ ],
+ "lib/agent-catalog.tsx": [
+  "AgentCatalogEntry",
+  "getAgentCatalog",
+  "AGENT_CATALOG",
+  "getAgentLabel",
+  "AgentIcon"
+ ],
+ "lib/agent-launch-prompt-delivery.ts": [
+  "seedNativeChatLaunchDraftForAgentTab",
+  "deliverLaunchPromptToAgentTab"
+ ],
+ "lib/agent-row-decay-state.ts": [
+  "AgentRowState",
+  "resolveDecayedAgentRowState",
+  "formatCompactDuration",
+  "agentNoUpdateLabel"
+ ],
+ "lib/agent-row-dot-state.ts": [
+  "agentRowDotState"
+ ],
+ "lib/agent-row-primary-text.ts": [
+  "ORCA_DISPATCH_PREAMBLE_PREFIX",
+  "isOrcaDispatchPrompt",
+  "orchestrationLabelsMatchLiveDispatch",
+  "getAgentRowPrimaryText",
+  "getAgentRowGeneratedTitleText",
+  "getOrcaDispatchTaskId"
+ ],
+ "lib/agent-row-tool-preview.ts": [
+  "showsAgentToolPreview",
+  "formatAgentToolPreview"
+ ],
+ "lib/agent-session-launch-plan.ts": [
+  "AgentSessionLaunchRequest",
+  "AgentSessionLaunchVerdict",
+  "AgentSessionStructuredFeasibilityRequest",
+  "AgentSessionLaunchTarget",
+  "AgentSessionLaunchPlan",
+  "adoptAgentSessionLaunchVerdict",
+  "structuredAgentSessionLaunchFeasible",
+  "planAgentSessionLaunch"
+ ],
+ "lib/agent-skill-cli-prerequisite.ts": [
+  "AGENT_SKILL_CLI_PREREQUISITE_NOTICE",
+  "CLI_PREREQUISITE_REGISTRATION_TOAST",
+  "CLI_PREREQUISITE_REGISTRATION_TOAST_DESCRIPTION",
+  "isOrcaCliAvailableOnPath",
+  "ensureOrcaCliAvailableForAgentSkillTerminal",
+  "showOrcaCliRegistrationPromptToast"
+ ],
+ "lib/agent-status-epoch-clock.ts": [
+  "createAgentStatusEpochClock",
+  "getAgentStatusEpochNow",
+  "resetAgentStatusEpochClockForTests"
+ ],
+ "lib/agent-status-worktree-attribution.ts": [
+  "AgentStatusPaneIdentity",
+  "parseAgentStatusPaneIdentity",
+  "resolveAgentStatusWorktreeId",
+  "mergeAgentStatusOrchestration"
+ ],
+ "lib/agent-status.ts": [
+  "WorkingAgentEntry",
+  "WorktreeAgents",
+  "getWorkingAgentsPerWorktree",
+  "agentTypeToIconAgent",
+  "agentKindForAgentType",
+  "mapAgentStatusStateToVisualStatus",
+  "countWorkingAgents"
+ ],
+ "lib/agent-trust-preflight.ts": [
+  "preflightAgentTrust"
+ ],
+ "lib/browser-uuid.ts": [
+  "createBrowserUuid"
+ ],
+ "lib/client-environment-info.ts": [
+  "resolveClientEnvironmentInfo",
+  "resolveClientEnvironmentFooter"
+ ],
+ "lib/connection-context.ts": [
+  "getConnectionId",
+  "isWorktreeConnectionResolved",
+  "getConnectionIdForFile"
+ ],
+ "lib/crash-diagnostics.ts": [
+  "installRendererCrashDiagnostics"
+ ],
+ "lib/desktop-window-chrome.ts": [
+  "DesktopWindowChromeInput",
+  "isPairedWebClientWindow",
+  "isLocalWindowsDesktopClient",
+  "shouldRenderDesktopWindowChrome"
+ ],
+ "lib/editable-target.ts": [
+  "isEditableTarget",
+  "isSelectAllShortcut"
+ ],
+ "lib/external-editor-open-capability.ts": [
+  "ExternalEditorOpenCapability",
+  "getExternalEditorOpenCapability"
+ ],
+ "lib/feedback-image-attachments.ts": [
+  "MAX_FEEDBACK_IMAGE_COUNT",
+  "MAX_FEEDBACK_IMAGE_BYTES",
+  "SUPPORTED_FEEDBACK_IMAGE_TYPES",
+  "FEEDBACK_IMAGE_FILE_ACCEPT",
+  "FeedbackImageDraft",
+  "hasAttachableFeedbackImage",
+  "releaseFeedbackImageDraft",
+  "formatFeedbackImageSize",
+  "readFeedbackImageFiles",
+  "extractImageFilesFromDataTransfer"
+ ],
+ "lib/file-type-icons.ts": [
+  "getFileTypeIcon"
+ ],
+ "lib/folder-workspace-path-status-cache-expiry.ts": [
+  "useFolderWorkspacePathStatusCacheExpiryTick"
+ ],
+ "lib/folder-workspace-path-status.ts": [
+  "getFolderWorkspacePathStatusTitle",
+  "getFolderWorkspacePathStatusDescription",
+  "formatFolderWorkspaceCreateError",
+  "folderWorkspaceActivationBlocked"
+ ],
+ "lib/git-utils.ts": [
+  "branchName"
+ ],
+ "lib/ime-composition-keyboard-event.ts": [
+  "isImeOwnedKeyboardEvent",
+  "resolveImeModifierGesture",
+  "useImeEnterGestureOwnership",
+  "isImeCompositionKeyDown"
+ ],
+ "lib/ipc-error.ts": [
+  "compactIpcErrorMessage",
+  "readIpcErrorDetail",
+  "readIpcErrorMessage",
+  "extractIpcErrorMessage"
+ ],
+ "lib/lazy-with-retry.ts": [
+  "LazyWithRetryOptions",
+  "LazyChunkLoadError",
+  "isLazyChunkLoadError",
+  "resetLazyChunkReloadRequestsForTest",
+  "loadLazyWithRetry",
+  "lazyWithRetry"
+ ],
+ "lib/left-sidebar-appearance.ts": [
+  "LeftSidebarStyleVariables",
+  "resolveLeftSidebarStyleVariables"
+ ],
+ "lib/linear-agent-skill-update-command.ts": [
+  "LinearAgentSkillUpdateTarget",
+  "getLinearAgentSkillUpdateTarget",
+  "getLinearAgentSkillUpdateCommand"
+ ],
+ "lib/linked-work-item-context.ts": [
+  "LinkedWorkItemContext",
+  "LINKED_CONTEXT_BLOCK_MAX_CHARS",
+  "buildContainedLinkedContextBlock",
+  "LinearLaunchContextArgs",
+  "buildLinearLaunchContextBlock",
+  "getLinkedWorkItemPromptContext",
+  "getLaunchableWorkItemDraftContent",
+  "resolveQuickCreateLinkedWorkItemPrompt"
+ ],
+ "lib/local-file-manager-label.ts": [
+  "getLocalFileManagerLabel"
+ ],
+ "lib/local-path-open-guard.ts": [
+  "isLocalPathOpenBlocked",
+  "showLocalPathOpenBlockedToast"
+ ],
+ "lib/local-preflight-context.ts": [
+  "getWslDistroFromPath",
+  "getLocalProjectExecutionRuntimeContext",
+  "getGlobalWindowsExecutionRuntimeContext",
+  "getLocalRepoProjectExecutionRuntimeContext",
+  "getLocalPreflightContext",
+  "getLocalAgentPreflightContext"
+ ],
+ "lib/manual-terminal-worktree-parking.ts": [
+  "MANUAL_TERMINAL_WORKTREE_PARK_EVENT",
+  "ManualTerminalWorktreeParkDetail",
+  "requestManualTerminalWorktreePark",
+  "takePendingManualTerminalWorktreePark",
+  "takeAllPendingManualTerminalWorktreeParks"
+ ],
+ "lib/migration-unsupported-agent-entry.ts": [
+  "migrationUnsupportedToAgentStatusEntry"
+ ],
+ "lib/native-chat-initial-view-mode.ts": [
+  "NativeChatLaunchPromptDelivery",
+  "decideInitialAgentTabViewMode",
+  "initialAgentTabViewModeProps"
+ ],
+ "lib/native-chat-transcript-readability.ts": [
+  "isNativeChatTranscriptLocalReadable"
+ ],
+ "lib/nested-repo-selected-paths.ts": [
+  "getSelectedNestedRepoPathsInScanOrder"
+ ],
+ "lib/new-workspace-project-options.ts": [
+  "NEW_WORKSPACE_PROJECT_GROUP_OPTION_PREFIX",
+  "NEW_WORKSPACE_FOLDER_SOURCE_OPTION_PREFIX",
+  "NewWorkspaceProjectOption",
+  "NEW_WORKSPACE_PROJECT_OPTION_QUERY_MAX_BYTES",
+  "isNewWorkspaceProjectOptionQueryTooLarge",
+  "buildNewWorkspaceProjectOptions",
+  "getRepoIdFromNewWorkspaceFolderSourceOptionId",
+  "getProjectGroupIdFromNewWorkspaceOptionId",
+  "getNewWorkspaceProjectGroupHostId",
+  "findActionableFolderProjectGroup",
+  "buildNewWorkspaceFolderSourceOptions",
+  "buildNewWorkspaceCreateTargetOptions",
+  "searchNewWorkspaceProjectOptions"
+ ],
+ "lib/new-workspace-ssh-gate.ts": [
+  "SelectedRepoSshGate",
+  "isSshConnectInProgress",
+  "getSelectedRepoSshGate",
+  "canUseRepoBackedComposerSources"
+ ],
+ "lib/new-workspace.ts": [
+  "CLIENT_PLATFORM",
+  "LinkedWorkItemSummary",
+  "canUseIssueCommandForLinkedItemProvider",
+  "DEFAULT_ISSUE_COMMAND_TEMPLATE",
+  "SetupConfig",
+  "renderIssueCommandTemplate",
+  "buildAgentPromptWithContext",
+  "getAttachmentLabel",
+  "getSetupConfig",
+  "getWorkspaceSeedName",
+  "ensureAgentStartupInTerminal"
+ ],
+ "lib/onboarding-folder-agent-launch.ts": [
+  "OnboardingFolderAgentLaunch",
+  "resolveDismissedOnboardingFolderAgentLaunch",
+  "revealOnboardingFolderWithAgentLaunch"
+ ],
+ "lib/onboarding-project-checklist.ts": [
+  "OnboardingProjectChecklistItem",
+  "markOnboardingProjectAdded"
+ ],
+ "lib/open-in-app-catalog.tsx": [
+  "OpenInAppPreset",
+  "getOpenInAppPresets",
+  "getOpenInAppPreset",
+  "isOpenInAppPresetAdded",
+  "OpenInApplicationIcon"
+ ],
+ "lib/open-in-application-selection.ts": [
+  "NO_OPEN_IN_APPLICATIONS"
+ ],
+ "lib/orca-hook-trust.ts": [
+  "OrcaHookScriptKind",
+  "hashOrcaHookScript"
+ ],
+ "lib/palette-match/palette-document.ts": [
+  "PaletteEvidenceUnit",
+  "PaletteEvidenceFieldSource",
+  "PaletteCompositePair",
+  "PaletteDocument",
+  "PaletteDocumentInput",
+  "buildPaletteDocument",
+  "PaletteTokenAssignment",
+  "PaletteSupportingEvidence",
+  "PaletteDocumentRank",
+  "PaletteDocumentMatch",
+  "comparePaletteSemanticRank",
+  "comparePaletteDocumentRank",
+  "createRecognizedPaletteRank",
+  "createPaletteFallbackRank"
+ ],
+ "lib/pane-agent-evidence.ts": [
+  "isExplicitAgentStatusFresh",
+  "classifyTitleActivity",
+  "resolveTitleActivityLabel",
+  "resolveCommittedTitleAgentType",
+  "AgentActivityDecision",
+  "ResolvePaneAgentActivityInput",
+  "resolvePaneAgentActivity"
+ ],
+ "lib/passive-macos-app-data-access.ts": [
+  "isMacAppDataPath",
+  "ActiveGitStatusPollingArgs",
+  "hasInteractiveActiveGitStatusConsumer",
+  "shouldPollActiveGitStatus"
+ ],
+ "lib/path.ts": [
+  "normalizeRelativePath",
+  "getRelativePathInsideRoot",
+  "basename",
+  "dirname",
+  "joinPath"
+ ],
+ "lib/pending-worktree-creation.ts": [
+  "WorktreeCreationPhase",
+  "WorktreeCreationProgressMode",
+  "WorktreeCreationRequest",
+  "PendingWorktreeCreation",
+  "findPendingLinkedWorkItemCreationId",
+  "getCreationProgressLabel"
+ ],
+ "lib/project-skill-runtime.ts": [
+  "ProjectAgentSkillRuntime",
+  "getProjectSkillDiscoveryTarget",
+  "getProjectAgentSkillRuntime",
+  "getProjectAgentSkillTerminalShellOverride",
+  "getProjectSkillInstallDisabledReason"
+ ],
+ "lib/remote-pairing-copy.ts": [
+  "translateHostAccessLinkError",
+  "translateRemotePairingEndpointKind",
+  "translateRemotePairingFailureDescription"
+ ],
+ "lib/repo-display-labels.ts": [
+  "getRepoDisplayLabelKey",
+  "getRepoDisplayLabelsByPath"
+ ],
+ "lib/repo-search.ts": [
+  "REPO_SEARCH_QUERY_MAX_BYTES",
+  "isRepoSearchQueryTooLarge",
+  "searchRepos"
+ ],
+ "lib/right-sidebar-visibility.ts": [
+  "canShowRightSidebarForView",
+  "rightSidebarShowsPullRequestData"
+ ],
+ "lib/running-agent-targets.ts": [
+  "RunningAgentTargetState",
+  "RunningAgentSendTarget",
+  "deriveRunningAgentSendTargets",
+  "resolveRunningAgentSendTarget"
+ ],
+ "lib/runtime-pane-title-leaf-id.ts": [
+  "RuntimePaneTitleLeafResolution",
+  "resolveRuntimePaneTitleLeafId",
+  "resolveRuntimePaneTitleForLeaf",
+  "resolveRuntimePaneTitleLeafResolution",
+  "resolveRuntimePaneTitleLeafIdFromRoot"
+ ],
+ "lib/screen-submit-shortcut.ts": [
+  "isScreenSubmitShortcut",
+  "getScreenSubmitModifierLabel",
+  "getScreenSubmitShortcutLabel"
+ ],
+ "lib/script-textarea-rows.ts": [
+  "SCRIPT_TEXTAREA_ROW_SCAN_CODE_UNITS",
+  "getDetectedSetupScriptTextareaRows",
+  "getRepositoryHookScriptTextareaRows"
+ ],
+ "lib/scroll-to-current-workspace-status.ts": [
+  "SCROLL_TO_CURRENT_WORKSPACE_REVEAL_REQUEST_EVENT",
+  "ScrollToCurrentWorkspaceRevealRequestDetail",
+  "requestScrollToCurrentWorkspaceReveal",
+  "requestScrollToCurrentWorkspaceRevealAndRename"
+ ],
+ "lib/settings-navigation-types.ts": [
+  "SettingsNavIcon",
+  "SettingsNavInstallStatus",
+  "SettingsNavTarget",
+  "FULL_DISK_ACCESS_SETTINGS_TARGET_ID",
+  "BROWSER_TERMINAL_LINK_ACTIONS_SETTINGS_TARGET_ID",
+  "BROWSER_CLIENT_HOSTED_REMOTE_SETTINGS_TARGET_ID",
+  "BROWSER_SSH_WORKSPACE_ROUTING_SETTINGS_TARGET_ID",
+  "BROWSER_USER_AGENT_SETTINGS_TARGET_ID",
+  "GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID",
+  "SettingsNavigationTarget",
+  "isSettingsNavigationTarget",
+  "SettingsNavSection",
+  "SettingsNavGroup"
+ ],
+ "lib/setup-script-prompt.ts": [
+  "SetupScriptPromptInspection",
+  "inspectSetupScriptPromptState",
+  "ignoresSharedSetupScripts",
+  "getSetupScriptPromptDismissalKey",
+  "isSetupScriptPromptDismissed",
+  "filterSetupScriptPromptDismissalsToValidRepos",
+  "sanitizeSetupScriptPromptDismissals",
+  "buildImportedHookSettings",
+  "formatCandidateSource",
+  "formatCandidateProvenance"
+ ],
+ "lib/short-time-ago.ts": [
+  "formatShortTimeAgo"
+ ],
+ "lib/shortcut-platform.ts": [
+  "getShortcutPlatform"
+ ],
+ "lib/sidebar-worktree-activation.ts": [
+  "activateWorktreeFromSidebar"
+ ],
+ "lib/structured-agent-session-provisional-tab.ts": [
+  "StructuredAgentSessionProvisionalLaunch",
+  "openStructuredAgentSessionProvisionalTab",
+  "beginStructuredAgentSessionProvisionalLaunch"
+ ],
+ "lib/structured-agent-session-tab-activation.ts": [
+  "activateStructuredAgentSessionTab",
+  "activateStructuredAgentSessionById"
+ ],
+ "lib/tab-has-live-pty.ts": [
+  "tabHasLivePty"
+ ],
+ "lib/telemetry.ts": [
+  "PRIVACY_URL",
+  "track",
+  "setOptIn",
+  "getConsentState",
+  "acknowledgeBanner"
+ ],
+ "lib/terminal-links.ts": [
+  "ParsedTerminalFileLink",
+  "ResolvedTerminalFileLink",
+  "extractTerminalFileLinks",
+  "extractTerminalFileLinkCandidates",
+  "resolveTerminalFileLink",
+  "resolveTerminalFileLinkText",
+  "isPathInsideWorktree",
+  "toWorktreeRelativePath"
+ ],
+ "lib/text-control-paste.ts": [
+  "measureTextControlPasteByteLength",
+  "measureTextControlPasteByteLengthWithYield",
+  "shouldHandleTextControlPaste",
+  "pasteTextIntoTextControl"
+ ],
+ "lib/update-check-click-options.ts": [
+  "getUpdateCheckHint",
+  "getUpdateCheckClickOptions"
+ ],
+ "lib/utils.ts": [
+  "cn"
+ ],
+ "lib/web-client-location.ts": [
+  "isWebClientLocation"
+ ],
+ "lib/window-visibility-interval.ts": [
+  "WindowVisibilityIntervalTimer",
+  "WindowVisibilityJitterTimer",
+  "isWindowVisible",
+  "installWindowVisibilityInterval"
+ ],
+ "lib/workspace-browser-tab-open.ts": [
+  "WorkspaceBrowserTabIntent",
+  "OpenWorkspaceBrowserTabRequest",
+  "canOpenWorkspaceBrowserTabOnRuntime",
+  "canOpenWorkspaceBrowserTabOnSsh",
+  "openWorkspaceBrowserTab"
+ ],
+ "lib/workspace-port-actions.ts": [
+  "WORKSPACE_PORT_ALL_HOSTS_SCAN_KEY",
+  "canStopWorkspacePort",
+  "WorkspacePortScanPublisher",
+  "shouldOpenWorkspacePortInOrcaBrowser",
+  "getPortSystemBrowserHint",
+  "getPortOpenBrowserTooltipLabel",
+  "resolvePortOpenInOrcaBrowser",
+  "workspacePortOwnerWorktreeId",
+  "goToWorkspacePortOwner",
+  "openWorkspacePortInBrowser",
+  "publishWorkspacePortScanForHost",
+  "refreshWorkspacePortScanAfterStop",
+  "workspacePortRuntimeTargetKey",
+  "workspacePortScanKeyForTarget",
+  "mergeWorkspacePortScans",
+  "scanWorkspacePortsForTarget",
+  "killWorkspacePortForTarget"
+ ],
+ "lib/workspace-port-groups.ts": [
+  "WorkspacePortGroup",
+  "getWorkspacePortsByWorktreeId",
+  "getWorkspacePortGroups",
+  "getExternalWorkspacePorts"
+ ],
+ "lib/workspace-port-localhost-label-selector.ts": [
+  "resolveLocalhostLabelRouteForPort",
+  "useLocalhostLabelRouteForPort"
+ ],
+ "lib/workspace-port-urls.ts": [
+  "addressForPort",
+  "browserUrlForPort",
+  "browserUrlForPortForwardEntry",
+  "addressForPortForwardEntry",
+  "advertisedBrowserUrlForForwardedRow",
+  "advertisedBrowserUrlForDetectedPort"
+ ],
+ "lib/worktree-activation.ts": [
+  "ActivateAndRevealResult",
+  "activateAndRevealFolderWorkspace",
+  "activateAndRevealWorktree",
+  "activateAndRevealWorkspace"
+ ],
+ "lib/worktree-activity-state.ts": [
+  "LiveAgentWorktreeStatus",
+  "getWorktreeIdsWithLiveAgent",
+  "getLiveAgentStatusByWorktreeId",
+  "hasActiveWorkspaceActivity",
+  "isInactiveWorkspace"
+ ],
+ "lib/worktree-display-name-order.ts": [
+  "compareWorktreeDisplayName"
+ ],
+ "lib/worktree-git-identity-display.ts": [
+  "WorktreeGitIdentityDisplay",
+  "shortGitHead",
+  "getDetachedHeadTooltip",
+  "getWorktreeGitIdentityDisplay"
+ ],
+ "lib/worktree-palette-document.ts": [
+  "WORKTREE_PALETTE_NAME_FIELD_ID",
+  "WORKTREE_PALETTE_BRANCH_FIELD_ID",
+  "WORKTREE_PALETTE_REPO_FIELD_ID",
+  "WORKTREE_PALETTE_HOST_FIELD_ID",
+  "PRCacheEntry",
+  "IssueCacheEntry",
+  "WorktreePaletteEvidencePolicy",
+  "WorktreePaletteDocumentSources",
+  "buildWorktreePaletteDocument",
+  "buildWorktreePaletteDocuments"
+ ],
+ "lib/worktree-palette-query-bounds.ts": [
+  "WORKTREE_PALETTE_QUERY_MAX_BYTES",
+  "isWorktreePaletteQueryTooLarge"
+ ],
+ "lib/worktree-palette-search.ts": [
+  "PaletteMatchedField",
+  "PaletteSupportingText",
+  "PaletteSearchResult",
+  "getWorktreePaletteSearchScope",
+  "makeEmptyPaletteSearchResult",
+  "toWorktreePaletteSearchResult",
+  "WorktreePaletteSearchArgs",
+  "searchWorktreeDocuments",
+  "searchWorktrees"
+ ],
+ "lib/worktree-runtime-owner-index.ts": [
+  "getCatalogOwnerHostId",
+  "findIndexedWorktreeOwner",
+  "findIndexedWorktreeOwnerForHost",
+  "IndexedRepoOwnerResolution",
+  "resolveIndexedRepoOwner",
+  "IndexedWorktreeOwnerResolution",
+  "resolveIndexedWorktreeOwner",
+  "findIndexedDetectedWorktrees",
+  "hasIndexedDetectedWorktree",
+  "findIndexedRepoOwner",
+  "findIndexedRepoOwnerForHost",
+  "findIndexedFolderWorkspaceOwner",
+  "findIndexedProjectGroupOwner"
+ ],
+ "lib/worktree-runtime-owner.ts": [
+  "getRuntimeEnvironmentIdForWorktree",
+  "getExplicitRuntimeEnvironmentIdForWorktree",
+  "getKnownExecutionHostIdForWorktree",
+  "getExecutionHostIdForWorktree",
+  "getSettingsForWorktreeRuntimeOwner"
+ ],
+ "lib/worktree-sleep-intent.ts": [
+  "markWorktreeSleepIntent",
+  "withWorktreeSleepTeardown",
+  "clearWorktreeSleepIntent",
+  "forgetWorktreeSleepIntent",
+  "hasWorktreeSleepIntent",
+  "onWorktreeSleepIntentCleared"
+ ],
+ "lib/worktree-sort-order-persistence.ts": [
+  "persistWorktreeSortOrderByHost"
+ ],
+ "lib/worktree-startup-payload.ts": [
+  "AgentStartedTelemetry",
+  "WorktreeStartupPayload",
+  "resolveStartupLaunchDraftText",
+  "draftViewModeProps"
+ ],
+ "lib/worktree-status.ts": [
+  "WorktreeStatus",
+  "getWorktreeStatus",
+  "getWorktreeStatusLabel",
+  "resolveWorktreeStatus"
+ ],
+ "lib/worktree-tab-bucket-projection.ts": [
+  "WorktreeTabBucketProjection",
+  "createWorktreeTabBucketProjection"
+ ],
+ "lib/worktree-visit-recency.ts": [
+  "WorktreeVisitOwner",
+  "getWorktreeVisitTimestamp",
+  "getWorktreeVisitKey",
+  "getWorktreeIdFromVisitKey",
+  "isHostQualifiedVisitKey",
+  "removeWorktreeVisitEntries",
+  "removeWorktreeVisitEntriesForTargets"
+ ],
+ "runtime/runtime-environment-ssh-state.ts": [
+  "hydrateRuntimeEnvironmentSshState",
+  "refreshRuntimeEnvironmentSshTargetMetadata",
+  "applyRuntimeEnvironmentSshStateChanged",
+  "connectRuntimeEnvironmentSshTarget",
+  "resyncRuntimeEnvironmentSshTargets"
+ ],
+ "runtime/runtime-git-client.ts": [
+  "getRuntimeGitScope",
+  "getRuntimeGitStatus",
+  "setRuntimeGitStatusUpstreamRefWatch",
+  "getRuntimeGitSubmoduleStatus",
+  "getRuntimeGitIgnoredPaths",
+  "getRuntimeGitHistory",
+  "getRuntimeGitConflictOperation",
+  "abortRuntimeGitMerge",
+  "abortRuntimeGitRebase",
+  "getRuntimeGitDiff",
+  "getRuntimeGitBranchCompare",
+  "getRuntimeGitCommitCompare",
+  "getRuntimeGitUpstreamStatus",
+  "fetchRuntimeGit",
+  "syncRuntimeGitForkDefaultBranch",
+  "pullRuntimeGit",
+  "fastForwardRuntimeGit",
+  "rebaseRuntimeGitFromBase",
+  "pushRuntimeGit",
+  "getRuntimeGitBranchDiff",
+  "getRuntimeGitCommitDiff",
+  "commitRuntimeGit",
+  "generateRuntimeCommitMessage",
+  "discoverRuntimeCommitMessageModels",
+  "cancelRuntimeGenerateCommitMessage",
+  "generateRuntimePullRequestFields",
+  "cancelRuntimeGeneratePullRequestFields",
+  "stageRuntimeGitPath",
+  "bulkStageRuntimeGitPaths",
+  "unstageRuntimeGitPath",
+  "bulkUnstageRuntimeGitPaths",
+  "bulkDiscardRuntimeGitPaths",
+  "discardRuntimeGitPath",
+  "getRuntimeGitRemoteFileUrl",
+  "getRuntimeGitRemoteCommitUrl"
+ ],
+ "runtime/runtime-hooks-client.ts": [
+  "HookCheckResult",
+  "IssueCommandReadResult",
+  "checkRuntimeHooks",
+  "inspectRuntimeSetupScriptImports",
+  "readRuntimeIssueCommand",
+  "writeRuntimeIssueCommand"
+ ],
+ "runtime/runtime-host-connection-state.ts": [
+  "HostStatus",
+  "RuntimeHostTransportState",
+  "RuntimeHostConnectionState",
+  "runtimeHostConnectionState",
+  "runtimeStatusForOverall",
+  "isConnectedRuntimeHostState",
+  "isDisconnectedRuntimeHostState",
+  "runtimeHostConnectionStateForEntry"
+ ],
+ "runtime/runtime-linear-client.ts": [
+  "RuntimeLinearSettings",
+  "LinearIssueAttributeFilterUnsupportedError",
+  "isLinearIssueAttributeFilterUnsupportedError",
+  "LinearIssueFilter",
+  "LinearConnectResult",
+  "LinearCreateIssueResult",
+  "LinearCreateProjectResult",
+  "LinearMutationResult",
+  "LinearCommentResult",
+  "LinearReadOptions",
+  "linearReadForce",
+  "getLinearRuntimeTarget",
+  "linearStatus",
+  "linearTestConnection",
+  "linearConnect",
+  "linearDisconnect",
+  "linearDisconnectWorkspace",
+  "linearSelectWorkspace",
+  "linearSearchIssues",
+  "linearListIssues"
+ ],
+ "runtime/runtime-linear-issue-mutations.ts": [
+  "linearCreateIssue",
+  "linearCreateSubIssue",
+  "linearGetIssue",
+  "linearUpdateIssue",
+  "linearAddIssueComment",
+  "linearIssueComments"
+ ],
+ "runtime/runtime-linear-project-client.ts": [
+  "linearListTeams",
+  "linearListProjects",
+  "linearCreateProject",
+  "linearGetProject",
+  "linearListProjectIssues",
+  "linearListCustomViews",
+  "linearGetCustomView",
+  "linearListCustomViewIssues",
+  "linearListCustomViewProjects",
+  "linearTeamStates",
+  "linearTeamLabels",
+  "linearTeamMembers"
+ ],
+ "runtime/runtime-rpc-client.ts": [
+  "isRuntimeScopeForbiddenError",
+  "callRuntimeRpc",
+  "ensureRuntimeEnvironmentCompatible",
+  "clearRecentRuntimeCompatibilityFailure",
+  "clearRuntimeCompatibilityCache",
+  "markRuntimeEnvironmentCompatible",
+  "getRuntimeEnvironmentStatus",
+  "runtimeEnvironmentSupportsCapability",
+  "assertRuntimeEnvironmentCapability",
+  "clearRuntimeCompatibilityCacheForTests"
+ ],
+ "runtime/runtime-server-directory-browser.ts": [
+  "RuntimeServerDirectoryListing",
+  "browseRuntimeServerDirectory"
+ ],
+ "runtime/use-worktree-runtime-target.ts": [
+  "useWorktreeRuntimeTarget"
+ ],
+ "ssh/ssh-connect-in-flight.ts": [
+  "subscribeSshConnectInFlight",
+  "beginSshConnect",
+  "endSshConnect",
+  "isSshConnectInFlight",
+  "trackSshConnect",
+  "useSshConnectInFlight",
+  "resetSshConnectInFlightForTests"
+ ],
+ "ssh/ssh-connect-ui-timeout.ts": [
+  "SSH_CONNECT_UI_TIMEOUT_MS",
+  "SSH_RECONNECT_UI_TIMEOUT_MS",
+  "withUiConnectTimeout"
+ ],
+ "ssh/ssh-connect-verb.ts": [
+  "sshConnectVerb",
+  "sshConnectingLabel"
+ ],
+ "ssh/ssh-connection-recoverability.ts": [
+  "isConnectingSshStatus",
+  "canConnectSshStatus"
+ ],
+ "store/github/cache-identity.ts": [
+  "projectViewCacheKey",
+  "projectViewRequestKey",
+  "projectViewSourceScope",
+  "settingsForProjectViewCacheKey",
+  "workItemsCacheKey",
+  "workItemsInflightRequestKey",
+  "issueCacheKey",
+  "runtimeScopedRepoCacheKey",
+  "sourceScopedRepoCacheKey",
+  "prCacheKey",
+  "repoCacheKeyPrefixes",
+  "matchesRepoCacheKey",
+  "evictRepoCacheEntries",
+  "prChecksCacheSuffix",
+  "prCommentsCacheSuffix",
+  "getPRChecksCacheTtl"
+ ],
+ "store/index.ts": [
+  "useAppStore"
+ ],
+ "store/project-host-setup-selector.ts": [
+  "getProjectHostSetupProjectionFromState"
+ ],
+ "store/repos/repo-state.ts": [
+  "ERROR_TOAST_DURATION",
+  "RepoUpdate",
+  "ProjectUpdate",
+  "FolderWorkspaceUpdates",
+  "NestedRepoScanControls",
+  "NestedRepoScanCancelOptions",
+  "FolderWorkspacePathStatusCacheEntry",
+  "DeleteProjectGroupWithContainedProjectsOptions",
+  "AllHostCatalogFetchOptions",
+  "ProjectRemovalFailure",
+  "DeleteProjectGroupWithContainedProjectsResult",
+  "FolderWorkspacePathStatusRouteOptions",
+  "AddRepoPathOptions",
+  "RuntimeCatalogFetchOptions",
+  "RepoSlice"
+ ],
+ "store/selectors.ts": [
+  "selectFloatingVisibleTabCount",
+  "resetFloatingVisibleTabCountSelectorCacheForTest",
+  "selectFloatingWorkspaceHasUnread",
+  "resetFloatingWorkspaceUnreadSelectorCacheForTest",
+  "getAllWorktreesFromState",
+  "getWorktreeMapFromState",
+  "getWorktreeOnHostFromState",
+  "getHasAnyWorktreesFromState",
+  "getRepoMapFromState",
+  "useRepos",
+  "useActiveRepo",
+  "useRepoMap",
+  "selectRepoByIdForActiveWorkspace",
+  "useRepoById",
+  "useProjectHostSetupProjection",
+  "useActiveWorktreeId",
+  "useWorktreesForRepo",
+  "useAllWorktrees",
+  "useWorktreeMap",
+  "useWorktreeById",
+  "useActiveWorktree"
+ ],
+ "store/slices/agent-status.ts": [
+  "createAgentStatusSlice"
+ ],
+ "store/slices/github-cache-key.ts": [
+  "getGitHubRepoCacheKey",
+  "getLegacyGitHubRepoCacheKey",
+  "getGitHubPRCacheKey",
+  "getLegacyGitHubPRCacheKey"
+ ],
+ "store/slices/hosted-review-cache-identity.ts": [
+  "LinkedReviewHints",
+  "getHostedReviewCacheKey",
+  "linkedReviewHintKey"
+ ],
+ "store/slices/project-group-owner-routing.ts": [
+  "getProjectGroupHostId",
+  "catalogOwnsHost",
+  "projectGroupMatchesOwnerHost",
+  "resolveProjectGroupOwnerHostId",
+  "settingsForProjectGroupOwner"
+ ],
+ "store/slices/project-group-removal-targets.ts": [
+  "ProjectGroupRemovalTargets",
+  "selectProjectGroupRemovalTargets"
+ ],
+ "store/slices/renderer-remove-worktree-result.ts": [
+  "RendererRemoveWorktreeResult"
+ ],
+ "store/slices/repo-host-identity.ts": [
+  "getRepoHostIdentity",
+  "repoMatchesHostIdentity",
+  "findRepoForHost"
+ ],
+ "store/slices/runtime-environment-ssh.ts": [
+  "RuntimeEnvironmentSshBucket",
+  "RuntimeEnvironmentSshSlice",
+  "getEnvironmentSshTargetConnectionGeneration",
+  "getEnvironmentSshStateGeneration",
+  "createRuntimeEnvironmentSshSlice"
+ ],
+ "store/slices/store-test-helpers.ts": [
+  "TEST_REPO",
+  "createTestStore",
+  "seedStore",
+  "makeWorktree",
+  "makeRuntimeOwnedWorktree",
+  "makeTab",
+  "makeLayout",
+  "makeOpenFile",
+  "makeUnifiedTab",
+  "makeTabGroup"
+ ],
+ "store/slices/ui.ts": [
+  "createUISlice"
+ ],
+ "store/slices/worktree-helpers.ts": [
+  "WorktreeFetchOptions",
+  "DirectSshWorktreeFetchOptions",
+  "WorktreeMetaUpdateGuard",
+  "WorktreeMetaUpdateOptions",
+  "WorktreeMetaBatchUpdate",
+  "WorktreeRenameRequest",
+  "ActiveWorktreeStateTransition",
+  "WorktreeSlice",
+  "findWorktreeById"
+ ],
+ "store/slices/worktree-removal-host-collision-fixture.ts": [
+  "COLLIDING_WORKTREE_ID",
+  "COLLIDING_WORKTREE_PATH",
+  "LOCAL_HOST",
+  "SSH_HOST",
+  "RELAY_HOST",
+  "HOST_COLLISION_MESSAGE",
+  "HOST_UNRESOLVED_MESSAGE",
+  "HostCheckout",
+  "createHostCheckout",
+  "cleanupHostCheckouts",
+  "RemovalTransportMocks",
+  "installRemovalTransports"
+ ],
+ "store/slices/worktree-removal-options.ts": [
+  "RemoveWorktreeOptions"
+ ],
+ "store/slices/worktrees-detected-listing-fixtures.ts": [
+  "makeDetectedResult",
+  "TEST_SSH_AUTHORITY",
+  "qualifyDetectedResult"
+ ],
+ "store/slices/worktrees-slice-test-fixtures.ts": [
+  "makeWorktree",
+  "makeTerminalTab",
+  "createWebview",
+  "makeLineage",
+  "makeWorkspaceLineage",
+  "makeFolderWorkspace"
+ ],
+ "store/slices/worktrees-slice-test-harness.ts": [
+  "StubMock",
+  "runtimeEnvironmentCall",
+  "runtimeEnvironmentTransportCall",
+  "worktreeListMock",
+  "listDetectedMock",
+  "listKnownForExecutionHostMock",
+  "forgetRemovedForExecutionHostMock",
+  "mockApi",
+  "resetRemoteRuntimeMocks",
+  "createTestStore",
+  "createLocalLineageTestStore",
+  "resetWorktreeSliceModuleMemory"
+ ],
+ "store/store-listener-census.ts": [
+  "readStoreListenerCount",
+  "installStoreListenerCensus"
+ ],
+ "store/types.ts": [
+  "AppState"
+ ],
+ "store/worktree-record-selector-cache.ts": [
+  "createWorktreeRecordSelector"
+ ],
+ "store/worktree-repo-index.ts": [
+  "getIndexedAllWorktrees",
+  "getIndexedWorktreeMap",
+  "getIndexedWorktreesById",
+  "getIndexedWorktreeById",
+  "getIndexedRepoMap"
+ ],
+ "store/worktree-visibility-defaults-by-host.ts": [
+  "getRepoOwnerWorktreeVisibilityDefaults"
+ ]
+}

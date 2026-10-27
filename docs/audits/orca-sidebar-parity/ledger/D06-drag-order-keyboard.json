@@ -1,0 +1,18 @@
+{
+ "domain": "D06-drag-order-keyboard",
+ "status": "ok",
+ "rows": 35,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 45,
+  "files": "22/22",
+  "symbols": "93/93",
+  "tests": "180/180",
+  "labels": "2/2",
+  "hotkeys": "8/8",
+  "prefs": "0/0",
+  "timers": "1/1",
+  "subscriptions": "4/4",
+  "preload": "0/0"
+ }
+}

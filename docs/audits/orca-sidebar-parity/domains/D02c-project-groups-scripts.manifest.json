@@ -1,0 +1,222 @@
+{
+ "domain": "D02c-project-groups-scripts",
+ "prod": [
+  {
+   "name": "HiddenWorktreeRecoveryList.tsx",
+   "kind": "prod",
+   "loc": 201
+  },
+  {
+   "name": "LinearAgentSkillSetupDialog.tsx",
+   "kind": "prod",
+   "loc": 198
+  },
+  {
+   "name": "LinearAgentSkillSetupPrompt.tsx",
+   "kind": "prod",
+   "loc": 413
+  },
+  {
+   "name": "NonGitFolderDialog.tsx",
+   "kind": "prod",
+   "loc": 170
+  },
+  {
+   "name": "OrcaYamlTrustDialog.tsx",
+   "kind": "prod",
+   "loc": 214
+  },
+  {
+   "name": "PreservedBranchBatchReviewDialog.tsx",
+   "kind": "prod",
+   "loc": 188
+  },
+  {
+   "name": "PreservedBranchBatchReviewModal.tsx",
+   "kind": "prod",
+   "loc": 52
+  },
+  {
+   "name": "ProjectGroupDeleteDialog.tsx",
+   "kind": "prod",
+   "loc": 218
+  },
+  {
+   "name": "ProjectGroupNameDialog.tsx",
+   "kind": "prod",
+   "loc": 136
+  },
+  {
+   "name": "RemoveFolderDialog.tsx",
+   "kind": "prod",
+   "loc": 122
+  },
+  {
+   "name": "SetupScriptPromptCard.tsx",
+   "kind": "prod",
+   "loc": 410
+  },
+  {
+   "name": "SetupScriptPromptCardShell.tsx",
+   "kind": "prod",
+   "loc": 106
+  },
+  {
+   "name": "SetupScriptPromptCardViews.tsx",
+   "kind": "prod",
+   "loc": 299
+  },
+  {
+   "name": "SetupScriptPromptToast.tsx",
+   "kind": "prod",
+   "loc": 38
+  },
+  {
+   "name": "SuppressExternalWorktreeInboxDialog.tsx",
+   "kind": "prod",
+   "loc": 88
+  },
+  {
+   "name": "complete-nested-folder-open.ts",
+   "kind": "prod",
+   "loc": 55
+  },
+  {
+   "name": "empty-project-placeholder-repos.ts",
+   "kind": "prod",
+   "loc": 32
+  },
+  {
+   "name": "linear-agent-skill-runtime.ts",
+   "kind": "prod",
+   "loc": 147
+  },
+  {
+   "name": "linear-agent-skill-setup-copy.ts",
+   "kind": "prod",
+   "loc": 114
+  },
+  {
+   "name": "linear-agent-skill-setup-reminder-toast.ts",
+   "kind": "prod",
+   "loc": 148
+  },
+  {
+   "name": "linear-agent-skill-setup-reminders.ts",
+   "kind": "prod",
+   "loc": 79
+  },
+  {
+   "name": "open-setup-script-settings.ts",
+   "kind": "prod",
+   "loc": 27
+  },
+  {
+   "name": "preserved-branch-batch-toast.tsx",
+   "kind": "prod",
+   "loc": 190
+  },
+  {
+   "name": "preserved-branch-toast.tsx",
+   "kind": "prod",
+   "loc": 119
+  },
+  {
+   "name": "setup-script-prompt-exposure-telemetry.ts",
+   "kind": "prod",
+   "loc": 41
+  },
+  {
+   "name": "setup-script-prompt-render-state.ts",
+   "kind": "prod",
+   "loc": 65
+  },
+  {
+   "name": "track-nested-folder-open.ts",
+   "kind": "prod",
+   "loc": 30
+  },
+  {
+   "name": "useSetupScriptPromptRevalidation.ts",
+   "kind": "prod",
+   "loc": 114
+  }
+ ],
+ "test": [
+  {
+   "name": "LinearAgentSkillSetupPrompt.reminder-toast.test.tsx",
+   "kind": "test",
+   "loc": 360
+  },
+  {
+   "name": "LinearAgentSkillSetupPrompt.test.tsx",
+   "kind": "test",
+   "loc": 932
+  },
+  {
+   "name": "LinearAgentSkillSetupPrompt.update-command.test.tsx",
+   "kind": "test",
+   "loc": 182
+  },
+  {
+   "name": "NonGitFolderDialog.test.tsx",
+   "kind": "test",
+   "loc": 257
+  },
+  {
+   "name": "OrcaYamlTrustDialog.test.tsx",
+   "kind": "test",
+   "loc": 98
+  },
+  {
+   "name": "ProjectGroupDeleteDialog.test.tsx",
+   "kind": "test",
+   "loc": 132
+  },
+  {
+   "name": "RemoveFolderDialog.test.tsx",
+   "kind": "test",
+   "loc": 94
+  },
+  {
+   "name": "SetupScriptPromptCard.test.ts",
+   "kind": "test",
+   "loc": 169
+  },
+  {
+   "name": "SetupScriptPromptCardShell.test.tsx",
+   "kind": "test",
+   "loc": 43
+  },
+  {
+   "name": "empty-project-placeholder-repos.test.ts",
+   "kind": "test",
+   "loc": 203
+  },
+  {
+   "name": "linear-agent-skill-runtime.shell-override.test.ts",
+   "kind": "test",
+   "loc": 33
+  },
+  {
+   "name": "linear-agent-skill-setup-reminders.test.ts",
+   "kind": "test",
+   "loc": 89
+  },
+  {
+   "name": "preserved-branch-batch-toast.test.tsx",
+   "kind": "test",
+   "loc": 208
+  },
+  {
+   "name": "preserved-branch-toast.test.tsx",
+   "kind": "test",
+   "loc": 105
+  },
+  {
+   "name": "useSetupScriptPromptRevalidation.test.tsx",
+   "kind": "test",
+   "loc": 296
+  }
+ ]
+}

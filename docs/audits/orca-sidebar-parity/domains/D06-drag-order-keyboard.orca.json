@@ -1,0 +1,1505 @@
+{
+  "domain": "D06-drag-order-keyboard",
+  "rows": [
+    {
+      "id": "D06-001",
+      "capability": "Serialização e empacotamento de dados de drag de worktrees únicas e em lote no HTML5 DataTransfer",
+      "surface": "Área de drag no sidebar / Kanban / Lista de worktrees",
+      "trigger": "Início de gesto de arrasto nativo (dragstart) de card(s) de worktree",
+      "behaviors": [
+        "Extrai a lista de IDs de worktrees a serem arrastadas a partir de parâmetro único ou array.",
+        "Define a propriedade dataTransfer.effectAllowed como 'move'.",
+        "Grava o ID da primeira worktree no tipo legado 'application/x-orca-worktree-id' para compatibilidade com drop targets unitários.",
+        "Serializa em JSON o array completo de IDs no tipo 'application/x-orca-worktree-ids' para suporte a arrasto em lote no Kanban e Sidebar.",
+        "Grava o primeiro ID no tipo 'text/plain' como fallback universal de arrasto para outros componentes."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-status-drag-data.ts:13-25"
+      ],
+      "tests": [
+        "components/sidebar/worktree-manual-order-store-write.test.ts:72 :: moves the dragged row past its neighbor in the store"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-002",
+      "capability": "Desserialização segura, validação de limites de payload e leitura de IDs de drag com fallback",
+      "surface": "Áreas de drop do sidebar (grupos de worktrees, cards e lanes de status)",
+      "trigger": "Eventos de dragover, dragenter e drop ao receber payload de worktrees",
+      "behaviors": [
+        "Valida o tamanho máximo em bytes do payload recebido contra WORKSPACE_STATUS_DRAG_PAYLOAD_MAX_BYTES (16 KB), descartando payloads excessivos por segurança.",
+        "Impõe teto de segurança WORKSPACE_STATUS_DRAG_ID_MAX_COUNT (512 IDs) ao desserializar arrays de IDs de worktrees.",
+        "readWorkspaceDragData lê preferencialmente o tipo tipado unitário e faz fallback para 'text/plain' se o primeiro estiver vazio ou ausente.",
+        "readWorkspaceDragDataIds tenta fazer o parse JSON do tipo 'application/x-orca-worktree-ids', sanitizando strings não vazias, e recorre ao payload unitário em caso de falha.",
+        "hasWorkspaceDragData verifica a presença de tipos válidos com tamanho delimitado dentro do DataTransfer.types."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-status-drag-data.ts:27-111"
+      ],
+      "tests": [
+        "components/sidebar/worktree-manual-order-store-write.test.ts:72 :: moves the dragged row past its neighbor in the store"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-003",
+      "capability": "Bloqueio de pointer drag em controles interativos internos e elementos portalizados externos",
+      "surface": "Card de worktree na lista do sidebar",
+      "trigger": "Disparo do evento pointerdown sobre elementos dentro do card",
+      "behaviors": [
+        "isSidebarPointerDragBlocked avalia o elemento alvo do evento de ponteiro em relação ao container da linha.",
+        "Bloqueia imediatamente o arrasto se o target não estiver contido no DOM da linha (ex.: hover cards do Radix portalizados para o body cujos eventos borbulham pelo React).",
+        "Localiza ancestrais interativos via INTERACTIVE_DRAG_BLOCKER_SELECTOR: botões, links (a[href]), inputs, textareas, selects, campos editáveis (contenteditable), roles button/menuitem e coleções Radix.",
+        "Bloqueia o arrasto quando o clique atinge um controle interativo interno, preservando a usabilidade de botões e seleção de texto."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:5-32"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:7 :: allows plain row targets to start pointer drags",
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:15 :: blocks portaled hover card targets outside the row",
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:26 :: blocks interactive targets inside the row",
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:34 :: blocks icon targets inside interactive row controls"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-004",
+      "capability": "Estilização global de documento durante pointer drag e desativação de seleção de texto",
+      "surface": "Documento global (document.body e document.documentElement)",
+      "trigger": "Início e finalização de sessão de pointer drag no sidebar",
+      "behaviors": [
+        "Ao ativar o drag, define document.body.style.userSelect como 'none' para evitar seleção acidental de texto durante o movimento.",
+        "Alterna o atributo 'data-worktree-sidebar-pointer-dragging' no elemento raiz html para habilitar regras CSS específicas de arrasto.",
+        "Ao finalizar ou cancelar o arrasto, restaura document.body.style.userSelect e remove o atributo do documento raiz."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:34-38"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:7 :: allows plain row targets to start pointer drags"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-005",
+      "capability": "Criação de elemento preview flutuante (ghost clone) e badge de contagem de multi-seleção",
+      "surface": "Overlay flutuante no DOM (document.body)",
+      "trigger": "Início de pointer drag de um card de worktree",
+      "behaviors": [
+        "createSidebarDragPreview clona a estrutura DOM do card de origem (cloneNode(true)).",
+        "Higieniza o clone removendo atributos duplicados de acessibilidade e identificação (id, aria-describedby, data-worktree-drag-id) em todos os níveis.",
+        "Configura o elemento preview com estilo position: fixed, left: 0, top: 0, dimensões idênticas ao card original e pointer-events: none.",
+        "Quando mais de um card é arrastado (draggedCount > 1), cria e anexa um badge flutuante com atributo data-worktree-sidebar-drag-count exibindo o número de itens.",
+        "Calcula os deslocamentos offsetX e offsetY do ponteiro em relação às bordas do card e anexa o preview ao document.body."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:40-97"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:7 :: allows plain row targets to start pointer drags"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-006",
+      "capability": "Atualização contínua de posição e escala do preview flutuante com deslocamento em modo nesting",
+      "surface": "Preview flutuante de drag no viewport",
+      "trigger": "Movimento contínuo do ponteiro (pointermove) durante o drag",
+      "behaviors": [
+        "updateSidebarDragPreviewPosition aplica transformação CSS hardware-accelerated translate3d(x, y, 0) scale(1.015).",
+        "Por padrão, posiciona o preview mantendo o offset capturado do clique (pointerX - offsetX, pointerY - offsetY).",
+        "Quando o preview possui o atributo data-worktree-sidebar-nesting (hover sobre card pai elegível), desloca o preview para pointerX + 16px e pointerY + 16px, mantendo o título do card de destino visível sob o cursor."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:60-70"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:7 :: allows plain row targets to start pointer drags"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-007",
+      "capability": "Captura de ponto de grab e projeção geométrica relativa ao centro do card arrastado",
+      "surface": "Motor de geometria de drag da lista de worktrees",
+      "trigger": "Início e movimento de drag em cards de diferentes alturas",
+      "behaviors": [
+        "getWorktreeSidebarDragGrab captura offsetY relativo e a altura total do card no início do arrasto, limitando offsets aos limites físicos.",
+        "getWorktreeSidebarDragReferenceY projeta a posição vertical de referência calculando o centro do card no espaço local: localY - grab.offsetY + (height / 2).",
+        "Garante que o teste de colisão avalie onde o card visualmente se encontra, evitando saltos de slot quando cards altos (ex: painéis de agentes expandidos) são agarrados perto da base ou do topo."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drag-geometry.ts:6-45",
+        "components/sidebar/worktree-sidebar-drag-geometry.ts:98-111"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:208 :: projects the dragged card from the pointer instead of using the bare pointer",
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:231 :: resolves the same slot wherever a tall card was grabbed",
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:251 :: clamps a grab offset that lands outside the card"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-008",
+      "capability": "Travamento estável de decisão de drop (anchor latching) imune a redimensionamentos dinâmicos",
+      "surface": "Motor de hit testing e âncora de drop na lista de worktrees",
+      "trigger": "Movimentação de ponteiro, scroll e redimensionamento dinâmico de cards por streaming",
+      "behaviors": [
+        "shouldReevaluateWorktreeSidebarDropAnchor avalia se houve intenção real de movimento do usuário antes de recalcular o slot de drop.",
+        "Ignora variações de sub-pixel e arredondamento de scroll inferiores a ANCHOR_REEVALUATE_EPSILON_PX (0.5px).",
+        "Mantém a decisão de inserção (inserir antes da worktreeId X) mesmo quando cards vizinhos sofrem expansão de layout ou streaming de status sob o ponteiro estático.",
+        "resolveWorktreeSidebarDropAnchorIndex remapeia a âncora retida para o índice atual do layout e retorna null caso o card alvo tenha sido removido/filtrado, disparando recálculo geométrico fresco.",
+        "getWorktreeSidebarDropAnchorId resolve o ID do card correspondente ao índice atual ou null para inserção no fim do grupo."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drag-geometry.ts:47-96"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:82 :: keeps the drop target fixed while a card expands under a still pointer",
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:94 :: never lets a growing card change the drop target across a whole expansion",
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:111 :: slides the indicator with the gap it marks while geometry is held",
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:123 :: still tracks the pointer normally once it moves again",
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:131 :: re-evaluates on real pointer or scroll movement but not on jitter",
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:155 :: falls back to a fresh decision when the anchored card disappears mid-drag",
+        "components/sidebar/worktree-sidebar-drag-geometry.test.ts:178 :: keeps one live coordinate space across a session refresh"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-009",
+      "capability": "Autoscroll contínuo proporcional nas bordas verticais do sidebar durante drag",
+      "surface": "Contêiner de scroll da lista de worktrees do sidebar",
+      "trigger": "Ponteiro posicionado próximo às extremidades verticais do contêiner durante drag",
+      "behaviors": [
+        "getWorktreeSidebarDragAutoscroll verifica se o cursor está horizontalmente contido dentro dos limites do contêiner de rolagem.",
+        "Detecta proximidade na zona de borda EDGE_ZONE_PX (56px) superior ou inferior, tolerando até MAX_OUTSIDE_EDGE_PX (48px) além da borda.",
+        "Calcula intensidade linear de velocidade proporcional à proximidade da borda, com teto MAX_SCROLL_SPEED_PX_PER_SECOND (960 px/s).",
+        "Escala o deslocamento pelo tempo decorrido do frame (elapsedMs), limitando frames atrasados a MAX_FRAME_MS (32ms).",
+        "Respeita os limites estritos de scrollTop entre 0 e scrollHeight - clientHeight, retornando null quando não há alteração de rolagem."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:7-87",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:182-205"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:30 :: scrolls up near the top edge",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:34 :: scrolls down near the bottom edge",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:38 :: does nothing away from the vertical edge zones",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:42 :: does nothing when the pointer is outside horizontally",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:46 :: does not write past scroll bounds",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:51 :: allows capped scrolling slightly beyond the vertical edge",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:56 :: scales by elapsed frame time and clamps delayed frames"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-010",
+      "capability": "Ajuste e fixação de drop em bordas extremas de grupo (boundary drop clamping)",
+      "surface": "Extremidades superior e inferior de grupos na lista de worktrees",
+      "trigger": "Cursor posicionado acima do primeiro item ou abaixo do último item de um grupo",
+      "behaviors": [
+        "getWorktreeSidebarBoundaryDrop avalia se a posição localY está além dos limites físicos do primeiro ou último retângulo montado.",
+        "Se o cursor estiver acima do primeiro item dentro de EDGE_ZONE_PX e o item for o índice 0 do grupo, fixa drop no índice 0 com indicatorY em max(0, firstRect.top - 3px).",
+        "Se o cursor estiver abaixo do último item dentro de EDGE_ZONE_PX e for o último item do grupo, fixa drop no índice sourceGroupSize com indicatorY em lastRect.bottom + 3px.",
+        "Caso esteja fora do raio de tolerância DROP_BOUNDS_PADDING_PX (8px) e não seja borda real do grupo, retorna 'outside', evitando drops fantasmas em lacunas intermediárias."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:89-125"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:66 :: clamps near the group start instead of clearing the edge preview",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:77 :: clamps near the group end instead of clearing the edge preview",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:88 :: still rejects gaps that are not the real group edge",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:101 :: keeps normal in-range hover handling unchanged"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-011",
+      "capability": "Extração de retângulos de drag ancorados nos slots virtuais estáticos da sidebar",
+      "surface": "Lista virtualizada de worktrees no sidebar",
+      "trigger": "Início e atualização de medição de layout para drag",
+      "behaviors": [
+        "getWorktreeSidebarDragRectsForGroup busca elementos DOM contendo [data-worktree-drag-id] pertencentes ao groupKey de origem.",
+        "Lê o atributo data-worktree-virtual-row-start do container da linha virtual para ancorar a coordenada top ao slot estático.",
+        "Isola o hit testing das transformações visuais translateY de animação de preview, garantindo estabilidade geométrica.",
+        "Ordena os retângulos verticalmente pela coordenada top antes de retorná-los."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:127-164"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:114 :: refreshes mounted rects for the source group only",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:127 :: anchors rects to virtual row slots so animated transforms do not perturb hit testing"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-012",
+      "capability": "Validação e atualização de sessão de drag em re-renderizações da sidebar",
+      "surface": "Sessão de drag ativa no sidebar",
+      "trigger": "Atualizações de estado do store ou re-renderização de componentes durante drag",
+      "behaviors": [
+        "refreshWorktreeSidebarDragSession verifica se o grupo de origem ainda existe nos grupos atuais.",
+        "Valida se a worktree principal arrastada (draggingWorktreeId) ainda pertence ao grupo.",
+        "Garante que nenhuma unidade do lote arrastado tenha desaparecido do grupo ou da unidade de linhagem.",
+        "Atualiza a sessão com a lista atualizada de rects, preservando o estado do drag mesmo quando retângulos estão temporariamente vazios durante atualizações virtuais.",
+        "Retorna null para abortar a sessão se o grupo ou itens fundamentais deixarem de existir."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:166-180"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:141 :: keeps the dragged set stable while refreshing rects",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:167 :: clears when the source group is missing",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:178 :: clears when the dragged worktree or reordered unit disappears",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:197 :: keeps a valid session when mounted rects are temporarily empty",
+        "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:208 :: keeps child-card reorder drags even when the child is not a top-level unit"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-013",
+      "capability": "Agrupamento de unidades atômicas de drag com agregação de descendentes de linhagem",
+      "surface": "Lista estrutural de worktrees",
+      "trigger": "Preparação das unidades de drag a partir das linhas renderizadas",
+      "behaviors": [
+        "getWorktreeDragUnitGroups itera sobre as linhas da lista e separa seções por cabeçalhos de grupo.",
+        "Ignora linhas não reordenáveis: cabeçalhos de host, cards de importação, inbox de worktrees externos, pendentes de criação e pastas de workspace.",
+        "Descarta cópias duplicadas na seção fixada (Pinned) quando a worktree possui ocorrência natural na lista (getNaturalWorktreeIds).",
+        "Para linhas com profundidade hierárquica (depth > 0), anexa a worktree à lista worktreeIds da unidade atômica pai imediatamente anterior.",
+        "Retorna grupos contendo unidades atômicas completas com seus respectivos descendentes agregados."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-drag-units.ts:7-66"
+      ],
+      "tests": [
+        "components/sidebar/worktree-drag-units.test.ts:24 :: treats expanded lineage descendants as part of the parent drag unit",
+        "components/sidebar/worktree-drag-units.test.ts:45 :: ignores imported worktree card rows without splitting drag groups",
+        "components/sidebar/worktree-drag-units.test.ts:73 :: includes pinned rows when they are the only rendered copy",
+        "components/sidebar/worktree-drag-units.test.ts:92 :: uses natural drag units when pinned rows have duplicate natural copies"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-014",
+      "capability": "Mapeamento de índice de drop visual de unidades atômicas para índice de linhas completo",
+      "surface": "Cálculo de índice de inserção de drop na lista plana",
+      "trigger": "Resolução de drop sobre unidades de drag agrupadas",
+      "behaviors": [
+        "getFullDropIndexForWorktreeDragUnit localiza o grupo de origem nas unidades de drag.",
+        "Limita o índice de drop fornecido entre 0 e a quantidade de unidades do grupo.",
+        "Acumula o tamanho total de worktreeIds de cada unidade atômica anterior ao índice de drop.",
+        "Converte o índice visual de unidades para o índice real de inserção no array plano de worktrees."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-drag-units.ts:68-84"
+      ],
+      "tests": [
+        "components/sidebar/worktree-drag-units.test.ts:115 :: maps visual unit drop indexes back to full row indexes"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-015",
+      "capability": "Cálculo de offsets animados de preview de drag e posicionamento da linha indicadora de drop",
+      "surface": "Linhas de worktree na lista do sidebar (animação translateY)",
+      "trigger": "Hover com drag sobre posições de reordenação no grupo",
+      "behaviors": [
+        "buildWorktreeDragPreviewOffsets calcula os deslocamentos verticais (offsets) aplicados via CSS transform nas linhas intermediárias.",
+        "Retorna offsets vazios e placeholderTop nulo caso o drop no índice resulte na mesma ordem atual.",
+        "Comprime lotes de multi-seleção para usar apenas um card representativo (o que foi agarrado) na simulação visual, evitando aberturas gigantes de espaço.",
+        "Calcula passos (strides) e gaps médios de fallback para acomodar cards e unidades de linhagem de alturas variáveis.",
+        "Deriva a origem baseTop a partir do primeiro card montado para manter estabilidade mesmo quando linhas anteriores foram desmontadas pelo virtualizador.",
+        "Calcula placeholderTop com o topo exato da posição onde a linha indicadora de drop deve ser desenhada."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-drag-preview-offsets.ts:8-185"
+      ],
+      "tests": [
+        "components/sidebar/worktree-manual-order.test.ts:193 :: slides intervening rows up while dragging a row down",
+        "components/sidebar/worktree-manual-order.test.ts:212 :: keeps downward offsets stable after virtualization unmounts the leading rows",
+        "components/sidebar/worktree-manual-order.test.ts:234 :: slides intervening rows down while dragging a row up",
+        "components/sidebar/worktree-manual-order.test.ts:252 :: returns no preview offsets for a no-op hover",
+        "components/sidebar/worktree-manual-order.test.ts:266 :: uses the dragged unit height when previewing variable-height rows",
+        "components/sidebar/worktree-manual-order.test.ts:280 :: uses the dragged unit height when previewing a short row above a tall row",
+        "components/sidebar/worktree-manual-order.test.ts:294 :: reserves one card-height slot while previewing a multi-select batch",
+        "components/sidebar/worktree-manual-order.test.ts:316 :: uses the grabbed selected card as the one preview placeholder",
+        "components/sidebar/worktree-manual-order.test.ts:334 :: returns no preview offsets for a no-op multi-select hover"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-016",
+      "capability": "Expansão de IDs arrastados para cobrir linhagem descendente visível na reordenação",
+      "surface": "Reordenação manual de worktrees",
+      "trigger": "Drag de card pai que possui filhos visíveis na lista",
+      "behaviors": [
+        "expandDraggedWorktreeIdsForVisibleLineage percorre as linhas com informação de profundidade hierárquica (depth).",
+        "Quando um card pai é identificado no conjunto de IDs arrastados, inclui automaticamente todos os seus descendentes visíveis subsequentes até que a profundidade retorne ao nível do pai ou superior.",
+        "Preserva a ordem visual dos elementos e mantém a cobertura correta mesmo quando filhos aninhados também estavam previamente selecionados.",
+        "Anexa IDs selecionados ausentes na lista visível no final da sequência sem duplicatas."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-manual-order.ts:27-66"
+      ],
+      "tests": [
+        "components/sidebar/worktree-manual-order.test.ts:96 :: expands an expanded lineage parent to its visible descendants for reordering",
+        "components/sidebar/worktree-manual-order.test.ts:110 :: keeps unrelated selected rows in visual order",
+        "components/sidebar/worktree-manual-order.test.ts:125 :: keeps ancestor coverage when a nested descendant is selected too",
+        "components/sidebar/worktree-manual-order.test.ts:139 :: restarts coverage for a later selected sibling after the previous run ends",
+        "components/sidebar/worktree-manual-order.test.ts:153 :: emits each absent selected id once"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-017",
+      "capability": "Reordenação de IDs dentro de um grupo com manipulação de lote sem estourar limites da V8",
+      "surface": "Estrutura de dados de ordenação de worktrees",
+      "trigger": "Movimentação de worktrees dentro do mesmo grupo",
+      "behaviors": [
+        "moveWorktreeIdsWithinGroup preserva a ordem relativa dos itens arrastados de acordo com a ordem original do grupo.",
+        "Calcula quantos itens selecionados foram removidos antes do ponto de drop para ajustar o índice de inserção exato.",
+        "Utiliza funções auxiliares de inserção iterativa (appendWorktreeIds / insertWorktreeIds) para evitar estouro de pilha de argumentos na chamada splice/push da engine V8 com frotas de milhares de workspaces."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-manual-order.ts:17-25",
+        "components/sidebar/worktree-manual-order.ts:68-106"
+      ],
+      "tests": [
+        "components/sidebar/worktree-manual-order.test.ts:164 :: moves a worktree down using the original drop index",
+        "components/sidebar/worktree-manual-order.test.ts:168 :: moves a worktree up",
+        "components/sidebar/worktree-manual-order.test.ts:172 :: preserves selected order for multi-drag batches",
+        "components/sidebar/worktree-manual-order.test.ts:181 :: moves a very large selected batch without overflowing argument limits"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-018",
+      "capability": "Geração de atualizações de ordem manual esparsa e re-indexação densa de fallback",
+      "surface": "Persistência de manualOrder no store de worktrees",
+      "trigger": "Confirmação de drop de reordenação manual",
+      "behaviors": [
+        "buildSparseManualOrderUpdates calcula novos valores de manualOrder com espaçamento padrão MANUAL_ORDER_STRIDE (1000).",
+        "Interpola valores de rank esparso entre o vizinho anterior (beforeRank) e o posterior (afterRank) sem mutar os itens imóveis.",
+        "Quando qualquer worktree conhecida não possui rank durável persistido, quando o espaço entre vizinhos é insuficiente (gap <= quantidade movida) ou quando vizinhos possuem ranks inválidos, dispara re-indexação de fallback (buildFallbackManualOrderUpdates).",
+        "mergeVisibleOrderIntoKnownOrder mescla a ordem visível na lista global de todas as worktrees conhecidas, garantindo que itens filtrados ou colapsados não percam sua posição nem sejam descartados durante a re-indexação."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-manual-order-ranks.ts:5-130"
+      ],
+      "tests": [
+        "components/sidebar/worktree-manual-order.test.ts:13 :: materializes filtered rows when the first drag creates Manual order",
+        "components/sidebar/worktree-manual-order.test.ts:32 :: keeps sparse updates after every known row has a durable rank",
+        "components/sidebar/worktree-manual-order.test.ts:49 :: never drops known rows when a stale visible sequence contains unknowns or duplicates",
+        "components/sidebar/worktree-manual-order.test.ts:61 :: preserves hidden rows when dense ranks require a full reindex",
+        "components/sidebar/worktree-manual-order.test.ts:78 :: preserves hidden rows when a stale neighbor requires a full reindex"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-019",
+      "capability": "Geração de atualizações de ordem manual para reordenação dentro de grupos visíveis ou drop entre grupos/lanes",
+      "surface": "Drop de reordenação na sidebar e no quadro Kanban",
+      "trigger": "Drop de cards na lista de grupos visíveis ou entre diferentes lanes de status",
+      "behaviors": [
+        "buildManualOrderUpdatesForVisibleGroups reordena itens no grupo de origem, mantém a ordem dos demais grupos e gera o mapa de updates de manualOrder para os itens afetados.",
+        "buildManualOrderUpdatesForGroupDrop transfere itens de outros grupos para o grupo de destino na posição exata de drop, recalculando ranks para o lote inserido.",
+        "shouldWriteManualOrderForGroupDrop autoriza a gravação de manualOrder se o modo de ordenação ativo for 'manual' ou se o drop ocorrer dentro do mesmo grupo/lane em outros modos de ordenação.",
+        "Para drops entre lanes fora do modo manual, mantém a ação estritamente como mudança de status sem sobrescrever a ordem manual."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-manual-order.ts:108-251"
+      ],
+      "tests": [
+        "components/sidebar/worktree-manual-order.test.ts:354 :: updates every visible workspace order while only moving the source group",
+        "components/sidebar/worktree-manual-order.test.ts:377 :: returns no updates for a no-op drop",
+        "components/sidebar/worktree-manual-order.test.ts:391 :: only updates moved rows when current ranks leave room",
+        "components/sidebar/worktree-manual-order.test.ts:411 :: moves an expanded lineage cluster as one ranked unit",
+        "components/sidebar/worktree-manual-order.test.ts:433 :: reorders a very large visible group without overflowing argument limits",
+        "components/sidebar/worktree-manual-order.test.ts:458 :: moves a selected batch across groups and stamps visible manual order",
+        "components/sidebar/worktree-manual-order.test.ts:481 :: keeps visual order for multi-select batches spanning groups",
+        "components/sidebar/worktree-manual-order.test.ts:497 :: returns no updates for a no-op same-group drop",
+        "components/sidebar/worktree-manual-order.test.ts:511 :: uses sparse moved-row ranks for cross-lane manual drops",
+        "components/sidebar/worktree-manual-order.test.ts:536 :: writes order for any lane drop while Manual sort is active",
+        "components/sidebar/worktree-manual-order.test.ts:546 :: writes order for same-lane drops outside Manual sort",
+        "components/sidebar/worktree-manual-order.test.ts:556 :: keeps cross-lane drops status-only outside Manual sort"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-020",
+      "capability": "Catálogo de ordem manual com suporte a worktrees git e pastas em clusters multi-host",
+      "surface": "Catálogo de ordenação de workspaces da sidebar",
+      "trigger": "Construção do mapa de ranks e ordem unificada de worktrees e folder workspaces",
+      "behaviors": [
+        "buildWorktreeManualOrderCatalog combina worktrees git e pastas de workspace (convertidas via folderWorkspaceToWorktree), excluindo itens arquivados.",
+        "Ordena linhas por manualOrder decrescente (ou fallback sortOrder) e desempata por rótulo de ordenação inteligente (compareWorktreeSortLabel).",
+        "Verifica consistência em clusters multi-host de mesmo ID: só atribui rank durável no catálogo se todas as instâncias do ID nos hosts concordarem com o mesmo valor de manualOrder.",
+        "Retorna orderedIds com todos os IDs únicos e rankByWorktreeId com os ranks duráveis validados."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-manual-order-catalog.ts:8-48"
+      ],
+      "tests": [
+        "components/sidebar/worktree-manual-order-catalog.test.ts:31 :: includes filtered-capable git and folder rows in fallback order",
+        "components/sidebar/worktree-manual-order-catalog.test.ts:41 :: treats a same-id host cluster as durable only when every owner agrees"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-021",
+      "capability": "Detecção de intenção de multi-seleção por teclas modificadoras (Shift / Cmd / Ctrl)",
+      "surface": "Eventos de clique em cards de worktree na lista",
+      "trigger": "Clique do usuário sobre card com ou sem teclas modificadoras pressionadas",
+      "behaviors": [
+        "getWorktreeSelectionIntent avalia o estado das teclas shiftKey, metaKey e ctrlKey no evento do mouse.",
+        "Retorna intenção 'range' quando shiftKey está pressionada.",
+        "No macOS (isMac === true), retorna 'toggle' quando metaKey (Cmd) está ativa sem ctrlKey.",
+        "No Windows/Linux (isMac === false), retorna 'toggle' quando ctrlKey está ativa sem metaKey.",
+        "Retorna intenção padrão 'replace' para cliques normais sem teclas modificadoras."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-multi-selection.ts:16-24"
+      ],
+      "tests": [
+        "components/sidebar/worktree-multi-selection.test.ts:12 :: uses Cmd on Mac and Ctrl elsewhere for toggle selection",
+        "components/sidebar/worktree-multi-selection.test.ts:24 :: replaces selection on plain click"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-022",
+      "capability": "Atualização de seleção unitária, toggle e extensão de intervalo contínuo (range)",
+      "surface": "Gerenciador de estado de seleção de worktrees",
+      "trigger": "Ação de seleção direta de worktree",
+      "behaviors": [
+        "updateWorktreeSelection processa a intenção de seleção sobre a lista de IDs visíveis.",
+        "Intenção 'replace': redefine a seleção exclusivamente para o targetId e estabelece targetId como a nova âncora.",
+        "Intenção 'toggle': adiciona ou remove o targetId do conjunto anterior e atualiza a âncora para o targetId, permitindo inclusive desmarcar todos os itens.",
+        "Intenção 'range': localiza os índices da âncora anterior e do alvo na lista visível e seleciona todo o intervalo contínuo entre eles (slice inclusivo), preservando a âncora original.",
+        "Se a âncora anterior não for encontrada ou for nula, o range recai graciosamente para a seleção exclusiva do targetId."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-multi-selection.ts:26-67"
+      ],
+      "tests": [
+        "components/sidebar/worktree-multi-selection.test.ts:37 :: toggles one worktree without dropping the rest",
+        "components/sidebar/worktree-multi-selection.test.ts:50 :: allows toggling the last selected worktree off",
+        "components/sidebar/worktree-multi-selection.test.ts:63 :: selects the visible range from the anchor to the target"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-023",
+      "capability": "Poda de seleção de worktrees ocultas por filtros e seleção por área retangular (marquee)",
+      "surface": "Seleção de worktrees por filtro de busca ou caixa de seleção por área",
+      "trigger": "Alteração de filtros de visibilidade ou gesto de arrasto de seleção por área",
+      "behaviors": [
+        "pruneWorktreeSelection remove da seleção atual qualquer worktree que não esteja mais presente na lista visibleIds.",
+        "Preserva o anchorId se ele continuar visível; caso contrário, redefine a âncora para o primeiro ID remanescente visível ou null.",
+        "updateWorktreeAreaSelection aplica seleção por área (areaIds) filtrada pela ordem estrita de visibleIds.",
+        "No modo aditivo (additive === true), incorpora os novos IDs ao conjunto selecionado existente e define o último ID da área como âncora.",
+        "No modo não aditivo, substitui completamente a seleção pelos IDs da área ou limpa a seleção se a área estiver vazia.",
+        "areWorktreeSelectionsEqual realiza comparação de igualdade estrita entre dois conjuntos de seleção."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-multi-selection.ts:69-123"
+      ],
+      "tests": [
+        "components/sidebar/worktree-multi-selection.test.ts:76 :: prunes selection when filtering hides selected worktrees",
+        "components/sidebar/worktree-multi-selection.test.ts:83 :: replaces selection from an area in visible order",
+        "components/sidebar/worktree-multi-selection.test.ts:96 :: adds area selection to the existing batch with modifier keys",
+        "components/sidebar/worktree-multi-selection.test.ts:109 :: does not clear the existing batch for an empty additive area",
+        "components/sidebar/worktree-multi-selection.test.ts:122 :: clears the existing batch for an empty non-additive area"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-024",
+      "capability": "Regras de elegibilidade de parentesco e prevenção de ciclos de linhagem",
+      "surface": "Validação de atribuição de pai de worktree (menu de contexto, drop direto e picker)",
+      "trigger": "Tentativa de definir uma worktree como pai de outra",
+      "behaviors": [
+        "isEligibleWorktreeParent valida se candidato e filho pertencem ao mesmo repositório (repoId).",
+        "Verifica compatibilidade de host de execução (childHostId === candidateHostId) e mesmo projeto (projectId).",
+        "Exclui worktrees arquivadas (isArchived === true) da elegibilidade.",
+        "canAssignWorktreeParent impede auto-atribuição (child.id === candidateParent.id).",
+        "Rejeita o candidato se ele já for o pai válido atual da worktree.",
+        "Percorre a cadeia de ancestrais do candidato via getLineageRenderInfo para detectar e bloquear ciclos transitivos (onde o filho seja ancestral do candidato).",
+        "Rejeita candidatos pertencentes a loops pré-existentes de linhagem (cyclicLineageIds), tratando instâncias obsoletas/quebradas como limites de travessia."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-parent-eligibility.ts:13-50",
+        "components/sidebar/worktree-parent-candidates.ts:13-76"
+      ],
+      "tests": [
+        "components/sidebar/worktree-parent-eligibility.test.ts:58 :: excludes self, valid current parent, and descendants",
+        "components/sidebar/worktree-parent-eligibility.test.ts:103 :: treats stale instance edges as broken during descendant traversal",
+        "components/sidebar/worktree-parent-eligibility.test.ts:125 :: allows a raw current parent candidate when the child lineage is stale",
+        "components/sidebar/worktree-parent-eligibility.test.ts:145 :: rejects candidates inside pre-existing lineage loops",
+        "components/sidebar/worktree-parent-eligibility.test.ts:164 :: stays repo-agnostic while the picker candidate filter is repo and host scoped",
+        "components/sidebar/worktree-parent-eligibility.test.ts:192 :: excludes same-repo candidates owned by a different runtime host",
+        "components/sidebar/worktree-parent-eligibility.test.ts:214 :: excludes a candidate across a known project boundary for picker and direct drop checks",
+        "components/sidebar/worktree-parent-eligibility.test.ts:242 :: excludes archived worktrees from picker candidates"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-025",
+      "capability": "Cálculo de posicionamento e ancoragem virtual do popover de seleção de pai (WorktreeParentPickerPopover)",
+      "surface": "Popover flutuante de seleção de pai de worktree",
+      "trigger": "Abertura do popover a partir do menu de contexto de um card de worktree",
+      "behaviors": [
+        "estimateWorktreeParentPickerHeight calcula a altura estimada do popover considerando bordas (2px), cabeçalho (28px), input (49px) e a altura da lista (até PICKER_LIST_MAX_HEIGHT = 288px com linhas de PICKER_ROW_HEIGHT = 56px).",
+        "clampWorktreeParentPickerAnchorTop eleva o topo da âncora para garantir que o popover não transborde o limite inferior da viewport, respeitando PICKER_VIEWPORT_PADDING (12px).",
+        "Utiliza uma âncora virtual (virtualAnchorRef) com DOMRect medido para que o Radix posicione o popover corretamente em relação à viewport, evitando desalinhamentos causados por contêineres virtuais com transform CSS.",
+        "useLayoutEffect registra listeners de 'resize' e 'scroll' da janela para recalcular o anchorRect e viewportHeight dinamicamente enquanto o popover estiver aberto."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-parent-picker-placement.ts:1-33",
+        "components/sidebar/WorktreeParentPickerPopover.tsx:165-184",
+        "components/sidebar/WorktreeParentPickerPopover.tsx:210-230"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:137 :: grows with the candidate count up to the list cap",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:144 :: reserves a single row when nothing is eligible",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:150 :: leaves an anchor that already fits where it is",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:154 :: lifts an anchor whose popover would run off the bottom",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:158 :: keeps an anchor above the window from riding off the top",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:162 :: pins to the top padding when the window is shorter than the popover"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-026",
+      "capability": "Filtro fuzzy e ordenação de candidatos a pai de worktree",
+      "surface": "Input de pesquisa no popover de seleção de pai",
+      "trigger": "Digitação do usuário no campo de busca do popover",
+      "behaviors": [
+        "getWorktreeParentPickerItemValue concatena o displayName, nome da branch (branchDisplayName) e o path da worktree em uma única string de busca.",
+        "filterWorktreeParentCandidates utiliza defaultFilter do cmdk para pontuar a compatibilidade da busca contra cada candidato elegível.",
+        "Filtra candidatos com pontuação positiva e os ordena por relevância (score decrescente).",
+        "Quando a busca é vazia, retorna todos os candidatos elegíveis na ordem original.",
+        "Ao alterar o termo de busca, reseta o índice de destaque (highlightedIndex = 0) e rola a lista virtual para o topo (virtualizer.scrollToOffset(0)).",
+        "clampWorktreeParentPickerIndex mantém o índice ativo estritamente dentro dos limites do array filtrado."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-parent-picker-filtering.ts:4-34",
+        "components/sidebar/WorktreeParentPickerPopover.tsx:232-255"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:105 :: includes workspace-facing fields used by command filtering",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:121 :: returns every candidate when the search is blank",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:125 :: drops non-matching candidates and ranks the closest match first",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:130 :: matches on branch and path, not just display name",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:168 :: keeps the highlight inside the filtered result window",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:174 :: collapses to zero when nothing matches"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-027",
+      "capability": "Navegação por teclado, acessibilidade e composição IME no popover de seleção de pai",
+      "surface": "Campo de busca e lista virtual do WorktreeParentPickerPopover",
+      "trigger": "Teclas ArrowDown, ArrowUp, Home, End, Enter e eventos de composição IME",
+      "behaviors": [
+        "handleWorktreeParentPickerKeyDown intercepta eventos de teclado no input de busca e previne propagação para o cmdk.",
+        "Ignora eventos de teclado durante composição IME ativa (isImeCompositionKeyDown) para não interferir na digitação de idiomas asiáticos.",
+        "ArrowDown avança para o próximo candidato; ArrowUp recua para o anterior; Home vai para o primeiro (índice 0); End vai para o último.",
+        "Enter seleciona o candidato ativo destacado e aciona selectParent.",
+        "useEffect sincroniza o atributo aria-activedescendant do input com o ID da opção selecionada na lista virtual para suporte a leitores de tela.",
+        "onOpenAutoFocus move o foco automaticamente para o input de busca ao abrir.",
+        "onCloseAutoFocus restaura o foco para o contêiner focusável mais próximo (listbox da sidebar) via getWorktreeParentPickerFocusRestoreTarget."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeParentPickerPopover.tsx:50-137",
+        "components/sidebar/WorktreeParentPickerPopover.tsx:280-345"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:194 :: restores focus to the focusable container of the anchored row",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:201 :: skips a row whose sidebar was already unmounted or never anchored",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:209 :: parent picker keyboard input"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-028",
+      "capability": "Execução da ação de seleção de pai com tratamento de erro e fechamento do popover",
+      "surface": "WorktreeParentPickerPopover",
+      "trigger": "Clique do mouse em candidato ou confirmação via tecla Enter",
+      "behaviors": [
+        "selectWorktreeParent fecha o popover imediatamente chamando close().",
+        "Dispara a action assignWorktreeParent(childWorktreeId, { parentWorktreeId }) do store.",
+        "Em caso de erro na promise, registra o erro no console e exibe notificação de erro via toast com mensagem traduzida auto.components.sidebar.WorktreeParentPickerPopover.failedSetParent ('Failed to set parent worktree').",
+        "Não executa nenhuma ação se childWorktreeId for nulo.",
+        "Suprime fechamento por clique externo nos primeiros 150ms após montagem (suppressInitialOutsideCloseRef) via setTimeout para evitar que o clique que abriu o dropdown feche o popover acidentalmente."
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.assignWorktreeParent"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeParentPickerPopover.tsx:64-106",
+        "components/sidebar/WorktreeParentPickerPopover.tsx:187-208"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:50 :: closes and assigns the selected parent to the captured child",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:68 :: shows sanitized failure copy after closing the picker",
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:87 :: does nothing without a captured child id"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-029",
+      "capability": "Renderização memoizada da linha de candidato no seletor de pai (WorktreeParentPickerRow)",
+      "surface": "Linha virtualizada no popover de seleção de pai",
+      "trigger": "Renderização de cada item de candidato na lista do popover",
+      "behaviors": [
+        "Componente memoizado (React.memo) para alta performance em listas com centenas de opções.",
+        "Renderiza indicador visual de status de atividade (StatusIndicator) com texto oculto para leitores de tela (getWorktreeStatusLabel).",
+        "Exibe o displayName da worktree candidata.",
+        "Renderiza badge 'Current' caso a worktree seja a workspace atualmente ativa no editor.",
+        "Exibe badge do repositório associado com cor personalizada (RepoBadgeMark) e nome em minúsculas.",
+        "Exibe ícone de servidor (Server) quando a worktree pertence a uma conexão remota SSH (connectionId presente).",
+        "Exibe ícone de branch git (GitBranch) e o nome formatado da branch (branchDisplayName).",
+        "Utiliza useWorktreeActivityStatuses para obter status de todos os itens visíveis em lote sem criar subscriptions individuais."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorktreeParentPickerRow.tsx:11-53",
+        "components/sidebar/WorktreeParentPickerPopover.tsx:265-272"
+      ],
+      "tests": [
+        "components/sidebar/WorktreeParentPickerPopover.test.ts:50 :: closes and assigns the selected parent to the captured child"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-030",
+      "capability": "Desaninhamento de worktrees com limpeza de vínculo de pai e notificação de erro em lote (unnestWorktrees)",
+      "surface": "Menu de contexto da sidebar ('Remove parent link') e gesto de drag-to-unnest",
+      "trigger": "Ação de remover o vínculo de linhagem paterna de uma ou mais worktrees",
+      "behaviors": [
+        "unnestWorktrees executa chamadas assíncronas paralelas updateWorktreeLineage(id, { noParent: true }) para todos os IDs selecionados.",
+        "Captura qualquer rejeição de promise (ex.: rota de owner não resolvida) e exibe uma única notificação de erro via toast com mensagem traduzida auto.components.sidebar.WorktreeList.failedUnnestWorkspace ('Failed to unnest workspace').",
+        "Evita unhandled promise rejections que fariam a ação parecer bem-sucedida silenciosamente.",
+        "Não executa chamadas para seleções vazias."
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.updateWorktreeLineage"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-unnest.ts:10-31"
+      ],
+      "tests": [
+        "components/sidebar/worktree-unnest.test.ts:15 :: clears the parent link on every requested worktree",
+        "components/sidebar/worktree-unnest.test.ts:28 :: toasts instead of rejecting when the lineage update fails",
+        "components/sidebar/worktree-unnest.test.ts:38 :: toasts once when several worktrees fail together",
+        "components/sidebar/worktree-unnest.test.ts:46 :: does nothing for an empty selection"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-031",
+      "capability": "Ciclagem de navegação por teclado entre worktrees visíveis com resolução de host qualificado",
+      "surface": "Navegação por teclado no sidebar (atalhos worktree.navigateUp / worktree.navigateDown)",
+      "trigger": "Acionamento de atalhos globais de navegação vertical entre worktrees",
+      "behaviors": [
+        "resolveCycledWorktreeId avança ciclicamente para a próxima worktree (down) ou anterior (up) com wrap-around na lista.",
+        "Quando a worktree ativa não pertence à lista de itens ciclables (ex.: grupo colapsado), entra na lista pela extremidade oposta ao movimento da tecla.",
+        "getCyclableRowIdentity e resolveActiveCycleIdentity qualificam identidades de worktrees com o hostId de execução (composeWorktreeHostIdentity), garantindo diferenciação de workspaces de mesmo ID em hosts distintos.",
+        "getCyclableWorktreeIds e getCyclableWorktrees derivam a lista diretamente das linhas renderizadas na sidebar, respeitando seções colapsadas e excluindo pastas de workspace (folder-workspace).",
+        "Mantém worktree fixada (Pinned) cyclable quando seu grupo natural está colapsado e desduplica ocorrências repetidas."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-keyboard-cycle.ts:13-96"
+      ],
+      "tests": [
+        "components/sidebar/worktree-keyboard-cycle.test.ts:14 :: steps to the next and previous worktree",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:23 :: wraps around at both ends",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:32 :: enters from the matching end when the active worktree is not cyclable",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:47 :: has nothing to cycle to when every group is collapsed",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:78 :: keeps a pinned worktree cyclable when only its natural group is collapsed",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:86 :: counts a duplicated pinned worktree once",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:96 :: keeps same-id rows on different hosts independently cyclable",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:115 :: leaves folder workspaces out of the rotation",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:133 :: drops worktrees the sidebar elided inside a collapsed host section",
+        "components/sidebar/worktree-keyboard-cycle.test.ts:156 :: cycles over the rendered rows instead of rebuilding a parallel layout"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-032",
+      "capability": "Preferência de linhas naturais sobre cópias duplicadas na seção fixada (Pinned)",
+      "surface": "Processamento de linhas de worktree para seleção e navegação",
+      "trigger": "Avaliação de linhas renderizadas com itens fixados e duplicados",
+      "behaviors": [
+        "getPreferredWorktreeRows desduplica linhas com a mesma identidade de host.",
+        "Na política padrão, dá preferência à cópia do workspace em seu grupo natural, recorrendo à cópia na seção Pinned apenas quando a ocorrência natural estiver oculta.",
+        "Na política 'single-location', preserva a primeira ocorrência encontrada da identidade.",
+        "getRenderedWorktreesInSidebarOrder preserva a ordem visual das worktrees e inclui pastas de workspace (folder-workspace) convertidas mantendo sua sequência visual na lista."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-row-preference.ts:7-64"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-row-preference.test.ts:84 :: keeps folder workspaces in visual order while preferring natural pinned rows"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-033",
+      "capability": "Cálculo de limites de rolagem e execução de scroll suave para revelação de elementos (reveal)",
+      "surface": "Contêiner de scroll da lista do sidebar",
+      "trigger": "Ação de focar e revelar worktree ativa ou selecionada",
+      "behaviors": [
+        "getScrollTopToRevealBounds calcula o scrollTop necessário para enquadrar os limites verticais de um elemento na área visível.",
+        "Aplica recuo superior WORKTREE_SIDEBAR_REVEAL_TOP_INSET (46px = GROUP_HEADER_ROW_HEIGHT 40px + WORKTREE_REVEAL_TOP_CLEARANCE 6px) para que cabeçalhos fixos de grupo não cubram o card revelado.",
+        "revealElementInScrollContainer executa container.scrollTo com a posição calculada.",
+        "Respeita a preferência de acessibilidade do usuário por movimento reduzido: quando matchMedia('(prefers-reduced-motion: reduce)') é verdadeiro, converte 'smooth' em 'auto' para salto instantâneo determinístico.",
+        "Invoca o callback onScrollIssued(targetTop) para notificar guardas de rolagem sobre a animação iniciada."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-reveal.ts:3-68"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-reveal.test.ts:23 :: reports the scroll target it issues so callers can guard the animation",
+        "components/sidebar/worktree-sidebar-reveal.test.ts:40 :: does not report a scroll when the element is already in view"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-034",
+      "capability": "Proteção contra cancelamento prematuro de animação de scroll de revelação (scroll settling guard)",
+      "surface": "Gerenciador de rolagem do sidebar",
+      "trigger": "Animação de scroll suave de revelação em andamento",
+      "behaviors": [
+        "createPendingRevealScroll registra o targetTop e um prazo de expiração de REVEAL_SCROLL_SETTLE_TIMEOUT_MS (1000ms).",
+        "isRevealScrollSettling verifica se o scrollTop atual difere do targetTop por mais de SETTLED_TOLERANCE_PX (1px) dentro da janela de tempo.",
+        "Impede que outras rotinas concorrentes de restauração de rolagem (ex.: restauração de âncora de scroll) sobrescrevam o scrollTop e cancelem a animação no meio.",
+        "Expira automaticamente após 1000ms para evitar travamento da guarda caso o alvo de scroll se torne fisicamente inalcançável."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-sidebar-reveal-scroll-settle.ts:1-35"
+      ],
+      "tests": [
+        "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:9 :: is not settling without a reveal scroll in flight",
+        "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:13 :: stays settling while a smooth reveal scroll is still animating",
+        "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:21 :: stops settling once the scroll reaches its target",
+        "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:28 :: stops settling after the timeout so an unreachable target cannot pin the guard open"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D06-035",
+      "capability": "Proveniência, herança e resolução de sobreposições de visibilidade de fontes de worktree externas",
+      "surface": "Configurações de visibilidade de fontes de worktree (projeto e global)",
+      "trigger": "Consulta e renderização de fontes de visibilidade de worktrees externas",
+      "behaviors": [
+        "globalWorktreeVisibilitySourceValue calcula o valor padrão global de visibilidade para fontes embutidas ('claude', 'gsd'), fontes customizadas e 'other'.",
+        "getWorktreeVisibilitySourceProvenance classifica a proveniência da fonte como 'global', 'project-override' (sobreposição local em relação ao global) ou 'project-source' (fonte criada exclusivamente pelo projeto).",
+        "listInheritedWorktreeVisibilitySources lista todas as fontes herdadas das configurações globais com seus respectivos valores padrão.",
+        "worktreeVisibilityValueLabel retorna os rótulos traduzidos 'Show' ou 'Hide'.",
+        "getWorktreeVisibilityOverrideNotice exibe aviso traduzido auto.components.sidebar.WorktreeVisibilitySourceList.overridingGlobal ('Overriding global setting: Show/Hide') apenas quando a preferência do projeto diverge do valor global configurado.",
+        "getWorktreeVisibilitySourceNote exibe a nota traduzida auto.components.sidebar.WorktreeVisibilitySourceList.projectOnly ('Added in this project only.') para fontes exclusivas do projeto."
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-visibility-source-provenance.ts:1-125"
+      ],
+      "tests": [
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:48 :: reports what each inheritable source is set to globally",
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:56 :: keeps a source the project has overridden, since global is what it overrode",
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:67 :: lists a global custom source but not one the project added itself",
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:87 :: names the global value a project override is ignoring",
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:97 :: stays quiet for an override that agrees with global settings",
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:104 :: stays quiet for a source that is still following global settings",
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:110 :: stays quiet outside a project scope",
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:116 :: marks a source the project added itself",
+        "components/sidebar/worktree-visibility-source-provenance.test.ts:126 :: says nothing for an inherited source"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "WorktreeParentPickerPopover.tsx": [
+        "D06-025",
+        "D06-026",
+        "D06-027",
+        "D06-028",
+        "D06-029"
+      ],
+      "WorktreeParentPickerRow.tsx": [
+        "D06-029"
+      ],
+      "workspace-status-drag-data.ts": [
+        "D06-001",
+        "D06-002"
+      ],
+      "worktree-drag-preview-offsets.ts": [
+        "D06-015"
+      ],
+      "worktree-drag-units.ts": [
+        "D06-013",
+        "D06-014"
+      ],
+      "worktree-keyboard-cycle.ts": [
+        "D06-031"
+      ],
+      "worktree-manual-order-catalog.ts": [
+        "D06-020"
+      ],
+      "worktree-manual-order-ranks.ts": [
+        "D06-018"
+      ],
+      "worktree-manual-order.ts": [
+        "D06-016",
+        "D06-017",
+        "D06-019"
+      ],
+      "worktree-multi-selection.ts": [
+        "D06-021",
+        "D06-022",
+        "D06-023"
+      ],
+      "worktree-parent-candidates.ts": [
+        "D06-024"
+      ],
+      "worktree-parent-eligibility.ts": [
+        "D06-024"
+      ],
+      "worktree-parent-picker-filtering.ts": [
+        "D06-026"
+      ],
+      "worktree-parent-picker-placement.ts": [
+        "D06-025"
+      ],
+      "worktree-sidebar-drag-autoscroll.ts": [
+        "D06-009",
+        "D06-010",
+        "D06-011",
+        "D06-012"
+      ],
+      "worktree-sidebar-drag-geometry.ts": [
+        "D06-007",
+        "D06-008"
+      ],
+      "worktree-sidebar-pointer-drag-dom.ts": [
+        "D06-003",
+        "D06-004",
+        "D06-005",
+        "D06-006"
+      ],
+      "worktree-sidebar-reveal-scroll-settle.ts": [
+        "D06-034"
+      ],
+      "worktree-sidebar-reveal.ts": [
+        "D06-033"
+      ],
+      "worktree-sidebar-row-preference.ts": [
+        "D06-032"
+      ],
+      "worktree-unnest.ts": [
+        "D06-030"
+      ],
+      "worktree-visibility-source-provenance.ts": [
+        "D06-035"
+      ]
+    },
+    "symbols": {
+      "getWorktreeParentPickerFocusRestoreTarget": [
+        "D06-027"
+      ],
+      "selectWorktreeParent": [
+        "D06-028"
+      ],
+      "handleWorktreeParentPickerKeyDown": [
+        "D06-027"
+      ],
+      "WorktreeParentPickerPopover": [
+        "D06-025",
+        "D06-026",
+        "D06-027",
+        "D06-028"
+      ],
+      "WorktreeParentPickerRow": [
+        "D06-029"
+      ],
+      "WORKSPACE_STATUS_DRAG_TYPE": [
+        "D06-001"
+      ],
+      "WORKSPACE_STATUS_DRAG_IDS_TYPE": [
+        "D06-001"
+      ],
+      "WORKSPACE_STATUS_DRAG_PAYLOAD_MAX_BYTES": [
+        "D06-002"
+      ],
+      "WORKSPACE_STATUS_DRAG_ID_MAX_COUNT": [
+        "D06-002"
+      ],
+      "writeWorkspaceDragData": [
+        "D06-001"
+      ],
+      "readWorkspaceDragData": [
+        "D06-002"
+      ],
+      "readWorkspaceDragDataIds": [
+        "D06-002"
+      ],
+      "hasWorkspaceDragData": [
+        "D06-002"
+      ],
+      "WorktreeDragPreviewRect": [
+        "D06-015"
+      ],
+      "WorktreeDragPreviewLayout": [
+        "D06-015"
+      ],
+      "buildWorktreeDragPreviewOffsets": [
+        "D06-015"
+      ],
+      "WorktreeDragUnitGroup": [
+        "D06-013"
+      ],
+      "getWorktreeDragUnitGroups": [
+        "D06-013"
+      ],
+      "getFullDropIndexForWorktreeDragUnit": [
+        "D06-014"
+      ],
+      "getCyclableRowIdentity": [
+        "D06-031"
+      ],
+      "getCyclableWorktreeRows": [
+        "D06-031"
+      ],
+      "resolveActiveCycleIdentity": [
+        "D06-031"
+      ],
+      "getCyclableWorktreeIds": [
+        "D06-031"
+      ],
+      "getCyclableWorktrees": [
+        "D06-031"
+      ],
+      "resolveCycledWorktreeId": [
+        "D06-031"
+      ],
+      "WorktreeManualOrderCatalog": [
+        "D06-020"
+      ],
+      "buildWorktreeManualOrderCatalog": [
+        "D06-020"
+      ],
+      "WorktreeManualOrderUpdate": [
+        "D06-018"
+      ],
+      "buildSparseManualOrderUpdates": [
+        "D06-018"
+      ],
+      "WorktreeDragGroup": [
+        "D06-016"
+      ],
+      "WorktreeDragLineageRow": [
+        "D06-016"
+      ],
+      "expandDraggedWorktreeIdsForVisibleLineage": [
+        "D06-016"
+      ],
+      "moveWorktreeIdsWithinGroup": [
+        "D06-017"
+      ],
+      "buildManualOrderUpdatesForVisibleGroups": [
+        "D06-019"
+      ],
+      "buildManualOrderUpdatesForGroupDrop": [
+        "D06-019"
+      ],
+      "shouldWriteManualOrderForGroupDrop": [
+        "D06-019"
+      ],
+      "WorktreeSelectionIntent": [
+        "D06-021"
+      ],
+      "WorktreeSelectionResult": [
+        "D06-022"
+      ],
+      "WorktreeAreaSelectionResult": [
+        "D06-023"
+      ],
+      "getWorktreeSelectionIntent": [
+        "D06-021"
+      ],
+      "updateWorktreeSelection": [
+        "D06-022"
+      ],
+      "pruneWorktreeSelection": [
+        "D06-023"
+      ],
+      "updateWorktreeAreaSelection": [
+        "D06-023"
+      ],
+      "areWorktreeSelectionsEqual": [
+        "D06-023"
+      ],
+      "getEligibleWorktreeParents": [
+        "D06-024"
+      ],
+      "isEligibleWorktreeParent": [
+        "D06-024"
+      ],
+      "canAssignWorktreeParent": [
+        "D06-024"
+      ],
+      "getWorktreeParentPickerItemValue": [
+        "D06-026"
+      ],
+      "filterWorktreeParentCandidates": [
+        "D06-026"
+      ],
+      "clampWorktreeParentPickerIndex": [
+        "D06-026"
+      ],
+      "PICKER_ROW_HEIGHT": [
+        "D06-025"
+      ],
+      "PICKER_ROW_OVERSCAN": [
+        "D06-025"
+      ],
+      "PICKER_LIST_MAX_HEIGHT": [
+        "D06-025"
+      ],
+      "PICKER_VIEWPORT_PADDING": [
+        "D06-025"
+      ],
+      "estimateWorktreeParentPickerHeight": [
+        "D06-025"
+      ],
+      "clampWorktreeParentPickerAnchorTop": [
+        "D06-025"
+      ],
+      "WorktreeSidebarDragPoint": [
+        "D06-009"
+      ],
+      "WorktreeSidebarDragRect": [
+        "D06-011"
+      ],
+      "WorktreeSidebarDragSession": [
+        "D06-012"
+      ],
+      "WorktreeSidebarAutoscrollResult": [
+        "D06-009"
+      ],
+      "WorktreeSidebarBoundaryDropResult": [
+        "D06-010"
+      ],
+      "getWorktreeSidebarDragAutoscroll": [
+        "D06-009"
+      ],
+      "getWorktreeSidebarBoundaryDrop": [
+        "D06-010"
+      ],
+      "getWorktreeSidebarDragRectsForGroup": [
+        "D06-011"
+      ],
+      "refreshWorktreeSidebarDragSession": [
+        "D06-012"
+      ],
+      "WorktreeSidebarDragGrab": [
+        "D06-007"
+      ],
+      "WorktreeSidebarDropAnchor": [
+        "D06-008"
+      ],
+      "getWorktreeSidebarDragReferenceY": [
+        "D06-007"
+      ],
+      "shouldReevaluateWorktreeSidebarDropAnchor": [
+        "D06-008"
+      ],
+      "resolveWorktreeSidebarDropAnchorIndex": [
+        "D06-008"
+      ],
+      "getWorktreeSidebarDropAnchorId": [
+        "D06-008"
+      ],
+      "getWorktreeSidebarDragGrab": [
+        "D06-007"
+      ],
+      "isSidebarPointerDragBlocked": [
+        "D06-003"
+      ],
+      "setSidebarPointerDragDocumentStyles": [
+        "D06-004"
+      ],
+      "updateSidebarDragPreviewPosition": [
+        "D06-006"
+      ],
+      "createSidebarDragPreview": [
+        "D06-005"
+      ],
+      "PendingRevealScroll": [
+        "D06-034"
+      ],
+      "REVEAL_SCROLL_SETTLE_TIMEOUT_MS": [
+        "D06-034"
+      ],
+      "createPendingRevealScroll": [
+        "D06-034"
+      ],
+      "isRevealScrollSettling": [
+        "D06-034"
+      ],
+      "WORKTREE_SIDEBAR_REVEAL_TOP_INSET": [
+        "D06-033"
+      ],
+      "getScrollTopToRevealBounds": [
+        "D06-033"
+      ],
+      "revealElementInScrollContainer": [
+        "D06-033"
+      ],
+      "getPreferredWorktreeRows": [
+        "D06-031",
+        "D06-032"
+      ],
+      "getRenderedWorktreesInSidebarOrder": [
+        "D06-032"
+      ],
+      "unnestWorktrees": [
+        "D06-030"
+      ],
+      "WorktreeVisibilitySourceProvenance": [
+        "D06-035"
+      ],
+      "globalWorktreeVisibilitySourceValue": [
+        "D06-035"
+      ],
+      "getWorktreeVisibilitySourceProvenance": [
+        "D06-035"
+      ],
+      "listInheritedWorktreeVisibilitySources": [
+        "D06-035"
+      ],
+      "worktreeVisibilityValueLabel": [
+        "D06-035"
+      ],
+      "getWorktreeVisibilityOverrideNotice": [
+        "D06-035"
+      ],
+      "getWorktreeVisibilitySourceNote": [
+        "D06-035"
+      ]
+    },
+    "labels": {
+      "components/sidebar/WorktreeParentPickerPopover.tsx:358 :: placeholder={translate(": "D06-026",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:142 :: label: 'This computer',": "INFRA: fixture label helper in keyboard cycle test"
+    },
+    "hotkeys": {
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:225 :: } as unknown as React.KeyboardEvent<HTMLInputElement>,": "INFRA: test keyboard event cast in WorktreeParentPickerPopover test",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:53 :: event: React.KeyboardEvent<HTMLInputElement>": "D06-027",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:115 :: if (event.key === 'ArrowDown') {": "D06-027",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:117 :: } else if (event.key === 'ArrowUp') {": "D06-027",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:119 :: } else if (event.key === 'Home') {": "D06-027",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:121 :: } else if (event.key === 'End') {": "D06-027",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:123 :: } else if (event.key === 'Enter') {": "D06-027",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:280 :: (event: React.KeyboardEvent<HTMLInputElement>) => {": "D06-027"
+    },
+    "prefs": {},
+    "timers": {
+      "components/sidebar/WorktreeParentPickerPopover.tsx:195 :: const timerId = window.setTimeout(() => {": "D06-028"
+    },
+    "subscriptions": {
+      "components/sidebar/WorktreeParentPickerPopover.tsx:179 :: window.addEventListener('resize', updateAnchorRect)": "D06-025",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:180 :: window.addEventListener('scroll', updateAnchorRect, true)": "D06-025",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:187 :: useEffect(() => {": "D06-028",
+      "components/sidebar/WorktreeParentPickerPopover.tsx:298 :: useEffect(() => {": "D06-027"
+    },
+    "preload": {},
+    "tests": {
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:49 :: selectWorktreeParent": "INFRA: describe suite header for selectWorktreeParent",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:50 :: closes and assigns the selected parent to the captured child": "D06-028",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:68 :: shows sanitized failure copy after closing the picker": "D06-028",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:87 :: does nothing without a captured child id": "D06-028",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:104 :: getWorktreeParentPickerItemValue": "INFRA: describe suite header for getWorktreeParentPickerItemValue",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:105 :: includes workspace-facing fields used by command filtering": "D06-026",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:112 :: filterWorktreeParentCandidates": "INFRA: describe suite header for filterWorktreeParentCandidates",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:121 :: returns every candidate when the search is blank": "D06-026",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:125 :: drops non-matching candidates and ranks the closest match first": "D06-026",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:130 :: matches on branch and path, not just display name": "D06-026",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:136 :: estimateWorktreeParentPickerHeight": "INFRA: describe suite header for estimateWorktreeParentPickerHeight",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:137 :: grows with the candidate count up to the list cap": "D06-025",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:144 :: reserves a single row when nothing is eligible": "D06-025",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:149 :: clampWorktreeParentPickerAnchorTop": "INFRA: describe suite header for clampWorktreeParentPickerAnchorTop",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:150 :: leaves an anchor that already fits where it is": "D06-025",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:154 :: lifts an anchor whose popover would run off the bottom": "D06-025",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:158 :: keeps an anchor above the window from riding off the top": "D06-025",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:162 :: pins to the top padding when the window is shorter than the popover": "D06-025",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:167 :: clampWorktreeParentPickerIndex": "INFRA: describe suite header for clampWorktreeParentPickerIndex",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:168 :: keeps the highlight inside the filtered result window": "D06-026",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:174 :: collapses to zero when nothing matches": "D06-026",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:179 :: getWorktreeParentPickerFocusRestoreTarget": "INFRA: describe suite header for getWorktreeParentPickerFocusRestoreTarget",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:194 :: restores focus to the focusable container of the anchored row": "D06-027",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:201 :: skips a row whose sidebar was already unmounted or never anchored": "D06-027",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:209 :: parent picker keyboard input": "INFRA: describe suite header for parent picker keyboard input",
+      "components/sidebar/worktree-drag-units.test.ts:23 :: getWorktreeDragUnitGroups": "INFRA: describe suite header for getWorktreeDragUnitGroups",
+      "components/sidebar/worktree-drag-units.test.ts:24 :: treats expanded lineage descendants as part of the parent drag unit": "D06-013",
+      "components/sidebar/worktree-drag-units.test.ts:45 :: ignores imported worktree card rows without splitting drag groups": "D06-013",
+      "components/sidebar/worktree-drag-units.test.ts:73 :: includes pinned rows when they are the only rendered copy": "D06-013",
+      "components/sidebar/worktree-drag-units.test.ts:92 :: uses natural drag units when pinned rows have duplicate natural copies": "D06-013",
+      "components/sidebar/worktree-drag-units.test.ts:114 :: getFullDropIndexForWorktreeDragUnit": "INFRA: describe suite header for getFullDropIndexForWorktreeDragUnit",
+      "components/sidebar/worktree-drag-units.test.ts:115 :: maps visual unit drop indexes back to full row indexes": "D06-014",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:11 :: resolveCycledWorktreeId": "INFRA: describe suite header for resolveCycledWorktreeId",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:14 :: steps to the next and previous worktree": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:23 :: wraps around at both ends": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:32 :: enters from the matching end when the active worktree is not cyclable": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:47 :: has nothing to cycle to when every group is collapsed": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:54 :: getCyclableWorktreeIds": "INFRA: describe suite header for getCyclableWorktreeIds",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:78 :: keeps a pinned worktree cyclable when only its natural group is collapsed": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:86 :: counts a duplicated pinned worktree once": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:96 :: keeps same-id rows on different hosts independently cyclable": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:115 :: leaves folder workspaces out of the rotation": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:133 :: drops worktrees the sidebar elided inside a collapsed host section": "D06-031",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:155 :: WorktreeList keyboard cycling": "INFRA: describe suite header for WorktreeList keyboard cycling",
+      "components/sidebar/worktree-keyboard-cycle.test.ts:156 :: cycles over the rendered rows instead of rebuilding a parallel layout": "D06-031",
+      "components/sidebar/worktree-manual-order-catalog.test.ts:30 :: buildWorktreeManualOrderCatalog": "INFRA: describe suite header for buildWorktreeManualOrderCatalog",
+      "components/sidebar/worktree-manual-order-catalog.test.ts:31 :: includes filtered-capable git and folder rows in fallback order": "D06-020",
+      "components/sidebar/worktree-manual-order-catalog.test.ts:41 :: treats a same-id host cluster as durable only when every owner agrees": "D06-020",
+      "components/sidebar/worktree-manual-order-store-write.test.ts:60 :: sidebar manual-order drop": "INFRA: describe suite header for sidebar manual-order drop",
+      "components/sidebar/worktree-manual-order-store-write.test.ts:72 :: moves the dragged row past its neighbor in the store": "D06-019",
+      "components/sidebar/worktree-manual-order-store-write.test.ts:95 :: leaves the order alone when the drop lands where the row already is": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:12 :: buildSparseManualOrderUpdates durable migration": "INFRA: describe suite header for buildSparseManualOrderUpdates durable migration",
+      "components/sidebar/worktree-manual-order.test.ts:13 :: materializes filtered rows when the first drag creates Manual order": "D06-018",
+      "components/sidebar/worktree-manual-order.test.ts:32 :: keeps sparse updates after every known row has a durable rank": "D06-018",
+      "components/sidebar/worktree-manual-order.test.ts:49 :: never drops known rows when a stale visible sequence contains unknowns or duplicates": "D06-018",
+      "components/sidebar/worktree-manual-order.test.ts:61 :: preserves hidden rows when dense ranks require a full reindex": "D06-018",
+      "components/sidebar/worktree-manual-order.test.ts:78 :: preserves hidden rows when a stale neighbor requires a full reindex": "D06-018",
+      "components/sidebar/worktree-manual-order.test.ts:95 :: expandDraggedWorktreeIdsForVisibleLineage": "INFRA: describe suite header for expandDraggedWorktreeIdsForVisibleLineage",
+      "components/sidebar/worktree-manual-order.test.ts:96 :: expands an expanded lineage parent to its visible descendants for reordering": "D06-016",
+      "components/sidebar/worktree-manual-order.test.ts:110 :: keeps unrelated selected rows in visual order": "D06-016",
+      "components/sidebar/worktree-manual-order.test.ts:125 :: keeps ancestor coverage when a nested descendant is selected too": "D06-016",
+      "components/sidebar/worktree-manual-order.test.ts:139 :: restarts coverage for a later selected sibling after the previous run ends": "D06-016",
+      "components/sidebar/worktree-manual-order.test.ts:153 :: emits each absent selected id once": "D06-016",
+      "components/sidebar/worktree-manual-order.test.ts:163 :: moveWorktreeIdsWithinGroup": "INFRA: describe suite header for moveWorktreeIdsWithinGroup",
+      "components/sidebar/worktree-manual-order.test.ts:164 :: moves a worktree down using the original drop index": "D06-017",
+      "components/sidebar/worktree-manual-order.test.ts:168 :: moves a worktree up": "D06-017",
+      "components/sidebar/worktree-manual-order.test.ts:172 :: preserves selected order for multi-drag batches": "D06-017",
+      "components/sidebar/worktree-manual-order.test.ts:181 :: moves a very large selected batch without overflowing argument limits": "D06-017",
+      "components/sidebar/worktree-manual-order.test.ts:192 :: buildWorktreeDragPreviewOffsets": "INFRA: describe suite header for buildWorktreeDragPreviewOffsets",
+      "components/sidebar/worktree-manual-order.test.ts:193 :: slides intervening rows up while dragging a row down": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:212 :: keeps downward offsets stable after virtualization unmounts the leading rows": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:234 :: slides intervening rows down while dragging a row up": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:252 :: returns no preview offsets for a no-op hover": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:266 :: uses the dragged unit height when previewing variable-height rows": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:280 :: uses the dragged unit height when previewing a short row above a tall row": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:294 :: reserves one card-height slot while previewing a multi-select batch": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:316 :: uses the grabbed selected card as the one preview placeholder": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:334 :: returns no preview offsets for a no-op multi-select hover": "D06-015",
+      "components/sidebar/worktree-manual-order.test.ts:353 :: buildManualOrderUpdatesForVisibleGroups": "INFRA: describe suite header for buildManualOrderUpdatesForVisibleGroups",
+      "components/sidebar/worktree-manual-order.test.ts:354 :: updates every visible workspace order while only moving the source group": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:377 :: returns no updates for a no-op drop": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:391 :: only updates moved rows when current ranks leave room": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:411 :: moves an expanded lineage cluster as one ranked unit": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:433 :: reorders a very large visible group without overflowing argument limits": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:457 :: buildManualOrderUpdatesForGroupDrop": "INFRA: describe suite header for buildManualOrderUpdatesForGroupDrop",
+      "components/sidebar/worktree-manual-order.test.ts:458 :: moves a selected batch across groups and stamps visible manual order": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:481 :: keeps visual order for multi-select batches spanning groups": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:497 :: returns no updates for a no-op same-group drop": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:511 :: uses sparse moved-row ranks for cross-lane manual drops": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:535 :: shouldWriteManualOrderForGroupDrop": "INFRA: describe suite header for shouldWriteManualOrderForGroupDrop",
+      "components/sidebar/worktree-manual-order.test.ts:536 :: writes order for any lane drop while Manual sort is active": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:546 :: writes order for same-lane drops outside Manual sort": "D06-019",
+      "components/sidebar/worktree-manual-order.test.ts:556 :: keeps cross-lane drops status-only outside Manual sort": "D06-019",
+      "components/sidebar/worktree-multi-selection.test.ts:11 :: worktree multi selection": "INFRA: describe suite header for worktree multi selection",
+      "components/sidebar/worktree-multi-selection.test.ts:12 :: uses Cmd on Mac and Ctrl elsewhere for toggle selection": "D06-021",
+      "components/sidebar/worktree-multi-selection.test.ts:24 :: replaces selection on plain click": "D06-021",
+      "components/sidebar/worktree-multi-selection.test.ts:37 :: toggles one worktree without dropping the rest": "D06-022",
+      "components/sidebar/worktree-multi-selection.test.ts:50 :: allows toggling the last selected worktree off": "D06-022",
+      "components/sidebar/worktree-multi-selection.test.ts:63 :: selects the visible range from the anchor to the target": "D06-022",
+      "components/sidebar/worktree-multi-selection.test.ts:76 :: prunes selection when filtering hides selected worktrees": "D06-023",
+      "components/sidebar/worktree-multi-selection.test.ts:83 :: replaces selection from an area in visible order": "D06-023",
+      "components/sidebar/worktree-multi-selection.test.ts:96 :: adds area selection to the existing batch with modifier keys": "D06-023",
+      "components/sidebar/worktree-multi-selection.test.ts:109 :: does not clear the existing batch for an empty additive area": "D06-023",
+      "components/sidebar/worktree-multi-selection.test.ts:122 :: clears the existing batch for an empty non-additive area": "D06-023",
+      "components/sidebar/worktree-parent-eligibility.test.ts:57 :: canAssignWorktreeParent": "INFRA: describe suite header for canAssignWorktreeParent",
+      "components/sidebar/worktree-parent-eligibility.test.ts:58 :: excludes self, valid current parent, and descendants": "D06-024",
+      "components/sidebar/worktree-parent-eligibility.test.ts:103 :: treats stale instance edges as broken during descendant traversal": "D06-024",
+      "components/sidebar/worktree-parent-eligibility.test.ts:125 :: allows a raw current parent candidate when the child lineage is stale": "D06-024",
+      "components/sidebar/worktree-parent-eligibility.test.ts:145 :: rejects candidates inside pre-existing lineage loops": "D06-024",
+      "components/sidebar/worktree-parent-eligibility.test.ts:164 :: stays repo-agnostic while the picker candidate filter is repo and host scoped": "D06-024",
+      "components/sidebar/worktree-parent-eligibility.test.ts:192 :: excludes same-repo candidates owned by a different runtime host": "D06-024",
+      "components/sidebar/worktree-parent-eligibility.test.ts:214 :: excludes a candidate across a known project boundary for picker and direct drop checks": "D06-024",
+      "components/sidebar/worktree-parent-eligibility.test.ts:242 :: excludes archived worktrees from picker candidates": "D06-024",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:29 :: getWorktreeSidebarDragAutoscroll": "INFRA: describe suite header for getWorktreeSidebarDragAutoscroll",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:30 :: scrolls up near the top edge": "D06-009",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:34 :: scrolls down near the bottom edge": "D06-009",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:38 :: does nothing away from the vertical edge zones": "D06-009",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:42 :: does nothing when the pointer is outside horizontally": "D06-009",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:46 :: does not write past scroll bounds": "D06-009",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:51 :: allows capped scrolling slightly beyond the vertical edge": "D06-009",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:56 :: scales by elapsed frame time and clamps delayed frames": "D06-009",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:65 :: getWorktreeSidebarBoundaryDrop": "INFRA: describe suite header for getWorktreeSidebarBoundaryDrop",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:66 :: clamps near the group start instead of clearing the edge preview": "D06-010",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:77 :: clamps near the group end instead of clearing the edge preview": "D06-010",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:88 :: still rejects gaps that are not the real group edge": "D06-010",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:101 :: keeps normal in-range hover handling unchanged": "D06-010",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:113 :: getWorktreeSidebarDragRectsForGroup": "INFRA: describe suite header for getWorktreeSidebarDragRectsForGroup",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:114 :: refreshes mounted rects for the source group only": "D06-011",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:127 :: anchors rects to virtual row slots so animated transforms do not perturb hit testing": "D06-011",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:140 :: refreshWorktreeSidebarDragSession": "INFRA: describe suite header for refreshWorktreeSidebarDragSession",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:141 :: keeps the dragged set stable while refreshing rects": "D06-012",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:167 :: clears when the source group is missing": "D06-012",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:178 :: clears when the dragged worktree or reordered unit disappears": "D06-012",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:197 :: keeps a valid session when mounted rects are temporarily empty": "D06-012",
+      "components/sidebar/worktree-sidebar-drag-autoscroll.test.ts:208 :: keeps child-card reorder drags even when the child is not a top-level unit": "D06-012",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:81 :: worktree sidebar drag geometry under mid-drag card growth": "INFRA: describe suite header for worktree sidebar drag geometry under mid-drag card growth",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:82 :: keeps the drop target fixed while a card expands under a still pointer": "D06-008",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:94 :: never lets a growing card change the drop target across a whole expansion": "D06-008",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:111 :: slides the indicator with the gap it marks while geometry is held": "D06-008",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:123 :: still tracks the pointer normally once it moves again": "D06-008",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:131 :: re-evaluates on real pointer or scroll movement but not on jitter": "D06-008",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:155 :: falls back to a fresh decision when the anchored card disappears mid-drag": "D06-008",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:178 :: keeps one live coordinate space across a session refresh": "D06-008",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:207 :: grab-relative hit testing": "INFRA: describe suite header for grab-relative hit testing",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:208 :: projects the dragged card from the pointer instead of using the bare pointer": "D06-007",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:231 :: resolves the same slot wherever a tall card was grabbed": "D06-007",
+      "components/sidebar/worktree-sidebar-drag-geometry.test.ts:251 :: clamps a grab offset that lands outside the card": "D06-007",
+      "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:6 :: worktree sidebar pointer drag DOM guards": "INFRA: describe suite header for worktree sidebar pointer drag DOM guards",
+      "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:7 :: allows plain row targets to start pointer drags": "D06-003",
+      "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:15 :: blocks portaled hover card targets outside the row": "D06-003",
+      "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:26 :: blocks interactive targets inside the row": "D06-003",
+      "components/sidebar/worktree-sidebar-pointer-drag-dom.test.ts:34 :: blocks icon targets inside interactive row controls": "D06-003",
+      "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:8 :: isRevealScrollSettling": "INFRA: describe suite header for isRevealScrollSettling",
+      "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:9 :: is not settling without a reveal scroll in flight": "D06-034",
+      "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:13 :: stays settling while a smooth reveal scroll is still animating": "D06-034",
+      "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:21 :: stops settling once the scroll reaches its target": "D06-034",
+      "components/sidebar/worktree-sidebar-reveal-scroll-settle.test.ts:28 :: stops settling after the timeout so an unreachable target cannot pin the guard open": "D06-034",
+      "components/sidebar/worktree-sidebar-reveal.test.ts:22 :: revealElementInScrollContainer": "INFRA: describe suite header for revealElementInScrollContainer",
+      "components/sidebar/worktree-sidebar-reveal.test.ts:23 :: reports the scroll target it issues so callers can guard the animation": "D06-033",
+      "components/sidebar/worktree-sidebar-reveal.test.ts:40 :: does not report a scroll when the element is already in view": "D06-033",
+      "components/sidebar/worktree-sidebar-row-preference.test.ts:83 :: getRenderedWorktreesInSidebarOrder": "INFRA: describe suite header for getRenderedWorktreesInSidebarOrder",
+      "components/sidebar/worktree-sidebar-row-preference.test.ts:84 :: keeps folder workspaces in visual order while preferring natural pinned rows": "D06-032",
+      "components/sidebar/worktree-unnest.test.ts:9 :: unnestWorktrees": "INFRA: describe suite header for unnestWorktrees",
+      "components/sidebar/worktree-unnest.test.ts:15 :: clears the parent link on every requested worktree": "D06-030",
+      "components/sidebar/worktree-unnest.test.ts:28 :: toasts instead of rejecting when the lineage update fails": "D06-030",
+      "components/sidebar/worktree-unnest.test.ts:38 :: toasts once when several worktrees fail together": "D06-030",
+      "components/sidebar/worktree-unnest.test.ts:46 :: does nothing for an empty selection": "D06-030",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:47 :: listInheritedWorktreeVisibilitySources": "INFRA: describe suite header for listInheritedWorktreeVisibilitySources",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:48 :: reports what each inheritable source is set to globally": "D06-035",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:56 :: keeps a source the project has overridden, since global is what it overrode": "D06-035",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:67 :: lists a global custom source but not one the project added itself": "D06-035",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:86 :: getWorktreeVisibilityOverrideNotice": "INFRA: describe suite header for getWorktreeVisibilityOverrideNotice",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:87 :: names the global value a project override is ignoring": "D06-035",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:97 :: stays quiet for an override that agrees with global settings": "D06-035",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:104 :: stays quiet for a source that is still following global settings": "D06-035",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:110 :: stays quiet outside a project scope": "D06-035",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:115 :: getWorktreeVisibilitySourceNote": "INFRA: describe suite header for getWorktreeVisibilitySourceNote",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:116 :: marks a source the project added itself": "D06-035",
+      "components/sidebar/worktree-visibility-source-provenance.test.ts:126 :: says nothing for an inherited source": "D06-035",
+      "components/sidebar/WorktreeParentPickerPopover.test.ts:213 :: leaves IME composition keys to the input method": "D06-027"
+    }
+  }
+}

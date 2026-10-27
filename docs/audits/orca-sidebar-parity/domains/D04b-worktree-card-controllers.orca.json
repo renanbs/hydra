@@ -1,0 +1,1229 @@
+{
+  "domain": "D04b-worktree-card-controllers",
+  "rows": [
+    {
+      "id": "D04b-001",
+      "capability": "Seleciona e foca automaticamente o workspace sucessor adequado após a exclusão do worktree atualmente ativo",
+      "surface": "sidebar esquerdo (foco de workspace no terminal)",
+      "trigger": "exclusão bem-sucedida do worktree ativo no visualizador de terminal",
+      "behaviors": [
+        "Captura antes da exclusão (`prepareActiveWorktreeFocusAfterDelete`) se o worktree a ser excluído era o workspace ativo no terminal",
+        "Identifica os worktrees irmãos do mesmo projeto (`repoId`) e filtra o worktree deletado, worktrees em processo de deleção (`deleteStateByWorktreeId.isDeleting`) e worktrees em targets SSH runtime-owned destruídos",
+        "Prioriza irmãos não-principais (`!isMainWorktree`) ordenados pela data da última visita (`lastVisitedAtByWorktreeId` / `getWorktreeVisitTimestamp`)",
+        "Recai para o worktree base/principal (`isMainWorktree`) do projeto caso nenhum outro irmão permaneça",
+        "Não rouba foco nem altera seleção se o usuário navegou para outro workspace, saiu da visualização de terminal (`activeView !== 'terminal'`) ou abriu painel de criação pendente (`activePendingCreationId !== null`) durante a deleção",
+        "Não rouba foco quando o worktree deletado não era o ativo ou quando o workspace ativo era um workspace que não é worktree",
+        "Ativa o sucessor via `activateAndRevealWorktree` com `revealInSidebar: false` para não deslocar a posição visual do sidebar"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.getState().activeView",
+        "useAppStore.getState().activePendingCreationId",
+        "useAppStore.getState().activeWorktreeId",
+        "useAppStore.getState().worktreesByRepo",
+        "useAppStore.getState().deleteStateByWorktreeId",
+        "useAppStore.getState().lastVisitedAtByWorktreeId",
+        "useAppStore.getState().repos"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/active-worktree-focus-after-delete.ts:15",
+        "components/sidebar/active-worktree-focus-after-delete.ts:42",
+        "components/sidebar/active-worktree-focus-after-delete.ts:69",
+        "components/sidebar/active-worktree-focus-after-delete.ts:103"
+      ],
+      "tests": [
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:78 :: prepareActiveWorktreeFocusAfterDelete",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:91 :: focuses the most-recently-visited non-base sibling of the same project",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:103 :: falls back to the base/primary worktree when no other workspace remains",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:114 :: does not re-focus a sibling hosted on a torn-down runtime-owned SSH target",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:130 :: stays within the deleted worktree project instead of jumping to another project",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:148 :: does not steal focus when the deleted worktree was not the active one",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:159 :: does not reclaim focus when the user navigated away during the delete",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:172 :: does not steal focus when the delete starts from a non-terminal view",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:186 :: does not reclaim focus when the user leaves terminal view during the delete",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:198 :: does not steal focus when a pending creation panel is active before delete",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:212 :: does not reclaim focus when pending creation opens during the delete",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:224 :: skips workspaces that are themselves mid-delete when picking a successor",
+        "components/sidebar/active-worktree-focus-after-delete.test.ts:237 :: does not steal focus when a non-worktree workspace is active"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-002",
+      "capability": "Detecta e destaca a linha do agente correspondente ao painel de terminal focado no worktree",
+      "surface": "linhas de agente aninhadas no card do worktree",
+      "trigger": "mudança de foco de painel de terminal (`activeTabId`, `terminalLayoutsByTabId.activeLeafId`)",
+      "behaviors": [
+        "Verifica se o worktree ativo coincide com o card (`state.activeWorktreeId === worktreeId`) e o tipo de aba ativo é 'terminal'",
+        "Confirma que a aba ativa pertence ao conjunto de abas do worktree (`tabsByWorktree`)",
+        "Gera a chave de painel ativa via `makePaneKey(activeTabId, activeLeafId)`",
+        "Retorna a paneKey quando há status de agente ativo (`agentStatusByPaneKey`), mantendo o highlight mesmo se o status decair além do limiar de frescor (stale/decayed)",
+        "Retorna a paneKey para linhas de agentes retidos (`retainedAgentsByPaneKey`) pertencentes ao worktree",
+        "Retorna a paneKey quando o painel possui entrada de erro de migração não suportada (`migrationUnsupportedByPtyId`)",
+        "Retorna null quando outro painel dividido, outra aba ou outra superfície não terminal está ativa"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore((state) => state.activeWorktreeId)",
+        "useAppStore((state) => state.activeTabType)",
+        "useAppStore((state) => state.activeTabId)",
+        "useAppStore((state) => state.tabsByWorktree)",
+        "useAppStore((state) => state.terminalLayoutsByTabId)",
+        "useAppStore((state) => state.agentStatusByPaneKey)",
+        "useAppStore((state) => state.retainedAgentsByPaneKey)",
+        "useAppStore((state) => state.migrationUnsupportedByPtyId)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/focused-agent-row-highlight.ts:5",
+        "components/sidebar/focused-agent-row-highlight.ts:17",
+        "components/sidebar/focused-agent-row-highlight.ts:61"
+      ],
+      "tests": [
+        "components/sidebar/focused-agent-row-highlight.test.ts:84 :: getFocusedAgentPaneKeyForWorktree",
+        "components/sidebar/focused-agent-row-highlight.test.ts:85 :: returns the focused pane key when that pane has a live agent status",
+        "components/sidebar/focused-agent-row-highlight.test.ts:95 :: highlights a focused row whose status has decayed past freshness",
+        "components/sidebar/focused-agent-row-highlight.test.ts:107 :: does not return another split pane in the same terminal tab",
+        "components/sidebar/focused-agent-row-highlight.test.ts:117 :: does not highlight while another surface type is active",
+        "components/sidebar/focused-agent-row-highlight.test.ts:128 :: returns retained agent row pane keys for the focused pane",
+        "components/sidebar/focused-agent-row-highlight.test.ts:145 :: returns migration-unsupported agent row pane keys for the focused pane"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-003",
+      "capability": "Exibe toast persistente de sugestão para manter a branch base local atualizada com upstream",
+      "surface": "toast de notificação (Sonner) com layout customizado e botões de ação",
+      "trigger": "criação de worktree quando a branch base local está defasada em relação à upstream (`suggestion.behind > 0`)",
+      "behaviors": [
+        "Renderiza toast informativo com duração infinita (`duration: Infinity`) identificado por `local-base-ref-update-suggestion:<baseRef>:<localBranch>`",
+        "Formata texto explicando a quantidade de commits defasados com substantivo singular/plural ('commit' / 'commits')",
+        "Disponibiliza botão 'Keep <localBranch> up to date' que ativa a configuração `refreshLocalBaseRefOnWorktreeCreate: true` e exibe toast de confirmação ou de erro caso a persistência falhe",
+        "Disponibiliza link clicável 'Settings › Keep local default branch up to date' que navega para a página de configurações no painel Git sem registrar recusa permanente",
+        "No fechamento manual do toast (botão X ou swipe), persiste `localBaseRefSuggestionDismissed: true` nas configurações se a opção não tiver sido habilitada e se não tiver sido fechado pela navegação a Settings"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "deps.getSettings()",
+        "deps.updateSettings({ refreshLocalBaseRefOnWorktreeCreate: true })",
+        "deps.updateSettings({ localBaseRefSuggestionDismissed: true })",
+        "deps.openSettingsPage()",
+        "deps.openSettingsTarget({ pane: 'git', sectionId: KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID })"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/local-base-ref-suggestion-toast.tsx:29",
+        "components/sidebar/local-base-ref-suggestion-toast.tsx:43",
+        "components/sidebar/local-base-ref-suggestion-toast.tsx:75",
+        "components/sidebar/local-base-ref-suggestion-toast.tsx:128"
+      ],
+      "tests": [
+        "components/sidebar/local-base-ref-suggestion-toast.test.tsx:77 :: showLocalBaseRefUpdateSuggestionToast",
+        "components/sidebar/local-base-ref-suggestion-toast.test.tsx:78 :: does nothing without a suggestion",
+        "components/sidebar/local-base-ref-suggestion-toast.test.tsx:83 :: turns on the setting and confirms from the Keep main up to date button",
+        "components/sidebar/local-base-ref-suggestion-toast.test.tsx:100 :: reports failure when enabling cannot persist the setting",
+        "components/sidebar/local-base-ref-suggestion-toast.test.tsx:118 :: deep-links to the Git setting and closes the toast from the Settings link",
+        "components/sidebar/local-base-ref-suggestion-toast.test.tsx:138 :: does not record a permanent dismissal when opening the Git setting"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-004",
+      "capability": "Executa a exclusão de worktree com toasts de erro interativos, navegação a diffs e retentativas com waiver",
+      "surface": "sidebar esquerdo e sistema de toasts (Sonner)",
+      "trigger": "solicitação de exclusão de worktree via menu de contexto, atalho ou ação rápida",
+      "behaviors": [
+        "Prepara a captura de foco antecipado (`prepareActiveWorktreeFocusAfterDelete`) antes de iniciar a remoção",
+        "Invoca `removeWorktree` na store passando opções de supressão de toast de branch preservada e lote de poda de snapshot",
+        "Se a exclusão for bem-sucedida, notifica callback de branch preservada (`onPreservedBranch`), compromete a transição de foco para o sucessor (`commitFocus`) e retorna true",
+        "Se a exclusão falhar, consulta `getDeleteStateForWorktreeHost` e renderiza o toast `showDeleteWorktreeFailureToast` com opções customizadas",
+        "Disponibiliza ação de visualizar alterações (`onViewChanges` / `viewWorktreeDiff`) que ativa o worktree sem spawnar shell inicial e abre o painel lateral direito no Source Control",
+        "Disponibiliza opção 'Delete Anyway' (`onDeleteAnyway`) para reexecutar com waiver de hook de arquivo (`allowFailedArchiveHook: true`)",
+        "Disponibiliza opção 'Force Delete' (`onForceDelete`) para reexecutar com `force: true` e waiver de parada não verificada de PTY (`allowUnverifiedPtyStop: true`) com ação de botão 'View'",
+        "Caso uma retentativa falhe novamente por outra razão (ex.: preflight sujo após waiver do hook), reapresenta o toast estruturado com ações em vez de emitir um erro cego sem botões"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.getState().removeWorktree",
+        "useAppStore.getState().gitStatusByWorktree",
+        "useAppStore.getState().deleteStateByWorktreeId",
+        "useAppStore.getState().setRightSidebarTab",
+        "useAppStore.getState().setRightSidebarOpen"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/run-worktree-delete-with-toast.ts:12",
+        "components/sidebar/run-worktree-delete-with-toast.ts:27",
+        "components/sidebar/run-worktree-delete-with-toast.ts:41",
+        "components/sidebar/run-worktree-delete-with-toast.ts:78",
+        "components/sidebar/run-worktree-delete-with-toast.ts:89",
+        "components/sidebar/run-worktree-delete-with-toast.ts:136"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-005",
+      "capability": "Exibe rótulo truncado no sidebar com medição responsiva contínua e tooltip flutuante sob demanda",
+      "surface": "rótulos de branch, worktree e projetos no sidebar",
+      "trigger": "renderização, redimensionamento do contêiner ou alteração do texto do rótulo",
+      "behaviors": [
+        "Determina se o texto está truncado comparando `scrollWidth > clientWidth` (`isSidebarLabelTruncated`)",
+        "Utiliza `ResizeObserver` no nó `<span>` com fallback para listener global `window.addEventListener('resize')` se não suportado",
+        "Reavalia o truncamento sincronamente em `useLayoutEffect` sempre que a propriedade `text` mudar, sem recriar o `ResizeObserver`",
+        "Renderiza apenas o `<span>` com classes `block min-w-0 truncate` quando o texto cabe na largura disponível ou quando `tooltipEnabled === false`",
+        "Envolve o rótulo com `<Tooltip>` e `<TooltipContent>` (com quebra de linha `break-all` e largura máxima de 80) quando truncado e habilitado",
+        "Suporta personalização de posicionamento via `tooltipSide` (padrão 'right') e `tooltipSideOffset` (padrão 8)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/truncated-sidebar-label.tsx:5",
+        "components/sidebar/truncated-sidebar-label.tsx:19",
+        "components/sidebar/truncated-sidebar-label.tsx:22",
+        "components/sidebar/truncated-sidebar-label.tsx:23",
+        "components/sidebar/truncated-sidebar-label.tsx:24",
+        "components/sidebar/truncated-sidebar-label.tsx:52",
+        "components/sidebar/truncated-sidebar-label.tsx:68",
+        "components/sidebar/truncated-sidebar-label.tsx:78",
+        "components/sidebar/truncated-sidebar-label.tsx:86",
+        "components/sidebar/truncated-sidebar-label.tsx:87"
+      ],
+      "tests": [
+        "components/sidebar/truncated-sidebar-label.test.tsx:18 :: isSidebarLabelTruncated",
+        "components/sidebar/truncated-sidebar-label.test.tsx:19 :: returns false when the label fits",
+        "components/sidebar/truncated-sidebar-label.test.tsx:24 :: returns true when the label overflows",
+        "components/sidebar/truncated-sidebar-label.test.tsx:29 :: TruncatedSidebarLabel",
+        "components/sidebar/truncated-sidebar-label.test.tsx:75 :: remeasures when the branch text changes without a resize event",
+        "components/sidebar/truncated-sidebar-label.test.tsx:98 :: keeps the nested tooltip disabled when a parent hover owns the full identity",
+        "components/sidebar/truncated-sidebar-label.test.tsx:111 :: keeps one ResizeObserver across a label text change"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-006",
+      "capability": "Resolve e valida alvos de exclusão confirmada de worktrees e linhagens contra o estado ao vivo da store",
+      "surface": "diálogo modal de confirmação de exclusão de worktree / linhagem",
+      "trigger": "confirmação do usuário no modal de exclusão",
+      "behaviors": [
+        "Converte payloads brutos de identidade em listas tipadas `WorktreeDeleteIdentity` para worktrees individuais e linhagens",
+        "Executa `resolveWorktreeBatchDeleteTargets` consultando `getWorktreeOnHostFromState` no estado atual da store",
+        "Verifica se todos os alvos foram resolvidos e se a contagem corresponde a `expectedCount`",
+        "Se a lista de alvos divergir (worktree deletado externamente ou estado alterado), exibe `showWorkspaceListChangedToast`, fecha o modal e retorna null para impedir exclusões incorretas"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.getState()",
+        "getWorktreeOnHostFromState(state, worktreeId, hostId)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-confirmed-worktree-delete-targets.ts:11",
+        "components/sidebar/use-confirmed-worktree-delete-targets.ts:28"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-007",
+      "capability": "Hidrata em segundo plano o status Git de múltiplos worktrees candidatos à exclusão",
+      "surface": "modal de diálogo de confirmação de exclusão de worktree",
+      "trigger": "abertura do modal de confirmação de exclusão (`isOpen: true`)",
+      "behaviors": [
+        "Gera identificador de geração a partir das identidades dos alvos para isolar execuções concorrentes",
+        "Filtra alvos elegíveis excluindo worktrees principais (`!target.isMainWorktree`) e workspaces de pasta",
+        "Ordena os alvos via `orderDeleteWorktreeStatusHydrationTargets` priorizando os visíveis e o worktree ativo",
+        "Aproveita status existente em `gitStatusByWorktree` para worktrees locais quando disponível",
+        "Dispara `getRuntimeGitStatus` com prioridade `'background'` e `includeLineStats: false` usando `AbortController`",
+        "Aplica configurações de ambiente de runtime adequadas para hosts remotos ou SSH",
+        "Atualiza o mapa de status por identidade à medida que as respostas chegam, descartando resultados se o modal for fechado ou a geração mudar"
+      ],
+      "background_activity": "requisições assíncronas getRuntimeGitStatus disparadas em background ao abrir modal de deleção",
+      "state_inputs": [
+        "useAppStore((state) => state.repos)",
+        "useAppStore((state) => state.settings)",
+        "useAppStore.getState().gitStatusByWorktree",
+        "useAppStore.getState().activeWorktreeId",
+        "useAppStore.getState().activeWorkspaceExecutionHostId",
+        "useAppStore.getState().worktreesByRepo"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-delete-worktree-status-hydration.ts:17",
+        "components/sidebar/use-delete-worktree-status-hydration.ts:38",
+        "components/sidebar/use-delete-worktree-status-hydration.ts:46",
+        "components/sidebar/use-delete-worktree-status-hydration.ts:75"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-008",
+      "capability": "Resolve o status de atividade consolidado de um worktree individual para o indicador de status",
+      "surface": "dot de status de atividade no card de worktree (compacto e detalhado)",
+      "trigger": "atualização de abas, processos PTY, títulos de painéis ou status de agentes no worktree",
+      "behaviors": [
+        "Extrai abas de terminal (`tabsByWorktree`) e de browser (`browserTabsByWorktree`) associadas ao worktree",
+        "Coleta PTYs ativas (`selectLivePtyIdsForWorktree`) e títulos de painéis em tempo de execução (`selectRuntimePaneTitlesForWorktree`)",
+        "Coleta raízes de layout de terminal (`selectTerminalLayoutRootsForWorktree`)",
+        "Extrai resumo consolidado de atividade de agentes (`selectWorktreeAgentActivitySummary`), incluindo flags de permissão pendente, trabalhando, monitorando, interrompido, concluído ativo e concluído retido",
+        "Invoca `resolveWorktreeStatus` para calcular o estado final (ex.: working, permission, done, idle), garantindo que o dot reflita fielmente o estado operacional dos agentes e terminais"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore((s) => s.tabsByWorktree[worktreeId])",
+        "useAppStore((s) => s.browserTabsByWorktree[worktreeId])",
+        "useAppStore(selectRuntimePaneTitlesForWorktree)",
+        "useAppStore(selectLivePtyIdsForWorktree)",
+        "useAppStore(selectTerminalLayoutRootsForWorktree)",
+        "useAppStore(selectWorktreeAgentActivitySummary)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-activity-status.ts:13",
+        "components/sidebar/use-worktree-activity-status.ts:39"
+      ],
+      "tests": [
+        "components/sidebar/use-worktree-activity-status.test.tsx:103 :: useWorktreeActivityStatus",
+        "components/sidebar/use-worktree-activity-status.test.tsx:124 :: keeps a restored offscreen working agent yellow from the hook snapshot",
+        "components/sidebar/use-worktree-activity-status.test.tsx:145 :: lets a fresh hook done state override the same pane stale working title",
+        "components/sidebar/use-worktree-activity-status.test.tsx:174 :: lets a retained done row override the same pane stale working title",
+        "components/sidebar/use-worktree-activity-status.test.tsx:209 :: does not keep the card working when all retained parent agents are done",
+        "components/sidebar/use-worktree-activity-status.test.tsx:252 :: lets a legacy numeric done hook override the matching stale working title",
+        "components/sidebar/use-worktree-activity-status.test.tsx:277 :: lets a completed worker suppress its parent pane stale working title",
+        "components/sidebar/use-worktree-activity-status.test.tsx:315 :: scopes cached agent summaries to the matching worktree"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-009",
+      "capability": "Seleciona em lote com comparação rasa os status de atividade para múltiplos worktrees candidatos",
+      "surface": "seletores e listas de worktrees (ex.: quick switchers, pickers)",
+      "trigger": "atualização no estado de terminais ou agentes em qualquer worktree",
+      "behaviors": [
+        "Itera sobre a lista de IDs de worktree especificados e calcula o `WorktreeStatus` individual de cada um via `resolveWorktreeStatus`",
+        "Utiliza memoização `useShallow` do Zustand na assinatura de estado `WorktreeActivityStatusState`",
+        "Garante que atualizações em worktrees fora do conjunto de IDs monitorados não alterem a igualdade rasa do mapa resultante, prevenindo re-renderizações desnecessárias"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore((state) => state.tabsByWorktree)",
+        "useAppStore((state) => state.browserTabsByWorktree)",
+        "useAppStore((state) => state.runtimePaneTitlesByTabId)",
+        "useAppStore((state) => state.ptyIdsByTabId)",
+        "useAppStore((state) => state.terminalLayoutsByTabId)",
+        "useAppStore((state) => state.agentStatusEpoch)",
+        "useAppStore((state) => state.agentStatusByPaneKey)",
+        "useAppStore((state) => state.migrationUnsupportedByPtyId)",
+        "useAppStore((state) => state.retainedAgentsByPaneKey)",
+        "useAppStore((state) => state.runtimeAgentOrchestrationByPaneKey)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-activity-statuses.ts:27",
+        "components/sidebar/use-worktree-activity-statuses.ts:67"
+      ],
+      "tests": [
+        "components/sidebar/use-worktree-activity-statuses.test.ts:22 :: selectWorktreeActivityStatuses",
+        "components/sidebar/use-worktree-activity-statuses.test.ts:23 :: stays shallow-equal when an unrelated worktree receives activity updates"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-010",
+      "capability": "Gerencia cliques, duplo-clique de edição, renomeação inline e alternância de não-lido no card do worktree",
+      "surface": "área interativa do card de worktree no sidebar",
+      "trigger": "clique simples, duplo-clique, submissão de renomeação ou clique no botão de não-lido",
+      "behaviors": [
+        "No clique simples (`handleClick`), ignora se o alvo do evento estiver fora do contêiner ou se houver seleção ativa de texto dentro do card",
+        "Verifica gestos de seleção múltipla (`onSelectionGesture`); se for apenas seleção, previne ativação",
+        "Se o worktree estiver em processo de exclusão (`isDeleting`), bloqueia ativação",
+        "Registra breadcrumb de diagnóstico de crash (`sidebar_worktree_activate`) com metadados do worktree e estado SSH",
+        "Dispara callback de ativação imediata (`onImmediateActivate`) e ativação assíncrona do worktree (`activateWorktreeFromSidebar`)",
+        "No duplo-clique (`handleDoubleClick`), abre modal `edit-meta` com metadados atuais do worktree (nome, issue, PR, comentário)",
+        "Na renomeação inline do título (`handleRenameTitle`), persiste o novo nome via `updateWorktreeMeta` com `displayName`",
+        "No toggle rápido de não-lido (`handleToggleUnreadQuick`), inverte o estado `isUnread` persistindo via `updateWorktreeMeta`"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "updateWorktreeMeta(worktree.id, { displayName }, { executionHostId })",
+        "updateWorktreeMeta(worktree.id, { isUnread: !worktree.isUnread }, { executionHostId })",
+        "openModal('edit-meta', ...)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-card-activation-actions.ts:45",
+        "components/sidebar/use-worktree-card-activation-actions.ts:77",
+        "components/sidebar/use-worktree-card-activation-actions.ts:84",
+        "components/sidebar/use-worktree-card-activation-actions.ts:106",
+        "components/sidebar/use-worktree-card-activation-actions.ts:119",
+        "components/sidebar/use-worktree-card-activation-actions.ts:150"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-011",
+      "capability": "Orquestra como controller central todos os hooks, propriedades de visibilidade e ações do card de worktree",
+      "surface": "card de worktree no sidebar",
+      "trigger": "renderização e interação contínua com o card de worktree",
+      "behaviors": [
+        "Compõe e unifica `useWorktreeCardFoundation`, `useWorktreeCardReviewDetails`, `useWorktreeCardLinkedDetails`, `useWorktreeCardLifecycleEffects`, `useWorktreeCardActivationActions`, `useWorktreeCardWorkspaceActions` e `useWorktreeCardSecondaryDetails`",
+        "Avalia a lista de propriedades configuradas no card (`cardProps`: 'status', 'issue', 'linear-issue', 'jira-issue', 'pr', 'automation', 'cli', 'comment', 'ports')",
+        "Determina a estratégia de refresh de revisão hospedada (`shouldRefreshHostedReview`: status no novo estilo, PR no estilo legado)",
+        "Controla estado de hover dos detalhes estendidos via `useWorktreeCardDetailsHoverControl`",
+        "Determina a visibilidade da ação rápida de exclusão (`showDeleteQuickAction`) combinando pressão da tecla modificadora Option/Alt (`deleteModifierPressed`), estado de exclusão (`!isDeleting`) e restrição de worktree principal (`!isMainWorktree`)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "foundation.cardProps",
+        "foundation.newCardStyle",
+        "foundation.settings",
+        "linked.deleteModifierPressed",
+        "linked.isDeleting",
+        "worktree.isMainWorktree"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-card-controller.ts:12",
+        "components/sidebar/use-worktree-card-controller.ts:34",
+        "components/sidebar/use-worktree-card-controller.ts:43",
+        "components/sidebar/use-worktree-card-controller.ts:85",
+        "components/sidebar/use-worktree-card-controller.ts:142"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-012",
+      "capability": "Fornece seletores e handlers fundamentais de estado, SSH, runtime, modais e layout do card de worktree",
+      "surface": "card de worktree e diálogos modais associados",
+      "trigger": "renderização do card, alterações de configurações de estilo e status de conexão SSH/runtime",
+      "behaviors": [
+        "Disponibiliza handlers para abertura do modal `edit-meta` focado em issue (`handleEditIssue`) ou em comentário (`handleEditComment`)",
+        "Disponibiliza handlers para navegação até a página de automações (`openAutomationsPage`) com proveniência e hostId (`handleOpenAutomation` e `handleOpenAutomationRun`)",
+        "Monitora e mapeia o estado de conexão SSH runtime-aware (`selectRuntimeAwareSshStatus`), hidratando o estado sob demanda (`hydrateRuntimeEnvironmentSshState`) e identificando remoção de host (`selectRuntimeAwareSshTargetRemoved`)",
+        "Deriva o rótulo do host de runtime e detecta desconexão do ambiente de runtime (`isRuntimeDisconnected`)",
+        "Expõe portas de workspace escaneadas (`workspacePorts`) e estado de conflito Git (`conflictOperation`, `remoteBranchConflict`)",
+        "Gerencia estados locais de renomeação de título (`titleRenaming`, `setTitleRenaming`) e diálogo de erro de renomeação (`showRenameErrorDialog`, `setShowRenameErrorDialog`)",
+        "Computa flags de layout: `newCardStyle` (estilo experimental) e `compactCards` (estilo compacto)"
+      ],
+      "background_activity": "hidratação de estado SSH via hydrateRuntimeEnvironmentSshState quando sshOwnerEnvironmentId muda",
+      "state_inputs": [
+        "useAppStore((s) => s.openModal)",
+        "useAppStore((s) => s.openTaskPage)",
+        "useAppStore((s) => s.openAutomationsPage)",
+        "useAppStore((s) => s.setPendingAutomationRunNavigation)",
+        "useAppStore((s) => s.updateWorktreeMeta)",
+        "useAppStore((s) => s.deleteFolderWorkspace)",
+        "useAppStore((s) => s.setActiveWorktree)",
+        "useAppStore((s) => s.settings)",
+        "useAppStore((s) => s.worktreeCardProperties)",
+        "useAppStore((s) => s.agentActivityDisplayMode)",
+        "useAppStore((s) => s.projectGroups)",
+        "useAppStore((s) => s.workspacePortScan)",
+        "useAppStore((s) => s.runtimeEnvironments)",
+        "useAppStore((s) => s.runtimeStatusByEnvironmentId)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-card-foundation.ts:26",
+        "components/sidebar/use-worktree-card-foundation.ts:49",
+        "components/sidebar/use-worktree-card-foundation.ts:85",
+        "components/sidebar/use-worktree-card-foundation.ts:146",
+        "components/sidebar/use-worktree-card-foundation.ts:153",
+        "components/sidebar/use-worktree-card-foundation.ts:186",
+        "components/sidebar/use-worktree-card-foundation.ts:205"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-013",
+      "capability": "Executa sincronização periódica e sob demanda de revisões hospedadas e issues com controle de visibilidade de janela",
+      "surface": "card de worktree (background e hover)",
+      "trigger": "intervalos de temporizador condicionados à visibilidade da janela, eventos de foco/visibilidade e hover no card",
+      "behaviors": [
+        "Executa polling periódico de revisões hospedadas (GitHub PR, GitLab MR, Bitbucket, Azure DevOps, Gitea) via `installWindowVisibilityInterval` com jitter de visibilidade (`HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS`), pausando quando a janela está oculta ou para clientes web",
+        "No novo estilo de card, executa busca sob demanda de revisão hospedada (`fetchHostedReviewForBranch`) ao passar o mouse com os detalhes de hover abertos (`hoverDetailsOpen`)",
+        "Executa polling periódico de issue do GitHub (intervalo de 5 min) condicionado à visibilidade da janela para worktrees com `linkedIssue`",
+        "No novo estilo de card, busca issue do GitHub sob demanda ao abrir o hover de detalhes",
+        "Para issues do Linear (`linkedLinearIssue`), efetua busca inicial e registra listeners de `focus` da janela e `visibilitychange` do documento para atualização automática",
+        "No novo estilo de card, busca issue do Linear sob demanda ao abrir o hover de detalhes"
+      ],
+      "background_activity": "polling de revisões hospedadas em intervalo com jitter e polling de issues GitHub a cada 5 minutos condicionados a isWindowVisible",
+      "state_inputs": [
+        "fetchHostedReviewForBranch(repo.path, branch, ...)",
+        "fetchIssue(repo.path, issueNumber, ...)",
+        "fetchLinearIssue(linearIssueId, 'all')"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:16",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:59",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:91",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:113",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:161",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:177",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:183",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:208",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:220",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:221",
+        "components/sidebar/use-worktree-card-lifecycle-effects.ts:228"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-014",
+      "capability": "Resolve detalhes vinculados de issues, fallback de URLs do Linear, título visual do card e rótulos de exclusão",
+      "surface": "card de worktree (títulos, badges de issues e estados de deleção)",
+      "trigger": "renderização do card e atualizações nas entradas de cache de issues e estado de exclusão",
+      "behaviors": [
+        "Resolve a exibição de issue do GitHub (`issueDisplay`), exibindo número e título ou placeholders 'Loading issue...' / 'Issue details unavailable'",
+        "Resolve a exibição de issue do Linear (`linearIssueDisplay`), construindo fallback de URL (`linearIssueUrlFallback`) combinando a chave da organização do viewer ou do workspace com o identificador",
+        "Resolve a exibição de issue do Jira (`jiraIssueDisplay`)",
+        "Calcula o título visível do card (`visibleCardTitle`) via `getWorktreeCardTitleDisplay` no novo estilo (compondo displayName salvo, branch, título de issues ou PR) ou `coerceWorktreeCardVisibleTitle` no estilo legado",
+        "Determina estado de exclusão em andamento (`isDeleting`) e fase enfileirada (`isQueuedForDeletion`) com rótulo correspondente ('Queued for deletion' vs 'Deleting…')",
+        "Monitora a pressão da tecla modificadora de exclusão (`deleteModifierPressed`)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore((s) => s.linearStatus)"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-card-linked-details.ts:21",
+        "components/sidebar/use-worktree-card-linked-details.ts:41",
+        "components/sidebar/use-worktree-card-linked-details.ts:61",
+        "components/sidebar/use-worktree-card-linked-details.ts:91",
+        "components/sidebar/use-worktree-card-linked-details.ts:109",
+        "components/sidebar/use-worktree-card-linked-details.ts:110",
+        "components/sidebar/use-worktree-card-linked-details.ts:120",
+        "components/sidebar/use-worktree-card-linked-details.ts:122"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-015",
+      "capability": "Deriva a identidade Git do worktree e reconcilia detalhes e caches de revisões hospedadas entre múltiplos provedores",
+      "surface": "card de worktree e linhas de metadados de revisão",
+      "trigger": "renderização do card e atualizações nas entradas de cache de PR/MR hospedados",
+      "behaviors": [
+        "Extrai a identidade Git (`branch` ou `detachedHeadDisplay`) ou caminho de workspace de pasta (`folderWorkspaceId`)",
+        "Gera chaves de cache específicas para hosted review, PR do GitHub, issue do GitHub e issue do Linear",
+        "Assina seletivamente apenas as entradas de cache específicas na store (`hostedReviewCache`, `prCache`, `issueCache`, `linearIssueCache`) sem assinar a store inteira",
+        "Reconcilia revisões vinculadas explícitas e detectadas entre GitHub, GitLab, Bitbucket, Azure DevOps e Gitea",
+        "Valida o cache de PRs mesclados (`isCachedMergedBranchPRCurrentForWorktree`) para garantir que o commit atual corresponde ao head mesclado",
+        "Gera a estrutura `prDisplay` via `getWorktreeCardPrDisplay` com suporte a supressão de PRs desvinculados (`suppressedGitHubPR`)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore((s) => s.hostedReviewCache[hostedReviewCacheKey])",
+        "useAppStore((s) => s.prCache[prCacheKey])",
+        "useAppStore((s) => s.issueCache[issueCacheKey])",
+        "useAppStore((s) => s.linearIssueCache[linearIssueCacheKey])"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-card-review-details.ts:19",
+        "components/sidebar/use-worktree-card-review-details.ts:28",
+        "components/sidebar/use-worktree-card-review-details.ts:46",
+        "components/sidebar/use-worktree-card-review-details.ts:86",
+        "components/sidebar/use-worktree-card-review-details.ts:119",
+        "components/sidebar/use-worktree-card-review-details.ts:159"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-016",
+      "capability": "Gerencia detalhes secundários, temporizador de prompt cache, abertura de tarefas e desvinculação de revisões",
+      "surface": "card de worktree (seções secundárias, hover cards e timers de cache)",
+      "trigger": "renderização de metadados secundários, clique em abrir issue/PR ou ação de desvincular revisão",
+      "behaviors": [
+        "Controla ênfase de não-lido (`showUnreadEmphasis`) condicionada ao toggle de status",
+        "Gerencia linhas compactas de agentes (`compactInlineAgentRows`) e visibilidade do temporizador agregado de cache (`showAggregateCacheTimer`)",
+        "Obtém o início da contagem regressiva do prompt cache (`usePromptCacheCountdownStartedAt`) e o TTL configurado (`promptCacheTtlMs`)",
+        "Disponibiliza abertura de issues e PRs do GitHub na página interna de tarefas do Orca (`openTaskPage` com `GitHubWorkItem`)",
+        "Disponibiliza abertura de issues do Linear na página interna de tarefas (`handleOpenLinearIssueInOrca`)",
+        "Disponibiliza abertura de links externos em abas de browser do workspace via `openWorkspaceBrowserTab`",
+        "Implementa desvinculação de revisões (`handleUnlinkReview`): grava tombstone de supressão para GitHub (`linkedPR: null`, `suppressedGitHubPR: number`), e remove links de GitLab, Bitbucket, Azure DevOps e Gitea"
+      ],
+      "background_activity": "contagem regressiva de expiração do cache gerenciada por usePromptCacheCountdownStartedAt",
+      "state_inputs": [
+        "openTaskPage({ taskSource: 'github', ... })",
+        "openTaskPage({ taskSource: 'linear', ... })",
+        "updateWorktreeMeta(worktree.id, { linkedPR: null, suppressedGitHubPR: hoverReview.number }, ...)",
+        "updateWorktreeMeta(worktree.id, { linkedGitLabMR: null }, ...)",
+        "settings.promptCacheTtlMs"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-card-secondary-details.ts:19",
+        "components/sidebar/use-worktree-card-secondary-details.ts:77",
+        "components/sidebar/use-worktree-card-secondary-details.ts:101",
+        "components/sidebar/use-worktree-card-secondary-details.ts:124",
+        "components/sidebar/use-worktree-card-secondary-details.ts:147",
+        "components/sidebar/use-worktree-card-secondary-details.ts:176",
+        "components/sidebar/use-worktree-card-secondary-details.ts:188",
+        "components/sidebar/use-worktree-card-secondary-details.ts:220",
+        "components/sidebar/use-worktree-card-secondary-details.ts:240"
+      ],
+      "tests": [
+        "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:112 :: useWorktreeCardSecondaryDetails store subscriptions",
+        "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:113 :: adds no store listener of its own beyond the hooks it composes",
+        "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:142 :: reads the cache TTL from the passed settings",
+        "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:158 :: reports no TTL while the aggregate cache timer is suppressed",
+        "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:173 :: writes a suppression tombstone when the user unlinks a displayed GitHub PR",
+        "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:201 :: surfaces a failed GitHub unlink after the optimistic card update is reverted"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-017",
+      "capability": "Fornece ações de exclusão rápida de workspace, controle de linhagem, drag and drop e menu de contexto",
+      "surface": "card de worktree no sidebar",
+      "trigger": "clique no botão de ação rápida (com Option/Alt), toggle de linhagem, arrasto do card ou clique com botão direito",
+      "behaviors": [
+        "Na ação rápida de exclusão (`handleWorkspaceQuickAction`), executa `deleteFolderWorkspace` para workspaces de pasta ou `runWorktreeDelete` com host qualificado para worktrees",
+        "Gera rótulos acessíveis e amigáveis para expansão/recolhimento de linhagem de worktrees filhos (`Show/Hide child workspace(s)`)",
+        "No início do arrasto (`handleDragStart`), grava IDs de arrasto único ou múltiplo no dataTransfer via `writeWorkspaceDragData` e notifica `onCardDragStart`",
+        "No fim do arrasto (`handleDragEnd`), notifica `onCardDragEnd`",
+        "No menu de contexto (`handleContextMenuSelect`), resolve os worktrees alvo da seleção",
+        "Interrompe propagação de eventos de ponteiro em botões de ação rápida (`stopQuickActionPointerPropagation`) para não disparar fechamento indesejado do quadro Kanban"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "deleteFolderWorkspace(folderWorkspaceId, ...)",
+        "runWorktreeDelete(worktree.id, { expectedHostId })",
+        "useAppStore.getState().activeWorktreeId",
+        "useAppStore.getState().activeWorkspaceExecutionHostId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-card-workspace-actions.ts:18",
+        "components/sidebar/use-worktree-card-workspace-actions.ts:51",
+        "components/sidebar/use-worktree-card-workspace-actions.ts:96",
+        "components/sidebar/use-worktree-card-workspace-actions.ts:126",
+        "components/sidebar/use-worktree-card-workspace-actions.ts:146",
+        "components/sidebar/use-worktree-card-workspace-actions.ts:156",
+        "components/sidebar/use-worktree-card-workspace-actions.ts:161"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-018",
+      "capability": "Resolve assincronamente com timeout de 35s links de issues do GitHub e Linear para abertura externa",
+      "surface": "diálogo modal edit-meta (campo de issue)",
+      "trigger": "clique no botão de abrir issue vinculada no diálogo de metadados",
+      "behaviors": [
+        "Suporta URLs diretas (GitHub e Linear), números de issue do GitHub e identificadores do Linear",
+        "Aplica limite de tamanho na query (`isWorkItemLinkQueryTooLarge`) para evitar congelamento por regex em grandes colagens",
+        "Constrói URL do Linear a partir da chave de organização conhecida ou busca via `fetchLinearIssue(identifier, 'all')`",
+        "Aplica timeout de segurança de 35 segundos (`OPEN_ISSUE_TIMEOUT_MS`) contra travamentos de IPC ou SSH",
+        "Invoca `window.api.shell.openUrl` para abrir o link resolvido no navegador externo do sistema",
+        "Rastreia geração de requisições (`openRequestRef`) e chave do input para descartar respostas de inputs alterados ou cancelados",
+        "Exibe indicador de carregamento durante a resolução (`openingIssue`) e sinaliza falha vinculada ao valor do input (`openIssueFailed`)"
+      ],
+      "background_activity": "timeout de 35 segundos via setTimeout gerenciado em resolveIssueUrlWithinTimeout",
+      "state_inputs": [
+        "fetchIssue(issueRepo.path, issueNumber, { repoId: issueRepo.id })",
+        "fetchLinearIssue(parsedLinearIssue.identifier, 'all', { sourceContext })",
+        "useAppStore((s) => s.repos)",
+        "useAppStore((s) => s.issueCache)"
+      ],
+      "backend_contract": [
+        "window.api.shell.openUrl -> electron.shell.openExternal"
+      ],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-issue-link.ts:18",
+        "components/sidebar/use-worktree-issue-link.ts:20",
+        "components/sidebar/use-worktree-issue-link.ts:23",
+        "components/sidebar/use-worktree-issue-link.ts:28",
+        "components/sidebar/use-worktree-issue-link.ts:44",
+        "components/sidebar/use-worktree-issue-link.ts:158",
+        "components/sidebar/use-worktree-issue-link.ts:177",
+        "components/sidebar/use-worktree-issue-link.ts:194",
+        "components/sidebar/use-worktree-issue-link.ts:210",
+        "components/sidebar/use-worktree-issue-link.ts:219",
+        "components/sidebar/use-worktree-issue-link.ts:236",
+        "components/sidebar/use-worktree-issue-link.ts:262"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-019",
+      "capability": "Projeta exclusivamente os timestamps de reconhecimento de agentes associados ao card",
+      "surface": "linhas de agentes no card de worktree",
+      "trigger": "atualizações no mapa global `acknowledgedAgentsByPaneKey`",
+      "behaviors": [
+        "Mapeia apenas as chaves de painel dos agentes pertencentes ao card para seus respectivos timestamps de reconhecimento",
+        "Garante igualdade rasa e referencial para que reconhecimentos em outros cards não disparem re-renderizações desnecessárias"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "state.acknowledgedAgentsByPaneKey"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-card-agent-ack-inputs.ts:7"
+      ],
+      "tests": [
+        "components/sidebar/worktree-card-agent-ack-inputs.test.tsx:30 :: selectAcknowledgedAgentTimes",
+        "components/sidebar/worktree-card-agent-ack-inputs.test.tsx:49 :: projects only this card rows so unrelated acknowledgements stay shallow-equal",
+        "components/sidebar/worktree-card-agent-ack-inputs.test.tsx:78 :: updates when one of this card rows is acknowledged"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-020",
+      "capability": "Garante isolamento de performance mantendo renderização de markdown dos cards fora do grafo síncrono inicial",
+      "surface": "comentários em markdown nos cards de worktree",
+      "trigger": "inicialização e renderização do bundle do renderer",
+      "behaviors": [
+        "Mantém o módulo `CommentMarkdown` fora do grafo estático de importação do ponto de entrada `main.tsx`",
+        "Roteia todas as superfícies de markdown do sidebar através de limites assíncronos (lazy loading) para preservar o tempo de boot do aplicativo"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-card-markdown-isolation.test.ts:7"
+      ],
+      "tests": [
+        "components/sidebar/worktree-card-markdown-isolation.test.ts:76 :: worktree card markdown performance isolation",
+        "components/sidebar/worktree-card-markdown-isolation.test.ts:77 :: keeps CommentMarkdown off the renderer boot graph entirely",
+        "components/sidebar/worktree-card-markdown-isolation.test.ts:86 :: routes both sidebar markdown surfaces through the shared lazy boundary"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-021",
+      "capability": "Seleciona e isola os inputs de alvos de envio para o popover de agentes mantendo estabilidade para worktrees inativos",
+      "surface": "popover de envio de alvo de agente (`agentSendPopoverTargetMode`)",
+      "trigger": "abertura/fechamento do popover de envio ou atualização de terminais e agentes",
+      "behaviors": [
+        "Quando o popover não tem como alvo o worktree atual, retorna o singleton congelado `EMPTY_SEND_TARGET_INPUTS`",
+        "Quando tem como alvo o worktree atual, expõe os mapas dinâmicos (`agentStatusByPaneKey`, `tabsByWorktree`, `terminalLayoutsByTabId`, `ptyIdsByTabId`, `runtimePaneTitlesByTabId`)",
+        "Isola os controles de modo e época (`selectSendTargetControlInputs`) retornando `EMPTY_SEND_TARGET_CONTROL_INPUTS` para cards inativos, evitando re-renderizações globais em incrementos de `agentStatusEpoch`"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "state.agentSendPopoverTargetMode",
+        "state.agentStatusEpoch",
+        "state.agentStatusByPaneKey",
+        "state.tabsByWorktree",
+        "state.terminalLayoutsByTabId",
+        "state.ptyIdsByTabId",
+        "state.runtimePaneTitlesByTabId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-card-send-target-inputs.ts:28",
+        "components/sidebar/worktree-card-send-target-inputs.ts:38",
+        "components/sidebar/worktree-card-send-target-inputs.ts:50",
+        "components/sidebar/worktree-card-send-target-inputs.ts:66"
+      ],
+      "tests": [
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:37 :: selectSendTargetInputs",
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:38 :: returns the shared empty constant when the popover does not target this worktree",
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:55 :: stays the stable empty constant when the popover targets a different worktree",
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:60 :: exposes the live maps when the popover targets this worktree",
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:73 :: shallow-changes only when a subscribed map reference actually changes while active",
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:92 :: selectSendTargetControlInputs",
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:93 :: stays stable across global epoch changes while the picker is closed",
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:108 :: stays stable when the picker targets another worktree",
+        "components/sidebar/worktree-card-send-target-inputs.test.ts:117 :: tracks the mode and freshness epoch only for the targeted worktree"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-022",
+      "capability": "Constrói e normaliza de forma pura o payload de atualização de metadados do worktree (nome, comentário, issues e revisões)",
+      "surface": "diálogo modal edit-meta",
+      "trigger": "salvamento de alterações no modal de edição de metadados",
+      "behaviors": [
+        "Normaliza o nome exibido (`displayName`), gravando string vazia para fallback e nunca valor `undefined` (evitando corrupção por spread)",
+        "Emite atualização de comentário apenas se alterado para não atualizar artificialmente `lastActivityAt`",
+        "Detecta se o campo de issue está sujo (`isIssueFieldDirty`) através de normalização de identidade (`issueLinkIdentity`) que ignora variações como '42' vs '#42' ou maiúsculas/minúsculas no Linear",
+        "Ao alterar a issue, desloca work items e contextos de tarefas do Linear anteriores sem afetar work items de PR ou de outros provedores",
+        "Limpa slots do outro provedor (GitHub vs Linear) ao salvar nova issue, garantindo exclusividade de um issue link por worktree",
+        "Valida e normaliza referências de PR/MR para GitHub e GitLab (`parseGitHubWorkItemNumberForMetaField` e `parseGitLabMergeRequestNumberForMetaField`)",
+        "Ao limpar um link explícito de PR no GitHub, grava tombstone de supressão (`suppressedGitHubPR`) para evitar reconexão automática em segundo plano"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-meta-updates.ts:12",
+        "components/sidebar/worktree-meta-updates.ts:57",
+        "components/sidebar/worktree-meta-updates.ts:67",
+        "components/sidebar/worktree-meta-updates.ts:81",
+        "components/sidebar/worktree-meta-updates.ts:107",
+        "components/sidebar/worktree-meta-updates.ts:118",
+        "components/sidebar/worktree-meta-updates.ts:132",
+        "components/sidebar/worktree-meta-updates.ts:157",
+        "components/sidebar/worktree-meta-updates.ts:172",
+        "components/sidebar/worktree-meta-updates.ts:203",
+        "components/sidebar/worktree-meta-updates.ts:265",
+        "components/sidebar/worktree-meta-updates.ts:297"
+      ],
+      "tests": [
+        "components/sidebar/worktree-meta-updates.test.ts:61 :: buildWorktreeMetaUpdates",
+        "components/sidebar/worktree-meta-updates.test.ts:62 :: writes only the GitLab MR slot in GitLab mode",
+        "components/sidebar/worktree-meta-updates.test.ts:69 :: accepts only positive MR references for the GitLab review row",
+        "components/sidebar/worktree-meta-updates.test.ts:91 :: emits no link keys when the issue field is untouched",
+        "components/sidebar/worktree-meta-updates.test.ts:105 :: writes a GitHub issue number and clears the Linear slots",
+        "components/sidebar/worktree-meta-updates.test.ts:116 :: emits no Linear clear when the workspace holds no Linear link",
+        "components/sidebar/worktree-meta-updates.test.ts:125 :: writes a bare Linear identifier and clears the stored organization key",
+        "components/sidebar/worktree-meta-updates.test.ts:134 :: takes the organization key from a Linear issue URL",
+        "components/sidebar/worktree-meta-updates.test.ts:148 :: clears every provider slot when the issue field is emptied",
+        "components/sidebar/worktree-meta-updates.test.ts:163 :: treats a provider switch with unchanged text as dirty",
+        "components/sidebar/worktree-meta-updates.test.ts:173 :: displaces a Linear linked work item when the issue field changes",
+        "components/sidebar/worktree-meta-updates.test.ts:190 :: leaves a PR-typed work item alone",
+        "components/sidebar/worktree-meta-updates.test.ts:203 :: leaves work items owned by other providers alone",
+        "components/sidebar/worktree-meta-updates.test.ts:218 :: emits nothing when a GitHub number is respelled with a hash",
+        "components/sidebar/worktree-meta-updates.test.ts:228 :: emits nothing when a Linear identifier is respelled in lower case",
+        "components/sidebar/worktree-meta-updates.test.ts:238 :: emits nothing when a Linear identifier is respelled as its stored URL",
+        "components/sidebar/worktree-meta-updates.test.ts:254 :: records an organization key for a stored bare identifier without displacing it",
+        "components/sidebar/worktree-meta-updates.test.ts:272 :: displaces the work item when a URL names another organization",
+        "components/sidebar/worktree-meta-updates.test.ts:295 :: clears a Linear link added after the snapshot was taken",
+        "components/sidebar/worktree-meta-updates.test.ts:302 :: clears a Linear link added after the snapshot when the field is emptied",
+        "components/sidebar/worktree-meta-updates.test.ts:313 :: ignores a provider switch on an empty field",
+        "components/sidebar/worktree-meta-updates.test.ts:325 :: does not displace a Linear work item when the issue field is clean",
+        "components/sidebar/worktree-meta-updates.test.ts:332 :: leaves links untouched for unparseable issue input",
+        "components/sidebar/worktree-meta-updates.test.ts:344 :: clears a display name with empty string, never a present-undefined key",
+        "components/sidebar/worktree-meta-updates.test.ts:350 :: rejects issue URLs in the PR input",
+        "components/sidebar/worktree-meta-updates.test.ts:356 :: accepts PR URLs in the PR input",
+        "components/sidebar/worktree-meta-updates.test.ts:362 :: records suppression when the user clears an explicit PR link",
+        "components/sidebar/worktree-meta-updates.test.ts:369 :: does not invent suppression for an already-unlinked PR field",
+        "components/sidebar/worktree-meta-updates.test.ts:373 :: does not suppress a PR linked in the background when the PR field is untouched",
+        "components/sidebar/worktree-meta-updates.test.ts:379 :: accepts issue URLs in the issue input",
+        "components/sidebar/worktree-meta-updates.test.ts:394 :: rejects PR URLs in the issue input",
+        "components/sidebar/worktree-meta-updates.test.ts:400 :: emits no comment when the note is unchanged",
+        "components/sidebar/worktree-meta-updates.test.ts:410 :: clears a comment with empty string, never a present-undefined key"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D04b-023",
+      "capability": "Gera sugestões de nomes de criaturas marinhas para novos worktrees com desduplicação global e registro de aposentadoria",
+      "surface": "diálogo de criação de novo worktree",
+      "trigger": "abertura do diálogo de novo worktree ou alteração do repositório selecionado",
+      "behaviors": [
+        "Coleta nomes já em uso em todos os repositórios (`collectUsedNames`) a partir dos basenames de caminhos de worktree normalizados",
+        "Combina nomes em uso com o registro de nomes aposentados (`RetiredNameRegistry`), impedindo a reutilização de nomes de workspaces deletados para evitar poluição de histórico de agentes CLI",
+        "Seleciona aleatoriamente um nome disponível do pool de criaturas marinhas (`selectSuggestedCreatureName`)",
+        "Degrada para variantes sufixadas com numeração quando o pool de nomes base é esgotado",
+        "Determina se a sugestão deve ser aplicada automaticamente (`shouldApplySuggestedName`): aplica se o campo estiver vazio ou se o valor atual for a sugestão anterior, preservando nomes editados manualmente pelo usuário"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-name-suggestions.ts:17",
+        "components/sidebar/worktree-name-suggestions.ts:40",
+        "components/sidebar/worktree-name-suggestions.ts:52",
+        "components/sidebar/worktree-name-suggestions.ts:56"
+      ],
+      "tests": [
+        "components/sidebar/worktree-name-suggestions.test.ts:16 :: getSuggestedCreatureName",
+        "components/sidebar/worktree-name-suggestions.test.ts:17 :: picks the first unused name when the RNG selects index 0",
+        "components/sidebar/worktree-name-suggestions.test.ts:21 :: dedupes against worktrees in EVERY repo, not just one",
+        "components/sidebar/worktree-name-suggestions.test.ts:33 :: never reuses a name already used in another repo",
+        "components/sidebar/worktree-name-suggestions.test.ts:47 :: selects randomly from the unused pool",
+        "components/sidebar/worktree-name-suggestions.test.ts:54 :: falls back to suffixed variants after the base list is exhausted",
+        "components/sidebar/worktree-name-suggestions.test.ts:60 :: never reissues a retired name whose workspace is already deleted",
+        "components/sidebar/worktree-name-suggestions.test.ts:66 :: treats retired names case-insensitively",
+        "components/sidebar/worktree-name-suggestions.test.ts:72 :: retires names on top of live worktrees rather than replacing that check",
+        "components/sidebar/worktree-name-suggestions.test.ts:82 :: skips a retired suffixed variant when falling back past an exhausted pool",
+        "components/sidebar/worktree-name-suggestions.test.ts:90 :: treats used names case-insensitively",
+        "components/sidebar/worktree-name-suggestions.test.ts:96 :: handles Windows-style worktree paths when deriving used basenames",
+        "components/sidebar/worktree-name-suggestions.test.ts:102 :: handles stored worktree paths with trailing separators",
+        "components/sidebar/worktree-name-suggestions.test.ts:117 :: shouldApplySuggestedName",
+        "components/sidebar/worktree-name-suggestions.test.ts:118 :: applies a suggestion when the field is blank",
+        "components/sidebar/worktree-name-suggestions.test.ts:123 :: applies a recomputed suggestion when the current value is still the prior suggestion",
+        "components/sidebar/worktree-name-suggestions.test.ts:127 :: does not overwrite a user-edited custom name when the repo selection changes",
+        "components/sidebar/worktree-name-suggestions.test.ts:132 :: MARINE_CREATURES",
+        "components/sidebar/worktree-name-suggestions.test.ts:133 :: is non-empty and unique after normalization and sanitization",
+        "components/sidebar/worktree-name-suggestions.test.ts:143 :: avoids names that read poorly as UI defaults"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "active-worktree-focus-after-delete.ts": [
+        "D04b-001"
+      ],
+      "focused-agent-row-highlight.ts": [
+        "D04b-002"
+      ],
+      "local-base-ref-suggestion-toast.tsx": [
+        "D04b-003"
+      ],
+      "run-worktree-delete-with-toast.ts": [
+        "D04b-004"
+      ],
+      "truncated-sidebar-label.tsx": [
+        "D04b-005"
+      ],
+      "use-confirmed-worktree-delete-targets.ts": [
+        "D04b-006"
+      ],
+      "use-delete-worktree-status-hydration.ts": [
+        "D04b-007"
+      ],
+      "use-worktree-activity-status.ts": [
+        "D04b-008"
+      ],
+      "use-worktree-activity-statuses.ts": [
+        "D04b-009"
+      ],
+      "use-worktree-card-activation-actions.ts": [
+        "D04b-010"
+      ],
+      "use-worktree-card-controller.ts": [
+        "D04b-011"
+      ],
+      "use-worktree-card-foundation.ts": [
+        "D04b-012"
+      ],
+      "use-worktree-card-lifecycle-effects.ts": [
+        "D04b-013"
+      ],
+      "use-worktree-card-linked-details.ts": [
+        "D04b-014"
+      ],
+      "use-worktree-card-review-details.ts": [
+        "D04b-015"
+      ],
+      "use-worktree-card-secondary-details.ts": [
+        "D04b-016"
+      ],
+      "use-worktree-card-workspace-actions.ts": [
+        "D04b-017"
+      ],
+      "use-worktree-issue-link.ts": [
+        "D04b-018"
+      ],
+      "worktree-card-agent-ack-inputs.ts": [
+        "D04b-019"
+      ],
+      "worktree-card-send-target-inputs.ts": [
+        "D04b-021"
+      ],
+      "worktree-meta-updates.ts": [
+        "D04b-022"
+      ],
+      "worktree-name-suggestions.ts": [
+        "D04b-023"
+      ]
+    },
+    "symbols": {
+      "prepareActiveWorktreeFocusAfterDelete": [
+        "D04b-001"
+      ],
+      "FocusedAgentRowHighlightState": [
+        "D04b-002"
+      ],
+      "getFocusedAgentPaneKeyForWorktree": [
+        "D04b-002"
+      ],
+      "useFocusedAgentPaneKey": [
+        "D04b-002"
+      ],
+      "showLocalBaseRefUpdateSuggestionToast": [
+        "D04b-003"
+      ],
+      "runWorktreeDeleteWithToast": [
+        "D04b-004"
+      ],
+      "isSidebarLabelTruncated": [
+        "D04b-005"
+      ],
+      "TruncatedSidebarLabel": [
+        "D04b-005"
+      ],
+      "useConfirmedWorktreeDeleteTargets": [
+        "D04b-006"
+      ],
+      "useDeleteWorktreeStatusHydration": [
+        "D04b-007"
+      ],
+      "useWorktreeActivityStatus": [
+        "D04b-008"
+      ],
+      "selectWorktreeActivityStatuses": [
+        "D04b-009"
+      ],
+      "useWorktreeActivityStatuses": [
+        "D04b-009"
+      ],
+      "useWorktreeCardActivationActions": [
+        "D04b-010"
+      ],
+      "useWorktreeCardController": [
+        "D04b-011"
+      ],
+      "WorktreeCardController": [
+        "D04b-011"
+      ],
+      "useWorktreeCardFoundation": [
+        "D04b-012"
+      ],
+      "useWorktreeCardLifecycleEffects": [
+        "D04b-013"
+      ],
+      "useWorktreeCardLinkedDetails": [
+        "D04b-014"
+      ],
+      "useWorktreeCardReviewDetails": [
+        "D04b-015"
+      ],
+      "useWorktreeCardSecondaryDetails": [
+        "D04b-016"
+      ],
+      "useWorktreeCardWorkspaceActions": [
+        "D04b-017"
+      ],
+      "useWorktreeIssueLink": [
+        "D04b-018"
+      ],
+      "selectAcknowledgedAgentTimes": [
+        "D04b-019"
+      ],
+      "SendTargetInputsState": [
+        "D04b-021"
+      ],
+      "SendTargetControlInputsState": [
+        "D04b-021"
+      ],
+      "SendTargetControlInputs": [
+        "D04b-021"
+      ],
+      "EMPTY_SEND_TARGET_INPUTS": [
+        "D04b-021"
+      ],
+      "EMPTY_SEND_TARGET_CONTROL_INPUTS": [
+        "D04b-021"
+      ],
+      "selectSendTargetInputs": [
+        "D04b-021"
+      ],
+      "selectSendTargetControlInputs": [
+        "D04b-021"
+      ],
+      "WorktreeReviewProvider": [
+        "D04b-022"
+      ],
+      "WorktreeMetaSavedPayload": [
+        "D04b-022"
+      ],
+      "WorktreeMetaDraft": [
+        "D04b-022"
+      ],
+      "WorktreeMetaSnapshot": [
+        "D04b-022"
+      ],
+      "WorktreeMetaLiveLinks": [
+        "D04b-022"
+      ],
+      "parseExplicitGitHubIssueUrl": [
+        "D04b-022"
+      ],
+      "parseGitHubWorkItemNumberForMetaField": [
+        "D04b-022"
+      ],
+      "parseGitLabMergeRequestNumberForMetaField": [
+        "D04b-022"
+      ],
+      "isIssueFieldDirty": [
+        "D04b-022"
+      ],
+      "buildWorktreeMetaUpdates": [
+        "D04b-022"
+      ],
+      "getSuggestedCreatureName": [
+        "D04b-023"
+      ],
+      "shouldApplySuggestedName": [
+        "D04b-023"
+      ]
+    },
+    "tests": {
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:78 :: prepareActiveWorktreeFocusAfterDelete": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:91 :: focuses the most-recently-visited non-base sibling of the same project": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:103 :: falls back to the base/primary worktree when no other workspace remains": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:114 :: does not re-focus a sibling hosted on a torn-down runtime-owned SSH target": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:130 :: stays within the deleted worktree project instead of jumping to another project": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:148 :: does not steal focus when the deleted worktree was not the active one": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:159 :: does not reclaim focus when the user navigated away during the delete": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:172 :: does not steal focus when the delete starts from a non-terminal view": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:186 :: does not reclaim focus when the user leaves terminal view during the delete": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:198 :: does not steal focus when a pending creation panel is active before delete": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:212 :: does not reclaim focus when pending creation opens during the delete": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:224 :: skips workspaces that are themselves mid-delete when picking a successor": "D04b-001",
+      "components/sidebar/active-worktree-focus-after-delete.test.ts:237 :: does not steal focus when a non-worktree workspace is active": "D04b-001",
+      "components/sidebar/focused-agent-row-highlight.test.ts:84 :: getFocusedAgentPaneKeyForWorktree": "D04b-002",
+      "components/sidebar/focused-agent-row-highlight.test.ts:85 :: returns the focused pane key when that pane has a live agent status": "D04b-002",
+      "components/sidebar/focused-agent-row-highlight.test.ts:95 :: highlights a focused row whose status has decayed past freshness": "D04b-002",
+      "components/sidebar/focused-agent-row-highlight.test.ts:107 :: does not return another split pane in the same terminal tab": "D04b-002",
+      "components/sidebar/focused-agent-row-highlight.test.ts:117 :: does not highlight while another surface type is active": "D04b-002",
+      "components/sidebar/focused-agent-row-highlight.test.ts:128 :: returns retained agent row pane keys for the focused pane": "D04b-002",
+      "components/sidebar/focused-agent-row-highlight.test.ts:145 :: returns migration-unsupported agent row pane keys for the focused pane": "D04b-002",
+      "components/sidebar/local-base-ref-suggestion-toast.test.tsx:77 :: showLocalBaseRefUpdateSuggestionToast": "D04b-003",
+      "components/sidebar/local-base-ref-suggestion-toast.test.tsx:78 :: does nothing without a suggestion": "D04b-003",
+      "components/sidebar/local-base-ref-suggestion-toast.test.tsx:83 :: turns on the setting and confirms from the Keep main up to date button": "D04b-003",
+      "components/sidebar/local-base-ref-suggestion-toast.test.tsx:100 :: reports failure when enabling cannot persist the setting": "D04b-003",
+      "components/sidebar/local-base-ref-suggestion-toast.test.tsx:118 :: deep-links to the Git setting and closes the toast from the Settings link": "D04b-003",
+      "components/sidebar/local-base-ref-suggestion-toast.test.tsx:138 :: does not record a permanent dismissal when opening the Git setting": "D04b-003",
+      "components/sidebar/truncated-sidebar-label.test.tsx:18 :: isSidebarLabelTruncated": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.test.tsx:19 :: returns false when the label fits": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.test.tsx:24 :: returns true when the label overflows": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.test.tsx:29 :: TruncatedSidebarLabel": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.test.tsx:75 :: remeasures when the branch text changes without a resize event": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.test.tsx:98 :: keeps the nested tooltip disabled when a parent hover owns the full identity": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.test.tsx:111 :: keeps one ResizeObserver across a label text change": "D04b-005",
+      "components/sidebar/use-worktree-activity-status.test.tsx:103 :: useWorktreeActivityStatus": "D04b-008",
+      "components/sidebar/use-worktree-activity-status.test.tsx:124 :: keeps a restored offscreen working agent yellow from the hook snapshot": "D04b-008",
+      "components/sidebar/use-worktree-activity-status.test.tsx:145 :: lets a fresh hook done state override the same pane stale working title": "D04b-008",
+      "components/sidebar/use-worktree-activity-status.test.tsx:174 :: lets a retained done row override the same pane stale working title": "D04b-008",
+      "components/sidebar/use-worktree-activity-status.test.tsx:209 :: does not keep the card working when all retained parent agents are done": "D04b-008",
+      "components/sidebar/use-worktree-activity-status.test.tsx:252 :: lets a legacy numeric done hook override the matching stale working title": "D04b-008",
+      "components/sidebar/use-worktree-activity-status.test.tsx:277 :: lets a completed worker suppress its parent pane stale working title": "D04b-008",
+      "components/sidebar/use-worktree-activity-status.test.tsx:315 :: scopes cached agent summaries to the matching worktree": "D04b-008",
+      "components/sidebar/use-worktree-activity-statuses.test.ts:22 :: selectWorktreeActivityStatuses": "D04b-009",
+      "components/sidebar/use-worktree-activity-statuses.test.ts:23 :: stays shallow-equal when an unrelated worktree receives activity updates": "D04b-009",
+      "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:112 :: useWorktreeCardSecondaryDetails store subscriptions": "D04b-016",
+      "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:113 :: adds no store listener of its own beyond the hooks it composes": "D04b-016",
+      "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:142 :: reads the cache TTL from the passed settings": "D04b-016",
+      "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:158 :: reports no TTL while the aggregate cache timer is suppressed": "D04b-016",
+      "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:173 :: writes a suppression tombstone when the user unlinks a displayed GitHub PR": "D04b-016",
+      "components/sidebar/use-worktree-card-secondary-details.store-subscriptions.test.tsx:201 :: surfaces a failed GitHub unlink after the optimistic card update is reverted": "D04b-016",
+      "components/sidebar/worktree-card-agent-ack-inputs.test.tsx:30 :: selectAcknowledgedAgentTimes": "D04b-019",
+      "components/sidebar/worktree-card-agent-ack-inputs.test.tsx:49 :: projects only this card rows so unrelated acknowledgements stay shallow-equal": "D04b-019",
+      "components/sidebar/worktree-card-agent-ack-inputs.test.tsx:78 :: updates when one of this card rows is acknowledged": "D04b-019",
+      "components/sidebar/worktree-card-markdown-isolation.test.ts:76 :: worktree card markdown performance isolation": "D04b-020",
+      "components/sidebar/worktree-card-markdown-isolation.test.ts:77 :: keeps CommentMarkdown off the renderer boot graph entirely": "D04b-020",
+      "components/sidebar/worktree-card-markdown-isolation.test.ts:86 :: routes both sidebar markdown surfaces through the shared lazy boundary": "D04b-020",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:37 :: selectSendTargetInputs": "D04b-021",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:38 :: returns the shared empty constant when the popover does not target this worktree": "D04b-021",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:55 :: stays the stable empty constant when the popover targets a different worktree": "D04b-021",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:60 :: exposes the live maps when the popover targets this worktree": "D04b-021",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:73 :: shallow-changes only when a subscribed map reference actually changes while active": "D04b-021",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:92 :: selectSendTargetControlInputs": "D04b-021",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:93 :: stays stable across global epoch changes while the picker is closed": "D04b-021",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:108 :: stays stable when the picker targets another worktree": "D04b-021",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:117 :: tracks the mode and freshness epoch only for the targeted worktree": "D04b-021",
+      "components/sidebar/worktree-meta-updates.test.ts:61 :: buildWorktreeMetaUpdates": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:62 :: writes only the GitLab MR slot in GitLab mode": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:69 :: accepts only positive MR references for the GitLab review row": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:91 :: emits no link keys when the issue field is untouched": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:105 :: writes a GitHub issue number and clears the Linear slots": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:116 :: emits no Linear clear when the workspace holds no Linear link": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:125 :: writes a bare Linear identifier and clears the stored organization key": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:134 :: takes the organization key from a Linear issue URL": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:148 :: clears every provider slot when the issue field is emptied": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:163 :: treats a provider switch with unchanged text as dirty": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:173 :: displaces a Linear linked work item when the issue field changes": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:190 :: leaves a PR-typed work item alone": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:203 :: leaves work items owned by other providers alone": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:218 :: emits nothing when a GitHub number is respelled with a hash": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:228 :: emits nothing when a Linear identifier is respelled in lower case": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:238 :: emits nothing when a Linear identifier is respelled as its stored URL": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:254 :: records an organization key for a stored bare identifier without displacing it": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:272 :: displaces the work item when a URL names another organization": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:295 :: clears a Linear link added after the snapshot was taken": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:302 :: clears a Linear link added after the snapshot when the field is emptied": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:313 :: ignores a provider switch on an empty field": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:325 :: does not displace a Linear work item when the issue field is clean": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:332 :: leaves links untouched for unparseable issue input": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:344 :: clears a display name with empty string, never a present-undefined key": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:350 :: rejects issue URLs in the PR input": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:356 :: accepts PR URLs in the PR input": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:362 :: records suppression when the user clears an explicit PR link": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:369 :: does not invent suppression for an already-unlinked PR field": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:373 :: does not suppress a PR linked in the background when the PR field is untouched": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:379 :: accepts issue URLs in the issue input": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:394 :: rejects PR URLs in the issue input": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:400 :: emits no comment when the note is unchanged": "D04b-022",
+      "components/sidebar/worktree-meta-updates.test.ts:410 :: clears a comment with empty string, never a present-undefined key": "D04b-022",
+      "components/sidebar/worktree-name-suggestions.test.ts:16 :: getSuggestedCreatureName": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:17 :: picks the first unused name when the RNG selects index 0": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:21 :: dedupes against worktrees in EVERY repo, not just one": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:33 :: never reuses a name already used in another repo": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:47 :: selects randomly from the unused pool": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:54 :: falls back to suffixed variants after the base list is exhausted": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:60 :: never reissues a retired name whose workspace is already deleted": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:66 :: treats retired names case-insensitively": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:72 :: retires names on top of live worktrees rather than replacing that check": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:82 :: skips a retired suffixed variant when falling back past an exhausted pool": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:90 :: treats used names case-insensitively": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:96 :: handles Windows-style worktree paths when deriving used basenames": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:102 :: handles stored worktree paths with trailing separators": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:117 :: shouldApplySuggestedName": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:118 :: applies a suggestion when the field is blank": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:123 :: applies a recomputed suggestion when the current value is still the prior suggestion": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:127 :: does not overwrite a user-edited custom name when the repo selection changes": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:132 :: MARINE_CREATURES": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:133 :: is non-empty and unique after normalization and sanitization": "D04b-023",
+      "components/sidebar/worktree-name-suggestions.test.ts:143 :: avoids names that read poorly as UI defaults": "D04b-023"
+    },
+    "labels": {
+      "components/sidebar/local-base-ref-suggestion-toast.test.tsx:59 :: function clickButton(container: HTMLElement, label: string): void {": "INFRA: test helper function clickButton",
+      "components/sidebar/run-worktree-delete-with-toast.ts:89 :: label: translate('auto.components.sidebar.delete.worktree.flow.7488ed8711', 'View'),": "D04b-004",
+      "components/sidebar/truncated-sidebar-label.test.tsx:8 :: vi.mock('@/components/ui/tooltip', () => ({": "INFRA: test fixture/assertion for tooltip",
+      "components/sidebar/truncated-sidebar-label.test.tsx:11 :: <div className={className} data-tooltip-content=\"\">": "INFRA: test fixture/assertion for tooltip",
+      "components/sidebar/truncated-sidebar-label.test.tsx:80 :: expect(container.querySelector('[data-tooltip-content]')).toBeNull()": "INFRA: test fixture/assertion for tooltip",
+      "components/sidebar/truncated-sidebar-label.test.tsx:86 :: const longTooltip = container.querySelector('[data-tooltip-content]')": "INFRA: test fixture/assertion for tooltip",
+      "components/sidebar/truncated-sidebar-label.test.tsx:95 :: expect(container.querySelector('[data-tooltip-content]')).toBeNull()": "INFRA: test fixture/assertion for tooltip",
+      "components/sidebar/truncated-sidebar-label.test.tsx:98 :: it('keeps the nested tooltip disabled when a parent hover owns the full identity', async () => {": "INFRA: test fixture/assertion for tooltip",
+      "components/sidebar/truncated-sidebar-label.test.tsx:101 :: <TruncatedSidebarLabel text=\"feature/really-long-branch-name\" tooltipEnabled={false} />": "INFRA: test fixture/assertion for tooltip",
+      "components/sidebar/truncated-sidebar-label.test.tsx:106 :: expect(container.querySelector('[data-tooltip-content]')).toBeNull()": "INFRA: test fixture/assertion for tooltip",
+      "components/sidebar/truncated-sidebar-label.tsx:2 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "INFRA: type definitions/imports for tooltip props",
+      "components/sidebar/truncated-sidebar-label.tsx:14 :: tooltipEnabled?: boolean": "INFRA: type definitions/imports for tooltip props",
+      "components/sidebar/truncated-sidebar-label.tsx:15 :: tooltipSide?: 'top' | 'right' | 'bottom' | 'left'": "INFRA: type definitions/imports for tooltip props",
+      "components/sidebar/truncated-sidebar-label.tsx:16 :: tooltipSideOffset?: number": "INFRA: type definitions/imports for tooltip props",
+      "components/sidebar/truncated-sidebar-label.tsx:22 :: tooltipEnabled = true,": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.tsx:23 :: tooltipSide = 'right',": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.tsx:24 :: tooltipSideOffset = 8": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.tsx:78 :: if (!tooltipEnabled || !truncated) {": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.tsx:86 :: side={tooltipSide}": "D04b-005",
+      "components/sidebar/truncated-sidebar-label.tsx:87 :: sideOffset={tooltipSideOffset}": "D04b-005",
+      "components/sidebar/worktree-card-send-target-inputs.test.ts:29 :: label: 'Send',": "INFRA: test fixture mock label"
+    },
+    "hotkeys": {},
+    "prefs": {},
+    "timers": {
+      "components/sidebar/use-worktree-issue-link.ts:23 :: let timer: ReturnType<typeof setTimeout> | undefined": "D04b-018",
+      "components/sidebar/use-worktree-issue-link.ts:28 :: timer = setTimeout(() => resolve(null), OPEN_ISSUE_TIMEOUT_MS)": "D04b-018"
+    },
+    "subscriptions": {
+      "components/sidebar/truncated-sidebar-label.tsx:52 :: window.addEventListener('resize', updateTruncated)": "D04b-005",
+      "components/sidebar/use-delete-worktree-status-hydration.ts:38 :: useEffect(() => {": "D04b-007",
+      "components/sidebar/use-worktree-card-foundation.ts:153 :: useEffect(() => {": "D04b-012",
+      "components/sidebar/use-worktree-card-lifecycle-effects.ts:59 :: useEffect(() => {": "D04b-013",
+      "components/sidebar/use-worktree-card-lifecycle-effects.ts:113 :: useEffect(() => {": "D04b-013",
+      "components/sidebar/use-worktree-card-lifecycle-effects.ts:161 :: useEffect(() => {": "D04b-013",
+      "components/sidebar/use-worktree-card-lifecycle-effects.ts:183 :: useEffect(() => {": "D04b-013",
+      "components/sidebar/use-worktree-card-lifecycle-effects.ts:208 :: useEffect(() => {": "D04b-013",
+      "components/sidebar/use-worktree-card-lifecycle-effects.ts:220 :: window.addEventListener('focus', refreshLinearIssueIfVisible)": "D04b-013",
+      "components/sidebar/use-worktree-card-lifecycle-effects.ts:221 :: document.addEventListener('visibilitychange', refreshLinearIssueIfVisible)": "D04b-013",
+      "components/sidebar/use-worktree-card-lifecycle-effects.ts:228 :: useEffect(() => {": "D04b-013"
+    },
+    "preload": {
+      "components/sidebar/use-worktree-issue-link.ts:177 :: void window.api.shell.openUrl(linearIssueUrl)": "D04b-018",
+      "components/sidebar/use-worktree-issue-link.ts:194 :: void window.api.shell.openUrl(url)": "D04b-018",
+      "components/sidebar/use-worktree-issue-link.ts:210 :: void window.api.shell.openUrl(issueUrlFromInput)": "D04b-018",
+      "components/sidebar/use-worktree-issue-link.ts:219 :: void window.api.shell.openUrl(cachedIssueUrl)": "D04b-018",
+      "components/sidebar/use-worktree-issue-link.ts:236 :: void window.api.shell.openUrl(url)": "D04b-018"
+    }
+  }
+}

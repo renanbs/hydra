@@ -1,0 +1,1999 @@
+{
+  "domain": "D07-menus-actions",
+  "rows": [
+    {
+      "id": "D07-001",
+      "capability": "Colocar workspace individual em modo sleep através do item de menu de contexto para liberar memória e processos",
+      "surface": "Menu de contexto do card de workspace (WorkspaceSleepMenuItems.tsx)",
+      "trigger": "Clique com botão direito no card de workspace e seleção do item de menu Sleep (ou via onSleep)",
+      "behaviors": [
+        "Renderiza item de menu DropdownMenuItem com ícone Moon e label Sleep com tooltip explicativo (fechar painéis ativos para liberar memória/CPU)",
+        "Desabilita o item de menu (sleepDisabled) quando o workspace não possui abas com PTYs ativas ou abas de navegador ativas",
+        "Fecha o menu de contexto e dispara runSleepWorktrees com delay de 50ms (window.setTimeout) para desvincular do ciclo de animação do menu"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.tabsByWorktree",
+        "useAppStore.ptyIdsByTabId",
+        "useAppStore.browserTabsByWorktree"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceSleepMenuItems.tsx:28",
+        "components/sidebar/WorkspaceSleepMenuItems.tsx:30",
+        "components/sidebar/use-worktree-context-menu-commands.ts:134",
+        "components/sidebar/use-worktree-context-menu-commands.ts:137",
+        "components/sidebar/workspace-lineage-menu-actions.ts:20"
+      ],
+      "tests": [
+        "components/sidebar/workspace-lineage-menu-actions.test.ts:44 :: describe workspace lineage menu actions",
+        "components/sidebar/workspace-lineage-menu-actions.test.ts:45 :: it collects recursive descendants and only targets workspaces with active panels for sleep",
+        "components/sidebar/workspace-lineage-menu-actions.test.ts:103 :: describe hasSleepableWorkspaceActivity",
+        "components/sidebar/workspace-lineage-menu-actions.test.ts:104 :: it treats preserved empty PTY arrays as slept, not live",
+        "components/sidebar/workspace-lineage-menu-actions.test.ts:114 :: it detects live terminal and browser activity"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-002",
+      "capability": "Colocar múltiplos workspaces selecionados em modo sleep simultaneamente através do menu de contexto com contagem dinâmica",
+      "surface": "Menu de contexto de seleção múltipla (WorkspaceSleepMenuItems.tsx, use-worktree-context-menu-model.tsx)",
+      "trigger": "Seleção de múltiplos workspaces no sidebar e acionamento do item Sleep",
+      "behaviors": [
+        "Calcula dinamicamente a contagem de workspaces que possuem atividade ativa para sleep (sleepableWorktrees)",
+        "Exibe label pluralizado dinâmico 'Sleep N Workspaces' quando múltiplos workspaces selecionados forem elegíveis",
+        "Exibe tooltip customizado para contexto múltiplo ('Close all active panels in the selected workspaces to free up memory and CPU.')",
+        "Desabilita a ação quando nenhum dos workspaces selecionados possuir processos ou terminais em execução"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.tabsByWorktree",
+        "useAppStore.ptyIdsByTabId",
+        "useAppStore.browserTabsByWorktree"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceSleepMenuItems.tsx:36",
+        "components/sidebar/use-worktree-context-menu-model.tsx:142",
+        "components/sidebar/use-worktree-context-menu-model.tsx:173"
+      ],
+      "tests": [
+        "components/sidebar/sleep-worktree-flow.test.ts:313 :: it sleeps multiple worktrees and clears active only once when included"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-003",
+      "capability": "Colocar workspace pai e toda a sua árvore de descendentes em modo sleep em lote",
+      "surface": "Menu de contexto de workspace com linhagem (WorkspaceSleepMenuItems.tsx, workspace-lineage-menu-actions.ts)",
+      "trigger": "Clique no item 'Sleep with Descendants (N)' em workspace que possui descendentes (!isMultiContext && descendantCount > 0)",
+      "behaviors": [
+        "Exibe item de menu condicional 'Sleep with Descendants (N)' com o número total de descendentes na linhagem",
+        "Exibe tooltip explicativo destacando o fechamento de painéis ativos no workspace e em todos os descendentes aninhados",
+        "Filtra recursivamente apenas os alvos que possuem atividade ativa de terminal ou navegador (subtreeSleepableWorktrees)",
+        "Desabilita o item (subtreeSleepDisabled) se nem o pai nem qualquer descendente tiver abas ou terminais ativos"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreeLineageById",
+        "useAppStore.tabsByWorktree",
+        "useAppStore.ptyIdsByTabId",
+        "useAppStore.browserTabsByWorktree"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceSleepMenuItems.tsx:47",
+        "components/sidebar/WorkspaceSleepMenuItems.tsx:50",
+        "components/sidebar/use-worktree-context-menu-commands.ts:140",
+        "components/sidebar/workspace-lineage-menu-actions.ts:29",
+        "components/sidebar/workspace-lineage-menu-actions.ts:50"
+      ],
+      "tests": [
+        "components/sidebar/workspace-lineage-menu-actions.test.ts:45 :: it collects recursive descendants and only targets workspaces with active panels for sleep",
+        "components/sidebar/workspace-lineage-menu-actions.test.ts:78 :: it does not expose stale descendants through the recursive action scope"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-004",
+      "capability": "Executar o pipeline sequencial de sleep de workspaces com teardown ordenado de navegadores, terminais e suspensão de VM efêmera",
+      "surface": "Background / Pipeline de execução de sleep (sleep-worktree-flow.ts)",
+      "trigger": "Invocação programática de runSleepWorktree ou runSleepWorktrees",
+      "behaviors": [
+        "Se o workspace ativo estiver no lote de sleep, marca o intent de sleep e limpa activeWorktreeId antes do teardown para evitar flicker de reboot no TerminalPane",
+        "Executa o desligamento de navegadores primeiro (shutdownWorktreeBrowsers) para destruir persistent webviews sem vazar páginas Chromium",
+        "Executa o desligamento de terminais (shutdownWorktreeTerminals) com keepIdentifiers: true para preservar histórico em disco e layouts para restauração no wake",
+        "Se disponível na plataforma desktop (window.api.ephemeralVm.suspendWorkspace), suspende a VM efêmera remota associada ao workspace",
+        "Marca o intent de sleep (markWorktreeSleepIntent) durante todo o teardown para manter painéis montados em estado 'cold' até wake explícito",
+        "Se o usuário reativar o workspace durante a execução em lote, limpa o intent de sleep e mantém o workspace acordado"
+      ],
+      "background_activity": "Teardown ordenado de processos em background por workspace",
+      "state_inputs": [
+        "useAppStore.activeWorktreeId",
+        "useAppStore.setActiveWorktree",
+        "useAppStore.shutdownWorktreeBrowsers",
+        "useAppStore.shutdownWorktreeTerminals"
+      ],
+      "backend_contract": [
+        "window.api.ephemeralVm.suspendWorkspace -> suspende VM efêmera do workspace no host"
+      ],
+      "orca_evidence": [
+        "components/sidebar/sleep-worktree-flow.ts:22",
+        "components/sidebar/sleep-worktree-flow.ts:133",
+        "components/sidebar/sleep-worktree-flow.ts:168",
+        "components/sidebar/sleep-worktree-flow.ts:182",
+        "components/sidebar/sleep-worktree-flow.ts:191"
+      ],
+      "tests": [
+        "components/sidebar/sleep-worktree-flow.test.ts:53 :: describe runSleepWorktree",
+        "components/sidebar/sleep-worktree-flow.test.ts:78 :: it tears down browsers before terminals on the sleep path",
+        "components/sidebar/sleep-worktree-flow.test.ts:99 :: it clears activeWorktreeId before teardown when the slept worktree is active",
+        "components/sidebar/sleep-worktree-flow.test.ts:110 :: it marks sleep intent before clearing the active slept worktree and keeps it after teardown",
+        "components/sidebar/sleep-worktree-flow.test.ts:194 :: it leaves activeWorktreeId alone and marks a background worktree slept",
+        "components/sidebar/sleep-worktree-flow.test.ts:205 :: it leaves a worktree the user activated mid-batch awake",
+        "components/sidebar/sleep-worktree-flow.test.ts:225 :: it marks each worktree only when its own teardown starts"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-005",
+      "capability": "Preservação da posição do scroll virtual do sidebar durante o sleep e recuperação de erros com toast",
+      "surface": "Sidebar Scroller e Toasts Sonner (sleep-worktree-flow.ts)",
+      "trigger": "Sleep de workspace ativo provocando desmontagem ou alteração de altura na lista virtual",
+      "behaviors": [
+        "Dispara evento VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT no container de scroll [data-worktree-sidebar] antes de limpar o workspace ativo",
+        "Captura posição relativa do card ativo (distinguindo cópias fixadas com row-key 'pinned:') e agenda loop de requestAnimationFrame (até 12 tentativas) para corrigir deltas de scroll",
+        "Em caso de falha no desligamento, reverte a limpeza do workspace ativo se ele era o alvo e remove a marcação de sleep para permitir novo retry",
+        "Traduz mensagens de erro técnicas do host (erros de host legado, erros de daemon/conexão de terminal) em avisos claros",
+        "Exibe toast de erro consolidado (toast.error) para falhas individuais ou múltiplas com descrição detalhada"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeWorktreeId",
+        "useAppStore.setActiveWorktree"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sleep-worktree-flow.ts:49",
+        "components/sidebar/sleep-worktree-flow.ts:59",
+        "components/sidebar/sleep-worktree-flow.ts:85",
+        "components/sidebar/sleep-worktree-flow.ts:117",
+        "components/sidebar/sleep-worktree-flow.ts:209"
+      ],
+      "tests": [
+        "components/sidebar/sleep-worktree-flow.test.ts:123 :: it preserves active row position through section-scoped sidebar row ids",
+        "components/sidebar/sleep-worktree-flow.test.ts:152 :: it anchors sleep restoration to the natural duplicate row when no primary row is marked",
+        "components/sidebar/sleep-worktree-flow.test.ts:246 :: it surfaces a toast and skips terminals when browsers throws",
+        "components/sidebar/sleep-worktree-flow.test.ts:267 :: it restores the active workspace when terminal convergence fails",
+        "components/sidebar/sleep-worktree-flow.test.ts:286 :: it continues sleeping later worktrees when one selected worktree fails"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-006",
+      "capability": "Gatilho e container popover para customização da aparência visual (cor e ícone) de status de workspace",
+      "surface": "Header / Seletor de status no sidebar (WorkspaceStatusAppearancePopover.tsx)",
+      "trigger": "Clique no botão de aparência de status com preview de cor e ícone",
+      "behaviors": [
+        "Renderiza botão com tamanho size-7, preview de cor em swatch arredondado com opacidade e ícone representativo",
+        "Configura Popover modal={false} com side='left', align='end' e sideOffset={8} para abertura não modal lateral",
+        "Impede autofoco automático (onOpenAutoFocus preventDefault) para manter o contexto de navegação",
+        "Inclui tooltip acessível ('Appearance') e aria-label traduzido ('Customize <status> appearance')"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:20",
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:28",
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:37",
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:56",
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:62"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-007",
+      "capability": "Grade de seleção de cores para personalização de status de workspace",
+      "surface": "Popover de aparência de status (WorkspaceStatusAppearancePopover.tsx, workspace-status.ts)",
+      "trigger": "Clique em um dos botões de cor dentro da grade de 8 colunas",
+      "behaviors": [
+        "Exibe grade de 8 colunas com 11 opções de cores: neutral, blue, sky, violet, amber, emerald, rose, zinc, conductor-done, conductor-review, conductor-progress",
+        "Aplica anel de seleção (border-ring bg-accent) no botão da cor atualmente atribuída ao status",
+        "Cada botão de cor possui tooltip com o nome da cor e aria-label acessível ('Set <status> color to <color>')",
+        "Ao clicar, invoca onChangeColor(status.id, color.id) para atualização imediata"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:64",
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:71",
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:80",
+        "components/sidebar/workspace-status.ts:59"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-008",
+      "capability": "Grade de seleção de ícones para personalização de status de workspace e renderização de ícones Conductor",
+      "surface": "Popover de aparência de status (WorkspaceStatusAppearancePopover.tsx, workspace-status-icon-options.ts, workspace-status-icons.tsx)",
+      "trigger": "Clique em um dos botões de ícone dentro da grade de 6 colunas",
+      "behaviors": [
+        "Exibe grade de 6 colunas com 16 opções de ícones: circle, circle-dot, circle-progress, circle-dashed, circle-ellipsis, git-pull-request (Review), timer, flag, circle-alert, circle-pause, circle-play, circle-check (Done), ban (Blocked), conductor-done, conductor-review, conductor-progress",
+        "Renderiza ícones SVG personalizados Conductor (ConductorDoneIcon com checkmark preenchido, ConductorReviewIcon com borda e checkmark vazado, ConductorProgressIcon com ponteiro de relógio)",
+        "Aplica estilo variant='secondary' no ícone atualmente selecionado e 'ghost' nos demais",
+        "Inclui tooltip com label do ícone e aria-label acessível ('Set <status> icon to <icon>')",
+        "Ao clicar, invoca onChangeIcon(status.id, icon.id)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:98",
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:101",
+        "components/sidebar/WorkspaceStatusAppearancePopover.tsx:109",
+        "components/sidebar/workspace-status-icon-options.ts:28",
+        "components/sidebar/workspace-status-icons.tsx:3",
+        "components/sidebar/workspace-status-icons.tsx:21",
+        "components/sidebar/workspace-status-icons.tsx:48"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-009",
+      "capability": "Resolução de metadados visuais de status (cor, tom, borda, laneTint, ícone) com fallbacks para padrões",
+      "surface": "Visualização de status de workspace (workspace-status.ts)",
+      "trigger": "Renderização de componentes que exibem status de workspace",
+      "behaviors": [
+        "Resolve configurações visuais para strings de status legado ou objetos WorkspaceStatusDefinition",
+        "Aplica mapeamento padrão para status built-in: todo (neutral/circle), in-progress (conductor-progress), in-review (conductor-review), completed (conductor-done)",
+        "Fornece fallbacks seguros para cores e ícones desconhecidos utilizando o catálogo localizado",
+        "Retorna objeto estruturado com tone (classes CSS de cor de texto com suporte a dark mode), swatch, border, laneTint e componente React de ícone"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-status.ts:173",
+        "components/sidebar/workspace-status.ts:192",
+        "components/sidebar/workspace-status.ts:200"
+      ],
+      "tests": [
+        "components/sidebar/workspace-status.test.ts:30 :: describe workspace status drag data",
+        "components/sidebar/workspace-status.test.ts:31 :: it keeps the legacy single worktree payload when writing a selected batch",
+        "components/sidebar/workspace-status.test.ts:42 :: it round-trips selected worktree ids for board batch drops",
+        "components/sidebar/workspace-status.test.ts:52 :: it falls back to the single worktree payload for older drag sources",
+        "components/sidebar/workspace-status.test.ts:60 :: it ignores invalid decoded worktree ids while preserving valid batch ids",
+        "components/sidebar/workspace-status.test.ts:70 :: it ignores oversized plain-text workspace drag fallbacks",
+        "components/sidebar/workspace-status.test.ts:80 :: it ignores multibyte oversized workspace drag fallbacks",
+        "components/sidebar/workspace-status.test.ts:89 :: it does not fall back to plain text when the typed id batch is oversized",
+        "components/sidebar/workspace-status.test.ts:100 :: it rejects oversized selected worktree id batches"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-010",
+      "capability": "Gatilho do menu de opções de workspaces com badge indicador de contagem de filtros ativos e tooltip",
+      "surface": "Header de Workspaces no Sidebar (SidebarWorkspaceOptionsMenu.tsx, workspace-options-menu-items.tsx)",
+      "trigger": "Visualização e clique no botão SlidersHorizontal de opções",
+      "behaviors": [
+        "Renderiza botão com ícone SlidersHorizontal (size-3.5 strokeWidth={2.25})",
+        "Calcula a soma de todos os filtros ativos através do hook useWorkspaceOptionsFilterBadge (sleeping, default branch, automação, CLI, detached head, outros dispositivos, filtros de repositório e visibilidade de host)",
+        "Exibe badge circular sobreposto no canto superior direito com o número de filtros ativos (ou '9+' se > 9) quando houver filtros aplicados",
+        "Exibe tooltip na base ('Workspace options' ou 'Workspace options (N active)') e aria-label com descrição acessível",
+        "Abre menu dropdown não-modal (modal={false}) alinhado à direita com sideOffset={8}"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.showSleepingWorkspaces",
+        "useAppStore.hideDefaultBranchWorkspace",
+        "useAppStore.hideAutomationGeneratedWorkspaces",
+        "useAppStore.hideCliCreatedWorkspaces",
+        "useAppStore.hideDetachedHeadWorkspaces",
+        "useAppStore.hideWorkspacesFromOtherDevices",
+        "useAppStore.alwaysShowDefaultBranchWorkspace",
+        "useAppStore.filterRepoIds",
+        "useAppStore.repos",
+        "useAppStore.visibleWorkspaceHostIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/SidebarWorkspaceOptionsMenu.tsx:21",
+        "components/sidebar/SidebarWorkspaceOptionsMenu.tsx:41",
+        "components/sidebar/SidebarWorkspaceOptionsMenu.tsx:61",
+        "components/sidebar/SidebarWorkspaceOptionsMenu.tsx:74",
+        "components/sidebar/workspace-options-menu-items.tsx:23"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-011",
+      "capability": "Seção 'Show' do menu de opções com filtros de escopo de host e repositórios",
+      "surface": "Menu de opções de workspaces (workspace-options-menu-items.tsx)",
+      "trigger": "Abertura do menu de opções quando houver múltiplos hosts ou mais de um repositório cadastrado",
+      "behaviors": [
+        "Exibe cabeçalho de seção 'Show' condicionalmente quando showHostScopeControls for verdadeiro ou repos.length > 1",
+        "Renderiza controles de visibilidade de host (SidebarHostScopeMenuSection) com label dinâmico de hosts visíveis",
+        "Renderiza seção de filtros de repositório (SidebarRepositoryFilterSection) permitindo filtrar workspaces por projeto",
+        "Preserva estado de abertura em visualizações de board via atributo data-workspace-board-preserve-open"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.visibleWorkspaceHostIds",
+        "useAppStore.setWorkspaceHostScope",
+        "useAppStore.setVisibleWorkspaceHostIds"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-options-menu-items.tsx:112",
+        "components/sidebar/workspace-options-menu-items.tsx:118",
+        "components/sidebar/workspace-options-menu-items.tsx:127"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-012",
+      "capability": "Controle de alternância de agrupamento de workspaces no menu de opções",
+      "surface": "Menu de opções de workspaces (workspace-options-menu-items.tsx, sidebar-workspace-option-items.ts)",
+      "trigger": "Seleção de opção de agrupamento em SidebarGroupByToggle",
+      "behaviors": [
+        "Exibe cabeçalho 'Group by' e grupo de alternância integrado",
+        "Oferece 4 modos de agrupamento: None (c2c7a45cda), Status (e029a2d775), PR (0f9b959b31) e Project (2170d553cf)",
+        "Atualiza a store global com setGroupBy ao selecionar uma opção"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.groupBy",
+        "useAppStore.setGroupBy"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-workspace-option-items.ts:7",
+        "components/sidebar/workspace-options-menu-items.tsx:132",
+        "components/sidebar/workspace-options-menu-items.tsx:136"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-013",
+      "capability": "Submenu de ordenação de workspaces (Sort by) com opções interativas",
+      "surface": "Menu de opções de workspaces (workspace-options-menu-items.tsx, sidebar-workspace-option-items.ts)",
+      "trigger": "Abertura do submenu 'Sort by' e seleção de item de rádio",
+      "behaviors": [
+        "Exibe label 'Sort by' com o valor atual alinhado à direita (Name, Agent Activity, Recent, Project, Manual)",
+        "Oferece opções: Name (alfabética), Agent Activity / Smart (agentes que necessitam atenção primeiro, depois atividade recente), Recent (atividade mais recente), Project (por repositório), Manual (arraste de workspaces dentro de cada grupo)",
+        "Exibe tooltips explicativos para opções que possuem descrições (Smart e Manual)",
+        "Usa onSelect preventDefault para manter o menu aberto permitindo alternar e comparar ordenações sem reabrir o painel"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.sortBy",
+        "useAppStore.setSortBy"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-workspace-option-items.ts:233",
+        "components/sidebar/workspace-options-menu-items.tsx:140",
+        "components/sidebar/workspace-options-menu-items.tsx:157",
+        "components/sidebar/workspace-options-menu-items.tsx:162"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-014",
+      "capability": "Submenu condicional de ordenação de projetos (Project order) no menu de opções",
+      "surface": "Menu de opções de workspaces (workspace-options-menu-items.tsx, sidebar-workspace-option-items.ts)",
+      "trigger": "Abertura do menu de opções quando groupBy === 'repo'",
+      "behaviors": [
+        "Renderiza submenu 'Project order' exclusivamente quando groupBy for 'repo', evitando controles mortos em outros modos de agrupamento",
+        "Oferece opções: Manual (arrastar projetos para organizá-los) e Recent (atividade mais recente de workspace no projeto)",
+        "Exibe tooltips com a descrição de cada modalidade de ordenação",
+        "Mantém o menu aberto ao selecionar (preventDefault) e atualiza a store com setProjectOrderBy"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.groupBy",
+        "useAppStore.projectOrderBy",
+        "useAppStore.setProjectOrderBy"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-workspace-option-items.ts:273",
+        "components/sidebar/workspace-options-menu-items.tsx:185",
+        "components/sidebar/workspace-options-menu-items.tsx:206"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-015",
+      "capability": "Configurações de exibição de cards de workspace, layout e visibilidade de propriedades",
+      "surface": "Menu de opções de workspaces (sidebar-workspace-option-items.ts, workspace-options-menu-items.tsx)",
+      "trigger": "Seleção de opções na seção de exibição de cards",
+      "behaviors": [
+        "Oferece opções de layout do card: Detailed (detalhado) e Compact (compacto)",
+        "Oferece opções de exibição de atividade de agentes: Compact e Full list",
+        "Gera opções dinâmicas de propriedades do card (getWorktreeCardPropertyOptions): Status, Notes, Automation, Orca CLI, Ports, Agent statuses, Branch name / Folder path, Tasks/Issues",
+        "Adapta labels de propriedades: divide opções de issues (GitHub, Linear, Jira) quando newCardStyle estiver ativo ou mantém opção combinada Tasks; ajusta label de branch para 'Branch / folder path' quando existirem grupos de projeto com pastas"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/sidebar-workspace-option-items.ts:32",
+        "components/sidebar/sidebar-workspace-option-items.ts:46",
+        "components/sidebar/sidebar-workspace-option-items.ts:58",
+        "components/sidebar/sidebar-workspace-option-items.ts:182",
+        "components/sidebar/workspace-options-menu-items.tsx:227"
+      ],
+      "tests": [
+        "components/sidebar/sidebar-workspace-option-items.test.ts:8 :: describe worktree card property options",
+        "components/sidebar/sidebar-workspace-option-items.test.ts:9 :: it keeps the combined Tasks option by default",
+        "components/sidebar/sidebar-workspace-option-items.test.ts:25 :: it splits issue providers only when new card style is on",
+        "components/sidebar/sidebar-workspace-option-items.test.ts:42 :: it uses branch-only copy by default and without project groups",
+        "components/sidebar/sidebar-workspace-option-items.test.ts:53 :: it keeps branch-only copy for legacy cards even with project groups",
+        "components/sidebar/sidebar-workspace-option-items.test.ts:59 :: it mentions folder paths only for new card style with project groups"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-016",
+      "capability": "Gerenciamento de modelo, coordenadas de clique, seleção múltipla e ciclo de vida do menu de contexto de worktree",
+      "surface": "Card de worktree no sidebar (use-worktree-context-menu-model.tsx)",
+      "trigger": "Clique com botão direito no card de worktree ou seleção múltipla de cards",
+      "behaviors": [
+        "Suporta abertura para worktree individual ou conjunto selecionado (selectedWorktrees / effectiveSelectedWorktrees)",
+        "Rastreia coordenadas do ponteiro (menuPoint: {x, y}) para posicionamento do menu flutuante",
+        "Registra listener global para CLOSE_ALL_CONTEXT_MENUS_EVENT para fechar o menu quando outro menu abrir",
+        "Coordena o ciclo de vida completo: agenda callback onLifecycleComplete com setTimeout(0) somente após o fechamento do menu principal e de todos os sub-diálogos/pickers ativos",
+        "Gerencia transição para picker de worktree pai (parentPicker, pendingParentPickerRef) com limpeza de timers em unmount"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.workspaceStatuses",
+        "useAppStore.projectGroups",
+        "useAppStore.deleteStateByWorktreeId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-context-menu-model.tsx:47",
+        "components/sidebar/use-worktree-context-menu-model.tsx:67",
+        "components/sidebar/use-worktree-context-menu-model.tsx:240",
+        "components/sidebar/use-worktree-context-menu-model.tsx:257",
+        "components/sidebar/use-worktree-context-menu-model.tsx:269",
+        "components/sidebar/use-worktree-context-menu-model.tsx:280"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-017",
+      "capability": "Otimização de performance com sentinelas vazias e políticas de isolamento de escopo no menu de contexto",
+      "surface": "Pipeline de contexto e subscrições de store (worktree-context-menu-policy.ts, use-worktree-context-menu-model.tsx)",
+      "trigger": "Renderização e verificação de escopos de menus de contexto",
+      "behaviors": [
+        "Usa sentinelas de módulo estáveis (EMPTY_TABS_BY_WORKTREE, EMPTY_PTY_IDS_BY_TAB_ID, EMPTY_BROWSER_TABS_BY_WORKTREE, EMPTY_DELETE_STATE_BY_WORKTREE_ID, EMPTY_WORKTREE_LINEAGE_BY_ID, EMPTY_WORKSPACE_LINEAGE_BY_CHILD_KEY, EMPTY_CYCLIC_LINEAGE_IDS) e a função seletora selectMenuScopedMap para retornar referências idênticas quando o menu estiver fechado, prevenindo re-renderizações desnecessárias durante alterações no store",
+        "Verifica shouldUseNativeContextMenu para delegar para o menu nativo em elementos marcados com data-worktree-native-context-menu",
+        "Verifica shouldIgnoreNestedWorktreeContextMenuScope para isolar previews aninhados de filhos de linhagem dentro do card pai, evitando disparo de múltiplos menus",
+        "Em handleCloseAutoFocus, impede restauração padrão de foco do Radix (event.preventDefault) e foca o container [data-worktree-sidebar] com preventScroll: true para evitar pulos de rolagem"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-context-menu-policy.ts:19",
+        "components/sidebar/worktree-context-menu-policy.ts:33",
+        "components/sidebar/worktree-context-menu-policy.ts:51",
+        "components/sidebar/worktree-context-menu-policy.ts:60",
+        "components/sidebar/use-worktree-context-menu-model.tsx:109",
+        "components/sidebar/use-worktree-context-menu-model.tsx:340"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-018",
+      "capability": "Revelação do submenu Developer sob demanda via tecla modificadora Option/Alt no menu de contexto",
+      "surface": "Menu de contexto de worktree (worktree-context-menu-policy.ts, use-worktree-context-menu-model.tsx)",
+      "trigger": "Clique com botão direito segurando Option/Alt em contexto individual (!isMultiContext)",
+      "behaviors": [
+        "Captura a tecla Option/Alt no momento da abertura do menu de contexto e armazena no estado developerMenuRevealed",
+        "Avalia shouldRevealWorktreeDeveloperMenu: revela o submenu Developer exclusivamente quando developerMenuRevealed for true e !isMultiContext",
+        "Reseta developerMenuRevealed ao fechar o menu para que cliques subsequentes sem modificador não herdem a revelação",
+        "Evita que o submenu apareça ou desapareça no meio da navegação do menu"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-context-menu-policy.ts:40",
+        "components/sidebar/use-worktree-context-menu-model.tsx:71",
+        "components/sidebar/use-worktree-context-menu-model.tsx:232"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-019",
+      "capability": "Supressão de cliques acidentais logo após a abertura do menu de contexto (click debounce)",
+      "surface": "Handlers de ponteiro no menu de contexto (use-worktree-context-menu-secondary-actions.ts, worktree-context-menu-policy.ts)",
+      "trigger": "Eventos de clique disparados nos primeiros 500ms após a abertura do menu",
+      "behaviors": [
+        "Registra o timestamp de abertura do menu em contextMenuOpenedAtRef",
+        "Avalia shouldSuppressContextMenuFollowUpClick: se o tempo decorrido estiver entre 0 e 500ms (CONTEXT_MENU_CLICK_SUPPRESSION_MS), bloqueia o evento (preventDefault e stopPropagation)",
+        "Evita que o 'mouse up' ou clique de liberação do botão direito acione imediatamente o item de menu posicionado sob o cursor",
+        "Limpa a referência de tempo após o período de supressão ou no primeiro clique válido"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-context-menu-policy.ts:16",
+        "components/sidebar/worktree-context-menu-policy.ts:74",
+        "components/sidebar/use-worktree-context-menu-secondary-actions.ts:17"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-020",
+      "capability": "Comandos de área de transferência e metadados no menu de contexto (Copy Path, Read/Unread, Pin, Rename)",
+      "surface": "Itens de ação do menu de contexto de worktree (use-worktree-context-menu-commands.ts)",
+      "trigger": "Seleção dos respectivos itens no menu de contexto",
+      "behaviors": [
+        "Copy Path: copia o caminho do worktree para a área de transferência usando window.api.ui.writeClipboardText(worktree.path)",
+        "Mark as Read / Unread: alterna metadados isUnread invocando updateWorktreeMeta com executionHostId qualificado",
+        "Pin / Unpin Workspace: alterna o estado fixado do workspace invocando setWorktreesPinnedAndReveal",
+        "Rename Workspace: abre o modal 'edit-meta' com foco no campo de displayName, passando repoId, executionHostId, issue, PR e comentários atuais"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.updateWorktreeMeta",
+        "useAppStore.setWorktreesPinnedAndReveal",
+        "useAppStore.openModal"
+      ],
+      "backend_contract": [
+        "window.api.ui.writeClipboardText -> escreve caminho na área de transferência do sistema"
+      ],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-context-menu-commands.ts:41",
+        "components/sidebar/use-worktree-context-menu-commands.ts:44",
+        "components/sidebar/use-worktree-context-menu-commands.ts:51",
+        "components/sidebar/use-worktree-context-menu-commands.ts:121"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-021",
+      "capability": "Gerenciamento de grupos de projetos a partir do menu de contexto de worktree",
+      "surface": "Submenu Project Group no menu de contexto (use-worktree-context-menu-commands.ts)",
+      "trigger": "Seleção das ações de criar grupo, mover para grupo ou remover de grupo",
+      "behaviors": [
+        "Create Group from Project: abre diálogo para criação de novo grupo com createGroupDialogActiveRef ativo; ao submeter, cria o grupo (createProjectGroup) e move o repositório para ele (moveProjectToGroup)",
+        "Move Project to Group: move o repositório para um grupo de projetos existente selecionado",
+        "Remove Project from Group: remove a vinculação do projeto com o grupo (moveProjectToGroup com groupId null)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.createProjectGroup",
+        "useAppStore.moveProjectToGroup"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-context-menu-commands.ts:54",
+        "components/sidebar/use-worktree-context-menu-commands.ts:68",
+        "components/sidebar/use-worktree-context-menu-commands.ts:80",
+        "components/sidebar/use-worktree-context-menu-commands.ts:89"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-022",
+      "capability": "Planejamento e atribuição de status a partir do menu de contexto com roteamento para Board Sync ou gravação local de metadados",
+      "surface": "Submenu Move to Status no menu de contexto (use-worktree-context-menu-commands.ts, worktree-context-menu-policy.ts)",
+      "trigger": "Seleção de um status no submenu Move to Status",
+      "behaviors": [
+        "Executa planWorkspaceStatusAssignment: se houver callback onAssignWorkspaceStatus (sincronização com Kanban/Linear), gera plano 'board-sync' com todos os IDs selecionados",
+        "Se não houver integração de board, gera plano 'local-only' filtrando apenas os workspaces cujo status atual é diferente do status selecionado (evitando escritas desnecessárias)",
+        "Fecha o menu de contexto e grava as alterações via updateWorktreeMeta com executionHostId correspondente em paralelo (Promise.all)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.updateWorktreeMeta"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-context-menu-commands.ts:94",
+        "components/sidebar/worktree-context-menu-policy.ts:233",
+        "components/sidebar/worktree-context-menu-policy.ts:241"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-023",
+      "capability": "Ações de hierarquia e linhagem no menu de contexto (abrir pai, selecionar pai e desaninhamento)",
+      "surface": "Itens de linhagem no menu de contexto (use-worktree-context-menu-commands.ts, use-worktree-context-menu-secondary-actions.ts, worktree-context-menu-policy.ts)",
+      "trigger": "Seleção de Open Parent Worktree, Set/Change Parent Worktree ou Remove Parent Link",
+      "behaviors": [
+        "Open Parent: se o worktree tiver pai válido (validParentWorktreeId), foca e revela o worktree pai via activateAndRevealWorktree",
+        "Set/Change Parent Worktree: exibe label dinâmico ('Set Parent Worktree...' ou 'Change Parent Worktree...'), desabilita se isDeleting ou eligibleParentCount === 0 e abre o picker flutuante ancorado no card",
+        "Remove Parent Link (Unnest): remove a relação de parentesco de todos os workspaces do contexto atual através de unnestWorktrees / updateWorktreeLineage"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreeLineageById",
+        "useAppStore.workspaceLineageByChildKey",
+        "useAppStore.updateWorktreeLineage"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-context-menu-commands.ts:161",
+        "components/sidebar/use-worktree-context-menu-secondary-actions.ts:10",
+        "components/sidebar/worktree-context-menu-policy.ts:47",
+        "components/sidebar/worktree-context-menu-policy.ts:81",
+        "components/sidebar/worktree-context-menu-policy.ts:91",
+        "components/sidebar/worktree-context-menu-policy.ts:98"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-024",
+      "capability": "Detector global de tecla modificadora Option/Alt para revelação de botão de exclusão rápida no hover",
+      "surface": "Janela da aplicação e cards de worktree (workspace-delete-quick-action.ts)",
+      "trigger": "Pressionamento e liberação da tecla Option (macOS) ou Alt (Windows/Linux)",
+      "behaviors": [
+        "Registra listeners com capture: true para keydown e keyup na janela, monitorando event.altKey e event.key === 'Alt'",
+        "Limpa o estado imediatamente em eventos blur da janela ou visibilitychange do documento para evitar que atalhos destrutivos fiquem presos visíveis após perda de foco",
+        "Expõe hook reativo useWorkspaceDeleteModifierPressed baseado em useSyncExternalStore",
+        "Avalia canShowWorkspaceDeleteQuickAction: exibe botão rápido somente se Alt estiver pressionado, o workspace não estiver sendo deletado e não for o worktree principal"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-delete-quick-action.ts:21",
+        "components/sidebar/workspace-delete-quick-action.ts:27",
+        "components/sidebar/workspace-delete-quick-action.ts:37",
+        "components/sidebar/workspace-delete-quick-action.ts:85",
+        "components/sidebar/workspace-delete-quick-action.ts:94"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-025",
+      "capability": "Identificação e deleção imediata de workspace sob hover com qualificação de host e suporte a pastas",
+      "surface": "Lista de workspaces no Sidebar (hovered-workspace-delete.ts)",
+      "trigger": "Acionamento de atalho de deleção sobre a linha sob hover do cursor",
+      "behaviors": [
+        "Localiza a linha de workspace mais profunda sob hover através do seletor de opção hover",
+        "Rejeita deleção se houver modal ativo ou se o elemento ativo for editável (isEditableTarget)",
+        "Para pastas de workspace (workspaceScope.type === 'folder'), delega para deleteFolderWorkspace com executionHostId e limpa activeWorktree se for o workspace atual",
+        "Mantém controle pendingFolderDeletes em Set para evitar requisições duplicadas de exclusão de pastas",
+        "Para worktrees Git, valida se não é o checkout principal nem já está deletando, e despacha runWorktreeDelete com expectedInstanceId e expectedHostId"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.activeModal",
+        "useAppStore.activeWorktreeId",
+        "useAppStore.deleteFolderWorkspace",
+        "useAppStore.deleteStateByWorktreeId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/hovered-workspace-delete.ts:42",
+        "components/sidebar/hovered-workspace-delete.ts:53",
+        "components/sidebar/hovered-workspace-delete.ts:86"
+      ],
+      "tests": [
+        "components/sidebar/hovered-workspace-delete.test.ts:53 :: describe hovered workspace delete",
+        "components/sidebar/hovered-workspace-delete.test.ts:54 :: it uses the deepest hovered worktree row",
+        "components/sidebar/hovered-workspace-delete.test.ts:65 :: it resolves the exact hovered host instead of the active workspace",
+        "components/sidebar/hovered-workspace-delete.test.ts:77 :: it retains the hovered host when resolving a folder workspace",
+        "components/sidebar/hovered-workspace-delete.test.ts:94 :: it rejects primary worktrees, stale rows, and missing hover",
+        "components/sidebar/hovered-workspace-delete.test.ts:113 :: it rejects worktrees that are already deleting",
+        "components/sidebar/hovered-workspace-delete.test.ts:133 :: it rejects hovered rows while an editable control has focus",
+        "components/sidebar/hovered-workspace-delete.test.ts:154 :: it routes the hovered worktree through the host-qualified safety flow",
+        "components/sidebar/hovered-workspace-delete.test.ts:175 :: it removes a hovered folder workspace from Orca without deleting its directory",
+        "components/sidebar/hovered-workspace-delete.test.ts:199 :: it rejects a duplicate folder delete while the first request is pending"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-026",
+      "capability": "Criação de intenção de deleção do menu de contexto e despacho diferido em macrotask",
+      "surface": "Ação de deleção no menu de contexto de worktree (worktree-context-menu-delete-intent.ts, use-worktree-context-menu-commands.ts)",
+      "trigger": "Seleção do comando Delete no menu de contexto",
+      "behaviors": [
+        "createWorktreeContextMenuDeleteIntent: constrói intenção tipada para worktree individual, lote (batch) ou pasta (folder), preservando hostId e instanceId",
+        "deferWorktreeContextMenuDeleteIntent: agenda a execução via setTimeout(0) para permitir que o menu feche completamente e preserve o scroll antes de abrir o modal ou iniciar a exclusão",
+        "Para pastas, remove a pasta do Orca e limpa activeWorktreeId se a pasta deletada estiver ativa",
+        "Para worktrees individuais ou em lote, encaminha para runWorktreeDelete ou runWorktreeBatchDelete"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.deleteFolderWorkspace",
+        "useAppStore.activeWorktreeId",
+        "useAppStore.setActiveWorktree"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/use-worktree-context-menu-commands.ts:145",
+        "components/sidebar/worktree-context-menu-delete-intent.ts:13",
+        "components/sidebar/worktree-context-menu-delete-intent.ts:37",
+        "components/sidebar/worktree-context-menu-delete-intent.ts:69"
+      ],
+      "tests": [
+        "components/sidebar/worktree-context-menu-delete-intent.test.ts:17 :: describe createWorktreeContextMenuDeleteIntent",
+        "components/sidebar/worktree-context-menu-delete-intent.test.ts:18 :: it routes a same-id row through the host that owns the context menu",
+        "components/sidebar/worktree-context-menu-delete-intent.test.ts:35 :: it keeps every selected host in a colliding batch",
+        "components/sidebar/worktree-context-menu-delete-intent.test.ts:51 :: it preserves the folder owner host in a context-menu delete intent",
+        "components/sidebar/worktree-context-menu-delete-intent.test.ts:71 :: describe deferWorktreeContextMenuDeleteIntent",
+        "components/sidebar/worktree-context-menu-delete-intent.test.ts:81 :: it dispatches the selected workspace identity after the menu event completes",
+        "components/sidebar/worktree-context-menu-delete-intent.test.ts:104 :: it preserves every selected workspace identity for batch validation",
+        "components/sidebar/worktree-context-menu-delete-intent.test.ts:118 :: it dispatches on the next macrotask by default"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-027",
+      "capability": "Preservação da posição de rolagem do sidebar ancorando no elemento irmão adjacente durante a exclusão",
+      "surface": "Container de rolagem da lista virtual do sidebar (worktree-context-menu-policy.ts)",
+      "trigger": "Início do fluxo de deleção de um card de worktree",
+      "behaviors": [
+        "Localiza a linha virtual [data-worktree-virtual-row] do item sendo deletado e calcula seu irmão superior ou inferior mais próximo como âncora",
+        "Mede o scrollTop, scrollHeight e posição top desejada",
+        "Executa loop com requestAnimationFrame para ajustar o scrollTop conforme o elemento âncora se desloca",
+        "shouldContinueDeleteSiblingPositionRestore limita o loop a 180 frames (DELETE_POSITION_RESTORE_MAX_FRAMES) ou 6 frames estáveis (DELETE_POSITION_RESTORE_STABLE_FRAMES) para permitir que a rolagem do usuário prevaleça após a estabilização"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-context-menu-policy.ts:17",
+        "components/sidebar/worktree-context-menu-policy.ts:167",
+        "components/sidebar/worktree-context-menu-policy.ts:176"
+      ],
+      "tests": [
+        "components/sidebar/worktree-delete-position-scaling.test.ts:36 :: it measures each mounted sidebar row once when choosing a delete-position anchor",
+        "components/sidebar/worktree-delete-position-scaling.test.ts:48 :: it anchors on the same row the pre-hoist comparator sort would have chosen"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-028",
+      "capability": "Árvore de decisão para deleção de worktree individual com validação de instância, host e tratamento de checkout principal e SSH desconectado",
+      "surface": "Pipeline central de deleção (delete-worktree-flow.ts)",
+      "trigger": "Invocação de runWorktreeDelete",
+      "behaviors": [
+        "Busca o worktree com qualificação de host (getWorktreeOnHostFromState) e valida expectedInstanceId; se a linha foi recriada ou desapareceu, exibe toast de lista desatualizada (showWorkspaceListChangedToast)",
+        "Proteção de checkout principal: Git proíbe remover o worktree principal; abre modal 'confirm-remove-folder' para remover o projeto do Orca mantendo os arquivos no disco",
+        "Limpa o estado de deleção anterior do worktree (clearWorktreeDeleteState)",
+        "Verifica resolução SSH (resolveSshWorkspaceForget): se o host SSH estiver desconectado ou for ghost (exceto em clientes web/mobile pareados), abre modal 'forget-ssh-workspace' para esquecer metadados locais",
+        "Calcula linhagem de descendentes (getWorkspaceDeleteLineage); se houver filhos, força a confirmação no modal delete-worktree com allowSkipConfirm: false",
+        "Se skipDeleteWorktreeConfirm for true e não houver filhos, executa runWorktreeDeleteWithToast diretamente sem abrir modal"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.repos",
+        "useAppStore.settings",
+        "useAppStore.sshConnectionStates",
+        "useAppStore.sshTargetLabels",
+        "useAppStore.worktreeLineageById",
+        "useAppStore.openModal",
+        "useAppStore.clearWorktreeDeleteState"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-flow.ts:35",
+        "components/sidebar/delete-worktree-flow.ts:50",
+        "components/sidebar/delete-worktree-flow.ts:71",
+        "components/sidebar/delete-worktree-flow.ts:88",
+        "components/sidebar/delete-worktree-flow.ts:106"
+      ],
+      "tests": [
+        "components/sidebar/delete-worktree-flow.test.ts:125 :: describe delete worktree flow",
+        "components/sidebar/delete-worktree-flow.test.ts:298 :: it runs a single eligible delete immediately when confirmation is skipped",
+        "components/sidebar/delete-worktree-flow.test.ts:489 :: it reports a stale list instead of silently dropping a delete whose row vanished",
+        "components/sidebar/delete-worktree-flow.test.ts:506 :: it rejects a delayed delete when the path now belongs to a different instance",
+        "components/sidebar/delete-worktree-flow.test.ts:522 :: it runs a delayed delete when the captured instance is still current",
+        "components/sidebar/delete-worktree-flow.test.ts:537 :: it stays silent for a folder workspace, which this funnel does not route",
+        "components/sidebar/delete-worktree-flow.test.ts:547 :: it does not report a stale list when the workspace is still present",
+        "components/sidebar/delete-worktree-flow.test.ts:560 :: it opens project removal confirmation for a primary workspace",
+        "components/sidebar/delete-worktree-flow.test.ts:583 :: it routes primary workspace removal to its exact SSH host"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-029",
+      "capability": "Resolução de alvos de deleção em lote, desduplicação por host e abertura de modal de confirmação",
+      "surface": "Pipeline de deleção em lote (delete-worktree-flow.ts, worktree-delete-request.ts)",
+      "trigger": "Invocação de runWorktreeBatchDelete com lista de IDs ou identidades de worktrees",
+      "behaviors": [
+        "Desduplica alvos por par único (id, hostId) para suportar múltiplos hosts com caminhos idênticos",
+        "Filtra checkouts principais e valida se as instâncias capturadas ainda correspondem ao estado atual do store",
+        "Se nenhum alvo for elegível, exibe toast showNoDeletableWorkspacesToast; se a lista estiver desatualizada, exibe showWorkspaceListChangedToast",
+        "Se houver apenas um alvo elegível sem filhos de linhagem e skipConfirm for permitido, executa a deleção paralela diretamente",
+        "Abre o modal 'delete-worktree' com worktreeIds, worktreeDeleteIdentities e callbacks configurados"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings",
+        "useAppStore.worktreeLineageById",
+        "useAppStore.openModal",
+        "useAppStore.clearWorktreeDeleteState"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-flow.ts:121",
+        "components/sidebar/delete-worktree-flow.ts:167",
+        "components/sidebar/delete-worktree-flow.ts:192",
+        "components/sidebar/worktree-delete-request.ts:44",
+        "components/sidebar/worktree-delete-request.ts:80"
+      ],
+      "tests": [
+        "components/sidebar/delete-worktree-flow.test.ts:142 :: it filters main worktrees and opens a batch confirmation for eligible targets",
+        "components/sidebar/delete-worktree-flow.test.ts:161 :: it opens the single-delete confirmation when only one target is eligible",
+        "components/sidebar/delete-worktree-flow.test.ts:173 :: it treats duplicate selected ids as one delete target",
+        "components/sidebar/delete-worktree-flow.test.ts:186 :: it rejects the whole batch when a selected path belongs to a different instance",
+        "components/sidebar/delete-worktree-flow.test.ts:209 :: it opens batch confirmation when every selected instance is still current",
+        "components/sidebar/delete-worktree-flow.test.ts:275 :: it keeps batch deletes behind confirmation when confirmation is skipped",
+        "components/sidebar/delete-worktree-flow.test.ts:608 :: it can force confirmation for a single eligible delete",
+        "components/sidebar/delete-worktree-flow.test.ts:625 :: it reports when no selected worktrees are eligible",
+        "components/sidebar/worktree-delete-request.test.ts:44 :: describe resolveWorktreeBatchDeleteTargets",
+        "components/sidebar/worktree-delete-request.test.ts:48 :: it reaches the second host row even though the local row is listed first",
+        "components/sidebar/worktree-delete-request.test.ts:57 :: it resolves the local row when that is the one confirmed",
+        "components/sidebar/worktree-delete-request.test.ts:66 :: it keeps both hosts when both rows are confirmed in one batch",
+        "components/sidebar/worktree-delete-request.test.ts:76 :: it refuses when the confirmed host no longer has a row",
+        "components/sidebar/worktree-delete-request.test.ts:85 :: it refuses when the row on the confirmed host was replaced",
+        "components/sidebar/worktree-delete-request.test.ts:96 :: it keeps first-wins for a bare id request that names no host",
+        "components/sidebar/worktree-delete-request.test.ts:102 :: it skips a main worktree without failing the batch",
+        "components/sidebar/worktree-delete-request.test.ts:114 :: describe readWorktreeDeleteIdentities",
+        "components/sidebar/worktree-delete-request.test.ts:115 :: it carries the host through the modal data round trip",
+        "components/sidebar/worktree-delete-request.test.ts:125 :: it drops a host that is not a valid execution host id"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-030",
+      "capability": "Cálculo de linhagem de descendentes para deleção em ordem child-first e isolamento de hosts",
+      "surface": "Resolução de linhagem para deleção (workspace-delete-lineage.ts)",
+      "trigger": "Cálculo de dependências de deleção antes de abrir diálogo ou executar deleção de pai",
+      "behaviors": [
+        "Resolve colisões de IDs idênticos priorizando sempre o host do worktree pai",
+        "Mapeia linhagem projetada e inline (com validação de worktreeInstanceId)",
+        "Percorre recursivamente a árvore de descendentes prevenindo ciclos com conjunto de visitação",
+        "Retorna lista de descendentes (descendants) e lista de alvos de exclusão ordenada (deleteAllTargets) colocando os filhos antes do pai (child-first) para evitar que o Git remova filhos como conteúdo untracked"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.worktreeLineageById"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/workspace-delete-lineage.ts:10",
+        "components/sidebar/workspace-delete-lineage.ts:18",
+        "components/sidebar/workspace-delete-lineage.ts:40",
+        "components/sidebar/workspace-delete-lineage.ts:72"
+      ],
+      "tests": [
+        "components/sidebar/workspace-delete-lineage.test.ts:48 :: describe getWorkspaceDeleteLineage",
+        "components/sidebar/workspace-delete-lineage.test.ts:49 :: it returns valid descendants for parent delete copy and child-first delete-all targets",
+        "components/sidebar/workspace-delete-lineage.test.ts:67 :: it ignores stale instance links",
+        "components/sidebar/workspace-delete-lineage.test.ts:82 :: it orders an exact inline-only legacy descendant before its parent",
+        "components/sidebar/workspace-delete-lineage.test.ts:93 :: it keeps a stale side-map child authoritative over valid inline lineage",
+        "components/sidebar/workspace-delete-lineage.test.ts:109 :: it rejects cross-repo, cross-host, and cross-project descendants",
+        "components/sidebar/workspace-delete-lineage.test.ts:133 :: it does not traverse cyclic projected lineage",
+        "components/sidebar/workspace-delete-lineage.test.ts:149 :: it resolves a colliding child id to the parent host",
+        "components/sidebar/workspace-delete-lineage.test.ts:167 :: it keeps the parent host preference stable regardless of row order",
+        "components/sidebar/workspace-delete-lineage.test.ts:185 :: it uses the confirmed host inline lineage when the bare projection belongs to the other host"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-031",
+      "capability": "Execução direta de exclusão quando a confirmação estiver desabilitada por preferência do usuário",
+      "surface": "Pipeline de deleção de worktree (delete-worktree-flow.ts)",
+      "trigger": "Tentativa de deleção com skipDeleteWorktreeConfirm ativo em worktree sem descendentes",
+      "behaviors": [
+        "Lê a preferência settings.skipDeleteWorktreeConfirm",
+        "Se o alvo for unitário e não tiver descendentes de linhagem, pula a abertura do modal e invoca runWorktreeDeleteWithToast ou runWorktreeDeletesInParallel",
+        "Se a deleção falhar e for forçada via toast de retry, notifica o callback onDeleted",
+        "Mantém a obrigatoriedade de confirmação em diálogos de lote ou quando o worktree possuir filhos de linhagem"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-flow.ts:99",
+        "components/sidebar/delete-worktree-flow.ts:153"
+      ],
+      "tests": [
+        "components/sidebar/delete-worktree-flow.test.ts:298 :: it runs a single eligible delete immediately when confirmation is skipped",
+        "components/sidebar/delete-worktree-flow.test.ts:316 :: it notifies onDeleted after a skip-confirm force delete succeeds",
+        "components/sidebar/delete-worktree-flow.test.ts:424 :: it keeps parent worktree deletes behind confirmation even when confirmation is skipped",
+        "components/sidebar/delete-worktree-flow.test.ts:458 :: it keeps context-menu parent deletes behind confirmation even when confirmation is skipped"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-032",
+      "capability": "Geração de textos contextuais para o diálogo de confirmação de exclusão adaptados para Git e pastas de projeto",
+      "surface": "Modal de confirmação de deleção de worktree (delete-worktree-dialog-copy.ts)",
+      "trigger": "Renderização do diálogo de confirmação de exclusão",
+      "behaviors": [
+        "Identifica se a deleção envolve pastas de projeto (isFolderWorkspaceDelete / countFolderWorkspaceDeletes)",
+        "Gera sufixo de descrição dinâmico: para pastas de projeto informa que a pasta física no disco não será deletada ('from Orca. Project folders on disk will not be deleted.'); para Git informa que os diretórios serão removidos do disco e do Git",
+        "Para deleções em lote com tipos mistos, explica claramente o comportamento diferenciado para Git vs pastas",
+        "Gera mensagem de bloqueio para checkout principal: 'Remove the folder project instead of deleting this workspace' para pastas ou 'Git does not allow removing the main worktree' para Git"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-dialog-copy.ts:8",
+        "components/sidebar/delete-worktree-dialog-copy.ts:19",
+        "components/sidebar/delete-worktree-dialog-copy.ts:26",
+        "components/sidebar/delete-worktree-dialog-copy.ts:63"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-033",
+      "capability": "Contagem de alterações não commitadas/untracked e ordenação prioritária de hidratação de status Git",
+      "surface": "Modal de confirmação de exclusão (delete-worktree-dirty-change-counts.ts)",
+      "trigger": "Abertura do modal de exclusão e consulta de status Git para os alvos",
+      "behaviors": [
+        "orderDeleteWorktreeStatusHydrationTargets: ordena alvos de consulta priorizando o workspace ativo primeiro (rank 0), workspaces visíveis na tela em seguida (rank 1) e descendentes por último (rank 2)",
+        "getDeleteWorktreeDirtyChangeCounts: calcula número de arquivos modificados ou untracked para cada worktree (ignorando checkout principal e pastas)",
+        "Se o status ainda não carregou mas o backend já confirmou estado 'dirty' (forceDeleteReason === 'dirty'), define a contagem como 0 para garantir que o aviso visual de dirty permaneça visível sem inventar contagem fictícia"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.gitStatusByWorktree",
+        "useAppStore.gitStatusByWorktreeIdentity",
+        "useAppStore.deleteStateByWorktreeId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-dirty-change-counts.ts:8",
+        "components/sidebar/delete-worktree-dirty-change-counts.ts:31",
+        "components/sidebar/delete-worktree-dirty-change-counts.ts:59"
+      ],
+      "tests": [
+        "components/sidebar/delete-worktree-dirty-change-counts.test.ts:28 :: describe delete-worktree status hydration ordering",
+        "components/sidebar/delete-worktree-dirty-change-counts.test.ts:29 :: it orders the active target first, visible targets next, and descendants last"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-034",
+      "capability": "Componente de dica de alterações não commitadas (Dirty Change Hint) com ícone de alerta e tooltip",
+      "surface": "Diálogo de confirmação de exclusão e aviso de filhos (DeleteWorktreeDirtyChangeHint.tsx)",
+      "trigger": "Exibição de worktree com alterações pendentes no modal de exclusão",
+      "behaviors": [
+        "Renderiza badge com AlertTriangle e texto destacando a quantidade: '1 uncommitted or untracked change' ou 'N uncommitted or untracked changes' (ou texto genérico se 0)",
+        "Exibe tooltip no topo com aviso severo: 'Deleting this workspace permanently removes these changes from disk.'",
+        "Retorna null se a contagem for undefined"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx:6",
+        "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx:15",
+        "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx:21",
+        "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx:29"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-035",
+      "capability": "Aviso de exclusão de linhagem de descendentes com lista prévia e contagem de alterações pendentes",
+      "surface": "Diálogo de confirmação de exclusão (DeleteWorktreeLineageNotice.tsx)",
+      "trigger": "Deleção de workspace pai com filhos de linhagem",
+      "behaviors": [
+        "Exibe painel com ícone Workflow e cabeçalho 'Child workspaces will be deleted'",
+        "Mostra contagem clara: 'Deleting this workspace also deletes 1 child workspace.' ou 'Deleting this workspace also deletes N child workspaces.'",
+        "Renderiza lista dos primeiros 4 filhos com nome e caminho truncados, acompanhados de DeleteWorktreeDirtyChangeHint individual",
+        "Exibe indicador '+N more' caso existam mais de 4 descendentes",
+        "Aplica contenção de layout min-w-0 max-w-full para evitar que caminhos longos sem quebra estiquem o modal"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/DeleteWorktreeLineageNotice.tsx:13",
+        "components/sidebar/DeleteWorktreeLineageNotice.tsx:28",
+        "components/sidebar/DeleteWorktreeLineageNotice.tsx:48",
+        "components/sidebar/DeleteWorktreeLineageNotice.tsx:59"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-036",
+      "capability": "Opção de checkbox acessível 'Don't ask again' para pular confirmações de exclusão futuras",
+      "surface": "Rodapé do modal de confirmação de exclusão (DeleteWorktreeSkipConfirmOption.tsx)",
+      "trigger": "Clique no botão checkbox 'Don't ask again'",
+      "behaviors": [
+        "Renderiza botão acessível com role='checkbox' e aria-checked={dontAskAgain}",
+        "Exibe caixa de seleção customizada com ícone Check (strokeWidth={3}) quando marcado",
+        "Renderiza label traduzido 'Don't ask again'",
+        "Oculta o controle quando showDontAskAgain for falso (ex.: deleções com filhos ou lote)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx:5",
+        "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx:19",
+        "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx:27",
+        "components/sidebar/DeleteWorktreeSkipConfirmOption.tsx:35"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-037",
+      "capability": "Painéis de aviso do modal de exclusão para bloqueio de checkout principal e exibição de erros",
+      "surface": "Modal de confirmação de exclusão (DeleteWorktreeWarningPanels.tsx)",
+      "trigger": "Seleção de worktree principal ou erro retornado em tentativa de deleção prévia",
+      "behaviors": [
+        "Se for worktree principal (isMainWorktree), exibe painel de alerta explicando que este é o checkout original de clonagem e inclui mainWorktreeBlocker",
+        "Se houver erro de deleção (deleteError) e não for o principal, exibe painel vermelho com AlertTriangle e mensagem de erro com quebra de linha (whitespace-pre-wrap break-all)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/DeleteWorktreeWarningPanels.tsx:5",
+        "components/sidebar/DeleteWorktreeWarningPanels.tsx:16",
+        "components/sidebar/DeleteWorktreeWarningPanels.tsx:41"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-038",
+      "capability": "Persistência da preferência de pular confirmação de deleção com toast de confirmação e link para configurações",
+      "surface": "Toasts Sonner e Navegação para Configurações (delete-worktree-preference-toast.ts)",
+      "trigger": "Conclusão de deleção com a opção 'Don't ask again' marcada",
+      "behaviors": [
+        "Persiste skipDeleteWorktreeConfirm: true nas configurações globais através de updateSettings",
+        "Exibe toast de sucesso informativo (duração 8000ms): 'We'll skip this confirmation next time. You can change this in Settings.'",
+        "Fornece botão de ação 'Open Settings' que navega diretamente para o painel de configurações gerais na seção 'general-skip-delete-worktree-confirm' permitindo desfazer rapidamente a alteração"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-preference-toast.ts:6",
+        "components/sidebar/delete-worktree-preference-toast.ts:18",
+        "components/sidebar/delete-worktree-preference-toast.ts:31",
+        "components/sidebar/delete-worktree-preference-toast.ts:40"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-039",
+      "capability": "Execução explícita do botão 'Force Delete' no modal com fechamento imediato e dispensa de verificação de PTYs",
+      "surface": "Modal de confirmação de exclusão em estado de erro (delete-worktree-dialog-force-delete.ts)",
+      "trigger": "Clique no botão 'Force Delete' dentro do diálogo",
+      "behaviors": [
+        "Localiza o alvo na lista atual de worktrees; se não encontrado, exibe toast de lista desatualizada e fecha o modal",
+        "Prepara a troca de foco do workspace ativo (prepareActiveWorktreeFocusAfterDelete)",
+        "Invoca removeWorktree com force: true e allowUnverifiedPtyStop: true (dispensando a prova de parada de PTYs)",
+        "Fecha o modal imediatamente enquanto o card já exibe visual de deleção em progresso",
+        "Trata resultado assíncrono: se sucesso, confirma foco e notifica onDeleted; se erro, exibe toast.error com descrição da falha"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-dialog-force-delete.ts:20",
+        "components/sidebar/delete-worktree-dialog-force-delete.ts:36",
+        "components/sidebar/delete-worktree-dialog-force-delete.ts:46",
+        "components/sidebar/delete-worktree-dialog-force-delete.ts:51"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-040",
+      "capability": "Execução de deleção 'Delete All' para toda a linhagem confirmada no modal em ordem paralela child-first",
+      "surface": "Modal de confirmação de exclusão com linhagem (delete-worktree-lineage-delete-all.ts)",
+      "trigger": "Confirmação da ação 'Delete All' no modal",
+      "behaviors": [
+        "Resolve os alvos confirmados da linhagem garantindo a contagem esperada",
+        "Dispara a deleção paralela (runWorktreeDeletesInParallel) passando forceOnConfirm e onForceDeleted",
+        "Fecha o modal imediatamente para exibir o progresso diretamente nos cards do sidebar",
+        "Notifica callback onDeleted com todos os alvos excluídos com sucesso"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-lineage-delete-all.ts:10",
+        "components/sidebar/delete-worktree-lineage-delete-all.ts:25",
+        "components/sidebar/delete-worktree-lineage-delete-all.ts:33"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-041",
+      "capability": "Toast customizado de falha na exclusão de worktree com rodapé de ações interativas (View, Force Delete, Delete Anyway)",
+      "surface": "Toasts Sonner do sistema (delete-worktree-failure-toast.tsx)",
+      "trigger": "Falha na remoção de um worktree retornada pelo backend",
+      "behaviors": [
+        "Renderiza toast customizado (DeleteWorktreeFailureToastBody) com botões em linha separada para evitar truncamento de erros multilinha",
+        "Exibe botão 'View' para abrir as alterações pendentes no diff viewer (suprimido se o erro for de worktree bloqueado sem alterações conhecidas)",
+        "Exibe botão destrutivo 'Force Delete' se a deleção puder ser forçada",
+        "Exibe botão destrutivo 'Delete Anyway' se a exclusão foi recusada por hook de archive (permitindo dispensar o hook)",
+        "Mantém o toast com duração Infinity quando oferecer opções destrutivas (Force Delete / Delete Anyway) para que o usuário leia os motivos antes de agir",
+        "Fecha o toast imediatamente ao clicar em qualquer botão de ação"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-failure-toast.tsx:29",
+        "components/sidebar/delete-worktree-failure-toast.tsx:64",
+        "components/sidebar/delete-worktree-failure-toast.tsx:90",
+        "components/sidebar/delete-worktree-failure-toast.tsx:114"
+      ],
+      "tests": [
+        "components/sidebar/delete-worktree-failure-toast.test.tsx:50 :: describe showDeleteWorktreeFailureToast",
+        "components/sidebar/delete-worktree-failure-toast.test.tsx:51 :: it uses a persistent in-body action footer when force delete is available",
+        "components/sidebar/delete-worktree-failure-toast.test.tsx:93 :: it keeps non-forceable failures destructive without a force action",
+        "components/sidebar/delete-worktree-failure-toast.test.tsx:127 :: it offers Delete Anyway when the archive hook refused the removal",
+        "components/sidebar/delete-worktree-failure-toast.test.tsx:157 :: it does not offer Delete Anyway for an ordinary failure",
+        "components/sidebar/delete-worktree-failure-toast.test.tsx:172 :: it offers neither force delete nor View for a locked workspace",
+        "components/sidebar/delete-worktree-failure-toast.test.tsx:196 :: it keeps View for a locked workspace when changed files are known",
+        "components/sidebar/delete-worktree-flow.test.ts:354 :: it opens the diff without re-seeding a shell when View changes is clicked",
+        "components/sidebar/delete-worktree-flow.test.ts:375 :: it does not offer force delete for a locked worktree",
+        "components/sidebar/delete-worktree-flow.test.ts:640 :: it reports a Delete Anyway success to the caller like a force retry"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-042",
+      "capability": "Geração de mensagens e descrições explicativas de falhas de exclusão com orientações de recuperação específicas",
+      "surface": "Mensagens de erro em toasts de deleção (delete-worktree-toast.ts)",
+      "trigger": "Geração de conteúdo para toast de erro de deleção de worktree",
+      "behaviors": [
+        "Locked worktree: exibe instrução para rodar 'git worktree unlock <path>' incluindo a razão estruturada reportada pelo Git se fornecida",
+        "Orphan directory: orienta o uso de Force Delete para remover diretório órfão após o Git já ter esquecido o worktree",
+        "Unstopped PTYs: diferencia entre terminais comprovadamente ativos (avisa que serão encerrados e descartará alterações) e parada não confirmada",
+        "Running agent sessions: diferencia entre sessões de agente comprovadamente ativas (avisa que serão encerradas e descartará conversas) e fechamento não confirmado",
+        "Missing registration: instrui Force Delete para limpar registro do Orca quando o Git já removeu o diretório",
+        "Dirty worktree: orienta que há arquivos modificados e oferece o caminho de Force Delete em tom informativo sem exibir stderr bruto assustador"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/delete-worktree-toast.ts:16",
+        "components/sidebar/delete-worktree-toast.ts:40",
+        "components/sidebar/delete-worktree-toast.ts:54",
+        "components/sidebar/delete-worktree-toast.ts:80",
+        "components/sidebar/delete-worktree-toast.ts:106",
+        "components/sidebar/delete-worktree-toast.ts:121"
+      ],
+      "tests": [
+        "components/sidebar/delete-worktree-toast.test.ts:12 :: describe getDeleteWorktreeToastCopy",
+        "components/sidebar/delete-worktree-toast.test.ts:13 :: it uses direct guidance when force delete is available",
+        "components/sidebar/delete-worktree-toast.test.ts:23 :: it uses terminal-teardown guidance when a PTY stop could not be proven",
+        "components/sidebar/delete-worktree-toast.test.ts:39 :: it names the running terminals when verification proved they are still live",
+        "components/sidebar/delete-worktree-toast.test.ts:55 :: it offers force delete when an agent session could not be confirmed closed",
+        "components/sidebar/delete-worktree-toast.test.ts:72 :: it names the running agent sessions when the close left them attached",
+        "components/sidebar/delete-worktree-toast.test.ts:88 :: it offers force delete when the teardown sweep itself timed out",
+        "components/sidebar/delete-worktree-toast.test.ts:104 :: it offers force delete when the sweep failed rather than timed out",
+        "components/sidebar/delete-worktree-toast.test.ts:118 :: it uses orphaned-directory guidance when Git tracking is already gone",
+        "components/sidebar/delete-worktree-toast.test.ts:133 :: it uses stale-row guidance when Git already removed the worktree directory",
+        "components/sidebar/delete-worktree-toast.test.ts:147 :: it preserves the raw error when force delete is unavailable",
+        "components/sidebar/delete-worktree-toast.test.ts:155 :: it uses lock-specific guidance",
+        "components/sidebar/delete-worktree-toast.test.ts:164 :: it includes the structured Git lock reason in localized recovery copy"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-043",
+      "capability": "Correspondência precisa de estado de deleção qualificado por host para suporte a múltiplos hosts com mesmo ID",
+      "surface": "Seletores e helpers de estado de deleção (worktree-delete-state-host-match.ts)",
+      "trigger": "Consulta de isDeleting ou forceDeleteReason para um worktree",
+      "behaviors": [
+        "Consulta primeiro o estado com a chave qualificada pelo host (getWorktreeHostIdentity)",
+        "Se não encontrar estado qualificado, faz fallback para o estado legado por id puro verificando se executionHostId coincide",
+        "Evita que a exclusão em um host SSH mascare ou interfira no estado do checkout local de mesmo caminho relativo"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.deleteStateByWorktreeId"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-delete-state-host-match.ts:5",
+        "components/sidebar/worktree-delete-state-host-match.ts:9",
+        "components/sidebar/worktree-delete-state-host-match.ts:14"
+      ],
+      "tests": [
+        "components/sidebar/delete-worktree-flow.test.ts:404 :: it does not offer force from another host",
+        "components/sidebar/worktree-delete-host-qualification.test.ts:129 :: describe STA-4343 sidebar delete: the confirmed row decides the host",
+        "components/sidebar/worktree-delete-host-qualification.test.ts:130 :: it deletes the SSH row and leaves the ACTIVE local checkout on disk",
+        "components/sidebar/worktree-delete-host-qualification.test.ts:161 :: it routes the batch delete path to the confirmed host too",
+        "components/sidebar/worktree-delete-host-qualification.test.ts:187 :: it tears down shared renderer state after both same-id host rows finish deleting",
+        "components/sidebar/worktree-delete-host-qualification.test.ts:218 :: it still deletes the local checkout for real when the local row is the one deleted",
+        "components/sidebar/worktree-delete-host-qualification.test.ts:239 :: it still deletes an ordinary single-host SSH workspace for real"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-044",
+      "capability": "Pipeline assíncrono de deleção paralela com agrupamento por repositório, ordenação por profundidade de caminho e serialização de travas",
+      "surface": "Pipeline de deleção paralela (worktree-delete-execution.ts)",
+      "trigger": "Invocação de runWorktreeDeletesInParallel",
+      "behaviors": [
+        "Desduplica alvos por identidade qualificada e marca todos como 'deleting' imediatamente no store para feedback visual instantâneo nos cards",
+        "Inicia poda de snapshots em lote (beginWorktreeSnapshotPruneBatch) para otimizar operações com múltiplos workspaces",
+        "Agrupa workspaces por host + repositório (groupIdentity) e ordena diretórios aninhados para exclusão prévia aos pais (maior path.length primeiro)",
+        "Serializa turns de exclusão por worktree (runInWorktreeDeleteTurn) usando cadeia de promessas para evitar concorrência destrutiva no mesmo diretório",
+        "Se a deleção de um filho falhar, cancela a deleção de seus ancestrais no mesmo repositório para evitar remoção como conteúdo untracked",
+        "Agrega avisos de branches preservados em um único toast consolidado ao final do lote (showPreservedBranchBatchToast)",
+        "Transfere o foco do workspace ativo uma única vez após todas as exclusões do lote concluírem"
+      ],
+      "background_activity": "Execução paralela de deleções por repositório com locks sequenciais",
+      "state_inputs": [
+        "useAppStore.activeWorktreeId",
+        "useAppStore.markWorktreesDeleting",
+        "useAppStore.clearWorktreeDeleteState"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-delete-execution.ts:32",
+        "components/sidebar/worktree-delete-execution.ts:51",
+        "components/sidebar/worktree-delete-execution.ts:68",
+        "components/sidebar/worktree-delete-execution.ts:114",
+        "components/sidebar/worktree-delete-execution.ts:153",
+        "components/sidebar/worktree-delete-execution.ts:182"
+      ],
+      "tests": [
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:87 :: describe runWorktreeDeletesInParallel",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:105 :: it uses one snapshot prune batch for a 100-workspace delete",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:139 :: it starts every selected delete before waiting for earlier deletes to finish",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:180 :: it marks every same-repo target deleting before serialized deletes finish",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:226 :: it deletes nested workspaces before their parent within the same repo",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:250 :: it passes confirmed force to each delete",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:277 :: it deletes a duplicated target identity only once",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:301 :: it deletes both host-qualified targets when they share a worktree id",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:341 :: it clears a pending ancestor when a nested descendant delete fails",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:373 :: it does not let a failed child on one host block an ancestor on another host",
+        "components/sidebar/delete-worktree-parallel-flow.test.ts:407 :: it replaces per-workspace branch warnings with one batch result",
+        "components/sidebar/delete-worktree-flow.test.ts:232 :: it revalidates each queued instance immediately before execution"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D07-045",
+      "capability": "Funções de política do menu de contexto para decisões de elegibilidade de deleção e remoção de projeto",
+      "surface": "Regras de política de menu de contexto (worktree-context-menu-policy.ts)",
+      "trigger": "Avaliação de ações disponíveis ao montar o menu de contexto",
+      "behaviors": [
+        "shouldRemoveProjectFromContextMenu: determina que quando o worktree for o principal (isMainWorktree), a ação correta no menu é 'Remove Project' em vez de deletar o workspace",
+        "isContextWorktreeDeletable: valida que um worktree secundário com repositório associado é elegível para deleção no menu de contexto"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/worktree-context-menu-policy.ts:107",
+        "components/sidebar/worktree-context-menu-policy.ts:114"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "DeleteWorktreeDirtyChangeHint.tsx": [
+        "D07-034"
+      ],
+      "DeleteWorktreeLineageNotice.tsx": [
+        "D07-035"
+      ],
+      "DeleteWorktreeSkipConfirmOption.tsx": [
+        "D07-036"
+      ],
+      "DeleteWorktreeWarningPanels.tsx": [
+        "D07-037"
+      ],
+      "SidebarWorkspaceOptionsMenu.tsx": [
+        "D07-010"
+      ],
+      "WorkspaceSleepMenuItems.tsx": [
+        "D07-001",
+        "D07-002",
+        "D07-003"
+      ],
+      "WorkspaceStatusAppearancePopover.tsx": [
+        "D07-006",
+        "D07-007",
+        "D07-008"
+      ],
+      "delete-worktree-dialog-copy.ts": [
+        "D07-032"
+      ],
+      "delete-worktree-dialog-force-delete.ts": [
+        "D07-039"
+      ],
+      "delete-worktree-dirty-change-counts.ts": [
+        "D07-033"
+      ],
+      "delete-worktree-failure-toast.tsx": [
+        "D07-041"
+      ],
+      "delete-worktree-flow.ts": [
+        "D07-028",
+        "D07-029",
+        "D07-031"
+      ],
+      "delete-worktree-lineage-delete-all.ts": [
+        "D07-040"
+      ],
+      "delete-worktree-preference-toast.ts": [
+        "D07-038"
+      ],
+      "delete-worktree-toast.ts": [
+        "D07-042"
+      ],
+      "hovered-workspace-delete.ts": [
+        "D07-025"
+      ],
+      "sidebar-workspace-option-items.ts": [
+        "D07-012",
+        "D07-013",
+        "D07-014",
+        "D07-015"
+      ],
+      "sleep-worktree-flow.ts": [
+        "D07-004",
+        "D07-005"
+      ],
+      "use-worktree-context-menu-commands.ts": [
+        "D07-001",
+        "D07-003",
+        "D07-020",
+        "D07-021",
+        "D07-022",
+        "D07-023",
+        "D07-026"
+      ],
+      "use-worktree-context-menu-model.tsx": [
+        "D07-002",
+        "D07-016",
+        "D07-017",
+        "D07-018"
+      ],
+      "use-worktree-context-menu-secondary-actions.ts": [
+        "D07-019",
+        "D07-023"
+      ],
+      "workspace-delete-lineage.ts": [
+        "D07-030"
+      ],
+      "workspace-delete-quick-action.ts": [
+        "D07-024"
+      ],
+      "workspace-lineage-menu-actions.ts": [
+        "D07-001",
+        "D07-003"
+      ],
+      "workspace-options-menu-items.tsx": [
+        "D07-010",
+        "D07-011",
+        "D07-012",
+        "D07-013",
+        "D07-014",
+        "D07-015"
+      ],
+      "workspace-status-icon-options.ts": [
+        "D07-008"
+      ],
+      "workspace-status-icons.tsx": [
+        "D07-008"
+      ],
+      "workspace-status.ts": [
+        "D07-007",
+        "D07-009"
+      ],
+      "worktree-context-menu-delete-intent.ts": [
+        "D07-026"
+      ],
+      "worktree-context-menu-policy.ts": [
+        "D07-017",
+        "D07-018",
+        "D07-019",
+        "D07-022",
+        "D07-023",
+        "D07-027",
+        "D07-045"
+      ],
+      "worktree-delete-execution.ts": [
+        "D07-044"
+      ],
+      "worktree-delete-request.ts": [
+        "D07-029"
+      ],
+      "worktree-delete-state-host-match.ts": [
+        "D07-043"
+      ]
+    },
+    "symbols": {
+      "SidebarWorkspaceOptionsMenu.tsx:default": [
+        "D07-010"
+      ],
+      "WorkspaceStatusAppearancePopover.tsx:default": [
+        "D07-006"
+      ],
+      "DeleteWorktreeDirtyChangeHint": [
+        "D07-034"
+      ],
+      "DeleteWorktreeLineageNotice": [
+        "D07-035"
+      ],
+      "DeleteWorktreeSkipConfirmOption": [
+        "D07-036"
+      ],
+      "DeleteWorktreeWarningPanels": [
+        "D07-037"
+      ],
+      "WorkspaceSleepMenuItems": [
+        "D07-001",
+        "D07-002",
+        "D07-003"
+      ],
+      "WorkspaceStatusAppearancePopover": [
+        "D07-006",
+        "D07-007",
+        "D07-008"
+      ],
+      "isFolderWorkspaceDelete": [
+        "D07-032"
+      ],
+      "countFolderWorkspaceDeletes": [
+        "D07-032"
+      ],
+      "getDeleteWorktreeDialogCopy": [
+        "D07-032"
+      ],
+      "getDeleteWorktreeLineageDialogCopy": [
+        "D07-032"
+      ],
+      "runDialogForceDelete": [
+        "D07-039"
+      ],
+      "orderDeleteWorktreeStatusHydrationTargets": [
+        "D07-033"
+      ],
+      "getDeleteWorktreeDirtyChangeCounts": [
+        "D07-033"
+      ],
+      "showDeleteWorktreeFailureToast": [
+        "D07-041"
+      ],
+      "runWorktreeDelete": [
+        "D07-028",
+        "D07-031"
+      ],
+      "runWorktreeBatchDelete": [
+        "D07-029"
+      ],
+      "runLineageDeleteAll": [
+        "D07-040"
+      ],
+      "persistDeleteWorktreeConfirmSkipPreference": [
+        "D07-038"
+      ],
+      "DeleteWorktreeToastCopy": [
+        "D07-042"
+      ],
+      "getDeleteWorktreeToastCopy": [
+        "D07-042"
+      ],
+      "HoveredWorkspaceDeleteTarget": [
+        "D07-025"
+      ],
+      "getHoveredWorkspaceIdentity": [
+        "D07-025"
+      ],
+      "resolveHoveredWorkspaceDeleteTarget": [
+        "D07-025"
+      ],
+      "deleteHoveredWorkspaceImmediately": [
+        "D07-025"
+      ],
+      "GROUP_BY_OPTIONS": [
+        "D07-012"
+      ],
+      "CARD_LAYOUT_OPTIONS": [
+        "D07-015"
+      ],
+      "AGENT_ACTIVITY_DISPLAY_OPTIONS": [
+        "D07-015"
+      ],
+      "WorktreeCardPropertyOption": [
+        "D07-015"
+      ],
+      "getWorktreeCardPropertyOptions": [
+        "D07-015"
+      ],
+      "WORKTREE_CARD_PROPERTY_OPTIONS": [
+        "D07-015"
+      ],
+      "SORT_OPTIONS": [
+        "D07-013"
+      ],
+      "PROJECT_ORDER_OPTIONS": [
+        "D07-014"
+      ],
+      "runSleepWorktree": [
+        "D07-004"
+      ],
+      "runSleepWorktrees": [
+        "D07-001",
+        "D07-002",
+        "D07-004"
+      ],
+      "useWorktreeContextMenuCommands": [
+        "D07-001",
+        "D07-020",
+        "D07-021",
+        "D07-022",
+        "D07-023"
+      ],
+      "WorktreeContextMenuProps": [
+        "D07-016"
+      ],
+      "useWorktreeContextMenuModel": [
+        "D07-002",
+        "D07-016",
+        "D07-018"
+      ],
+      "WorktreeContextMenuModel": [
+        "D07-016"
+      ],
+      "useWorktreeContextMenuSecondaryActions": [
+        "D07-019",
+        "D07-023"
+      ],
+      "getWorkspaceDeleteLineage": [
+        "D07-028",
+        "D07-030"
+      ],
+      "useWorkspaceDeleteModifierPressed": [
+        "D07-024"
+      ],
+      "canShowWorkspaceDeleteQuickAction": [
+        "D07-024"
+      ],
+      "WorkspaceLineageMenuActions": [
+        "D07-003"
+      ],
+      "hasSleepableWorkspaceActivity": [
+        "D07-001",
+        "D07-003"
+      ],
+      "getWorkspaceLineageMenuActions": [
+        "D07-003"
+      ],
+      "useWorkspaceLineageMenuActions": [
+        "D07-003"
+      ],
+      "useWorkspaceOptionsFilterBadge": [
+        "D07-010"
+      ],
+      "WorkspaceOptionsMenuItems": [
+        "D07-011",
+        "D07-012",
+        "D07-013",
+        "D07-014",
+        "D07-015"
+      ],
+      "WorkspaceStatusIconOption": [
+        "D07-008"
+      ],
+      "getWorkspaceStatusIconOptions": [
+        "D07-008"
+      ],
+      "ConductorDoneIcon": [
+        "D07-008"
+      ],
+      "ConductorReviewIcon": [
+        "D07-008"
+      ],
+      "ConductorProgressIcon": [
+        "D07-008"
+      ],
+      "getWorkspaceStatusColorOptions": [
+        "D07-007"
+      ],
+      "getWorkspaceStatusVisualMeta": [
+        "D07-009"
+      ],
+      "WorktreeContextMenuDeleteIntent": [
+        "D07-026"
+      ],
+      "createWorktreeContextMenuDeleteIntent": [
+        "D07-026"
+      ],
+      "runWorktreeContextMenuDeleteIntent": [
+        "D07-026"
+      ],
+      "deferWorktreeContextMenuDeleteIntent": [
+        "D07-026"
+      ],
+      "CLOSE_ALL_CONTEXT_MENUS_EVENT": [
+        "D07-016",
+        "D07-017"
+      ],
+      "WORKTREE_CONTEXT_MENU_SCOPE_ATTR": [
+        "D07-017"
+      ],
+      "WORKTREE_NATIVE_CONTEXT_MENU_ATTR": [
+        "D07-017"
+      ],
+      "PARENT_PICKER_EXIT_ANIMATION_MS": [
+        "D07-017"
+      ],
+      "EMPTY_TABS_BY_WORKTREE": [
+        "D07-017"
+      ],
+      "EMPTY_PTY_IDS_BY_TAB_ID": [
+        "D07-017"
+      ],
+      "EMPTY_BROWSER_TABS_BY_WORKTREE": [
+        "D07-017"
+      ],
+      "EMPTY_DELETE_STATE_BY_WORKTREE_ID": [
+        "D07-017"
+      ],
+      "EMPTY_WORKTREE_LINEAGE_BY_ID": [
+        "D07-017"
+      ],
+      "EMPTY_WORKSPACE_LINEAGE_BY_CHILD_KEY": [
+        "D07-017"
+      ],
+      "EMPTY_CYCLIC_LINEAGE_IDS": [
+        "D07-017"
+      ],
+      "selectMenuScopedMap": [
+        "D07-017"
+      ],
+      "shouldRevealWorktreeDeveloperMenu": [
+        "D07-018"
+      ],
+      "hasWorktreeParentLink": [
+        "D07-023"
+      ],
+      "shouldUseNativeContextMenu": [
+        "D07-017"
+      ],
+      "shouldIgnoreNestedWorktreeContextMenuScope": [
+        "D07-017"
+      ],
+      "shouldSuppressContextMenuFollowUpClick": [
+        "D07-019"
+      ],
+      "getWorktreeParentPickerLabel": [
+        "D07-023"
+      ],
+      "isWorktreeParentPickerDisabled": [
+        "D07-023"
+      ],
+      "getWorktreeParentPickerAnchor": [
+        "D07-023"
+      ],
+      "shouldRemoveProjectFromContextMenu": [
+        "D07-045"
+      ],
+      "isContextWorktreeDeletable": [
+        "D07-045"
+      ],
+      "shouldContinueDeleteSiblingPositionRestore": [
+        "D07-027"
+      ],
+      "preserveDeleteSiblingPosition": [
+        "D07-027"
+      ],
+      "WorkspaceStatusAssignmentPlan": [
+        "D07-022"
+      ],
+      "planWorkspaceStatusAssignment": [
+        "D07-022"
+      ],
+      "runWorktreeDeletesInParallel": [
+        "D07-044"
+      ],
+      "WorktreeBatchDeleteOptions": [
+        "D07-029"
+      ],
+      "WorktreeDeleteIdentity": [
+        "D07-029"
+      ],
+      "WorktreeDeleteOptions": [
+        "D07-029"
+      ],
+      "WorktreeDeleteWithToastOptions": [
+        "D07-044"
+      ],
+      "toWorktreeDeleteIdentities": [
+        "D07-029"
+      ],
+      "WorktreeDeleteTargetLookup": [
+        "D07-029"
+      ],
+      "resolveWorktreeBatchDeleteTargets": [
+        "D07-029"
+      ],
+      "readWorktreeDeleteIdentities": [
+        "D07-029"
+      ],
+      "getDeleteStateForWorktreeHost": [
+        "D07-043"
+      ]
+    },
+    "tests": {
+      "components/sidebar/delete-worktree-dirty-change-counts.test.ts:28 :: describe delete-worktree status hydration ordering": "INFRA: describe suite header for delete-worktree status hydration ordering",
+      "components/sidebar/delete-worktree-dirty-change-counts.test.ts:29 :: it orders the active target first, visible targets next, and descendants last": "D07-033",
+      "components/sidebar/delete-worktree-failure-toast.test.tsx:50 :: describe showDeleteWorktreeFailureToast": "INFRA: describe suite header for showDeleteWorktreeFailureToast",
+      "components/sidebar/delete-worktree-failure-toast.test.tsx:51 :: it uses a persistent in-body action footer when force delete is available": "D07-026",
+      "components/sidebar/delete-worktree-failure-toast.test.tsx:93 :: it keeps non-forceable failures destructive without a force action": "D07-030",
+      "components/sidebar/delete-worktree-failure-toast.test.tsx:127 :: it offers Delete Anyway when the archive hook refused the removal": "D07-041",
+      "components/sidebar/delete-worktree-failure-toast.test.tsx:157 :: it does not offer Delete Anyway for an ordinary failure": "D07-041",
+      "components/sidebar/delete-worktree-failure-toast.test.tsx:172 :: it offers neither force delete nor View for a locked workspace": "D07-041",
+      "components/sidebar/delete-worktree-failure-toast.test.tsx:196 :: it keeps View for a locked workspace when changed files are known": "D07-041",
+      "components/sidebar/delete-worktree-flow.test.ts:125 :: describe delete worktree flow": "INFRA: describe suite header for delete worktree flow",
+      "components/sidebar/delete-worktree-flow.test.ts:142 :: it filters main worktrees and opens a batch confirmation for eligible targets": "D07-029",
+      "components/sidebar/delete-worktree-flow.test.ts:161 :: it opens the single-delete confirmation when only one target is eligible": "D07-029",
+      "components/sidebar/delete-worktree-flow.test.ts:173 :: it treats duplicate selected ids as one delete target": "D07-029",
+      "components/sidebar/delete-worktree-flow.test.ts:186 :: it rejects the whole batch when a selected path belongs to a different instance": "D07-029",
+      "components/sidebar/delete-worktree-flow.test.ts:209 :: it opens batch confirmation when every selected instance is still current": "D07-029",
+      "components/sidebar/delete-worktree-flow.test.ts:232 :: it revalidates each queued instance immediately before execution": "D07-044",
+      "components/sidebar/delete-worktree-flow.test.ts:275 :: it keeps batch deletes behind confirmation when confirmation is skipped": "D07-029",
+      "components/sidebar/delete-worktree-flow.test.ts:298 :: it runs a single eligible delete immediately when confirmation is skipped": "D07-028",
+      "components/sidebar/delete-worktree-flow.test.ts:316 :: it notifies onDeleted after a skip-confirm force delete succeeds": "D07-031",
+      "components/sidebar/delete-worktree-flow.test.ts:354 :: it opens the diff without re-seeding a shell when View changes is clicked": "D07-041",
+      "components/sidebar/delete-worktree-flow.test.ts:375 :: it does not offer force delete for a locked worktree": "D07-041",
+      "components/sidebar/delete-worktree-flow.test.ts:404 :: it does not offer force from another host": "D07-043",
+      "components/sidebar/delete-worktree-flow.test.ts:424 :: it keeps parent worktree deletes behind confirmation even when confirmation is skipped": "D07-031",
+      "components/sidebar/delete-worktree-flow.test.ts:458 :: it keeps context-menu parent deletes behind confirmation even when confirmation is skipped": "D07-031",
+      "components/sidebar/delete-worktree-flow.test.ts:489 :: it reports a stale list instead of silently dropping a delete whose row vanished": "D07-028",
+      "components/sidebar/delete-worktree-flow.test.ts:506 :: it rejects a delayed delete when the path now belongs to a different instance": "D07-028",
+      "components/sidebar/delete-worktree-flow.test.ts:522 :: it runs a delayed delete when the captured instance is still current": "D07-028",
+      "components/sidebar/delete-worktree-flow.test.ts:537 :: it stays silent for a folder workspace, which this funnel does not route": "D07-028",
+      "components/sidebar/delete-worktree-flow.test.ts:547 :: it does not report a stale list when the workspace is still present": "D07-028",
+      "components/sidebar/delete-worktree-flow.test.ts:560 :: it opens project removal confirmation for a primary workspace": "D07-028",
+      "components/sidebar/delete-worktree-flow.test.ts:583 :: it routes primary workspace removal to its exact SSH host": "D07-028",
+      "components/sidebar/delete-worktree-flow.test.ts:608 :: it can force confirmation for a single eligible delete": "D07-029",
+      "components/sidebar/delete-worktree-flow.test.ts:625 :: it reports when no selected worktrees are eligible": "D07-029",
+      "components/sidebar/delete-worktree-flow.test.ts:640 :: it reports a Delete Anyway success to the caller like a force retry": "D07-041",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:87 :: describe runWorktreeDeletesInParallel": "INFRA: describe suite header for runWorktreeDeletesInParallel",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:105 :: it uses one snapshot prune batch for a 100-workspace delete": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:139 :: it starts every selected delete before waiting for earlier deletes to finish": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:180 :: it marks every same-repo target deleting before serialized deletes finish": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:226 :: it deletes nested workspaces before their parent within the same repo": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:250 :: it passes confirmed force to each delete": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:277 :: it deletes a duplicated target identity only once": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:301 :: it deletes both host-qualified targets when they share a worktree id": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:341 :: it clears a pending ancestor when a nested descendant delete fails": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:373 :: it does not let a failed child on one host block an ancestor on another host": "D07-044",
+      "components/sidebar/delete-worktree-parallel-flow.test.ts:407 :: it replaces per-workspace branch warnings with one batch result": "D07-044",
+      "components/sidebar/delete-worktree-toast.test.ts:12 :: describe getDeleteWorktreeToastCopy": "INFRA: describe suite header for getDeleteWorktreeToastCopy",
+      "components/sidebar/delete-worktree-toast.test.ts:13 :: it uses direct guidance when force delete is available": "D07-042",
+      "components/sidebar/delete-worktree-toast.test.ts:23 :: it uses terminal-teardown guidance when a PTY stop could not be proven": "D07-042",
+      "components/sidebar/delete-worktree-toast.test.ts:39 :: it names the running terminals when verification proved they are still live": "D07-042",
+      "components/sidebar/delete-worktree-toast.test.ts:55 :: it offers force delete when an agent session could not be confirmed closed": "D07-042",
+      "components/sidebar/delete-worktree-toast.test.ts:72 :: it names the running agent sessions when the close left them attached": "D07-042",
+      "components/sidebar/delete-worktree-toast.test.ts:88 :: it offers force delete when the teardown sweep itself timed out": "D07-042",
+      "components/sidebar/delete-worktree-toast.test.ts:104 :: it offers force delete when the sweep failed rather than timed out": "D07-001",
+      "components/sidebar/delete-worktree-toast.test.ts:118 :: it uses orphaned-directory guidance when Git tracking is already gone": "D07-026",
+      "components/sidebar/delete-worktree-toast.test.ts:133 :: it uses stale-row guidance when Git already removed the worktree directory": "D07-025",
+      "components/sidebar/delete-worktree-toast.test.ts:147 :: it preserves the raw error when force delete is unavailable": "D07-042",
+      "components/sidebar/delete-worktree-toast.test.ts:155 :: it uses lock-specific guidance": "D07-042",
+      "components/sidebar/delete-worktree-toast.test.ts:164 :: it includes the structured Git lock reason in localized recovery copy": "D07-042",
+      "components/sidebar/hovered-workspace-delete.test.ts:53 :: describe hovered workspace delete": "INFRA: describe suite header for hovered workspace delete",
+      "components/sidebar/hovered-workspace-delete.test.ts:54 :: it uses the deepest hovered worktree row": "D07-025",
+      "components/sidebar/hovered-workspace-delete.test.ts:65 :: it resolves the exact hovered host instead of the active workspace": "D07-025",
+      "components/sidebar/hovered-workspace-delete.test.ts:77 :: it retains the hovered host when resolving a folder workspace": "D07-025",
+      "components/sidebar/hovered-workspace-delete.test.ts:94 :: it rejects primary worktrees, stale rows, and missing hover": "D07-025",
+      "components/sidebar/hovered-workspace-delete.test.ts:113 :: it rejects worktrees that are already deleting": "D07-025",
+      "components/sidebar/hovered-workspace-delete.test.ts:133 :: it rejects hovered rows while an editable control has focus": "D07-025",
+      "components/sidebar/hovered-workspace-delete.test.ts:154 :: it routes the hovered worktree through the host-qualified safety flow": "D07-025",
+      "components/sidebar/hovered-workspace-delete.test.ts:175 :: it removes a hovered folder workspace from Orca without deleting its directory": "D07-025",
+      "components/sidebar/hovered-workspace-delete.test.ts:199 :: it rejects a duplicate folder delete while the first request is pending": "D07-025",
+      "components/sidebar/sidebar-workspace-option-items.test.ts:8 :: describe worktree card property options": "INFRA: describe suite header for worktree card property options",
+      "components/sidebar/sidebar-workspace-option-items.test.ts:9 :: it keeps the combined Tasks option by default": "D07-015",
+      "components/sidebar/sidebar-workspace-option-items.test.ts:25 :: it splits issue providers only when new card style is on": "D07-015",
+      "components/sidebar/sidebar-workspace-option-items.test.ts:42 :: it uses branch-only copy by default and without project groups": "D07-009",
+      "components/sidebar/sidebar-workspace-option-items.test.ts:53 :: it keeps branch-only copy for legacy cards even with project groups": "D07-004",
+      "components/sidebar/sidebar-workspace-option-items.test.ts:59 :: it mentions folder paths only for new card style with project groups": "D07-015",
+      "components/sidebar/sleep-worktree-flow.test.ts:53 :: describe runSleepWorktree": "INFRA: describe suite header for runSleepWorktree",
+      "components/sidebar/sleep-worktree-flow.test.ts:78 :: it tears down browsers before terminals on the sleep path": "D07-003",
+      "components/sidebar/sleep-worktree-flow.test.ts:99 :: it clears activeWorktreeId before teardown when the slept worktree is active": "D07-004",
+      "components/sidebar/sleep-worktree-flow.test.ts:110 :: it marks sleep intent before clearing the active slept worktree and keeps it after teardown": "D07-004",
+      "components/sidebar/sleep-worktree-flow.test.ts:123 :: it preserves active row position through section-scoped sidebar row ids": "D07-005",
+      "components/sidebar/sleep-worktree-flow.test.ts:152 :: it anchors sleep restoration to the natural duplicate row when no primary row is marked": "D07-005",
+      "components/sidebar/sleep-worktree-flow.test.ts:194 :: it leaves activeWorktreeId alone and marks a background worktree slept": "D07-004",
+      "components/sidebar/sleep-worktree-flow.test.ts:205 :: it leaves a worktree the user activated mid-batch awake": "D07-004",
+      "components/sidebar/sleep-worktree-flow.test.ts:225 :: it marks each worktree only when its own teardown starts": "D07-004",
+      "components/sidebar/sleep-worktree-flow.test.ts:246 :: it surfaces a toast and skips terminals when browsers throws": "D07-005",
+      "components/sidebar/sleep-worktree-flow.test.ts:267 :: it restores the active workspace when terminal convergence fails": "D07-005",
+      "components/sidebar/sleep-worktree-flow.test.ts:286 :: it continues sleeping later worktrees when one selected worktree fails": "D07-005",
+      "components/sidebar/sleep-worktree-flow.test.ts:313 :: it sleeps multiple worktrees and clears active only once when included": "D07-002",
+      "components/sidebar/workspace-delete-lineage.test.ts:48 :: describe getWorkspaceDeleteLineage": "INFRA: describe suite header for getWorkspaceDeleteLineage",
+      "components/sidebar/workspace-delete-lineage.test.ts:49 :: it returns valid descendants for parent delete copy and child-first delete-all targets": "D07-030",
+      "components/sidebar/workspace-delete-lineage.test.ts:67 :: it ignores stale instance links": "D07-030",
+      "components/sidebar/workspace-delete-lineage.test.ts:82 :: it orders an exact inline-only legacy descendant before its parent": "D07-030",
+      "components/sidebar/workspace-delete-lineage.test.ts:93 :: it keeps a stale side-map child authoritative over valid inline lineage": "D07-030",
+      "components/sidebar/workspace-delete-lineage.test.ts:109 :: it rejects cross-repo, cross-host, and cross-project descendants": "D07-030",
+      "components/sidebar/workspace-delete-lineage.test.ts:133 :: it does not traverse cyclic projected lineage": "D07-025",
+      "components/sidebar/workspace-delete-lineage.test.ts:149 :: it resolves a colliding child id to the parent host": "D07-030",
+      "components/sidebar/workspace-delete-lineage.test.ts:167 :: it keeps the parent host preference stable regardless of row order": "D07-030",
+      "components/sidebar/workspace-delete-lineage.test.ts:185 :: it uses the confirmed host inline lineage when the bare projection belongs to the other host": "D07-030",
+      "components/sidebar/workspace-lineage-menu-actions.test.ts:44 :: describe workspace lineage menu actions": "INFRA: describe suite header for workspace lineage menu actions",
+      "components/sidebar/workspace-lineage-menu-actions.test.ts:45 :: it collects recursive descendants and only targets workspaces with active panels for sleep": "D07-001",
+      "components/sidebar/workspace-lineage-menu-actions.test.ts:78 :: it does not expose stale descendants through the recursive action scope": "D07-003",
+      "components/sidebar/workspace-lineage-menu-actions.test.ts:103 :: describe hasSleepableWorkspaceActivity": "INFRA: describe suite header for hasSleepableWorkspaceActivity",
+      "components/sidebar/workspace-lineage-menu-actions.test.ts:104 :: it treats preserved empty PTY arrays as slept, not live": "D07-001",
+      "components/sidebar/workspace-lineage-menu-actions.test.ts:114 :: it detects live terminal and browser activity": "D07-001",
+      "components/sidebar/workspace-status.test.ts:30 :: describe workspace status drag data": "INFRA: describe suite header for workspace status drag data",
+      "components/sidebar/workspace-status.test.ts:31 :: it keeps the legacy single worktree payload when writing a selected batch": "D07-009",
+      "components/sidebar/workspace-status.test.ts:42 :: it round-trips selected worktree ids for board batch drops": "D07-009",
+      "components/sidebar/workspace-status.test.ts:52 :: it falls back to the single worktree payload for older drag sources": "D07-009",
+      "components/sidebar/workspace-status.test.ts:60 :: it ignores invalid decoded worktree ids while preserving valid batch ids": "D07-009",
+      "components/sidebar/workspace-status.test.ts:70 :: it ignores oversized plain-text workspace drag fallbacks": "D07-009",
+      "components/sidebar/workspace-status.test.ts:80 :: it ignores multibyte oversized workspace drag fallbacks": "D07-009",
+      "components/sidebar/workspace-status.test.ts:89 :: it does not fall back to plain text when the typed id batch is oversized": "D07-009",
+      "components/sidebar/workspace-status.test.ts:100 :: it rejects oversized selected worktree id batches": "D07-009",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:17 :: describe createWorktreeContextMenuDeleteIntent": "INFRA: describe suite header for createWorktreeContextMenuDeleteIntent",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:18 :: it routes a same-id row through the host that owns the context menu": "D07-026",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:35 :: it keeps every selected host in a colliding batch": "D07-026",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:51 :: it preserves the folder owner host in a context-menu delete intent": "D07-026",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:71 :: describe deferWorktreeContextMenuDeleteIntent": "INFRA: describe suite header for deferWorktreeContextMenuDeleteIntent",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:81 :: it dispatches the selected workspace identity after the menu event completes": "D07-026",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:104 :: it preserves every selected workspace identity for batch validation": "D07-001",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:118 :: it dispatches on the next macrotask by default": "D07-026",
+      "components/sidebar/worktree-delete-host-qualification.test.ts:129 :: describe STA-4343 sidebar delete: the confirmed row decides the host": "INFRA: describe suite header for STA-4343 sidebar delete: the confirmed row decides the host",
+      "components/sidebar/worktree-delete-host-qualification.test.ts:130 :: it deletes the SSH row and leaves the ACTIVE local checkout on disk": "D07-043",
+      "components/sidebar/worktree-delete-host-qualification.test.ts:161 :: it routes the batch delete path to the confirmed host too": "D07-029",
+      "components/sidebar/worktree-delete-host-qualification.test.ts:187 :: it tears down shared renderer state after both same-id host rows finish deleting": "D07-043",
+      "components/sidebar/worktree-delete-host-qualification.test.ts:218 :: it still deletes the local checkout for real when the local row is the one deleted": "D07-043",
+      "components/sidebar/worktree-delete-host-qualification.test.ts:239 :: it still deletes an ordinary single-host SSH workspace for real": "D07-043",
+      "components/sidebar/worktree-delete-position-scaling.test.ts:36 :: it measures each mounted sidebar row once when choosing a delete-position anchor": "D07-027",
+      "components/sidebar/worktree-delete-position-scaling.test.ts:48 :: it anchors on the same row the pre-hoist comparator sort would have chosen": "D07-027",
+      "components/sidebar/worktree-delete-request.test.ts:44 :: describe resolveWorktreeBatchDeleteTargets": "INFRA: describe suite header for resolveWorktreeBatchDeleteTargets",
+      "components/sidebar/worktree-delete-request.test.ts:48 :: it reaches the second host row even though the local row is listed first": "D07-027",
+      "components/sidebar/worktree-delete-request.test.ts:57 :: it resolves the local row when that is the one confirmed": "D07-029",
+      "components/sidebar/worktree-delete-request.test.ts:66 :: it keeps both hosts when both rows are confirmed in one batch": "D07-029",
+      "components/sidebar/worktree-delete-request.test.ts:76 :: it refuses when the confirmed host no longer has a row": "D07-029",
+      "components/sidebar/worktree-delete-request.test.ts:85 :: it refuses when the row on the confirmed host was replaced": "D07-029",
+      "components/sidebar/worktree-delete-request.test.ts:96 :: it keeps first-wins for a bare id request that names no host": "D07-029",
+      "components/sidebar/worktree-delete-request.test.ts:102 :: it skips a main worktree without failing the batch": "D07-029",
+      "components/sidebar/worktree-delete-request.test.ts:114 :: describe readWorktreeDeleteIdentities": "INFRA: describe suite header for readWorktreeDeleteIdentities",
+      "components/sidebar/worktree-delete-request.test.ts:115 :: it carries the host through the modal data round trip": "D07-029",
+      "components/sidebar/worktree-delete-request.test.ts:125 :: it drops a host that is not a valid execution host id": "D07-028"
+    },
+    "labels": {
+      "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx:3 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D07-034",
+      "components/sidebar/SidebarWorkspaceOptionsMenu.tsx:9 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D07-010",
+      "components/sidebar/SidebarWorkspaceOptionsMenu.tsx:46 :: aria-label={": "D07-010",
+      "components/sidebar/WorkspaceSleepMenuItems.tsx:3 :: import { DropdownMenuItem } from '@/components/ui/dropdown-menu'": "D07-001",
+      "components/sidebar/WorkspaceSleepMenuItems.tsx:4 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D07-001",
+      "components/sidebar/WorkspaceSleepMenuItems.tsx:30 :: <DropdownMenuItem onSelect={onSleep} disabled={sleepDisabled}>": "D07-001",
+      "components/sidebar/WorkspaceSleepMenuItems.tsx:33 :: </DropdownMenuItem>": "D07-001",
+      "components/sidebar/WorkspaceSleepMenuItems.tsx:50 :: <DropdownMenuItem onSelect={onSleepSubtree} disabled={subtreeSleepDisabled}>": "D07-001",
+      "components/sidebar/WorkspaceSleepMenuItems.tsx:57 :: </DropdownMenuItem>": "D07-001",
+      "components/sidebar/WorkspaceStatusAppearancePopover.tsx:4 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D07-006",
+      "components/sidebar/WorkspaceStatusAppearancePopover.tsx:37 :: aria-label={translate(": "D07-006",
+      "components/sidebar/WorkspaceStatusAppearancePopover.tsx:81 :: aria-label={translate(": "D07-006",
+      "components/sidebar/WorkspaceStatusAppearancePopover.tsx:110 :: aria-label={translate(": "D07-006",
+      "components/sidebar/delete-worktree-failure-toast.test.tsx:32 :: function clickButton(container: HTMLElement, label: string): void {": "INFRA: test clickButton helper with label parameter",
+      "components/sidebar/delete-worktree-preference-toast.ts:35 :: label: translate(": "D07-038",
+      "components/sidebar/sidebar-workspace-option-items.ts:52 :: label: string": "D07-015",
+      "components/sidebar/sidebar-workspace-option-items.ts:74 :: label: string": "D07-015",
+      "components/sidebar/workspace-options-menu-items.tsx:12 :: import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'": "D07-010",
+      "components/sidebar/workspace-status-icon-options.ts:24 :: label: string": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:32 :: label: translate('auto.components.sidebar.workspace.status.b4a7101fe1', 'Circle'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:37 :: label: translate('auto.components.sidebar.workspace.status.a702bc08d4', 'Dot'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:42 :: label: translate('auto.components.sidebar.workspace.status.226d1e7773', 'Progress'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:47 :: label: translate('auto.components.sidebar.workspace.status.821d156f54', 'Dashed'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:52 :: label: translate('auto.components.sidebar.workspace.status.5f9ca31a84', 'Waiting'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:57 :: label: translate('auto.components.sidebar.workspace.status.409528031f', 'Review'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:62 :: label: translate('auto.components.sidebar.workspace.status.251c817bdd', 'Timer'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:67 :: label: translate('auto.components.sidebar.workspace.status.6380517b10', 'Flag'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:72 :: label: translate('auto.components.sidebar.workspace.status.642da473f2', 'Alert'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:77 :: label: translate('auto.components.sidebar.workspace.status.111db162bf', 'Paused'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:82 :: label: translate('auto.components.sidebar.workspace.status.2c19d1db33', 'Play'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:87 :: label: translate('auto.components.sidebar.workspace.status.6b8285b8dd', 'Done'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:92 :: label: translate('auto.components.sidebar.workspace.status.93ac840dcb', 'Blocked'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:97 :: label: translate('auto.components.sidebar.workspace.status.6b8285b8dd', 'Done'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:102 :: label: translate('auto.components.sidebar.workspace.status.6c1efa2cf8', 'In review'),": "D07-008",
+      "components/sidebar/workspace-status-icon-options.ts:107 :: label: translate('auto.components.sidebar.workspace.status.cb387159f6', 'In progress'),": "D07-008",
+      "components/sidebar/workspace-status.ts:51 :: label: string": "D07-007",
+      "components/sidebar/workspace-status.ts:61 :: label: translate('auto.components.sidebar.workspace.status.52e3c6e2a4', 'Neutral'),": "D07-007",
+      "components/sidebar/workspace-status.ts:69 :: label: translate('auto.components.sidebar.workspace.status.fc3b92756c', 'Blue'),": "D07-007",
+      "components/sidebar/workspace-status.ts:77 :: label: translate('auto.components.sidebar.workspace.status.6437a8c253', 'Sky'),": "D07-007",
+      "components/sidebar/workspace-status.ts:85 :: label: translate('auto.components.sidebar.workspace.status.1b81da243a', 'Violet'),": "D07-007",
+      "components/sidebar/workspace-status.ts:93 :: label: translate('auto.components.sidebar.workspace.status.7cebab6d4a', 'Amber'),": "D07-007",
+      "components/sidebar/workspace-status.ts:101 :: label: translate('auto.components.sidebar.workspace.status.ddf25b6262', 'Emerald'),": "D07-007",
+      "components/sidebar/workspace-status.ts:109 :: label: translate('auto.components.sidebar.workspace.status.7adb43ecf0', 'Rose'),": "D07-007",
+      "components/sidebar/workspace-status.ts:117 :: label: translate('auto.components.sidebar.workspace.status.caabd5ca85', 'Zinc'),": "D07-007",
+      "components/sidebar/workspace-status.ts:125 :: label: translate('auto.components.sidebar.workspace.status.895f381714', 'Conductor Done'),": "D07-007",
+      "components/sidebar/workspace-status.ts:133 :: label: translate('auto.components.sidebar.workspace.status.caebe3c10f', 'Conductor Review'),": "D07-007",
+      "components/sidebar/workspace-status.ts:141 :: label: translate('auto.components.sidebar.workspace.status.1a9383112b', 'Conductor Progress'),": "D07-007",
+      "components/sidebar/workspace-status.ts:153 :: label: translate('auto.components.sidebar.workspace.status.52e3c6e2a4', 'Neutral'),": "D07-007",
+      "components/sidebar/workspace-status.ts:166 :: label: translate('auto.components.sidebar.workspace.status.a702bc08d4', 'Dot'),": "D07-009"
+    },
+    "hotkeys": {
+      "components/sidebar/delete-worktree-flow.test.ts:535 :: // Why: the delete-current-workspace shortcut (useIpcEvents) forwards whatever workspace is": "D07-028",
+      "components/sidebar/workspace-delete-quick-action.ts:21 :: function onKeyDown(event: KeyboardEvent): void {": "D07-024",
+      "components/sidebar/workspace-delete-quick-action.ts:22 :: if (event.altKey || event.key === 'Alt') {": "D07-024",
+      "components/sidebar/workspace-delete-quick-action.ts:27 :: function onKeyUp(event: KeyboardEvent): void {": "D07-024",
+      "components/sidebar/workspace-delete-quick-action.ts:28 :: if (event.key === 'Alt' || !event.altKey) {": "D07-024",
+      "components/sidebar/worktree-delete-request.test.ts:5 :: * Both the delete-confirmation dialog and the batch shortcut funnel through": "D07-029"
+    },
+    "prefs": {},
+    "timers": {
+      "components/sidebar/sleep-worktree-flow.test.ts:62 :: requestAnimationFrame: vi.fn()": "INFRA: mocked window.requestAnimationFrame in sleep flow test",
+      "components/sidebar/sleep-worktree-flow.test.ts:124 :: const requestAnimationFrame = vi.fn(() => 1)": "INFRA: mocked window.requestAnimationFrame in sleep flow test",
+      "components/sidebar/sleep-worktree-flow.test.ts:144 :: vi.stubGlobal('window', { requestAnimationFrame })": "INFRA: mocked window.requestAnimationFrame in sleep flow test",
+      "components/sidebar/sleep-worktree-flow.test.ts:149 :: expect(requestAnimationFrame).toHaveBeenCalledTimes(1)": "INFRA: mocked window.requestAnimationFrame in sleep flow test",
+      "components/sidebar/sleep-worktree-flow.test.ts:153 :: const requestAnimationFrame = vi.fn(() => 1)": "INFRA: mocked window.requestAnimationFrame in sleep flow test",
+      "components/sidebar/sleep-worktree-flow.test.ts:185 :: vi.stubGlobal('window', { requestAnimationFrame })": "INFRA: mocked window.requestAnimationFrame in sleep flow test",
+      "components/sidebar/sleep-worktree-flow.ts:85 :: window.requestAnimationFrame(restore)": "D07-005",
+      "components/sidebar/sleep-worktree-flow.ts:106 :: window.requestAnimationFrame(restore)": "D07-005",
+      "components/sidebar/sleep-worktree-flow.ts:109 :: window.requestAnimationFrame(restore)": "D07-005",
+      "components/sidebar/use-worktree-context-menu-commands.ts:137 :: window.setTimeout(() => void runSleepWorktrees(worktreeIds), 50)": "D07-001",
+      "components/sidebar/use-worktree-context-menu-model.tsx:257 :: const timer = window.setTimeout(() => {": "D07-016",
+      "components/sidebar/use-worktree-context-menu-model.tsx:348 :: window.setTimeout(openPendingParentPicker, 0)": "D07-016",
+      "components/sidebar/worktree-context-menu-delete-intent.test.ts:120 :: vi.stubGlobal('window', { setTimeout })": "INFRA: mocked window.setTimeout in delete intent test",
+      "components/sidebar/worktree-context-menu-delete-intent.ts:74 :: defer: (callback: () => void) => void = (callback) => window.setTimeout(callback, 0)": "D07-026",
+      "components/sidebar/worktree-context-menu-policy.ts:221 :: window.requestAnimationFrame(restore)": "D07-027",
+      "components/sidebar/worktree-delete-position-scaling.test.ts:63 :: vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(0)": "INFRA: spy on window.requestAnimationFrame in position scaling test"
+    },
+    "subscriptions": {
+      "components/sidebar/use-worktree-context-menu-model.tsx:240 :: useEffect(() => {": "D07-016",
+      "components/sidebar/use-worktree-context-menu-model.tsx:267 :: useEffect(() => {": "D07-016",
+      "components/sidebar/use-worktree-context-menu-model.tsx:269 :: window.addEventListener(CLOSE_ALL_CONTEXT_MENUS_EVENT, closeMenu)": "D07-016",
+      "components/sidebar/use-worktree-context-menu-model.tsx:273 :: useEffect(": "D07-016",
+      "components/sidebar/workspace-delete-quick-action.ts:44 :: window.addEventListener('keydown', onKeyDown, { capture: true })": "D07-024",
+      "components/sidebar/workspace-delete-quick-action.ts:45 :: window.addEventListener('keyup', onKeyUp, { capture: true })": "D07-024",
+      "components/sidebar/workspace-delete-quick-action.ts:46 :: window.addEventListener('blur', clearDeleteModifierPressed)": "D07-024",
+      "components/sidebar/workspace-delete-quick-action.ts:48 :: document.addEventListener('visibilitychange', clearDeleteModifierPressed)": "D07-024"
+    },
+    "preload": {
+      "components/sidebar/sleep-worktree-flow.ts:191 :: if (typeof window !== 'undefined' && window.api?.ephemeralVm?.suspendWorkspace) {": "D07-004",
+      "components/sidebar/sleep-worktree-flow.ts:192 :: await window.api.ephemeralVm.suspendWorkspace({ workspaceId: worktreeId })": "D07-004",
+      "components/sidebar/use-worktree-context-menu-commands.ts:42 :: window.api.ui.writeClipboardText(args.worktree.path)": "D07-020"
+    }
+  }
+}

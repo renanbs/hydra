@@ -1,0 +1,5126 @@
+[
+ {
+  "path": "attention/agent-attention-contract.ts",
+  "loc": 85
+ },
+ {
+  "path": "components/CodexRestartChip.tsx",
+  "loc": 162
+ },
+ {
+  "path": "components/TerminalSearch.tsx",
+  "loc": 230
+ },
+ {
+  "path": "components/activity/activity-clear-completed.ts",
+  "loc": 242
+ },
+ {
+  "path": "components/activity/activity-event-build-cache.ts",
+  "loc": 129
+ },
+ {
+  "path": "components/activity/activity-event-builder-context.ts",
+  "loc": 182
+ },
+ {
+  "path": "components/activity/activity-event-builder-sources.ts",
+  "loc": 105
+ },
+ {
+  "path": "components/activity/activity-event-builder.ts",
+  "loc": 142
+ },
+ {
+  "path": "components/activity/activity-event-cap.ts",
+  "loc": 46
+ },
+ {
+  "path": "components/activity/activity-event-state.ts",
+  "loc": 38
+ },
+ {
+  "path": "components/activity/activity-pane-events.ts",
+  "loc": 113
+ },
+ {
+  "path": "components/activity/activity-portal-churn-budget.ts",
+  "loc": 42
+ },
+ {
+  "path": "components/activity/activity-portal-readiness-oscillation.ts",
+  "loc": 40
+ },
+ {
+  "path": "components/activity/activity-scope-filter-controls.tsx",
+  "loc": 94
+ },
+ {
+  "path": "components/activity/activity-scope-filter.ts",
+  "loc": 80
+ },
+ {
+  "path": "components/activity/activity-standalone-worktree.ts",
+  "loc": 67
+ },
+ {
+  "path": "components/activity/activity-tab-projection.ts",
+  "loc": 66
+ },
+ {
+  "path": "components/activity/activity-thread-builder.ts",
+  "loc": 170
+ },
+ {
+  "path": "components/activity/activity-thread-child-agent.ts",
+  "loc": 90
+ },
+ {
+  "path": "components/activity/activity-thread-grouping.ts",
+  "loc": 154
+ },
+ {
+  "path": "components/activity/activity-thread-hover-card-summary.tsx",
+  "loc": 230
+ },
+ {
+  "path": "components/activity/activity-thread-hover-card.tsx",
+  "loc": 407
+ },
+ {
+  "path": "components/activity/activity-thread-list-resize-handle.tsx",
+  "loc": 37
+ },
+ {
+  "path": "components/activity/activity-thread-list-toolbar.tsx",
+  "loc": 232
+ },
+ {
+  "path": "components/activity/activity-thread-options-menu.tsx",
+  "loc": 260
+ },
+ {
+  "path": "components/activity/activity-thread-presentation.ts",
+  "loc": 224
+ },
+ {
+  "path": "components/activity/activity-thread-row.tsx",
+  "loc": 253
+ },
+ {
+  "path": "components/activity/activity-thread-virtual-items.ts",
+  "loc": 74
+ },
+ {
+  "path": "components/activity/activity-thread-virtual-row.tsx",
+  "loc": 73
+ },
+ {
+  "path": "components/agent/AgentCombobox.tsx",
+  "loc": 433
+ },
+ {
+  "path": "components/agent-session-continuation/AgentSessionContinuationDialog.tsx",
+  "loc": 309
+ },
+ {
+  "path": "components/agent-session-continuation/agent-session-continuation-selection.ts",
+  "loc": 16
+ },
+ {
+  "path": "components/browser-pane/describe-page/live-browser-url-registry.ts",
+  "loc": 19
+ },
+ {
+  "path": "components/browser-pane/host-guest/browser-page-mount-admission.ts",
+  "loc": 63
+ },
+ {
+  "path": "components/browser-pane/host-guest/browser-page-viewport.ts",
+  "loc": 283
+ },
+ {
+  "path": "components/browser-pane/host-guest/browser-page-zoom.ts",
+  "loc": 118
+ },
+ {
+  "path": "components/browser-pane/host-guest/webview-drag-passthrough.ts",
+  "loc": 59
+ },
+ {
+  "path": "components/browser-pane/host-guest/webview-registry.ts",
+  "loc": 290
+ },
+ {
+  "path": "components/contextual-tours/contextual-tour-gate.ts",
+  "loc": 241
+ },
+ {
+  "path": "components/contextual-tours/request-contextual-tour-when-ready.ts",
+  "loc": 64
+ },
+ {
+  "path": "components/dashboard/AgentDashboardSettingsMenu.tsx",
+  "loc": 133
+ },
+ {
+  "path": "components/dashboard/DashboardAgentChildDisclosure.tsx",
+  "loc": 74
+ },
+ {
+  "path": "components/dashboard/DashboardAgentRowMessage.tsx",
+  "loc": 64
+ },
+ {
+  "path": "components/dashboard/DashboardAgentRowToolStep.tsx",
+  "loc": 64
+ },
+ {
+  "path": "components/dashboard/DashboardAgentRowTrailingControls.tsx",
+  "loc": 182
+ },
+ {
+  "path": "components/dashboard/agent-row-pane-live-title.ts",
+  "loc": 29
+ },
+ {
+  "path": "components/dashboard/build-dashboard-bucket-counts.ts",
+  "loc": 219
+ },
+ {
+  "path": "components/dashboard/build-dashboard-snapshot.ts",
+  "loc": 287
+ },
+ {
+  "path": "components/dashboard/dashboard-card-bucket.ts",
+  "loc": 19
+ },
+ {
+  "path": "components/dashboard/dashboard-card-context.ts",
+  "loc": 96
+ },
+ {
+  "path": "components/dashboard/dashboard-card-labels.ts",
+  "loc": 60
+ },
+ {
+  "path": "components/dashboard/dashboard-card-terminal-input.ts",
+  "loc": 150
+ },
+ {
+  "path": "components/dashboard/dashboard-client-host.ts",
+  "loc": 32
+ },
+ {
+  "path": "components/dashboard/dashboard-orchestration-selection.ts",
+  "loc": 40
+ },
+ {
+  "path": "components/dashboard/dashboard-row-bucket.ts",
+  "loc": 48
+ },
+ {
+  "path": "components/dashboard/dashboard-snapshot-filter-options.ts",
+  "loc": 27
+ },
+ {
+  "path": "components/dashboard/dashboard-snapshot-workspaces.ts",
+  "loc": 183
+ },
+ {
+  "path": "components/dashboard/dashboard-subagent-cards.ts",
+  "loc": 36
+ },
+ {
+  "path": "components/dashboard/dashboard-worktree-launch-options.ts",
+  "loc": 127
+ },
+ {
+  "path": "components/dashboard/reveal-dashboard-agent.ts",
+  "loc": 23
+ },
+ {
+  "path": "components/dashboard/useLiveDashboardSnapshot.ts",
+  "loc": 149
+ },
+ {
+  "path": "components/dashboard/worktree-agent-rows-cache.ts",
+  "loc": 181
+ },
+ {
+  "path": "components/dashboard-popout/AgentDashboardFilterChips.tsx",
+  "loc": 87
+ },
+ {
+  "path": "components/dashboard-popout/AgentDashboardToolbar.tsx",
+  "loc": 228
+ },
+ {
+  "path": "components/dashboard-popout/AgentKanbanBoard.tsx",
+  "loc": 306
+ },
+ {
+  "path": "components/dashboard-popout/AgentKanbanCard.tsx",
+  "loc": 359
+ },
+ {
+  "path": "components/dashboard-popout/AgentTerminalDialog.tsx",
+  "loc": 201
+ },
+ {
+  "path": "components/dashboard-popout/AgentTerminalPreview.tsx",
+  "loc": 457
+ },
+ {
+  "path": "components/dashboard-popout/DashboardHostBadge.tsx",
+  "loc": 81
+ },
+ {
+  "path": "components/dashboard-popout/FilterOptionCount.tsx",
+  "loc": 4
+ },
+ {
+  "path": "components/dashboard-popout/agent-board-filtering.ts",
+  "loc": 106
+ },
+ {
+  "path": "components/dashboard-popout/agent-dashboard-filter-options.ts",
+  "loc": 95
+ },
+ {
+  "path": "components/dashboard-popout/preview-grid-claim.ts",
+  "loc": 95
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-app-menu-clipboard.ts",
+  "loc": 72
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-box-fit.ts",
+  "loc": 47
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-compatibility.ts",
+  "loc": 51
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-ime-bridge.ts",
+  "loc": 52
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-key-handler.ts",
+  "loc": 225
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-ligatures.ts",
+  "loc": 43
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-links.ts",
+  "loc": 26
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-options.ts",
+  "loc": 87
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-paste.ts",
+  "loc": 71
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-right-click-paste.ts",
+  "loc": 45
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-shortcuts.ts",
+  "loc": 60
+ },
+ {
+  "path": "components/dashboard-popout/preview-terminal-snapshot-replay.ts",
+  "loc": 41
+ },
+ {
+  "path": "components/dashboard-popout/terminal-preview-unavailable-message.ts",
+  "loc": 27
+ },
+ {
+  "path": "components/editor/check-run-details-tab.ts",
+  "loc": 69
+ },
+ {
+  "path": "components/editor/markdown-internal-links.ts",
+  "loc": 244
+ },
+ {
+  "path": "components/editor/mermaid-config.ts",
+  "loc": 14
+ },
+ {
+  "path": "components/editor/rich-markdown-code-block-languages.ts",
+  "loc": 67
+ },
+ {
+  "path": "components/feature-wall/use-integration-connection-status.ts",
+  "loc": 255
+ },
+ {
+  "path": "components/linear-issue-attribute-filter-team-ids.ts",
+  "loc": 211
+ },
+ {
+  "path": "components/link-actions/LinkActionPopover.tsx",
+  "loc": 197
+ },
+ {
+  "path": "components/link-actions/link-action-request.ts",
+  "loc": 24
+ },
+ {
+  "path": "components/link-routing-preference-dialog.tsx",
+  "loc": 260
+ },
+ {
+  "path": "components/native-chat/NativeChatCopyButton.tsx",
+  "loc": 69
+ },
+ {
+  "path": "components/native-chat/NativeChatView.tsx",
+  "loc": 66
+ },
+ {
+  "path": "components/native-chat/native-chat-availability.ts",
+  "loc": 73
+ },
+ {
+  "path": "components/native-chat/native-chat-composer-scope-cache.ts",
+  "loc": 24
+ },
+ {
+  "path": "components/native-chat/native-chat-launch-session-options.ts",
+  "loc": 34
+ },
+ {
+  "path": "components/native-chat/native-chat-leaf-routing.ts",
+  "loc": 123
+ },
+ {
+  "path": "components/native-chat/native-chat-send-eligibility.ts",
+  "loc": 27
+ },
+ {
+  "path": "components/native-chat/native-chat-session-option-cache.ts",
+  "loc": 55
+ },
+ {
+  "path": "components/native-chat/native-chat-session-option-enrichment.ts",
+  "loc": 121
+ },
+ {
+  "path": "components/native-chat/native-chat-shortcut.ts",
+  "loc": 33
+ },
+ {
+  "path": "components/native-chat/structured-agent-session-outbox-storage.ts",
+  "loc": 141
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-command-value.ts",
+  "loc": 2
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-cross-repo-dialog.tsx",
+  "loc": 92
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-github-direct-link.ts",
+  "loc": 111
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-localized-options.tsx",
+  "loc": 95
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-name-field-copy.ts",
+  "loc": 119
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-name-field-model.ts",
+  "loc": 105
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-name-field-surface.tsx",
+  "loc": 228
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-name-input-surface.tsx",
+  "loc": 309
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-provider-availability.ts",
+  "loc": 17
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-repo-slug.ts",
+  "loc": 61
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-source-popover-focus.ts",
+  "loc": 14
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-source-results-surface.tsx",
+  "loc": 156
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-source-results.ts",
+  "loc": 2
+ },
+ {
+  "path": "components/new-workspace/smart-workspace-source-row-content.tsx",
+  "loc": 168
+ },
+ {
+  "path": "components/new-workspace/use-jira-source-connection.ts",
+  "loc": 113
+ },
+ {
+  "path": "components/new-workspace/use-jira-url-source.ts",
+  "loc": 271
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-field-availability.ts",
+  "loc": 255
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-field-focus-controls.ts",
+  "loc": 94
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-github-search.ts",
+  "loc": 240
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-gitlab-search.ts",
+  "loc": 173
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-name-field-actions.ts",
+  "loc": 235
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-name-field-controller.ts",
+  "loc": 151
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-name-field-foundation.ts",
+  "loc": 201
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-name-field-presentation.ts",
+  "loc": 301
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-name-field-state.ts",
+  "loc": 99
+ },
+ {
+  "path": "components/new-workspace/use-smart-workspace-secondary-searches.ts",
+  "loc": 261
+ },
+ {
+  "path": "components/onboarding/OnboardingInlineCommandTerminal.tsx",
+  "loc": 382
+ },
+ {
+  "path": "components/pet/pet-blob-cache.ts",
+  "loc": 337
+ },
+ {
+  "path": "components/pet/pet-models.ts",
+  "loc": 53
+ },
+ {
+  "path": "components/pet/sprite-frame-detection.ts",
+  "loc": 104
+ },
+ {
+  "path": "components/right-sidebar/coalesced-poll-runner.ts",
+  "loc": 135
+ },
+ {
+  "path": "components/right-sidebar/parent-pr-checks-github-pr-cache.ts",
+  "loc": 96
+ },
+ {
+  "path": "components/right-sidebar/parent-pr-checks-hosted-review-cache.ts",
+  "loc": 91
+ },
+ {
+  "path": "components/right-sidebar/parent-pr-checks-row-status.ts",
+  "loc": 217
+ },
+ {
+  "path": "components/right-sidebar/push-target-upstream-refresh-cache.ts",
+  "loc": 149
+ },
+ {
+  "path": "components/right-sidebar/source-control-primary-action-titles.ts",
+  "loc": 20
+ },
+ {
+  "path": "components/right-sidebar/source-control-primary-action-types.ts",
+  "loc": 65
+ },
+ {
+  "path": "components/right-sidebar/source-control-primary-action.ts",
+  "loc": 257
+ },
+ {
+  "path": "components/settings/AgentSkillSetupFailureNotice.tsx",
+  "loc": 18
+ },
+ {
+  "path": "components/settings/FontAutocomplete.tsx",
+  "loc": 333
+ },
+ {
+  "path": "components/settings/SettingsConstants.ts",
+  "loc": 51
+ },
+ {
+  "path": "components/settings/TerminalThemePicker.tsx",
+  "loc": 207
+ },
+ {
+  "path": "components/settings/agent-skill-recheck-surface-sync.ts",
+  "loc": 19
+ },
+ {
+  "path": "components/settings/agent-skill-setup-panel-props.ts",
+  "loc": 45
+ },
+ {
+  "path": "components/settings/agent-skill-terminal-snapshot.ts",
+  "loc": 22
+ },
+ {
+  "path": "components/settings/settings-form-option-filter.ts",
+  "loc": 80
+ },
+ {
+  "path": "components/settings/settings-search.ts",
+  "loc": 163
+ },
+ {
+  "path": "components/setup-guide/setup-guide-browser-milestone-progress.ts",
+  "loc": 81
+ },
+ {
+  "path": "components/setup-guide/setup-guide-progress-readiness.ts",
+  "loc": 106
+ },
+ {
+  "path": "components/setup-guide/setup-script-probe-cache.ts",
+  "loc": 34
+ },
+ {
+  "path": "components/shared/kill-all-terminal-surfaces.ts",
+  "loc": 318
+ },
+ {
+  "path": "components/shared/useDaemonActions.tsx",
+  "loc": 331
+ },
+ {
+  "path": "components/skills/SkillFreshnessStatusPill.tsx",
+  "loc": 104
+ },
+ {
+  "path": "components/skills/skill-freshness-update-dialog.ts",
+  "loc": 31
+ },
+ {
+  "path": "components/status-bar/icons.tsx",
+  "loc": 345
+ },
+ {
+  "path": "components/tab-bar/reconcile-order.ts",
+  "loc": 48
+ },
+ {
+  "path": "components/terminal/initial-terminal.ts",
+  "loc": 7
+ },
+ {
+  "path": "components/terminal/pty-running-work-probe.ts",
+  "loc": 105
+ },
+ {
+  "path": "components/terminal/running-terminal-close-guard.ts",
+  "loc": 143
+ },
+ {
+  "path": "components/terminal/terminal-close-copy-kind.ts",
+  "loc": 38
+ },
+ {
+  "path": "components/terminal-pane/AgentSessionContinuationMenuItem.tsx",
+  "loc": 21
+ },
+ {
+  "path": "components/terminal-pane/CloseTerminalDialog.tsx",
+  "loc": 181
+ },
+ {
+  "path": "components/terminal-pane/MobileDriverOverlay.tsx",
+  "loc": 344
+ },
+ {
+  "path": "components/terminal-pane/SessionRestoredBanner.tsx",
+  "loc": 27
+ },
+ {
+  "path": "components/terminal-pane/SessionRestoredBannerPortals.tsx",
+  "loc": 34
+ },
+ {
+  "path": "components/terminal-pane/TerminalAgentSessionForkDialog.tsx",
+  "loc": 132
+ },
+ {
+  "path": "components/terminal-pane/TerminalContextMenu.tsx",
+  "loc": 355
+ },
+ {
+  "path": "components/terminal-pane/TerminalErrorToast.tsx",
+  "loc": 344
+ },
+ {
+  "path": "components/terminal-pane/TerminalPane.tsx",
+  "loc": 15
+ },
+ {
+  "path": "components/terminal-pane/TerminalPaneHeaderOverlay.tsx",
+  "loc": 407
+ },
+ {
+  "path": "components/terminal-pane/TerminalPaneNativeChatPortal.tsx",
+  "loc": 102
+ },
+ {
+  "path": "components/terminal-pane/TerminalPaneRuntimePortals.tsx",
+  "loc": 197
+ },
+ {
+  "path": "components/terminal-pane/TerminalPaneSurface.tsx",
+  "loc": 348
+ },
+ {
+  "path": "components/terminal-pane/TerminalProcessExitOverlay.tsx",
+  "loc": 61
+ },
+ {
+  "path": "components/terminal-pane/TerminalQuickCommandEditorDialog.tsx",
+  "loc": 32
+ },
+ {
+  "path": "components/terminal-pane/TerminalQuickCommandsSubmenu.tsx",
+  "loc": 162
+ },
+ {
+  "path": "components/terminal-pane/TerminalRemoteRuntimeReconnectBanner.tsx",
+  "loc": 72
+ },
+ {
+  "path": "components/terminal-pane/TerminalSessionStateSaveFailureDialog.tsx",
+  "loc": 76
+ },
+ {
+  "path": "components/terminal-pane/TerminalSshReconnectOverlay.tsx",
+  "loc": 239
+ },
+ {
+  "path": "components/terminal-pane/agent-completion-coordinator-types.ts",
+  "loc": 72
+ },
+ {
+  "path": "components/terminal-pane/agent-completion-coordinator.ts",
+  "loc": 335
+ },
+ {
+  "path": "components/terminal-pane/agent-hook-terminal-lifecycle.ts",
+  "loc": 26
+ },
+ {
+  "path": "components/terminal-pane/codex-auto-approval-notification-suppression.ts",
+  "loc": 87
+ },
+ {
+  "path": "components/terminal-pane/expand-collapse.ts",
+  "loc": 249
+ },
+ {
+  "path": "components/terminal-pane/ipc-pty-attach.ts",
+  "loc": 74
+ },
+ {
+  "path": "components/terminal-pane/ipc-pty-connect-result.ts",
+  "loc": 60
+ },
+ {
+  "path": "components/terminal-pane/ipc-pty-connect.ts",
+  "loc": 214
+ },
+ {
+  "path": "components/terminal-pane/ipc-pty-session-handlers.ts",
+  "loc": 168
+ },
+ {
+  "path": "components/terminal-pane/ipc-pty-spawn-request.ts",
+  "loc": 82
+ },
+ {
+  "path": "components/terminal-pane/keyboard-handlers.ts",
+  "loc": 13
+ },
+ {
+  "path": "components/terminal-pane/layout-serialization.ts",
+  "loc": 247
+ },
+ {
+  "path": "components/terminal-pane/leaf-scrollback-resolution.ts",
+  "loc": 22
+ },
+ {
+  "path": "components/terminal-pane/merge-captured-leaf-state.ts",
+  "loc": 30
+ },
+ {
+  "path": "components/terminal-pane/mobile-driver-overlay-visibility.ts",
+  "loc": 8
+ },
+ {
+  "path": "components/terminal-pane/native-chat-covered-pane.ts",
+  "loc": 21
+ },
+ {
+  "path": "components/terminal-pane/native-chat-leaf-title-agent.ts",
+  "loc": 43
+ },
+ {
+  "path": "components/terminal-pane/pane-agent-session-id.ts",
+  "loc": 27
+ },
+ {
+  "path": "components/terminal-pane/pane-helpers.ts",
+  "loc": 79
+ },
+ {
+  "path": "components/terminal-pane/pane-title-overlay-rects.ts",
+  "loc": 33
+ },
+ {
+  "path": "components/terminal-pane/pty-connection/pane-pty-layout-binding.ts",
+  "loc": 13
+ },
+ {
+  "path": "components/terminal-pane/pty-connection/pty-connect-limits.ts",
+  "loc": 51
+ },
+ {
+  "path": "components/terminal-pane/pty-connection-types.ts",
+  "loc": 145
+ },
+ {
+  "path": "components/terminal-pane/pty-data-sidecar-subscriptions.ts",
+  "loc": 29
+ },
+ {
+  "path": "components/terminal-pane/pty-delivery-interest.ts",
+  "loc": 37
+ },
+ {
+  "path": "components/terminal-pane/pty-dispatcher.ts",
+  "loc": 344
+ },
+ {
+  "path": "components/terminal-pane/pty-eager-buffer-clamp.ts",
+  "loc": 15
+ },
+ {
+  "path": "components/terminal-pane/pty-exit-delivery.ts",
+  "loc": 51
+ },
+ {
+  "path": "components/terminal-pane/pty-input-write-head-queue.ts",
+  "loc": 30
+ },
+ {
+  "path": "components/terminal-pane/pty-input-write-queue-contract.ts",
+  "loc": 39
+ },
+ {
+  "path": "components/terminal-pane/pty-input-write-queue.ts",
+  "loc": 318
+ },
+ {
+  "path": "components/terminal-pane/pty-output-processor.ts",
+  "loc": 267
+ },
+ {
+  "path": "components/terminal-pane/pty-output-side-effect-queue.ts",
+  "loc": 161
+ },
+ {
+  "path": "components/terminal-pane/pty-output-title-observer.ts",
+  "loc": 135
+ },
+ {
+  "path": "components/terminal-pane/pty-pre-handler-buffer.ts",
+  "loc": 374
+ },
+ {
+  "path": "components/terminal-pane/pty-preconnect-input-buffer.ts",
+  "loc": 210
+ },
+ {
+  "path": "components/terminal-pane/pty-shutdown-data-suspension.ts",
+  "loc": 196
+ },
+ {
+  "path": "components/terminal-pane/pty-shutdown-exit-deferral.ts",
+  "loc": 298
+ },
+ {
+  "path": "components/terminal-pane/pty-shutdown-host-generation.ts",
+  "loc": 79
+ },
+ {
+  "path": "components/terminal-pane/pty-shutdown-output-queue.ts",
+  "loc": 149
+ },
+ {
+  "path": "components/terminal-pane/pty-side-effect-pending-census.ts",
+  "loc": 65
+ },
+ {
+  "path": "components/terminal-pane/pty-transport-types.ts",
+  "loc": 284
+ },
+ {
+  "path": "components/terminal-pane/pty-transport.ts",
+  "loc": 284
+ },
+ {
+  "path": "components/terminal-pane/regular-terminal-focus-ownership.ts",
+  "loc": 165
+ },
+ {
+  "path": "components/terminal-pane/remote-pane-layout-push.ts",
+  "loc": 47
+ },
+ {
+  "path": "components/terminal-pane/renderer-owned-agent-status-registry.ts",
+  "loc": 62
+ },
+ {
+  "path": "components/terminal-pane/replay-guard.ts",
+  "loc": 281
+ },
+ {
+  "path": "components/terminal-pane/resolve-split-cwd.ts",
+  "loc": 103
+ },
+ {
+  "path": "components/terminal-pane/retire-unbound-ipc-terminal-pane.ts",
+  "loc": 67
+ },
+ {
+  "path": "components/terminal-pane/retire-unbound-runtime-terminal-pane.ts",
+  "loc": 60
+ },
+ {
+  "path": "components/terminal-pane/session-restored-banner-pane-state.ts",
+  "loc": 115
+ },
+ {
+  "path": "components/terminal-pane/shutdown-buffer-captures.ts",
+  "loc": 48
+ },
+ {
+  "path": "components/terminal-pane/terminal-agent-paste-bracketing.ts",
+  "loc": 93
+ },
+ {
+  "path": "components/terminal-pane/terminal-agent-session-continuation.ts",
+  "loc": 87
+ },
+ {
+  "path": "components/terminal-pane/terminal-agent-session-fork.ts",
+  "loc": 287
+ },
+ {
+  "path": "components/terminal-pane/terminal-appearance.ts",
+  "loc": 253
+ },
+ {
+  "path": "components/terminal-pane/terminal-bracketed-paste.ts",
+  "loc": 173
+ },
+ {
+  "path": "components/terminal-pane/terminal-clipboard-selection-text.ts",
+  "loc": 17
+ },
+ {
+  "path": "components/terminal-pane/terminal-context-menu-dismiss.ts",
+  "loc": 10
+ },
+ {
+  "path": "components/terminal-pane/terminal-ctrl-enter.ts",
+  "loc": 31
+ },
+ {
+  "path": "components/terminal-pane/terminal-delivery-watchdog.ts",
+  "loc": 278
+ },
+ {
+  "path": "components/terminal-pane/terminal-drop-handler.ts",
+  "loc": 118
+ },
+ {
+  "path": "components/terminal-pane/terminal-drop-internal-rejection-message.ts",
+  "loc": 16
+ },
+ {
+  "path": "components/terminal-pane/terminal-drop-pane-resolution.ts",
+  "loc": 38
+ },
+ {
+  "path": "components/terminal-pane/terminal-drop-path-writer.ts",
+  "loc": 92
+ },
+ {
+  "path": "components/terminal-pane/terminal-drop-shell.ts",
+  "loc": 44
+ },
+ {
+  "path": "components/terminal-pane/terminal-drop-target.ts",
+  "loc": 41
+ },
+ {
+  "path": "components/terminal-pane/terminal-drop-worktree-path.ts",
+  "loc": 19
+ },
+ {
+  "path": "components/terminal-pane/terminal-drop-write-failure.ts",
+  "loc": 23
+ },
+ {
+  "path": "components/terminal-pane/terminal-error-accumulation.ts",
+  "loc": 127
+ },
+ {
+  "path": "components/terminal-pane/terminal-fit-restore.ts",
+  "loc": 89
+ },
+ {
+  "path": "components/terminal-pane/terminal-freeze-breadcrumbs.ts",
+  "loc": 91
+ },
+ {
+  "path": "components/terminal-pane/terminal-freeze-report.ts",
+  "loc": 59
+ },
+ {
+  "path": "components/terminal-pane/terminal-http-link-activation.ts",
+  "loc": 5
+ },
+ {
+  "path": "components/terminal-pane/terminal-ime-composition-tracker.ts",
+  "loc": 141
+ },
+ {
+  "path": "components/terminal-pane/terminal-ime-input-context-refresh.ts",
+  "loc": 74
+ },
+ {
+  "path": "components/terminal-pane/terminal-ime-kitty-commit-encoding.ts",
+  "loc": 163
+ },
+ {
+  "path": "components/terminal-pane/terminal-ime-native-text-forwarder.ts",
+  "loc": 407
+ },
+ {
+  "path": "components/terminal-pane/terminal-input-activity.ts",
+  "loc": 13
+ },
+ {
+  "path": "components/terminal-pane/terminal-input-host-platform.ts",
+  "loc": 107
+ },
+ {
+  "path": "components/terminal-pane/terminal-input-quarantine.ts",
+  "loc": 88
+ },
+ {
+  "path": "components/terminal-pane/terminal-kitty-csi-u-encoding.ts",
+  "loc": 275
+ },
+ {
+  "path": "components/terminal-pane/terminal-layout-leaf-ids.ts",
+  "loc": 290
+ },
+ {
+  "path": "components/terminal-pane/terminal-layout-pty-ownership.ts",
+  "loc": 258
+ },
+ {
+  "path": "components/terminal-pane/terminal-lifecycle-diagnostics.ts",
+  "loc": 34
+ },
+ {
+  "path": "components/terminal-pane/terminal-link-action-request.ts",
+  "loc": 82
+ },
+ {
+  "path": "components/terminal-pane/terminal-live-layout-reconciliation.ts",
+  "loc": 231
+ },
+ {
+  "path": "components/terminal-pane/terminal-mode-2031-replies.ts",
+  "loc": 39
+ },
+ {
+  "path": "components/terminal-pane/terminal-native-copy-gutter.ts",
+  "loc": 32
+ },
+ {
+  "path": "components/terminal-pane/terminal-native-file-drop.ts",
+  "loc": 329
+ },
+ {
+  "path": "components/terminal-pane/terminal-native-only-shortcut.ts",
+  "loc": 122
+ },
+ {
+  "path": "components/terminal-pane/terminal-option-kitty-release.ts",
+  "loc": 102
+ },
+ {
+  "path": "components/terminal-pane/terminal-output-visibility.ts",
+  "loc": 166
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-attention-subscriptions.ts",
+  "loc": 152
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-close-admission.ts",
+  "loc": 76
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-host-state.ts",
+  "loc": 124
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-layout-tree.ts",
+  "loc": 63
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-paste-execution.ts",
+  "loc": 150
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-paste-listeners.ts",
+  "loc": 248
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-recovery.ts",
+  "loc": 351
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-split-with-inherited-cwd.ts",
+  "loc": 57
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-tab-detach.ts",
+  "loc": 173
+ },
+ {
+  "path": "components/terminal-pane/terminal-pane-types.ts",
+  "loc": 18
+ },
+ {
+  "path": "components/terminal-pane/terminal-parked-watcher-registry.ts",
+  "loc": 236
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-chunks.ts",
+  "loc": 99
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-coordinator.ts",
+  "loc": 243
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-diagnostics.ts",
+  "loc": 48
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-errors.ts",
+  "loc": 22
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-executor.ts",
+  "loc": 193
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-limits.ts",
+  "loc": 5
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-model.ts",
+  "loc": 73
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-payload-metadata.ts",
+  "loc": 13
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-runtime.ts",
+  "loc": 135
+ },
+ {
+  "path": "components/terminal-pane/terminal-paste-ssh-platform.ts",
+  "loc": 10
+ },
+ {
+  "path": "components/terminal-pane/terminal-pty-ack-gate.ts",
+  "loc": 119
+ },
+ {
+  "path": "components/terminal-pane/terminal-pty-input-transaction.ts",
+  "loc": 29
+ },
+ {
+  "path": "components/terminal-pane/terminal-pty-paste-writer.ts",
+  "loc": 15
+ },
+ {
+  "path": "components/terminal-pane/terminal-pty-pre-spawn-e2e-barrier.ts",
+  "loc": 72
+ },
+ {
+  "path": "components/terminal-pane/terminal-remote-runtime-recovery-ui-state.ts",
+  "loc": 29
+ },
+ {
+  "path": "components/terminal-pane/terminal-restored-viewport.ts",
+  "loc": 10
+ },
+ {
+  "path": "components/terminal-pane/terminal-selection-copy.ts",
+  "loc": 26
+ },
+ {
+  "path": "components/terminal-pane/terminal-shortcut-policy.ts",
+  "loc": 291
+ },
+ {
+  "path": "components/terminal-pane/terminal-shutdown-layout-capture.ts",
+  "loc": 200
+ },
+ {
+  "path": "components/terminal-pane/terminal-tab-agent-type-index.ts",
+  "loc": 100
+ },
+ {
+  "path": "components/terminal-pane/terminal-tab-lookup.ts",
+  "loc": 25
+ },
+ {
+  "path": "components/terminal-pane/terminal-unified-tab-lookup.ts",
+  "loc": 74
+ },
+ {
+  "path": "components/terminal-pane/terminal-user-input-signal.ts",
+  "loc": 67
+ },
+ {
+  "path": "components/terminal-pane/terminal-view-attributes-publisher.ts",
+  "loc": 251
+ },
+ {
+  "path": "components/terminal-pane/terminal-windows-shift-enter.ts",
+  "loc": 61
+ },
+ {
+  "path": "components/terminal-pane/use-mobile-overlay-ticks.ts",
+  "loc": 159
+ },
+ {
+  "path": "components/terminal-pane/use-notification-dispatch.ts",
+  "loc": 210
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-chat-state.ts",
+  "loc": 300
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-close-actions.ts",
+  "loc": 267
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-context-actions.ts",
+  "loc": 245
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-context-menu.ts",
+  "loc": 307
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-controller.ts",
+  "loc": 41
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-foundation.ts",
+  "loc": 243
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-global-effects.ts",
+  "loc": 336
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-global-listeners.ts",
+  "loc": 251
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-layout-bindings.ts",
+  "loc": 172
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-layout-persistence.ts",
+  "loc": 226
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-lifecycle-stage.ts",
+  "loc": 148
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-lifecycle.ts",
+  "loc": 204
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-mobile-actions.ts",
+  "loc": 254
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-paste-listeners.ts",
+  "loc": 40
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-process-exit-actions.ts",
+  "loc": 254
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-projection.ts",
+  "loc": 229
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-reconciliation.ts",
+  "loc": 203
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-startup-actions.ts",
+  "loc": 240
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-store-actions.ts",
+  "loc": 83
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-store-bindings.ts",
+  "loc": 90
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-title-effects.ts",
+  "loc": 277
+ },
+ {
+  "path": "components/terminal-pane/use-terminal-pane-title-state.ts",
+  "loc": 157
+ },
+ {
+  "path": "components/terminal-pane/use-visible-terminal-tab-claim.ts",
+  "loc": 21
+ },
+ {
+  "path": "components/terminal-pane/useSessionRestoredBannerDismiss.ts",
+  "loc": 24
+ },
+ {
+  "path": "components/terminal-pane/useTerminalFontZoom.ts",
+  "loc": 71
+ },
+ {
+  "path": "components/terminal-quick-commands/TerminalQuickCommandDialog.tsx",
+  "loc": 266
+ },
+ {
+  "path": "components/terminal-search-safe-find.ts",
+  "loc": 38
+ },
+ {
+  "path": "components/ui/collapsible.tsx",
+  "loc": 24
+ },
+ {
+  "path": "components/ui/select.tsx",
+  "loc": 182
+ },
+ {
+  "path": "components/ui/tabs.tsx",
+  "loc": 81
+ },
+ {
+  "path": "components/ui/toggle.tsx",
+  "loc": 44
+ },
+ {
+  "path": "components/worktree-base-fallback-notice.ts",
+  "loc": 35
+ },
+ {
+  "path": "constants/terminal.ts",
+  "loc": 93
+ },
+ {
+  "path": "hooks/agent-hook-completion-notifications.ts",
+  "loc": 338
+ },
+ {
+  "path": "hooks/agent-hook-completion-store-sync.ts",
+  "loc": 114
+ },
+ {
+  "path": "hooks/installed-agent-skill-discovery-cache.ts",
+  "loc": 88
+ },
+ {
+  "path": "hooks/installed-agent-skill-discovery.ts",
+  "loc": 235
+ },
+ {
+  "path": "hooks/installed-agent-skill-verdict.ts",
+  "loc": 65
+ },
+ {
+  "path": "hooks/installed-agent-skills-change-event.ts",
+  "loc": 2
+ },
+ {
+  "path": "hooks/metadata-request-cache.ts",
+  "loc": 164
+ },
+ {
+  "path": "hooks/programmatic-scroll-marks.ts",
+  "loc": 72
+ },
+ {
+  "path": "hooks/requestVirtualizedScrollAnchorRecord.ts",
+  "loc": 17
+ },
+ {
+  "path": "hooks/ssh-reconnect-pane-retry.ts",
+  "loc": 56
+ },
+ {
+  "path": "hooks/terminal-command-finished-event.ts",
+  "loc": 25
+ },
+ {
+  "path": "hooks/use-active-skill-discovery-runtime-target.ts",
+  "loc": 63
+ },
+ {
+  "path": "hooks/use-clipboard-text-copy-feedback.ts",
+  "loc": 83
+ },
+ {
+  "path": "hooks/use-terminal-quick-command-hosts.ts",
+  "loc": 216
+ },
+ {
+  "path": "hooks/useActiveProjectSkillRuntime.ts",
+  "loc": 163
+ },
+ {
+  "path": "hooks/useImmediateMutation.ts",
+  "loc": 58
+ },
+ {
+  "path": "hooks/useIssueMetadata.ts",
+  "loc": 326
+ },
+ {
+  "path": "hooks/useMetadataListRequest.ts",
+  "loc": 72
+ },
+ {
+  "path": "hooks/useSkillFreshness.ts",
+  "loc": 232
+ },
+ {
+  "path": "hooks/viewport-size-change-listener.ts",
+  "loc": 32
+ },
+ {
+  "path": "hooks/virtualized-scroll-anchor-listener.ts",
+  "loc": 140
+ },
+ {
+  "path": "hooks/virtualized-scroll-anchor-recording.ts",
+  "loc": 77
+ },
+ {
+  "path": "hooks/virtualized-scroll-anchor-restore.ts",
+  "loc": 168
+ },
+ {
+  "path": "hooks/virtualizedScrollOffsetRestore.ts",
+  "loc": 6
+ },
+ {
+  "path": "i18n/hosted-review-localized-copy.ts",
+  "loc": 64
+ },
+ {
+  "path": "i18n/relative-time-format.ts",
+  "loc": 39
+ },
+ {
+  "path": "i18n/supported-languages.ts",
+  "loc": 52
+ },
+ {
+  "path": "lib/active-agent-note-send-delivery.ts",
+  "loc": 152
+ },
+ {
+  "path": "lib/active-agent-note-send-diagnostics.ts",
+  "loc": 82
+ },
+ {
+  "path": "lib/active-agent-note-send-result.ts",
+  "loc": 84
+ },
+ {
+  "path": "lib/active-agent-note-send.ts",
+  "loc": 184
+ },
+ {
+  "path": "lib/active-agent-note-target.ts",
+  "loc": 238
+ },
+ {
+  "path": "lib/active-agent-terminal-send-readiness.ts",
+  "loc": 112
+ },
+ {
+  "path": "lib/activity-thread-display.ts",
+  "loc": 247
+ },
+ {
+  "path": "lib/agent-background-session-timeout-toast.ts",
+  "loc": 17
+ },
+ {
+  "path": "lib/agent-draft-paste-content.ts",
+  "loc": 217
+ },
+ {
+  "path": "lib/agent-draft-readiness.ts",
+  "loc": 93
+ },
+ {
+  "path": "lib/agent-favicon-assets.ts",
+  "loc": 61
+ },
+ {
+  "path": "lib/agent-followup-delivery.ts",
+  "loc": 67
+ },
+ {
+  "path": "lib/agent-hibernation-output-activity.ts",
+  "loc": 44
+ },
+ {
+  "path": "lib/agent-hibernation-pane-age.ts",
+  "loc": 107
+ },
+ {
+  "path": "lib/agent-icon-glyphs.tsx",
+  "loc": 170
+ },
+ {
+  "path": "lib/agent-launch-route-input.ts",
+  "loc": 130
+ },
+ {
+  "path": "lib/agent-launch-routing.ts",
+  "loc": 80
+ },
+ {
+  "path": "lib/agent-native-draft-prefill.ts",
+  "loc": 17
+ },
+ {
+  "path": "lib/agent-paste-draft.ts",
+  "loc": 342
+ },
+ {
+  "path": "lib/agent-ready-wait.ts",
+  "loc": 115
+ },
+ {
+  "path": "lib/agent-resume-launch-target.ts",
+  "loc": 62
+ },
+ {
+  "path": "lib/agent-send-title-status.ts",
+  "loc": 36
+ },
+ {
+  "path": "lib/agent-session-continuation.ts",
+  "loc": 114
+ },
+ {
+  "path": "lib/agent-startup-delayed-delivery.ts",
+  "loc": 246
+ },
+ {
+  "path": "lib/agent-startup-delivery-guards.ts",
+  "loc": 48
+ },
+ {
+  "path": "lib/app-menu-paste.ts",
+  "loc": 137
+ },
+ {
+  "path": "lib/app-menu-selection-actions.ts",
+  "loc": 15
+ },
+ {
+  "path": "lib/client-creation-action-policy.ts",
+  "loc": 116
+ },
+ {
+  "path": "lib/connection-owner-resolution.ts",
+  "loc": 138
+ },
+ {
+  "path": "lib/crash-breadcrumb-data.ts",
+  "loc": 69
+ },
+ {
+  "path": "lib/crash-breadcrumb-recorder.ts",
+  "loc": 25
+ },
+ {
+  "path": "lib/create-untitled-markdown.ts",
+  "loc": 183
+ },
+ {
+  "path": "lib/direct-ssh-target-owner-index.ts",
+  "loc": 11
+ },
+ {
+  "path": "lib/direct-ssh-target-scope-types.ts",
+  "loc": 49
+ },
+ {
+  "path": "lib/direct-ssh-target-scope.ts",
+  "loc": 310
+ },
+ {
+  "path": "lib/doc-preview-grants.ts",
+  "loc": 86
+ },
+ {
+  "path": "lib/e2e-config.ts",
+  "loc": 24
+ },
+ {
+  "path": "lib/editor-file-operation-owner.ts",
+  "loc": 216
+ },
+ {
+  "path": "lib/ensure-hooks-confirmed.ts",
+  "loc": 308
+ },
+ {
+  "path": "lib/ephemeral-vm-failed-create-cleanup.ts",
+  "loc": 39
+ },
+ {
+  "path": "lib/ephemeral-vm-runtime-cleanup.ts",
+  "loc": 97
+ },
+ {
+  "path": "lib/execution-host-display-label.ts",
+  "loc": 61
+ },
+ {
+  "path": "lib/explicit-file-link-target.ts",
+  "loc": 82
+ },
+ {
+  "path": "lib/file-search-result-owner.ts",
+  "loc": 16
+ },
+ {
+  "path": "lib/file-type-icon-extension-table.ts",
+  "loc": 200
+ },
+ {
+  "path": "lib/file-type-icon-name-table.ts",
+  "loc": 87
+ },
+ {
+  "path": "lib/find-query-bounds.ts",
+  "loc": 11
+ },
+ {
+  "path": "lib/flatten-retained-slice.ts",
+  "loc": 4
+ },
+ {
+  "path": "lib/focus-terminal-tab-surface.ts",
+  "loc": 118
+ },
+ {
+  "path": "lib/folder-workspace-connection.ts",
+  "loc": 27
+ },
+ {
+  "path": "lib/folder-workspace-runtime-owner.ts",
+  "loc": 168
+ },
+ {
+  "path": "lib/foreground-terminal-tabs.ts",
+  "loc": 84
+ },
+ {
+  "path": "lib/github-source-runtime-context.ts",
+  "loc": 70
+ },
+ {
+  "path": "lib/github-work-item-identity.ts",
+  "loc": 2
+ },
+ {
+  "path": "lib/github-work-item-source-lookup.ts",
+  "loc": 117
+ },
+ {
+  "path": "lib/gitlab-links.ts",
+  "loc": 2
+ },
+ {
+  "path": "lib/gitlab-work-item-source-lookup.ts",
+  "loc": 95
+ },
+ {
+  "path": "lib/hook-command-delayed-delivery.ts",
+  "loc": 101
+ },
+ {
+  "path": "lib/host-mirror-handle-gap-wait.ts",
+  "loc": 405
+ },
+ {
+  "path": "lib/host-mirrored-pane-liveness.ts",
+  "loc": 91
+ },
+ {
+  "path": "lib/http-link-routing.ts",
+  "loc": 330
+ },
+ {
+  "path": "lib/input-quiet-scheduler.ts",
+  "loc": 170
+ },
+ {
+  "path": "lib/keyboard-layout/detect-option-as-alt.ts",
+  "loc": 119
+ },
+ {
+  "path": "lib/keyboard-layout/input-source-id.ts",
+  "loc": 76
+ },
+ {
+  "path": "lib/keyboard-layout/layout-base-character.ts",
+  "loc": 200
+ },
+ {
+  "path": "lib/keyboard-layout/option-as-alt-probe.ts",
+  "loc": 256
+ },
+ {
+  "path": "lib/keyboard-layout/option-key-location-state.ts",
+  "loc": 41
+ },
+ {
+  "path": "lib/keyboard-layout/use-effective-mac-option-as-alt.ts",
+  "loc": 33
+ },
+ {
+  "path": "lib/language-detect.ts",
+  "loc": 132
+ },
+ {
+  "path": "lib/launch-agent-session-continuation.ts",
+  "loc": 143
+ },
+ {
+  "path": "lib/launch-structured-agent-session.ts",
+  "loc": 292
+ },
+ {
+  "path": "lib/lazy-chunk-recovery-reload.ts",
+  "loc": 81
+ },
+ {
+  "path": "lib/linear-issue-url-lookup.ts",
+  "loc": 79
+ },
+ {
+  "path": "lib/linear-issue-workspace-attachment.ts",
+  "loc": 126
+ },
+ {
+  "path": "lib/linked-work-item-provider.ts",
+  "loc": 4
+ },
+ {
+  "path": "lib/live-resume-anchor-record.ts",
+  "loc": 52
+ },
+ {
+  "path": "lib/local-preflight-context-cache.ts",
+  "loc": 106
+ },
+ {
+  "path": "lib/local-preflight-context-key.ts",
+  "loc": 25
+ },
+ {
+  "path": "lib/markdown-document-templates.ts",
+  "loc": 233
+ },
+ {
+  "path": "lib/markdown-template-picker-request.ts",
+  "loc": 56
+ },
+ {
+  "path": "lib/native-chat-launch-draft-mirrorability.ts",
+  "loc": 24
+ },
+ {
+  "path": "lib/native-chat-launch-prompt.ts",
+  "loc": 25
+ },
+ {
+  "path": "lib/native-chat-supported-agent.ts",
+  "loc": 5
+ },
+ {
+  "path": "lib/native-chat-telemetry.ts",
+  "loc": 102
+ },
+ {
+  "path": "lib/new-workspace-duplicate-project-details.ts",
+  "loc": 147
+ },
+ {
+  "path": "lib/onboarding-folder-agent-startup.ts",
+  "loc": 104
+ },
+ {
+  "path": "lib/orchestration-setup-state.ts",
+  "loc": 24
+ },
+ {
+  "path": "lib/palette-match/evidence-composer.ts",
+  "loc": 54
+ },
+ {
+  "path": "lib/palette-match/indexed-field.ts",
+  "loc": 172
+ },
+ {
+  "path": "lib/palette-match/match-document.ts",
+  "loc": 297
+ },
+ {
+  "path": "lib/palette-match/match-field.ts",
+  "loc": 185
+ },
+ {
+  "path": "lib/palette-match/match-quality.ts",
+  "loc": 81
+ },
+ {
+  "path": "lib/palette-match/normalized-text.ts",
+  "loc": 110
+ },
+ {
+  "path": "lib/palette-match/palette-assignment-inspection.ts",
+  "loc": 16
+ },
+ {
+  "path": "lib/palette-match/palette-assignment-ranking.ts",
+  "loc": 313
+ },
+ {
+  "path": "lib/palette-match/palette-match-rendering.ts",
+  "loc": 50
+ },
+ {
+  "path": "lib/palette-match/palette-query.ts",
+  "loc": 124
+ },
+ {
+  "path": "lib/palette-match/palette-ranking.ts",
+  "loc": 109
+ },
+ {
+  "path": "lib/palette-match/palette-selection-source-order.ts",
+  "loc": 21
+ },
+ {
+  "path": "lib/palette-match/text-segments.ts",
+  "loc": 122
+ },
+ {
+  "path": "lib/palette-match/typo-distance.ts",
+  "loc": 43
+ },
+ {
+  "path": "lib/palette-repo-resolution.ts",
+  "loc": 116
+ },
+ {
+  "path": "lib/pane-manager/mint-stable-pane-id.ts",
+  "loc": 25
+ },
+ {
+  "path": "lib/pane-manager/mobile-driver-state.ts",
+  "loc": 86
+ },
+ {
+  "path": "lib/pane-manager/mobile-fit-overrides.ts",
+  "loc": 177
+ },
+ {
+  "path": "lib/pane-manager/pane-cursor-blink-suspension.ts",
+  "loc": 63
+ },
+ {
+  "path": "lib/pane-manager/pane-display-visibility.ts",
+  "loc": 15
+ },
+ {
+  "path": "lib/pane-manager/pane-divider.ts",
+  "loc": 100
+ },
+ {
+  "path": "lib/pane-manager/pane-drag-pointer.ts",
+  "loc": 265
+ },
+ {
+  "path": "lib/pane-manager/pane-drag-reorder.ts",
+  "loc": 163
+ },
+ {
+  "path": "lib/pane-manager/pane-fit-client-size.ts",
+  "loc": 21
+ },
+ {
+  "path": "lib/pane-manager/pane-fit-continuation-registry.ts",
+  "loc": 162
+ },
+ {
+  "path": "lib/pane-manager/pane-fit-continuation-retry.ts",
+  "loc": 113
+ },
+ {
+  "path": "lib/pane-manager/pane-fit-measurability.ts",
+  "loc": 63
+ },
+ {
+  "path": "lib/pane-manager/pane-fit-webgl-attach-signal.ts",
+  "loc": 23
+ },
+ {
+  "path": "lib/pane-manager/pane-fit.ts",
+  "loc": 264
+ },
+ {
+  "path": "lib/pane-manager/pane-identity-registry.ts",
+  "loc": 79
+ },
+ {
+  "path": "lib/pane-manager/pane-inline-images.ts",
+  "loc": 100
+ },
+ {
+  "path": "lib/pane-manager/pane-key-resolution.ts",
+  "loc": 70
+ },
+ {
+  "path": "lib/pane-manager/pane-lifecycle.ts",
+  "loc": 282
+ },
+ {
+  "path": "lib/pane-manager/pane-manager-drag-wiring.ts",
+  "loc": 33
+ },
+ {
+  "path": "lib/pane-manager/pane-manager-host.ts",
+  "loc": 33
+ },
+ {
+  "path": "lib/pane-manager/pane-manager-layout-sweeps.ts",
+  "loc": 42
+ },
+ {
+  "path": "lib/pane-manager/pane-manager-pane-creation.ts",
+  "loc": 98
+ },
+ {
+  "path": "lib/pane-manager/pane-manager-registry.ts",
+  "loc": 235
+ },
+ {
+  "path": "lib/pane-manager/pane-manager-tree-mutations.ts",
+  "loc": 111
+ },
+ {
+  "path": "lib/pane-manager/pane-manager-types.ts",
+  "loc": 229
+ },
+ {
+  "path": "lib/pane-manager/pane-manager.ts",
+  "loc": 358
+ },
+ {
+  "path": "lib/pane-manager/pane-metric-options-deferral.ts",
+  "loc": 150
+ },
+ {
+  "path": "lib/pane-manager/pane-overlay-focus.ts",
+  "loc": 18
+ },
+ {
+  "path": "lib/pane-manager/pane-public-view.ts",
+  "loc": 29
+ },
+ {
+  "path": "lib/pane-manager/pane-rendering-control.ts",
+  "loc": 138
+ },
+ {
+  "path": "lib/pane-manager/pane-rendering-diagnostics.ts",
+  "loc": 20
+ },
+ {
+  "path": "lib/pane-manager/pane-reparent-frame-tracker.ts",
+  "loc": 31
+ },
+ {
+  "path": "lib/pane-manager/pane-reveal-repaint.ts",
+  "loc": 93
+ },
+ {
+  "path": "lib/pane-manager/pane-scroll.ts",
+  "loc": 337
+ },
+ {
+  "path": "lib/pane-manager/pane-subtree-split.ts",
+  "loc": 147
+ },
+ {
+  "path": "lib/pane-manager/pane-terminal-gpu-acceleration.ts",
+  "loc": 47
+ },
+ {
+  "path": "lib/pane-manager/pane-terminal-mouse-wheel.ts",
+  "loc": 220
+ },
+ {
+  "path": "lib/pane-manager/pane-terminal-options.ts",
+  "loc": 76
+ },
+ {
+  "path": "lib/pane-manager/pane-terminal-tui-wheel-reports.ts",
+  "loc": 256
+ },
+ {
+  "path": "lib/pane-manager/pane-tree-equalization.ts",
+  "loc": 73
+ },
+ {
+  "path": "lib/pane-manager/pane-tree-ops.ts",
+  "loc": 297
+ },
+ {
+  "path": "lib/pane-manager/pane-webgl-reattach.ts",
+  "loc": 36
+ },
+ {
+  "path": "lib/pane-manager/pane-webgl-renderer.ts",
+  "loc": 334
+ },
+ {
+  "path": "lib/pane-manager/terminal-arabic-shaping-joiner.ts",
+  "loc": 239
+ },
+ {
+  "path": "lib/pane-manager/terminal-ime-anchor.ts",
+  "loc": 130
+ },
+ {
+  "path": "lib/pane-manager/terminal-ime-candidate-anchor.ts",
+  "loc": 180
+ },
+ {
+  "path": "lib/pane-manager/terminal-keyboard-protocol.ts",
+  "loc": 67
+ },
+ {
+  "path": "lib/pane-manager/terminal-ligatures-addon.ts",
+  "loc": 121
+ },
+ {
+  "path": "lib/pane-manager/terminal-link-provider-guard.ts",
+  "loc": 60
+ },
+ {
+  "path": "lib/pane-manager/terminal-scroll-buffer-snapshot.ts",
+  "loc": 53
+ },
+ {
+  "path": "lib/pane-manager/terminal-scroll-intent-key-store.ts",
+  "loc": 63
+ },
+ {
+  "path": "lib/pane-manager/terminal-scroll-intent-rebuild.ts",
+  "loc": 131
+ },
+ {
+  "path": "lib/pane-manager/terminal-scroll-intent.ts",
+  "loc": 347
+ },
+ {
+  "path": "lib/pane-manager/terminal-scrollback-clear.ts",
+  "loc": 16
+ },
+ {
+  "path": "lib/pane-manager/terminal-webgl-hidden-retention.ts",
+  "loc": 84
+ },
+ {
+  "path": "lib/pane-manager/terminal-windows-ctrl-alt-chord-classification.ts",
+  "loc": 76
+ },
+ {
+  "path": "lib/pane-manager/windows-pty-compatibility.ts",
+  "loc": 111
+ },
+ {
+  "path": "lib/pane-manager/xterm-instance-disposed.ts",
+  "loc": 13
+ },
+ {
+  "path": "lib/paste-payload-metadata.ts",
+  "loc": 168
+ },
+ {
+  "path": "lib/pr-comment-reactions.ts",
+  "loc": 87
+ },
+ {
+  "path": "lib/primary-selection.ts",
+  "loc": 123
+ },
+ {
+  "path": "lib/provider-runtime-context.ts",
+  "loc": 22
+ },
+ {
+  "path": "lib/react-commit-cascade-store-write-samples.ts",
+  "loc": 159
+ },
+ {
+  "path": "lib/renderer-agent-status-observations.ts",
+  "loc": 17
+ },
+ {
+  "path": "lib/renderer-app-platform.ts",
+  "loc": 32
+ },
+ {
+  "path": "lib/renderer-memory-profile.ts",
+  "loc": 124
+ },
+ {
+  "path": "lib/renderer-memory-sampling.ts",
+  "loc": 263
+ },
+ {
+  "path": "lib/repo-runtime-owner.ts",
+  "loc": 139
+ },
+ {
+  "path": "lib/repo-slug-cache.ts",
+  "loc": 145
+ },
+ {
+  "path": "lib/repo-slug-index.ts",
+  "loc": 251
+ },
+ {
+  "path": "lib/resume-sleeping-agent-session.ts",
+  "loc": 322
+ },
+ {
+  "path": "lib/runtime-session-mirror-owners.ts",
+  "loc": 49
+ },
+ {
+  "path": "lib/runtime-session-mirror-targets.ts",
+  "loc": 77
+ },
+ {
+  "path": "lib/setup-runner.ts",
+  "loc": 21
+ },
+ {
+  "path": "lib/setup-script-status.ts",
+  "loc": 22
+ },
+ {
+  "path": "lib/sha256.ts",
+  "loc": 2
+ },
+ {
+  "path": "lib/single-runtime-legacy-owner.ts",
+  "loc": 17
+ },
+ {
+  "path": "lib/skill-freshness-display-status.ts",
+  "loc": 83
+ },
+ {
+  "path": "lib/sleeping-agent-pane-ownership.ts",
+  "loc": 190
+ },
+ {
+  "path": "lib/sleeping-agent-session-launch.ts",
+  "loc": 134
+ },
+ {
+  "path": "lib/sleeping-record-execution-host-scope.ts",
+  "loc": 78
+ },
+ {
+  "path": "lib/smart-github-submit.ts",
+  "loc": 223
+ },
+ {
+  "path": "lib/source-control-commit-draft-session.ts",
+  "loc": 20
+ },
+ {
+  "path": "lib/source-control-huge-repo-warning-dismissals.ts",
+  "loc": 124
+ },
+ {
+  "path": "lib/source-control-remote-error.ts",
+  "loc": 316
+ },
+ {
+  "path": "lib/ssh-workspace-browser-route-eligibility.ts",
+  "loc": 29
+ },
+ {
+  "path": "lib/state-collection-byte-estimate.ts",
+  "loc": 246
+ },
+ {
+  "path": "lib/structured-agent-launch-settlement.ts",
+  "loc": 114
+ },
+ {
+  "path": "lib/structured-agent-session-launch-callers.ts",
+  "loc": 97
+ },
+ {
+  "path": "lib/structured-agent-session-launch-cancellation.ts",
+  "loc": 146
+ },
+ {
+  "path": "lib/structured-agent-session-launch-draft.ts",
+  "loc": 26
+ },
+ {
+  "path": "lib/structured-agent-session-launch-failure-toast.ts",
+  "loc": 39
+ },
+ {
+  "path": "lib/structured-agent-session-launch-label.ts",
+  "loc": 6
+ },
+ {
+  "path": "lib/structured-agent-session-launch-persistence.ts",
+  "loc": 199
+ },
+ {
+  "path": "lib/structured-agent-session-launch-prompt.ts",
+  "loc": 169
+ },
+ {
+  "path": "lib/structured-agent-session-launch-recovery.ts",
+  "loc": 138
+ },
+ {
+  "path": "lib/structured-agent-session-launch-registry.ts",
+  "loc": 298
+ },
+ {
+  "path": "lib/structured-agent-session-launch-reload.ts",
+  "loc": 44
+ },
+ {
+  "path": "lib/structured-agent-session-launch-status.ts",
+  "loc": 17
+ },
+ {
+  "path": "lib/structured-agent-session-launch.ts",
+  "loc": 290
+ },
+ {
+  "path": "lib/structured-agent-synthetic-sleeping-record.ts",
+  "loc": 15
+ },
+ {
+  "path": "lib/terminal-bare-file-link-detection.ts",
+  "loc": 68
+ },
+ {
+  "path": "lib/terminal-contrast-correction.ts",
+  "loc": 37
+ },
+ {
+  "path": "lib/terminal-file-link-detection-ranges.ts",
+  "loc": 126
+ },
+ {
+  "path": "lib/terminal-file-uri-link.ts",
+  "loc": 95
+ },
+ {
+  "path": "lib/terminal-input-activity-coalescing.ts",
+  "loc": 138
+ },
+ {
+  "path": "lib/terminal-layout-equality.ts",
+  "loc": 57
+ },
+ {
+  "path": "lib/terminal-pane-title-sanitization.ts",
+  "loc": 94
+ },
+ {
+  "path": "lib/terminal-path-normalization.ts",
+  "loc": 146
+ },
+ {
+  "path": "lib/terminal-quick-command-project-scope.ts",
+  "loc": 74
+ },
+ {
+  "path": "lib/terminal-tab-for-pty-id.ts",
+  "loc": 74
+ },
+ {
+  "path": "lib/terminal-theme.ts",
+  "loc": 179
+ },
+ {
+  "path": "lib/terminal-themes/classic.ts",
+  "loc": 78
+ },
+ {
+  "path": "lib/terminal-themes/defaults.ts",
+  "loc": 57
+ },
+ {
+  "path": "lib/terminal-themes/index.ts",
+  "loc": 17
+ },
+ {
+  "path": "lib/terminal-themes/popular-dark-core.ts",
+  "loc": 196
+ },
+ {
+  "path": "lib/terminal-themes/popular-dark-extended.ts",
+  "loc": 220
+ },
+ {
+  "path": "lib/terminal-themes/popular-dark.ts",
+  "loc": 8
+ },
+ {
+  "path": "lib/terminal-themes/popular-light.ts",
+  "loc": 203
+ },
+ {
+  "path": "lib/terminal-themes/shared.ts",
+  "loc": 18
+ },
+ {
+  "path": "lib/terminal-themes/types.ts",
+  "loc": 3
+ },
+ {
+  "path": "lib/terminal-themes-data.ts",
+  "loc": 13
+ },
+ {
+  "path": "lib/terminal-title-contrast.ts",
+  "loc": 204
+ },
+ {
+  "path": "lib/terminal-worktree-route.ts",
+  "loc": 145
+ },
+ {
+  "path": "lib/text-control-paste-diagnostics.ts",
+  "loc": 152
+ },
+ {
+  "path": "lib/text-control-paste-model.ts",
+  "loc": 55
+ },
+ {
+  "path": "lib/text-control-paste-ownership.ts",
+  "loc": 126
+ },
+ {
+  "path": "lib/unified-tab-anchor-insertion.ts",
+  "loc": 22
+ },
+ {
+  "path": "lib/unified-tab-host-ownership.ts",
+  "loc": 111
+ },
+ {
+  "path": "lib/visible-overlay.ts",
+  "loc": 53
+ },
+ {
+  "path": "lib/web-runtime-worktree-terminal-after-wake.ts",
+  "loc": 124
+ },
+ {
+  "path": "lib/windows-terminal-capabilities.ts",
+  "loc": 312
+ },
+ {
+  "path": "lib/windows-terminal-capability-read.ts",
+  "loc": 107
+ },
+ {
+  "path": "lib/windows-terminal-capability-reprobe.ts",
+  "loc": 208
+ },
+ {
+  "path": "lib/workspace-emoji-shortcodes.ts",
+  "loc": 146
+ },
+ {
+  "path": "lib/workspace-file-drag.ts",
+  "loc": 277
+ },
+ {
+  "path": "lib/workspace-port-localhost-label.ts",
+  "loc": 34
+ },
+ {
+  "path": "lib/workspace-port-scan-client.ts",
+  "loc": 115
+ },
+ {
+  "path": "lib/workspace-session-host-split.ts",
+  "loc": 353
+ },
+ {
+  "path": "lib/workspace-session-hydration-keys.ts",
+  "loc": 171
+ },
+ {
+  "path": "lib/workspace-terminal-host-authority.ts",
+  "loc": 173
+ },
+ {
+  "path": "lib/worktree-activation-gated-empty-reseed.ts",
+  "loc": 38
+ },
+ {
+  "path": "lib/worktree-activation-nav-registration.ts",
+  "loc": 16
+ },
+ {
+  "path": "lib/worktree-activation-pty-inventory.ts",
+  "loc": 87
+ },
+ {
+  "path": "lib/worktree-activation-store-contract.ts",
+  "loc": 78
+ },
+ {
+  "path": "lib/worktree-activation-surface-selection.ts",
+  "loc": 40
+ },
+ {
+  "path": "lib/worktree-agent-activation-gate.ts",
+  "loc": 295
+ },
+ {
+  "path": "lib/worktree-agent-live-surface-adoption.ts",
+  "loc": 180
+ },
+ {
+  "path": "lib/worktree-agent-structured-inventory.ts",
+  "loc": 86
+ },
+ {
+  "path": "lib/worktree-default-display-name.ts",
+  "loc": 34
+ },
+ {
+  "path": "lib/worktree-default-terminal-tabs.ts",
+  "loc": 112
+ },
+ {
+  "path": "lib/worktree-execution-host-alias.ts",
+  "loc": 17
+ },
+ {
+  "path": "lib/worktree-initial-terminal-seeding.ts",
+  "loc": 270
+ },
+ {
+  "path": "lib/worktree-jump-navigation.ts",
+  "loc": 95
+ },
+ {
+  "path": "lib/worktree-live-terminal-surface-owners.ts",
+  "loc": 121
+ },
+ {
+  "path": "lib/worktree-nav-view-history-replay.ts",
+  "loc": 107
+ },
+ {
+  "path": "lib/worktree-operation-catalog-route.ts",
+  "loc": 115
+ },
+ {
+  "path": "lib/worktree-operation-generation.ts",
+  "loc": 108
+ },
+ {
+  "path": "lib/worktree-operation-route.ts",
+  "loc": 333
+ },
+ {
+  "path": "lib/worktree-owner-route.ts",
+  "loc": 89
+ },
+ {
+  "path": "lib/worktree-palette-comment-snippet.ts",
+  "loc": 44
+ },
+ {
+  "path": "lib/worktree-palette-evidence.ts",
+  "loc": 203
+ },
+ {
+  "path": "lib/worktree-palette-gitlab-url-match.ts",
+  "loc": 99
+ },
+ {
+  "path": "lib/worktree-palette-task-url-match.ts",
+  "loc": 325
+ },
+ {
+  "path": "lib/worktree-palette-task-url-result.ts",
+  "loc": 44
+ },
+ {
+  "path": "lib/worktree-runtime-owner-state.ts",
+  "loc": 32
+ },
+ {
+  "path": "lib/worktree-setup-issue-command-queue.ts",
+  "loc": 66
+ },
+ {
+  "path": "lib/worktree-sort-order-host-split.ts",
+  "loc": 36
+ },
+ {
+  "path": "runtime/abortable-runtime-environment-call.ts",
+  "loc": 74
+ },
+ {
+  "path": "runtime/agent-resume-host-authority-capability.ts",
+  "loc": 45
+ },
+ {
+  "path": "runtime/agent-session-create-operation.ts",
+  "loc": 72
+ },
+ {
+  "path": "runtime/agent-session-operation-id.ts",
+  "loc": 15
+ },
+ {
+  "path": "runtime/client-hosted-browser-close-intent-replay.ts",
+  "loc": 93
+ },
+ {
+  "path": "runtime/client-hosted-browser-close-intents.ts",
+  "loc": 133
+ },
+ {
+  "path": "runtime/close-mirrored-editor-tab.ts",
+  "loc": 60
+ },
+ {
+  "path": "runtime/github-check-details-timeout.ts",
+  "loc": 40
+ },
+ {
+  "path": "runtime/gitlab-ipc-timeout.ts",
+  "loc": 27
+ },
+ {
+  "path": "runtime/gitlab-job-trace-client.ts",
+  "loc": 92
+ },
+ {
+  "path": "runtime/host-live-terminal-probe.ts",
+  "loc": 116
+ },
+ {
+  "path": "runtime/host-session-mirror-hydration.ts",
+  "loc": 127
+ },
+ {
+  "path": "runtime/host-session-snapshot-authority.ts",
+  "loc": 44
+ },
+ {
+  "path": "runtime/local-jira-search-cancellation.ts",
+  "loc": 40
+ },
+ {
+  "path": "runtime/local-runtime-capabilities.ts",
+  "loc": 70
+ },
+ {
+  "path": "runtime/local-session-tab-close-owner.ts",
+  "loc": 29
+ },
+ {
+  "path": "runtime/local-structured-session-owner.ts",
+  "loc": 1
+ },
+ {
+  "path": "runtime/local-structured-session-tab-retirement.ts",
+  "loc": 64
+ },
+ {
+  "path": "runtime/local-structured-session-tabs-sync/inventory-generation-fence.ts",
+  "loc": 57
+ },
+ {
+  "path": "runtime/local-structured-session-tabs-sync/inventory-refresh.ts",
+  "loc": 85
+ },
+ {
+  "path": "runtime/local-structured-session-tabs-sync/retired-epoch-repair.ts",
+  "loc": 131
+ },
+ {
+  "path": "runtime/local-structured-session-tabs-sync/snapshot-apply.ts",
+  "loc": 235
+ },
+ {
+  "path": "runtime/local-structured-session-tabs-sync/snapshot-projection.ts",
+  "loc": 37
+ },
+ {
+  "path": "runtime/local-structured-session-tabs-sync/subscription.ts",
+  "loc": 138
+ },
+ {
+  "path": "runtime/local-structured-session-tabs-sync.ts",
+  "loc": 51
+ },
+ {
+  "path": "runtime/native-chat-launch-draft-runtime-resolution.ts",
+  "loc": 19
+ },
+ {
+  "path": "runtime/remote-agent-session-launch.ts",
+  "loc": 47
+ },
+ {
+  "path": "runtime/remote-runtime-session-tabs-inflight.ts",
+  "loc": 70
+ },
+ {
+  "path": "runtime/remote-runtime-terminal-e2e-control.ts",
+  "loc": 219
+ },
+ {
+  "path": "runtime/remote-runtime-terminal-multiplexer-base.ts",
+  "loc": 213
+ },
+ {
+  "path": "runtime/remote-runtime-terminal-multiplexer-implementation.ts",
+  "loc": 166
+ },
+ {
+  "path": "runtime/remote-runtime-terminal-multiplexer-types.ts",
+  "loc": 209
+ },
+ {
+  "path": "runtime/remote-runtime-terminal-multiplexer.ts",
+  "loc": 64
+ },
+ {
+  "path": "runtime/remote-runtime-terminal-snapshot-state.ts",
+  "loc": 162
+ },
+ {
+  "path": "runtime/remote-server-install-failure-probe.ts",
+  "loc": 36
+ },
+ {
+  "path": "runtime/remote-server-restart-wait.ts",
+  "loc": 81
+ },
+ {
+  "path": "runtime/remote-server-update-batch.ts",
+  "loc": 21
+ },
+ {
+  "path": "runtime/remote-server-update-coordinator.ts",
+  "loc": 296
+ },
+ {
+  "path": "runtime/remote-server-update-errors.ts",
+  "loc": 54
+ },
+ {
+  "path": "runtime/remote-server-updater-polling.ts",
+  "loc": 35
+ },
+ {
+  "path": "runtime/remote-terminal-layout-resolution.ts",
+  "loc": 142
+ },
+ {
+  "path": "runtime/remote-worktree-sleep.ts",
+  "loc": 180
+ },
+ {
+  "path": "runtime/restored-client-hosted-browser-host-attach.ts",
+  "loc": 122
+ },
+ {
+  "path": "runtime/runtime-client-target.ts",
+  "loc": 36
+ },
+ {
+  "path": "runtime/runtime-compatibility-test-fixture.ts",
+  "loc": 40
+ },
+ {
+  "path": "runtime/runtime-environment-revision.ts",
+  "loc": 25
+ },
+ {
+  "path": "runtime/runtime-file-client-types.ts",
+  "loc": 34
+ },
+ {
+  "path": "runtime/runtime-file-client.ts",
+  "loc": 34
+ },
+ {
+  "path": "runtime/runtime-file-import-client.ts",
+  "loc": 221
+ },
+ {
+  "path": "runtime/runtime-file-metadata-client.ts",
+  "loc": 81
+ },
+ {
+  "path": "runtime/runtime-file-mutation-client.ts",
+  "loc": 197
+ },
+ {
+  "path": "runtime/runtime-file-read-client.ts",
+  "loc": 248
+ },
+ {
+  "path": "runtime/runtime-file-routing.ts",
+  "loc": 130
+ },
+ {
+  "path": "runtime/runtime-file-search-client.ts",
+  "loc": 207
+ },
+ {
+  "path": "runtime/runtime-file-watch-client.ts",
+  "loc": 241
+ },
+ {
+  "path": "runtime/runtime-git-client-context.ts",
+  "loc": 99
+ },
+ {
+  "path": "runtime/runtime-git-diff-client.ts",
+  "loc": 126
+ },
+ {
+  "path": "runtime/runtime-git-generation-client.ts",
+  "loc": 151
+ },
+ {
+  "path": "runtime/runtime-git-status-client.ts",
+  "loc": 204
+ },
+ {
+  "path": "runtime/runtime-git-sync-client.ts",
+  "loc": 229
+ },
+ {
+  "path": "runtime/runtime-git-working-tree-client.ts",
+  "loc": 174
+ },
+ {
+  "path": "runtime/runtime-jira-client.ts",
+  "loc": 284
+ },
+ {
+  "path": "runtime/runtime-jira-payload-stream.ts",
+  "loc": 94
+ },
+ {
+  "path": "runtime/runtime-jira-summary-client.ts",
+  "loc": 48
+ },
+ {
+  "path": "runtime/runtime-jira-target.ts",
+  "loc": 24
+ },
+ {
+  "path": "runtime/runtime-jira-user-fields-client.ts",
+  "loc": 75
+ },
+ {
+  "path": "runtime/runtime-protocol-compat.ts",
+  "loc": 34
+ },
+ {
+  "path": "runtime/runtime-provider-search-bounds.ts",
+  "loc": 13
+ },
+ {
+  "path": "runtime/runtime-repo-client.ts",
+  "loc": 78
+ },
+ {
+  "path": "runtime/runtime-repo-search-bounds.ts",
+  "loc": 10
+ },
+ {
+  "path": "runtime/runtime-rpc-environment-call.ts",
+  "loc": 31
+ },
+ {
+  "path": "runtime/runtime-rpc-result.ts",
+  "loc": 23
+ },
+ {
+  "path": "runtime/runtime-skills-client.ts",
+  "loc": 127
+ },
+ {
+  "path": "runtime/runtime-status-probe-diagnostics.ts",
+  "loc": 19
+ },
+ {
+  "path": "runtime/runtime-terminal-inspection.ts",
+  "loc": 319
+ },
+ {
+  "path": "runtime/runtime-terminal-stream.ts",
+  "loc": 121
+ },
+ {
+  "path": "runtime/runtime-worktree-selector.ts",
+  "loc": 25
+ },
+ {
+  "path": "runtime/structured-agent-session-client.ts",
+  "loc": 123
+ },
+ {
+  "path": "runtime/structured-agent-session-close.ts",
+  "loc": 23
+ },
+ {
+  "path": "runtime/structured-agent-session-tab-retirement.ts",
+  "loc": 123
+ },
+ {
+  "path": "runtime/sync-runtime-graph/agent-status-projection.ts",
+  "loc": 98
+ },
+ {
+  "path": "runtime/sync-runtime-graph/editor-draft-hash.ts",
+  "loc": 15
+ },
+ {
+  "path": "runtime/sync-runtime-graph/graph-publication.ts",
+  "loc": 247
+ },
+ {
+  "path": "runtime/sync-runtime-graph/graph-state.ts",
+  "loc": 158
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-session-browser-tabs.ts",
+  "loc": 38
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-session-capture.ts",
+  "loc": 191
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-session-editor-tabs.ts",
+  "loc": 77
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-session-group-projection.ts",
+  "loc": 242
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-session-inputs.ts",
+  "loc": 233
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-session-snapshots.ts",
+  "loc": 247
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-session-surfaces.ts",
+  "loc": 115
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-session-terminal-tabs.ts",
+  "loc": 126
+ },
+ {
+  "path": "runtime/sync-runtime-graph/mobile-terminal-theme.ts",
+  "loc": 83
+ },
+ {
+  "path": "runtime/sync-runtime-graph/sync-key.ts",
+  "loc": 182
+ },
+ {
+  "path": "runtime/sync-runtime-graph/sync-projections.ts",
+  "loc": 275
+ },
+ {
+  "path": "runtime/sync-runtime-graph/types.ts",
+  "loc": 185
+ },
+ {
+  "path": "runtime/sync-runtime-graph.ts",
+  "loc": 156
+ },
+ {
+  "path": "runtime/use-runtime-session-mirror-environment-key.ts",
+  "loc": 111
+ },
+ {
+  "path": "runtime/web-agent-session-handoff.ts",
+  "loc": 91
+ },
+ {
+  "path": "runtime/web-runtime-browser-creation-context.ts",
+  "loc": 265
+ },
+ {
+  "path": "runtime/web-runtime-browser-creation-e2e-fault.ts",
+  "loc": 226
+ },
+ {
+  "path": "runtime/web-runtime-browser-creation-failure.ts",
+  "loc": 118
+ },
+ {
+  "path": "runtime/web-runtime-browser-creation.ts",
+  "loc": 255
+ },
+ {
+  "path": "runtime/web-runtime-browser-materialization-wait.ts",
+  "loc": 60
+ },
+ {
+  "path": "runtime/web-runtime-browser-materialization.ts",
+  "loc": 39
+ },
+ {
+  "path": "runtime/web-runtime-browser-tab-staging.ts",
+  "loc": 184
+ },
+ {
+  "path": "runtime/web-runtime-session-environment.ts",
+  "loc": 37
+ },
+ {
+  "path": "runtime/web-runtime-session-snapshot.ts",
+  "loc": 213
+ },
+ {
+  "path": "runtime/web-runtime-session-tab-lifecycle.ts",
+  "loc": 194
+ },
+ {
+  "path": "runtime/web-runtime-session-tab-move.ts",
+  "loc": 125
+ },
+ {
+  "path": "runtime/web-runtime-session-types.ts",
+  "loc": 52
+ },
+ {
+  "path": "runtime/web-runtime-session-workspace-routing.ts",
+  "loc": 57
+ },
+ {
+  "path": "runtime/web-runtime-session-workspace-selection.ts",
+  "loc": 52
+ },
+ {
+  "path": "runtime/web-runtime-session.ts",
+  "loc": 31
+ },
+ {
+  "path": "runtime/web-runtime-split-focus.ts",
+  "loc": 163
+ },
+ {
+  "path": "runtime/web-runtime-terminal-actions.ts",
+  "loc": 308
+ },
+ {
+  "path": "runtime/web-runtime-terminal-create-operation.ts",
+  "loc": 305
+ },
+ {
+  "path": "runtime/web-runtime-terminal-creation.ts",
+  "loc": 65
+ },
+ {
+  "path": "runtime/web-runtime-terminal-identity.ts",
+  "loc": 7
+ },
+ {
+  "path": "runtime/web-runtime-terminal-placement-settlement.ts",
+  "loc": 74
+ },
+ {
+  "path": "runtime/web-runtime-wake-terminal-respawn.ts",
+  "loc": 29
+ },
+ {
+  "path": "runtime/web-runtime-worktree-activation.ts",
+  "loc": 60
+ },
+ {
+  "path": "runtime/web-session-browser-placement.ts",
+  "loc": 245
+ },
+ {
+  "path": "runtime/web-session-close-intent.ts",
+  "loc": 136
+ },
+ {
+  "path": "runtime/web-session-focus-intent.ts",
+  "loc": 188
+ },
+ {
+  "path": "runtime/web-session-intent-owner.ts",
+  "loc": 13
+ },
+ {
+  "path": "runtime/web-session-reorder-intent.ts",
+  "loc": 134
+ },
+ {
+  "path": "runtime/web-session-tab-rpc-timeout.ts",
+  "loc": 5
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/active-session-subscription.ts",
+  "loc": 285
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/agent-status-primitives.ts",
+  "loc": 204
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-active-state.ts",
+  "loc": 288
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-browser-records.ts",
+  "loc": 134
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-final-patch.ts",
+  "loc": 150
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-preparation-base.ts",
+  "loc": 229
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-preparation-browser.ts",
+  "loc": 237
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-preparation-groups.ts",
+  "loc": 235
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-preparation-unified.ts",
+  "loc": 278
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-snapshot.ts",
+  "loc": 52
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-terminal-records.ts",
+  "loc": 131
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/apply-worktree-records.ts",
+  "loc": 92
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/global-session-events.ts",
+  "loc": 159
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/global-session-subscription.ts",
+  "loc": 227
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/load-initial.ts",
+  "loc": 178
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/mirror-settle.ts",
+  "loc": 155
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/publisher-identity-fences.ts",
+  "loc": 184
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/snapshot-api.ts",
+  "loc": 130
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/state-equality-core.ts",
+  "loc": 164
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/state.ts",
+  "loc": 285
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/store-patch.ts",
+  "loc": 173
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/terminal-surfaces.ts",
+  "loc": 257
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/tracking-decisions.ts",
+  "loc": 195
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/tracking-lifecycle.ts",
+  "loc": 221
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/tracking-mappings.ts",
+  "loc": 58
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/tracking.ts",
+  "loc": 255
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/use-web-session-tabs-sync.ts",
+  "loc": 130
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/visibility-resume-coordinator.ts",
+  "loc": 311
+ },
+ {
+  "path": "runtime/web-session-tabs-sync/visibility-resume-types.ts",
+  "loc": 42
+ },
+ {
+  "path": "runtime/web-session-tabs-sync.ts",
+  "loc": 55
+ },
+ {
+  "path": "runtime/web-session-terminal-handle-events.ts",
+  "loc": 120
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-adoption.ts",
+  "loc": 187
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-cache.ts",
+  "loc": 243
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-inventory-validation.ts",
+  "loc": 47
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-inventory.ts",
+  "loc": 256
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-pane.ts",
+  "loc": 200
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-queue.ts",
+  "loc": 98
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-rpc-lane.ts",
+  "loc": 32
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-surface-index.ts",
+  "loc": 80
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery-surface.ts",
+  "loc": 301
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-recovery.ts",
+  "loc": 317
+ },
+ {
+  "path": "runtime/web-session-terminal-orphan-topology.ts",
+  "loc": 140
+ },
+ {
+  "path": "runtime/web-session-terminal-placement.ts",
+  "loc": 82
+ },
+ {
+  "path": "runtime/web-session-terminal-recovery-snapshot-validation.ts",
+  "loc": 94
+ },
+ {
+  "path": "runtime/web-session-terminal-retirement-proof-ledger.ts",
+  "loc": 77
+ },
+ {
+  "path": "runtime/web-terminal-surface-id.ts",
+  "loc": 7
+ },
+ {
+  "path": "runtime/window-visibility-subscription-parking.ts",
+  "loc": 288
+ },
+ {
+  "path": "store/catalog-identity.ts",
+  "loc": 46
+ },
+ {
+  "path": "store/copy-on-write-record.ts",
+  "loc": 32
+ },
+ {
+  "path": "store/folder-workspaces/folder-path-status-actions.ts",
+  "loc": 83
+ },
+ {
+  "path": "store/folder-workspaces/folder-path-status.ts",
+  "loc": 136
+ },
+ {
+  "path": "store/folder-workspaces/folder-workspace-catalog-actions.ts",
+  "loc": 142
+ },
+ {
+  "path": "store/folder-workspaces/folder-workspace-catalog.ts",
+  "loc": 295
+ },
+ {
+  "path": "store/folder-workspaces/folder-workspace-mutations.ts",
+  "loc": 272
+ },
+ {
+  "path": "store/folder-workspaces/folder-workspace-routing.ts",
+  "loc": 65
+ },
+ {
+  "path": "store/github/cache-model.ts",
+  "loc": 64
+ },
+ {
+  "path": "store/github/cache-persistence.ts",
+  "loc": 17
+ },
+ {
+  "path": "store/github/cache-policy.ts",
+  "loc": 50
+ },
+ {
+  "path": "store/github/check-actions.ts",
+  "loc": 231
+ },
+ {
+  "path": "store/github/comment-fetch-actions.ts",
+  "loc": 93
+ },
+ {
+  "path": "store/github/comment-mutation-actions.ts",
+  "loc": 216
+ },
+ {
+  "path": "store/github/conversation-comment-actions.ts",
+  "loc": 94
+ },
+ {
+  "path": "store/github/issue-actions.ts",
+  "loc": 94
+ },
+ {
+  "path": "store/github/pr-check-status-cache.ts",
+  "loc": 82
+ },
+ {
+  "path": "store/github/pr-comment-cache.ts",
+  "loc": 42
+ },
+ {
+  "path": "store/github/pr-refresh-state.ts",
+  "loc": 141
+ },
+ {
+  "path": "store/github/pr-result-cache.ts",
+  "loc": 252
+ },
+ {
+  "path": "store/github/pr-result-routing.ts",
+  "loc": 185
+ },
+ {
+  "path": "store/github/project-actions.ts",
+  "loc": 254
+ },
+ {
+  "path": "store/github/project-cache.ts",
+  "loc": 129
+ },
+ {
+  "path": "store/github/project-row-actions.ts",
+  "loc": 292
+ },
+ {
+  "path": "store/github/pull-request-actions.ts",
+  "loc": 155
+ },
+ {
+  "path": "store/github/pull-request-execution.ts",
+  "loc": 291
+ },
+ {
+  "path": "store/github/refresh-event-actions.ts",
+  "loc": 279
+ },
+ {
+  "path": "store/github/refresh-routing-actions.ts",
+  "loc": 93
+ },
+ {
+  "path": "store/github/refresh-sweep-actions.ts",
+  "loc": 223
+ },
+ {
+  "path": "store/github/repository-routing.ts",
+  "loc": 117
+ },
+ {
+  "path": "store/github/request-coordination.ts",
+  "loc": 84
+ },
+ {
+  "path": "store/github/review-thread-actions.ts",
+  "loc": 92
+ },
+ {
+  "path": "store/github/slice-types.ts",
+  "loc": 277
+ },
+ {
+  "path": "store/github/stale-worktree-refresh-actions.ts",
+  "loc": 85
+ },
+ {
+  "path": "store/github/work-item-aggregate-actions.ts",
+  "loc": 263
+ },
+ {
+  "path": "store/github/work-item-fetch-actions.ts",
+  "loc": 235
+ },
+ {
+  "path": "store/github/work-item-mutation-actions.ts",
+  "loc": 133
+ },
+ {
+  "path": "store/github/work-item-routing.ts",
+  "loc": 223
+ },
+ {
+  "path": "store/github/worktree-refresh.ts",
+  "loc": 280
+ },
+ {
+  "path": "store/host-catalog-fencing.ts",
+  "loc": 62
+ },
+ {
+  "path": "store/project-groups/nested-repository-operations.ts",
+  "loc": 130
+ },
+ {
+  "path": "store/project-groups/project-group-catalog-actions.ts",
+  "loc": 95
+ },
+ {
+  "path": "store/project-groups/project-group-catalog.ts",
+  "loc": 68
+ },
+ {
+  "path": "store/project-groups/project-group-mutations.ts",
+  "loc": 269
+ },
+ {
+  "path": "store/project-groups/project-group-owner-stamping.ts",
+  "loc": 17
+ },
+ {
+  "path": "store/project-groups/project-group-removal-state.ts",
+  "loc": 39
+ },
+ {
+  "path": "store/project-host-setup-selector-normalization.ts",
+  "loc": 51
+ },
+ {
+  "path": "store/projects/project-compatibility-core.ts",
+  "loc": 242
+ },
+ {
+  "path": "store/projects/project-compatibility-host-merge.ts",
+  "loc": 226
+ },
+ {
+  "path": "store/projects/project-host-routing.ts",
+  "loc": 154
+ },
+ {
+  "path": "store/projects/project-host-setup-actions.ts",
+  "loc": 288
+ },
+ {
+  "path": "store/projects/project-profile-presence.ts",
+  "loc": 48
+ },
+ {
+  "path": "store/projects/project-update.ts",
+  "loc": 55
+ },
+ {
+  "path": "store/projects/project-wsl-filesystem-boundary-advisory.ts",
+  "loc": 74
+ },
+ {
+  "path": "store/react-commit-cascade-write-probe.ts",
+  "loc": 37
+ },
+ {
+  "path": "store/repos/all-host-repo-catalog-actions.ts",
+  "loc": 199
+ },
+ {
+  "path": "store/repos/owner-routing.ts",
+  "loc": 101
+ },
+ {
+  "path": "store/repos/repo-add-actions.ts",
+  "loc": 220
+ },
+ {
+  "path": "store/repos/repo-catalog-actions.ts",
+  "loc": 173
+ },
+ {
+  "path": "store/repos/repo-catalog-fencing.ts",
+  "loc": 66
+ },
+ {
+  "path": "store/repos/repo-catalog-identity.ts",
+  "loc": 78
+ },
+ {
+  "path": "store/repos/repo-catalog-merge.ts",
+  "loc": 141
+ },
+ {
+  "path": "store/repos/repo-ordering.ts",
+  "loc": 86
+ },
+ {
+  "path": "store/repos/repo-removal.ts",
+  "loc": 287
+ },
+ {
+  "path": "store/repos/repo-update.ts",
+  "loc": 232
+ },
+ {
+  "path": "store/repos/runtime-repo-catalog-actions.ts",
+  "loc": 157
+ },
+ {
+  "path": "store/repos/safe-auto-fork-sync.ts",
+  "loc": 55
+ },
+ {
+  "path": "store/right-sidebar-route.ts",
+  "loc": 58
+ },
+ {
+  "path": "store/runtime-catalog-hosts.ts",
+  "loc": 8
+ },
+ {
+  "path": "store/runtime-target-host.ts",
+  "loc": 12
+ },
+ {
+  "path": "store/slices/active-tab-owner-worktree.ts",
+  "loc": 82
+ },
+ {
+  "path": "store/slices/agent-pane-authority.ts",
+  "loc": 137
+ },
+ {
+  "path": "store/slices/agent-status-authority-actions.ts",
+  "loc": 228
+ },
+ {
+  "path": "store/slices/agent-status-capacity-eviction.ts",
+  "loc": 121
+ },
+ {
+  "path": "store/slices/agent-status-cleanup-actions.ts",
+  "loc": 217
+ },
+ {
+  "path": "store/slices/agent-status-connection-worktree-scope.ts",
+  "loc": 41
+ },
+ {
+  "path": "store/slices/agent-status-contract.ts",
+  "loc": 169
+ },
+ {
+  "path": "store/slices/agent-status-drop-actions.ts",
+  "loc": 255
+ },
+ {
+  "path": "store/slices/agent-status-drop-reducer.ts",
+  "loc": 190
+ },
+ {
+  "path": "store/slices/agent-status-freshness-scheduler.ts",
+  "loc": 252
+ },
+ {
+  "path": "store/slices/agent-status-launch-actions.ts",
+  "loc": 110
+ },
+ {
+  "path": "store/slices/agent-status-launch-config.ts",
+  "loc": 163
+ },
+ {
+  "path": "store/slices/agent-status-live-actions.ts",
+  "loc": 146
+ },
+ {
+  "path": "store/slices/agent-status-live-entry-builder.ts",
+  "loc": 303
+ },
+ {
+  "path": "store/slices/agent-status-live-facts.ts",
+  "loc": 134
+ },
+ {
+  "path": "store/slices/agent-status-live-reducer.ts",
+  "loc": 129
+ },
+ {
+  "path": "store/slices/agent-status-migration-unsupported-entries.ts",
+  "loc": 17
+ },
+ {
+  "path": "store/slices/agent-status-orchestration-actions.ts",
+  "loc": 103
+ },
+ {
+  "path": "store/slices/agent-status-orchestration-context.ts",
+  "loc": 51
+ },
+ {
+  "path": "store/slices/agent-status-pane-key-tab-binding.ts",
+  "loc": 183
+ },
+ {
+  "path": "store/slices/agent-status-pane-keyed-records.ts",
+  "loc": 112
+ },
+ {
+  "path": "store/slices/agent-status-provider-session-actions.ts",
+  "loc": 173
+ },
+ {
+  "path": "store/slices/agent-status-recovery-actions.ts",
+  "loc": 171
+ },
+ {
+  "path": "store/slices/agent-status-recovery-collection.ts",
+  "loc": 168
+ },
+ {
+  "path": "store/slices/agent-status-recovery-equivalence.ts",
+  "loc": 83
+ },
+ {
+  "path": "store/slices/agent-status-retention-actions.ts",
+  "loc": 171
+ },
+ {
+  "path": "store/slices/agent-status-runtime.ts",
+  "loc": 245
+ },
+ {
+  "path": "store/slices/agent-status-sleeping-records.ts",
+  "loc": 136
+ },
+ {
+  "path": "store/slices/agent-status-slice-contract.ts",
+  "loc": 181
+ },
+ {
+  "path": "store/slices/agent-status-worktree-drop-actions.ts",
+  "loc": 175
+ },
+ {
+  "path": "store/slices/browser/browser-close-actions.ts",
+  "loc": 263
+ },
+ {
+  "path": "store/slices/browser/browser-cookie-import-actions.ts",
+  "loc": 193
+ },
+ {
+  "path": "store/slices/browser/browser-history-actions.ts",
+  "loc": 116
+ },
+ {
+  "path": "store/slices/browser/browser-host-actions.ts",
+  "loc": 70
+ },
+ {
+  "path": "store/slices/browser/browser-host-state.ts",
+  "loc": 175
+ },
+ {
+  "path": "store/slices/browser/browser-hydration-actions.ts",
+  "loc": 264
+ },
+ {
+  "path": "store/slices/browser/browser-page-annotation.ts",
+  "loc": 18
+ },
+ {
+  "path": "store/slices/browser/browser-page-conversion-actions.ts",
+  "loc": 212
+ },
+ {
+  "path": "store/slices/browser/browser-page-create-actions.ts",
+  "loc": 210
+ },
+ {
+  "path": "store/slices/browser/browser-page-focus-actions.ts",
+  "loc": 94
+ },
+ {
+  "path": "store/slices/browser/browser-page-metadata-actions.ts",
+  "loc": 131
+ },
+ {
+  "path": "store/slices/browser/browser-page-state-actions.ts",
+  "loc": 231
+ },
+ {
+  "path": "store/slices/browser/browser-profile-import-actions.ts",
+  "loc": 172
+ },
+ {
+  "path": "store/slices/browser/browser-profile-list-actions.ts",
+  "loc": 171
+ },
+ {
+  "path": "store/slices/browser/browser-remote-close.ts",
+  "loc": 33
+ },
+ {
+  "path": "store/slices/browser/browser-slice-contract.ts",
+  "loc": 260
+ },
+ {
+  "path": "store/slices/browser/browser-tab-actions.ts",
+  "loc": 257
+ },
+ {
+  "path": "store/slices/browser/browser-tab-focus-actions.ts",
+  "loc": 145
+ },
+ {
+  "path": "store/slices/browser/create-browser-slice.ts",
+  "loc": 57
+ },
+ {
+  "path": "store/slices/browser-page-conversion.ts",
+  "loc": 137
+ },
+ {
+  "path": "store/slices/browser-page-records.ts",
+  "loc": 207
+ },
+ {
+  "path": "store/slices/browser-webview-cleanup.ts",
+  "loc": 78
+ },
+ {
+  "path": "store/slices/browser.ts",
+  "loc": 18
+ },
+ {
+  "path": "store/slices/codex-restart-notice-account-identity.ts",
+  "loc": 26
+ },
+ {
+  "path": "store/slices/commit-message-generation.ts",
+  "loc": 189
+ },
+ {
+  "path": "store/slices/degraded-repo-worktree-validity.ts",
+  "loc": 80
+ },
+ {
+  "path": "store/slices/detected-agents.ts",
+  "loc": 125
+ },
+ {
+  "path": "store/slices/detected-worktree-refresh-leases.ts",
+  "loc": 265
+ },
+ {
+  "path": "store/slices/dictation.ts",
+  "loc": 62
+ },
+ {
+  "path": "store/slices/diff-comment-persistence.ts",
+  "loc": 322
+ },
+ {
+  "path": "store/slices/diffComments.ts",
+  "loc": 256
+ },
+ {
+  "path": "store/slices/direct-ssh-pane-retry-ledger.ts",
+  "loc": 172
+ },
+ {
+  "path": "store/slices/direct-ssh-terminal-authority-ledger.ts",
+  "loc": 252
+ },
+ {
+  "path": "store/slices/direct-ssh-terminal-recovery-types.ts",
+  "loc": 64
+ },
+ {
+  "path": "store/slices/direct-ssh-terminal-recovery.ts",
+  "loc": 173
+ },
+ {
+  "path": "store/slices/direct-ssh-terminal-workspace-scope.ts",
+  "loc": 133
+ },
+ {
+  "path": "store/slices/editor/actions/check-run-details-actions.ts",
+  "loc": 218
+ },
+ {
+  "path": "store/slices/editor/actions/close-file-action.ts",
+  "loc": 219
+ },
+ {
+  "path": "store/slices/editor/actions/editor-cursor-line.ts",
+  "loc": 15
+ },
+ {
+  "path": "store/slices/editor/actions/editor-draft-state.ts",
+  "loc": 164
+ },
+ {
+  "path": "store/slices/editor/actions/editor-reveal-focus-state.ts",
+  "loc": 23
+ },
+ {
+  "path": "store/slices/editor/actions/explorer-dir-state.ts",
+  "loc": 75
+ },
+ {
+  "path": "store/slices/editor/actions/file-search-actions.ts",
+  "loc": 121
+ },
+ {
+  "path": "store/slices/editor/actions/git-branch-compare-actions.ts",
+  "loc": 118
+ },
+ {
+  "path": "store/slices/editor/actions/git-remote-push-pull.ts",
+  "loc": 116
+ },
+ {
+  "path": "store/slices/editor/actions/git-remote-status.ts",
+  "loc": 88
+ },
+ {
+  "path": "store/slices/editor/actions/git-remote-sync.ts",
+  "loc": 136
+ },
+ {
+  "path": "store/slices/editor/actions/git-status-actions.ts",
+  "loc": 277
+ },
+ {
+  "path": "store/slices/editor/actions/hydrate-editor-session.ts",
+  "loc": 160
+ },
+ {
+  "path": "store/slices/editor/actions/markdown-link-action.ts",
+  "loc": 185
+ },
+ {
+  "path": "store/slices/editor/actions/markdown-preview-actions.ts",
+  "loc": 200
+ },
+ {
+  "path": "store/slices/editor/actions/open-combined-diff.ts",
+  "loc": 231
+ },
+ {
+  "path": "store/slices/editor/actions/open-conflict-file.ts",
+  "loc": 135
+ },
+ {
+  "path": "store/slices/editor/actions/open-conflict-review.ts",
+  "loc": 171
+ },
+ {
+  "path": "store/slices/editor/actions/open-file-action.ts",
+  "loc": 54
+ },
+ {
+  "path": "store/slices/editor/actions/open-file-apply.ts",
+  "loc": 294
+ },
+ {
+  "path": "store/slices/editor/actions/open-file-mutations.ts",
+  "loc": 198
+ },
+ {
+  "path": "store/slices/editor/actions/open-file-state.ts",
+  "loc": 35
+ },
+ {
+  "path": "store/slices/editor/actions/open-history-diff.ts",
+  "loc": 202
+ },
+ {
+  "path": "store/slices/editor/actions/open-unstaged-diff.ts",
+  "loc": 107
+ },
+ {
+  "path": "store/slices/editor/actions/recently-closed-editor-tabs.ts",
+  "loc": 220
+ },
+ {
+  "path": "store/slices/editor/actions/rekey-open-files-action.ts",
+  "loc": 152
+ },
+ {
+  "path": "store/slices/editor/actions/restored-editor-owner-destination.ts",
+  "loc": 96
+ },
+ {
+  "path": "store/slices/editor/actions/restored-editor-owner-transition.ts",
+  "loc": 259
+ },
+ {
+  "path": "store/slices/editor/actions/restored-editor-owner.ts",
+  "loc": 50
+ },
+ {
+  "path": "store/slices/editor/actions/right-sidebar-state.ts",
+  "loc": 143
+ },
+ {
+  "path": "store/slices/editor/create-editor-slice.ts",
+  "loc": 60
+ },
+ {
+  "path": "store/slices/editor/file-ids/editor-file-ids.ts",
+  "loc": 154
+ },
+ {
+  "path": "store/slices/editor/file-ids/hydrated-editor-file-ids.ts",
+  "loc": 208
+ },
+ {
+  "path": "store/slices/editor/file-ids/hydrated-editor-file-selection.ts",
+  "loc": 40
+ },
+ {
+  "path": "store/slices/editor/file-ids/hydrated-editor-frontmatter.ts",
+  "loc": 50
+ },
+ {
+  "path": "store/slices/editor/file-ids/open-file-path-rekey.ts",
+  "loc": 80
+ },
+ {
+  "path": "store/slices/editor/focus/editor-focus-reveal.ts",
+  "loc": 63
+ },
+ {
+  "path": "store/slices/editor/git/branch-compare-state.ts",
+  "loc": 27
+ },
+ {
+  "path": "store/slices/editor/git/diff-runtime-owner.ts",
+  "loc": 14
+ },
+ {
+  "path": "store/slices/editor/git/git-status-reconciliation.ts",
+  "loc": 186
+ },
+ {
+  "path": "store/slices/editor/search/file-search-state.ts",
+  "loc": 18
+ },
+ {
+  "path": "store/slices/editor/tabs/editor-open-target-group.ts",
+  "loc": 101
+ },
+ {
+  "path": "store/slices/editor/tabs/editor-tab-content-type.ts",
+  "loc": 10
+ },
+ {
+  "path": "store/slices/editor/tabs/untitled-file-cleanup.ts",
+  "loc": 33
+ },
+ {
+  "path": "store/slices/editor/tabs/workspace-editor-item.ts",
+  "loc": 163
+ },
+ {
+  "path": "store/slices/editor/types/editor-files-slice.ts",
+  "loc": 176
+ },
+ {
+  "path": "store/slices/editor/types/editor-git-slice.ts",
+  "loc": 137
+ },
+ {
+  "path": "store/slices/editor/types/editor-set-get.ts",
+  "loc": 6
+ },
+ {
+  "path": "store/slices/editor/types/editor-slice.ts",
+  "loc": 11
+ },
+ {
+  "path": "store/slices/editor/types/file-search-worktree-state.ts",
+  "loc": 17
+ },
+ {
+  "path": "store/slices/editor/types/git-runtime-operation.ts",
+  "loc": 6
+ },
+ {
+  "path": "store/slices/editor/types/open-file-path-rekey.ts",
+  "loc": 14
+ },
+ {
+  "path": "store/slices/editor/types/open-file.ts",
+  "loc": 174
+ },
+ {
+  "path": "store/slices/editor/types/pending-editor-reveal.ts",
+  "loc": 18
+ },
+ {
+  "path": "store/slices/editor/types/restored-editor-owner.ts",
+  "loc": 15
+ },
+ {
+  "path": "store/slices/editor.ts",
+  "loc": 42
+ },
+ {
+  "path": "store/slices/folder-workspace-activity-persistence.ts",
+  "loc": 54
+ },
+ {
+  "path": "store/slices/folder-workspace-update-coordinator.ts",
+  "loc": 58
+ },
+ {
+  "path": "store/slices/github-checks.ts",
+  "loc": 79
+ },
+ {
+  "path": "store/slices/github-project-row-owner.ts",
+  "loc": 32
+ },
+ {
+  "path": "store/slices/github-repo-lookup-index.ts",
+  "loc": 72
+ },
+ {
+  "path": "store/slices/github-work-items-query-bounds.ts",
+  "loc": 5
+ },
+ {
+  "path": "store/slices/github.ts",
+  "loc": 104
+ },
+ {
+  "path": "store/slices/hosted-review-cache-state.ts",
+  "loc": 240
+ },
+ {
+  "path": "store/slices/hosted-review-card-refresh.ts",
+  "loc": 42
+ },
+ {
+  "path": "store/slices/hosted-review-pr-cache.ts",
+  "loc": 39
+ },
+ {
+  "path": "store/slices/hosted-review-request-state.ts",
+  "loc": 189
+ },
+ {
+  "path": "store/slices/hosted-review.ts",
+  "loc": 323
+ },
+ {
+  "path": "store/slices/jira-collection-read-actions.ts",
+  "loc": 215
+ },
+ {
+  "path": "store/slices/jira-connection-actions.ts",
+  "loc": 195
+ },
+ {
+  "path": "store/slices/jira-issue-patch-action.ts",
+  "loc": 41
+ },
+ {
+  "path": "store/slices/jira-issue-read-actions.ts",
+  "loc": 175
+ },
+ {
+  "path": "store/slices/jira-read-coordination.ts",
+  "loc": 249
+ },
+ {
+  "path": "store/slices/jira-slice-contract.ts",
+  "loc": 72
+ },
+ {
+  "path": "store/slices/jira.ts",
+  "loc": 23
+ },
+ {
+  "path": "store/slices/keybindings.ts",
+  "loc": 131
+ },
+ {
+  "path": "store/slices/linear/linear-cache.ts",
+  "loc": 234
+ },
+ {
+  "path": "store/slices/linear/linear-custom-view-detail-actions.ts",
+  "loc": 141
+ },
+ {
+  "path": "store/slices/linear/linear-custom-view-issue-actions.ts",
+  "loc": 153
+ },
+ {
+  "path": "store/slices/linear/linear-custom-view-list-actions.ts",
+  "loc": 149
+ },
+ {
+  "path": "store/slices/linear/linear-custom-view-project-actions.ts",
+  "loc": 137
+ },
+ {
+  "path": "store/slices/linear/linear-invalidation-actions.ts",
+  "loc": 155
+ },
+ {
+  "path": "store/slices/linear/linear-issue-cache-actions.ts",
+  "loc": 101
+ },
+ {
+  "path": "store/slices/linear/linear-issue-detail-actions.ts",
+  "loc": 157
+ },
+ {
+  "path": "store/slices/linear/linear-issue-list-actions.ts",
+  "loc": 250
+ },
+ {
+  "path": "store/slices/linear/linear-project-detail-actions.ts",
+  "loc": 133
+ },
+ {
+  "path": "store/slices/linear/linear-project-issue-actions.ts",
+  "loc": 153
+ },
+ {
+  "path": "store/slices/linear/linear-project-list-actions.ts",
+  "loc": 147
+ },
+ {
+  "path": "store/slices/linear/linear-slice-connection-actions.ts",
+  "loc": 234
+ },
+ {
+  "path": "store/slices/linear/linear-slice-contract.ts",
+  "loc": 160
+ },
+ {
+  "path": "store/slices/linear/linear-slice-request-state.ts",
+  "loc": 161
+ },
+ {
+  "path": "store/slices/linear/linear-slice-scope.ts",
+  "loc": 76
+ },
+ {
+  "path": "store/slices/linear/linear-slice-status-actions.ts",
+  "loc": 115
+ },
+ {
+  "path": "store/slices/linear/linear-team-actions.ts",
+  "loc": 135
+ },
+ {
+  "path": "store/slices/linear.ts",
+  "loc": 58
+ },
+ {
+  "path": "store/slices/local-agent-context-eviction.ts",
+  "loc": 118
+ },
+ {
+  "path": "store/slices/local-agent-legacy-loading.ts",
+  "loc": 43
+ },
+ {
+  "path": "store/slices/local-detected-agent-state.ts",
+  "loc": 302
+ },
+ {
+  "path": "store/slices/local-detected-agent-store-state.ts",
+  "loc": 44
+ },
+ {
+  "path": "store/slices/memory.ts",
+  "loc": 45
+ },
+ {
+  "path": "store/slices/modal-slot-dismissal.ts",
+  "loc": 9
+ },
+ {
+  "path": "store/slices/new-issue-draft.ts",
+  "loc": 41
+ },
+ {
+  "path": "store/slices/orca-profiles-auth-actions.ts",
+  "loc": 245
+ },
+ {
+  "path": "store/slices/orca-profiles.ts",
+  "loc": 151
+ },
+ {
+  "path": "store/slices/pane-column-split-drop-no-op.ts",
+  "loc": 71
+ },
+ {
+  "path": "store/slices/pane-foreground-agent.ts",
+  "loc": 110
+ },
+ {
+  "path": "store/slices/persisted-ui-write-baseline.ts",
+  "loc": 182
+ },
+ {
+  "path": "store/slices/pinned-tab-close-confirm.ts",
+  "loc": 93
+ },
+ {
+  "path": "store/slices/preflight.ts",
+  "loc": 141
+ },
+ {
+  "path": "store/slices/pull-request-generation.ts",
+  "loc": 317
+ },
+ {
+  "path": "store/slices/rate-limits.ts",
+  "loc": 138
+ },
+ {
+  "path": "store/slices/readopted-ssh-worktree-rows.ts",
+  "loc": 52
+ },
+ {
+  "path": "store/slices/recently-closed-tab-position.ts",
+  "loc": 167
+ },
+ {
+  "path": "store/slices/recently-closed-tabs.ts",
+  "loc": 203
+ },
+ {
+  "path": "store/slices/remote-server-updates.ts",
+  "loc": 179
+ },
+ {
+  "path": "store/slices/repo-filter-selection.ts",
+  "loc": 10
+ },
+ {
+  "path": "store/slices/repo-identity-reconcile.ts",
+  "loc": 72
+ },
+ {
+  "path": "store/slices/repo-reorder-host-split.ts",
+  "loc": 65
+ },
+ {
+  "path": "store/slices/repos.ts",
+  "loc": 86
+ },
+ {
+  "path": "store/slices/retired-terminal-tab-state-sweep.ts",
+  "loc": 100
+ },
+ {
+  "path": "store/slices/runtime-detected-agents.ts",
+  "loc": 238
+ },
+ {
+  "path": "store/slices/runtime-environment-disconnect-toast.ts",
+  "loc": 86
+ },
+ {
+  "path": "store/slices/runtime-environment-ssh-selectors.ts",
+  "loc": 99
+ },
+ {
+  "path": "store/slices/runtime-environment-status-equality.ts",
+  "loc": 12
+ },
+ {
+  "path": "store/slices/runtime-status-connection-generation.ts",
+  "loc": 24
+ },
+ {
+  "path": "store/slices/runtime-status-hydration.ts",
+  "loc": 109
+ },
+ {
+  "path": "store/slices/runtime-status-refresh.ts",
+  "loc": 52
+ },
+ {
+  "path": "store/slices/runtime-status-snapshot.ts",
+  "loc": 44
+ },
+ {
+  "path": "store/slices/runtime-status-types.ts",
+  "loc": 27
+ },
+ {
+  "path": "store/slices/runtime-status.ts",
+  "loc": 330
+ },
+ {
+  "path": "store/slices/settings-owner-hydration-publication.ts",
+  "loc": 165
+ },
+ {
+  "path": "store/slices/settings-search-state.ts",
+  "loc": 39
+ },
+ {
+  "path": "store/slices/settings.ts",
+  "loc": 304
+ },
+ {
+  "path": "store/slices/sparse-presets.ts",
+  "loc": 211
+ },
+ {
+  "path": "store/slices/ssh-target-cleanup.ts",
+  "loc": 309
+ },
+ {
+  "path": "store/slices/ssh.ts",
+  "loc": 212
+ },
+ {
+  "path": "store/slices/stale-runtime-host-rows.ts",
+  "loc": 62
+ },
+ {
+  "path": "store/slices/stats.ts",
+  "loc": 21
+ },
+ {
+  "path": "store/slices/superseded-ssh-repo-rows.ts",
+  "loc": 87
+ },
+ {
+  "path": "store/slices/tab-group-reference-repair.ts",
+  "loc": 128
+ },
+ {
+  "path": "store/slices/tab-group-state.ts",
+  "loc": 271
+ },
+ {
+  "path": "store/slices/tabs/create-tabs-slice.ts",
+  "loc": 30
+ },
+ {
+  "path": "store/slices/tabs/tabs-bulk-close-actions.ts",
+  "loc": 87
+ },
+ {
+  "path": "store/slices/tabs/tabs-close-actions.ts",
+  "loc": 197
+ },
+ {
+  "path": "store/slices/tabs/tabs-create-actions.ts",
+  "loc": 223
+ },
+ {
+  "path": "store/slices/tabs/tabs-drop-actions.ts",
+  "loc": 194
+ },
+ {
+  "path": "store/slices/tabs/tabs-focus-actions.ts",
+  "loc": 113
+ },
+ {
+  "path": "store/slices/tabs/tabs-group-actions.ts",
+  "loc": 195
+ },
+ {
+  "path": "store/slices/tabs/tabs-host-mirroring.ts",
+  "loc": 66
+ },
+ {
+  "path": "store/slices/tabs/tabs-label-actions.ts",
+  "loc": 210
+ },
+ {
+  "path": "store/slices/tabs/tabs-layout.ts",
+  "loc": 125
+ },
+ {
+  "path": "store/slices/tabs/tabs-move-actions.ts",
+  "loc": 132
+ },
+ {
+  "path": "store/slices/tabs/tabs-reconciliation-batch.ts",
+  "loc": 62
+ },
+ {
+  "path": "store/slices/tabs/tabs-reconciliation.ts",
+  "loc": 267
+ },
+ {
+  "path": "store/slices/tabs/tabs-secondary-actions.ts",
+  "loc": 94
+ },
+ {
+  "path": "store/slices/tabs/tabs-session-actions.ts",
+  "loc": 118
+ },
+ {
+  "path": "store/slices/tabs/tabs-slice-contract.ts",
+  "loc": 164
+ },
+ {
+  "path": "store/slices/tabs/tabs-surface.ts",
+  "loc": 206
+ },
+ {
+  "path": "store/slices/tabs/tabs-tab-order.ts",
+  "loc": 41
+ },
+ {
+  "path": "store/slices/tabs-hydration.ts",
+  "loc": 349
+ },
+ {
+  "path": "store/slices/tabs.ts",
+  "loc": 12
+ },
+ {
+  "path": "store/slices/task-creation-drafts.ts",
+  "loc": 41
+ },
+ {
+  "path": "store/slices/terminal-activation-spawn-suppression.ts",
+  "loc": 25
+ },
+ {
+  "path": "store/slices/terminal-helpers.ts",
+  "loc": 41
+ },
+ {
+  "path": "store/slices/terminal-orphan-helpers.ts",
+  "loc": 217
+ },
+ {
+  "path": "store/slices/terminal-quick-command-hosts.ts",
+  "loc": 285
+ },
+ {
+  "path": "store/slices/terminal-session-row-hydration.ts",
+  "loc": 267
+ },
+ {
+  "path": "store/slices/terminal-tab-owner-index.ts",
+  "loc": 185
+ },
+ {
+  "path": "store/slices/terminal-tab-retirement.ts",
+  "loc": 270
+ },
+ {
+  "path": "store/slices/terminal-tab-title-batch.ts",
+  "loc": 244
+ },
+ {
+  "path": "store/slices/terminals.ts",
+  "loc": 97
+ },
+ {
+  "path": "store/slices/ui/ui-slice-activity-actions.ts",
+  "loc": 156
+ },
+ {
+  "path": "store/slices/ui/ui-slice-agent-actions.ts",
+  "loc": 214
+ },
+ {
+  "path": "store/slices/ui/ui-slice-agent-notification-acknowledgement.ts",
+  "loc": 55
+ },
+ {
+  "path": "store/slices/ui/ui-slice-contextual-tour-progression.ts",
+  "loc": 38
+ },
+ {
+  "path": "store/slices/ui/ui-slice-contract-contextual.ts",
+  "loc": 117
+ },
+ {
+  "path": "store/slices/ui/ui-slice-contract-core.ts",
+  "loc": 220
+ },
+ {
+  "path": "store/slices/ui/ui-slice-contract-preferences.ts",
+  "loc": 204
+ },
+ {
+  "path": "store/slices/ui/ui-slice-contract.ts",
+  "loc": 36
+ },
+ {
+  "path": "store/slices/ui/ui-slice-feature-actions.ts",
+  "loc": 86
+ },
+ {
+  "path": "store/slices/ui/ui-slice-hydration-actions.ts",
+  "loc": 346
+ },
+ {
+  "path": "store/slices/ui/ui-slice-hydration-sanitizers.ts",
+  "loc": 253
+ },
+ {
+  "path": "store/slices/ui/ui-slice-hydration-values.ts",
+  "loc": 156
+ },
+ {
+  "path": "store/slices/ui/ui-slice-modal-actions.ts",
+  "loc": 25
+ },
+ {
+  "path": "store/slices/ui/ui-slice-persistence-actions.ts",
+  "loc": 52
+ },
+ {
+  "path": "store/slices/ui/ui-slice-preference-actions.ts",
+  "loc": 305
+ },
+ {
+  "path": "store/slices/ui/ui-slice-settings-actions.ts",
+  "loc": 60
+ },
+ {
+  "path": "store/slices/ui/ui-slice-surface-actions.ts",
+  "loc": 178
+ },
+ {
+  "path": "store/slices/ui/ui-slice-task-actions.ts",
+  "loc": 215
+ },
+ {
+  "path": "store/slices/ui/ui-slice-tour-actions.ts",
+  "loc": 239
+ },
+ {
+  "path": "store/slices/ui/ui-slice-trust-actions.ts",
+  "loc": 143
+ },
+ {
+  "path": "store/slices/ui/ui-slice-update-actions.ts",
+  "loc": 135
+ },
+ {
+  "path": "store/slices/ui/ui-slice-view-actions.ts",
+  "loc": 108
+ },
+ {
+  "path": "store/slices/usage-provider-slices.ts",
+  "loc": 307
+ },
+ {
+  "path": "store/slices/workspace-cleanup-broad-scan-registry.ts",
+  "loc": 87
+ },
+ {
+  "path": "store/slices/workspace-cleanup-browse.ts",
+  "loc": 61
+ },
+ {
+  "path": "store/slices/workspace-cleanup-cache-hydration.ts",
+  "loc": 41
+ },
+ {
+  "path": "store/slices/workspace-cleanup-candidate-enrichment.ts",
+  "loc": 305
+ },
+ {
+  "path": "store/slices/workspace-cleanup-local-evidence.ts",
+  "loc": 240
+ },
+ {
+  "path": "store/slices/workspace-cleanup-preflight-failures.ts",
+  "loc": 106
+ },
+ {
+  "path": "store/slices/workspace-cleanup-removal-targets.ts",
+  "loc": 338
+ },
+ {
+  "path": "store/slices/workspace-cleanup-removal.ts",
+  "loc": 239
+ },
+ {
+  "path": "store/slices/workspace-cleanup-scan-lifecycle.ts",
+  "loc": 149
+ },
+ {
+  "path": "store/slices/workspace-cleanup-scan-progress.ts",
+  "loc": 284
+ },
+ {
+  "path": "store/slices/workspace-cleanup.ts",
+  "loc": 172
+ },
+ {
+  "path": "store/slices/workspace-space.ts",
+  "loc": 246
+ },
+ {
+  "path": "store/slices/worktree-by-id-index.ts",
+  "loc": 41
+ },
+ {
+  "path": "store/slices/worktree-catalog-reconciliation.ts",
+  "loc": 59
+ },
+ {
+  "path": "store/slices/worktree-delete-state-types.ts",
+  "loc": 17
+ },
+ {
+  "path": "store/slices/worktree-listing-branch-switch.ts",
+  "loc": 107
+ },
+ {
+  "path": "store/slices/worktree-meta-update-application.ts",
+  "loc": 80
+ },
+ {
+  "path": "store/slices/worktree-nav-history.ts",
+  "loc": 307
+ },
+ {
+  "path": "store/slices/worktree-purge-target.ts",
+  "loc": 7
+ },
+ {
+  "path": "store/slices/worktree-refresh-options.ts",
+  "loc": 6
+ },
+ {
+  "path": "store/slices/worktree-visibility-owner-settings.ts",
+  "loc": 120
+ },
+ {
+  "path": "store/slices/worktree-visibility-settings-write.ts",
+  "loc": 136
+ },
+ {
+  "path": "store/slices/worktrees/create/create-worktree.ts",
+  "loc": 235
+ },
+ {
+  "path": "store/slices/worktrees/create/created-worktree-state-merge.ts",
+  "loc": 63
+ },
+ {
+  "path": "store/slices/worktrees/create/local-base-ref-refresh-toast.ts",
+  "loc": 84
+ },
+ {
+  "path": "store/slices/worktrees/create/pending-worktree-creation.ts",
+  "loc": 98
+ },
+ {
+  "path": "store/slices/worktrees/create/prefetch-worktree-create-base.ts",
+  "loc": 30
+ },
+ {
+  "path": "store/slices/worktrees/create/worktree-create-parent-pick.ts",
+  "loc": 94
+ },
+ {
+  "path": "store/slices/worktrees/create/worktree-create-payload.ts",
+  "loc": 136
+ },
+ {
+  "path": "store/slices/worktrees/listing/authoritative-worktree-removal-memory.ts",
+  "loc": 82
+ },
+ {
+  "path": "store/slices/worktrees/listing/detected-worktree-host-merge.ts",
+  "loc": 35
+ },
+ {
+  "path": "store/slices/worktrees/listing/detected-worktree-meta.ts",
+  "loc": 207
+ },
+ {
+  "path": "store/slices/worktrees/listing/detected-worktree-provider-request.ts",
+  "loc": 139
+ },
+ {
+  "path": "store/slices/worktrees/listing/detected-worktree-refresh-admission.ts",
+  "loc": 39
+ },
+ {
+  "path": "store/slices/worktrees/listing/detected-worktree-refresh.ts",
+  "loc": 269
+ },
+ {
+  "path": "store/slices/worktrees/listing/direct-ssh-authority.ts",
+  "loc": 58
+ },
+ {
+  "path": "store/slices/worktrees/listing/fetch-all-worktrees.ts",
+  "loc": 193
+ },
+ {
+  "path": "store/slices/worktrees/listing/fetch-detected-worktrees.ts",
+  "loc": 99
+ },
+ {
+  "path": "store/slices/worktrees/listing/fetch-worktrees.ts",
+  "loc": 124
+ },
+ {
+  "path": "store/slices/worktrees/listing/fetched-worktree-merge.ts",
+  "loc": 267
+ },
+ {
+  "path": "store/slices/worktrees/listing/known-ssh-worktree-fetch.ts",
+  "loc": 278
+ },
+ {
+  "path": "store/slices/worktrees/listing/runtime-scope-forbidden-toast.ts",
+  "loc": 24
+ },
+ {
+  "path": "store/slices/worktrees/listing/runtime-worktree-rpc-errors.ts",
+  "loc": 19
+ },
+ {
+  "path": "store/slices/worktrees/listing/worktree-catalog-visibility.ts",
+  "loc": 33
+ },
+ {
+  "path": "store/slices/worktrees/listing/worktree-host-ownership.ts",
+  "loc": 296
+ },
+ {
+  "path": "store/slices/worktrees/listing/worktree-meta-host-match.ts",
+  "loc": 19
+ },
+ {
+  "path": "store/slices/worktrees/listing/worktree-owner-settings.ts",
+  "loc": 163
+ },
+ {
+  "path": "store/slices/worktrees/listing/worktree-refresh-pool.ts",
+  "loc": 23
+ },
+ {
+  "path": "store/slices/worktrees/listing/worktree-slice-constants.ts",
+  "loc": 20
+ },
+ {
+  "path": "store/slices/worktrees/listing/worktree-slice-types.ts",
+  "loc": 97
+ },
+ {
+  "path": "store/slices/worktrees/metadata/detached-head-display-name.ts",
+  "loc": 18
+ },
+ {
+  "path": "store/slices/worktrees/metadata/hosted-review-link-mutation.ts",
+  "loc": 328
+ },
+ {
+  "path": "store/slices/worktrees/metadata/hosted-review-link-update-normalization.ts",
+  "loc": 14
+ },
+ {
+  "path": "store/slices/worktrees/metadata/hosted-review-push-target-ensure.ts",
+  "loc": 47
+ },
+ {
+  "path": "store/slices/worktrees/metadata/hosted-review-push-target.ts",
+  "loc": 92
+ },
+ {
+  "path": "store/slices/worktrees/metadata/update-worktree-meta.ts",
+  "loc": 313
+ },
+ {
+  "path": "store/slices/worktrees/metadata/update-worktrees-meta.ts",
+  "loc": 124
+ },
+ {
+  "path": "store/slices/worktrees/metadata/worktree-base-status.ts",
+  "loc": 29
+ },
+ {
+  "path": "store/slices/worktrees/metadata/worktree-git-identity-update.ts",
+  "loc": 197
+ },
+ {
+  "path": "store/slices/worktrees/metadata/worktree-lineage-actions.ts",
+  "loc": 95
+ },
+ {
+  "path": "store/slices/worktrees/metadata/worktree-lineage-host-merge.ts",
+  "loc": 98
+ },
+ {
+  "path": "store/slices/worktrees/metadata/worktree-lineage-refresh.ts",
+  "loc": 291
+ },
+ {
+  "path": "store/slices/worktrees/metadata/worktree-meta-persist.ts",
+  "loc": 156
+ },
+ {
+  "path": "store/slices/worktrees/session/activation-terminal-prep.ts",
+  "loc": 5
+ },
+ {
+  "path": "store/slices/worktrees/session/active-worktree-surface.ts",
+  "loc": 27
+ },
+ {
+  "path": "store/slices/worktrees/session/folder-workspace-activity.ts",
+  "loc": 24
+ },
+ {
+  "path": "store/slices/worktrees/session/migrate-worktree-identity.ts",
+  "loc": 23
+ },
+ {
+  "path": "store/slices/worktrees/session/set-active-folder-workspace.ts",
+  "loc": 76
+ },
+ {
+  "path": "store/slices/worktrees/session/set-active-worktree.ts",
+  "loc": 287
+ },
+ {
+  "path": "store/slices/worktrees/session/worktree-identity-rename-state.ts",
+  "loc": 273
+ },
+ {
+  "path": "store/slices/worktrees/session/worktree-pin-reveal.ts",
+  "loc": 115
+ },
+ {
+  "path": "store/slices/worktrees/session/worktree-slice-initial-state.ts",
+  "loc": 42
+ },
+ {
+  "path": "store/slices/worktrees/session/worktree-slice-lookups.ts",
+  "loc": 155
+ },
+ {
+  "path": "store/slices/worktrees/session/worktree-unread-activity.ts",
+  "loc": 317
+ },
+ {
+  "path": "store/slices/worktrees/session/worktree-visit-recency.ts",
+  "loc": 155
+ },
+ {
+  "path": "store/slices/worktrees/teardown/dispatch-worktree-removal.ts",
+  "loc": 84
+ },
+ {
+  "path": "store/slices/worktrees/teardown/force-delete-preserved-branch.ts",
+  "loc": 115
+ },
+ {
+  "path": "store/slices/worktrees/teardown/host-qualified-worktree-removal.ts",
+  "loc": 253
+ },
+ {
+  "path": "store/slices/worktrees/teardown/host-qualified-worktree-row-removal.ts",
+  "loc": 157
+ },
+ {
+  "path": "store/slices/worktrees/teardown/missing-worktree-terminal-teardown.ts",
+  "loc": 62
+ },
+ {
+  "path": "store/slices/worktrees/teardown/orphaned-runtime-ssh-project-purge.ts",
+  "loc": 45
+ },
+ {
+  "path": "store/slices/worktrees/teardown/preserved-branch-cleanup-target.ts",
+  "loc": 7
+ },
+ {
+  "path": "store/slices/worktrees/teardown/purge-stale-runtime-host-state.ts",
+  "loc": 317
+ },
+ {
+  "path": "store/slices/worktrees/teardown/record-key-omission.ts",
+  "loc": 30
+ },
+ {
+  "path": "store/slices/worktrees/teardown/remove-worktree-store-cleanup.ts",
+  "loc": 144
+ },
+ {
+  "path": "store/slices/worktrees/teardown/remove-worktree.ts",
+  "loc": 331
+ },
+ {
+  "path": "store/slices/worktrees/teardown/removed-worktree-renderer-teardown.ts",
+  "loc": 83
+ },
+ {
+  "path": "store/slices/worktrees/teardown/removed-worktree-snapshot-prune.ts",
+  "loc": 26
+ },
+ {
+  "path": "store/slices/worktrees/teardown/worktree-delete-state.ts",
+  "loc": 138
+ },
+ {
+  "path": "store/slices/worktrees/teardown/worktree-purge-doomed-ids.ts",
+  "loc": 84
+ },
+ {
+  "path": "store/slices/worktrees/teardown/worktree-purge-omitters.ts",
+  "loc": 85
+ },
+ {
+  "path": "store/slices/worktrees/teardown/worktree-purge-state.ts",
+  "loc": 262
+ },
+ {
+  "path": "store/slices/worktrees.ts",
+  "loc": 120
+ },
+ {
+  "path": "store/store-identity-churn-probe.ts",
+  "loc": 206
+ },
+ {
+  "path": "store/terminals/direct-ssh-terminal-bindings.ts",
+  "loc": 105
+ },
+ {
+  "path": "store/terminals/renamable-unified-tab.ts",
+  "loc": 15
+ },
+ {
+  "path": "store/terminals/terminal-actions.ts",
+  "loc": 289
+ },
+ {
+  "path": "store/terminals/terminal-active-workspace-creation.ts",
+  "loc": 69
+ },
+ {
+  "path": "store/terminals/terminal-contracts.ts",
+  "loc": 43
+ },
+ {
+  "path": "store/terminals/terminal-disowned-pty-sources.ts",
+  "loc": 53
+ },
+ {
+  "path": "store/terminals/terminal-ephemeral-state.ts",
+  "loc": 237
+ },
+ {
+  "path": "store/terminals/terminal-layout-state.ts",
+  "loc": 176
+ },
+ {
+  "path": "store/terminals/terminal-pane-hibernation.ts",
+  "loc": 243
+ },
+ {
+  "path": "store/terminals/terminal-pty-bindings.ts",
+  "loc": 287
+ },
+ {
+  "path": "store/terminals/terminal-pty-identities.ts",
+  "loc": 102
+ },
+ {
+  "path": "store/terminals/terminal-pty-release.ts",
+  "loc": 161
+ },
+ {
+  "path": "store/terminals/terminal-restart-state.ts",
+  "loc": 202
+ },
+ {
+  "path": "store/terminals/terminal-shutdown-guards.ts",
+  "loc": 190
+ },
+ {
+  "path": "store/terminals/terminal-shutdown-state.ts",
+  "loc": 180
+ },
+ {
+  "path": "store/terminals/terminal-shutdown.ts",
+  "loc": 172
+ },
+ {
+  "path": "store/terminals/terminal-startup-queues.ts",
+  "loc": 138
+ },
+ {
+  "path": "store/terminals/terminal-state.ts",
+  "loc": 159
+ },
+ {
+  "path": "store/terminals/terminal-tab-attention.ts",
+  "loc": 130
+ },
+ {
+  "path": "store/terminals/terminal-tab-close-providers.ts",
+  "loc": 107
+ },
+ {
+  "path": "store/terminals/terminal-tab-close.ts",
+  "loc": 266
+ },
+ {
+  "path": "store/terminals/terminal-tab-creation.ts",
+  "loc": 287
+ },
+ {
+  "path": "store/terminals/terminal-tab-location.ts",
+  "loc": 20
+ },
+ {
+  "path": "store/terminals/terminal-tab-navigation.ts",
+  "loc": 121
+ },
+ {
+  "path": "store/terminals/terminal-tab-presentation.ts",
+  "loc": 203
+ },
+ {
+  "path": "store/terminals/terminal-tab-recovery-ledger.ts",
+  "loc": 218
+ },
+ {
+  "path": "store/terminals/terminal-unverified-pty-loss.ts",
+  "loc": 48
+ },
+ {
+  "path": "store/terminals/terminal-workspace-routing.ts",
+  "loc": 110
+ },
+ {
+  "path": "store/terminals/workspace-terminal-hydration-patch.ts",
+  "loc": 246
+ },
+ {
+  "path": "store/terminals/workspace-terminal-hydration.ts",
+  "loc": 232
+ },
+ {
+  "path": "store/terminals/workspace-terminal-layout-plan.ts",
+  "loc": 58
+ },
+ {
+  "path": "store/terminals/workspace-terminal-placeholders.ts",
+  "loc": 93
+ },
+ {
+  "path": "store/terminals/workspace-terminal-reconnect-plan.ts",
+  "loc": 88
+ },
+ {
+  "path": "store/terminals/workspace-terminal-reconnect.ts",
+  "loc": 181
+ },
+ {
+  "path": "store/terminals/workspace-terminal-row-plan.ts",
+  "loc": 101
+ },
+ {
+  "path": "store/terminals/workspace-terminal-ssh-placeholders.ts",
+  "loc": 56
+ }
+]

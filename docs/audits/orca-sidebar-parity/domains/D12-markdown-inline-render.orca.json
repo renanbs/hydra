@@ -1,0 +1,581 @@
+{
+  "domain": "D12-markdown-inline-render",
+  "rows": [
+    {
+      "id": "D12-001",
+      "capability": "Renderização compacta de markdown para cards do sidebar com supressão de parágrafos <p> e quebras de linha preservadas",
+      "surface": "Card de worktree / commit / comentário no sidebar",
+      "trigger": "Montagem do componente CommentMarkdown com variant='compact' (padrão)",
+      "behaviors": [
+        "Substitui tags <p> por <span className='comment-md-p'> evitando margens verticais duplas no layout denso de cards",
+        "Aplica plugin remarkBreaks convertendo quebras de linha simples em <br> para compatibilidade com comentários em texto puro",
+        "Aplica contenção de layout com min-w-0, max-w-full e [overflow-wrap:anywhere]",
+        "Reseta estilos de pill de código inline em <code> filhos de <pre> via seletor descendente [&_pre_code]",
+        "Encaminha ref e props via React.forwardRef e React.memo permitindo composição transparente com Radix HoverCardTrigger asChild"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/CommentMarkdown.tsx:46",
+        "components/sidebar/CommentMarkdown.tsx:210",
+        "components/sidebar/CommentMarkdown.tsx:243",
+        "components/sidebar/comment-markdown-element-renderers.tsx:67"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:7 :: it marks compact headings so a parent can opt into block flow",
+        "components/sidebar/CommentMarkdown.test.tsx:20 :: it marks adjacent compact paragraphs inside disclosure content"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-002",
+      "capability": "Achatamento acessível de títulos (H1 a H6) para fluxo inline na variante compacta",
+      "surface": "Card de comentário/worktree no sidebar",
+      "trigger": "Títulos markdown (# a ######) renderizados com variant='compact'",
+      "behaviors": [
+        "Renderiza H1 a H6 como elementos <span> inline (classes comment-md-h, comment-md-h1 a h3, font-bold/font-semibold) preservando o fluxo inline do card",
+        "Atribui role='heading' e aria-level={1..6} aos spans para manter a hierarquia de navegação acessível por leitores de tela"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/comment-markdown-element-renderers.tsx:106",
+        "components/sidebar/comment-markdown-element-renderers.tsx:142"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:7 :: it marks compact headings so a parent can opt into block flow",
+        "components/sidebar/CommentMarkdown.test.tsx:275 :: it flattens headings to inline text in the compact variant"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-003",
+      "capability": "Renderização documental de markdown com títulos em bloco, citações e espaçamento hierárquico",
+      "surface": "Drawer de issue / PR, dialog de detalhes, chat document view",
+      "trigger": "Montagem do componente CommentMarkdown com variant='document'",
+      "behaviors": [
+        "Renderiza parágrafos como elementos <p className='my-2 first:mt-0 last:mb-0'>",
+        "Renderiza títulos reais <h1> a <h6> com tipografia escalonada (18px, 16px, 15px), semibold, entrelinha compacta e margens verticais",
+        "Renderiza citações em bloco <blockquote> com borda lateral esquerda (border-l-2 border-border/70 pl-3 text-muted-foreground)",
+        "Renderiza divisores horizontais <hr className='my-4 border-border/60'>"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/CommentMarkdown.tsx:197",
+        "components/sidebar/comment-markdown-element-renderers.tsx:220",
+        "components/sidebar/comment-markdown-element-renderers.tsx:265",
+        "components/sidebar/comment-markdown-element-renderers.tsx:283"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:189 :: it renders markdown blockquotes",
+        "components/sidebar/CommentMarkdown.test.tsx:266 :: it renders headings as block elements with hierarchy in the document variant"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-004",
+      "capability": "Sanitização rigorosa de HTML bruto, remoção de comentários HTML e filtragem de tags e protocolos inseguros",
+      "surface": "Qualquer superfície de renderização de markdown (compacta ou documental)",
+      "trigger": "Processamento de conteúdo markdown contendo HTML bruto, tags de formatação ou comentários",
+      "behaviors": [
+        "Aplica pipeline rehypeRaw seguido de rehypeSanitize com schema estendido de defaultSchema",
+        "Permite tags HTML seguras: details, summary, sub, sup, ins, kbd, table, thead, tbody, tr, th, td, blockquote",
+        "Filtra e remove completamente comentários HTML de linha única e multilinha (<!-- ... -->)",
+        "Permite atributos seguros específicos: open em details; href e title em <a>; src, alt, title, width, height em <img>; type, checked, disabled em <input>; align em <td> e <th>",
+        "Permite protocolos data: e blob: em src de imagens; protocolo file: em href é filtrado e higienizado por padrão a menos que allowFileUriLinks esteja habilitado",
+        "Renderiza <details>/<summary> como seções expansíveis nativas acessíveis"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/CommentMarkdown.tsx:37",
+        "components/sidebar/CommentMarkdown.tsx:162",
+        "components/sidebar/CommentMarkdown.tsx:185"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:162 :: it strips single-line and multi-line HTML comments",
+        "components/sidebar/CommentMarkdown.test.tsx:176 :: it renders <details>/<summary> as a disclosure section",
+        "components/sidebar/CommentMarkdown.test.tsx:198 :: it renders raw HTML blockquotes",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:121 :: it sanitizes file URI links unless the caller opts in",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:137 :: it sanitizes raw HTML file URI links unless the caller opts in"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-005",
+      "capability": "Autolinking de referências a issues e PRs do GitHub para mesmo repositório e cross-repo",
+      "surface": "Comentários e descrições com contexto de repositório (githubRepo prop)",
+      "trigger": "Presença de padrões #123 ou owner/repo#123 no texto do markdown",
+      "behaviors": [
+        "Identifica referências via GITHUB_REFERENCE_PATTERN e converte nós de texto em links <a> apontando para https://github.com/{owner}/{repo}/issues/{number}",
+        "Para referências curtas #123, utiliza owner e repo fornecidos na prop githubRepo",
+        "Para referências qualificadas owner/repo#123, resolve o repositório de destino mantendo o rótulo original",
+        "Ignora referências embutidas em identificadores ou caminhos precedidos por caracteres alfanuméricos ou _.-/",
+        "Não autolinka referências situadas dentro de links <a> existentes ou blocos de código inline/fenced",
+        "Processa listas massivas de referências iterativamente evitando limites de recursão ou tamanho de argumentos da V8"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/CommentMarkdown.tsx:48",
+        "components/sidebar/CommentMarkdown.tsx:75",
+        "components/sidebar/CommentMarkdown.tsx:109",
+        "components/sidebar/CommentMarkdown.tsx:156",
+        "components/sidebar/CommentMarkdown.tsx:238"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:34 :: it autolinks same-repo GitHub issue references when repo context is provided",
+        "components/sidebar/CommentMarkdown.test.tsx:47 :: it autolinks cross-repo GitHub issue references",
+        "components/sidebar/CommentMarkdown.test.tsx:59 :: it does not autolink GitHub issue references inside existing links or code",
+        "components/sidebar/CommentMarkdown.test.tsx:135 :: it autolinks very large generated GitHub reference comments"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-006",
+      "capability": "Autolinking inteligente de caminhos de arquivos e linhas com discriminação contextual (remarkNativeChatFileLinks)",
+      "surface": "Chat nativo e documentos com linkifyFilePaths=true",
+      "trigger": "Presença de caminhos de arquivo POSIX, Windows, relativos, cotados ou em código inline no texto",
+      "behaviors": [
+        "Converte caminhos POSIX (/tmp/foo.html, ./scripts/run, ~/file), Windows (C:\\Reports\\doc.pdf) e sufixos de linha/coluna (file:12, file:12:3) em hrefs com prefixo #orca-native-file:",
+        "Suporta caminhos completos com caracteres Unicode (/tmp/报告.html, docs/café/report.pdf) e extensões iniciadas por dígitos (.7z)",
+        "Transforma caminhos em código inline (`path/file.ts`) em links clicáveis preservando a estilização visual de <code>",
+        "Converte caminhos entre aspas (\"Folder/file.md\", 'Folder/file.md') tratando apóstrofos em nomes de diretório (Brennan's Folder)",
+        "Discrimina prosa de caminhos: não gera links para tokens comuns como and/or, TCP/IP, 24/7, N/A, km/h, A/B test, origin/main, v1.2.3, 1.0, aspect 16:9, John 3:16",
+        "Separa caminhos relativos adjacentes unidos por conectivos em prosa (src/a.ts and src/b.ts viram dois links distintos)",
+        "Respeita pontuação de fim de frase latina e Unicode (!, ?, —, 。, ！, ？, ，, 、, ；, ：) e atribuições de linha de comando (--config=./file.yaml)",
+        "Rejeita caminhos parciais adjacentes a caracteres não suportados (/tmp/$draft/file.html) e preserva blocos de código cercados (fenced code) como texto puro sem linkificação"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/comment-markdown-native-chat-file-links.ts:16",
+        "components/sidebar/comment-markdown-native-chat-file-links.ts:79",
+        "components/sidebar/comment-markdown-native-chat-file-links.ts:153",
+        "components/sidebar/comment-markdown-native-chat-file-links.ts:221",
+        "components/sidebar/CommentMarkdown.tsx:236"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:220 :: it linkifies bare POSIX and Windows document paths without an extension allowlist",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:248 :: it makes an inline-code file path clickable while preserving code styling",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:280 :: it leaves prose-shaped slash tokens and numeric versions unlinked",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:311 :: it links each relative path separately when prose joins them",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:332 :: it links quoted spaced-first-segment paths around apostrophes",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:364 :: it links a spaced-first-segment relative path when inline code disambiguates it",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:389 :: it requires path shape before a spaced line suffix can make a link",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:410 :: it preserves line suffixes on valid spaced path shapes",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:441 :: it links complete Unicode paths and extensions that begin with a digit",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:462 :: it never links an ASCII suffix inside a path containing an unsupported character",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:482 :: it links paths before common sentence punctuation",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:503 :: it links paths after CLI assignment and before Unicode sentence punctuation",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:524 :: it does not link partial paths across unsupported punctuation",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:572 :: it normalizes Windows markdown hrefs but leaves fenced paths as source text"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-007",
+      "capability": "Interceptação de cliques e auxclick em links com bloqueio de propagação para o card pai e cancelamento de navegação insegura",
+      "surface": "Links em qualquer renderizador de markdown",
+      "trigger": "Clique com botão esquerdo ou clique auxiliar com botão do meio (button 1) em tags <a>",
+      "behaviors": [
+        "Chama event.stopPropagation() impedindo que cliques em links disparem handlers de seleção ou foco do card ou linha pai",
+        "Executa event.preventDefault() automaticamente em links file: ou com prefixo #orca-native-file: prevenindo navegação indesejada do navegador",
+        "Encaminha evento e href para o callback onLinkClick fornecido pelo chamador",
+        "Intercepção de auxclick suporta clique com botão do meio (button 1); cliques com botão direito (button 2) não ativam interceptação",
+        "Quando allowFileUriLinks=true é informado, permite que o chamador intercepte URIs file:// explicitamente autorizadas"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/comment-markdown-element-renderers.tsx:38",
+        "components/sidebar/comment-markdown-element-renderers.tsx:53",
+        "components/sidebar/CommentMarkdown.tsx:40"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:25 :: it lets callers intercept rendered document links",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:55 :: it intercepts auxiliary clicks on generated native file links",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:89 :: it does not activate generated native file links on right-click",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:156 :: it lets opted-in callers intercept rendered file URI links",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:543 :: it prevents the default action for an unresolved internal file href"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-008",
+      "capability": "Renderização segura de imagens compactas com validação de fontes confiáveis (blob/data URI) e fallback de links remotos",
+      "surface": "Cards compactos do sidebar (variant='compact')",
+      "trigger": "Tags de imagem markdown ![alt](src) em cards compactos",
+      "behaviors": [
+        "Valida fonte via isTrustedCompactImageSrc permitindo inline apenas protocolos blob: ou data:image/(png|jpeg|gif|webp);base64",
+        "Converte URLs remotas não confiáveis (http/https) em links textuais seguros <a> exibindo alt ou src para evitar requisições de rede automáticas ao listar cards",
+        "Exibe imagens confiáveis com thumbnail contido (max-h-32 rounded-sm outline outline-1 outline-border/70)",
+        "Quando expandImages=true, integra com ExpandableMarkdownImage abrindo lightbox ao clicar",
+        "Quando expandImages=false, envolve imagem em link <a> delegando clique para onLinkClick"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/comment-markdown-element-renderers.tsx:28",
+        "components/sidebar/comment-markdown-element-renderers.tsx:154",
+        "components/sidebar/CommentMarkdown.tsx:32"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:73 :: it keeps remote compact markdown images as links",
+        "components/sidebar/CommentMarkdown.test.tsx:83 :: it renders trusted compact markdown images inline",
+        "components/sidebar/CommentMarkdown.test.tsx:108 :: it adds an expand control to compact images only when requested"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-009",
+      "capability": "Lightbox modal acessível com controle de foco e isolamento de dismiss para visualização expandida de imagens",
+      "surface": "Modal dialog viewport-centered acionado a partir de imagens em markdown",
+      "trigger": "Clique no botão de imagem expandível com cursor-zoom-in e aria-label='Expand image'",
+      "behaviors": [
+        "Abre modal Radix Dialog ocupando 90vw x 90dvh (h-[90dvh] w-[90vw] max-w-[90vw]) com backdrop e overflow contido",
+        "Bloqueia propagação do clique com event.stopPropagation() no botão disparador para não selecionar o card pai",
+        "Exibe cabeçalho com título truncado, título para leitores de tela (DialogTitle sr-only) e botão de fechar acessível com aria-label='Close'",
+        "Mantém retenção e captura de foco (focus trap) dentro do modal e restaura o foco ao botão disparador após o fechamento",
+        "Permite fechar via tecla Escape ou botão fechar sem propagar evento para sheets/drawers pais (mantém drawer de issue Jira/Linear aberto)",
+        "Apresenta imagem centralizada com rolagem suave bg-muted/20 scrollbar-editor e max-h-full max-w-full object-contain",
+        "Na variante documental, se onLinkClick for fornecido, delega clique diretamente para o callback em vez de abrir lightbox interno"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/MarkdownImageLightbox.tsx:31",
+        "components/sidebar/comment-markdown-element-renderers.tsx:60",
+        "components/sidebar/comment-markdown-element-renderers.tsx:300"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:93 :: it renders document markdown images with an expand control for the lightbox",
+        "components/sidebar/CommentMarkdown.link-click.test.tsx:190 :: it lets callers intercept rendered document images",
+        "components/sidebar/MarkdownImageLightbox.test.tsx:13 :: it opens an accessible dialog, traps focus, and restores focus after Escape",
+        "components/sidebar/MarkdownImageLightbox.test.tsx:38 :: it closes from the dialog close button",
+        "components/sidebar/MarkdownImageLightbox.test.tsx:46 :: it keeps the parent issue drawer open after Escape and close-button dismissal"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-010",
+      "capability": "Renderização e upgrade automático de mídia de anexos de usuário do GitHub (vídeos HTML5 e imagens com sessão autenticada)",
+      "surface": "Variante documental em issues / PRs do GitHub",
+      "trigger": "Presença de links ou imagens apontando para https://github.com/user-attachments/assets/{uuid}",
+      "behaviors": [
+        "Detecta URLs de anexo do GitHub via isGitHubUserAttachmentUrl",
+        "Detecta autolinks puros de vídeo via isGitHubUserAttachmentVideoLink e realiza upgrade automático para elemento <video> com controles, preload='metadata', playsInline e max-h-[28rem]",
+        "Em caso de falha de carregamento do vídeo (onError), substitui dinamicamente pelo fallback textual AttachmentFallbackLink",
+        "Imagens de anexo privado do GitHub (GitHubUserAttachmentImage) são encapsuladas em links <a> externos para abertura na sessão autenticada do usuário; em falha no <img onError>, degrada para link textual seguro",
+        "Aplica stopPropagation() nos cliques de mídia para evitar navegação de elementos pais",
+        "Links convencionais para URLs que não são anexos de vídeo continuam sendo renderizados como links normais"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/comment-markdown-github-attachment-media.tsx:3",
+        "components/sidebar/comment-markdown-github-attachment-media.tsx:21",
+        "components/sidebar/comment-markdown-github-attachment-media.tsx:47",
+        "components/sidebar/comment-markdown-github-attachment-media.tsx:78",
+        "components/sidebar/comment-markdown-element-renderers.tsx:222",
+        "components/sidebar/comment-markdown-element-renderers.tsx:288"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx:38 :: it renders GitHub user attachment document images as openable links",
+        "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx:50 :: it falls back to a text link when a GitHub user attachment image cannot load",
+        "components/sidebar/CommentMarkdown.test.tsx:117 :: it renders bare GitHub user attachment links as document videos",
+        "components/sidebar/CommentMarkdown.test.tsx:127 :: it keeps non-attachment document links as links"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-011",
+      "capability": "Renderização reativa de diagramas Mermaid em cercas de código com adaptação de tema claro/escuro",
+      "surface": "Variante documental com blocos de código ```mermaid",
+      "trigger": "Presença de cerca de código com classe language-mermaid",
+      "behaviors": [
+        "Identifica cercas mermaid via isMermaidFence e desempacota o <pre> externo via isMermaidPre",
+        "Renderiza componente CommentMermaidBlock reutilizando o renderer MermaidBlock em contêiner com rolagem horizontal (max-h-80 overflow-x-auto rounded-md border p-3)",
+        "Reatividade de tema: consulta useAppStore((s) => s.settings) para computar isDark com base em settings.theme === 'dark' ou theme === 'system' com matchMedia('(prefers-color-scheme: dark)')",
+        "Desativa labels HTML (htmlLabels={false}) para garantir que o SVG sanitizado não perca elementos foreignObject em certas plataformas",
+        "Isolamento compacto: na variante compacta (variant='compact'), cercas mermaid permanecem como blocos de código <pre> simples delimitados (max-h-32 font-mono) evitando mutações assíncronas de layout na lista do sidebar"
+      ],
+      "background_activity": "none",
+      "state_inputs": [
+        "useAppStore.settings.theme"
+      ],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/CommentMermaidBlock.tsx:15",
+        "components/sidebar/comment-mermaid-fence.tsx:6",
+        "components/sidebar/comment-markdown-element-renderers.tsx:236",
+        "components/sidebar/comment-markdown-element-renderers.tsx:247"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:217 :: it renders mermaid code fences as a mermaid container instead of a pre block",
+        "components/sidebar/CommentMarkdown.test.tsx:255 :: it keeps compact mermaid fences as bounded source blocks"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-012",
+      "capability": "Delegação customizada de renderização de blocos de código com extração de linguagem (DocumentCodeBlockRenderer)",
+      "surface": "Variante documental em chats e visualizadores com renderCodeBlock prop",
+      "trigger": "Blocos de código cercados (```lang ... ``` ou ``` ... ```)",
+      "behaviors": [
+        "Extrai identificador de linguagem da classe CSS do elemento filho (language-{lang} -> lang)",
+        "Quando renderCodeBlock (ex.: NativeChatCodeBlock) é fornecido, delega a renderização do bloco passando children e language extraída",
+        "Para cercas sem linguagem especificada (bare code fences), não inventa rótulo de linguagem (language=undefined)",
+        "Quando renderCodeBlock não é fornecido, renderiza bloco <pre className='my-3 max-h-80 max-w-full overflow-x-auto rounded-md bg-accent p-3 font-mono text-[12px]'>"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/comment-markdown-element-renderers.tsx:20",
+        "components/sidebar/comment-markdown-element-renderers.tsx:250",
+        "components/sidebar/CommentMarkdown.tsx:203"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:228 :: it uses the supplied code-block renderer for fenced document markdown",
+        "components/sidebar/CommentMarkdown.test.tsx:242 :: it does not invent a language label for a bare code fence"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-013",
+      "capability": "Renderização de tabelas GFM responsivas com contenção de overflow e listas de tarefas não interativas",
+      "surface": "Tabelas e listas em variantes compacta e documental",
+      "trigger": "Presença de tabelas GFM (| a | b |) ou listas de tarefas (- [ ] / - [x])",
+      "behaviors": [
+        "Tabelas na variante compacta são envolvidas em contêiner max-w-full overflow-x-auto com fonte text-[10px] e bordas colapsadas para caber na largura de ~200px do sidebar",
+        "Tabelas na variante documental são envolvidas em contêiner max-w-full overflow-x-auto rounded-md border com min-w-full, text-[13px] e cabeçalhos bg-muted/60",
+        "Listas de tarefas GFM renderizam checkboxes <input type='checkbox' disabled> com pointer-events-none evitando acionamento acidental de abertura/edição do card pai",
+        "Listas ordenadas e não ordenadas renderizam com marcadores nativos (list-disc, list-decimal) e recuo ajustado (ml-3 em compact, ml-5 em document)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/comment-markdown-element-renderers.tsx:95",
+        "components/sidebar/comment-markdown-element-renderers.tsx:206",
+        "components/sidebar/comment-markdown-element-renderers.tsx:261",
+        "components/sidebar/comment-markdown-element-renderers.tsx:319"
+      ],
+      "tests": [
+        "components/sidebar/CommentMarkdown.test.tsx:207 :: it renders GFM tables",
+        "components/sidebar/CommentMarkdown.test.tsx:284 :: it contains long PR body markdown inside its available width"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "id": "D12-014",
+      "capability": "Carregamento assíncrono (code-splitting), pré-aquecimento de chunk e fallback sem salto de layout (CommentMarkdownAsync)",
+      "surface": "Boot-path e renderização lazy de markdown no sidebar",
+      "trigger": "Montagem de CommentMarkdownAsync ou chamada imperativa a preloadCommentMarkdown()",
+      "behaviors": [
+        "Isola o bundle pesado de ~356 KB (react-markdown, remark, rehype) em chunk dinâmico carregado via lazyWithRetry com chave 'comment-markdown'",
+        "preloadCommentMarkdown() aquece o chunk dinâmico antes da renderização para eliminar exibição de fallback visual durante a navegação",
+        "CommentMarkdownAsync utiliza React.Suspense com fallback de texto puro em contêiner com dimensões e quebra idênticas (min-w-0 max-w-full [overflow-wrap:anywhere], fallbackClassName, title) garantindo ausência de Cumulative Layout Shift (CLS)"
+      ],
+      "background_activity": "none",
+      "state_inputs": [],
+      "backend_contract": [],
+      "orca_evidence": [
+        "components/sidebar/comment-markdown-lazy.tsx:7",
+        "components/sidebar/comment-markdown-lazy.tsx:13",
+        "components/sidebar/comment-markdown-lazy.tsx:26"
+      ],
+      "tests": [],
+      "confidence": "verified"
+    }
+  ],
+  "coverage": {
+    "files": {
+      "CommentMarkdown.tsx": [
+        "D12-001",
+        "D12-003",
+        "D12-004",
+        "D12-005",
+        "D12-006",
+        "D12-007",
+        "D12-008",
+        "D12-012"
+      ],
+      "CommentMermaidBlock.tsx": [
+        "D12-011"
+      ],
+      "MarkdownImageLightbox.tsx": [
+        "D12-009"
+      ],
+      "comment-markdown-element-renderers.tsx": [
+        "D12-001",
+        "D12-002",
+        "D12-003",
+        "D12-007",
+        "D12-008",
+        "D12-009",
+        "D12-010",
+        "D12-011",
+        "D12-012",
+        "D12-013"
+      ],
+      "comment-markdown-github-attachment-media.tsx": [
+        "D12-010"
+      ],
+      "comment-markdown-lazy.tsx": [
+        "D12-014"
+      ],
+      "comment-markdown-native-chat-file-links.ts": [
+        "D12-006"
+      ]
+    },
+    "symbols": {
+      "CommentMarkdown.tsx:default": [
+        "D12-001"
+      ],
+      "CommentMermaidBlock.tsx:default": [
+        "D12-011"
+      ],
+      "remarkGitHubReferences": [
+        "D12-005"
+      ],
+      "CommentMermaidBlock": [
+        "D12-011"
+      ],
+      "ExpandableMarkdownImage": [
+        "D12-009"
+      ],
+      "CommentMarkdownLinkClickHandler": "INFRA: TypeScript type definition for anchor/image click interception callback",
+      "DocumentCodeBlockRenderer": "INFRA: TypeScript type definition for custom code block renderer callback",
+      "isTrustedCompactImageSrc": [
+        "D12-008"
+      ],
+      "createCompactCommentMarkdownComponents": [
+        "D12-001",
+        "D12-002",
+        "D12-008",
+        "D12-013"
+      ],
+      "createDocumentCommentMarkdownComponents": [
+        "D12-003",
+        "D12-007",
+        "D12-009",
+        "D12-010",
+        "D12-011",
+        "D12-012",
+        "D12-013"
+      ],
+      "compactCommentMarkdownComponents": [
+        "D12-001",
+        "D12-008"
+      ],
+      "documentCommentMarkdownComponents": [
+        "D12-003",
+        "D12-010"
+      ],
+      "isGitHubUserAttachmentUrl": [
+        "D12-010"
+      ],
+      "isGitHubUserAttachmentVideoLink": [
+        "D12-010"
+      ],
+      "GitHubUserAttachmentVideo": [
+        "D12-010"
+      ],
+      "GitHubUserAttachmentImage": [
+        "D12-010"
+      ],
+      "preloadCommentMarkdown": [
+        "D12-014"
+      ],
+      "CommentMarkdownAsync": [
+        "D12-014"
+      ],
+      "remarkNativeChatFileLinks": [
+        "D12-006"
+      ]
+    },
+    "tests": {
+      "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx:24 :: describe CommentMarkdown GitHub attachment images": "INFRA: describe block grouping attachment image tests",
+      "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx:38 :: it renders GitHub user attachment document images as openable links": "D12-010",
+      "components/sidebar/CommentMarkdown.github-attachment-image.test.tsx:50 :: it falls back to a text link when a GitHub user attachment image cannot load": "D12-010",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:12 :: describe CommentMarkdown link click handler": "INFRA: describe block grouping link click tests",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:25 :: it lets callers intercept rendered document links": "D12-007",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:55 :: it intercepts auxiliary clicks on generated native file links": "D12-007",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:89 :: it does not activate generated native file links on right-click": "D12-007",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:121 :: it sanitizes file URI links unless the caller opts in": "D12-004",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:137 :: it sanitizes raw HTML file URI links unless the caller opts in": "D12-004",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:156 :: it lets opted-in callers intercept rendered file URI links": "D12-007",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:190 :: it lets callers intercept rendered document images": "D12-009",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:220 :: it linkifies bare POSIX and Windows document paths without an extension allowlist": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:248 :: it makes an inline-code file path clickable while preserving code styling": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:280 :: it leaves prose-shaped slash tokens and numeric versions unlinked": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:311 :: it links each relative path separately when prose joins them": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:332 :: it links quoted spaced-first-segment paths around apostrophes": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:364 :: it links a spaced-first-segment relative path when inline code disambiguates it": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:389 :: it requires path shape before a spaced line suffix can make a link": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:410 :: it preserves line suffixes on valid spaced path shapes": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:441 :: it links complete Unicode paths and extensions that begin with a digit": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:462 :: it never links an ASCII suffix inside a path containing an unsupported character": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:482 :: it links paths before common sentence punctuation": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:503 :: it links paths after CLI assignment and before Unicode sentence punctuation": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:524 :: it does not link partial paths across unsupported punctuation": "D12-006",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:543 :: it prevents the default action for an unresolved internal file href": "D12-007",
+      "components/sidebar/CommentMarkdown.link-click.test.tsx:572 :: it normalizes Windows markdown hrefs but leaves fenced paths as source text": "D12-006",
+      "components/sidebar/CommentMarkdown.test.tsx:6 :: describe CommentMarkdown": "INFRA: describe block grouping CommentMarkdown tests",
+      "components/sidebar/CommentMarkdown.test.tsx:7 :: it marks compact headings so a parent can opt into block flow": "D12-001",
+      "components/sidebar/CommentMarkdown.test.tsx:20 :: it marks adjacent compact paragraphs inside disclosure content": "D12-001",
+      "components/sidebar/CommentMarkdown.test.tsx:34 :: it autolinks same-repo GitHub issue references when repo context is provided": "D12-005",
+      "components/sidebar/CommentMarkdown.test.tsx:47 :: it autolinks cross-repo GitHub issue references": "D12-005",
+      "components/sidebar/CommentMarkdown.test.tsx:59 :: it does not autolink GitHub issue references inside existing links or code": "D12-005",
+      "components/sidebar/CommentMarkdown.test.tsx:73 :: it keeps remote compact markdown images as links": "D12-008",
+      "components/sidebar/CommentMarkdown.test.tsx:83 :: it renders trusted compact markdown images inline": "D12-008",
+      "components/sidebar/CommentMarkdown.test.tsx:93 :: it renders document markdown images with an expand control for the lightbox": "D12-009",
+      "components/sidebar/CommentMarkdown.test.tsx:108 :: it adds an expand control to compact images only when requested": "D12-008",
+      "components/sidebar/CommentMarkdown.test.tsx:117 :: it renders bare GitHub user attachment links as document videos": "D12-010",
+      "components/sidebar/CommentMarkdown.test.tsx:127 :: it keeps non-attachment document links as links": "D12-010",
+      "components/sidebar/CommentMarkdown.test.tsx:135 :: it autolinks very large generated GitHub reference comments": "D12-005",
+      "components/sidebar/CommentMarkdown.test.tsx:162 :: it strips single-line and multi-line HTML comments": "D12-004",
+      "components/sidebar/CommentMarkdown.test.tsx:176 :: it renders <details>/<summary> as a disclosure section": "D12-004",
+      "components/sidebar/CommentMarkdown.test.tsx:189 :: it renders markdown blockquotes": "D12-003",
+      "components/sidebar/CommentMarkdown.test.tsx:198 :: it renders raw HTML blockquotes": "D12-004",
+      "components/sidebar/CommentMarkdown.test.tsx:207 :: it renders GFM tables": "D12-013",
+      "components/sidebar/CommentMarkdown.test.tsx:217 :: it renders mermaid code fences as a mermaid container instead of a pre block": "D12-011",
+      "components/sidebar/CommentMarkdown.test.tsx:228 :: it uses the supplied code-block renderer for fenced document markdown": "D12-012",
+      "components/sidebar/CommentMarkdown.test.tsx:242 :: it does not invent a language label for a bare code fence": "D12-012",
+      "components/sidebar/CommentMarkdown.test.tsx:255 :: it keeps compact mermaid fences as bounded source blocks": "D12-011",
+      "components/sidebar/CommentMarkdown.test.tsx:266 :: it renders headings as block elements with hierarchy in the document variant": "D12-003",
+      "components/sidebar/CommentMarkdown.test.tsx:275 :: it flattens headings to inline text in the compact variant": "D12-002",
+      "components/sidebar/CommentMarkdown.test.tsx:284 :: it contains long PR body markdown inside its available width": "D12-013",
+      "components/sidebar/MarkdownImageLightbox.test.tsx:12 :: describe ExpandableMarkdownImage": "INFRA: describe block grouping lightbox tests",
+      "components/sidebar/MarkdownImageLightbox.test.tsx:13 :: it opens an accessible dialog, traps focus, and restores focus after Escape": "D12-009",
+      "components/sidebar/MarkdownImageLightbox.test.tsx:38 :: it closes from the dialog close button": "D12-009",
+      "components/sidebar/MarkdownImageLightbox.test.tsx:46 :: it keeps the parent issue drawer open after Escape and close-button dismissal": "D12-009"
+    },
+    "labels": {
+      "expect(markup).toContain('aria-label=\"Expand image\"')": "D12-009",
+      "expect(markup).toContain('aria-label=\"Copy code\"')": "D12-012",
+      "label: string,": "INFRA: TypeScript parameter declaration in splitGitHubReferenceText/createGitHubReferenceLinkNode",
+      "aria-label={translate(": "D12-009",
+      "aria-label={translate('auto.components.sidebar.MarkdownImageLightbox.close', 'Close')}": "D12-009",
+      "title={props.title}": "D12-014"
+    },
+    "hotkeys": {},
+    "prefs": {},
+    "timers": {},
+    "subscriptions": {},
+    "preload": {}
+  }
+}

@@ -1,0 +1,18 @@
+{
+ "domain": "D03b-sidebar-list-orchestration",
+ "status": "ok",
+ "rows": 50,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 108,
+  "files": "31/31",
+  "symbols": "114/114",
+  "tests": "321/321",
+  "labels": "61/61",
+  "hotkeys": "13/13",
+  "prefs": "0/0",
+  "timers": "9/9",
+  "subscriptions": "29/29",
+  "preload": "4/4"
+ }
+}

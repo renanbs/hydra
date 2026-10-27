@@ -1,0 +1,18 @@
+{
+ "domain": "D04b-worktree-card-controllers",
+ "status": "ok",
+ "rows": 23,
+ "violations": [],
+ "counts": {
+  "bad_evidence": 0,
+  "files": "22/22",
+  "symbols": "43/43",
+  "tests": "117/117",
+  "labels": "21/21",
+  "hotkeys": "0/0",
+  "prefs": "0/0",
+  "timers": "2/2",
+  "subscriptions": "11/11",
+  "preload": "5/5"
+ }
+}

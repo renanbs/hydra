@@ -1,0 +1,619 @@
+{
+ "src/components/sidebar/AddRepoDialog.tsx": [
+  "AddRepoDialog"
+ ],
+ "src/components/sidebar/AutoRenameFailedDialog.tsx": [
+  "AutoRenameFailedDialogProps",
+  "AutoRenameFailedDialog"
+ ],
+ "src/components/sidebar/CacheTimer.tsx": [
+  "CacheTimerProps",
+  "CacheTimer"
+ ],
+ "src/components/sidebar/CompactAgentRow.tsx": [
+  "CompactAgentRowProps",
+  "CompactAgentRow"
+ ],
+ "src/components/sidebar/FolderWorkspaceRow.tsx": [
+  "FolderWorkspaceRowProps",
+  "FolderWorkspaceRow"
+ ],
+ "src/components/sidebar/ParentPickerModal.tsx": [
+  "ParentCandidate",
+  "ParentPickerModalProps",
+  "ParentPickerModal"
+ ],
+ "src/components/sidebar/ProjectGroupDeleteDialog.tsx": [
+  "ProjectGroupDeleteDialogProps",
+  "ProjectGroupDeleteDialog"
+ ],
+ "src/components/sidebar/ProjectGroupNameDialog.tsx": [
+  "ProjectGroupNameDialogProps",
+  "ProjectGroupNameDialog"
+ ],
+ "src/components/sidebar/ProjectHeaderActions.tsx": [
+  "PROJECT_HEADER_ACTIONS_CLASS_NAME",
+  "ProjectHeaderActions"
+ ],
+ "src/components/sidebar/SectionHeader.tsx": [
+  "GroupSectionHeaderProps",
+  "RepoSectionHeaderProps",
+  "SectionHeaderProps",
+  "GroupSectionHeader",
+  "RepoSectionHeader",
+  "SectionHeader"
+ ],
+ "src/components/sidebar/SidebarAgentsList.tsx": [
+  "SidebarAgentsList"
+ ],
+ "src/components/sidebar/SidebarFooter.tsx": [
+  "SidebarFooter"
+ ],
+ "src/components/sidebar/SidebarHeader.tsx": [
+  "SidebarHeader"
+ ],
+ "src/components/sidebar/SidebarNav.tsx": [
+  "SidebarNav"
+ ],
+ "src/components/sidebar/WorkspaceOptionsMenu.tsx": [
+  "GroupByMode",
+  "WorkspaceDisplayOptions",
+  "WorkspaceOptionsMenu"
+ ],
+ "src/components/sidebar/WorktreeCard.tsx": [
+  "WorktreeCard"
+ ],
+ "src/components/sidebar/WorktreeCardAgents.tsx": [
+  "WorktreeCardAgents"
+ ],
+ "src/components/sidebar/WorktreeCardDetailsHover.tsx": [
+  "WorktreeCardDetailsHoverProps",
+  "WorktreeCardDetailsHover"
+ ],
+ "src/components/sidebar/WorktreeCardHelpers.tsx": [
+  "branchDisplayName",
+  "CONFLICT_OPERATION_LABELS",
+  "EMPTY_TABS",
+  "EMPTY_BROWSER_TABS",
+  "FilledBellIcon",
+  "PullRequestIcon"
+ ],
+ "src/components/sidebar/WorktreeCardPortsTrigger.tsx": [
+  "WorktreeCardPortsTriggerProps",
+  "WorktreeCardPortsTrigger"
+ ],
+ "src/components/sidebar/WorktreeCardReviewBadge.tsx": [
+  "WorktreeCardReviewBadgeProps",
+  "WorktreeCardReviewBadge"
+ ],
+ "src/components/sidebar/WorktreeCardStatusLane.tsx": [
+  "WorktreeCardStatusLaneProps",
+  "WorktreeCardStatusLane"
+ ],
+ "src/components/sidebar/WorktreeContextMenu.tsx": [
+  "WorktreeContextMenuProps",
+  "WorktreeContextMenu"
+ ],
+ "src/components/sidebar/WorktreeHostContextBadge.tsx": [
+  "WorktreeHostContextBadge"
+ ],
+ "src/components/sidebar/WorktreeList.tsx": [
+  "WorktreeListProps",
+  "WorktreeList"
+ ],
+ "src/components/sidebar/WorktreeSidebar.tsx": [
+  "WorktreeSidebar"
+ ],
+ "src/components/sidebar/WorktreeStatusIndicator.tsx": [
+  "WorktreeStatusIndicatorProps",
+  "WorktreeStatusIndicator"
+ ],
+ "src/components/sidebar/WorktreeTitleInlineRename.tsx": [
+  "WorktreeTitleRenameCommit",
+  "getWorktreeTitleRenameCommit",
+  "WorktreeTitleInlineRenameProps",
+  "WorktreeTitleInlineRename"
+ ],
+ "src/components/sidebar/WorktreeVisibilityDialog.tsx": [
+  "WorktreeVisibilityDialogProps",
+  "WorktreeVisibilityDialog"
+ ],
+ "src/components/sidebar/agent-finished-timestamp.ts": [
+  "lastEnteredDoneAt"
+ ],
+ "src/components/sidebar/agent-row-lineage-model.ts": [
+  "AgentLineageSourceRow",
+  "AgentRowLineageTree",
+  "resolveAgentRowParentPaneKey",
+  "buildAgentRowLineageTree"
+ ],
+ "src/components/sidebar/agent-status-types.ts": [
+  "AGENT_STATUS_STATES",
+  "AgentStatusState",
+  "AgentSubagentState",
+  "AgentSubagentSnapshot",
+  "AgentStatusOrchestrationContext",
+  "AgentStatusEntry",
+  "AgentLineageMetadata",
+  "DashboardAgentRowData"
+ ],
+ "src/components/sidebar/compact-agent-row-labels.ts": [
+  "getAgentDotState",
+  "orchestrationLabelsMatchLiveDispatch",
+  "getAgentRowPrimaryText",
+  "getCompactAgentPrimary",
+  "getCompactAgentSecondary",
+  "getCompactAgentTime"
+ ],
+ "src/components/sidebar/default-branch-workspace.ts": [
+  "isDefaultBranchWorkspace"
+ ],
+ "src/components/sidebar/folder-workspace-host-id.ts": [
+  "getFolderWorkspaceHostId"
+ ],
+ "src/components/sidebar/host-section-order.ts": [
+  "orderHostSectionOptions"
+ ],
+ "src/components/sidebar/host-section-rows.ts": [
+  "HostHeaderRow",
+  "HostSectionRow",
+  "HostSectionOption",
+  "addHostSectionRows"
+ ],
+ "src/components/sidebar/natural-worktree-ids.ts": [
+  "getNaturalWorktreeIds"
+ ],
+ "src/components/sidebar/pinned-section-worktrees.ts": [
+  "getPinnedSectionWorktrees",
+  "isPinnedSectionWorktree"
+ ],
+ "src/components/sidebar/pr-display.tsx": [
+  "ReviewState",
+  "ReviewChecks",
+  "PrDisplay",
+  "getReviewStateTone",
+  "reviewLabel",
+  "reviewStatusLabel",
+  "ReviewIcon"
+ ],
+ "src/components/sidebar/project-filter-reveal.ts": [
+  "ProjectFilterRevealState",
+  "revealRepoInProjectFilter"
+ ],
+ "src/components/sidebar/project-header-drop.ts": [
+  "ProjectHeaderDragBucketKey",
+  "ProjectHeaderDragRect",
+  "ProjectHeaderDropPreview",
+  "getProjectHeaderDragBucketKey",
+  "getSidebarOrderedRepoHeaderIdsByBucket",
+  "getLogicalRepoOrderRankById",
+  "getProjectGroupOrderForSidebarDrop",
+  "mapSidebarProjectHeaderDropIndexToSiblingInsertIndex",
+  "measureProjectHeaderDragRects",
+  "mapSidebarRepoDropIndexToAllRepoInsertAt",
+  "computeProjectHeaderDropPreview",
+  "applyAllRepoInsertAt"
+ ],
+ "src/components/sidebar/rendered-sidebar-worktree-order.ts": [
+  "computeRenderedSidebarWorktrees",
+  "computeRenderedSidebarWorktreeOrder"
+ ],
+ "src/components/sidebar/repo-header-action-button-class.ts": [
+  "REPO_HEADER_ACTION_REVEAL_CLASS",
+  "REPO_HEADER_ACTION_BUTTON_CLASS"
+ ],
+ "src/components/sidebar/sidebar-filter-actions.ts": [
+  "sidebarHasActiveFilters",
+  "ClearFilterActions",
+  "computeClearFilterActions"
+ ],
+ "src/components/sidebar/sidebar-host-options.ts": [
+  "SidebarHostOption",
+  "SidebarHostScopeOption",
+  "buildSidebarHostOptions",
+  "shouldShowHostScopeControls",
+  "buildSidebarHostScopeOptions",
+  "getSidebarHostVisibilityLabel",
+  "getSidebarHostHealthLabel"
+ ],
+ "src/components/sidebar/smart-attention.ts": [
+  "getAgentStatusByPaneKey",
+  "detectPaneHasUnreadTurn",
+  "detectPaneHasUnreadBell",
+  "IDLE",
+  "IDLE",
+  "WorktreeAttention",
+  "WorktreeAttention",
+  "buildAttentionByWorktree",
+  "buildAttentionByWorktree",
+  "hasFreshAttributedAgentStatus",
+  "hasFreshAttributedAgentStatus"
+ ],
+ "src/components/sidebar/smart-sort.ts": [
+  "SortBy",
+  "CREATE_GRACE_MS",
+  "effectiveRecentActivity",
+  "WorktreeSortLabelInput",
+  "getWorktreeSortLabel",
+  "WorktreeSortLabels",
+  "buildWorktreeSortLabels",
+  "compareWorktreeSortLabel",
+  "buildWorktreeComparator",
+  "sortWorktreesSmart"
+ ],
+ "src/components/sidebar/truncated-sidebar-label.tsx": [
+  "isSidebarLabelTruncated",
+  "TruncatedSidebarLabelProps",
+  "TruncatedSidebarLabel"
+ ],
+ "src/components/sidebar/types.ts": [
+  "SidebarBody",
+  "AgentsStatusFilter",
+  "AgentsGroupBy",
+  "SidebarPrefsSnapshot",
+  "SidebarShellPrefs",
+  "AvailableAgent",
+  "HydraProject",
+  "GitWorktreeInfo",
+  "WorkspacePort",
+  "WorktreeReviewStatus",
+  "WorktreeSession",
+  "GitRepoStatus",
+  "WorktreeSidebarProps"
+ ],
+ "src/components/sidebar/use-worktree-card-controller.ts": [
+  "WorktreeCardController",
+  "useWorktreeCardController"
+ ],
+ "src/components/sidebar/visible-worktree-host-scope.ts": [
+  "getVisibleWorkspaceHostIdSet",
+  "worktreeMatchesVisibleHost"
+ ],
+ "src/components/sidebar/visible-worktree-indexes.ts": [
+  "getLineageAncestorIndex",
+  "getSortedWorktreeRankIndex"
+ ],
+ "src/components/sidebar/visible-worktree-kinds.ts": [
+  "isSleepingSweepExemptWorkspace",
+  "isSleepingSweepExemptionNarrowingList",
+  "isAutomationGeneratedWorkspace",
+  "isCliCreatedWorkspace",
+  "isDetachedHeadWorkspace",
+  "SidebarFilterState"
+ ],
+ "src/components/sidebar/visible-worktrees.ts": [
+  "computeVisibleWorktrees",
+  "computeVisibleWorktreeIds",
+  "VisibleWorktreeShortcutTarget",
+  "setVisibleWorktreeIds",
+  "setVisibleWorktreeShortcutTargets",
+  "buildVisibleWorktreeOptionsFromState",
+  "getVisibleWorktreeIds",
+  "getVisibleWorktreeShortcutTargets"
+ ],
+ "src/components/sidebar/workspace-creator-visibility.ts": [
+  "EMPTY_PAIRED_DEVICE_IDS_BY_ENVIRONMENT",
+  "getPairedDeviceIdsByEnvironment",
+  "isWorkspaceFromOtherDevice",
+  "isFolderWorkspaceFromOtherDevice",
+  "filterFolderWorkspacesFromOtherDevices"
+ ],
+ "src/components/sidebar/workspace-status-drag-data.ts": [
+  "WORKSPACE_STATUS_DRAG_TYPE",
+  "WORKSPACE_STATUS_DRAG_IDS_TYPE",
+  "WORKSPACE_STATUS_DRAG_PAYLOAD_MAX_BYTES",
+  "WORKSPACE_STATUS_DRAG_ID_MAX_COUNT",
+  "writeWorkspaceDragData",
+  "readWorkspaceDragData",
+  "readWorkspaceDragDataIds",
+  "hasWorkspaceDragData"
+ ],
+ "src/components/sidebar/workspace-status-icon-options.ts": [
+  "WorkspaceStatusIconOption",
+  "getWorkspaceStatusIconOptions"
+ ],
+ "src/components/sidebar/workspace-status-icons.tsx": [
+  "ConductorDoneIcon",
+  "ConductorReviewIcon",
+  "ConductorProgressIcon"
+ ],
+ "src/components/sidebar/workspace-status.ts": [
+  "getWorkspaceStatusColorOptions",
+  "getWorkspaceStatusVisualMeta"
+ ],
+ "src/components/sidebar/worktree-card-agent-summary.ts": [
+  "AgentRow",
+  "agentStatusOrder",
+  "summarizeAgents",
+  "buildSummaryAgentGroups",
+  "selectSummaryGroupIconAgents"
+ ],
+ "src/components/sidebar/worktree-card-compact-agents.tsx": [
+  "CompactAgentExpansion",
+  "CompactAgentSummaryButton",
+  "WorktreeCompactAgentsList"
+ ],
+ "src/components/sidebar/worktree-card-header.tsx": [
+  "WorktreeCardHeaderProps",
+  "WorktreeCardHeader"
+ ],
+ "src/components/sidebar/worktree-card-meta-row.tsx": [
+  "WorktreeCardMetaRowProps",
+  "WorktreeCardMetaRow"
+ ],
+ "src/components/sidebar/worktree-card-model.ts": [
+  "WorktreeRenameRequest",
+  "ActiveSurfaceVariant",
+  "WorktreeCardProps",
+  "ResolvedWorktreeCardProps",
+  "EMPTY_WORKSPACE_PORTS",
+  "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS",
+  "shouldBeginWorktreeRename",
+  "formatSparseDirectoryPreview",
+  "isWebClient",
+  "getDirectoryName"
+ ],
+ "src/components/sidebar/worktree-card-parent-content.tsx": [
+  "WorktreeCardParentContentProps",
+  "WorktreeCardParentContent"
+ ],
+ "src/components/sidebar/worktree-card-presentation.tsx": [
+  "WorktreeCardPresentation",
+  "buildWorktreeCardPresentation"
+ ],
+ "src/components/sidebar/worktree-card-surface.tsx": [
+  "WorktreeCardSurfaceProps",
+  "WorktreeCardSurface"
+ ],
+ "src/components/sidebar/worktree-drag-units.ts": [
+  "WorktreeDragUnitGroup",
+  "getWorktreeDragUnitGroups",
+  "getFullDropIndexForWorktreeDragUnit"
+ ],
+ "src/components/sidebar/worktree-lineage-projection.ts": [
+  "LineageRenderInfo",
+  "getProjectedWorktreeLineage",
+  "getCyclicProjectedWorktreeLineageIds",
+  "getLineageRenderInfo",
+  "getProjectedWorktreeLineageChildrenByParentId",
+  "getWorktreeLineageAncestors"
+ ],
+ "src/components/sidebar/worktree-list/buildSidebarRows.ts": [
+  "buildSidebarRows"
+ ],
+ "src/components/sidebar/worktree-list/grouping/build-rows.ts": [
+  "buildRows"
+ ],
+ "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts": [
+  "RenderableFolderWorkspace",
+  "getRenderableFolderWorkspaces",
+  "getFolderWorkspaceLaneKey",
+  "compareFolderWorkspacesForDisplay"
+ ],
+ "src/components/sidebar/worktree-list/grouping/group-keys.ts": [
+  "PRGroupKey",
+  "PR_GROUP_ORDER",
+  "getPRLaneKey",
+  "PR_GROUP_META",
+  "PROJECT_GROUP_META",
+  "getProjectGroupHeaderKey",
+  "PINNED_GROUP_KEY",
+  "PINNED_GROUP_META",
+  "ALL_GROUP_KEY",
+  "ALL_GROUP_META",
+  "LINEAGE_GROUP_PREFIX",
+  "getLineageGroupKey",
+  "getWorktreeLineageGroupKey",
+  "getPRGroupKey"
+ ],
+ "src/components/sidebar/worktree-list/grouping/group-sections.ts": [
+  "SectionAppendContext",
+  "appendOrderedGroups"
+ ],
+ "src/components/sidebar/worktree-list/grouping/host-labels.ts": [
+  "getMixedHostContextLabels",
+  "NoticeHostContext",
+  "getNoticeHostContextLabels",
+  "getMixedWorktreeHostContextLabels",
+  "getHostWorktreeCounts",
+  "getHostWorktreeIds",
+  "getLaneHostWorktreeCounts",
+  "getLaneHostWorktreeIds"
+ ],
+ "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts": [
+  "emitPinnedGroup"
+ ],
+ "src/components/sidebar/worktree-list/grouping/project-group-sections.ts": [
+  "appendProjectGroupSections"
+ ],
+ "src/components/sidebar/worktree-list/grouping/project-grouping.ts": [
+  "OrderedGroupEntry",
+  "ProjectGroupingModel",
+  "WorktreeGroupEntry",
+  "ProjectGroupingIndex",
+  "buildProjectGroupingIndex",
+  "ProjectHeaderRevealTarget",
+  "getProjectGroupingForRepo",
+  "getProjectHeaderRevealTarget",
+  "addRepoIdToGroup"
+ ],
+ "src/components/sidebar/worktree-list/grouping/row-builders.ts": [
+  "buildPendingCreationRow",
+  "buildImportedWorktreesCardRow",
+  "buildNewExternalWorktreesInboxRow",
+  "appendWorktreeRows",
+  "buildFolderWorkspaceRow"
+ ],
+ "src/components/sidebar/worktree-list/grouping/row-types.ts": [
+  "WorktreeGroupBy",
+  "PinnedWorktreeDisplayPolicy",
+  "getPinnedWorktreeDisplayPolicy",
+  "GroupHeaderRow",
+  "WorktreeRow",
+  "ImportedWorktreesCardCandidate",
+  "ImportedWorktreesCardRow",
+  "NewExternalWorktreesInboxCandidate",
+  "NewExternalWorktreesInboxRow",
+  "PendingCreationRow",
+  "FolderWorkspaceRow",
+  "PendingCreationRef",
+  "Row"
+ ],
+ "src/components/sidebar/worktree-list/grouping/section-order.ts": [
+  "getRenderedNaturalAnchorRepoIds",
+  "orderMainWorktreeFirst",
+  "withRepoSectionDisplayLabels",
+  "recentRankForEntry",
+  "compareRecentRank",
+  "getManualOrderAnchorRepo",
+  "sortProjectEntries"
+ ],
+ "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts": [
+  "getGroupKeyForWorktree",
+  "getGroupKeysForWorktree"
+ ],
+ "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts": [
+  "buildOrderedGroups"
+ ],
+ "src/components/sidebar/worktree-list/hard-scroll-up.ts": [
+  "HARD_SCROLL_UP",
+  "HardScrollUpWheelSample",
+  "HardScrollUpScrollSample",
+  "HardScrollUpDetectorState",
+  "HardScrollUpViewport",
+  "createHardScrollUpDetectorState",
+  "normalizeWheelDeltaY",
+  "reduceHardScrollUpOnWheel",
+  "reduceHardScrollUpOnScroll",
+  "reduceHardScrollUpOnIdle",
+  "reduceHardScrollUpOnDismiss"
+ ],
+ "src/components/sidebar/worktree-list/keyboard-cycle.ts": [
+  "FocusableRowKey",
+  "getFocusableRowKeys",
+  "resolveCycledFocusKey"
+ ],
+ "src/components/sidebar/worktree-list/listing/host-filtering.ts": [
+  "getVisibleSidebarHostIdSet",
+  "filterProjectGroupsForVisibleHosts",
+  "filterFolderWorkspacesForVisibleHosts",
+  "getProjectGroupExecutionHostIdForRows",
+  "getFolderWorkspaceExecutionHostIdForRows",
+  "getRuntimeEnvironmentIdForFolderPathStatusHost",
+  "getFolderPathStatusRouteOptionsForRows"
+ ],
+ "src/components/sidebar/worktree-list/listing/review-cache-inputs.ts": [
+  "WorktreeListReviewCacheState",
+  "WorktreeListReviewCacheInputs",
+  "EMPTY_WORKTREE_LIST_REVIEW_CACHE_INPUTS",
+  "selectWorktreeListReviewCacheInputs"
+ ],
+ "src/components/sidebar/worktree-list/pointer-drag-dom.ts": [
+  "isSidebarPointerDragBlocked",
+  "setSidebarPointerDragDocumentStyles",
+  "updateSidebarDragPreviewPosition",
+  "createSidebarDragPreview"
+ ],
+ "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx": [
+  "UNKNOWN_EXTERNAL_WORKTREE_PARENT_PATH",
+  "ImportedWorktreesVisibilityLineProps",
+  "ExternalWorktreePathGroup",
+  "getExternalWorktreeParentPath",
+  "groupWorktreesByParentPath",
+  "selectInboxWorktrees",
+  "mergeExternalWorktreeInboxPaths",
+  "ImportedWorktreesVisibilityLine"
+ ],
+ "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx": [
+  "NewExternalWorktreesInboxLineProps",
+  "NewExternalWorktreesInboxLine"
+ ],
+ "src/components/sidebar/worktree-list/rows/indentation.ts": [
+  "SIDEBAR_TREE_INDENT",
+  "FLUSH_CARD_CONTENT_PULLBACK",
+  "NEW_CARD_STYLE_STATUS_LANE_EXTRA_PULLBACK",
+  "FLUSH_CARD_MIN_CONTENT_INSET",
+  "WORKTREE_CARD_SURFACE_MARGIN",
+  "LINEAGE_IMMEDIATE_PARENT_STEP",
+  "LINEAGE_NESTED_ROW_SURFACE_INSET",
+  "LINEAGE_CHILDREN_INLINE_OFFSET",
+  "PROJECT_GROUP_HEADER_BASE_PADDING",
+  "WORKTREE_SECTION_HEADER_PADDING_LEFT",
+  "PROJECT_GROUP_HEADER_INDENT",
+  "MAX_PROJECT_GROUP_HEADER_DEPTH",
+  "getProjectGroupHeaderPaddingLeft",
+  "getWorktreeCardContentIndent",
+  "getFolderBackedRepoWorktreeCardContentIndent",
+  "getFolderBackedRepoWorktreeCardSurfaceInset",
+  "getFolderWorkspaceCardContentIndent",
+  "getFolderWorkspaceCardSurfaceInset",
+  "getFolderWorkspaceRowGeometry",
+  "getWorktreeCardSurfaceInset",
+  "getFlushWorktreeCardPaddingLeft",
+  "getNewCardStyleParentContentMarginLeft",
+  "getLineageNestedRowGeometry",
+  "getLineageChildrenInlineStyle",
+  "getLineageEffectiveChildStart"
+ ],
+ "src/components/sidebar/worktree-list/types.ts": [
+  "SidebarStatusState",
+  "ProjectGroup",
+  "SidebarRow",
+  "MatchesFilter",
+  "GetWorktreesForProject",
+  "IsDefaultBranchWt",
+  "IsDetachedHeadWt",
+  "IsAutomationCreatedWt",
+  "IsCliCreatedWt",
+  "IsSleepingWorktree",
+  "SortWorktreesByOption",
+  "SortSessionsByOption",
+  "SidebarProjectionInput"
+ ],
+ "src/components/sidebar/worktree-manual-order-ranks.ts": [
+  "WorktreeManualOrderUpdate",
+  "buildSparseManualOrderUpdates"
+ ],
+ "src/components/sidebar/worktree-manual-order.ts": [
+  "WorktreeDragGroup",
+  "WorktreeDragLineageRow",
+  "expandDraggedWorktreeIdsForVisibleLineage",
+  "moveWorktreeIdsWithinGroup",
+  "buildManualOrderUpdatesForVisibleGroups",
+  "buildManualOrderUpdatesForGroupDrop",
+  "shouldWriteManualOrderForGroupDrop"
+ ],
+ "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts": [
+  "WorktreeSidebarDragPoint",
+  "WorktreeSidebarDragRect",
+  "WorktreeSidebarDragSession",
+  "WorktreeSidebarAutoscrollResult",
+  "WorktreeSidebarBoundaryDropResult",
+  "getWorktreeSidebarDragAutoscroll",
+  "getWorktreeSidebarBoundaryDrop",
+  "getWorktreeSidebarDragRectsForGroup",
+  "refreshWorktreeSidebarDragSession"
+ ],
+ "src/components/sidebar/worktree-sidebar-drag-geometry.ts": [
+  "WorktreeSidebarDragGrab",
+  "WorktreeSidebarDropAnchor",
+  "getWorktreeSidebarDragReferenceY",
+  "shouldReevaluateWorktreeSidebarDropAnchor",
+  "resolveWorktreeSidebarDropAnchorIndex",
+  "getWorktreeSidebarDropAnchorId",
+  "getWorktreeSidebarDragGrab"
+ ],
+ "src/components/sidebar/worktree-sidebar-header-drop-preview.ts": [
+  "WorktreeSidebarHeaderDragRect",
+  "WorktreeSidebarHeaderDropPreview",
+  "computeWorktreeSidebarHeaderDropPreview"
+ ],
+ "src/components/sidebar/worktree-sidebar-row-preference.ts": [
+  "getPreferredWorktreeRows",
+  "getRenderedWorktreesInSidebarOrder"
+ ],
+ "src/components/sidebar/worktree-title-derived-agent-rows.ts": [
+  "resolveAgentTypeFromTerminalTitle",
+  "resolveAgentTypeFromTerminalTitle"
+ ]
+}
