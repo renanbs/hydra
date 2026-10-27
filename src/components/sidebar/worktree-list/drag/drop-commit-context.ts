@@ -20,6 +20,12 @@ export type WorktreeDropCommitContext = {
   computeWorktreeDrop: (pointerY: number) => WorktreeSidebarDropPreview | null
   refreshWorktreeDragSession: () => boolean
   clearWorktreeDrag: () => void
+  /**
+   * The ids a press actually drags (D03a-002): the list's selection when the pressed row is part
+   * of one and it holds more than one, the pressed row alone otherwise — resolved host-qualified
+   * by the list, because two hosts can publish the same workspace id.
+   */
+  resolveDraggedWorktreeIds: (rowKey: string, worktreeId: string) => readonly string[]
   onReorderWorktrees: (args: WorktreeGroupReorderArgs) => void
   /**
    * Writes a persisted workspace status for the dragged workspaces. The workspace board's

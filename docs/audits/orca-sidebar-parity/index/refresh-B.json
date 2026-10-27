@@ -15,11 +15,14 @@
   },
   {
    "id": "D03a-002",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:139"
+    "src/components/sidebar/worktree-multi-drag-selection.ts:18-46",
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:22-81",
+    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:138-141",
+    "src/components/sidebar/WorktreeList.tsx:771-809"
    ],
-   "note": "Sem multi-seleção: draggedIds é sempre [worktreeId]; a expansão existente é por linhagem visível, não por cards selecionados."
+   "note": "Multi-seleção e multi-drag ligados: draggedIds deixa de ser sempre [worktreeId] e passa a ser o lote resolvido por identidade host-qualified; caso host-qualified coberto por teste (worktree-multi-drag-selection.parity.test.ts)."
   },
   {
    "id": "D03a-003",

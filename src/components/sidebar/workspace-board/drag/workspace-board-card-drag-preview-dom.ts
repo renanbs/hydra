@@ -6,6 +6,7 @@ const BOARD_POINTER_DRAGGING_ATTR = 'data-workspace-board-pointer-dragging'
 const CARD_DRAGGING_ATTR = 'data-workspace-board-card-pointer-dragging'
 const DRAG_PREVIEW_ATTR = 'data-workspace-board-card-drag-preview'
 const DRAG_CARD_ATTR = 'data-workspace-board-card-drag-card'
+const DRAG_COUNT_ATTR = 'data-workspace-board-card-drag-count'
 
 export function setWorkspaceBoardCardDragDocumentStyles(enabled: boolean): void {
   document.body.style.cursor = enabled ? 'grabbing' : ''
@@ -13,9 +14,14 @@ export function setWorkspaceBoardCardDragDocumentStyles(enabled: boolean): void 
   document.documentElement.toggleAttribute(BOARD_POINTER_DRAGGING_ATTR, enabled)
 }
 
-/** Ghosts the card the drag lifted, so the slot it came from reads as vacated. */
-export function setWorkspaceBoardDraggedCard(card: HTMLElement, dragging: boolean): void {
-  card.toggleAttribute(CARD_DRAGGING_ATTR, dragging)
+/** Ghosts the cards the drag lifted, so the slots they came from read as vacated. */
+export function setWorkspaceBoardDraggedCards(
+  cards: readonly HTMLElement[],
+  dragging: boolean
+): void {
+  for (const card of cards) {
+    card.toggleAttribute(CARD_DRAGGING_ATTR, dragging)
+  }
 }
 
 /**
@@ -26,6 +32,8 @@ export function createWorkspaceBoardCardDragPreview(args: {
   sourceCard: HTMLElement
   pointerX: number
   pointerY: number
+  /** How many worktrees the drag moves; the badge only paints past one (D08-037). */
+  draggedCount: number
 }): { preview: HTMLElement; offsetX: number; offsetY: number } {
   const rect = args.sourceCard.getBoundingClientRect()
   const preview = document.createElement('div')
@@ -40,6 +48,14 @@ export function createWorkspaceBoardCardDragPreview(args: {
   preview.setAttribute(DRAG_PREVIEW_ATTR, 'true')
   preview.setAttribute('aria-hidden', 'true')
   preview.appendChild(clone)
+  // Why: the ghost is the grabbed card alone, so a batch of several reads as several only
+  // through the count — one selected card stays unbadged, exactly like the sidebar's preview.
+  if (args.draggedCount > 1) {
+    const badge = document.createElement('span')
+    badge.setAttribute(DRAG_COUNT_ATTR, 'true')
+    badge.textContent = String(args.draggedCount)
+    preview.appendChild(badge)
+  }
   preview.style.position = 'fixed'
   preview.style.left = '0'
   preview.style.top = '0'

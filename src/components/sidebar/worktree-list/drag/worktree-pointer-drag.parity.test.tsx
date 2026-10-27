@@ -211,6 +211,25 @@ function dropIndicator(): HTMLElement | null {
   return document.querySelector<HTMLElement>("[data-worktree-sidebar-drop-indicator]");
 }
 
+function rowSurface(row: HTMLElement): HTMLElement {
+  const surface = row.querySelector<HTMLElement>("[data-worktree-card-surface]");
+  if (!surface) {
+    throw new Error("the row card surface is not painted");
+  }
+  return surface;
+}
+
+/** A click over the row's own card surface: the list's selection gesture path. */
+function clickRow(row: HTMLElement, init: MouseEventInit = {}): void {
+  fireEvent.click(rowSurface(row), init);
+}
+
+function dragCountBadge(): string | null {
+  return (
+    document.querySelector<HTMLElement>("[data-worktree-sidebar-drag-count]")?.textContent ?? null
+  );
+}
+
 /** Press the first row, cross the threshold, and settle: a live drag session. */
 async function startDragOnFirstRow(row: HTMLElement): Promise<void> {
   // The virtualizer measures the freshly mounted rows a frame after the commit; drain it so the
@@ -398,5 +417,123 @@ describe("worktree list pointer drag", () => {
 
     expect(fireEvent.click(surface)).toBe(false);
     expect(onSelectGitWorktree).not.toHaveBeenCalled();
+  });
+});
+
+describe("worktree list multi-selection and drag", () => {
+  beforeEach(() => resetStore());
+  afterEach(() => resetStore());
+
+  it("selects rows with plain, ctrl and shift clicks over the painted order", () => {
+    const { rows } = renderList();
+
+    clickRow(rows[2]!);
+    expect(rows[2]).toHaveAttribute("data-worktree-selected", "true");
+    expect(rows[2]).toHaveAttribute("aria-selected", "true");
+    expect(rows[0]).not.toHaveAttribute("data-worktree-selected");
+
+    // Ctrl toggles rows into the batch, on top of the plain click's singleton.
+    clickRow(rows[0]!, { ctrlKey: true });
+    clickRow(rows[1]!, { ctrlKey: true });
+    expect(rows[0]).toHaveAttribute("data-worktree-selected", "true");
+    expect(rows[1]).toHaveAttribute("data-worktree-selected", "true");
+    expect(rows[2]).toHaveAttribute("data-worktree-selected", "true");
+
+    // Ctrl toggles the same row back out.
+    clickRow(rows[1]!, { ctrlKey: true });
+    expect(rows[1]).not.toHaveAttribute("data-worktree-selected");
+
+    // Shift extends a range from the anchor (the last toggled row, w1).
+    clickRow(rows[3]!, { shiftKey: true });
+    expect(rows[0]).not.toHaveAttribute("data-worktree-selected");
+    expect(rows[1]).toHaveAttribute("data-worktree-selected", "true");
+    expect(rows[2]).toHaveAttribute("data-worktree-selected", "true");
+    expect(rows[3]).toHaveAttribute("data-worktree-selected", "true");
+  });
+
+  it("reorders the whole selection in a single commit", async () => {
+    const { rows, onReorderWorktreesInGroup } = renderList();
+
+    clickRow(rows[0]!, { ctrlKey: true });
+    clickRow(rows[1]!, { ctrlKey: true });
+
+    await startDragOnFirstRow(rows[0]!);
+    expect(dragCountBadge()).toBe("2");
+
+    movePointer(3 * ROW_PITCH + ROW_HEIGHT / 2);
+    await settleDragFrame();
+    releasePointer(3 * ROW_PITCH + ROW_HEIGHT / 2);
+
+    expect(onReorderWorktreesInGroup).toHaveBeenCalledTimes(1);
+    const [ordered, projectPath] = onReorderWorktreesInGroup.mock.calls[0] as [
+      GitWorktreeInfo[],
+      string,
+    ];
+    expect(projectPath).toBe(PROJECT.path);
+    // The batch travels together and lands as a block, ahead of nothing it did not pass.
+    expect(ordered.map((entry) => entry.path)).toEqual([
+      "/repo/hydra/w2",
+      "/repo/hydra/w3",
+      "/repo/hydra/w0",
+      "/repo/hydra/w1",
+    ]);
+    expect(dragPreview()).toBeNull();
+  });
+
+  it("reorders only the grabbed row when it is outside the selection", async () => {
+    const { rows, onReorderWorktreesInGroup } = renderList();
+
+    // The selection holds w1; the grabbed row is w0, which is not in it.
+    clickRow(rows[1]!, { ctrlKey: true });
+
+    await startDragOnFirstRow(rows[0]!);
+    expect(dragCountBadge()).toBeNull();
+
+    movePointer(ROW_PITCH + ROW_HEIGHT / 2);
+    await settleDragFrame();
+    releasePointer(ROW_PITCH + ROW_HEIGHT / 2);
+
+    expect(onReorderWorktreesInGroup).toHaveBeenCalledTimes(1);
+    const [ordered] = onReorderWorktreesInGroup.mock.calls[0] as [GitWorktreeInfo[], string];
+    expect(ordered.map((entry) => entry.path)).toEqual([
+      "/repo/hydra/w1",
+      "/repo/hydra/w0",
+      "/repo/hydra/w2",
+      "/repo/hydra/w3",
+    ]);
+  });
+
+  it("publishes the whole selection on a native row drag", () => {
+    const { rows } = renderList();
+
+    clickRow(rows[0]!, { ctrlKey: true });
+    clickRow(rows[1]!, { ctrlKey: true });
+
+    const dataTransfer = new FakeDataTransfer();
+    expect(fireEvent(rowSurface(rows[0]!), dragStartEvent(dataTransfer))).toBe(true);
+
+    expect(hasWorkspaceDragData(dataTransfer)).toBe(true);
+    expect(readWorkspaceDragDataIds(dataTransfer)).toEqual([
+      "repo_a::/repo/hydra/w0",
+      "repo_a::/repo/hydra/w1",
+    ]);
+  });
+
+  it("clears the batch badge and commits nothing on abort", async () => {
+    const { rows, onReorderWorktreesInGroup } = renderList();
+
+    clickRow(rows[0]!, { ctrlKey: true });
+    clickRow(rows[1]!, { ctrlKey: true });
+
+    await startDragOnFirstRow(rows[0]!);
+    expect(dragCountBadge()).toBe("2");
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(dragPreview()).toBeNull();
+    expect(dragCountBadge()).toBeNull();
+
+    releasePointer(ROW_PITCH + ROW_HEIGHT / 2);
+    expect(onReorderWorktreesInGroup).not.toHaveBeenCalled();
   });
 });

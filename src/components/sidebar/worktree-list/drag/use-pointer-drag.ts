@@ -135,7 +135,10 @@ export function useWorktreePointerDrag(args: {
       if (rects.length <= 1 && !hasWorkspaceBoardSidebarDropBoard()) {
         return
       }
-      const draggedIds = [worktreeId]
+      // Why the list's own resolver: a press on a row that belongs to a selection of more than
+      // one drags the whole set, host-qualified — the pressed row's id alone would miss the
+      // siblings and could sweep in another host's row that shares its id.
+      const draggedIds = ctx.resolveDraggedWorktreeIds(rowKey, worktreeId)
       const reorderDraggedIds = session.getReorderDraggedIds(draggedIds)
       const reorderUnitDraggedIds = session.getReorderUnitDraggedIds(
         sourceGroupKey,
@@ -161,7 +164,7 @@ export function useWorktreePointerDrag(args: {
         frameId: null
       }
     },
-    [scrollRef, session, worktreePointerDragRef]
+    [ctx, scrollRef, session, worktreePointerDragRef]
   )
 
   const handleRowClickCapture = useCallback(

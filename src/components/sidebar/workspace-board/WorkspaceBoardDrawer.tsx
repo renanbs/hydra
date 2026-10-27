@@ -7,6 +7,7 @@ import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
 import WorkspaceBoardDrawerView from './WorkspaceBoardDrawerView'
 import { useWorkspaceBoardAreaSelection } from './use-workspace-board-area-selection'
 import { useWorkspaceBoardCardPointerDrag } from './drag/use-workspace-board-card-pointer-drag'
+import type { WorkspaceBoardCardDragTarget } from './drag/use-workspace-board-card-pointer-drag'
 import { useWorkspaceBoardColumnResize } from './use-workspace-board-column-resize'
 import { useWorkspaceBoardGeometry, type WorkspaceBoardGeometry } from './use-workspace-board-geometry'
 import { useWorkspaceBoardProjection } from './use-workspace-board-projection'
@@ -19,7 +20,8 @@ import { filterWorkspaceBoardLanes } from './workspace-board-search'
 import {
   isWorkspaceBoardSelectAllShortcut,
   isWorkspaceBoardTextEntryTarget
-} from './workspace-board-selection'
+} from './workspace-board-keyboard'
+import { resolveWorktreeMultiDragSelection } from '../worktree-multi-drag-selection'
 import { resolveWorkspaceBoardStatusAssignmentTargets } from './workspace-board-status-assignment'
 import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-board-worktrees'
 
@@ -182,16 +184,6 @@ function WorkspaceBoardDrawerContent({
     onDropWorktreesAtEndOfStatus: dropWorktreesAtEndOfStatus,
     onPinWorktrees: pinWorktrees
   })
-  const { onCardPointerDownCapture, isPointerDragActiveRef } =
-    useWorkspaceBoardCardPointerDrag({
-      open,
-      boardRef,
-      onAssignWorktreeStatus,
-      onPinWorktree,
-      onDragTargetChange: nativeDrag.setDragOverStatus,
-      onPinDragTargetChange: nativeDrag.setPinDragOver
-    })
-  useWorkspaceBoardShiftWheelScroll(boardRef, laneScrollerRef, open, isPointerDragActiveRef)
   const statusActions = useWorkspaceBoardStatusActions({ allWorktrees, onAssignWorktreeStatus })
   const boardCards = useMemo(() => lanes.flatMap((lane) => lane.cards), [lanes])
   const { query, setQuery, clearQuery, matchingWorktreeIds, isFiltering, isQueryTooLarge } =
@@ -220,6 +212,55 @@ function WorkspaceBoardDrawerContent({
     selectionAnchorId,
     updateSelectionForArea
   })
+  // The batch a card press moves: one target per worktree, carrying the lane it was lifted
+  // from and the path the app's writers key on. Host-qualified, so the id→path bridge never
+  // confuses two hosts' rows with the same workspace id.
+  const dragTargetByIdentity = useMemo(() => {
+    const byIdentity = new Map<string, WorkspaceBoardCardDragTarget>()
+    for (const lane of lanes) {
+      for (const card of lane.cards) {
+        byIdentity.set(card.identity, {
+          identity: card.identity,
+          worktreePath: card.worktree.path,
+          status: lane.status.id
+        })
+      }
+    }
+    return byIdentity
+  }, [lanes])
+  const resolveCardDragTargets = useCallback(
+    (draggedWorktreeId: string, draggedWorktreeIdentity: string) => {
+      const batch = resolveWorktreeMultiDragSelection({
+        draggedWorktreeId,
+        draggedWorktreeIdentity,
+        selectedWorktreeIdentities: selectedWorktreeIds,
+        surfaceWorktrees: boardCards.map((card) => ({
+          worktreeId: card.worktreeId,
+          identity: card.identity
+        }))
+      })
+      const targets: WorkspaceBoardCardDragTarget[] = []
+      for (const candidate of batch) {
+        const target = dragTargetByIdentity.get(candidate.identity)
+        if (target) {
+          targets.push(target)
+        }
+      }
+      return targets
+    },
+    [boardCards, dragTargetByIdentity, selectedWorktreeIds]
+  )
+  const { onCardPointerDownCapture, isPointerDragActiveRef } =
+    useWorkspaceBoardCardPointerDrag({
+      open,
+      boardRef,
+      onAssignWorktreeStatus,
+      onPinWorktree,
+      resolveCardDragTargets,
+      onDragTargetChange: nativeDrag.setDragOverStatus,
+      onPinDragTargetChange: nativeDrag.setPinDragOver
+    })
+  useWorkspaceBoardShiftWheelScroll(boardRef, laneScrollerRef, open, isPointerDragActiveRef)
 
   // Orca counts the *rendered* selection in the header: a card a search hides is still
   // selected, but the badge describes what the user can see and act on.

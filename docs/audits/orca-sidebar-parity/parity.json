@@ -3828,16 +3828,16 @@
    "components/sidebar/worktree-list/drag/use-pointer-drag.ts:183-186"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:139"
+    "src/components/sidebar/worktree-multi-drag-selection.ts:18-46",
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:22-81",
+    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:138-141",
+    "src/components/sidebar/WorktreeList.tsx:771-809"
    ],
-   "missing_behaviors": [
-    "multi-drag de cards selecionados",
-    "detecção host-qualified (getWorktreeHostIdentity)"
-   ],
-   "notes": "Sem multi-seleção e sem drag múltiplo no Hydra: handleWorktreeDragStart passa apenas o path do card (WorktreeSidebar.tsx:428-432).",
-   "note": "Sem multi-seleção: draggedIds é sempre [worktreeId]; a expansão existente é por linhagem visível, não por cards selecionados."
+   "missing_behaviors": [],
+   "notes": "Regra portada em módulo puro compartilhado: se a identidade host-qualified pressionada pertence à seleção e há >1, o drag move o conjunto; senão move só o pressionado. A lista ganhou seleção (clique/ctrl/shift) com o mesmo modelo do board (worktree-selection.ts) e o pointer drag resolve o lote por resolver injetado (WorktreeList.tsx:794-808), reusando a reordenação atual (onReorderWorktrees, 1 commit por grupo).",
+   "note": "Multi-seleção e multi-drag ligados: draggedIds deixa de ser sempre [worktreeId] e passa a ser o lote resolvido por identidade host-qualified; caso host-qualified coberto por teste (worktree-multi-drag-selection.parity.test.ts)."
   },
   "par": [
    "PAR-08"
@@ -14355,21 +14355,18 @@
    "components/sidebar/workspace-kanban-card-drag-preview-dom.ts:70"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:12-14",
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:25-63"
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:11-64",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:205-230",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:172-201",
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:213-259",
+    "src/App.css:724-742"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Define cursor grabbing, userSelect none e data-workspace-board-pointer-dragging no html",
-    "Marca os cards originais com data-workspace-board-card-pointer-dragging",
-    "Clona o nó do card e anexa elemento flutuante fixed no body",
-    "Exibe badge de contagem (data-workspace-board-card-drag-count) para múltiplos cards",
-    "Atualiza a posição do preview via translate3d acompanhando o ponteiro"
-   ],
-   "notes": "Passo 2: workspace-kanban-card-drag-preview-dom, os atributos data-workspace-board-card-pointer-dragging/drag-count e o preview flutuante ausentes (0 hits). O sidebar usa o drag nativo do navegador (worktree-card-surface.tsx:89 draggable + model.ts:60 onDragStart), cujo preview é do próprio browser. Não localizado.",
-   "note": "Preview clonado e cursor grabbing existem; falta o badge de contagem para multi-drag."
+   "missing_behaviors": [],
+   "notes": "Preview clonado fixed no body, cursor grabbing nas duas fases (preview e html), cards originais do lote marcados com data-workspace-board-card-pointer-dragging e posicionamento por translate3d. O badge de contagem (data-workspace-board-card-drag-count) passou a pintar quando o lote tem >1, com o lote resolvido host-qualified no drawer (WorkspaceBoardDrawer.tsx:213-259) e repassado ao drag (draggedCount).",
+   "note": "Badge de contagem do multi-drag presente com >1 e ausente com 1; preview limpo no abort (Escape/pointercancel). Coberto por workspace-board-card-pointer-drag.parity.test.tsx."
   },
   "par": [
    "PAR-14"

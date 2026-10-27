@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useWorkspaceBoardDrawerLingering } from './use-workspace-board-drawer-lingering'
-import { isWorkspaceBoardTextEntryTarget } from './workspace-board-selection'
+import { isWorkspaceBoardTextEntryTarget } from './workspace-board-keyboard'
 
 /**
  * Why: Escape must dismiss interactive nested overlays before this companion

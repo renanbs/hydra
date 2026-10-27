@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 100 | 13.1% |
-| partial | 316 | 41.3% |
-| missing | 342 | 44.7% |
+| parity | 102 | 13.3% |
+| partial | 315 | 41.2% |
+| missing | 341 | 44.6% |
 | not-applicable | 6 | 0.8% |
 | out-of-scope | 1 | 0.1% |
 
@@ -20,14 +20,14 @@
 | D02a-repo-add-wizard | 42 | 1 | 12 | 22 | 6 | 1 |
 | D02b-hosts-ssh-remote | 30 | 2 | 11 | 17 | 0 | 0 |
 | D02c-project-groups-scripts | 26 | 1 | 3 | 22 | 0 | 0 |
-| D03a-worktree-list-module | 104 | 11 | 49 | 44 | 0 | 0 |
+| D03a-worktree-list-module | 104 | 12 | 49 | 43 | 0 | 0 |
 | D03b-sidebar-list-orchestration | 50 | 2 | 17 | 31 | 0 | 0 |
 | D04a-worktree-card-surface | 111 | 14 | 56 | 41 | 0 | 0 |
 | D04b-worktree-card-controllers | 23 | 0 | 11 | 12 | 0 | 0 |
 | D05-agents-rows | 23 | 0 | 10 | 13 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 13 | 11 | 11 | 0 | 0 |
 | D07-menus-actions | 45 | 4 | 28 | 13 | 0 | 0 |
-| D08-kanban-board | 45 | 19 | 12 | 14 | 0 | 0 |
+| D08-kanban-board | 45 | 20 | 11 | 14 | 0 | 0 |
 | D09-filters-sort | 31 | 0 | 24 | 7 | 0 | 0 |
 | D10-visibility-inbox-notices | 91 | 22 | 40 | 29 | 0 | 0 |
 | D11-lineage-grouping-model | 17 | 3 | 6 | 8 | 0 | 0 |

@@ -272,6 +272,17 @@ async function startDrag(): Promise<void> {
   await settleDragFrame()
 }
 
+/** A click over the card's own surface: the board's selection gesture path. */
+function clickCard(worktreePath: string, init: MouseEventInit = {}): void {
+  const surface = boardCard(worktreePath)?.querySelector<HTMLElement>(
+    '[data-worktree-card-surface]'
+  )
+  if (!surface) {
+    throw new Error(`the card surface for ${worktreePath} is not painted`)
+  }
+  fireEvent.click(surface, init)
+}
+
 afterEach(() => {
   cleanup()
 })
@@ -336,6 +347,26 @@ describe('workspace board pin drop target', () => {
     )
     expect(pinStrip().classList.contains(HOVER_BACKGROUND)).toBe(false)
     expect(dragPreview()).toBeNull()
+  })
+
+  it('pins the whole selection when a selected card is dropped on the strip', async () => {
+    const { onAssign, onPin } = await renderBoard()
+
+    clickCard('/repo/hydra/wt-progress', { ctrlKey: true })
+    clickCard('/repo/hydra/wt-done', { ctrlKey: true })
+
+    await startDrag()
+    movePointer(PROGRESS_X, PIN_Y)
+    await settleDragFrame()
+    expect(pinStrip().classList.contains(HOVER_BACKGROUND)).toBe(true)
+
+    releasePointer(PROGRESS_X, PIN_Y)
+
+    expect(onPin).toHaveBeenCalledTimes(2)
+    expect(onPin).toHaveBeenCalledWith('/repo/hydra/wt-progress')
+    expect(onPin).toHaveBeenCalledWith('/repo/hydra/wt-done')
+    // The pin never writes the status column, for any member of the batch.
+    expect(onAssign).not.toHaveBeenCalled()
   })
 
   it('clears the highlight without pinning when the pointer leaves for a lane', async () => {

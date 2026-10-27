@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 342 capabilities
+## MISSING — 341 capabilities
 
 
 ### D01-shell-chrome (29)
@@ -106,9 +106,8 @@
 - **D02c-025** — Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup | falta: findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay; markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório; getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface | components/sidebar/setup-script-prompt-render-state.ts:15
 - **D02c-026** — Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime | falta: Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco; Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes; Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota; Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar | components/sidebar/useSetupScriptPromptRevalidation.ts:14
 
-### D03a-worktree-list-module (44)
+### D03a-worktree-list-module (43)
 
-- **D03a-002** — Arrastar vários cards selecionados em conjunto | falta: multi-drag de cards selecionados; detecção host-qualified (getWorktreeHostIdentity) | components/sidebar/worktree-list/drag/use-pointer-drag.ts:183-186
 - **D03a-003** — Reordenar com histerese de intenção (evita troca de slot ao cruzar gutter) | falta: REORDER_INTENT_DELAY_MS=160ms; preserveOffsets durante nova intenção; não renovar intenção por autoscroll | components/sidebar/worktree-list/drag/pointer-flush.ts:23
 - **D03a-005** — Aninhar worktree sob outro arrastando sobre o card pai | falta: nesting por hover sobre card pai; dataset.worktreeSidebarNesting; applyWorktreeLineageDropPreview; hit test do card visível | components/sidebar/worktree-list/drag/pointer-flush.ts:145-163
 - **D03a-006** — Validação de elegibilidade de parent no aninhamento por arraste | falta: isEligibleWorktreeParent; getCyclicProjectedWorktreeLineageIds no drag; zera lineageParentId quando inelegível | components/sidebar/worktree-list/drag/use-lineage-drop-commit.ts:27-62
@@ -400,7 +399,7 @@
 - **D15b-011** — Definição de métricas de reserva de layout para o chrome superior da janela e barra de status em painéis portalizados de workspace | components/sidebar/workspace-chrome-metrics.ts:1-4
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 316 capabilities
+## PARTIAL — 315 capabilities
 
 
 ### D01-shell-chrome (15)
@@ -659,7 +658,7 @@
 - **D07-044** — Pipeline assíncrono de deleção paralela com agrupamento por repositório, ordenação por profundidade de caminho e serialização de travas | falta: Desduplicação por identidade qualificada e marcação 'deleting' imediata no store; beginWorktreeSnapshotPruneBatch; Agrupamento por host+repositório e ordenação por profundidade (path.length) para excluir filhos antes do pai; Serialização por turno (runInWorktreeDeleteTurn) para o mesmo diretório | backend: invoke('delete_worktree') N chamadas concorrentes -> src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476 | components/sidebar/worktree-delete-execution.ts:32
 - **D07-045** — Funções de política do menu de contexto para decisões de elegibilidade de deleção e remoção de projeto | falta: isContextWorktreeDeletable: o Hydra não valida na montagem do menu que o worktree secundário tem repositório associado — quando o repoPath não resolve, o item Delete continua habilitado e o handler retorna silenciosamente (src/App.tsx:1772) | components/sidebar/worktree-context-menu-policy.ts:107
 
-### D08-kanban-board (12)
+### D08-kanban-board (11)
 
 - **D08-001** — Alternar abertura e fechamento do painel Kanban via evento global ou ação de UI com telemetria | falta: Gerencia o estado de abertura workspaceBoardOpen/renderedOpen; Registra interação de feature workspace-board no store ao abrir; Fecha e limpa estados de pré-visualização de drag e menus ativos; Escuta o evento global orca:toggle-workspace-board na janela | components/sidebar/useWorkspaceBoardPanel.ts:50
 - **D08-006** — Ciclo de renderização diferido dos cards e descarte de seleção externa | falta: Diferimento da renderização de cards com requestAnimationFrame + startTransition; Cancela a animação se o drawer fechar antes do frame disparar; Limpa seleção de cards em pointerdown fora do sheet e fora de keep-open targets | components/sidebar/use-workspace-kanban-render-lifecycle.ts:4
@@ -670,7 +669,6 @@
 - **D08-011** — Tratamento de tecla Escape no campo de busca para limpar texto ou fechar o board respeitando IME | falta: Ignora Escape durante composição de caractere (event.nativeEvent.isComposing); Aciona o fechamento do painel Kanban (onClose) se o campo já estiver vazio; Previne propagação do evento para evitar duplo acionamento | components/sidebar/WorkspaceKanbanSearchField.tsx:120
 - **D08-013** — Indexação e correspondência de busca de workspaces no Kanban com suporte a host-qualified identities | falta: useDeferredValue para manter o input responsivo e permitir interrupção do re-render; Política board-only de indexação (apenas texto impresso nos cards, sem portas/reviews/automações); Retorna null para query vazia ou acima do limite (isWorktreePaletteQueryTooLarge) em vez de zerar o board; Chave de resultado qualificada por host (composeWorktreeHostIdentity) | components/sidebar/use-workspace-kanban-search.ts:24
 - **D08-029** — Projeção de dados e agrupamento de worktrees no Kanban com ordenação manual ou recente/fixada | falta: Agrupa worktrees em raias por status do workspace (colunas do board); Aplica ordenação manual (sortManualBoardWorktrees por manualOrder/sortOrder) no board; Constrói grupos de drag do board (boardDragGroups) e registra para drop da sidebar; Constrói buildUnambiguousWorktreeIdIndex e identidade ativa host-qualified no board | components/sidebar/use-workspace-kanban-board-projection.ts:16
-- **D08-037** — Preview visual de drag e multi-drag com clonagem de elemento, cursor grabbing e badge de contagem | falta: Define cursor grabbing, userSelect none e data-workspace-board-pointer-dragging no html; Marca os cards originais com data-workspace-board-card-pointer-dragging; Clona o nó do card e anexa elemento flutuante fixed no body; Exibe badge de contagem (data-workspace-board-card-drag-count) para múltiplos cards | components/sidebar/workspace-kanban-card-drag-preview-dom.ts:22
 - **D08-038** — Resolução de alvo de drop, tolerância de gaps e linha indicadora de inserção | falta: Resolve status da raia sob o ponteiro com tolerância de 24px entre colunas (STATUS_DROP_GAP_TOLERANCE_PX); Detecta drop target na área de fixação (data-workspace-pin-drop-target); Calcula índice de inserção comparando Y com os pontos médios dos cards; Renderiza linha indicadora (data-workspace-board-card-drop-indicator) | components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:49
 - **D08-042** — Ações de reordenação, movimentação e fixação de worktrees com comutação automática para ordenação manual | falta: moveWorktreeToStatus / moveWorktreesToStatus qualificados por hostId; Pin em lote do conjunto selecionado (pinWorktrees); Comutação automática para sortBy 'manual' ao reordenar intencionalmente no board; Sincronização opcional de status de tarefa com Linear (maybeSyncTaskStatuses) | components/sidebar/use-workspace-kanban-worktree-actions.ts:20
 

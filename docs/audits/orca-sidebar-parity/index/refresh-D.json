@@ -366,12 +366,15 @@
   },
   {
    "id": "D08-037",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:12-14",
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:25-63"
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:11-64",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:205-230",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:172-201",
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:213-259",
+    "src/App.css:724-742"
    ],
-   "note": "Preview clonado e cursor grabbing existem; falta o badge de contagem para multi-drag."
+   "note": "Badge de contagem do multi-drag presente com >1 e ausente com 1; preview limpo no abort (Escape/pointercancel). Coberto por workspace-board-card-pointer-drag.parity.test.tsx."
   },
   {
    "id": "D08-038",
