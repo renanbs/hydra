@@ -1,0 +1,17 @@
+{
+ "group": "AD",
+ "generatedFrom": "2026-10-22 primary vs secondary active surface when the Pinned section mirrors the active workspace",
+ "rows": [
+  {
+   "id": "D03a-069",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/navigation/active-row.ts:1-35",
+    "src/components/sidebar/WorktreeList.tsx:906-930",
+    "src/components/sidebar/WorktreeList.tsx:1178-1182",
+    "src/components/sidebar/worktree-list/navigation/active-row.parity.test.ts:1-45"
+   ],
+   "note": "The natural (non-Pinned) copy is the primary active row; the mirrored card gets variant secondary, and aria-activedescendant follows the primary key."
+  }
+ ]
+}

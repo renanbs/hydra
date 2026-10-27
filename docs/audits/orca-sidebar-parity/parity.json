@@ -5299,13 +5299,19 @@
    "components/sidebar/worktree-list/navigation/use-active-row.ts:9-101"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/navigation/active-row.ts:1-35",
+    "src/components/sidebar/WorktreeList.tsx:906-930",
+    "src/components/sidebar/WorktreeList.tsx:1178-1182",
+    "src/components/sidebar/worktree-list/navigation/active-row.parity.test.ts:1-45"
+   ],
    "missing_behaviors": [
     "use-active-row primário/secundário",
     "invalidação do primário quando a row some"
    ],
-   "notes": "Não localizado após busca por use-active-row, primaryActiveRowKey, ActiveSurfaceVariant. (O card tem data-worktree-card-active mas nada o marca como primary/secondary — worktree-card-surface.tsx:82-84.)"
+   "notes": "The natural (non-Pinned) copy is the primary active row; the mirrored card gets variant secondary, and aria-activedescendant follows the primary key.",
+   "note": "The natural (non-Pinned) copy is the primary active row; the mirrored card gets variant secondary, and aria-activedescendant follows the primary key."
   },
   "domain": "D03a-worktree-list-module"
  },
