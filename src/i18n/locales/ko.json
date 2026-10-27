@@ -7256,7 +7256,11 @@
           "f0871e6bfb": "연결",
           "47e94bd6ba": "연결됨",
           "a883f5a00f": "terminal 시간 초과: {{value0}}",
-          "8ce71262f4": "재설정될 때까지 terminals"
+          "8ce71262f4": "재설정될 때까지 terminals",
+          "configAlias": "별칭 {{value0}}",
+          "presenceFromSshConfig": "~/.ssh/config에서",
+          "presenceLocal": "이 컴퓨터에서 추가됨",
+          "generation": "세대 {{value0}}"
         },
         "SshTargetDestructiveActions": {
           "7e66942808": "그러면 이 SSH 대상에서 활성 terminal 세션이 중지됩니다. 다시 연결해도 복원되지 않습니다.",

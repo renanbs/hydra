@@ -8506,7 +8506,11 @@
           "c77f1abfe3": "Ending remote terminals",
           "18968ede9e": "Error",
           "f0871e6bfb": "connect",
-          "47e94bd6ba": "connected"
+          "47e94bd6ba": "connected",
+          "configAlias": "alias {{value0}}",
+          "presenceFromSshConfig": "From ~/.ssh/config",
+          "presenceLocal": "Added on this computer",
+          "generation": "generation {{value0}}"
         },
         "SshTargetDestructiveActions": {
           "7e66942808": "This will stop active terminal sessions on this SSH target. Reconnecting will not restore them.",

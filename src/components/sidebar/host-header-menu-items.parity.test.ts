@@ -1,7 +1,7 @@
 // Parity guard for the host-header menu MODEL. Orca decides the host menu's actions in
 // a pure function so the rules are testable without rendering the sidebar; this port
 // keeps that seam and narrows it to the actions Hydra has a backend for. What it locks
-// out: a menu item for a host that cannot execute it (a Reconnect/Manage row with no
+// out: a menu item for a host that cannot execute it (a Reconnect row with no
 // remote-execution subsystem behind it), and a compatibility alarm invented from a
 // verdict the registry never called blocked.
 import { describe, expect, it } from 'vitest'
@@ -25,10 +25,10 @@ const BLOCKED_CLIENT: RuntimeCompatVerdict = {
 }
 
 describe('buildHostHeaderMenuModel', () => {
-  it('offers Rename + Remove for an SSH host (the only kind with a registry row)', () => {
+  it('offers Rename + Manage + Remove for an SSH host (the only kind with a registry row)', () => {
     const model = buildHostHeaderMenuModel({ kind: 'ssh', health: 'available' })
 
-    expect(model.actions).toEqual(['rename', 'remove'])
+    expect(model.actions).toEqual(['rename', 'manage', 'remove'])
     expect(model.blocked).toBeNull()
   })
 

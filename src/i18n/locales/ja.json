@@ -7288,7 +7288,11 @@
           "f0871e6bfb": "接続",
           "47e94bd6ba": "接続されています",
           "a883f5a00f": "ターミナルタイムアウト: {{value0}}",
-          "8ce71262f4": "リセットするまでターミナルを維持"
+          "8ce71262f4": "リセットするまでターミナルを維持",
+          "configAlias": "エイリアス {{value0}}",
+          "presenceFromSshConfig": "~/.ssh/config から",
+          "presenceLocal": "このコンピューターで追加",
+          "generation": "世代 {{value0}}"
         },
         "SshTargetDestructiveActions": {
           "7e66942808": "これにより、この SSH ターゲット上のアクティブなターミナルセッションが停止されます。再接続しても復元されません。",

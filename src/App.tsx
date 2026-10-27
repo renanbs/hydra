@@ -42,7 +42,7 @@ import { hydrateWorkspaceHostScopePreference, useAppStore } from "./store";
 import { hydrateSshTargets } from "./store/ssh-bridge";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
-import { SettingsModal } from "./components/SettingsModal";
+import { SettingsModal, type HydraNavId } from "./components/SettingsModal";
 import type { HydraSettings } from "./shared/settings-types";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, DEFAULT_OPEN_IN_APPLICATIONS } from "./shared/settings-types";
 import { applyDocumentTheme } from "./lib/document-theme";
@@ -335,7 +335,7 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
-  const [settingsSectionRequested, setSettingsSectionRequested] = useState<"agents" | "general" | null>(null);
+  const [settingsSectionRequested, setSettingsSectionRequested] = useState<HydraNavId | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -1392,6 +1392,16 @@ export default function App() {
     window.addEventListener("hydra:open-command-palette", handleOpenPalette);
     const handleOpenJumpPalette = () => setIsJumpPaletteOpen(true);
     window.addEventListener("hydra:open-jump-palette", handleOpenJumpPalette);
+    // Why: the sidebar's host-header menu is many layers below App, so it cannot call
+    // setIsSettingsOpen directly; this is the same event bus sibling deep links use, and
+    // the modal still opens through App's single settings state.
+    const handleOpenSettingsPane = (e: Event) => {
+      const detail = (e as CustomEvent<{ section?: HydraNavId }>).detail;
+      if (!detail?.section) return;
+      setSettingsSectionRequested(detail.section);
+      setIsSettingsOpen(true);
+    };
+    window.addEventListener("hydra:open-settings", handleOpenSettingsPane);
 
     invoke<AvailableAgent[]>("list_available_agents")
       .then(setAvailableAgents)
@@ -1439,6 +1449,7 @@ export default function App() {
       window.removeEventListener("hydra:rename-project-group", handleRenameProjectGroup);
       window.removeEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
       window.removeEventListener("hydra:open-command-palette", handleOpenPalette);
+      window.removeEventListener("hydra:open-settings", handleOpenSettingsPane);
       mql.removeEventListener("change", onSystemChange);
     };
   }, []);

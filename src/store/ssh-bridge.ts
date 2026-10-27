@@ -22,7 +22,16 @@ import { useAppStore } from './index'
  * The `ssh_hosts` commands return serde camelCase payloads that mirror
  * `src/shared/ssh-types.ts`, so no reshaping happens here.
  */
-export async function hydrateSshTargets(): Promise<void> {
+
+/**
+ * Re-read the registry into the store and hand back the full target rows.
+ *
+ * The store only keeps the label/generation projection (`sshTargetLabels`,
+ * `sshTargetGenerations`); the Settings pane needs the whole row (endpoint,
+ * config alias, source, generation), so the same read that hydrates the store
+ * also returns the list it fetched instead of a second `ssh_list_targets` call.
+ */
+export async function hydrateSshTargets(): Promise<SshTarget[]> {
   const [targets, removedLabels] = await Promise.all([
     invoke<SshTarget[]>('ssh_list_targets'),
     invoke<Record<string, string>>('ssh_list_removed_target_labels')
@@ -32,6 +41,7 @@ export async function hydrateSshTargets(): Promise<void> {
   // `setRemovedSshTargetLabels` carries the re-adoption tombstones for ghost hosts.
   setSshTargetsMetadata(targets)
   setRemovedSshTargetLabels(removedLabels)
+  return targets
 }
 
 /**
