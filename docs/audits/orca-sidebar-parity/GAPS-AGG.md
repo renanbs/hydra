@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 198 capabilities
+## MISSING — 196 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -99,13 +99,11 @@
 - **D02c-025** — Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup | falta: findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay; markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório; getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface | components/sidebar/setup-script-prompt-render-state.ts:15
 - **D02c-026** — Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime | falta: Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco; Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes; Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota; Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar | components/sidebar/useSetupScriptPromptRevalidation.ts:14
 
-### D03a-worktree-list-module (8)
+### D03a-worktree-list-module (6)
 
-- **D03a-035** — Linha de criação em andamento (pending creation) | falta: row pending-creation renderizada; pending:<creationId> como tipo virtual | components/sidebar/worktree-list/grouping/row-builders.ts:22-32
 - **D03a-048** — Forçar visível o alvo do seletor de envio de agente | falta: use-agent-send-target; agentSendPopoverTargetMode; forcedVisibleWorktreeIds do alvo | components/sidebar/worktree-list/listing/use-agent-send-target.ts:6-64
 - **D03a-049** — Forçar expansão das seções que escondem o worktree alvo do seletor de agente | falta: use-collapsed-groups removendo group keys do alvo; getFolderWorkspaceRevealGroupKeys; panel pinned single-location | components/sidebar/worktree-list/listing/use-collapsed-groups.ts:17-121
 - **D03a-051** — Preservar identidade de arrays iguais entre recomputos | falta: reuseArrayIfEqual; identidade de array preservada entre recomputos | components/sidebar/worktree-list/listing/use-reused-array-identity.ts:4-13
-- **D03a-055** — Chaves de criações pendentes com identidade cacheada | falta: selectPendingWorktreeCreationKeys; EMPTY_PENDING_WORKTREE_CREATION_KEYS congelado; cache WeakMap por slice | components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts:3-39
 - **D03a-069** — Superfície ativa primária vs secundária quando o worktree renderiza em duas seções | falta: use-active-row primário/secundário; invalidação do primário quando a row some | components/sidebar/worktree-list/navigation/use-active-row.ts:9-101
 - **D03a-070** — Resolver worktree/folder workspace conhecido e sua existência | falta: getKnownSidebarWorktreeById; sidebarWorkspaceStillExists; getFolderWorkspaceRevealGroupKeys | components/sidebar/worktree-list/navigation/folder-reveal.ts:12-108
 - **D03a-075** — Indicador de falha de scan de worktrees com retry e cópia de diagnóstico | falta: RepoScanUnavailableIndicator com retry de fetchWorktrees; tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch); Copy command / Copy diagnostics | backend: window.api.ui.writeClipboardText (Orca; equivalente Tauri: clipboard do webview) | components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx:18-153

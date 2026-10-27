@@ -137,3 +137,44 @@ describe("lineage nesting in the painted row pipeline (Orca parity)", () => {
     expect(childRow?.depth).toBe(0);
   });
 });
+
+describe("pending creation rows in the painted pipeline (D03a-035/055)", () => {
+  it("emits the pending row with the cached key and labels", () => {
+    const repoA = repo("repo_a");
+    const rows = buildRows(
+      "repo",
+      [],
+      new Map([[repoA.id, repoA]]),
+      null,
+      new Set(),
+      undefined,
+      undefined,
+      "manual",
+      {},
+      new Map(),
+      true,
+      undefined,
+      [{ id: "group_1", name: "Group", tabOrder: 0, parentPath: null }],
+      new Set(),
+      new Map(),
+      new Map(),
+      [
+        {
+          creationId: "c1",
+          repoId: "repo_a",
+          key: "c1 repo_a",
+          branchName: "feat/x",
+          agentName: "Claude",
+        },
+      ]
+    );
+
+    const pending = rows.find((row) => row.type === "pending-creation");
+    expect(pending).toMatchObject({
+      key: "c1 repo_a",
+      creationId: "c1",
+      branchName: "feat/x",
+      agentName: "Claude",
+    });
+  });
+});

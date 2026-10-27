@@ -252,6 +252,13 @@ export interface WorktreeSidebarProps {
   lineageByPath?: Readonly<Record<string, string>>;
   /** Persisted notes/linked work items, keyed by checkout path. */
   worktreeMetadataByPath?: WorktreeMetadataByPath;
+  /** In-flight creates that own optimistic rows until the backend answers. */
+  pendingWorktreeCreations?: readonly {
+    creationId: string;
+    repoId: string;
+    branchName?: string;
+    agentName?: string;
+  }[];
   /** Opens the metadata editor for one painted row. */
   onEditWorktreeMetadata?: (worktree: GitWorktreeInfo) => void;
   /** Commits a nest drag: parent and child checkout paths inside one project. */

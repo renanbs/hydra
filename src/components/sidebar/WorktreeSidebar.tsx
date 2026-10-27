@@ -98,6 +98,7 @@ export function WorktreeSidebar({
   onReorderWorktrees,
   lineageByPath,
   worktreeMetadataByPath,
+  pendingWorktreeCreations,
   onEditWorktreeMetadata,
   onAssignWorktreeParent,
   onUnnestWorktrees,
@@ -1062,6 +1063,7 @@ export function WorktreeSidebar({
               onReorderWorktreesInGroup={commitReorderedWorktrees}
               lineageByPath={lineageByPath}
               worktreeMetadataByPath={worktreeMetadataByPath}
+              pendingWorktreeCreations={pendingWorktreeCreations}
               onEditWorktreeMetadata={onEditWorktreeMetadata}
               onAssignWorktreeParent={onAssignWorktreeParent}
               onUnnestWorktrees={onUnnestWorktrees}

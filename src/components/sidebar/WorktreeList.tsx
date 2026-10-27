@@ -82,6 +82,8 @@ import {
 import { PINNED_GROUP_KEY } from "./worktree-list/grouping/group-keys";
 import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
 import { computeHeaderSectionBounds } from "./worktree-header-section-boundaries";
+import { selectPendingWorktreeCreationKeys } from "./worktree-list/listing/pending-worktree-creation-keys";
+import { PendingWorktreeCreationRow } from "./worktree-list/rows/PendingWorktreeCreationRow";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
@@ -353,6 +355,13 @@ export interface WorktreeListProps {
   hiddenWorktreeErrorsByProject?: Readonly<Record<string, string | null>>;
   /** Card-level "Show in worktree list" (policy flip with rollback). */
   onShowAllHiddenWorktrees?: (proj: HydraProject) => void;
+  /** In-flight creates that own optimistic rows until the backend answers. */
+  pendingWorktreeCreations?: readonly {
+    creationId: string;
+    repoId: string;
+    branchName?: string;
+    agentName?: string;
+  }[];
   /** Whether the workspace board is already open (D03a-012 preview is conditional). */
   workspaceBoardOpen?: boolean;
   onWorkspaceBoardDragPreviewStart?: () => void;
@@ -584,6 +593,7 @@ export function WorktreeList({
   onSuppressHiddenWorktrees,
   hiddenWorktreeErrorsByProject,
   onShowAllHiddenWorktrees,
+  pendingWorktreeCreations,
   workspaceBoardOpen,
   onWorkspaceBoardDragPreviewStart,
   onWorkspaceBoardDragPreviewCommit,
@@ -659,6 +669,18 @@ export function WorktreeList({
   // Host ownership per repo, shared by the row pipeline and the delete-state
   // resolution below: a card's delete state is keyed by host-qualified identity.
   const hostIdByRepoId = useMemo(() => buildHostIdByRepoId(storeRepos as Repo[]), [storeRepos]);
+
+  const pendingCreationRefs = useMemo(() => {
+    const pending = pendingWorktreeCreations ?? [];
+    const keys = selectPendingWorktreeCreationKeys(pending);
+    return pending.map((creation, index) => ({
+      creationId: creation.creationId,
+      repoId: creation.repoId,
+      key: keys[index],
+      ...(creation.branchName ? { branchName: creation.branchName } : {}),
+      ...(creation.agentName ? { agentName: creation.agentName } : {}),
+    }));
+  }, [pendingWorktreeCreations]);
 
   const rowModel = useMemo<SidebarRowModel>(() => {
     const pipelineRepos = visibleProjects.map((project) =>
@@ -788,7 +810,8 @@ export function WorktreeList({
         buildExternalWorktreeNoticeCandidates({
           repos: pipelineRepos,
           hiddenWorktreesByProjectPath: hiddenWorktreesByProject ?? {},
-        })
+        }),
+        pendingCreationRefs
       ),
       pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(pipelineState.settings),
       propWorktreeByPath,
@@ -826,6 +849,7 @@ export function WorktreeList({
     storeSshConnectionStates,
     storeRuntimeEnvironments,
     storeRuntimeStatusByEnvironmentId,
+    pendingCreationRefs,
   ]);
 
   const { rows } = rowModel;
@@ -1308,7 +1332,7 @@ export function WorktreeList({
       renameRequest,
       onWorktreeContextMenu,
       selectedContextWorktrees,
-      onSelectSession,
+          onSelectSession,
       onWorktreeDragStart,
       onWorktreeDragOver,
       onWorktreeDrop,
@@ -1544,8 +1568,14 @@ export function WorktreeList({
         case "new-external-worktrees-inbox":
           return renderNoticeRow(row);
         case "pending-creation":
-          // Hydra has no in-flight create rows on this path (Orca D03a-035).
-          return null;
+          return (
+            <PendingWorktreeCreationRow
+              key={row.key}
+              branchName={row.branchName}
+              agentName={row.agentName}
+              repoName={row.repo?.displayName}
+            />
+          );
       }
     },
     [
