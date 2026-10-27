@@ -71,6 +71,7 @@ import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
+import { markSidebarWorktreeActiveImmediately } from "./worktree-list/rows/sidebar-worktree-active-dom";
 import { resolveWorktreeMultiDragSelection } from "./worktree-multi-drag-selection";
 import type { WorktreeMultiDragCandidate } from "./worktree-multi-drag-selection";
 import { useWorktreeListSelection } from "./worktree-list/use-worktree-list-selection";
@@ -1251,6 +1252,10 @@ export function WorktreeList({
           worktreeId={row.worktree.id}
           worktreePath={wt.path}
           optionId={slot.optionId}
+          hostIdentity={getWorktreeHostIdentity({
+            id: row.worktree.id,
+            hostId: row.worktree.hostId,
+          })}
           isActive={slot.isActive}
           isSelected={isMultiSelected}
           style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
@@ -1290,7 +1295,12 @@ export function WorktreeList({
               linkedPR: row.worktree.linkedPR,
               linkedLinearIssue: row.worktree.linkedLinearIssue,
             }}
-            onSelect={onSelectGitWorktree}
+            onSelect={(wt) => {
+              // Orca marks the mounted option current before the store update lands,
+              // so the click never paints an unselected card for a frame.
+              markSidebarWorktreeActiveImmediately(row.worktree.id, row.rowKey);
+              onSelectGitWorktree(wt);
+            }}
             onSelectionGesture={(event) => handleSelectionGesture(event, identity)}
             onDelete={onDeleteGitWorktree}
             onRename={(newTitle) => persistWorktreeDisplayName(wt.path, newTitle)}

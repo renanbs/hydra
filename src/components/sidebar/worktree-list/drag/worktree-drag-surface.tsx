@@ -18,6 +18,7 @@ export function WorktreeDragRow({
   worktreeId,
   worktreePath,
   optionId,
+  hostIdentity,
   isActive = false,
   isSelected = false,
   style,
@@ -28,6 +29,8 @@ export function WorktreeDragRow({
   worktreePath: string
   /** Listbox option id; the viewport points `aria-activedescendant` at it. */
   optionId?: string
+  /** Host-qualified identity; lets the immediate-activation DOM marker keep hosts apart. */
+  hostIdentity?: string
   /** True when this card paints the active workspace. */
   isActive?: boolean
   /** True when the list's multi-selection holds this row (D03a-002). */
@@ -48,6 +51,9 @@ export function WorktreeDragRow({
       aria-selected={isActive || isSelected}
       aria-current={isActive ? 'page' : undefined}
       data-worktree-path={worktreePath}
+      data-worktree-id={worktreeId}
+      data-worktree-row-key={rowKey}
+      data-worktree-host-identity={hostIdentity}
       data-worktree-nesting-id={worktreeId}
       data-worktree-selected={isSelected ? 'true' : undefined}
       data-worktree-drag-id={groupKey ? worktreeId : undefined}

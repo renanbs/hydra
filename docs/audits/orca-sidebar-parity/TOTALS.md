@@ -4,8 +4,8 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 276 | 36.1% |
-| partial | 302 | 39.5% |
+| parity | 277 | 36.2% |
+| partial | 301 | 39.3% |
 | missing | 178 | 23.3% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
@@ -21,7 +21,7 @@
 | D02b-hosts-ssh-remote | 30 | 2 | 11 | 17 | 0 | 0 |
 | D02c-project-groups-scripts | 26 | 4 | 3 | 19 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 42 | 57 | 5 | 0 | 0 |
-| D03b-sidebar-list-orchestration | 50 | 15 | 20 | 15 | 0 | 0 |
+| D03b-sidebar-list-orchestration | 50 | 16 | 19 | 15 | 0 | 0 |
 | D04a-worktree-card-surface | 111 | 23 | 65 | 22 | 1 | 0 |
 | D04b-worktree-card-controllers | 23 | 1 | 11 | 11 | 0 | 0 |
 | D05-agents-rows | 23 | 0 | 10 | 13 | 0 | 0 |
