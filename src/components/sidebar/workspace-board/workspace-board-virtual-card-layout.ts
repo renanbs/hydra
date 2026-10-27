@@ -1,14 +1,16 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
 import {
+  isValidWorkspaceBoardVirtualMeasurement,
   resolveWorkspaceBoardCardIndexFromMeasurements,
   resolveWorkspaceBoardCardIndicatorYFromMeasurements
 } from './workspace-board-virtual-lanes'
 
 /**
  * A lane's card list publishes its measured layout here, keyed by the lane's own scroll
- * element. The card drag reads it to resolve an insertion slot whose card is outside the
- * painted window: the vertical axis of D08-024 is virtualized too, so the last painted card
- * is not the end of the lane.
+ * element. Two callers read it: the card drag, which resolves an insertion slot whose card is
+ * outside the painted window (the vertical axis of D08-024 is virtualized too, so the last
+ * painted card is not the end of the lane), and the marquee's hit test, which needs the
+ * rectangles of cards the virtualizer has not mounted.
  *
  * Ported from Orca `workspace-kanban-virtual-lane-layout`.
  */
@@ -16,8 +18,27 @@ import {
 type WorkspaceBoardVirtualCardLayoutRegistration = {
   scrollElement: HTMLElement
   spacerElement: HTMLElement
-  getItemCount: () => number
+  getItemIdentities: () => readonly string[]
   getMeasurements: () => readonly Pick<VirtualItem, 'index' | 'start' | 'end'>[]
+}
+
+/** One card slot: painted or not, in viewport coordinates plus the lane's content space. */
+export type WorkspaceBoardVirtualCardItemRect = {
+  id: string
+  index: number
+  left: number
+  top: number
+  right: number
+  bottom: number
+  /** `top`/`bottom` rebased into the lane's own content coordinates. */
+  contentTop: number
+  contentBottom: number
+}
+
+type WorkspaceBoardVirtualCardLayoutSnapshot = {
+  registration: WorkspaceBoardVirtualCardLayoutRegistration
+  itemIdentities: readonly string[]
+  measurements: readonly Pick<VirtualItem, 'index' | 'start' | 'end'>[]
 }
 
 const cardLayouts = new WeakMap<HTMLElement, WorkspaceBoardVirtualCardLayoutRegistration>()
@@ -25,13 +46,13 @@ const cardLayouts = new WeakMap<HTMLElement, WorkspaceBoardVirtualCardLayoutRegi
 export function registerWorkspaceBoardVirtualCardLayout(args: {
   scrollElement: HTMLElement
   spacerElement: HTMLElement
-  getItemCount: () => number
+  getItemIdentities: () => readonly string[]
   getMeasurements: () => readonly Pick<VirtualItem, 'index' | 'start' | 'end'>[]
 }): () => void {
   const registration: WorkspaceBoardVirtualCardLayoutRegistration = {
     scrollElement: args.scrollElement,
     spacerElement: args.spacerElement,
-    getItemCount: args.getItemCount,
+    getItemIdentities: args.getItemIdentities,
     getMeasurements: args.getMeasurements
   }
   cardLayouts.set(args.scrollElement, registration)
@@ -44,7 +65,47 @@ export function registerWorkspaceBoardVirtualCardLayout(args: {
 
 /** How many cards the lane holds, painted or not; `null` when the lane registered no list. */
 export function getWorkspaceBoardVirtualCardItemCount(scrollElement: HTMLElement): number | null {
-  return cardLayouts.get(scrollElement)?.getItemCount() ?? null
+  return cardLayouts.get(scrollElement)?.getItemIdentities().length ?? null
+}
+
+/**
+ * Every card slot the lane measured — painted or not — in viewport coordinates. The marquee
+ * hit-tests these instead of the DOM, so a card the virtualizer left outside its window still
+ * counts under the rectangle, and `contentTop`/`contentBottom` let a lane that scrolls
+ * mid-drag keep answering with the content positions the user dragged across.
+ *
+ * `null` when the lane registered no list or the measurement cache is behind the card list,
+ * so the caller falls back to the painted cards' live rects.
+ */
+export function getWorkspaceBoardVirtualCardItemRects(
+  scrollElement: HTMLElement
+): WorkspaceBoardVirtualCardItemRect[] | null {
+  const snapshot = getVirtualCardLayoutSnapshot(scrollElement)
+  if (!snapshot) {
+    return null
+  }
+
+  const spacerRect = snapshot.registration.spacerElement.getBoundingClientRect()
+  const containerRect = snapshot.registration.scrollElement.getBoundingClientRect()
+  const contentOffset = spacerRect.top - containerRect.top + scrollElement.scrollTop
+  const rects: WorkspaceBoardVirtualCardItemRect[] = []
+  for (let index = 0; index < snapshot.itemIdentities.length; index++) {
+    const measurement = snapshot.measurements[index]
+    if (!isValidWorkspaceBoardVirtualMeasurement(measurement, index)) {
+      return null
+    }
+    rects.push({
+      id: snapshot.itemIdentities[index]!,
+      index,
+      left: spacerRect.left,
+      top: spacerRect.top + measurement.start,
+      right: spacerRect.right,
+      bottom: spacerRect.top + measurement.end,
+      contentTop: contentOffset + measurement.start,
+      contentBottom: contentOffset + measurement.end
+    })
+  }
+  return rects
 }
 
 /**
@@ -60,7 +121,7 @@ export function resolveWorkspaceBoardVirtualCardSlot(args: {
   if (!registration) {
     return null
   }
-  const itemCount = registration.getItemCount()
+  const itemCount = registration.getItemIdentities().length
   const measurements = registration.getMeasurements()
   const spacerTop = registration.spacerElement.getBoundingClientRect().top
   const dropIndex = resolveWorkspaceBoardCardIndexFromMeasurements({
@@ -82,4 +143,18 @@ export function resolveWorkspaceBoardVirtualCardSlot(args: {
     return null
   }
   return { dropIndex, dropIndicatorY }
+}
+
+function getVirtualCardLayoutSnapshot(
+  scrollElement: HTMLElement
+): WorkspaceBoardVirtualCardLayoutSnapshot | null {
+  const registration = cardLayouts.get(scrollElement)
+  if (!registration) {
+    return null
+  }
+  const itemIdentities = registration.getItemIdentities()
+  const measurements = registration.getMeasurements()
+  return measurements.length >= itemIdentities.length
+    ? { registration, itemIdentities, measurements }
+    : null
 }

@@ -1,12 +1,15 @@
 import React from 'react'
 import type { WorkspaceStatus } from '../../../shared/worktree/types'
-import type { GitWorktreeInfo, HydraProject } from '../types'
+import type { GitWorktreeInfo } from '../types'
 import WorkspaceBoardHeader from './WorkspaceBoardHeader'
 import WorkspaceBoardLaneGrid from './WorkspaceBoardLaneGrid'
 import WorkspaceBoardSheet from './WorkspaceBoardSheet'
 import type { WorkspaceBoardGeometry } from './use-workspace-board-geometry'
 import type { WorkspaceBoardStatusActions } from './use-workspace-board-status-actions'
-import type { WorkspaceBoardLane } from './workspace-board-worktrees'
+import type {
+  WorkspaceBoardCard as WorkspaceBoardCardModel,
+  WorkspaceBoardLane
+} from './workspace-board-worktrees'
 
 type WorkspaceBoardDrawerViewProps = {
   open: boolean
@@ -15,6 +18,8 @@ type WorkspaceBoardDrawerViewProps = {
   columnWidth: number
   compactCards: boolean
   boardRef: React.RefObject<HTMLDivElement | null>
+  /** The marquee's own box, painted imperatively while a selection drag is in flight. */
+  areaSelectionOverlayRef: React.RefObject<HTMLDivElement | null>
   dropTargetStatus: WorkspaceStatus | null
   /** The board's status CRUD, owned by the drawer and rendered into the header. */
   statusActions: WorkspaceBoardStatusActions
@@ -24,20 +29,31 @@ type WorkspaceBoardDrawerViewProps = {
   isTooLarge: boolean
   matchCount: number
   totalCount: number
+  /** How many of the cards the board shows are selected; the header's count badge. */
+  selectedCount: number
+  /** The board's selection, by host-qualified card identity. */
+  selectedWorktreeIds: ReadonlySet<string>
   onQueryChange: (query: string) => void
   onClearQuery: () => void
   onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
+  onAreaSelectionPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void
+  onSelectionGesture: (event: React.MouseEvent<HTMLElement>, worktreeIdentity: string) => boolean
   onOpenChange: (open: boolean) => void
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
-  onContextMenu?: (
-    event: React.MouseEvent,
-    worktree: GitWorktreeInfo,
-    project: HydraProject
-  ) => void
+  onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
 }
 
-/** Ported from Orca `WorkspaceKanbanDrawerView`, minus the overlay/multi-select machinery. */
+/**
+ * Ported from Orca `WorkspaceKanbanDrawerView` (minus the pin drop target and the contextual
+ * tour, which are not part of this increment).
+ *
+ * Why the marquee listens on its own surface, below the header: a press on the board's padded
+ * area around and between the lanes is the "empty space" a marquee starts from, and the cards
+ * inside it own their own presses (`onCardPointerDownCapture`). The marquee's own box is painted
+ * inside the lane grid (the board's coordinate space) so its `translate3d` and the hit test
+ * measure against the same origin.
+ */
 export default function WorkspaceBoardDrawerView({
   open,
   geometry,
@@ -45,6 +61,7 @@ export default function WorkspaceBoardDrawerView({
   columnWidth,
   compactCards,
   boardRef,
+  areaSelectionOverlayRef,
   dropTargetStatus,
   statusActions,
   query,
@@ -52,9 +69,13 @@ export default function WorkspaceBoardDrawerView({
   isTooLarge,
   matchCount,
   totalCount,
+  selectedCount,
+  selectedWorktreeIds,
   onQueryChange,
   onClearQuery,
   onCardPointerDownCapture,
+  onAreaSelectionPointerDown,
+  onSelectionGesture,
   onOpenChange,
   onActivate,
   onSelectSession,
@@ -72,12 +93,17 @@ export default function WorkspaceBoardDrawerView({
         isTooLarge={isTooLarge}
         matchCount={matchCount}
         totalCount={totalCount}
+        selectedCount={selectedCount}
         onQueryChange={onQueryChange}
         onClearQuery={onClearQuery}
         onClose={() => onOpenChange(false)}
         statusActions={statusActions}
       />
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+      <div
+        data-workspace-board-selection-surface=""
+        className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3"
+        onPointerDown={onAreaSelectionPointerDown}
+      >
         <div
           ref={setLaneScrollerElement}
           data-workspace-board-lanes-scroller=""
@@ -92,6 +118,9 @@ export default function WorkspaceBoardDrawerView({
             boardRef={boardRef}
             laneScrollerElement={laneScrollerElement}
             dropTargetStatus={dropTargetStatus}
+            areaSelectionOverlayRef={areaSelectionOverlayRef}
+            selectedWorktreeIds={selectedWorktreeIds}
+            onSelectionGesture={onSelectionGesture}
             onCardPointerDownCapture={onCardPointerDownCapture}
             onActivate={onActivate}
             onSelectSession={onSelectSession}

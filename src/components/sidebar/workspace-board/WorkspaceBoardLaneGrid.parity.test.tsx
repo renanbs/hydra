@@ -71,6 +71,7 @@ function LaneRowHarness({
 }): React.JSX.Element {
   const [scrollerElement, setScrollerElement] = useState<HTMLDivElement | null>(null)
   const boardRef = useRef<HTMLDivElement | null>(null)
+  const areaSelectionOverlayRef = useRef<HTMLDivElement | null>(null)
   const attachScroller = useCallback((node: HTMLDivElement | null) => {
     if (node) {
       Object.defineProperty(node, 'offsetWidth', {
@@ -91,6 +92,9 @@ function LaneRowHarness({
         boardRef={boardRef}
         laneScrollerElement={scrollerElement}
         dropTargetStatus={dropTargetStatus}
+        areaSelectionOverlayRef={areaSelectionOverlayRef}
+        selectedWorktreeIds={new Set()}
+        onSelectionGesture={vi.fn()}
         onCardPointerDownCapture={vi.fn()}
         onActivate={vi.fn()}
       />

@@ -42,3 +42,22 @@ export async function persistWorktreeStatus(
 ): Promise<void> {
   await invoke('set_worktree_status', { worktreePath, status })
 }
+
+/**
+ * Persists one assignment that covers several workspaces — the workspace board's card menu
+ * assigning a status to the selected set.
+ *
+ * Why one write per worktree instead of a batch command: `set_worktree_status` is the app's
+ * single status writer and keys on one path, and a per-path write keeps the states independent —
+ * a workspace the host refuses must not cancel the others. Sequential rather than parallel: the
+ * writes share one SQLite writer, so racing them buys nothing and makes a failure harder to
+ * attribute.
+ */
+export async function persistWorktreeStatusBatch(
+  worktreePaths: readonly string[],
+  status: string | null
+): Promise<void> {
+  for (const worktreePath of worktreePaths) {
+    await persistWorktreeStatus(worktreePath, status)
+  }
+}

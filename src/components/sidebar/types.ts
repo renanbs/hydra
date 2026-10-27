@@ -210,7 +210,18 @@ export interface WorktreeSidebarProps {
   onOpenNewWorkspaceModal: (proj?: HydraProject) => void;
   onSessionContextMenu?: (e: React.MouseEvent, session: WorktreeSession) => void;
   onProjectContextMenu?: (e: React.MouseEvent, project: HydraProject) => void;
-  onWorktreeContextMenu?: (e: React.MouseEvent, worktree: GitWorktreeInfo, project: HydraProject) => void;
+  /**
+   * The worktree menu. The optional fourth argument is the workspace board's selection-aware
+   * target list — a batch the card the user right-clicked belongs to — so the status the menu
+   * assigns covers the whole selection (Orca's `activeContextWorktrees`). The sidebar's own
+   * rows pass no targets.
+   */
+  onWorktreeContextMenu?: (
+    e: React.MouseEvent,
+    worktree: GitWorktreeInfo,
+    project: HydraProject,
+    targetWorktreePaths?: readonly string[]
+  ) => void;
   /**
    * The app's own workspace-status write (`set_worktree_status` + the local worktree
    * maps this sidebar projects from). The workspace board's card drop commits through

@@ -84,6 +84,8 @@ function CardListHarness(): React.JSX.Element {
         cards={CARDS}
         scrollerElement={scrollerElement}
         compactCards={false}
+        selectedWorktreeIds={new Set()}
+        onSelectionGesture={vi.fn()}
         onActivate={vi.fn()}
       />
     </div>

@@ -1,26 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useWorkspaceBoardDrawerLingering } from './use-workspace-board-drawer-lingering'
-
-/**
- * Why: the board's Escape listener is capture-phase on document, so it runs before
- * React's handlers and a field inside the board cannot stop it. Any in-progress
- * edit (the board's search field, the sidebar search, an inline rename) therefore
- * keeps Escape for itself — the search field covers clear-then-close on its own.
- */
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false
-  }
-  // xterm's hidden input textarea is not a real text field; treating it as one
-  // would block Escape while a terminal has focus.
-  if (target.classList.contains('xterm-helper-textarea')) {
-    return false
-  }
-  if (target.isContentEditable) {
-    return true
-  }
-  return target.closest('input, textarea, select, [contenteditable=""]') !== null
-}
+import { isWorkspaceBoardTextEntryTarget } from './workspace-board-selection'
 
 /**
  * Why: Escape must dismiss interactive nested overlays before this companion
@@ -105,7 +85,11 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
       if (event.key !== 'Escape') {
         return
       }
-      if (isEditableTarget(event.target)) {
+      // Why: this listener is capture-phase on document, so it runs before React's handlers
+      // and a field inside the board cannot stop it. Any in-progress edit (the board's search
+      // field, the sidebar search, an inline rename) therefore keeps Escape for itself — the
+      // search field covers clear-then-close on its own.
+      if (isWorkspaceBoardTextEntryTarget(event.target)) {
         return
       }
       if (document.querySelector(WORKSPACE_BOARD_ESCAPE_BLOCKING_OVERLAY_SELECTOR)) {

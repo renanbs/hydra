@@ -13388,10 +13388,10 @@
    "components/sidebar/use-workspace-kanban-render-lifecycle.ts:30"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "partial",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59",
-    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:83-100"
+    "src/components/sidebar/workspace-board/use-workspace-board-lane-hydration.ts:44-68",
+    "src/components/sidebar/workspace-board/use-workspace-board-selection.ts:70-82"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -13400,7 +13400,7 @@
     "Limpa seleção de cards em pointerdown fora do sheet e fora de keep-open targets"
    ],
    "notes": "Passo 1/3: use-workspace-kanban-render-lifecycle ausente (0 hits); startTransition não aparece em src/components/sidebar/**. Os rAF existentes (WorktreeSidebar.tsx:373,410) servem ao highlight de reveal, não ao board. Passo 5: sem seleção de cards no sidebar (0 hits para selectedWorktreeIds). Não localizado.",
-   "note": "Board renderiza todas as raias/cards por map; sem startTransition/ciclo diferido nem descarte de selecao externa."
+   "note": "Ciclo diferido existe por raia (startTransition, D08-020) e a selecao e descartada ao reabrir/fechar o board; falta o descarte por pointerdown fora do board (Orca useWorkspaceKanbanRenderLifecycle), declarado fora do escopo do PR 24."
   },
   "par": [
    "PAR-14"
@@ -13449,7 +13449,9 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:21-50"
+    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:36-95",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:1-175",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:1-182"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -13460,7 +13462,7 @@
     "Encaminha clique de fechar ao callback onClose explícito"
    ],
    "notes": "Passo 2: os labels existem só no catálogo i18n importado (src/i18n/en-runtime-required.json:1898-1902 'Workspace board'/'Close workspace board'); nenhum uso em src/**. O header da sidebar (SidebarHeader.tsx:50) tem título estático e botões de agents/add-project. Passo 5: sem contagem de seleção (0 hits). Não localizado.",
-   "note": "Header tem titulo e botao fechar; faltam busca, filtro, menu de configuracoes e contagem de selecao."
+   "note": "Titulo, badge de contagem de selecao (>1), busca, menu de configuracoes, descricao sr-only e botao fechar existem; falta apenas o menu de filtro do sidebar (SidebarFilter) no cluster direito."
   },
   "par": [
    "PAR-14"
@@ -13478,7 +13480,9 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:45-59"
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:100-127",
+    "src/components/sidebar/workspace-board/WorkspaceBoardAreaSelectionOverlay.tsx:1-21",
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:183"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -13488,7 +13492,7 @@
     "Container com rolagem horizontal personalizada (scrollbar-sleek) para a grade de raias"
    ],
    "notes": "Passo 2: atributo data-workspace-board-selection-surface ausente (0 hits). Passo 3: nenhum container de raias; scrollbar-sleek existe no scroller vertical da lista (WorktreeSidebar.tsx:698), sem grade horizontal. Passo 5: sem drop target de pin. Não localizado.",
-   "note": "Container de raias existe; faltam superficie de selecao, overlay de area e alvo de contextual tour."
+   "note": "Superficie de selecao (data-workspace-board-selection-surface) com pointerdown do marquee, overlay de area e container de raias existem; falta o alvo central de contextual tour (o Hydra nao tem sistema de tour)."
   },
   "par": [
    "PAR-14"
@@ -14140,9 +14144,12 @@
    "components/sidebar/use-workspace-kanban-selection.ts:93"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardCard.tsx:41-57"
+    "src/components/sidebar/workspace-board/workspace-board-selection.ts:32-214",
+    "src/components/sidebar/workspace-board/use-workspace-board-selection.ts:27-176",
+    "src/components/sidebar/workspace-board/WorkspaceBoardCard.tsx:52-96",
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:190-214"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14154,7 +14161,7 @@
     "selectForContextMenu preserva seleção se o card clicado já estiver selecionado"
    ],
    "notes": "Passo 3: não existe multi-seleção de worktrees no sidebar — 0 hits para selectedWorktreeIds/selectedIds/shiftKey em src/components/sidebar/**; o clique do card só ativa o worktree e abre menu (use-worktree-card-controller.ts:196; WorktreeList.tsx:374 passa isPinned, não seleção). Passo 5: {BOARD_ABSENT}. Não localizado.",
-   "note": "Sem multi-selecao de cards (selectedWorktreeIds)."
+   "note": "Clique simples substitui, ctrl/meta alterna por plataforma e shift estende da ancora no escopo dos cards visiveis; poda/re-ancoragem quando a lista muda, reset ao fechar, selectForContextMenu preservando o lote, e teclado com Mod+A (seleciona os visiveis) guardado contra campos de texto."
   },
   "par": [
    "PAR-14"
@@ -14172,9 +14179,12 @@
    "components/sidebar/WorkspaceKanbanAreaSelectionOverlay.tsx:5"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:30"
+    "src/components/sidebar/workspace-board/use-workspace-board-area-selection.ts:257-311",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-state.ts:56-84",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-dom.ts:46-116",
+    "src/components/sidebar/workspace-board/WorkspaceBoardAreaSelectionOverlay.tsx:1-21"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14185,7 +14195,7 @@
     "Recorta o retângulo dentro dos limites do board"
    ],
    "notes": "Passo 1: use-workspace-kanban-area-selection/workspace-kanban-area-selection-state/WorkspaceKanbanAreaSelectionOverlay ausentes (0 hits); AREA_SELECTION_DRAG_THRESHOLD ausente. Passo 3: nenhum marquee/seleção por área no sidebar (grep marquee/area-selection = 0). Passo 5: {BOARD_ABSENT}. Não localizado.",
-   "note": "Sem marquee/selecao por area (DrawerView explicitamente sem a maquinaria de overlay/multi-select)."
+   "note": "Marquee so com botao primario e ponteiro nao-touch (ignora scrollbar e elementos interativos), modo aditivo por shift/cmd-ctrl da plataforma, threshold de 4px, overlay escrito imperativamente com translate3d por frame e recorte nos limites do board."
   },
   "par": [
    "PAR-14"
@@ -14201,9 +14211,10 @@
    "components/sidebar/workspace-kanban-area-selection-dom.ts:139"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26"
+    "src/components/sidebar/workspace-board/use-workspace-board-area-selection.ts:178-215",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-dom.ts:177-243"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14213,7 +14224,7 @@
     "Recalcula hit-testing dos cards a cada frame"
    ],
    "notes": "Passo 1/3: getAreaSelectionScrollContainer/getAreaSelectionAutoScrollDelta ausentes (0 hits). O autoscroll existente é do drag de linhas da lista (worktree-sidebar-drag-autoscroll.ts, não alcançável pela renderização) e não há hit-testing de marquee. Passo 5: {BOARD_ABSENT}. Não localizado.",
-   "note": "Sem auto-scroll de selecao por area."
+   "note": "Auto-scroll vertical da raia sob o ponteiro (coluna X + vizinhanca Y de 96px), zona de borda de 48px com delta maximo de 22px, frame auto-agendado enquanto o ponteiro fica na zona, e remedicao do layout + flush do marquee a cada frame de rolagem."
   },
   "par": [
    "PAR-14"
@@ -14230,9 +14241,12 @@
    "components/sidebar/workspace-kanban-area-selection-dom.ts:192"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-card-rects.ts:40-116",
+    "src/components/sidebar/workspace-board/workspace-board-virtual-card-layout.ts:80-121",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-dom.ts:117-155",
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-dom.ts:259-318"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14243,7 +14257,7 @@
     "Re-aplica o preview quando cards virtuais forem remontados"
    ],
    "notes": "Passo 1/2: workspace-kanban-area-selection-card-rects e o atributo data-workspace-board-card-area-selected ausentes (0 hits). Passo 3: sem seleção por área nem layout virtual para hit-testing (WorktreeList.tsx:326 renderiza direto). Não localizado.",
-   "note": "Rects sao lidos no hit-test; sem rects de selecao por area/preview imperativo."
+   "note": "Rects vem do layout virtual medido (card fora da janela montada conta) com override pelo elemento pintado; hit-test horizontal no viewport e vertical no espaco de conteudo do scroller da raia (sobrevive a rolagem), preview imperativo via data-workspace-board-card-area-selected reaplicado em remount."
   },
   "par": [
    "PAR-14"
@@ -14258,9 +14272,12 @@
    "components/sidebar/workspace-kanban-area-selection-state.ts:40"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-start.ts:7-14"
+    "src/components/sidebar/workspace-board/workspace-board-area-selection-state.ts:58-84",
+    "src/components/sidebar/workspace-board/use-workspace-board-area-selection.ts:224-256",
+    "src/components/sidebar/workspace-board/use-workspace-board-area-selection.ts:333-343",
+    "src/components/sidebar/workspace-board/workspace-board-selection.ts:116-142"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14271,7 +14288,7 @@
     "Cancela frames pendentes de animação e auto-scroll"
    ],
    "notes": "Passo 1/3: updateSelectionForArea e a máquina de estado de seleção por área ausentes (0 hits); não há seleção de cards (ver D08-031). O único click-outside é o do WorkspaceOptionsMenu (WorktreeSidebar.tsx:300). Não localizado.",
-   "note": "Sem maquina de selecao por area (commit/cancel); modifiers sao deliberadamente reservados."
+   "note": "Clique simples em espaco vazio comita a area vazia e limpa a selecao; clique aditivo em espaco vazio nao limpa; pointerup apos arrasto comita a lista final via updateSelectionForArea (aditivo faz uniao) e limpa preview/overlay; Escape cancela o marquee (captura no window, sem fechar o board) e os frames de animacao/auto-scroll pendentes sao cancelados."
   },
   "par": [
    "PAR-14"

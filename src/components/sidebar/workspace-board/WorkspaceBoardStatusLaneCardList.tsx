@@ -1,6 +1,6 @@
-import React, { useCallback, useLayoutEffect, useRef } from 'react'
+import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import type { GitWorktreeInfo, HydraProject } from '../types'
+import type { GitWorktreeInfo } from '../types'
 import WorkspaceBoardCard from './WorkspaceBoardCard'
 import { registerWorkspaceBoardVirtualCardLayout } from './workspace-board-virtual-card-layout'
 import {
@@ -19,13 +19,12 @@ type WorkspaceBoardStatusLaneCardListProps = {
    */
   scrollerElement: HTMLDivElement | null
   compactCards: boolean
+  /** The board's selection, by host-qualified card identity. */
+  selectedWorktreeIds: ReadonlySet<string>
+  onSelectionGesture: (event: React.MouseEvent<HTMLElement>, worktreeIdentity: string) => boolean
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
-  onContextMenu?: (
-    event: React.MouseEvent,
-    worktree: GitWorktreeInfo,
-    project: HydraProject
-  ) => void
+  onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
 }
 
 /**
@@ -41,13 +40,18 @@ function WorkspaceBoardStatusLaneCardList({
   cards,
   scrollerElement,
   compactCards,
+  selectedWorktreeIds,
+  onSelectionGesture,
   onActivate,
   onSelectSession,
   onContextMenu
 }: WorkspaceBoardStatusLaneCardListProps): React.JSX.Element {
   const spacerRef = useRef<HTMLDivElement | null>(null)
-  const itemCountRef = useRef(cards.length)
-  itemCountRef.current = cards.length
+  // Why the identities, not just the count: the marquee's hit test needs a rectangle per card
+  // the lane holds, including the ones the vertical virtualizer has not mounted.
+  const itemIdentities = useMemo(() => cards.map((card) => card.identity), [cards])
+  const itemIdentitiesRef = useRef(itemIdentities)
+  itemIdentitiesRef.current = itemIdentities
   const estimateSize = useCallback(
     () => estimateWorkspaceBoardCardHeight(compactCards),
     [compactCards]
@@ -76,7 +80,7 @@ function WorkspaceBoardStatusLaneCardList({
     return registerWorkspaceBoardVirtualCardLayout({
       scrollElement: scrollerElement,
       spacerElement,
-      getItemCount: () => itemCountRef.current,
+      getItemIdentities: () => itemIdentitiesRef.current,
       getMeasurements: () => virtualizer.measurementsCache
     })
   }, [scrollerElement, virtualizer])
@@ -115,6 +119,8 @@ function WorkspaceBoardStatusLaneCardList({
             <WorkspaceBoardCard
               card={card}
               compactCards={compactCards}
+              isSelected={selectedWorktreeIds.has(card.identity)}
+              onSelectionGesture={onSelectionGesture}
               onActivate={onActivate}
               onSelectSession={onSelectSession}
               onContextMenu={onContextMenu}

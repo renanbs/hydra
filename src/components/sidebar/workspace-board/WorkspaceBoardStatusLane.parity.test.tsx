@@ -57,6 +57,8 @@ function renderLane(
       renderCards={overrides.renderCards ?? true}
       columnWidth={308}
       compactCards={false}
+      selectedWorktreeIds={new Set()}
+      onSelectionGesture={vi.fn()}
       onActivate={vi.fn()}
     />
   )
