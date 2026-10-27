@@ -33,6 +33,9 @@ type WorkspaceBoardLaneGridProps = {
   /** True while a query narrows the board; the lanes print "matches / total". */
   hasQuery: boolean
   columnWidth: number
+  isResizingColumn: boolean
+  onColumnResizeStart: (event: React.PointerEvent<HTMLElement>) => void
+  onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void
   compactCards: boolean
   /** The element the card drag measures its lanes against and hit-tests inside. */
   boardRef: React.RefObject<HTMLDivElement | null>
@@ -70,16 +73,19 @@ type WorkspaceBoardLaneGridProps = {
  * so a lane outside the window still has a measurable slot here even though it paints nothing.
  * The measured layout is published to the card drag for exactly that reason.
  *
- * Why the lanes are not DOM-measured (Orca does measure them): Orca's column-resize handle
- * changes a lane's width under the virtualizer. This increment ships no resize handle, so the
- * persisted column width *is* the lane width and the virtualizer is re-measured when it
- * changes.
+ * Why the lanes are not DOM-measured (Orca does measure them): the column resize changes the
+ * persisted width under the virtualizer, and the grid re-measures explicitly when that width
+ * changes (`laneVirtualizer.measure()`), so a lane's DOM box never has to disagree with the
+ * estimate the drag hit-tests against.
  */
 export default function WorkspaceBoardLaneGrid({
   open,
   lanes,
   hasQuery,
   columnWidth,
+  isResizingColumn,
+  onColumnResizeStart,
+  onColumnResizeKeyDown,
   compactCards,
   boardRef,
   laneScrollerElement,
@@ -202,6 +208,7 @@ export default function WorkspaceBoardLaneGrid({
               hasQuery={hasQuery}
               renderCards={hydratedLaneIds.has(lane.status.id)}
               columnWidth={columnWidth}
+              isResizingColumn={isResizingColumn}
               compactCards={compactCards}
               isDropTarget={laneDropTargetStatus === lane.status.id}
               selectedWorktreeIds={selectedWorktreeIds}
@@ -209,6 +216,8 @@ export default function WorkspaceBoardLaneGrid({
               onActivate={onActivate}
               onSelectSession={onSelectSession}
               onContextMenu={onContextMenu}
+              onColumnResizeStart={onColumnResizeStart}
+              onColumnResizeKeyDown={onColumnResizeKeyDown}
             />
           </div>
         )

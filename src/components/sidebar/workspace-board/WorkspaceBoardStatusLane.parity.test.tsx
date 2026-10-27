@@ -56,10 +56,13 @@ function renderLane(
       hasQuery={overrides.hasQuery ?? false}
       renderCards={overrides.renderCards ?? true}
       columnWidth={308}
+      isResizingColumn={false}
       compactCards={false}
       selectedWorktreeIds={new Set()}
       onSelectionGesture={vi.fn()}
       onActivate={vi.fn()}
+      onColumnResizeStart={vi.fn()}
+      onColumnResizeKeyDown={vi.fn()}
     />
   )
   return container

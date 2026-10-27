@@ -14,7 +14,10 @@ const EMPTY_PATHS: ReadonlySet<string> = new Set<string>()
 
 export type WorkspaceBoardProjection = {
   lanes: WorkspaceBoardLane[]
-  /** Persisted lane width (Orca `workspaceBoardColumnWidth`); this increment has no resize handle. */
+  /**
+   * Persisted lane width (Orca `workspaceBoardColumnWidth`). The drawer hands it to the
+   * resize hook as the committed value; the hook's live draft is what actually paints.
+   */
   columnWidth: number
 }
 

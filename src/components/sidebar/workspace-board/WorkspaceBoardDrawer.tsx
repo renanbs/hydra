@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useAppStore } from '@/store'
 import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { PrDisplay } from '../pr-display'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeSession } from '../types'
@@ -6,10 +7,12 @@ import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
 import WorkspaceBoardDrawerView from './WorkspaceBoardDrawerView'
 import { useWorkspaceBoardAreaSelection } from './use-workspace-board-area-selection'
 import { useWorkspaceBoardCardPointerDrag } from './drag/use-workspace-board-card-pointer-drag'
+import { useWorkspaceBoardColumnResize } from './use-workspace-board-column-resize'
 import { useWorkspaceBoardGeometry, type WorkspaceBoardGeometry } from './use-workspace-board-geometry'
 import { useWorkspaceBoardProjection } from './use-workspace-board-projection'
 import { useWorkspaceBoardSearch } from './use-workspace-board-search'
 import { useWorkspaceBoardSelection } from './use-workspace-board-selection'
+import { useWorkspaceBoardShiftWheelScroll } from './use-workspace-board-shift-wheel-scroll'
 import { useWorkspaceBoardStatusActions } from './use-workspace-board-status-actions'
 import { filterWorkspaceBoardLanes } from './workspace-board-search'
 import {
@@ -104,7 +107,7 @@ function WorkspaceBoardDrawerContent({
 }: WorkspaceBoardDrawerProps & {
   geometry: WorkspaceBoardGeometry
 }): React.JSX.Element {
-  const { lanes, columnWidth } = useWorkspaceBoardProjection({
+  const { lanes, columnWidth: committedColumnWidth } = useWorkspaceBoardProjection({
     displayProjects,
     getProjectWorktrees,
     sessions,
@@ -116,13 +119,19 @@ function WorkspaceBoardDrawerContent({
     portsByWorktree,
     prByPath,
   })
+  const setWorkspaceBoardColumnWidth = useAppStore((state) => state.setWorkspaceBoardColumnWidth)
+  const { columnWidth, isResizingColumn, onColumnResizeStart, onColumnResizeKeyDown } =
+    useWorkspaceBoardColumnResize(committedColumnWidth, setWorkspaceBoardColumnWidth)
   const boardRef = useRef<HTMLDivElement | null>(null)
+  const laneScrollerRef = useRef<HTMLDivElement | null>(null)
   const areaSelectionOverlayRef = useRef<HTMLDivElement | null>(null)
-  const { onCardPointerDownCapture, dropTargetStatus } = useWorkspaceBoardCardPointerDrag({
-    open,
-    boardRef,
-    onAssignWorktreeStatus,
-  })
+  const { onCardPointerDownCapture, dropTargetStatus, isPointerDragActiveRef } =
+    useWorkspaceBoardCardPointerDrag({
+      open,
+      boardRef,
+      onAssignWorktreeStatus,
+    })
+  useWorkspaceBoardShiftWheelScroll(boardRef, laneScrollerRef, open, isPointerDragActiveRef)
   const statusActions = useWorkspaceBoardStatusActions({ allWorktrees, onAssignWorktreeStatus })
   const boardCards = useMemo(() => lanes.flatMap((lane) => lane.cards), [lanes])
   const { query, setQuery, clearQuery, matchingWorktreeIds, isFiltering, isQueryTooLarge } =
@@ -230,8 +239,12 @@ function WorkspaceBoardDrawerContent({
       geometry={geometry}
       lanes={filtered.lanes}
       columnWidth={columnWidth}
+      isResizingColumn={isResizingColumn}
+      onColumnResizeStart={onColumnResizeStart}
+      onColumnResizeKeyDown={onColumnResizeKeyDown}
       compactCards={compactCards}
       boardRef={boardRef}
+      laneScrollerRef={laneScrollerRef}
       areaSelectionOverlayRef={areaSelectionOverlayRef}
       dropTargetStatus={dropTargetStatus}
       statusActions={statusActions}

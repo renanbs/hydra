@@ -88,6 +88,9 @@ function LaneRowHarness({
         lanes={LANES}
         hasQuery={false}
         columnWidth={columnWidth}
+        isResizingColumn={false}
+        onColumnResizeStart={vi.fn()}
+        onColumnResizeKeyDown={vi.fn()}
         compactCards={false}
         boardRef={boardRef}
         laneScrollerElement={scrollerElement}

@@ -206,20 +206,24 @@
   },
   {
    "id": "D08-022",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:55",
-    "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:47"
+    "src/components/sidebar/workspace-board/use-workspace-board-column-resize.ts:150-158",
+    "src/components/sidebar/workspace-board/use-workspace-board-column-resize.ts:4",
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:92",
+    "src/components/sidebar/workspace-board/use-workspace-board-column-resize.parity.test.tsx:1"
    ],
-   "note": "Largura vem do store persistido; sem alca de resize/atalhos de teclado."
+   "note": "Alca de arraste (role=separator, aria-valuemin/max/now, tabIndex 0) + atalhos ArrowLeft/ArrowRight com Shift dobrando o passo; clamp MIN/MAX e commit 1x por gesto persistindo workspaceBoardColumnWidth, com o virtualizador re-medido. Nao dispara drag nem marquee."
   },
   {
    "id": "D08-023",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:47-48"
+    "src/components/sidebar/workspace-board/use-workspace-board-shift-wheel-scroll.ts:103",
+    "src/components/sidebar/workspace-board/use-workspace-board-shift-wheel-scroll.ts:113",
+    "src/components/sidebar/workspace-board/use-workspace-board-shift-wheel-scroll.ts:8-10"
    ],
-   "note": "Sem Shift+wheel horizontal durante drag no board."
+   "note": "Shift+roda rola o scroller de raias horizontalmente de forma acelerada durante drag (listener em capture/passive:false); roda normal passa intacta e fora de drag o hook fica inerte (coerente com a capability)."
   },
   {
    "id": "D08-024",

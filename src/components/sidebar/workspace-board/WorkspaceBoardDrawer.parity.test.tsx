@@ -1,6 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { useAppStore } from '@/store'
+import {
+  WORKSPACE_BOARD_COLUMN_WIDTH_MAX,
+  WORKSPACE_BOARD_COLUMN_WIDTH_MIN
+} from '../../../shared/workspace-statuses'
 import type { GitWorktreeInfo, HydraProject } from '../types'
 import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
 import WorkspaceBoardDrawer, { type WorkspaceBoardDrawerProps } from './WorkspaceBoardDrawer'
@@ -217,15 +222,32 @@ describe('WorkspaceBoardDrawer', () => {
     expect(laneCount('completed')).toBe('1')
   })
 
-  it('renders the search field and the settings menu but no control this increment does not ship', () => {
+  it('renders the search field, the settings menu and the column resize handle, but no control this increment does not ship', () => {
     render(<Board {...drawerProps()} />)
 
     expect(screen.getByRole('textbox', { name: 'Search workspaces' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Workspace board settings' })).toBeInTheDocument()
-    // The sidebar filter menu, the column resize handle and the lane's
-    // create-workspace buttons belong to later increments.
-    expect(document.body.querySelector('[data-workspace-board-column-resize-handle]')).toBeNull()
-    expect(document.body.querySelector('[role="separator"]')).toBeNull()
+    // D08-022: the lane's right edge owns the resize gesture, one handle per lane.
+    const handles = document.body.querySelectorAll<HTMLElement>(
+      '[data-workspace-board-column-resize-handle]'
+    )
+    expect(handles).toHaveLength(document.body.querySelectorAll('[data-workspace-status]').length)
+    expect(handles[0]).toHaveAttribute('role', 'separator')
+    expect(handles[0]).toHaveAttribute('aria-orientation', 'vertical')
+    expect(handles[0]).toHaveAttribute(
+      'aria-valuemin',
+      String(WORKSPACE_BOARD_COLUMN_WIDTH_MIN)
+    )
+    expect(handles[0]).toHaveAttribute(
+      'aria-valuemax',
+      String(WORKSPACE_BOARD_COLUMN_WIDTH_MAX)
+    )
+    expect(handles[0]).toHaveAttribute(
+      'aria-valuenow',
+      String(useAppStore.getState().workspaceBoardColumnWidth)
+    )
+    // The sidebar filter menu and the lane's create-workspace buttons belong to later
+    // increments.
     expect(document.body.querySelector('[aria-label^="New workspace in"]')).toBeNull()
   })
 

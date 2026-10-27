@@ -73,9 +73,15 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
   /** Destination lane of the drag in flight, for the lane's own highlight. */
   dropTargetStatus: WorkspaceStatus | null
+  /**
+   * Whether a card drag is in flight *past its threshold*. Read imperatively (never rendered)
+   * by the Shift+wheel scroll, which is only allowed to take the wheel mid-drag.
+   */
+  isPointerDragActiveRef: React.RefObject<boolean>
 } {
   const { open, boardRef, onAssignWorktreeStatus } = args
   const dragRef = useRef<WorkspaceBoardCardDragState | null>(null)
+  const isPointerDragActiveRef = useRef(false)
   const suppressClickUntilRef = useRef(0)
   const [dropTargetStatus, setDropTargetStatus] = useState<WorkspaceStatus | null>(null)
   // Why: the window listeners are installed once per open board, so the commit callback
@@ -124,6 +130,7 @@ export function useWorkspaceBoardCardPointerDrag(args: {
       if (!state.started) {
         return
       }
+      isPointerDragActiveRef.current = false
       suppressClickUntilRef.current = performance.now() + CLICK_SUPPRESSION_MS
       if (!commitStatus) {
         return
@@ -135,6 +142,7 @@ export function useWorkspaceBoardCardPointerDrag(args: {
 
   const startWorkspaceBoardCardDrag = useCallback((state: WorkspaceBoardCardDragState) => {
     state.started = true
+    isPointerDragActiveRef.current = true
     setWorkspaceBoardDraggedCard(state.sourceCard, true)
     const preview = createWorkspaceBoardCardDragPreview({
       sourceCard: state.sourceCard,
@@ -331,5 +339,5 @@ export function useWorkspaceBoardCardPointerDrag(args: {
     [boardRef, open]
   )
 
-  return { onCardPointerDownCapture, dropTargetStatus }
+  return { onCardPointerDownCapture, dropTargetStatus, isPointerDragActiveRef }
 }

@@ -2,6 +2,10 @@ import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import type { WorkspaceStatusDefinition } from '../../../shared/worktree/types'
+import {
+  WORKSPACE_BOARD_COLUMN_WIDTH_MAX,
+  WORKSPACE_BOARD_COLUMN_WIDTH_MIN
+} from '../../../shared/workspace-statuses'
 import { getWorkspaceStatusVisualMeta } from '../workspace-status'
 import type { GitWorktreeInfo } from '../types'
 import WorkspaceBoardStatusLaneCardList from './WorkspaceBoardStatusLaneCardList'
@@ -21,6 +25,8 @@ type WorkspaceBoardStatusLaneProps = {
    */
   renderCards: boolean
   columnWidth: number
+  /** True while this board owns the width gesture; the handle paints its active state. */
+  isResizingColumn: boolean
   compactCards: boolean
   /** True while a card drag hovers this lane; the destination lane paints its own ring. */
   isDropTarget?: boolean
@@ -30,6 +36,8 @@ type WorkspaceBoardStatusLaneProps = {
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
   onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
+  onColumnResizeStart: (event: React.PointerEvent<HTMLElement>) => void
+  onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void
 }
 
 /**
@@ -38,9 +46,9 @@ type WorkspaceBoardStatusLaneProps = {
  * The lane root is also the board's drop destination — its rect resolves the target
  * lane and `isDropTarget` paints the highlight while a card hovers it. The lane body is the
  * card list's own scroll element, so the cards are virtualized inside it (`renderCards`
- * gates them until this lane's hydration frame). The column resize handle and the lane's
- * create-workspace buttons are not part of this increment, so they are absent rather than
- * inert.
+ * gates them until this lane's hydration frame). Its right edge carries the column resize
+ * handle (D08-022); the lane's create-workspace buttons are not part of this increment, so
+ * they are absent rather than inert.
  */
 function WorkspaceBoardStatusLane({
   status,
@@ -49,6 +57,7 @@ function WorkspaceBoardStatusLane({
   hasQuery,
   renderCards,
   columnWidth,
+  isResizingColumn,
   compactCards,
   isDropTarget = false,
   selectedWorktreeIds,
@@ -56,6 +65,8 @@ function WorkspaceBoardStatusLane({
   onActivate,
   onSelectSession,
   onContextMenu,
+  onColumnResizeStart,
+  onColumnResizeKeyDown,
 }: WorkspaceBoardStatusLaneProps): React.JSX.Element {
   // Why state, not a ref: the card list is a child of this body, so its layout effects run
   // before this element's own ref is attached — a ref read there would see `null` and the
@@ -70,13 +81,41 @@ function WorkspaceBoardStatusLane({
       data-workspace-status={status.id}
       data-workspace-board-lane-drop-target={isDropTarget ? '' : undefined}
       className={cn(
-        'flex h-full min-h-0 min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-t-2 border-worktree-sidebar-border',
+        'group/lane relative flex h-full min-h-0 min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-t-2 border-worktree-sidebar-border',
         meta.border,
         meta.laneTint,
         isDropTarget && 'ring-1 ring-inset ring-worktree-sidebar-ring'
       )}
       style={{ width: `${columnWidth}px` }}
     >
+      <div
+        data-workspace-board-column-resize-handle=""
+        role="separator"
+        aria-orientation="vertical"
+        aria-label={translate(
+          'auto.components.sidebar.WorkspaceKanbanStatusLane.3611d1ae7f',
+          'Resize workspace board columns'
+        )}
+        aria-valuemin={WORKSPACE_BOARD_COLUMN_WIDTH_MIN}
+        aria-valuemax={WORKSPACE_BOARD_COLUMN_WIDTH_MAX}
+        aria-valuenow={columnWidth}
+        tabIndex={0}
+        className={cn(
+          'absolute right-0 top-0 z-20 h-9 w-2 cursor-col-resize outline-none',
+          'focus-visible:ring-1 focus-visible:ring-worktree-sidebar-ring'
+        )}
+        onPointerDown={onColumnResizeStart}
+        onKeyDown={onColumnResizeKeyDown}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <span
+          className={cn(
+            'absolute inset-y-2 left-1/2 w-px -translate-x-1/2 rounded-full bg-transparent transition-colors',
+            'group-hover/lane:bg-worktree-sidebar-ring/55 group-focus-visible:bg-worktree-sidebar-ring',
+            isResizingColumn && 'bg-worktree-sidebar-ring'
+          )}
+        />
+      </div>
       <div className="flex h-9 shrink-0 items-center gap-2 border-b border-border/70 py-0 pl-3 pr-2">
         <div className="flex min-w-0 flex-1 items-center gap-1.5">
           <meta.icon className={cn('size-3.5 shrink-0', meta.tone)} />
