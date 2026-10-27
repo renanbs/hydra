@@ -39,6 +39,7 @@ function card(
 ): WorkspaceBoardCardModel {
   return {
     identity,
+    worktreeId: `repo_1::/repo/hydra/${identity}`,
     worktree: worktree(identity),
     project: PROJECT,
     sessions: [],

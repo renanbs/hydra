@@ -401,12 +401,13 @@
   },
   {
    "id": "D08-041",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26",
-    "src/components/sidebar/workspace-status-drag-data.ts:28"
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:1",
+    "src/components/sidebar/workspace-board/WorkspaceBoardNativeDrag.parity.test.tsx:1",
+    "src/components/sidebar/workspace-board/WorkspaceBoardPinDropTarget.tsx:41-47"
    ],
-   "note": "Drop de card->raia existe, mas por pointer drag, nao HTML5 nativo; helpers de payload continuam sem consumidor."
+   "note": "Drop nativo no board com deteccao de dados de workspace (hasWorkspaceDragData) e insercao no fim da raia; a faixa de pin ganhou onDragOver/onDragLeave/onDrop nativos (divergencia declarada na PR do pin eliminada)."
   },
   {
    "id": "D08-042",

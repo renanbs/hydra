@@ -46,13 +46,21 @@ type WorkspaceBoardStatusLaneProps = {
   onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
   onColumnResizeStart: (event: React.PointerEvent<HTMLElement>) => void
   onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void
+  /** Native HTML5 drag over this lane (Orca's `onDragOver`): highlights the destination. */
+  onNativeDragOver?: (event: React.DragEvent<HTMLElement>, status: WorkspaceStatus) => void
+  onNativeDragLeave?: (event: React.DragEvent<HTMLElement>) => void
+  /** Native drop on this lane: the lane's status, at the end of the lane (D08-041). */
+  onNativeDrop?: (event: React.DragEvent<HTMLElement>, status: WorkspaceStatus) => void
 }
 
 /**
  * Ported from Orca `WorkspaceKanbanStatusLane`: one lane per user-defined
  * `WorkspaceStatus`, with its icon, label, card counter and empty placeholder.
  * The lane root is also the board's drop destination — its rect resolves the target
- * lane and `isDropTarget` paints the highlight while a card hovers it. The lane body is the
+ * lane and `isDropTarget` paints the highlight while a card hovers it. The same root is the
+ * native HTML5 drop target (Orca's `data-workspace-status-drop-target`, `onDragOver`/
+ * `onDragLeave`/`onDrop`): a native workspace drag is received by payload, and a release
+ * applies this lane's status at the end of the lane (D08-041). The lane body is the
  * card list's own scroll element, so the cards are virtualized inside it (`renderCards`
  * gates them until this lane's hydration frame). Its right edge carries the column resize
  * handle (D08-022); each lane also carries its create-workspace affordance — the header
@@ -76,6 +84,9 @@ function WorkspaceBoardStatusLane({
   onContextMenu,
   onColumnResizeStart,
   onColumnResizeKeyDown,
+  onNativeDragOver,
+  onNativeDragLeave,
+  onNativeDrop,
 }: WorkspaceBoardStatusLaneProps): React.JSX.Element {
   // Why state, not a ref: the card list is a child of this body, so its layout effects run
   // before this element's own ref is attached — a ref read there would see `null` and the
@@ -95,6 +106,7 @@ function WorkspaceBoardStatusLane({
   return (
     <section
       data-workspace-status={status.id}
+      data-workspace-status-drop-target=""
       data-workspace-board-lane-drop-target={isDropTarget ? '' : undefined}
       className={cn(
         'group/lane relative flex h-full min-h-0 min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-t-2 border-worktree-sidebar-border',
@@ -103,6 +115,9 @@ function WorkspaceBoardStatusLane({
         isDropTarget && 'ring-1 ring-inset ring-worktree-sidebar-ring'
       )}
       style={{ width: `${columnWidth}px` }}
+      onDragOver={(event) => onNativeDragOver?.(event, status.id)}
+      onDragLeave={onNativeDragLeave}
+      onDrop={(event) => onNativeDrop?.(event, status.id)}
     >
       <div
         data-workspace-board-column-resize-handle=""

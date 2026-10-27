@@ -30,8 +30,18 @@ type WorkspaceBoardDrawerViewProps = {
   /** The marquee's own box, painted imperatively while a selection drag is in flight. */
   areaSelectionOverlayRef: React.RefObject<HTMLDivElement | null>
   dropTargetStatus: WorkspaceStatus | null
-  /** Whether the board's own card drag is over the pin strip, for its hover highlight. */
+  /** Whether a card drag — pointer or native — is over the pin strip, for its hover highlight. */
   pinDropTargetActive: boolean
+  /** Native HTML5 drag over a lane (Orca's `onDragOver`): highlights the destination lane. */
+  onNativeDragOver: (event: React.DragEvent<HTMLElement>, status: WorkspaceStatus) => void
+  onNativeDragLeave: (event: React.DragEvent<HTMLElement>) => void
+  /** Native drop on a lane: the lane's status, at the end of the lane (D08-041). */
+  onNativeDrop: (event: React.DragEvent<HTMLElement>, status: WorkspaceStatus) => void
+  /** Native drag over the pin strip: hover only, the lane highlight stays dark (D08-028). */
+  onPinDragOver: (event: React.DragEvent<HTMLElement>) => void
+  onPinDragLeave: (event: React.DragEvent<HTMLElement>) => void
+  /** Native drop on the pin strip: a pin, never a status (D08-028). */
+  onPinDrop: (event: React.DragEvent<HTMLElement>) => void
   /** The board's status CRUD, owned by the drawer and rendered into the header. */
   statusActions: WorkspaceBoardStatusActions
   /** Board search state, threaded to the header field and the lane counts. */
@@ -81,6 +91,12 @@ export default function WorkspaceBoardDrawerView({
   areaSelectionOverlayRef,
   dropTargetStatus,
   pinDropTargetActive,
+  onNativeDragOver,
+  onNativeDragLeave,
+  onNativeDrop,
+  onPinDragOver,
+  onPinDragLeave,
+  onPinDrop,
   statusActions,
   query,
   isFiltering,
@@ -132,8 +148,15 @@ export default function WorkspaceBoardDrawerView({
         onPointerDown={onAreaSelectionPointerDown}
       >
         {/* Above the lane row, as Orca places it: the strip is the board's second drop
-            destination and answers before the lanes (D08-028). */}
-        <WorkspaceBoardPinDropTarget open={open} isDragOver={pinDropTargetActive} />
+            destination and answers before the lanes (D08-028). Its native handlers are the
+            board's own — the strip pins by payload, never by pointer position. */}
+        <WorkspaceBoardPinDropTarget
+          open={open}
+          isDragOver={pinDropTargetActive}
+          onDragOver={onPinDragOver}
+          onDragLeave={onPinDragLeave}
+          onDrop={onPinDrop}
+        />
         <div
           ref={attachLaneScroller}
           data-workspace-board-lanes-scroller=""
@@ -159,6 +182,9 @@ export default function WorkspaceBoardDrawerView({
             onActivate={onActivate}
             onSelectSession={onSelectSession}
             onContextMenu={onContextMenu}
+            onNativeDragOver={onNativeDragOver}
+            onNativeDragLeave={onNativeDragLeave}
+            onNativeDrop={onNativeDrop}
           />
         </div>
       </div>

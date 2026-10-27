@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type React from 'react'
 import type { WorkspaceStatus } from '../../../../shared/worktree/types'
 import { isSidebarPointerDragBlocked } from '../../worktree-list/pointer-drag-dom'
@@ -73,24 +73,32 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   onAssignWorktreeStatus: (worktreePath: string, status: WorkspaceStatus) => void | Promise<void>
   /** Pins the dropped workspace without touching its status (D08-028). */
   onPinWorktree: (worktreePath: string) => void | Promise<void>
+  /**
+   * The board's one lane-highlight state (Orca's `onDragTargetChange`). The native drag owns
+   * it and the pointer drag publishes into it, so both gestures light the same lane.
+   */
+  onDragTargetChange: (status: WorkspaceStatus | null) => void
+  /** The board's one pin-hover state (Orca's `onPinDragTargetChange`). */
+  onPinDragTargetChange: (over: boolean) => void
 }): {
   onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
-  /** Destination lane of the drag in flight, for the lane's own highlight. */
-  dropTargetStatus: WorkspaceStatus | null
-  /** Whether the drag in flight is over the pin strip; the lane highlight stays dark then. */
-  pinDropTargetActive: boolean
   /**
    * Whether a card drag is in flight *past its threshold*. Read imperatively (never rendered)
    * by the Shift+wheel scroll, which is only allowed to take the wheel mid-drag.
    */
   isPointerDragActiveRef: React.RefObject<boolean>
 } {
-  const { open, boardRef, onAssignWorktreeStatus, onPinWorktree } = args
+  const {
+    open,
+    boardRef,
+    onAssignWorktreeStatus,
+    onPinWorktree,
+    onDragTargetChange,
+    onPinDragTargetChange
+  } = args
   const dragRef = useRef<WorkspaceBoardCardDragState | null>(null)
   const isPointerDragActiveRef = useRef(false)
   const suppressClickUntilRef = useRef(0)
-  const [dropTargetStatus, setDropTargetStatus] = useState<WorkspaceStatus | null>(null)
-  const [pinDropTargetActive, setPinDropTargetActive] = useState(false)
   // Why: the window listeners are installed once per open board, so the commit callbacks
   // must be read through refs that always hold the latest ones App handed down.
   const assignStatusRef = useRef(onAssignWorktreeStatus)
@@ -99,10 +107,10 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   pinWorktreeRef.current = onPinWorktree
 
   const clearDropTarget = useCallback(() => {
-    setDropTargetStatus(null)
-    setPinDropTargetActive(false)
+    onDragTargetChange(null)
+    onPinDragTargetChange(false)
     removeWorkspaceBoardCardDropIndicator()
-  }, [])
+  }, [onDragTargetChange, onPinDragTargetChange])
 
   const stopWorkspaceBoardCardDrag = useCallback(
     (commit: boolean) => {
@@ -189,15 +197,15 @@ export function useWorkspaceBoardCardPointerDrag(args: {
         resolveWorkspaceBoardPinDropTarget(state.currentX, state.currentY) ??
         getWorkspaceBoardCardDropTarget(board, state.currentX, state.currentY)
       state.latestDropTarget = { target, x: state.currentX, y: state.currentY }
-      setPinDropTargetActive(isWorkspaceBoardPinDropTarget(target))
-      setDropTargetStatus((previous) => (previous === target.status ? previous : target.status))
+      onPinDragTargetChange(isWorkspaceBoardPinDropTarget(target))
+      onDragTargetChange(target.status)
       if (target.status === null) {
         removeWorkspaceBoardCardDropIndicator()
         return
       }
       updateWorkspaceBoardCardDropIndicator(target)
     },
-    [boardRef, clearDropTarget]
+    [boardRef, clearDropTarget, onDragTargetChange, onPinDragTargetChange]
   )
 
   const flushWorkspaceBoardCardDragFrame = useCallback(() => {
@@ -365,5 +373,5 @@ export function useWorkspaceBoardCardPointerDrag(args: {
     [boardRef, open]
   )
 
-  return { onCardPointerDownCapture, dropTargetStatus, pinDropTargetActive, isPointerDragActiveRef }
+  return { onCardPointerDownCapture, isPointerDragActiveRef }
 }

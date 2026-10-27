@@ -45,6 +45,7 @@ function worktree(id: string): GitWorktreeInfo {
 function card(index: number): WorkspaceBoardCardModel {
   return {
     identity: `|wt-${index}`,
+    worktreeId: `repo_1::/repo/hydra/wt-${index}`,
     worktree: worktree(`wt-${index}`),
     project: PROJECT,
     sessions: [],

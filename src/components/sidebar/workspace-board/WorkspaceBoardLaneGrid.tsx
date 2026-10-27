@@ -63,6 +63,11 @@ type WorkspaceBoardLaneGridProps = {
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
   onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
+  /** Native HTML5 drag over a lane (Orca's `onDragOver`): highlights the destination lane. */
+  onNativeDragOver?: (event: React.DragEvent<HTMLElement>, status: WorkspaceStatus) => void
+  onNativeDragLeave?: (event: React.DragEvent<HTMLElement>) => void
+  /** Native drop on a lane: the lane's status, at the end of the lane (D08-041). */
+  onNativeDrop?: (event: React.DragEvent<HTMLElement>, status: WorkspaceStatus) => void
 }
 
 /**
@@ -100,6 +105,9 @@ export default function WorkspaceBoardLaneGrid({
   onActivate,
   onSelectSession,
   onContextMenu,
+  onNativeDragOver,
+  onNativeDragLeave,
+  onNativeDrop,
 }: WorkspaceBoardLaneGridProps): React.JSX.Element {
   const [focusedStatusId, setFocusedStatusId] = useState<WorkspaceStatus | null>(null)
   const laneStatusIds = useMemo(() => lanes.map((lane) => lane.status.id), [lanes])
@@ -222,6 +230,9 @@ export default function WorkspaceBoardLaneGrid({
               onContextMenu={onContextMenu}
               onColumnResizeStart={onColumnResizeStart}
               onColumnResizeKeyDown={onColumnResizeKeyDown}
+              onNativeDragOver={onNativeDragOver}
+              onNativeDragLeave={onNativeDragLeave}
+              onNativeDrop={onNativeDrop}
             />
           </div>
         )

@@ -31,6 +31,12 @@ type WorkspaceBoardCardProps = {
  * drop knows which worktree `set_worktree_status` must be written for (the id and the
  * index on the same frame are display and lane-slot hooks).
  *
+ * The board's lanes and pin strip are native drop destinations, but this card is NOT a native
+ * drag source: Orca passes `nativeDragEnabled={false}` down the board's lane grid, so the
+ * board only ever receives — the sidebar list's rows are the source (D08-041). The card
+ * therefore keeps its pointer drag alone, and the inner `WorktreeCard` renders no `draggable`
+ * frame either.
+ *
  * `data-workspace-board-card-selected` is the selection state React owns; the marquee's own
  * ring is written imperatively on the same frame as `data-workspace-board-card-area-selected`
  * while a drag is in flight, so a card can be pre-lit before the commit renders.

@@ -4118,11 +4118,11 @@
    "components/sidebar/worktree-list/drag/use-native-drag.ts:151-229"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:450",
-    "src/components/sidebar/WorktreeSidebar.tsx:487",
-    "src/components/sidebar/WorktreeList.tsx:899"
+    "src/components/sidebar/WorktreeList.tsx:989",
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:1",
+    "src/components/sidebar/worktree-list/drag/worktree-native-board-drop.parity.test.tsx:1"
    ],
    "missing_behaviors": [
     "dragover com seta de nesting/status + dropEffect=move",
@@ -4130,7 +4130,7 @@
     "captura de rects do grupo e grab por offset"
    ],
    "notes": "Existe drag nativo HTML5 para (a) reordenar worktrees dentro do projeto e (b) reordenar projetos/soltar em grupo, com indicador topo/base; faltam nesting, status e board.",
-   "note": "Drag nativo HTML5 segue para reorder dentro do projeto e (sem slot) cross-grupo; sem dragover de nesting/status nem drop no board."
+   "note": "Payload do drag nativo da lista unificado no modulo compartilhado (workspace-status-drag-data) e o board aceita o drop nativo em raia (status) e na faixa de pin (fixa sem status); o payload legado application/x-hydra-worktree-drag foi removido. Direcao fiel do Orca (lista -> board); board -> sidebar nao e direcao do Orca e os cards do board nao sao fonte nativa (nativeDragEnabled={false})."
   },
   "par": [
    "PAR-88"
@@ -4144,13 +4144,17 @@
    "components/sidebar/worktree-list/drag/use-native-autoscroll.ts:29-107"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-native-drag.ts:1",
+    "src/components/sidebar/workspace-board/use-workspace-board-native-drag.parity.test.tsx:1"
+   ],
    "missing_behaviors": [
     "nativeLatestPointRef",
     "autoscroll nativo recomputando preview por frame"
    ],
-   "notes": "Não localizado após busca por use-native-autoscroll, nativeLatestPointRef."
+   "notes": "Não localizado após busca por use-native-autoscroll, nativeLatestPointRef.",
+   "note": "Loop de frame do drag nativo re-deriva o alvo/posicao a cada quadro (rAF), portado do Orca; coberto por teste com rects sinteticos."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -14475,10 +14479,11 @@
    "components/sidebar/use-workspace-kanban-native-drag.ts:44"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26",
-    "src/components/sidebar/workspace-status-drag-data.ts:28"
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:1",
+    "src/components/sidebar/workspace-board/WorkspaceBoardNativeDrag.parity.test.tsx:1",
+    "src/components/sidebar/workspace-board/WorkspaceBoardPinDropTarget.tsx:41-47"
    ],
    "backend": [],
    "missing_behaviors": [
@@ -14488,7 +14493,7 @@
     "Insere os worktrees soltos ao final da raia de status de destino"
    ],
    "notes": "Passo 1/3: use-workspace-kanban-native-drag ausente (0 hits) e as funções de payload existem mas sem consumidor — workspace-status-drag-data.ts:3-5 define application/x-orca-worktree-id(-ids) porém writeWorkspaceDragData/readWorkspaceDragDataIds/hasWorkspaceDragData têm 0 callers (só re-export em workspace-status.ts:40). O drag nativo da lista usa outro caminho e só reordena dentro do projeto (WorktreeSidebar.tsx:456). Não localizado.",
-   "note": "Drop de card->raia existe, mas por pointer drag, nao HTML5 nativo; helpers de payload continuam sem consumidor."
+   "note": "Drop nativo no board com deteccao de dados de workspace (hasWorkspaceDragData) e insercao no fim da raia; a faixa de pin ganhou onDragOver/onDragLeave/onDrop nativos (divergencia declarada na PR do pin eliminada)."
   },
   "par": [
    "PAR-14",

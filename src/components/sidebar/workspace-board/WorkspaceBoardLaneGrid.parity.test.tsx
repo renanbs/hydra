@@ -47,6 +47,7 @@ function lane(statusId: string): WorkspaceBoardLane {
   }
   const card: WorkspaceBoardCardModel = {
     identity: `|${statusId}-card`,
+    worktreeId: `repo_1::/repo/hydra/${statusId}-card`,
     worktree: worktree(`${statusId}-card`),
     project: PROJECT,
     sessions: [],
