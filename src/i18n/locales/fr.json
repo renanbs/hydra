@@ -5045,8 +5045,7 @@
           "49f62c5665": "Tableau des espaces de travail",
           "5c9c7c16aa": "Ajoutez un projet pour créer des espaces de travail",
           "a30e34eb5c": "Fermer le tableau des espaces de travail",
-          "addProject": "Ajouter un projet",
-          "addSshHost": "Ajouter un hôte SSH"
+          "addProject": "Ajouter un projet"
         },
         "SidebarNav": {
           "80611a8b10": "Recherche",
