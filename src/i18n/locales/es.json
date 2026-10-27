@@ -5134,6 +5134,10 @@
         },
         "HostRenameDialog": {
           "1a2b3c4d5e": "Renombrar host",
+          "description": "El host SSH guardado se renombra en todos los lugares donde aparece: barra lateral, selectores y ajustes.",
+          "labelRequired": "Introduce un nombre para este host.",
+          "labelDuplicate": "Otro host ya usa este nombre.",
+          "renameFailed": "No se pudo renombrar el host.",
           "2b3c4d5e6f": "Esta etiqueta se muestra solo en este equipo. Déjala en blanco para usar el nombre predeterminado.",
           "3c4d5e6f7a": "Nombre para mostrar",
           "4d5e6f7a8b": "Restablecer predeterminado",

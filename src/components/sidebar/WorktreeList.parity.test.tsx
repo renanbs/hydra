@@ -228,6 +228,34 @@ describe("WorktreeList row model (Orca parity)", () => {
     ]);
   });
 
+  it("paints the host-actions trigger on the SSH host header only", () => {
+    resetStore({
+      repos: [
+        { id: "repo_a", connectionId: null, executionHostId: "local" },
+        { id: "repo_b", connectionId: "srv", executionHostId: "ssh:srv" },
+      ],
+      visibleWorkspaceHostIds: ["local", "ssh:srv"],
+      workspaceHostScope: "all",
+      sshTargetLabels: new Map([["srv", "Build server"]]),
+      sshConnectionStates: new Map(),
+    });
+
+    const { container } = renderList({
+      projects: [PROJECT_A, PROJECT_B],
+      worktreesByProject: {
+        [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)],
+        [PROJECT_B.path]: [worktree("/repo/orca", "main", true)],
+      },
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Host actions for Build server" })
+    ).toBeInTheDocument();
+    // The local host has no registry row to rename or remove, so it offers no menu at all.
+    const localHeader = container.querySelector('[data-host-header-id="local"]');
+    expect(localHeader?.querySelector("button")).toBeNull();
+  });
+
   it("applies the menu's Hide sleeping filter on the painted rows", () => {
     const shown = renderList({
       projects: [PROJECT_A],

@@ -112,7 +112,10 @@ function omitRemovedSshTargetTabSessions(
 ): { next: Record<string, string>; removed: boolean } {
   const next: Record<string, string> = {}
   let removed = false
-  for (const [tabId, sessionId] of Object.entries(sessions)) {
+  // Why the guard: these terminal collections are declared by `AppState` but the live
+  // store only initializes the ones its composed slices own, so a target removal must
+  // tolerate an empty (absent) collection instead of throwing on the way to the delete.
+  for (const [tabId, sessionId] of Object.entries(sessions ?? {})) {
     if (isRemovedSshTargetTabSession(tabId, sessionId, targetId, targetTabIds)) {
       removed = true
       continue
@@ -127,12 +130,13 @@ function omitRemovedSshTargetRecovery<T extends { authority: { targetId: string 
   targetId: string,
   targetTabIds: ReadonlySet<string>
 ): { next: Record<string, T>; removed: boolean } {
+  const current = entries ?? {}
   const next = Object.fromEntries(
-    Object.entries(entries).filter(
+    Object.entries(current).filter(
       ([tabId, entry]) => !targetTabIds.has(tabId) && entry.authority.targetId !== targetId
     )
   )
-  return { next, removed: Object.keys(next).length !== Object.keys(entries).length }
+  return { next, removed: Object.keys(next).length !== Object.keys(current).length }
 }
 
 function clearSshTargetTabPtyState(
@@ -160,10 +164,10 @@ function clearSshTargetTabPtyState(
   for (const [worktreeId, tabs] of Object.entries(tabsByWorktree)) {
     let nextTabs = tabs
     for (const [index, tab] of tabs.entries()) {
-      const lastKnownPtyId = state.lastKnownRelayPtyIdByTabId[tab.id]
+      const lastKnownPtyId = state.lastKnownRelayPtyIdByTabId?.[tab.id]
       const ptyIds = [
         ...new Set([
-          ...(state.ptyIdsByTabId[tab.id] ?? []),
+          ...(state.ptyIdsByTabId?.[tab.id] ?? []),
           ...(tab.ptyId ? [tab.ptyId] : []),
           ...(lastKnownPtyId ? [lastKnownPtyId] : [])
         ])
@@ -237,7 +241,8 @@ export function buildRemovedSshTargetCleanupPatch(
     targetTabIds
   )
 
-  const nextDeferredTargets = state.deferredSshReconnectTargets.filter((id: any) => id !== targetId)
+  const deferredSshReconnectTargets = state.deferredSshReconnectTargets ?? []
+  const nextDeferredTargets = deferredSshReconnectTargets.filter((id: string) => id !== targetId)
   const nextTransientClearedConnections = {
     ...state.transientClearedAgentStatusConnectionIds
   }
@@ -265,7 +270,7 @@ export function buildRemovedSshTargetCleanupPatch(
   const nextCredentialQueue = state.sshCredentialQueue.filter((req: any) => req.targetId !== targetId)
   const removedCredentialRequest = nextCredentialQueue.length !== state.sshCredentialQueue.length
   const removedDeferredTarget =
-    nextDeferredTargets.length !== state.deferredSshReconnectTargets.length
+    nextDeferredTargets.length !== deferredSshReconnectTargets.length
   const changed =
     removedTransientClearBlock ||
     removedConnectionState ||

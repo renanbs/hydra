@@ -5182,6 +5182,10 @@
         },
         "HostRenameDialog": {
           "1a2b3c4d5e": "重命名主机",
+          "description": "保存的 SSH 主机将在其出现的所有位置（侧边栏、选择器和设置）重命名。",
+          "labelRequired": "请输入该主机的名称。",
+          "labelDuplicate": "另一个主机已使用此名称。",
+          "renameFailed": "重命名主机失败。",
           "2b3c4d5e6f": "此标签仅在此计算机上显示。留空以使用默认名称。",
           "3c4d5e6f7a": "显示名称",
           "4d5e6f7a8b": "重置为默认",

@@ -104,6 +104,16 @@ export type SshTargetAddResult = {
   repoReadoptions: SshRepoReadoption[]
 }
 
+/** What `ssh_remove_target` reports back for one deleted target. */
+export type SshRemoveTargetResult = {
+  /** Record of the deleted target, kept so re-adding the same host can re-adopt
+   *  the workspaces still pinned to the old id. Absent for a target main did not
+   *  hold (already removed, or runtime-owned). */
+  tombstone?: RemovedSshTargetTombstone
+  /** The `~/.ssh/config` alias the deletion suppressed from passive import. */
+  suppressedAlias?: string
+}
+
 export type SshConfigImportResult = {
   targets: SshTarget[]
   repoReadoptions: SshRepoReadoption[]
