@@ -1,12 +1,11 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 175 capabilities
+## MISSING — 174 capabilities
 
 
-### D01-shell-chrome (25)
+### D01-shell-chrome (24)
 
-- **D01-004** — Drop de diretórios nativos sobre a superfície do sidebar para adição direta de projeto | falta: captura de drag nativo do SO sobre a casca (useSidebarProjectDrop); overlay 'Drop folder to add project' com borda tracejada e FolderPlus; importação/criação do projeto ao soltar a pasta | components/sidebar/index.tsx:13
 - **D01-006** — Gating de inicialização para varredura de repositórios e proteção contra oscilação de status de runtime | falta: bloqueio de fetchAllWorktrees enquanto startupWorktreeRefreshCompleted === false; varredura total só quando a quantidade de repositórios muda após a inicialização; guarda contra disparos repetidos na oscilação de runtimeStatusByEnvironmentId | components/sidebar/index.tsx:54-55
 - **D01-010** — Alvo de teletransporte (Portal Target) para controles da visualização de atividades de agentes | falta: container com ref activityOptionsTarget ao lado dos botões de ação do cabeçalho; injeção dos filtros de agentes (SidebarAgentsList) dentro do cabeçalho; desmontagem do alvo no modo workspaces | components/sidebar/SidebarHeader.tsx:14
 - **D01-017** — Entrada do checklist de Onboarding (Setup Guide) com anel de progresso e persistência | falta: resolução de visibilidade (shouldShowSetupGuideEntry / getSetupGuideSidebarEntryReady); anel de progresso SetupGuideProgressRing com contagem de etapas; abertura do modal 'setup-guide' com telemetrySource='sidebar'; ocultação via menu de contexto persistindo setupGuideSidebarDismissed | components/sidebar/SetupGuideSidebarEntry.tsx:20-124

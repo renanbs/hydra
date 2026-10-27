@@ -84,15 +84,17 @@
    "components/sidebar/index.tsx:250-258"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "captura de drag nativo do SO sobre a casca (useSidebarProjectDrop)",
-    "overlay 'Drop folder to add project' com borda tracejada e FolderPlus",
-    "importação/criação do projeto ao soltar a pasta"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/use-sidebar-project-drop.ts:29-100",
+    "src/components/sidebar/WorktreeSidebar.tsx:278-289",
+    "src/components/sidebar/WorktreeSidebar.tsx:838-858",
+    "src/components/sidebar/use-sidebar-project-drop.parity.test.tsx:60-105"
    ],
-   "notes": "Busca em 5 passos: (1) useSidebarProjectDrop -> 0 ocorrências em src; (2) strings 'Drop folder to add project' -> 0; (3) onDragOver/onDrop na casca -> só DnD interno de cards/projetos (src/components/sidebar/WorktreeList.tsx:277-280 e :394-399), nenhum listener de drop de SO; (4) comandos Tauri de add-folder por drop -> inexistentes; (5) src/App.tsx sem dragenter/dragover/onDrop. Candidato fora de escopo: nenhum."
+   "backend": [],
+   "missing_behaviors": [],
+   "notes": "Webview drag events are filtered against the sidebar rect, the dashed FolderPlus overlay paints only over it, and each dropped path goes through catalog_add_folder followed by a project refresh.",
+   "note": "Webview drag events are filtered against the sidebar rect, the dashed FolderPlus overlay paints only over it, and each dropped path goes through catalog_add_folder followed by a project refresh."
   },
   "par": [
    "PAR-13"

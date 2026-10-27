@@ -11,6 +11,7 @@ import {
   Eye,
   Plus,
   FolderTree,
+  FolderPlus,
 } from "lucide-react";
 import { SidebarNav } from "./SidebarNav";
 import { SidebarHeader } from "./SidebarHeader";
@@ -29,6 +30,7 @@ import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-pa
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
+import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
 import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
@@ -275,6 +277,14 @@ export function WorktreeSidebar({
   // sidebar's own box and reads the sidebar's visible workspaces, so it lives
   // here rather than in the shell.
   const sidebarRootRef = useRef<HTMLDivElement | null>(null);
+  const handleDroppedProjectAdded = useCallback(() => {
+    window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+  }, []);
+  const { isProjectDropActive } = useSidebarProjectDrop({
+    enabled: true,
+    sidebarRef: sidebarRootRef,
+    onProjectAdded: handleDroppedProjectAdded,
+  });
   const {
     workspaceBoardOpen,
     workspaceBoardRenderedOpen,
@@ -836,9 +846,21 @@ export function WorktreeSidebar({
   return (
     <div
       ref={sidebarRootRef}
-      className="flex h-full w-full flex-col bg-worktree-sidebar text-worktree-sidebar-foreground select-none overflow-hidden"
+      className="relative flex h-full w-full flex-col bg-worktree-sidebar text-worktree-sidebar-foreground select-none overflow-hidden"
       style={leftSidebarStyle}
     >
+      {/* Orca `useSidebarProjectDrop`: native folder drag over the sidebar. */}
+      {isProjectDropActive && (
+        <div
+          data-sidebar-project-drop-overlay="true"
+          className="pointer-events-none absolute inset-2 z-50 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-emerald-500/70 bg-emerald-500/10 text-center"
+        >
+          <FolderPlus className="size-6 text-emerald-400" />
+          <span className="px-4 text-[11px] font-medium text-emerald-200">
+            Drop folder to add project
+          </span>
+        </div>
+      )}
       {/* 1. Top Strip Nav (Search / Worktree palette) */}
       <SidebarNav
         onOpenWorktreePalette={() => {
