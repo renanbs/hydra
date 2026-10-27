@@ -1,0 +1,7 @@
+{
+ "group": "AU",
+ "generatedFrom": "2026-10-27 shelf chrome increment: native OS folder drops over the sidebar paint the drop outline and add each dropped folder through the catalog writer",
+ "rows": [
+  {"id":"D01-004","status":"parity","evidence":["src/components/sidebar/use-sidebar-project-drop.ts:29-100","src/components/sidebar/WorktreeSidebar.tsx:278-289","src/components/sidebar/WorktreeSidebar.tsx:838-858","src/components/sidebar/use-sidebar-project-drop.parity.test.tsx:60-105"],"missing_behaviors":[],"note":"Webview drag events are filtered against the sidebar rect, the dashed FolderPlus overlay paints only over it, and each dropped path goes through catalog_add_folder followed by a project refresh."}
+ ]
+}
