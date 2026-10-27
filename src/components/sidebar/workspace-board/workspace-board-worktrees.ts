@@ -31,6 +31,11 @@ export type WorkspaceBoardCard = {
 export type WorkspaceBoardLane = {
   status: WorkspaceStatusDefinition
   cards: WorkspaceBoardCard[]
+  /**
+   * Lane membership before the board's search filter. A filtered lane keeps this
+   * so its badge can print "matches / total" without re-deriving the denominator.
+   */
+  totalCount: number
 }
 
 /**
@@ -125,8 +130,12 @@ export function buildWorkspaceBoardLanes(args: {
     })
   }
 
-  return workspaceStatuses.map((status) => ({
-    status,
-    cards: cardsByStatus.get(status.id) ?? [],
-  }))
+  return workspaceStatuses.map((status) => {
+    const cards = cardsByStatus.get(status.id) ?? []
+    return {
+      status,
+      cards,
+      totalCount: cards.length,
+    }
+  })
 }

@@ -15,6 +15,14 @@ type WorkspaceBoardDrawerViewProps = {
   compactCards: boolean
   boardRef: React.RefObject<HTMLDivElement | null>
   dropTargetStatus: WorkspaceStatus | null
+  /** Board search state, threaded to the header field and the lane counts. */
+  query: string
+  isFiltering: boolean
+  isTooLarge: boolean
+  matchCount: number
+  totalCount: number
+  onQueryChange: (query: string) => void
+  onClearQuery: () => void
   onCardPointerDownCapture: (event: React.PointerEvent<HTMLElement>) => void
   onOpenChange: (open: boolean) => void
   onActivate: (worktree: GitWorktreeInfo) => void
@@ -35,6 +43,13 @@ export default function WorkspaceBoardDrawerView({
   compactCards,
   boardRef,
   dropTargetStatus,
+  query,
+  isFiltering,
+  isTooLarge,
+  matchCount,
+  totalCount,
+  onQueryChange,
+  onClearQuery,
   onCardPointerDownCapture,
   onOpenChange,
   onActivate,
@@ -43,11 +58,21 @@ export default function WorkspaceBoardDrawerView({
 }: WorkspaceBoardDrawerViewProps): React.JSX.Element {
   return (
     <WorkspaceBoardSheet geometry={geometry} open={open} onOpenChange={onOpenChange}>
-      <WorkspaceBoardHeader onClose={() => onOpenChange(false)} />
+      <WorkspaceBoardHeader
+        query={query}
+        isFiltering={isFiltering}
+        isTooLarge={isTooLarge}
+        matchCount={matchCount}
+        totalCount={totalCount}
+        onQueryChange={onQueryChange}
+        onClearQuery={onClearQuery}
+        onClose={() => onOpenChange(false)}
+      />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3">
         <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-sleek">
           <WorkspaceBoardLaneGrid
             lanes={lanes}
+            hasQuery={isFiltering}
             columnWidth={columnWidth}
             compactCards={compactCards}
             boardRef={boardRef}

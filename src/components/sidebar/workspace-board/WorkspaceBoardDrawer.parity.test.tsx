@@ -165,12 +165,33 @@ describe('WorkspaceBoardDrawer', () => {
     expect(laneCount('completed')).toBe('0')
   })
 
-  it('renders no inert control from the capabilities this increment does not ship', () => {
+  it('filters the cards as the search text changes and restores them when cleared', () => {
+    render(<WorkspaceBoardDrawer {...drawerProps()} />)
+    const input = screen.getByRole('textbox', { name: 'Search workspaces' })
+
+    fireEvent.change(input, { target: { value: 'progress' } })
+
+    expect(document.body.querySelectorAll('[data-workspace-board-card-id]')).toHaveLength(1)
+    expect(
+      document.body.querySelector('[data-workspace-board-card-id="|wt-progress"]')
+    ).not.toBeNull()
+    expect(laneCount('in-progress')).toBe('1 / 1')
+    expect(laneCount('completed')).toBe('0 / 1')
+    expect(lane('completed')?.textContent).toContain('No matches')
+
+    fireEvent.change(input, { target: { value: '' } })
+
+    expect(document.body.querySelectorAll('[data-workspace-board-card-id]')).toHaveLength(2)
+    expect(laneCount('in-progress')).toBe('1')
+    expect(laneCount('completed')).toBe('1')
+  })
+
+  it('renders the search field but no control this increment does not ship', () => {
     render(<WorkspaceBoardDrawer {...drawerProps()} />)
 
-    // Search field, filter menu, settings menu, column resize handle and the
-    // lane's create-workspace buttons belong to later increments.
-    expect(document.body.querySelector('input')).toBeNull()
+    expect(screen.getByRole('textbox', { name: 'Search workspaces' })).toBeInTheDocument()
+    // Filter menu, settings menu, column resize handle and the lane's
+    // create-workspace buttons belong to later increments.
     expect(document.body.querySelector('[data-workspace-board-column-resize-handle]')).toBeNull()
     expect(document.body.querySelector('[role="separator"]')).toBeNull()
     expect(

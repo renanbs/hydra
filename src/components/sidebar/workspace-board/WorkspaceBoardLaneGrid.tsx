@@ -6,6 +6,8 @@ import type { WorkspaceBoardLane } from './workspace-board-worktrees'
 
 type WorkspaceBoardLaneGridProps = {
   lanes: readonly WorkspaceBoardLane[]
+  /** True while a query narrows the board; the lanes print "matches / total". */
+  hasQuery: boolean
   columnWidth: number
   compactCards: boolean
   /** The element the card drag measures its lanes against and hit-tests inside. */
@@ -30,6 +32,7 @@ type WorkspaceBoardLaneGridProps = {
  */
 export default function WorkspaceBoardLaneGrid({
   lanes,
+  hasQuery,
   columnWidth,
   compactCards,
   boardRef,
@@ -51,6 +54,8 @@ export default function WorkspaceBoardLaneGrid({
           key={lane.status.id}
           status={lane.status}
           cards={lane.cards}
+          totalCount={lane.totalCount}
+          hasQuery={hasQuery}
           columnWidth={columnWidth}
           compactCards={compactCards}
           isDropTarget={dropTargetStatus === lane.status.id}

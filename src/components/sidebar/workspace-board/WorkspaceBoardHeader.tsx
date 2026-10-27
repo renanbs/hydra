@@ -3,17 +3,32 @@ import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { translate } from '@/i18n/i18n'
+import WorkspaceBoardSearchField from './WorkspaceBoardSearchField'
 
 type WorkspaceBoardHeaderProps = {
+  query: string
+  isFiltering: boolean
+  isTooLarge: boolean
+  matchCount: number
+  totalCount: number
+  onQueryChange: (query: string) => void
+  onClearQuery: () => void
   onClose: () => void
 }
 
 /**
- * Ported from Orca `WorkspaceKanbanDrawerHeader`, minus the search field, the
- * filter menu and the settings menu — none of them exist in this increment, so
- * the header only titles the board and closes it.
+ * Ported from Orca `WorkspaceKanbanDrawerHeader`, minus the filter menu and the
+ * settings menu — neither exists in this increment, so the header carries the
+ * title, the board's search field and the close button only.
  */
 export default function WorkspaceBoardHeader({
+  query,
+  isFiltering,
+  isTooLarge,
+  matchCount,
+  totalCount,
+  onQueryChange,
+  onClearQuery,
   onClose,
 }: WorkspaceBoardHeaderProps): React.JSX.Element {
   return (
@@ -30,6 +45,16 @@ export default function WorkspaceBoardHeader({
               )}
             </span>
           </SheetTitle>
+          <WorkspaceBoardSearchField
+            query={query}
+            isFiltering={isFiltering}
+            isTooLarge={isTooLarge}
+            matchCount={matchCount}
+            totalCount={totalCount}
+            onQueryChange={onQueryChange}
+            onClear={onClearQuery}
+            onClose={onClose}
+          />
         </div>
         <SheetDescription className="sr-only">
           {translate(
