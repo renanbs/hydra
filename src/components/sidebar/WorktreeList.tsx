@@ -14,7 +14,6 @@ import { getDeleteStateForWorktreeHost } from "./worktree-delete-state-host-matc
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
-import type { WorktreeStatus } from "../../lib/worktree-status";
 import { isInactiveWorkspace } from "../../lib/worktree-activity-state";
 import {
   isAutomationGeneratedWorkspace,
@@ -64,6 +63,7 @@ import type {
   ProjectGroup,
 } from "./types";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 
 // ─── Hydra props → Orca row-pipeline projection ──────────────────────────────
 //
@@ -258,51 +258,6 @@ function buildLiveActivityIndex(
     }
   }
   return { tabsByWorktree, ptyIdsByTabId, worktreeIdsWithLiveAgent };
-}
-
-function toPipelineWorktree(args: {
-  worktree: GitWorktreeInfo;
-  project: HydraProject;
-  hostId: ExecutionHostId | undefined;
-  isPinned: boolean;
-  isUnread: boolean;
-  status: WorktreeStatus;
-}): Worktree {
-  const { worktree, project, hostId, isPinned, isUnread, status } = args;
-  return {
-    id: worktree.id ?? `${project.id}::${worktree.path}`,
-    repoId: project.id,
-    projectId: project.id,
-    displayName: worktree.displayName ?? worktree.display_name ?? worktree.branch,
-    comment: "",
-    linkedIssue: null,
-    linkedPR: null,
-    linkedLinearIssue: null,
-    isArchived: false,
-    isUnread,
-    isPinned,
-    sortOrder: 0,
-    lastActivityAt: worktree.created_at ?? 0,
-    workspaceStatus: status,
-    createdAt: worktree.created_at ?? undefined,
-    path: worktree.path,
-    head: worktree.head_commit,
-    branch: worktree.branch,
-    isBare: worktree.is_bare,
-    isMainWorktree: worktree.is_main ?? worktree.isMainWorktree ?? false,
-    // Provenance only carries the KIND from the scan; the ported predicates
-    // (`visible-worktree-kinds.ts`) read `.kind` alone, so the minimal object is
-    // cast past the Orca snapshot fields the sidebar never renders.
-    automationProvenance:
-      worktree.automationProvenanceKind === "created-by-automation"
-        ? ({ kind: "created-by-automation" } as Worktree["automationProvenance"])
-        : undefined,
-    cliProvenance:
-      worktree.cliProvenanceKind === "created-by-cli"
-        ? ({ kind: "created-by-cli" } as Worktree["cliProvenance"])
-        : undefined,
-    ...(hostId ? { hostId } : {}),
-  };
 }
 
 /** `prByPath` (Hydra's review display) → the Orca `prCache` shape PR lanes read. */
@@ -639,9 +594,8 @@ export function WorktreeList({
           sessions: worktreeSessions,
           hasLiveTerminal: livePaths.has(worktree.path),
         });
-        const projected = toPipelineWorktree({
-          worktree,
-          project,
+        const projected = toWorktreeRow(worktree, {
+          repoId: project.id,
           hostId,
           isPinned: pinnedSet.has(worktree.path),
           isUnread: unreadSet.has(worktree.path),
