@@ -1,842 +1,842 @@
 {
-  "domain": "D06-drag-order-keyboard",
-  "rows": [
-    {
-      "id": "D06-001",
-      "capability": "Serialização e empacotamento de dados de drag de worktrees únicas e em lote no HTML5 DataTransfer",
-      "orca_evidence": [
-        "components/sidebar/workspace-status-drag-data.ts:13-25"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:428-432",
-          "src/components/sidebar/WorktreeSidebar.tsx:470-474",
-          "src/components/sidebar/workspace-status-drag-data.ts:8-23",
-          "src/components/sidebar/workspace-status.ts:38-47"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Serializa o array completo de IDs em JSON no tipo 'application/x-orca-worktree-ids' para arrasto em lote (Kanban/sidebar)",
-          "Grava o ID unitário no tipo legado 'application/x-orca-worktree-id'",
-          "Grava o primeiro ID em 'text/plain' como fallback universal"
-        ],
-        "notes": "O dragstart real grava apenas 'application/x-hydra-worktree-drag' com um único path e effectAllowed='move' (WorktreeSidebar.tsx:430-431); idem para projeto ('application/x-hydra-project-drag', :472-473). O helper writeWorkspaceDragData é um port fiel (workspace-status-drag-data.ts:8-23) porém SEM call site: só é re-exportado por workspace-status.ts:38-47 e nunca invocado (grep writeWorkspaceDragData → 0 usos fora do próprio módulo)."
-      },
-      "par": [
-        "PAR-88"
-      ]
-    },
-    {
-      "id": "D06-002",
-      "capability": "Desserialização segura, validação de limites de payload e leitura de IDs de drag com fallback",
-      "orca_evidence": [
-        "components/sidebar/workspace-status-drag-data.ts:27-111"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:442-463",
-          "src/components/sidebar/workspace-status-drag-data.ts:25-79"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Valida tamanho máximo em bytes do payload (WORKSPACE_STATUS_DRAG_PAYLOAD_MAX_BYTES = 16 KB) e descarta payloads excessivos",
-          "Impõe teto de 512 IDs (WORKSPACE_STATUS_DRAG_ID_MAX_COUNT) na desserialização",
-          "readWorkspaceDragData com preferência pelo tipo tipado e fallback para 'text/plain'",
-          "readWorkspaceDragDataIds com parse JSON sanitizado e fallback para o payload unitário",
-          "hasWorkspaceDragData com verificação de tipos válidos e tamanho delimitado"
-        ],
-        "notes": "Não existe leitura de payload de drag: os handlers de drop usam estado React interno (draggedWorktreePath) e nunca chamam dataTransfer.getData (grep 'getData(' em src/components/sidebar → somente workspace-status-drag-data.ts:91). As funções readWorkspaceDragData/readWorkspaceDragDataIds/hasWorkspaceDragData existem como port fiel, mas com 0 call sites. Buscas: nome (workspace-status-drag-data.ts), semântica (WORKSPACE_STATUS_DRAG_*), comportamento (drop handlers em WorktreeSidebar.tsx), backend (nenhum comando Tauri de drag)."
-      },
-      "par": [
-        "PAR-88"
-      ]
-    },
-    {
-      "id": "D06-003",
-      "capability": "Bloqueio de pointer drag em controles interativos internos e elementos portalizados externos",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:5-32"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-list/pointer-drag-dom.ts:21-35",
-          "src/components/sidebar/worktree-card-surface.tsx:89-91"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "isSidebarPointerDragBlocked bloqueando targets fora do DOM da linha (hover cards portalizados no body)",
-          "INTERACTIVE_DRAG_BLOCKER_SELECTOR para botões, links, inputs, selects, contenteditable e roles Radix",
-          "Bloqueio de pointer drag sobre controles interativos internos preservando seleção de texto"
-        ],
-        "notes": "isSidebarPointerDragBlocked é um port fiel (pointer-drag-dom.ts:21-35) sem nenhum call site (grep → 1 hit, a própria definição). O sidebar usa drag nativo HTML5 com draggable no card (worktree-card-surface.tsx:89-91) e delega o comportamento de alvo ao browser."
-      },
-      "par": [
-        "PAR-43"
-      ]
-    },
-    {
-      "id": "D06-004",
-      "capability": "Estilização global de documento durante pointer drag e desativação de seleção de texto",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:34-38"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-list/pointer-drag-dom.ts:37-42",
-          "src/components/sidebar/WorktreeSidebar.tsx:428-432"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "document.body.style.userSelect = 'none' durante a sessão de drag",
-          "Alterna o atributo 'data-worktree-sidebar-pointer-dragging' no elemento raiz html",
-          "Restaura userSelect e remove o atributo ao finalizar/cancelar o drag"
-        ],
-        "notes": "setSidebarPointerDragDocumentStyles existe como port (pointer-drag-dom.ts:37-42) mas sem call site. O dragstart real do sidebar não toca em document.body/documentElement (WorktreeSidebar.tsx:428-432 apenas grava o dataTransfer)."
-      },
-      "par": [
-        "PAR-43"
-      ]
-    },
-    {
-      "id": "D06-005",
-      "capability": "Criação de elemento preview flutuante (ghost clone) e badge de contagem de multi-seleção",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:40-97"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-list/pointer-drag-dom.ts:44-70",
-          "src/components/sidebar/worktree-card-surface.tsx:89-91"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "createSidebarDragPreview clonando o card de origem (cloneNode(true))",
-          "Higienização do clone (id, aria-describedby, data-worktree-drag-id)",
-          "Preview fixed com position/left/top, dimensões do card e pointer-events: none",
-          "Badge 'data-worktree-sidebar-drag-count' quando draggedCount > 1",
-          "Cálculo de offsetX/offsetY do ponteiro e anexação ao document.body"
-        ],
-        "notes": "createSidebarDragPreview é um port fiel (pointer-drag-dom.ts:71-...), porém 0 call sites; não há ghost clone em nenhum caminho vivo. O drag nativo do browser desenha a imagem padrão (worktree-card-surface.tsx:89-91). Buscas: nome (createSidebarDragPreview), marcação (data-worktree-sidebar-drag-preview/count), comportamento (nenhum pointerdown handler no sidebar), backend (n/a)."
-      },
-      "par": [
-        "PAR-43"
-      ]
-    },
-    {
-      "id": "D06-006",
-      "capability": "Atualização contínua de posição e escala do preview flutuante com deslocamento em modo nesting",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:60-70"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-list/pointer-drag-dom.ts:57-69",
-          "src/components/sidebar/worktree-list/pointer-drag-dom.ts:100-106"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "updateSidebarDragPreviewPosition com translate3d(x, y, 0) scale(1.015)",
-          "Posicionamento pelo offset capturado do clique (pointerX - offsetX, pointerY - offsetY)",
-          "Deslocamento +16px em modo nesting ('data-worktree-sidebar-nesting')"
-        ],
-        "notes": "updateSidebarDragPreviewPosition (pointer-drag-dom.ts:57-69) só é chamada de dentro do próprio módulo (linha 102), i.e. nenhum call site externo. Não há pointermove handler no sidebar."
-      },
-      "par": [
-        "PAR-43"
-      ]
-    },
-    {
-      "id": "D06-007",
-      "capability": "Captura de ponto de grab e projeção geométrica relativa ao centro do card arrastado",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-drag-geometry.ts:6-45",
-        "components/sidebar/worktree-sidebar-drag-geometry.ts:98-111"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-drag-geometry.ts:28-43",
-          "src/components/sidebar/worktree-sidebar-drag-geometry.ts:101-112"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "getWorktreeSidebarDragGrab capturando offsetY relativo e altura com clamp aos limites do card",
-          "getWorktreeSidebarDragReferenceY projetando o centro do card (localY - offsetY + height/2)",
-          "Hit testing por projeção do card em vez do ponteiro cru para cards de alturas variáveis"
-        ],
-        "notes": "getWorktreeSidebarDragGrab e getWorktreeSidebarDragReferenceY são ports fiéis (drag-geometry.ts:28-43,101-112), mas o arquivo inteiro é órfão: só é importado por worktree-sidebar-drag-autoscroll.ts:6 (import type) e essa cadeia não chega a nenhum componente. O drop real usa o meio do retângulo do card alvo (WorktreeSidebar.tsx:434-440)."
-      }
-    },
-    {
-      "id": "D06-008",
-      "capability": "Travamento estável de decisão de drop (anchor latching) imune a redimensionamentos dinâmicos",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-drag-geometry.ts:47-96"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-drag-geometry.ts:57-69",
-          "src/components/sidebar/worktree-sidebar-drag-geometry.ts:76-92",
-          "src/components/sidebar/WorktreeSidebar.tsx:434-440"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "shouldReevaluateWorktreeSidebarDropAnchor com epsilon de 0.5px para jitter de ponteiro/scroll",
-          "Manutenção da âncora de inserção enquanto vizinhos expandem/streaming sob ponteiro estático",
-          "resolveWorktreeSidebarDropAnchorIndex remapeando a âncora para o índice atual e retornando null se o card desapareceu",
-          "getWorktreeSidebarDropAnchorId resolvendo o ID da âncora ou null (fim do grupo)"
-        ],
-        "notes": "Os três símbolos são ports fiéis (drag-geometry.ts:57-92) e nunca são chamados. O Hydra recalcula o alvo a cada dragover a partir do retângulo atual do card (WorktreeSidebar.tsx:437-439), portanto um card que cresce sob o ponteiro move o alvo — exatamente o comportamento que a linha Orca corrige."
-      }
-    },
-    {
-      "id": "D06-009",
-      "capability": "Autoscroll contínuo proporcional nas bordas verticais do sidebar durante drag",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:7-87",
-        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:182-205"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:53-91",
-          "src/components/sidebar/WorktreeSidebar.tsx:703-710"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Detecção de contenção horizontal do cursor no container de scroll",
-          "Zona de borda EDGE_ZONE_PX (56px) com tolerância MAX_OUTSIDE_EDGE_PX (48px)",
-          "Velocidade linear proporcional com teto MAX_SCROLL_SPEED_PX_PER_SECOND (960 px/s)",
-          "Escala por elapsedMs com clamp de frames atrasados em MAX_FRAME_MS (32ms)",
-          "Respeito aos limites de scrollTop e retorno null quando não há rolagem"
-        ],
-        "notes": "getWorktreeSidebarDragAutoscroll é port fiel com as mesmas constantes (drag-autoscroll.ts:8-11,53-91) e 0 call sites. Não há autoscroll de drag: o container de rolagem do sidebar (WorktreeSidebar.tsx:703) não tem nenhum listener de dragover que mova scrollTop."
-      }
-    },
-    {
-      "id": "D06-010",
-      "capability": "Ajuste e fixação de drop em bordas extremas de grupo (boundary drop clamping)",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:89-125"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:93-126",
-          "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:45-63",
-          "src/components/sidebar/project-header-drop.ts:185-203"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Fixação do drop no índice 0 com indicatorY = max(0, firstRect.top - 3px) acima do primeiro item",
-          "Fixação do drop em sourceGroupSize com indicatorY = lastRect.bottom + 3px abaixo do último item",
-          "Retorno 'outside' fora do DROP_BOUNDS_PADDING_PX (8px) para evitar drops fantasmas em lacunas"
-        ],
-        "notes": "getWorktreeSidebarBoundaryDrop é port fiel (drag-autoscroll.ts:93-126) e tem exatamente um consumidor: computeWorktreeSidebarHeaderDropPreview (header-drop-preview.ts:45-60), que por sua vez só é chamado por computeProjectHeaderDropPreview (project-header-drop.ts:185-203) — e esse último não tem nenhum call site no app (grep computeProjectHeaderDropPreview → 0 fora de testes). Ilha morta: existe, é fiel, não produz efeito observável."
-      }
-    },
-    {
-      "id": "D06-011",
-      "capability": "Extração de retângulos de drag ancorados nos slots virtuais estáticos da sidebar",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:127-164"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:128-174",
-          "src/components/sidebar/WorktreeSidebar.tsx:434-440"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "getWorktreeSidebarDragRectsForGroup buscando [data-worktree-drag-id] do groupKey de origem",
-          "Ancoragem ao slot estático via 'data-worktree-virtual-row-start'",
-          "Isolamento do hit testing das transformações translateY de animação",
-          "Ordenação vertical dos retângulos por top"
-        ],
-        "notes": "getWorktreeSidebarDragRectsForGroup é port fiel (:128-174) com 0 call sites. O Hydra não usa rects de grupo para hit testing de reordenação — o alvo é o card sob o cursor (WorktreeSidebar.tsx:434-440)."
-      }
-    },
-    {
-      "id": "D06-012",
-      "capability": "Validação e atualização de sessão de drag em re-renderizações da sidebar",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-drag-autoscroll.ts:166-180"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:176-214",
-          "src/components/sidebar/WorktreeSidebar.tsx:189-191"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "refreshWorktreeSidebarDragSession validando que o grupo de origem ainda existe",
-          "Validação de que draggingWorktreeId ainda pertence ao grupo",
-          "Garantia de que nenhuma unidade do lote desapareceu",
-          "Atualização da sessão com rects preservando estado quando rects estão temporariamente vazios",
-          "Retorno null para abortar a sessão quando grupo/itens somem"
-        ],
-        "notes": "refreshWorktreeSidebarDragSession é port fiel (:176-214) com 0 call sites. A 'sessão de drag' do Hydra é apenas dois useState (draggedWorktreePath, worktreeDropTarget em WorktreeSidebar.tsx:189-191); não há reconciliação contra re-render/virtualização."
-      }
-    },
-    {
-      "id": "D06-013",
-      "capability": "Agrupamento de unidades atômicas de drag com agregação de descendentes de linhagem",
-      "orca_evidence": [
-        "components/sidebar/worktree-drag-units.ts:7-66"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-drag-units.ts:18-68",
-          "src/components/sidebar/WorktreeSidebar.tsx:449-459"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Separação de seções por cabeçalhos de grupo ao montar unidades de drag",
-          "Exclusão de linhas não reordenáveis (host-header, import card, inbox externo, pending-creation, folder-workspace)",
-          "Descarte de cópias duplicadas na seção Pinned quando há ocorrência natural",
-          "Agregação de descendentes (depth > 0) à unidade atômica pai"
-        ],
-        "notes": "getWorktreeDragUnitGroups é port fiel (worktree-drag-units.ts:18-68) com 0 call sites; só é referenciado por import type em worktree-sidebar-drag-autoscroll.ts:2. O drop real reordena um único path por splice (WorktreeSidebar.tsx:449-459), sem unidades atômicas nem agregação de linhagem."
-      }
-    },
-    {
-      "id": "D06-014",
-      "capability": "Mapeamento de índice de drop visual de unidades atômicas para índice de linhas completo",
-      "orca_evidence": [
-        "components/sidebar/worktree-drag-units.ts:68-84"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-drag-units.ts:70-85",
-          "src/components/sidebar/WorktreeSidebar.tsx:449-459"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "getFullDropIndexForWorktreeDragUnit localizando o grupo de origem",
-          "Clamp do índice visual entre 0 e a quantidade de unidades",
-          "Acúmulo do tamanho de worktreeIds das unidades anteriores para o índice plano"
-        ],
-        "notes": "getFullDropIndexForWorktreeDragUnit é port fiel (worktree-drag-units.ts:70-85) com 0 call sites. O Hydra converte índice de drop diretamente sobre o array plano do projeto (WorktreeSidebar.tsx:451-457)."
-      }
-    },
-    {
-      "id": "D06-015",
-      "capability": "Cálculo de offsets animados de preview de drag e posicionamento da linha indicadora de drop",
-      "orca_evidence": [
-        "components/sidebar/worktree-drag-preview-offsets.ts:8-185"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-card-surface.tsx:95-99",
-          "src/components/sidebar/WorktreeSidebar.tsx:442-463"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "buildWorktreeDragPreviewOffsets calculando deslocamentos translateY das linhas intermediárias",
-          "Compressão de lotes multi-seleção para um único card representativo",
-          "Cálculo de strides/gaps médios para alturas variáveis e unidades de linhagem",
-          "baseTop derivado do primeiro card montado para estabilidade sob virtualização",
-          "placeholderTop marcando a posição da linha indicadora de drop"
-        ],
-        "notes": "Não existe arquivo equivalente a worktree-drag-preview-offsets.ts no Hydra (grep buildWorktreeDragPreviewOffsets / o nome do arquivo → 0 hits) e nenhum cálculo de offsets de preview/placeholder. O feedback de drop é apenas a comparação dropTarget?.path no card (worktree-card-surface.tsx:95-98) e a ordem final é aplicada no drop (WorktreeSidebar.tsx:449-459). Buscas: nome (0), semântica (translateY/offsetTop/placeholderTop no sidebar → nenhum), comportamento (ausente)."
-      }
-    },
-    {
-      "id": "D06-016",
-      "capability": "Expansão de IDs arrastados para cobrir linhagem descendente visível na reordenação",
-      "orca_evidence": [
-        "components/sidebar/worktree-manual-order.ts:27-66"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-manual-order.ts:36-72",
-          "src/components/sidebar/WorktreeSidebar.tsx:428-432"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Percorrer linhas com profundidade hierárquica (depth) para expandir o pai arrastado",
-          "Inclusão automática dos descendentes visíveis subsequentes até a profundidade do pai",
-          "Preservação da ordem visual com cobertura correta de filhos aninhados já selecionados",
-          "Anexação de IDs selecionados ausentes da lista visível ao final, sem duplicatas"
-        ],
-        "notes": "expandDraggedWorktreeIdsForVisibleLineage é port fiel (worktree-manual-order.ts:36-72) chamado apenas por buildManualOrderUpdatesForVisibleGroups (também morto). O drag do Hydra move um único path (WorktreeSidebar.tsx:428-432) e não existe noção de lote/linhagem no drag. As props de linhagem do card (lineageChildren, onLineageToggle, isLineageDropTarget) nunca são passadas por WorktreeList (use-worktree-card-controller.ts:99-102)."
-      }
-    },
-    {
-      "id": "D06-017",
-      "capability": "Reordenação de IDs dentro de um grupo com manipulação de lote sem estourar limites da V8",
-      "orca_evidence": [
-        "components/sidebar/worktree-manual-order.ts:17-25",
-        "components/sidebar/worktree-manual-order.ts:68-106"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:442-463",
-          "src/components/sidebar/worktree-manual-order.ts:74-115"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Reordenação de lote multi-seleção preservando a ordem relativa dos itens arrastados segundo a ordem original do grupo",
-          "Ajuste do índice de inserção pela quantidade de selecionados removidos antes do ponto de drop (caso multi-item)",
-          "Inserção iterativa (appendWorktreeIds/insertWorktreeIds) à prova do limite de argumentos do V8 para frotas grandes"
-        ],
-        "notes": "O gesto de mover um card para cima/baixo dentro do grupo existe e é wired (WorktreeSidebar.tsx:449-459: splice de um item com ajuste 'insertIdx > fromIdx ? insertIdx-1'), mas apenas para 1 item. moveWorktreeIdsWithinGroup (worktree-manual-order.ts:74-115) é port fiel e não tem call site vivo. Não há multi-seleção (ver D06-021) nem proteção contra estouro de argumentos."
-      }
-    },
-    {
-      "id": "D06-018",
-      "capability": "Geração de atualizações de ordem manual esparsa e re-indexação densa de fallback",
-      "orca_evidence": [
-        "components/sidebar/worktree-manual-order-ranks.ts:5-130"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-manual-order-ranks.ts:53-141",
-          "src/App.tsx:1922-1937"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "buildSparseManualOrderUpdates com espaçamento MANUAL_ORDER_STRIDE (1000) e interpolação between beforeRank/afterRank",
-          "Re-indexação densa de fallback (buildFallbackManualOrderUpdates) quando faltam ranks duráveis ou o gap é insuficiente",
-          "Ranks inválidos forçando fallback",
-          "mergeVisibleOrderIntoKnownOrder preservando itens filtrados/colapsados na ordem global conhecida"
-        ],
-        "notes": "O Hydra não tem conceito de manualOrder/rank: a ordem é um array de paths persistido cru em localStorage (App.tsx:1931-1937, chave 'hydra:worktrees_order[:<path>]'). buildSparseManualOrderUpdates é port fiel mas só chamado por worktree-manual-order.ts (ilha morta). Ausência de ranks significa que itens filtrados/colapsados não são preservados por rank — são descartados do array persistido se não estiverem presentes."
-      }
-    },
-    {
-      "id": "D06-019",
-      "capability": "Geração de atualizações de ordem manual para reordenação dentro de grupos visíveis ou drop entre grupos/lanes",
-      "orca_evidence": [
-        "components/sidebar/worktree-manual-order.ts:108-251"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:442-463",
-          "src/components/sidebar/worktree-manual-order.ts:117-252"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "buildManualOrderUpdatesForVisibleGroups reordenando o grupo de origem e mantendo os demais grupos intactos",
-          "buildManualOrderUpdatesForGroupDrop transferindo itens entre grupos na posição exata de drop",
-          "shouldWriteManualOrderForGroupDrop autorizando gravação conforme o modo de ordenação ativo (manual vs outros)",
-          "Drops entre lanes fora do modo manual tratados estritamente como mudança de status, sem sobrescrever ordem"
-        ],
-        "notes": "A reordenação intra-grupo (mesmo projeto) existe e persiste (WorktreeSidebar.tsx:449-459 → onReorderWorktrees → App.tsx:1922-1937), mas: (a) não há transferência de worktree entre projetos/lanes (se draggedPath não pertence ao projeto alvo, fromIdx === -1 e o drop é no-op, :449-453); (b) não existe gating por modo de ordenação nem stamp de manualOrder; (c) os três builders Orca são ports mortos (0 call sites)."
-      },
-      "par": [
-        "PAR-88"
-      ]
-    },
-    {
-      "id": "D06-020",
-      "capability": "Catálogo de ordem manual com suporte a worktrees git e pastas em clusters multi-host",
-      "orca_evidence": [
-        "components/sidebar/worktree-manual-order-catalog.ts:8-48"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-manual-order-ranks.ts:7-51",
-          "src/App.tsx:1922-1937"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "buildWorktreeManualOrderCatalog combinando worktrees git e folder workspaces (folderWorkspaceToWorktree), excluindo arquivados",
-          "Ordenação por manualOrder decrescente (ou sortOrder) com desempate por compareWorktreeSortLabel",
-          "Consistência em clusters multi-host de mesmo ID (rank durável só se todas as instâncias concordarem)",
-          "Retorno de orderedIds únicos e rankByWorktreeId validado"
-        ],
-        "notes": "Não existe buildWorktreeManualOrderCatalog nem catálogo de ranks no Hydra (a ordem vive como array ordenado por projeto, App.tsx:1922-1937). A validação multi-host de rank durável é inexistente — a ordenação por host é feita por identidade de host em worktree-sidebar-row-preference.ts / visible-worktree-indexes.ts, sem relação com manualOrder. Buscas: nome (0), semântica (manualOrder/rankByWorktreeId → nenhum uso vivo), comportamento (ausente)."
-      }
-    },
-    {
-      "id": "D06-021",
-      "capability": "Detecção de intenção de multi-seleção por teclas modificadoras (Shift / Cmd / Ctrl)",
-      "orca_evidence": [
-        "components/sidebar/worktree-multi-selection.ts:16-24"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-card-model.ts:22-25",
-          "src/components/sidebar/worktree-card-surface.tsx:62-69"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "getWorktreeSelectionIntent avaliando shiftKey/metaKey/ctrlKey no evento de clique",
-          "Intenção 'range' com Shift",
-          "Intenção 'toggle' com Cmd (macOS) ou Ctrl (Win/Linux)",
-          "Intenção padrão 'replace' sem modificadores"
-        ],
-        "notes": "Não existe multi-seleção de worktrees no Hydra. As únicas marcas são props vestigiais nunca passadas: isMultiSelected/selectedWorktrees (worktree-card-model.ts:22-25, use-worktree-card-controller.ts:81-84) — grep por atribuição dessas props fora do controller/surface → 0 hits. Os únicos usos de ctrlKey/metaKey no sidebar são em SidebarAgentsList.tsx:232-233,566-568 (seleção de linhas de agente, outro domínio). Nenhum arquivo worktree-multi-selection no Hydra."
-      },
-      "par": [
-        "PAR-08"
-      ]
-    },
-    {
-      "id": "D06-022",
-      "capability": "Atualização de seleção unitária, toggle e extensão de intervalo contínuo (range)",
-      "orca_evidence": [
-        "components/sidebar/worktree-multi-selection.ts:26-67"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-card-model.ts:22-25",
-          "src/components/sidebar/WorktreeList.tsx:373-386"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "updateWorktreeSelection processando intenção sobre a lista de IDs visíveis",
-          "Intenção 'replace' com nova âncora",
-          "Intenção 'toggle' adicionando/removendo o target preservando o restante",
-          "Intenção 'range' selecionando o slice inclusivo entre âncora e alvo, com fallback para seleção exclusiva"
-        ],
-        "notes": "Nenhuma das funções existe (grep updateWorktreeSelection → 0). O clique no card apenas ativa a worktree (WorktreeList.tsx:363-410 → onSelectGitWorktree); não há estado de conjunto selecionado nem âncora."
-      },
-      "par": [
-        "PAR-08"
-      ]
-    },
-    {
-      "id": "D06-023",
-      "capability": "Poda de seleção de worktrees ocultas por filtros e seleção por área retangular (marquee)",
-      "orca_evidence": [
-        "components/sidebar/worktree-multi-selection.ts:69-123"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeList.tsx:216-249",
-          "src/components/sidebar/visible-worktrees.ts:244-290"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "pruneWorktreeSelection removendo worktrees fora de visibleIds e reancorando",
-          "updateWorktreeAreaSelection em ordem estrita de visibleIds",
-          "Modo aditivo incorporando IDs e definindo a âncora no último ID da área",
-          "Modo não aditivo substituindo/limpando a seleção",
-          "areWorktreeSelectionsEqual comparando conjuntos"
-        ],
-        "notes": "Não há marquee/area selection nem seleção múltipla no sidebar. O Hydra calcula a lista visível (visible-worktrees.ts:244-290, setVisibleWorktreeIds em :273) apenas para atalhos Cmd+1–9, não para poda de seleção. Grep por marquee/selectionAnchor/areaSelection em src/components/sidebar → 0 hits."
-      },
-      "par": [
-        "PAR-08"
-      ]
-    },
-    {
-      "id": "D06-024",
-      "capability": "Regras de elegibilidade de parentesco e prevenção de ciclos de linhagem",
-      "orca_evidence": [
-        "components/sidebar/worktree-parent-eligibility.ts:13-50",
-        "components/sidebar/worktree-parent-candidates.ts:13-76"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:3163-3172",
-          "src/App.tsx:3288-3296",
-          "src/components/sidebar/ParentPickerModal.tsx:119-160",
-          "src/components/sidebar/worktree-card-surface.tsx:86"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "isEligibleWorktreeParent exigindo mesmo repositório (repoId)",
-          "Compatibilidade de host de execução (childHostId === candidateHostId) e mesmo projectId",
-          "Exclusão de worktrees arquivadas da elegibilidade",
-          "canAssignWorktreeParent rejeitando o pai atual válido da worktree",
-          "Detecção de ciclos transitivos percorrendo ancestrais via getLineageRenderInfo",
-          "Rejeição de candidatos em loops pré-existentes (cyclicLineageIds)"
-        ],
-        "notes": "A elegibilidade é montada inline no App: eligibleParents = todos os projetos + todas as gitWorktrees, filtrando somente o próprio alvo (App.tsx:3164-3172 e :3289-3296). Não há isEligibleWorktreeParent/canAssignWorktreeParent (grep → 0), nenhum escopo por repo/host/projeto, nenhuma exclusão de arquivadas e nenhuma detecção de ciclo. O drop-to-parent por arrasto não existe (isLineageDropTarget nunca é passado — worktree-card-surface.tsx:86 tem o atributo, mas o controller usa default false, use-worktree-card-controller.ts:102)."
-      },
-      "par": [
-        "PAR-43"
-      ]
-    },
-    {
-      "id": "D06-025",
-      "capability": "Cálculo de posicionamento e ancoragem virtual do popover de seleção de pai (WorktreeParentPickerPopover)",
-      "orca_evidence": [
-        "components/sidebar/worktree-parent-picker-placement.ts:1-33",
-        "components/sidebar/WorktreeParentPickerPopover.tsx:165-184",
-        "components/sidebar/WorktreeParentPickerPopover.tsx:210-230"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/ParentPickerModal.tsx:67-77",
-          "src/components/sidebar/ParentPickerModal.tsx:33-40"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "estimateWorktreeParentPickerHeight (bordas 2px + header 28px + input 49px + lista até PICKER_LIST_MAX_HEIGHT=288px com PICKER_ROW_HEIGHT=56px)",
-          "clampWorktreeParentPickerAnchorTop limitando ao viewport com PICKER_VIEWPORT_PADDING (12px)",
-          "Âncora virtual (virtualAnchorRef/DOMRect medido) para posicionamento Radix correto sob transform CSS",
-          "Listeners de 'resize'/'scroll' da janela recalculando anchorRect e viewportHeight com o popover aberto"
-        ],
-        "notes": "O Hydra substituiu o popover ancorado por um modal centralizado 'fixed inset-0 ... items-center justify-center' (ParentPickerModal.tsx:70). Não existe estimativa de altura, clamp de âncora, âncora virtual nem listeners de resize/scroll (grep estimateWorktreeParentPickerHeight / clampWorktreeParentPickerAnchorTop / addEventListener('resize') no sidebar → 0). Buscas: nome (0), marcação (role=dialog ausente; div overlay), comportamento (modal sem geometria), backend (n/a)."
-      }
-    },
-    {
-      "id": "D06-026",
-      "capability": "Filtro fuzzy e ordenação de candidatos a pai de worktree",
-      "orca_evidence": [
-        "components/sidebar/worktree-parent-picker-filtering.ts:4-34",
-        "components/sidebar/WorktreeParentPickerPopover.tsx:232-255"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/ParentPickerModal.tsx:55-65",
-          "src/components/sidebar/ParentPickerModal.tsx:100-113"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Score/relevância via defaultFilter do cmdk com ordenação por score decrescente",
-          "Reset do índice destacado (highlightedIndex = 0) ao mudar o termo",
-          "Rolagem da lista virtual ao topo (virtualizer.scrollToOffset(0))",
-          "clampWorktreeParentPickerIndex mantendo o índice ativo dentro do array filtrado"
-        ],
-        "notes": "O modal filtra por substring case-insensitive sobre name/path/branch — equivalente parcial do getWorktreeParentPickerItemValue (ParentPickerModal.tsx:55-65) — sem pontuação fuzzy, sem ranking e sem índice destacado (a lista é renderizada diretamente, :119, e não há estado de highlight nem virtualização)."
-      }
-    },
-    {
-      "id": "D06-027",
-      "capability": "Navegação por teclado, acessibilidade e composição IME no popover de seleção de pai",
-      "orca_evidence": [
-        "components/sidebar/WorktreeParentPickerPopover.tsx:50-137",
-        "components/sidebar/WorktreeParentPickerPopover.tsx:280-345"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/ParentPickerModal.tsx:33-52",
-          "src/components/sidebar/ParentPickerModal.tsx:100-107"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "ArrowDown/ArrowUp avançando/recuando o candidato ativo",
-          "Home/End indo ao primeiro/último candidato",
-          "Enter selecionando o candidato destacado",
-          "Ignorar eventos durante composição IME (isImeCompositionKeyDown)",
-          "Sincronização de aria-activedescendant com a opção destacada",
-          "Restauração de foco ao container focusável mais próximo via getWorktreeParentPickerFocusRestoreTarget"
-        ],
-        "notes": "O modal foca o input ao abrir (ParentPickerModal.tsx:34-40) e trata apenas Escape via listener global (window keydown, :44-52). Não há navegação por setas/Home/End/Enter, nem tratamento de IME, nem aria-activedescendant, nem restauração de foco (grep handleWorktreeParentPickerKeyDown / getWorktreeParentPickerFocusRestoreTarget → 0)."
-      }
-    },
-    {
-      "id": "D06-028",
-      "capability": "Execução da ação de seleção de pai com tratamento de erro e fechamento do popover",
-      "orca_evidence": [
-        "components/sidebar/WorktreeParentPickerPopover.tsx:64-106",
-        "components/sidebar/WorktreeParentPickerPopover.tsx:187-208"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:3258-3268",
-          "src/App.tsx:3464-3475",
-          "src/components/sidebar/ParentPickerModal.tsx:122-127",
-          "src/components/sidebar/ParentPickerModal.tsx:163-176"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Tratamento de rejeição da promise de atribuição com toast traduzido (WorktreeParentPickerPopover.failedSetParent)",
-          "Supressão do fechamento por clique externo nos primeiros 150ms (suppressInitialOutsideCloseRef/setTimeout)"
-        ],
-        "notes": "O clique no candidato dispara onSelect → atualiza worktreeLineage e persiste em localStorage, e fecha o modal (ParentPickerModal.tsx:125-126 → App.tsx:3961-3967). A ação é síncrona (localStorage), logo não há caminho de erro/toast; a chave i18n 'failedSetParent' não tem consumidor. Não há guarda de 150ms contra o clique que abriu o menu (o modal fecha no clique do backdrop, :71). O backend store real está ausente: src/store/slices/worktrees/metadata/worktree-lineage-actions.ts:1-5 é auto-stub (createAssignWorktreeParent: any = null)."
-      }
-    },
-    {
-      "id": "D06-029",
-      "capability": "Renderização memoizada da linha de candidato no seletor de pai (WorktreeParentPickerRow)",
-      "orca_evidence": [
-        "components/sidebar/WorktreeParentPickerRow.tsx:11-53",
-        "components/sidebar/WorktreeParentPickerPopover.tsx:265-272"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/ParentPickerModal.tsx:119-160"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Componente memoizado (React.memo) para listas com centenas de opções",
-          "Indicador visual de status de atividade (StatusIndicator + getWorktreeStatusLabel com texto para leitores de tela)",
-          "Badge do repositório com cor personalizada (RepoBadgeMark)",
-          "Ícone de servidor (Server) para conexão remota SSH (connectionId presente)",
-          "Ícone de branch git (GitBranch) junto do branchDisplayName",
-          "Status de atividade em lote via useWorktreeActivityStatuses"
-        ],
-        "notes": "A linha do modal é um <button> inline não memoizado que exibe nome, branch em fonte mono, path e o badge 'Current' (ParentPickerModal.tsx:119-160). Não há status indicator, repo badge colorido, ícone de SSH, ícone de branch nem subscription de atividade (grep RepoBadgeMark / useWorktreeActivityStatuses no picker → 0)."
-      }
-    },
-    {
-      "id": "D06-030",
-      "capability": "Desaninhamento de worktrees com limpeza de vínculo de pai e notificação de erro em lote (unnestWorktrees)",
-      "orca_evidence": [
-        "components/sidebar/worktree-unnest.ts:10-31"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:3275",
-          "src/App.tsx:3485",
-          "src/App.tsx:3594",
-          "src/components/sidebar/ParentPickerModal.tsx:161-176"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "unnestWorktrees executando chamadas assíncronas paralelas updateWorktreeLineage(id, { noParent: true })",
-          "Captura de rejeição de promise com toast único traduzido (WorktreeList.failedUnnestWorkspace)",
-          "No-op para seleção vazia"
-        ],
-        "notes": "Remover o vínculo existe em três caminhos wired: item de menu 'Remove from Parent' no contexto de projeto/worktree/sessão (App.tsx:3275,3485,3594 — delete da chave em worktreeLineage + persistLineage para localStorage) e botão 'Remove Link' no modal (ParentPickerModal.tsx:167-175). É síncrono (localStorage), sem promise/erro/toast; a chave i18n 'failedUnnestWorkspace' não tem consumidor. A store real é auto-stub (worktree-lineage-actions.ts:1-5)."
-      },
-      "par": [
-        "PAR-43"
-      ]
-    },
-    {
-      "id": "D06-031",
-      "capability": "Ciclagem de navegação por teclado entre worktrees visíveis com resolução de host qualificado",
-      "orca_evidence": [
-        "components/sidebar/worktree-keyboard-cycle.ts:13-96"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:2633-2641",
-          "src/App.tsx:1596-1609",
-          "src/components/sidebar/worktree-list/keyboard-cycle.ts:23-64",
-          "src/shared/keybindings/definitions-core-1.ts:46-59"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Ciclagem sobre a lista de worktrees visíveis derivada das linhas renderizadas (getCyclableWorktreeIds/getCyclableWorktrees)",
-          "Enter pela extremidade oposta quando a worktree ativa não é ciclável (ex.: grupo colapsado)",
-          "Identidade qualificada por host (composeWorktreeHostIdentity) para diferenciar workspaces de mesmo ID em hosts distintos",
-          "Exclusão de folder workspaces da rotação",
-          "Deduplicação de worktree fixada (Pinned) mantida ciclável quando o grupo natural está colapsado"
-        ],
-        "notes": "O atalho existe e é wired: Cmd+Shift+ArrowUp/Down (App.tsx:2633-2641; definições em definitions-core-1.ts:46-59 com default Mod+Shift+Arrow{Up,Down}) chama handleNavigateWorkspace (App.tsx:1596-1609), que cicla com wrap-around sobre a lista de PROJETOS, não sobre worktrees visíveis. O port adjacente keyboard-cycle.ts (getFocusableRowKeys/resolveCycledFocusKey, :23-64) tem semântica própria (inclui projetos/sessões, chave 'type:id', sem identidade de host) e 0 importadores. A chave de ciclagem de worktrees qualificada por host não existe (grep getCyclableWorktreeIds/composeWorktreeHostIdentity no sidebar → 0)."
-      }
-    },
-    {
-      "id": "D06-032",
-      "capability": "Preferência de linhas naturais sobre cópias duplicadas na seção fixada (Pinned)",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-row-preference.ts:7-64"
-      ],
-      "hydra": {
-        "status": "parity",
-        "evidence": [
-          "src/components/sidebar/worktree-sidebar-row-preference.ts:7-51",
-          "src/components/sidebar/worktree-sidebar-row-preference.ts:53-64",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:16",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:105",
-          "src/components/sidebar/visible-worktrees.ts:377",
-          "src/components/sidebar/visible-worktrees.ts:398"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Port fiel e alcançável a partir do mount: App.tsx:3636 → WorktreeSidebar → WorktreeList/App importam visible-worktrees.ts, cujo getVisibleWorktreeShortcutTargets (:380-398) e a ordenação (:377) chamam computeRenderedSidebarWorktrees/Order, que por sua vez chamam getRenderedWorktreesInSidebarOrder (rendered-sidebar-worktree-order.ts:105). getPreferredWorktreeRows implementa a política padrão (cópia natural, fallback Pinned) e 'single-location' (:7-51); getRenderedWorktreesInSidebarOrder preserva a ordem visual incluindo folder workspaces convertidas (:53-64). Mesma semântica de identidade de host (getWorktreeHostIdentity). Nota: no Hydra este caminho alimenta a numeração Cmd+1–9, não uma navegação por teclado de worktrees."
-      }
-    },
-    {
-      "id": "D06-033",
-      "capability": "Cálculo de limites de rolagem e execução de scroll suave para revelação de elementos (reveal)",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-reveal.ts:3-68"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:382-418",
-          "src/components/sidebar/WorktreeSidebar.tsx:410-415"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "getScrollTopToRevealBounds calculando o scrollTop de enquadramento dos limites do elemento",
-          "Recuo superior WORKTREE_SIDEBAR_REVEAL_TOP_INSET (46px = 40px header + 6px clearance) para não cobrir o card com headers fixos",
-          "Conversão de 'smooth' em 'auto' sob matchMedia('(prefers-reduced-motion: reduce)')",
-          "Callback onScrollIssued(targetTop) para guardas de rolagem"
-        ],
-        "notes": "A revelação existe e é wired: handleRevealCurrent expande projeto/grupo colapsados, destaca o card (flashRevealedWorktree) e rola com el.scrollIntoView({behavior:'smooth', block:'nearest'}) (WorktreeSidebar.tsx:382-415). Faltam o cálculo explícito de scrollTop com inset de header, o respeito a prefers-reduced-motion e o callback de rolagem. Existe hook de reduced motion no repo (src/hooks/usePrefersReducedMotion.ts) mas não é usado neste caminho (grep 'prefers-reduced-motion' em src/components/sidebar → 0)."
-      }
-    },
-    {
-      "id": "D06-034",
-      "capability": "Proteção contra cancelamento prematuro de animação de scroll de revelação (scroll settling guard)",
-      "orca_evidence": [
-        "components/sidebar/worktree-sidebar-reveal-scroll-settle.ts:1-35"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx:410-415",
-          "src/hooks/virtualized-scroll-anchor-restore.ts:1-40"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "createPendingRevealScroll registrando targetTop e expiração REVEAL_SCROLL_SETTLE_TIMEOUT_MS (1000ms)",
-          "isRevealScrollSettling comparando scrollTop com targetTop dentro de SETTLED_TOLERANCE_PX (1px)",
-          "Bloqueio de rotinas concorrentes de restauração de scroll que sobrescrevam scrollTop durante a animação",
-          "Expiração automática para não travar a guarda com alvo inalcançável"
-        ],
-        "notes": "Não existe guarda de settling de reveal: grep createPendingRevealScroll/isRevealScrollSettling/setTimeout de reveal → 0 hits; não há arquivo worktree-sidebar-reveal-scroll-settle. O scroll de reveal é um scrollIntoView fire-and-forget (WorktreeSidebar.tsx:413) sem nenhum estado de 'scroll em voo'. O hook virtualized-scroll-anchor-restore.ts trata restauração de âncora de virtualização, não o settling de reveal."
-      }
-    },
-    {
-      "id": "D06-035",
-      "capability": "Proveniência, herança e resolução de sobreposições de visibilidade de fontes de worktree externas",
-      "orca_evidence": [
-        "components/sidebar/worktree-visibility-source-provenance.ts:1-125"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/lib/worktree-visibility-sources.ts:261-273",
-          "src/lib/worktree-visibility-sources.ts:340-370",
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:379-395",
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:420-430"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "listInheritedWorktreeVisibilitySources listando as fontes herdadas do global com seus valores padrão",
-          "worktreeVisibilityValueLabel retornando os rótulos traduzidos 'Show'/'Hide'",
-          "getWorktreeVisibilityOverrideNotice exibindo o aviso 'Overriding global setting: Show/Hide' quando o projeto diverge do global",
-          "getWorktreeVisibilitySourceNote exibindo a nota 'Added in this project only.' para fontes exclusivas do projeto"
-        ],
-        "notes": "A base existe e é wired: globalWorktreeVisibilitySourceValue (worktree-visibility-sources.ts:261-273) e getWorktreeVisibilitySourceProvenance (:345-370, com os três kinds 'global'/'project-override'/'project-source') são consumidos por WorktreeVisibilityDialog.tsx:379-395, renderizado em WorktreeSidebar.tsx:1142. Faltam os 4 auxiliares de rótulo/aviso; as chaves i18n en.json:6355-6356 (overridingGlobal, projectOnly) existem mas estão órfãs (grep → 0 consumidores). 'Use global' é implementado no diálogo (:420-430) porém sem o texto de aviso correspondente."
-      }
-    }
-  ],
-  "summary": {
-    "parity": 1,
-    "partial": 12,
-    "missing": 22,
-    "not-applicable": 0,
-    "out-of-scope": 0
+ "domain": "D06-drag-order-keyboard",
+ "rows": [
+  {
+   "id": "D06-001",
+   "capability": "Serialização e empacotamento de dados de drag de worktrees únicas e em lote no HTML5 DataTransfer",
+   "orca_evidence": [
+    "components/sidebar/workspace-status-drag-data.ts:13-25"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:450",
+     "src/components/sidebar/workspace-status-drag-data.ts:8-23"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Serializa o array completo de IDs em JSON no tipo 'application/x-orca-worktree-ids' para arrasto em lote (Kanban/sidebar)",
+     "Grava o ID unitário no tipo legado 'application/x-orca-worktree-id'",
+     "Grava o primeiro ID em 'text/plain' como fallback universal"
+    ],
+    "notes": "O dragstart real grava apenas 'application/x-hydra-worktree-drag' com um único path e effectAllowed='move' (WorktreeSidebar.tsx:430-431); idem para projeto ('application/x-hydra-project-drag', :472-473). O helper writeWorkspaceDragData é um port fiel (workspace-status-drag-data.ts:8-23) porém SEM call site: só é re-exportado por workspace-status.ts:38-47 e nunca invocado (grep writeWorkspaceDragData → 0 usos fora do próprio módulo).",
+    "note": "Empacotamento DataTransfer parcial (nativo), sem multi-seleção."
+   },
+   "par": [
+    "PAR-88"
+   ]
+  },
+  {
+   "id": "D06-002",
+   "capability": "Desserialização segura, validação de limites de payload e leitura de IDs de drag com fallback",
+   "orca_evidence": [
+    "components/sidebar/workspace-status-drag-data.ts:27-111"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:442-463"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Valida tamanho máximo em bytes do payload (WORKSPACE_STATUS_DRAG_PAYLOAD_MAX_BYTES = 16 KB) e descarta payloads excessivos",
+     "Impõe teto de 512 IDs (WORKSPACE_STATUS_DRAG_ID_MAX_COUNT) na desserialização",
+     "readWorkspaceDragData com preferência pelo tipo tipado e fallback para 'text/plain'",
+     "readWorkspaceDragDataIds com parse JSON sanitizado e fallback para o payload unitário",
+     "hasWorkspaceDragData com verificação de tipos válidos e tamanho delimitado"
+    ],
+    "notes": "Não existe leitura de payload de drag: os handlers de drop usam estado React interno (draggedWorktreePath) e nunca chamam dataTransfer.getData (grep 'getData(' em src/components/sidebar → somente workspace-status-drag-data.ts:91). As funções readWorkspaceDragData/readWorkspaceDragDataIds/hasWorkspaceDragData existem como port fiel, mas com 0 call sites. Buscas: nome (workspace-status-drag-data.ts), semântica (WORKSPACE_STATUS_DRAG_*), comportamento (drop handlers em WorktreeSidebar.tsx), backend (nenhum comando Tauri de drag).",
+    "note": "Validação de limites de payload de drag ausente."
+   },
+   "par": [
+    "PAR-88"
+   ]
+  },
+  {
+   "id": "D06-003",
+   "capability": "Bloqueio de pointer drag em controles interativos internos e elementos portalizados externos",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:5-32"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-list/pointer-drag-dom.ts:21-35",
+     "src/components/sidebar/worktree-card-surface.tsx:89-91"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "isSidebarPointerDragBlocked bloqueando targets fora do DOM da linha (hover cards portalizados no body)",
+     "INTERACTIVE_DRAG_BLOCKER_SELECTOR para botões, links, inputs, selects, contenteditable e roles Radix",
+     "Bloqueio de pointer drag sobre controles interativos internos preservando seleção de texto"
+    ],
+    "notes": "isSidebarPointerDragBlocked é um port fiel (pointer-drag-dom.ts:21-35) sem nenhum call site (grep → 1 hit, a própria definição). O sidebar usa drag nativo HTML5 com draggable no card (worktree-card-surface.tsx:89-91) e delega o comportamento de alvo ao browser."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D06-004",
+   "capability": "Estilização global de documento durante pointer drag e desativação de seleção de texto",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:34-38"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:85",
+     "src/components/sidebar/worktree-list/pointer-drag-dom.ts:44-70"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "document.body.style.userSelect = 'none' durante a sessão de drag",
+     "Alterna o atributo 'data-worktree-sidebar-pointer-dragging' no elemento raiz html",
+     "Restaura userSelect e remove o atributo ao finalizar/cancelar o drag"
+    ],
+    "notes": "setSidebarPointerDragDocumentStyles existe como port (pointer-drag-dom.ts:37-42) mas sem call site. O dragstart real do sidebar não toca em document.body/documentElement (WorktreeSidebar.tsx:428-432 apenas grava o dataTransfer).",
+    "note": "setSidebarPointerDragDocumentStyles(true/false) no begin/clear do pointer drag."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D06-005",
+   "capability": "Criação de elemento preview flutuante (ghost clone) e badge de contagem de multi-seleção",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:40-97"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-list/pointer-drag-dom.ts:44-70",
+     "src/components/sidebar/worktree-card-surface.tsx:89-91"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "createSidebarDragPreview clonando o card de origem (cloneNode(true))",
+     "Higienização do clone (id, aria-describedby, data-worktree-drag-id)",
+     "Preview fixed com position/left/top, dimensões do card e pointer-events: none",
+     "Badge 'data-worktree-sidebar-drag-count' quando draggedCount > 1",
+     "Cálculo de offsetX/offsetY do ponteiro e anexação ao document.body"
+    ],
+    "notes": "createSidebarDragPreview é um port fiel (pointer-drag-dom.ts:71-...), porém 0 call sites; não há ghost clone em nenhum caminho vivo. O drag nativo do browser desenha a imagem padrão (worktree-card-surface.tsx:89-91). Buscas: nome (createSidebarDragPreview), marcação (data-worktree-sidebar-drag-preview/count), comportamento (nenhum pointerdown handler no sidebar), backend (n/a)."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D06-006",
+   "capability": "Atualização contínua de posição e escala do preview flutuante com deslocamento em modo nesting",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-pointer-drag-dom.ts:60-70"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-list/pointer-drag-dom.ts:57-69",
+     "src/components/sidebar/worktree-list/pointer-drag-dom.ts:100-106"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "updateSidebarDragPreviewPosition com translate3d(x, y, 0) scale(1.015)",
+     "Posicionamento pelo offset capturado do clique (pointerX - offsetX, pointerY - offsetY)",
+     "Deslocamento +16px em modo nesting ('data-worktree-sidebar-nesting')"
+    ],
+    "notes": "updateSidebarDragPreviewPosition (pointer-drag-dom.ts:57-69) só é chamada de dentro do próprio módulo (linha 102), i.e. nenhum call site externo. Não há pointermove handler no sidebar."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D06-007",
+   "capability": "Captura de ponto de grab e projeção geométrica relativa ao centro do card arrastado",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drag-geometry.ts:6-45",
+    "components/sidebar/worktree-sidebar-drag-geometry.ts:98-111"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-sidebar-drag-geometry.ts:28-43"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getWorktreeSidebarDragGrab capturando offsetY relativo e altura com clamp aos limites do card",
+     "getWorktreeSidebarDragReferenceY projetando o centro do card (localY - offsetY + height/2)",
+     "Hit testing por projeção do card em vez do ponteiro cru para cards de alturas variáveis"
+    ],
+    "notes": "getWorktreeSidebarDragGrab e getWorktreeSidebarDragReferenceY são ports fiéis (drag-geometry.ts:28-43,101-112), mas o arquivo inteiro é órfão: só é importado por worktree-sidebar-drag-autoscroll.ts:6 (import type) e essa cadeia não chega a nenhum componente. O drop real usa o meio do retângulo do card alvo (WorktreeSidebar.tsx:434-440).",
+    "note": "getWorktreeSidebarDragGrab existe mas sem projeção relativa ao centro do card no caminho pintado."
+   }
+  },
+  {
+   "id": "D06-008",
+   "capability": "Travamento estável de decisão de drop (anchor latching) imune a redimensionamentos dinâmicos",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drag-geometry.ts:47-96"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/use-session.ts:132",
+     "src/components/sidebar/worktree-sidebar-drag-geometry.ts:57-69"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "shouldReevaluateWorktreeSidebarDropAnchor com epsilon de 0.5px para jitter de ponteiro/scroll",
+     "Manutenção da âncora de inserção enquanto vizinhos expandem/streaming sob ponteiro estático",
+     "resolveWorktreeSidebarDropAnchorIndex remapeando a âncora para o índice atual e retornando null se o card desapareceu",
+     "getWorktreeSidebarDropAnchorId resolvendo o ID da âncora ou null (fim do grupo)"
+    ],
+    "notes": "Os três símbolos são ports fiéis (drag-geometry.ts:57-92) e nunca são chamados. O Hydra recalcula o alvo a cada dragover a partir do retângulo atual do card (WorktreeSidebar.tsx:437-439), portanto um card que cresce sob o ponteiro move o alvo — exatamente o comportamento que a linha Orca corrige.",
+    "note": "Anchor latching via shouldReevaluateWorktreeSidebarDropAnchor usado por frame na sessão de drag montada."
+   }
+  },
+  {
+   "id": "D06-009",
+   "capability": "Autoscroll contínuo proporcional nas bordas verticais do sidebar durante drag",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drag-autoscroll.ts:7-87",
+    "components/sidebar/worktree-sidebar-drag-autoscroll.ts:182-205"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts:42",
+     "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:53-91"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Detecção de contenção horizontal do cursor no container de scroll",
+     "Zona de borda EDGE_ZONE_PX (56px) com tolerância MAX_OUTSIDE_EDGE_PX (48px)",
+     "Velocidade linear proporcional com teto MAX_SCROLL_SPEED_PX_PER_SECOND (960 px/s)",
+     "Escala por elapsedMs com clamp de frames atrasados em MAX_FRAME_MS (32ms)",
+     "Respeito aos limites de scrollTop e retorno null quando não há rolagem"
+    ],
+    "notes": "getWorktreeSidebarDragAutoscroll é port fiel com as mesmas constantes (drag-autoscroll.ts:8-11,53-91) e 0 call sites. Não há autoscroll de drag: o container de rolagem do sidebar (WorktreeSidebar.tsx:703) não tem nenhum listener de dragover que mova scrollTop.",
+    "note": "Autoscroll proporcional nas bordas ligado pelo pointer drag."
+   }
+  },
+  {
+   "id": "D06-010",
+   "capability": "Ajuste e fixação de drop em bordas extremas de grupo (boundary drop clamping)",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drag-autoscroll.ts:89-125"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:93-126"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Fixação do drop no índice 0 com indicatorY = max(0, firstRect.top - 3px) acima do primeiro item",
+     "Fixação do drop em sourceGroupSize com indicatorY = lastRect.bottom + 3px abaixo do último item",
+     "Retorno 'outside' fora do DROP_BOUNDS_PADDING_PX (8px) para evitar drops fantasmas em lacunas"
+    ],
+    "notes": "getWorktreeSidebarBoundaryDrop é port fiel (drag-autoscroll.ts:93-126) e tem exatamente um consumidor: computeWorktreeSidebarHeaderDropPreview (header-drop-preview.ts:45-60), que por sua vez só é chamado por computeProjectHeaderDropPreview (project-header-drop.ts:185-203) — e esse último não tem nenhum call site no app (grep computeProjectHeaderDropPreview → 0 fora de testes). Ilha morta: existe, é fiel, não produz efeito observável.",
+    "note": "Clamping de bordas extremas de grupo sem caminho pintado."
+   }
+  },
+  {
+   "id": "D06-011",
+   "capability": "Extração de retângulos de drag ancorados nos slots virtuais estáticos da sidebar",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drag-autoscroll.ts:127-164"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/use-session.ts:66",
+     "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:126"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getWorktreeSidebarDragRectsForGroup buscando [data-worktree-drag-id] do groupKey de origem",
+     "Ancoragem ao slot estático via 'data-worktree-virtual-row-start'",
+     "Isolamento do hit testing das transformações translateY de animação",
+     "Ordenação vertical dos retângulos por top"
+    ],
+    "notes": "getWorktreeSidebarDragRectsForGroup é port fiel (:128-174) com 0 call sites. O Hydra não usa rects de grupo para hit testing de reordenação — o alvo é o card sob o cursor (WorktreeSidebar.tsx:434-440).",
+    "note": "getWorktreeSidebarDragRectsForGroup mede os slots pintados e alimenta a sessão."
+   }
+  },
+  {
+   "id": "D06-012",
+   "capability": "Validação e atualização de sessão de drag em re-renderizações da sidebar",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-drag-autoscroll.ts:166-180"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/use-session.ts:104",
+     "src/components/sidebar/worktree-list/drag/use-pointer-autoscroll.ts:60"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "refreshWorktreeSidebarDragSession validando que o grupo de origem ainda existe",
+     "Validação de que draggingWorktreeId ainda pertence ao grupo",
+     "Garantia de que nenhuma unidade do lote desapareceu",
+     "Atualização da sessão com rects preservando estado quando rects estão temporariamente vazios",
+     "Retorno null para abortar a sessão quando grupo/itens somem"
+    ],
+    "notes": "refreshWorktreeSidebarDragSession é port fiel (:176-214) com 0 call sites. A 'sessão de drag' do Hydra é apenas dois useState (draggedWorktreePath, worktreeDropTarget em WorktreeSidebar.tsx:189-191); não há reconciliação contra re-render/virtualização.",
+    "note": "refreshWorktreeDragSession revalida/atualiza a sessão em cada frame/autoscroll."
+   }
+  },
+  {
+   "id": "D06-013",
+   "capability": "Agrupamento de unidades atômicas de drag com agregação de descendentes de linhagem",
+   "orca_evidence": [
+    "components/sidebar/worktree-drag-units.ts:7-66"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/use-session.ts:71",
+     "src/components/sidebar/worktree-list/drag/use-session.ts:88"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Separação de seções por cabeçalhos de grupo ao montar unidades de drag",
+     "Exclusão de linhas não reordenáveis (host-header, import card, inbox externo, pending-creation, folder-workspace)",
+     "Descarte de cópias duplicadas na seção Pinned quando há ocorrência natural",
+     "Agregação de descendentes (depth > 0) à unidade atômica pai"
+    ],
+    "notes": "getWorktreeDragUnitGroups é port fiel (worktree-drag-units.ts:18-68) com 0 call sites; só é referenciado por import type em worktree-sidebar-drag-autoscroll.ts:2. O drop real reordena um único path por splice (WorktreeSidebar.tsx:449-459), sem unidades atômicas nem agregação de linhagem.",
+    "note": "getWorktreeDragUnitGroups + expandDraggedWorktreeIdsForVisibleLineage agregam descendentes."
+   }
+  },
+  {
+   "id": "D06-014",
+   "capability": "Mapeamento de índice de drop visual de unidades atômicas para índice de linhas completo",
+   "orca_evidence": [
+    "components/sidebar/worktree-drag-units.ts:68-84"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/pointer-commit.ts:41"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getFullDropIndexForWorktreeDragUnit localizando o grupo de origem",
+     "Clamp do índice visual entre 0 e a quantidade de unidades",
+     "Acúmulo do tamanho de worktreeIds das unidades anteriores para o índice plano"
+    ],
+    "notes": "getFullDropIndexForWorktreeDragUnit é port fiel (worktree-drag-units.ts:70-85) com 0 call sites. O Hydra converte índice de drop diretamente sobre o array plano do projeto (WorktreeSidebar.tsx:451-457).",
+    "note": "getFullDropIndexForWorktreeDragUnit mapeia índice visual → linha completa no commit."
+   }
+  },
+  {
+   "id": "D06-015",
+   "capability": "Cálculo de offsets animados de preview de drag e posicionamento da linha indicadora de drop",
+   "orca_evidence": [
+    "components/sidebar/worktree-drag-preview-offsets.ts:8-185"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/row-state.ts:68",
+     "src/components/sidebar/worktree-list/drag/worktree-drag-surface.tsx:77"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "buildWorktreeDragPreviewOffsets calculando deslocamentos translateY das linhas intermediárias",
+     "Compressão de lotes multi-seleção para um único card representativo",
+     "Cálculo de strides/gaps médios para alturas variáveis e unidades de linhagem",
+     "baseTop derivado do primeiro card montado para estabilidade sob virtualização",
+     "placeholderTop marcando a posição da linha indicadora de drop"
+    ],
+    "notes": "Não existe arquivo equivalente a worktree-drag-preview-offsets.ts no Hydra (grep buildWorktreeDragPreviewOffsets / o nome do arquivo → 0 hits) e nenhum cálculo de offsets de preview/placeholder. O feedback de drop é apenas a comparação dropTarget?.path no card (worktree-card-surface.tsx:95-98) e a ordem final é aplicada no drop (WorktreeSidebar.tsx:449-459). Buscas: nome (0), semântica (translateY/offsetTop/placeholderTop no sidebar → nenhum), comportamento (ausente).",
+    "note": "Offsets animados + linha indicadora pintados a partir do estado de drag."
+   }
+  },
+  {
+   "id": "D06-016",
+   "capability": "Expansão de IDs arrastados para cobrir linhagem descendente visível na reordenação",
+   "orca_evidence": [
+    "components/sidebar/worktree-manual-order.ts:27-66"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/use-session.ts:88"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Percorrer linhas com profundidade hierárquica (depth) para expandir o pai arrastado",
+     "Inclusão automática dos descendentes visíveis subsequentes até a profundidade do pai",
+     "Preservação da ordem visual com cobertura correta de filhos aninhados já selecionados",
+     "Anexação de IDs selecionados ausentes da lista visível ao final, sem duplicatas"
+    ],
+    "notes": "expandDraggedWorktreeIdsForVisibleLineage é port fiel (worktree-manual-order.ts:36-72) chamado apenas por buildManualOrderUpdatesForVisibleGroups (também morto). O drag do Hydra move um único path (WorktreeSidebar.tsx:428-432) e não existe noção de lote/linhagem no drag. As props de linhagem do card (lineageChildren, onLineageToggle, isLineageDropTarget) nunca são passadas por WorktreeList (use-worktree-card-controller.ts:99-102).",
+    "note": "Expansão de ids arrastados para linhagem descendente visível na reordenação."
+   }
+  },
+  {
+   "id": "D06-017",
+   "capability": "Reordenação de IDs dentro de um grupo com manipulação de lote sem estourar limites da V8",
+   "orca_evidence": [
+    "components/sidebar/worktree-manual-order.ts:17-25",
+    "components/sidebar/worktree-manual-order.ts:68-106"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:747",
+     "src/components/sidebar/WorktreeSidebar.tsx:450"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Reordenação de lote multi-seleção preservando a ordem relativa dos itens arrastados segundo a ordem original do grupo",
+     "Ajuste do índice de inserção pela quantidade de selecionados removidos antes do ponto de drop (caso multi-item)",
+     "Inserção iterativa (appendWorktreeIds/insertWorktreeIds) à prova do limite de argumentos do V8 para frotas grandes"
+    ],
+    "notes": "O gesto de mover um card para cima/baixo dentro do grupo existe e é wired (WorktreeSidebar.tsx:449-459: splice de um item com ajuste 'insertIdx > fromIdx ? insertIdx-1'), mas apenas para 1 item. moveWorktreeIdsWithinGroup (worktree-manual-order.ts:74-115) é port fiel e não tem call site vivo. Não há multi-seleção (ver D06-021) nem proteção contra estouro de argumentos.",
+    "note": "Reordenação dentro do grupo commitada por buildManualOrderUpdatesForVisibleGroups no drop pointer."
+   }
+  },
+  {
+   "id": "D06-018",
+   "capability": "Geração de atualizações de ordem manual esparsa e re-indexação densa de fallback",
+   "orca_evidence": [
+    "components/sidebar/worktree-manual-order-ranks.ts:5-130"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:750",
+     "src/components/sidebar/worktree-manual-order-ranks.ts:53"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "buildSparseManualOrderUpdates com espaçamento MANUAL_ORDER_STRIDE (1000) e interpolação between beforeRank/afterRank",
+     "Re-indexação densa de fallback (buildFallbackManualOrderUpdates) quando faltam ranks duráveis ou o gap é insuficiente",
+     "Ranks inválidos forçando fallback",
+     "mergeVisibleOrderIntoKnownOrder preservando itens filtrados/colapsados na ordem global conhecida"
+    ],
+    "notes": "O Hydra não tem conceito de manualOrder/rank: a ordem é um array de paths persistido cru em localStorage (App.tsx:1931-1937, chave 'hydra:worktrees_order[:<path>]'). buildSparseManualOrderUpdates é port fiel mas só chamado por worktree-manual-order.ts (ilha morta). Ausência de ranks significa que itens filtrados/colapsados não são preservados por rank — são descartados do array persistido se não estiverem presentes.",
+    "note": "Atualizações esparsas de ordem manual geradas no drop do pointer."
+   }
+  },
+  {
+   "id": "D06-019",
+   "capability": "Geração de atualizações de ordem manual para reordenação dentro de grupos visíveis ou drop entre grupos/lanes",
+   "orca_evidence": [
+    "components/sidebar/worktree-manual-order.ts:108-251"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:747"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "buildManualOrderUpdatesForVisibleGroups reordenando o grupo de origem e mantendo os demais grupos intactos",
+     "buildManualOrderUpdatesForGroupDrop transferindo itens entre grupos na posição exata de drop",
+     "shouldWriteManualOrderForGroupDrop autorizando gravação conforme o modo de ordenação ativo (manual vs outros)",
+     "Drops entre lanes fora do modo manual tratados estritamente como mudança de status, sem sobrescrever ordem"
+    ],
+    "notes": "A reordenação intra-grupo (mesmo projeto) existe e persiste (WorktreeSidebar.tsx:449-459 → onReorderWorktrees → App.tsx:1922-1937), mas: (a) não há transferência de worktree entre projetos/lanes (se draggedPath não pertence ao projeto alvo, fromIdx === -1 e o drop é no-op, :449-453); (b) não existe gating por modo de ordenação nem stamp de manualOrder; (c) os três builders Orca são ports mortos (0 call sites).",
+    "note": "Só reordenação dentro do grupo de origem; drop entre grupos/lanes não commita."
+   },
+   "par": [
+    "PAR-88"
+   ]
+  },
+  {
+   "id": "D06-020",
+   "capability": "Catálogo de ordem manual com suporte a worktrees git e pastas em clusters multi-host",
+   "orca_evidence": [
+    "components/sidebar/worktree-manual-order-catalog.ts:8-48"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:1922-1937",
+     "src/components/sidebar/WorktreeList.tsx:776"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "buildWorktreeManualOrderCatalog combinando worktrees git e folder workspaces (folderWorkspaceToWorktree), excluindo arquivados",
+     "Ordenação por manualOrder decrescente (ou sortOrder) com desempate por compareWorktreeSortLabel",
+     "Consistência em clusters multi-host de mesmo ID (rank durável só se todas as instâncias concordarem)",
+     "Retorno de orderedIds únicos e rankByWorktreeId validado"
+    ],
+    "notes": "Não existe buildWorktreeManualOrderCatalog nem catálogo de ranks no Hydra (a ordem vive como array ordenado por projeto, App.tsx:1922-1937). A validação multi-host de rank durável é inexistente — a ordenação por host é feita por identidade de host em worktree-sidebar-row-preference.ts / visible-worktree-indexes.ts, sem relação com manualOrder. Buscas: nome (0), semântica (manualOrder/rankByWorktreeId → nenhum uso vivo), comportamento (ausente).",
+    "note": "Catálogo de ordem manual parcial para clusters multi-host."
+   }
+  },
+  {
+   "id": "D06-021",
+   "capability": "Detecção de intenção de multi-seleção por teclas modificadoras (Shift / Cmd / Ctrl)",
+   "orca_evidence": [
+    "components/sidebar/worktree-multi-selection.ts:16-24"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/worktree-card-model.ts:22-25"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getWorktreeSelectionIntent avaliando shiftKey/metaKey/ctrlKey no evento de clique",
+     "Intenção 'range' com Shift",
+     "Intenção 'toggle' com Cmd (macOS) ou Ctrl (Win/Linux)",
+     "Intenção padrão 'replace' sem modificadores"
+    ],
+    "notes": "Não existe multi-seleção de worktrees no Hydra. As únicas marcas são props vestigiais nunca passadas: isMultiSelected/selectedWorktrees (worktree-card-model.ts:22-25, use-worktree-card-controller.ts:81-84) — grep por atribuição dessas props fora do controller/surface → 0 hits. Os únicos usos de ctrlKey/metaKey no sidebar são em SidebarAgentsList.tsx:232-233,566-568 (seleção de linhas de agente, outro domínio). Nenhum arquivo worktree-multi-selection no Hydra.",
+    "note": "Sem detecção de multi-seleção por modificadores."
+   },
+   "par": [
+    "PAR-08"
+   ]
+  },
+  {
+   "id": "D06-022",
+   "capability": "Atualização de seleção unitária, toggle e extensão de intervalo contínuo (range)",
+   "orca_evidence": [
+    "components/sidebar/worktree-multi-selection.ts:26-67"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:373-386"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "updateWorktreeSelection processando intenção sobre a lista de IDs visíveis",
+     "Intenção 'replace' com nova âncora",
+     "Intenção 'toggle' adicionando/removendo o target preservando o restante",
+     "Intenção 'range' selecionando o slice inclusivo entre âncora e alvo, com fallback para seleção exclusiva"
+    ],
+    "notes": "Nenhuma das funções existe (grep updateWorktreeSelection → 0). O clique no card apenas ativa a worktree (WorktreeList.tsx:363-410 → onSelectGitWorktree); não há estado de conjunto selecionado nem âncora.",
+    "note": "Sem toggle/range de seleção."
+   },
+   "par": [
+    "PAR-08"
+   ]
+  },
+  {
+   "id": "D06-023",
+   "capability": "Poda de seleção de worktrees ocultas por filtros e seleção por área retangular (marquee)",
+   "orca_evidence": [
+    "components/sidebar/worktree-multi-selection.ts:69-123"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:216-249"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "pruneWorktreeSelection removendo worktrees fora de visibleIds e reancorando",
+     "updateWorktreeAreaSelection em ordem estrita de visibleIds",
+     "Modo aditivo incorporando IDs e definindo a âncora no último ID da área",
+     "Modo não aditivo substituindo/limpando a seleção",
+     "areWorktreeSelectionsEqual comparando conjuntos"
+    ],
+    "notes": "Não há marquee/area selection nem seleção múltipla no sidebar. O Hydra calcula a lista visível (visible-worktrees.ts:244-290, setVisibleWorktreeIds em :273) apenas para atalhos Cmd+1–9, não para poda de seleção. Grep por marquee/selectionAnchor/areaSelection em src/components/sidebar → 0 hits.",
+    "note": "Sem poda de seleção/marquee."
+   },
+   "par": [
+    "PAR-08"
+   ]
+  },
+  {
+   "id": "D06-024",
+   "capability": "Regras de elegibilidade de parentesco e prevenção de ciclos de linhagem",
+   "orca_evidence": [
+    "components/sidebar/worktree-parent-eligibility.ts:13-50",
+    "components/sidebar/worktree-parent-candidates.ts:13-76"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:3163-3172",
+     "src/components/sidebar/ParentPickerModal.tsx:119-160"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "isEligibleWorktreeParent exigindo mesmo repositório (repoId)",
+     "Compatibilidade de host de execução (childHostId === candidateHostId) e mesmo projectId",
+     "Exclusão de worktrees arquivadas da elegibilidade",
+     "canAssignWorktreeParent rejeitando o pai atual válido da worktree",
+     "Detecção de ciclos transitivos percorrendo ancestrais via getLineageRenderInfo",
+     "Rejeição de candidatos em loops pré-existentes (cyclicLineageIds)"
+    ],
+    "notes": "A elegibilidade é montada inline no App: eligibleParents = todos os projetos + todas as gitWorktrees, filtrando somente o próprio alvo (App.tsx:3164-3172 e :3289-3296). Não há isEligibleWorktreeParent/canAssignWorktreeParent (grep → 0), nenhum escopo por repo/host/projeto, nenhuma exclusão de arquivadas e nenhuma detecção de ciclo. O drop-to-parent por arrasto não existe (isLineageDropTarget nunca é passado — worktree-card-surface.tsx:86 tem o atributo, mas o controller usa default false, use-worktree-card-controller.ts:102).",
+    "note": "Elegibilidade/anti-ciclo parciais."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D06-025",
+   "capability": "Cálculo de posicionamento e ancoragem virtual do popover de seleção de pai (WorktreeParentPickerPopover)",
+   "orca_evidence": [
+    "components/sidebar/worktree-parent-picker-placement.ts:1-33",
+    "components/sidebar/WorktreeParentPickerPopover.tsx:165-184",
+    "components/sidebar/WorktreeParentPickerPopover.tsx:210-230"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/ParentPickerModal.tsx:67-77",
+     "src/components/sidebar/ParentPickerModal.tsx:33-40"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "estimateWorktreeParentPickerHeight (bordas 2px + header 28px + input 49px + lista até PICKER_LIST_MAX_HEIGHT=288px com PICKER_ROW_HEIGHT=56px)",
+     "clampWorktreeParentPickerAnchorTop limitando ao viewport com PICKER_VIEWPORT_PADDING (12px)",
+     "Âncora virtual (virtualAnchorRef/DOMRect medido) para posicionamento Radix correto sob transform CSS",
+     "Listeners de 'resize'/'scroll' da janela recalculando anchorRect e viewportHeight com o popover aberto"
+    ],
+    "notes": "O Hydra substituiu o popover ancorado por um modal centralizado 'fixed inset-0 ... items-center justify-center' (ParentPickerModal.tsx:70). Não existe estimativa de altura, clamp de âncora, âncora virtual nem listeners de resize/scroll (grep estimateWorktreeParentPickerHeight / clampWorktreeParentPickerAnchorTop / addEventListener('resize') no sidebar → 0). Buscas: nome (0), marcação (role=dialog ausente; div overlay), comportamento (modal sem geometria), backend (n/a)."
+   }
+  },
+  {
+   "id": "D06-026",
+   "capability": "Filtro fuzzy e ordenação de candidatos a pai de worktree",
+   "orca_evidence": [
+    "components/sidebar/worktree-parent-picker-filtering.ts:4-34",
+    "components/sidebar/WorktreeParentPickerPopover.tsx:232-255"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/ParentPickerModal.tsx:55-65",
+     "src/components/sidebar/ParentPickerModal.tsx:100-113"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Score/relevância via defaultFilter do cmdk com ordenação por score decrescente",
+     "Reset do índice destacado (highlightedIndex = 0) ao mudar o termo",
+     "Rolagem da lista virtual ao topo (virtualizer.scrollToOffset(0))",
+     "clampWorktreeParentPickerIndex mantendo o índice ativo dentro do array filtrado"
+    ],
+    "notes": "O modal filtra por substring case-insensitive sobre name/path/branch — equivalente parcial do getWorktreeParentPickerItemValue (ParentPickerModal.tsx:55-65) — sem pontuação fuzzy, sem ranking e sem índice destacado (a lista é renderizada diretamente, :119, e não há estado de highlight nem virtualização)."
+   }
+  },
+  {
+   "id": "D06-027",
+   "capability": "Navegação por teclado, acessibilidade e composição IME no popover de seleção de pai",
+   "orca_evidence": [
+    "components/sidebar/WorktreeParentPickerPopover.tsx:50-137",
+    "components/sidebar/WorktreeParentPickerPopover.tsx:280-345"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/ParentPickerModal.tsx:33-52",
+     "src/components/sidebar/ParentPickerModal.tsx:100-107"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "ArrowDown/ArrowUp avançando/recuando o candidato ativo",
+     "Home/End indo ao primeiro/último candidato",
+     "Enter selecionando o candidato destacado",
+     "Ignorar eventos durante composição IME (isImeCompositionKeyDown)",
+     "Sincronização de aria-activedescendant com a opção destacada",
+     "Restauração de foco ao container focusável mais próximo via getWorktreeParentPickerFocusRestoreTarget"
+    ],
+    "notes": "O modal foca o input ao abrir (ParentPickerModal.tsx:34-40) e trata apenas Escape via listener global (window keydown, :44-52). Não há navegação por setas/Home/End/Enter, nem tratamento de IME, nem aria-activedescendant, nem restauração de foco (grep handleWorktreeParentPickerKeyDown / getWorktreeParentPickerFocusRestoreTarget → 0)."
+   }
+  },
+  {
+   "id": "D06-028",
+   "capability": "Execução da ação de seleção de pai com tratamento de erro e fechamento do popover",
+   "orca_evidence": [
+    "components/sidebar/WorktreeParentPickerPopover.tsx:64-106",
+    "components/sidebar/WorktreeParentPickerPopover.tsx:187-208"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:3258-3268",
+     "src/components/sidebar/ParentPickerModal.tsx:163-176"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Tratamento de rejeição da promise de atribuição com toast traduzido (WorktreeParentPickerPopover.failedSetParent)",
+     "Supressão do fechamento por clique externo nos primeiros 150ms (suppressInitialOutsideCloseRef/setTimeout)"
+    ],
+    "notes": "O clique no candidato dispara onSelect → atualiza worktreeLineage e persiste em localStorage, e fecha o modal (ParentPickerModal.tsx:125-126 → App.tsx:3961-3967). A ação é síncrona (localStorage), logo não há caminho de erro/toast; a chave i18n 'failedSetParent' não tem consumidor. Não há guarda de 150ms contra o clique que abriu o menu (o modal fecha no clique do backdrop, :71). O backend store real está ausente: src/store/slices/worktrees/metadata/worktree-lineage-actions.ts:1-5 é auto-stub (createAssignWorktreeParent: any = null).",
+    "note": "Ação de seleção de pai parcial."
+   }
+  },
+  {
+   "id": "D06-029",
+   "capability": "Renderização memoizada da linha de candidato no seletor de pai (WorktreeParentPickerRow)",
+   "orca_evidence": [
+    "components/sidebar/WorktreeParentPickerRow.tsx:11-53",
+    "components/sidebar/WorktreeParentPickerPopover.tsx:265-272"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/ParentPickerModal.tsx:119-160"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Componente memoizado (React.memo) para listas com centenas de opções",
+     "Indicador visual de status de atividade (StatusIndicator + getWorktreeStatusLabel com texto para leitores de tela)",
+     "Badge do repositório com cor personalizada (RepoBadgeMark)",
+     "Ícone de servidor (Server) para conexão remota SSH (connectionId presente)",
+     "Ícone de branch git (GitBranch) junto do branchDisplayName",
+     "Status de atividade em lote via useWorktreeActivityStatuses"
+    ],
+    "notes": "A linha do modal é um <button> inline não memoizado que exibe nome, branch em fonte mono, path e o badge 'Current' (ParentPickerModal.tsx:119-160). Não há status indicator, repo badge colorido, ícone de SSH, ícone de branch nem subscription de atividade (grep RepoBadgeMark / useWorktreeActivityStatuses no picker → 0)."
+   }
+  },
+  {
+   "id": "D06-030",
+   "capability": "Desaninhamento de worktrees com limpeza de vínculo de pai e notificação de erro em lote (unnestWorktrees)",
+   "orca_evidence": [
+    "components/sidebar/worktree-unnest.ts:10-31"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:3275",
+     "src/components/sidebar/ParentPickerModal.tsx:161-176"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "unnestWorktrees executando chamadas assíncronas paralelas updateWorktreeLineage(id, { noParent: true })",
+     "Captura de rejeição de promise com toast único traduzido (WorktreeList.failedUnnestWorkspace)",
+     "No-op para seleção vazia"
+    ],
+    "notes": "Remover o vínculo existe em três caminhos wired: item de menu 'Remove from Parent' no contexto de projeto/worktree/sessão (App.tsx:3275,3485,3594 — delete da chave em worktreeLineage + persistLineage para localStorage) e botão 'Remove Link' no modal (ParentPickerModal.tsx:167-175). É síncrono (localStorage), sem promise/erro/toast; a chave i18n 'failedUnnestWorkspace' não tem consumidor. A store real é auto-stub (worktree-lineage-actions.ts:1-5).",
+    "note": "Unnest parcial (sem limpeza em lote completa)."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D06-031",
+   "capability": "Ciclagem de navegação por teclado entre worktrees visíveis com resolução de host qualificado",
+   "orca_evidence": [
+    "components/sidebar/worktree-keyboard-cycle.ts:13-96"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/viewport/use-listbox-keyboard.ts:104",
+     "src/components/sidebar/worktree-list/viewport/use-listbox-keyboard.ts:72"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Ciclagem sobre a lista de worktrees visíveis derivada das linhas renderizadas (getCyclableWorktreeIds/getCyclableWorktrees)",
+     "Enter pela extremidade oposta quando a worktree ativa não é ciclável (ex.: grupo colapsado)",
+     "Identidade qualificada por host (composeWorktreeHostIdentity) para diferenciar workspaces de mesmo ID em hosts distintos",
+     "Exclusão de folder workspaces da rotação",
+     "Deduplicação de worktree fixada (Pinned) mantida ciclável quando o grupo natural está colapsado"
+    ],
+    "notes": "O atalho existe e é wired: Cmd+Shift+ArrowUp/Down (App.tsx:2633-2641; definições em definitions-core-1.ts:46-59 com default Mod+Shift+Arrow{Up,Down}) chama handleNavigateWorkspace (App.tsx:1596-1609), que cicla com wrap-around sobre a lista de PROJETOS, não sobre worktrees visíveis. O port adjacente keyboard-cycle.ts (getFocusableRowKeys/resolveCycledFocusKey, :23-64) tem semântica própria (inclui projetos/sessões, chave 'type:id', sem identidade de host) e 0 importadores. A chave de ciclagem de worktrees qualificada por host não existe (grep getCyclableWorktreeIds/composeWorktreeHostIdentity no sidebar → 0).",
+    "note": "Ciclo de navegação por teclado entre rows visíveis ligado no viewport (sidebar.focusWorktreeList)."
+   }
+  },
+  {
+   "id": "D06-032",
+   "capability": "Preferência de linhas naturais sobre cópias duplicadas na seção fixada (Pinned)",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-row-preference.ts:7-64"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-sidebar-row-preference.ts:7-51",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:16"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Port fiel e alcançável a partir do mount: App.tsx:3636 → WorktreeSidebar → WorktreeList/App importam visible-worktrees.ts, cujo getVisibleWorktreeShortcutTargets (:380-398) e a ordenação (:377) chamam computeRenderedSidebarWorktrees/Order, que por sua vez chamam getRenderedWorktreesInSidebarOrder (rendered-sidebar-worktree-order.ts:105). getPreferredWorktreeRows implementa a política padrão (cópia natural, fallback Pinned) e 'single-location' (:7-51); getRenderedWorktreesInSidebarOrder preserva a ordem visual incluindo folder workspaces convertidas (:53-64). Mesma semântica de identidade de host (getWorktreeHostIdentity). Nota: no Hydra este caminho alimenta a numeração Cmd+1–9, não uma navegação por teclado de worktrees.",
+    "note": "Preferência de linhas naturais sobre duplicatas Pinned segue ligada."
+   }
+  },
+  {
+   "id": "D06-033",
+   "capability": "Cálculo de limites de rolagem e execução de scroll suave para revelação de elementos (reveal)",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-reveal.ts:3-68"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:29",
+     "src/components/sidebar/WorktreeSidebar.tsx:428"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getScrollTopToRevealBounds calculando o scrollTop de enquadramento dos limites do elemento",
+     "Recuo superior WORKTREE_SIDEBAR_REVEAL_TOP_INSET (46px = 40px header + 6px clearance) para não cobrir o card com headers fixos",
+     "Conversão de 'smooth' em 'auto' sob matchMedia('(prefers-reduced-motion: reduce)')",
+     "Callback onScrollIssued(targetTop) para guardas de rolagem"
+    ],
+    "notes": "A revelação existe e é wired: handleRevealCurrent expande projeto/grupo colapsados, destaca o card (flashRevealedWorktree) e rola com el.scrollIntoView({behavior:'smooth', block:'nearest'}) (WorktreeSidebar.tsx:382-415). Faltam o cálculo explícito de scrollTop com inset de header, o respeito a prefers-reduced-motion e o callback de rolagem. Existe hook de reduced motion no repo (src/hooks/usePrefersReducedMotion.ts) mas não é usado neste caminho (grep 'prefers-reduced-motion' em src/components/sidebar → 0).",
+    "note": "Reveal rola por índice mas align 'auto'; sem scroll suave/limites do Orca."
+   }
+  },
+  {
+   "id": "D06-034",
+   "capability": "Proteção contra cancelamento prematuro de animação de scroll de revelação (scroll settling guard)",
+   "orca_evidence": [
+    "components/sidebar/worktree-sidebar-reveal-scroll-settle.ts:1-35"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/hooks/virtualized-scroll-anchor-restore.ts:1-40"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "createPendingRevealScroll registrando targetTop e expiração REVEAL_SCROLL_SETTLE_TIMEOUT_MS (1000ms)",
+     "isRevealScrollSettling comparando scrollTop com targetTop dentro de SETTLED_TOLERANCE_PX (1px)",
+     "Bloqueio de rotinas concorrentes de restauração de scroll que sobrescrevam scrollTop durante a animação",
+     "Expiração automática para não travar a guarda com alvo inalcançável"
+    ],
+    "notes": "Não existe guarda de settling de reveal: grep createPendingRevealScroll/isRevealScrollSettling/setTimeout de reveal → 0 hits; não há arquivo worktree-sidebar-reveal-scroll-settle. O scroll de reveal é um scrollIntoView fire-and-forget (WorktreeSidebar.tsx:413) sem nenhum estado de 'scroll em voo'. O hook virtualized-scroll-anchor-restore.ts trata restauração de âncora de virtualização, não o settling de reveal.",
+    "note": "Sem guard de settling do scroll de reveal."
+   }
+  },
+  {
+   "id": "D06-035",
+   "capability": "Proveniência, herança e resolução de sobreposições de visibilidade de fontes de worktree externas",
+   "orca_evidence": [
+    "components/sidebar/worktree-visibility-source-provenance.ts:1-125"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/lib/worktree-visibility-sources.ts:261-273",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:379-395"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "listInheritedWorktreeVisibilitySources listando as fontes herdadas do global com seus valores padrão",
+     "worktreeVisibilityValueLabel retornando os rótulos traduzidos 'Show'/'Hide'",
+     "getWorktreeVisibilityOverrideNotice exibindo o aviso 'Overriding global setting: Show/Hide' quando o projeto diverge do global",
+     "getWorktreeVisibilitySourceNote exibindo a nota 'Added in this project only.' para fontes exclusivas do projeto"
+    ],
+    "notes": "A base existe e é wired: globalWorktreeVisibilitySourceValue (worktree-visibility-sources.ts:261-273) e getWorktreeVisibilitySourceProvenance (:345-370, com os três kinds 'global'/'project-override'/'project-source') são consumidos por WorktreeVisibilityDialog.tsx:379-395, renderizado em WorktreeSidebar.tsx:1142. Faltam os 4 auxiliares de rótulo/aviso; as chaves i18n en.json:6355-6356 (overridingGlobal, projectOnly) existem mas estão órfãs (grep → 0 consumidores). 'Use global' é implementado no diálogo (:420-430) porém sem o texto de aviso correspondente.",
+    "note": "Proveniência/overlap de visibilidade parcial."
+   }
   }
+ ],
+ "summary": {
+  "parity": 1,
+  "partial": 12,
+  "missing": 22,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
 }

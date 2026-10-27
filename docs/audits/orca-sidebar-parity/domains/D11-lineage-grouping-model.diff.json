@@ -1,471 +1,436 @@
 {
-  "domain": "D11-lineage-grouping-model",
-  "rows": [
-    {
-      "id": "D11-001",
-      "capability": "Identificação de workspaces da branch padrão para controle de visibilidade derivada e filtragem",
-      "orca_evidence": [
-        "components/sidebar/default-branch-workspace.ts:4"
-      ],
-      "hydra": {
-        "status": "parity",
-        "evidence": [
-          "src/components/sidebar/default-branch-workspace.ts:4",
-          "src/components/sidebar/default-branch-workspace.ts:6",
-          "src/components/sidebar/visible-worktrees.ts:132",
-          "src/components/sidebar/visible-worktrees.ts:111",
-          "src/components/sidebar/WorktreeSidebar.tsx:537",
-          "src/components/sidebar/WorktreeList.tsx:19"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Regra idêntica à do Orca (isMainWorktree && branch.trim() !== '' && ephemeralVmCheckoutMode !== 'provisioned-root'). Alcançável: mount WorktreeSidebar.tsx:19 -> WorktreeList.tsx:19 (import de valor de visible-worktrees) -> visible-worktrees.ts:49 -> default-branch-workspace.ts:4; executado no fallback de atalhos (App.tsx:58 -> App.tsx:2456 -> visible-worktrees.ts:326/380). A lista pintada aplica o mesmo efeito por código inline próprio em WorktreeSidebar.tsx:537 (critério ligeiramente diferente: preserva o worktree ativo)."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-002",
-      "capability": "Extração de IDs de worktrees em seus grupos naturais com exclusão de duplicatas da seção fixada",
-      "orca_evidence": [
-        "components/sidebar/natural-worktree-ids.ts:16"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Entrada: array de linhas do sidebar contendo type, sectionKey e objeto worktree opcional",
-          "Saída: Set<string> contendo os IDs das worktrees renderizadas em seu grupo natural",
-          "Regra de derivação: itera sobre as linhas e adiciona row.worktree.id apenas para linhas onde row.type === 'item' E row.sectionKey !== PINNED_GROUP_KEY E row.worktree está presente",
-          "Exclui duplicatas que aparecem na seção PINNED para que não ocupem slots de drag espúrios no reordenamento",
-          "Ignora todos os demais tipos de linha (header, host-header, imported-worktrees-card, new-external-worktrees-inbox, pending-creation, folder-workspace)",
-          "Utiliza loop direto em vez de flatMap para evitar alocações de arrays temporários por reconstrução de modelo"
-        ],
-        "notes": "O arquivo existe (src/components/sidebar/natural-worktree-ids.ts:16) com a regra exata, mas é código morto: seu único importador de valor é src/components/sidebar/worktree-drag-units.ts:3 (uso em :23), e worktree-drag-units.ts é inalcançável do mount (só é importado como `import type` em src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:2). BFS de imports de valor a partir de App.tsx/WorktreeSidebar.tsx/SidebarAgentsList.tsx não encontra o módulo; index/hydra_scope.json registra reachable_depth=null. Buscas adicionais: getNaturalWorktreeIds (só natural-worktree-ids.ts e worktree-drag-units.ts), PINNED_GROUP_KEY em modelo de drag natural (ausente), natural-worktree-ids.test (só teste)."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-003",
-      "capability": "Determinação de worktrees da seção Pinned por fixação explícita ou herança de linhagem de ancestrais fixados",
-      "orca_evidence": [
-        "components/sidebar/pinned-section-worktrees.ts:8",
-        "components/sidebar/pinned-section-worktrees.ts:43"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/pinned-section-worktrees.ts:8",
-          "src/components/sidebar/pinned-section-worktrees.ts:43",
-          "src/components/sidebar/worktree-list/grouping/build-rows.ts:25",
-          "src/components/sidebar/worktree-list/grouping/build-rows.ts:101",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:56",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:116",
-          "src/components/sidebar/visible-worktrees.ts:377",
-          "src/components/sidebar/WorktreeList.tsx:374"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Worktrees de Pinned renderizadas como seção própria no topo do sidebar: o resolvedor alcançável (build-rows.ts:101 -> emitPinnedGroup:138) só alimenta o modelo de linhas usado na numeração Cmd+1-9 (rendered-sidebar-worktree-order.ts:56/116 <- visible-worktrees.ts:377); a lista pintada (WorktreeList.renderProjectNode) não usa buildRows e não emite grupo Pinned.",
-          "Herança de presença em Pinned para descendentes de um ancestral fixado nos cards pintados: WorktreeCard recebe isPinned de um Set<string> de paths vindo do App (WorktreeList.tsx:374 <- App.tsx:426 pinnedWorktrees), sem propagação por linhagem."
-        ],
-        "notes": "O módulo é port fiel (fila de trabalho iterativa, isolamento por host com getWorktreeHostIdentity, sem recursão) e é alcançável/wired via build-rows.ts:25. O gap é a superfície: pinnedWorktrees do caminho pintado é um Set de paths por localStorage (App.tsx:431 hydra:worktree_lineage / App.tsx:424-426), não o worktree.isPinned do modelo Orca."
-      },
-      "par": [
-        "PAR-35"
-      ]
-    },
-    {
-      "id": "D11-004",
-      "capability": "Derivação de estado, tooltips e requisitos de reconexão para criação de worktree no header do repositório",
-      "orca_evidence": [
-        "components/sidebar/repo-header-create-state.ts:14"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Entrada: objeto repo (Repo), label exibido do repositório (string) e status da conexão SSH (SshConnectionStatus | null)",
-          "Saída: objeto RepoHeaderCreateState { disabled: boolean, tooltip: string, ariaLabel: string, requiresSshReconnect: boolean }",
-          "Regra de repositório pasta (!isGitRepoKind): disabled=false, tooltip/ariaLabel='Create workspace for {{label}}', requiresSshReconnect=false",
-          "Regra de repositório SSH com conexão pendente/bloqueada (desconectado, reconectando, erro ou nulo): disabled=true, tooltip='Reconnect SSH target before creating workspaces', ariaLabel='Reconnect SSH target before creating workspaces for {{label}}', requiresSshReconnect=true",
-          "Regra de repositório git conectado ou local: disabled=false, tooltip/ariaLabel='Create new worktree for {{label}}', requiresSshReconnect=false",
-          "Garante textos i18n traduzidos e descrições acessíveis para leitores de tela"
-        ],
-        "notes": "Não localizado após busca em src/components/sidebar/** por: getRepoHeaderCreateState, RepoHeaderCreateState, requiresSshReconnect, 'Reconnect SSH target', 'Create new worktree for', 'Create workspace for' (nada no Hydra; as 6 ocorrências dessas strings no índice hydra_labels.json são fixtures do teste Orca). O header de projeto é SectionHeader.tsx, cujo botão de criação tem label estático 'New workspace in this project' (SectionHeader.tsx:365-366, mesma label em :188-189 para grupo) sem derivação de tooltip/ariaLabel/disabled por repo.kind ou status SSH. ProjectHeaderActions.tsx:20 é apenas um contêiner de layout (nenhum estado de botão)."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-005",
-      "capability": "Hook de resolução de preferências de visibilidade padrão do proprietário do repositório",
-      "orca_evidence": [
-        "components/sidebar/use-repo-owner-visibility-defaults.ts:6"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Entrada: objeto Repo ou null",
-          "Saída: WorktreeVisibilityDefaults correspondente ao host do repositório ou undefined se repo for null",
-          "Regra de derivação: lê settings e worktreeVisibilityDefaultsByHost da useAppStore e invoca getRepoOwnerWorktreeVisibilityDefaults(repo, settings, defaultsByHost)",
-          "Permite que diferentes hosts executores (local vs SSH remoto) tenham políticas distintas de visibilidade padrão de branch e sono"
-        ],
-        "notes": "Não localizado após busca por useRepoOwnerVisibilityDefaults, getRepoOwnerWorktreeVisibilityDefaults, repoOwnerVisibility, ownerVisibility, 'getVisibilityDefaultsForHost'. Existe infraestrutura de defaults por host no store (src/store/slices/settings.ts:42 estado worktreeVisibilityDefaultsByHost, :183 inicial {}, :270 hydrateOwnerWorktreeVisibilityDefaults; escritores em src/store/repos/all-host-repo-catalog-actions.ts:169 e runtime-repo-catalog-actions.ts:108), mas nenhum hook/leitor resolve por (repo, settings, defaultsByHost): o diálogo consome apenas settings.worktree_visibility_defaults do host focado (WorktreeSidebar.tsx:1146)."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-006",
-      "capability": "Projeção memoizada de atividade de abas de terminal e navegador por worktree",
-      "orca_evidence": [
-        "components/sidebar/visible-worktree-activity-inputs.ts:8",
-        "components/sidebar/visible-worktree-activity-inputs.ts:20",
-        "components/sidebar/visible-worktree-activity-inputs.ts:31"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Entrada: tabsByWorktree (Record<string, TerminalTab[]>) e browserTabsByWorktree (Record<string, BrowserWorkspace[]>)",
-          "Saída: projeções mínimas contendo apenas { id: string } agrupadas por worktreeId",
-          "Regra de memoização: isola baldes (buckets) por worktreeId; alterações puramente de metadados (como renomeação de título de aba, URL, favicon ou cor) preservam a identidade da referência do balde anterior",
-          "Em atualizações com 300+ worktrees, inspeciona e recomputa apenas o balde modificado, reusando arrays estáveis para as worktrees irmãs",
-          "Remove projeções de baldes para worktrees excluídas",
-          "Evita recomputações desnecessárias do pipeline de ordenação e visibilidade do sidebar em eventos frequentes de título/status de abas"
-        ],
-        "notes": "Não localizado após busca por visible-worktree-activity-inputs, TerminalActivityTab, BrowserActivityTab, createVisibleWorktreeTerminalActivityProjection, getVisibleWorktreeTerminalActivityTabs, getVisibleWorktreeBrowserActivityTabs. Existe apenas a semântica grosseira de atividade (src/lib/worktree-activity-state.ts:24 getWorktreeIdsWithLiveAgent, :72 hasActiveWorkspaceActivity), consumida por visible-worktrees.ts:26/168-180; não há projeção memoizada de baldes { id } nem isolamento de identidade por worktreeId."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-007",
-      "capability": "Resolução e correspondência de escopo de host executor para visibilidade de worktrees",
-      "orca_evidence": [
-        "components/sidebar/visible-worktree-host-scope.ts:14",
-        "components/sidebar/visible-worktree-host-scope.ts:23"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/visible-worktree-host-scope.ts:14",
-          "src/components/sidebar/visible-worktree-host-scope.ts:23",
-          "src/components/sidebar/visible-worktrees.ts:367",
-          "src/components/sidebar/visible-worktrees.ts:373",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:45",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:91"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Filtro de escopo de host aplicado à lista pintada do sidebar: a lista pintada (WorktreeSidebar.getFilteredAndSortedWorktrees, WorktreeSidebar.tsx:533) não consulta workspaceHostScope/visibleWorkspaceHostIds; o efeito só existe no pipeline de atalhos/ordenação (visible-worktrees.ts:367/373 e rendered-sidebar-worktree-order.ts:45/91).",
-          "Ponto de entrada que altere o escopo: setWorkspaceHostScope (src/store/slices/ui/ui-slice-preference-actions.ts:68) e setVisibleWorkspaceHostIds (:77) não têm nenhum chamador em src/, então o conjunto resolvido é sempre null (todos os hosts) fora de testes."
-        ],
-        "notes": "Regra de resolução/correspondência idêntica à do Orca (visible-worktree-host-scope.ts:14-36) e alcançável a partir do mount via visible-worktrees.ts:50 (import) e rendered-sidebar-worktree-order.ts:21."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-008",
-      "capability": "Indexação memoizada via WeakMap de ancestrais não-arquivados e ranks de ordenação",
-      "orca_evidence": [
-        "components/sidebar/visible-worktree-indexes.ts:20",
-        "components/sidebar/visible-worktree-indexes.ts:41"
-      ],
-      "hydra": {
-        "status": "parity",
-        "evidence": [
-          "src/components/sidebar/visible-worktree-indexes.ts:18",
-          "src/components/sidebar/visible-worktree-indexes.ts:20",
-          "src/components/sidebar/visible-worktree-indexes.ts:39",
-          "src/components/sidebar/visible-worktree-indexes.ts:41",
-          "src/components/sidebar/visible-worktrees.ts:123",
-          "src/components/sidebar/visible-worktrees.ts:197"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Port fiel: WeakMap por worktreesByRepo (linha 18) filtrando isArchived e mantendo a ÚLTIMA linha na colisão de id (index.set sobrescreve, linhas 26-31); WeakMap por sortedIds (linha 39) mapeando id->rank. Ambos alcançáveis e chamados em computeVisibleWorktrees (visible-worktrees.ts:123 e :197)."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-009",
-      "capability": "Predicados de classificação de tipos de workspace para filtros e badges do sidebar",
-      "orca_evidence": [
-        "components/sidebar/visible-worktree-kinds.ts:12",
-        "components/sidebar/visible-worktree-kinds.ts:24",
-        "components/sidebar/visible-worktree-kinds.ts:31",
-        "components/sidebar/visible-worktree-kinds.ts:35",
-        "components/sidebar/visible-worktree-kinds.ts:47",
-        "components/sidebar/visible-worktree-kinds.ts:52"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/visible-worktree-kinds.ts:12",
-          "src/components/sidebar/visible-worktree-kinds.ts:24",
-          "src/components/sidebar/visible-worktree-kinds.ts:31",
-          "src/components/sidebar/visible-worktree-kinds.ts:35",
-          "src/components/sidebar/visible-worktree-kinds.ts:47",
-          "src/components/sidebar/visible-worktree-kinds.ts:52",
-          "src/components/sidebar/sidebar-filter-actions.ts:14",
-          "src/lib/worktree-activation.ts:289",
-          "src/components/sidebar/WorktreeSidebar.tsx:540"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Efeito de hideSleepingWorkspaces (isSleepingSweepExemptWorkspace / isSleepingSweepExemptionNarrowingList) sobre a lista pintada: nenhum uso de displayOptions.hideSleeping em WorktreeSidebar.tsx/WorktreeList.tsx; o filtro só roda no pipeline de atalhos (visible-worktrees.ts:168-180).",
-          "Efeito de hideAutomationGeneratedWorkspaces e hideCliCreatedWorkspaces sobre a lista pintada: expostos no menu de opções (WorkspaceOptionsMenu.tsx:433/447) mas ausentes de getFilteredAndSortedWorktrees (WorktreeSidebar.tsx:533-547).",
-          "Uso de isDetachedHeadWorkspace pelo card pintado: a lista pintada usa heurística inline por string de branch (WorktreeSidebar.tsx:540, 'w.branch !== \"HEAD\" && != \"(detached)\"'), enquanto o predicado Orca só é consumido em visible-worktrees.ts e em src/lib/worktree-activation.ts:289."
-        ],
-        "notes": "Os 6 símbolos existem nas linhas exatas do Orca e são alcançáveis (visible-worktrees.ts:44-48 reexporta/usa; sidebar-filter-actions.ts:14-25 alimenta o badge de Clear Filters). Os filtros que eles governam não são aplicados à lista pintada e os flags correspondentes do store só têm leitores (sidebar-filter-actions.ts:14-25) e nunca são elevados a true: a única escrita é o rebaixamento para false em src/lib/worktree-activation.ts:284-290, e os toggles do menu gravam apenas em prefs (WorktreeSidebar.tsx:348-351 handleDisplayOptionsChange -> App.tsx:468-476)."
-      },
-      "par": [
-        "PAR-51"
-      ]
-    },
-    {
-      "id": "D11-010",
-      "capability": "Pipeline central de cálculo e composição de filtros de worktrees visíveis com injeção de ancestrais",
-      "orca_evidence": [
-        "components/sidebar/visible-worktrees.ts:88",
-        "components/sidebar/visible-worktrees.ts:186",
-        "components/sidebar/visible-worktrees.ts:221",
-        "components/sidebar/visible-worktrees.ts:269"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/visible-worktrees.ts:111",
-          "src/components/sidebar/visible-worktrees.ts:123",
-          "src/components/sidebar/visible-worktrees.ts:127",
-          "src/components/sidebar/visible-worktrees.ts:132",
-          "src/components/sidebar/visible-worktrees.ts:197",
-          "src/components/sidebar/visible-worktrees.ts:209",
-          "src/components/sidebar/visible-worktrees.ts:244",
-          "src/components/sidebar/visible-worktrees.ts:326",
-          "src/components/sidebar/visible-worktrees.ts:377",
-          "src/App.tsx:58",
-          "src/App.tsx:2456",
-          "src/components/sidebar/WorktreeSidebar.tsx:533",
-          "src/components/sidebar/WorktreeList.tsx:241"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Passo 2 (dispositivos pareados/hideWorkspacesFromOtherDevices) na lista pintada",
-          "Passo 4 (proveniência de automação) na lista pintada",
-          "Passo 5 (proveniência CLI) na lista pintada",
-          "Passo 7 (escopo de host visível) na lista pintada",
-          "Passo 9 (sweep de workspaces dormindo, com abas wake-hint e agente vivo) na lista pintada",
-          "Passo 12 (injeção de ancestrais de linhagem para evitar órfãos) na lista pintada",
-          "Passos 3 e 6 (branch padrão/detached) aplicados pela função do port: a lista pintada usa filtros inline divergentes (WorktreeSidebar.tsx:537-542)"
-        ],
-        "notes": "Todos os 12 passos estão implementados em computeVisibleWorktrees (visible-worktrees.ts:111-243) e são executados em runtime pelo fallback de atalhos quando o WorktreeList está desmontado (App.tsx:58 -> App.tsx:2456 -> getVisibleWorktreeShortcutTargets:380 -> getVisibleWorktreeIds:326 -> computeVisibleWorktreeIds:244), e WorktreeList publica a ordem real em :241. A superfície 'lista de worktrees no sidebar' é, porém, servida por outro modelo: WorktreeList.renderProjectNode itera getFilteredAndSortedWorktrees (WorktreeSidebar.tsx:533-547) e aplica só 2 dos 12 passos; os flags do store lidos pelo pipeline (showSleepingWorkspaces, hideAutomationGeneratedWorkspaces, hideCliCreatedWorkspaces, hideWorkspacesFromOtherDevices, hideDefaultBranchWorkspace, alwaysShowDefaultBranchWorkspace, workspaceHostScope/visibleWorkspaceHostIds) nunca são elevados a true em src/ (única escrita: rebaixamento para false em src/lib/worktree-activation.ts:284-290; workspaceHostScope/visibleWorkspaceHostIds sem chamador algum)."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-011",
-      "capability": "Publicação e resolução de IDs e alvos para atalhos globais de teclado espelhando a ordem visual renderizada",
-      "orca_evidence": [
-        "components/sidebar/visible-worktrees.ts:244",
-        "components/sidebar/visible-worktrees.ts:250",
-        "components/sidebar/visible-worktrees.ts:254",
-        "components/sidebar/visible-worktrees.ts:304",
-        "components/sidebar/visible-worktrees.ts:358"
-      ],
-      "hydra": {
-        "status": "parity",
-        "evidence": [
-          "src/components/sidebar/visible-worktrees.ts:266",
-          "src/components/sidebar/visible-worktrees.ts:271",
-          "src/components/sidebar/visible-worktrees.ts:273",
-          "src/components/sidebar/visible-worktrees.ts:277",
-          "src/components/sidebar/visible-worktrees.ts:292",
-          "src/components/sidebar/visible-worktrees.ts:326",
-          "src/components/sidebar/visible-worktrees.ts:380",
-          "src/components/sidebar/WorktreeList.tsx:240",
-          "src/components/sidebar/WorktreeList.tsx:241",
-          "src/components/sidebar/WorktreeList.tsx:242",
-          "src/App.tsx:58",
-          "src/App.tsx:2456",
-          "src/lib/visible-worktree-index-jump.ts:24"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "Mecanismo publicado/resolvido idêntico ao Orca (_publishedVisibleIds/_publishedVisibleShortcutTargets em :266/:271, setters :273/:277 aceitando null, fallback buildVisibleWorktreeOptionsFromState :292 recomputando ordem + pipeline de linhas). Caminho vivo: WorktreeList.tsx:240-246 publica antes do paint e anula ao desmontar; App.tsx:2456 (Cmd+1-9) consome via findWorktreeForShortcutIndex (src/lib/visible-worktree-index-jump.ts:26)."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-012",
-      "capability": "Isolamento de visibilidade de workspaces criados por outros dispositivos pareados",
-      "orca_evidence": [
-        "components/sidebar/workspace-creator-visibility.ts:10",
-        "components/sidebar/workspace-creator-visibility.ts:12",
-        "components/sidebar/workspace-creator-visibility.ts:27",
-        "components/sidebar/workspace-creator-visibility.ts:46",
-        "components/sidebar/workspace-creator-visibility.ts:56"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/workspace-creator-visibility.ts:10",
-          "src/components/sidebar/workspace-creator-visibility.ts:26",
-          "src/components/sidebar/workspace-creator-visibility.ts:46",
-          "src/components/sidebar/workspace-creator-visibility.ts:65",
-          "src/components/sidebar/workspace-creator-visibility.ts:75",
-          "src/components/sidebar/visible-worktrees.ts:127",
-          "src/components/sidebar/visible-worktrees.ts:311",
-          "src/components/sidebar/visible-worktrees.ts:312"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Filtro hideWorkspacesFromOtherDevices aplicado à lista pintada do sidebar (WorktreeSidebar.getFilteredAndSortedWorktrees, WorktreeSidebar.tsx:533-547)",
-          "Ponto de entrada que ligue hideWorkspacesFromOtherDevices: o flag do store não tem escritor em src/ (apenas leitura em visible-worktrees.ts:311 e em sidebar-filter-actions.ts:20/61); filterFolderWorkspacesFromOtherDevices (:75) não tem chamador de produção."
-        ],
-        "notes": "Port fiel e alcançável (visible-worktrees.ts:46-48 importa getPairedDeviceIdsByEnvironment/isWorkspaceFromOtherDevice/filterFolderWorkspacesFromOtherDevices; uso em :127 e :311-313), incluindo preferência pelo device id autenticado vivo (status.pairedDeviceId) e fail-open. O efeito observável depende do flag nunca acionado."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-013",
-      "capability": "Geometria de hit-zone de drag-and-drop para aninhamento de linhagem e cálculo de desaninhamento em reordenação",
-      "orca_evidence": [
-        "components/sidebar/worktree-lineage-drag-drop.ts:13",
-        "components/sidebar/worktree-lineage-drag-drop.ts:28",
-        "components/sidebar/worktree-lineage-drag-drop.ts:61"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "isWorktreeLineageDropZoneHit: calcula calhas superior e inferior de reordenação (limitadas a min(altura * 0.2, 8px)); retorna true se o ponteiro Y estiver na zona central de aninhamento, permitindo que o topo e a base permaneçam para soltar em reordenação",
-          "Rejeita retângulos vazios ou invertidos (altura <= 0)",
-          "getWorktreeLineageDropTargetId: localiza a linha [data-worktree-drag-id] dentro do container, encontra o conteúdo pai [data-worktree-card-parent-content], exclui linhas filhas aninhadas para manter hit zones isoladas, e valida a posição do ponteiro",
-          "getReorderedWorktreeIdsToUnnest: identifica cards arrastados que possuíam pai válido na linhagem e devem ter sua linhagem limpa (desaninhamento) ao serem movidos para outra posição na lista",
-          "Não desaninha cards selecionados que estão fora do grupo de origem do drag",
-          "Trata linhagem legada apenas inline e não recorre a inline quando o mapa lateral possui entrada com pai inválido/obsoleto"
-        ],
-        "notes": "Não localizado após busca por worktree-lineage-drag-drop, isWorktreeLineageDropZoneHit, getWorktreeLineageDropTargetId, getReorderedWorktreeIdsToUnnest, dropZone, nest, 'data-worktree-drag-id'. O módulo não existe; 'data-worktree-drag-id' aparece só em módulos inalcançáveis (src/components/sidebar/worktree-list/pointer-drag-dom.ts:47,52-53; src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:134/138, este último só alcançável para o preview de drop de header). O drag pintado é reordenação plana de projetos/worktrees (WorktreeSidebar.tsx:484-502 handleProjectDrop, WorktreeList.tsx:389-398 onWorktreeDragStart/Over/Drop) sem zona central de aninhamento de linhagem. Aninhamento existe apenas por menu: ParentPickerModal (App.tsx:3951) gravando em worktreeLineage local. Relacionado: PAR-43."
-      },
-      "par": [
-        "PAR-43"
-      ]
-    },
-    {
-      "id": "D11-014",
-      "capability": "Projeção de linhagem de worktrees, detecção de ciclos com memoização WeakMap e travessia hierárquica",
-      "orca_evidence": [
-        "components/sidebar/worktree-lineage-projection.ts:8",
-        "components/sidebar/worktree-lineage-projection.ts:15",
-        "components/sidebar/worktree-lineage-projection.ts:60",
-        "components/sidebar/worktree-lineage-projection.ts:84",
-        "components/sidebar/worktree-lineage-projection.ts:105",
-        "components/sidebar/worktree-lineage-projection.ts:128"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/worktree-lineage-projection.ts:8",
-          "src/components/sidebar/worktree-lineage-projection.ts:15",
-          "src/components/sidebar/worktree-lineage-projection.ts:38",
-          "src/components/sidebar/worktree-lineage-projection.ts:60",
-          "src/components/sidebar/worktree-lineage-projection.ts:84",
-          "src/components/sidebar/worktree-lineage-projection.ts:105",
-          "src/components/sidebar/worktree-lineage-projection.ts:128",
-          "src/components/sidebar/visible-worktrees.ts:39",
-          "src/components/sidebar/visible-worktrees.ts:217",
-          "src/components/sidebar/visible-worktrees.ts:225",
-          "src/components/sidebar/pinned-section-worktrees.ts:14",
-          "src/components/sidebar/worktree-list/grouping/row-builders.ts:6"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Renderização de cards aninhados por linhagem no sidebar: a indentação é fixa em lineageDepth 0 (WorktreeList.tsx:343, getWorktreeCardContentIndent); as constantes LINEAGE_* (worktree-list/rows/indentation.ts:13-17) não são exercitadas por nenhum consumidor pintado.",
-          "Chip/região de filhos de linhagem no card: showLineageChildChip é forçado a false (use-worktree-card-controller.ts:313) e worktree-card-parent-content.tsx não é referenciado pelo caminho pintado.",
-          "Estado de Pinned por seção derivado de linhagem no card (inPinnedSection nunca é passado: use-worktree-card-controller.ts:87-88/272-273)."
-        ],
-        "notes": "Port fiel, com os 6 símbolos nas linhas exatas do Orca (8/15/60/84/105/128) e memoização WeakMap de dois níveis (:38-57). Alcançável e usado por computeVisibleWorktrees (visible-worktrees.ts:50/217/225), pinned-section-worktrees.ts:14 e row-builders.ts:6. O efeito de árvore hierárquica de cards no sidebar pintado não existe. Relacionado: PAR-82 (persistência de expansão de linhagem)."
-      },
-      "par": [
-        "PAR-82"
-      ]
-    },
-    {
-      "id": "D11-015",
-      "capability": "Cache de manipuladores de toggle de grupos de linhagem para estabilidade referencial",
-      "orca_evidence": [
-        "components/sidebar/worktree-lineage-toggle-handler-cache.ts:3",
-        "components/sidebar/worktree-lineage-toggle-handler-cache.ts:9"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "createLineageToggleHandlerCache: recebe função toggleGroup e retorna getter (groupKey: string) => LineageToggleHandler",
-          "Mantém um Map interno de manipuladores indexado pela chave do grupo de linhagem",
-          "Garante identidade referencial idêntica para o mesmo groupKey entre sucessivos renders, permitindo que cards memoizados via React.memo (WorktreeCard) não re-renderizem em bumps de época de ordenação ou status",
-          "Manipulador encapsulado executa preventDefault() e stopPropagation() no evento de clique do mouse antes de chamar toggleGroup(groupKey)"
-        ],
-        "notes": "Não localizado após busca por createLineageToggleHandlerCache, LineageToggleHandler, worktree-lineage-toggle-handler-cache, 'lineage toggle'. O sidebar pintado só tem toggles de colapso de projeto/grupo (WorktreeSidebar.tsx:325-343 toggleProjectCollapse/toggleGroupCollapse) e o modelo sombra expõe getLineageGroupKey (worktree-list/grouping/group-keys.ts:100) sem cache de handler referencialmente estável. Relacionado: PAR-82."
-      },
-      "par": [
-        "PAR-82"
-      ]
-    },
-    {
-      "id": "D11-016",
-      "capability": "Índice de IDs de worktree inequívocos com detecção e remoção de colisões multi-host",
-      "orca_evidence": [
-        "components/sidebar/worktree-unambiguous-id-index.ts:3"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "buildUnambiguousWorktreeIdIndex: recebe lista de worktrees de múltiplos hosts e constrói Map<string, Worktree>",
-          "Se um ID não qualificado aparecer mais de uma vez (pertencente a hosts distintos), ele é removido do mapa e adicionado a um conjunto de IDs ambíguos",
-          "IDs únicos são preservados com segurança; consultas para IDs ambíguos retornam undefined para evitar resolução acidental do workspace errado",
-          "Preserva IDs únicos subsequentes mesmo após a detecção de uma colisão"
-        ],
-        "notes": "Não localizado após busca por worktree-unambiguous-id-index, buildUnambiguousWorktreeIdIndex, 'unambiguous' (só ocorrências não relacionadas em editor-autosave.ts:88, setup-script-prompt.ts:109-124, hooks/ipc-tab-switch.ts:178). O Hydra resolve colisão multi-host por identidade qualificada por host em vez de descartar o id ambíguo: src/store/worktree-repo-index.ts:34-39 colapsa por composeWorktreeHostIdentity, :49-55 documenta 'FIRST wins' em getIndexedWorktreeMap:79 (e getIndexedWorktreesById:86 devolve todos os donos). Semântica oposta à do Orca (que retorna undefined para ids ambíguos)."
-      },
-      "par": []
-    },
-    {
-      "id": "D11-017",
-      "capability": "Expansão O(N) de linhagem visível para seleção múltipla e reordenação profunda",
-      "orca_evidence": [
-        "components/sidebar/worktree-lineage-expansion.performance.test.ts:37"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "expandDraggedWorktreeIdsForVisibleLineage: expande a seleção de IDs arrastados para incluir automaticamente todos os descendentes visíveis na árvore",
-          "Executa em tempo linear O(N) lendo a profundidade (depth) de cada linha exatamente uma vez, mesmo quando todos os ancestrais estão selecionados",
-          "Deduplica IDs ausentes sem buscas quadráticas no array resultante",
-          "Garante paridade de ordenação com o modelo de referência em casos de IDs duplicados, IDs ausentes e valores de borda de profundidade"
-        ],
-        "notes": "A função existe (src/components/sidebar/worktree-manual-order.ts:36 expandDraggedWorktreeIdsForVisibleLineage) mas o módulo é inalcançável do mount: nenhum importador de valor em src/ (só `import type` em worktree-sidebar-drag-autoscroll.ts:1) e index/hydra_scope.json registra reachable_depth=null. Logo o efeito (expansão O(N) de descendentes visíveis na seleção arrastada) não é produzido em nenhum caminho alcançável; a lista pintada nem implementa multi-seleção de cards. Relacionado: PAR-08."
-      },
-      "par": [
-        "PAR-08"
-      ]
-    }
-  ],
-  "summary": {
-    "parity": 3,
-    "partial": 6,
-    "missing": 8,
-    "not-applicable": 0,
-    "out-of-scope": 0
+ "domain": "D11-lineage-grouping-model",
+ "rows": [
+  {
+   "id": "D11-001",
+   "capability": "Identificação de workspaces da branch padrão para controle de visibilidade derivada e filtragem",
+   "orca_evidence": [
+    "components/sidebar/default-branch-workspace.ts:4"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/default-branch-workspace.ts:4",
+     "src/components/sidebar/visible-worktrees.ts:132",
+     "src/components/sidebar/WorktreeSidebar.tsx:537"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Regra idêntica à do Orca (isMainWorktree && branch.trim() !== '' && ephemeralVmCheckoutMode !== 'provisioned-root'). Alcançável: mount WorktreeSidebar.tsx:19 -> WorktreeList.tsx:19 (import de valor de visible-worktrees) -> visible-worktrees.ts:49 -> default-branch-workspace.ts:4; executado no fallback de atalhos (App.tsx:58 -> App.tsx:2456 -> visible-worktrees.ts:326/380). A lista pintada aplica o mesmo efeito por código inline próprio em WorktreeSidebar.tsx:537 (critério ligeiramente diferente: preserva o worktree ativo).",
+    "note": "Identificação de branch padrão segue ligada."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-002",
+   "capability": "Extração de IDs de worktrees em seus grupos naturais com exclusão de duplicatas da seção fixada",
+   "orca_evidence": [
+    "components/sidebar/natural-worktree-ids.ts:16"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Entrada: array de linhas do sidebar contendo type, sectionKey e objeto worktree opcional",
+     "Saída: Set<string> contendo os IDs das worktrees renderizadas em seu grupo natural",
+     "Regra de derivação: itera sobre as linhas e adiciona row.worktree.id apenas para linhas onde row.type === 'item' E row.sectionKey !== PINNED_GROUP_KEY E row.worktree está presente",
+     "Exclui duplicatas que aparecem na seção PINNED para que não ocupem slots de drag espúrios no reordenamento",
+     "Ignora todos os demais tipos de linha (header, host-header, imported-worktrees-card, new-external-worktrees-inbox, pending-creation, folder-workspace)",
+     "Utiliza loop direto em vez de flatMap para evitar alocações de arrays temporários por reconstrução de modelo"
+    ],
+    "notes": "O arquivo existe (src/components/sidebar/natural-worktree-ids.ts:16) com a regra exata, mas é código morto: seu único importador de valor é src/components/sidebar/worktree-drag-units.ts:3 (uso em :23), e worktree-drag-units.ts é inalcançável do mount (só é importado como `import type` em src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:2). BFS de imports de valor a partir de App.tsx/WorktreeSidebar.tsx/SidebarAgentsList.tsx não encontra o módulo; index/hydra_scope.json registra reachable_depth=null. Buscas adicionais: getNaturalWorktreeIds (só natural-worktree-ids.ts e worktree-drag-units.ts), PINNED_GROUP_KEY em modelo de drag natural (ausente), natural-worktree-ids.test (só teste)."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-003",
+   "capability": "Determinação de worktrees da seção Pinned por fixação explícita ou herança de linhagem de ancestrais fixados",
+   "orca_evidence": [
+    "components/sidebar/pinned-section-worktrees.ts:8",
+    "components/sidebar/pinned-section-worktrees.ts:43"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/pinned-section-worktrees.ts:8",
+     "src/components/sidebar/WorktreeList.tsx:374"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Worktrees de Pinned renderizadas como seção própria no topo do sidebar: o resolvedor alcançável (build-rows.ts:101 -> emitPinnedGroup:138) só alimenta o modelo de linhas usado na numeração Cmd+1-9 (rendered-sidebar-worktree-order.ts:56/116 <- visible-worktrees.ts:377); a lista pintada (WorktreeList.renderProjectNode) não usa buildRows e não emite grupo Pinned.",
+     "Herança de presença em Pinned para descendentes de um ancestral fixado nos cards pintados: WorktreeCard recebe isPinned de um Set<string> de paths vindo do App (WorktreeList.tsx:374 <- App.tsx:426 pinnedWorktrees), sem propagação por linhagem."
+    ],
+    "notes": "O módulo é port fiel (fila de trabalho iterativa, isolamento por host com getWorktreeHostIdentity, sem recursão) e é alcançável/wired via build-rows.ts:25. O gap é a superfície: pinnedWorktrees do caminho pintado é um Set de paths por localStorage (App.tsx:431 hydra:worktree_lineage / App.tsx:424-426), não o worktree.isPinned do modelo Orca.",
+    "note": "Pinned por herança de linhagem parcial."
+   },
+   "par": [
+    "PAR-35"
+   ]
+  },
+  {
+   "id": "D11-004",
+   "capability": "Derivação de estado, tooltips e requisitos de reconexão para criação de worktree no header do repositório",
+   "orca_evidence": [
+    "components/sidebar/repo-header-create-state.ts:14"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Entrada: objeto repo (Repo), label exibido do repositório (string) e status da conexão SSH (SshConnectionStatus | null)",
+     "Saída: objeto RepoHeaderCreateState { disabled: boolean, tooltip: string, ariaLabel: string, requiresSshReconnect: boolean }",
+     "Regra de repositório pasta (!isGitRepoKind): disabled=false, tooltip/ariaLabel='Create workspace for {{label}}', requiresSshReconnect=false",
+     "Regra de repositório SSH com conexão pendente/bloqueada (desconectado, reconectando, erro ou nulo): disabled=true, tooltip='Reconnect SSH target before creating workspaces', ariaLabel='Reconnect SSH target before creating workspaces for {{label}}', requiresSshReconnect=true",
+     "Regra de repositório git conectado ou local: disabled=false, tooltip/ariaLabel='Create new worktree for {{label}}', requiresSshReconnect=false",
+     "Garante textos i18n traduzidos e descrições acessíveis para leitores de tela"
+    ],
+    "notes": "Não localizado após busca em src/components/sidebar/** por: getRepoHeaderCreateState, RepoHeaderCreateState, requiresSshReconnect, 'Reconnect SSH target', 'Create new worktree for', 'Create workspace for' (nada no Hydra; as 6 ocorrências dessas strings no índice hydra_labels.json são fixtures do teste Orca). O header de projeto é SectionHeader.tsx, cujo botão de criação tem label estático 'New workspace in this project' (SectionHeader.tsx:365-366, mesma label em :188-189 para grupo) sem derivação de tooltip/ariaLabel/disabled por repo.kind ou status SSH. ProjectHeaderActions.tsx:20 é apenas um contêiner de layout (nenhum estado de botão)."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-005",
+   "capability": "Hook de resolução de preferências de visibilidade padrão do proprietário do repositório",
+   "orca_evidence": [
+    "components/sidebar/use-repo-owner-visibility-defaults.ts:6"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Entrada: objeto Repo ou null",
+     "Saída: WorktreeVisibilityDefaults correspondente ao host do repositório ou undefined se repo for null",
+     "Regra de derivação: lê settings e worktreeVisibilityDefaultsByHost da useAppStore e invoca getRepoOwnerWorktreeVisibilityDefaults(repo, settings, defaultsByHost)",
+     "Permite que diferentes hosts executores (local vs SSH remoto) tenham políticas distintas de visibilidade padrão de branch e sono"
+    ],
+    "notes": "Não localizado após busca por useRepoOwnerVisibilityDefaults, getRepoOwnerWorktreeVisibilityDefaults, repoOwnerVisibility, ownerVisibility, 'getVisibilityDefaultsForHost'. Existe infraestrutura de defaults por host no store (src/store/slices/settings.ts:42 estado worktreeVisibilityDefaultsByHost, :183 inicial {}, :270 hydrateOwnerWorktreeVisibilityDefaults; escritores em src/store/repos/all-host-repo-catalog-actions.ts:169 e runtime-repo-catalog-actions.ts:108), mas nenhum hook/leitor resolve por (repo, settings, defaultsByHost): o diálogo consome apenas settings.worktree_visibility_defaults do host focado (WorktreeSidebar.tsx:1146)."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-006",
+   "capability": "Projeção memoizada de atividade de abas de terminal e navegador por worktree",
+   "orca_evidence": [
+    "components/sidebar/visible-worktree-activity-inputs.ts:8",
+    "components/sidebar/visible-worktree-activity-inputs.ts:20",
+    "components/sidebar/visible-worktree-activity-inputs.ts:31"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Entrada: tabsByWorktree (Record<string, TerminalTab[]>) e browserTabsByWorktree (Record<string, BrowserWorkspace[]>)",
+     "Saída: projeções mínimas contendo apenas { id: string } agrupadas por worktreeId",
+     "Regra de memoização: isola baldes (buckets) por worktreeId; alterações puramente de metadados (como renomeação de título de aba, URL, favicon ou cor) preservam a identidade da referência do balde anterior",
+     "Em atualizações com 300+ worktrees, inspeciona e recomputa apenas o balde modificado, reusando arrays estáveis para as worktrees irmãs",
+     "Remove projeções de baldes para worktrees excluídas",
+     "Evita recomputações desnecessárias do pipeline de ordenação e visibilidade do sidebar em eventos frequentes de título/status de abas"
+    ],
+    "notes": "Não localizado após busca por visible-worktree-activity-inputs, TerminalActivityTab, BrowserActivityTab, createVisibleWorktreeTerminalActivityProjection, getVisibleWorktreeTerminalActivityTabs, getVisibleWorktreeBrowserActivityTabs. Existe apenas a semântica grosseira de atividade (src/lib/worktree-activity-state.ts:24 getWorktreeIdsWithLiveAgent, :72 hasActiveWorkspaceActivity), consumida por visible-worktrees.ts:26/168-180; não há projeção memoizada de baldes { id } nem isolamento de identidade por worktreeId."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-007",
+   "capability": "Resolução e correspondência de escopo de host executor para visibilidade de worktrees",
+   "orca_evidence": [
+    "components/sidebar/visible-worktree-host-scope.ts:14",
+    "components/sidebar/visible-worktree-host-scope.ts:23"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/visible-worktree-host-scope.ts:14",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:45"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Filtro de escopo de host aplicado à lista pintada do sidebar: a lista pintada (WorktreeSidebar.getFilteredAndSortedWorktrees, WorktreeSidebar.tsx:533) não consulta workspaceHostScope/visibleWorkspaceHostIds; o efeito só existe no pipeline de atalhos/ordenação (visible-worktrees.ts:367/373 e rendered-sidebar-worktree-order.ts:45/91).",
+     "Ponto de entrada que altere o escopo: setWorkspaceHostScope (src/store/slices/ui/ui-slice-preference-actions.ts:68) e setVisibleWorkspaceHostIds (:77) não têm nenhum chamador em src/, então o conjunto resolvido é sempre null (todos os hosts) fora de testes."
+    ],
+    "notes": "Regra de resolução/correspondência idêntica à do Orca (visible-worktree-host-scope.ts:14-36) e alcançável a partir do mount via visible-worktrees.ts:50 (import) e rendered-sidebar-worktree-order.ts:21.",
+    "note": "Escopo de host executor parcial."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-008",
+   "capability": "Indexação memoizada via WeakMap de ancestrais não-arquivados e ranks de ordenação",
+   "orca_evidence": [
+    "components/sidebar/visible-worktree-indexes.ts:20",
+    "components/sidebar/visible-worktree-indexes.ts:41"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/visible-worktree-indexes.ts:18",
+     "src/components/sidebar/visible-worktree-indexes.ts:20",
+     "src/components/sidebar/visible-worktree-indexes.ts:39",
+     "src/components/sidebar/visible-worktree-indexes.ts:41",
+     "src/components/sidebar/visible-worktrees.ts:123",
+     "src/components/sidebar/visible-worktrees.ts:197"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Port fiel: WeakMap por worktreesByRepo (linha 18) filtrando isArchived e mantendo a ÚLTIMA linha na colisão de id (index.set sobrescreve, linhas 26-31); WeakMap por sortedIds (linha 39) mapeando id->rank. Ambos alcançáveis e chamados em computeVisibleWorktrees (visible-worktrees.ts:123 e :197)."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-009",
+   "capability": "Predicados de classificação de tipos de workspace para filtros e badges do sidebar",
+   "orca_evidence": [
+    "components/sidebar/visible-worktree-kinds.ts:12",
+    "components/sidebar/visible-worktree-kinds.ts:24",
+    "components/sidebar/visible-worktree-kinds.ts:31",
+    "components/sidebar/visible-worktree-kinds.ts:35",
+    "components/sidebar/visible-worktree-kinds.ts:47",
+    "components/sidebar/visible-worktree-kinds.ts:52"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/visible-worktree-kinds.ts:12",
+     "src/components/sidebar/WorktreeSidebar.tsx:540"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Efeito de hideSleepingWorkspaces (isSleepingSweepExemptWorkspace / isSleepingSweepExemptionNarrowingList) sobre a lista pintada: nenhum uso de displayOptions.hideSleeping em WorktreeSidebar.tsx/WorktreeList.tsx; o filtro só roda no pipeline de atalhos (visible-worktrees.ts:168-180).",
+     "Efeito de hideAutomationGeneratedWorkspaces e hideCliCreatedWorkspaces sobre a lista pintada: expostos no menu de opções (WorkspaceOptionsMenu.tsx:433/447) mas ausentes de getFilteredAndSortedWorktrees (WorktreeSidebar.tsx:533-547).",
+     "Uso de isDetachedHeadWorkspace pelo card pintado: a lista pintada usa heurística inline por string de branch (WorktreeSidebar.tsx:540, 'w.branch !== \"HEAD\" && != \"(detached)\"'), enquanto o predicado Orca só é consumido em visible-worktrees.ts e em src/lib/worktree-activation.ts:289."
+    ],
+    "notes": "Os 6 símbolos existem nas linhas exatas do Orca e são alcançáveis (visible-worktrees.ts:44-48 reexporta/usa; sidebar-filter-actions.ts:14-25 alimenta o badge de Clear Filters). Os filtros que eles governam não são aplicados à lista pintada e os flags correspondentes do store só têm leitores (sidebar-filter-actions.ts:14-25) e nunca são elevados a true: a única escrita é o rebaixamento para false em src/lib/worktree-activation.ts:284-290, e os toggles do menu gravam apenas em prefs (WorktreeSidebar.tsx:348-351 handleDisplayOptionsChange -> App.tsx:468-476).",
+    "note": "Predicados de tipo parcial."
+   },
+   "par": [
+    "PAR-51"
+   ]
+  },
+  {
+   "id": "D11-010",
+   "capability": "Pipeline central de cálculo e composição de filtros de worktrees visíveis com injeção de ancestrais",
+   "orca_evidence": [
+    "components/sidebar/visible-worktrees.ts:88",
+    "components/sidebar/visible-worktrees.ts:186",
+    "components/sidebar/visible-worktrees.ts:221",
+    "components/sidebar/visible-worktrees.ts:269"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/visible-worktrees.ts:111",
+     "src/components/sidebar/WorktreeList.tsx:241"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Passo 2 (dispositivos pareados/hideWorkspacesFromOtherDevices) na lista pintada",
+     "Passo 4 (proveniência de automação) na lista pintada",
+     "Passo 5 (proveniência CLI) na lista pintada",
+     "Passo 7 (escopo de host visível) na lista pintada",
+     "Passo 9 (sweep de workspaces dormindo, com abas wake-hint e agente vivo) na lista pintada",
+     "Passo 12 (injeção de ancestrais de linhagem para evitar órfãos) na lista pintada",
+     "Passos 3 e 6 (branch padrão/detached) aplicados pela função do port: a lista pintada usa filtros inline divergentes (WorktreeSidebar.tsx:537-542)"
+    ],
+    "notes": "Todos os 12 passos estão implementados em computeVisibleWorktrees (visible-worktrees.ts:111-243) e são executados em runtime pelo fallback de atalhos quando o WorktreeList está desmontado (App.tsx:58 -> App.tsx:2456 -> getVisibleWorktreeShortcutTargets:380 -> getVisibleWorktreeIds:326 -> computeVisibleWorktreeIds:244), e WorktreeList publica a ordem real em :241. A superfície 'lista de worktrees no sidebar' é, porém, servida por outro modelo: WorktreeList.renderProjectNode itera getFilteredAndSortedWorktrees (WorktreeSidebar.tsx:533-547) e aplica só 2 dos 12 passos; os flags do store lidos pelo pipeline (showSleepingWorkspaces, hideAutomationGeneratedWorkspaces, hideCliCreatedWorkspaces, hideWorkspacesFromOtherDevices, hideDefaultBranchWorkspace, alwaysShowDefaultBranchWorkspace, workspaceHostScope/visibleWorkspaceHostIds) nunca são elevados a true em src/ (única escrita: rebaixamento para false em src/lib/worktree-activation.ts:284-290; workspaceHostScope/visibleWorkspaceHostIds sem chamador algum).",
+    "note": "Pipeline central de visíveis parcial (injeção de ancestrais incompleta)."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-011",
+   "capability": "Publicação e resolução de IDs e alvos para atalhos globais de teclado espelhando a ordem visual renderizada",
+   "orca_evidence": [
+    "components/sidebar/visible-worktrees.ts:244",
+    "components/sidebar/visible-worktrees.ts:250",
+    "components/sidebar/visible-worktrees.ts:254",
+    "components/sidebar/visible-worktrees.ts:304",
+    "components/sidebar/visible-worktrees.ts:358"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/visible-worktrees.ts:266",
+     "src/components/sidebar/WorktreeList.tsx:240-242",
+     "src/App.tsx:2456"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Mecanismo publicado/resolvido idêntico ao Orca (_publishedVisibleIds/_publishedVisibleShortcutTargets em :266/:271, setters :273/:277 aceitando null, fallback buildVisibleWorktreeOptionsFromState :292 recomputando ordem + pipeline de linhas). Caminho vivo: WorktreeList.tsx:240-246 publica antes do paint e anula ao desmontar; App.tsx:2456 (Cmd+1-9) consome via findWorktreeForShortcutIndex (src/lib/visible-worktree-index-jump.ts:26).",
+    "note": "Publicação de ids/targets de atalho espelhando a ordem visual segue ligada."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-012",
+   "capability": "Isolamento de visibilidade de workspaces criados por outros dispositivos pareados",
+   "orca_evidence": [
+    "components/sidebar/workspace-creator-visibility.ts:10",
+    "components/sidebar/workspace-creator-visibility.ts:12",
+    "components/sidebar/workspace-creator-visibility.ts:27",
+    "components/sidebar/workspace-creator-visibility.ts:46",
+    "components/sidebar/workspace-creator-visibility.ts:56"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/workspace-creator-visibility.ts:10",
+     "src/components/sidebar/workspace-creator-visibility.ts:26",
+     "src/components/sidebar/workspace-creator-visibility.ts:46",
+     "src/components/sidebar/workspace-creator-visibility.ts:65",
+     "src/components/sidebar/workspace-creator-visibility.ts:75",
+     "src/components/sidebar/visible-worktrees.ts:127",
+     "src/components/sidebar/visible-worktrees.ts:311",
+     "src/components/sidebar/visible-worktrees.ts:312"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Filtro hideWorkspacesFromOtherDevices aplicado à lista pintada do sidebar (WorktreeSidebar.getFilteredAndSortedWorktrees, WorktreeSidebar.tsx:533-547)",
+     "Ponto de entrada que ligue hideWorkspacesFromOtherDevices: o flag do store não tem escritor em src/ (apenas leitura em visible-worktrees.ts:311 e em sidebar-filter-actions.ts:20/61); filterFolderWorkspacesFromOtherDevices (:75) não tem chamador de produção."
+    ],
+    "notes": "Port fiel e alcançável (visible-worktrees.ts:46-48 importa getPairedDeviceIdsByEnvironment/isWorkspaceFromOtherDevice/filterFolderWorkspacesFromOtherDevices; uso em :127 e :311-313), incluindo preferência pelo device id autenticado vivo (status.pairedDeviceId) e fail-open. O efeito observável depende do flag nunca acionado."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-013",
+   "capability": "Geometria de hit-zone de drag-and-drop para aninhamento de linhagem e cálculo de desaninhamento em reordenação",
+   "orca_evidence": [
+    "components/sidebar/worktree-lineage-drag-drop.ts:13",
+    "components/sidebar/worktree-lineage-drag-drop.ts:28",
+    "components/sidebar/worktree-lineage-drag-drop.ts:61"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "isWorktreeLineageDropZoneHit: calcula calhas superior e inferior de reordenação (limitadas a min(altura * 0.2, 8px)); retorna true se o ponteiro Y estiver na zona central de aninhamento, permitindo que o topo e a base permaneçam para soltar em reordenação",
+     "Rejeita retângulos vazios ou invertidos (altura <= 0)",
+     "getWorktreeLineageDropTargetId: localiza a linha [data-worktree-drag-id] dentro do container, encontra o conteúdo pai [data-worktree-card-parent-content], exclui linhas filhas aninhadas para manter hit zones isoladas, e valida a posição do ponteiro",
+     "getReorderedWorktreeIdsToUnnest: identifica cards arrastados que possuíam pai válido na linhagem e devem ter sua linhagem limpa (desaninhamento) ao serem movidos para outra posição na lista",
+     "Não desaninha cards selecionados que estão fora do grupo de origem do drag",
+     "Trata linhagem legada apenas inline e não recorre a inline quando o mapa lateral possui entrada com pai inválido/obsoleto"
+    ],
+    "notes": "Não localizado após busca por worktree-lineage-drag-drop, isWorktreeLineageDropZoneHit, getWorktreeLineageDropTargetId, getReorderedWorktreeIdsToUnnest, dropZone, nest, 'data-worktree-drag-id'. O módulo não existe; 'data-worktree-drag-id' aparece só em módulos inalcançáveis (src/components/sidebar/worktree-list/pointer-drag-dom.ts:47,52-53; src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:134/138, este último só alcançável para o preview de drop de header). O drag pintado é reordenação plana de projetos/worktrees (WorktreeSidebar.tsx:484-502 handleProjectDrop, WorktreeList.tsx:389-398 onWorktreeDragStart/Over/Drop) sem zona central de aninhamento de linhagem. Aninhamento existe apenas por menu: ParentPickerModal (App.tsx:3951) gravando em worktreeLineage local. Relacionado: PAR-43."
+   },
+   "par": [
+    "PAR-43"
+   ]
+  },
+  {
+   "id": "D11-014",
+   "capability": "Projeção de linhagem de worktrees, detecção de ciclos com memoização WeakMap e travessia hierárquica",
+   "orca_evidence": [
+    "components/sidebar/worktree-lineage-projection.ts:8",
+    "components/sidebar/worktree-lineage-projection.ts:15",
+    "components/sidebar/worktree-lineage-projection.ts:60",
+    "components/sidebar/worktree-lineage-projection.ts:84",
+    "components/sidebar/worktree-lineage-projection.ts:105",
+    "components/sidebar/worktree-lineage-projection.ts:128"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-lineage-projection.ts:8",
+     "src/components/sidebar/worktree-lineage-projection.ts:15",
+     "src/components/sidebar/worktree-lineage-projection.ts:38",
+     "src/components/sidebar/worktree-lineage-projection.ts:60",
+     "src/components/sidebar/worktree-lineage-projection.ts:84",
+     "src/components/sidebar/worktree-lineage-projection.ts:105",
+     "src/components/sidebar/worktree-lineage-projection.ts:128",
+     "src/components/sidebar/visible-worktrees.ts:39",
+     "src/components/sidebar/visible-worktrees.ts:217",
+     "src/components/sidebar/visible-worktrees.ts:225",
+     "src/components/sidebar/pinned-section-worktrees.ts:14",
+     "src/components/sidebar/worktree-list/grouping/row-builders.ts:6"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Renderização de cards aninhados por linhagem no sidebar: a indentação é fixa em lineageDepth 0 (WorktreeList.tsx:343, getWorktreeCardContentIndent); as constantes LINEAGE_* (worktree-list/rows/indentation.ts:13-17) não são exercitadas por nenhum consumidor pintado.",
+     "Chip/região de filhos de linhagem no card: showLineageChildChip é forçado a false (use-worktree-card-controller.ts:313) e worktree-card-parent-content.tsx não é referenciado pelo caminho pintado.",
+     "Estado de Pinned por seção derivado de linhagem no card (inPinnedSection nunca é passado: use-worktree-card-controller.ts:87-88/272-273)."
+    ],
+    "notes": "Port fiel, com os 6 símbolos nas linhas exatas do Orca (8/15/60/84/105/128) e memoização WeakMap de dois níveis (:38-57). Alcançável e usado por computeVisibleWorktrees (visible-worktrees.ts:50/217/225), pinned-section-worktrees.ts:14 e row-builders.ts:6. O efeito de árvore hierárquica de cards no sidebar pintado não existe. Relacionado: PAR-82 (persistência de expansão de linhagem)."
+   },
+   "par": [
+    "PAR-82"
+   ]
+  },
+  {
+   "id": "D11-015",
+   "capability": "Cache de manipuladores de toggle de grupos de linhagem para estabilidade referencial",
+   "orca_evidence": [
+    "components/sidebar/worktree-lineage-toggle-handler-cache.ts:3",
+    "components/sidebar/worktree-lineage-toggle-handler-cache.ts:9"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "createLineageToggleHandlerCache: recebe função toggleGroup e retorna getter (groupKey: string) => LineageToggleHandler",
+     "Mantém um Map interno de manipuladores indexado pela chave do grupo de linhagem",
+     "Garante identidade referencial idêntica para o mesmo groupKey entre sucessivos renders, permitindo que cards memoizados via React.memo (WorktreeCard) não re-renderizem em bumps de época de ordenação ou status",
+     "Manipulador encapsulado executa preventDefault() e stopPropagation() no evento de clique do mouse antes de chamar toggleGroup(groupKey)"
+    ],
+    "notes": "Não localizado após busca por createLineageToggleHandlerCache, LineageToggleHandler, worktree-lineage-toggle-handler-cache, 'lineage toggle'. O sidebar pintado só tem toggles de colapso de projeto/grupo (WorktreeSidebar.tsx:325-343 toggleProjectCollapse/toggleGroupCollapse) e o modelo sombra expõe getLineageGroupKey (worktree-list/grouping/group-keys.ts:100) sem cache de handler referencialmente estável. Relacionado: PAR-82."
+   },
+   "par": [
+    "PAR-82"
+   ]
+  },
+  {
+   "id": "D11-016",
+   "capability": "Índice de IDs de worktree inequívocos com detecção e remoção de colisões multi-host",
+   "orca_evidence": [
+    "components/sidebar/worktree-unambiguous-id-index.ts:3"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "buildUnambiguousWorktreeIdIndex: recebe lista de worktrees de múltiplos hosts e constrói Map<string, Worktree>",
+     "Se um ID não qualificado aparecer mais de uma vez (pertencente a hosts distintos), ele é removido do mapa e adicionado a um conjunto de IDs ambíguos",
+     "IDs únicos são preservados com segurança; consultas para IDs ambíguos retornam undefined para evitar resolução acidental do workspace errado",
+     "Preserva IDs únicos subsequentes mesmo após a detecção de uma colisão"
+    ],
+    "notes": "Não localizado após busca por worktree-unambiguous-id-index, buildUnambiguousWorktreeIdIndex, 'unambiguous' (só ocorrências não relacionadas em editor-autosave.ts:88, setup-script-prompt.ts:109-124, hooks/ipc-tab-switch.ts:178). O Hydra resolve colisão multi-host por identidade qualificada por host em vez de descartar o id ambíguo: src/store/worktree-repo-index.ts:34-39 colapsa por composeWorktreeHostIdentity, :49-55 documenta 'FIRST wins' em getIndexedWorktreeMap:79 (e getIndexedWorktreesById:86 devolve todos os donos). Semântica oposta à do Orca (que retorna undefined para ids ambíguos)."
+   },
+   "par": []
+  },
+  {
+   "id": "D11-017",
+   "capability": "Expansão O(N) de linhagem visível para seleção múltipla e reordenação profunda",
+   "orca_evidence": [
+    "components/sidebar/worktree-lineage-expansion.performance.test.ts:37"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "expandDraggedWorktreeIdsForVisibleLineage: expande a seleção de IDs arrastados para incluir automaticamente todos os descendentes visíveis na árvore",
+     "Executa em tempo linear O(N) lendo a profundidade (depth) de cada linha exatamente uma vez, mesmo quando todos os ancestrais estão selecionados",
+     "Deduplica IDs ausentes sem buscas quadráticas no array resultante",
+     "Garante paridade de ordenação com o modelo de referência em casos de IDs duplicados, IDs ausentes e valores de borda de profundidade"
+    ],
+    "notes": "A função existe (src/components/sidebar/worktree-manual-order.ts:36 expandDraggedWorktreeIdsForVisibleLineage) mas o módulo é inalcançável do mount: nenhum importador de valor em src/ (só `import type` em worktree-sidebar-drag-autoscroll.ts:1) e index/hydra_scope.json registra reachable_depth=null. Logo o efeito (expansão O(N) de descendentes visíveis na seleção arrastada) não é produzido em nenhum caminho alcançável; a lista pintada nem implementa multi-seleção de cards. Relacionado: PAR-08."
+   },
+   "par": [
+    "PAR-08"
+   ]
   }
+ ],
+ "summary": {
+  "parity": 3,
+  "partial": 6,
+  "missing": 8,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
 }

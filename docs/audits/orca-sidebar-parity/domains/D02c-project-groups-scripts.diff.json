@@ -1,724 +1,718 @@
 {
-  "domain": "D02c-project-groups-scripts",
-  "rows": [
-    {
-      "id": "D02c-001",
-      "capability": "Recuperação de worktrees externos ocultos em lista virtualizada com busca e reexibição individual",
-      "orca_evidence": [
-        "components/sidebar/HiddenWorktreeRecoveryList.tsx:23",
-        "components/sidebar/HiddenWorktreeRecoveryList.tsx:47",
-        "components/sidebar/HiddenWorktreeRecoveryList.tsx:58",
-        "components/sidebar/HiddenWorktreeRecoveryList.tsx:83",
-        "components/sidebar/HiddenWorktreeRecoveryList.tsx:119",
-        "components/sidebar/HiddenWorktreeRecoveryList.tsx:146"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:557 — heading 'Hidden worktrees ({recoveredWorktrees.length})'",
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:568 — campo de busca com ícone Search (gate >5, Orca exige >=10)",
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:189 — filteredWorktrees por branch||path case-insensitive",
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:583 — .map() simples, sem virtualizador",
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:604 — botão 'Show'/'Showing...' disabled por busyPath",
-          "src/components/sidebar/WorktreeVisibilityDialog.tsx:619 — empty state textual 'No hidden worktrees found.'",
-          "src/components/sidebar/WorktreeSidebar.tsx:1142 — mount do dialog (alcançável a partir de App.tsx:3636)"
-        ],
-        "backend": [
-          "invoke('scan_worktrees') -> src/components/sidebar/WorktreeVisibilityDialog.tsx:112 -> src-tauri/src/lib.rs:399"
-        ],
-        "missing_behaviors": [
-          "Virtualização da lista com @tanstack/react-virtual (estimateSize 56px, overscan 3, max-h-56) — lib ausente do package.json",
-          "Atributos de acessibilidade aria-posinset / aria-setsize por item",
-          "Ícone FolderMinus no empty state (Hydra só renderiza texto)",
-          "Limiar de busca em >=10 worktrees ocultos (Hydra mostra a busca com >5)",
-          "Filtro por displayName (Hydra filtra por branch||path; GitWorktreeInfo não tem displayName aqui)",
-          "Caminho relativo via relativePathInsideRoot (Hydra usa replace(project.path,''))"
-        ],
-        "notes": "Lista de recuperação portada inline dentro de WorktreeVisibilityDialog (não existe componente HiddenWorktreeRecoveryList separado). i18n namespace HiddenWorktreeRecoveryList (en.json:5795) sem uso."
-      }
-    },
-    {
-      "id": "D02c-002",
-      "capability": "Dialog de confirmação para supressão da caixa de entrada de worktrees externos do repositório",
-      "orca_evidence": [
-        "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:19",
-        "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:32",
-        "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:46",
-        "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:62"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:52 — o '×' suprime direto (onSuppress), sem dialog de confirmação",
-          "src/i18n/locales/en.json:6147 — namespace SuppressExternalWorktreeInboxDialog presente mas nenhum componente o referencia"
-        ],
-        "backend": [
-          "invoke('suppress_worktree_inbox') -> src/components/sidebar/WorktreeSidebar.tsx:794 -> src-tauri/src/lib.rs:423"
-        ],
-        "missing_behaviors": [
-          "Exibe título 'Hide external worktrees?' e descrição avisando que worktrees externos não serão mais exibidos na barra lateral ou na lista para o repositório",
-          "Exibe caixa explicativa informando que a funcionalidade pode ser reativada nas configurações do projeto com link 'Open Non-Orca worktrees settings'",
-          "Botões de rodapé: 'Cancel' (variante secondary) e 'Hide external worktrees' (default), ambos desabilitados durante estado pending"
-        ],
-        "notes": "Buscas: componente SuppressExternalWorktreeInboxDialog, modal id 'suppress-*', textos 'Hide external worktrees?'/'Open Non-Orca worktrees settings' (só i18n). A capacidade de supressão existe, o dialog de confirmação não."
-      }
-    },
-    {
-      "id": "D02c-003",
-      "capability": "Dialog modal para instalação e configuração do skill de agente Linear com terminal integrado",
-      "orca_evidence": [
-        "components/sidebar/LinearAgentSkillSetupDialog.tsx:36",
-        "components/sidebar/LinearAgentSkillSetupDialog.tsx:47",
-        "components/sidebar/LinearAgentSkillSetupDialog.tsx:77",
-        "components/sidebar/LinearAgentSkillSetupDialog.tsx:107",
-        "components/sidebar/LinearAgentSkillSetupDialog.tsx:157"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/i18n/locales/en.json:11267 — namespace LinearAgentSkillPane (i18n órfão, sem componente)",
-          "src/shared/agent-feature-install-commands.ts:1 — re-export de ORCA_LINEAR_SKILL_* / LINEAR_* (constantes sem UI)",
-          "src/i18n/en-runtime-required.json — chaves AgentSkillSetupPanel sem componente"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Estado de sucesso (showSuccess): exibe título 'Linear ticket access is ready', descrição contextual, pílula de status conectada (IntegrationStatusPill tone='connected') e botão 'Done'",
-          "Estado de instalação: exibe prompt descritivo com ícone Info ('Enable agents to read and edit the attached Linear ticket.')",
-          "Embute painel AgentSkillSetupPanel com terminal embutido (terminalHeightPx: 240), comando de instalação/atualização e botão 'Install CLI & Skill'",
-          "Executa verificação e pré-instalação do CLI do Orca (isOrcaCliAvailableOnPath, AGENT_SKILL_CLI_PREREQUISITE_NOTICE)",
-          "Botão discreto 'Don't show again' com ícone EyeOff e tooltip no canto superior direito alinhado ao botão de fechar para dispensa permanente",
-          "Permite fechamento via botão 'Done', botão de fechar, tecla Escape ou clique fora sem dispensa permanente se já em estado de sucesso"
-        ],
-        "notes": "Buscas: LinearAgentSkillSetupDialog, AgentSkillSetupPanel, IntegrationStatusPill, TicketCheck, 'Linear ticket access is ready', 'Install CLI & Skill' (só feature-tips.ts). Nenhum dialog de setup de skill Linear."
-      }
-    },
-    {
-      "id": "D02c-004",
-      "capability": "Prompt inline e modal para detecção, verificação e setup de skill do agente Linear",
-      "orca_evidence": [
-        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:46",
-        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:140",
-        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:173",
-        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:224",
-        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:287",
-        "components/sidebar/LinearAgentSkillSetupPrompt.tsx:352"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/hooks/useInstalledAgentSkills.ts:122 — useInstalledAgentSkillNames genérico existe, mas nunca chamado com LINEAR_AGENT_SKILL_NAMES",
-          "src/shared/agent-feature-install-commands.ts:1 — constantes de comando re-exportadas, sem consumidor",
-          "src/i18n/locales/en.json:6051 — namespace LinearAgentSkillSetupPrompt órfão"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Detecta status de instalação do CLI via window.api.cli.getInstallStatus ou getWslInstallStatus para WSL",
-          "Consulta skills globais instaladas via hook useInstalledAgentSkillNames com LINEAR_AGENT_SKILL_NAMES",
-          "Suporta verificação manual via botão 'Re-check' com ícone RefreshCw revalidando CLI e skills",
-          "Gerencia concorrência de verificações com requestGeneration e setupCheckIdentity para descartar respostas defasadas de CLI/runtime",
-          "Dispensa permanente salva '1' no localStorage sob chave de storage específica do runtime e fecha toasts ativos",
-          "Monta lazy dialog LinearAgentSkillSetupDialog sob demanda via lazyWithRetry",
-          "Modo inline renderiza card compacto com ícone TicketCheck, cópia contextual de runtime e botões 'Set up' e 'Re-check'",
-          "Gera comandos de instalação e atualização dinâmicos via buildSkillCommandForRuntime e getLinearAgentSkillUpdateCommand"
-        ],
-        "notes": "Buscas: 'LinearAgentSkillSetupPrompt', 'Dismiss Linear agent skill setup', window.api.cli.getInstallStatus/getWslInstallStatus (ausentes no preload Hydra), requestGeneration/setupCheckIdentity, lazyWithRetry."
-      }
-    },
-    {
-      "id": "D02c-005",
-      "capability": "Resolução de runtime local/WSL/remoto e chave de persistência para setup de skill do Linear",
-      "orca_evidence": [
-        "components/sidebar/linear-agent-skill-runtime.ts:18",
-        "components/sidebar/linear-agent-skill-runtime.ts:25",
-        "components/sidebar/linear-agent-skill-runtime.ts:63",
-        "components/sidebar/linear-agent-skill-runtime.ts:98",
-        "components/sidebar/linear-agent-skill-runtime.ts:124",
-        "components/sidebar/linear-agent-skill-runtime.ts:131"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/i18n/locales/en.json:6051 — textos de runtime só em i18n"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Identifica plataforma corrente (win32, linux, darwin) a partir do navigator.userAgent",
-          "Resolve runtime do agente (LocalAgentRuntime) forçando host para ambientes remotos e WSL para distros configuradas",
-          "Preserva a distribuição preferida mesmo em estado repair-required para evitar poluição entre Windows e WSL",
-          "Calcula chave de persistência de dispensa: 'orca.linearTicketsSkill.setupDismissed.host' ou 'orca.linearTicketsSkill.setupDismissed.wsl.<distro>'",
-          "Determina target de descoberta de skills (SkillDiscoveryTarget) e override de terminal para shells POSIX no Windows (forçando PowerShell)"
-        ],
-        "notes": "Buscas: linear-agent-skill-runtime.ts, 'orca.linearTicketsSkill.setupDismissed', LocalAgentRuntime, SkillDiscoveryTarget, getLinearPromptTerminalShellOverride. Nada em src/ (src/lib/orchestration-setup-state.ts tem setupDismissed não relacionado)."
-      }
-    },
-    {
-      "id": "D02c-006",
-      "capability": "Geração de textos e internacionalização para o fluxo de setup do skill do Linear",
-      "orca_evidence": [
-        "components/sidebar/linear-agent-skill-setup-copy.ts:4",
-        "components/sidebar/linear-agent-skill-setup-copy.ts:23",
-        "components/sidebar/linear-agent-skill-setup-copy.ts:44",
-        "components/sidebar/linear-agent-skill-setup-copy.ts:91"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/i18n/locales/en.json:6051 — namespace LinearAgentSkillSetupPrompt órfão"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Gera rótulo de pré-requisitos ausentes: CLI ausente, skill ausente ou ambos ausentes",
-          "Gera títulos e descrições para toasts de aviso diferenciando host local, ambientes WSL e conexões remotas",
-          "Gera texto explicativo inline detalhando o escopo da instalação (host, WSL ou remoto)"
-        ],
-        "notes": "Buscas: linear-agent-skill-setup-copy.ts, buildMissingPrerequisitesLabel, títulos/descrições de toast host/WSL/remoto. Nenhum módulo de copy."
-      }
-    },
-    {
-      "id": "D02c-007",
-      "capability": "Lembretes e notificações toast de setup do skill do Linear com limite de repetições",
-      "orca_evidence": [
-        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:26",
-        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:31",
-        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:54",
-        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:71",
-        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:85",
-        "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:134"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/i18n/locales/en.json:6051 — chaves de toast/reminder órfãs"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Abre automaticamente o modal de setup na primeira ativação elegível do runtime",
-          "Dispara toast de aviso com botão 'Set up' em ativações subsequentes caso o modal anterior tenha sido fechado informalmente",
-          "Limita os lembretes via toast a LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT (máximo 3 vezes)",
-          "Descarta o toast ativo e atualiza estado ao dispensar permanentemente ou ao concluir a instalação",
-          "Limpa o toast ao desmontar a visualização modal"
-        ],
-        "notes": "Buscas: linear-agent-skill-setup-reminder-toast.ts, useLinearAgentSkillSetupReminderToast, toastCount, LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT, snooze."
-      }
-    },
-    {
-      "id": "D02c-008",
-      "capability": "Gerenciamento de cache em memória e retenção LRU para lembretes de setup do Linear",
-      "orca_evidence": [
-        "components/sidebar/linear-agent-skill-setup-reminders.ts:1",
-        "components/sidebar/linear-agent-skill-setup-reminders.ts:15",
-        "components/sidebar/linear-agent-skill-setup-reminders.ts:34",
-        "components/sidebar/linear-agent-skill-setup-reminders.ts:40",
-        "components/sidebar/linear-agent-skill-setup-reminders.ts:63"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/i18n/en-runtime-required.json — chaves de reminder órfãs"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Armazena em memória o estado de exibição (modalShown, toastCount, snoozed, activeToastId) por chave de runtime",
-          "Aplica política de despejo LRU limitando o cache a MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS = 256 entradas",
-          "Preserva entradas com activeToastId ativo antes de despejar chaves inativas",
-          "Gera identificadores de ativação sequenciais únicos (createLinearAgentSkillSetupActivationId)",
-          "Suporta redefinição completa de estado em testes (resetLinearAgentSkillSetupReminderState)"
-        ],
-        "notes": "Buscas: linear-agent-skill-setup-reminders.ts, MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS, createLinearAgentSkillSetupActivationId, resetLinearAgentSkillSetupReminderState."
-      }
-    },
-    {
-      "id": "D02c-009",
-      "capability": "Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git",
-      "orca_evidence": [
-        "components/sidebar/NonGitFolderDialog.tsx:21",
-        "components/sidebar/NonGitFolderDialog.tsx:38",
-        "components/sidebar/NonGitFolderDialog.tsx:53",
-        "components/sidebar/NonGitFolderDialog.tsx:112",
-        "components/sidebar/NonGitFolderDialog.tsx:136",
-        "components/sidebar/NonGitFolderDialog.tsx:154"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:60 — 'Browse folder' importa a pasta direto via catalog_add_folder, sem dialog educativo",
-          "src-tauri/src/catalog.rs:364 — add_folder_to_catalog: pasta não-git vira project group + folder workspace silenciosamente (catalog.rs:420-480)",
-          "src/store/repos/repo-add-actions.ts:88 — openModal('confirm-non-git-folder') aberto, mas nenhum componente renderiza activeModal (grep 'activeModal' em src/**/*.tsx = 0)",
-          "src/store/repos/repo-add-actions.ts:167 — addNonGitFolder existe no store, sem caller em componente",
-          "src/i18n/locales/en.json:5228 — namespace NonGitFolderDialog órfão"
-        ],
-        "backend": [
-          "invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277"
-        ],
-        "missing_behaviors": [
-          "Exibe aviso esclarecendo que a pasta não é um repositório Git (editor, terminal e busca funcionam; recursos Git ficam indisponíveis)",
-          "Informa o host onde o caminho foi verificado: host SSH, ambiente de runtime específico ou local",
-          "Exibe o caminho da pasta em bloco destacado com quebra de linha",
-          "Ao confirmar pasta em host SSH: invoca window.api.repos.addRemote, atualiza store via upsertAddedRepoWithProjectHostSetup, marca onboarding (addedFolder), busca worktrees e ativa agente/chat se aplicável",
-          "Ao confirmar pasta local: invoca useAppStore.addNonGitFolder com caminho, displayName e runtimeEnvironmentId",
-          "Trata erros de adição remota exibindo toast com mensagem de falha"
-        ],
-        "notes": "Buscas: NonGitFolderDialog, 'Open as Folder', 'This folder isn't a Git repository', window.api.repos.addRemote (inexistente no Hydra). Fluxo de pasta não-git sem confirmação/aviso de host."
-      }
-    },
-    {
-      "id": "D02c-010",
-      "capability": "Fluxo de conclusão e telemetria para abertura de pastas aninhadas não-git",
-      "orca_evidence": [
-        "components/sidebar/complete-nested-folder-open.ts:7",
-        "components/sidebar/complete-nested-folder-open.ts:22",
-        "components/sidebar/complete-nested-folder-open.ts:26",
-        "components/sidebar/complete-nested-folder-open.ts:35",
-        "components/sidebar/track-nested-folder-open.ts:8",
-        "components/sidebar/track-nested-folder-open.ts:18"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/nested-repo-telemetry.ts:26 — 'open_as_folder' definido; :170 buildNestedRepoImportActionTelemetry nunca chamado",
-          "src/shared/telemetry-event-registry.ts:110 — add_repo_nested_import_action registrado, sem emissor",
-          "src/store/slices/repos.ts:60-62 — scanNestedRepos/importNestedRepos expostos no store sem consumidor em *.tsx",
-          "src/store/repos/repo-add-actions.ts:88 — modal 'confirm-non-git-folder' sem renderer"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Rastreia telemetria de importação (add_repo_nested_import_action com action: 'open_as_folder')",
-          "Para pastas em host SSH: abre modal 'confirm-non-git-folder' repassando caminho, connectionId e runtimeEnvironmentId",
-          "Para pastas locais: invoca addNonGitFolder gerenciando estado de geração (generation) e fechando modal ao concluir",
-          "Trata erros capturados exibindo toast de erro se a geração do fluxo ainda for a corrente"
-        ],
-        "notes": "Buscas: complete-nested-folder-open.ts, track-nested-folder-open.ts, addNonGitFolder caller, 'open_as_folder'. Sem fluxo de conclusão de pasta aninhada."
-      }
-    },
-    {
-      "id": "D02c-011",
-      "capability": "Dialog modal para confiança e aprovação de execução de hooks do orca.yaml",
-      "orca_evidence": [
-        "components/sidebar/OrcaYamlTrustDialog.tsx:16",
-        "components/sidebar/OrcaYamlTrustDialog.tsx:31",
-        "components/sidebar/OrcaYamlTrustDialog.tsx:57",
-        "components/sidebar/OrcaYamlTrustDialog.tsx:109",
-        "components/sidebar/OrcaYamlTrustDialog.tsx:160",
-        "components/sidebar/OrcaYamlTrustDialog.tsx:180",
-        "components/sidebar/OrcaYamlTrustDialog.tsx:199"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/ui/ui-slice-trust-actions.ts:7 — markOrcaHookScriptConfirmed definido, zero callers",
-          "src/store/slices/ui/ui-slice-trust-actions.ts:25 — markOrcaHookRepoAlwaysTrusted definido, zero callers",
-          "src/i18n/locales/en.json:5237 — namespace OrcaYamlTrustDialog órfão"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Diferencia quatro tipos de script: 'setup script', 'archive script', 'issue command' e 'VM recipe' com gatilhos explicativos",
-          "Adapta título e descrição para script novo vs script modificado desde última aprovação (previouslyApproved)",
-          "Exibe pré-visualização formatada do conteúdo do script em container monospace com rolagem",
-          "Opção de checkbox 'Always trust orca.yaml in <repo>' com estilo destacado para confiar permanentemente no repositório",
-          "Ações no rodapé: 'Don't run' (cancela/ignora) e 'Run hooks' (executa e registra aprovação pontual ou permanente)"
-        ],
-        "notes": "Buscas: OrcaYamlTrustDialog, 'Run hooks', 'Always trust', modal 'confirm-orca-yaml-hooks', trusted_orca_hooks no Rust. Estado de trust existe no store mas nenhuma UI o aciona; nenhum comando Tauri de trust/execução de hook."
-      }
-    },
-    {
-      "id": "D02c-012",
-      "capability": "Dialog modal para revisão e exclusão forçada em lote de branches preservadas",
-      "orca_evidence": [
-        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:31",
-        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:38",
-        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:88",
-        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:113",
-        "components/sidebar/PreservedBranchBatchReviewDialog.tsx:171",
-        "components/sidebar/PreservedBranchBatchReviewModal.tsx:25"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/worktrees/teardown/force-delete-preserved-branch.ts:11 — createForceDeletePreservedBranch é stub `any = null`",
-          "src/store/slices/worktrees.ts:97 — store recebe o stub nulo"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Filtra branches acionáveis que possuem expectedHead válido",
-          "Controle de seleção em lote via checkbox 'Select all' com suporte a estado indeterminado e contador 'N of M selected'",
-          "Lista cada branch com nome, repositório de origem, prefixo do hash de commit (7 caracteres) e aviso 'May be unmerged' ou 'Head unavailable'",
-          "Desabilita checkbox para branches sem head disponível",
-          "Botão de exclusão destrutivo 'Force Delete N Branches' com ícone Trash2, desabilitado quando nenhuma branch está selecionada",
-          "Executa exclusão em lote ao confirmar delegando para forceDeletePreservedBranchBatch"
-        ],
-        "notes": "Buscas: PreservedBranchBatchReviewDialog, PreservedBranchBatchReviewModal, modal 'preserved-branch-review', 'Force Delete N Branches', forceDeletePreservedBranchBatch. Nenhum componente."
-      }
-    },
-    {
-      "id": "D02c-013",
-      "capability": "Notificação toast e exclusão concorrente em lote para múltiplas branches preservadas",
-      "orca_evidence": [
-        "components/sidebar/preserved-branch-batch-toast.tsx:20",
-        "components/sidebar/preserved-branch-batch-toast.tsx:45",
-        "components/sidebar/preserved-branch-batch-toast.tsx:88",
-        "components/sidebar/preserved-branch-batch-toast.tsx:109",
-        "components/sidebar/preserved-branch-batch-toast.tsx:157"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/store/slices/worktrees/teardown/force-delete-preserved-branch.ts:11 — stub nulo consumido em src/store/slices/worktrees.ts:97"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Exibe toast de aviso inicial com contagem de workspaces removidos e branches mantidas, explicando que o espaço em disco continuará sendo liberado",
-          "Botão 'Review N Branches' abre o modal de revisão em lote com duração infinita no toast",
-          "Agrupa branches por repositório e executa forceDeletePreservedBranch concorrente com limite BRANCH_REPO_DELETE_CONCURRENCY = 4",
-          "Exibe toast de carregamento durante a operação, toast de sucesso quando todas são excluídas ou toast de erro persistente com lista de falhas e botão 'Retry N Branches'"
-        ],
-        "notes": "Buscas: preserved-branch-batch-toast.tsx, showPreservedBranchBatchToast, BRANCH_REPO_DELETE_CONCURRENCY, 'Review N Branches', 'Retry N Branches'. Nenhum toast."
-      }
-    },
-    {
-      "id": "D02c-014",
-      "capability": "Notificação toast e exclusão forçada individual de branch preservada após remoção de worktree",
-      "orca_evidence": [
-        "components/sidebar/preserved-branch-toast.tsx:19",
-        "components/sidebar/preserved-branch-toast.tsx:22",
-        "components/sidebar/preserved-branch-toast.tsx:28",
-        "components/sidebar/preserved-branch-toast.tsx:52",
-        "components/sidebar/preserved-branch-toast.tsx:75"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/DeleteWorktreeDialog.tsx:95 — deleção só reporta erro inline (failures.join); sem toast de branch preservada",
-          "src/store/slices/worktrees/teardown/remove-worktree.ts:9 — createRemoveWorktree é stub `any = null`"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Título do toast diferencia remoção de workspace principal ('Workspace deleted, branch kept') de worktree secundário ('Worktree deleted, branch kept')",
-          "Descrição detalha que o Git não pôde deletar a branch com segurança para não perder commits locais",
-          "Corpo personalizado do toast renderiza botão 'Force Delete Branch' com ícone Trash2 quando o expectedHead está disponível",
-          "Duração do toast definida como Infinity quando há botão de exclusão forçada disponível",
-          "Invoca callback onForceDelete e descarta o toast ao clicar"
-        ],
-        "notes": "Buscas: preserved-branch-toast.tsx, showPreservedBranchToast, 'Worktree deleted, branch kept', 'Force Delete Branch'. Nenhum toast."
-      }
-    },
-    {
-      "id": "D02c-015",
-      "capability": "Dialog modal para exclusão de grupo de projetos e opção de remoção de projetos contidos",
-      "orca_evidence": [
-        "components/sidebar/ProjectGroupDeleteDialog.tsx:23",
-        "components/sidebar/ProjectGroupDeleteDialog.tsx:88",
-        "components/sidebar/ProjectGroupDeleteDialog.tsx:94",
-        "components/sidebar/ProjectGroupDeleteDialog.tsx:107",
-        "components/sidebar/ProjectGroupDeleteDialog.tsx:140",
-        "components/sidebar/ProjectGroupDeleteDialog.tsx:177"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/ProjectGroupDeleteDialog.tsx:14 — componente portado (título/nome/Contained projects/+N more/foco/Deleting...)",
-          "src/components/sidebar/ProjectGroupDeleteDialog.tsx:85-116 — painel de membros e aviso estático (sem checkbox de remoção)",
-          "src/components/sidebar/WorktreeSidebar.tsx:1125 — mount do dialog",
-          "src/store/project-groups/project-group-mutations.ts:139 — deleteProjectGroupWithContainedProjects(removeContainedProjects) existe no store mas não é passado pelo dialog"
-        ],
-        "backend": [
-          "CustomEvent 'hydra:delete-project-group' -> src/components/sidebar/WorktreeSidebar.tsx:1134 -> src/App.tsx:1211 (estado local + 'hydra:refresh-projects')"
-        ],
-        "missing_behaviors": [
-          "Checkbox opcional 'Remove N contained projects' e props removeContainedProjects/onRemoveContainedProjectsChange (store já suporta; UI não expõe)",
-          "content ref (mountedRef) para evitar mutações de estado após desmontagem"
-        ],
-        "notes": "A remoção do grupo passa por estado do App (App.tsx:1211) e não pela mutation do store; membros voltam ungrouped. Sem testes Hydra para este dialog."
-      }
-    },
-    {
-      "id": "D02c-016",
-      "capability": "Dialog modal para criação e renomeação de grupos de projeto",
-      "orca_evidence": [
-        "components/sidebar/ProjectGroupNameDialog.tsx:21",
-        "components/sidebar/ProjectGroupNameDialog.tsx:64",
-        "components/sidebar/ProjectGroupNameDialog.tsx:76",
-        "components/sidebar/ProjectGroupNameDialog.tsx:96"
-      ],
-      "hydra": {
-        "status": "parity",
-        "evidence": [
-          "src/components/sidebar/ProjectGroupNameDialog.tsx:14 — componente portado",
-          "src/components/sidebar/ProjectGroupNameDialog.tsx:33-36 — foco automático + select do texto inicial ao abrir",
-          "src/components/sidebar/ProjectGroupNameDialog.tsx:122 — confirmar desabilitado com nome vazio ou submetendo",
-          "src/components/sidebar/ProjectGroupNameDialog.tsx:125 — 'Saving...' durante submit",
-          "src/components/sidebar/WorktreeSidebar.tsx:1115 — mount do dialog (criar/renomear)"
-        ],
-        "backend": [
-          "CustomEvent 'hydra:create-project-group'/'hydra:rename-project-group' -> src/App.tsx:1178/1205 (estado + refresh) ; persistência via sidebar prefs (App.tsx:462-465)"
-        ],
-        "missing_behaviors": [],
-        "notes": "Hidratação inicial via useState(initialName) + effect no open; comportamento observável equivalente (sem teste Hydra dedicado)."
-      }
-    },
-    {
-      "id": "D02c-017",
-      "capability": "Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados",
-      "orca_evidence": [
-        "components/sidebar/empty-project-placeholder-repos.ts:5",
-        "components/sidebar/empty-project-placeholder-repos.ts:12",
-        "components/sidebar/empty-project-placeholder-repos.ts:18",
-        "components/sidebar/empty-project-placeholder-repos.ts:21"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/WorktreeList.tsx:249 — renderProjectNode sempre emite SectionHeader por projeto (mesmo com 0 worktrees visíveis)",
-          "src/components/sidebar/WorktreeList.tsx:463-553 — grupos renderizam todos os groupProjects de visibleProjects; filtros de workspace não removem projetos",
-          "src/components/sidebar/worktree-list/grouping/build-rows.ts:62 — parâmetro placeholderRepoIds existe",
-          "src/components/sidebar/rendered-sidebar-worktree-order.ts:71 — único caller passa EMPTY_REPO_ID_SET"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe",
-          "Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList)"
-        ],
-        "notes": "O efeito observável (membros de grupo/empty repos seguem visíveis) é obtido estruturalmente porque o WorktreeList renderiza seções de repo incondicionalmente; a função nomeada do Orca e seus testes (empty-project-placeholder-repos.test.ts) não existem."
-      }
-    },
-    {
-      "id": "D02c-018",
-      "capability": "Dialog modal para confirmação de remoção de projeto/pasta do Orca com aviso contextual de host",
-      "orca_evidence": [
-        "components/sidebar/RemoveFolderDialog.tsx:20",
-        "components/sidebar/RemoveFolderDialog.tsx:46",
-        "components/sidebar/RemoveFolderDialog.tsx:52",
-        "components/sidebar/RemoveFolderDialog.tsx:58",
-        "components/sidebar/RemoveFolderDialog.tsx:65",
-        "components/sidebar/RemoveFolderDialog.tsx:87"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/App.tsx:3279 / src/App.tsx:3492 — item de menu 'Remove Project from Hydra' remove imediatamente",
-          "src/App.tsx:1612 — handleRemoveProject invoca catalog_remove_repo sem dialog/aviso contextual de host",
-          "src/i18n/locales/en.json:5285 — namespace RemoveFolderDialog órfão"
-        ],
-        "backend": [
-          "invoke('catalog_remove_repo') -> src/App.tsx:1613 -> src-tauri/src/lib.rs:289"
-        ],
-        "missing_behaviors": [
-          "Exibe título 'Remove Project' e adapta a mensagem ao tipo de host e projeto",
-          "Para receitas de VM: alerta que a receita de VM determina se ambiente e arquivos serão excluídos permanentemente",
-          "Para projetos SSH: esclarece que os arquivos continuam no host remoto e podem ser recuperados ao reconectar o host",
-          "Para projetos locais: esclarece que os arquivos continuam no disco local",
-          "Botão 'Remove' destrutivo invoca removeProject no store com feedback de toast em caso de erro"
-        ],
-        "notes": "Buscas: RemoveFolderDialog, 'Remove Project' title, removeDescriptionSsh/Local/VmRecipe, modal 'confirm-remove-folder'. Backend existe e é chamado; o dialog contextual (VM/SSH/local) não."
-      }
-    },
-    {
-      "id": "D02c-019",
-      "capability": "Card orquestrador para sugestão, inspeção e salvamento de setup scripts do projeto",
-      "orca_evidence": [
-        "components/sidebar/SetupScriptPromptCard.tsx:32",
-        "components/sidebar/SetupScriptPromptCard.tsx:63",
-        "components/sidebar/SetupScriptPromptCard.tsx:94",
-        "components/sidebar/SetupScriptPromptCard.tsx:156",
-        "components/sidebar/SetupScriptPromptCard.tsx:175",
-        "components/sidebar/SetupScriptPromptCard.tsx:288"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/lib/setup-script-prompt.ts:32 — inspectSetupScriptPromptState definido, zero callers",
-          "src/store/slices/ui/ui-slice-trust-actions.ts:49 — dismissSetupScriptPrompt definido, sem caller de UI",
-          "src/i18n/locales/en.json:5300 — namespace SetupScriptPromptCard órfão"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Inspeciona assincronamente hooks de runtime e candidatos de importação (checkRuntimeHooks, inspectRuntimeSetupScriptImports)",
-          "Suporta edição de setup detectado de package manager antes de salvar",
-          "Botão 'Configure' navega diretamente para as configurações de comandos locais do repositório",
-          "Botão de dispensa persiste a recusa para a identidade de host do repositório no store (dismissSetupScriptPrompt)",
-          "Salva comando detectado via updateRepo (hookSettings) e emite telemetria de ação (setup_script_prompt_action)",
-          "Exibe toast de confirmação com link para reabrir as configurações do projeto após salvar",
-          "Suporta re-tentativa manual de inspeção em caso de erro"
-        ],
-        "notes": "Buscas: SetupScriptPromptCard.tsx, 'Add a setup script', checkRuntimeHooks, inspectRuntimeSetupScriptImports, updateRepo(hookSettings). Card orquestrador ausente."
-      }
-    },
-    {
-      "id": "D02c-020",
-      "capability": "Shell visual e contenção flutuante do card de sugestão de setup script",
-      "orca_evidence": [
-        "components/sidebar/SetupScriptPromptCardShell.tsx:35",
-        "components/sidebar/SetupScriptPromptCardShell.tsx:37",
-        "components/sidebar/SetupScriptPromptCardShell.tsx:42",
-        "components/sidebar/SetupScriptPromptCardShell.tsx:48",
-        "components/sidebar/SetupScriptPromptCardShell.tsx:66"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/i18n/locales/en.json:5300 — chaves do card órfãs"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Posicionamento flutuante com sombra (shadow-[0_10px_24px_rgba(0,0,0,0.18)]) sem reservar espaço estático na sidebar",
-          "Exibe título 'Add a setup script', botão de fechar/dispensa com tooltip, badge de cor do repositório e nome de exibição",
-          "Orquestra o corpo do texto e os botões de ação correspondentes ao estado atual (erro, package manager, candidato ou configuração)"
-        ],
-        "notes": "Buscas: SetupScriptPromptCardShell.tsx, 'Add a setup script', shadow-[0_10px_24px_rgba(0,0,0,0.18)]. Nenhum shell flutuante."
-      }
-    },
-    {
-      "id": "D02c-021",
-      "capability": "Componentes visuais e ações para o card de setup script (edição, ações de package manager e erros)",
-      "orca_evidence": [
-        "components/sidebar/SetupScriptPromptCardViews.tsx:14",
-        "components/sidebar/SetupScriptPromptCardViews.tsx:44",
-        "components/sidebar/SetupScriptPromptCardViews.tsx:85",
-        "components/sidebar/SetupScriptPromptCardViews.tsx:126",
-        "components/sidebar/SetupScriptPromptCardViews.tsx:198",
-        "components/sidebar/SetupScriptPromptCardViews.tsx:229",
-        "components/sidebar/SetupScriptPromptCardViews.tsx:249"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/i18n/locales/en.json:5309 — namespace SetupScriptPromptCardViews órfão",
-          "src/shared/setup-script-imports.ts:3 — SetupScriptImportCandidate é stub `any = null`"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "DismissButton: botão de ícone 'X' com tooltip 'Dismiss'",
-          "DetectedSetupPreview: caixa de texto editável com número dinâmico de linhas (getDetectedSetupScriptTextareaRows) e proveniência do comando",
-          "PackageManagerActions: botão primário 'Save' (com spinner durante salvamento) e botão secundário 'Configure manually'",
-          "SetupScriptPromptBody: mensagens contextuais para erro de inspeção, orca.yaml compartilhado ignorado, package manager ou sugestão geral",
-          "InspectionErrorActions: botões 'Retry' com ícone RefreshCw e 'Settings' com ícone Settings",
-          "ConfigureOnlyAction: botão 'Configure' com ícone Settings",
-          "SaveLocalSetupAction: botão 'Save local setup' com ícone Download ou spinner de salvamento"
-        ],
-        "notes": "Buscas: SetupScriptPromptCardViews.tsx, DismissButton, DetectedSetupPreview, PackageManagerActions, SaveLocalSetupAction, InspectionErrorActions, getDetectedSetupScriptTextareaRows."
-      }
-    },
-    {
-      "id": "D02c-022",
-      "capability": "Toast de confirmação e atalho de configurações ao salvar setup script no projeto",
-      "orca_evidence": [
-        "components/sidebar/SetupScriptPromptToast.tsx:9",
-        "components/sidebar/SetupScriptPromptToast.tsx:12",
-        "components/sidebar/SetupScriptPromptToast.tsx:27"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/i18n/locales/en.json:5300 — 'Saved in this project's settings' só em i18n"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Exibe toast de sucesso com mensagem 'Saved in this project's settings'",
-          "Inclui link clicável sublinhado no texto do toast para navegar instantaneamente até as configurações do repositório",
-          "Suporta descrição detalhando execução na criação de worktrees ou campos não suportados ignorados"
-        ],
-        "notes": "Buscas: SetupScriptPromptToast.tsx, showSavedInProjectSettingsToast, onOpenSettings link. Nenhum toast."
-      }
-    },
-    {
-      "id": "D02c-023",
-      "capability": "Navegação direta para a seção de comandos locais nas configurações do repositório",
-      "orca_evidence": [
-        "components/sidebar/open-setup-script-settings.ts:4",
-        "components/sidebar/open-setup-script-settings.ts:18",
-        "components/sidebar/open-setup-script-settings.ts:19",
-        "components/sidebar/open-setup-script-settings.ts:25"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/settings/TerminalTccAttributionNotice.tsx:49-65 — primitivas openSettingsTarget/openSettingsPage/setSettingsSearchQuery existem e são usadas por outras superfícies"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Limpa qualquer filtro de busca ativo nas configurações (setSettingsSearchQuery('')) para evitar ocultação acidental da seção",
-          "Define o alvo de navegação para o painel 'repo', host específico e seção de comandos locais do repositório",
-          "Abre a página de configurações (openSettingsPage())"
-        ],
-        "notes": "Buscas: open-setup-script-settings.ts, openSetupScriptSettings, seção 'local commands'/localCommands no SettingsModal. Nenhuma função/seção equivalente."
-      }
-    },
-    {
-      "id": "D02c-024",
-      "capability": "Telemetria de exposição do card de setup script com deduplicação por chave composta",
-      "orca_evidence": [
-        "components/sidebar/setup-script-prompt-exposure-telemetry.ts:5",
-        "components/sidebar/setup-script-prompt-exposure-telemetry.ts:18",
-        "components/sidebar/setup-script-prompt-exposure-telemetry.ts:24",
-        "components/sidebar/setup-script-prompt-exposure-telemetry.ts:36"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/shared/telemetry-event-registry.ts:114 — 'setup_script_prompt_shown' registrado",
-          "src/shared/telemetry-repository-event-schemas.ts:106 — schema setupScriptPromptShownSchema presente"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Constrói payload de telemetria com buildSetupScriptPromptTelemetry contendo modo, provedor e contagem de arquivos/campos",
-          "Deduplica emissões por chave composta (repoHostIdentity, mode, provider, file_count_bucket, unsupported_field_count_bucket, has_shared_hooks)",
-          "Dispara evento 'setup_script_prompt_shown' apenas na primeira ocorrência de cada chave"
-        ],
-        "notes": "Buscas: setup-script-prompt-exposure-telemetry.ts, trackSetupScriptPromptExposure, buildSetupScriptPromptTelemetry, trackedPromptKeys. Schema existe, emissor e deduplicação não."
-      }
-    },
-    {
-      "id": "D02c-025",
-      "capability": "Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup",
-      "orca_evidence": [
-        "components/sidebar/setup-script-prompt-render-state.ts:15",
-        "components/sidebar/setup-script-prompt-render-state.ts:37",
-        "components/sidebar/setup-script-prompt-render-state.ts:46"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/lib/setup-script-prompt.ts:12-32 — tipos/inspeção presentes, mas findSetupScriptPromptRepo/markSetupScriptPromptSaved/getRenderedSetupScriptPromptState ausentes"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay",
-          "markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório",
-          "getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface"
-        ],
-        "notes": "Buscas: setup-script-prompt-render-state.ts, findSetupScriptPromptRepo, markSetupScriptPromptSaved, getRenderedSetupScriptPromptState, lastVisiblePrompt. Nenhum dos três símbolos existe."
-      }
-    },
-    {
-      "id": "D02c-026",
-      "capability": "Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime",
-      "orca_evidence": [
-        "components/sidebar/useSetupScriptPromptRevalidation.ts:14",
-        "components/sidebar/useSetupScriptPromptRevalidation.ts:48",
-        "components/sidebar/useSetupScriptPromptRevalidation.ts:58",
-        "components/sidebar/useSetupScriptPromptRevalidation.ts:68",
-        "components/sidebar/useSetupScriptPromptRevalidation.ts:76"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [
-          "src/components/sidebar/WorktreeSidebar.tsx — nenhum listener de 'focus' de janela para revalidar prompt de setup"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco",
-          "Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes",
-          "Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota",
-          "Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar"
-        ],
-        "notes": "Buscas: useSetupScriptPromptRevalidation.ts, requestRevalidation, connectionGeneration, runtimeStatusByEnvironmentId. Hook ausente."
-      }
-    }
-  ],
-  "summary": {
-    "parity": 1,
-    "partial": 3,
-    "missing": 22,
-    "not-applicable": 0,
-    "out-of-scope": 0
+ "domain": "D02c-project-groups-scripts",
+ "rows": [
+  {
+   "id": "D02c-001",
+   "capability": "Recuperação de worktrees externos ocultos em lista virtualizada com busca e reexibição individual",
+   "orca_evidence": [
+    "components/sidebar/HiddenWorktreeRecoveryList.tsx:23",
+    "components/sidebar/HiddenWorktreeRecoveryList.tsx:47",
+    "components/sidebar/HiddenWorktreeRecoveryList.tsx:58",
+    "components/sidebar/HiddenWorktreeRecoveryList.tsx:83",
+    "components/sidebar/HiddenWorktreeRecoveryList.tsx:119",
+    "components/sidebar/HiddenWorktreeRecoveryList.tsx:146"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:116-128",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:539-623",
+     "src/components/sidebar/WorktreeSidebar.tsx:1198-1210"
+    ],
+    "backend": [
+     "invoke('scan_worktrees') -> src/components/sidebar/WorktreeVisibilityDialog.tsx:112 -> src-tauri/src/lib.rs:399"
+    ],
+    "missing_behaviors": [
+     "Virtualização da lista com @tanstack/react-virtual (estimateSize 56px, overscan 3, max-h-56) — lib ausente do package.json",
+     "Atributos de acessibilidade aria-posinset / aria-setsize por item",
+     "Ícone FolderMinus no empty state (Hydra só renderiza texto)",
+     "Limiar de busca em >=10 worktrees ocultos (Hydra mostra a busca com >5)",
+     "Filtro por displayName (Hydra filtra por branch||path; GitWorktreeInfo não tem displayName aqui)",
+     "Caminho relativo via relativePathInsideRoot (Hydra usa replace(project.path,''))"
+    ],
+    "notes": "Lista de recuperação portada inline dentro de WorktreeVisibilityDialog (não existe componente HiddenWorktreeRecoveryList separado). i18n namespace HiddenWorktreeRecoveryList (en.json:5795) sem uso.",
+    "note": "Dialog montado e funcional; a lista de recuperacao segue .map() sem virtualizador/aria-posinset, gate de busca >5 (Orca >=10) e filtro por branch||path."
+   }
+  },
+  {
+   "id": "D02c-002",
+   "capability": "Dialog de confirmação para supressão da caixa de entrada de worktrees externos do repositório",
+   "orca_evidence": [
+    "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:19",
+    "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:32",
+    "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:46",
+    "components/sidebar/SuppressExternalWorktreeInboxDialog.tsx:62"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:6151-6155"
+    ],
+    "backend": [
+     "invoke('suppress_worktree_inbox') -> src/components/sidebar/WorktreeSidebar.tsx:794 -> src-tauri/src/lib.rs:423"
+    ],
+    "missing_behaviors": [
+     "Exibe título 'Hide external worktrees?' e descrição avisando que worktrees externos não serão mais exibidos na barra lateral ou na lista para o repositório",
+     "Exibe caixa explicativa informando que a funcionalidade pode ser reativada nas configurações do projeto com link 'Open Non-Orca worktrees settings'",
+     "Botões de rodapé: 'Cancel' (variante secondary) e 'Hide external worktrees' (default), ambos desabilitados durante estado pending"
+    ],
+    "notes": "Buscas: componente SuppressExternalWorktreeInboxDialog, modal id 'suppress-*', textos 'Hide external worktrees?'/'Open Non-Orca worktrees settings' (só i18n). A capacidade de supressão existe, o dialog de confirmação não.",
+    "note": "SuppressExternalWorktreeInboxDialog orfao; o 'x' ainda suprime direto."
+   }
+  },
+  {
+   "id": "D02c-003",
+   "capability": "Dialog modal para instalação e configuração do skill de agente Linear com terminal integrado",
+   "orca_evidence": [
+    "components/sidebar/LinearAgentSkillSetupDialog.tsx:36",
+    "components/sidebar/LinearAgentSkillSetupDialog.tsx:47",
+    "components/sidebar/LinearAgentSkillSetupDialog.tsx:77",
+    "components/sidebar/LinearAgentSkillSetupDialog.tsx:107",
+    "components/sidebar/LinearAgentSkillSetupDialog.tsx:157"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:11275-11280"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Estado de sucesso (showSuccess): exibe título 'Linear ticket access is ready', descrição contextual, pílula de status conectada (IntegrationStatusPill tone='connected') e botão 'Done'",
+     "Estado de instalação: exibe prompt descritivo com ícone Info ('Enable agents to read and edit the attached Linear ticket.')",
+     "Embute painel AgentSkillSetupPanel com terminal embutido (terminalHeightPx: 240), comando de instalação/atualização e botão 'Install CLI & Skill'",
+     "Executa verificação e pré-instalação do CLI do Orca (isOrcaCliAvailableOnPath, AGENT_SKILL_CLI_PREREQUISITE_NOTICE)",
+     "Botão discreto 'Don't show again' com ícone EyeOff e tooltip no canto superior direito alinhado ao botão de fechar para dispensa permanente",
+     "Permite fechamento via botão 'Done', botão de fechar, tecla Escape ou clique fora sem dispensa permanente se já em estado de sucesso"
+    ],
+    "notes": "Buscas: LinearAgentSkillSetupDialog, AgentSkillSetupPanel, IntegrationStatusPill, TicketCheck, 'Linear ticket access is ready', 'Install CLI & Skill' (só feature-tips.ts). Nenhum dialog de setup de skill Linear.",
+    "note": "LinearAgentSkillPane orfao, sem componente."
+   }
+  },
+  {
+   "id": "D02c-004",
+   "capability": "Prompt inline e modal para detecção, verificação e setup de skill do agente Linear",
+   "orca_evidence": [
+    "components/sidebar/LinearAgentSkillSetupPrompt.tsx:46",
+    "components/sidebar/LinearAgentSkillSetupPrompt.tsx:140",
+    "components/sidebar/LinearAgentSkillSetupPrompt.tsx:173",
+    "components/sidebar/LinearAgentSkillSetupPrompt.tsx:224",
+    "components/sidebar/LinearAgentSkillSetupPrompt.tsx:287",
+    "components/sidebar/LinearAgentSkillSetupPrompt.tsx:352"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:6055-6060"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Detecta status de instalação do CLI via window.api.cli.getInstallStatus ou getWslInstallStatus para WSL",
+     "Consulta skills globais instaladas via hook useInstalledAgentSkillNames com LINEAR_AGENT_SKILL_NAMES",
+     "Suporta verificação manual via botão 'Re-check' com ícone RefreshCw revalidando CLI e skills",
+     "Gerencia concorrência de verificações com requestGeneration e setupCheckIdentity para descartar respostas defasadas de CLI/runtime",
+     "Dispensa permanente salva '1' no localStorage sob chave de storage específica do runtime e fecha toasts ativos",
+     "Monta lazy dialog LinearAgentSkillSetupDialog sob demanda via lazyWithRetry",
+     "Modo inline renderiza card compacto com ícone TicketCheck, cópia contextual de runtime e botões 'Set up' e 'Re-check'",
+     "Gera comandos de instalação e atualização dinâmicos via buildSkillCommandForRuntime e getLinearAgentSkillUpdateCommand"
+    ],
+    "notes": "Buscas: 'LinearAgentSkillSetupPrompt', 'Dismiss Linear agent skill setup', window.api.cli.getInstallStatus/getWslInstallStatus (ausentes no preload Hydra), requestGeneration/setupCheckIdentity, lazyWithRetry.",
+    "note": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES."
+   }
+  },
+  {
+   "id": "D02c-005",
+   "capability": "Resolução de runtime local/WSL/remoto e chave de persistência para setup de skill do Linear",
+   "orca_evidence": [
+    "components/sidebar/linear-agent-skill-runtime.ts:18",
+    "components/sidebar/linear-agent-skill-runtime.ts:25",
+    "components/sidebar/linear-agent-skill-runtime.ts:63",
+    "components/sidebar/linear-agent-skill-runtime.ts:98",
+    "components/sidebar/linear-agent-skill-runtime.ts:124",
+    "components/sidebar/linear-agent-skill-runtime.ts:131"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:6055-6060"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Identifica plataforma corrente (win32, linux, darwin) a partir do navigator.userAgent",
+     "Resolve runtime do agente (LocalAgentRuntime) forçando host para ambientes remotos e WSL para distros configuradas",
+     "Preserva a distribuição preferida mesmo em estado repair-required para evitar poluição entre Windows e WSL",
+     "Calcula chave de persistência de dispensa: 'orca.linearTicketsSkill.setupDismissed.host' ou 'orca.linearTicketsSkill.setupDismissed.wsl.<distro>'",
+     "Determina target de descoberta de skills (SkillDiscoveryTarget) e override de terminal para shells POSIX no Windows (forçando PowerShell)"
+    ],
+    "notes": "Buscas: linear-agent-skill-runtime.ts, 'orca.linearTicketsSkill.setupDismissed', LocalAgentRuntime, SkillDiscoveryTarget, getLinearPromptTerminalShellOverride. Nada em src/ (src/lib/orchestration-setup-state.ts tem setupDismissed não relacionado).",
+    "note": "Resolucao de runtime/chave de dispensa ausente."
+   }
+  },
+  {
+   "id": "D02c-006",
+   "capability": "Geração de textos e internacionalização para o fluxo de setup do skill do Linear",
+   "orca_evidence": [
+    "components/sidebar/linear-agent-skill-setup-copy.ts:4",
+    "components/sidebar/linear-agent-skill-setup-copy.ts:23",
+    "components/sidebar/linear-agent-skill-setup-copy.ts:44",
+    "components/sidebar/linear-agent-skill-setup-copy.ts:91"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:6055-6060"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Gera rótulo de pré-requisitos ausentes: CLI ausente, skill ausente ou ambos ausentes",
+     "Gera títulos e descrições para toasts de aviso diferenciando host local, ambientes WSL e conexões remotas",
+     "Gera texto explicativo inline detalhando o escopo da instalação (host, WSL ou remoto)"
+    ],
+    "notes": "Buscas: linear-agent-skill-setup-copy.ts, buildMissingPrerequisitesLabel, títulos/descrições de toast host/WSL/remoto. Nenhum módulo de copy.",
+    "note": "Textos do fluxo so em i18n."
+   }
+  },
+  {
+   "id": "D02c-007",
+   "capability": "Lembretes e notificações toast de setup do skill do Linear com limite de repetições",
+   "orca_evidence": [
+    "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:26",
+    "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:31",
+    "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:54",
+    "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:71",
+    "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:85",
+    "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:134"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:6055-6060"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Abre automaticamente o modal de setup na primeira ativação elegível do runtime",
+     "Dispara toast de aviso com botão 'Set up' em ativações subsequentes caso o modal anterior tenha sido fechado informalmente",
+     "Limita os lembretes via toast a LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT (máximo 3 vezes)",
+     "Descarta o toast ativo e atualiza estado ao dispensar permanentemente ou ao concluir a instalação",
+     "Limpa o toast ao desmontar a visualização modal"
+    ],
+    "notes": "Buscas: linear-agent-skill-setup-reminder-toast.ts, useLinearAgentSkillSetupReminderToast, toastCount, LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT, snooze.",
+    "note": "Lembretes/toasts do skill Linear ausentes."
+   }
+  },
+  {
+   "id": "D02c-008",
+   "capability": "Gerenciamento de cache em memória e retenção LRU para lembretes de setup do Linear",
+   "orca_evidence": [
+    "components/sidebar/linear-agent-skill-setup-reminders.ts:1",
+    "components/sidebar/linear-agent-skill-setup-reminders.ts:15",
+    "components/sidebar/linear-agent-skill-setup-reminders.ts:34",
+    "components/sidebar/linear-agent-skill-setup-reminders.ts:40",
+    "components/sidebar/linear-agent-skill-setup-reminders.ts:63"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/en-runtime-required.json — chaves de reminder órfãs"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Armazena em memória o estado de exibição (modalShown, toastCount, snoozed, activeToastId) por chave de runtime",
+     "Aplica política de despejo LRU limitando o cache a MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS = 256 entradas",
+     "Preserva entradas com activeToastId ativo antes de despejar chaves inativas",
+     "Gera identificadores de ativação sequenciais únicos (createLinearAgentSkillSetupActivationId)",
+     "Suporta redefinição completa de estado em testes (resetLinearAgentSkillSetupReminderState)"
+    ],
+    "notes": "Buscas: linear-agent-skill-setup-reminders.ts, MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS, createLinearAgentSkillSetupActivationId, resetLinearAgentSkillSetupReminderState."
+   }
+  },
+  {
+   "id": "D02c-009",
+   "capability": "Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git",
+   "orca_evidence": [
+    "components/sidebar/NonGitFolderDialog.tsx:21",
+    "components/sidebar/NonGitFolderDialog.tsx:38",
+    "components/sidebar/NonGitFolderDialog.tsx:53",
+    "components/sidebar/NonGitFolderDialog.tsx:112",
+    "components/sidebar/NonGitFolderDialog.tsx:136",
+    "components/sidebar/NonGitFolderDialog.tsx:154"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:5228-5235"
+    ],
+    "backend": [
+     "invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277"
+    ],
+    "missing_behaviors": [
+     "Exibe aviso esclarecendo que a pasta não é um repositório Git (editor, terminal e busca funcionam; recursos Git ficam indisponíveis)",
+     "Informa o host onde o caminho foi verificado: host SSH, ambiente de runtime específico ou local",
+     "Exibe o caminho da pasta em bloco destacado com quebra de linha",
+     "Ao confirmar pasta em host SSH: invoca window.api.repos.addRemote, atualiza store via upsertAddedRepoWithProjectHostSetup, marca onboarding (addedFolder), busca worktrees e ativa agente/chat se aplicável",
+     "Ao confirmar pasta local: invoca useAppStore.addNonGitFolder com caminho, displayName e runtimeEnvironmentId",
+     "Trata erros de adição remota exibindo toast com mensagem de falha"
+    ],
+    "notes": "Buscas: NonGitFolderDialog, 'Open as Folder', 'This folder isn't a Git repository', window.api.repos.addRemote (inexistente no Hydra). Fluxo de pasta não-git sem confirmação/aviso de host.",
+    "note": "NonGitFolderDialog orfao; addNonGitFolder segue sem renderer (modal 'confirm-non-git-folder' sem componente)."
+   }
+  },
+  {
+   "id": "D02c-010",
+   "capability": "Fluxo de conclusão e telemetria para abertura de pastas aninhadas não-git",
+   "orca_evidence": [
+    "components/sidebar/complete-nested-folder-open.ts:7",
+    "components/sidebar/complete-nested-folder-open.ts:22",
+    "components/sidebar/complete-nested-folder-open.ts:26",
+    "components/sidebar/complete-nested-folder-open.ts:35",
+    "components/sidebar/track-nested-folder-open.ts:8",
+    "components/sidebar/track-nested-folder-open.ts:18"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/shared/nested-repo-telemetry.ts:26 — 'open_as_folder' definido; :170 buildNestedRepoImportActionTelemetry nunca chamado",
+     "src/shared/telemetry-event-registry.ts:110 — add_repo_nested_import_action registrado, sem emissor",
+     "src/store/slices/repos.ts:60-62 — scanNestedRepos/importNestedRepos expostos no store sem consumidor em *.tsx",
+     "src/store/repos/repo-add-actions.ts:88 — modal 'confirm-non-git-folder' sem renderer"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Rastreia telemetria de importação (add_repo_nested_import_action com action: 'open_as_folder')",
+     "Para pastas em host SSH: abre modal 'confirm-non-git-folder' repassando caminho, connectionId e runtimeEnvironmentId",
+     "Para pastas locais: invoca addNonGitFolder gerenciando estado de geração (generation) e fechando modal ao concluir",
+     "Trata erros capturados exibindo toast de erro se a geração do fluxo ainda for a corrente"
+    ],
+    "notes": "Buscas: complete-nested-folder-open.ts, track-nested-folder-open.ts, addNonGitFolder caller, 'open_as_folder'. Sem fluxo de conclusão de pasta aninhada."
+   }
+  },
+  {
+   "id": "D02c-011",
+   "capability": "Dialog modal para confiança e aprovação de execução de hooks do orca.yaml",
+   "orca_evidence": [
+    "components/sidebar/OrcaYamlTrustDialog.tsx:16",
+    "components/sidebar/OrcaYamlTrustDialog.tsx:31",
+    "components/sidebar/OrcaYamlTrustDialog.tsx:57",
+    "components/sidebar/OrcaYamlTrustDialog.tsx:109",
+    "components/sidebar/OrcaYamlTrustDialog.tsx:160",
+    "components/sidebar/OrcaYamlTrustDialog.tsx:180",
+    "components/sidebar/OrcaYamlTrustDialog.tsx:199"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:5237-5245"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Diferencia quatro tipos de script: 'setup script', 'archive script', 'issue command' e 'VM recipe' com gatilhos explicativos",
+     "Adapta título e descrição para script novo vs script modificado desde última aprovação (previouslyApproved)",
+     "Exibe pré-visualização formatada do conteúdo do script em container monospace com rolagem",
+     "Opção de checkbox 'Always trust orca.yaml in <repo>' com estilo destacado para confiar permanentemente no repositório",
+     "Ações no rodapé: 'Don't run' (cancela/ignora) e 'Run hooks' (executa e registra aprovação pontual ou permanente)"
+    ],
+    "notes": "Buscas: OrcaYamlTrustDialog, 'Run hooks', 'Always trust', modal 'confirm-orca-yaml-hooks', trusted_orca_hooks no Rust. Estado de trust existe no store mas nenhuma UI o aciona; nenhum comando Tauri de trust/execução de hook.",
+    "note": "OrcaYamlTrustDialog orfao; markOrcaHookScriptConfirmed/AlwaysTrusted seguem sem callers."
+   }
+  },
+  {
+   "id": "D02c-012",
+   "capability": "Dialog modal para revisão e exclusão forçada em lote de branches preservadas",
+   "orca_evidence": [
+    "components/sidebar/PreservedBranchBatchReviewDialog.tsx:31",
+    "components/sidebar/PreservedBranchBatchReviewDialog.tsx:38",
+    "components/sidebar/PreservedBranchBatchReviewDialog.tsx:88",
+    "components/sidebar/PreservedBranchBatchReviewDialog.tsx:113",
+    "components/sidebar/PreservedBranchBatchReviewDialog.tsx:171",
+    "components/sidebar/PreservedBranchBatchReviewModal.tsx:25"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/worktrees/teardown/force-delete-preserved-branch.ts:11 — createForceDeletePreservedBranch é stub `any = null`",
+     "src/store/slices/worktrees.ts:97 — store recebe o stub nulo"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Filtra branches acionáveis que possuem expectedHead válido",
+     "Controle de seleção em lote via checkbox 'Select all' com suporte a estado indeterminado e contador 'N of M selected'",
+     "Lista cada branch com nome, repositório de origem, prefixo do hash de commit (7 caracteres) e aviso 'May be unmerged' ou 'Head unavailable'",
+     "Desabilita checkbox para branches sem head disponível",
+     "Botão de exclusão destrutivo 'Force Delete N Branches' com ícone Trash2, desabilitado quando nenhuma branch está selecionada",
+     "Executa exclusão em lote ao confirmar delegando para forceDeletePreservedBranchBatch"
+    ],
+    "notes": "Buscas: PreservedBranchBatchReviewDialog, PreservedBranchBatchReviewModal, modal 'preserved-branch-review', 'Force Delete N Branches', forceDeletePreservedBranchBatch. Nenhum componente."
+   }
+  },
+  {
+   "id": "D02c-013",
+   "capability": "Notificação toast e exclusão concorrente em lote para múltiplas branches preservadas",
+   "orca_evidence": [
+    "components/sidebar/preserved-branch-batch-toast.tsx:20",
+    "components/sidebar/preserved-branch-batch-toast.tsx:45",
+    "components/sidebar/preserved-branch-batch-toast.tsx:88",
+    "components/sidebar/preserved-branch-batch-toast.tsx:109",
+    "components/sidebar/preserved-branch-batch-toast.tsx:157"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/store/slices/worktrees/teardown/force-delete-preserved-branch.ts:11 — stub nulo consumido em src/store/slices/worktrees.ts:97"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Exibe toast de aviso inicial com contagem de workspaces removidos e branches mantidas, explicando que o espaço em disco continuará sendo liberado",
+     "Botão 'Review N Branches' abre o modal de revisão em lote com duração infinita no toast",
+     "Agrupa branches por repositório e executa forceDeletePreservedBranch concorrente com limite BRANCH_REPO_DELETE_CONCURRENCY = 4",
+     "Exibe toast de carregamento durante a operação, toast de sucesso quando todas são excluídas ou toast de erro persistente com lista de falhas e botão 'Retry N Branches'"
+    ],
+    "notes": "Buscas: preserved-branch-batch-toast.tsx, showPreservedBranchBatchToast, BRANCH_REPO_DELETE_CONCURRENCY, 'Review N Branches', 'Retry N Branches'. Nenhum toast."
+   }
+  },
+  {
+   "id": "D02c-014",
+   "capability": "Notificação toast e exclusão forçada individual de branch preservada após remoção de worktree",
+   "orca_evidence": [
+    "components/sidebar/preserved-branch-toast.tsx:19",
+    "components/sidebar/preserved-branch-toast.tsx:22",
+    "components/sidebar/preserved-branch-toast.tsx:28",
+    "components/sidebar/preserved-branch-toast.tsx:52",
+    "components/sidebar/preserved-branch-toast.tsx:75"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:95 — deleção só reporta erro inline (failures.join); sem toast de branch preservada",
+     "src/store/slices/worktrees/teardown/remove-worktree.ts:9 — createRemoveWorktree é stub `any = null`"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Título do toast diferencia remoção de workspace principal ('Workspace deleted, branch kept') de worktree secundário ('Worktree deleted, branch kept')",
+     "Descrição detalha que o Git não pôde deletar a branch com segurança para não perder commits locais",
+     "Corpo personalizado do toast renderiza botão 'Force Delete Branch' com ícone Trash2 quando o expectedHead está disponível",
+     "Duração do toast definida como Infinity quando há botão de exclusão forçada disponível",
+     "Invoca callback onForceDelete e descarta o toast ao clicar"
+    ],
+    "notes": "Buscas: preserved-branch-toast.tsx, showPreservedBranchToast, 'Worktree deleted, branch kept', 'Force Delete Branch'. Nenhum toast."
+   }
+  },
+  {
+   "id": "D02c-015",
+   "capability": "Dialog modal para exclusão de grupo de projetos e opção de remoção de projetos contidos",
+   "orca_evidence": [
+    "components/sidebar/ProjectGroupDeleteDialog.tsx:23",
+    "components/sidebar/ProjectGroupDeleteDialog.tsx:88",
+    "components/sidebar/ProjectGroupDeleteDialog.tsx:94",
+    "components/sidebar/ProjectGroupDeleteDialog.tsx:107",
+    "components/sidebar/ProjectGroupDeleteDialog.tsx:140",
+    "components/sidebar/ProjectGroupDeleteDialog.tsx:177"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/ProjectGroupDeleteDialog.tsx:14-116",
+     "src/store/project-groups/project-group-mutations.ts:139",
+     "src/components/sidebar/WorktreeSidebar.tsx:1188-1196"
+    ],
+    "backend": [
+     "CustomEvent 'hydra:delete-project-group' -> src/components/sidebar/WorktreeSidebar.tsx:1134 -> src/App.tsx:1211 (estado local + 'hydra:refresh-projects')"
+    ],
+    "missing_behaviors": [
+     "Checkbox opcional 'Remove N contained projects' e props removeContainedProjects/onRemoveContainedProjectsChange (store já suporta; UI não expõe)",
+     "content ref (mountedRef) para evitar mutações de estado após desmontagem"
+    ],
+    "notes": "A remoção do grupo passa por estado do App (App.tsx:1211) e não pela mutation do store; membros voltam ungrouped. Sem testes Hydra para este dialog.",
+    "note": "Dialog portado e montado; segue sem checkbox 'Remove N contained projects' (store suporta, UI nao expoe)."
+   }
+  },
+  {
+   "id": "D02c-016",
+   "capability": "Dialog modal para criação e renomeação de grupos de projeto",
+   "orca_evidence": [
+    "components/sidebar/ProjectGroupNameDialog.tsx:21",
+    "components/sidebar/ProjectGroupNameDialog.tsx:64",
+    "components/sidebar/ProjectGroupNameDialog.tsx:76",
+    "components/sidebar/ProjectGroupNameDialog.tsx:96"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/ProjectGroupNameDialog.tsx:14-125",
+     "src/components/sidebar/WorktreeSidebar.tsx:1188-1196"
+    ],
+    "backend": [
+     "CustomEvent 'hydra:create-project-group'/'hydra:rename-project-group' -> src/App.tsx:1178/1205 (estado + refresh) ; persistência via sidebar prefs (App.tsx:462-465)"
+    ],
+    "missing_behaviors": [],
+    "notes": "Hidratação inicial via useState(initialName) + effect no open; comportamento observável equivalente (sem teste Hydra dedicado).",
+    "note": "Criar/renomear grupo com foco+select inicial, disable com nome vazio e 'Saving...' inalterado."
+   }
+  },
+  {
+   "id": "D02c-017",
+   "capability": "Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados",
+   "orca_evidence": [
+    "components/sidebar/empty-project-placeholder-repos.ts:5",
+    "components/sidebar/empty-project-placeholder-repos.ts:12",
+    "components/sidebar/empty-project-placeholder-repos.ts:18",
+    "components/sidebar/empty-project-placeholder-repos.ts:21"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:627-636",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:62",
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:196-210"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe",
+     "Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList)"
+    ],
+    "notes": "O efeito observável (membros de grupo/empty repos seguem visíveis) é obtido estruturalmente porque o WorktreeList renderiza seções de repo incondicionalmente; a função nomeada do Orca e seus testes (empty-project-placeholder-repos.test.ts) não existem.",
+    "note": "placeholderRepoIds existe e e alimentado por noticeRepoIds no pipeline, mas getEmptyProjectPlaceholderRepoIds segue inexistente e o acoplamento a filterRepoIds permanece fora do WorktreeList."
+   }
+  },
+  {
+   "id": "D02c-018",
+   "capability": "Dialog modal para confirmação de remoção de projeto/pasta do Orca com aviso contextual de host",
+   "orca_evidence": [
+    "components/sidebar/RemoveFolderDialog.tsx:20",
+    "components/sidebar/RemoveFolderDialog.tsx:46",
+    "components/sidebar/RemoveFolderDialog.tsx:52",
+    "components/sidebar/RemoveFolderDialog.tsx:58",
+    "components/sidebar/RemoveFolderDialog.tsx:65",
+    "components/sidebar/RemoveFolderDialog.tsx:87"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:5285-5295"
+    ],
+    "backend": [
+     "invoke('catalog_remove_repo') -> src/App.tsx:1613 -> src-tauri/src/lib.rs:289"
+    ],
+    "missing_behaviors": [
+     "Exibe título 'Remove Project' e adapta a mensagem ao tipo de host e projeto",
+     "Para receitas de VM: alerta que a receita de VM determina se ambiente e arquivos serão excluídos permanentemente",
+     "Para projetos SSH: esclarece que os arquivos continuam no host remoto e podem ser recuperados ao reconectar o host",
+     "Para projetos locais: esclarece que os arquivos continuam no disco local",
+     "Botão 'Remove' destrutivo invoca removeProject no store com feedback de toast em caso de erro"
+    ],
+    "notes": "Buscas: RemoveFolderDialog, 'Remove Project' title, removeDescriptionSsh/Local/VmRecipe, modal 'confirm-remove-folder'. Backend existe e é chamado; o dialog contextual (VM/SSH/local) não.",
+    "note": "RemoveFolderDialog orfao; remocao de projeto segue imediata via catalog_remove_repo."
+   }
+  },
+  {
+   "id": "D02c-019",
+   "capability": "Card orquestrador para sugestão, inspeção e salvamento de setup scripts do projeto",
+   "orca_evidence": [
+    "components/sidebar/SetupScriptPromptCard.tsx:32",
+    "components/sidebar/SetupScriptPromptCard.tsx:63",
+    "components/sidebar/SetupScriptPromptCard.tsx:94",
+    "components/sidebar/SetupScriptPromptCard.tsx:156",
+    "components/sidebar/SetupScriptPromptCard.tsx:175",
+    "components/sidebar/SetupScriptPromptCard.tsx:288"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/lib/setup-script-prompt.ts:1-32",
+     "src/i18n/locales/en.json:5300-5308"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Inspeciona assincronamente hooks de runtime e candidatos de importação (checkRuntimeHooks, inspectRuntimeSetupScriptImports)",
+     "Suporta edição de setup detectado de package manager antes de salvar",
+     "Botão 'Configure' navega diretamente para as configurações de comandos locais do repositório",
+     "Botão de dispensa persiste a recusa para a identidade de host do repositório no store (dismissSetupScriptPrompt)",
+     "Salva comando detectado via updateRepo (hookSettings) e emite telemetria de ação (setup_script_prompt_action)",
+     "Exibe toast de confirmação com link para reabrir as configurações do projeto após salvar",
+     "Suporta re-tentativa manual de inspeção em caso de erro"
+    ],
+    "notes": "Buscas: SetupScriptPromptCard.tsx, 'Add a setup script', checkRuntimeHooks, inspectRuntimeSetupScriptImports, updateRepo(hookSettings). Card orquestrador ausente.",
+    "note": "Card orquestrador ausente; inspectSetupScriptPromptState segue sem callers."
+   }
+  },
+  {
+   "id": "D02c-020",
+   "capability": "Shell visual e contenção flutuante do card de sugestão de setup script",
+   "orca_evidence": [
+    "components/sidebar/SetupScriptPromptCardShell.tsx:35",
+    "components/sidebar/SetupScriptPromptCardShell.tsx:37",
+    "components/sidebar/SetupScriptPromptCardShell.tsx:42",
+    "components/sidebar/SetupScriptPromptCardShell.tsx:48",
+    "components/sidebar/SetupScriptPromptCardShell.tsx:66"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:5300-5308"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Posicionamento flutuante com sombra (shadow-[0_10px_24px_rgba(0,0,0,0.18)]) sem reservar espaço estático na sidebar",
+     "Exibe título 'Add a setup script', botão de fechar/dispensa com tooltip, badge de cor do repositório e nome de exibição",
+     "Orquestra o corpo do texto e os botões de ação correspondentes ao estado atual (erro, package manager, candidato ou configuração)"
+    ],
+    "notes": "Buscas: SetupScriptPromptCardShell.tsx, 'Add a setup script', shadow-[0_10px_24px_rgba(0,0,0,0.18)]. Nenhum shell flutuante.",
+    "note": "Shell visual do card so em i18n."
+   }
+  },
+  {
+   "id": "D02c-021",
+   "capability": "Componentes visuais e ações para o card de setup script (edição, ações de package manager e erros)",
+   "orca_evidence": [
+    "components/sidebar/SetupScriptPromptCardViews.tsx:14",
+    "components/sidebar/SetupScriptPromptCardViews.tsx:44",
+    "components/sidebar/SetupScriptPromptCardViews.tsx:85",
+    "components/sidebar/SetupScriptPromptCardViews.tsx:126",
+    "components/sidebar/SetupScriptPromptCardViews.tsx:198",
+    "components/sidebar/SetupScriptPromptCardViews.tsx:229",
+    "components/sidebar/SetupScriptPromptCardViews.tsx:249"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:5309-5320"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "DismissButton: botão de ícone 'X' com tooltip 'Dismiss'",
+     "DetectedSetupPreview: caixa de texto editável com número dinâmico de linhas (getDetectedSetupScriptTextareaRows) e proveniência do comando",
+     "PackageManagerActions: botão primário 'Save' (com spinner durante salvamento) e botão secundário 'Configure manually'",
+     "SetupScriptPromptBody: mensagens contextuais para erro de inspeção, orca.yaml compartilhado ignorado, package manager ou sugestão geral",
+     "InspectionErrorActions: botões 'Retry' com ícone RefreshCw e 'Settings' com ícone Settings",
+     "ConfigureOnlyAction: botão 'Configure' com ícone Settings",
+     "SaveLocalSetupAction: botão 'Save local setup' com ícone Download ou spinner de salvamento"
+    ],
+    "notes": "Buscas: SetupScriptPromptCardViews.tsx, DismissButton, DetectedSetupPreview, PackageManagerActions, SaveLocalSetupAction, InspectionErrorActions, getDetectedSetupScriptTextareaRows.",
+    "note": "Componentes de acao do card ausentes; SetupScriptImportCandidate segue stub."
+   }
+  },
+  {
+   "id": "D02c-022",
+   "capability": "Toast de confirmação e atalho de configurações ao salvar setup script no projeto",
+   "orca_evidence": [
+    "components/sidebar/SetupScriptPromptToast.tsx:9",
+    "components/sidebar/SetupScriptPromptToast.tsx:12",
+    "components/sidebar/SetupScriptPromptToast.tsx:27"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/i18n/locales/en.json:5300-5308"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Exibe toast de sucesso com mensagem 'Saved in this project's settings'",
+     "Inclui link clicável sublinhado no texto do toast para navegar instantaneamente até as configurações do repositório",
+     "Suporta descrição detalhando execução na criação de worktrees ou campos não suportados ignorados"
+    ],
+    "notes": "Buscas: SetupScriptPromptToast.tsx, showSavedInProjectSettingsToast, onOpenSettings link. Nenhum toast.",
+    "note": "Toast de confirmacao do setup script so em i18n."
+   }
+  },
+  {
+   "id": "D02c-023",
+   "capability": "Navegação direta para a seção de comandos locais nas configurações do repositório",
+   "orca_evidence": [
+    "components/sidebar/open-setup-script-settings.ts:4",
+    "components/sidebar/open-setup-script-settings.ts:18",
+    "components/sidebar/open-setup-script-settings.ts:19",
+    "components/sidebar/open-setup-script-settings.ts:25"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/settings/TerminalTccAttributionNotice.tsx:49-65 — primitivas openSettingsTarget/openSettingsPage/setSettingsSearchQuery existem e são usadas por outras superfícies"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Limpa qualquer filtro de busca ativo nas configurações (setSettingsSearchQuery('')) para evitar ocultação acidental da seção",
+     "Define o alvo de navegação para o painel 'repo', host específico e seção de comandos locais do repositório",
+     "Abre a página de configurações (openSettingsPage())"
+    ],
+    "notes": "Buscas: open-setup-script-settings.ts, openSetupScriptSettings, seção 'local commands'/localCommands no SettingsModal. Nenhuma função/seção equivalente."
+   }
+  },
+  {
+   "id": "D02c-024",
+   "capability": "Telemetria de exposição do card de setup script com deduplicação por chave composta",
+   "orca_evidence": [
+    "components/sidebar/setup-script-prompt-exposure-telemetry.ts:5",
+    "components/sidebar/setup-script-prompt-exposure-telemetry.ts:18",
+    "components/sidebar/setup-script-prompt-exposure-telemetry.ts:24",
+    "components/sidebar/setup-script-prompt-exposure-telemetry.ts:36"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/shared/telemetry-event-registry.ts:114 — 'setup_script_prompt_shown' registrado",
+     "src/shared/telemetry-repository-event-schemas.ts:106 — schema setupScriptPromptShownSchema presente"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Constrói payload de telemetria com buildSetupScriptPromptTelemetry contendo modo, provedor e contagem de arquivos/campos",
+     "Deduplica emissões por chave composta (repoHostIdentity, mode, provider, file_count_bucket, unsupported_field_count_bucket, has_shared_hooks)",
+     "Dispara evento 'setup_script_prompt_shown' apenas na primeira ocorrência de cada chave"
+    ],
+    "notes": "Buscas: setup-script-prompt-exposure-telemetry.ts, trackSetupScriptPromptExposure, buildSetupScriptPromptTelemetry, trackedPromptKeys. Schema existe, emissor e deduplicação não."
+   }
+  },
+  {
+   "id": "D02c-025",
+   "capability": "Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup",
+   "orca_evidence": [
+    "components/sidebar/setup-script-prompt-render-state.ts:15",
+    "components/sidebar/setup-script-prompt-render-state.ts:37",
+    "components/sidebar/setup-script-prompt-render-state.ts:46"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/lib/setup-script-prompt.ts:12-32 — tipos/inspeção presentes, mas findSetupScriptPromptRepo/markSetupScriptPromptSaved/getRenderedSetupScriptPromptState ausentes"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay",
+     "markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório",
+     "getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface"
+    ],
+    "notes": "Buscas: setup-script-prompt-render-state.ts, findSetupScriptPromptRepo, markSetupScriptPromptSaved, getRenderedSetupScriptPromptState, lastVisiblePrompt. Nenhum dos três símbolos existe."
+   }
+  },
+  {
+   "id": "D02c-026",
+   "capability": "Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime",
+   "orca_evidence": [
+    "components/sidebar/useSetupScriptPromptRevalidation.ts:14",
+    "components/sidebar/useSetupScriptPromptRevalidation.ts:48",
+    "components/sidebar/useSetupScriptPromptRevalidation.ts:58",
+    "components/sidebar/useSetupScriptPromptRevalidation.ts:68",
+    "components/sidebar/useSetupScriptPromptRevalidation.ts:76"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:1190-1210"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco",
+     "Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes",
+     "Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota",
+     "Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar"
+    ],
+    "notes": "Buscas: useSetupScriptPromptRevalidation.ts, requestRevalidation, connectionGeneration, runtimeStatusByEnvironmentId. Hook ausente.",
+    "note": "Nenhum listener de 'focus' de janela/ativacao/reconexao para revalidar prompt de setup."
+   }
   }
+ ],
+ "summary": {
+  "parity": 1,
+  "partial": 3,
+  "missing": 22,
+  "not-applicable": 0,
+  "out-of-scope": 0
+ }
 }

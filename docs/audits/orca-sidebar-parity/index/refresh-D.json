@@ -1,0 +1,1428 @@
+{
+ "group": "D",
+ "generatedFrom": "unknown",
+ "rows": [
+  {
+   "id": "D08-001",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:43",
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:124-127",
+    "src/components/sidebar/SidebarFooter.tsx:53-58",
+    "src/components/sidebar/WorktreeSidebar.tsx:207-211",
+    "src/components/sidebar/WorktreeSidebar.tsx:893-894",
+    "src/shared/keybindings/definitions-core-1.ts:103"
+   ],
+   "note": "Board substitui o antigo missing: toggle ligado via evento global + botao do footer; faltam telemetria e handler do keybinding workspace.openBoard."
+  },
+  {
+   "id": "D08-002",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:471-492",
+    "src/components/sidebar/worktree-sidebar-drop-preview.ts:1"
+   ],
+   "note": "Sem previewWorkspaceBoardFromDrag/solidify: o board so recebe cards por drop interno (ponteiro), nao por drag da lista."
+  },
+  {
+   "id": "D08-003",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:10-24",
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:31-40",
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:99-111"
+   ],
+   "note": "Escape em capture no document, respeitando campo editavel (isEditableTarget) e overlays abertos; fecha so o board."
+  },
+  {
+   "id": "D08-004",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:60-61",
+    "src/components/sidebar/WorktreeSidebar.tsx:312-316"
+   ],
+   "note": "Board ignora pointerdown/interact outside (sem outside dismiss); so Escape/botao e o click-outside do WorkspaceOptionsMenu existem."
+  },
+  {
+   "id": "D08-005",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-drawer-lingering.ts:7",
+    "src/components/sidebar/workspace-board/use-workspace-board-drawer-lingering.ts:13-22",
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:54-58"
+   ],
+   "note": "Linger de 300ms com cancelamento ao reabrir; drawer so desmonta apos a animacao."
+  },
+  {
+   "id": "D08-006",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59",
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:83-100"
+   ],
+   "note": "Board renderiza todas as raias/cards por map; sem startTransition/ciclo diferido nem descarte de selecao externa."
+  },
+  {
+   "id": "D08-007",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:44-56",
+    "src/components/sidebar/workspace-board/use-workspace-board-geometry.ts:24-57"
+   ],
+   "note": "Sheet reserva chrome/status por medicao do sidebar; faltam as constantes WORKSPACE_TOP_CHROME_HEIGHT/STATUS_BAR_RESERVE_HEIGHT e o data-contextual-tour-target."
+  },
+  {
+   "id": "D08-008",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:21-50"
+   ],
+   "note": "Header tem titulo e botao fechar; faltam busca, filtro, menu de configuracoes e contagem de selecao."
+  },
+  {
+   "id": "D08-009",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:45-59"
+   ],
+   "note": "Container de raias existe; faltam superficie de selecao, overlay de area e alvo de contextual tour."
+  },
+  {
+   "id": "D08-010",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:695-720"
+   ],
+   "note": "Busca do sidebar existe (input + Clear filter), mas o board nao tem campo de busca proprio; o clear nao preserva foco."
+  },
+  {
+   "id": "D08-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:704-709"
+   ],
+   "note": "Escape limpa texto do filtro ou da blur; sem guard de IME nem fechar-board (nao ha busca no board)."
+  },
+  {
+   "id": "D08-012",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:695-720"
+   ],
+   "note": "Sem live region debouncada nem badges de contagem/aviso de filtro longo."
+  },
+  {
+   "id": "D08-013",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:562-635",
+    "src/components/sidebar/visible-worktree-filters.ts:1"
+   ],
+   "note": "Matching de busca do sidebar existe; falta o pipeline host-qualified/board (deferred value, politica de campos, guarda de tamanho)."
+  },
+  {
+   "id": "D08-014",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/group-sections.ts:96-120",
+    "src/components/sidebar/WorktreeList.tsx:338"
+   ],
+   "note": "Sem projecao de raias sob busca/contagens por grupo; o agrupamento por status so afeta indentacao."
+  },
+  {
+   "id": "D08-015",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:21-50",
+    "src/store/slices/ui/ui-slice-preference-actions.ts:259"
+   ],
+   "note": "Sem menu de configuracoes do board (sync toggle/lista de status); setter de sync sem caller."
+  },
+  {
+   "id": "D08-016",
+   "status": "missing",
+   "evidence": [
+    "src/shared/workspace-statuses.ts:143",
+    "src/store/slices/ui/ui-slice-preference-actions.ts:239"
+   ],
+   "note": "Sem mover/remover status nem migracao de worktrees."
+  },
+  {
+   "id": "D08-017",
+   "status": "missing",
+   "evidence": [
+    "src/shared/workspace-statuses.ts:143",
+    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:21-50"
+   ],
+   "note": "Sem botao 'Add status'; makeWorkspaceStatusId so usado na normalizacao de persistencia."
+  },
+  {
+   "id": "D08-018",
+   "status": "missing",
+   "evidence": [
+    "src/store/slices/ui/ui-slice-preference-actions.ts:239-243",
+    "src/components/sidebar/workspace-status.ts:197"
+   ],
+   "note": "Sem acoes de renomear/cor/icone de status; setter generico sem caller de UI."
+  },
+  {
+   "id": "D08-019",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59"
+   ],
+   "note": "Grade de raias nao virtualizada (render direto); @tanstack/react-virtual nao e dependencia."
+  },
+  {
+   "id": "D08-020",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59"
+   ],
+   "note": "Sem hidratacao progressiva de raias (sem startTransition/virtualizacao)."
+  },
+  {
+   "id": "D08-021",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:47-88"
+   ],
+   "note": "Raia tem contador (data-workspace-board-lane-count) e placeholder Empty; falta o botao 'New workspace in {status}'."
+  },
+  {
+   "id": "D08-022",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:55",
+    "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:47"
+   ],
+   "note": "Largura vem do store persistido; sem alca de resize/atalhos de teclado."
+  },
+  {
+   "id": "D08-023",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:47-48"
+   ],
+   "note": "Sem Shift+wheel horizontal durante drag no board."
+  },
+  {
+   "id": "D08-024",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:70-84"
+   ],
+   "note": "Cards renderizados por map sem virtualizador vertical/est. de altura."
+  },
+  {
+   "id": "D08-025",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+   ],
+   "note": "Hit-testing/indice/indicador existem, mas a partir de rects vivos do DOM, nao de um layout virtual registrado."
+  },
+  {
+   "id": "D08-026",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-status-drag-data.ts:3-5",
+    "src/components/sidebar/workspace-status.ts:38-46"
+   ],
+   "note": "Sem canal DOM de IDs completos (delimitador NUL); helpers de payload seguem sem consumidor."
+  },
+  {
+   "id": "D08-027",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardCard.tsx:41-57"
+   ],
+   "note": "Card integra WorktreeCard com atributos data-workspace-board-card-*, identidade host-qualified e badge Pinned."
+  },
+  {
+   "id": "D08-028",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:4-18"
+   ],
+   "note": "Alvo de drop so por raia de status; sem data-workspace-pin-drop-target/feedback de pin."
+  },
+  {
+   "id": "D08-029",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:37-88",
+    "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:55-140"
+   ],
+   "note": "Projecao reusa os filtros/sort do sidebar e fixa os pinned no topo da raia; faltam ordenacao manual, grupos host-qualified e indice de board."
+  },
+  {
+   "id": "D08-030",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:47-88"
+   ],
+   "note": "Sem gatilho 'New workspace in {status.label}' nem passagem de workspaceStatus ao createWorktree."
+  },
+  {
+   "id": "D08-031",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardCard.tsx:41-57"
+   ],
+   "note": "Sem multi-selecao de cards (selectedWorktreeIds)."
+  },
+  {
+   "id": "D08-032",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:30"
+   ],
+   "note": "Sem marquee/selecao por area (DrawerView explicitamente sem a maquinaria de overlay/multi-select)."
+  },
+  {
+   "id": "D08-033",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26"
+   ],
+   "note": "Sem auto-scroll de selecao por area."
+  },
+  {
+   "id": "D08-034",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+   ],
+   "note": "Rects sao lidos no hit-test; sem rects de selecao por area/preview imperativo."
+  },
+  {
+   "id": "D08-035",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-start.ts:7-14"
+   ],
+   "note": "Sem maquina de selecao por area (commit/cancel); modifiers sao deliberadamente reservados."
+  },
+  {
+   "id": "D08-036",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:26",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:213-218",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:127",
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:47"
+   ],
+   "note": "Pointer drag do card com threshold 5px e supressao de clique (250ms), ligado ao lane grid."
+  },
+  {
+   "id": "D08-037",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:12-14",
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-preview-dom.ts:25-63"
+   ],
+   "note": "Preview clonado e cursor grabbing existem; falta o badge de contagem para multi-drag."
+  },
+  {
+   "id": "D08-038",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:18",
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:77-82",
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:228-252"
+   ],
+   "note": "Resolucao de raia com tolerancia de gap e linha indicadora existem; falta o alvo de pin."
+  },
+  {
+   "id": "D08-039",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+   ],
+   "note": "Sem traducao de indice filtrado->raia cheia (o board nao tem busca)."
+  },
+  {
+   "id": "D08-040",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:57"
+   ],
+   "note": "Sem registo de grupos de drop vindos da sidebar/destaque externo do board."
+  },
+  {
+   "id": "D08-041",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26",
+    "src/components/sidebar/workspace-status-drag-data.ts:28"
+   ],
+   "note": "Drop de card->raia existe, mas por pointer drag, nao HTML5 nativo; helpers de payload continuam sem consumidor."
+  },
+  {
+   "id": "D08-042",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:130-137",
+    "src/components/sidebar/WorktreeSidebar.tsx:471-492",
+    "src/App.tsx:3517-3528"
+   ],
+   "note": "Movimentacao de status agora existe via drop no board (set_worktree_status); faltam pin em lote, comutacao automatica para ordenacao manual, sync Linear e telemetria."
+  },
+  {
+   "id": "D09-001",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-415",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-472",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:12"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-002",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-472",
+    "src/components/ui/dropdown-menu.tsx:64"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-003",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-472",
+    "src/components/ui/dropdown-menu.tsx:161"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-004",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarHeader.tsx:79-110",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:131-138"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do SidebarHeader atualizadas."
+  },
+  {
+   "id": "D09-005",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:403-415",
+    "src/components/sidebar/WorktreeSidebar.tsx:46-50",
+    "src/components/sidebar/WorktreeSidebar.tsx:364-367",
+    "src/shared/keybindings/definitions-core-1.ts:241"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-006",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-429",
+    "src/components/sidebar/visible-worktree-kinds.ts:12-28",
+    "src/components/sidebar/WorktreeSidebar.tsx:566-568"
+   ],
+   "note": "Sem mudanca de comportamento; veredito mantido."
+  },
+  {
+   "id": "D09-007",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:417-472",
+    "src/components/sidebar/WorktreeSidebar.tsx:566-572"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-008",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:143-260",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-262"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-009",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:166-174",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:241-262"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-010",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:384-475",
+    "src/components/sidebar/SidebarHeader.tsx:79-86"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do SidebarHeader atualizadas."
+  },
+  {
+   "id": "D09-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:278-302",
+    "src/components/sidebar/WorktreeSidebar.tsx:364-367"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-012",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:196-235",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:159-161",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:48"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-013",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:176-196"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-014",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-247"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-015",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:206-214"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-016",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:145-160",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:161-174",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:116-127",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-262"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-017",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:397-472",
+    "src/components/sidebar/visible-worktrees.ts:125-129",
+    "src/store/index.ts:135,377"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do store atualizadas."
+  },
+  {
+   "id": "D09-018",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/project-filter-reveal.ts:1-12",
+    "src/lib/worktree-activation.ts:279",
+    "src/components/sidebar/WorktreeSidebar.tsx:400-433"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-019",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/sidebar-filter-actions.ts:12-26",
+    "src/components/sidebar/visible-worktrees.ts:12"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-020",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/sidebar-filter-actions.ts:31-67",
+    "src/components/sidebar/visible-worktrees.ts:12"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-021",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/visible-worktree-host-scope.ts:30-39",
+    "src/components/sidebar/visible-worktrees.ts:111-190",
+    "src/components/sidebar/visible-worktrees.ts:147-160"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-022",
+   "status": "partial",
+   "evidence": [
+    "src/lib/smart-attention.ts:52-72",
+    "src/lib/smart-attention.ts:83-94",
+    "src/components/sidebar/WorktreeSidebar.tsx:562-635",
+    "src/components/sidebar/SidebarAgentsList.tsx:88-110",
+    "src/components/sidebar/smart-attention.ts:20-26"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-023",
+   "status": "partial",
+   "evidence": [
+    "src/lib/smart-attention.ts:102-115",
+    "src/components/sidebar/WorktreeSidebar.tsx:562-635"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-025",
+   "status": "missing",
+   "evidence": [
+    "src/lib/smart-attention.ts:33-44",
+    "src/components/sidebar/WorktreeSidebar.tsx:562-635",
+    "src/components/sidebar/SidebarAgentsList.tsx:15-21",
+    "src/lib/tab-has-live-pty.ts:1"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-028",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/smart-sort.ts:28",
+    "src/components/sidebar/smart-sort.ts:38-51",
+    "src/components/sidebar/smart-sort.ts:125,142",
+    "src/components/sidebar/WorktreeSidebar.tsx:589-591"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-029",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/smart-sort.ts:51-92",
+    "src/components/sidebar/smart-sort.ts:196-197",
+    "src/components/sidebar/WorktreeSidebar.tsx:589-595"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D09-030",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/smart-sort.ts:104-160",
+    "src/components/sidebar/visible-worktrees.ts:341-357",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:305-330"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D09-031",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/smart-sort.ts:178-215",
+    "src/components/sidebar/smart-attention.ts:23,25",
+    "src/components/sidebar/visible-worktrees.ts:341-350",
+    "src/components/sidebar/WorktreeSidebar.tsx:562-635"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D10-005",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:49",
+    "src/components/DeleteWorktreeDialog.tsx:44"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-006",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:140",
+    "src/components/DeleteWorktreeDialog.tsx:147"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-007",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:150-171",
+    "src/components/DeleteWorktreeDialog.tsx:153"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-009",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:177",
+    "src/components/DeleteWorktreeDialog.tsx:183",
+    "src/components/DeleteWorktreeDialog.tsx:210"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-010",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:44",
+    "src/components/DeleteWorktreeDialog.tsx:58",
+    "src/components/DeleteWorktreeDialog.tsx:98",
+    "src/components/DeleteWorktreeDialog.tsx:199"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:60-68",
+    "src/components/DeleteWorktreeDialog.tsx:211",
+    "src/components/DeleteWorktreeDialog.tsx:217"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-012",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:94"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-013",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:96",
+    "invoke('delete_worktree') em loop paralelo em src/components/DeleteWorktreeDialog.tsx:106"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-014",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:57",
+    "src/components/DeleteWorktreeDialog.tsx:98"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-016",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:153",
+    "src/App.tsx:408"
+   ],
+   "note": "Sem mudanca de comportamento; veredito mantido."
+  },
+  {
+   "id": "D10-017",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:70-77"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-018",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:145-148"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-019",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:60-68",
+    "src/components/DeleteWorktreeDialog.tsx:217"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-020",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:150-171"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-022",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:153-168",
+    "src/components/DeleteWorktreeDialog.tsx:166"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-023",
+   "status": "partial",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:150"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-024",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:196",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:155"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-025",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:185",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:183",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:155"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-026",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:206",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:207",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:57"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-028",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:290",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:295",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:279",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:56"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-029",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:307",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:319",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:328"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-030",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:60",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:83"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-031",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:59",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:69",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:77"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-033",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:87-100",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:95",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:103"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-034",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:110"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-038",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:336",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:348",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:352"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-040",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:107-130",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:110"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-041",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:537",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:542",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:550"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-042",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:313",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:317",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:308"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-043",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:229",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:204",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:220"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-044",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:260"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-045",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:229",
+    "src/lib/worktree-visibility-sources.ts:345"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-046",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:285",
+    "src/lib/worktree-visibility-sources.ts:279"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-047",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:304"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-048",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:561",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:595",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:608"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-049",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:625",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:413",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:528"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-050",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:528",
+    "src/App.tsx:3662"
+   ],
+   "note": "Sem mudanca de comportamento; veredito mantido."
+  },
+  {
+   "id": "D10-051",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:494",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:496-524"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-053",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:537",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:542",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:550"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-054",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:467-488",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:288-296"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-055",
+   "status": "parity",
+   "evidence": [
+    "src/lib/worktree-visibility-sources.ts:421",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:74",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:84"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-056",
+   "status": "parity",
+   "evidence": [
+    "src/lib/worktree-visibility-sources.ts:186",
+    "src/lib/worktree-visibility-sources.ts:199",
+    "src/lib/worktree-visibility-sources.ts:217"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-057",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:525-529",
+    "src/lib/worktree-visibility-sources.ts:406"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-058",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:413"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-059",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:419",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:424"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-060",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:433",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:442"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-062",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:377",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:381",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:479"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-064",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:749-803"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D10-065",
+   "status": "parity",
+   "evidence": [
+    "src/App.tsx:1068",
+    "src/App.tsx:1100",
+    "src/components/sidebar/WorktreeList.tsx:254"
+   ],
+   "note": "Sem mudanca de comportamento; veredito mantido."
+  },
+  {
+   "id": "D10-067",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:749-780"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D10-068",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:749-803"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D10-069",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:785-803"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D10-087",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:157-167",
+    "src/lib/worktree-visibility-sources.ts:279"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-088",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:229"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-089",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:223"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D10-090",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:260"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D12-001",
+   "status": "missing",
+   "evidence": [
+    "package.json:13",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:124",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:256"
+   ],
+   "note": "Sem renderer markdown; package.json tocado pela pilha mas sem dependencia de markdown inline."
+  },
+  {
+   "id": "D12-002",
+   "status": "missing",
+   "evidence": [
+    "package.json:13",
+    "src/components/sidebar/worktree-card-meta-row.tsx:60"
+   ],
+   "note": "Sem renderer markdown inline."
+  },
+  {
+   "id": "D12-003",
+   "status": "missing",
+   "evidence": [
+    "package.json:13",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:124",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:276"
+   ],
+   "note": "Sem renderer markdown inline."
+  },
+  {
+   "id": "D12-004",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:195",
+    "src/components/terminal-pane/terminal-bracketed-paste.ts:51",
+    "pnpm-lock.yaml:0"
+   ],
+   "note": "Sem renderer markdown inline; bracketed paste nao renderiza markdown."
+  },
+  {
+   "id": "D12-005",
+   "status": "missing",
+   "evidence": [
+    "src/shared/github/project-identity.ts:11",
+    "package.json:13"
+   ],
+   "note": "Sem renderer markdown inline."
+  },
+  {
+   "id": "D12-008",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/worktree-card-meta-row.tsx:1",
+    "package.json:13"
+   ],
+   "note": "Sem renderer markdown inline."
+  },
+  {
+   "id": "D12-009",
+   "status": "missing",
+   "evidence": [
+    "src/i18n/locales/en.json:6237",
+    "src/i18n/locales/en.json:6239"
+   ],
+   "note": "Strings de markdown existem so no catalogo i18n importado; nenhum renderer."
+  },
+  {
+   "id": "D12-010",
+   "status": "missing",
+   "evidence": [
+    "package.json:13",
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:276"
+   ],
+   "note": "Sem renderer markdown inline."
+  },
+  {
+   "id": "D12-011",
+   "status": "missing",
+   "evidence": [
+    "src/lib/language-detect.ts:32",
+    "src/lib/language-detect.ts:33",
+    "package.json:13"
+   ],
+   "note": "Deteccao de linguagem existe mas sem renderer de codigo inline."
+  },
+  {
+   "id": "D12-012",
+   "status": "missing",
+   "evidence": [
+    "src/store/slices/editor/actions/markdown-preview-actions.ts:3",
+    "src/i18n/locales/en.json:17501"
+   ],
+   "note": "Sem renderer markdown inline no sidebar."
+  },
+  {
+   "id": "D12-013",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/truncated-sidebar-label.tsx:1",
+    "package.json:13"
+   ],
+   "note": "Sem renderer markdown inline."
+  },
+  {
+   "id": "D15a-006",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/sidebar-host-options.ts:39",
+    "src/components/sidebar/sidebar-host-options.ts:97",
+    "src/components/sidebar/sidebar-host-options.ts:101",
+    "src/components/sidebar/sidebar-host-options.ts:120",
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:96",
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:103"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D15a-007",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/host-section-rows.ts:205",
+    "src/components/sidebar/host-section-rows.ts:211",
+    "src/components/sidebar/host-section-rows.ts:290",
+    "src/components/sidebar/host-section-rows.ts:300",
+    "src/components/sidebar/worktree-list/grouping/host-labels.ts:204",
+    "src/components/sidebar/worktree-list/grouping/host-labels.ts:229",
+    "src/components/sidebar/folder-workspace-host-id.ts:16",
+    "src/components/sidebar/worktree-list/grouping/group-sections.ts:105",
+    "src/components/sidebar/worktree-list/grouping/group-sections.ts:134",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:165"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D15a-009",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/ProjectHeaderActions.tsx:26",
+    "src/components/sidebar/SectionHeader.tsx:154",
+    "src/components/sidebar/SectionHeader.tsx:335",
+    "src/components/sidebar/SectionHeader.tsx:265",
+    "src/components/sidebar/SectionHeader.tsx:293",
+    "src/components/sidebar/SectionHeader.tsx:168",
+    "src/components/sidebar/SectionHeader.tsx:88",
+    "src/components/sidebar/WorktreeSidebar.tsx:471-492"
+   ],
+   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D15a-010",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3705",
+    "src/App.tsx:3709",
+    "src/App.tsx:737",
+    "src/hooks/useSidebarResize.ts:51",
+    "src/hooks/useSidebarResize.ts:185",
+    "src/components/sidebar/WorktreeSidebar.tsx:695-720"
+   ],
+   "note": "Sem mudanca de comportamento; veredito mantido."
+  },
+  {
+   "id": "D15a-012",
+   "status": "partial",
+   "evidence": [
+    "src/shared/worktree/host-qualified-identity.ts:30",
+    "src/components/sidebar/visible-worktrees.ts:147",
+    "src/components/sidebar/visible-worktrees.ts:155",
+    "src/components/sidebar/worktree-list/grouping/host-labels.ts:171",
+    "src/components/sidebar/worktree-list/grouping/host-labels.ts:184",
+    "src/components/sidebar/pinned-section-worktrees.ts:13",
+    "src/components/sidebar/pinned-section-worktrees.ts:26"
+   ],
+   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+  },
+  {
+   "id": "D15b-001",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:37-88",
+    "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:55-140",
+    "src/components/sidebar/visible-worktree-filters.ts:1"
+   ],
+   "note": "Board existe e projeta as worktrees visiveis do sidebar (getProjectWorktrees + isVisibleUnderSidebarMenuFilters); falta o hook/epoch proprio e a desativacao de injecao de ancestrais do Orca."
+  },
+  {
+   "id": "D15b-003",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:892",
+    "src/components/sidebar/SidebarHeader.tsx:72",
+    "src/components/sidebar/WorktreeSidebar.tsx:364-367"
+   ],
+   "note": "Nenhum redirect/replay de reveal ao trocar Agents->Workspaces; linhas do WorktreeSidebar atualizadas."
+  },
+  {
+   "id": "D15b-004",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:130-137",
+    "src/App.tsx:3517-3528",
+    "src/components/sidebar/workspace-status-drag-data.ts:28"
+   ],
+   "note": "Drop de card->status agora existe via onAssignWorktreeStatus/set_worktree_status; faltam pin, lote e commitWorkspaceStatusDocumentDrop."
+  },
+  {
+   "id": "D15b-005",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:195-266"
+   ],
+   "note": "Board captura pointermove/up/cancel em window (capture) e click no document para o drag de card; nao ha drop/dragend HTML5 nem bypass de interceptacao do Electron."
+  },
+  {
+   "id": "D15b-008",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3466",
+    "src/App.tsx:4154-4174",
+    "src/components/sidebar/ParentPickerModal.tsx:12-30,66"
+   ],
+   "note": "Acao 'Change Parent Worktree...' abre o ParentPickerModal (App-level); sem ancora/pending/timer de fallback."
+  },
+  {
+   "id": "D15b-009",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:4161",
+    "src/components/sidebar/ParentPickerModal.tsx:66"
+   ],
+   "note": "Close desmonta o picker no mesmo commit; sem unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS."
+  },
+  {
+   "id": "D15b-010",
+   "status": "missing",
+   "evidence": [
+    "src/lib/setup-script-prompt.ts:32",
+    "src/lib/setup-script-prompt.ts:83-91",
+    "src/store/slices/ui/ui-slice-trust-actions.ts:48-57",
+    "src/components/SettingsModal.tsx:754-762"
+   ],
+   "note": "Sem prompt de setup script na sidebar; infra de inspecao sem renderer."
+  },
+  {
+   "id": "D15b-012",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:17-100",
+    "src/components/sidebar/project-header-drop.ts:185-204",
+    "src/components/sidebar/WorktreeSidebar.tsx:471-492",
+    "src/components/sidebar/WorktreeList.tsx:1000-1003"
+   ],
+   "note": "Reordenacao de headers wired por midpoint; o calculo completo (scrollTop/contentBottom/bordas/indicador px) segue no caminho morto."
+  },
+  {
+   "id": "D15b-013",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:92,107-142",
+    "src/components/sidebar/WorktreeSidebar.tsx:471-478"
+   ],
+   "note": "Snap existe so no caminho morto; no wired, dragOver vive no header - zone morta persiste."
+  },
+  {
+   "id": "D15b-014",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarFooter.tsx:35-42",
+    "src/components/sidebar/WorktreeSidebar.tsx:400-433",
+    "src/components/sidebar/WorktreeSidebar.tsx:892"
+   ],
+   "note": "Acao 'Reveal active workspace' existe (scrollIntoView 'nearest'), mas sem a matematica de bounds/inset do Orca."
+  }
+ ]
+}

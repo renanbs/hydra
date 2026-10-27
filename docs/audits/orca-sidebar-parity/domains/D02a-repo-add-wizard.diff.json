@@ -1,894 +1,896 @@
 {
-  "domain": "D02a-repo-add-wizard",
-  "rows": [
-    {
-      "id": "D02a-001",
-      "capability": "Gerencia o ciclo de vida, abertura, fechamento e cancelamento do modal principal de adição de projeto",
-      "orca_evidence": [
-        "components/sidebar/AddRepoDialog.tsx:23",
-        "components/sidebar/AddRepoDialog.tsx:213",
-        "components/sidebar/AddRepoDialogChrome.tsx:6"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:29",
-          "src/components/sidebar/AddRepoDialog.tsx:35-43",
-          "src/components/sidebar/AddRepoDialog.tsx:115",
-          "src/App.tsx:4026"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Abertura por store activeModal === 'add-repo' (Hydra usa prop booleana isOpen)",
-          "Processa caminhos arrastados via modalData.droppedLocalPath (drop de pasta do SO)",
-          "Aborta git clone ativo via window.api.repos.cloneAbort() ao fechar/resetar",
-          "Ref de geração monotônica para descartar resultados assíncronos obsoletos",
-          "onCloseAutoFocus / prop 'hosted' do workspace composer"
-        ],
-        "notes": "Modal existe e é montado (App.tsx:4026): isOpen/onClose, reset de step+error na abertura (35-43), Escape fecha (40), clique no backdrop fecha (115). Ausentes os demais sub-comportamentos listados; sem store activeModal e sem clone-abort no backend (0 comandos em lib.rs)."
-      },
-      "par": [
-        "PAR-13"
-      ]
-    },
-    {
-      "id": "D02a-002",
-      "capability": "Exibe indicador de etapa com navegação de retorno e controle de bloqueio durante operações",
-      "orca_evidence": [
-        "components/sidebar/AddRepoStepIndicator.tsx:11",
-        "components/sidebar/AddRepoDialog.tsx:261",
-        "components/sidebar/AddRepoDialogChrome.tsx:31"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:118-133",
-          "src/components/sidebar/AddRepoDialog.tsx:237-243"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Etapas 'remote', 'server-path' e 'nested' no indicador (Hydra só tem start/clone/create)",
-          "Desabilita Back durante importação aninhada (step==='nested' && isAdding)",
-          "Telemetria de ação de retorno a partir da revisão aninhada"
-        ],
-        "notes": "Header com botão Back (ArrowLeft) e títulos por etapa existem (AddRepoDialog.tsx:122-131); 'Oculta o indicador na etapa inicial' equivalente (Back só aparece com step!=='start', 122)."
-      }
-    },
-    {
-      "id": "D02a-003",
-      "capability": "Permite selecionar o host de execução (Local, SSH ou Runtime) com status de conectividade e compatibilidade",
-      "orca_evidence": [
-        "components/sidebar/AddRepoHostSelector.tsx:32",
-        "components/sidebar/use-add-repo-host-selection.ts:18",
-        "components/sidebar/add-repo-host-availability.ts:3"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Exibe host selecionado com label, badge de saúde (health) e detalhes de compatibilidade",
-          "Filtra hosts de VM efêmera e o host local em sessões de cliente web",
-          "Permite conectar hosts SSH desconectados diretamente pelo popover com indicador Loader2 e feedback de erro via toast",
-          "Atualiza o estado otimista da conexão SSH no store antes da confirmação do backend",
-          "Exibe orientações detalhadas de atualização para hosts de runtime incompatíveis (protocol compat)"
-        ],
-        "notes": "Busca 5 passos: (1) AddRepoHostSelector/useAddRepoHostSelection só como chaves i18n (src/i18n/locales/en.json:5067), sem componente/hook em src/**; (2) labels 'Add remote host'/'Add SSH host'/'Add remote server' ausentes de src/components; (3) AddRepoDialog do Hydra não tem seletor de host (só local); (4) 0 comandos ssh/runtime em src-tauri/src/lib.rs; (5) window.api.ssh é placeholder. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-004",
-      "capability": "Reseta formulários e estados escopados por host ao trocar de host ou fechar o diálogo",
-      "orca_evidence": [
-        "components/sidebar/use-add-repo-host-change-reset.ts:3",
-        "components/sidebar/AddRepoDialog.tsx:254"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Detecta alteração do selectedHostId através de ref de host anterior",
-          "Executa onResetClosed quando o modal fecha para limpar dados residuais",
-          "Executa onResetHostScopedState ao alternar entre hosts para limpar caminhos digitados, erros e scans pendentes",
-          "Evita submissão acidental de caminhos pertencentes a outro host"
-        ],
-        "notes": "useAddRepoHostChangeReset inexistente em src/**. Nenhum ref de host anterior / reset host-scoped; AddRepoDialog só reseta step+error. Busca em src/** e index/hydra_exports.json. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-005",
-      "capability": "Oferece submenu para adicionar novo host SSH ou parear servidor Orca remoto diretamente do seletor de host",
-      "orca_evidence": [
-        "components/sidebar/AddRepoHostSelector.tsx:83",
-        "components/sidebar/AddRepoHostSelectorSlot.tsx:6"
-      ],
-      "hydra": {
-        "status": "not-applicable",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [],
-        "reason": "Não portável (SSH remote host): a linha depende da arquitetura de host remoto do Orca (IPC Electron window.api.ssh.* / servidor Orca remoto). O Hydra é local-first (Tauri + PTY/SQLite locais): src/types/window-api.d.ts declara window.api como bridge ausente em runtime, e src-tauri/src/lib.rs não expõe nenhum comando ssh (0/110)."
-      }
-    },
-    {
-      "id": "D02a-006",
-      "capability": "Apresenta a tela inicial de adição de projeto com navegação por teclado (setas e Enter) e ações primária/secundárias",
-      "orca_evidence": [
-        "components/sidebar/AddRepoStartSteps.tsx:81",
-        "components/sidebar/add-repo-local-start-actions.ts:24"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:151-201"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Navegação roving por teclado ArrowDown/ArrowUp entre ações (data-add-repo-action)",
-          "Chip visual de Enter ⏎ com autofoco e remoção no blur (aria-hidden)",
-          "Reordenação das ações secundárias por isSshLikely (remote-first)",
-          "Descrição de estado vazio 'Add a project to get started with Orca.'"
-        ],
-        "notes": "Etapa inicial com 3 ações existe: 'Browse folder' primária (155-170), 'Clone from URL' (172-185), 'Create new project' (187-200). Sem roving de teclado nem ordenação host-aware."
-      }
-    },
-    {
-      "id": "D02a-007",
-      "capability": "Roteia a autoridade de navegação e busca de arquivos conforme o tipo do host selecionado",
-      "orca_evidence": [
-        "components/sidebar/add-repo-browse-authority.ts:9",
-        "components/sidebar/AddRepoDialog.tsx:335"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:49-69"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Rota runtime -> etapa 'server-path'",
-          "Rota SSH -> navegação remota com targetId",
-          "Módulo routeAddRepoBrowse com autoridade por tipo de host"
-        ],
-        "notes": "Hydra executa o ramo local diretamente: dialogo nativo open({directory:true}) + catalog_add_folder (51-60), sem roteamento por host."
-      }
-    },
-    {
-      "id": "D02a-008",
-      "capability": "Seleciona pastas locais via diálogo nativo ou drag-and-drop e inicia escaneamento de repositórios",
-      "orca_evidence": [
-        "components/sidebar/useAddRepoLocalFolderFlow.ts:38",
-        "components/sidebar/useAddRepoLocalFolderFlow.ts:299",
-        "components/sidebar/AddRepoDialog.tsx:173"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:49-69",
-          "src/App.tsx:4029-4052"
-        ],
-        "backend": [
-          "invoke('catalog_add_folder') -> src-tauri/src/lib.rs:277"
-        ],
-        "missing_behaviors": [
-          "Bloqueio de seleção local com runtime remoto ativo (toast de erro)",
-          "Scan assíncrono de repositórios aninhados (scanNestedRepos)",
-          "Labels de progresso 'Scanning for repositories...' / 'Opening project...'",
-          "Redireciona para revisão aninhada quando há múltiplos repositórios",
-          "Atualização autoritativa de worktrees após add",
-          "Processamento de droppedLocalPath"
-        ],
-        "notes": "Fluxo local existe: picker nativo -> catalog_add_folder -> callback onProjectAdded relê o catálogo (App.tsx:4029-4052). Backend rastreado. Faltam scan aninhado/progresso/drop."
-      }
-    },
-    {
-      "id": "D02a-009",
-      "capability": "Executa adição em lote de múltiplas pastas locais com adiamento da navegação e descarte de pastas complexas",
-      "orca_evidence": [
-        "components/sidebar/useAddRepoLocalFolderFlow.ts:246"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Itera sobre os caminhos em modo 'batch'",
-          "Pula pastas não-git com sub-repositórios durante lote e contabiliza skippedCount",
-          "Exibe toast informativo ao final se alguma pasta foi ignorada com orientação para adicionar individualmente",
-          "Adia o handoff de onGitRepoReady até que todas as pastas do lote sejam processadas, ativando o primeiro repositório"
-        ],
-        "notes": "Nenhum fluxo em lote: picker do SO usa multiple:false (AddRepoDialog.tsx:53); sem skippedCount/toast de pastas ignoradas; handleAddLocalPaths inexistente. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-010",
-      "capability": "Fornece interface para entrada manual de caminho no host remoto e navegação por explorador de arquivos integrado",
-      "orca_evidence": [
-        "components/sidebar/AddRepoServerStartStep.tsx:23",
-        "components/sidebar/AddRepoDialogStepContent.tsx:175"
-      ],
-      "hydra": {
-        "status": "not-applicable",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [],
-        "reason": "Não portável (runtime server remoto): a linha depende de filesystem/browser de servidor de runtime do Orca (RemoteFileBrowser + runtimeRpc). O Hydra não tem comando Tauri equivalente; runtimeRpc via window.api.runtime.call é placeholder sem runtime (src/types/window-api.d.ts)."
-      }
-    },
-    {
-      "id": "D02a-011",
-      "capability": "Processa o fluxo de adição de caminho de servidor com escaneamento assíncrono e suporte a pastas não-git",
-      "orca_evidence": [
-        "components/sidebar/useAddRepoServerPathFlow.ts:29",
-        "components/sidebar/useAddRepoServerPathFlow.ts:50"
-      ],
-      "hydra": {
-        "status": "not-applicable",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [],
-        "reason": "Não portável (runtime server remoto): a linha depende de filesystem/browser de servidor de runtime do Orca (RemoteFileBrowser + runtimeRpc). O Hydra não tem comando Tauri equivalente; runtimeRpc via window.api.runtime.call é placeholder sem runtime (src/types/window-api.d.ts)."
-      }
-    },
-    {
-      "id": "D02a-012",
-      "capability": "Configura os parâmetros de clonagem de repositório Git com barra de progresso em tempo real e seleção de destino",
-      "orca_evidence": [
-        "components/sidebar/AddRepoCloneStep.tsx:28",
-        "components/sidebar/AddRepoDialogStepContent.tsx:212"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:137-147",
-          "src/components/sidebar/AddRepoDialog.tsx:204-258"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Botão de pasta para picker nativo / RemoteFileBrowser (SSH/runtime)",
-          "Barra de progresso animada com fase e percentual (isCloning && cloneProgress)",
-          "Descrição do diálogo adaptada ao nome do host de destino"
-        ],
-        "notes": "Campos URL Git (208-220) e destino (222-236) existem; Enter submete via <form onSubmit>; erro destacado (137-147). Faltam progresso, botão de pasta e host-aware copy."
-      }
-    },
-    {
-      "id": "D02a-013",
-      "capability": "Calcula a pasta pai padrão para clonagem a partir do diretório de workspace configurado",
-      "orca_evidence": [
-        "components/sidebar/clone-defaults.ts:1",
-        "components/sidebar/clone-defaults.ts:30",
-        "components/sidebar/useAddRepoCloneFlow.ts:46"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Remove o segmento final 'workspaces' do workspaceDir para posicionar clones como irmãos dos workspaces",
-          "Trata caminhos POSIX, Windows e raízes absolutas (/ ou C:\\)",
-          "Auto-preenche a pasta de destino apenas na primeira entrada na etapa clone sem sobrescrever dados digitados",
-          "Não auto-preenche destinos locais quando um host de runtime ou SSH estiver selecionado"
-        ],
-        "notes": "getDefaultCloneParent/getCloneDestinationAutoFill inexistentes; destino de clone é literal '/home/renan/src' (AddRepoDialog.tsx:26) e não deriva de settings.workspaceDir. Backend sem repos:get-default-create-project-parent. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-014",
-      "capability": "Executa a clonagem de repositório Git nos modos Local, SSH ou Runtime RPC com assinatura de progresso",
-      "orca_evidence": [
-        "components/sidebar/useAddRepoCloneFlow.ts:24",
-        "components/sidebar/useAddRepoCloneFlow.ts:69",
-        "components/sidebar/useAddRepoCloneFlow.ts:111",
-        "components/sidebar/useAddRepoCloneFlow.ts:136",
-        "components/sidebar/useAddRepoCloneFlow.ts:153"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:71-90"
-        ],
-        "backend": [
-          "invoke('clone_project') -> src-tauri/src/lib.rs:445"
-        ],
-        "missing_behaviors": [
-          "Assinatura de window.api.repos.onCloneProgress (progresso em tempo real)",
-          "Roteamento SSH (cloneRemote) e runtime (runtimeRpc repo.clone)",
-          "Upsert no store com runtimeEnvironmentId/sshConnectionId",
-          "Toast 'Repository cloned'",
-          "Atualização de worktrees + onGitRepoReady('clone_url')",
-          "extractIpcErrorMessage"
-        ],
-        "notes": "Clone local existe: invoke('clone_project', {url,parentDir}) (77-79), erro via String(err) (88). Sem progresso/runtime/SSH/store."
-      }
-    },
-    {
-      "id": "D02a-015",
-      "capability": "Fornece interface para criação de novo projeto com visualização colapsável de configurações avançadas e preview do caminho final",
-      "orca_evidence": [
-        "components/sidebar/AddRepoCreateStep.tsx:38",
-        "components/sidebar/create-project-defaults.ts:27"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:250-296"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Disclosure colapsável de configurações avançadas (localização e branch)",
-          "Preview em tempo real do caminho completo",
-          "Aviso de verificação de Git ('Checking Git on this host...') / Git ausente",
-          "Aviso de pasta pai ainda não escolhida no host remoto",
-          "Avançado aberto por padrão para hosts SSH/runtime"
-        ],
-        "notes": "Etapa de criação com input de nome (265-277) e localização (279-292) existe; sem disclosure/preview/checagem de Git."
-      }
-    },
-    {
-      "id": "D02a-016",
-      "capability": "Gerencia o campo de localização do novo projeto com suporte a seletor nativo, input manual e navegador remoto",
-      "orca_evidence": [
-        "components/sidebar/CreateProjectLocationField.tsx:17",
-        "components/sidebar/CreateProjectLocationField.tsx:63"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:279-292"
-        ],
-        "backend": [],
-        "missing_behaviors": [
-          "Botão com ícone de pasta/lápis para alterar pasta pai via picker nativo",
-          "Abertura do CreateProjectParentBrowser (RemoteFileBrowser) em tela cheia",
-          "Tooltip 'Browse host filesystem'"
-        ],
-        "notes": "Apenas input de texto editável para a pasta de localização; sem picker nativo nem navegador remoto."
-      }
-    },
-    {
-      "id": "D02a-017",
-      "capability": "Resolve a pasta padrão para novos projetos (~/orca/projects) e sonda disponibilidade de Git com timeout",
-      "orca_evidence": [
-        "components/sidebar/useCreateProjectDefaults.ts:39",
-        "components/sidebar/useCreateProjectDefaults.ts:158",
-        "components/sidebar/useCreateProjectDefaults.ts:276",
-        "components/sidebar/create-project-defaults.ts:40"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Obtém o diretório padrão local via window.api.repos.getDefaultCreateProjectParent()",
-          "Obtém o diretório padrão no host de runtime via browseRuntimeServerDirectory(runtimeEnvironmentId, '~')",
-          "Aplica timeout de 1500ms para sonda local de Git e 3000ms para sonda de runtime",
-          "Sonda disponibilidade de Git via window.api.repos.isGitAvailable() ou RPC 'repo.gitAvailable'",
-          "Formata resumo com shorthand '~/orca/projects' para caminhos padrão locais",
-          "Marca o campo como 'touched' para nunca sobrescrever caminhos inseridos manualmente pelo usuário",
-          "Impede submissão enquanto a pasta padrão pertencer a um host anterior"
-        ],
-        "notes": "useCreateProjectDefaults/create-project-defaults inexistentes; pasta de criação é literal '/home/renan/src' (AddRepoDialog.tsx:27); sem sonda de Git (0 comandos isGitAvailable/getDefaultCreateProjectParent em lib.rs). Não localizado."
-      }
-    },
-    {
-      "id": "D02a-018",
-      "capability": "Executa a criação física de novo projeto Git local, remoto SSH ou em servidor runtime",
-      "orca_evidence": [
-        "components/sidebar/useCreateRepo.ts:18",
-        "components/sidebar/useCreateRepo.ts:77",
-        "components/sidebar/useCreateRepo.ts:107",
-        "components/sidebar/useCreateRepo.ts:124"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/components/sidebar/AddRepoDialog.tsx:92-111"
-        ],
-        "backend": [
-          "invoke('create_project') -> src-tauri/src/lib.rs:428"
-        ],
-        "missing_behaviors": [
-          "pickDirectory nativo para escolher pasta pai",
-          "Criação SSH (createRemote) e runtime (runtimeRpc repo.create)",
-          "Toasts de dedup 'Project already added' / 'Project created'",
-          "Atualização autoritativa de worktrees + onGitRepoReady",
-          "Ativação de workspace sintético para projetos de pasta",
-          "Ref de geração/montagem para submissões obsoletas"
-        ],
-        "notes": "Criação local existe: invoke('create_project', {name,parentDir,initGit:true}) (98-102) + retorno onProjectAdded. Backend rastreado. Sem dedup/worktrees/ssh/runtime."
-      }
-    },
-    {
-      "id": "D02a-019",
-      "capability": "Configura a adição de projeto em host SSH listando targets, estado de conexão e permitindo navegação remota",
-      "orca_evidence": [
-        "components/sidebar/AddRepoRemoteStep.tsx:28",
-        "components/sidebar/AddRepoSteps.tsx:39"
-      ],
-      "hydra": {
-        "status": "not-applicable",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [],
-        "reason": "Não portável (SSH remote host): a linha depende da arquitetura de host remoto do Orca (IPC Electron window.api.ssh.* / servidor Orca remoto). O Hydra é local-first (Tauri + PTY/SQLite locais): src/types/window-api.d.ts declara window.api como bridge ausente em runtime, e src-tauri/src/lib.rs não expõe nenhum comando ssh (0/110)."
-      }
-    },
-    {
-      "id": "D02a-020",
-      "capability": "Gerencia o fluxo de adição de repositório remoto SSH, escaneamento de diretório e tratamento de pastas não-git",
-      "orca_evidence": [
-        "components/sidebar/AddRepoSteps.tsx:39",
-        "components/sidebar/AddRepoSteps.tsx:78",
-        "components/sidebar/AddRepoSteps.tsx:119",
-        "components/sidebar/AddRepoSteps.tsx:130",
-        "components/sidebar/AddRepoSteps.tsx:185"
-      ],
-      "hydra": {
-        "status": "not-applicable",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [],
-        "reason": "Não portável (SSH remote host): a linha depende da arquitetura de host remoto do Orca (IPC Electron window.api.ssh.* / servidor Orca remoto). O Hydra é local-first (Tauri + PTY/SQLite locais): src/types/window-api.d.ts declara window.api como bridge ausente em runtime, e src-tauri/src/lib.rs não expõe nenhum comando ssh (0/110)."
-      },
-      "par": [
-        "PAR-41"
-      ]
-    },
-    {
-      "id": "D02a-021",
-      "capability": "Rastreia e telemetra resultados de escaneamento aninhado em conexões remotas SSH",
-      "orca_evidence": [
-        "components/sidebar/use-add-repo-remote-nested-scan.ts:6"
-      ],
-      "hydra": {
-        "status": "not-applicable",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [],
-        "reason": "Não portável (SSH remote host): a linha depende da arquitetura de host remoto do Orca (IPC Electron window.api.ssh.* / servidor Orca remoto). O Hydra é local-first (Tauri + PTY/SQLite locais): src/types/window-api.d.ts declara window.api como bridge ausente em runtime, e src-tauri/src/lib.rs não expõe nenhum comando ssh (0/110)."
-      }
-    },
-    {
-      "id": "D02a-022",
-      "capability": "Apresenta lista de repositórios descobertos em pasta pai com controles de seleção, nome de grupo e opções de importação",
-      "orca_evidence": [
-        "components/sidebar/AddRepoNestedImportStep.tsx:27",
-        "components/sidebar/AddRepoDialogStepContent.tsx:234"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Exibe resumo 'Found N repositories in /path/to/folder.' com contagem singular/plural",
-          "Lista repositórios com checklist selecionável via NestedRepoChecklist",
-          "Exibe aviso de limite de scan (NestedRepoScanLimitNotice) se o scan foi truncado, atingiu timeout ou foi interrompido",
-          "Input para nome do grupo pré-preenchido com o nome da pasta pai",
-          "Botão 'Yes, import as group' para importar projetos agrupados em monorepo/grupo",
-          "Botão 'No, import separately' para importar cada repositório como projeto individual",
-          "Botão 'Open as Folder' exibido quando nenhum repositório está selecionado",
-          "Botão de parada de escaneamento com Tooltip quando o scan ainda estiver em andamento"
-        ],
-        "notes": "AddRepoNestedImportStep/NestedRepoChecklist/NestedRepoScanLimitNotice só como chaves i18n; nenhuma UI de revisão aninhada no Hydra. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-023",
-      "capability": "Controla o estado de revisão aninhada, seleção de repositórios, nome de grupo e cancelamento de escaneamento",
-      "orca_evidence": [
-        "components/sidebar/useAddRepoNestedReviewController.ts:11",
-        "components/sidebar/useAddRepoNestedReviewState.ts:17"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Inicializa conjunto de caminhos selecionados com todos os repositórios descobertos",
-          "Calcula nome de grupo padrão com defaultProjectGroupNameForPath",
-          "Gerencia ID de escaneamento e executa cancelamento via cancelNestedRepoScan",
-          "Determina o tipo de runtime da telemetria ('local', 'ssh' ou 'runtime')",
-          "Reseta todo o estado de revisão ao retroceder ou fechar o diálogo"
-        ],
-        "notes": "useAddRepoNestedReviewController/useAddRepoNestedReviewState inexistentes em src/**. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-024",
-      "capability": "Executa a importação em lote dos repositórios selecionados como grupo ou avulsos com telemetria e tratamento de falhas parciais",
-      "orca_evidence": [
-        "components/sidebar/useAddRepoNestedImportFlow.ts:70"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Preserva a ordem dos repositórios conforme a ordem do scan via getSelectedNestedRepoPathsInScanOrder",
-          "Emite telemetria 'add_repo_nested_import_action' com modo de importação ('import_group' ou 'import_separate')",
-          "Executa importNestedRepos com parentPath, groupName, projectPaths e connectionId/runtimeEnvironmentId",
-          "Emite telemetria 'add_repo_nested_import_result' com dados detalhados do resultado",
-          "Executa fetchWorktrees para todos os projetos importados com sucesso",
-          "Exibe toast de aviso caso alguns repositórios tenham falhado na importação ('N failed')",
-          "Conclui o fluxo ativando o primeiro repositório importado via onGitRepoReady"
-        ],
-        "notes": "useAddRepoNestedImportFlow/importNestedRepos inexistentes (apenas chave i18n); sem import em grupo/lote. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-025",
-      "capability": "Permite abrir a pasta raiz do escaneamento como projeto não-git quando nenhum repositório for selecionado",
-      "orca_evidence": [
-        "components/sidebar/useAddRepoNestedImportFlow.ts:223"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Utiliza o nome editado do grupo como displayName caso seja diferente do padrão do caminho",
-          "Executa completeNestedFolderOpen para adicionar a pasta raiz",
-          "Emite telemetria de ação e resultado associada à recuperação de pasta não-git com seleção zerada",
-          "Fecha o diálogo e ativa o workspace sintético de pasta"
-        ],
-        "notes": "handleOpenNestedRootFolder/completeNestedFolderOpen inexistentes; sem botão 'Open as Folder' no fluxo de add. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-026",
-      "capability": "Exibe diálogo de confirmação para adicionar pasta específica como projeto separado (AddProjectFromFolderDialog)",
-      "orca_evidence": [
-        "components/sidebar/AddProjectFromFolderDialog.tsx:24",
-        "components/sidebar/AddProjectFromFolderDialog.tsx:77"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Exibe caminho da pasta formatado em bloco mono",
-          "Ao confirmar, adiciona projeto Git via addRepoPath ou addRemote (para SSH)",
-          "Redireciona para o modal 'confirm-non-git-folder' caso a pasta não seja um repositório Git válido",
-          "Executa upsertAddedRepoWithProjectHostSetup para sincronizar o store com o host do projeto",
-          "Conclui com finishProjectAddWithDefaultCheckout para repositórios Git válidos"
-        ],
-        "notes": "AddProjectFromFolderDialog só como chave i18n; nenhum modal confirm-add-project-from-folder montado em App.tsx (modal store só trata new-workspace/delete-worktree). Não localizado."
-      },
-      "par": [
-        "PAR-41"
-      ]
-    },
-    {
-      "id": "D02a-027",
-      "capability": "Processa modal de compatibilidade para handoff pós-adição de projeto (ProjectAddedDialog)",
-      "orca_evidence": [
-        "components/sidebar/ProjectAddedDialog.tsx:11",
-        "components/sidebar/ProjectAddedDialog.tsx:33"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Aceita tanto `repoId` quanto `projectId` legado para compatibilidade com versões antigas de onboarding",
-          "Aguarda hidratação do repositório via fetchRepos se o repositório ainda não estiver no store",
-          "Para projetos de pasta, atualiza worktrees e ativa o workspace sintético de pasta",
-          "Para repositórios Git, executa finishProjectAddWithDefaultCheckout com source 'project_added_compat'",
-          "Protegido contra execução duplicada em React StrictMode via handoffRunRef"
-        ],
-        "notes": "ProjectAddedDialog inexistente em src/**; sem modal 'project-added' nem handoff de compatibilidade. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-028",
-      "capability": "Localiza e ativa o checkout padrão (main branch) do projeto com suporte a cwd inicial customizado",
-      "orca_evidence": [
-        "components/sidebar/project-added-default-checkout.ts:25",
-        "components/sidebar/project-added-default-checkout.ts:167",
-        "components/sidebar/project-added-default-checkout.ts:244"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:4029-4052",
-          "src/App.tsx:1584"
-        ],
-        "backend": [
-          "invoke('catalog_get') -> src-tauri/src/lib.rs:270"
-        ],
-        "missing_behaviors": [
-          "Identificação do worktree principal (isMainWorktree) filtrado por executionHostId",
-          "Localização do checkout padrão detectado (detectedWorktreesByRepo)",
-          "Revelação de checkout padrão oculto",
-          "Desativação temporária de hideDefaultBranchWorkspace",
-          "activateAndRevealWorktree no sidebar",
-          "Telemetria 'add_repo_default_checkout_handoff'"
-        ],
-        "notes": "Handoff existe de forma simplificada: onProjectAdded relê catálogo, seleciona o primeiro projeto e abre um terminal com cwd = project.path (App.tsx:4029-4052) via handleSelectProject (App.tsx:1584). Sem detecção de main worktree/reveal/telemetria."
-      }
-    },
-    {
-      "id": "D02a-029",
-      "capability": "Detecta e revela worktrees externos vinculados ocultos ao importar um projeto existente",
-      "orca_evidence": [
-        "components/sidebar/project-added-default-checkout.ts:73"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Verifica se há worktrees externos não gerenciados pelo Orca e não-visíveis (excluindo agent-scratch)",
-          "Atualiza a configuração do repositório para externalWorktreeVisibility: 'show'",
-          "Executa atualização autoritativa dos worktrees com requireAuthoritative: true",
-          "Retorna motivo de falha para telemetria caso a atualização ou o refresh falhem"
-        ],
-        "notes": "revealDetectedHiddenLinkedExternalWorktrees inexistente; nenhuma revelação de worktrees vinculados ocultos no fluxo de import. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-030",
-      "capability": "Finaliza a importação de projeto quando o usuário opta por não abrir worktree imediatamente (Skip)",
-      "orca_evidence": [
-        "components/sidebar/add-repo-skip-finalization.ts:18"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Define o repositório recém-importado como activeRepoId",
-          "Revela o repositório nos filtros de projeto do sidebar via revealRepoInProjectFilter",
-          "Desativa o filtro showActiveOnly para não esconder o projeto recém-adicionado",
-          "Desativa hideDefaultBranchWorkspace caso todos os worktrees importados sejam da branch padrão",
-          "Garante a isenção de alwaysShowDefaultBranchWorkspace para projetos sem PTY ativo com showSleepingWorkspaces desligado"
-        ],
-        "notes": "finalizeImportedRepoAfterSkip inexistente; AddRepoDialog não oferece opção Skip. Primitivas de filtro existem (project-filter-reveal.ts, hideDefaultBranchWorkspace) mas sem fluxo de finalização skip. Não localizado."
-      },
-      "par": [
-        "PAR-44"
-      ]
-    },
-    {
-      "id": "D02a-031",
-      "capability": "Gera e emite telemetria de descoberta de worktrees pré-existentes durante a adição de projetos",
-      "orca_evidence": [
-        "components/sidebar/add-repo-existing-workspaces-telemetry.ts:36",
-        "components/sidebar/use-complete-git-repo-add.ts:22"
-      ],
-      "hydra": {
-        "status": "out-of-scope",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [],
-        "reason": "Decisão de produto contra paridade (telemetria): Hydra (Tauri local) não possui sink de telemetria; src/lib/telemetry.ts:26 chama window.api.telemetryTrack, bridge ausente no runtime (src/types/window-api.d.ts:5-7) e a doc aponta para onorca.dev. O protocolo cita telemetria como caso de out-of-scope."
-      }
-    },
-    {
-      "id": "D02a-032",
-      "capability": "Sincroniza o store de repositórios, projetos e configurações de host durante adições diretas por IPC",
-      "orca_evidence": [
-        "components/sidebar/add-repo-store-upsert.ts:28"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Captura e injeta executionHostId no objeto de repositório (SSH connection ID ou runtime environment ID)",
-          "Verifica duplicidade baseada em getRepoHostIdentity",
-          "Gera projeção compatível de projetos e configurações de host com projectHostSetupProjectionFromRepos",
-          "Atualiza atomicamente as fatias repos, projects e projectHostSetups no store"
-        ],
-        "notes": "upsertAddedRepoWithProjectHostSetup inexistente; o fluxo wired (App.tsx:4029-4052) apenas relê o catálogo (projects/groups/folderWorkspaces), sem repos/projectHostSetups/host-identity dedup. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-033",
-      "capability": "Resolve o proprietário de runtime e opções de atualização autoritativa de worktrees",
-      "orca_evidence": [
-        "components/sidebar/add-repo-runtime-owner.ts:6",
-        "components/sidebar/add-repo-runtime-owner.ts:19"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Converte proprietário de runtime ou conexão SSH no executionHostId correspondente",
-          "Gera objeto de opções com requireAuthoritative: true e executionHostId para direcionar a busca ao host correto"
-        ],
-        "notes": "capturedAddRepoExecutionHostId/worktreeRefreshOptions inexistentes; refresh é refreshGitWorktrees(proj.path) sem opções de host/autoridade (App.tsx:1584). Não localizado."
-      }
-    },
-    {
-      "id": "D02a-034",
-      "capability": "Submete a criação de workspace de pasta com vinculação de tarefas (GitHub/GitLab/Linear/Jira) e inicialização de agente",
-      "orca_evidence": [
-        "components/sidebar/folder-workspace-composer-submit.ts:47"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Gera nome automático baseado na tarefa vinculada ou fallback '<grupo> workspace'",
-          "Executa preflight de confiança do agente (preflightAgentTrust) para caminhos de pasta",
-          "Planeja inicialização de agente TUI ou sessão estruturada de native chat (planAgentSessionLaunch)",
-          "Cria o workspace de pasta com conexão SSH e tarefa vinculada preservadas",
-          "Marca o workspace para auto-renomeação pela primeira mensagem do agente se aplicável",
-          "Ativa e revela o novo workspace de pasta via activateAndRevealFolderWorkspace",
-          "Entrega prompts de rascunho (draft) ou follow-up no terminal do agente"
-        ],
-        "notes": "submitFolderWorkspaceCreate inexistente; createFolderWorkspace do store (folder-workspace-mutations.ts:62) nunca é chamado por componente (grep em src/components = 0). Sem compositor de workspace de pasta. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-035",
-      "capability": "Configura plataforma de execução, rascunho de prompt e quoting de shell para inicialização de agentes em pastas",
-      "orca_evidence": [
-        "components/sidebar/folder-workspace-agent-startup.ts:15",
-        "components/sidebar/folder-workspace-agent-startup.ts:26",
-        "components/sidebar/folder-workspace-agent-startup.ts:34"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Determina plataforma correta ('win32' vs 'linux') para caminhos remotos SSH e caminhos WSL UNC",
-          "Resolve o rascunho de prompt vinculado à tarefa (resolveFolderWorkspaceLaunchDraft)",
-          "Monta plano de inicialização de agente com suporte a draft launch e escape adequado para Windows/POSIX"
-        ],
-        "notes": "folder-workspace-agent-startup/planAgentSessionLaunch para folder workspaces inexistentes no fluxo wired; sem compositor. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-036",
-      "capability": "Verifica a validade do caminho de workspace de pasta com cache e bloqueia criação em caminhos inexistentes ou obsoletos",
-      "orca_evidence": [
-        "components/sidebar/folder-workspace-composer-path-status.ts:12",
-        "components/sidebar/folder-workspace-composer-path-status.ts:74"
-      ],
-      "hydra": {
-        "status": "partial",
-        "evidence": [
-          "src/App.tsx:2066-2085",
-          "src/components/sidebar/WorktreeList.tsx:525"
-        ],
-        "backend": [
-          "invoke('path_exists') -> src-tauri/src/lib.rs:199"
-        ],
-        "missing_behaviors": [
-          "Cache TTL de status de caminho (cacheExpiryTick)",
-          "Bloqueio do botão de criação (pathStatusBlocksCreate) enquanto pendente/inexistente/ambíguo",
-          "Mensagem de erro detalhada (pathStatusProjectError)",
-          "Hook useFolderWorkspaceComposerPathStatus (compositor inexistente no Hydra)"
-        ],
-        "notes": "Validade de caminho de workspace de pasta é verificada em runtime de exibição: useEffect chama path_exists para cada folderWorkspace e marca badge de pasta ausente (App.tsx:2066-2085; WorktreeList.tsx:525). Não há cache TTL nem bloqueio de criação (não há compositor)."
-      }
-    },
-    {
-      "id": "D02a-037",
-      "capability": "Mapeia repositórios de origem do grupo e converte itens de trabalho vinculados (GitHub, GitLab, Linear)",
-      "orca_evidence": [
-        "components/sidebar/folder-workspace-composer-helpers.ts:31",
-        "components/sidebar/folder-workspace-composer-helpers.ts:47",
-        "components/sidebar/folder-workspace-composer-helpers.ts:88"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Filtra repositórios pertencentes à pasta pai ou ao grupo de projetos garantindo mesmo executionHostId",
-          "Converte itens do GitHub, GitLab e Linear em estruturas padronizadas LinkedWorkItemSummary",
-          "Gera seleção inteligente de nome do workspace com getSmartNameSelection",
-          "Fornece label estável 'Create workspace' para o botão de ação primária"
-        ],
-        "notes": "folder-workspace-composer-helpers (getFolderSourceRepos/getSmartNameSelection/'Create workspace') inexistentes; sem compositor de pasta. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-038",
-      "capability": "Calcula e exibe badge de status de PR e revisões para cards de workspace de pasta",
-      "orca_evidence": [
-        "components/sidebar/folder-workspace-card-pr-display.ts:29"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Coleta worktrees filhos diretos e aninhados vinculados ao workspace de pasta por lineage",
-          "Previne recursão infinita descartando ciclos de lineage projetada",
-          "Agrega status de PRs via buildParentPrChecksRows",
-          "Ordena e prioriza o status de revisão mais crítico: failure (0) > pending (1) > success (2) > neutral (3)"
-        ],
-        "notes": "getFolderWorkspaceCardPrDisplay/buildParentPrChecksRows inexistentes; FolderWorkspaceRow renderiza só status/path, sem badge de PR (FolderWorkspaceRow.tsx:22-67). Não localizado."
-      }
-    },
-    {
-      "id": "D02a-039",
-      "capability": "Resolve a seção de host correta para exibição e agrupamento do workspace de pasta no sidebar",
-      "orca_evidence": [
-        "components/sidebar/folder-workspace-host-id.ts:14"
-      ],
-      "hydra": {
-        "status": "parity",
-        "evidence": [
-          "src/components/sidebar/folder-workspace-host-id.ts:14",
-          "src/components/sidebar/host-section-rows.ts:67",
-          "src/components/sidebar/worktree-list/grouping/host-labels.ts:215"
-        ],
-        "backend": [],
-        "missing_behaviors": [],
-        "notes": "getFolderWorkspaceHostId resolve connectionId do folder workspace/grupo para ExecutionHostId SSH (ou default) e é consumido pela contagem de header e pelo bucketing/agrupamento de hosts do sidebar (host-section-rows.ts:67, host-labels.ts:215). Mesmo efeito observável da linha Orca."
-      }
-    },
-    {
-      "id": "D02a-040",
-      "capability": "Integra o diálogo AddRepoDialog como modal aninhado dentro do workspace composer",
-      "orca_evidence": [
-        "components/sidebar/use-add-repo-hosted-controller.ts:19"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Fecha apenas o diálogo aninhado em cancelamentos mantendo o modal do compositor aberto",
-          "Ao adicionar repositório Git, fecha o diálogo aninhado e seleciona o novo projeto no compositor via onProjectAdded",
-          "Para handoffs de pasta ou navegação para Configurações SSH, fecha tanto o diálogo aninhado quanto o modal do compositor"
-        ],
-        "notes": "useAddRepoHostedController inexistente; AddRepoDialog não é embutido como modal aninhado do NewWorkspaceComposer (composer fecha e reabre o diálogo — NewWorkspaceComposer.tsx:175-180). Não localizado."
-      }
-    },
-    {
-      "id": "D02a-041",
-      "capability": "Exibe aviso de escaneamento em andamento com botão de parada para interromper a busca de repositórios",
-      "orca_evidence": [
-        "components/sidebar/AddRepoStartSteps.tsx:18",
-        "components/sidebar/AddRepoNestedImportStep.tsx:197"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "Exibe spinner animado Loader2 e mensagem informativa do scan",
-          "Botão de parada com ícone CircleStop no hover e tooltip 'Scanning repositories. Click to stop.'",
-          "Dispara cancelamento do scan pelo ID de escaneamento ativo ao clicar em Stop"
-        ],
-        "notes": "AddRepoNestedScanProgressNotice/AddRepoNestedImportStopButton inexistentes; sem UI de progresso/stop de scan aninhado. Não localizado."
-      }
-    },
-    {
-      "id": "D02a-042",
-      "capability": "Fornece utilitários de nomeação de grupo por caminho e geração de identificadores únicos de escaneamento",
-      "orca_evidence": [
-        "components/sidebar/add-repo-dialog-types.ts:3",
-        "components/sidebar/add-repo-dialog-types.ts:12"
-      ],
-      "hydra": {
-        "status": "missing",
-        "evidence": [],
-        "backend": [],
-        "missing_behaviors": [
-          "defaultProjectGroupNameForPath extrai o último segmento de diretório normalizando barras '/' e '\\'",
-          "createNestedRepoScanId gera strings únicas baseadas em timestamp e aleatoriedade ('nested-repo-scan-...')"
-        ],
-        "notes": "defaultProjectGroupNameForPath/createNestedRepoScanId inexistentes em src/**. Não localizado."
-      }
-    }
-  ],
-  "summary": {
-    "parity": 1,
-    "partial": 12,
-    "missing": 22,
-    "not-applicable": 6,
-    "out-of-scope": 1
+ "domain": "D02a-repo-add-wizard",
+ "rows": [
+  {
+   "id": "D02a-001",
+   "capability": "Gerencia o ciclo de vida, abertura, fechamento e cancelamento do modal principal de adição de projeto",
+   "orca_evidence": [
+    "components/sidebar/AddRepoDialog.tsx:23",
+    "components/sidebar/AddRepoDialog.tsx:213",
+    "components/sidebar/AddRepoDialogChrome.tsx:6"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:20-21",
+     "src/App.tsx:3869",
+     "src/App.tsx:4230-4233"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Abertura por store activeModal === 'add-repo' (Hydra usa prop booleana isOpen)",
+     "Processa caminhos arrastados via modalData.droppedLocalPath (drop de pasta do SO)",
+     "Aborta git clone ativo via window.api.repos.cloneAbort() ao fechar/resetar",
+     "Ref de geração monotônica para descartar resultados assíncronos obsoletos",
+     "onCloseAutoFocus / prop 'hosted' do workspace composer"
+    ],
+    "notes": "Modal existe e é montado (App.tsx:4026): isOpen/onClose, reset de step+error na abertura (35-43), Escape fecha (40), clique no backdrop fecha (115). Ausentes os demais sub-comportamentos listados; sem store activeModal e sem clone-abort no backend (0 comandos em lib.rs).",
+    "note": "Ciclo de vida inalterado (prop isOpen, sem activeModal/droppedLocalPath/cloneAbort/generation ref)."
+   },
+   "par": [
+    "PAR-13"
+   ]
+  },
+  {
+   "id": "D02a-002",
+   "capability": "Exibe indicador de etapa com navegação de retorno e controle de bloqueio durante operações",
+   "orca_evidence": [
+    "components/sidebar/AddRepoStepIndicator.tsx:11",
+    "components/sidebar/AddRepoDialog.tsx:261",
+    "components/sidebar/AddRepoDialogChrome.tsx:31"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:118-133",
+     "src/components/sidebar/AddRepoDialog.tsx:237-243"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Etapas 'remote', 'server-path' e 'nested' no indicador (Hydra só tem start/clone/create)",
+     "Desabilita Back durante importação aninhada (step==='nested' && isAdding)",
+     "Telemetria de ação de retorno a partir da revisão aninhada"
+    ],
+    "notes": "Header com botão Back (ArrowLeft) e títulos por etapa existem (AddRepoDialog.tsx:122-131); 'Oculta o indicador na etapa inicial' equivalente (Back só aparece com step!=='start', 122)."
+   }
+  },
+  {
+   "id": "D02a-003",
+   "capability": "Permite selecionar o host de execução (Local, SSH ou Runtime) com status de conectividade e compatibilidade",
+   "orca_evidence": [
+    "components/sidebar/AddRepoHostSelector.tsx:32",
+    "components/sidebar/use-add-repo-host-selection.ts:18",
+    "components/sidebar/add-repo-host-availability.ts:3"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Exibe host selecionado com label, badge de saúde (health) e detalhes de compatibilidade",
+     "Filtra hosts de VM efêmera e o host local em sessões de cliente web",
+     "Permite conectar hosts SSH desconectados diretamente pelo popover com indicador Loader2 e feedback de erro via toast",
+     "Atualiza o estado otimista da conexão SSH no store antes da confirmação do backend",
+     "Exibe orientações detalhadas de atualização para hosts de runtime incompatíveis (protocol compat)"
+    ],
+    "notes": "Busca 5 passos: (1) AddRepoHostSelector/useAddRepoHostSelection só como chaves i18n (src/i18n/locales/en.json:5067), sem componente/hook em src/**; (2) labels 'Add remote host'/'Add SSH host'/'Add remote server' ausentes de src/components; (3) AddRepoDialog do Hydra não tem seletor de host (só local); (4) 0 comandos ssh/runtime em src-tauri/src/lib.rs; (5) window.api.ssh é placeholder. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-004",
+   "capability": "Reseta formulários e estados escopados por host ao trocar de host ou fechar o diálogo",
+   "orca_evidence": [
+    "components/sidebar/use-add-repo-host-change-reset.ts:3",
+    "components/sidebar/AddRepoDialog.tsx:254"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Detecta alteração do selectedHostId através de ref de host anterior",
+     "Executa onResetClosed quando o modal fecha para limpar dados residuais",
+     "Executa onResetHostScopedState ao alternar entre hosts para limpar caminhos digitados, erros e scans pendentes",
+     "Evita submissão acidental de caminhos pertencentes a outro host"
+    ],
+    "notes": "useAddRepoHostChangeReset inexistente em src/**. Nenhum ref de host anterior / reset host-scoped; AddRepoDialog só reseta step+error. Busca em src/** e index/hydra_exports.json. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-005",
+   "capability": "Oferece submenu para adicionar novo host SSH ou parear servidor Orca remoto diretamente do seletor de host",
+   "orca_evidence": [
+    "components/sidebar/AddRepoHostSelector.tsx:83",
+    "components/sidebar/AddRepoHostSelectorSlot.tsx:6"
+   ],
+   "hydra": {
+    "status": "not-applicable",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "reason": "Não portável (SSH remote host): a linha depende da arquitetura de host remoto do Orca (IPC Electron window.api.ssh.* / servidor Orca remoto). O Hydra é local-first (Tauri + PTY/SQLite locais): src/types/window-api.d.ts declara window.api como bridge ausente em runtime, e src-tauri/src/lib.rs não expõe nenhum comando ssh (0/110)."
+   }
+  },
+  {
+   "id": "D02a-006",
+   "capability": "Apresenta a tela inicial de adição de projeto com navegação por teclado (setas e Enter) e ações primária/secundárias",
+   "orca_evidence": [
+    "components/sidebar/AddRepoStartSteps.tsx:81",
+    "components/sidebar/add-repo-local-start-actions.ts:24"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:151-201"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Navegação roving por teclado ArrowDown/ArrowUp entre ações (data-add-repo-action)",
+     "Chip visual de Enter ⏎ com autofoco e remoção no blur (aria-hidden)",
+     "Reordenação das ações secundárias por isSshLikely (remote-first)",
+     "Descrição de estado vazio 'Add a project to get started with Orca.'"
+    ],
+    "notes": "Etapa inicial com 3 ações existe: 'Browse folder' primária (155-170), 'Clone from URL' (172-185), 'Create new project' (187-200). Sem roving de teclado nem ordenação host-aware."
+   }
+  },
+  {
+   "id": "D02a-007",
+   "capability": "Roteia a autoridade de navegação e busca de arquivos conforme o tipo do host selecionado",
+   "orca_evidence": [
+    "components/sidebar/add-repo-browse-authority.ts:9",
+    "components/sidebar/AddRepoDialog.tsx:335"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:49-69"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Rota runtime -> etapa 'server-path'",
+     "Rota SSH -> navegação remota com targetId",
+     "Módulo routeAddRepoBrowse com autoridade por tipo de host"
+    ],
+    "notes": "Hydra executa o ramo local diretamente: dialogo nativo open({directory:true}) + catalog_add_folder (51-60), sem roteamento por host."
+   }
+  },
+  {
+   "id": "D02a-008",
+   "capability": "Seleciona pastas locais via diálogo nativo ou drag-and-drop e inicia escaneamento de repositórios",
+   "orca_evidence": [
+    "components/sidebar/useAddRepoLocalFolderFlow.ts:38",
+    "components/sidebar/useAddRepoLocalFolderFlow.ts:299",
+    "components/sidebar/AddRepoDialog.tsx:173"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:4233-4253",
+     "src/components/sidebar/AddRepoDialog.tsx:20-21"
+    ],
+    "backend": [
+     "invoke('catalog_add_folder') -> src-tauri/src/lib.rs:277"
+    ],
+    "missing_behaviors": [
+     "Bloqueio de seleção local com runtime remoto ativo (toast de erro)",
+     "Scan assíncrono de repositórios aninhados (scanNestedRepos)",
+     "Labels de progresso 'Scanning for repositories...' / 'Opening project...'",
+     "Redireciona para revisão aninhada quando há múltiplos repositórios",
+     "Atualização autoritativa de worktrees após add",
+     "Processamento de droppedLocalPath"
+    ],
+    "notes": "Fluxo local existe: picker nativo -> catalog_add_folder -> callback onProjectAdded relê o catálogo (App.tsx:4029-4052). Backend rastreado. Faltam scan aninhado/progresso/drop.",
+    "note": "onProjectAdded so rele catalog_get; seguem ausentes scan aninhado, labels de progresso e droppedLocalPath."
+   }
+  },
+  {
+   "id": "D02a-009",
+   "capability": "Executa adição em lote de múltiplas pastas locais com adiamento da navegação e descarte de pastas complexas",
+   "orca_evidence": [
+    "components/sidebar/useAddRepoLocalFolderFlow.ts:246"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Itera sobre os caminhos em modo 'batch'",
+     "Pula pastas não-git com sub-repositórios durante lote e contabiliza skippedCount",
+     "Exibe toast informativo ao final se alguma pasta foi ignorada com orientação para adicionar individualmente",
+     "Adia o handoff de onGitRepoReady até que todas as pastas do lote sejam processadas, ativando o primeiro repositório"
+    ],
+    "notes": "Nenhum fluxo em lote: picker do SO usa multiple:false (AddRepoDialog.tsx:53); sem skippedCount/toast de pastas ignoradas; handleAddLocalPaths inexistente. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-010",
+   "capability": "Fornece interface para entrada manual de caminho no host remoto e navegação por explorador de arquivos integrado",
+   "orca_evidence": [
+    "components/sidebar/AddRepoServerStartStep.tsx:23",
+    "components/sidebar/AddRepoDialogStepContent.tsx:175"
+   ],
+   "hydra": {
+    "status": "not-applicable",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "reason": "Não portável (runtime server remoto): a linha depende de filesystem/browser de servidor de runtime do Orca (RemoteFileBrowser + runtimeRpc). O Hydra não tem comando Tauri equivalente; runtimeRpc via window.api.runtime.call é placeholder sem runtime (src/types/window-api.d.ts)."
+   }
+  },
+  {
+   "id": "D02a-011",
+   "capability": "Processa o fluxo de adição de caminho de servidor com escaneamento assíncrono e suporte a pastas não-git",
+   "orca_evidence": [
+    "components/sidebar/useAddRepoServerPathFlow.ts:29",
+    "components/sidebar/useAddRepoServerPathFlow.ts:50"
+   ],
+   "hydra": {
+    "status": "not-applicable",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "reason": "Não portável (runtime server remoto): a linha depende de filesystem/browser de servidor de runtime do Orca (RemoteFileBrowser + runtimeRpc). O Hydra não tem comando Tauri equivalente; runtimeRpc via window.api.runtime.call é placeholder sem runtime (src/types/window-api.d.ts)."
+   }
+  },
+  {
+   "id": "D02a-012",
+   "capability": "Configura os parâmetros de clonagem de repositório Git com barra de progresso em tempo real e seleção de destino",
+   "orca_evidence": [
+    "components/sidebar/AddRepoCloneStep.tsx:28",
+    "components/sidebar/AddRepoDialogStepContent.tsx:212"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:137-147",
+     "src/components/sidebar/AddRepoDialog.tsx:204-258"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Botão de pasta para picker nativo / RemoteFileBrowser (SSH/runtime)",
+     "Barra de progresso animada com fase e percentual (isCloning && cloneProgress)",
+     "Descrição do diálogo adaptada ao nome do host de destino"
+    ],
+    "notes": "Campos URL Git (208-220) e destino (222-236) existem; Enter submete via <form onSubmit>; erro destacado (137-147). Faltam progresso, botão de pasta e host-aware copy."
+   }
+  },
+  {
+   "id": "D02a-013",
+   "capability": "Calcula a pasta pai padrão para clonagem a partir do diretório de workspace configurado",
+   "orca_evidence": [
+    "components/sidebar/clone-defaults.ts:1",
+    "components/sidebar/clone-defaults.ts:30",
+    "components/sidebar/useAddRepoCloneFlow.ts:46"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Remove o segmento final 'workspaces' do workspaceDir para posicionar clones como irmãos dos workspaces",
+     "Trata caminhos POSIX, Windows e raízes absolutas (/ ou C:\\)",
+     "Auto-preenche a pasta de destino apenas na primeira entrada na etapa clone sem sobrescrever dados digitados",
+     "Não auto-preenche destinos locais quando um host de runtime ou SSH estiver selecionado"
+    ],
+    "notes": "getDefaultCloneParent/getCloneDestinationAutoFill inexistentes; destino de clone é literal '/home/renan/src' (AddRepoDialog.tsx:26) e não deriva de settings.workspaceDir. Backend sem repos:get-default-create-project-parent. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-014",
+   "capability": "Executa a clonagem de repositório Git nos modos Local, SSH ou Runtime RPC com assinatura de progresso",
+   "orca_evidence": [
+    "components/sidebar/useAddRepoCloneFlow.ts:24",
+    "components/sidebar/useAddRepoCloneFlow.ts:69",
+    "components/sidebar/useAddRepoCloneFlow.ts:111",
+    "components/sidebar/useAddRepoCloneFlow.ts:136",
+    "components/sidebar/useAddRepoCloneFlow.ts:153"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:71-90"
+    ],
+    "backend": [
+     "invoke('clone_project') -> src-tauri/src/lib.rs:445"
+    ],
+    "missing_behaviors": [
+     "Assinatura de window.api.repos.onCloneProgress (progresso em tempo real)",
+     "Roteamento SSH (cloneRemote) e runtime (runtimeRpc repo.clone)",
+     "Upsert no store com runtimeEnvironmentId/sshConnectionId",
+     "Toast 'Repository cloned'",
+     "Atualização de worktrees + onGitRepoReady('clone_url')",
+     "extractIpcErrorMessage"
+    ],
+    "notes": "Clone local existe: invoke('clone_project', {url,parentDir}) (77-79), erro via String(err) (88). Sem progresso/runtime/SSH/store."
+   }
+  },
+  {
+   "id": "D02a-015",
+   "capability": "Fornece interface para criação de novo projeto com visualização colapsável de configurações avançadas e preview do caminho final",
+   "orca_evidence": [
+    "components/sidebar/AddRepoCreateStep.tsx:38",
+    "components/sidebar/create-project-defaults.ts:27"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:250-296"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Disclosure colapsável de configurações avançadas (localização e branch)",
+     "Preview em tempo real do caminho completo",
+     "Aviso de verificação de Git ('Checking Git on this host...') / Git ausente",
+     "Aviso de pasta pai ainda não escolhida no host remoto",
+     "Avançado aberto por padrão para hosts SSH/runtime"
+    ],
+    "notes": "Etapa de criação com input de nome (265-277) e localização (279-292) existe; sem disclosure/preview/checagem de Git."
+   }
+  },
+  {
+   "id": "D02a-016",
+   "capability": "Gerencia o campo de localização do novo projeto com suporte a seletor nativo, input manual e navegador remoto",
+   "orca_evidence": [
+    "components/sidebar/CreateProjectLocationField.tsx:17",
+    "components/sidebar/CreateProjectLocationField.tsx:63"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:279-292"
+    ],
+    "backend": [],
+    "missing_behaviors": [
+     "Botão com ícone de pasta/lápis para alterar pasta pai via picker nativo",
+     "Abertura do CreateProjectParentBrowser (RemoteFileBrowser) em tela cheia",
+     "Tooltip 'Browse host filesystem'"
+    ],
+    "notes": "Apenas input de texto editável para a pasta de localização; sem picker nativo nem navegador remoto."
+   }
+  },
+  {
+   "id": "D02a-017",
+   "capability": "Resolve a pasta padrão para novos projetos (~/orca/projects) e sonda disponibilidade de Git com timeout",
+   "orca_evidence": [
+    "components/sidebar/useCreateProjectDefaults.ts:39",
+    "components/sidebar/useCreateProjectDefaults.ts:158",
+    "components/sidebar/useCreateProjectDefaults.ts:276",
+    "components/sidebar/create-project-defaults.ts:40"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Obtém o diretório padrão local via window.api.repos.getDefaultCreateProjectParent()",
+     "Obtém o diretório padrão no host de runtime via browseRuntimeServerDirectory(runtimeEnvironmentId, '~')",
+     "Aplica timeout de 1500ms para sonda local de Git e 3000ms para sonda de runtime",
+     "Sonda disponibilidade de Git via window.api.repos.isGitAvailable() ou RPC 'repo.gitAvailable'",
+     "Formata resumo com shorthand '~/orca/projects' para caminhos padrão locais",
+     "Marca o campo como 'touched' para nunca sobrescrever caminhos inseridos manualmente pelo usuário",
+     "Impede submissão enquanto a pasta padrão pertencer a um host anterior"
+    ],
+    "notes": "useCreateProjectDefaults/create-project-defaults inexistentes; pasta de criação é literal '/home/renan/src' (AddRepoDialog.tsx:27); sem sonda de Git (0 comandos isGitAvailable/getDefaultCreateProjectParent em lib.rs). Não localizado."
+   }
+  },
+  {
+   "id": "D02a-018",
+   "capability": "Executa a criação física de novo projeto Git local, remoto SSH ou em servidor runtime",
+   "orca_evidence": [
+    "components/sidebar/useCreateRepo.ts:18",
+    "components/sidebar/useCreateRepo.ts:77",
+    "components/sidebar/useCreateRepo.ts:107",
+    "components/sidebar/useCreateRepo.ts:124"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/AddRepoDialog.tsx:92-111"
+    ],
+    "backend": [
+     "invoke('create_project') -> src-tauri/src/lib.rs:428"
+    ],
+    "missing_behaviors": [
+     "pickDirectory nativo para escolher pasta pai",
+     "Criação SSH (createRemote) e runtime (runtimeRpc repo.create)",
+     "Toasts de dedup 'Project already added' / 'Project created'",
+     "Atualização autoritativa de worktrees + onGitRepoReady",
+     "Ativação de workspace sintético para projetos de pasta",
+     "Ref de geração/montagem para submissões obsoletas"
+    ],
+    "notes": "Criação local existe: invoke('create_project', {name,parentDir,initGit:true}) (98-102) + retorno onProjectAdded. Backend rastreado. Sem dedup/worktrees/ssh/runtime."
+   }
+  },
+  {
+   "id": "D02a-019",
+   "capability": "Configura a adição de projeto em host SSH listando targets, estado de conexão e permitindo navegação remota",
+   "orca_evidence": [
+    "components/sidebar/AddRepoRemoteStep.tsx:28",
+    "components/sidebar/AddRepoSteps.tsx:39"
+   ],
+   "hydra": {
+    "status": "not-applicable",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "reason": "Não portável (SSH remote host): a linha depende da arquitetura de host remoto do Orca (IPC Electron window.api.ssh.* / servidor Orca remoto). O Hydra é local-first (Tauri + PTY/SQLite locais): src/types/window-api.d.ts declara window.api como bridge ausente em runtime, e src-tauri/src/lib.rs não expõe nenhum comando ssh (0/110)."
+   }
+  },
+  {
+   "id": "D02a-020",
+   "capability": "Gerencia o fluxo de adição de repositório remoto SSH, escaneamento de diretório e tratamento de pastas não-git",
+   "orca_evidence": [
+    "components/sidebar/AddRepoSteps.tsx:39",
+    "components/sidebar/AddRepoSteps.tsx:78",
+    "components/sidebar/AddRepoSteps.tsx:119",
+    "components/sidebar/AddRepoSteps.tsx:130",
+    "components/sidebar/AddRepoSteps.tsx:185"
+   ],
+   "hydra": {
+    "status": "not-applicable",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "reason": "Não portável (SSH remote host): a linha depende da arquitetura de host remoto do Orca (IPC Electron window.api.ssh.* / servidor Orca remoto). O Hydra é local-first (Tauri + PTY/SQLite locais): src/types/window-api.d.ts declara window.api como bridge ausente em runtime, e src-tauri/src/lib.rs não expõe nenhum comando ssh (0/110)."
+   },
+   "par": [
+    "PAR-41"
+   ]
+  },
+  {
+   "id": "D02a-021",
+   "capability": "Rastreia e telemetra resultados de escaneamento aninhado em conexões remotas SSH",
+   "orca_evidence": [
+    "components/sidebar/use-add-repo-remote-nested-scan.ts:6"
+   ],
+   "hydra": {
+    "status": "not-applicable",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "reason": "Não portável (SSH remote host): a linha depende da arquitetura de host remoto do Orca (IPC Electron window.api.ssh.* / servidor Orca remoto). O Hydra é local-first (Tauri + PTY/SQLite locais): src/types/window-api.d.ts declara window.api como bridge ausente em runtime, e src-tauri/src/lib.rs não expõe nenhum comando ssh (0/110)."
+   }
+  },
+  {
+   "id": "D02a-022",
+   "capability": "Apresenta lista de repositórios descobertos em pasta pai com controles de seleção, nome de grupo e opções de importação",
+   "orca_evidence": [
+    "components/sidebar/AddRepoNestedImportStep.tsx:27",
+    "components/sidebar/AddRepoDialogStepContent.tsx:234"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Exibe resumo 'Found N repositories in /path/to/folder.' com contagem singular/plural",
+     "Lista repositórios com checklist selecionável via NestedRepoChecklist",
+     "Exibe aviso de limite de scan (NestedRepoScanLimitNotice) se o scan foi truncado, atingiu timeout ou foi interrompido",
+     "Input para nome do grupo pré-preenchido com o nome da pasta pai",
+     "Botão 'Yes, import as group' para importar projetos agrupados em monorepo/grupo",
+     "Botão 'No, import separately' para importar cada repositório como projeto individual",
+     "Botão 'Open as Folder' exibido quando nenhum repositório está selecionado",
+     "Botão de parada de escaneamento com Tooltip quando o scan ainda estiver em andamento"
+    ],
+    "notes": "AddRepoNestedImportStep/NestedRepoChecklist/NestedRepoScanLimitNotice só como chaves i18n; nenhuma UI de revisão aninhada no Hydra. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-023",
+   "capability": "Controla o estado de revisão aninhada, seleção de repositórios, nome de grupo e cancelamento de escaneamento",
+   "orca_evidence": [
+    "components/sidebar/useAddRepoNestedReviewController.ts:11",
+    "components/sidebar/useAddRepoNestedReviewState.ts:17"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Inicializa conjunto de caminhos selecionados com todos os repositórios descobertos",
+     "Calcula nome de grupo padrão com defaultProjectGroupNameForPath",
+     "Gerencia ID de escaneamento e executa cancelamento via cancelNestedRepoScan",
+     "Determina o tipo de runtime da telemetria ('local', 'ssh' ou 'runtime')",
+     "Reseta todo o estado de revisão ao retroceder ou fechar o diálogo"
+    ],
+    "notes": "useAddRepoNestedReviewController/useAddRepoNestedReviewState inexistentes em src/**. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-024",
+   "capability": "Executa a importação em lote dos repositórios selecionados como grupo ou avulsos com telemetria e tratamento de falhas parciais",
+   "orca_evidence": [
+    "components/sidebar/useAddRepoNestedImportFlow.ts:70"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Preserva a ordem dos repositórios conforme a ordem do scan via getSelectedNestedRepoPathsInScanOrder",
+     "Emite telemetria 'add_repo_nested_import_action' com modo de importação ('import_group' ou 'import_separate')",
+     "Executa importNestedRepos com parentPath, groupName, projectPaths e connectionId/runtimeEnvironmentId",
+     "Emite telemetria 'add_repo_nested_import_result' com dados detalhados do resultado",
+     "Executa fetchWorktrees para todos os projetos importados com sucesso",
+     "Exibe toast de aviso caso alguns repositórios tenham falhado na importação ('N failed')",
+     "Conclui o fluxo ativando o primeiro repositório importado via onGitRepoReady"
+    ],
+    "notes": "useAddRepoNestedImportFlow/importNestedRepos inexistentes (apenas chave i18n); sem import em grupo/lote. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-025",
+   "capability": "Permite abrir a pasta raiz do escaneamento como projeto não-git quando nenhum repositório for selecionado",
+   "orca_evidence": [
+    "components/sidebar/useAddRepoNestedImportFlow.ts:223"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Utiliza o nome editado do grupo como displayName caso seja diferente do padrão do caminho",
+     "Executa completeNestedFolderOpen para adicionar a pasta raiz",
+     "Emite telemetria de ação e resultado associada à recuperação de pasta não-git com seleção zerada",
+     "Fecha o diálogo e ativa o workspace sintético de pasta"
+    ],
+    "notes": "handleOpenNestedRootFolder/completeNestedFolderOpen inexistentes; sem botão 'Open as Folder' no fluxo de add. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-026",
+   "capability": "Exibe diálogo de confirmação para adicionar pasta específica como projeto separado (AddProjectFromFolderDialog)",
+   "orca_evidence": [
+    "components/sidebar/AddProjectFromFolderDialog.tsx:24",
+    "components/sidebar/AddProjectFromFolderDialog.tsx:77"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Exibe caminho da pasta formatado em bloco mono",
+     "Ao confirmar, adiciona projeto Git via addRepoPath ou addRemote (para SSH)",
+     "Redireciona para o modal 'confirm-non-git-folder' caso a pasta não seja um repositório Git válido",
+     "Executa upsertAddedRepoWithProjectHostSetup para sincronizar o store com o host do projeto",
+     "Conclui com finishProjectAddWithDefaultCheckout para repositórios Git válidos"
+    ],
+    "notes": "AddProjectFromFolderDialog só como chave i18n; nenhum modal confirm-add-project-from-folder montado em App.tsx (modal store só trata new-workspace/delete-worktree). Não localizado."
+   },
+   "par": [
+    "PAR-41"
+   ]
+  },
+  {
+   "id": "D02a-027",
+   "capability": "Processa modal de compatibilidade para handoff pós-adição de projeto (ProjectAddedDialog)",
+   "orca_evidence": [
+    "components/sidebar/ProjectAddedDialog.tsx:11",
+    "components/sidebar/ProjectAddedDialog.tsx:33"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Aceita tanto `repoId` quanto `projectId` legado para compatibilidade com versões antigas de onboarding",
+     "Aguarda hidratação do repositório via fetchRepos se o repositório ainda não estiver no store",
+     "Para projetos de pasta, atualiza worktrees e ativa o workspace sintético de pasta",
+     "Para repositórios Git, executa finishProjectAddWithDefaultCheckout com source 'project_added_compat'",
+     "Protegido contra execução duplicada em React StrictMode via handoffRunRef"
+    ],
+    "notes": "ProjectAddedDialog inexistente em src/**; sem modal 'project-added' nem handoff de compatibilidade. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-028",
+   "capability": "Localiza e ativa o checkout padrão (main branch) do projeto com suporte a cwd inicial customizado",
+   "orca_evidence": [
+    "components/sidebar/project-added-default-checkout.ts:25",
+    "components/sidebar/project-added-default-checkout.ts:167",
+    "components/sidebar/project-added-default-checkout.ts:244"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:4233-4253"
+    ],
+    "backend": [
+     "invoke('catalog_get') -> src-tauri/src/lib.rs:270"
+    ],
+    "missing_behaviors": [
+     "Identificação do worktree principal (isMainWorktree) filtrado por executionHostId",
+     "Localização do checkout padrão detectado (detectedWorktreesByRepo)",
+     "Revelação de checkout padrão oculto",
+     "Desativação temporária de hideDefaultBranchWorkspace",
+     "activateAndRevealWorktree no sidebar",
+     "Telemetria 'add_repo_default_checkout_handoff'"
+    ],
+    "notes": "Handoff existe de forma simplificada: onProjectAdded relê catálogo, seleciona o primeiro projeto e abre um terminal com cwd = project.path (App.tsx:4029-4052) via handleSelectProject (App.tsx:1584). Sem detecção de main worktree/reveal/telemetria.",
+    "note": "Handoff de checkout padrao segue ausente no caminho de producao (so re-selecao do primeiro projeto + tab sintetica)."
+   }
+  },
+  {
+   "id": "D02a-029",
+   "capability": "Detecta e revela worktrees externos vinculados ocultos ao importar um projeto existente",
+   "orca_evidence": [
+    "components/sidebar/project-added-default-checkout.ts:73"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Verifica se há worktrees externos não gerenciados pelo Orca e não-visíveis (excluindo agent-scratch)",
+     "Atualiza a configuração do repositório para externalWorktreeVisibility: 'show'",
+     "Executa atualização autoritativa dos worktrees com requireAuthoritative: true",
+     "Retorna motivo de falha para telemetria caso a atualização ou o refresh falhem"
+    ],
+    "notes": "revealDetectedHiddenLinkedExternalWorktrees inexistente; nenhuma revelação de worktrees vinculados ocultos no fluxo de import. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-030",
+   "capability": "Finaliza a importação de projeto quando o usuário opta por não abrir worktree imediatamente (Skip)",
+   "orca_evidence": [
+    "components/sidebar/add-repo-skip-finalization.ts:18"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Define o repositório recém-importado como activeRepoId",
+     "Revela o repositório nos filtros de projeto do sidebar via revealRepoInProjectFilter",
+     "Desativa o filtro showActiveOnly para não esconder o projeto recém-adicionado",
+     "Desativa hideDefaultBranchWorkspace caso todos os worktrees importados sejam da branch padrão",
+     "Garante a isenção de alwaysShowDefaultBranchWorkspace para projetos sem PTY ativo com showSleepingWorkspaces desligado"
+    ],
+    "notes": "finalizeImportedRepoAfterSkip inexistente; AddRepoDialog não oferece opção Skip. Primitivas de filtro existem (project-filter-reveal.ts, hideDefaultBranchWorkspace) mas sem fluxo de finalização skip. Não localizado."
+   },
+   "par": [
+    "PAR-44"
+   ]
+  },
+  {
+   "id": "D02a-031",
+   "capability": "Gera e emite telemetria de descoberta de worktrees pré-existentes durante a adição de projetos",
+   "orca_evidence": [
+    "components/sidebar/add-repo-existing-workspaces-telemetry.ts:36",
+    "components/sidebar/use-complete-git-repo-add.ts:22"
+   ],
+   "hydra": {
+    "status": "out-of-scope",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [],
+    "reason": "Decisão de produto contra paridade (telemetria): Hydra (Tauri local) não possui sink de telemetria; src/lib/telemetry.ts:26 chama window.api.telemetryTrack, bridge ausente no runtime (src/types/window-api.d.ts:5-7) e a doc aponta para onorca.dev. O protocolo cita telemetria como caso de out-of-scope."
+   }
+  },
+  {
+   "id": "D02a-032",
+   "capability": "Sincroniza o store de repositórios, projetos e configurações de host durante adições diretas por IPC",
+   "orca_evidence": [
+    "components/sidebar/add-repo-store-upsert.ts:28"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Captura e injeta executionHostId no objeto de repositório (SSH connection ID ou runtime environment ID)",
+     "Verifica duplicidade baseada em getRepoHostIdentity",
+     "Gera projeção compatível de projetos e configurações de host com projectHostSetupProjectionFromRepos",
+     "Atualiza atomicamente as fatias repos, projects e projectHostSetups no store"
+    ],
+    "notes": "upsertAddedRepoWithProjectHostSetup inexistente; o fluxo wired (App.tsx:4029-4052) apenas relê o catálogo (projects/groups/folderWorkspaces), sem repos/projectHostSetups/host-identity dedup. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-033",
+   "capability": "Resolve o proprietário de runtime e opções de atualização autoritativa de worktrees",
+   "orca_evidence": [
+    "components/sidebar/add-repo-runtime-owner.ts:6",
+    "components/sidebar/add-repo-runtime-owner.ts:19"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Converte proprietário de runtime ou conexão SSH no executionHostId correspondente",
+     "Gera objeto de opções com requireAuthoritative: true e executionHostId para direcionar a busca ao host correto"
+    ],
+    "notes": "capturedAddRepoExecutionHostId/worktreeRefreshOptions inexistentes; refresh é refreshGitWorktrees(proj.path) sem opções de host/autoridade (App.tsx:1584). Não localizado."
+   }
+  },
+  {
+   "id": "D02a-034",
+   "capability": "Submete a criação de workspace de pasta com vinculação de tarefas (GitHub/GitLab/Linear/Jira) e inicialização de agente",
+   "orca_evidence": [
+    "components/sidebar/folder-workspace-composer-submit.ts:47"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Gera nome automático baseado na tarefa vinculada ou fallback '<grupo> workspace'",
+     "Executa preflight de confiança do agente (preflightAgentTrust) para caminhos de pasta",
+     "Planeja inicialização de agente TUI ou sessão estruturada de native chat (planAgentSessionLaunch)",
+     "Cria o workspace de pasta com conexão SSH e tarefa vinculada preservadas",
+     "Marca o workspace para auto-renomeação pela primeira mensagem do agente se aplicável",
+     "Ativa e revela o novo workspace de pasta via activateAndRevealFolderWorkspace",
+     "Entrega prompts de rascunho (draft) ou follow-up no terminal do agente"
+    ],
+    "notes": "submitFolderWorkspaceCreate inexistente; createFolderWorkspace do store (folder-workspace-mutations.ts:62) nunca é chamado por componente (grep em src/components = 0). Sem compositor de workspace de pasta. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-035",
+   "capability": "Configura plataforma de execução, rascunho de prompt e quoting de shell para inicialização de agentes em pastas",
+   "orca_evidence": [
+    "components/sidebar/folder-workspace-agent-startup.ts:15",
+    "components/sidebar/folder-workspace-agent-startup.ts:26",
+    "components/sidebar/folder-workspace-agent-startup.ts:34"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Determina plataforma correta ('win32' vs 'linux') para caminhos remotos SSH e caminhos WSL UNC",
+     "Resolve o rascunho de prompt vinculado à tarefa (resolveFolderWorkspaceLaunchDraft)",
+     "Monta plano de inicialização de agente com suporte a draft launch e escape adequado para Windows/POSIX"
+    ],
+    "notes": "folder-workspace-agent-startup/planAgentSessionLaunch para folder workspaces inexistentes no fluxo wired; sem compositor. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-036",
+   "capability": "Verifica a validade do caminho de workspace de pasta com cache e bloqueia criação em caminhos inexistentes ou obsoletos",
+   "orca_evidence": [
+    "components/sidebar/folder-workspace-composer-path-status.ts:12",
+    "components/sidebar/folder-workspace-composer-path-status.ts:74"
+   ],
+   "hydra": {
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:517-533",
+     "src/store/folder-workspaces/folder-path-status-actions.ts:1-20"
+    ],
+    "backend": [
+     "invoke('path_exists') -> src-tauri/src/lib.rs:199"
+    ],
+    "missing_behaviors": [
+     "Cache TTL de status de caminho (cacheExpiryTick)",
+     "Bloqueio do botão de criação (pathStatusBlocksCreate) enquanto pendente/inexistente/ambíguo",
+     "Mensagem de erro detalhada (pathStatusProjectError)",
+     "Hook useFolderWorkspaceComposerPathStatus (compositor inexistente no Hydra)"
+    ],
+    "notes": "Validade de caminho de workspace de pasta é verificada em runtime de exibição: useEffect chama path_exists para cada folderWorkspace e marca badge de pasta ausente (App.tsx:2066-2085; WorktreeList.tsx:525). Não há cache TTL nem bloqueio de criação (não há compositor).",
+    "note": "Hook useFolderWorkspaceComposerPathStatus segue so referenciado em teste de boundary; sem cache TTL/bloqueio de criacao no compositor."
+   }
+  },
+  {
+   "id": "D02a-037",
+   "capability": "Mapeia repositórios de origem do grupo e converte itens de trabalho vinculados (GitHub, GitLab, Linear)",
+   "orca_evidence": [
+    "components/sidebar/folder-workspace-composer-helpers.ts:31",
+    "components/sidebar/folder-workspace-composer-helpers.ts:47",
+    "components/sidebar/folder-workspace-composer-helpers.ts:88"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Filtra repositórios pertencentes à pasta pai ou ao grupo de projetos garantindo mesmo executionHostId",
+     "Converte itens do GitHub, GitLab e Linear em estruturas padronizadas LinkedWorkItemSummary",
+     "Gera seleção inteligente de nome do workspace com getSmartNameSelection",
+     "Fornece label estável 'Create workspace' para o botão de ação primária"
+    ],
+    "notes": "folder-workspace-composer-helpers (getFolderSourceRepos/getSmartNameSelection/'Create workspace') inexistentes; sem compositor de pasta. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-038",
+   "capability": "Calcula e exibe badge de status de PR e revisões para cards de workspace de pasta",
+   "orca_evidence": [
+    "components/sidebar/folder-workspace-card-pr-display.ts:29"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Coleta worktrees filhos diretos e aninhados vinculados ao workspace de pasta por lineage",
+     "Previne recursão infinita descartando ciclos de lineage projetada",
+     "Agrega status de PRs via buildParentPrChecksRows",
+     "Ordena e prioriza o status de revisão mais crítico: failure (0) > pending (1) > success (2) > neutral (3)"
+    ],
+    "notes": "getFolderWorkspaceCardPrDisplay/buildParentPrChecksRows inexistentes; FolderWorkspaceRow renderiza só status/path, sem badge de PR (FolderWorkspaceRow.tsx:22-67). Não localizado."
+   }
+  },
+  {
+   "id": "D02a-039",
+   "capability": "Resolve a seção de host correta para exibição e agrupamento do workspace de pasta no sidebar",
+   "orca_evidence": [
+    "components/sidebar/folder-workspace-host-id.ts:14"
+   ],
+   "hydra": {
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/folder-workspace-host-id.ts:14",
+     "src/components/sidebar/host-section-rows.ts:67",
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:215"
+    ],
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "getFolderWorkspaceHostId resolve connectionId do folder workspace/grupo para ExecutionHostId SSH (ou default) e é consumido pela contagem de header e pelo bucketing/agrupamento de hosts do sidebar (host-section-rows.ts:67, host-labels.ts:215). Mesmo efeito observável da linha Orca."
+   }
+  },
+  {
+   "id": "D02a-040",
+   "capability": "Integra o diálogo AddRepoDialog como modal aninhado dentro do workspace composer",
+   "orca_evidence": [
+    "components/sidebar/use-add-repo-hosted-controller.ts:19"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Fecha apenas o diálogo aninhado em cancelamentos mantendo o modal do compositor aberto",
+     "Ao adicionar repositório Git, fecha o diálogo aninhado e seleciona o novo projeto no compositor via onProjectAdded",
+     "Para handoffs de pasta ou navegação para Configurações SSH, fecha tanto o diálogo aninhado quanto o modal do compositor"
+    ],
+    "notes": "useAddRepoHostedController inexistente; AddRepoDialog não é embutido como modal aninhado do NewWorkspaceComposer (composer fecha e reabre o diálogo — NewWorkspaceComposer.tsx:175-180). Não localizado."
+   }
+  },
+  {
+   "id": "D02a-041",
+   "capability": "Exibe aviso de escaneamento em andamento com botão de parada para interromper a busca de repositórios",
+   "orca_evidence": [
+    "components/sidebar/AddRepoStartSteps.tsx:18",
+    "components/sidebar/AddRepoNestedImportStep.tsx:197"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "Exibe spinner animado Loader2 e mensagem informativa do scan",
+     "Botão de parada com ícone CircleStop no hover e tooltip 'Scanning repositories. Click to stop.'",
+     "Dispara cancelamento do scan pelo ID de escaneamento ativo ao clicar em Stop"
+    ],
+    "notes": "AddRepoNestedScanProgressNotice/AddRepoNestedImportStopButton inexistentes; sem UI de progresso/stop de scan aninhado. Não localizado."
+   }
+  },
+  {
+   "id": "D02a-042",
+   "capability": "Fornece utilitários de nomeação de grupo por caminho e geração de identificadores únicos de escaneamento",
+   "orca_evidence": [
+    "components/sidebar/add-repo-dialog-types.ts:3",
+    "components/sidebar/add-repo-dialog-types.ts:12"
+   ],
+   "hydra": {
+    "status": "missing",
+    "evidence": [],
+    "backend": [],
+    "missing_behaviors": [
+     "defaultProjectGroupNameForPath extrai o último segmento de diretório normalizando barras '/' e '\\'",
+     "createNestedRepoScanId gera strings únicas baseadas em timestamp e aleatoriedade ('nested-repo-scan-...')"
+    ],
+    "notes": "defaultProjectGroupNameForPath/createNestedRepoScanId inexistentes em src/**. Não localizado."
+   }
   }
+ ],
+ "summary": {
+  "parity": 1,
+  "partial": 12,
+  "missing": 22,
+  "not-applicable": 6,
+  "out-of-scope": 1
+ }
 }

@@ -16,11 +16,9 @@
    "hydra": {
     "status": "missing",
     "evidence": [
-     "src/App.tsx:1756 handleDeleteGitWorktree — resolve repoPath e abre/fecha o dialog; nenhuma captura de sucessor",
-     "src/App.tsx:1789 after delete: refreshGitWorktrees + dispatch 'hydra:refresh-projects' apenas; setActiveWorktreePath nunca é chamado",
-     "src/App.tsx:4081 onDeleted -> refreshGitWorktrees (sem troca de foco)",
-     "src/lib/worktree-visit-recency.ts:1 Auto-stub (lastVisitedAt/recência não implementados)",
-     "src/store/slices/worktrees/session/worktree-visit-recency.ts:1 Auto-stub"
+     "src/App.tsx:1931",
+     "src/App.tsx:1977-1981",
+     "src/App.tsx:4308-4314"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -32,7 +30,8 @@
      "Ativação via activateAndRevealWorktree com revealInSidebar: false"
     ],
     "reason": "",
-    "notes": "Buscas sem resultado (5 passos): prepareActiveWorktreeFocusAfterDelete, activateAndRevealWorktree, lastVisitedAtByWorktreeId, getWorktreeVisitTimestamp, isMainWorktree-priority — em src/** e src-tauri/src/**. Unwired por completo."
+    "notes": "Buscas sem resultado (5 passos): prepareActiveWorktreeFocusAfterDelete, activateAndRevealWorktree, lastVisitedAtByWorktreeId, getWorktreeVisitTimestamp, isMainWorktree-priority — em src/** e src-tauri/src/**. Unwired por completo.",
+    "note": "Pós-delete: refreshGitWorktrees + refresh-projects; sem captura de sucessor/foco."
    }
   },
   {
@@ -46,11 +45,9 @@
    "hydra": {
     "status": "missing",
     "evidence": [
-     "src/components/sidebar/worktree-card-compact-agents.tsx:221 isFocusedPane={r.entry.sessionId === activeSessionId} (render de destaque existe)",
-     "src/components/sidebar/CompactAgentRow.tsx:100 bg de linha focada; :134-173 realce de texto",
-     "src/components/sidebar/worktree-card-parent-content.tsx:118 repassa activeSessionId ao WorktreeCardAgents",
-     "src/components/sidebar/WorktreeCardAgents.tsx:210 repassa activeSessionId",
-     "src/components/sidebar/WorktreeList.tsx:354-388 NÃO passa activeSessionId ao WorktreeCard (prop fica undefined no mount) => isFocusedPane é sempre false"
+     "src/components/sidebar/worktree-card-compact-agents.tsx:196",
+     "src/components/sidebar/CompactAgentRow.tsx:100",
+     "src/components/sidebar/WorktreeList.tsx:927-947"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -63,7 +60,8 @@
      "Supressão quando outro split/aba/superfície está ativo"
     ],
     "reason": "",
-    "notes": "O destaque é apenas um prop dormente: WorktreeSidebar/WorktreeList nunca fornecem activeSessionId (grep activeSessionId em WorktreeSidebar.tsx/WorktreeList.tsx = 0 ocorrências de pass-down). Buscas sem resultado: focused-agent-row-highlight, makePaneKey no sidebar, migrationUnsupportedByPtyId no card."
+    "notes": "O destaque é apenas um prop dormente: WorktreeSidebar/WorktreeList nunca fornecem activeSessionId (grep activeSessionId em WorktreeSidebar.tsx/WorktreeList.tsx = 0 ocorrências de pass-down). Buscas sem resultado: focused-agent-row-highlight, makePaneKey no sidebar, migrationUnsupportedByPtyId no card.",
+    "note": "WorktreeList/WorktreeSidebar não passam activeSessionId; isFocusedPane sempre false."
    }
   },
   {
@@ -109,13 +107,11 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-card-header.tsx:187-199 botão de exclusão rápida -> handleWorkspaceQuickAction",
-     "src/components/sidebar/use-worktree-card-controller.ts:239 handleDelete -> onDelete(worktree, effectiveRepo)",
-     "src/App.tsx:1756 handleDeleteGitWorktree (skip-confirm ou abre dialog)",
-     "src/components/DeleteWorktreeDialog.tsx:96-106 handleDelete(force) -> invoke('delete_worktree')",
-     "src/components/DeleteWorktreeDialog.tsx:177 painel de erro inline (não toast)",
-     "src/components/DeleteWorktreeDialog.tsx:64-67 botão 'Force Delete' após falha",
-     "src-tauri/src/lib.rs:476 #[tauri::command] delete_worktree (assinatura repo_path/worktree_path apenas)"
+     "src/components/sidebar/worktree-card-header.tsx:187-199",
+     "src/components/sidebar/use-worktree-card-controller.ts:239",
+     "src/App.tsx:1931",
+     "src/components/DeleteWorktreeDialog.tsx:96-106",
+     "src-tauri/src/lib.rs:476"
     ],
     "backend": [
      "invoke('delete_worktree', { repoPath, worktreePath }) -> src-tauri/src/lib.rs:476 (registrado em src-tauri/src/lib.rs:1505)"
@@ -128,7 +124,8 @@
      "Reapresentação do toast estruturado em nova falha"
     ],
     "reason": "",
-    "notes": "Existe um fluxo de deleção (dialog + retry force), mas não o fluxo de toasts do Orca. A maquinaria de waiver está definida e NÃO usada: src/store/slices/worktree-removal-options.ts:3-19 (allowFailedArchiveHook/allowUnverifiedPtyStop/snapshotPruneBatchId), src/shared/worktree/archive-hook-removal-gate.ts:21 ('Delete Anyway' apenas em texto de hint), e src/store/slices/worktrees/teardown/remove-worktree.ts:9 (createRemoveWorktree: any = null → store removeWorktree nunca chamado; grep removeWorktree( em src/** = 0 call-sites)."
+    "notes": "Existe um fluxo de deleção (dialog + retry force), mas não o fluxo de toasts do Orca. A maquinaria de waiver está definida e NÃO usada: src/store/slices/worktree-removal-options.ts:3-19 (allowFailedArchiveHook/allowUnverifiedPtyStop/snapshotPruneBatchId), src/shared/worktree/archive-hook-removal-gate.ts:21 ('Delete Anyway' apenas em texto de hint), e src/store/slices/worktrees/teardown/remove-worktree.ts:9 (createRemoveWorktree: any = null → store removeWorktree nunca chamado; grep removeWorktree( em src/** = 0 call-sites).",
+    "note": "Fluxo de deleção existe (erro inline/force), sem máquina de toasts/waiver."
    }
   },
   {
@@ -173,9 +170,8 @@
    "hydra": {
     "status": "missing",
     "evidence": [
-     "src/App.tsx:1757-1773 resolve repoPath a partir de projectsRef/worktreesByProject (resolução simples, sem validação)",
-     "src/App.tsx:4081 dialogue recebe worktrees direto de deleteWorktreeModal",
-     "nenhum resolveWorktreeBatchDeleteTargets / getWorktreeOnHostFromState no sidebar (grep)"
+     "src/App.tsx:1931-1954",
+     "src/App.tsx:4308-4314"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -185,7 +181,8 @@
      "showWorkspaceListChangedToast + fechamento do modal + retorno null em divergência"
     ],
     "reason": "",
-    "notes": "Buscas: use-confirmed-worktree-delete-targets, resolveWorktreeBatchDeleteTargets, expectedCount, showWorkspaceListChangedToast — 0 resultados em src/**."
+    "notes": "Buscas: use-confirmed-worktree-delete-targets, resolveWorktreeBatchDeleteTargets, expectedCount, showWorkspaceListChangedToast — 0 resultados em src/**.",
+    "note": "Resolução de targets em lote/validação de host ausentes."
    }
   },
   {
@@ -200,9 +197,8 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/App.tsx:1795-1810 useEffect dispara invoke('get_detailed_git_status_cmd', { repoPath: wt.path }) por target ao abrir o modal e grava dirtyChangeCountsByWorktreeId",
-     "src/components/DeleteWorktreeDialog.tsx:165-176 renderiza contagem 'N uncommitted' por target",
-     "src-tauri/src/lib.rs:113 get_detailed_git_status_cmd (registered src-tauri/src/lib.rs:1456)"
+     "src/App.tsx:2002-2017",
+     "src/components/DeleteWorktreeDialog.tsx:165-176"
     ],
     "backend": [
      "invoke('get_detailed_git_status_cmd') -> src-tauri/src/lib.rs:113"
@@ -217,7 +213,8 @@
      "Ambiente de runtime para hosts remotos/SSH"
     ],
     "reason": "",
-    "notes": "Hydra hidrata apenas a contagem de sujeira via get_detailed_git_status_cmd; não há getRuntimeGitStatus no sidebar (grep 0) nem AbortController no efeito."
+    "notes": "Hydra hidrata apenas a contagem de sujeira via get_detailed_git_status_cmd; não há getRuntimeGitStatus no sidebar (grep 0) nem AbortController no efeito.",
+    "note": "Só dirty count via get_detailed_git_status_cmd; sem getRuntimeGitStatus/AbortController."
    }
   },
   {
@@ -230,10 +227,9 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/lib/workspace-status-signals.ts:14 workspaceStatusFrom(sessions, hasLiveTerminal) — resolvedor alternativo efetivamente chamado",
-     "src/components/sidebar/WorktreeList.tsx:358 e :521 status={workspaceStatusFrom({...})} por worktree/folder row",
-     "src/components/sidebar/WorktreeStatusIndicator.tsx:37 dot ladder (working/monitoring/interrupted/permission/done-active/inactive)",
-     "src/lib/worktree-status.ts resolveWorktreeStatus/getWorktreeStatusLabel definidos mas com ZERO call-sites (grep em src/**)"
+     "src/lib/workspace-status-signals.ts:14",
+     "src/components/sidebar/WorktreeList.tsx:910",
+     "src/components/sidebar/WorktreeStatusIndicator.tsx:37"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -245,7 +241,8 @@
      "Invocação de resolveWorktreeStatus para o estado final"
     ],
     "reason": "",
-    "notes": "Divergência documentada em src/lib/workspace-status-signals.ts:9-13 ('Hydra has no per-pane PTY index, so the equivalent signals are the workspace's sessions ... and whether a terminal tab is still mounted'). O dot é observável; as entradas consolidadas de PTY/agentes não existem."
+    "notes": "Divergência documentada em src/lib/workspace-status-signals.ts:9-13 ('Hydra has no per-pane PTY index, so the equivalent signals are the workspace's sessions ... and whether a terminal tab is still mounted'). O dot é observável; as entradas consolidadas de PTY/agentes não existem.",
+    "note": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes."
    }
   },
   {
@@ -258,8 +255,8 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:358 e :521 calculam status por worktree visível em loop (cobre múltiplos worktrees)",
-     "src/lib/workspace-status-signals.ts:14 resolvedor por worktree"
+     "src/components/sidebar/WorktreeList.tsx:910",
+     "src/lib/workspace-status-signals.ts:14"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -269,7 +266,8 @@
      "Assinaturas de agentStatusEpoch/agentStatusByPaneKey/migrationUnsupportedByPtyId/retainedAgentsByPaneKey/runtimeAgentOrchestrationByPaneKey"
     ],
     "reason": "",
-    "notes": "Sem batch selector: grep useWorktreeActivityStatuses/useShallow/shallow em src/components/sidebar/** = 0. O status multi-worktree existe pontualmente na lista, sem o contrato de igualdade rasa."
+    "notes": "Sem batch selector: grep useWorktreeActivityStatuses/useShallow/shallow em src/components/sidebar/** = 0. O status multi-worktree existe pontualmente na lista, sem o contrato de igualdade rasa.",
+    "note": "Sem batch selector com igualdade rasa."
    }
   },
   {
@@ -286,10 +284,10 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:162-186 handleClick/handleDoubleClick",
-     "src/components/sidebar/use-worktree-card-controller.ts:225-233 handleRenameTitle",
-     "src/components/sidebar/WorktreeList.tsx:734-746,765-785,830-838 atalho + persistWorktreeDisplayName + renameRequest",
-     "src/components/sidebar/worktree-card-presentation.tsx:88 showUnreadQuickAction"
+     "src/components/sidebar/use-worktree-card-controller.ts:162-186",
+     "src/components/sidebar/use-worktree-card-controller.ts:225-233",
+     "src/components/sidebar/worktree-card-header.tsx:113-135",
+     "src/App.tsx:3860-3877"
     ],
     "backend": [
      "invoke('set_worktree_display_name') -> src/App.tsx:3342 (apenas menu de contexto; comando em src-tauri/src/lib.rs:505, registrado src-tauri/src/lib.rs:1506)"
@@ -299,10 +297,12 @@
      "Registro de breadcrumb de crash sidebar_worktree_activate",
      "Ativação assíncrona activateWorktreeFromSidebar",
      "Duplo-clique abrindo modal edit-meta (Hydra abre renomeação inline)",
-     "Toggle rápido de não-lido (handleToggleUnreadQuick): showUnreadQuickAction computado (worktree-card-presentation.tsx:88) e nunca renderizado"
+     "Persistência do novo nome via updateWorktreeMeta (update-worktree-meta.ts:1 Auto-stub; handler do mount ausente)",
+     "Toggle rápido de não-lido (handleToggleUnreadQuick): showUnreadQuickAction é computado em worktree-card-presentation.tsx:88 mas nunca renderizado"
     ],
     "reason": "",
-    "notes": "O commit do rename inline agora persiste de fato: o mount provê persistWorktreeDisplayName → set_worktree_display_name (WorktreeList.tsx:765-785). Não-lido segue só via menu de contexto."
+    "notes": "Buscas: 'sidebar_worktree_activate', 'edit-meta', buildWorktreeMetaUpdates, updateWorktreeMeta no card — 0 resultados. Não-lido só existe via menu de contexto (App.tsx:3406 toggleUnreadWorktree).",
+    "note": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op)."
    }
   },
   {
@@ -318,15 +318,22 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:72-245",
-     "src/components/sidebar/use-worktree-card-controller.ts:347-361"
+     "src/components/sidebar/use-worktree-card-controller.ts:72",
+     "src/components/sidebar/worktree-card-presentation.tsx:111-113",
+     "src/components/sidebar/worktree-card-header.tsx:187-199",
+     "src/shared/worktree/card-properties.ts:1"
     ],
     "backend": [],
     "missing_behaviors": [
-     "cardProps/selectores de runtime-SSH e port scan no card (ver D04b-012)"
+     "Composição de useWorktreeCardFoundation/ReviewDetails/LinkedDetails/LifecycleEffects/ActivationActions/WorkspaceActions/SecondaryDetails (Hydra concentra tudo num único hook)",
+     "Avaliação da lista cardProps ('status','issue','linear-issue','jira-issue','pr','automation','cli','comment','ports')",
+     "shouldRefreshHostedReview (novo estilo vs legado)",
+     "Hook de controle de hover useWorktreeCardDetailsHoverControl (WorktreeCardDetailsHover.tsx é um popover local próprio)",
+     "Condição deleteModifierPressed (Option/Alt) para showDeleteQuickAction — símbolo ausente no Hydra"
     ],
     "reason": "",
-    "notes": "Controller central montado; sem mudança material neste slice."
+    "notes": "Buscas: deleteModifierPressed, cardProps, shouldRefreshHostedReview, useWorktreeCardDetailsHoverControl — 0 resultados.",
+    "note": "showUnreadQuickAction computado e não renderizado; cardProps não existe."
    }
   },
   {
@@ -344,22 +351,22 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:72-245 handlers de estado/layout",
-     "src/components/sidebar/use-worktree-card-controller.ts:304-319 conflictOperation/cacheStartedAt/isRuntimeDisconnected hardcoded",
-     "src/components/sidebar/WorktreeList.tsx:824 ports={portsByWorktree.get(wt.path)}",
-     "src/components/sidebar/worktree-card-surface.tsx:12 AutoRenameFailedDialog"
+     "src/components/sidebar/use-worktree-card-controller.ts:72-245",
+     "src/components/sidebar/use-worktree-card-controller.ts:304-319",
+     "src/components/sidebar/WorktreeList.tsx:927"
     ],
     "backend": [],
     "missing_behaviors": [
      "selectRuntimeAwareSshStatus + hydrateRuntimeEnvironmentSshState + selectRuntimeAwareSshTargetRemoved no card",
      "Rótulo do host de runtime e detecção isRuntimeDisconnected (hardcoded false)",
      "workspacePorts escaneadas (port scan do card)",
-     "conflictOperation/remoteBranchConflict reais (hardcoded '' / false)",
+     "conflictOperation/remoteBranchConflict reais (hardcoded '' / false; remoteBranchConflict é sempre false)",
      "Handlers openAutomationsPage/openTaskPage/setPendingAutomationRunNavigation",
      "cardProps e workspacePortScan/runtimeEnvironments/runtimeStatusByEnvironmentId"
     ],
     "reason": "",
-    "notes": "Sem mudança material neste slice."
+    "notes": "SSH runtime-aware selectors existem na store (src/store/slices/runtime-environment-ssh-selectors.ts) mas não são usados pelo card. WorkspaceSidebar tem scanPorts em WorktreeSidebar.tsx:259, não no card.",
+    "note": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded."
    }
   },
   {
@@ -381,9 +388,9 @@
    "hydra": {
     "status": "missing",
     "evidence": [
-     "src/components/sidebar/worktree-card-model.ts:116 HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS = 60_000 definido e com ZERO consumidores (grep em src/**)",
-     "nenhum setInterval/polling no card: src/components/sidebar/CacheTimer.tsx:18 e worktree-card-compact-agents.tsx:196 (useNow 30s de timestamps) são os únicos timers do card",
-     "src/store/slices/hosted-review.ts:2 fetchHostedReviewForBranch definido em slice @ts-nocheck sem call-sites (grep = 0 fora do próprio arquivo)"
+     "src/components/sidebar/worktree-card-model.ts:124",
+     "src/components/sidebar/CacheTimer.tsx:18",
+     "src/store/slices/hosted-review.ts:2"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -395,7 +402,8 @@
      "Busca sob demanda de issue Linear no hover"
     ],
     "reason": "",
-    "notes": "installWindowVisibilityInterval existe (src/lib/window-visibility-interval.ts) mas é usado por src/hooks/use-now.ts, não pelo card. Buscas: fetchHostedReviewForBranch, fetchIssue, fetchLinearIssue, hoverDetailsOpen no sidebar — 0 call-sites."
+    "notes": "installWindowVisibilityInterval existe (src/lib/window-visibility-interval.ts) mas é usado por src/hooks/use-now.ts, não pelo card. Buscas: fetchHostedReviewForBranch, fetchIssue, fetchLinearIssue, hoverDetailsOpen no sidebar — 0 call-sites.",
+    "note": "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidores; sem polling no card."
    }
   },
   {
@@ -414,10 +422,9 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:152-158 visibleCardTitle = display_name || displayName || branch || basename(path) || 'worktree'",
-     "src/components/sidebar/use-worktree-card-controller.ts:319-320 isQueuedForDeletion: false / deleteLabel: 'Deleting workspace...'",
-     "src/components/sidebar/worktree-card-header.tsx:113-127 WorktreeTitleInlineRename exibe o título; rótulo 'primary' em :144-152",
-     "src/components/sidebar/worktree-card-meta-row.tsx:98 cacheStartedAt != null && <CacheTimer/>"
+     "src/components/sidebar/use-worktree-card-controller.ts:152-158",
+     "src/components/sidebar/worktree-card-header.tsx:113-152",
+     "src/components/sidebar/worktree-card-meta-row.tsx:98"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -429,7 +436,8 @@
      "deleteModifierPressed"
     ],
     "reason": "",
-    "notes": "Buscas: 'Queued for deletion', 'Loading issue', 'Issue details unavailable', getWorktreeCardTitleDisplay, linearIssueDisplay, jiraIssueDisplay em src/components/sidebar/** — 0 resultados. A meta row não renderiza badges de issue/PR."
+    "notes": "Buscas: 'Queued for deletion', 'Loading issue', 'Issue details unavailable', getWorktreeCardTitleDisplay, linearIssueDisplay, jiraIssueDisplay em src/components/sidebar/** — 0 resultados. A meta row não renderiza badges de issue/PR.",
+    "note": "Título resolvido; badges de issue/PR e rótulos de loading ausentes."
    }
   },
   {
@@ -446,11 +454,10 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:360 prDisplay={prByPath?.[wt.path] ?? null}",
-     "src/App.tsx:2023 invoke('pr_status', { repoPath, branch }) preenche prByPath (uma sondagem por repo/branch, cacheada)",
-     "src/components/sidebar/WorktreeCardStatusLane.tsx:38 showReview = quiet && prDisplay !== null (glifo de revisão na lane)",
-     "src/components/sidebar/WorktreeCardReviewBadge.tsx:29 badge de PR (GitHub-only: pr_number/state/url)",
-     "src/components/sidebar/use-worktree-card-controller.ts:234 identityDisplay branch/path"
+     "src/components/sidebar/WorktreeList.tsx:914",
+     "src/App.tsx:2227",
+     "src/components/sidebar/WorktreeCardStatusLane.tsx:38",
+     "src/components/sidebar/WorktreeCardReviewBadge.tsx:29"
     ],
     "backend": [
      "invoke('pr_status') -> src-tauri/src/lib.rs:410 #[tauri::command] pr_status (registrado src-tauri/src/lib.rs:1499)"
@@ -463,7 +470,8 @@
      "getWorktreeCardPrDisplay com suppressedGitHubPR"
     ],
     "reason": "",
-    "notes": "Só GitHub via pr_status; suppression (src/shared/worktree/github-pr-suppression.ts) e caches multi-provedor existem na store mas não são usados pelo card. use-worktree-card-review-details.ts citado em comentário do controller (:257) mas o arquivo não existe no Hydra."
+    "notes": "Só GitHub via pr_status; suppression (src/shared/worktree/github-pr-suppression.ts) e caches multi-provedor existem na store mas não são usados pelo card. use-worktree-card-review-details.ts citado em comentário do controller (:257) mas o arquivo não existe no Hydra.",
+    "note": "Só GitHub via pr_status; suppression/caches multi-provedor não usados."
    }
   },
   {
@@ -483,10 +491,9 @@
    "hydra": {
     "status": "missing",
     "evidence": [
-     "src/components/sidebar/CacheTimer.tsx:10 existe mas é inalcançável em runtime: use-worktree-card-controller.ts:305 fixa cacheStartedAt: null e a meta row só o renderiza com != null (worktree-card-meta-row.tsx:98)",
-     "nenhum handleUnlinkReview / openTaskPage / openWorkspaceBrowserTab no card (grep em src/components/sidebar/** = 0)",
-     "showAggregateCacheTimer/compactInlineAgentRows/showUnreadEmphasis ausentes",
-     "src/store/slices/ui/ui-slice-task-actions.ts openTaskPage existe na store mas sem call-site no sidebar"
+     "src/components/sidebar/CacheTimer.tsx:10",
+     "src/components/sidebar/use-worktree-card-controller.ts:305",
+     "src/store/slices/ui/ui-slice-task-actions.ts:43"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -498,7 +505,8 @@
      "handleUnlinkReview com tombstone suppressedGitHubPR e remoção de links GitLab/Bitbucket/Azure/Gitea"
     ],
     "reason": "",
-    "notes": "Buscas: use-worktree-card-secondary-details, handleUnlinkReview, showAggregateCacheTimer, compactInlineAgentRows, usePromptCacheCountdownStartedAt, openWorkspaceBrowserTab — 0 resultados. CacheTimer é código morto por construção."
+    "notes": "Buscas: use-worktree-card-secondary-details, handleUnlinkReview, showAggregateCacheTimer, compactInlineAgentRows, usePromptCacheCountdownStartedAt, openWorkspaceBrowserTab — 0 resultados. CacheTimer é código morto por construção.",
+    "note": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card."
    }
   },
   {
@@ -516,12 +524,9 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:239-245 handleDelete/handleWorkspaceQuickAction -> onDelete(worktree, effectiveRepo)",
-     "src/components/sidebar/worktree-card-header.tsx:187-199 botão de exclusão rápida (stopQuickActionPointerPropagation em :190)",
-     "src/components/sidebar/use-worktree-card-controller.ts:188-212 handleDragStart/handleDragEnd (delegam a onCardDragStart/onCardDragEnd)",
-     "src/components/sidebar/use-worktree-card-controller.ts:214-222 handleContextMenuSelect -> onContextMenu",
-     "src/components/sidebar/WorktreeList.tsx:387-405 onDragStart/onDragOver/onDrop/onDragEnd wired",
-     "src/components/sidebar/use-worktree-card-controller.ts:336 stopQuickActionPointerPropagation = e.stopPropagation()"
+     "src/components/sidebar/use-worktree-card-controller.ts:239-245",
+     "src/components/sidebar/worktree-card-header.tsx:187-199",
+     "src/components/sidebar/WorktreeList.tsx:943-946"
     ],
     "backend": [
      "invoke('delete_worktree') -> src-tauri/src/lib.rs:476 (via App.tsx:1756)"
@@ -534,7 +539,8 @@
      "Resolução dos worktrees alvo da seleção no menu de contexto (Hydra delega cru ao App)"
     ],
     "reason": "",
-    "notes": "Buscas: deleteFolderWorkspace no card, writeWorkspaceDragData, 'Show child', 'Hide child', expectedHostId — 0 resultados no sidebar. onLineageToggle/writeWorkspaceDragData são símbolos órfãos."
+    "notes": "Buscas: deleteFolderWorkspace no card, writeWorkspaceDragData, 'Show child', 'Hide child', expectedHostId — 0 resultados no sidebar. onLineageToggle/writeWorkspaceDragData são símbolos órfãos.",
+    "note": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais."
    }
   },
   {
@@ -668,10 +674,9 @@
    "hydra": {
     "status": "missing",
     "evidence": [
-     "src/store/slices/worktrees/metadata/update-worktree-meta.ts:1-12 auto-stub (createUpdateWorktreeMeta = null)",
-     "src/store/slices/worktrees.ts:99 updateWorktreeMeta: createUpdateWorktreeMeta",
-     "símbolos inexistentes: buildWorktreeMetaUpdates/isIssueFieldDirty/issueLinkIdentity (grep em src/** = 0)",
-     "nenhum diálogo edit-meta no sidebar (grep 'edit-meta' = 0)"
+     "src/App.tsx:3576",
+     "src/App.tsx:3640",
+     "src/store/slices/worktrees/metadata/update-worktree-meta.ts:1"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -684,7 +689,8 @@
      "Tombstone suppressedGitHubPR ao limpar link explícito de PR"
     ],
     "reason": "",
-    "notes": "update-worktree-meta.ts continua auto-stub (createUpdateWorktreeMeta = null) e não há diálogo edit-meta; os payloads de metadados seguem não portados."
+    "notes": "Buscas: worktree-meta-updates, isIssueFieldDirty, issueLinkIdentity, suppressedGitHubPR no sidebar — 0 call-sites.",
+    "note": "Sem update de metadados agrupado; rename/unread gravam direto."
    }
   },
   {

@@ -1,0 +1,744 @@
+{
+ "group": "C (D04a, D04b, D05)",
+ "generatedFrom": "bd69b33",
+ "rows": [
+  {
+   "id": "D04a-001",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeCard.tsx:7",
+    "src/components/sidebar/WorktreeCard.tsx:12",
+    "src/components/sidebar/WorktreeCard.tsx:16",
+    "src/components/sidebar/use-worktree-card-controller.ts:72-129"
+   ],
+   "note": "Reconfirmado: wrapper memo + controller ligados ao mount."
+  },
+  {
+   "id": "D04a-005",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-surface.tsx:129-141",
+    "src/components/sidebar/worktree-card-header.tsx:114-133",
+    "src/components/sidebar/worktree-card-parent-content.tsx:55-67"
+   ],
+   "note": "Falta propagação de affiliateListMode a todas as ações mutantes."
+  },
+  {
+   "id": "D04a-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-surface.tsx:143-152",
+    "src/components/sidebar/AutoRenameFailedDialog.tsx:11-20"
+   ],
+   "note": "Dialog de erro de auto-rename wired no surface."
+  },
+  {
+   "id": "D04a-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:13-33",
+    "src/components/sidebar/worktree-card-header.tsx:93-111"
+   ],
+   "note": "Chip de repo existe; falta o estilo compacto."
+  },
+  {
+   "id": "D04a-012",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:90-206",
+    "src-tauri/src/catalog.rs:71"
+   ],
+   "note": "PR54-58 adicionaram registry/dialog/settings SSH, mas nenhum controle host SSH no card."
+  },
+  {
+   "id": "D04a-013",
+   "status": "missing",
+   "evidence": [
+    "src-tauri/src/catalog.rs:71",
+    "src/components/sidebar/worktree-card-header.tsx:90-206"
+   ],
+   "note": "Sem fluxo de conexão SSH no renderer/card."
+  },
+  {
+   "id": "D04a-014",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:318",
+    "src/components/sidebar/worktree-card-surface.tsx:80"
+   ],
+   "note": "isRuntimeDisconnected hardcoded; sem glifo de host runtime nomeado."
+  },
+  {
+   "id": "D04a-015",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:114-133",
+    "src/components/sidebar/WorktreeTitleInlineRename.tsx:62-68"
+   ],
+   "note": "Rename inline existe; atalho via request depende de produtor externo."
+  },
+  {
+   "id": "D04a-016",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:135-148",
+    "src/components/sidebar/worktree-card-surface.tsx:143-152"
+   ],
+   "note": "Badge de falha + dialog ligados."
+  },
+  {
+   "id": "D04a-017",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:150-157",
+    "src/components/sidebar/worktree-card-presentation.tsx:90"
+   ],
+   "note": "Badge primary fora do compacto, com tooltip."
+  },
+  {
+   "id": "D04a-018",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:159-170",
+    "src/components/sidebar/worktree-card-model.ts:129-140"
+   ],
+   "note": "Badge sparse existe; prévia depende de sparseDirectories propagado."
+  },
+  {
+   "id": "D04a-019",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:175-205",
+    "src/components/sidebar/worktree-card-presentation.tsx:111-114"
+   ],
+   "note": "Estrela + delete quick action existem; falta gate de legado."
+  },
+  {
+   "id": "D04a-020",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:314",
+    "src/components/sidebar/use-worktree-card-controller.ts:313"
+   ],
+   "note": "Linhas secundárias (conflito remoto/Linear/filhas) ausentes."
+  },
+  {
+   "id": "D04a-022",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:30-75",
+    "src/components/sidebar/worktree-card-header.tsx:117-118"
+   ],
+   "note": "Sem badge de não-lido sobre o glifo no novo estilo."
+  },
+  {
+   "id": "D04a-034",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardPortsTrigger.tsx:11-41",
+    "src/components/sidebar/worktree-card-presentation.tsx:147-151",
+    "src/components/sidebar/WorktreeSidebar.tsx:226-269"
+   ],
+   "note": "Gatilho de portas existe; feature interaction parcial."
+  },
+  {
+   "id": "D04a-035",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:190-246",
+    "src/components/sidebar/WorktreeList.tsx:377"
+   ],
+   "note": "Lista de portas no hover wired."
+  },
+  {
+   "id": "D04a-036",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx:111-122",
+    "src/components/sidebar/WorktreeSidebar.tsx:260-263"
+   ],
+   "note": "Ações de porta parciais (toasts/refresh)."
+  },
+  {
+   "id": "D04a-047",
+   "status": "missing",
+   "evidence": [
+    "src/hooks/use-clipboard-text-copy-feedback.ts:16-20",
+    "src/hooks/use-clipboard-text-copy-feedback.ts:65",
+    "src/App.tsx:3638"
+   ],
+   "note": "Cópia de link de work item sem desvincular não existe; só Copy Path/Commit."
+  },
+  {
+   "id": "D04a-052",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeContextMenu.tsx:19-31",
+    "src/components/sidebar/use-worktree-card-controller.ts:214-223",
+    "src/App.tsx:3533",
+    "src/App.tsx:4118-4124"
+   ],
+   "note": "Menu por worktree abre; supressão de clique fantasma parcial."
+  },
+  {
+   "id": "D04a-053",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3576",
+    "src/components/sidebar/worktree-card-header.tsx:175-205"
+   ],
+   "note": "Rename via PromptDialog; gate de contexto único ausente."
+  },
+  {
+   "id": "D04a-054",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3641-3645",
+    "src/components/sidebar/worktree-status-menu-items.tsx:16-38"
+   ],
+   "note": "PR63: submenu usa workspaceStatuses configurados e marca status atual (checked); falta variante multi-seleção."
+  },
+  {
+   "id": "D04a-055",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3306-3361",
+    "src/App.tsx:3549"
+   ],
+   "note": "Submenu Open in existe; ramos file-manager/settings incompletos."
+  },
+  {
+   "id": "D04a-056",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3306-3361"
+   ],
+   "note": "Abrir em editor/gerenciador com bloqueios/toasts parcial."
+  },
+  {
+   "id": "D04a-057",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3637"
+   ],
+   "note": "Copy Path existe; erros/feedback divergente."
+  },
+  {
+   "id": "D04a-058",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3639",
+    "src/App.tsx:3363-3365"
+   ],
+   "note": "Pin/Unpin derivado do estado; falta desabilitação durante exclusão."
+  },
+  {
+   "id": "D04a-059",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3640",
+    "src/App.tsx:3366-3368"
+   ],
+   "note": "Mark Read/Unread derivado do estado; falta desabilitação durante exclusão."
+  },
+  {
+   "id": "D04a-060",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:1342-1352"
+   ],
+   "note": "Criação de grupo por evento; origem rica do card ausente."
+  },
+  {
+   "id": "D04a-061",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:1353-1358"
+   ],
+   "note": "Mover para grupo parcial."
+  },
+  {
+   "id": "D04a-062",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:1359-1386"
+   ],
+   "note": "Remover do grupo parcial."
+  },
+  {
+   "id": "D04a-063",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3661-3664",
+    "src/App.tsx:4155-4174",
+    "src/components/sidebar/ParentPickerModal.tsx:14-189"
+   ],
+   "note": "Seletor de parent existe e wired."
+  },
+  {
+   "id": "D04a-064",
+   "status": "parity",
+   "evidence": [
+    "src/App.tsx:3477-3485"
+   ],
+   "note": "Abrir parent válido pelo menu."
+  },
+  {
+   "id": "D04a-065",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:3485"
+   ],
+   "note": "Sem remoção de parentesco em lote."
+  },
+  {
+   "id": "D04a-066",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3400",
+    "src/App.tsx:3548"
+   ],
+   "note": "Gate por Alt avaliado; submenu Developer completo ausente."
+  },
+  {
+   "id": "D04a-067",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3487-3491",
+    "src/App.tsx:3122-3127"
+   ],
+   "note": "Itens de sleep parciais."
+  },
+  {
+   "id": "D04a-068",
+   "status": "parity",
+   "evidence": [
+    "src/App.tsx:3694"
+   ],
+   "note": "Delete Worktree desabilitado no principal com tooltip."
+  },
+  {
+   "id": "D04a-069",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:3694",
+    "src/shared/keybindings/definitions-core-1.ts:84"
+   ],
+   "note": "Rótulo/atalho presentes; estado pendente parcial."
+  },
+  {
+   "id": "D04a-070",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:4155-4174",
+    "src/App.tsx:4118-4130"
+   ],
+   "note": "Overlays sobre o menu parciais."
+  },
+  {
+   "id": "D04a-071",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:4118-4130",
+    "src/components/sidebar/WorktreeContextMenu.tsx:13-32"
+   ],
+   "note": "Overlay montado junto do card; fragmento vazio parcial."
+  },
+  {
+   "id": "D04a-072",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeContextMenu.tsx:19-31",
+    "src/App.tsx:4118"
+   ],
+   "note": "Menu inerte quando fechado (guard de render)."
+  },
+  {
+   "id": "D04a-077",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:114-133",
+    "src/components/sidebar/use-worktree-card-controller.ts:190"
+   ],
+   "note": "onEditingChange trava o drag; ramo de consumo externo parcial."
+  },
+  {
+   "id": "D04a-078",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeCardAgents.tsx:201-213",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:176-232"
+   ],
+   "note": "Lista inline só quando há linhas (return null)."
+  },
+  {
+   "id": "D04a-080",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:176-232",
+    "src/components/sidebar/CompactAgentRow.tsx:87-180"
+   ],
+   "note": "Linha compacta existe; campos (cache timer/modelo) dormentes."
+  },
+  {
+   "id": "D04a-081",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:63-173",
+    "src/components/sidebar/worktree-card-agent-summary.ts:48-97"
+   ],
+   "note": "Resumo agrupado existe; contadores agregados parciais."
+  },
+  {
+   "id": "D04a-082",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:28-60"
+   ],
+   "note": "Container de expansão mantém conteúdo montado e inerte quando fechado."
+  },
+  {
+   "id": "D04a-083",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/CompactAgentRow.tsx:70-76",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:216-226",
+    "src/App.tsx:1850-1899"
+   ],
+   "note": "Ativação wired; validação de paneKey/linhas obsoletas parcial."
+  },
+  {
+   "id": "D04a-085",
+   "status": "missing",
+   "evidence": [
+    "src/store/slices/ui/ui-slice-agent-actions.ts:50",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:176-232"
+   ],
+   "note": "Sem modo de envio a agente nas linhas do card."
+  },
+  {
+   "id": "D04a-087",
+   "status": "partial",
+   "evidence": [
+    "src/store/index.ts:699-704",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:74-75"
+   ],
+   "note": "Persistência de expansão só no store em memória."
+  },
+  {
+   "id": "D04a-088",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:28-60"
+   ],
+   "note": "Supressão de scroll parcial; sem revelação do card no próximo frame."
+  },
+  {
+   "id": "D04a-092",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:191-193"
+   ],
+   "note": "Tick de 30s por lista não vazia (useNow enabled)."
+  },
+  {
+   "id": "D04a-093",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:3637-3639"
+   ],
+   "note": "Sem diálogo de edição de metadados."
+  },
+  {
+   "id": "D04a-094",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:3637-3639"
+   ],
+   "note": "Sem campo de nome com sugestões de emoji."
+  },
+  {
+   "id": "D04a-097",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:3637-3639"
+   ],
+   "note": "Sem campo de comentário/notas com markdown."
+  },
+  {
+   "id": "D04a-098",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:3637-3639"
+   ],
+   "note": "Sem payload de metadados qualificado por host."
+  },
+  {
+   "id": "D04a-100",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:152-157",
+    "src/components/sidebar/worktree-card-header.tsx:114-133"
+   ],
+   "note": "Título visível resolvido; títulos de issue/Linear/Jira/review ausentes."
+  },
+  {
+   "id": "D04a-101",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:2227",
+    "src/components/sidebar/WorktreeList.tsx:914",
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:36-52"
+   ],
+   "note": "Só GitHub via pr_status; supressão/multi-provedor ausentes."
+  },
+  {
+   "id": "D04a-105",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:910",
+    "src/lib/workspace-status-signals.ts:14"
+   ],
+   "note": "Sem seletores por worktree (pane/PTY/layout) com identidade estável."
+  },
+  {
+   "id": "D04a-106",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-model.ts:14",
+    "src/components/sidebar/worktree-card-model.ts:98",
+    "src/components/sidebar/worktree-card-model.ts:115-143"
+   ],
+   "note": "Modelo/defaults do card existe; helpers de estilo parcial."
+  },
+  {
+   "id": "D04a-109",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:369-392",
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:107-112",
+    "src/components/sidebar/WorktreeSidebar.tsx:847"
+   ],
+   "note": "Menu de exibição existe; propriedades/layout de agentes parcial."
+  },
+  {
+   "id": "D04a-110",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:369-392"
+   ],
+   "note": "Lista canônica existe em shared; rótulos no menu do card ausentes."
+  },
+  {
+   "id": "D04a-111",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/worktree-card-model.ts:14-113"
+   ],
+   "note": "Contrato de props existe no wrapper; hover completo ausente."
+  },
+  {
+   "id": "D04b-001",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:1931",
+    "src/App.tsx:1977-1981",
+    "src/App.tsx:4308-4314"
+   ],
+   "note": "Pós-delete: refreshGitWorktrees + refresh-projects; sem captura de sucessor/foco."
+  },
+  {
+   "id": "D04b-002",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:196",
+    "src/components/sidebar/CompactAgentRow.tsx:100",
+    "src/components/sidebar/WorktreeList.tsx:927-947"
+   ],
+   "note": "WorktreeList/WorktreeSidebar não passam activeSessionId; isFocusedPane sempre false."
+  },
+  {
+   "id": "D04b-004",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-header.tsx:187-199",
+    "src/components/sidebar/use-worktree-card-controller.ts:239",
+    "src/App.tsx:1931",
+    "src/components/DeleteWorktreeDialog.tsx:96-106",
+    "src-tauri/src/lib.rs:476"
+   ],
+   "note": "Fluxo de deleção existe (erro inline/force), sem máquina de toasts/waiver."
+  },
+  {
+   "id": "D04b-006",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:1931-1954",
+    "src/App.tsx:4308-4314"
+   ],
+   "note": "Resolução de targets em lote/validação de host ausentes."
+  },
+  {
+   "id": "D04b-007",
+   "status": "partial",
+   "evidence": [
+    "src/App.tsx:2002-2017",
+    "src/components/DeleteWorktreeDialog.tsx:165-176"
+   ],
+   "note": "Só dirty count via get_detailed_git_status_cmd; sem getRuntimeGitStatus/AbortController."
+  },
+  {
+   "id": "D04b-008",
+   "status": "partial",
+   "evidence": [
+    "src/lib/workspace-status-signals.ts:14",
+    "src/components/sidebar/WorktreeList.tsx:910",
+    "src/components/sidebar/WorktreeStatusIndicator.tsx:37"
+   ],
+   "note": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes."
+  },
+  {
+   "id": "D04b-009",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:910",
+    "src/lib/workspace-status-signals.ts:14"
+   ],
+   "note": "Sem batch selector com igualdade rasa."
+  },
+  {
+   "id": "D04b-010",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:162-186",
+    "src/components/sidebar/use-worktree-card-controller.ts:225-233",
+    "src/components/sidebar/worktree-card-header.tsx:113-135",
+    "src/App.tsx:3860-3877"
+   ],
+   "note": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op)."
+  },
+  {
+   "id": "D04b-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:72",
+    "src/components/sidebar/worktree-card-presentation.tsx:111-113",
+    "src/components/sidebar/worktree-card-header.tsx:187-199",
+    "src/shared/worktree/card-properties.ts:1"
+   ],
+   "note": "showUnreadQuickAction computado e não renderizado; cardProps não existe."
+  },
+  {
+   "id": "D04b-012",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:72-245",
+    "src/components/sidebar/use-worktree-card-controller.ts:304-319",
+    "src/components/sidebar/WorktreeList.tsx:927"
+   ],
+   "note": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded."
+  },
+  {
+   "id": "D04b-013",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/worktree-card-model.ts:124",
+    "src/components/sidebar/CacheTimer.tsx:18",
+    "src/store/slices/hosted-review.ts:2"
+   ],
+   "note": "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidores; sem polling no card."
+  },
+  {
+   "id": "D04b-014",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:152-158",
+    "src/components/sidebar/worktree-card-header.tsx:113-152",
+    "src/components/sidebar/worktree-card-meta-row.tsx:98"
+   ],
+   "note": "Título resolvido; badges de issue/PR e rótulos de loading ausentes."
+  },
+  {
+   "id": "D04b-015",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:914",
+    "src/App.tsx:2227",
+    "src/components/sidebar/WorktreeCardStatusLane.tsx:38",
+    "src/components/sidebar/WorktreeCardReviewBadge.tsx:29"
+   ],
+   "note": "Só GitHub via pr_status; suppression/caches multi-provedor não usados."
+  },
+  {
+   "id": "D04b-016",
+   "status": "missing",
+   "evidence": [
+    "src/components/sidebar/CacheTimer.tsx:10",
+    "src/components/sidebar/use-worktree-card-controller.ts:305",
+    "src/store/slices/ui/ui-slice-task-actions.ts:43"
+   ],
+   "note": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card."
+  },
+  {
+   "id": "D04b-017",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/use-worktree-card-controller.ts:239-245",
+    "src/components/sidebar/worktree-card-header.tsx:187-199",
+    "src/components/sidebar/WorktreeList.tsx:943-946"
+   ],
+   "note": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais."
+  },
+  {
+   "id": "D04b-022",
+   "status": "missing",
+   "evidence": [
+    "src/App.tsx:3576",
+    "src/App.tsx:3640",
+    "src/store/slices/worktrees/metadata/update-worktree-meta.ts:1"
+   ],
+   "note": "Sem update de metadados agrupado; rename/unread gravam direto."
+  },
+  {
+   "id": "D05-001",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:676-679",
+    "src/components/sidebar/SidebarAgentsList.tsx:22",
+    "src/components/sidebar/SidebarAgentsList.tsx:60"
+   ],
+   "note": "Alternância de corpo wired; lazy/scroll preservado do Orca ausentes."
+  },
+  {
+   "id": "D05-002",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx:52",
+    "src/store/slices/ui/ui-slice-preference-actions.ts:176-181"
+   ],
+   "note": "Persistência de preferências via uiPrefsBridge; partes locais só no slice."
+  },
+  {
+   "id": "D05-007",
+   "status": "partial",
+   "evidence": [
+    "src-tauri/src/agent_state.rs:14",
+    "src-tauri/src/lib.rs:866",
+    "src/shared/agent-status-freshness.ts:37",
+    "src/lib/agent-row-decay-state.ts:24",
+    "src/components/AgentStateDot.tsx:15"
+   ],
+   "note": "Freshness/decay existem; projeção completa por card parcial."
+  },
+  {
+   "id": "D05-013",
+   "status": "partial",
+   "evidence": [
+    "src/lib/worktree-activity-state.ts:32",
+    "src/components/sidebar/visible-worktrees.ts:293",
+    "src/components/sidebar/smart-attention.ts:19"
+   ],
+   "note": "smart-attention (PR45) alimenta visibilidade; ramos de atenção ainda parciais."
+  }
+ ]
+}
