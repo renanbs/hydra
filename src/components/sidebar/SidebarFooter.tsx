@@ -1,4 +1,7 @@
-import { Settings, GitCommit, Crosshair } from "lucide-react";
+import { Settings, GitCommit, Crosshair, Kanban } from "lucide-react";
+import { translate } from "@/i18n/i18n";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { GitRepoStatus } from "./types";
 
 interface SidebarFooterProps {
@@ -11,9 +14,13 @@ interface SidebarFooterProps {
    * body — the button is hidden when the agents list owns the viewport.
    */
   onRevealCurrent?: () => void;
+  /** Whether the workspace board panel is open (drives the trigger's pressed state). */
+  workspaceBoardOpen: boolean;
+  /** Orca SidebarToolbar parity: the board's only entry point, in the sidebar footer. */
+  onToggleWorkspaceBoard: () => void;
 }
 
-export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealCurrent }: SidebarFooterProps) {
+export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealCurrent, workspaceBoardOpen, onToggleWorkspaceBoard }: SidebarFooterProps) {
   return (
     <div className="h-8 border-t border-worktree-sidebar-border px-3 flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 font-mono bg-worktree-sidebar shrink-0">
       <button
@@ -36,6 +43,36 @@ export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealC
             <Crosshair className="size-3.5" />
           </button>
         )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant={workspaceBoardOpen ? "secondary" : "ghost"}
+              size="icon-xs"
+              aria-label={translate(
+                "auto.components.sidebar.SidebarToolbar.49f62c5665",
+                "Workspace board"
+              )}
+              aria-pressed={workspaceBoardOpen}
+              data-workspace-board-trigger=""
+              onClick={onToggleWorkspaceBoard}
+              className="text-muted-foreground"
+            >
+              <Kanban className="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={4}>
+            {workspaceBoardOpen
+              ? translate(
+                  "auto.components.sidebar.SidebarToolbar.a30e34eb5c",
+                  "Close workspace board"
+                )
+              : translate(
+                  "auto.components.sidebar.SidebarToolbar.49f62c5665",
+                  "Workspace board"
+                )}
+          </TooltipContent>
+        </Tooltip>
         {appVersion && (
           <span className="text-[10px] text-neutral-500" title={`Hydra v${appVersion}`}>v{appVersion}</span>
         )}

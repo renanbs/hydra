@@ -14,15 +14,13 @@ import { getDeleteStateForWorktreeHost } from "./worktree-delete-state-host-matc
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
-import { isInactiveWorkspace } from "../../lib/worktree-activity-state";
 import {
-  isAutomationGeneratedWorkspace,
-  isCliCreatedWorkspace,
-  isSleepingSweepExemptWorkspace,
-} from "./visible-worktree-kinds";
+  buildSidebarLiveActivityIndex,
+  isVisibleUnderSidebarMenuFilters,
+} from "./visible-worktree-filters";
 import { getGitHubPRCacheKey } from "@/store/slices/github-cache-key";
+import { buildHostIdByRepoId } from "./repo-execution-host-index";
 import {
-  getRepoExecutionHostId,
   normalizeExecutionHostScope,
   normalizeVisibleExecutionHostIds,
   type ExecutionHostId,
@@ -97,22 +95,6 @@ function pipelineCollapsedKeys(
   // Keys already carrying their prefix (`all`, `pinned`, `host:…`) pass through.
   for (const id of collapsedGroups) keys.add(id.includes(":") ? id : `project-group:${id}`);
   return keys;
-}
-
-/**
- * Host ownership per repo. The catalog→sidebar bridge drops host fields, so the
- * only host-aware source on the render path is the store's Orca-compat catalog;
- * when it is empty every repo stays local (exactly today's single-host list).
- */
-function buildHostIdByRepoId(repos: readonly Repo[]): Map<string, ExecutionHostId> {
-  const byRepoId = new Map<string, ExecutionHostId>();
-  for (const repo of repos) {
-    if (!repo?.id) continue;
-    if (repo.connectionId || repo.executionHostId) {
-      byRepoId.set(repo.id, getRepoExecutionHostId(repo));
-    }
-  }
-  return byRepoId;
 }
 
 /** Stable empty map: the store seeds no delete state, and a fresh `{}` would thrash memos. */
@@ -243,34 +225,6 @@ function toPipelineFolderWorkspace(workspace: {
     createdAt: 0,
     updatedAt: 0,
   };
-}
-
-/** Live-activity index the ported sleep sweep reads, built from Hydra's sessions. */
-function buildLiveActivityIndex(
-  sessions: readonly WorktreeSession[],
-  liveWorkspacePaths: ReadonlySet<string>
-): {
-  tabsByWorktree: Record<string, { id: string }[]>;
-  ptyIdsByTabId: Record<string, string[]>;
-  worktreeIdsWithLiveAgent: Set<string>;
-} {
-  const tabsByWorktree: Record<string, { id: string }[]> = {};
-  const ptyIdsByTabId: Record<string, string[]> = {};
-  const worktreeIdsWithLiveAgent = new Set<string>();
-  for (const session of sessions) {
-    const path = session.project_path;
-    if (!path) continue;
-    // Why: a closed terminal drops the tab (Orca's tabHasLivePty), so only paths
-    // with a mounted terminal get a tab entry — otherwise nothing ever sleeps.
-    if (liveWorkspacePaths.has(path)) {
-      tabsByWorktree[path] = [...(tabsByWorktree[path] ?? []), { id: session.id }];
-      ptyIdsByTabId[session.id] = ["live"];
-    }
-    if (session.state === "working" || session.state === "blocked" || session.state === "waiting") {
-      worktreeIdsWithLiveAgent.add(path);
-    }
-  }
-  return { tabsByWorktree, ptyIdsByTabId, worktreeIdsWithLiveAgent };
 }
 
 /** `prByPath` (Hydra's review display) → the Orca `prCache` shape PR lanes read. */
@@ -606,10 +560,7 @@ export function WorktreeList({
     );
     const pipelineFolderWorkspaces = folderWorkspaces.map(toPipelineFolderWorkspace);
 
-    const { tabsByWorktree, ptyIdsByTabId, worktreeIdsWithLiveAgent } = buildLiveActivityIndex(
-      sessions,
-      livePaths
-    );
+    const liveActivity = buildSidebarLiveActivityIndex(sessions, livePaths);
 
     const propWorktreeByPath = new Map<string, GitWorktreeInfo>();
     const propProjectById = new Map<string, HydraProject>();
@@ -634,19 +585,14 @@ export function WorktreeList({
           isUnread: unreadSet.has(worktree.path),
           status,
         });
-        // Menu filters (Orca's ported predicates, never a re-derived rule).
-        if (displayOptions.hideAutomationCreated && isAutomationGeneratedWorkspace(projected)) continue;
-        if (displayOptions.hideCliCreated && isCliCreatedWorkspace(projected)) continue;
+        // Menu filters (Orca's ported predicates, never a re-derived rule). Shared
+        // with the workspace board so both surfaces hide the same workspaces.
         if (
-          displayOptions.hideSleeping &&
-          !isSleepingSweepExemptWorkspace(projected, true) &&
-          isInactiveWorkspace(
-            projected.id,
-            tabsByWorktree,
-            ptyIdsByTabId,
-            {},
-            worktreeIdsWithLiveAgent
-          )
+          !isVisibleUnderSidebarMenuFilters({
+            worktree: projected,
+            displayOptions,
+            liveActivity,
+          })
         ) {
           continue;
         }

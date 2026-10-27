@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
+import { Check } from "lucide-react";
 import {
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -10,6 +11,8 @@ export interface ContextMenuItem {
   label: string;
   icon?: React.ReactNode;
   shortcut?: string;
+  /** Marks the item as the current choice (radio semantics, like the Radix menus). */
+  checked?: boolean;
   danger?: boolean;
   disabled?: boolean;
   separator?: boolean;
@@ -258,6 +261,7 @@ export function CustomContextMenu({ x, y, items, onClose }: CustomContextMenuPro
           }`}
         >
           <div className="flex items-center gap-2 min-w-0">
+            {item.checked && <Check className="w-3 h-3 shrink-0 text-accent-foreground" />}
             {item.icon && <span className="text-neutral-400 shrink-0">{item.icon}</span>}
             <span className="text-[11px] truncate">{item.label}</span>
           </div>

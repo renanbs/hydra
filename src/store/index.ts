@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core'
 
 import type { Repo } from '../shared/repo-types'
 import type { Worktree } from '../shared/worktree/types'
+import type { WorkspaceStatusDefinition } from '../shared/worktree/types'
 import { toWorktreeRow } from '../shared/worktree/worktree-row'
 import type { CreateWorktreeCallOptions } from './slices/worktrees/create/worktree-create-payload'
 import type { GitWorktreeInfo } from '../components/sidebar/types'
@@ -216,6 +217,10 @@ export interface AppState extends SshSlice {
   runtimeEnvironments: any
   runtimeTerminalQuickCommands: any
   sortBy: 'name' | 'smart' | 'recent' | 'repo' | 'manual'
+  /** User-defined workspace statuses (UI slice) — the workspace board's lanes. */
+  workspaceStatuses: WorkspaceStatusDefinition[]
+  /** Persisted workspace-board lane width (UI slice). */
+  workspaceBoardColumnWidth: number
   taskPageData: any
   unreadAgentCompletionPanes: any
   unreadTerminalTabs: any

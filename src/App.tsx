@@ -36,6 +36,8 @@ import {
 import { isShellProcess } from "./components/workbench/tab-agent";
 import { hydrateWorkspaceHostScopePreference, useAppStore } from "./store";
 import { hydrateSshTargets } from "./store/ssh-bridge";
+import { buildWorktreeStatusMenuItems } from "./components/sidebar/worktree-status-menu-items";
+import { cloneDefaultWorkspaceStatuses } from "./shared/workspace-statuses";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraNavId } from "./components/SettingsModal";
@@ -111,7 +113,6 @@ import {
   MoreHorizontal,
   Hash,
   Terminal,
-  Kanban,
 } from "lucide-react";
 import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
@@ -3504,6 +3505,8 @@ export default function App() {
   };
 
   const handleWorktreeContextMenu = (e: React.MouseEvent, wt: GitWorktreeInfo, proj: HydraProject) => {
+    // Same source the sidebar pipeline and the workspace board read (`state.workspaceStatuses`).
+    const workspaceStatuses = useAppStore.getState().workspaceStatuses ?? cloneDefaultWorkspaceStatuses();
     const isMain = wt.path === proj.path;
     const isPinned = pinnedWorktrees.has(wt.path);
     const isUnread = unreadWorktrees.has(wt.path);
@@ -3626,43 +3629,11 @@ export default function App() {
         { label: "Copy Commit", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) },
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(wt.path) },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(wt.path) },
-        {
-          label: "Status",
-          icon: <Kanban className="w-3.5 h-3.5" />,
-          children: [
-            {
-              label: "Blocked",
-              icon: <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("blocked"),
-            },
-            {
-              label: "Waiting",
-              icon: <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("waiting"),
-            },
-            {
-              label: "Working",
-              icon: <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("working"),
-            },
-            {
-              label: "Done",
-              icon: <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("done"),
-            },
-            {
-              label: "Idle",
-              icon: <span className="w-2 h-2 rounded-full bg-neutral-400 shrink-0" />,
-              onClick: () => handleAssignWorktreeStatus("idle"),
-            },
-            {
-              label: "Clear Status",
-              separator: true,
-              onClick: () => handleAssignWorktreeStatus(null),
-            },
-          ],
-          onClick: () => {},
-        },
+        buildWorktreeStatusMenuItems({
+          workspaceStatuses,
+          currentStatus: wt.status ?? null,
+          onAssignStatus: handleAssignWorktreeStatus,
+        }),
         {
           label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
           icon: <FolderTree className="w-3.5 h-3.5" />,
