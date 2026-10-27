@@ -12,6 +12,10 @@ import { useWorkspaceBoardLaneHydration } from './use-workspace-board-lane-hydra
 import WorkspaceBoardStatusLane from './WorkspaceBoardStatusLane'
 import { registerWorkspaceBoardVirtualLaneLayout } from './workspace-board-virtual-lane-layout'
 import {
+  registerWorkspaceBoardSidebarDropBoard,
+  useWorkspaceBoardSidebarDropTargetStatus
+} from './workspace-board-sidebar-drop'
+import {
   WORKSPACE_BOARD_LANE_GAP,
   WORKSPACE_BOARD_LANE_OVERSCAN,
   extractWorkspaceBoardLaneRange
@@ -120,6 +124,15 @@ export default function WorkspaceBoardLaneGrid({
       getMeasurements: () => laneVirtualizer.measurementsCache
     })
   }, [boardRef, laneVirtualizer])
+  // Why gated on `open`: the sheet lingers through its close animation, and a board the
+  // user dismissed must not stay a destination for the sidebar list's drag.
+  useLayoutEffect(() => {
+    const gridElement = boardRef.current
+    if (!gridElement || !open) {
+      return
+    }
+    return registerWorkspaceBoardSidebarDropBoard({ boardElement: gridElement })
+  }, [boardRef, open])
 
   const virtualLanes = laneVirtualizer.getVirtualItems()
   const windowLaneIds = useMemo(
@@ -131,6 +144,10 @@ export default function WorkspaceBoardLaneGrid({
     [laneStatusIds, virtualLanes]
   )
   const hydratedLaneIds = useWorkspaceBoardLaneHydration({ open, laneIds: windowLaneIds })
+  // Why the fallback: a sidebar-list drag publishes its destination lane here — the two
+  // drags are one gesture apart, so whichever is live is the lane that paints.
+  const sidebarDropTargetStatus = useWorkspaceBoardSidebarDropTargetStatus()
+  const laneDropTargetStatus = dropTargetStatus ?? sidebarDropTargetStatus
 
   return (
     <div
@@ -172,7 +189,7 @@ export default function WorkspaceBoardLaneGrid({
               renderCards={hydratedLaneIds.has(lane.status.id)}
               columnWidth={columnWidth}
               compactCards={compactCards}
-              isDropTarget={dropTargetStatus === lane.status.id}
+              isDropTarget={laneDropTargetStatus === lane.status.id}
               onActivate={onActivate}
               onSelectSession={onSelectSession}
               onContextMenu={onContextMenu}

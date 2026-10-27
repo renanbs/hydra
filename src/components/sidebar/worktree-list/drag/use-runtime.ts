@@ -2,6 +2,7 @@
 // Source: orca/src/renderer/src/components/sidebar/worktree-list/drag/use-runtime.ts
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { setSidebarPointerDragDocumentStyles } from '../pointer-drag-dom'
+import { clearWorkspaceBoardSidebarDropTargetVisual } from '../../workspace-board/workspace-board-sidebar-drop'
 import {
   WORKTREE_ROW_DRAG_INITIAL_STATE,
   type WorktreePointerDrag,
@@ -45,6 +46,9 @@ export function useWorktreeDragRuntime(): WorktreeDragRuntime {
   const clearWorktreeDrag = useCallback(() => {
     const drag = worktreePointerDragRef.current
     cancelWorktreePointerAutoscroll()
+    // Why outside the `drag` guard: the board's highlight and insertion line live in the
+    // board's own DOM, so a stale one has no other owner to take it down.
+    clearWorkspaceBoardSidebarDropTargetVisual()
     if (drag) {
       if (drag.frameId !== null) {
         window.cancelAnimationFrame(drag.frameId)

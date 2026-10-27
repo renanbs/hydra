@@ -349,6 +349,7 @@ describe("the painted list with sticky headers", () => {
         onToggleProjectCollapse={vi.fn()}
         onToggleGroupCollapse={vi.fn()}
         onReorderWorktreesInGroup={onReorderWorktreesInGroup}
+        onAssignWorktreeStatus={vi.fn()}
       />
     );
     // Measurement and the first windowed render settle inside these frames.
