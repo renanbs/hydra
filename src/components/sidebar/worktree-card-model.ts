@@ -3,6 +3,7 @@ import type React from 'react'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus, WorktreeSession } from './types'
 import type { WorktreeStatus } from '../../lib/worktree-status'
 import type { PrDisplay } from './pr-display'
+import type { WorktreeDeleteState } from '../../store/slices/worktree-delete-state-types'
 
 export type WorktreeRenameRequest = {
   worktreeId: string
@@ -64,6 +65,21 @@ export interface WorktreeCardProps {
   onDragEnd?: () => void
   onDelete?: (wt: GitWorktreeInfo, proj: HydraProject) => void
   onRename?: (newTitle: string) => Promise<void> | void
+  /**
+   * Host-qualified delete state for THIS row (Orca `deleteStateByWorktreeId`).
+   * The card paints its in-place delete overlay from it instead of latching a
+   * local flag, so cancelling or failing the confirmation dialog releases the
+   * card the moment the state is cleared (D04a G5).
+   */
+  deleteState?: WorktreeDeleteState | null
+  /**
+   * Inline-rename request for THIS row (Orca `renamingWorktreeId`), published by
+   * the sidebar keyboard path for `workspace.rename` (D04a G9). The card opens
+   * its inline editor when the request names it, then clears it.
+   */
+  renameRequest?: WorktreeRenameRequest | null
+  /** Clears the external rename request once the card begins editing. */
+  onRenameRequestConsumed?: () => void
   nativeDragEnabled?: boolean
   affiliateListMode?: boolean
   statusPrDisplay?: unknown | null

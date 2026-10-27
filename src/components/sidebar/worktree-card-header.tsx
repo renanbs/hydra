@@ -55,7 +55,7 @@ export function WorktreeCardHeader({
     showUnreadEmphasis,
     setTitleRenaming,
     handleRenameTitle,
-    renamingWorktreeId,
+    renameRequest,
     setRenamingWorktreeId,
     titleRenaming,
     handleOpenRenameErrorDialog,
@@ -123,11 +123,13 @@ export function WorktreeCardHeader({
           onRename={handleRenameTitle}
           beginEditing={
             !affiliateListMode &&
-            shouldBeginWorktreeRename(
-              renamingWorktreeId ? { worktreeId: renamingWorktreeId } : null,
-              worktree.id || worktree.path,
-              renameRowKey
-            )
+            // Why: entering rename mode flips `titleRenaming`, which swaps the
+            // card's hover wrapper and remounts this header — the inline editor's
+            // local `editing` state would be lost, so the card-level flag re-opens
+            // it on the remount (double-click and `workspace.rename` both rely on
+            // this; without it rename from the card is a no-op).
+            (titleRenaming ||
+              shouldBeginWorktreeRename(renameRequest, worktree.id || worktree.path, renameRowKey))
           }
           onBeginEditingConsumed={affiliateListMode ? undefined : () => setRenamingWorktreeId?.(null)}
         />

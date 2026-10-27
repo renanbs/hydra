@@ -62,6 +62,18 @@ export interface DeleteWorktreeDialogProps {
   liveWorktrees?: readonly WorktreeDeleteLiveTarget[];
   /** Fired when a confirmed target no longer matches the live list. */
   onStaleTargets?: () => void;
+  /**
+   * Publishes the in-progress state for the confirmed rows as the removal is
+   * dispatched, so the sidebar card paints its overlay while it runs (Orca
+   * `markWorktreesDeleting`, called by `runWorktreeDeletesInParallel`).
+   */
+  onDeleteStart?: (targets: readonly WorktreeDeleteIdentity[]) => void;
+  /**
+   * Releases what `onDeleteStart` published once every invoke settled — success,
+   * backend refusal or failure. Without it a refused removal would leave the card
+   * inert (the regression this dialog's own state cannot clear).
+   */
+  onDeleteSettled?: (targets: readonly WorktreeDeleteIdentity[]) => void;
 }
 
 export function DeleteWorktreeDialog({
@@ -78,6 +90,8 @@ export function DeleteWorktreeDialog({
   deleteTargets,
   liveWorktrees,
   onStaleTargets,
+  onDeleteStart,
+  onDeleteSettled,
 }: DeleteWorktreeDialogProps) {
   const [dontAskAgain, setDontAskAgain] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -199,6 +213,9 @@ export function DeleteWorktreeDialog({
     const deletedPaths: string[] = [];
     const failures: { path: string; error: string }[] = [];
     let pending = payloads.length;
+    // Orca `markWorktreesDeleting`: the sidebar card owns the in-progress feedback,
+    // so publish before the first invoke leaves the renderer.
+    onDeleteStart?.(identities);
     for (const payload of payloads) {
       // Why: `hostId` rides along so the backend can route a destructive removal
       // to the host the user confirmed (STA-4343); the payload stays path-complete
@@ -219,6 +236,9 @@ export function DeleteWorktreeDialog({
           pending -= 1;
           if (pending === 0) {
             setIsDeletingLocal(false);
+            // Release the card in the same settle that stops the dialog spinner:
+            // a refused removal must leave the row clickable again.
+            onDeleteSettled?.(identities);
             if (failures.length === 0) {
               onClose();
               if (deletedPaths.length > 0) onDeleted(deletedPaths);

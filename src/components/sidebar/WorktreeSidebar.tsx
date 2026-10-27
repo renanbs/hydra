@@ -65,6 +65,7 @@ export function WorktreeSidebar({
   onDeleteGitWorktree,
   onNewSessionWithAgent: _onNewSessionWithAgent,
   onRenameWorktreeTitle,
+  deleteStateByWorktreeId,
   onDeleteSession,
   onOpenSettings,
   onOpenGlobalSettings,
@@ -735,6 +736,7 @@ export function WorktreeSidebar({
               onDeleteGitWorktree={onDeleteGitWorktree}
               onSelectSession={onSelectSession}
               onRenameWorktreeTitle={onRenameWorktreeTitle}
+              deleteStateByWorktreeId={deleteStateByWorktreeId}
               onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
               onOpenAddRepoDialog={onOpenAddRepoDialog}
               onClearFilter={() => setFilter("")}

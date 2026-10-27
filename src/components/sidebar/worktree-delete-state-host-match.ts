@@ -6,6 +6,16 @@ import type { Worktree } from '../../shared/worktree/types'
 import type { WorktreeDeleteState } from '../../store/slices/worktree-delete-state-types'
 import { getWorktreeHostIdentity } from '../../shared/worktree/host-qualified-identity'
 
+/**
+ * Write-side counterpart of the read below (Orca `getDeleteStateTargetKey`): a row
+ * that knows its host publishes under the host-qualified identity, while an
+ * unqualified row keeps the bare id its read path falls back to. Publishing a
+ * hosted row under the bare id would light its sibling on the other host.
+ */
+export function getDeleteStateKeyForWorktreeHost(worktree: Pick<Worktree, 'id' | 'hostId'>): string {
+  return worktree.hostId ? getWorktreeHostIdentity(worktree) : worktree.id
+}
+
 export function getDeleteStateForWorktreeHost(
   worktree: Pick<Worktree, 'id' | 'hostId'>,
   states: Readonly<Record<string, WorktreeDeleteState | undefined>>
