@@ -190,6 +190,32 @@ describe('workspace board card drop commit target', () => {
       })
     ).toBe(nothing)
   })
+
+  it('keeps the pin strip as the target when the release trails it by a few pixels', () => {
+    const pin: WorkspaceBoardCardDropTarget = { status: null, dropIndex: 0, isPinDrop: true }
+
+    expect(
+      resolveWorkspaceBoardCardDropCommitTarget({
+        currentTarget: nothing,
+        latestTrackedTarget: { target: pin, x: 500, y: -32 },
+        x: 503,
+        y: -30
+      })
+    ).toBe(pin)
+  })
+
+  it('refuses to resurrect the pin strip the pointer left', () => {
+    const pin: WorkspaceBoardCardDropTarget = { status: null, dropIndex: 0, isPinDrop: true }
+
+    expect(
+      resolveWorkspaceBoardCardDropCommitTarget({
+        currentTarget: nothing,
+        latestTrackedTarget: { target: pin, x: 500, y: -32 },
+        x: 500,
+        y: 600
+      })
+    ).toBe(nothing)
+  })
 })
 
 describe('workspace board card drop target from the board DOM', () => {

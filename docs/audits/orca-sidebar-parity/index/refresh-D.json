@@ -272,11 +272,13 @@
   },
   {
    "id": "D08-028",
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:4-18"
+    "src/components/sidebar/workspace-board/WorkspaceBoardPinDropTarget.tsx:41-47",
+    "src/components/sidebar/workspace-board/workspace-board-pin-drop-target.ts:1",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:1"
    ],
-   "note": "Alvo de drop so por raia de status; sem data-workspace-pin-drop-target/feedback de pin."
+   "note": "Faixa de pin portada acima da grade (aparência/copy/atributo do Orca) ligada ao drag por ponteiro existente: hover destaca e apaga raia alvo/linha, soltar fixa via o caminho único de flags e NAO muda status; o drag da lista tambem mira a faixa com data-workspace-board-external-drag-target."
   },
   {
    "id": "D08-029",

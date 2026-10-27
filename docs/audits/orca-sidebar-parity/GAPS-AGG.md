@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 344 capabilities
+## MISSING — 343 capabilities
 
 
 ### D01-shell-chrome (29)
@@ -293,7 +293,7 @@
 - **D07-042** — Geração de mensagens e descrições explicativas de falhas de exclusão com orientações de recuperação específicas | falta: Instrução 'git worktree unlock <path>' para worktree locked com razão estruturada; Orientações para orphan directory, PTYs não paradas, sessões de agente ativas, registro ausente e dirty worktree; Separação entre confirmação comprovada e não confirmada de parada de PTY/agente | components/sidebar/delete-worktree-toast.ts:16
 - **D07-043** — Correspondência precisa de estado de deleção qualificado por host para suporte a múltiplos hosts com mesmo ID | falta: Chave qualificada por host (getWorktreeHostIdentity); Fallback legado por id puro com verificação de executionHostId; Isolamento entre exclusão em host SSH e checkout local de mesmo caminho | components/sidebar/worktree-delete-state-host-match.ts:5
 
-### D08-kanban-board (15)
+### D08-kanban-board (14)
 
 - **D08-002** — Pré-visualização e solidificação do painel Kanban a partir de drag da barra lateral | falta: Ativa workspaceBoardDragPreviewOpen sem telemetria até solidificar; Solidifica a abertura convertendo preview em abertura definitiva + telemetria; Cancela a pré-visualização se o drag for abortado/sair sem drop | components/sidebar/useWorkspaceBoardPanel.ts:87
 - **D08-004** — Descarte do board por interação fora da área (outside dismiss) preservando aberturas de menus e modais | falta: Calcula bounding rect do sheet content e descarta o board em clique à direita do painel; Preserva abertura via preserveOpenForMenu; Preserva abertura para isWorkspaceBoardKeepOpenTarget (gatilhos, popovers, context menus, dropdowns, dialogs, toasts, tour); Ignora cliques à esquerda da borda viva do sheet | components/sidebar/use-workspace-kanban-outside-dismiss.ts:4
@@ -304,7 +304,6 @@
 - **D08-017** — Adição de novos status no Kanban com geração dinâmica de ID único | falta: Adiciona novo status ao final com label 'Status N'; Gera ID único via makeWorkspaceStatusId; Registra interação de feature workspace-board-actions no store | components/sidebar/WorkspaceKanbanSettingsMenu.tsx:191
 - **D08-018** — Ações e persistência de alterações de status (renomear, cor, ícone) com registro de telemetria | falta: Renomeia status aplicando trim e ignorando entradas vazias; Atualiza cor personalizada do status; Atualiza ícone do status; Persiste a lista no store e registra interação workspace-board-actions | components/sidebar/use-workspace-kanban-status-actions.ts:13
 - **D08-026** — Publicação e serialização de IDs completos da raia via canal DOM com delimitador NUL | falta: Serializa IDs completos da raia com delimitador NUL (WORKSPACE_LANE_FULL_IDS_DELIMITER); Publica data-workspace-lane-full-ids na raia apenas sob busca ativa; Permite que drops da sidebar conheçam a lista completa de IDs da raia; Faz parsing seguro distinguindo raia não publicada de raia vazia | components/sidebar/WorkspaceKanbanStatusLane.tsx:68
-- **D08-028** — Alvo de drop para fixação de cards (Pin Drop Target) com feedback visual de hover | falta: Área tracejada acima das raias com ícone Pin e texto 'Pinned - Drop here to pin without changing status.'; Destaca borda/fundo quando isDragOver ou data-workspace-board-external-drag-target; Encaminha onDragOver/onDragLeave ao manipulador de drag | components/sidebar/WorkspaceKanbanPinDropTarget.tsx:12
 - **D08-039** — Tradução de índice de drop sob filtro de busca para a lista completa da raia | falta: Mapeia índice de drop dos cards visíveis para a posição na lista completa da raia; Retorna o índice direto quando a raia não está filtrada; Append ao final quando todos os cards da raia estão filtrados; Mapeia inserção antes do primeiro / após o último item visível para a raia cheia | components/sidebar/workspace-kanban-filtered-drop-index.ts:33
 - **D08-040** — Integração de drop vindo da barra lateral para o Kanban com registro de grupos e destaque visual | falta: Registra grupos lógicos (registerWorkspaceKanbanSidebarDropGroups) com o drawer aberto; Verifica se o ponto do ponteiro está dentro da superfície do sheet do Kanban; Destaca a raia alvo (data-workspace-board-external-drag-target) e posiciona a linha indicadora; Traduz índices virtuais/filtrados na fronteira de commit | components/sidebar/workspace-kanban-sidebar-drop.ts:32
 - **D08-043** — Sincronização de status de tarefas com Linear via hook com notificações toast de sucesso/aviso/erro | falta: Valida a preferência syncTaskStatusFromWorkspaceBoard e monta a requisição; Sincroniza de forma assíncrona em background; Toast 'Task status sync skipped' com motivo (issue não lida, estado não encontrado, múltiplos estados); Toast 'Task status sync failed' em falha de mutação/erro do provedor | components/sidebar/use-workspace-board-task-status-sync.ts:13

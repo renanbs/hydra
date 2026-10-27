@@ -343,6 +343,12 @@ export interface WorktreeListProps {
    * board and the context menu share one writer (D08-002/D08-040).
    */
   onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
+  /**
+   * The app's own pin write (`set_worktree_flags` with `is_pinned`). A sidebar row dragged
+   * onto an open workspace board's pin strip commits through it, so the board strip and the
+   * row menu share one writer (D08-028).
+   */
+  onPinWorktreePaths: (worktreePaths: readonly string[]) => void;
   draggedProjectId?: string | null;
   projectDropTarget?: { id: string; position: "top" | "bottom" } | null;
   groupDropTargetId?: string | null;
@@ -492,6 +498,7 @@ export function WorktreeList({
   scrollRef,
   onReorderWorktreesInGroup,
   onAssignWorktreeStatus,
+  onPinWorktreePaths,
   draggedProjectId,
   projectDropTarget,
   groupDropTargetId,
@@ -807,6 +814,22 @@ export function WorktreeList({
       }
     },
     [dragWorktreeById, onAssignWorktreeStatus]
+  );
+
+  // ─── Pointer-drag pin-strip drop → the panel's pin writer ──────────────────
+  //
+  // The same id→path bridge, for the board's pin strip: the drag speaks row ids, the app's
+  // pin writer speaks workspace paths. One writer for both the strip and the row menu.
+  const handlePinWorktrees = useCallback(
+    (worktreeIds: readonly string[]) => {
+      const worktreePaths: string[] = [];
+      for (const worktreeId of worktreeIds) {
+        const entry = dragWorktreeById.get(worktreeId);
+        if (entry) worktreePaths.push(entry.worktree.path);
+      }
+      if (worktreePaths.length > 0) onPinWorktreePaths(worktreePaths);
+    },
+    [dragWorktreeById, onPinWorktreePaths]
   );
 
   // Same contract as Orca `use-selection`: publish before paint so Cmd+1–9 matches
@@ -1271,6 +1294,7 @@ export function WorktreeList({
       scrollRef={viewportScrollRef}
       onReorderWorktrees={handlePointerGroupReorder}
       onAssignWorktreesStatus={handleAssignWorktreesStatus}
+      onPinWorktrees={handlePinWorktrees}
     >
       <VirtualizedWorktreeViewport
         rows={rows}

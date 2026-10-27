@@ -27,4 +27,10 @@ export type WorktreeDropCommitContext = {
    * status column, and the panel bridges the ids onto the app's single status writer.
    */
   onAssignWorktreesStatus: (worktreeIds: readonly string[], status: string) => void
+  /**
+   * Pins the dragged workspaces without touching their status. The board's pin strip drop
+   * (D08-028) is its only caller, and the panel bridges the ids onto the app's single pin
+   * writer — the same one the row menu uses.
+   */
+  onPinWorktrees: (worktreeIds: readonly string[]) => void
 }
