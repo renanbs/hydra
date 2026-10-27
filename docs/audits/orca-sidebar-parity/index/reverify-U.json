@@ -1,0 +1,16 @@
+{
+ "group": "U",
+ "generatedFrom": "2026-10-21 hidden-worktree recovery list: virtualized above ten rows with a shared row component and an accessible per-row name",
+ "rows": [
+  {
+   "id": "D02c-001",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:46-120",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:819-870",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-190"
+   ],
+   "note": "Search stays, rows above ten render through react-window, and each Show button is named 'Show <branch> at <path>'."
+  }
+ ]
+}

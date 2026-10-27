@@ -100,6 +100,7 @@ export function useWorktreePointerDrag(args: {
         draggingWorktreeId: drag.worktreeId,
         dropIndex: null,
         dropIndicatorY: null,
+        lineageDropTargetId: null,
         previewOffsetsByWorktreeId: EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
       })
       startWorktreePointerAutoscroll()
@@ -161,6 +162,7 @@ export function useWorktreePointerDrag(args: {
         preview: null,
         previewOffsetX: 0,
         previewOffsetY: 0,
+        reorderIntent: null,
         frameId: null
       }
     },

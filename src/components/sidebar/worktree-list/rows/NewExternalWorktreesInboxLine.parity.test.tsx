@@ -123,3 +123,21 @@ describe("NewExternalWorktreesInboxLine (Orca parity)", () => {
     expect(screen.getByText("openclaw")).toBeInTheDocument();
   });
 });
+
+
+describe("NewExternalWorktreesInboxLine action errors", () => {
+  it("shows the inbox error catalog message in an alert", () => {
+    render(
+      <NewExternalWorktreesInboxLine
+        repoDisplayName="hydra"
+        hiddenWorktrees={[{ path: "/repo/wt/a", branch: "a", head_commit: "x", is_bare: false, is_locked: false }]}
+        promptDismissedAt={1}
+        onReview={() => {}}
+        error="Could not import external worktrees. Try again."
+      />
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Could not import external worktrees. Try again."
+    );
+  });
+});

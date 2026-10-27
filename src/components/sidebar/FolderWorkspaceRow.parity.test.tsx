@@ -49,7 +49,8 @@ describe("FolderWorkspaceRow (Orca parity)", () => {
     expect(working.container.querySelector("span.animate-spin")).not.toBeNull();
 
     const permission = renderRow({ status: "permission" });
-    expect(permission.container.querySelector("svg.text-amber-500")).not.toBeNull();
+    // Orca paints the shared AgentQuestionIcon (`text-agent-question`), not a raw lucide glyph.
+    expect(permission.container.querySelector("svg.text-agent-question")).not.toBeNull();
   });
 
   it("shows the FolderX badge only when the folder is gone", () => {

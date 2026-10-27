@@ -7,6 +7,7 @@ import type {
   WorktreeVisibilitySourcePreferences,
 } from "../../lib/worktree-visibility-sources";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
 import type { AgentSubagentSnapshot } from "./agent-status-types";
 import type { ProjectGroup } from "./worktree-list/types";
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
@@ -37,6 +38,8 @@ export interface SidebarPrefsSnapshot {
   displayOptions?: WorkspaceDisplayOptions;
   agentsReadFilter?: AgentsStatusFilter;
   agentsGroupBy?: AgentsGroupBy;
+  /** Set once the one-time Agents-view intro popover has been acknowledged (D01-009). */
+  agentsSidebarIntroShown?: boolean;
   /** Sidebar host filter scope; `'all'` = mixed view. */
   workspaceHostScope?: WorkspaceHostScope;
   /** Sidebar host filter ids; `null` = all hosts (sticky). */
@@ -51,6 +54,7 @@ export interface SidebarShellPrefs {
   displayOptions: WorkspaceDisplayOptions;
   agentsReadFilter: AgentsStatusFilter;
   agentsGroupBy: AgentsGroupBy;
+  agentsSidebarIntroShown: boolean;
 }
 
 export interface AvailableAgent {
@@ -244,6 +248,19 @@ export interface WorktreeSidebarProps {
   onReorderSessions?: (sessions: WorktreeSession[]) => void;
   onReorderProjects?: (projects: HydraProject[]) => void;
   onReorderWorktrees?: (worktrees: GitWorktreeInfo[], projectPath?: string) => void;
+  /** Persisted lineage (`childPath -> parentPath`) owned by the app. */
+  lineageByPath?: Readonly<Record<string, string>>;
+  /** Persisted notes/linked work items, keyed by checkout path. */
+  worktreeMetadataByPath?: WorktreeMetadataByPath;
+  /** Opens the metadata editor for one painted row. */
+  onEditWorktreeMetadata?: (worktree: GitWorktreeInfo) => void;
+  /** Commits a nest drag: parent and child checkout paths inside one project. */
+  onAssignWorktreeParent?: (
+    parentWorktreePath: string,
+    childWorktreePaths: readonly string[]
+  ) => void;
+  /** Detaches nested workspaces dragged onto a reorder line. */
+  onUnnestWorktrees?: (childWorktreePaths: readonly string[]) => void;
   pinnedProjects?: Set<string>;
   unreadProjects?: Set<string>;
   pinnedWorktrees?: Set<string>;
@@ -280,5 +297,6 @@ export interface WorktreeSidebarProps {
   initialDisplayOptions?: WorkspaceDisplayOptions;
   initialAgentsReadFilter?: AgentsStatusFilter;
   initialAgentsGroupBy?: AgentsGroupBy;
+  initialAgentsIntroShown?: boolean;
   onSidebarPrefsChange?: (prefs: SidebarShellPrefs) => void;
 }

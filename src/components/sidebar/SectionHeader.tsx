@@ -36,6 +36,8 @@ export interface GroupSectionHeaderProps {
   onDragOver?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent) => void;
+  /** Estimated section bottom in virtual-row pixels (drag preview bounds). */
+  sectionEnd?: number;
   className?: string;
 }
 
@@ -57,6 +59,8 @@ export interface RepoSectionHeaderProps {
   onDragOver?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent) => void;
   onDragEnd?: (e: React.DragEvent) => void;
+  /** Estimated section bottom in virtual-row pixels (drag preview bounds). */
+  sectionEnd?: number;
   className?: string;
   inGroup?: boolean;
 }
@@ -81,6 +85,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
   onDragOver,
   onDragLeave,
   onDrop,
+  sectionEnd,
   className = "",
 }: Omit<GroupSectionHeaderProps, "variant">): React.JSX.Element {
   const handleClick = useCallback(
@@ -107,6 +112,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       aria-expanded={!isCollapsed}
       aria-label={`Project Group ${group.name}`}
       data-section-header-id={sectionKey}
+      data-project-group-header-section-end={sectionEnd}
       className={cn(
         "group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
         isDropTarget && "bg-worktree-sidebar-accent ring-1 ring-worktree-sidebar-ring/40",
@@ -226,6 +232,7 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
   onDragOver,
   onDrop,
   onDragEnd,
+  sectionEnd,
   className = "",
   inGroup = false,
 }: Omit<RepoSectionHeaderProps, "variant">): React.JSX.Element {
@@ -289,6 +296,7 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
         aria-expanded={!isCollapsed}
         aria-label={`Project ${project.displayName || project.name}`}
         data-repo-header-id={project.id}
+      data-repo-header-section-end={sectionEnd}
         className="flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
         style={{
           paddingLeft: inGroup

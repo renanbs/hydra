@@ -49,6 +49,8 @@ import {
   persistWorktreeStatusBatch,
 } from "./lib/worktree-status-persistence";
 import { cloneDefaultWorkspaceStatuses } from "./shared/workspace-statuses";
+import { keybindingMatchesAction } from "./shared/keybindings";
+import { getShortcutPlatform } from "./lib/shortcut-platform";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraNavId } from "./components/SettingsModal";
@@ -81,6 +83,14 @@ import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
+import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
+import { WorktreeMetaDialog } from "./components/sidebar/WorktreeMetaDialog";
+import { SIDEBAR_REVEAL_REQUEST_EVENT } from "./components/sidebar/use-worktree-reveal-body-redirect";
+import type {
+  WorktreeMetadataByPath,
+  WorktreeMetadataDraft,
+  WorktreeMetadataRecord,
+} from "./components/sidebar/worktree-metadata-types";
 import { getDeleteStateKeyForWorktreeHost } from "./components/sidebar/worktree-delete-state-host-match";
 import type { WorktreeDeleteState } from "./store/slices/worktree-delete-state-types";
 import type { ExecutionHostId } from "./shared/execution-host";
@@ -199,13 +209,14 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
   // resultado é um objeto fresco (nunca o blob mutado). filterProjectIds preenche
   // ausente/malformado com [] — mesma guarda do reader antigo do Shell.
   const src = value as Record<keyof WorkspaceDisplayOptions, unknown>;
-  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead } = src;
+  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch } = src;
   if (groupBy !== "none" && groupBy !== "workspace-status" && groupBy !== "repo") return undefined;
   if (sortBy !== "agent-activity" && sortBy !== "name" && sortBy !== "recent") return undefined;
   if (
     typeof hideSleeping !== "boolean" || typeof hideDefaultBranch !== "boolean" ||
     typeof hideAutomationCreated !== "boolean" || typeof hideCliCreated !== "boolean" ||
-    typeof hideDetachedHead !== "boolean"
+    typeof hideDetachedHead !== "boolean" ||
+    (alwaysShowDefaultBranch !== undefined && typeof alwaysShowDefaultBranch !== "boolean")
   ) {
     return undefined;
   }
@@ -217,6 +228,7 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
     hideAutomationCreated,
     hideCliCreated,
     hideDetachedHead,
+    alwaysShowDefaultBranch: alwaysShowDefaultBranch === true,
     filterProjectIds: asStringArrayPref(src.filterProjectIds) ?? [],
   };
 }
@@ -254,6 +266,7 @@ function sanitizeSidebarPrefsSnapshot(input: unknown): SidebarPrefsSnapshot {
     out.agentsReadFilter = src.agentsReadFilter;
   }
   if (src.agentsGroupBy === "state" || src.agentsGroupBy === "project") out.agentsGroupBy = src.agentsGroupBy;
+  if (typeof src.agentsSidebarIntroShown === "boolean") out.agentsSidebarIntroShown = src.agentsSidebarIntroShown;
   // Host scope: same normalizers the store setters use, so a malformed value
   // degrades to the default ('all' / all hosts) instead of blanking the sidebar.
   out.workspaceHostScope = normalizeExecutionHostScope(
@@ -488,6 +501,9 @@ export default function App() {
   // Orca parity: the store's host-aware catalog is the one source that can name a
   // repo's execution host on the render path (`WorktreeList` reads the same slice).
   const storeRepos = useAppStore((s) => s.repos);
+  // Orca parity (D01-052): the global shortcut path reads the keybinding registry
+  // (definitions + user overrides) instead of hardcoded chords.
+  const keybindings = useAppStore((s) => s.keybindings);
   /** Live workspace rows the delete confirmation revalidates its targets against. */
   const deleteLiveTargets = useMemo<WorktreeDeleteLiveTarget[]>(() => {
     const rows: WorktreeDeleteLiveTarget[] = [];
@@ -500,6 +516,7 @@ export default function App() {
           isMainWorktree: wt.is_main ?? wt.isMainWorktree ?? false,
           path: wt.path,
           repoPath,
+          displayName: wt.display_name ?? wt.displayName ?? wt.branch ?? wt.path,
         });
       }
     }
@@ -565,6 +582,14 @@ export default function App() {
     try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
   });
   const persistLineage = (m: Record<string, string>) => { try { localStorage.setItem("hydra:worktree_lineage", JSON.stringify(m)); } catch {} };
+  const [worktreeMetadataByPath, setWorktreeMetadataByPath] = useState<WorktreeMetadataByPath>({});
+  const [worktreeMetaDialog, setWorktreeMetaDialog] = useState<{ wt: GitWorktreeInfo } | null>(null);
+
+  useEffect(() => {
+    invoke<Record<string, WorktreeMetadataRecord>>("list_worktree_metadata")
+      .then(setWorktreeMetadataByPath)
+      .catch(console.error);
+  }, []);
 
   // PR-14: blob merged + debounce 250ms. sidebarPrefsHydratedRef faz gate das
   // escritas até a hidratação completar — sem o gate, o mount dispararia os
@@ -606,6 +631,7 @@ export default function App() {
     snap.displayOptions = prefs.displayOptions;
     snap.agentsReadFilter = prefs.agentsReadFilter;
     snap.agentsGroupBy = prefs.agentsGroupBy;
+    snap.agentsSidebarIntroShown = prefs.agentsSidebarIntroShown;
     scheduleSidebarPrefsSave();
   }, [scheduleSidebarPrefsSave]);
 
@@ -1819,6 +1845,46 @@ export default function App() {
     handleSelectProject(projs[nextIdx]);
   }, [handleSelectProject]);
 
+  const handleAssignWorktreeParent = useCallback(
+    (parentWorktreePath: string, childWorktreePaths: readonly string[]) => {
+      const repoPathByWorktreePath = new Map<string, string>();
+      for (const [repoPath, list] of Object.entries(worktreesByProject)) {
+        for (const worktree of list) repoPathByWorktreePath.set(worktree.path, repoPath);
+      }
+      const parentRepoPath = repoPathByWorktreePath.get(parentWorktreePath);
+      if (!parentRepoPath) return;
+      const nestable = childWorktreePaths.filter(
+        (childPath) =>
+          childPath !== parentWorktreePath &&
+          repoPathByWorktreePath.get(childPath) === parentRepoPath
+      );
+      if (nestable.length === 0) return;
+      setWorktreeLineage((previous) => {
+        const next = { ...previous };
+        for (const childPath of nestable) next[childPath] = parentWorktreePath;
+        persistLineage(next);
+        return next;
+      });
+    },
+    [worktreesByProject]
+  );
+
+  const handleUnnestWorktrees = useCallback((childWorktreePaths: readonly string[]) => {
+    setWorktreeLineage((previous) => {
+      const next = { ...previous };
+      let changed = false;
+      for (const childPath of childWorktreePaths) {
+        if (next[childPath] !== undefined) {
+          delete next[childPath];
+          changed = true;
+        }
+      }
+      if (!changed) return previous;
+      persistLineage(next);
+      return next;
+    });
+  }, []);
+
   const handleRemoveProject = (proj: HydraProject) => {
     invoke("catalog_remove_repo", { path: proj.path })
       .then(() => {
@@ -2006,6 +2072,7 @@ export default function App() {
       invoke("delete_worktree", {
         repoPath: liveTarget.repoPath ?? repoPath,
         worktreePath: liveTarget.path,
+        force: false,
         ...(liveTarget.hostId ? { hostId: liveTarget.hostId } : {}),
       })
         .then(() => {
@@ -2017,11 +2084,49 @@ export default function App() {
         })
         .catch((err) => {
           console.error("delete_worktree failed:", err);
-          setDeleteWorktreeModal({ repoPath, worktrees: [wt], deleteTargets: [deleteTarget], error: String(err) });
+          // Orca `showWorktreeDeleteFailureToast`: the recovery lives in a toast with
+          // a Force Delete action, not in a reopened dialog the user has to dismiss.
+          const failure = describeWorktreeDeleteFailure(String(err), liveTarget.path);
+          toast.error(failure.summary, {
+            description: failure.guidance ?? undefined,
+            duration: Infinity,
+            action: failure.canForce
+              ? {
+                  label: "Force Delete",
+                  onClick: () => {
+                    publishDeleteStateForTargets([deleteTarget], WORKTREE_DELETE_IN_PROGRESS);
+                    invoke("delete_worktree", {
+                      repoPath: liveTarget.repoPath ?? repoPath,
+                      worktreePath: liveTarget.path,
+                      force: true,
+                      ...(liveTarget.hostId ? { hostId: liveTarget.hostId } : {}),
+                    })
+                      .then(() => {
+                        refreshGitWorktrees(repoPath);
+                        if (activeProject && activeProject.path !== repoPath) {
+                          refreshGitWorktrees(activeProject.path);
+                        }
+                        window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                        toast.success("Workspace deleted");
+                      })
+                      .catch((forceErr) => {
+                        const retry = describeWorktreeDeleteFailure(
+                          String(forceErr),
+                          liveTarget.path
+                        );
+                        toast.error(retry.summary, {
+                          description: retry.guidance ?? undefined,
+                          duration: Infinity,
+                        });
+                      })
+                      .finally(() => publishDeleteStateForTargets([deleteTarget], null));
+                  },
+                }
+              : undefined,
+          });
         })
         .finally(() => {
-          // A refusal reopens the confirmation with the error, so the card must
-          // stop looking busy the moment the invoke settles.
+          // A refusal must leave the card interactive again; the toast owns the retry.
           publishDeleteStateForTargets([deleteTarget], null);
         });
       return;
@@ -2797,7 +2902,24 @@ export default function App() {
         setIsCommandPaletteOpen((prev) => !prev);
         return;
       }
-      if (isChord && e.key.toLowerCase() === "b") {
+      // D01-052: the left-sidebar toggle is a first-class command — dispatched from
+      // the keybinding registry (`sidebar.left.toggle`, Mod+B by default and
+      // user-remappable) instead of a hardcoded `b` chord.
+      // D09-005: the sleeping toggle ships unbound but is remappable; dispatch it from
+      // the registry so the sidebar row and the command agree on the chord.
+      if (
+        keybindingMatchesAction(
+          "sidebar.sleepingWorkspaces.toggle",
+          e,
+          getShortcutPlatform(),
+          keybindings
+        )
+      ) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("hydra:toggle-sleeping-workspaces"));
+        return;
+      }
+      if (keybindingMatchesAction("sidebar.left.toggle", e, getShortcutPlatform(), keybindings)) {
         e.preventDefault();
         setIsLeftSidebarOpen((prev) => {
           const next = !prev;
@@ -2961,7 +3083,8 @@ export default function App() {
     handleNewTerminalTab,
     handleNewFileTab,
     handleOpenFileTab,
-    handleNavigateWorkspace
+    handleNavigateWorkspace,
+    keybindings
   ]);
 
 
@@ -3680,6 +3803,13 @@ export default function App() {
           },
         },
         {
+          label: "Edit Workspace Metadata...",
+          icon: <Pencil className="w-3.5 h-3.5" />,
+          onClick: () => {
+            setWorktreeMetaDialog({ wt });
+          },
+        },
+        {
           label: "Rename Branch in Git...",
           icon: <GitBranch className="w-3.5 h-3.5" />,
           onClick: () => {
@@ -3770,7 +3900,20 @@ export default function App() {
               }
             } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[wt.path]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
         ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Head: ${wt.head_commit.slice(0,7)} · Bare: ${wt.is_bare ? "yes":"no"}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) } as ContextMenuItem] : []),
-        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([wt.path]) },
+        {
+          label:
+            targetWorktreePaths && targetWorktreePaths.length > 1
+              ? `Sleep ${targetWorktreePaths.length} Workspaces`
+              : "Sleep",
+          icon: <Moon className="w-3.5 h-3.5" />,
+          separator: true,
+          onClick: () =>
+            sleepSessionsForPaths(
+              targetWorktreePaths && targetWorktreePaths.length > 1
+                ? [...targetWorktreePaths]
+                : [wt.path]
+            ),
+        },
         ...(descendantCount > 0 ? [{ label: `Sleep with Descendants (${descendantCount})`, icon: <Moon className="w-3.5 h-3.5" />, onClick: () => {
               const subtree = Object.entries(worktreeLineage).filter(([, parent]) => parent === wt.path).map(([child]) => child);
               sleepSessionsForPaths([wt.path, ...subtree]);
@@ -3965,6 +4108,11 @@ export default function App() {
                 onReorderSessions={handleReorderSessions}
                 onReorderProjects={handleReorderProjects}
                 onReorderWorktrees={handleReorderWorktrees}
+                lineageByPath={worktreeLineage}
+                worktreeMetadataByPath={worktreeMetadataByPath}
+                onEditWorktreeMetadata={(wt) => setWorktreeMetaDialog({ wt })}
+                onAssignWorktreeParent={handleAssignWorktreeParent}
+                onUnnestWorktrees={handleUnnestWorktrees}
                 pinnedProjects={pinnedProjects}
                 unreadProjects={unreadProjects}
                 pinnedWorktrees={pinnedWorktrees}
@@ -3983,6 +4131,7 @@ export default function App() {
                 initialDisplayOptions={initialSidebarPrefs?.displayOptions}
                 initialAgentsReadFilter={initialSidebarPrefs?.agentsReadFilter}
                 initialAgentsGroupBy={initialSidebarPrefs?.agentsGroupBy}
+                initialAgentsIntroShown={initialSidebarPrefs?.agentsSidebarIntroShown}
                 onSidebarPrefsChange={handleSidebarPrefsChange}
                 compactCards={Boolean(hydraSettings.compact_worktree_cards)}
                 settings={hydraSettings}
@@ -4296,6 +4445,11 @@ export default function App() {
             handleSelectProject(proj);
           }
           handleSelectGitWorktree(wt);
+          // The jump palette is reachable from the Agents body; ask the sidebar to
+          // switch to Workspaces and reveal the chosen row.
+          window.dispatchEvent(
+            new CustomEvent(SIDEBAR_REVEAL_REQUEST_EVENT, { detail: { path: wt.path } })
+          );
         }}
         onSelectSession={(sess) => handleSelectSession(sess.id)}
         onNewWorkspace={() => setIsNewWorkspaceOpen(true)}
@@ -4364,6 +4518,7 @@ export default function App() {
         isMainWorktree={deleteWorktreeModal?.worktrees.some((w) => w.path === deleteWorktreeModal?.repoPath) ?? false}
         deleteTargets={deleteWorktreeModal?.deleteTargets ?? []}
         liveWorktrees={deleteLiveTargets}
+        lineageByPath={worktreeLineage}
         onStaleTargets={showStaleDeleteNotice}
         onDeleteStart={(targets) => publishDeleteStateForTargets(targets, WORKTREE_DELETE_IN_PROGRESS)}
         onDeleteSettled={(targets) => publishDeleteStateForTargets(targets, null)}
@@ -4413,6 +4568,100 @@ export default function App() {
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
         repoPath={deleteWorktreeModal?.repoPath ?? ""}
+      />
+
+      <WorktreeMetaDialog
+        open={worktreeMetaDialog != null}
+        worktreeName={
+          worktreeMetaDialog?.wt.display_name ||
+          worktreeMetaDialog?.wt.branch ||
+          worktreeMetaDialog?.wt.path ||
+          ""
+        }
+        initial={{
+          displayName:
+            worktreeMetaDialog?.wt.display_name ||
+            worktreeMetaDialog?.wt.branch ||
+            worktreeMetaDialog?.wt.path ||
+            "",
+          comment: worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.comment ?? "",
+          linkedIssue:
+            worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_issue ?? null,
+          linkedPR:
+            worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_pr ?? null,
+          linkedLinearIssue:
+            worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_linear_issue ?? null,
+        }}
+        onOpenChange={(open) => {
+          if (!open) setWorktreeMetaDialog(null);
+        }}
+        onSave={(draft: WorktreeMetadataDraft) => {
+          const target = worktreeMetaDialog?.wt;
+          if (!target) return;
+         (async () => {
+            try {
+              await invoke("save_worktree_metadata", {
+                worktreePath: target.path,
+                comment: draft.comment.trim() ? draft.comment : null,
+                linkedIssue: draft.linkedIssue,
+                linkedPr: draft.linkedPR,
+                linkedLinearIssue: draft.linkedLinearIssue,
+              });
+              if (draft.displayName && draft.displayName !== target.display_name) {
+                await invoke("set_worktree_display_name", {
+                  worktreePath: target.path,
+                  displayName: draft.displayName,
+                });
+                setGitWorktrees((prev) =>
+                  prev.map((row) =>
+                    row.path === target.path ? { ...row, display_name: draft.displayName } : row
+                  )
+                );
+                setWorktreesByProject((prev) => {
+                  const next = { ...prev };
+                  for (const key of Object.keys(next)) {
+                    next[key] = next[key].map((row) =>
+                      row.path === target.path ? { ...row, display_name: draft.displayName } : row
+                    );
+                  }
+                  return next;
+                });
+              }
+              const now = Date.now();
+              setWorktreeMetadataByPath((prev) => ({
+                ...prev,
+                [target.path]: {
+                  ...(prev[target.path] ?? {
+                    worktree_path: target.path,
+                    display_name: null,
+                    first_agent_message_rename_error: null,
+                    status: null,
+                    created_at: null,
+                    created_with_agent: null,
+                    provenance_kind: null,
+                    is_pinned: null,
+                    is_unread: null,
+                    linked_issue: null,
+                    linked_pr: null,
+                    linked_linear_issue: null,
+                    comment: null,
+                    updated_at: now,
+                  }),
+                  comment: draft.comment.trim() ? draft.comment : null,
+                  linked_issue: draft.linkedIssue,
+                  linked_pr: draft.linkedPR,
+                  linked_linear_issue: draft.linkedLinearIssue,
+                  updated_at: now,
+                },
+              }));
+              window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+            } catch (err) {
+              console.error("Failed to save workspace metadata:", err);
+            } finally {
+              setWorktreeMetaDialog(null);
+            }
+          })();
+        }}
       />
 
 

@@ -1267,7 +1267,7 @@ fn persist_worktree_creation(
     Ok(())
 }
 
-pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), String> {
+pub fn remove_git_worktree(repo_path: &str, worktree_path: &str, force: bool) -> Result<(), String> {
     let wt = PathBuf::from(worktree_path);
     let wt_existed = wt.exists();
 
@@ -1378,9 +1378,15 @@ pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), S
     let mut git_error: Option<String> = None;
 
     if let Some(target) = &resolved_repo {
-        // Run git worktree remove --force <worktree_path>
+        // Orca parity: `force` is explicit. Without it Git refuses dirty or locked
+        // worktrees, and the caller must confirm; only Force Delete passes true.
+        let mut remove_args = vec!["worktree", "remove"];
+        if force {
+            remove_args.push("--force");
+        }
+        remove_args.push(worktree_path);
         let out = Command::new("git")
-            .args(["worktree", "remove", "--force", worktree_path])
+            .args(&remove_args)
             .current_dir(target)
             .output();
 
@@ -1397,11 +1403,15 @@ pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), S
             }
         }
 
-        // Run git worktree prune to clean up any prunable / stale metadata
-        let _ = Command::new("git")
-            .args(["worktree", "prune"])
-            .current_dir(target)
-            .output();
+        // Only prune after a successful removal, or when the directory is gone
+        // (orphan registration): pruning a locked/dirty failure would erase the
+        // metadata the user needs to recover the checkout.
+        if git_remove_succeeded || !wt.exists() {
+            let _ = Command::new("git")
+                .args(["worktree", "prune"])
+                .current_dir(target)
+                .output();
+        }
     } else {
         // If no target resolved yet, try running prune on all candidates in a folder workspace
         for c in &candidates {
@@ -1412,8 +1422,10 @@ pub fn remove_git_worktree(repo_path: &str, worktree_path: &str) -> Result<(), S
         }
     }
 
-    // 3. Guarantee filesystem directory removal (Orca parity)
-    if wt_existed && wt.exists() {
+    // 3. Guarantee filesystem directory removal only on an explicit force delete.
+    // Without force a surviving directory is the dirty/locked checkout Git refused
+    // to remove, so deleting it here would silently destroy the user's changes.
+    if force && wt_existed && wt.exists() {
         if let Err(e) = std::fs::remove_dir_all(&wt) {
             if e.kind() != std::io::ErrorKind::NotFound {
                 return Err(format!("Failed to delete worktree directory {}: {}", worktree_path, e));
@@ -1711,7 +1723,7 @@ branch refs/heads/feat/auth\n";
         // Now remove using the parent folder workspace path (which has NO .git!)
         let folder_ws_str = tmp.to_str().unwrap();
         let wt_str = wt_dir.to_str().unwrap();
-        let rm_res = remove_git_worktree(folder_ws_str, wt_str);
+        let rm_res = remove_git_worktree(folder_ws_str, wt_str, false);
         assert!(rm_res.is_ok(), "remove_git_worktree must succeed even when repo_path is folder workspace: {:?}", rm_res);
 
         // Verify directory is deleted from disk
@@ -1725,6 +1737,44 @@ branch refs/heads/feat/auth\n";
             .expect("git worktree list");
         let stdout = String::from_utf8_lossy(&list_out.stdout);
         assert!(!stdout.contains("workspace-1754"), "worktree must be unregistered in git");
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn test_remove_git_worktree_requires_force_for_dirty_checkout() {
+        let tmp = std::env::temp_dir().join(format!(
+            "hydra-test-rm-dirty-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let repo = tmp.join("repo");
+        let wt = tmp.join("wt");
+        let _ = std::fs::create_dir_all(&repo);
+        let _ = Command::new("git").args(["init", "-b", "main"]).current_dir(&repo).output();
+        let _ = Command::new("git").args(["config", "user.name", "Test"]).current_dir(&repo).output();
+        let _ = Command::new("git").args(["config", "user.email", "test@test.com"]).current_dir(&repo).output();
+        let _ = std::fs::write(repo.join("README.md"), "hello");
+        let _ = Command::new("git").args(["add", "."]).current_dir(&repo).output();
+        let _ = Command::new("git").args(["commit", "-m", "initial"]).current_dir(&repo).output();
+        let add = Command::new("git")
+            .args(["worktree", "add", "-b", "feature/dirty", wt.to_str().unwrap()])
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add");
+        assert!(add.status.success());
+        // Local change that a plain `git worktree remove` must refuse.
+        let _ = std::fs::write(wt.join("dirty.txt"), "uncommitted");
+
+        let refused = remove_git_worktree(repo.to_str().unwrap(), wt.to_str().unwrap(), false);
+        assert!(refused.is_err(), "dirty checkout must refuse a non-forced delete");
+        assert!(wt.exists(), "refused delete must leave the checkout on disk");
+
+        let forced = remove_git_worktree(repo.to_str().unwrap(), wt.to_str().unwrap(), true);
+        assert!(forced.is_ok(), "force delete must remove the dirty checkout: {:?}", forced);
+        assert!(!wt.exists(), "force delete removes the directory");
 
         let _ = std::fs::remove_dir_all(&tmp);
     }

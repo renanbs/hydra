@@ -9,7 +9,14 @@ import {
   Plug,
   Square,
   Folder,
+  CircleDot,
+  SquareTerminal,
+  GitPullRequest,
+  FileText,
+  Pencil,
 } from "lucide-react";
+import { DetailHeader, MetadataActionIcon } from "./worktree-card-detail-controls";
+import { CommentMarkdown } from "./comment-markdown";
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from "./types";
 import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
 
@@ -18,6 +25,17 @@ export interface WorktreeCardDetailsHoverProps {
   project: HydraProject;
   ports?: WorkspacePort[];
   review?: WorktreeReviewStatus;
+  /** Persisted workspace metadata (notes + linked work items). */
+  metadata?: {
+    comment: string;
+    linkedIssue: number | null;
+    linkedPR: number | null;
+    linkedLinearIssue: string | null;
+  } | null;
+  /** Opens the workspace metadata editor for this card (Orca detail actions). */
+  onEditMetadata?: () => void;
+  /** The workspace was created through the CLI (Orca CLI provenance section). */
+  cliCreated?: boolean;
   children: React.ReactNode;
   onPortKilled?: () => void;
 }
@@ -27,6 +45,9 @@ export function WorktreeCardDetailsHover({
   project,
   ports = [],
   review,
+  metadata = null,
+  onEditMetadata,
+  cliCreated = false,
   children,
   onPortKilled,
 }: WorktreeCardDetailsHoverProps): React.JSX.Element {
@@ -259,6 +280,82 @@ export function WorktreeCardDetailsHover({
                   </span>
                 )}
               </div>
+            </div>
+          )}
+
+          {cliCreated ? (
+            <div className="space-y-1 pb-2 border-b border-neutral-800">
+              <DetailHeader icon={<SquareTerminal className="w-3 h-3 text-neutral-400" />} label="Created by CLI" />
+            </div>
+          ) : null}
+
+          {(metadata?.linkedIssue != null ||
+            metadata?.linkedPR != null ||
+            metadata?.linkedLinearIssue ||
+            (metadata?.comment?.trim().length ?? 0) > 0) && (
+            <div className="space-y-2 pb-2 border-b border-neutral-800">
+              {metadata?.linkedIssue != null && (
+                <div className="space-y-1">
+                  <DetailHeader
+                    icon={<CircleDot className="w-3 h-3 text-emerald-400" />}
+                    label="Issue"
+                    actions={
+                      onEditMetadata ? (
+                        <MetadataActionIcon label="Edit workspace metadata" onClick={onEditMetadata}>
+                          <Pencil className="w-3 h-3" />
+                        </MetadataActionIcon>
+                      ) : null
+                    }
+                  />
+                  <div className="font-mono text-[11px] text-neutral-300">
+                    #{metadata.linkedIssue}
+                  </div>
+                </div>
+              )}
+
+              {metadata?.linkedPR != null && (
+                <div className="space-y-1">
+                  <DetailHeader
+                    icon={<GitPullRequest className="w-3 h-3 text-violet-400" />}
+                    label="Review"
+                  />
+                  <div className="font-mono text-[11px] text-neutral-300">
+                    #{metadata.linkedPR}
+                  </div>
+                </div>
+              )}
+
+              {metadata?.linkedLinearIssue && (
+                <div className="space-y-1">
+                  <DetailHeader
+                    icon={<CircleDot className="w-3 h-3 text-indigo-400" />}
+                    label="Linear"
+                  />
+                  <div className="font-mono text-[11px] text-neutral-300">
+                    {metadata.linkedLinearIssue}
+                  </div>
+                </div>
+              )}
+
+              {metadata?.comment?.trim() ? (
+                <div className="min-w-0 space-y-1">
+                  <DetailHeader
+                    icon={<FileText className="w-3 h-3" />}
+                    label="Notes"
+                    actions={
+                      onEditMetadata ? (
+                        <MetadataActionIcon label="Edit workspace notes" onClick={onEditMetadata}>
+                          <Pencil className="w-3 h-3" />
+                        </MetadataActionIcon>
+                      ) : null
+                    }
+                  />
+                  <CommentMarkdown
+                    text={metadata.comment}
+                    className="text-[11px] leading-4 text-neutral-300"
+                  />
+                </div>
+              ) : null}
             </div>
           )}
 

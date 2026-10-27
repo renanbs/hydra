@@ -1,0 +1,33 @@
+{
+ "group": "Y",
+ "generatedFrom": "2026-10-22 batch sleep from the selection and the inbox action error catalog",
+ "rows": [
+  {
+   "id": "D07-002",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:975-987",
+    "src/components/sidebar/WorktreeList.tsx:1248-1258",
+    "src/components/sidebar/WorktreeSidebar.tsx:892-903",
+    "src/App.tsx:3900-3918"
+   ],
+   "missing_behaviors": [
+    "Tooltip multi-contexto além do label pluralizado",
+    "Filtro de elegibilidade (apenas workspaces com painéis sleepable) antes de montar a ação"
+   ],
+   "note": "Right-clicking a row inside a multi-selection passes the selected paths to the app, which offers 'Sleep N Workspaces' and sleeps them in one call."
+  },
+  {
+   "id": "D10-070",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:960-1010",
+    "src/components/sidebar/WorktreeSidebar.tsx:1432-1450",
+    "src/components/sidebar/WorktreeList.tsx:1260-1280",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:270-290",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.parity.test.tsx:130-150"
+   ],
+   "note": "Show/keep-hidden/permanent-hide failures map to Orca's three messages, clear on success and render in the row's alert."
+  }
+ ]
+}

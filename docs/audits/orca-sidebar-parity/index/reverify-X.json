@@ -1,0 +1,13 @@
+{
+ "group": "X",
+ "generatedFrom": "2026-10-22 quick-win sweep: project filter actions/search, visibility help + override warning, context-menu click debounce",
+ "rows": [
+  {"id":"D09-009","status":"parity","evidence":["src/components/sidebar/WorkspaceOptionsMenu.tsx:300-338","src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:275-305"],"note":"Select all fills every project id and Clear empties it; both disable when the action is a no-op."},
+  {"id":"D09-013","status":"parity","evidence":["src/components/sidebar/WorkspaceOptionsMenu.tsx:335-365"],"note":"Pills scroll at max-h-16, carry the repo color dot and the remove button has an aria-label naming the project."},
+  {"id":"D09-014","status":"parity","evidence":["src/components/sidebar/project-filter-search.ts:1-45","src/components/sidebar/WorkspaceOptionsMenu.tsx:210-214","src/components/sidebar/project-filter-search.parity.test.ts:1-35"],"note":"Search matches display name/name/path, ranks name hits above path hits, trims and case-folds."},
+  {"id":"D09-016","status":"partial","evidence":["src/components/sidebar/WorkspaceOptionsMenu.tsx:250-258"],"missing_behaviors":["Props filterRepoIds/setFilterRepoIds para reuso pela visão de agentes","RepoBadgeLabel no gatilho do submenu"],"note":"The Projects row hides when there is nothing to filter; the agents-view reuse still depends on shared props."},
+  {"id":"D10-052","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:640-670","src/components/sidebar/WorktreeVisibilityDialog.tsx:350-370","src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-196"],"note":"Help opens on hover or click and closes on Escape or outside click, with the exact Orca question as label."},
+  {"id":"D10-061","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:696-706","src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:198-215"],"note":"A source row whose project override differs from Global Settings prints 'Overriding global setting: Show|Hide'."},
+  {"id":"D07-019","status":"parity","evidence":["src/components/sidebar/context-menu-click-debounce.ts:1-12","src/components/RadixContextMenu.tsx:93-108","src/components/sidebar/context-menu-click-debounce.parity.test.ts:1-25"],"note":"A 500ms capture-phase window swallows the follow-up click that opened the menu; menu clicks are exempt."}
+ ]
+}

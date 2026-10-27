@@ -271,3 +271,42 @@ describe("discovered-worktree inbox helpers (Orca parity)", () => {
     expect(mergeExternalWorktreeInboxPaths(undefined, ["/c/d"])).toEqual(["/c/d"]);
   });
 });
+
+
+describe("ImportedWorktreesVisibilityLine action errors", () => {
+  it("shows the inbox error catalog message in an alert", () => {
+    render(
+      <ImportedWorktreesVisibilityLine
+        repoDisplayName="hydra"
+        hiddenWorktrees={[{ path: "/repo/wt/a", branch: "a", head_commit: "x", is_bare: false, is_locked: false }]}
+        error="Could not keep discovered worktrees hidden. Try again."
+      />
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Could not keep discovered worktrees hidden. Try again."
+    );
+  });
+});
+
+
+describe("ImportedWorktreesVisibilityLine card-level show", () => {
+  it("uses the policy action instead of importing each path", () => {
+    const onShowAll = vi.fn();
+    const onShow = vi.fn();
+    render(
+      <TooltipProvider>
+        <ImportedWorktreesVisibilityLine
+          repoDisplayName="hydra"
+          hiddenWorktrees={[{ path: "/repo/wt/a", branch: "a", head_commit: "x", is_bare: false, is_locked: false }]}
+          onShowAll={onShowAll}
+          onShow={onShow}
+          onKeepHidden={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Expand 1 hidden/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Show in worktree list" }));
+    expect(onShowAll).toHaveBeenCalledTimes(1);
+    expect(onShow).not.toHaveBeenCalled();
+  });
+});

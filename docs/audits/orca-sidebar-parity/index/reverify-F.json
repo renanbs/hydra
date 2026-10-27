@@ -1,0 +1,979 @@
+{
+ "group": "F",
+ "generatedFrom": "re-verification pass 2026-10-20: 17 read-only domain scouts re-checked every row with hydra.status=missing against the current code (the 0d261c2 refresh covered ~455/765 rows; D10 and the drag/virtualization/board work landed after it). Only changes with path:line evidence were kept.",
+ "rows": [
+  {
+   "id": "D01-026",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarNav.tsx:14",
+    "src/components/sidebar/SidebarNav.tsx:21-23",
+    "src/components/sidebar/SidebarNav.tsx:29",
+    "src/i18n/i18n.ts:99-102",
+    "src/i18n/pseudo-localization.ts:1-5"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "SidebarNav agora assina useTranslation() e passa aria-label/'Search' por translate(), que aplica pseudoLocalizeString; a nav reage a troca de locale sem remontagem."
+  },
+  {
+   "id": "D01-032",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SidebarFooter.tsx:81",
+    "src/components/sidebar/SidebarFooter.tsx:83-89",
+    "src/components/sidebar/SidebarFooter.tsx:95-104",
+    "src/components/sidebar/WorktreeSidebar.tsx:966-972",
+    "src/components/sidebar/SidebarFooter.parity.test.tsx:22-46"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "data-workspace-board-preview no gatilho durante o drag de card para o board",
+    "variante secondary (destaque) quando workspaceBoardDragPreviewOpen"
+   ],
+   "note": "Gatilho Kanban existe no rodapé (aria-label, tooltip dinâmico, data-workspace-board-trigger, aria-pressed, variant secondary ao abrir, toggle); falta só o estado de preview por drag."
+  },
+  {
+   "id": "D03a-011",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:33-47",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:44-52",
+    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:101-133",
+    "src/components/sidebar/worktree-list/drag/worktree-pointer-board-drop.parity.test.tsx:318-348",
+    "src/components/sidebar/worktree-list/drag/worktree-native-board-drop.parity.test.tsx:365-408"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Cards do sidebar caem em lane/pin strip do board (ponteiro e HTML5) e escrevem status/pin uma vez; testes de paridade cobrem."
+  },
+  {
+   "id": "D03a-017",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/use-pointer-window-events.ts:29-64",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:36-52",
+    "src/components/sidebar/worktree-list/drag/use-runtime.ts:62-64"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "visibilitychange abandonando o drag em andamento",
+    "listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo",
+    "commit de nest sem slot (nesting inexistente)"
+   ],
+   "note": "Pointer drag commita/abandona fora do sidebar via window capture (pointerup/pointercancel/Escape); falta o fallback document drop/dragend e visibilitychange."
+  },
+  {
+   "id": "D03a-044",
+   "status": "partial",
+   "evidence": [
+    "src/lib/worktree-activation.ts:277-292",
+    "src/components/sidebar/project-filter-reveal.ts:7-12"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "adicionar o host do alvo a visibleWorkspaceHostIds",
+    "ligar showSleepingWorkspaces quando o alvo está dormindo"
+   ],
+   "note": "revealRepoInProjectFilter agora está ligado no activateAndRevealWorktree junto com hideAutomation/hideCli/hideDetachedHead; host e sleeping não são reabertos."
+  },
+  {
+   "id": "D03a-053",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/listing/render-row.ts:12-31",
+    "src/components/sidebar/worktree-list/viewport/use-virtualizer.ts:71-77",
+    "src/components/sidebar/worktree-list/viewport/virtual-rows.parity.test.ts:110-150"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "getRenderRowKey cobre host:/hdr:/imported:/inbox:/pending:/folder-workspace:/wt: e é o getItemKey do virtualizer; lineage-group não existe (linhagem por indentação)."
+  },
+  {
+   "id": "D03a-059",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-listbox-keyboard.ts:66-140",
+    "src/components/sidebar/worktree-list/keyboard-cycle.ts:5",
+    "src/components/sidebar/worktree-list/viewport/use-listbox-keyboard.parity.test.tsx:163-210"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Ciclo reconstruído das rows item pintadas (getPreferredWorktreeRows), ativa via onActivateRow e rola com scrollToIndex; testes cobrem wrap e ativação."
+  },
+  {
+   "id": "D03a-060",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:39-53",
+    "src/components/sidebar/WorktreeList.tsx:805-826",
+    "src/components/sidebar/worktree-list/drag/worktree-pointer-drag.parity.test.tsx:423-505"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "limpar a seleção por clique fora do container da lista",
+    "selectForContextMenu preservando a seleção"
+   ],
+   "note": "Clique/Ctrl/Shift + prune por render + identidade host-qualified estão ligados e testados; falta limpeza por clique externo e seleção ao abrir menu de contexto."
+  },
+  {
+   "id": "D03a-063",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:31-50",
+    "src/components/sidebar/WorktreeSidebar.tsx:458-491"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "reveal de headers (project-group:/project:/repo:)",
+    "toast 'Target no longer exists' e retry quando a row não existe"
+   ],
+   "note": "Reveal de item/folder agora passa pelo virtualizer e expande projeto/grupo; headers, toast de alvo ausente e retry não existem."
+  },
+  {
+   "id": "D03a-066",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/option-id.ts:28-40",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:116-124",
+    "src/components/sidebar/WorktreeList.tsx:711-723"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "preferência pela cópia fora do Pinned quando pinnedDisplayPolicy=duplicate-in-groups"
+   ],
+   "note": "aria-activedescendant aponta para a option montada e folder-workspace mapeia; activeRowKey pega a primeira cópia (Pinned), sem a preferência do Orca pela cópia natural."
+  },
+  {
+   "id": "D03a-067",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/listing/render-row.ts:12-31",
+    "src/components/sidebar/worktree-sidebar-row-preference.ts:9-41"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "rowKeyMatchesRenderRow",
+    "renderRowContainsWorktree",
+    "findPreferredRenderRowIndexForWorktree"
+   ],
+   "note": "A lookup de key foi portada (getRenderRowKey) e a preferência de row existe para navegação, mas contenção e índice preferido por worktree não têm módulo equivalente."
+  },
+  {
+   "id": "D03a-071",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:458-491"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "getPinnedWorktreeRevealCollapsedGroupKeys (expandir a seção Pinned colapsada)"
+   ],
+   "note": "O reveal expande projeto e project-group inline; a seção Pinned colapsada não é reaberta para o alvo."
+  },
+  {
+   "id": "D03a-074",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:428-467",
+    "src/components/sidebar/host-section-rows.ts:18-32",
+    "src/components/sidebar/HostSectionHeaderMenu.tsx:26-130"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "ícone Server/ServerOff e indicador de saúde do host",
+    "aria-label no badge de contagem",
+    "alça de drag data-host-header-drag-id"
+   ],
+   "note": "Header de host renderizado inline com detalhe, contagem, chevron e menu; health existe no row mas não é pintado e não há alça de drag."
+  },
+  {
+   "id": "D03a-088",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:1281-1319",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:180-225",
+    "src/components/sidebar/worktree-list/drag/worktree-drag-surface.tsx:41-72"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Dispatch por tipo ocorre no switch de renderRow dentro do slot virtual, e o offset de preview é transform no frame interno; não há linha lineage-group."
+  },
+  {
+   "id": "D03a-089",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:158-174",
+    "src/components/sidebar/worktree-list/viewport/use-virtualizer.ts:120-165"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "aria-multiselectable=\"true\" no listbox"
+   ],
+   "note": "Viewport TanStack com role=listbox, aria-orientation e aria-activedescendant; falta o aria-multiselectable que o Orca publica."
+  },
+  {
+   "id": "D03a-090",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/use-runtime.ts:62-64",
+    "src/components/sidebar/WorktreeSidebar.tsx:151-152",
+    "src/components/sidebar/worktree-list/viewport/use-row-measurement.ts:100-104"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "cancelar o timeout do highlight de reveal no unmount (clearRevealHighlightTimeout)"
+   ],
+   "note": "Drag, RAFs de medição e timer do jump-to-top são limpos no unmount; highlightTimerRef do WorktreeSidebar não tem cleanup."
+  },
+  {
+   "id": "D03a-091",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:141-153",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:167-169",
+    "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:34-60"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Pointerdown na faixa da scrollbar, wheel e touchmove marcam input direto; a janela de 500ms governa medição e restauração de âncora."
+  },
+  {
+   "id": "D03a-093",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-group-toggle.ts:16-29",
+    "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:22"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "toggleGroupWithScrollAnchor despacha VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT antes do toggle; getLineageToggleHandler não existe porque não há rows lineage-group."
+  },
+  {
+   "id": "D03a-094",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/hard-scroll-up.ts:9-35",
+    "src/components/sidebar/worktree-list/viewport/use-scroll-to-top.ts:8-14"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Detector deixou de ser órfão: use-scroll-to-top montado no viewport usa HARD_SCROLL_UP, normalizeWheelDeltaY e os reducers de wheel/scroll/idle."
+  },
+  {
+   "id": "D03a-095",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-scroll-to-top.ts:35-210",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:214",
+    "src/components/sidebar/worktree-list/viewport/use-scroll-to-top.parity.test.tsx:51-118"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Botão ir-ao-topo com listeners wheel/scroll/pointerdown, auto-hide por idle e supressão pós-jump; WorktreeListScrollToTopButton montado."
+  },
+  {
+   "id": "D03a-096",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-row-measurement.ts:52-113",
+    "src/components/sidebar/worktree-list/viewport/virtual-rows.ts:111-133",
+    "src/components/sidebar/worktree-list/viewport/virtual-rows.ts:162-235"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Mede só nós com key atual, prune do elementsCache, âncora virtualizada, dois tiers sticky e animação de remoção ligados num hook."
+  },
+  {
+   "id": "D03a-097",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-row-removal-animation.ts:18-120",
+    "src/components/sidebar/worktree-list/viewport/use-row-removal-animation.parity.test.tsx:52-95"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "WORKTREE_ROW_REMOVAL_ANIMATION_MS=180, buildVirtualRowRemovalMotions e element.animate com prefers-reduced-motion presentes; rekey só existiria para lineage-group."
+  },
+  {
+   "id": "D03a-098",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:18-76",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:61-62"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Janelas de 500ms/300ms, markScrollMovement/markDirectScrollInput, shouldSkipScrollAnchorRestore e o evento SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT estão montados; reveal não usa scroll suave."
+  },
+  {
+   "id": "D03a-099",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-virtualizer.ts:58-165"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "TanStack useVirtualizer com overscan 10, gap 4, scrollPaddingStart, isScrollingResetDelay, getItemKey via getRenderRowKey, measureElement com guarda de identidade e rangeExtractor sticky."
+  },
+  {
+   "id": "D03a-100",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:52-140",
+    "src/store/github/refresh-routing-actions.ts:57-69",
+    "src/store/github/worktree-refresh.ts:11"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "coordenador de refresh de PR/CI (findWorktreeById/buildPRRefreshCandidate são stubs null)"
+   ],
+   "note": "Reporter montado com janela start/end, dedupe por geração e visibilitychange; a ação do store degrada para no-op porque o slice do coordenador não está composto."
+  },
+  {
+   "id": "D03a-101",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/virtual-rows.ts:16-40",
+    "src/components/sidebar/worktree-list/viewport/virtual-rows.ts:55-91",
+    "src/components/sidebar/worktree-list/viewport/virtual-rows.ts:111-133",
+    "src/components/sidebar/worktree-list/viewport/virtual-rows.ts:135-190",
+    "src/components/sidebar/worktree-list/viewport/virtual-rows.ts:266-295"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Constantes de altura, estimativa, prune, getStickyHeaderIndexes em dois tiers, extractWorktreeVirtualRowIndexes e transform presentes; buildLineageRowRekeyMap não se aplica sem lineage-group."
+  },
+  {
+   "id": "D03a-102",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/viewport-props.ts:7-45",
+    "src/components/sidebar/worktree-list/drag/WorktreeListDragProvider.tsx:19-85",
+    "src/components/sidebar/WorktreeList.tsx:1406-1428"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Contexto de render empacotado como viewport-props + slot + contexts de drag; defaults de visibilidade por host vivem em worktreeVisibilityDefaultsByHost no store."
+  },
+  {
+   "id": "D03a-103",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/viewport-props.ts:7-45",
+    "src/components/sidebar/WorktreeList.tsx:1416-1427"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "viewport-props.ts existe e é o contrato consumido pelo VirtualizedWorktreeViewport a partir do WorktreeList."
+  },
+  {
+   "id": "D03b-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:226-231",
+    "src/components/sidebar/WorktreeSidebar.tsx:969-970",
+    "src/components/sidebar/WorktreeSidebar.tsx:974-994",
+    "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:41",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:219"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Board panel e drawer montados no WorktreeSidebar (toggle no footer, Escape, lingering) e drag preview do board existe."
+  },
+  {
+   "id": "D03b-020",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:1415",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:41",
+    "src/components/sidebar/WorktreeSidebar.tsx:1250",
+    "src/components/sidebar/WorktreeSidebar.tsx:1260",
+    "src/components/sidebar/WorktreeSidebar.tsx:854"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "A lista montada pinta VirtualizedWorktreeViewport (TanStack Virtual, sticky headers, listbox) e os dialogos de grupo sao abertos pelo menu de contexto do cabecalho."
+  },
+  {
+   "id": "D03b-023",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeListScrollToTopButton.tsx:11",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:111",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:239",
+    "src/components/sidebar/worktree-list/viewport/use-scroll-to-top.ts:34"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Botao flutuante com tooltip 'Jump to top', fade-in e deteccao de hard-scroll-up montado sobre o viewport."
+  },
+  {
+   "id": "D03b-024",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebarDropIndicator.tsx:5",
+    "src/components/sidebar/worktree-list/drag/worktree-drag-surface.tsx:81-86",
+    "src/components/sidebar/WorktreeList.tsx:1424"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Indicador de soltura dedicado (bolinhas + linha) pintado como dropIndicator do viewport."
+  },
+  {
+   "id": "D03b-025",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/SectionHeader.tsx:269-272",
+    "src/components/sidebar/WorktreeSidebar.tsx:563-566",
+    "src/components/sidebar/WorktreeSidebar.tsx:923-925",
+    "src/components/sidebar/project-header-drop.ts:25-58"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "sessao de arrasto por ponteiro (createProjectHeaderDragSession/useRepoHeaderDrag) com limiar de 4px e preview flutuante",
+    "qualificacao de alvo: handle data-repo-header-drag-handle e exclusao de data-repo-header-actions"
+   ],
+   "note": "Hydra inicia drag via HTML5 draggable no header inteiro e comita reordenacao plana."
+  },
+  {
+   "id": "D03b-027",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/project-header-drop.ts:130-162",
+    "src/components/sidebar/project-header-drop.ts:185-200",
+    "src/components/sidebar/SectionHeader.tsx:276-281"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "measureProjectHeaderDragRects/computeProjectHeaderDropPreview sem callers",
+    "preview por limites de secao: data-repo-header-section-end sem produtor"
+   ],
+   "note": "Helpers medidos do Orca estao portados mas mortos; o affordance observavel e a linha de drop nativa do header."
+  },
+  {
+   "id": "D03b-028",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/project-header-drop.ts:61-107",
+    "src/components/sidebar/project-header-drop.ts:205-220",
+    "src/components/sidebar/WorktreeSidebar.tsx:577-593"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "getProjectGroupOrderForSidebarDrop/mapSidebarProjectHeaderDropIndexToSiblingInsertIndex/applyAllRepoInsertAt sem callers",
+    "commit por bucket de grupo com ranks/tabOrder por irmaos"
+   ],
+   "note": "Reordenar cabecalho funciona, mas o commit e global e ignora os buckets/ranks de grupo do Orca."
+  },
+  {
+   "id": "D03b-042",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-drag-units.ts:18-60",
+    "src/components/sidebar/worktree-list/drag/use-session.ts:56",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:8",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:60-68",
+    "src/components/sidebar/worktree-list/drag/worktree-pointer-drag.parity.test.tsx:400"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "getWorktreeDragUnitGroups alimenta o drag de ponteiro vivo e o indice de commit."
+  },
+  {
+   "id": "D03b-043",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-sidebar-drop-preview.ts:88-124",
+    "src/components/sidebar/worktree-sidebar-drop-preview.ts:136",
+    "src/components/sidebar/worktree-list/drag/use-session.ts:129",
+    "src/components/sidebar/worktree-drop-preview.parity.test.ts:33"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Centro mais proximo e limites de grupo/autoscroll do drop preview usados pelo computeWorktreeDrop montado."
+  },
+  {
+   "id": "D03b-044",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-sidebar-drop-preview.ts:63-80",
+    "src/components/sidebar/WorktreeSidebarDropIndicator.tsx:5-12",
+    "src/components/sidebar/worktree-list/drag/worktree-drag-surface.tsx:86",
+    "src/components/sidebar/WorktreeList.tsx:1424"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "O indicador alinha ao placeholderTop-3 do layout replayado e e pintado pelo WorktreeDragDropIndicator."
+  },
+  {
+   "id": "D03b-045",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:40-46",
+    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:104-124",
+    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:29"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "tolerancia de raio de 6px sobre o ultimo alvo rastreado no release do sidebar"
+   ],
+   "note": "Soltar sobre lane do board ja atribui status; falta a tolerancia de 6px para pointerup sem frame final."
+  },
+  {
+   "id": "D04b-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-delete-request.ts:23",
+    "src/components/sidebar/worktree-delete-request.ts:33",
+    "src/components/sidebar/worktree-delete-request.ts:48-51",
+    "src/components/DeleteWorktreeDialog.tsx:105",
+    "src/components/DeleteWorktreeDialog.tsx:115-121",
+    "src/components/DeleteWorktreeDialog.tsx:189-196",
+    "src/App.tsx:516-519",
+    "src/App.tsx:2002-2010",
+    "src/App.tsx:4378-4379",
+    "src/components/sidebar/worktree-delete-request.parity.test.ts:45-108"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Stale: WorktreeDeleteIdentity + host-qualified batch resolver, render/confirm-time revalidation against live rows, and 'Workspace list changed' toast + modal close all landed."
+  },
+  {
+   "id": "D06-002",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-status-drag-data.ts:25-57",
+    "src/components/sidebar/workspace-status-drag-data.ts:59-71",
+    "src/components/sidebar/workspace-status-drag-data.ts:73-80",
+    "src/components/sidebar/workspace-status-drag-data.ts:87-104",
+    "src/components/sidebar/workspace-board/use-workspace-board-native-drag.ts:204-206",
+    "src/components/sidebar/workspace-board/use-workspace-board-native-drag.ts:252",
+    "src/components/sidebar/WorktreeList.tsx:1062"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Deserialization is live now: board drop gates call hasWorkspaceDragData/readWorkspaceDragDataIds, with 16KB byte cap and 512-id ceiling enforced."
+  },
+  {
+   "id": "D06-003",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:123",
+    "src/components/sidebar/worktree-list/pointer-drag-dom.ts:11-37",
+    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:393"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "isSidebarPointerDragBlocked is invoked on every row press and enforces the interactive/off-row (portaled) blocker selector."
+  },
+  {
+   "id": "D06-005",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:74-84",
+    "src/components/sidebar/worktree-list/pointer-drag-dom.ts:38-54",
+    "src/components/sidebar/worktree-list/pointer-drag-dom.ts:71-108",
+    "src/components/sidebar/worktree-list/drag/worktree-pointer-drag.parity.test.tsx:461"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Ghost clone, attribute sanitization, fixed preview and count badge are created on drag start; test asserts the multi-select badge."
+  },
+  {
+   "id": "D06-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:34-39",
+    "src/components/sidebar/worktree-list/pointer-drag-dom.ts:57-68"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Each RAF moves the preview through translate3d+scale(1.015), using the captured grab offset and the nesting +16px branch."
+  },
+  {
+   "id": "D06-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:96",
+    "src/components/sidebar/worktree-sidebar-drag-geometry.ts:28-43",
+    "src/components/sidebar/worktree-sidebar-drag-geometry.ts:101-112",
+    "src/components/sidebar/worktree-sidebar-drop-preview.ts:168-172",
+    "src/components/sidebar/worktree-list/drag/use-session.ts:128-136"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Grab offset/height (clamped) feeds the card-center referenceY used by the live drop preview."
+  },
+  {
+   "id": "D06-010",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:93-126",
+    "src/components/sidebar/worktree-sidebar-drop-preview.ts:176-186",
+    "src/components/sidebar/worktree-list/drag/use-session.ts:128-136"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Boundary clamping (index 0, sourceGroupSize, 8px outside band) now runs in the painted computeWorktreeDrop path."
+  },
+  {
+   "id": "D06-021",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-selection.ts:32-40",
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:63",
+    "src/components/sidebar/WorktreeList.tsx:801-803",
+    "src/components/sidebar/WorktreeList.tsx:1042",
+    "src/components/sidebar/worktree-list/drag/worktree-pointer-drag.parity.test.tsx:435-447"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "getWorktreeSelectionIntent (shift range, Cmd/Ctrl toggle, plain replace) is wired into the sidebar rows and asserted in tests."
+  },
+  {
+   "id": "D06-022",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-selection.ts:48-82",
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:63-80",
+    "src/components/sidebar/use-worktree-card-controller.ts:197-198",
+    "src/components/sidebar/WorktreeList.tsx:1042"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "replace/toggle/range selection updates are live; modified clicks are consumed before row activation."
+  },
+  {
+   "id": "D06-023",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-selection.ts:93-113",
+    "src/components/sidebar/worktree-selection.ts:116-137",
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:37-50",
+    "src/components/sidebar/workspace-board/use-workspace-board-selection.ts:119-131",
+    "src/components/sidebar/worktree-selection.parity.test.ts:174-230"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Pruning/re-anchoring runs on the list rows during render; area selection is wired on the board panel, as in Orca's kanban selection hook."
+  },
+  {
+   "id": "D07-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:24-29",
+    "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:34-57",
+    "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:60-73",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:110-115",
+    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:92-98",
+    "src/components/sidebar/WorktreeSidebar.tsx:974-975",
+    "src/components/sidebar/SidebarFooter.tsx:88-90"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Popover portado e montado no menu de settings do board, aberto pelo footer do sidebar."
+  },
+  {
+   "id": "D07-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:74-99",
+    "src/components/sidebar/workspace-status.ts:58-147",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:167-172"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Grade grid-cols-8 com 11 cores, anel na cor atual, aria e onChangeColor; teste de paridade prova a escrita no store."
+  },
+  {
+   "id": "D07-008",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceStatusAppearancePopover.tsx:101-124",
+    "src/components/sidebar/workspace-status-icons.tsx:4",
+    "src/components/sidebar/workspace-status-icons.tsx:24",
+    "src/components/sidebar/workspace-status-icons.tsx:51",
+    "src/components/sidebar/workspace-board/use-workspace-board-status-actions.ts:66-72",
+    "src/store/slices/ui/ui-slice-preference-actions.ts:243-247",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:174-176"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Grade grid-cols-6 com variant secondary/ghost, tooltip/aria e onChangeIcon persistido em workspaceStatuses."
+  },
+  {
+   "id": "D07-027",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:60",
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:82-90",
+    "src/components/sidebar/worktree-list/viewport/use-row-measurement.ts:103-115",
+    "src/hooks/virtualized-scroll-anchor-restore.ts:52-58",
+    "src/hooks/virtualized-scroll-anchor-restore.ts:142-159",
+    "src/hooks/useVirtualizedScrollAnchor.ts:215-242"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "A delecao e coberta pelo scroll anchor virtualizado: fallbackKeys ancoram na linha visivel seguinte quando a linha ancorada e removida."
+  },
+  {
+   "id": "D07-043",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-delete-state-host-match.ts:15-17",
+    "src/components/sidebar/worktree-delete-state-host-match.ts:19-33",
+    "src/components/DeleteWorktreeDialog.tsx:21",
+    "src/components/DeleteWorktreeDialog.tsx:129-131",
+    "src/App.tsx:527-540",
+    "src/App.tsx:4412",
+    "src/components/sidebar/worktree-delete-request.ts:44-70",
+    "src/components/sidebar/worktree-delete-request.parity.test.ts:1"
+   ],
+   "backend": [
+    "invoke('delete_worktree', { hostId }) -> src/components/DeleteWorktreeDialog.tsx:223 -> src-tauri/src/lib.rs:478 (registrado em src-tauri/src/lib.rs:1518)"
+   ],
+   "missing_behaviors": [],
+   "note": "STA-4343: chave de estado qualificada por host, leitura com fallback legado validando executionHostId e dedupe por (id,host)."
+  },
+  {
+   "id": "D08-012",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:7",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:66",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:77",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:93-94",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:146-148",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:160-163",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:170-172",
+    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:72-80",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.parity.test.tsx:100-118"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Live region with 400ms debounce, n/m tabular badge, Too-long destructive warning and whitespace/non-filtering omission all exist in the board header's search field."
+  },
+  {
+   "id": "D08-014",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/workspace-board-search.ts:131-142",
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx:191-194",
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:105",
+    "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:160",
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:217-219",
+    "src/components/sidebar/workspace-board/workspace-board-search.parity.test.ts:148-171"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Lane projection preserves order, reuses lane objects when no query (test asserts same reference) and keeps each lane's unfiltered totalCount."
+  },
+  {
+   "id": "D08-015",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:43",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:51-64",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:72-80",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:86-101",
+    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:92-100",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:138-162"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "Switch 'Sync board and issue status' (deliberately absent: Hydra has no Linear sync engine)"
+   ],
+   "note": "Non-modal settings dropdown, Board settings tooltip, nested popover preservation, status list and inline blur/Enter rename exist; only the task-sync switch is absent."
+  },
+  {
+   "id": "D08-016",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:121",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:136",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:151-155",
+    "src/components/sidebar/workspace-board/use-workspace-board-status-actions.ts:79-95",
+    "src/components/sidebar/workspace-board/workspace-board-status-crud.ts:89-113",
+    "src/components/sidebar/workspace-board/workspace-board-status-crud.parity.test.ts:66-93",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:150-162"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Move left/right and Remove buttons with disabled bounds exist, and removal migrates every worktree of the removed lane (including default-status fallback) to the adjacent survivor."
+  },
+  {
+   "id": "D08-017",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:165-176",
+    "src/components/sidebar/workspace-board/use-workspace-board-status-actions.ts:41-49",
+    "src/components/sidebar/workspace-board/workspace-board-status-crud.ts:29-34",
+    "src/shared/workspace-statuses.ts:143",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:138-141"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Add status appends 'Status N', generates a de-duplicated id via makeWorkspaceStatusId and records workspace-board-actions in the store."
+  },
+  {
+   "id": "D08-018",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board/use-workspace-board-status-actions.ts:39-45",
+    "src/components/sidebar/workspace-board/use-workspace-board-status-actions.ts:51-70",
+    "src/components/sidebar/workspace-board/workspace-board-status-crud.ts:36-62"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Rename trims and ignores blanks, color/icon updates are applied, and every edit commits through setWorkspaceStatuses plus workspace-board-actions telemetry."
+  },
+  {
+   "id": "D08-040",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:55-66",
+    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:84-104",
+    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:112-137",
+    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:164",
+    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:44-49",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:34-47",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:59-68",
+    "src/components/sidebar/worktree-list/drag/worktree-pointer-board-drop.parity.test.tsx:323-395"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "Traduz índices virtuais/filtrados na fronteira de commit (resolveWorkspaceKanbanSidebarFullLaneDropIndex)",
+    "Constrói atualizações em lote (buildWorkspaceKanbanSidebarDropUpdates) e decide comutação para ordenação manual"
+   ],
+   "note": "Sidebar drag now resolves board lanes/pin strip via a registered open board, paints lane highlight + indicator and commits status/pin; index translation and batch metadata updates remain absent."
+  },
+  {
+   "id": "D09-025",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/smart-attention.ts:381-415",
+    "src/components/sidebar/smart-attention.ts:388",
+    "src/components/sidebar/smart-attention.ts:391-399",
+    "src/components/sidebar/smart-attention.ts:419-421",
+    "src/components/sidebar/smart-attention.ts:436-446",
+    "src/components/sidebar/smart-attention.ts:423-430",
+    "src/components/sidebar/smart-attention.parity.test.ts:134-170"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "collectTabPaneInputs is now a full port: tabHasLivePty gating, entriesByTabId, permissionHookLeafIds suppression, split-pane leaf resolution, restored-tab title inheritance."
+  },
+  {
+   "id": "D09-026",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/smart-attention.ts:456-466",
+    "src/components/sidebar/smart-attention.ts:263-289",
+    "src/components/sidebar/smart-attention.ts:293-307",
+    "src/components/sidebar/smart-attention.ts:497-500",
+    "src/components/sidebar/smart-sort.ts:205-217",
+    "src/components/sidebar/visible-worktrees.ts:341-350",
+    "src/components/sidebar/smart-attention.parity.test.ts:155-178"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Stubbed null exports replaced by a real buildAttentionByWorktree with tab index, migration conversion, malformed paneKey drop and byAttributedWorktree precedence; wired from the smart-sort pipeline."
+  },
+  {
+   "id": "D11-002",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/natural-worktree-ids.ts:16-23",
+    "src/components/sidebar/worktree-list/drag/groups.ts:4",
+    "src/components/sidebar/worktree-list/drag/groups.ts:18",
+    "src/components/sidebar/worktree-list/drag/groups.ts:49",
+    "src/components/sidebar/worktree-list/drag/use-session.ts:22",
+    "src/components/sidebar/worktree-list/drag/use-session.ts:56-57",
+    "src/components/sidebar/worktree-drag-units.ts:3",
+    "src/components/sidebar/worktree-drag-units.ts:23",
+    "src/components/sidebar/worktree-list/drag/WorktreeListDragProvider.tsx:46",
+    "src/components/sidebar/WorktreeList.tsx:1407",
+    "src/components/sidebar/worktree-sidebar-drag-autoscroll.parity.test.ts:213"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Veredito obsoleto: o modulo deixou de ser orfao - groups.ts/use-session.ts o importam por valor e o provider e montado em WorktreeList.tsx:1407."
+  },
+  {
+   "id": "D11-017",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-manual-order.ts:36-72",
+    "src/components/sidebar/worktree-list/drag/use-session.ts:58-72",
+    "src/components/sidebar/worktree-list/drag/use-session.ts:161",
+    "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:141-145",
+    "src/components/sidebar/WorktreeList.tsx:805-819",
+    "src/components/sidebar/WorktreeList.tsx:1413",
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:20-30"
+   ],
+   "backend": [],
+   "missing_behaviors": [],
+   "note": "Veredito obsoleto: a expansao e chamada por getReorderDraggedIds no pointer drag vivo e a lista pintada ja tem multi-selecao de cards."
+  },
+  {
+   "id": "D15b-002",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:108",
+    "src/components/sidebar/visible-worktree-filters.ts:62-73",
+    "src/components/sidebar/workspace-board/workspace-board-worktrees.parity.test.ts:208-217",
+    "src/components/sidebar/visible-worktrees.ts:301-304"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "Amostragem re-chaveada por epoch clock (getAgentStatusEpochNow/agentStatusEpoch) em vez de Date.now()",
+    "Sentinela 0 que desliga a amostra de agentes quando showSleepingWorkspaces esta ativo",
+    "Memo do conjunto de ids vivos compartilhado entre board e lista"
+   ],
+   "note": "O board ja isola workspaces dormindo (hideSleeping via isVisibleUnderSidebarMenuFilters, com teste), mas nao ha epoch clock nem amostra compartilhada; o audit so buscou o hook pelo nome."
+  },
+  {
+   "id": "D15b-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:44-53",
+    "src/components/sidebar/workspace-board/use-workspace-board-geometry.ts:20-38"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "Constantes exportadas WORKSPACE_TOP_CHROME_HEIGHT = 36 e STATUS_BAR_RESERVE_HEIGHT = 24",
+    "Modulo de metricas compartilhado para paineis portalizados (o sheet mede o rect do sidebar em vez de usar as constantes)"
+   ],
+   "note": "O sheet portalizado do board ja reserva chrome superior e status bar medindo o sidebar; faltam apenas as constantes/modulo de metricas que o Orca exporta."
+  },
+  {
+   "id": "D04a-088",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-compact-agents.tsx:63-66",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:101",
+    "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:13-18",
+    "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:44-50"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "Revelação do card no próximo frame (rAF) em useLayoutEffect, só em expansão genuína (o toggle não revela o card após abrir)"
+   ],
+   "note": "A supressão do ajuste de scroll já existe; só a revelação no frame seguinte falta."
+  },
+  {
+   "id": "D04a-110",
+   "status": "partial",
+   "evidence": [
+    "src/shared/worktree/card-properties.ts:45-58",
+    "src/shared/ui-chrome-types.ts:28-33"
+   ],
+   "backend": [],
+   "missing_behaviors": [
+    "Catálogo de rótulos traduzidos por propriedade (equivalente a PROPERTY_OPTIONS com translate), consumível pelo menu de opções"
+   ],
+   "note": "A lista canônica de ids já existe e alimenta persistência/normalização; faltam os rótulos i18n por propriedade."
+  }
+ ]
+}

@@ -15,6 +15,8 @@ export type WorktreeRowDragState = {
   draggingWorktreeId: string | null
   dropIndex: number | null
   dropIndicatorY: number | null
+  /** Card the pointer is hovering to nest under, or null for a reorder. */
+  lineageDropTargetId: string | null
   previewOffsetsByWorktreeId: ReadonlyMap<string, number>
 }
 
@@ -24,6 +26,7 @@ export const WORKTREE_ROW_DRAG_INITIAL_STATE: WorktreeRowDragState = {
   draggingWorktreeId: null,
   dropIndex: null,
   dropIndicatorY: null,
+  lineageDropTargetId: null,
   previewOffsetsByWorktreeId: EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
 }
 
@@ -45,6 +48,12 @@ export type WorktreePointerDrag = {
   previewOffsetX: number
   previewOffsetY: number
   frameId: number | null
+  /**
+   * Hysteresis for the reorder slot (Orca `REORDER_INTENT_DELAY_MS`): crossing a
+   * gutter into the next card starts a 160ms intent, so a pointer that grazes the
+   * boundary does not flip the insertion line back and forth.
+   */
+  reorderIntent: { dropIndex: number; pointerY: number; startedAt: number } | null
 }
 
 export function areWorktreeDragPreviewOffsetsEqual(
@@ -76,28 +85,68 @@ export function applyWorktreeDropPreview(
       previous.previewOffsetsByWorktreeId,
       drop.previewOffsetsByWorktreeId
     )
-  return unchanged
+  return unchanged && previous.lineageDropTargetId === null
     ? previous
     : {
         draggingWorktreeId: previous.draggingWorktreeId,
         dropIndex: drop.dropIndex,
         dropIndicatorY: drop.dropIndicatorY,
+        lineageDropTargetId: null,
         previewOffsetsByWorktreeId: drop.previewOffsetsByWorktreeId
       }
 }
 
 /** Drop the insertion line and the row offsets a frame had opened. */
-export function clearWorktreeDropPreview(previous: WorktreeRowDragState): WorktreeRowDragState {
+export function clearWorktreeDropPreview(
+  previous: WorktreeRowDragState,
+  options: { preserveOffsets?: boolean } = {}
+): WorktreeRowDragState {
   const unchanged =
     previous.dropIndex === null &&
     previous.dropIndicatorY === null &&
     previous.previewOffsetsByWorktreeId.size === 0
-  return unchanged
+  if (unchanged) {
+    return previous
+  }
+  return {
+    draggingWorktreeId: previous.draggingWorktreeId,
+    dropIndex: null,
+    dropIndicatorY: null,
+    lineageDropTargetId: previous.lineageDropTargetId,
+    // Why preserve: while the 160ms intent is pending the rows must stay where the
+    // previous slot opened them; snapping back and reopening would flicker.
+    previewOffsetsByWorktreeId: options.preserveOffsets
+      ? previous.previewOffsetsByWorktreeId
+      : EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
+  }
+}
+
+/** The pointer is over a nestable card: the insertion line gives way to the parent ring. */
+export function applyWorktreeLineageDropPreview(
+  previous: WorktreeRowDragState,
+  targetId: string
+): WorktreeRowDragState {
+  if (
+    previous.lineageDropTargetId === targetId &&
+    previous.dropIndex === null &&
+    previous.dropIndicatorY === null &&
+    previous.previewOffsetsByWorktreeId.size === 0
+  ) {
+    return previous
+  }
+  return {
+    draggingWorktreeId: previous.draggingWorktreeId,
+    dropIndex: null,
+    dropIndicatorY: null,
+    lineageDropTargetId: targetId,
+    previewOffsetsByWorktreeId: EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
+  }
+}
+
+export function clearWorktreeLineageDropPreview(
+  previous: WorktreeRowDragState
+): WorktreeRowDragState {
+  return previous.lineageDropTargetId === null
     ? previous
-    : {
-        draggingWorktreeId: previous.draggingWorktreeId,
-        dropIndex: null,
-        dropIndicatorY: null,
-        previewOffsetsByWorktreeId: EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS
-      }
+    : { ...previous, lineageDropTargetId: null }
 }

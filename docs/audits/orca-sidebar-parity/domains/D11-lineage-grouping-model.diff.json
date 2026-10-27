@@ -16,7 +16,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Regra idêntica à do Orca (isMainWorktree && branch.trim() !== '' && ephemeralVmCheckoutMode !== 'provisioned-root'). Alcançável: mount WorktreeSidebar.tsx:19 -> WorktreeList.tsx:19 (import de valor de visible-worktrees) -> visible-worktrees.ts:49 -> default-branch-workspace.ts:4; executado no fallback de atalhos (App.tsx:58 -> App.tsx:2456 -> visible-worktrees.ts:326/380). A lista pintada aplica o mesmo efeito por código inline próprio em WorktreeSidebar.tsx:537 (critério ligeiramente diferente: preserva o worktree ativo).",
+    "notes": "Identificação de branch padrão segue ligada.",
     "note": "Identificação de branch padrão segue ligada."
    },
    "par": []
@@ -28,18 +28,24 @@
     "components/sidebar/natural-worktree-ids.ts:16"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Entrada: array de linhas do sidebar contendo type, sectionKey e objeto worktree opcional",
-     "Saída: Set<string> contendo os IDs das worktrees renderizadas em seu grupo natural",
-     "Regra de derivação: itera sobre as linhas e adiciona row.worktree.id apenas para linhas onde row.type === 'item' E row.sectionKey !== PINNED_GROUP_KEY E row.worktree está presente",
-     "Exclui duplicatas que aparecem na seção PINNED para que não ocupem slots de drag espúrios no reordenamento",
-     "Ignora todos os demais tipos de linha (header, host-header, imported-worktrees-card, new-external-worktrees-inbox, pending-creation, folder-workspace)",
-     "Utiliza loop direto em vez de flatMap para evitar alocações de arrays temporários por reconstrução de modelo"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/natural-worktree-ids.ts:16-23",
+     "src/components/sidebar/worktree-list/drag/groups.ts:4",
+     "src/components/sidebar/worktree-list/drag/groups.ts:18",
+     "src/components/sidebar/worktree-list/drag/groups.ts:49",
+     "src/components/sidebar/worktree-list/drag/use-session.ts:22",
+     "src/components/sidebar/worktree-list/drag/use-session.ts:56-57",
+     "src/components/sidebar/worktree-drag-units.ts:3",
+     "src/components/sidebar/worktree-drag-units.ts:23",
+     "src/components/sidebar/worktree-list/drag/WorktreeListDragProvider.tsx:46",
+     "src/components/sidebar/WorktreeList.tsx:1407",
+     "src/components/sidebar/worktree-sidebar-drag-autoscroll.parity.test.ts:213"
     ],
-    "notes": "O arquivo existe (src/components/sidebar/natural-worktree-ids.ts:16) com a regra exata, mas é código morto: seu único importador de valor é src/components/sidebar/worktree-drag-units.ts:3 (uso em :23), e worktree-drag-units.ts é inalcançável do mount (só é importado como `import type` em src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:2). BFS de imports de valor a partir de App.tsx/WorktreeSidebar.tsx/SidebarAgentsList.tsx não encontra o módulo; index/hydra_scope.json registra reachable_depth=null. Buscas adicionais: getNaturalWorktreeIds (só natural-worktree-ids.ts e worktree-drag-units.ts), PINNED_GROUP_KEY em modelo de drag natural (ausente), natural-worktree-ids.test (só teste)."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Veredito obsoleto: o modulo deixou de ser orfao - groups.ts/use-session.ts o importam por valor e o provider e montado em WorktreeList.tsx:1407.",
+    "note": "Veredito obsoleto: o modulo deixou de ser orfao - groups.ts/use-session.ts o importam por valor e o provider e montado em WorktreeList.tsx:1407."
    },
    "par": []
   },
@@ -61,7 +67,7 @@
      "Worktrees de Pinned renderizadas como seção própria no topo do sidebar: o resolvedor alcançável (build-rows.ts:101 -> emitPinnedGroup:138) só alimenta o modelo de linhas usado na numeração Cmd+1-9 (rendered-sidebar-worktree-order.ts:56/116 <- visible-worktrees.ts:377); a lista pintada (WorktreeList.renderProjectNode) não usa buildRows e não emite grupo Pinned.",
      "Herança de presença em Pinned para descendentes de um ancestral fixado nos cards pintados: WorktreeCard recebe isPinned de um Set<string> de paths vindo do App (WorktreeList.tsx:374 <- App.tsx:426 pinnedWorktrees), sem propagação por linhagem."
     ],
-    "notes": "O módulo é port fiel (fila de trabalho iterativa, isolamento por host com getWorktreeHostIdentity, sem recursão) e é alcançável/wired via build-rows.ts:25. O gap é a superfície: pinnedWorktrees do caminho pintado é um Set de paths por localStorage (App.tsx:431 hydra:worktree_lineage / App.tsx:424-426), não o worktree.isPinned do modelo Orca.",
+    "notes": "Pinned por herança de linhagem parcial.",
     "note": "Pinned por herança de linhagem parcial."
    },
    "par": [
@@ -152,7 +158,7 @@
      "Filtro de escopo de host aplicado à lista pintada do sidebar: a lista pintada (WorktreeSidebar.getFilteredAndSortedWorktrees, WorktreeSidebar.tsx:533) não consulta workspaceHostScope/visibleWorkspaceHostIds; o efeito só existe no pipeline de atalhos/ordenação (visible-worktrees.ts:367/373 e rendered-sidebar-worktree-order.ts:45/91).",
      "Ponto de entrada que altere o escopo: setWorkspaceHostScope (src/store/slices/ui/ui-slice-preference-actions.ts:68) e setVisibleWorkspaceHostIds (:77) não têm nenhum chamador em src/, então o conjunto resolvido é sempre null (todos os hosts) fora de testes."
     ],
-    "notes": "Regra de resolução/correspondência idêntica à do Orca (visible-worktree-host-scope.ts:14-36) e alcançável a partir do mount via visible-worktrees.ts:50 (import) e rendered-sidebar-worktree-order.ts:21.",
+    "notes": "Escopo de host executor parcial.",
     "note": "Escopo de host executor parcial."
    },
    "par": []
@@ -203,7 +209,7 @@
      "Efeito de hideAutomationGeneratedWorkspaces e hideCliCreatedWorkspaces sobre a lista pintada: expostos no menu de opções (WorkspaceOptionsMenu.tsx:433/447) mas ausentes de getFilteredAndSortedWorktrees (WorktreeSidebar.tsx:533-547).",
      "Uso de isDetachedHeadWorkspace pelo card pintado: a lista pintada usa heurística inline por string de branch (WorktreeSidebar.tsx:540, 'w.branch !== \"HEAD\" && != \"(detached)\"'), enquanto o predicado Orca só é consumido em visible-worktrees.ts e em src/lib/worktree-activation.ts:289."
     ],
-    "notes": "Os 6 símbolos existem nas linhas exatas do Orca e são alcançáveis (visible-worktrees.ts:44-48 reexporta/usa; sidebar-filter-actions.ts:14-25 alimenta o badge de Clear Filters). Os filtros que eles governam não são aplicados à lista pintada e os flags correspondentes do store só têm leitores (sidebar-filter-actions.ts:14-25) e nunca são elevados a true: a única escrita é o rebaixamento para false em src/lib/worktree-activation.ts:284-290, e os toggles do menu gravam apenas em prefs (WorktreeSidebar.tsx:348-351 handleDisplayOptionsChange -> App.tsx:468-476).",
+    "notes": "Predicados de tipo parcial.",
     "note": "Predicados de tipo parcial."
    },
    "par": [
@@ -235,7 +241,7 @@
      "Passo 12 (injeção de ancestrais de linhagem para evitar órfãos) na lista pintada",
      "Passos 3 e 6 (branch padrão/detached) aplicados pela função do port: a lista pintada usa filtros inline divergentes (WorktreeSidebar.tsx:537-542)"
     ],
-    "notes": "Todos os 12 passos estão implementados em computeVisibleWorktrees (visible-worktrees.ts:111-243) e são executados em runtime pelo fallback de atalhos quando o WorktreeList está desmontado (App.tsx:58 -> App.tsx:2456 -> getVisibleWorktreeShortcutTargets:380 -> getVisibleWorktreeIds:326 -> computeVisibleWorktreeIds:244), e WorktreeList publica a ordem real em :241. A superfície 'lista de worktrees no sidebar' é, porém, servida por outro modelo: WorktreeList.renderProjectNode itera getFilteredAndSortedWorktrees (WorktreeSidebar.tsx:533-547) e aplica só 2 dos 12 passos; os flags do store lidos pelo pipeline (showSleepingWorkspaces, hideAutomationGeneratedWorkspaces, hideCliCreatedWorkspaces, hideWorkspacesFromOtherDevices, hideDefaultBranchWorkspace, alwaysShowDefaultBranchWorkspace, workspaceHostScope/visibleWorkspaceHostIds) nunca são elevados a true em src/ (única escrita: rebaixamento para false em src/lib/worktree-activation.ts:284-290; workspaceHostScope/visibleWorkspaceHostIds sem chamador algum).",
+    "notes": "Pipeline central de visíveis parcial (injeção de ancestrais incompleta).",
     "note": "Pipeline central de visíveis parcial (injeção de ancestrais incompleta)."
    },
    "par": []
@@ -259,7 +265,7 @@
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Mecanismo publicado/resolvido idêntico ao Orca (_publishedVisibleIds/_publishedVisibleShortcutTargets em :266/:271, setters :273/:277 aceitando null, fallback buildVisibleWorktreeOptionsFromState :292 recomputando ordem + pipeline de linhas). Caminho vivo: WorktreeList.tsx:240-246 publica antes do paint e anula ao desmontar; App.tsx:2456 (Cmd+1-9) consome via findWorktreeForShortcutIndex (src/lib/visible-worktree-index-jump.ts:26).",
+    "notes": "Publicação de ids/targets de atalho espelhando a ordem visual segue ligada.",
     "note": "Publicação de ids/targets de atalho espelhando a ordem visual segue ligada."
    },
    "par": []
@@ -304,8 +310,12 @@
     "components/sidebar/worktree-lineage-drag-drop.ts:61"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/drag/nesting.ts:12-13",
+     "src/components/sidebar/worktree-list/drag/nesting.ts:53-79",
+     "src/components/sidebar/worktree-list/drag/worktree-nesting.parity.test.ts:150-181"
+    ],
     "backend": [],
     "missing_behaviors": [
      "isWorktreeLineageDropZoneHit: calcula calhas superior e inferior de reordenação (limitadas a min(altura * 0.2, 8px)); retorna true se o ponteiro Y estiver na zona central de aninhamento, permitindo que o topo e a base permaneçam para soltar em reordenação",
@@ -315,7 +325,8 @@
      "Não desaninha cards selecionados que estão fora do grupo de origem do drag",
      "Trata linhagem legada apenas inline e não recorre a inline quando o mapa lateral possui entrada com pai inválido/obsoleto"
     ],
-    "notes": "Não localizado após busca por worktree-lineage-drag-drop, isWorktreeLineageDropZoneHit, getWorktreeLineageDropTargetId, getReorderedWorktreeIdsToUnnest, dropZone, nest, 'data-worktree-drag-id'. O módulo não existe; 'data-worktree-drag-id' aparece só em módulos inalcançáveis (src/components/sidebar/worktree-list/pointer-drag-dom.ts:47,52-53; src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:134/138, este último só alcançável para o preview de drop de header). O drag pintado é reordenação plana de projetos/worktrees (WorktreeSidebar.tsx:484-502 handleProjectDrop, WorktreeList.tsx:389-398 onWorktreeDragStart/Over/Drop) sem zona central de aninhamento de linhagem. Aninhamento existe apenas por menu: ParentPickerModal (App.tsx:3951) gravando em worktreeLineage local. Relacionado: PAR-43."
+    "notes": "Hit test rejects empty rects, reserves min(20% height, 8px) at top/bottom for reorder and nests only in the middle band.",
+    "note": "Hit test rejects empty rects, reserves min(20% height, 8px) at top/bottom for reorder and nests only in the middle band."
    },
    "par": [
     "PAR-43"
@@ -335,26 +346,17 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-lineage-projection.ts:8",
-     "src/components/sidebar/worktree-lineage-projection.ts:15",
-     "src/components/sidebar/worktree-lineage-projection.ts:38",
-     "src/components/sidebar/worktree-lineage-projection.ts:60",
-     "src/components/sidebar/worktree-lineage-projection.ts:84",
-     "src/components/sidebar/worktree-lineage-projection.ts:105",
-     "src/components/sidebar/worktree-lineage-projection.ts:128",
-     "src/components/sidebar/visible-worktrees.ts:39",
-     "src/components/sidebar/visible-worktrees.ts:217",
-     "src/components/sidebar/visible-worktrees.ts:225",
-     "src/components/sidebar/pinned-section-worktrees.ts:14",
-     "src/components/sidebar/worktree-list/grouping/row-builders.ts:6"
+     "src/components/sidebar/WorktreeList.tsx:657-682",
+     "src/components/sidebar/WorktreeList.tsx:1080-1092",
+     "src/components/sidebar/worktree-list/grouping/lineage-nesting.parity.test.ts:1-75"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Renderização de cards aninhados por linhagem no sidebar: a indentação é fixa em lineageDepth 0 (WorktreeList.tsx:343, getWorktreeCardContentIndent); as constantes LINEAGE_* (worktree-list/rows/indentation.ts:13-17) não são exercitadas por nenhum consumidor pintado.",
-     "Chip/região de filhos de linhagem no card: showLineageChildChip é forçado a false (use-worktree-card-controller.ts:313) e worktree-card-parent-content.tsx não é referenciado pelo caminho pintado.",
-     "Estado de Pinned por seção derivado de linhagem no card (inPinnedSection nunca é passado: use-worktree-card-controller.ts:87-88/272-273)."
+     "Chip/região de filhos de linhagem no card",
+     "Estado de Pinned por seção derivado de linhagem no card"
     ],
-    "notes": "Port fiel, com os 6 símbolos nas linhas exatas do Orca (8/15/60/84/105/128) e memoização WeakMap de dois níveis (:38-57). Alcançável e usado por computeVisibleWorktrees (visible-worktrees.ts:50/217/225), pinned-section-worktrees.ts:14 e row-builders.ts:6. O efeito de árvore hierárquica de cards no sidebar pintado não existe. Relacionado: PAR-82 (persistência de expansão de linhagem)."
+    "notes": "The app's path lineage is projected into the row model, the pipeline emits nested rows (depth 1) and the card indents by lineage depth instead of flattening it.",
+    "note": "The app's path lineage is projected into the row model, the pipeline emits nested rows (depth 1) and the card indents by lineage depth instead of flattening it."
    },
    "par": [
     "PAR-82"
@@ -410,16 +412,20 @@
     "components/sidebar/worktree-lineage-expansion.performance.test.ts:37"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "expandDraggedWorktreeIdsForVisibleLineage: expande a seleção de IDs arrastados para incluir automaticamente todos os descendentes visíveis na árvore",
-     "Executa em tempo linear O(N) lendo a profundidade (depth) de cada linha exatamente uma vez, mesmo quando todos os ancestrais estão selecionados",
-     "Deduplica IDs ausentes sem buscas quadráticas no array resultante",
-     "Garante paridade de ordenação com o modelo de referência em casos de IDs duplicados, IDs ausentes e valores de borda de profundidade"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-manual-order.ts:36-72",
+     "src/components/sidebar/worktree-list/drag/use-session.ts:58-72",
+     "src/components/sidebar/worktree-list/drag/use-session.ts:161",
+     "src/components/sidebar/worktree-list/drag/use-pointer-drag.ts:141-145",
+     "src/components/sidebar/WorktreeList.tsx:805-819",
+     "src/components/sidebar/WorktreeList.tsx:1413",
+     "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:20-30"
     ],
-    "notes": "A função existe (src/components/sidebar/worktree-manual-order.ts:36 expandDraggedWorktreeIdsForVisibleLineage) mas o módulo é inalcançável do mount: nenhum importador de valor em src/ (só `import type` em worktree-sidebar-drag-autoscroll.ts:1) e index/hydra_scope.json registra reachable_depth=null. Logo o efeito (expansão O(N) de descendentes visíveis na seleção arrastada) não é produzido em nenhum caminho alcançável; a lista pintada nem implementa multi-seleção de cards. Relacionado: PAR-08."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Veredito obsoleto: a expansao e chamada por getReorderDraggedIds no pointer drag vivo e a lista pintada ja tem multi-selecao de cards.",
+    "note": "Veredito obsoleto: a expansao e chamada por getReorderDraggedIds no pointer drag vivo e a lista pintada ja tem multi-selecao de cards."
    },
    "par": [
     "PAR-08"

@@ -50,6 +50,9 @@ export interface ImportedWorktreesVisibilityLineProps {
   error?: string | null;
   /** Per-path recovery: one `import_worktree` per hidden worktree. */
   onShow?: (worktreePath: string) => void;
+  /** Card-level recovery (Orca `showImportedWorktreesCard`): flips the repo policy
+   *  to `show`, refreshes authoritatively and rolls back on failure. */
+  onShowAll?: () => void;
   /** Acknowledge the listed paths into the repo's inbox baseline. */
   onKeepHidden?: (worktreePaths: string[]) => void;
   className?: string;
@@ -148,6 +151,7 @@ export function ImportedWorktreesVisibilityLine({
   pending = false,
   error = null,
   onShow,
+  onShowAll,
   onKeepHidden,
   className = "",
 }: ImportedWorktreesVisibilityLineProps): React.JSX.Element | null {
@@ -338,18 +342,24 @@ export function ImportedWorktreesVisibilityLine({
                   Keep hidden
                 </Button>
               )}
-              {onShow && (
+              {onShowAll || onShow ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="xs"
                   disabled={pending}
-                  onClick={() => inboxPaths.forEach((worktreePath) => onShow(worktreePath))}
+                  onClick={() => {
+                    if (onShowAll) {
+                      onShowAll();
+                    } else {
+                      inboxPaths.forEach((worktreePath) => onShow?.(worktreePath));
+                    }
+                  }}
                   className="h-6 px-2 text-[11px] font-medium cursor-pointer"
                 >
                   Show in worktree list
                 </Button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

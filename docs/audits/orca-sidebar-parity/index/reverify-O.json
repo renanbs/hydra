@@ -1,0 +1,17 @@
+{
+ "group": "O",
+ "generatedFrom": "2026-10-21 drag fallbacks: visibilitychange aborts a pointer drag and capture-phase document dragend/drop release a native drag, without preempting the row/header drop handlers",
+ "rows": [
+  {
+   "id": "D03a-019",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/use-pointer-window-events.ts:69-96",
+    "src/components/sidebar/WorktreeSidebar.tsx:600-616",
+    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:46-62",
+    "src/components/sidebar/worktree-list/drag/worktree-pointer-drag.parity.test.tsx:304-325"
+   ],
+   "note": "Hidden document aborts the pointer drag; native dragend/drop are caught on document capture, the drop cleanup is deferred so the row/header handler commits first; status/nest drops without a reorder slot are committed."
+  }
+ ]
+}

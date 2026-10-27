@@ -9,6 +9,8 @@ import {
   DropdownMenuSubTrigger,
 } from "./ui/dropdown-menu";
 import type { ContextMenuItem } from "./CustomContextMenu";
+import { shouldSuppressContextMenuFollowUpClick } from "./sidebar/context-menu-click-debounce";
+import { useEffect } from "react";
 
 /**
  * Item 4 TODO Hydra: menus Radix com submenu no hover, num portal.
@@ -90,6 +92,21 @@ export function RadixContextMenu({
   items: ContextMenuItem[];
   onClose: () => void;
 }) {
+  // Why capture: the click that opened the menu (right-click release, card click)
+  // can land on the card underneath and activate it. Keep it out for 500ms; menu
+  // clicks are exempt so a fast first selection still works.
+  useEffect(() => {
+    const openedAt = Date.now();
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      if (target?.closest('[role="menu"]')) return;
+      if (!shouldSuppressContextMenuFollowUpClick(openedAt, Date.now())) return;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, []);
   return (
     <DropdownMenu open onOpenChange={(open) => !open && onClose()}>
       <DropdownMenuContent

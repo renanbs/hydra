@@ -66,6 +66,14 @@ export function useWorktreePointerDragWindowEvents(args: {
       clearWorktreeDrag()
     }
 
+    // Orca aborts a drag when the document is hidden: the pointer sequence cannot be
+    // trusted after the tab loses visibility, so no release should commit later.
+    const handleVisibilityChange = (): void => {
+      if (document.visibilityState === 'hidden' && worktreePointerDragRef.current) {
+        clearWorktreeDrag()
+      }
+    }
+
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape' || !worktreePointerDragRef.current) {
         return
@@ -79,11 +87,13 @@ export function useWorktreePointerDragWindowEvents(args: {
     window.addEventListener('pointermove', handlePointerMove, { capture: true })
     window.addEventListener('pointerup', handlePointerUp, { capture: true })
     window.addEventListener('pointercancel', handlePointerCancel, { capture: true })
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => {
       window.removeEventListener('keydown', handleKeyDown, { capture: true })
       window.removeEventListener('pointermove', handlePointerMove, { capture: true })
       window.removeEventListener('pointerup', handlePointerUp, { capture: true })
       window.removeEventListener('pointercancel', handlePointerCancel, { capture: true })
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [
     beginWorktreePointerDrag,

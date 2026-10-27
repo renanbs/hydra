@@ -1,0 +1,12 @@
+{
+ "group": "S",
+ "generatedFrom": "2026-10-21 compact markdown renderer for workspace notes: dependency-free inline tokens, inert raw HTML, safe-protocol-only links opened through the external command",
+ "rows": [
+  {"id":"D12-001","status":"parity","evidence":["src/components/sidebar/comment-markdown.tsx:1-150","src/components/sidebar/comment-markdown.parity.test.tsx:59-70"],"note":"Compact variant renders line divs (no <p>), preserves line breaks and uses the card's own typography."},
+  {"id":"D12-002","status":"parity","evidence":["src/components/sidebar/comment-markdown.tsx:118-125","src/components/sidebar/comment-markdown.parity.test.tsx:59-70"],"note":"H1–H6 lines flatten to a semibold inline line instead of block headings."},
+  {"id":"D12-003","status":"missing","evidence":[],"missing_behaviors":["Variante documental com headings em bloco, citações e espaçamento hierárquico"],"note":"Only the compact sidebar variant exists."},
+  {"id":"D12-004","status":"partial","evidence":["src/components/sidebar/comment-markdown.tsx:1-30","src/components/sidebar/comment-markdown.parity.test.tsx:32-40"],"missing_behaviors":["Remoção de comentários HTML (hoje aparecem como texto literal)"],"note":"Raw HTML can never become markup and unsafe protocols stay literal; HTML comments are shown, not stripped."},
+  {"id":"D12-007","status":"parity","evidence":["src/components/sidebar/comment-markdown.tsx:75-92","src/components/sidebar/comment-markdown.parity.test.tsx:42-55"],"note":"Links preventDefault+stopPropagation and open via open_external_url_cmd; only http(s)/mailto linkify."},
+  {"id":"D12-012","status":"missing","evidence":[],"missing_behaviors":["Bloco de código com extração de linguagem e renderer customizado"],"note":"Fenced blocks are not recognized; backticks render inline only."}
+ ]
+}

@@ -4,6 +4,7 @@ import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus
 import type { WorktreeStatus } from '../../lib/worktree-status'
 import type { PrDisplay } from './pr-display'
 import type { ResolvedWorktreeCardProps, WorktreeCardProps, WorktreeRenameRequest } from './worktree-card-model'
+import { usePromptCacheCountdownStartedAt, usePromptCacheTtlMs } from './CacheTimer'
 
 export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   repo: HydraProject | undefined
@@ -143,6 +144,14 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
   const isDeleting = deleteState?.isDeleting ?? false
   const isQueuedForDeletion = deleteState?.phase === 'queued'
   const deleteLabel = isQueuedForDeletion ? 'Queued for deletion' : 'Deleting workspace...'
+
+  // D01-049: the countdown's data source. The card shows its worktree's most urgent
+  // cache start (the store keys caches by pane and `tabsByWorktree` by worktree path,
+  // exactly like the terminal writers) and reads the TTL from the same settings blob
+  // the terminal seeding consults.
+  const cacheTimerActive = !compactCards
+  const cacheStartedAt = usePromptCacheCountdownStartedAt(worktree.path, cacheTimerActive)
+  const cacheTtlMs = usePromptCacheTtlMs(cacheTimerActive)
 
   // Why (D04a G9): the sidebar keyboard path (`workspace.rename`) hands the card
   // the request it should consume, exactly as Orca's card reads it from the store.
@@ -326,8 +335,8 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     branch: branchName,
     detachedHeadDisplay,
     conflictOperation: '',
-    cacheStartedAt: null,
-    cacheTtlMs: 300_000,
+    cacheStartedAt,
+    cacheTtlMs,
     hasDetails: Boolean(review || (ports && ports.length > 0) || metaRowChildren),
     hasPorts: Boolean(ports && ports.length > 0),
     showStatus: true,

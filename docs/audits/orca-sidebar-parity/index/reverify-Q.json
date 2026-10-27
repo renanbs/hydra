@@ -1,0 +1,38 @@
+{
+ "group": "Q",
+ "generatedFrom": "2026-10-21 card metadata badges: icon-only badges for notes, provenance, issue and Linear in the meta row/title row, gated by hasWorktreeCardDetails",
+ "rows": [
+  {
+   "id": "D04a-025",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-card-metadata-badges.tsx:60-125",
+    "src/components/sidebar/worktree-card-presentation.tsx:92-108",
+    "src/components/sidebar/worktree-card-presentation.tsx:166-176"
+   ],
+   "missing_behaviors": [
+    "Badge de Jira (o card não projeta linked Jira)"
+   ],
+   "note": "Notes, automation, CLI, issue and Linear badges render next to the existing review/ports triggers; Jira awaits its metadata field."
+  },
+  {
+   "id": "D04a-026",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-metadata-badges.tsx:24-33",
+    "src/components/sidebar/worktree-card-presentation.tsx:92-108",
+    "src/components/sidebar/worktree-card-metadata-badges.parity.test.tsx:12-22"
+   ],
+   "note": "hasWorktreeCardDetails decides whether the meta row/title row detail slot and the hover exist at all."
+  },
+  {
+   "id": "D04a-027",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-card-metadata-badges.tsx:35-58",
+    "src/components/sidebar/worktree-card-metadata-badges.parity.test.tsx:24-42"
+   ],
+   "note": "Each badge is icon-only with role=img, aria-label full sentence and a matching tooltip."
+  }
+ ]
+}

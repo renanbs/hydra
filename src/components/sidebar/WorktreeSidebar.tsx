@@ -27,7 +27,7 @@ const SidebarAgentsList = lazyWithRetry(() =>
 import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
 import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
-import { WorkspaceOptionsMenu, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
@@ -44,6 +44,12 @@ import type {
   SidebarShellPrefs,
 } from "./types";
 import { IDLE, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
+import { useAppStore } from "../../store";
+import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redirect";
+import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
+import { RemoveFolderDialog } from "./RemoveFolderDialog";
+import { SuppressExternalWorktreeInboxDialog } from "./SuppressExternalWorktreeInboxDialog";
+import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
 export * from "./types";
 
@@ -55,6 +61,7 @@ const defaultDisplayOptions: WorkspaceDisplayOptions = {
   hideAutomationCreated: false,
   hideCliCreated: false,
   hideDetachedHead: false,
+  alwaysShowDefaultBranch: false,
 };
 
 export function WorktreeSidebar({
@@ -89,6 +96,11 @@ export function WorktreeSidebar({
   onReorderSessions: _onReorderSessions,
   onReorderProjects,
   onReorderWorktrees,
+  lineageByPath,
+  worktreeMetadataByPath,
+  onEditWorktreeMetadata,
+  onAssignWorktreeParent,
+  onUnnestWorktrees,
   pinnedProjects,
   unreadProjects,
   pinnedWorktrees,
@@ -113,6 +125,7 @@ export function WorktreeSidebar({
   initialDisplayOptions,
   initialAgentsReadFilter,
   initialAgentsGroupBy,
+  initialAgentsIntroShown,
   onSidebarPrefsChange,
 }: WorktreeSidebarProps): React.JSX.Element {
   // ─── View & Preference State ─────────────────────────────────────────────
@@ -132,6 +145,11 @@ export function WorktreeSidebar({
   const [agentsGroupBy, setAgentsGroupBy] = useState<AgentsGroupBy>(
     initialAgentsGroupBy ?? "state"
   );
+  // D01-009: the one-time Agents-view intro is gated by a persisted preference
+  // (the same `ui.sidebar` blob the other shell prefs use), not raw localStorage.
+  const [agentsIntroShown, setAgentsIntroShown] = useState<boolean>(
+    initialAgentsIntroShown ?? false
+  );
 
   const [filter, setFilter] = useState("");
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
@@ -146,6 +164,42 @@ export function WorktreeSidebar({
   // Context Menu state
   const [activeProjectMenu, setActiveProjectMenu] = useState<{ proj: HydraProject; x: number; y: number } | null>(null);
   const [activeGroupMenu, setActiveGroupMenu] = useState<{ group: { id: string; name: string }; x: number; y: number } | null>(null);
+  const [removeProjectTarget, setRemoveProjectTarget] = useState<HydraProject | null>(null);
+  const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
+  const [suppressInboxPending, setSuppressInboxPending] = useState(false);
+  const [hiddenWorktreeErrorByProject, setHiddenWorktreeErrorByProject] = useState<
+    Record<string, string | null>
+  >({});
+  const setHiddenWorktreeError = useCallback(
+    (projectPath: string, message: string | null) => {
+      setHiddenWorktreeErrorByProject((previous) => {
+        if (previous[projectPath] === message) return previous;
+        return { ...previous, [projectPath]: message };
+      });
+    },
+    []
+  );
+  // Why primitives/reference-stable slices: a selector that returns a fresh
+  // object literal makes zustand re-render forever (React "maximum update depth").
+  const removeProjectRepo = useAppStore((state) =>
+    removeProjectTarget
+      ? state.repos.find((entry) => entry.path === removeProjectTarget.path) ?? null
+      : null
+  );
+  const removeProjectSshLabels = useAppStore((state) => state.sshTargetLabels);
+  const removeProjectRemovedSshLabels = useAppStore((state) => state.removedSshTargetLabels);
+  const removeProjectTargetId = removeProjectRepo?.connectionId?.trim() ?? "";
+  const removeProjectHost = !removeProjectTargetId
+    ? ({ kind: "local" } as const)
+    : isRuntimeOwnedSshTargetId(removeProjectTargetId)
+      ? ({ kind: "vm" } as const)
+      : {
+          kind: "ssh" as const,
+          label:
+            removeProjectSshLabels.get(removeProjectTargetId) ??
+            removeProjectRemovedSshLabels.get(removeProjectTargetId) ??
+            removeProjectTargetId,
+        };
 
   // Dialogs state
   const [groupNameDialog, setGroupNameDialog] = useState<{
@@ -349,6 +403,7 @@ export function WorktreeSidebar({
       displayOptions: patch?.displayOptions ?? displayOptions,
       agentsReadFilter: patch?.agentsReadFilter ?? agentsStatusFilter,
       agentsGroupBy: patch?.agentsGroupBy ?? agentsGroupBy,
+      agentsSidebarIntroShown: patch?.agentsSidebarIntroShown ?? agentsIntroShown,
     });
   }, [
     onSidebarPrefsChange,
@@ -358,6 +413,7 @@ export function WorktreeSidebar({
     displayOptions,
     agentsStatusFilter,
     agentsGroupBy,
+    agentsIntroShown,
   ]);
 
   // ─── Project & Group Toggles ─────────────────────────────────────────────
@@ -391,9 +447,50 @@ export function WorktreeSidebar({
     notifyPrefs({ displayOptions: newOptions });
   }, [notifyPrefs]);
 
+  // Registry-dispatched toggle (D09-005): one writer, the same one the menu uses.
+  useEffect(() => {
+    const onToggle = () => {
+      handleDisplayOptionsChange({
+        ...displayOptions,
+        hideSleeping: !displayOptions.hideSleeping,
+      });
+    };
+    window.addEventListener("hydra:toggle-sleeping-workspaces", onToggle);
+    return () => window.removeEventListener("hydra:toggle-sleeping-workspaces", onToggle);
+  }, [displayOptions, handleDisplayOptionsChange]);
+
+  // The empty state's escape hatch (D01-051): resets every menu/host-scope filter
+  // that can empty the list, through the same writers the options menu uses — one
+  // writer per preference, no parallel state.
+  const setWorkspaceHostScope = useAppStore((s) => s.setWorkspaceHostScope);
+  const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
+  const handleClearSidebarFilters = useCallback(() => {
+    const next: WorkspaceDisplayOptions = {
+      ...displayOptions,
+      hideSleeping: false,
+      hideDefaultBranch: false,
+      hideAutomationCreated: false,
+      hideCliCreated: false,
+      hideDetachedHead: false,
+      alwaysShowDefaultBranch: false,
+      filterProjectIds: [],
+    };
+    setDisplayOptions(next);
+    notifyPrefs({ displayOptions: next });
+    setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
+    setVisibleWorkspaceHostIds(null);
+  }, [displayOptions, notifyPrefs, setWorkspaceHostScope, setVisibleWorkspaceHostIds]);
+
   const handleAgentsGroupByChange = useCallback((groupBy: AgentsGroupBy) => {
     setAgentsGroupBy(groupBy);
     notifyPrefs({ agentsGroupBy: groupBy });
+  }, [notifyPrefs]);
+
+  // D01-009: acknowledging the intro persists through the same writer as the other
+  // shell prefs, so it shows exactly once across restarts.
+  const handleAcknowledgeAgentsIntro = useCallback(() => {
+    setAgentsIntroShown(true);
+    notifyPrefs({ agentsSidebarIntroShown: true });
   }, [notifyPrefs]);
 
   const handleAgentsStatusFilterChange = useCallback((statusFilterValue: AgentsStatusFilter) => {
@@ -462,6 +559,14 @@ export function WorktreeSidebar({
     flashRevealedWorktree,
   ]);
 
+  // Orca `useWorkspaceRevealBodyRedirect`: a reveal request that arrives while the
+  // Agents body owns the viewport switches to Workspaces and replays the reveal.
+  useWorktreeRevealBodyRedirect({
+    agentsBodyShowing: sidebarBody === "agents",
+    onShowWorkspaces: () => handleSetSidebarBody("workspaces"),
+    onReveal: (path) => handleRevealCurrent(path ?? undefined),
+  });
+
   // ─── Drag and Drop Handlers ──────────────────────────────────────────────
   /**
    * The panel's single order writer: an in-group reorder from any gesture — the HTML5
@@ -521,6 +626,30 @@ export function WorktreeSidebar({
     setDraggedWorktreePath(null);
     setWorktreeDropTarget(null);
   }, []);
+
+  // Orca document capture fallback (D03a-019): a native row drag released outside any
+  // registered target still ends the drag, so the list never keeps a stale preview.
+  useEffect(() => {
+    if (!draggedWorktreePath) return;
+    const clearNativeDrag = () => {
+      setDraggedWorktreePath(null);
+      setWorktreeDropTarget(null);
+    };
+    // Why deferred: the capture-phase drop runs BEFORE the row/header drop handler,
+    // so clearing synchronously would make the row reorder read a null source.
+    let dropTimer: number | null = null;
+    const handleDocumentDrop = () => {
+      if (dropTimer !== null) window.clearTimeout(dropTimer);
+      dropTimer = window.setTimeout(clearNativeDrag, 0);
+    };
+    document.addEventListener("dragend", clearNativeDrag, { capture: true });
+    document.addEventListener("drop", handleDocumentDrop, { capture: true });
+    return () => {
+      if (dropTimer !== null) window.clearTimeout(dropTimer);
+      document.removeEventListener("dragend", clearNativeDrag, { capture: true });
+      document.removeEventListener("drop", handleDocumentDrop, { capture: true });
+    };
+  }, [draggedWorktreePath]);
 
   const handleProjectDragStart = useCallback((e: React.DragEvent, id: string) => {
     setDraggedProjectId(id);
@@ -693,6 +822,8 @@ export function WorktreeSidebar({
       <SidebarHeader
         sidebarBody={sidebarBody}
         setSidebarBody={handleSetSidebarBody}
+        introShown={agentsIntroShown}
+        onAcknowledgeIntro={handleAcknowledgeAgentsIntro}
         groupBy={displayOptions.groupBy}
         onOpenAddRepoDialog={onOpenAddRepoDialog}
         onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
@@ -700,6 +831,7 @@ export function WorktreeSidebar({
         optionsMenuOpen={optionsMenuOpen}
         setOptionsMenuOpen={setOptionsMenuOpen}
         projects={projects}
+        activeFilterCount={countActiveWorkspaceFilters(displayOptions)}
       />
 
       {/* 3. Main Body */}
@@ -800,6 +932,7 @@ export function WorktreeSidebar({
               onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
               onOpenAddRepoDialog={onOpenAddRepoDialog}
               onClearFilter={() => setFilter("")}
+              onClearSidebarFilters={handleClearSidebarFilters}
               onToggleProjectCollapse={toggleProjectCollapse}
               onToggleGroupCollapse={toggleGroupCollapse}
               onProjectContextMenu={(e, proj) => {
@@ -814,10 +947,56 @@ export function WorktreeSidebar({
                 const rect = e.currentTarget.getBoundingClientRect();
                 setActiveGroupMenu({ group, x: rect.right, y: rect.bottom + 4 });
               }}
-              onWorktreeContextMenu={(e, wt, proj) => {
+              onWorktreeContextMenu={(e, wt, proj, selectedWorktrees) => {
                 const targetProject = proj || activeProject;
                 if (targetProject) {
-                  onWorktreeContextMenu?.(e, wt, targetProject);
+                  onWorktreeContextMenu?.(
+                    e,
+                    wt,
+                    targetProject,
+                    selectedWorktrees?.map((entry) => entry.path)
+                  );
+                }
+              }}
+              onShowAllHiddenWorktrees={async (proj) => {
+                const previousExternal = proj.externalWorktreeVisibility ?? null;
+                try {
+                  await invoke("catalog_set_worktree_visibility_sources", {
+                    repoPath: proj.path,
+                    customSources: proj.customWorktreeVisibilitySources ?? null,
+                    sourcePreferences: proj.worktreeVisibilitySourcePreferences ?? null,
+                    externalWorktreeVisibility: "show",
+                    externalWorktreeVisibilityLegacy:
+                      proj.externalWorktreeVisibilityLegacy ?? null,
+                    agentWorktreeVisibility: proj.agentWorktreeVisibility ?? null,
+                    externalWorktreeDiscoverySuppressedAt:
+                      proj.externalWorktreeDiscoverySuppressedAt ?? null,
+                  });
+                  setHiddenWorktreeError(proj.path, null);
+                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                } catch (err) {
+                  console.error(err);
+                  // Roll back the policy so the card does not claim a state the scan
+                  // never confirmed (Orca `showImportedWorktreesCard`).
+                  try {
+                    await invoke("catalog_set_worktree_visibility_sources", {
+                      repoPath: proj.path,
+                      customSources: proj.customWorktreeVisibilitySources ?? null,
+                      sourcePreferences: proj.worktreeVisibilitySourcePreferences ?? null,
+                      externalWorktreeVisibility: previousExternal,
+                      externalWorktreeVisibilityLegacy:
+                        proj.externalWorktreeVisibilityLegacy ?? null,
+                      agentWorktreeVisibility: proj.agentWorktreeVisibility ?? null,
+                      externalWorktreeDiscoverySuppressedAt:
+                        proj.externalWorktreeDiscoverySuppressedAt ?? null,
+                    });
+                  } catch (rollbackError) {
+                    console.error(rollbackError);
+                  }
+                  setHiddenWorktreeError(
+                    proj.path,
+                    "Could not show discovered worktrees. Try again."
+                  );
                 }
               }}
               onShowHiddenWorktree={async (proj, worktreePath) => {
@@ -827,9 +1006,14 @@ export function WorktreeSidebar({
                     worktreePath,
                   });
                   await stampVisibilityPromptPhase(proj);
+                  setHiddenWorktreeError(proj.path, null);
                   window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
                 } catch (err) {
                   console.error(err);
+                  setHiddenWorktreeError(
+                    proj.path,
+                    "Could not show discovered worktrees. Try again."
+                  );
                 }
               }}
               onKeepHiddenWorktrees={async (proj, worktreePaths) => {
@@ -846,19 +1030,18 @@ export function WorktreeSidebar({
                         : Date.now(),
                   });
                   visibilityPromptStampedReposRef.current.add(proj.path);
+                  setHiddenWorktreeError(proj.path, null);
                   window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
                 } catch (err) {
                   console.error(err);
+                  setHiddenWorktreeError(
+                    proj.path,
+                    "Could not keep discovered worktrees hidden. Try again."
+                  );
                 }
               }}
-              onSuppressHiddenWorktrees={async (proj) => {
-                try {
-                  await invoke("suppress_worktree_inbox", { projectPath: proj.path });
-                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-                } catch (err) {
-                  console.error(err);
-                }
-              }}
+              onSuppressHiddenWorktrees={(proj) => setSuppressInboxTarget(proj)}
+              hiddenWorktreeErrorsByProject={hiddenWorktreeErrorByProject}
               onReviewHiddenWorktrees={(proj) => {
                 setVisibilityDialog({
                   open: true,
@@ -870,6 +1053,11 @@ export function WorktreeSidebar({
               worktreeDropTarget={worktreeDropTarget}
               scrollRef={worktreeScrollRef}
               onReorderWorktreesInGroup={commitReorderedWorktrees}
+              lineageByPath={lineageByPath}
+              worktreeMetadataByPath={worktreeMetadataByPath}
+              onEditWorktreeMetadata={onEditWorktreeMetadata}
+              onAssignWorktreeParent={onAssignWorktreeParent}
+              onUnnestWorktrees={onUnnestWorktrees}
               onAssignWorktreeStatus={onAssignWorktreeStatus}
               onPinWorktreePaths={handlePinWorktreePaths}
               draggedProjectId={draggedProjectId}
@@ -917,6 +1105,7 @@ export function WorktreeSidebar({
         projects={projects}
         onClose={() => setOptionsMenuOpen(false)}
         onOptionsChange={handleDisplayOptionsChange}
+        onAddProject={onOpenAddRepoDialog}
       />
 
       {/* 5. Footer */}
@@ -1132,7 +1321,7 @@ export function WorktreeSidebar({
               onClick={() => {
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
-                onRemoveProject(proj);
+                setRemoveProjectTarget(proj);
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
             >
@@ -1243,6 +1432,61 @@ export function WorktreeSidebar({
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
         onOpenGlobalSettings={() => onOpenGlobalSettings?.()}
+      />
+
+      <RemoveFolderDialog
+        open={removeProjectTarget != null}
+        projectName={removeProjectTarget?.name ?? ""}
+        host={removeProjectHost}
+        onOpenChange={(open) => {
+          if (!open) setRemoveProjectTarget(null);
+        }}
+        onConfirm={() => {
+          const target = removeProjectTarget;
+          setRemoveProjectTarget(null);
+          if (target) onRemoveProject(target);
+        }}
+      />
+
+      <SuppressExternalWorktreeInboxDialog
+        open={suppressInboxTarget != null}
+        repoDisplayName={suppressInboxTarget?.name ?? ""}
+        pending={suppressInboxPending}
+        onOpenChange={(open) => {
+          if (!open && !suppressInboxPending) setSuppressInboxTarget(null);
+        }}
+        onOpenRecovery={() => {
+          const target = suppressInboxTarget;
+          setSuppressInboxTarget(null);
+          // The project's own visibility dialog is Hydra's "Non-Orca worktrees
+          // settings" surface: it owns every source toggle and the recovery list.
+          if (target) {
+            setVisibilityDialog({
+              open: true,
+              project: target,
+              hiddenWorktrees: hiddenWorktreesByProject?.[target.path] ?? [],
+            });
+          }
+        }}
+        onConfirm={async () => {
+          const target = suppressInboxTarget;
+          if (!target) return;
+          setSuppressInboxPending(true);
+          try {
+            await invoke("suppress_worktree_inbox", { projectPath: target.path });
+            setHiddenWorktreeError(target.path, null);
+            window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+            setSuppressInboxTarget(null);
+          } catch (err) {
+            console.error(err);
+            setHiddenWorktreeError(
+              target.path,
+              "Could not hide external worktrees permanently. Try again."
+            );
+          } finally {
+            setSuppressInboxPending(false);
+          }
+        }}
       />
 
       {promptDialog && (

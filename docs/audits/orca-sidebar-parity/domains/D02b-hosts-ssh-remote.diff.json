@@ -23,7 +23,7 @@
      "Bloqueio de fechamento enquanto salvamento ou importação em lote estiver em andamento.",
      "Alternância entre formulário SSH, picker de ~/.ssh/config e formulário de servidor remoto conforme renderMode e sshView."
     ],
-    "notes": "Não localizado após busca em src/components/sidebar/**, src/components/settings/** e src/store/** por 'AddRemoteHostDialog', 'AddRemoteHostMode', 'renderMode', 'resolvingConfigAlias', 'isBulkImporting'. Resta apenas o namespace de tradução (src/i18n/locales/en.json:6158 e src/i18n/en-runtime-required.json:1832); não existe componente nem ciclo de vida. O subsistema SSH portado não está ligado ao runtime: o store real não implementa o slice (sshConnectionStates = null em src/store/index.ts:432), o slice está marcado como buffer ('Orca port buffer' em src/store/slices/ssh.ts:1) e src/App.tsx:3911 registra explicitamente 'SSH sem função'.",
+    "notes": "Dialog SSH agora existe e esta ligado (montado pelo SshPane em Settings): reset() invalida resolucoes, close bloqueia com isSaving/isBulkImporting e ha view form/config-picker. Falta o modo 'server' e o latch de renderMode; o gatilho no cabecalho do sidebar foi removido (botao inventado).",
     "note": "Dialog SSH agora existe e esta ligado (montado pelo SshPane em Settings): reset() invalida resolucoes, close bloqueia com isSaving/isBulkImporting e ha view form/config-picker. Falta o modo 'server' e o latch de renderMode; o gatilho no cabecalho do sidebar foi removido (botao inventado)."
    },
    "par": []
@@ -50,7 +50,7 @@
      "Disclosure colapsável para campos avançados via SshHostAdvancedFields.",
      "Link de rodapé 'Fill from ~/.ssh/config…' para alternar para a visualização do picker de configuração."
     ],
-    "notes": "Não localizado após busca em src/components/sidebar/**, src/components/settings/** por 'SshHostFields', 'RemoteServerFields', 'AddRemoteHostFields', 'applyParsedSshHostInput', 'SshHostAdvancedFields' — 0 ocorrências fora de i18n (src/i18n/locales/en.json:6158).",
+    "notes": "Label, Host (autoFocus + parse no blur), Username, Port e Identity file com hint portados; faltam o disclosure avancado (SshHostAdvancedFields) e os campos de servidor remoto.",
     "note": "Label, Host (autoFocus + parse no blur), Username, Port e Identity file com hint portados; faltam o disclosure avancado (SshHostAdvancedFields) e os campos de servidor remoto."
    },
    "par": []
@@ -82,7 +82,7 @@
      "Registra readoptions e atualiza metadados no store com recordSshRepoReadoptions e setSshTargetsMetadata.",
      "Registra telemetria com recordFeatureInteraction('ssh') e emite toast de sucesso 'SSH host added.'."
     ],
-    "notes": "Não localizado após busca por 'saveNewSshHostFromForm', 'isDuplicateSshTargetAlias', 'ssh-target-duplicate', 'setSshTargetsMetadata', 'recordSshRepoReadoptions', 'MAX_SSH_RELAY_GRACE_PERIOD_SECONDS' em src/** — 0 (fora de i18n). setSshTargetsMetadata só existe no slice buffer (src/store/slices/ssh.ts:139).",
+    "notes": "Valida host e porta 1-65535, gera label fallback, chama addSshTarget + hydrate e emite 'SSH host added.'. Faltam checagem de duplicidade, timeout grace, setSshTargetsMetadata/readoptions e telemetria.",
     "note": "Valida host e porta 1-65535, gera label fallback, chama addSshTarget + hydrate e emite 'SSH host added.'. Faltam checagem de duplicidade, timeout grace, setSshTargetsMetadata/readoptions e telemetria."
    },
    "par": []
@@ -107,17 +107,8 @@
     "backend": [
      "window.api.ssh.listConfigHosts (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend"
     ],
-    "missing_behaviors": [
-     "Carrega lista de hosts do SSH config via loadSshConfigHostsForPicker chamando window.api.ssh.listConfigHosts.",
-     "Aplica debounce de 200ms na digitação do filtro via queryTimer.",
-     "Utiliza configSearchGeneration para descartar buscas antigas fora de ordem.",
-     "Exibe indicador de carregamento 'Reading ~/.ssh/config…'.",
-     "Exibe botão 'Try again' para reintentar em caso de erro na leitura do arquivo.",
-     "Diferencia visualmente estado sem hosts no arquivo de estado de busca sem correspondências.",
-     "Exibe aviso de resultados truncados em SSH_CONFIG_HOST_RESULT_LIMIT (100) quando hasMore é true.",
-     "Botão 'Back' permite retornar ao formulário manual sem perder o estado."
-    ],
-    "notes": "Não localizado após busca por 'loadSshConfigHostsForPicker', 'SSH_CONFIG_HOST_RESULT_LIMIT', 'configSearchGeneration', 'Reading ~/.ssh/config' — 0. Não há picker de ~/.ssh/config nem comando de listagem.",
+    "missing_behaviors": [],
+    "notes": "Picker portado: debounce 200ms, guarda de geracao, 'Reading ~/.ssh/config…', 'Try again', empty vs no-match, aviso de truncamento por SSH_CONFIG_HOST_RESULT_LIMIT e 'Back'.",
     "note": "Picker portado: debounce 200ms, guarda de geracao, 'Reading ~/.ssh/config…', 'Try again', empty vs no-match, aviso de truncamento por SSH_CONFIG_HOST_RESULT_LIMIT e 'Back'."
    },
    "par": []
@@ -148,7 +139,7 @@
      "Emite toast de sucesso 'Filled from {alias}. Review and Save.' e alterna a visualização de volta para o formulário.",
      "Trata erro de incompatibilidade orientando a reiniciar o Orca se a API de preload estiver desatualizada."
     ],
-    "notes": "Não localizado após busca por 'prefillFormFromSshConfigHost', 'resolveConfigHost', 'configResolveGeneration' — 0.",
+    "notes": "Resolucao por alias com configResolveGeneration, indicador 'Reading…', prefill e toast 'Filled from…' portados; faltam expansao automatica do disclosure avancado e o tratamento de preload desatualizado.",
     "note": "Resolucao por alias com configResolveGeneration, indicador 'Reading…', prefill e toast 'Filled from…' portados; faltam expansao automatica do disclosure avancado e o tratamento de preload desatualizado."
    },
    "par": []
@@ -166,12 +157,8 @@
      "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:193-215"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Host já presente no Orca (alreadyInOrca === true) exibe badge verde 'In Orca' e fica desabilitado para clique.",
-     "Host previamente removido do Orca (previouslyRemoved === true) exibe badge 'Removed from Orca' e permanece selecionável para re-adoção individual.",
-     "Lista utiliza elementos de botão acessíveis com aria-busy durante carregamento ou resolução."
-    ],
-    "notes": "Não localizado após busca por 'alreadyInOrca', 'previouslyRemoved', 'tombstone', 'In Orca', 'Removed from Orca' em src/components/sidebar/** = 0. O conceito de tombstone existe apenas no slice buffer portado (removedSshTargetLabels em src/store/slices/ssh.ts:53), sem UI alcançável que o consuma.",
+    "missing_behaviors": [],
+    "notes": "Badge 'In Orca' desabilitado e 'Removed from Orca' re-selecionavel, com aria-busy na lista.",
     "note": "Badge 'In Orca' desabilitado e 'Removed from Orca' re-selecionavel, com aria-busy na lista."
    },
    "par": []
@@ -202,7 +189,7 @@
      "Emite toast 'Added {N} hosts to Orca.' ao importar novos alvos e fecha o dialog.",
      "Emite toast '~/.ssh/config already in sync.' e recarrega a lista se não houver novos hosts a adicionar."
     ],
-    "notes": "Não localizado após busca por 'addAllSshConfigHostsToOrca', 'reAdopt', 'already in sync', 'Adding hosts…' — 0.",
+    "notes": "Import em massa sem reAdopt, 'Adding hosts…', toasts 'Added N hosts'/'already in sync' e reload dentro da geracao; faltam recordSshRepoReadoptions/setSshTargetsMetadata e telemetria.",
     "note": "Import em massa sem reAdopt, 'Adding hosts…', toasts 'Added N hosts'/'already in sync' e reload dentro da geracao; faltam recordSshRepoReadoptions/setSshTargetsMetadata e telemetria."
    },
    "par": []
@@ -226,7 +213,7 @@
      "Renderiza campo 'Access link' com fonte mono e placeholder 'orca://pair?code=...'.",
      "Exibe texto de ajuda contextual indicando como gerar o link no computador remoto (Settings → Remote Orca Servers → Share this host)."
     ],
-    "notes": "Não localizado após busca por 'Add remote server', 'Pair with Orca running on another computer', 'orca://pair', 'Access link' — 0 (fora de i18n:6158). O único pareamento do Hydra é o Mobile Companion (src/components/PairingModal.tsx:67 + get_pairing_qr em src-tauri/src/lib.rs:1054), feature distinta: supervisão móvel, não host de execução remota. Ausência de implementação, não de plataforma — ver seção de n/a no .gaps.md.",
+    "notes": "Modo 'server' (pareamento Orca Server) ausente; so i18n orfao e o Mobile Companion, que e outra feature.",
     "note": "Modo 'server' (pareamento Orca Server) ausente; so i18n orfao e o Mobile Companion, que e outra feature."
    },
    "par": []
@@ -252,7 +239,7 @@
      "Exibe checkbox de override 'I am using an SSH tunnel' para permitir loopback intencional via túnel SSH.",
      "Reseta o checkbox de override automaticamente ao alterar o texto do pairingCode."
     ],
-    "notes": "Não localizado após busca por 'parseHostAccessLink', 'allowLoopback', 'I am using an SSH tunnel', 'loopback' em src/** = 0 (fora de i18n:6158).",
+    "notes": "parseHostAccessLink/loopback override seguem sem implementacao.",
     "note": "parseHostAccessLink/loopback override seguem sem implementacao."
    },
    "par": []
@@ -280,7 +267,7 @@
      "Em caso de sucesso, consulta lista atualizada com window.api.runtimeEnvironments.list() e atualiza store via setRuntimeEnvironments.",
      "Dispara atualização de snapshots de status via readRuntimeHostStatusSnapshots(), emite toast 'Remote server added.' e fecha o dialog."
     ],
-    "notes": "Não localizado após busca por 'verifyAndAddFromPairingCode', 'translateRemotePairingFailureDescription', 'readRuntimeHostStatusSnapshots', 'Remote server added.' — 0.",
+    "notes": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes.",
     "note": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes."
    },
    "par": []
@@ -308,7 +295,7 @@
      "Quando o host está bloqueado por incompatibilidade de protocolo (client-too-old ou server-too-old), renderiza item destrutivo com AlertTriangle e tooltip explicativa via describeRuntimeCompatBlock.",
      "Clique no item de alerta direciona diretamente para as preferências do host correspondente."
     ],
-    "notes": "Não localizado após busca em src/components/sidebar/** por 'HostSectionHeaderMenu', 'buildHostHeaderMenuModel', 'host-header-menu', 'Host actions', 'describeRuntimeCompatBlock' — 0 (só i18n:6036). O modelo de host-header existe (src/components/sidebar/host-section-rows.ts:290) mas não é pintado: addHostSectionRows (host-section-rows.ts:166) só é chamado pelo replay de atalhos Cmd+1-9 (rendered-sidebar-worktree-order.ts:93); WorktreeList.tsx monta projetos/worktrees direto e não importa host-section-rows. Não há botão de reticências nem menu por host.",
+    "notes": "Trigger com aria-label/title, stopPropagation no clique e tecla, label do host e aviso destrutivo com AlertTriangle + describeRuntimeCompatBlock portados e ligados na linha host-header. O aviso nao e item clicavel (nao direciona para prefs do host).",
     "note": "Trigger com aria-label/title, stopPropagation no clique e tecla, label do host e aviso destrutivo com AlertTriangle + describeRuntimeCompatBlock portados e ligados na linha host-header. O aviso nao e item clicavel (nao direciona para prefs do host)."
    },
    "par": []
@@ -336,7 +323,7 @@
      "Para host Runtime, exibe item 'Check connection' que limpa cache de compatibilidade (clearRuntimeCompatibilityCache), consulta status via window.api.runtimeEnvironments.getStatus({ timeoutMs: 10000 }) e atualiza snapshots com readRuntimeHostStatusSnapshots().",
      "Exibe indicador de carregamento spinner durante a operação e emite toast de sucesso ou erro."
     ],
-    "notes": "Não localizado após busca por 'runSshAction', 'Check connection', 'Reconnect', 'sshConnectVerb', 'clearRuntimeCompatibilityCache' — 0. Nenhum comando SSH/runtime parte do sidebar; sshConnectionStates chega ao sidebar como null (src/store/index.ts:432, consumido em rendered-sidebar-worktree-order.ts:98).",
+    "notes": "Connect/Reconnect/Check connection fora: sem subsistema de execucao remota.",
     "note": "Connect/Reconnect/Check connection fora: sem subsistema de execucao remota."
    },
    "par": []
@@ -363,7 +350,7 @@
      "Para host local, abre configurações no painel 'general'.",
      "Executa openSettingsPage() para exibir a página de preferências."
     ],
-    "notes": "Não localizado após busca por 'Manage host…' como item de menu de host — 0. O menu de cabeçalho de host não existe (ver D02b-011); openSettingsTarget/openSettingsPage existem no store, mas nenhum call-site de host os aciona a partir do sidebar. sidebar-host-options.ts não tem call-site de UI (só rendered-sidebar-worktree-order.ts:96).",
+    "notes": "'Manage host…' existe para host SSH (emite 'hydra:open-settings' section ssh, consumido no App). Faltam os ramos runtime (servers, environmentId) e local (general).",
     "note": "'Manage host…' existe para host SSH (emite 'hydra:open-settings' section ssh, consumido no App). Faltam os ramos runtime (servers, environmentId) e local (general)."
    },
    "par": []
@@ -389,7 +376,7 @@
      "Pressionar Enter submete o formulário e salva a renomeação em hostSettingOverrides via applyHostRename.",
      "Botão 'Reset to default' (habilitado apenas se houver override ativo) restaura o label padrão via clearHostRename."
     ],
-    "notes": "Não localizado após busca por 'HostRenameDialog', 'applyHostRename', 'clearHostRename', 'getHostDisplayLabelOverride', 'Reset to default' em src/components/sidebar/** = 0 (só i18n:6028). O Hydra tem renomeação inline de worktree (src/components/sidebar/WorktreeTitleInlineRename.tsx:1), não de host.",
+    "notes": "Dialog de rename existe (ssh_update_target + hydrate, Enter submete, validacao vazio/duplicado). Difere do Orca: grava o label real do registry, sem override/placeholder derivado e sem 'Reset to default'; indisponivel para local/runtime.",
     "note": "Dialog de rename existe (ssh_update_target + hydrate, Enter submete, validacao vazio/duplicado). Difere do Orca: grava o label real do registry, sem override/placeholder derivado e sem 'Reset to default'; indisponivel para local/runtime."
    },
    "par": []
@@ -414,7 +401,7 @@
      "Para host Runtime, o dialog orienta o usuário e oferece botão 'Open settings' que deep-linka para o painel de servidores nas configurações.",
      "Para host SSH, abre o modal completo de remoção inline com opção de limpeza de workspaces."
     ],
-    "notes": "Não localizado após busca por 'resolveHostRemoval', 'HostRemovalTarget', 'Remove host', 'HostRemoveDialog' em src/** (fora de i18n:6009) = 0. Nenhuma resolução de remoção por tipo de host existe.",
+    "notes": "Remocao existe para SSH (targetId); sem resolucao por tipo de host e sem o ramo runtime com 'Open settings' nem local.",
     "note": "Remocao existe para SSH (targetId); sem resolucao por tipo de host e sem o ramo runtime com 'Open settings' nem local."
    },
    "par": []
@@ -441,7 +428,7 @@
      "Adapta a descrição do dialog para 0, 1 ou múltiplos workspaces, alertando que por padrão os workspaces permanecem no Orca e arquivos remotos não são tocados.",
      "Pluralização correta de '1 workspace' vs '{N} workspaces'."
     ],
-    "notes": "Não localizado após busca por 'resolveSshHostRemoval', 'ssh-host-remove-resolution', 'hostRepoIds', 'workspaceWorktreeIds' — 0. host-section-rows.ts:47-52 lê connectionId/executionHostId de repositórios, mas não resolve remoção nem conta workspaces para um dialog.",
+    "notes": "Coleta/dedupe de repos e worktrees, contagem e pluralizacao portadas; nao consulta sshConnectionStates para variar a descricao conectado/offline.",
     "note": "Coleta/dedupe de repos e worktrees, contagem e pluralizacao portadas; nao consulta sshConnectionStates para variar a descricao conectado/offline."
    },
    "par": []
@@ -463,7 +450,7 @@
      "Quando conectado, exibe label 'Also delete these {count} workspaces on {host}' com hint avisando sobre deleção física irreversível de worktrees git e branches no host remoto.",
      "Quando desconectado/offline, exibe label 'Also remove these {count} workspaces from Orca' com hint avisando que registros serão limpos apenas no Orca sem tocar no host remoto."
     ],
-    "notes": "Não localizado após busca por 'deleteWorkspaces', 'Also delete these', 'Also remove these', 'SwitchIndicator' em src/components/sidebar/** = 0. Sem dialog de remoção de host.",
+    "notes": "O switch Advanced ('also delete/forget these N workspaces') segue ausente por decisao declarada; nenhum controle existe.",
     "note": "O switch Advanced ('also delete/forget these N workspaces') segue ausente por decisao declarada; nenhum controle existe."
    },
    "par": []
@@ -493,7 +480,7 @@
      "Purga overrides de renomeação com clearHostRename em hostSettingOverrides.",
      "Emite toast de sucesso 'Removed {label}' e fecha o dialog."
     ],
-    "notes": "Não localizado após busca por 'clearSshHostWorkspaces', 'removeSshTargetWithBestEffortCleanup', 'delete-remote', 'forget-local' em src/** (fora de i18n:6009) = 0; clearRemovedSshTargetState só existe no slice buffer (src/store/slices/ssh.ts:158) e não é chamado por nenhuma UI alcançável.",
+    "notes": "removeSshTarget + clearRemovedSshTargetState + hydrate + toast 'Removed {label}' portados; faltam limpeza de workspaces em cascata, aborto atomico em falha e purga de overrides de rename.",
     "note": "removeSshTarget + clearRemovedSshTargetState + hydrate + toast 'Removed {label}' portados; faltam limpeza de workspaces em cascata, aborto atomico em falha e purga de overrides de rename."
    },
    "par": []
@@ -516,7 +503,7 @@
      "Classifica target configurado e com status 'connected' como 'connected' (remoção normal permitida).",
      "Classifica target configurado mas com status desconectado ou em erro como 'disconnected'."
     ],
-    "notes": "Não localizado após busca por 'resolveSshWorkspaceForget', 'ssh-workspace-forget-resolution', 'ghost', 'not-ssh' em src/components/sidebar/** = 0.",
+    "notes": "So conta workspaces; sem classificacao ghost/connected/disconnected nem resolucao de esquecimento.",
     "note": "So conta workspaces; sem classificacao ghost/connected/disconnected nem resolucao de esquecimento."
    },
    "par": []
@@ -542,7 +529,7 @@
      "Ao clicar em 'Reconnect & Delete', executa window.api.ssh.connect({ targetId }) e, após reconectar com sucesso, fecha o modal e dispara runWorktreeDeleteWithToast.",
      "Lida com estados ocupados de carregamento com spinners animados e bloqueio de botões."
     ],
-    "notes": "Não localizado após busca por 'ForgetSshWorkspaceDialog', 'Reconnect & Delete', 'Remove from Orca', 'ServerOff' em src/** (fora de i18n:6227) = 0.",
+    "notes": "ForgetSshWorkspaceDialog segue orfao em i18n, sem componente.",
     "note": "ForgetSshWorkspaceDialog segue orfao em i18n, sem componente."
    },
    "par": []
@@ -567,7 +554,7 @@
      "Quando desconectado, exibe botão inline 'Connect' com spinner animado e texto 'Connecting…' durante conexão em voo via useSshConnectInFlight, evitando que o usuário precise abrir configurações.",
      "Aplica stopPropagation no clique de conectar para evitar seleção acidental de target desconectado."
     ],
-    "notes": "Não localizado após busca em src/components/sidebar/** por 'SshTargetRow', 'useSshConnectInFlight', 'Connecting…' = 0 (só i18n:5515). O wizard do Hydra (src/components/sidebar/AddRepoDialog.tsx:21) tem apenas os passos 'start' | 'clone' | 'create', sem seletor de host/target SSH e sem linha de status de conexão.",
+    "notes": "Wizard segue start/clone/create, sem seletor de host/target SSH nem linha de status/conexao.",
     "note": "Wizard segue start/clone/create, sem seletor de host/target SSH nem linha de status/conexao."
    },
    "par": []
@@ -595,7 +582,7 @@
      "Armazena resolvedPath, entries e pathFlavor ('posix' | 'win32').",
      "Ao desmontar o componente (setBrowserRootRef), cancela timers e invalida requisições em voo."
     ],
-    "notes": "Não localizado após busca em src/** por 'RemoteFileBrowser', 'use-remote-file-browser-listing', 'listingCacheRef', 'browseDir', 'pathFlavor' = 0 (só i18n:5276). O Hydra escolhe pastas com o diálogo nativo do Tauri (src/components/sidebar/AddRepoDialog.tsx:3, @tauri-apps/plugin-dialog) e não possui navegador de arquivos remoto.",
+    "notes": "RemoteFileBrowser orfao; Hydra usa o dialogo nativo do Tauri.",
     "note": "RemoteFileBrowser orfao; Hydra usa o dialogo nativo do Tauri."
    },
    "par": []
@@ -621,7 +608,7 @@
      "Renderiza cada segmento intermediário com separador ChevronRight e truncamento de até 120px.",
      "Clique em qualquer segmento intermediário remonta o caminho absoluto correspondente via breadcrumbPathTo e navega diretamente."
     ],
-    "notes": "Não localizado após busca por 'RemoteFileBrowserBreadcrumbs', 'splitBrowsePath', 'driveBreadcrumbPath', 'breadcrumbPathTo' = 0 (só i18n:5276).",
+    "notes": "Breadcrumbs remotos ausentes.",
     "note": "Breadcrumbs remotos ausentes."
    },
    "par": []
@@ -646,7 +633,7 @@
      "Clique em arquivo dispara aviso temporário 'Files can't be opened as a project' no rodapé por 2000ms (fileHintTimerRef).",
      "onMouseDown com preventDefault na linha garante que o foco permaneça no input de texto para digitação contínua."
     ],
-    "notes": "Não localizado após busca por 'RemoteFileBrowserEntryList', 'getFileTypeIcon', 'clickTimerRef', 'fileHintTimerRef' = 0 (só i18n:5276).",
+    "notes": "Listagem remota com debounce/duplo clique ausente.",
     "note": "Listagem remota com debounce/duplo clique ausente."
    },
    "par": []
@@ -672,7 +659,7 @@
      "Botão 'Select folder' confirma e retorna o caminho resolvido committed, desabilitado durante loading ou preview ativo com filtro.",
      "Botão 'Cancel' fecha o navegador de arquivos sem selecionar."
     ],
-    "notes": "Não localizado após busca por 'Select folder', 'Empty directory', 'No matches for', 'LoaderCircle' em src/components/sidebar/** = 0.",
+    "notes": "Estados do file browser remoto ausentes.",
     "note": "Estados do file browser remoto ausentes."
    },
    "par": []
@@ -697,7 +684,7 @@
      "Em modo de caminho (Path Mode), dispara resolução remota assíncrona com debounce de 300ms (PATH_DEBOUNCE_MS) exibindo spinner no input.",
      "Otimização de prefixo comprometido (committedPrefix): se a parte do caminho antes da última barra não mudou, filtra a pré-visualização localmente sem fazer requisições de rede adicionais."
     ],
-    "notes": "Não localizado após busca por 'useRemoteFileBrowserPathPreview', 'isPathMode', 'committedPrefix', 'PATH_DEBOUNCE_MS' = 0.",
+    "notes": "Path Mode do navegador remoto ausente.",
     "note": "Path Mode do navegador remoto ausente."
    },
    "par": []
@@ -724,7 +711,7 @@
      "Suporta segmentos especiais '.' (permanece) e '..' (sobe um nível via parentPath);",
      "Atualiza estado de preview com o caminho final resolvido, listagem de entradas e filtro da cauda."
     ],
-    "notes": "Não localizado após busca por 'resolvePathInput', 'resolveSegmentStep', 'remote-file-browser-path-preview-resolver', 'SegmentOutcome' = 0.",
+    "notes": "Resolucao de segmentos remotos ausente.",
     "note": "Resolucao de segmentos remotos ausente."
    },
    "par": []
@@ -750,7 +737,7 @@
      "Descarta e defere resolução de colagens com textos gigantescos via shouldDeferRemoteFileBrowserPasteResolve / isRemoteFileBrowserPathResolveTextTooLarge.",
      "Colagens de tamanho padrão executam resolução de caminho no próximo tick sem debounce (pasteResolveTimerRef)."
     ],
-    "notes": "Não localizado após busca por 'REMOTE_FILE_BROWSER_FILTER_QUERY_MAX_BYTES', 'shouldDeferRemoteFileBrowserPasteResolve', 'isRemoteFileBrowserPathResolveTextTooLarge', 'repeated separators' = 0.",
+    "notes": "Limites/guarda de colagem remotos ausentes.",
     "note": "Limites/guarda de colagem remotos ausentes."
    },
    "par": []
@@ -774,7 +761,7 @@
      "Escape: se o input tiver texto, limpa o filtro e cancela a pré-visualização (decideEscAction); se o input já estiver vazio, fecha o modal via onCancel.",
      "Backspace em input vazio sem pré-visualização: sobe para o diretório pai (navigateUp), exceto se já estiver na raiz '/'."
     ],
-    "notes": "Não localizado após busca por 'useRemoteFileBrowserFilterKeyCommands', 'decideEnterAction', 'decideEscAction', 'remote-file-browser-helpers' = 0.",
+    "notes": "Navegacao por teclado do input remoto ausente.",
     "note": "Navegacao por teclado do input remoto ausente."
    },
    "par": []
@@ -801,7 +788,7 @@
      "Subir nível a partir da raiz de uma unidade Windows retorna para a listagem raiz do host ('/') via parentOfDrivePath.",
      "Garante que pastas POSIX com nomes em formato de drive não sejam interpretadas incorretamente como unidades Windows."
     ],
-    "notes": "Não localizado após busca por 'remote-file-browser-drive-paths', 'isDrivePath', 'driveRootOf', 'parentOfDrivePath', 'joinDrivePath' = 0.",
+    "notes": "Suporte a drives win32 no file browser remoto ausente.",
     "note": "Suporte a drives win32 no file browser remoto ausente."
    },
    "par": []

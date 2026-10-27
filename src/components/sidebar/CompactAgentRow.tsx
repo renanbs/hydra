@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react'
 
 import { AgentBrandIcon } from '../AgentIcon'
 import { AgentStateDot } from '../AgentStateDot'
+import CacheTimer, { usePromptCacheCountdownForPane } from './CacheTimer'
 import { cn } from '../../lib/utils'
 import { formatAgentTypeLabel } from '../../shared/agent-type-label'
 import {
@@ -27,6 +28,11 @@ export interface CompactAgentRowProps {
   onToggleChildAgents?: () => void
   /** Reserve the disclosure gutter so leaf rows stay aligned with parent rows that have a chevron. */
   reserveDisclosureGutter?: boolean
+  /**
+   * Whether this row paints its own pane's prompt-cache countdown. Compact rows are the
+   * per-pane surface (the card's aggregate timer is off while compact), mirroring Orca.
+   */
+  cacheTimerActive?: boolean
 }
 
 function stopActivationKeyPropagation(e: React.KeyboardEvent): void {
@@ -45,7 +51,8 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   childAgentCount = 0,
   childAgentsExpanded = false,
   onToggleChildAgents,
-  reserveDisclosureGutter = false
+  reserveDisclosureGutter = false,
+  cacheTimerActive = true
 }: CompactAgentRowProps): React.JSX.Element {
   const agentType = agent.agentType ?? agent.displayAgent ?? 'unknown'
   const activationId = agent.entry.sessionId ?? agent.paneKey
@@ -61,6 +68,7 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   const rowTitle = `${leadingText}${trailingText ? ` - ${trailingText}` : ''}`
   const model = agent.entry.model?.trim() ?? ''
   const shortTime = getCompactAgentTime(agent, now)
+  const cacheTimer = usePromptCacheCountdownForPane(agent.paneKey, cacheTimerActive)
   const hasChildDisclosure = childAgentCount > 0
   // Why: subagent child rows carry the child's NAME (e.g. "pr-reviewer") in
   // agentType, which is not an iconable agent and would render the unknown
@@ -164,6 +172,8 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
           +{childAgentCount}
         </span>
       )}
+
+      {cacheTimer && <CacheTimer startedAt={cacheTimer.startedAt} ttlMs={cacheTimer.ttlMs} />}
 
       {shortTime && (
         <span

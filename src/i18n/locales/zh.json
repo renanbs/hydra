@@ -14715,6 +14715,17 @@
     }
   },
   "components": {
+    "cacheTimer": {
+      "expired": "下一条消息将把完整上下文作为未缓存的 token 重新发送",
+      "remaining": "提示缓存将在 {{remaining}} 后过期"
+    },
+    "worktreeStatusIndicator": {
+      "working": "工作中",
+      "monitoring": "监控后台任务",
+      "permission": "需注意",
+      "interrupted": "已中断",
+      "done": "完成"
+    },
     "native-chat": {
       "composer": {
         "imageUnsupported": "此智能体不支持粘贴图片。",

@@ -114,7 +114,8 @@
      "useEffect de auto-close/limpeza quando nenhum alvo é resolvível",
      "limpeza de deleteState por alvo ao fechar (handleOpenChange)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -140,7 +141,8 @@
      "copy não-destrutiva para folder workspace",
      "targetLabel destacado / childTargetLabel"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -163,7 +165,8 @@
      "labels de host em colisão",
      "preview single vs batch com semântica própria (role/region)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -177,10 +180,14 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:388"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeLineageNotice.tsx:10-56",
+     "src/components/DeleteWorktreeDialog.tsx:404-407"
+    ],
     "backend": [],
-    "notes": "não localizado: DeleteWorktreeDialog.tsx não trata lineage; worktree-lineage-projection.ts e ProjectGroupDeleteDialog.tsx não fazem delete-all de descendentes no dialog. Buscas: 'LineageNotice', 'descendants', 'canDeleteAllLineage'."
+    "notes": "Lineage warning names the descendants and their count before the destructive confirm.",
+    "note": "Lineage warning names the descendants and their count before the destructive confirm."
    },
    "par": [
     "PAR-56"
@@ -201,7 +208,7 @@
      "src/components/DeleteWorktreeDialog.tsx:210"
     ],
     "backend": [],
-    "notes": "Botão destrutivo oculto quando isMainWorktree; erro nunca oferece override de lock.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
     "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
@@ -226,7 +233,8 @@
      "src/components/DeleteWorktreeDialog.tsx:199"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -242,17 +250,17 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:408"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:60-68",
-     "src/components/DeleteWorktreeDialog.tsx:211",
-     "src/components/DeleteWorktreeDialog.tsx:217"
+     "src/components/DeleteWorktreeDialog.tsx:200-208",
+     "src/components/DeleteWorktreeDialog.tsx:448-464"
     ],
     "backend": [],
     "missing_behaviors": [
      "variante de label lineage 'Delete {count} Workspaces' (canDeleteAllLineage)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Footer matrix now includes the lineage variant 'Delete N Workspaces' alongside Cancel/Delete/Force Delete.",
+    "notes": "Footer matrix now includes the lineage variant 'Delete N Workspaces' alongside Cancel/Delete/Force Delete."
    },
    "par": [
     "PAR-56"
@@ -271,7 +279,8 @@
      "src/components/DeleteWorktreeDialog.tsx:94"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -300,7 +309,8 @@
      "toast 'Workspace list changed' + closeModal antes de deletar",
      "closeModal imediato (Hydra mantém o dialog aberto até todos terminarem)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -314,10 +324,10 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:283"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:57",
-     "src/components/DeleteWorktreeDialog.tsx:98"
+     "src/App.tsx:2031-2068",
+     "src/components/sidebar/worktree-delete-failure.ts:15-75"
     ],
     "backend": {
      "be": [
@@ -327,7 +337,8 @@
     "missing_behaviors": [
      "entrada de force-delete a partir de toast/erro (Hydra só oferece no próprio dialog)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Force Delete de recuperação a partir do toast, sem persistir preferência de pular confirmação.",
+    "notes": "Force Delete de recuperação a partir do toast, sem persistir preferência de pular confirmação."
    },
    "par": [
     "PAR-56",
@@ -342,10 +353,15 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:316"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:173",
+     "src/components/DeleteWorktreeDialog.tsx:246-330",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:255-288"
+    ],
     "backend": [],
-    "notes": "não localizado: sem canDeleteAllLineage/lineageDeleteIdentities no DeleteWorktreeDialog. Buscas: 'lineage', 'descendants', 'runLineageDeleteAll'."
+    "notes": "One click deletes the parent plus every descendant through the same confirmation.",
+    "note": "One click deletes the parent plus every descendant through the same confirmation."
    },
    "par": [
     "PAR-56"
@@ -370,7 +386,8 @@
      "useDeleteWorktreeStatusHydration por host dono do alvo",
      "AbortController / não reiniciar requests pendentes quando um alvo hidrata"
     ],
-    "note": "Sem mudanca de comportamento; veredito mantido."
+    "note": "Sem mudanca de comportamento; veredito mantido.",
+    "notes": "Sem mudanca de comportamento; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -391,7 +408,8 @@
     "missing_behaviors": [
      "limpar deleteStateByWorktreeId por alvo que não está isDeleting ao fechar"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -414,7 +432,8 @@
      "childTargetLabel de lineage",
      "classe de destaque do targetLabel"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -428,16 +447,16 @@
     "components/sidebar/DeleteWorktreeDialogFooter.tsx:50"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:60-68",
-     "src/components/DeleteWorktreeDialog.tsx:217"
+     "src/components/DeleteWorktreeDialog.tsx:200-208"
     ],
     "backend": [],
     "missing_behaviors": [
      "variante canDeleteAllLineage"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Label matrix covers deleting/force-deleting, batch and the lineage target count.",
+    "notes": "Label matrix covers deleting/force-deleting, batch and the lineage target count."
    },
    "par": [
     "PAR-56"
@@ -462,7 +481,8 @@
      "bounding box max-h-48 com scroll",
      "erro inline por linha"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -477,10 +497,14 @@
     "components/sidebar/DeleteWorktreeTargetPreview.tsx:69"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/DeleteWorktreeDialog.tsx:335-346",
+     "src/components/DeleteWorktreeDialog.tsx:372-386"
+    ],
     "backend": [],
-    "notes": "não localizado: sem getCollisionIds/getTargetHostLabel/hostLabelById no delete dialog. Buscas: 'collision', 'hostLabelById', 'Unknown host'."
+    "notes": "Batch rows whose path exists on more than one host now print the execution-host label.",
+    "note": "Batch rows whose path exists on more than one host now print the execution-host label."
    },
    "par": [
     "PAR-56"
@@ -504,7 +528,8 @@
     "missing_behaviors": [
      "erro inline por alvo (Hydra agrega o erro num único painel global)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -528,7 +553,8 @@
      "host no nome acessível em colisão",
      "retorno null sem worktree resolvido"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    },
    "par": [
     "PAR-56"
@@ -552,7 +578,8 @@
      "copy por placement (pinned-fallback 'Hiding N … in <repo>')",
      "repoScopeLabel '<repo> on <host>' (multi-host)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -570,7 +597,8 @@
      "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:155"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -588,7 +616,8 @@
      "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:57"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -598,10 +627,17 @@
     "components/sidebar/ImportedWorktreesVisibilityLine.tsx:156"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeList.tsx:1235-1236",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:121",
+     "src/components/sidebar/worktree-list/grouping/row-builders.ts:46",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:211-224",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:207"
+    ],
     "backend": [],
-    "notes": "sem host glyph/context na linha montada: getNoticeHostContextLabels (grouping/host-labels.ts:89) produz NoticeHostContext mas o componente alcançável (via WorktreeList.tsx:287) não o consome."
+    "notes": "getNoticeHostContextLabels feeds row.hostContextLabel/hostContextHostId; the line renders label + glyph only when the project spans hosts.",
+    "note": "getNoticeHostContextLabels feeds row.hostContextLabel/hostContextHostId; the line renders label + glyph only when the project spans hosts."
    }
   },
   {
@@ -622,7 +658,8 @@
      "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:56"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -641,7 +678,8 @@
      "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:328"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -658,7 +696,8 @@
      "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:83"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -677,7 +716,8 @@
      "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:77"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -690,10 +730,16 @@
     "components/sidebar/NewExternalWorktreesInboxLine.tsx:135"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:68-72",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:83",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:122",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.parity.test.tsx:107"
+    ],
     "backend": [],
-    "notes": "sem host: o componente recebe apenas repoDisplayName; não há repoScopeLabel/glyph. Buscas: 'on <host>', 'hostContextHostId' — nenhum consumidor alcançável."
+    "notes": "repoScopeLabel qualifies the review and suppress accessible names and the visible host label when the project spans hosts.",
+    "note": "repoScopeLabel qualifies the review and suppress accessible names and the visible host label when the project spans hosts."
    }
   },
   {
@@ -712,7 +758,8 @@
      "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:103"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -727,7 +774,8 @@
      "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:110"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -741,12 +789,16 @@
     "components/sidebar/NoticeHostGlyph.tsx:90"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeHostContextBadge.tsx:5"
+     "src/components/sidebar/NoticeHostGlyph.tsx:74",
+     "src/components/sidebar/NoticeHostGlyph.tsx:86-90",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:217-224",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:93-100"
     ],
     "backend": [],
-    "notes": "sem NoticeHostGlyph: existe apenas WorktreeHostContextBadge (badge de texto, sem ícone monitor/server, tooltip ou estado desconectado). Buscas: 'Project on this host', 'lucide-monitor', 'lucide-server', 'HostRowIcon' — ausentes."
+    "notes": "NoticeHostGlyph draws the single Monitor/Server vocabulary with the 'Project on …' tooltip and is mounted by both notice rows.",
+    "note": "NoticeHostGlyph draws the single Monitor/Server vocabulary with the 'Project on …' tooltip and is mounted by both notice rows."
    }
   },
   {
@@ -758,10 +810,17 @@
     "components/sidebar/NoticeHostGlyph.tsx:79"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/NoticeHostGlyph.tsx:80-84",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:221",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:98",
+     "src/components/sidebar/NoticeHostGlyph.parity.test.tsx:105",
+     "src/components/sidebar/NoticeHostGlyph.parity.test.tsx:113"
+    ],
     "backend": [],
-    "notes": "não localizado: sem role=img/tabIndex/keyboardFocusable em glyph de notice."
+    "notes": "keyboardFocusable controls role/tabIndex/aria-label: true on the passive expandable row, false inside the pill's button.",
+    "note": "keyboardFocusable controls role/tabIndex/aria-label: true on the passive expandable row, false inside the pill's button."
    }
   },
   {
@@ -772,10 +831,15 @@
     "components/sidebar/NoticeHostGlyph.tsx:44"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/NoticeHostGlyph.tsx:36-45",
+     "src/components/sidebar/NoticeHostGlyph.parity.test.tsx:88",
+     "src/components/sidebar/NoticeHostGlyph.parity.test.tsx:97"
+    ],
     "backend": [],
-    "notes": "não localizado: sem runtimeHostConnectionStateForEntry/isDisconnectedRuntimeHostState para o glyph de notice."
+    "notes": "Disconnected comes from runtimeHostConnectionStateForEntry + isDisconnectedRuntimeHostState, so an absent entry stays 'not probed'.",
+    "note": "Disconnected comes from runtimeHostConnectionStateForEntry + isDisconnectedRuntimeHostState, so an absent entry stays 'not probed'."
    }
   },
   {
@@ -799,7 +863,8 @@
      "guard isGitRepoKind(repo)",
      "resolução de alvo por host (resolveWorktreeVisibilityHostTarget)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -811,10 +876,17 @@
     "components/sidebar/WorktreeVisibilityDialog.tsx:104"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:148",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:152-168",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:221-224",
+     "src/components/sidebar/worktree-visibility-host-target.ts:67-84",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:408"
+    ],
     "backend": [],
-    "notes": "sem executionHostId/host scope nas chamadas fetchWorktrees/updateRepo. Buscas: 'requestedHostId', 'executionHostId' no dialog — ausentes."
+    "notes": "refreshTargetRepo/updateTargetRepo carry requestedHostId into fetchWorktrees and updateRepo; test proves two hosts sharing id/path stay isolated.",
+    "note": "refreshTargetRepo/updateTargetRepo carry requestedHostId into fetchWorktrees and updateRepo; test proves two hosts sharing id/path stay isolated."
    }
   },
   {
@@ -837,7 +909,8 @@
      "travar linhas/ações enquanto 'checking'",
      "nunca confiar em snapshot fallback/vazio"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -855,7 +928,8 @@
      "src/components/sidebar/WorktreeVisibilityDialog.tsx:550"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -879,7 +953,8 @@
      "fence de scope nos callbacks (não aplica estado se o scope mudou)",
      "sucesso promove listState para 'ready' limpando falha anterior"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -902,7 +977,8 @@
     "missing_behaviors": [
      "checagem isAccepted contra o repo mais recente no scope"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -923,7 +999,8 @@
     "missing_behaviors": [
      "validação de aceitação no commit (campo ausente + visibilidade efetiva == default global)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -943,7 +1020,8 @@
     "missing_behaviors": [
      "rotear o próprio toggle para revert (Hydra só expõe o link 'Use global')"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -965,7 +1043,8 @@
     "missing_behaviors": [
      "validação de aceitação (source presente E visibility 'hide' no repo mais recente)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -985,7 +1064,8 @@
     "missing_behaviors": [
      "validação de aceitação (source ausente E pref custom removida)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1006,7 +1086,8 @@
      "lista virtualizada",
      "nome acessível distinto 'Show <nome> at <path>'"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1029,7 +1110,8 @@
      "disabled incluindo checking/busyPath/toggling (Hydra só usa savingSource)",
      "link 'Manage in Global Settings' posicionado abaixo da lista de sources"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1051,7 +1133,8 @@
      "navegar para a seção de visibilidade de worktrees (Hydra abre 'general')",
      "closeModal + openSettingsTarget({pane:'general',repoId:null,sectionId})"
     ],
-    "note": "Sem mudanca de comportamento; veredito mantido."
+    "note": "Sem mudanca de comportamento; veredito mantido.",
+    "notes": "Sem mudanca de comportamento; veredito mantido."
    }
   },
   {
@@ -1068,7 +1151,8 @@
      "src/components/sidebar/WorktreeVisibilityDialog.tsx:496-524"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1081,10 +1165,15 @@
     "components/sidebar/WorktreeVisibilityHelpPopover.tsx:35"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:640-670",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:350-370",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:182-196"
+    ],
     "backend": [],
-    "notes": "não localizado: WorktreeVisibilityHelpPopover inexistente. Buscas: 'Which worktrees', 'hidden by default', 'CircleHelp' na sidebar — ausentes."
+    "notes": "Help opens on hover or click and closes on Escape or outside click, with the exact Orca question as label.",
+    "note": "Help opens on hover or click and closes on Escape or outside click, with the exact Orca question as label."
    }
   },
   {
@@ -1103,7 +1192,8 @@
      "src/components/sidebar/WorktreeVisibilityDialog.tsx:550"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1127,7 +1217,8 @@
      "erro inline role=alert no próprio form",
      "distinção 'save-failed' silencioso"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1146,7 +1237,8 @@
      "src/components/sidebar/WorktreeVisibilityDialog.tsx:84"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1163,7 +1255,8 @@
      "src/lib/worktree-visibility-sources.ts:217"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1184,7 +1277,8 @@
      "pular selectedCheckout e ownership orca-managed",
      "base configurada de built-in contada como 'other'"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1204,7 +1298,8 @@
      "aria-label com rootPath completo (Hydra usa o basename)",
      "tooltip 'Remove custom location'"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1221,7 +1316,8 @@
      "src/components/sidebar/WorktreeVisibilityDialog.tsx:424"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1243,7 +1339,8 @@
      "nome acessível com rootPath completo para custom",
      "ignorar re-seleção do mesmo segmento"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1254,10 +1351,14 @@
     "components/sidebar/WorktreeVisibilitySourceList.tsx:346"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:696-706",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:198-215"
+    ],
     "backend": [],
-    "notes": "não localizado: sem getWorktreeVisibilityOverrideNotice / role=status de override. Hydra só mostra o link 'Use global' quando o override coincide com o global."
+    "notes": "A source row whose project override differs from Global Settings prints 'Overriding global setting: Show|Hide'.",
+    "note": "A source row whose project override differs from Global Settings prints 'Overriding global setting: Show|Hide'."
    }
   },
   {
@@ -1276,7 +1377,8 @@
      "src/components/sidebar/WorktreeVisibilityDialog.tsx:479"
     ],
     "backend": [],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1288,10 +1390,19 @@
     "components/sidebar/imported-worktrees-card-actions.ts:47"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "partial",
+    "evidence": [
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:54-58",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:340-360",
+     "src/components/sidebar/WorktreeSidebar.tsx:961-1010",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:300-325"
+    ],
     "backend": [],
-    "notes": "não localizado: sem card 'Imported worktrees' nem ação show com update+refresh+rollback. Buscas: 'ImportedWorktreesCard', 'showImportedWorktreesCard' — ausentes."
+    "notes": "The card button calls the policy writer with every other visibility field preserved; a failed write restores the previous external visibility and shows the error message.",
+    "missing_behaviors": [
+     "Rollback quando o refresh autoritativo falha (o dispatcher de refresh-projects é fire-and-forget; só a falha do write reverte)"
+    ],
+    "note": "The card button calls the policy writer with every other visibility field preserved; a failed write restores the previous external visibility and shows the error message."
    }
   },
   {
@@ -1312,7 +1423,8 @@
     "missing_behaviors": [
      "superfície de erro/rollback (Hydra só faz console.error)"
     ],
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
+    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
    }
   },
   {
@@ -1330,7 +1442,7 @@
      "src/components/sidebar/WorktreeList.tsx:254"
     ],
     "backend": [],
-    "notes": "helper getHiddenImportedWorktrees inlined; hidden vem de scan_worktrees (autoritativo).",
+    "notes": "Sem mudanca de comportamento; veredito mantido.",
     "note": "Sem mudanca de comportamento; veredito mantido."
    }
   },
@@ -1343,10 +1455,15 @@
     "components/sidebar/imported-worktrees-card-candidates.ts:48"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:101-124",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:63",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:165"
+    ],
     "backend": [],
-    "notes": "sem buildImportedWorktreesCardCandidates; os row-types/grouping (buildSidebarRows) estão em hydra_unreachable.json."
+    "notes": "buildExternalWorktreeNoticeCandidates ports Orca's card candidates: git repo gate, phase gate, suppression and non-empty hidden list.",
+    "note": "buildExternalWorktreeNoticeCandidates ports Orca's card candidates: git repo gate, phase gate, suppression and non-empty hidden list."
    }
   },
   {
@@ -1368,7 +1485,8 @@
      "import em lote para a allowlist (importedExternalWorktreePaths)",
      "rollback explícito quando o refresh falha"
     ],
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
+    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
    }
   },
   {
@@ -1390,7 +1508,8 @@
      "mensagem de erro 'Could not keep external worktrees hidden. Try again.'",
      "superfície de erro na linha"
     ],
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
+    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
    }
   },
   {
@@ -1414,7 +1533,8 @@
      "gravar externalWorktreeDiscoverySuppressedAt no config do repo (Hydra grava suppressed_discovery em SQLite)",
      "mensagem de erro"
     ],
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
+    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
    }
   },
   {
@@ -1426,10 +1546,17 @@
     "components/sidebar/new-external-worktrees-inbox-actions.ts:45"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/WorktreeSidebar.tsx:960-1010",
+     "src/components/sidebar/WorktreeSidebar.tsx:1432-1450",
+     "src/components/sidebar/WorktreeList.tsx:1260-1280",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:270-290",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.parity.test.tsx:130-150"
+    ],
     "backend": [],
-    "notes": "não localizado: ações só fazem console.error (WorktreeSidebar.tsx:761-799). Buscas pelas strings 'Could not keep external worktrees hidden', 'Could not import external worktrees' — ausentes."
+    "notes": "Show/keep-hidden/permanent-hide failures map to Orca's three messages, clear on success and render in the row's alert.",
+    "note": "Show/keep-hidden/permanent-hide failures map to Orca's three messages, clear on success and render in the row's alert."
    }
   },
   {
@@ -1440,10 +1567,14 @@
     "components/sidebar/new-external-worktrees-inbox-candidates.ts:26"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:116-123",
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:179"
+    ],
     "backend": [],
-    "notes": "sem buildNewExternalWorktreesInboxCandidates; a linha renderiza por projeto visível, sem gating de candidatura (WorktreeList.tsx:304)."
+    "notes": "The same builder emits the compact inbox candidate only after the prompt phase, minus baseline paths.",
+    "note": "The same builder emits the compact inbox candidate only after the prompt phase, minus baseline paths."
    }
   },
   {
@@ -1478,10 +1609,14 @@
     "components/sidebar/prompt-cache-countdown-clock.ts:48"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/prompt-cache-countdown-clock.ts:36-62",
+     "src/components/sidebar/prompt-cache-countdown-clock.ts:45-51"
+    ],
     "backend": [],
-    "notes": "não localizado: CacheTimer.tsx não escuta visibilitychange. Buscas: 'visibilitychange', 'isWindowVisible' no countdown — ausentes."
+    "notes": "The shared clock stops on isWindowVisible() === false, listens to visibilitychange and publishes a fresh tick on return.",
+    "note": "The shared clock stops on isWindowVisible() === false, listens to visibilitychange and publishes a fresh tick on return."
    },
    "par": [
     "PAR-60"
@@ -1494,10 +1629,14 @@
     "components/sidebar/prompt-cache-countdown-clock.ts:91"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/prompt-cache-countdown-clock.ts:94-103",
+     "src/components/sidebar/CacheTimer.tsx:124"
+    ],
     "backend": [],
-    "notes": "não localizado: sem useSyncExternalStore de countdown; CacheTimer usa useState+setInterval local."
+    "notes": "usePromptCacheCountdownNow(active) is a useSyncExternalStore over the shared subscribe/get pair.",
+    "note": "usePromptCacheCountdownNow(active) is a useSyncExternalStore over the shared subscribe/get pair."
    },
    "par": [
     "PAR-60"
@@ -1512,10 +1651,14 @@
     "components/sidebar/prompt-cache-timer-selection.ts:21"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/prompt-cache-timer-selection.ts:18-45",
+     "src/components/sidebar/CacheTimer.tsx:88"
+    ],
     "backend": [],
-    "notes": "não localizado: sem getMostUrgentPromptCacheStartedAt. cacheStartedAt é hardcoded null em use-worktree-card-controller.ts:305."
+    "notes": "getMostUrgentPromptCacheStartedAt picks the oldest startedAt among the worktree's tabs.",
+    "note": "getMostUrgentPromptCacheStartedAt picks the oldest startedAt among the worktree's tabs."
    },
    "par": [
     "PAR-60"
@@ -1529,10 +1672,14 @@
     "components/sidebar/prompt-cache-timer-selection.ts:46"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/prompt-cache-timer-selection.ts:47-60",
+     "src/components/sidebar/CacheTimer.tsx:113"
+    ],
     "backend": [],
-    "notes": "não localizado: sem getPromptCacheCountdownForPane. Buscas: 'getPromptCacheCountdownForPane', 'paneKey', 'ttlMs' na sidebar — ausentes."
+    "notes": "getPromptCacheCountdownForPane requires a positive ttl and a parseable pane key, then reads that pane's startedAt.",
+    "note": "getPromptCacheCountdownForPane requires a positive ttl and a parseable pane key, then reads that pane's startedAt."
    },
    "par": [
     "PAR-60"
@@ -1547,10 +1694,18 @@
     "components/sidebar/stale-workspace-list-toast.ts:28"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "partial",
+    "evidence": [
+     "src/App.tsx:516-521",
+     "src/App.tsx:2009",
+     "src/App.tsx:4379"
+    ],
     "backend": [],
-    "notes": "não localizado: sem showWorkspaceListChangedToast/showNoDeletableWorkspacesToast. Buscas: 'Workspace list changed', 'No deletable workspaces', 'toast.info' no fluxo de delete — ausentes."
+    "notes": "The stale-list toast matches Orca; the no-deletable variant has no caller because batch deletion from a selection is absent.",
+    "missing_behaviors": [
+     "toast 'No deletable workspaces selected' da seleção múltipla que resolve para zero alvos (o caminho de multi-select delete ainda não existe)"
+    ],
+    "note": "The stale-list toast matches Orca; the no-deletable variant has no caller because batch deletion from a selection is absent."
    },
    "par": [
     "PAR-86"
@@ -1643,10 +1798,14 @@
     "components/sidebar/worktree-visibility-host-target.ts:31"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-host-target.ts:22-45",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:152"
+    ],
     "backend": [],
-    "notes": "sem worktree-visibility-host-target.ts: sem parse de hostId/findRepoForHost/scope. Buscas: 'resolveWorktreeVisibilityHostTarget', 'getRepoHostIdentity' no dialog — ausentes."
+    "notes": "resolveWorktreeVisibilityHostTarget parses the requested host, resolves the repo for it, filters detected worktrees and builds the '<host>\\0<repoId>' scope.",
+    "note": "resolveWorktreeVisibilityHostTarget parses the requested host, resolves the repo for it, filters detected worktrees and builds the '<host>\\0<repoId>' scope."
    }
   },
   {
@@ -1657,10 +1816,14 @@
     "components/sidebar/worktree-visibility-host-target.ts:48"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-host-target.ts:67-84",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:221-224"
+    ],
     "backend": [],
-    "notes": "sem useWorktreeVisibilityHostActions; chamadas usam project.path sem executionHostId."
+    "notes": "useWorktreeVisibilityHostActions wraps fetch/update so both carry the resolved executionHostId.",
+    "note": "useWorktreeVisibilityHostActions wraps fetch/update so both carry the resolved executionHostId."
    }
   },
   {
@@ -1673,10 +1836,15 @@
     "components/sidebar/worktree-visibility-mutation-fence.ts:30"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-mutation-fence.ts:16-42",
+     "src/components/sidebar/worktree-visibility-mutation-fence.ts:43-90",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:226"
+    ],
     "backend": [],
-    "notes": "sem worktree-visibility-mutation-fence.ts (busyPath é estado local do dialog, não sobrevive ao unmount)."
+    "notes": "Module-level fences keyed by scope survive unmount: start/subscribe/finish plus useVisibilityMutationFence rehydrate busyPath/isToggling.",
+    "note": "Module-level fences keyed by scope survive unmount: start/subscribe/finish plus useVisibilityMutationFence rehydrate busyPath/isToggling."
    }
   },
   {
@@ -1688,10 +1856,14 @@
     "components/sidebar/worktree-visibility-mutation-fence.ts:68"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/worktree-visibility-mutation-fence.ts:66-90",
+     "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:481"
+    ],
     "backend": [],
-    "notes": "não localizado: sem useVisibilityMutationFence."
+    "notes": "On remount the fence restores the in-flight state, then refreshes and clears it when the old mutation finishes.",
+    "note": "On remount the fence restores the in-flight state, then refreshes and clears it when the old mutation finishes."
    }
   },
   {
@@ -1712,7 +1884,8 @@
     "missing_behaviors": [
      "getLatestRepoForVisibilityScope (repo atual por scope de host)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1734,7 +1907,8 @@
     "missing_behaviors": [
      "predicado de aceitação (isAccepted)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1755,7 +1929,8 @@
     "missing_behaviors": [
      "copy específica de host antigo que descarta prefs de source ('This host doesn't support source-specific worktree visibility…')"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
@@ -1777,7 +1952,8 @@
     "missing_behaviors": [
      "helper shouldUseGlobalWorktreeVisibility + validação de aceitação"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
+    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
    }
   },
   {
