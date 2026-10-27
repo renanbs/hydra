@@ -35,6 +35,7 @@ import {
 } from "./components/RunningTerminalCloseDialog";
 import { isShellProcess } from "./components/workbench/tab-agent";
 import { hydrateWorkspaceHostScopePreference, useAppStore } from "./store";
+import { hydrateSshTargets } from "./store/ssh-bridge";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal } from "./components/SettingsModal";
@@ -980,6 +981,12 @@ export default function App() {
         // não descartar silenciosamente as mudanças do usuário nesta sessão.
         sidebarPrefsHydratedRef.current = true;
       });
+
+    // Hidrata o registry de hosts SSH do store (é o que faz o submenu "Hosts"
+    // aparecer quando existe alvo não-local). Falha do backend não derruba o boot:
+    // o store fica com sshTargetsHydrated=false e o submenu continua escondido até
+    // uma leitura bem-sucedida. Sem polling — uma leitura no boot.
+    hydrateSshTargets().catch(console.error);
   }, []);
 
   // 2. Carrega o estado persistido do workbench (tabs + active tab) — com dedupe por sessionId/title

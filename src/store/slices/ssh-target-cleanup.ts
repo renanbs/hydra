@@ -1,6 +1,7 @@
-// @ts-nocheck — Orca port buffer; typecheck when this subsystem is wired.
 import type { AppState } from '../types'
 import type { SshConnectionState, SshTarget, SshTargetSummary } from '../../shared/ssh-types'
+import type { TerminalTab } from '../../shared/terminal-tab-types'
+import type { Worktree } from '../../shared/worktree/types'
 import { parseAppSshPtyId } from '../../shared/ssh-pty-id'
 import { sanitizeSshTargetGeneration } from '../../shared/ssh-target-generation'
 import { resolveDirectSshTargetScope } from '../../lib/direct-ssh-target-scope'
@@ -60,16 +61,20 @@ export function sshTargetGenerationsEqual(
 }
 
 function collectSshTargetTerminalTabIds(state: AppState, targetId: string): Set<string> {
+  // `AppState` is still an auto-stub (`any`) while its slices are ported, so the
+  // collections this walk reads are annotated explicitly — otherwise `Object.values`
+  // infers `unknown[]` and the loop body degrades to `unknown`.
+  const worktreesByRepo: Record<string, Worktree[]> = state.worktreesByRepo
   const targetWorktreeIds = resolveDirectSshTargetScope({
     targetId,
     catalogRevision: 0,
     repos: state.repos,
-    worktreesByRepo: state.worktreesByRepo,
+    worktreesByRepo,
     detectedWorktreesByRepo: state.detectedWorktreesByRepo,
     restoredRuntimeHostIdByWorkspaceSessionKey: state.restoredRuntimeHostIdByWorkspaceSessionKey
   }).gitWorktreeIds
   const tabIds = new Set<string>()
-  for (const worktrees of Object.values(state.worktreesByRepo)) {
+  for (const worktrees of Object.values(worktreesByRepo)) {
     for (const worktree of worktrees) {
       if (!targetWorktreeIds.has(worktree.id)) {
         continue
@@ -142,14 +147,17 @@ function clearSshTargetTabPtyState(
   | 'pendingCodexPaneRestartIds'
   | 'codexRestartNoticeByPtyId'
 > & { changed: boolean } {
-  let nextTabsByWorktree = state.tabsByWorktree
+  // Same auto-stub reason as `collectSshTargetTerminalTabIds`: annotate the tab map so
+  // `Object.entries` yields `TerminalTab[]` instead of `unknown`.
+  const tabsByWorktree: Record<string, TerminalTab[]> = state.tabsByWorktree
+  let nextTabsByWorktree = tabsByWorktree
   const nextPtyIdsByTabId = { ...state.ptyIdsByTabId }
   const nextLastKnownRelayPtyIdByTabId = { ...state.lastKnownRelayPtyIdByTabId }
   const nextPendingCodexPaneRestartIds = { ...state.pendingCodexPaneRestartIds }
   const nextCodexRestartNoticeByPtyId = { ...state.codexRestartNoticeByPtyId }
   let changed = false
 
-  for (const [worktreeId, tabs] of Object.entries(state.tabsByWorktree)) {
+  for (const [worktreeId, tabs] of Object.entries(tabsByWorktree)) {
     let nextTabs = tabs
     for (const [index, tab] of tabs.entries()) {
       const lastKnownPtyId = state.lastKnownRelayPtyIdByTabId[tab.id]
