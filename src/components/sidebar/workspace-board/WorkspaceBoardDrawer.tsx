@@ -52,6 +52,12 @@ export type WorkspaceBoardDrawerProps = {
    * grows a second writer for the same column.
    */
   onAssignWorktreeStatus: (worktreePath: string, status: WorkspaceStatus) => void | Promise<void>
+  /**
+   * Opens the workspace composer (the sidebar's own modal) with the clicked lane's status
+   * preselected (D08-021/D08-030). The board never grows a second modal mechanism; the
+   * app owns the composer and clears the preselected status when it closes.
+   */
+  onCreateWorktree: (workspaceStatus: WorkspaceStatus) => void
   onOpenChange: (open: boolean) => void
   onSelectWorktree: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
@@ -99,6 +105,7 @@ function WorkspaceBoardDrawerContent({
   compactCards,
   allWorktrees,
   onAssignWorktreeStatus,
+  onCreateWorktree,
   onOpenChange,
   onSelectWorktree,
   onSelectSession,
@@ -255,6 +262,7 @@ function WorkspaceBoardDrawerContent({
       totalCount={filtered.totalCount}
       selectedCount={selectedVisibleCount}
       selectedWorktreeIds={selectedWorktreeIds}
+      onCreateWorktree={onCreateWorktree}
       onQueryChange={setQuery}
       onClearQuery={clearQuery}
       onCardPointerDownCapture={onCardPointerDownCapture}

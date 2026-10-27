@@ -77,6 +77,7 @@ export function WorktreeSidebar({
   onProjectContextMenu,
   onWorktreeContextMenu,
   onAssignWorktreeStatus,
+  onCreateWorktree,
   onReorderSessions: _onReorderSessions,
   onReorderProjects,
   onReorderWorktrees,
@@ -921,6 +922,7 @@ export function WorktreeSidebar({
         compactCards={compactCards}
         allWorktrees={allWorktrees}
         onAssignWorktreeStatus={onAssignWorktreeStatus}
+        onCreateWorktree={onCreateWorktree}
         onOpenChange={handleWorkspaceBoardOpenChange}
         onSelectWorktree={onSelectGitWorktree}
         onSelectSession={onSelectSession}

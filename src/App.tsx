@@ -333,6 +333,12 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
   const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
+  /**
+   * Lane the workspace board's create button was pressed from (D08-030): the composer
+   * seeds its creation request with this status, so the new worktree is born in that lane.
+   * Cleared whenever the composer closes, so it never leaks into the next creation.
+   */
+  const [newWorkspaceInitialStatus, setNewWorkspaceInitialStatus] = useState<string | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
@@ -2019,6 +2025,8 @@ export default function App() {
 
 
   const handleCreatedWorkspace = (worktreePath: string, branchName: string, agentName: string, executable: string) => {
+    // The lane's create path persisted the status through `set_worktree_status`; refresh
+    // re-reads it from the host so the new worktree paints in the lane it was created from.
     if (activeProject) refreshGitWorktrees(activeProject.path);
     const id = `sess_wt_${Date.now().toString().slice(-4)}`;
     const newSession: WorktreeSession = {
@@ -2054,6 +2062,21 @@ export default function App() {
     setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (fleet)`, type: "terminal", sessionId: id, executable, cwd: worktreePath }]);
     setActiveTabId(tabId);
   };
+
+  /**
+   * D08-030: the workspace board's lane `+` opens the same composer the sidebar uses,
+   * preselected with that lane's status. One modal mechanism, seeded once.
+   */
+  const handleCreateWorktreeInStatus = useCallback((workspaceStatus: string) => {
+    setNewWorkspaceInitialStatus(workspaceStatus);
+    setIsNewWorkspaceOpen(true);
+  }, []);
+
+  /** Closes the composer and drops the lane seed so the next creation starts clean. */
+  const closeNewWorkspaceComposer = useCallback(() => {
+    setIsNewWorkspaceOpen(false);
+    setNewWorkspaceInitialStatus(null);
+  }, []);
 
   const handleSelectSession = (id: string) => {
     setSessions((prev) =>
@@ -2705,7 +2728,7 @@ export default function App() {
         }
         if (isNewWorkspaceOpen) {
           e.preventDefault();
-          setIsNewWorkspaceOpen(false);
+          closeNewWorkspaceComposer();
           return;
         }
         if (isAddRepoOpen) {
@@ -3904,6 +3927,7 @@ export default function App() {
                 onProjectContextMenu={handleProjectContextMenu}
                 onWorktreeContextMenu={handleWorktreeContextMenu}
                 onAssignWorktreeStatus={assignWorktreeStatus}
+                onCreateWorktree={handleCreateWorktreeInStatus}
                 onReorderSessions={handleReorderSessions}
                 onReorderProjects={handleReorderProjects}
                 onReorderWorktrees={handleReorderWorktrees}
@@ -4290,10 +4314,11 @@ export default function App() {
         activeProject={activeProject}
         projects={projects}
         availableAgents={availableAgents}
+        initialWorkspaceStatus={newWorkspaceInitialStatus}
         onSelectProject={handleSelectProject}
         onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onClose={() => setIsNewWorkspaceOpen(false)}
+        onClose={closeNewWorkspaceComposer}
         onCreated={handleCreatedWorkspace}
       />
 

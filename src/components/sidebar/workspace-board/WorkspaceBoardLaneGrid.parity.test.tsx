@@ -7,6 +7,7 @@
 import { act, fireEvent, render } from '@testing-library/react'
 import React, { useCallback, useRef, useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import type { WorkspaceStatusDefinition } from '../../../shared/worktree/types'
 import type { GitWorktreeInfo, HydraProject } from '../types'
 import WorkspaceBoardLaneGrid from './WorkspaceBoardLaneGrid'
@@ -82,26 +83,29 @@ function LaneRowHarness({
     setScrollerElement(node)
   }, [])
   return (
-    <div ref={attachScroller} data-workspace-board-lanes-scroller="">
-      <WorkspaceBoardLaneGrid
-        open
-        lanes={LANES}
-        hasQuery={false}
-        columnWidth={columnWidth}
-        isResizingColumn={false}
-        onColumnResizeStart={vi.fn()}
-        onColumnResizeKeyDown={vi.fn()}
-        compactCards={false}
-        boardRef={boardRef}
-        laneScrollerElement={scrollerElement}
-        dropTargetStatus={dropTargetStatus}
-        areaSelectionOverlayRef={areaSelectionOverlayRef}
-        selectedWorktreeIds={new Set()}
-        onSelectionGesture={vi.fn()}
-        onCardPointerDownCapture={vi.fn()}
-        onActivate={vi.fn()}
-      />
-    </div>
+    <TooltipProvider>
+      <div ref={attachScroller} data-workspace-board-lanes-scroller="">
+        <WorkspaceBoardLaneGrid
+          open
+          lanes={LANES}
+          hasQuery={false}
+          columnWidth={columnWidth}
+          isResizingColumn={false}
+          onColumnResizeStart={vi.fn()}
+          onColumnResizeKeyDown={vi.fn()}
+          compactCards={false}
+          boardRef={boardRef}
+          laneScrollerElement={scrollerElement}
+          dropTargetStatus={dropTargetStatus}
+          areaSelectionOverlayRef={areaSelectionOverlayRef}
+          selectedWorktreeIds={new Set()}
+          onCreateWorktree={vi.fn()}
+          onSelectionGesture={vi.fn()}
+          onCardPointerDownCapture={vi.fn()}
+          onActivate={vi.fn()}
+        />
+      </div>
+    </TooltipProvider>
   )
 }
 

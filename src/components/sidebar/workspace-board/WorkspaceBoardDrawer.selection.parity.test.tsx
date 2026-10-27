@@ -176,6 +176,7 @@ function drawerProps(overrides: Partial<WorkspaceBoardDrawerProps> = {}): Worksp
     compactCards: false,
     allWorktrees: WORKTREES,
     onAssignWorktreeStatus: vi.fn(),
+    onCreateWorktree: vi.fn(),
     onOpenChange: vi.fn(),
     onSelectWorktree: vi.fn(),
     ...overrides

@@ -228,6 +228,11 @@ export interface WorktreeSidebarProps {
    * it, so the board and the context menu share one writer (D08-041).
    */
   onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
+  /**
+   * The workspace board's lane create button: opens the composer with the lane's status
+   * preselected (D08-021/D08-030). The app owns the composer and clears the status on close.
+   */
+  onCreateWorktree: (workspaceStatus: string) => void;
   onReorderSessions?: (sessions: WorktreeSession[]) => void;
   onReorderProjects?: (projects: HydraProject[]) => void;
   onReorderWorktrees?: (worktrees: GitWorktreeInfo[], projectPath?: string) => void;

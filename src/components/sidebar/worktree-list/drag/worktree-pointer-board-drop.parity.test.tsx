@@ -238,6 +238,7 @@ function renderHarness(): Harness {
           compactCards={false}
           allWorktrees={worktrees}
           onAssignWorktreeStatus={handleAssign}
+          onCreateWorktree={vi.fn()}
           onOpenChange={handleWorkspaceBoardOpenChange}
           onSelectWorktree={vi.fn()}
         />

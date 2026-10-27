@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useAppStore } from '@/store'
@@ -63,6 +63,7 @@ function drawerProps(overrides: Partial<WorkspaceBoardDrawerProps> = {}): Worksp
     compactCards: false,
     allWorktrees: WORKTREES,
     onAssignWorktreeStatus: vi.fn(),
+    onCreateWorktree: vi.fn(),
     onOpenChange: vi.fn(),
     onSelectWorktree: vi.fn(),
     ...overrides
@@ -222,7 +223,7 @@ describe('WorkspaceBoardDrawer', () => {
     expect(laneCount('completed')).toBe('1')
   })
 
-  it('renders the search field, the settings menu and the column resize handle, but no control this increment does not ship', () => {
+  it('renders the search field, the settings menu, the column resize handle and the lane create controls, but no control this increment does not ship', () => {
     render(<Board {...drawerProps()} />)
 
     expect(screen.getByRole('textbox', { name: 'Search workspaces' })).toBeInTheDocument()
@@ -231,7 +232,8 @@ describe('WorkspaceBoardDrawer', () => {
     const handles = document.body.querySelectorAll<HTMLElement>(
       '[data-workspace-board-column-resize-handle]'
     )
-    expect(handles).toHaveLength(document.body.querySelectorAll('[data-workspace-status]').length)
+    const laneElements = document.body.querySelectorAll<HTMLElement>('[data-workspace-status]')
+    expect(handles).toHaveLength(laneElements.length)
     expect(handles[0]).toHaveAttribute('role', 'separator')
     expect(handles[0]).toHaveAttribute('aria-orientation', 'vertical')
     expect(handles[0]).toHaveAttribute(
@@ -246,9 +248,46 @@ describe('WorkspaceBoardDrawer', () => {
       'aria-valuenow',
       String(useAppStore.getState().workspaceBoardColumnWidth)
     )
-    // The sidebar filter menu and the lane's create-workspace buttons belong to later
-    // increments.
-    expect(document.body.querySelector('[aria-label^="New workspace in"]')).toBeNull()
+    // D08-021/D08-030: each lane now carries its two create-workspace affordances — the
+    // header `+` and the full-width footer `+` — both labelled for the lane's status.
+    expect(document.body.querySelectorAll('[aria-label^="New workspace in"]')).toHaveLength(
+      laneElements.length * 2
+    )
+  })
+
+  it('opens the composer for the lane whose create button was pressed, without dragging or selecting', async () => {
+    const onCreateWorktree = vi.fn()
+    const onAssignWorktreeStatus = vi.fn()
+    const onSelectWorktree = vi.fn()
+    render(
+      <Board
+        {...drawerProps({ onCreateWorktree, onAssignWorktreeStatus, onSelectWorktree })}
+      />
+    )
+    await settleLaneHydration()
+
+    const laneElement = lane('in-progress')
+    expect(laneElement).not.toBeNull()
+    const createButton = within(laneElement as HTMLElement).getAllByRole('button', {
+      name: 'New workspace in In progress',
+    })[0]
+    expect(createButton).toBeInTheDocument()
+
+    fireEvent.pointerDown(createButton, { button: 0 })
+    fireEvent.click(createButton)
+
+    expect(onCreateWorktree).toHaveBeenCalledTimes(1)
+    expect(onCreateWorktree).toHaveBeenCalledWith('in-progress')
+    // A press on the lane's create control is not a card drag; it writes no status.
+    expect(onAssignWorktreeStatus).not.toHaveBeenCalled()
+    // ... and not a card activation.
+    expect(onSelectWorktree).not.toHaveBeenCalled()
+    // ... and it selects no card.
+    for (const card of document.body.querySelectorAll<HTMLElement>(
+      '[data-workspace-board-card-id]'
+    )) {
+      expect(card.dataset.workspaceBoardCardSelected).toBe('false')
+    }
   })
 
   it('opens the status settings menu from the header trigger', () => {
