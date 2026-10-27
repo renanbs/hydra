@@ -4356,17 +4356,15 @@
    "components/sidebar/worktree-list/grouping/group-sections.ts:94-123"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts:216-225",
-    "src/components/sidebar/worktree-list/grouping/group-sections.ts:94"
+    "src/components/sidebar/WorktreeList.tsx:688-716",
+    "src/components/sidebar/WorktreeList.tsx:780-790",
+    "src/components/sidebar/WorktreeList.parity.test.tsx:169-215"
    ],
-   "missing_behaviors": [
-    "lanes por status com label/tone/ícone",
-    "omissão de lanes vazias",
-    "contagem incluindo folder workspaces"
-   ],
-   "notes": "Lanes de status existem só no pipeline headless; a lista pintada não tem lanes de status (WorktreeList.tsx:338 só muda indent)."
+   "missing_behaviors": [],
+   "notes": "Lanes read the persisted workspaceStatus and the store's definitions; agent activity no longer overwrites the lane, and the lane header keeps label/tone/icon/count.",
+   "note": "Lanes read the persisted workspaceStatus and the store's definitions; agent activity no longer overwrites the lane, and the lane header keeps label/tone/icon/count."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4579,15 +4577,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/worktree-list/grouping/section-order.ts:99",
-    "src/components/sidebar/WorktreeSidebar.tsx:508-524"
+    "src/components/sidebar/sidebar-worktree-sort.ts:28-46",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:116-150"
    ],
    "missing_behaviors": [
-    "ordenação Manual vs Recent de projetos",
-    "getManualOrderAnchorRepo"
+    "getManualOrderAnchorRepo e ordenação de projetos por Project/Manual"
    ],
-   "notes": "Ordenação de seções parcial.",
-   "note": "Ordenação de seções parcial."
+   "notes": "Recent is reachable and Manual reads persisted manualOrder; project-level manual anchoring remains.",
+   "note": "Recent is reachable and Manual reads persisted manualOrder; project-level manual anchoring remains."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4858,18 +4855,16 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:533-599",
-    "src/components/sidebar/smart-sort.ts:178"
+    "src/components/sidebar/WorktreeSidebar.tsx:777-812",
+    "src/components/sidebar/sidebar-session-attention.ts:84-105"
    ],
    "missing_behaviors": [
-    "modo Smart com atenção por worktree",
     "SORT_SETTLE_MS=3000 de debounce",
-    "persistência de ordem Smart por host",
-    "telemetria smart_sort_*",
-    "identidade estável dos ids"
+    "persistência da ordem Smart por host",
+    "telemetria smart_sort_*"
    ],
-   "notes": "Smart sort existe no pipeline headless; não dirige o paint.",
-   "note": "Smart sort existe no pipeline headless; não dirige o paint."
+   "notes": "Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain.",
+   "note": "Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -6293,18 +6288,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:533",
-    "src/App.tsx:1922",
-    "src/components/sidebar/WorktreeList.tsx:202"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:76-96",
+    "src/components/sidebar/sidebar-worktree-sort.ts:28-46"
    ],
    "backend": [],
    "missing_behaviors": [
-    "catálogo de ordem manual (buildWorktreeManualOrderCatalog) e useSidebarWorktreeSortOrder/useVisibleSidebarWorktrees: Hydra ordena por sortBy name|recent|agent-activity (WorktreeSidebar.tsx:576-605)",
-    "persistência efetiva da ordem manual de worktrees: App.tsx:1928-1938 grava hydra:worktrees_order em localStorage mas nunca o lê de volta",
-    "modos Smart/status e derivação de visíveis com linhagem/host padrão"
+    "catálogo de ordem manual (buildWorktreeManualOrderCatalog) e reordenação por drop persistida nesse catálogo"
    ],
-   "notes": "Pipeline de ordenação parcial.",
-   "note": "Pipeline de ordenação parcial."
+   "notes": "Mode set and comparator now match Orca; the manual-order catalog used by drag reordering is still absent.",
+   "note": "Mode set and comparator now match Orca; the manual-order catalog used by drag reordering is still absent."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -15119,25 +15111,18 @@
    "components/sidebar/smart-attention.ts:121"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/lib/smart-attention.ts:52-72",
-    "src/lib/smart-attention.ts:83-94",
-    "src/components/sidebar/WorktreeSidebar.tsx:562-635",
-    "src/components/sidebar/SidebarAgentsList.tsx:88-110",
-    "src/components/sidebar/smart-attention.ts:20-26"
+    "src/components/sidebar/sidebar-session-attention.ts:53-105",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:20-80",
+    "src/components/sidebar/WorktreeSidebar.tsx:779-810"
    ],
    "backend": [
     "decay do hook: src-tauri/src/agent_state.rs:63-75 (AGENT_STATE_STALE_AFTER_MS = 30*60*1000, agent_state.rs:13) chamado por src-tauri/src/hooks/pipeline.rs:610-619"
    ],
-   "missing_behaviors": [
-    "Ordem das classes 2/3 invertida: Hydra põe Working=2 e Done&unvisited=3 (lib/smart-attention.ts:63-66, doc 26-31), Orca põe Done=2 e Working=3",
-    "Heurísticas de título ('permission'→Classe 1, 'working'→Classe 3, title idle/null→nada): o resolver do Hydra não lê títulos (SessionAttentionInput não tem title, lib/smart-attention.ts:33-44)",
-    "'done' interrompido por Ctrl+C → Classe 5: não há flag interrupted chegando ao resolver (WorktreeSession não tem interrupted/stateHistory, components/sidebar/types.ts:126-148)",
-    "Campo cause ('blocked'|'waiting'|'title-heuristic') — AttentionCause: 0 hits no Hydra"
-   ],
-   "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+   "missing_behaviors": [],
+   "notes": "Painted Agent Activity order uses Orca's classes (1 blocked/waiting, 2 fresh done, 3 working, 4 live-idle, 5 idle) and the freshest-event tie-break.",
+   "note": "Painted Agent Activity order uses Orca's classes (1 blocked/waiting, 2 fresh done, 3 working, 4 live-idle, 5 idle) and the freshest-event tie-break."
   },
   "domain": "D09-filters-sort"
  },
@@ -15151,16 +15136,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/lib/smart-attention.ts:102-115",
-    "src/components/sidebar/WorktreeSidebar.tsx:562-635"
+    "src/components/sidebar/sidebar-session-attention.ts:53-105"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Propagação de `cause` quando a classe resolvida é Classe 1 (SessionAttention = {cls, attentionTimestamp} apenas, lib/smart-attention.ts:46-49)",
-    "Garantia de que um 'done' expirado não mascare um 'working' vivo é implícita (depende do decay do Rust); não há teste/lógica frontend para o caso"
+    "fallback por heurística de título (permission -> classe 1, working -> classe 3) quando não há entrada de hook",
+    "propagação de `cause` da heurística de título"
    ],
-   "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+   "notes": "Class order now matches Orca for hook-backed sessions; title heuristics still only exist in the unused tab/pane path.",
+   "note": "Class order now matches Orca for hook-backed sessions; title heuristics still only exist in the unused tab/pane path."
   },
   "domain": "D09-filters-sort"
  },
@@ -15247,18 +15231,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/smart-attention.ts:25-26",
-    "src/components/sidebar/smart-sort.ts:197",
-    "src/lib/worktree-activity-state.ts:24-70",
-    "src/lib/pane-agent-evidence.ts:18-36",
-    "src/components/sidebar/visible-worktrees.ts:26,301"
+    "src/components/sidebar/sidebar-worktree-sort.ts:96-113"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Wiring ao cold-start do sort: smart-sort.ts:197 chama hasFreshAttributedAgentStatus, que é `null` (components/sidebar/smart-attention.ts:25)",
-    "Uso direto de isExplicitAgentStatusFresh (Hydra usa isFreshNonDoneAgentStatus, que exclui 'done')"
+    "cold start do caminho pintado a partir do sortOrder persistido"
    ],
-   "notes": "O análogo funcional existe e cobre os 3 primeiros comportamentos: getWorktreeIdsWithLiveAgent/getLiveAgentStatusByWorktreeId (worktree-activity-state.ts:24-70) valida frescor e resolve worktreeId explícito OU via aba espelhada (worktreeIdByTabId), consumido em visible-worktrees.ts:301 para o sweep de sleeping/atividade — não para o cold-start."
+   "notes": "hasFreshAttributedAgentStatus exists, but the painted comparator has no cold-start branch.",
+   "note": "hasFreshAttributedAgentStatus exists, but the painted comparator has no cold-start branch."
   },
   "domain": "D09-filters-sort"
  },
@@ -15270,20 +15250,15 @@
    "components/sidebar/smart-sort.ts:32"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/smart-sort.ts:28",
-    "src/components/sidebar/smart-sort.ts:38-51",
-    "src/components/sidebar/smart-sort.ts:125,142",
-    "src/components/sidebar/WorktreeSidebar.tsx:589-591"
+    "src/components/sidebar/sidebar-worktree-sort.ts:96-113",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:150-170"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Uso no sort 'Recent' renderizado: WorktreeSidebar usa created_at desc (WorktreeSidebar.tsx:563-565) e ignora o grace floor",
-    "Alcance do helper no caminho montado: effectiveRecentActivity só é exercido por smart-sort.ts (consumido via visible-worktrees.ts para numeração Cmd+1-9 quando o sidebar está desmontado)"
-   ],
-   "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+   "missing_behaviors": [],
+   "notes": "Recent mode uses effectiveRecentActivity (createdAt + 5min create-grace floor bounded by now) through the shared comparator.",
+   "note": "Recent mode uses effectiveRecentActivity (createdAt + 5min create-grace floor bounded by now) through the shared comparator."
   },
   "domain": "D09-filters-sort"
  },
@@ -15296,19 +15271,15 @@
    "components/sidebar/smart-sort.ts:68"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/smart-sort.ts:51-92",
-    "src/components/sidebar/smart-sort.ts:196-197",
-    "src/components/sidebar/WorktreeSidebar.tsx:589-595"
+    "src/components/sidebar/sidebar-worktree-sort.ts:96-113",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:172-190"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Uso no sort 'Name' renderizado: WorktreeSidebar compara (displayName||branch).localeCompare (WorktreeSidebar.tsx:560-561), sem basename/id fallback",
-    "Alcance no caminho montado (os labels só são construídos dentro de smart-sort.ts, exercido via visible-worktrees.ts)"
-   ],
-   "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+   "missing_behaviors": [],
+   "notes": "Name mode uses getWorktreeSortLabel (trimmed displayName, else path basename, else id) keyed per row object.",
+   "note": "Name mode uses getWorktreeSortLabel (trimmed displayName, else path basename, else id) keyed per row object."
   },
   "domain": "D09-filters-sort"
  },
@@ -15319,19 +15290,16 @@
    "components/sidebar/smart-sort.ts:80"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/smart-sort.ts:104-160",
-    "src/components/sidebar/visible-worktrees.ts:341-357",
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:305-330"
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:76-96",
+    "src/components/sidebar/sidebar-worktree-sort.ts:28-46",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:105-150"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Modos 'repo' e 'manual' na UI: o menu Sort by oferece apenas Agent Activity/Name/Recent (WorkspaceOptionsMenu.tsx:309-312) e o render usa created_at para 'recent'",
-    "Consumo pelo caminho renderizado: buildWorktreeComparator só é chamado no fallback de Cmd+1-9 (visible-worktrees.ts:355)"
-   ],
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "missing_behaviors": [],
+   "notes": "Menu offers Agent Activity/Name/Recent/Project/Manual and each maps onto the shared comparator; manual uses manualOrder with sortOrder fallback.",
+   "note": "Menu offers Agent Activity/Name/Recent/Project/Manual and each maps onto the shared comparator; manual uses manualOrder with sortOrder fallback."
   },
   "domain": "D09-filters-sort"
  },
@@ -15344,19 +15312,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/smart-sort.ts:178-215",
-    "src/components/sidebar/smart-attention.ts:23,25",
-    "src/components/sidebar/visible-worktrees.ts:341-350",
-    "src/components/sidebar/WorktreeSidebar.tsx:562-635"
+    "src/components/sidebar/sidebar-worktree-sort.ts:28-46",
+    "src/components/sidebar/smart-sort.ts:178-205"
    ],
    "backend": [],
    "missing_behaviors": [
-    "Funcionamento: ambas as ramificações dependem de símbolos `null` — cold start chama hasFreshAttributedAgentStatus (smart-sort.ts:197 → stub:25) e warm chama buildAttentionByWorktree (smart-sort.ts:205 → stub:23)",
-    "Consumo pela lista de worktrees renderizada (WorktreeSidebar ordena por conta própria; sortWorktreesSmart só é alcançado por getVisibleWorktreeIds quando o sidebar está desmontado)",
-    "Consumo pela paleta de comandos (comentário 168-170 cita a paleta, mas não há chamada em WorktreeJumpPalette/command palette)"
+    "cold start: reordenar pelo sortOrder persistido até chegar o snapshot de agent status"
    ],
-   "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-   "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+   "notes": "The painted path sorts the modes themselves; it does not run sortWorktreesSmart's cold-start fallback.",
+   "note": "The painted path sorts the modes themselves; it does not run sortWorktreesSmart's cold-start fallback."
   },
   "domain": "D09-filters-sort"
  },
