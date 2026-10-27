@@ -1,7 +1,9 @@
 // Guard for the live-store host-scope port: the setters carry the exact Orca
 // `ui-slice-preference-actions` semantics (single host narrows scope, multi keeps
 // it, 'all' clears the filter) but persist nothing — persistence is the App's
-// debounced `ui.sidebar` writer. Also guards `ui.sidebar` boot hydration.
+// debounced `ui.sidebar` writer. Enforced 2026-10-08: the slice adapter no longer
+// mirrors `workspaceHostScope`/`visibleWorkspaceHostIds` into its `ui.state` row.
+// Also guards `ui.sidebar` boot hydration.
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { hydrateWorkspaceHostScopePreference, useAppStore } from "./index";
 

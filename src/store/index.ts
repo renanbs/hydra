@@ -229,8 +229,10 @@ export interface AppState {
   worktreeNavHistory: any[]
   worktreeNavHistoryIndex: number
   // ─── Sidebar host scope actions (supplied by the composed UI slice) ───
-  // Same normalizers the slice runs; the slice also writes its own `ui.state` row through the
-  // Tauri adapter. The App still hydrates the boot value from its `ui.sidebar` blob.
+  // Same normalizers the slice runs; the slice updates local state only — persistence is the
+  // App's debounced `ui.sidebar` blob (single writer since 2026-10-08, after the slice adapter
+  // stopped mirroring these keys into its `ui.state` row). The App still hydrates the boot value
+  // from that blob.
   setWorkspaceHostScope: (scope: WorkspaceHostScope) => void
   setVisibleWorkspaceHostIds: (ids: readonly ExecutionHostId[] | null) => void
   // ─── Orca Compat: Actions ───
@@ -651,9 +653,9 @@ export const useAppStore = create<AppState>()(
     setMruTabIds: (ids) => set({ mruTabIds: ids }),
 
     // `setWorkspaceHostScope` / `setVisibleWorkspaceHostIds` used to live here as a
-    // bare-set port. The UI slice now owns them: same normalizers, plus the slice's
-    // own `ui.state` write through the Tauri adapter (`ui-prefs-bridge`). The App
-    // still hydrates the boot value from its `ui.sidebar` blob via
+    // bare-set port. The UI slice now owns them: same normalizers, local state only —
+    // no `ui.state` write since 2026-10-08, the App's `ui.sidebar` blob is the single
+    // writer. The App hydrates the boot value from that blob via
     // `hydrateWorkspaceHostScopePreference` below.
 
     addTabToWorktree: (worktreePath, tab, select = true) =>

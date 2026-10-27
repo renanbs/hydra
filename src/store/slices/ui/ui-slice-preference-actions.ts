@@ -47,7 +47,9 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
     groupBy: 'repo',
     // Why: group keys are mode-specific, so clear collapsed state on mode switch — stale keys are meaningless and accumulate.
     setGroupBy: (g: any) => {
-      uiPrefsBridge.set({ groupBy: g, collapsedGroups: [] }).catch(console.error)
+      // Why: `collapsedGroups` is owned by the App's `ui.sidebar` blob (single writer since 2026-10-08);
+      // the slice still resets it locally. Full consolidation waits on reconciling the divergent namespaces.
+      uiPrefsBridge.set({ groupBy: g }).catch(console.error)
       set({ groupBy: g, collapsedGroups: new Set<string>() })
     },
 
@@ -69,9 +71,10 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
     setWorkspaceHostScope: (scope: any) => {
       const normalized = normalizeExecutionHostScope(scope)
       const visibleWorkspaceHostIds = normalized === 'all' ? null : [normalized]
+      // Why: `workspaceHostScope`/`visibleWorkspaceHostIds` are owned by the App's `ui.sidebar` blob
+      // (single writer since 2026-10-08); the slice only updates local state. Full consolidation waits
+      // on reconciling the divergent domains.
       set({ workspaceHostScope: normalized, visibleWorkspaceHostIds })
-      uiPrefsBridge.set({ workspaceHostScope: normalized, visibleWorkspaceHostIds })
-        .catch(console.error)
     },
     visibleWorkspaceHostIds: null,
     setVisibleWorkspaceHostIds: (ids: any) => {
@@ -83,9 +86,10 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
       } else if (normalized.length === 1) {
         workspaceHostScope = normalized[0]
       }
+      // Why: `visibleWorkspaceHostIds`/`workspaceHostScope` are owned by the App's `ui.sidebar` blob
+      // (single writer since 2026-10-08); the slice only updates local state. Full consolidation waits
+      // on reconciling the divergent domains.
       set({ visibleWorkspaceHostIds: normalized, workspaceHostScope })
-      uiPrefsBridge.set({ visibleWorkspaceHostIds: normalized, workspaceHostScope })
-        .catch(console.error)
     },
     workspaceHostOrder: [],
     setWorkspaceHostOrder: (ids: any) => {
@@ -179,13 +183,15 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
     },
     agentsReadFilter: DEFAULT_AGENTS_READ_FILTER,
     setAgentsReadFilter: (v: any) => {
+      // Why: `agentsReadFilter` is owned by the App's `ui.sidebar` blob (single writer since 2026-10-08);
+      // the slice only updates local state. Full consolidation waits on reconciling the divergent domains.
       set({ agentsReadFilter: v })
-      uiPrefsBridge.set({ agentsReadFilter: v }).catch(console.error)
     },
     agentsGroupBy: DEFAULT_AGENTS_GROUP_BY,
     setAgentsGroupBy: (v: any) => {
+      // Why: `agentsGroupBy` is owned by the App's `ui.sidebar` blob (single writer since 2026-10-08);
+      // the slice only updates local state. Full consolidation waits on reconciling the divergent domains.
       set({ agentsGroupBy: v })
-      uiPrefsBridge.set({ agentsGroupBy: v }).catch(console.error)
     },
 
     collapsedGroups: new Set<string>(),
@@ -197,7 +203,8 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
         } else {
           next.add(key)
         }
-        uiPrefsBridge.set({ collapsedGroups: [...next] }).catch(console.error)
+        // Why: `collapsedGroups` is owned by the App's `ui.sidebar` blob (single writer since 2026-10-08);
+        // the slice only updates local state. Full consolidation waits on reconciling the divergent namespaces.
         return { collapsedGroups: next }
       }),
 
