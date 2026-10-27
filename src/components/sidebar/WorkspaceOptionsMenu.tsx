@@ -72,9 +72,28 @@ export function toggleWorkspaceHostVisibility(args: {
   };
 }
 
+/** The menu's five modes; ids stay compatible with the persisted prefs. */
+const SORT_BY_OPTIONS = [
+  { id: "agent-activity", label: "Agent Activity" },
+  { id: "name", label: "Name" },
+  { id: "recent", label: "Recent" },
+  { id: "project", label: "Project" },
+  { id: "manual", label: "Manual" },
+] as const;
+
+const SORT_BY_LABELS: Record<WorkspaceDisplayOptions["sortBy"], string> = {
+  "agent-activity": "Agent Activity",
+  smart: "Agent Activity",
+  name: "Name",
+  recent: "Recent",
+  project: "Project",
+  manual: "Manual",
+};
+
 export interface WorkspaceDisplayOptions {
   groupBy: GroupByMode;
-  sortBy: "agent-activity" | "name" | "recent";
+  /** `smart` is the comparator name; the menu keeps showing it as Agent Activity. */
+  sortBy: "agent-activity" | "smart" | "name" | "recent" | "project" | "manual";
   hideSleeping: boolean;
   hideDefaultBranch: boolean;
   hideAutomationCreated: boolean;
@@ -575,17 +594,13 @@ export function WorkspaceOptionsMenu({
           >
             <span>Sort by</span>
             <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-              <span>{options.sortBy === "agent-activity" ? "Agent Activity" : options.sortBy === "name" ? "Name" : "Recent"}</span>
+              <span>{SORT_BY_LABELS[options.sortBy]}</span>
               <ChevronRight className="w-3 h-3 text-muted-foreground" />
             </span>
           </div>
           {openSubmenu === "sort" && (
             <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
-              {[
-                { id: "agent-activity", label: "Agent Activity" },
-                { id: "name", label: "Name" },
-                { id: "recent", label: "Recent" },
-              ].map((opt) => (
+              {SORT_BY_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
                   onClick={() => {

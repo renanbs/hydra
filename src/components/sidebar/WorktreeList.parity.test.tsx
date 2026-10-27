@@ -11,6 +11,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAppStore } from "@/store";
 import { WorktreeList, type WorktreeListProps } from "./WorktreeList";
 import { getVisibleWorktreeShortcutTargets } from "./visible-worktrees";
+import { toWorktreeRow } from "../../shared/worktree/worktree-row";
+import { cloneDefaultWorkspaceStatuses } from "../../shared/workspace-statuses";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { HydraProject, GitWorktreeInfo } from "./types";
 
@@ -61,6 +63,9 @@ const BASE_STORE_STATE = {
   visibleWorkspaceHostIds: [],
   workspaceHostScope: null,
   worktreeLineageById: {},
+  // Reset per test: the lane assertions below read both of these from the store.
+  workspaceStatuses: cloneDefaultWorkspaceStatuses(),
+  worktreesByRepo: {},
 };
 
 function resetStore(overrides: Record<string, unknown> = {}) {
@@ -164,6 +169,50 @@ describe("WorktreeList row model (Orca parity)", () => {
     expect(container.querySelector('[data-section-header-id="pinned"]')).not.toBeNull();
     expect(
       container.querySelector(`[data-worktree-path="${pinnedPath}"]`)
+    ).toBeNull();
+  });
+
+  it("routes a card into its persisted workspace-status lane, not its agent activity", () => {
+    resetStore({
+      workspaceStatuses: [
+        { id: "todo", label: "Todo" },
+        { id: "in-progress", label: "In progress" },
+        { id: "done", label: "Done" },
+      ],
+      worktreesByRepo: {
+        repo_a: [
+          toWorktreeRow(worktree("/repo/hydra", "main", true), {
+            repoId: "repo_a",
+            status: "todo",
+          }),
+        ],
+      },
+    });
+
+    const { container } = renderList({
+      projects: [PROJECT_A],
+      worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+      // The agent blocking must not move the card out of its persisted lane.
+      sessions: [
+        {
+          id: "s1",
+          project_path: "/repo/hydra",
+          title: "omp",
+          branch: "main",
+          state: "blocked",
+          active: true,
+          agentName: "omp",
+          executable: "omp",
+        },
+      ],
+      displayOptions: { ...BASE_DISPLAY_OPTIONS, groupBy: "workspace-status" },
+    });
+
+    expect(
+      container.querySelector('[data-section-header-id="workspace-status:todo"]')
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-section-header-id="workspace-status:in-progress"]')
     ).toBeNull();
   });
 

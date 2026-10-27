@@ -234,18 +234,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:533",
-     "src/App.tsx:1922",
-     "src/components/sidebar/WorktreeList.tsx:202"
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:76-96",
+     "src/components/sidebar/sidebar-worktree-sort.ts:28-46"
     ],
     "backend": [],
     "missing_behaviors": [
-     "catálogo de ordem manual (buildWorktreeManualOrderCatalog) e useSidebarWorktreeSortOrder/useVisibleSidebarWorktrees: Hydra ordena por sortBy name|recent|agent-activity (WorktreeSidebar.tsx:576-605)",
-     "persistência efetiva da ordem manual de worktrees: App.tsx:1928-1938 grava hydra:worktrees_order em localStorage mas nunca o lê de volta",
-     "modos Smart/status e derivação de visíveis com linhagem/host padrão"
+     "catálogo de ordem manual (buildWorktreeManualOrderCatalog) e reordenação por drop persistida nesse catálogo"
     ],
-    "notes": "Pipeline de ordenação parcial.",
-    "note": "Pipeline de ordenação parcial."
+    "notes": "Mode set and comparator now match Orca; the manual-order catalog used by drag reordering is still absent.",
+    "note": "Mode set and comparator now match Orca; the manual-order catalog used by drag reordering is still absent."
    }
   },
   {

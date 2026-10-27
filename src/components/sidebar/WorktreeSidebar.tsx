@@ -35,7 +35,6 @@ import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
 import type {
   HydraProject,
   GitWorktreeInfo,
-  WorktreeSession,
   WorktreeSidebarProps,
   AgentsGroupBy,
   AgentsStatusFilter,
@@ -43,7 +42,10 @@ import type {
   SidebarBody,
   SidebarShellPrefs,
 } from "./types";
-import { IDLE, resolveWorktreeAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
+import { toWorktreeRow } from "../../shared/worktree/worktree-row";
+import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
+import { applyPersistedWorktreeOrder, sortSidebarWorktrees } from "./sidebar-worktree-sort";
+import { resolveWorktreeAttentionFromSessions } from "./sidebar-session-attention";
 import { useAppStore } from "../../store";
 import { getRepoExecutionHostId } from "../../shared/execution-host";
 import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redirect";
@@ -718,6 +720,25 @@ export function WorktreeSidebar({
     return list;
   }, [projects, displayOptions.filterProjectIds, pinnedProjects]);
 
+  /** Repo labels for Project sort, projected once for the whole sidebar. */
+  const pipelineRepoMap = useMemo(
+    () =>
+      new Map(
+        projects.map((project) => [
+          project.id,
+          toPipelineRepo({
+            project,
+            projectGroupId: projectGroupMap?.[project.id] ?? null,
+            hostId: undefined,
+          }),
+        ])
+      ),
+    [projects, projectGroupMap]
+  );
+
+  /** Persisted rows carry the manual order and real activity timestamps. */
+  const worktreesByRepo = useAppStore((state) => state.worktreesByRepo);
+
   const groupDeleteMembers = useMemo(() => {
     if (!groupDeleteDialog.group) return [];
     return displayProjects.filter(
@@ -753,54 +774,49 @@ export function WorktreeSidebar({
       });
     }
 
-    // Sort worktrees
-    if (displayOptions.sortBy === "name") {
-      return [...wts].sort((a, b) => (a.displayName || a.branch).localeCompare(b.displayName || b.branch));
-    }
-    if (displayOptions.sortBy === "recent") {
-      return [...wts].sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0));
-    }
-    if (displayOptions.sortBy === "agent-activity") {
-      const now = Date.now();
-      const sessionInput = (s: WorktreeSession, isUnvisited?: boolean): SessionAttentionInput => ({
-        state: s.state,
-        stateStartedAt: s.state_started_at,
-        lastActivityAt: s.updated_at ?? s.created_at ?? undefined,
-        hasLivePty: true,
-        isUnvisited,
-      });
-
-      const attentionByPath = new Map<string, SessionAttention>();
-      for (const wt of wts) {
-        const wtSessions = sessions.filter(
-          (s) => s.project_path === wt.path || (wt.is_main && s.project_path === proj.path)
-        );
-        const inputs = wtSessions.map((s) =>
-          sessionInput(s, Boolean(unreadWorktrees?.has(wt.path) || unreadProjects?.has(proj.id)))
-        );
-        attentionByPath.set(wt.path, resolveWorktreeAttention(inputs, now));
-      }
-
-      return [...wts].sort((a, b) => {
-        const aa = attentionByPath.get(a.path) ?? IDLE;
-        const bb = attentionByPath.get(b.path) ?? IDLE;
-        if (aa.cls !== bb.cls) return aa.cls - bb.cls;
-        if (aa.attentionTimestamp !== bb.attentionTimestamp) {
-          return bb.attentionTimestamp - aa.attentionTimestamp;
-        }
-        return (b.created_at ?? 0) - (a.created_at ?? 0);
-      });
-    }
-
-    return wts;
+    // Sort through the ported Orca comparator. The menu's legacy "Agent Activity" is
+    // the `smart` mode, and Project/Manual/Recent/Name all share the comparator the
+    // closed-sidebar path uses (see `smart-sort.ts`), so the two paths cannot drift.
+    const now = Date.now();
+    const projected = applyPersistedWorktreeOrder(
+      wts.map((worktree) => toWorktreeRow(worktree, { repoId: proj.id })),
+      worktreesByRepo[proj.id]
+    );
+    const smartMode =
+      displayOptions.sortBy === "agent-activity" || displayOptions.sortBy === "smart";
+    const attentionByWorktree = smartMode
+      ? new Map(
+          projected.map((row) => {
+            const worktree = wts.find((candidate) => candidate.path === row.path);
+            const rowSessions = sessions.filter(
+              (session) =>
+                session.project_path === row.path ||
+                ((worktree?.is_main || worktree?.isMainWorktree) &&
+                  session.project_path === proj.path)
+            );
+            return [row.id, resolveWorktreeAttentionFromSessions(rowSessions, now)] as const;
+          })
+        )
+      : undefined;
+    const ordered = sortSidebarWorktrees({
+      worktrees: projected,
+      mode: displayOptions.sortBy,
+      repoMap: pipelineRepoMap,
+      now,
+      attentionByWorktree,
+    });
+    const byPath = new Map(wts.map((worktree) => [worktree.path, worktree]));
+    return ordered
+      .map((row) => byPath.get(row.path))
+      .filter((worktree): worktree is GitWorktreeInfo => worktree !== undefined);
   }, [
     getWorktreesForProject,
     displayOptions,
     query,
     sessions,
     activeWorktreePath,
-    unreadWorktrees,
-    unreadProjects,
+    pipelineRepoMap,
+    worktreesByRepo,
   ]);
 
   // ─── Background Appearance Tint ──────────────────────────────────────────

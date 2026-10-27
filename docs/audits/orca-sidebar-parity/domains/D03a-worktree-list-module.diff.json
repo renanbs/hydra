@@ -604,17 +604,15 @@
     "components/sidebar/worktree-list/grouping/group-sections.ts:94-123"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts:216-225",
-     "src/components/sidebar/worktree-list/grouping/group-sections.ts:94"
+     "src/components/sidebar/WorktreeList.tsx:688-716",
+     "src/components/sidebar/WorktreeList.tsx:780-790",
+     "src/components/sidebar/WorktreeList.parity.test.tsx:169-215"
     ],
-    "missing_behaviors": [
-     "lanes por status com label/tone/ícone",
-     "omissão de lanes vazias",
-     "contagem incluindo folder workspaces"
-    ],
-    "notes": "Lanes de status existem só no pipeline headless; a lista pintada não tem lanes de status (WorktreeList.tsx:338 só muda indent)."
+    "missing_behaviors": [],
+    "notes": "Lanes read the persisted workspaceStatus and the store's definitions; agent activity no longer overwrites the lane, and the lane header keeps label/tone/icon/count.",
+    "note": "Lanes read the persisted workspaceStatus and the store's definitions; agent activity no longer overwrites the lane, and the lane header keeps label/tone/icon/count."
    }
   },
   {
@@ -818,15 +816,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/section-order.ts:99",
-     "src/components/sidebar/WorktreeSidebar.tsx:508-524"
+     "src/components/sidebar/sidebar-worktree-sort.ts:28-46",
+     "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:116-150"
     ],
     "missing_behaviors": [
-     "ordenação Manual vs Recent de projetos",
-     "getManualOrderAnchorRepo"
+     "getManualOrderAnchorRepo e ordenação de projetos por Project/Manual"
     ],
-    "notes": "Ordenação de seções parcial.",
-    "note": "Ordenação de seções parcial."
+    "notes": "Recent is reachable and Manual reads persisted manualOrder; project-level manual anchoring remains.",
+    "note": "Recent is reachable and Manual reads persisted manualOrder; project-level manual anchoring remains."
    }
   },
   {
@@ -1084,18 +1081,16 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:533-599",
-     "src/components/sidebar/smart-sort.ts:178"
+     "src/components/sidebar/WorktreeSidebar.tsx:777-812",
+     "src/components/sidebar/sidebar-session-attention.ts:84-105"
     ],
     "missing_behaviors": [
-     "modo Smart com atenção por worktree",
      "SORT_SETTLE_MS=3000 de debounce",
-     "persistência de ordem Smart por host",
-     "telemetria smart_sort_*",
-     "identidade estável dos ids"
+     "persistência da ordem Smart por host",
+     "telemetria smart_sort_*"
     ],
-    "notes": "Smart sort existe no pipeline headless; não dirige o paint.",
-    "note": "Smart sort existe no pipeline headless; não dirige o paint."
+    "notes": "Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain.",
+    "note": "Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain."
    }
   },
   {

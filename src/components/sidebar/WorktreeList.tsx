@@ -27,7 +27,6 @@ import { buildHostIdByRepoId } from "./repo-execution-host-index";
 import {
   normalizeExecutionHostScope,
   normalizeVisibleExecutionHostIds,
-  type ExecutionHostId,
 } from "../../shared/execution-host";
 import type { Repo } from "../../shared/repo-types";
 import type { FolderWorkspace } from "../../shared/folder-workspace-types";
@@ -71,6 +70,7 @@ import type {
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
+import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
 import { resolveWorktreeMultiDragSelection } from "./worktree-multi-drag-selection";
 import type { WorktreeMultiDragCandidate } from "./worktree-multi-drag-selection";
 import { useWorktreeListSelection } from "./worktree-list/use-worktree-list-selection";
@@ -184,36 +184,6 @@ export function resolveWorkspaceShortcutTarget(
     if (worktree) return { worktree, project };
   }
   return null;
-}
-
-function toPipelineRepo(args: {
-  project: HydraProject;
-  projectGroupId: string | null;
-  hostId: ExecutionHostId | undefined;
-}): Repo {
-  const { project, projectGroupId, hostId } = args;
-  return {
-    id: project.id,
-    path: project.path,
-    displayName: project.displayName ?? project.name,
-    badgeColor: project.color ?? "#64748b",
-    addedAt: 0,
-    projectGroupId,
-    // Why: the discovered-worktree notice candidates are built off the repo
-    // (Orca `buildImportedWorktreesCardCandidates`), so the pipeline repo has to
-    // carry the phase state the project persists — otherwise every repo looks
-    // un-prompted and un-suppressed.
-    ...(project.externalWorktreeVisibilityPromptDismissedAt != null
-      ? { externalWorktreeVisibilityPromptDismissedAt: project.externalWorktreeVisibilityPromptDismissedAt }
-      : {}),
-    ...(project.externalWorktreeInboxBaselinePaths
-      ? { externalWorktreeInboxBaselinePaths: project.externalWorktreeInboxBaselinePaths }
-      : {}),
-    ...(project.externalWorktreeDiscoverySuppressedAt != null
-      ? { externalWorktreeDiscoverySuppressedAt: project.externalWorktreeDiscoverySuppressedAt }
-      : {}),
-    ...(hostId ? { executionHostId: hostId } : {}),
-  };
 }
 
 function toPipelineProjectGroup(
@@ -658,6 +628,8 @@ export function WorktreeList({
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
   const storeWorktreeLineageById = useAppStore((s) => s.worktreeLineageById);
+  const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses);
+  const storeWorktreesByRepo = useAppStore((s) => s.worktreesByRepo);
   const storeKeybindings = useAppStore((s) => s.keybindings);
   // Why (D04a G9): the sidebar keyboard path owns the inline-rename request for
   // `workspace.rename`; the card it names consumes and clears it.
@@ -715,6 +687,18 @@ export function WorktreeList({
 
     const propWorktreeByPath = new Map<string, GitWorktreeInfo>();
     const propProjectById = new Map<string, HydraProject>();
+    // Why: the lane a card paints in comes from the persisted workspace status
+    // (Orca `workspaceStatus`), not from the agent's current activity. The scan row
+    // has no status of its own, so the store's worktree rows are the source.
+    const persistedStatusById = new Map<string, string>();
+    const persistedStatusByPath = new Map<string, string>();
+    for (const rows of Object.values(storeWorktreesByRepo)) {
+      for (const row of rows) {
+        if (!row.workspaceStatus) continue;
+        persistedStatusById.set(row.id, row.workspaceStatus);
+        persistedStatusByPath.set(row.path, row.workspaceStatus);
+      }
+    }
     const worktreesByRepo: Record<string, Worktree[]> = {};
     const candidates: { project: HydraProject; worktree: GitWorktreeInfo }[] = [];
     for (const project of visibleProjects) {
@@ -722,13 +706,11 @@ export function WorktreeList({
       const hostId = hostIdByRepoId.get(project.id);
       const projectedForRepo: Worktree[] = [];
       for (const worktree of getFilteredAndSortedWorktrees(project)) {
-        const worktreeSessions = sessions.filter(
-          (s) => s.project_path === worktree.path || (worktree.is_main && s.project_path === project.path)
-        );
-        const status = workspaceStatusFrom({
-          sessions: worktreeSessions,
-          hasLiveTerminal: livePaths.has(worktree.path),
-        });
+        const status =
+          persistedStatusByPath.get(worktree.path) ??
+          (worktree.id ? persistedStatusById.get(worktree.id) : undefined) ??
+          worktree.status ??
+          null;
         const projected = toWorktreeRow(worktree, {
           repoId: project.id,
           hostId,
@@ -802,6 +784,7 @@ export function WorktreeList({
       workspaceHostScope: pipelineHostScope,
       projectGroups: pipelineGroups,
       groupBy: displayOptions.groupBy,
+      workspaceStatuses: storeWorkspaceStatuses,
       worktreeCardProperties: [],
       repos: pipelineRepos,
       worktreesByRepo,
@@ -862,6 +845,8 @@ export function WorktreeList({
     storeSshConnectionStates,
     storeRuntimeEnvironments,
     storeRuntimeStatusByEnvironmentId,
+    storeWorkspaceStatuses,
+    storeWorktreesByRepo,
     pendingCreationRefs,
   ]);
 
