@@ -5,8 +5,8 @@
 | status | linhas | % |
 |---|---|---|
 | parity | 234 | 30.6% |
-| partial | 327 | 42.7% |
-| missing | 196 | 25.6% |
+| partial | 328 | 42.9% |
+| missing | 195 | 25.5% |
 | not-applicable | 7 | 0.9% |
 | out-of-scope | 1 | 0.1% |
 
@@ -26,7 +26,7 @@
 | D04b-worktree-card-controllers | 23 | 1 | 11 | 11 | 0 | 0 |
 | D05-agents-rows | 23 | 0 | 10 | 13 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 22 | 11 | 2 | 0 | 0 |
-| D07-menus-actions | 45 | 15 | 28 | 2 | 0 | 0 |
+| D07-menus-actions | 45 | 15 | 29 | 1 | 0 | 0 |
 | D08-kanban-board | 45 | 25 | 13 | 7 | 0 | 0 |
 | D09-filters-sort | 31 | 12 | 19 | 0 | 0 | 0 |
 | D10-visibility-inbox-notices | 91 | 47 | 39 | 5 | 0 | 0 |

@@ -86,6 +86,7 @@ import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delet
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
 import { WorktreeMetaDialog } from "./components/sidebar/WorktreeMetaDialog";
 import { SIDEBAR_REVEAL_REQUEST_EVENT } from "./components/sidebar/use-worktree-reveal-body-redirect";
+import { requestVirtualizedScrollAnchorRecord } from "./hooks/requestVirtualizedScrollAnchorRecord";
 import type {
   WorktreeMetadataByPath,
   WorktreeMetadataDraft,
@@ -3502,6 +3503,10 @@ export default function App() {
     return items;
   };
   const sleepSessionsForPaths = (paths: string[]) => {
+    // Orca `sleep-worktree-flow`: capture the visible-row anchor in the same tick the
+    // rows disappear, so the virtualized restore pins the same workspace instead of
+    // jumping to the top.
+    requestVirtualizedScrollAnchorRecord("[data-worktree-sidebar]");
     const ids = sessions.filter((s) => paths.some((p) => s.project_path === p || s.project_path.startsWith(p))).map((s) => s.id);
     // close associated tabs and mark sessions inactive; emulate Orca sleep (close panels)
     setTabs((prev) => prev.filter((t) => !ids.some((id) => t.id === `tab_${id}` || t.sessionId === id)));
