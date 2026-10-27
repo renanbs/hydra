@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/store";
 import { ALL_EXECUTION_HOSTS_SCOPE, type ExecutionHostId } from "../../shared/execution-host";
-import type { WorkspaceHostScope } from "../../shared/ui-chrome-types";
 import {
   buildSidebarHostOptions,
   buildSidebarHostScopeOptions,
@@ -25,16 +24,6 @@ import { toHostSourceMap } from "./rendered-sidebar-worktree-order";
 import type { HydraProject } from "./WorktreeSidebar";
 
 export type GroupByMode = "none" | "workspace-status" | "pr-status" | "repo";
-
-/**
- * The Orca UI-slice actions that own host scope. `AppState` does not declare them
- * (the slice is not composed into the live store yet), so the menu looks them up
- * structurally and only offers the control when they are actually present.
- */
-interface HostScopeStoreActions {
-  setWorkspaceHostScope: (scope: WorkspaceHostScope) => void;
-  setVisibleWorkspaceHostIds: (ids: readonly ExecutionHostId[] | null) => void;
-}
 
 /**
  * Orca `SidebarHostScopeMenuSection.toggleHost`: toggling the last visible host
@@ -105,7 +94,8 @@ export function WorkspaceOptionsMenu({
   const storeRuntimeEnvironments = useAppStore((s) => s.runtimeEnvironments);
   const storeSettings = useAppStore((s) => s.settings);
   const visibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
-  const hostScopeActions = useAppStore((s) => s as Partial<HostScopeStoreActions>);
+  const setWorkspaceHostScope = useAppStore((s) => s.setWorkspaceHostScope);
+  const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
 
   const hostOptions = useMemo<SidebarHostOption[]>(
     () =>
@@ -127,12 +117,6 @@ export function WorkspaceOptionsMenu({
     ]
   );
   const hostScopeOptions = useMemo(() => buildSidebarHostScopeOptions(hostOptions), [hostOptions]);
-  // Why the action guard: the Orca UI slice that owns setWorkspaceHostScope /
-  // setVisibleWorkspaceHostIds is not composed into the live store yet; offering
-  // the row without the actions would render a control that throws on click.
-  const hostScopeActionsAvailable =
-    typeof hostScopeActions.setWorkspaceHostScope === "function" &&
-    typeof hostScopeActions.setVisibleWorkspaceHostIds === "function";
   useEffect(() => {
     if (!isOpen) {
       setOpenSubmenu(null);
@@ -213,8 +197,7 @@ export function WorkspaceOptionsMenu({
         : `${selectedFilterProjects.length} projects`;
 
   // ─── Host scope handlers (Orca SidebarHostScopeMenuSection) ───────────────
-  const showHostScopeControls =
-    hostScopeActionsAvailable && shouldShowHostScopeControls(hostOptions);
+  const showHostScopeControls = shouldShowHostScopeControls(hostOptions);
   const allHostsVisible = visibleWorkspaceHostIds == null;
   const visibleHostIdSet = new Set<ExecutionHostId>(visibleWorkspaceHostIds ?? []);
   const hostVisibilityLabel = getSidebarHostVisibilityLabel(
@@ -229,11 +212,11 @@ export function WorkspaceOptionsMenu({
 
   const toggleAllHosts = () => {
     if (!allHostsVisible) {
-      hostScopeActions.setWorkspaceHostScope?.(ALL_EXECUTION_HOSTS_SCOPE);
+      setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
       return;
     }
     const firstHost = hostOptions[0];
-    if (firstHost) hostScopeActions.setVisibleWorkspaceHostIds?.([firstHost.id]);
+    if (firstHost) setVisibleWorkspaceHostIds([firstHost.id]);
   };
 
   const toggleHost = (hostId: ExecutionHostId) => {
@@ -242,7 +225,7 @@ export function WorkspaceOptionsMenu({
       hostIds: hostOptions.map((host) => host.id),
       hostId,
     });
-    if (result.changed) hostScopeActions.setVisibleWorkspaceHostIds?.(result.visibleWorkspaceHostIds);
+    if (result.changed) setVisibleWorkspaceHostIds(result.visibleWorkspaceHostIds);
   };
 
   return (

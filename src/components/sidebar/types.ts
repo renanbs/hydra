@@ -9,6 +9,10 @@ import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { AgentSubagentSnapshot } from "./agent-status-types";
 import type { ProjectGroup } from "./worktree-list/types";
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
+import type {
+  VisibleWorkspaceHostIds,
+  WorkspaceHostScope,
+} from "../../shared/ui-chrome-types";
 
 export type { ProjectGroup };
 
@@ -32,6 +36,10 @@ export interface SidebarPrefsSnapshot {
   displayOptions?: WorkspaceDisplayOptions;
   agentsReadFilter?: AgentsStatusFilter;
   agentsGroupBy?: AgentsGroupBy;
+  /** Sidebar host filter scope; `'all'` = mixed view. */
+  workspaceHostScope?: WorkspaceHostScope;
+  /** Sidebar host filter ids; `null` = all hosts (sticky). */
+  visibleWorkspaceHostIds?: VisibleWorkspaceHostIds;
 }
 
 /** Fatia das prefs que o SidebarShell detém localmente e reporta ao App no change. */

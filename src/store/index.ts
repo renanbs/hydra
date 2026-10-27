@@ -9,6 +9,16 @@ import type { ProjectHostSetupProjection } from '../shared/project-host-setup-pr
 import type { ProviderRateLimits } from '../shared/rate-limit-types'
 import type { HydraSettings } from '../shared/settings-types'
 import type { KeybindingActionId } from '../shared/keybindings/keybindings-module'
+import type {
+  VisibleWorkspaceHostIds,
+  WorkspaceHostScope,
+} from '../shared/ui-chrome-types'
+import {
+  ALL_EXECUTION_HOSTS_SCOPE,
+  normalizeExecutionHostScope,
+  normalizeVisibleExecutionHostIds,
+  type ExecutionHostId,
+} from '../shared/execution-host'
 
 export const EMPTY_TABS: TabItem[] = [];
 export interface AppState {
@@ -156,7 +166,8 @@ export interface AppState {
   runtimeDetectedAgentIds: any[]
   suppressedPtyExitIds: any[]
   transientClearedAgentStatusConnectionIds: any[]
-  visibleWorkspaceHostIds: any[]
+  /** Which execution hosts the sidebar shows; `null` = all hosts (sticky). */
+  visibleWorkspaceHostIds: VisibleWorkspaceHostIds
   // ─── Orca Compat: String IDs ───
   activeBrowserTabId: string | null
   activeFileId: string | null
@@ -198,9 +209,13 @@ export interface AppState {
   unreadAgentCompletionPanes: any
   unreadTerminalTabs: any
   workspaceDocHistory: any[]
-  workspaceHostScope: any
+  /** Presentation/filtering scope for the sidebar; `'all'` = mixed view. */
+  workspaceHostScope: WorkspaceHostScope
   worktreeNavHistory: any[]
   worktreeNavHistoryIndex: number
+  // ─── Sidebar host scope actions (Orca ui slice, live-store port) ───
+  setWorkspaceHostScope: (scope: WorkspaceHostScope) => void
+  setVisibleWorkspaceHostIds: (ids: readonly ExecutionHostId[] | null) => void
   // ─── Orca Compat: Actions ───
   setActiveBrowserPage: (...args: any[]) => any
   setActiveBrowserTab: (...args: any[]) => any
@@ -302,7 +317,7 @@ export interface AppState {
 }
 
 export const useAppStore = create<AppState>()(
-  subscribeWithSelector((set) => ({
+  subscribeWithSelector((set, get) => ({
     tabsByWorktree: {},
     activeTabIdByWorktree: {},
     mruTabIds: [],
@@ -397,7 +412,7 @@ export const useAppStore = create<AppState>()(
     runtimeDetectedAgentIds: [],
     suppressedPtyExitIds: [],
     transientClearedAgentStatusConnectionIds: [],
-    visibleWorkspaceHostIds: [],
+    visibleWorkspaceHostIds: null,
     activeBrowserTabId: null,
     activeFileId: null,
     activeTabId: null,
@@ -437,7 +452,7 @@ export const useAppStore = create<AppState>()(
     unreadAgentCompletionPanes: null,
     unreadTerminalTabs: null,
     workspaceDocHistory: [],
-    workspaceHostScope: null,
+    workspaceHostScope: 'all',
     worktreeNavHistory: [],
     worktreeNavHistoryIndex: 0,
     setActiveBrowserPage: () => {},
@@ -563,6 +578,31 @@ export const useAppStore = create<AppState>()(
       }),
 
     setMruTabIds: (ids) => set({ mruTabIds: ids }),
+
+    // Why bare set: persistence is the App's debounced `ui.sidebar` writer, not
+    // the store (the ported Orca slice went through a `window.api.ui` bridge that
+    // does not exist under Tauri).
+    setWorkspaceHostScope: (scope) => {
+      const workspaceHostScope = normalizeExecutionHostScope(scope)
+      set({
+        workspaceHostScope,
+        // A concrete scope means exactly that host; 'all' clears the filter.
+        visibleWorkspaceHostIds:
+          workspaceHostScope === ALL_EXECUTION_HOSTS_SCOPE ? null : [workspaceHostScope],
+      })
+    },
+    setVisibleWorkspaceHostIds: (ids) => {
+      const visibleWorkspaceHostIds = normalizeVisibleExecutionHostIds(ids)
+      // Why: workspaceHostScope stays the compat/default-host signal for creation
+      // flows; visibility can now be multi-select (only 0 or 1 host rewrites it).
+      let workspaceHostScope = get().workspaceHostScope
+      if (visibleWorkspaceHostIds === null) {
+        workspaceHostScope = ALL_EXECUTION_HOSTS_SCOPE
+      } else if (visibleWorkspaceHostIds.length === 1) {
+        workspaceHostScope = visibleWorkspaceHostIds[0]
+      }
+      set({ visibleWorkspaceHostIds, workspaceHostScope })
+    },
     addTabToWorktree: (worktreePath, tab, select = true) =>
       set((s) => {
         const currentTabs = s.tabsByWorktree[worktreePath] ?? [];
@@ -722,3 +762,26 @@ export const useAppStore = create<AppState>()(
     hydrateTabs: (tabsByWorktree) => set({ tabsByWorktree }),
   }))
 )
+
+/**
+ * Boot hydration for the `ui.sidebar` blob's host-scope keys. Applies both store
+ * setters in order (scope, then ids) so their normalizers reconcile a partial or
+ * legacy blob; an absent key falls back to the live-store default — `'all'` /
+ * `null` (all hosts). Safe to call with a raw, unvalidated blob.
+ */
+export function hydrateWorkspaceHostScopePreference(blob: {
+  workspaceHostScope?: unknown
+  visibleWorkspaceHostIds?: unknown
+}): void {
+  const workspaceHostScope = normalizeExecutionHostScope(
+    typeof blob.workspaceHostScope === 'string' ? blob.workspaceHostScope : null
+  )
+  const visibleWorkspaceHostIds = normalizeVisibleExecutionHostIds(
+    Array.isArray(blob.visibleWorkspaceHostIds)
+      ? (blob.visibleWorkspaceHostIds as string[])
+      : null
+  )
+  const store = useAppStore.getState()
+  store.setWorkspaceHostScope(workspaceHostScope)
+  store.setVisibleWorkspaceHostIds(visibleWorkspaceHostIds)
+}
