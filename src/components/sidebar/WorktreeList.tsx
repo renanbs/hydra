@@ -1,5 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-import React, { useMemo, useCallback, useLayoutEffect, useEffect, useState } from "react";
+import React, { useMemo, useCallback, useLayoutEffect, useEffect, useRef, useState } from "react";
 import { useAppStore } from "@/store";
 import { ChevronDown, FolderPlus, Plus } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -33,10 +33,12 @@ import type { ProjectGroup as SharedProjectGroup } from "../../shared/project-gr
 import type { Worktree } from "../../shared/worktree/types";
 import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
 import { HostSectionHeaderMenu } from "./HostSectionHeaderMenu";
-import type {
-  FolderWorkspaceRow as FolderWorkspaceRowModel,
-  GroupHeaderRow,
-  WorktreeRow,
+import {
+  getPinnedWorktreeDisplayPolicy,
+  type FolderWorkspaceRow as FolderWorkspaceRowModel,
+  type GroupHeaderRow,
+  type PinnedWorktreeDisplayPolicy,
+  type WorktreeRow,
 } from "./worktree-list/grouping/row-types";
 import {
   WORKTREE_SECTION_HEADER_PADDING_LEFT,
@@ -73,6 +75,8 @@ import {
   WorktreeDragRow,
 } from "./worktree-list/drag/worktree-drag-surface";
 import type { WorktreeGroupReorderArgs } from "./worktree-list/drag/drop-commit-context";
+import { VirtualizedWorktreeViewport } from "./worktree-list/viewport/VirtualizedWorktreeViewport";
+import type { WorktreeVirtualRowSlot } from "./worktree-list/viewport/viewport-props";
 
 // ─── Hydra props → Orca row-pipeline projection ──────────────────────────────
 //
@@ -298,6 +302,12 @@ function buildPRCache(args: {
 
 interface SidebarRowModel {
   rows: HostSectionRow[];
+  /**
+   * Pinned-placement policy the row pipeline built these rows with. Read here, from the same
+   * pipeline settings, so the keyboard cycle dedupes duplicated pinned rows exactly like the
+   * painted list does.
+   */
+  pinnedDisplayPolicy: PinnedWorktreeDisplayPolicy;
   /** Projection worktree path → the Hydra prop the card and its callbacks expect. */
   propWorktreeByPath: Map<string, GitWorktreeInfo>;
   propProjectById: Map<string, HydraProject>;
@@ -363,8 +373,9 @@ export interface WorktreeListProps {
   draggedWorktreePath?: string | null;
   worktreeDropTarget?: { path: string; position: "top" | "bottom" } | null;
   /**
-   * The panel's scroll container. The pointer drag measures row rects against it and
-   * autoscrolls it; without it rows get no drag slot.
+   * The panel's scroll container. The viewport renders that container and assigns it here, so
+   * the pointer drag measures row rects against the real scroller and the reveal/anchor code
+   * records against the element that actually scrolls.
    */
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   /**
@@ -675,6 +686,7 @@ export function WorktreeList({
           hiddenWorktreesByProjectPath: hiddenWorktreesByProject ?? {},
         })
       ),
+      pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(pipelineState.settings),
       propWorktreeByPath,
       propProjectById,
     };
@@ -709,6 +721,63 @@ export function WorktreeList({
   ]);
 
   const { rows } = rowModel;
+
+  // ─── Virtualized viewport inputs ───────────────────────────────────────────
+  //
+  // The viewport renders the scroll container itself and assigns it here, so the panel's ref
+  // (pointer-drag geometry, scroll-anchor recording, reveal) keeps pointing at the real
+  // scroller. Without a caller ref — unit renders, composed lists — it owns one.
+  const internalScrollRef = useRef<HTMLDivElement | null>(null);
+  const viewportScrollRef = scrollRef ?? internalScrollRef;
+  const pinnedDisplayPolicy = rowModel.pinnedDisplayPolicy;
+
+  /** Row key of the active workspace: the row `aria-activedescendant` points at. */
+  const activeRowKey = useMemo(() => {
+    if (!activeWorktreePath) return null;
+    for (const row of rows) {
+      if (row.type === "folder-workspace" && row.folderWorkspace.folderPath === activeWorktreePath) {
+        return row.key;
+      }
+      if (row.type === "item" && row.worktree.path === activeWorktreePath) {
+        return row.rowKey;
+      }
+    }
+    return null;
+  }, [rows, activeWorktreePath]);
+
+  /**
+   * Collapse/expand a painted row's section. The row union carries three collapse vocabularies
+   * (host section key, project id, group id) and the persisted sets speak the Hydra one, so the
+   * mapping lives here, next to the callbacks that own it.
+   */
+  const toggleRowCollapse = useCallback(
+    (row: HostSectionRow) => {
+      if (row.type === "host-header") {
+        onToggleGroupCollapse(row.key);
+        return;
+      }
+      if (row.type !== "header") return;
+      if (row.repo) {
+        onToggleProjectCollapse(row.repo.id);
+        return;
+      }
+      if (row.projectGroup && typeof row.projectGroup.id === "string") {
+        onToggleGroupCollapse(row.projectGroup.id);
+        return;
+      }
+      onToggleGroupCollapse(row.key);
+    },
+    [onToggleGroupCollapse, onToggleProjectCollapse]
+  );
+
+  /** Keyboard navigation activated a row: select the workspace it paints. */
+  const activateRow = useCallback(
+    (row: WorktreeRow) => {
+      const worktree = rowModel.propWorktreeByPath.get(row.worktree.path);
+      if (worktree) onSelectGitWorktree(worktree);
+    },
+    [onSelectGitWorktree, rowModel]
+  );
 
   // ─── Pointer-drag reorder → the panel's order writer ───────────────────────
   //
@@ -854,7 +923,7 @@ export function WorktreeList({
   );
 
   const renderWorktreeRow = useCallback(
-    (row: WorktreeRow): React.JSX.Element | null => {
+    (row: WorktreeRow, slot: WorktreeVirtualRowSlot): React.JSX.Element | null => {
       const wt = rowModel.propWorktreeByPath.get(row.worktree.path);
       const proj = rowModel.propProjectById.get(row.worktree.repoId);
       if (!wt || !proj) return null;
@@ -886,6 +955,8 @@ export function WorktreeList({
           rowKey={row.rowKey}
           worktreeId={row.worktree.id}
           worktreePath={wt.path}
+          optionId={slot.optionId}
+          isActive={slot.isActive}
           style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
         >
           <WorktreeCard
@@ -960,7 +1031,7 @@ export function WorktreeList({
   );
 
   const renderRepoHeader = useCallback(
-    (row: GroupHeaderRow): React.JSX.Element | null => {
+    (row: GroupHeaderRow, slot: WorktreeVirtualRowSlot): React.JSX.Element | null => {
       const proj = row.repo ? rowModel.propProjectById.get(row.repo.id) : undefined;
       if (!proj) return null;
       const isDropTarget = projectDropTarget?.id === proj.id;
@@ -973,7 +1044,7 @@ export function WorktreeList({
           isActive={activeProject?.path === proj.path}
           count={row.count}
           inGroup={(row.projectGroupDepth ?? 0) > 0}
-          onToggleCollapse={() => onToggleProjectCollapse(proj.id)}
+          onToggleCollapse={slot.toggleCollapse}
           onSelectProject={onSelectProject}
           onOpenNewWorkspace={onOpenNewWorkspaceModal}
           onContextMenu={onProjectContextMenu}
@@ -992,7 +1063,6 @@ export function WorktreeList({
       activeProject?.path,
       collapsedProjects,
       isCollapsedKey,
-      onToggleProjectCollapse,
       onSelectProject,
       onOpenNewWorkspaceModal,
       onProjectContextMenu,
@@ -1006,7 +1076,7 @@ export function WorktreeList({
   );
 
   const renderGroupHeader = useCallback(
-    (row: GroupHeaderRow): React.JSX.Element | null => {
+    (row: GroupHeaderRow, slot: WorktreeVirtualRowSlot): React.JSX.Element | null => {
       const group = row.projectGroup;
       if (!group || typeof group.id !== "string") return null;
       return (
@@ -1018,7 +1088,7 @@ export function WorktreeList({
           isCollapsed={isCollapsedKey(row.key)}
           count={row.count}
           depth={row.projectGroupDepth ?? 0}
-          onToggleCollapse={() => onToggleGroupCollapse(group.id as string)}
+          onToggleCollapse={slot.toggleCollapse}
           onContextMenu={
             onGroupContextMenu
               ? (e) => onGroupContextMenu(e, { id: group.id as string, name: group.name })
@@ -1035,7 +1105,6 @@ export function WorktreeList({
     },
     [
       isCollapsedKey,
-      onToggleGroupCollapse,
       onGroupContextMenu,
       groupDropTargetId,
       onGroupDragOver,
@@ -1045,22 +1114,32 @@ export function WorktreeList({
   );
 
   const renderFolderRow = useCallback(
-    (row: FolderWorkspaceRowModel): React.JSX.Element => {
+    (row: FolderWorkspaceRowModel, slot: WorktreeVirtualRowSlot): React.JSX.Element => {
       const folderPath = row.folderWorkspace.folderPath;
       const folderSessions = sessions.filter((s) => s.project_path === folderPath);
+      const isActive = activeWorktreePath === folderPath;
       return (
-        <FolderWorkspaceRow
+        // Why the option wrapper: Hydra's folder row predates the listbox contract, and the
+        // viewport's `aria-activedescendant` has to name one element per focusable row.
+        <div
           key={row.key}
-          name={row.folderWorkspace.name}
-          folderPath={folderPath}
-          status={workspaceStatusFrom({
-            sessions: folderSessions,
-            hasLiveTerminal: livePaths.has(folderPath),
-          })}
-          pathMissing={missingPaths.has(folderPath)}
-          isActive={activeWorktreePath === folderPath}
-          onActivate={() => onActivateFolderWorkspace?.(folderPath)}
-        />
+          id={slot.optionId}
+          role="option"
+          aria-selected={isActive}
+          aria-current={isActive ? "page" : undefined}
+        >
+          <FolderWorkspaceRow
+            name={row.folderWorkspace.name}
+            folderPath={folderPath}
+            status={workspaceStatusFrom({
+              sessions: folderSessions,
+              hasLiveTerminal: livePaths.has(folderPath),
+            })}
+            pathMissing={missingPaths.has(folderPath)}
+            isActive={isActive}
+            onActivate={() => onActivateFolderWorkspace?.(folderPath)}
+          />
+        </div>
       );
     },
     [sessions, livePaths, missingPaths, activeWorktreePath, onActivateFolderWorkspace]
@@ -1124,70 +1203,61 @@ export function WorktreeList({
     ]
   );
 
-  const content = useMemo(() => {
-    const nodes: React.JSX.Element[] = [];
-    for (const row of rows) {
+  /**
+   * Row content for one virtual slot. The viewport owns the slot (position, measurement,
+   * listbox identity) and the scroll anchor; this decides what a row paints and which
+   * existing row components get it.
+   */
+  const renderRow = useCallback(
+    (row: HostSectionRow, slot: WorktreeVirtualRowSlot): React.ReactNode => {
       switch (row.type) {
         case "host-header":
-          nodes.push(
+          return (
             <HostSectionHeader
               key={row.key}
               row={row}
               isCollapsed={collapsedGroups.has(row.key)}
-              onToggleCollapse={() => onToggleGroupCollapse(row.key)}
+              onToggleCollapse={slot.toggleCollapse}
             />
           );
-          break;
         case "header": {
           if (row.repo) {
-            const header = renderRepoHeader(row);
-            if (header) nodes.push(header);
-          } else if (row.projectGroup && typeof row.projectGroup.id === "string") {
-            const header = renderGroupHeader(row);
-            if (header) nodes.push(header);
-          } else {
-            nodes.push(
-              <LaneSectionHeader
-                key={row.key}
-                row={row}
-                isCollapsed={isCollapsedKey(row.key)}
-                onToggleCollapse={() => onToggleGroupCollapse(row.key)}
-              />
-            );
+            return renderRepoHeader(row, slot);
           }
-          break;
+          if (row.projectGroup && typeof row.projectGroup.id === "string") {
+            return renderGroupHeader(row, slot);
+          }
+          return (
+            <LaneSectionHeader
+              key={row.key}
+              row={row}
+              isCollapsed={isCollapsedKey(row.key)}
+              onToggleCollapse={slot.toggleCollapse}
+            />
+          );
         }
-        case "item": {
-          const node = renderWorktreeRow(row);
-          if (node) nodes.push(node);
-          break;
-        }
+        case "item":
+          return renderWorktreeRow(row, slot);
         case "folder-workspace":
-          nodes.push(renderFolderRow(row));
-          break;
+          return renderFolderRow(row, slot);
         case "imported-worktrees-card":
-        case "new-external-worktrees-inbox": {
-          const node = renderNoticeRow(row);
-          if (node) nodes.push(node);
-          break;
-        }
+        case "new-external-worktrees-inbox":
+          return renderNoticeRow(row);
         case "pending-creation":
           // Hydra has no in-flight create rows on this path (Orca D03a-035).
-          break;
+          return null;
       }
-    }
-    return nodes;
-  }, [
-    rows,
-    collapsedGroups,
-    isCollapsedKey,
-    onToggleGroupCollapse,
-    renderRepoHeader,
-    renderGroupHeader,
-    renderWorktreeRow,
-    renderFolderRow,
-    renderNoticeRow,
-  ]);
+    },
+    [
+      collapsedGroups,
+      isCollapsedKey,
+      renderRepoHeader,
+      renderGroupHeader,
+      renderWorktreeRow,
+      renderFolderRow,
+      renderNoticeRow,
+    ]
+  );
 
   if (projects.length === 0) {
     return (
@@ -1230,13 +1300,21 @@ export function WorktreeList({
   return (
     <WorktreeListDragProvider
       rows={rows}
-      scrollRef={scrollRef}
+      scrollRef={viewportScrollRef}
       onReorderWorktrees={handlePointerGroupReorder}
     >
-      <div className={`relative ${className}`}>
-        <div className="space-y-1">{content}</div>
-        <WorktreeDragDropIndicator />
-      </div>
+      <VirtualizedWorktreeViewport
+        rows={rows}
+        activeRowKey={activeRowKey}
+        pinnedDisplayPolicy={pinnedDisplayPolicy}
+        revealPath={highlightedRevealPath ?? null}
+        renderRow={renderRow}
+        onActivateRow={activateRow}
+        onToggleRowCollapse={toggleRowCollapse}
+        dropIndicator={<WorktreeDragDropIndicator />}
+        scrollRef={viewportScrollRef}
+        className={className}
+      />
     </WorktreeListDragProvider>
   );
 }
