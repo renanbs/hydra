@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import type { GitWorktreeInfo, HydraProject } from '../types'
 import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
 import WorkspaceBoardDrawer, { type WorkspaceBoardDrawerProps } from './WorkspaceBoardDrawer'
@@ -55,11 +56,24 @@ function drawerProps(overrides: Partial<WorkspaceBoardDrawerProps> = {}): Worksp
     sessions: [],
     displayOptions: DISPLAY_OPTIONS,
     compactCards: false,
+    allWorktrees: WORKTREES,
     onAssignWorktreeStatus: vi.fn(),
     onOpenChange: vi.fn(),
     onSelectWorktree: vi.fn(),
     ...overrides
   }
+}
+
+/**
+ * App wraps the whole shell in one `TooltipProvider`; the board's settings menu is a
+ * tooltip trigger, so the drawer renders under the same provider here.
+ */
+function Board(props: WorkspaceBoardDrawerProps): React.JSX.Element {
+  return (
+    <TooltipProvider>
+      <WorkspaceBoardDrawer {...props} />
+    </TooltipProvider>
+  )
 }
 
 function lane(statusId: string): HTMLElement | null {
@@ -103,7 +117,11 @@ describe('WorkspaceBoardDrawer', () => {
   })
 
   it('opens from its trigger and closes on Escape', () => {
-    render(<BoardHarness />)
+    render(
+      <TooltipProvider>
+        <BoardHarness />
+      </TooltipProvider>
+    )
 
     expect(document.body.querySelector('[data-workspace-board-sheet]')).toBeNull()
 
@@ -117,14 +135,14 @@ describe('WorkspaceBoardDrawer', () => {
   })
 
   it('renders no sheet while the drawer is not rendered open', () => {
-    render(<WorkspaceBoardDrawer {...drawerProps({ open: false, renderedOpen: false })} />)
+    render(<Board {...drawerProps({ open: false, renderedOpen: false })} />)
 
     expect(document.body.querySelector('[data-workspace-board-sheet]')).toBeNull()
     expect(screen.queryByText('Workspace board')).toBeNull()
   })
 
   it('renders one lane per user status with the visible workspace counts', () => {
-    render(<WorkspaceBoardDrawer {...drawerProps()} />)
+    render(<Board {...drawerProps()} />)
 
     expect(document.body.querySelector('[data-workspace-board-sheet]')).not.toBeNull()
     expect(screen.getByText('Workspace board')).toBeInTheDocument()
@@ -135,7 +153,7 @@ describe('WorkspaceBoardDrawer', () => {
   })
 
   it('renders a card per visible workspace, keyed by the board card attributes', () => {
-    render(<WorkspaceBoardDrawer {...drawerProps()} />)
+    render(<Board {...drawerProps()} />)
 
     const cards = document.body.querySelectorAll('[data-workspace-board-card-id]')
     expect(cards).toHaveLength(2)
@@ -148,25 +166,21 @@ describe('WorkspaceBoardDrawer', () => {
   })
 
   it('shows the empty placeholder on a lane with no workspace', () => {
-    render(<WorkspaceBoardDrawer {...drawerProps()} />)
+    render(<Board {...drawerProps()} />)
 
     expect(lane('todo')?.textContent).toContain('Empty')
     expect(lane('in-progress')?.textContent).not.toContain('Empty')
   })
 
   it('shows only the workspaces the sidebar hands over', () => {
-    render(
-      <WorkspaceBoardDrawer
-        {...drawerProps({ getProjectWorktrees: () => [WORKTREES[0]] })}
-      />
-    )
+    render(<Board {...drawerProps({ getProjectWorktrees: () => [WORKTREES[0]] })} />)
 
     expect(document.body.querySelectorAll('[data-workspace-board-card-id]')).toHaveLength(1)
     expect(laneCount('completed')).toBe('0')
   })
 
   it('filters the cards as the search text changes and restores them when cleared', () => {
-    render(<WorkspaceBoardDrawer {...drawerProps()} />)
+    render(<Board {...drawerProps()} />)
     const input = screen.getByRole('textbox', { name: 'Search workspaces' })
 
     fireEvent.change(input, { target: { value: 'progress' } })
@@ -186,24 +200,36 @@ describe('WorkspaceBoardDrawer', () => {
     expect(laneCount('completed')).toBe('1')
   })
 
-  it('renders the search field but no control this increment does not ship', () => {
-    render(<WorkspaceBoardDrawer {...drawerProps()} />)
+  it('renders the search field and the settings menu but no control this increment does not ship', () => {
+    render(<Board {...drawerProps()} />)
 
     expect(screen.getByRole('textbox', { name: 'Search workspaces' })).toBeInTheDocument()
-    // Filter menu, settings menu, column resize handle and the lane's
+    expect(screen.getByRole('button', { name: 'Workspace board settings' })).toBeInTheDocument()
+    // The sidebar filter menu, the column resize handle and the lane's
     // create-workspace buttons belong to later increments.
     expect(document.body.querySelector('[data-workspace-board-column-resize-handle]')).toBeNull()
     expect(document.body.querySelector('[role="separator"]')).toBeNull()
-    expect(
-      document.body.querySelector('[aria-label="Workspace board settings"]')
-    ).toBeNull()
     expect(document.body.querySelector('[aria-label^="New workspace in"]')).toBeNull()
+  })
+
+  it('opens the status settings menu from the header trigger', () => {
+    render(<Board {...drawerProps()} />)
+
+    expect(screen.queryByText('Statuses')).toBeNull()
+
+    fireEvent.pointerDown(
+      screen.getByRole('button', { name: 'Workspace board settings' }),
+      { button: 0, ctrlKey: false }
+    )
+
+    expect(screen.getByText('Statuses')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add status' })).toBeInTheDocument()
   })
 
   it('closes itself and opens the workspace when a card is activated', () => {
     const onOpenChange = vi.fn()
     const onSelectWorktree = vi.fn()
-    render(<WorkspaceBoardDrawer {...drawerProps({ onOpenChange, onSelectWorktree })} />)
+    render(<Board {...drawerProps({ onOpenChange, onSelectWorktree })} />)
 
     const card = document.body.querySelector<HTMLElement>(
       '[data-workspace-board-worktree-id="wt-done"] [data-worktree-card-surface]'
@@ -222,14 +248,14 @@ describe('WorkspaceBoardDrawer', () => {
     // The linger itself (drawer mounted 300ms past close, so Radix can finish the
     // exit animation) is pinned by `use-workspace-board-panel.parity.test.tsx`;
     // jsdom runs no animations, so the painted DOM only proves the gate.
-    const { rerender } = render(<WorkspaceBoardDrawer {...drawerProps()} />)
+    const { rerender } = render(<Board {...drawerProps()} />)
     expect(document.body.querySelector('[data-workspace-board-sheet]')).not.toBeNull()
 
-    rerender(<WorkspaceBoardDrawer {...drawerProps({ open: false })} />)
+    rerender(<Board {...drawerProps({ open: false })} />)
     expect(document.body.querySelector('[data-workspace-board-sheet]')).toBeNull()
 
     act(() => vi.advanceTimersByTime(300))
-    rerender(<WorkspaceBoardDrawer {...drawerProps({ open: false, renderedOpen: false })} />)
+    rerender(<Board {...drawerProps({ open: false, renderedOpen: false })} />)
     expect(document.body.querySelector('[data-workspace-board-sheet]')).toBeNull()
   })
 })

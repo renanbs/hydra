@@ -34,7 +34,7 @@ import {
   type CloseTerminalDialogCopyKind,
 } from "./components/RunningTerminalCloseDialog";
 import { isShellProcess } from "./components/workbench/tab-agent";
-import { hydrateWorkspaceHostScopePreference, useAppStore } from "./store";
+import { hydrateWorkspaceHostScopePreference, hydrateUiStatePreferences, useAppStore } from "./store";
 import { hydrateSshTargets } from "./store/ssh-bridge";
 import { buildWorktreeStatusMenuItems } from "./components/sidebar/worktree-status-menu-items";
 import {
@@ -993,6 +993,10 @@ export default function App() {
     // o store fica com sshTargetsHydrated=false e o submenu continua escondido até
     // uma leitura bem-sucedida. Sem polling — uma leitura no boot.
     hydrateSshTargets().catch(console.error);
+
+    // Fatia Shell/store-owned (ui.state): leitura única no boot. As cinco chaves do
+    // blob `ui.sidebar` (posse do App) ficam de fora — ver `hydrateSliceUiPreferences`.
+    hydrateUiStatePreferences().catch(console.error);
   }, []);
 
   // 2. Carrega o estado persistido do workbench (tabs + active tab) — com dedupe por sessionId/title

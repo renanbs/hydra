@@ -5,6 +5,7 @@ import WorkspaceBoardHeader from './WorkspaceBoardHeader'
 import WorkspaceBoardLaneGrid from './WorkspaceBoardLaneGrid'
 import WorkspaceBoardSheet from './WorkspaceBoardSheet'
 import type { WorkspaceBoardGeometry } from './use-workspace-board-geometry'
+import type { WorkspaceBoardStatusActions } from './use-workspace-board-status-actions'
 import type { WorkspaceBoardLane } from './workspace-board-worktrees'
 
 type WorkspaceBoardDrawerViewProps = {
@@ -15,6 +16,8 @@ type WorkspaceBoardDrawerViewProps = {
   compactCards: boolean
   boardRef: React.RefObject<HTMLDivElement | null>
   dropTargetStatus: WorkspaceStatus | null
+  /** The board's status CRUD, owned by the drawer and rendered into the header. */
+  statusActions: WorkspaceBoardStatusActions
   /** Board search state, threaded to the header field and the lane counts. */
   query: string
   isFiltering: boolean
@@ -43,6 +46,7 @@ export default function WorkspaceBoardDrawerView({
   compactCards,
   boardRef,
   dropTargetStatus,
+  statusActions,
   query,
   isFiltering,
   isTooLarge,
@@ -67,6 +71,7 @@ export default function WorkspaceBoardDrawerView({
         onQueryChange={onQueryChange}
         onClearQuery={onClearQuery}
         onClose={() => onOpenChange(false)}
+        statusActions={statusActions}
       />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3">
         <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-sleek">

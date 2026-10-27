@@ -5200,6 +5200,7 @@
           "79eb990aa4": "Ajouter un statut",
           "054cb50df7": "Supprimer {{value0}}",
           "b45b350eb0": "Déplacer {{value0}} vers la gauche",
+          "9c10b1606f": "Déplacer {{value0}} vers la droite",
           "8ce44af9a8": "Renommer {{value0}}",
           "395e541d5d": "Statuts",
           "34f03eb0de": "Paramètres du tableau",
@@ -5214,6 +5215,7 @@
         },
         "WorkspaceStatusAppearancePopover": {
           "514be2f569": "Définir la couleur de {{value0}} sur {{value1}}",
+          "dfbd2f434e": "Définir l’icône de {{value0}} sur {{value1}}",
           "8be427206b": "Icône",
           "2ac106f6b2": "Couleur",
           "74b1413279": "Apparence",

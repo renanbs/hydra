@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { translate } from '@/i18n/i18n'
 import WorkspaceBoardSearchField from './WorkspaceBoardSearchField'
+import WorkspaceBoardSettingsMenu from './WorkspaceBoardSettingsMenu'
+import type { WorkspaceBoardStatusActions } from './use-workspace-board-status-actions'
 
 type WorkspaceBoardHeaderProps = {
   query: string
@@ -14,12 +16,14 @@ type WorkspaceBoardHeaderProps = {
   onQueryChange: (query: string) => void
   onClearQuery: () => void
   onClose: () => void
+  /** The board's status CRUD, wired to the store by the drawer. */
+  statusActions: WorkspaceBoardStatusActions
 }
 
 /**
- * Ported from Orca `WorkspaceKanbanDrawerHeader`, minus the filter menu and the
- * settings menu — neither exists in this increment, so the header carries the
- * title, the board's search field and the close button only.
+ * Ported from Orca `WorkspaceKanbanDrawerHeader`, minus the sidebar filter menu —
+ * that surface belongs to a later increment, so the header carries the title, the
+ * board's search field, the status settings menu and the close button.
  */
 export default function WorkspaceBoardHeader({
   query,
@@ -30,10 +34,11 @@ export default function WorkspaceBoardHeader({
   onQueryChange,
   onClearQuery,
   onClose,
+  statusActions,
 }: WorkspaceBoardHeaderProps): React.JSX.Element {
   return (
     <>
-      <SheetHeader className="border-b border-worktree-sidebar-border px-4 py-3 pr-12">
+      <SheetHeader className="border-b border-worktree-sidebar-border px-4 py-3 pr-16">
         {/* Why: SheetTitle is the sheet's aria-labelledby target and renders an
             <h2>, so the board's own controls must be its sibling, not a descendant. */}
         <div className="flex items-center gap-2">
@@ -65,6 +70,15 @@ export default function WorkspaceBoardHeader({
       </SheetHeader>
 
       <div className="absolute right-3 top-2.5 flex items-center gap-1">
+        <WorkspaceBoardSettingsMenu
+          workspaceStatuses={statusActions.workspaceStatuses}
+          onRenameStatus={statusActions.onRenameStatus}
+          onChangeStatusColor={statusActions.onChangeStatusColor}
+          onChangeStatusIcon={statusActions.onChangeStatusIcon}
+          onMoveStatus={statusActions.onMoveStatus}
+          onRemoveStatus={statusActions.onRemoveStatus}
+          onAddStatus={statusActions.onAddStatus}
+        />
         <Button
           variant="ghost"
           size="icon-xs"

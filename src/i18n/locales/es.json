@@ -4559,6 +4559,7 @@
           "79eb990aa4": "Agregar estado",
           "054cb50df7": "Quitar {{value0}}",
           "b45b350eb0": "Mover {{value0}} a la izquierda",
+          "9c10b1606f": "Mover {{value0}} a la derecha",
           "8ce44af9a8": "Cambiar nombre {{value0}}",
           "395e541d5d": "Estados",
           "34f03eb0de": "Ajustes del tablero",
@@ -4573,6 +4574,7 @@
         },
         "WorkspaceStatusAppearancePopover": {
           "514be2f569": "Establecer color de {{value0}} en {{value1}}",
+          "dfbd2f434e": "Establecer icono de {{value0}} en {{value1}}",
           "8be427206b": "Icono",
           "2ac106f6b2": "Color",
           "74b1413279": "Apariencia",

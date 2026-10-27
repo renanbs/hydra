@@ -1,5 +1,6 @@
 // @ts-nocheck — Orca port buffer; typecheck when this subsystem is wired.
 import type { UISlice, UISliceGet, UISliceSet } from './ui-slice-contract'
+import type { Repo } from '../../../shared/repo-types'
 import type { AppState } from '../../types'
 import type { PersistedUIState } from '../../../shared/persisted-ui-state-types'
 import { normalizeRightSidebarRoute } from '../../right-sidebar-route'
@@ -343,6 +344,194 @@ export function createUiHydrationActions(set: UISliceSet, _get: UISliceGet): Par
           persistedUIWriteBaseline: nextWriteBaseline,
           persistedUIWriteBaselineGeneration: nextWriteBaselineGeneration
         } as Partial<AppState>
+      }),
+
+    /**
+     * Boot hydration for the slice's OWN persistence row (`ui.state`).
+     *
+     * Why not `hydratePersistedUI(blob)`: that action builds its ~100-field patch from the
+     * blob with defaults, so a key the slice never wrote (all of the App-owned `ui.sidebar`
+     * fields, every width/route/session field) would be reset to a default instead of kept.
+     * It also owns the writer's diff baseline, which only makes sense for a full payload.
+     * Here every key is applied individually and only when it is actually present in the
+     * blob; the five App-owned keys are in no hydrator at all, so they can never be written.
+     */
+    hydrateSliceUiPreferences: (snapshot: Record<string, unknown>) =>
+      set((s: SliceUiStateSnapshot) => {
+        const patch: Record<string, unknown> = {}
+        for (const [key, hydrate] of Object.entries(SLICE_UI_STATE_HYDRATORS)) {
+          if (Object.prototype.hasOwnProperty.call(snapshot, key)) {
+            Object.assign(patch, hydrate(snapshot[key], s, snapshot))
+          }
+        }
+        // The slice's own persistence is now read; every gate keyed on it (feature
+        // interactions, contextual tours, the usage notice) can trust the hydrated state.
+        patch.persistedUIReady = true
+        return patch as Partial<AppState>
       })
   }
+}
+
+/** The fields the slice's hydrators read off the live state. */
+type SliceUiStateSnapshot = { repos: Repo[] } & Record<string, unknown>
+
+function readPersistedCustomPets(snapshot: Record<string, unknown>): { id?: unknown }[] {
+  const value = Array.isArray(snapshot.customPets)
+    ? snapshot.customPets
+    : Array.isArray(snapshot.customSidekicks)
+      ? snapshot.customSidekicks
+      : []
+  return value.filter(
+    (model): model is { id?: unknown } => typeof model === 'object' && model !== null
+  )
+}
+
+/**
+ * One entry per `ui.state` key the slice writes (the source of truth is the set of
+ * `uiPrefsBridge.set({...})` call sites). Each hydrator receives the raw persisted value,
+ * the live state and the whole snapshot, and returns the field patch — reusing the exact
+ * normalizers `hydratePersistedUI` already uses for the same field.
+ *
+ * The five keys the App owns through its `ui.sidebar` blob (`workspaceHostScope`,
+ * `visibleWorkspaceHostIds`, `collapsedGroups`, `agentsReadFilter`, `agentsGroupBy`) are
+ * deliberately absent: the App hydrates those from its own blob, and a second writer here
+ * is the bug the single-writer guard pins.
+ */
+const SLICE_UI_STATE_HYDRATORS: Record<
+  string,
+  (
+    value: unknown,
+    state: SliceUiStateSnapshot,
+    snapshot: Record<string, unknown>
+  ) => Record<string, unknown>
+> = {
+  groupBy: (value) => ({ groupBy: value === 'parent' ? 'repo' : value }),
+  workspaceHostOrder: (value) => ({ workspaceHostOrder: normalizeExecutionHostOrder(value) }),
+  automationHostFilter: (value) => ({
+    automationHostFilter: parsePersistedAutomationHostFilter(value)
+  }),
+  agentsVisibleHostIds: (value) => ({
+    agentsVisibleHostIds: normalizeVisibleExecutionHostIds(value)
+  }),
+  agentsFilterRepoIds: (value) => ({ agentsFilterRepoIds: sanitizePersistedRepoIds(value) }),
+  agentsShowChildAgents: (value) => ({ agentsShowChildAgents: value === true }),
+  agentsCompactMode: (value) => ({ agentsCompactMode: value !== false }),
+  agentsShowSearch: (value) => ({ agentsShowSearch: value !== false }),
+  worktreeCardProperties: (value) => ({
+    worktreeCardProperties: normalizeWorktreeCardProperties(value)
+  }),
+  _worktreeCardModeDefaulted: (value) => ({ _worktreeCardModeDefaulted: value === true }),
+  agentActivityDisplayMode: (value) => ({
+    agentActivityDisplayMode: normalizeAgentActivityDisplayMode(value)
+  }),
+  workspaceStatuses: (value) => ({ workspaceStatuses: normalizeWorkspaceStatuses(value) }),
+  workspaceBoardOpacity: (value) => ({ workspaceBoardOpacity: clampWorkspaceBoardOpacity(value) }),
+  workspaceBoardColumnWidth: (value) => ({
+    workspaceBoardColumnWidth: clampWorkspaceBoardColumnWidth(value)
+  }),
+  syncTaskStatusFromWorkspaceBoard: (value) => ({
+    syncTaskStatusFromWorkspaceBoard: value === true
+  }),
+  statusBarItems: (value) => ({ statusBarItems: migrateStatusBarItems(value) }),
+  statusBarVisible: (value) => ({ statusBarVisible: value ?? true }),
+  usagePercentageDisplay: (value) => ({
+    usagePercentageDisplay: normalizeUsagePercentageDisplay(value)
+  }),
+  usagePercentageDisplayChangeNoticeDismissed: (value) => ({
+    usagePercentageDisplayChangeNoticeDismissed: value === true
+  }),
+  statusBarUsageMode: (value) => ({ statusBarUsageMode: normalizeStatusBarUsageMode(value) }),
+  featureTipsSeenIds: (value) => ({ featureTipsSeenIds: normalizeFeatureTipIds(value) }),
+  featureInteractions: (value) => ({
+    featureInteractions: normalizeFeatureInteractions(value)
+  }),
+  contextualToursSeenIds: (value) => ({
+    contextualToursSeenIds: normalizeContextualTourIds(value)
+  }),
+  contextualToursAutoEligible: (value) => ({
+    contextualToursAutoEligible: typeof value === 'boolean' ? value : null
+  }),
+  taskResumeState: (value) => ({ taskResumeState: sanitizeTaskResumeState(value) }),
+  manualRepoOrder: (value, state) => {
+    const manualRepoOrder = normalizeManualRepoOrder(value)
+    return { manualRepoOrder, repos: applyManualRepoOrder(state.repos, manualRepoOrder) }
+  },
+  workspaceCleanup: (value) => {
+    const cleanup = typeof value === 'object' && value !== null ? value : {}
+    return {
+      workspaceCleanupDismissals: sanitizeWorkspaceCleanupDismissals(
+        Reflect.get(cleanup, 'dismissals')
+      ),
+      workspaceCleanupBrowse: normalizeWorkspaceCleanupBrowseState(
+        Reflect.get(cleanup, 'browse')
+      )
+    }
+  },
+  trustedOrcaHooks: (value, state) => ({
+    trustedOrcaHooks: hydrateTrustedOrcaHooks(value, new Set(state.repos.map((repo) => repo.id)))
+  }),
+  setupScriptPromptDismissedRepoIds: (value, state) => {
+    const validRepoHostIdentities = new Set(state.repos.map(getRepoHostIdentity))
+    return {
+      setupScriptPromptDismissedRepoIds:
+        validRepoHostIdentities.size === 0
+          ? sanitizeSetupScriptPromptDismissals(value)
+          : filterSetupScriptPromptDismissalsToValidRepos(value, validRepoHostIdentities)
+    }
+  },
+  setupGuideSidebarDismissed: (value) => ({ setupGuideSidebarDismissed: value === true }),
+  setupGuideBrowserMilestoneMigrated: (value) => ({
+    setupGuideBrowserMilestoneMigrated: value === true
+  }),
+  setupGuideBrowserMilestoneLegacyComplete: (value) => ({
+    setupGuideBrowserMilestoneLegacyComplete: value === true
+  }),
+  browserImportHintHidden: (value) => ({ browserImportHintHidden: value === true }),
+  mobileEmulatorTabIntroDismissed: (value) => ({
+    mobileEmulatorTabIntroDismissed: value === true
+  }),
+  mobileEmulatorAgentSetupDismissed: (value) => ({
+    mobileEmulatorAgentSetupDismissed: value === true
+  }),
+  projectOrderManualDefaultNoticeDismissed: (value) => ({
+    projectOrderManualDefaultNoticeDismissed: value === true
+  }),
+  usageEmptyStateDismissed: (value) => ({ usageEmptyStateDismissed: value === true }),
+  petVisible: (value) => ({ petVisible: value ?? true }),
+  petSize: (value) => ({
+    petSize: clampPetSize(value, {
+      min: PET_SIZE_MIN,
+      max: PET_SIZE_MAX,
+      fallback: PET_SIZE_DEFAULT
+    })
+  }),
+  customPets: (_value, _state, snapshot) => ({ customPets: readPersistedCustomPets(snapshot) }),
+  petId: (value, _state, snapshot) => {
+    const id = value ?? snapshot.sidekickId
+    if (typeof id !== 'string') {
+      return { petId: DEFAULT_PET_ID }
+    }
+    if (isBundledPetId(id) || readPersistedCustomPets(snapshot).some((model) => model.id === id)) {
+      return { petId: id }
+    }
+    return { petId: DEFAULT_PET_ID }
+  },
+  dismissedUpdateVersion: (value) => ({ dismissedUpdateVersion: value ?? null }),
+  dismissedUnexpectedSignoutVersion: (value, state) =>
+    hydrateUnexpectedSignoutDismissal(state, value),
+  releaseChannelOverride: (value) => ({
+    releaseChannelOverride: isReleaseChannel(value) ? value : null
+  }),
+  updateReassuranceSeen: (value) => ({ updateReassuranceSeen: value ?? false }),
+  osc52ClipboardDefaultOnNoticePending: (value) => ({
+    osc52ClipboardDefaultOnNoticePending: value === true
+  }),
+  browserDefaultUrl: (value) => ({ browserDefaultUrl: value ?? null }),
+  browserDefaultSearchEngine: (value) => ({ browserDefaultSearchEngine: value ?? null }),
+  browserDefaultZoomLevel: (value) => ({
+    browserDefaultZoomLevel: normalizeBrowserPageZoomLevel(value)
+  }),
+  browserKagiSessionLink: (value) => ({
+    browserKagiSessionLink: normalizeKagiSessionLink(typeof value === 'string' ? value : '')
+  })
 }

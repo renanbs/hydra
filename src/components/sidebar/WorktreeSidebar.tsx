@@ -241,6 +241,14 @@ export function WorktreeSidebar({
     return [];
   }, [worktreesByProject, gitWorktrees, activeProject]);
 
+  // The board's lanes read the visible set (`getFilteredAndSortedWorktrees`), but removing
+  // a status must migrate the workspaces the sidebar hides too — this is the one unfiltered
+  // list, built from the same per-project source the sidebar itself projects from.
+  const allWorktrees = useMemo(
+    () => projects.flatMap((project) => getWorktreesForProject(project)),
+    [projects, getWorktreesForProject]
+  );
+
   useEffect(() => {
     let cancelled = false;
     const scanPorts = async () => {
@@ -910,6 +918,7 @@ export function WorktreeSidebar({
         portsByWorktree={portsByWorktree}
         prByPath={prByPath}
         compactCards={compactCards}
+        allWorktrees={allWorktrees}
         onAssignWorktreeStatus={onAssignWorktreeStatus}
         onOpenChange={handleWorkspaceBoardOpenChange}
         onSelectWorktree={onSelectGitWorktree}

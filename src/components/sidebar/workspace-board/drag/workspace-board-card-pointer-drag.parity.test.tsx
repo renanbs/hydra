@@ -8,6 +8,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useCallback, useState } from 'react'
 import { describe, expect, it, vi, type Mock } from 'vitest'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import type { GitWorktreeInfo, HydraProject } from '../../types'
 import type { WorkspaceDisplayOptions } from '../../WorkspaceOptionsMenu'
 import WorkspaceBoardDrawer, { type WorkspaceBoardDrawerProps } from '../WorkspaceBoardDrawer'
@@ -146,6 +147,7 @@ function drawerProps(overrides: Partial<WorkspaceBoardDrawerProps> = {}): Worksp
     sessions: [],
     displayOptions: DISPLAY_OPTIONS,
     compactCards: false,
+    allWorktrees: WORKTREES,
     onAssignWorktreeStatus: vi.fn(),
     onOpenChange: vi.fn(),
     onSelectWorktree: vi.fn(),
@@ -199,7 +201,11 @@ function BoardHarness({
 function renderBoard(): { onAssign: Mock; onSelect: Mock } {
   const onAssign = vi.fn()
   const onSelect = vi.fn()
-  render(<BoardHarness onAssignWorktreeStatus={onAssign} onSelectWorktree={onSelect} />)
+  render(
+    <TooltipProvider>
+      <BoardHarness onAssignWorktreeStatus={onAssign} onSelectWorktree={onSelect} />
+    </TooltipProvider>
+  )
   fireEvent.click(screen.getByRole('button', { name: 'Toggle board' }))
   stubBoardRects()
   return { onAssign, onSelect }
