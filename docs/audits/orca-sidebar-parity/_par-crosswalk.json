@@ -760,7 +760,7 @@
   },
   {
    "id": "D10-020",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-021",
@@ -768,11 +768,11 @@
   },
   {
    "id": "D10-022",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-023",
-   "status": "partial"
+   "status": "parity"
   }
  ]
 }

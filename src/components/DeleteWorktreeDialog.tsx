@@ -12,7 +12,7 @@
 // because the workspace list can change between opening and confirming. A target
 // that vanished or was recreated aborts with a "Workspace list changed" notice
 // instead of deleting whichever checkout shares the path.
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { LoaderCircle, Trash2, Check } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import type { GitWorktreeInfo } from "./sidebar/types";
@@ -239,7 +239,9 @@ export function DeleteWorktreeDialog({
     onClose();
   }, [identities.length, isDeleting, missingTargets, onClose, onStaleTargets, open, validationEnabled]);
 
-  if (!open) return null;
+  // Orca returns null when no target resolves; an empty destructive dialog would
+  // offer a Delete button for nothing.
+  if (!open || worktrees.length === 0) return null;
 
   // Orca onOpenAutoFocus parity: focus the confirm button, not the first
   // tabbable control, so "Delete, Enter" works from the keyboard.
@@ -341,6 +343,8 @@ export function DeleteWorktreeDialog({
     void runDeletes();
   };
 
+  const targetRegionId = useId();
+
   // Why: a batch can hold the same path on two execution hosts, so the preview
   // must name the host or the two destructive rows are indistinguishable.
   const collidedPaths = new Set<string>();
@@ -354,6 +358,20 @@ export function DeleteWorktreeDialog({
       }
     }
   }
+
+  const singleTarget = worktrees[0];
+  const singleTargetLiveRow =
+    !isBatchDelete && singleTarget
+      ? liveWorktrees?.find(
+          (row) =>
+            row.path === singleTarget.path &&
+            (!singleTarget.id || row.id === singleTarget.id)
+        )
+      : undefined;
+  const singleTargetHostLabel =
+    !isBatchDelete && singleTarget && collidedPaths.has(singleTarget.path) && singleTargetLiveRow?.hostId
+      ? getExecutionHostLabel(singleTargetLiveRow.hostId)
+      : null;
 
   return (
     <div
@@ -377,7 +395,16 @@ export function DeleteWorktreeDialog({
         </p>
 
         {/* Orca DeleteWorktreeTargetPreview parity: path + dirty-change count */}
-        <div className="mt-3 space-y-1">
+        <section
+          role={isBatchDelete ? "list" : "region"}
+          aria-label={isBatchDelete ? "Workspaces to delete" : undefined}
+          aria-labelledby={
+            isBatchDelete
+              ? undefined
+              : `${targetRegionId}-0${singleTargetHostLabel ? ` ${targetRegionId}-0-host` : ""}`
+          }
+          className={isBatchDelete ? "mt-3 max-h-48 space-y-1 overflow-y-auto" : "mt-3 space-y-1"}
+        >
           {worktrees.map((wt, index) => {
             const dirty = dirtyChangeCountsByWorktreeId[wt.path] ?? null;
             const state = deleteStates[index] ?? null;
@@ -389,14 +416,55 @@ export function DeleteWorktreeDialog({
               : undefined;
             const hostLabel = liveRow?.hostId ? getExecutionHostLabel(liveRow.hostId) : null;
             return (
-              <div key={wt.path} className="flex items-center justify-between gap-3 p-2 rounded bg-neutral-950 border border-neutral-800">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Trash2 className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                  <span className="truncate font-mono text-[11px] text-neutral-300" title={wt.path}>{wt.path}</span>
-                  {hostLabel && (
-                    <span className="shrink-0 rounded border border-neutral-700 bg-neutral-800/80 px-1.5 py-0.5 text-[10px] text-neutral-300">
-                      {hostLabel}
+              <div
+                key={wt.path}
+                role={isBatchDelete ? "listitem" : undefined}
+                aria-labelledby={
+                  isBatchDelete
+                    ? `${targetRegionId}-${index}-name ${targetRegionId}-${index}-path${
+                        hostLabel ? ` ${targetRegionId}-${index}-host` : ""
+                      }`
+                    : undefined
+                }
+                className="flex items-center justify-between gap-3 p-2 rounded bg-neutral-950 border border-neutral-800"
+              >
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Trash2 className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                    <span
+                      id={isBatchDelete ? `${targetRegionId}-${index}-name` : undefined}
+                      className="min-w-0 truncate text-[11px] font-medium text-neutral-200"
+                    >
+                      {wt.display_name || wt.branch || wt.path}
                     </span>
+                    <span
+                      id={
+                        isBatchDelete
+                          ? `${targetRegionId}-${index}-path`
+                          : `${targetRegionId}-0`
+                      }
+                      className="truncate font-mono text-[11px] text-neutral-300"
+                      title={wt.path}
+                    >
+                      {wt.path}
+                    </span>
+                    {hostLabel && (
+                      <span
+                        id={
+                          isBatchDelete
+                            ? `${targetRegionId}-${index}-host`
+                            : `${targetRegionId}-0-host`
+                        }
+                        className="shrink-0 rounded border border-neutral-700 bg-neutral-800/80 px-1.5 py-0.5 text-[10px] text-neutral-300"
+                      >
+                        {hostLabel}
+                      </span>
+                    )}
+                  </div>
+                  {state?.error && (
+                    <p className="break-words text-[10px] leading-4 text-red-400" role="alert">
+                      {state.error}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -410,7 +478,7 @@ export function DeleteWorktreeDialog({
               </div>
             );
           })}
-        </div>
+        </section>
 
         <DeleteWorktreeLineageNotice
           descendants={lineageDelete.descendants}
