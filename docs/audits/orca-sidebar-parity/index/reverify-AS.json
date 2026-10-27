@@ -1,0 +1,9 @@
+{
+ "group": "AS",
+ "generatedFrom": "2026-10-27 agent-row increment: the compact row exposes Mark thread as read / Mark thread as unread / Clear notification, wired to the real attention actions",
+ "rows": [
+  {"id":"D05-021","status":"parity","evidence":["src/components/sidebar/CompactAgentRow.tsx:102-112","src/components/sidebar/CompactAgentRow.tsx:198-208","src/components/sidebar/worktree-card-compact-agents.tsx:198-208","src/components/sidebar/CompactAgentRow.thread-actions.parity.test.tsx:28-40"],"missing_behaviors":[],"note":"Row menu clears the pane/agent-completion unread markers through clearTerminalPaneUnread; covered by render tests."},
+  {"id":"D05-022","status":"parity","evidence":["src/components/sidebar/CompactAgentRow.tsx:103-111","src/components/sidebar/worktree-card-compact-agents.tsx:205-208","src/components/sidebar/CompactAgentRow.thread-actions.parity.test.tsx:42-58"],"missing_behaviors":[],"note":"Mark thread as unread writes the agent-completion unread reason for the pane key from the row menu."},
+  {"id":"D05-023","status":"parity","evidence":["src/components/sidebar/CompactAgentRow.tsx:106-111","src/components/sidebar/worktree-card-compact-agents.tsx:206-208","src/components/sidebar/CompactAgentRow.thread-actions.parity.test.tsx:50-58"],"missing_behaviors":[],"note":"Clear notification drops the completion marker for the row's pane without touching the thread."}
+ ]
+}

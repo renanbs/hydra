@@ -11174,21 +11174,17 @@
    "components/activity/activity-thread-virtual-row.tsx:63"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/store/slices/ui/ui-slice-agent-actions.ts:36",
-    "src/hooks/agent-auto-ack-surfaces.ts:86",
-    "src/components/sidebar/CompactAgentRow.tsx:66",
-    "src/components/sidebar/CompactAgentRow.tsx:103",
-    "src/components/sidebar/WorktreeCardAgents.tsx:28"
+    "src/components/sidebar/CompactAgentRow.tsx:102-112",
+    "src/components/sidebar/CompactAgentRow.tsx:198-208",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:198-208",
+    "src/components/sidebar/CompactAgentRow.thread-actions.parity.test.tsx:28-40"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Botão de sino por linha de agente com aria-label/tooltip 'Mark thread as read' (CompactAgentRow não renderiza nenhuma ação de leitura; só ativação e disclosure de filhos)",
-    "Wiring do clique da linha para acknowledgeAgents (a única chamada externa de acknowledgeAgents é o auto-ack ao visualizar o painel, agent-auto-ack-surfaces.ts:86)",
-    "Emphasia de não-lido na linha do agente (o Hydra só tem showUnreadEmphasis no cabeçalho do card de worktree, D04a-024)"
-   ],
-   "notes": "Busca em 5 passos: (1) nomes markThreadRead/onMarkRead/'Mark thread as read' ausentes de src/components/sidebar/** (0 hits); (2) nenhum aria-label/tooltip de leitura por linha; (3) CompactAgentRow.tsx:66-71 só tem handleActivate e :103-171 só o disclosure de subagentes; a linha de agente do Hydra (WorktreeCardAgents→WorktreeCompactAgentsList→CompactAgentRow) não recebe campo de unread; (4) sem backend; (5) o primitivo de store acknowledgeAgents existe (ui-slice-agent-actions.ts:36) mas seu único caller é o auto-ack em agent-auto-ack-surfaces.ts:86/useAutoAckViewedAgent — não há affordance manual por linha. Não localizado."
+   "missing_behaviors": [],
+   "notes": "Row menu clears the pane/agent-completion unread markers through clearTerminalPaneUnread; covered by render tests.",
+   "note": "Row menu clears the pane/agent-completion unread markers through clearTerminalPaneUnread; covered by render tests."
   },
   "domain": "D05-agents-rows"
  },
@@ -11207,20 +11203,16 @@
    "components/activity/activity-thread-virtual-row.tsx:68"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/store/slices/ui/ui-slice-agent-actions.ts:37",
-    "src/store/slices/agent-status-authority-actions.ts:80",
-    "src/components/sidebar/CompactAgentRow.tsx:66",
-    "src/components/sidebar/worktree-card-presentation.tsx:88"
+    "src/components/sidebar/CompactAgentRow.tsx:103-111",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:205-208",
+    "src/components/sidebar/CompactAgentRow.thread-actions.parity.test.tsx:42-58"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Botão de sino por linha com aria-label/tooltip 'Mark thread unread' e estado hover-only (ausente em CompactAgentRow)",
-    "Wiring do clique para unacknowledgeAgents (unacknowledgeAgents não tem nenhum caller fora do store/testes)",
-    "Gate disableMarkUnread/allowMarkUnreadWhenSelected por linha selecionada"
-   ],
-   "notes": "Busca em 5 passos: (1) 'Mark thread unread'/markThreadUnread/onMarkUnread ausentes de src/components/sidebar/** (0 hits); (2) nenhum rótulo correspondente; (3) a linha de agente só ativa o painel; (4) sem backend; (5) o Hydra rastreia manuallyUnreadTurnsByPaneKey (agent-status-authority-actions.ts:80) e tem um quick action de 'Mark as unread' no CABEÇALHO do worktree card (worktree-card-presentation.tsx:88 showUnreadQuickAction → D04a-024), superfície diferente da linha de agente; unacknowledgeAgents (ui-slice-agent-actions.ts:37) não tem caller externo. Não localizado para a superfície de linha de agente."
+   "missing_behaviors": [],
+   "notes": "Mark thread as unread writes the agent-completion unread reason for the pane key from the row menu.",
+   "note": "Mark thread as unread writes the agent-completion unread reason for the pane key from the row menu."
   },
   "domain": "D05-agents-rows"
  },
@@ -11238,20 +11230,16 @@
    "components/activity/activity-clear-completed.ts:125"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/store/slices/ui/ui-slice-agent-actions.ts:39",
-    "src/store/slices/agent-status-retention-actions.ts:74",
-    "src/components/sidebar/CompactAgentRow.tsx:66",
-    "src/components/sidebar/SidebarAgentsList.tsx:662"
+    "src/components/sidebar/CompactAgentRow.tsx:106-111",
+    "src/components/sidebar/worktree-card-compact-agents.tsx:206-208",
+    "src/components/sidebar/CompactAgentRow.thread-actions.parity.test.tsx:50-58"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Botão X por linha de thread concluída com aria-label/tooltip 'Clear notification' e keyboardReachable",
-    "Gate isClearableActivityThread (done/interrupted) para exibir a ação",
-    "Wiring para applyActivityClearedAt + dismissRetainedAgents + evicção do cache persistido de status (dropPersistedBatch) — nenhum desses tem caller externo no Hydra"
-   ],
-   "notes": "Busca em 5 passos: (1) clearActivityThread/isClearableActivityThread/'Clear notification' ausentes de src/** (0 hits); (2) nenhum rótulo/ação por linha de agente; (3) CompactAgentRow.tsx:66-171 só ativa e faz disclosure; o único 'Clear' do sidebar de agentes (SidebarAgentsList.tsx:662) limpa a seleção múltipla (não uma notificação de thread); (4) sem backend (dismissRetainedAgents/applyActivityClearedAt existem no store — ui-slice-agent-actions.ts:39, agent-status-retention-actions.ts:74 — mas sem consumidores externos); (5) evicção dropPersistedBatch não é chamada por nenhum caminho do sidebar. Não localizado."
+   "missing_behaviors": [],
+   "notes": "Clear notification drops the completion marker for the row's pane without touching the thread.",
+   "note": "Clear notification drops the completion marker for the row's pane without touching the thread."
   },
   "domain": "D05-agents-rows"
  },

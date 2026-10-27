@@ -200,6 +200,10 @@ export function WorktreeCompactAgentsList({
   // Why: one 30s tick per non-empty list (Orca's WorktreeCardAgentsBody owns the same cadence);
   // a zero-agent list pays no timer cost because `enabled` is false.
   const now = useNow(30_000, rows.length > 0)
+  // Orca's row actions: a thread can be marked read/unread, and a finished turn's
+  // notification cleared, without opening the pane.
+  const clearPaneUnread = useAppStore((s) => s.clearTerminalPaneUnread)
+  const markCompletionUnread = useAppStore((s) => s.markAgentCompletionPaneUnread)
 
   if (rows.length === 0) return null
 
@@ -232,6 +236,9 @@ export function WorktreeCompactAgentsList({
                 childAgentsExpanded={r.childAgentsExpanded}
                 onToggleChildAgents={r.onToggleChildAgents}
                 reserveDisclosureGutter={anyRootHasChildren && (r.childAgentCount ?? 0) === 0}
+                onMarkRead={() => clearPaneUnread(r.paneKey)}
+                onMarkUnread={() => markCompletionUnread(r.paneKey, 'agent-completion')}
+                onClearNotification={() => clearPaneUnread(r.paneKey)}
             />
           ))}
         </CompactAgentExpansion>

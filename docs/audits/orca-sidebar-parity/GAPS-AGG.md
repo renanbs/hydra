@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 178 capabilities
+## MISSING — 175 capabilities
 
 
 ### D01-shell-chrome (25)
@@ -161,7 +161,7 @@
 - **D04b-022** — Constrói e normaliza de forma pura o payload de atualização de metadados do worktree (nome, comentário, issues e revisões) | falta: Normalização de displayName sem valor undefined; Emissão de comentário apenas se alterado; Detecção de campo de issue sujo por identidade normalizada; Deslocamento de work items/contextos Linear ao trocar issue | components/sidebar/worktree-meta-updates.ts:12
 - **D04b-023** — Gera sugestões de nomes de criaturas marinhas para novos worktrees com desduplicação global e registro de aposentadoria | falta: collectUsedNames sobre todos os repositórios; Combinação com RetiredNameRegistry (nomes de workspaces deletados); selectSuggestedCreatureName aleatório do pool; Fallback para variantes sufixadas quando o pool esgota | components/sidebar/worktree-name-suggestions.ts:17
 
-### D05-agents-rows (13)
+### D05-agents-rows (10)
 
 - **D05-003** — Desmarcação automática de seleção de painel inativo na lista de threads de agentes | falta: Monitora selectedPaneKeyIsLive via useEffect; Reseta selectedPaneKey para null quando o painel correspondente não está mais vivo, impedindo seleção fantasma | components/sidebar/SidebarAgentsList.tsx:49
 - **D05-010** — Derivação de linhas filhas para subagentes em processo com propagação de frescor do pai | falta: Gera linhas filhas indentadas para subagentes/teammates em processo; Chaves sintéticas com NUL (parentPaneKey\u0000subagent:id); activationPaneKey apontando para o painel pai; Frescor do filho via resolveAgentChildWorkFreshness (pai estagnado ⇒ active decai para unverifiable) | components/sidebar/worktree-subagent-child-rows.ts:18
@@ -173,9 +173,6 @@
 - **D05-018** — Seleção em lote de orquestração de runtime para múltiplos worktrees no dashboard | falta: selectRuntimeAgentOrchestrationBatch (consulta em lote com cache compartilhado) — 0 hits; Short-circuit EMPTY_WORKTREE_AGENT_ORCHESTRATION_INDEX para worktreeIds.length === 0 — 0 hits; releaseRuntimeAgentOrchestrationBatchCache (no-op de ciclo de vida do índice compartilhado) — 0 hits | components/sidebar/worktree-agent-orchestration-batch.ts:8
 - **D05-019** — Sintetização de aba de fallback e timestamp inicial efetivo para agentes sem aba no renderer | falta: effectiveWorktreeAgentRowStartedAt ancorando em entry.stateHistory[0]?.startedAt ?? entry.stateStartedAt — 0 hits; tabFromWorktreeAttributedStatusEntry sintetizando TerminalTab (ptyId null, sortOrder MAX_SAFE_INTEGER, createdAt efetivo) — 0 hits; Renderizar entradas atribuídas ao worktree cuja aba não existe no renderer (Hydra só cobre sessões headless, não entradas de status órfãs de aba) | components/sidebar/worktree-agent-row-fallback-tab.ts:5
 - **D05-020** — Ordenação comparativa determinística de linhas de agentes por timestamp, aba e chave ordinal | falta: compareWorktreeAgentRows com desempate startedAt → tab.sortOrder → tab.createdAt → comparePaneKeysOrdinal (0 hits para os dois símbolos); comparableNumber para fallback zero seguro de valores indefinidos; Estabilidade visual contra 'pulos' de linha em atualizações concorrentes | components/sidebar/worktree-agent-row-order.ts:7
-- **D05-021** — Marcar thread individual como lida a partir da linha da lista de Agentes (Mark thread as read) | falta: Botão de sino por linha de agente com aria-label/tooltip 'Mark thread as read' (CompactAgentRow não renderiza nenhuma ação de leitura; só ativação e disclosure de filhos); Wiring do clique da linha para acknowledgeAgents (a única chamada externa de acknowledgeAgents é o auto-ack ao visualizar o painel, agent-auto-ack-surfaces.ts:86); Emphasia de não-lido na linha do agente (o Hydra só tem showUnreadEmphasis no cabeçalho do card de worktree, D04a-024) | components/sidebar/SidebarAgentsList.tsx:159
-- **D05-022** — Marcar thread individual como não-lida a partir da linha da lista de Agentes (Mark thread unread) | falta: Botão de sino por linha com aria-label/tooltip 'Mark thread unread' e estado hover-only (ausente em CompactAgentRow); Wiring do clique para unacknowledgeAgents (unacknowledgeAgents não tem nenhum caller fora do store/testes); Gate disableMarkUnread/allowMarkUnreadWhenSelected por linha selecionada | components/sidebar/SidebarAgentsList.tsx:160
-- **D05-023** — Limpar notificação de uma thread concluída individual na linha da lista de Agentes (Clear notification) | falta: Botão X por linha de thread concluída com aria-label/tooltip 'Clear notification' e keyboardReachable; Gate isClearableActivityThread (done/interrupted) para exibir a ação; Wiring para applyActivityClearedAt + dismissRetainedAgents + evicção do cache persistido de status (dropPersistedBatch) — nenhum desses tem caller externo no Hydra | components/activity/activity-thread-virtual-row.tsx:65
 
 ### D06-drag-order-keyboard (2)
 

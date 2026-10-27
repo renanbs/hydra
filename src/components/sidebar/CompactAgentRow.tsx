@@ -1,13 +1,14 @@
 // src/components/sidebar/CompactAgentRow.tsx
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // src/renderer/src/components/sidebar/worktree-card-compact-agent-row.tsx
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 
 import { AgentBrandIcon } from '../AgentIcon'
 import { AgentStateDot } from '../AgentStateDot'
 import CacheTimer, { usePromptCacheCountdownForPane } from './CacheTimer'
 import { cn } from '../../lib/utils'
+import { CustomContextMenu, type ContextMenuItem } from '../CustomContextMenu'
 import { formatAgentTypeLabel } from '../../shared/agent-type-label'
 import {
   getAgentDotState,
@@ -33,6 +34,12 @@ export interface CompactAgentRowProps {
    * per-pane surface (the card's aggregate timer is off while compact), mirroring Orca.
    */
   cacheTimerActive?: boolean
+  /** Marks the thread read (Orca `Mark thread as read`). */
+  onMarkRead?: () => void
+  /** Marks the thread unread (Orca `Mark thread unread`). */
+  onMarkUnread?: () => void
+  /** Clears a completed turn's notification without touching the thread (Orca `Clear notification`). */
+  onClearNotification?: () => void
 }
 
 function stopActivationKeyPropagation(e: React.KeyboardEvent): void {
@@ -52,7 +59,10 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   childAgentsExpanded = false,
   onToggleChildAgents,
   reserveDisclosureGutter = false,
-  cacheTimerActive = true
+  cacheTimerActive = true,
+  onMarkRead,
+  onMarkUnread,
+  onClearNotification
 }: CompactAgentRowProps): React.JSX.Element {
   const agentType = agent.agentType ?? agent.displayAgent ?? 'unknown'
   const activationId = agent.entry.sessionId ?? agent.paneKey
@@ -92,6 +102,15 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
     [onToggleChildAgents]
   )
 
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
+  const menuItems: ContextMenuItem[] = [
+    ...(onMarkRead ? [{ label: 'Mark thread as read', onClick: onMarkRead }] : []),
+    ...(onMarkUnread ? [{ label: 'Mark thread as unread', onClick: onMarkUnread }] : []),
+    ...(onClearNotification
+      ? [{ label: 'Clear notification', onClick: onClearNotification }]
+      : []),
+  ]
+
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <div
@@ -103,6 +122,15 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
           handleActivate(e as unknown as React.MouseEvent)
         }
       }}
+      onContextMenu={
+        menuItems.length === 0
+          ? undefined
+          : (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setMenu({ x: e.clientX, y: e.clientY })
+            }
+      }
       className={cn(
         'compact-agent-row group/compact-agent-row flex h-6 min-w-0 cursor-pointer items-center gap-1 overflow-hidden rounded-sm px-1 text-[11px] leading-none select-none',
         isFocusedPane
@@ -185,6 +213,15 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
         >
           {shortTime}
         </span>
+      )}
+
+      {menu && menuItems.length > 0 && (
+        <CustomContextMenu
+          x={menu.x}
+          y={menu.y}
+          items={menuItems}
+          onClose={() => setMenu(null)}
+        />
       )}
     </div>
   )
