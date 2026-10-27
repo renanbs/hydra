@@ -1451,11 +1451,16 @@ export function WorktreeSidebar({
         projectCount={groupDeleteMembers.length}
         projectNames={groupDeleteMembers.map((p) => p.name)}
         onOpenChange={(open) => setGroupDeleteDialog((prev) => ({ ...prev, open }))}
-        onConfirm={() => {
+        onConfirm={(removeContained) => {
           if (groupDeleteDialog.group) {
             window.dispatchEvent(
               new CustomEvent("hydra:delete-project-group", {
-                detail: { id: groupDeleteDialog.group.id },
+                detail: {
+                  id: groupDeleteDialog.group.id,
+                  removeProjectPaths: removeContained
+                    ? groupDeleteMembers.map((project) => project.path)
+                    : [],
+                },
               })
             );
           }

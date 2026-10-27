@@ -1441,8 +1441,15 @@ export default function App() {
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
     };
     const handleDeleteProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ id: string }>).detail;
+      const detail = (e as CustomEvent<{ id: string; removeProjectPaths?: string[] }>).detail;
       if (!detail?.id) return;
+      // Orca `removeContainedProjects`: the checkbox deletes the member projects
+      // too; without it they stay, merely ungrouped.
+      for (const path of detail.removeProjectPaths ?? []) {
+        void invoke("remove_project", { path }).catch((error) =>
+          console.error("Failed to remove contained project:", error)
+        );
+      }
       setProjectGroups((prev) => prev.filter((g) => g.id !== detail.id));
       // Delete strips the membership map — member projects render ungrouped again.
       setProjectGroupMap((prev) => {
