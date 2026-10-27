@@ -65,6 +65,14 @@ import type {
 } from "./types";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
+import { applyWorktreeGroupOrder } from "./worktree-group-order";
+import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
+import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
+import {
+  WorktreeDragDropIndicator,
+  WorktreeDragRow,
+} from "./worktree-list/drag/worktree-drag-surface";
+import type { WorktreeGroupReorderArgs } from "./worktree-list/drag/drop-commit-context";
 
 // ─── Hydra props → Orca row-pipeline projection ──────────────────────────────
 //
@@ -354,6 +362,16 @@ export interface WorktreeListProps {
   // Drag and drop state & handlers
   draggedWorktreePath?: string | null;
   worktreeDropTarget?: { path: string; position: "top" | "bottom" } | null;
+  /**
+   * The panel's scroll container. The pointer drag measures row rects against it and
+   * autoscrolls it; without it rows get no drag slot.
+   */
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
+  /**
+   * Commits a pointer-drag reorder of one group, in the order the rows now have. The
+   * panel routes it through the same write path the HTML5 drop uses.
+   */
+  onReorderWorktreesInGroup?: (ordered: GitWorktreeInfo[], projectPath: string) => void;
   draggedProjectId?: string | null;
   projectDropTarget?: { id: string; position: "top" | "bottom" } | null;
   groupDropTargetId?: string | null;
@@ -500,6 +518,8 @@ export function WorktreeList({
   onKeepHiddenWorktrees,
   onReviewHiddenWorktrees,
   worktreeDropTarget,
+  scrollRef,
+  onReorderWorktreesInGroup,
   draggedProjectId,
   projectDropTarget,
   groupDropTargetId,
@@ -690,6 +710,68 @@ export function WorktreeList({
 
   const { rows } = rowModel;
 
+  // ─── Pointer-drag reorder → the panel's order writer ───────────────────────
+  //
+  // The drag speaks Orca row ids; the writer speaks Hydra's project worktree list.
+  // This is the ONE bridge between them, and it commits through the same
+  // `onReorderWorktreesInGroup` the HTML5 drop handler uses — never a second write.
+  const dragWorktreeById = useMemo(() => {
+    const byId = new Map<string, { worktree: GitWorktreeInfo; project: HydraProject }>();
+    for (const row of rows) {
+      if (row.type !== "item") continue;
+      const worktree = rowModel.propWorktreeByPath.get(row.worktree.path);
+      const project = rowModel.propProjectById.get(row.worktree.repoId);
+      if (worktree && project) byId.set(row.worktree.id, { worktree, project });
+    }
+    return byId;
+  }, [rowModel, rows]);
+
+  const dragWorktreeIds = useMemo(() => [...dragWorktreeById.keys()], [dragWorktreeById]);
+
+  const handlePointerGroupReorder = useCallback(
+    (dragArgs: WorktreeGroupReorderArgs) => {
+      if (!onReorderWorktreesInGroup) return;
+      // The manual-order module owns the reorder: it replays the group through
+      // `buildSparseManualOrderUpdates` and reports whether anything moved.
+      const { changed, orderedIds } = buildManualOrderUpdatesForVisibleGroups({
+        groups: dragArgs.groups,
+        sourceGroupKey: dragArgs.sourceGroupKey,
+        draggedIds: dragArgs.draggedIds,
+        dropIndex: dragArgs.dropIndex,
+        now: Date.now(),
+        allWorktreeIds: dragWorktreeIds,
+      });
+      if (!changed) return;
+
+      const orderedByProject = new Map<
+        string,
+        { project: HydraProject; worktrees: GitWorktreeInfo[] }
+      >();
+      for (const worktreeId of orderedIds) {
+        const entry = dragWorktreeById.get(worktreeId);
+        if (!entry) continue;
+        const bucket = orderedByProject.get(entry.project.path) ?? {
+          project: entry.project,
+          worktrees: [],
+        };
+        bucket.worktrees.push(entry.worktree);
+        orderedByProject.set(entry.project.path, bucket);
+      }
+      for (const { project, worktrees } of orderedByProject.values()) {
+        onReorderWorktreesInGroup(
+          applyWorktreeGroupOrder(getFilteredAndSortedWorktrees(project), worktrees),
+          project.path
+        );
+      }
+    },
+    [
+      dragWorktreeById,
+      dragWorktreeIds,
+      getFilteredAndSortedWorktrees,
+      onReorderWorktreesInGroup,
+    ]
+  );
+
   // Same contract as Orca `use-selection`: publish before paint so Cmd+1–9 matches
   // the painted cards. Null on unmount (sidebar closed) means "recompute".
   const shortcutTargets = useMemo(() => {
@@ -799,10 +881,11 @@ export function WorktreeList({
       );
 
       return (
-        <div
+        <WorktreeDragRow
           key={row.rowKey}
-          data-worktree-path={wt.path}
-          className="relative"
+          rowKey={row.rowKey}
+          worktreeId={row.worktree.id}
+          worktreePath={wt.path}
           style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
         >
           <WorktreeCard
@@ -845,7 +928,7 @@ export function WorktreeList({
             onDrop={onWorktreeDrop ? (e, path) => onWorktreeDrop(e, path, proj) : undefined}
             onDragEnd={onWorktreeDragEnd}
           />
-        </div>
+        </WorktreeDragRow>
       );
     },
     [
@@ -1145,9 +1228,16 @@ export function WorktreeList({
   }
 
   return (
-    <div className={`space-y-1 ${className}`}>
-      {content}
-    </div>
+    <WorktreeListDragProvider
+      rows={rows}
+      scrollRef={scrollRef}
+      onReorderWorktrees={handlePointerGroupReorder}
+    >
+      <div className={`relative ${className}`}>
+        <div className="space-y-1">{content}</div>
+        <WorktreeDragDropIndicator />
+      </div>
+    </WorktreeListDragProvider>
   );
 }
 
