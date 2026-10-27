@@ -527,9 +527,15 @@
     "components/sidebar/workspace-kanban-lane-range.ts:3"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59"
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:95-108",
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:81-93",
+     "src/components/sidebar/workspace-board/workspace-board-virtual-lanes.ts:14-17",
+     "src/components/sidebar/workspace-board/workspace-board-virtual-lanes.ts:45-62",
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:139-149",
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.parity.test.tsx:177-205",
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.parity.test.tsx:136-174"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -540,7 +546,7 @@
      "Rastreia foco por onFocusCapture/onBlurCapture nas raias"
     ],
     "notes": "Passo 1: WorkspaceKanbanLaneGrid/workspace-kanban-lane-range ausentes (0 hits). Passo 3: não há virtualização de raias; @tanstack/react-virtual não está declarado em package.json/pnpm-lock (único hit é import type em src/hooks/useVirtualizedScrollAnchor.ts:10, sem uso runtime) e a lista renderiza via map (WorktreeList.tsx:211). Passo 5: {BOARD_ABSENT}. Não localizado.",
-    "note": "Grade de raias nao virtualizada (render direto); @tanstack/react-virtual nao e dependencia."
+    "note": "Grade horizontal com @tanstack/react-virtual (overscan 1, gap 12, getTotalSize, useFlushSync false), retencao da raia focada via extractWorkspaceBoardLaneRange e foco por onFocusCapture/onBlurCapture. Diferenca de mecanismo (nao de comportamento): a largura da raia vem do columnWidth persistido (estimateSize + measure() na mudanca) em vez de measureElement no DOM — o Orca mede o elemento por causa da alca de resize de coluna (D08-022, fora de escopo)."
    },
    "par": [
     "PAR-14"
@@ -554,9 +560,14 @@
     "components/sidebar/WorkspaceKanbanLaneGrid.tsx:142"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:43-59"
+     "src/components/sidebar/workspace-board/use-workspace-board-lane-hydration.ts:31-68",
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:125-133",
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:172",
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:100-113",
+     "src/components/sidebar/workspace-board/use-workspace-board-lane-hydration.parity.test.tsx:22-61",
+     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.parity.test.tsx:177-194"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -566,7 +577,7 @@
      "Evita gargalo ao carregar fluxos com múltiplas raias pesadas"
     ],
     "notes": "Passo 1/3: hidratação escalonada de raias ausente (0 hits para startTransition/overscan de lane em src/components/sidebar/**). Não há virtualizador de raias (ver D08-019). Passo 5: {BOARD_ABSENT}. Não localizado.",
-    "note": "Sem hidratacao progressiva de raias (sem startTransition/virtualizacao)."
+    "note": "Uma raia por quadro de animacao (requestAnimationFrame + startTransition), so as raias da janela virtual; a primeira raia hidrata no primeiro quadro e o conjunto encolhe quando uma raia sai da janela. A raia sem cards mantem o placeholder Empty desde o primeiro paint."
    },
    "par": [
     "PAR-14"
@@ -671,9 +682,13 @@
     "components/sidebar/WorkspaceKanbanLaneCardList.tsx:80"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:70-84"
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLaneCardList.tsx:59-118",
+     "src/components/sidebar/workspace-board/workspace-board-virtual-lanes.ts:20-36",
+     "src/components/sidebar/workspace-board/workspace-board-virtual-lanes.ts:84-105",
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLane.tsx:94-108",
+     "src/components/sidebar/workspace-board/WorkspaceBoardStatusLaneCardList.parity.test.tsx:135-189"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -684,7 +699,7 @@
      "Registra o layout virtual para operações de drag"
     ],
     "notes": "Passo 1: WorkspaceKanbanLaneCardList ausente (0 hits). Passo 3: cards são renderizados por map sem virtualizador (WorktreeList.tsx:326) e @tanstack/react-virtual não é dependência (só import type em useVirtualizedScrollAnchor.ts:10). Passo 5: {BOARD_ABSENT}. Não localizado.",
-    "note": "Cards renderizados por map sem virtualizador vertical/est. de altura."
+    "note": "Cards virtualizados no eixo vertical dentro da raia: estimativa por densidade (56/88px) substituida pela altura real medida (measureElement), overscan 6, gap 8 e useFlushSync false; o layout medido e publicado para o hit-test do drop (resolveWorkspaceBoardVirtualCardSlot)."
    },
    "par": [
     "PAR-14"
@@ -700,9 +715,15 @@
     "components/sidebar/workspace-kanban-virtual-lane-layout.ts:109"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+     "src/components/sidebar/workspace-board/workspace-board-virtual-lane-layout.ts:28-81",
+     "src/components/sidebar/workspace-board/workspace-board-virtual-card-layout.ts:23-85",
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:175-225",
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:227-275",
+     "src/components/sidebar/workspace-board/workspace-board-virtual-lanes.parity.test.ts:63-163",
+     "src/components/sidebar/workspace-board/workspace-board-virtual-lane-layout.parity.test.ts:28-95",
+     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.parity.test.ts:241-303"
     ],
     "backend": [],
     "missing_behaviors": [
@@ -714,7 +735,7 @@
      "Desregistro seguro sem remover instâncias mais recentes"
     ],
     "notes": "Passo 1/3: workspace-kanban-virtual-lane-layout ausente (0 hits para WeakMap de layout de raia/resolveWorkspaceKanban*). O único hit-testing de drag do sidebar está em worktree-list/pointer-drag-dom.ts, listado em index/hydra_unreachable.json. Passo 5: {BOARD_ABSENT}. Não localizado.",
-    "note": "Hit-testing/indice/indicador existem, mas a partir de rects vivos do DOM, nao de um layout virtual registrado."
+    "note": "Dois registros em WeakMap (raias por elemento da grade; cards por scroller da raia) publicam ids logicos + cache de medicoes do virtualizador; o hit-test resolve a raia e o indice/indicador de drop de uma raia fora da janela montada e de um slot alem da janela pintada de cards, com desregistro que nao remove uma instancia mais nova. Diferenca de mecanismo: o indice sai de uma varredura sobre a cache medida (Orca usa busca binaria) — mesmo resultado."
    },
    "par": [
     "PAR-14"

@@ -60,6 +60,10 @@ export default function WorkspaceBoardDrawerView({
   onSelectSession,
   onContextMenu,
 }: WorkspaceBoardDrawerViewProps): React.JSX.Element {
+  // Why the drawer owns the lane row's scroller: the lanes are virtualized inside it. It is
+  // handed to the grid as an element, not a ref — the grid is a child of this scroller, so its
+  // layout effects run before this element's own ref is attached.
+  const [laneScrollerElement, setLaneScrollerElement] = React.useState<HTMLDivElement | null>(null)
   return (
     <WorkspaceBoardSheet geometry={geometry} open={open} onOpenChange={onOpenChange}>
       <WorkspaceBoardHeader
@@ -74,13 +78,19 @@ export default function WorkspaceBoardDrawerView({
         statusActions={statusActions}
       />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3">
-        <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-sleek">
+        <div
+          ref={setLaneScrollerElement}
+          data-workspace-board-lanes-scroller=""
+          className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-sleek"
+        >
           <WorkspaceBoardLaneGrid
+            open={open}
             lanes={lanes}
             hasQuery={isFiltering}
             columnWidth={columnWidth}
             compactCards={compactCards}
             boardRef={boardRef}
+            laneScrollerElement={laneScrollerElement}
             dropTargetStatus={dropTargetStatus}
             onCardPointerDownCapture={onCardPointerDownCapture}
             onActivate={onActivate}
