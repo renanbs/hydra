@@ -2,11 +2,70 @@
  "group": "S",
  "generatedFrom": "2026-10-21 compact markdown renderer for workspace notes: dependency-free inline tokens, inert raw HTML, safe-protocol-only links opened through the external command",
  "rows": [
-  {"id":"D12-001","status":"parity","evidence":["src/components/sidebar/comment-markdown.tsx:1-150","src/components/sidebar/comment-markdown.parity.test.tsx:59-70"],"note":"Compact variant renders line divs (no <p>), preserves line breaks and uses the card's own typography."},
-  {"id":"D12-002","status":"parity","evidence":["src/components/sidebar/comment-markdown.tsx:118-125","src/components/sidebar/comment-markdown.parity.test.tsx:59-70"],"note":"H1–H6 lines flatten to a semibold inline line instead of block headings."},
-  {"id":"D12-003","status":"missing","evidence":[],"missing_behaviors":["Variante documental com headings em bloco, citações e espaçamento hierárquico"],"note":"Only the compact sidebar variant exists."},
-  {"id":"D12-004","status":"partial","evidence":["src/components/sidebar/comment-markdown.tsx:1-30","src/components/sidebar/comment-markdown.parity.test.tsx:32-40"],"missing_behaviors":["Remoção de comentários HTML (hoje aparecem como texto literal)"],"note":"Raw HTML can never become markup and unsafe protocols stay literal; HTML comments are shown, not stripped."},
-  {"id":"D12-007","status":"parity","evidence":["src/components/sidebar/comment-markdown.tsx:75-92","src/components/sidebar/comment-markdown.parity.test.tsx:42-55"],"note":"Links preventDefault+stopPropagation and open via open_external_url_cmd; only http(s)/mailto linkify."},
-  {"id":"D12-012","status":"missing","evidence":[],"missing_behaviors":["Bloco de código com extração de linguagem e renderer customizado"],"note":"Fenced blocks are not recognized; backticks render inline only."}
+  {
+   "id": "D12-001",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/comment-markdown.tsx:236-272",
+    "src/components/sidebar/comment-markdown-element-renderers.tsx:77-100",
+    "src/components/sidebar/comment-markdown.parity.test.tsx:18-26"
+   ],
+   "note": "Compact variant renders paragraphs as spans, applies remark-breaks and the card typography; react-markdown is now the engine.",
+   "missing_behaviors": []
+  },
+  {
+   "id": "D12-002",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/comment-markdown-element-renderers.tsx:126-155",
+    "src/components/sidebar/comment-markdown.parity.test.tsx:58-70"
+   ],
+   "note": "H1–H6 render as inline spans with role=heading and the original aria-level; no block heading tags.",
+   "missing_behaviors": []
+  },
+  {
+   "id": "D12-003",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/comment-markdown.tsx:236-272",
+    "src/components/sidebar/comment-markdown-element-renderers.tsx:234-320",
+    "src/components/sidebar/comment-markdown.parity.test.tsx:80-96"
+   ],
+   "missing_behaviors": [],
+   "note": "Document variant renders block headings with hierarchy, paragraphs, quotes and rules; verified by render tests."
+  },
+  {
+   "id": "D12-004",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/comment-markdown.tsx:163-183",
+    "src/components/sidebar/comment-markdown.parity.test.tsx:30-40"
+   ],
+   "missing_behaviors": [],
+   "note": "Raw HTML is parsed then sanitized with rehype-sanitize; event handlers and unsafe protocols cannot survive."
+  },
+  {
+   "id": "D12-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/comment-markdown-element-renderers.tsx:40-68",
+    "src/components/sidebar/comment-markdown.tsx:196-208",
+    "src/components/sidebar/comment-markdown.parity.test.tsx:44-56"
+   ],
+   "note": "Links preventDefault+stopPropagation and open via open_external_url_cmd; auxclick is routed the same way.",
+   "missing_behaviors": []
+  },
+  {
+   "id": "D12-012",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/comment-markdown-element-renderers.tsx:18-30",
+    "src/components/sidebar/comment-markdown-element-renderers.tsx:250-270"
+   ],
+   "missing_behaviors": [
+    "consumidor que passe renderCodeBlock (nenhuma superfície do Hydra renderiza documento hoje)"
+   ],
+   "note": "Fenced blocks extract language-* and delegate to a custom renderer when provided; no caller supplies one yet."
+  }
  ]
 }

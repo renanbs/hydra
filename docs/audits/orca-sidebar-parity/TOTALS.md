@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 269 | 35.2% |
-| partial | 297 | 38.8% |
-| missing | 190 | 24.8% |
+| parity | 275 | 35.9% |
+| partial | 300 | 39.2% |
+| missing | 181 | 23.7% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
 
@@ -31,6 +31,6 @@
 | D09-filters-sort | 31 | 16 | 15 | 0 | 0 | 0 |
 | D10-visibility-inbox-notices | 91 | 68 | 18 | 5 | 0 | 0 |
 | D11-lineage-grouping-model | 17 | 6 | 6 | 5 | 0 | 0 |
-| D12-markdown-inline-render | 14 | 3 | 1 | 10 | 0 | 0 |
+| D12-markdown-inline-render | 14 | 9 | 4 | 1 | 0 | 0 |
 | D15-misc-a | 12 | 2 | 5 | 5 | 0 | 0 |
 | D15-misc-b | 14 | 1 | 7 | 6 | 0 | 0 |

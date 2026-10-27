@@ -554,15 +554,15 @@
   },
   {
    "id": "D12-003",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D12-004",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D12-005",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D12-006",
@@ -574,31 +574,31 @@
   },
   {
    "id": "D12-008",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D12-009",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D12-010",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D12-011",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D12-012",
-   "status": "missing"
+   "status": "partial"
   },
   {
    "id": "D12-013",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D12-014",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D15a-001",

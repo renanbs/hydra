@@ -47,7 +47,7 @@ describe("WorktreeCardDetailsHover metadata sections (Orca parity)", () => {
     vi.useRealTimers();
   });
 
-  it("renders issue, review and Linear sections and the compact markdown note", () => {
+  it("renders issue, review and Linear sections and the compact markdown note", async () => {
     vi.useFakeTimers();
     openHover();
 
@@ -57,7 +57,11 @@ describe("WorktreeCardDetailsHover metadata sections (Orca parity)", () => {
     expect(screen.getByText("#34")).toBeInTheDocument();
     expect(screen.getByText("Linear")).toBeInTheDocument();
     expect(screen.getByText("ENG-7")).toBeInTheDocument();
-    expect(screen.getByText("bold note").tagName).toBe("STRONG");
+    // The markdown renderer is a lazy chunk; the raw-text fallback paints first.
+    vi.useRealTimers();
+    expect((await screen.findByText("bold note", undefined, { timeout: 5000 })).tagName).toBe(
+      "STRONG"
+    );
   });
 
   it("offers the metadata edit action from the section header", () => {
