@@ -7,6 +7,8 @@ type UseSidebarResizeOptions = {
   maxWidth: number
   deltaSign: 1 | -1
   renderedExtraWidth?: number
+  /** Width a double-click on the handle restores (Orca parity: sidebar reset). */
+  defaultWidth?: number
   setWidth: (width: number) => void
   onDraftWidthChange?: (width: number) => void
 }
@@ -14,7 +16,9 @@ type UseSidebarResizeOptions = {
 type UseSidebarResizeResult<T extends HTMLElement> = {
   containerRef: React.RefObject<T | null>
   isResizing: boolean
-  onResizeStart: (event: React.MouseEvent) => void
+  onResizeStart: (event: React.PointerEvent) => void
+  /** Restores `defaultWidth` (clamped) as the committed sidebar width. */
+  onResizeReset: () => void
 }
 
 export function clampSidebarResizeWidth(width: number, minWidth: number, maxWidth: number): number {
@@ -55,6 +59,7 @@ export function useSidebarResize<T extends HTMLElement>({
   maxWidth,
   deltaSign,
   renderedExtraWidth = 0,
+  defaultWidth,
   setWidth,
   onDraftWidthChange
 }: UseSidebarResizeOptions): UseSidebarResizeResult<T> {
@@ -65,6 +70,8 @@ export function useSidebarResize<T extends HTMLElement>({
   const draftWidthRef = useRef(width)
   const frameRef = useRef<number | null>(null)
   const overlayRef = useRef<HTMLDivElement | null>(null)
+  const captureElementRef = useRef<Element | null>(null)
+  const capturePointerIdRef = useRef<number | null>(null)
   const [isResizing, setIsResizing] = useState(false)
 
   const removeDragOverlay = useCallback(() => {
@@ -75,11 +82,25 @@ export function useSidebarResize<T extends HTMLElement>({
     overlayRef.current = null
   }, [])
 
+  const releasePointerCapture = useCallback(() => {
+    const element = captureElementRef.current
+    const pointerId = capturePointerIdRef.current
+    captureElementRef.current = null
+    capturePointerIdRef.current = null
+    if (!element || pointerId === null) {
+      return
+    }
+    if (element.hasPointerCapture?.(pointerId)) {
+      element.releasePointerCapture(pointerId)
+    }
+  }, [])
+
   const resetDocumentStyles = useCallback(() => {
     document.body.style.cursor = ''
     document.body.style.userSelect = ''
     removeDragOverlay()
-  }, [removeDragOverlay])
+    releasePointerCapture()
+  }, [releasePointerCapture, removeDragOverlay])
 
   const applyRenderedWidth = useCallback(
     (nextWidth: number) => {
@@ -129,6 +150,17 @@ export function useSidebarResize<T extends HTMLElement>({
       setWidth(finalWidth)
     }
   }, [applyRenderedWidth, onDraftWidthChange, resetDocumentStyles, setWidth, width])
+
+  const onResizeReset = useCallback(() => {
+    if (defaultWidth === undefined) {
+      return
+    }
+    const nextWidth = clampSidebarResizeWidth(defaultWidth, minWidth, maxWidth)
+    draftWidthRef.current = nextWidth
+    applyRenderedWidth(nextWidth)
+    onDraftWidthChange?.(nextWidth)
+    setWidth(nextWidth)
+  }, [applyRenderedWidth, defaultWidth, maxWidth, minWidth, onDraftWidthChange, setWidth])
 
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
@@ -183,7 +215,7 @@ export function useSidebarResize<T extends HTMLElement>({
   }, [handleMouseMove, resetDocumentStyles, stopResize])
 
   const onResizeStart = useCallback(
-    (event: React.MouseEvent) => {
+    (event: React.PointerEvent) => {
       event.preventDefault()
       isResizingRef.current = true
       setIsResizing(true)
@@ -193,6 +225,18 @@ export function useSidebarResize<T extends HTMLElement>({
       onDraftWidthChange?.(width)
       document.body.style.cursor = 'col-resize'
       document.body.style.userSelect = 'none'
+
+      // Why: capture the pointer on the handle so a drag that leaves the 3px
+      // strip (or crosses a WebKitGTK <embed>) keeps delivering move/up events
+      // to this element. The window listeners below still run — the capture
+      // only pins the event target, and the overlay still protects against
+      // native embeds that swallow events before they bubble.
+      const captureTarget = event.currentTarget as Element | null
+      if (captureTarget?.setPointerCapture) {
+        captureTarget.setPointerCapture(event.pointerId)
+        captureElementRef.current = captureTarget
+        capturePointerIdRef.current = event.pointerId
+      }
 
       // Why: native plugins like Chromium's PDF <embed> capture pointer events
       // internally, so dragging across them swallows the `mouseup` on the
@@ -214,5 +258,5 @@ export function useSidebarResize<T extends HTMLElement>({
     [onDraftWidthChange, width]
   )
 
-  return { containerRef, isResizing, onResizeStart }
+  return { containerRef, isResizing, onResizeStart, onResizeReset }
 }

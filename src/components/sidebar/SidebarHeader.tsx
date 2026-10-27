@@ -1,21 +1,28 @@
 import { useState, useId, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Bell, FolderPlus, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { translate } from "@/i18n/i18n";
+import type { GroupByMode } from "./WorkspaceOptionsMenu";
+import type { HydraProject } from "./types";
 
 type SidebarHeaderProps = {
   sidebarBody: "workspaces" | "agents";
   setSidebarBody: (body: "workspaces" | "agents") => void;
+  /** Orca sidebar-title parity: the grouping mode picks Projects (repo) or Workspaces. */
+  groupBy: GroupByMode;
   onOpenAddRepoDialog: () => void;
-  onOpenNewWorkspaceModal: (proj?: any) => void;
+  onOpenNewWorkspaceModal: (proj?: HydraProject) => void;
   optionsButtonRef: React.RefObject<HTMLButtonElement | null>;
   optionsMenuOpen: boolean;
   setOptionsMenuOpen: (open: boolean) => void;
-  projects: any[];
+  projects: HydraProject[];
 };
 
 export function SidebarHeader({
   sidebarBody,
   setSidebarBody,
+  groupBy,
   onOpenAddRepoDialog,
   onOpenNewWorkspaceModal,
   optionsButtonRef,
@@ -23,6 +30,8 @@ export function SidebarHeader({
   setOptionsMenuOpen,
   projects,
 }: SidebarHeaderProps) {
+  // Subscribe this header to locale changes before using translate().
+  useTranslation();
   const agentsViewActive = sidebarBody === "agents";
   const introShownKey = "hydra:agents_sidebar_intro_shown";
   const [introOpen, setIntroOpen] = useState(false);
@@ -42,16 +51,21 @@ export function SidebarHeader({
     setIntroOpen(false);
   };
 
-  const sidebarTitle = "Projects";
+  const sidebarTitle =
+    groupBy === "repo"
+      ? translate("dashboard.sidebar.projects", "Projects")
+      : translate("dashboard.sidebar.workspaces", "Workspaces");
 
-  const activityLabel = agentsViewActive ? "Turn off activity view" : "View activity";
+  const activityLabel = agentsViewActive
+    ? translate("dashboard.sidebar.closeActivity", "Turn off activity view")
+    : translate("dashboard.sidebar.openActivity", "View activity");
 
   return (
     <div className="mt-2 flex h-8 min-w-0 items-center justify-between gap-1.5 px-2">
       <div className="flex min-w-0 items-center gap-1">
         <span
           className="min-w-0 truncate select-none pl-2 pr-0.5 text-xs font-semibold text-muted-foreground/80"
-          data-sidebar-section-title="projects"
+          data-sidebar-section-title={groupBy === "repo" ? "projects" : "workspaces"}
         >
           {sidebarTitle}
         </span>

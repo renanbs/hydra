@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { List } from "react-window";
 import { invoke } from "@tauri-apps/api/core";
 import { AgentBrandIcon } from "../AgentIcon";
@@ -33,6 +33,12 @@ type SidebarAgentsListProps = {
   onGroupByChange: (groupBy: AgentsGroupBy) => void;
   statusFilter: AgentsStatusFilter;
   onStatusFilterChange: (filter: AgentsStatusFilter) => void;
+  /**
+   * Orca agentsScrollTopRef parity: the shell owns the agents list scroll offset so
+   * switching the sidebar body restores where the user left off instead of resetting
+   * to the top. The list writes on scroll and restores on mount.
+   */
+  scrollTopRef?: React.MutableRefObject<number>;
 };
 
 export function SidebarAgentsList({
@@ -48,11 +54,33 @@ export function SidebarAgentsList({
   onGroupByChange,
   statusFilter,
   onStatusFilterChange,
+  scrollTopRef,
 }: SidebarAgentsListProps) {
   const [filter, setFilter] = useState("");
   const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
   const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
+
+  // Scroll offset persistence (Orca agentsScrollTopRef parity): the plain list owns
+  // its scrolling div; the virtualized List owns an outer scroll element reached
+  // through its imperative ref.
+  const listScrollRef = useRef<HTMLDivElement | null>(null);
+  const virtualListRef = useRef<{
+    element: HTMLDivElement | null;
+    scrollToRow: (config: {
+      align?: "auto" | "center" | "end" | "smart" | "start";
+      behavior?: "auto" | "instant" | "smooth";
+      index: number;
+    }) => void;
+  } | null>(null);
+  const handleListScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      if (scrollTopRef) {
+        scrollTopRef.current = event.currentTarget.scrollTop;
+      }
+    },
+    [scrollTopRef]
+  );
 
   // Get project name for a session
   const getProjectName = useCallback(
@@ -189,6 +217,18 @@ export function SidebarAgentsList({
   }, [agentFlatRows, compactCards]);
 
   const useAgentVirtualization = agentFlatRows.length > 30 || filteredSessions.length > 50;
+
+  // Restore the persisted offset after the scroll container for the active render
+  // path mounts. Re-runs if the path flips; the ref stays current via onScroll.
+  useLayoutEffect(() => {
+    if (!scrollTopRef) {
+      return;
+    }
+    const target = useAgentVirtualization ? virtualListRef.current?.element : listScrollRef.current;
+    if (target) {
+      target.scrollTop = scrollTopRef.current;
+    }
+  }, [scrollTopRef, useAgentVirtualization]);
 
   const AgentVirtualRow = ({ index, style, ariaAttributes }: { index: number; style: React.CSSProperties; ariaAttributes?: any }) => {
     const row = agentFlatRows[index];
@@ -518,6 +558,7 @@ export function SidebarAgentsList({
       {useAgentVirtualization ? (
         <div className="flex-1 min-h-0 overflow-hidden">
           <List
+            listRef={virtualListRef}
             rowCount={agentFlatRows.length}
             rowHeight={getAgentRowHeight}
             rowComponent={AgentVirtualRow}
@@ -526,10 +567,15 @@ export function SidebarAgentsList({
             style={{ height: "100%", width: "100%" }}
             className="py-2"
             overscanCount={8}
+            onScroll={handleListScroll}
           />
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
+        <div
+          ref={listScrollRef}
+          onScroll={handleListScroll}
+          className="flex-1 overflow-y-auto px-2 pb-2 space-y-2"
+        >
           {groupedSessions.map((group) => (
             <div key={group.label} className="space-y-1">
               {/* Group Header */}
