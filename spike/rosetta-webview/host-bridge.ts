@@ -7,9 +7,24 @@ import { createHydraBindings } from './bindings'
 type RpcRequest = { kind: 'rpc'; id: number; path: string; args: unknown[] }
 
 const bindings = createHydraBindings()
+
+function reportLine(line: string): void {
+  void fetch('http://localhost:1421/__rosetta-report', {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'content-type': 'text/plain' },
+    body: line
+  }).catch(() => {})
+}
+
+reportLine('HOST start')
 const iframe = document.createElement('iframe')
 iframe.src = 'http://localhost:1421/spike/rosetta-webview/'
+iframe.onload = () => reportLine('HOST iframe load')
+iframe.onerror = () => reportLine('HOST iframe error')
 document.body.appendChild(iframe)
+if (window.__TAURI_INTERNALS__) reportLine('HOST tauri-internals present')
+else reportLine('HOST tauri-internals MISSING')
 
 const orphans = new Map<string, number>()
 

@@ -11,6 +11,22 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Diagnostic: report boot failures even if the module graph fails.
+      fetch('/__rosetta-report', { method: 'POST', body: 'CHILD boot' }).catch(() => {})
+      window.addEventListener('error', (event) => {
+        fetch('/__rosetta-report', {
+          method: 'POST',
+          body: `CHILD error ${event.message} @ ${event.filename}:${event.lineno}`
+        }).catch(() => {})
+      })
+      window.addEventListener('unhandledrejection', (event) => {
+        fetch('/__rosetta-report', {
+          method: 'POST',
+          body: `CHILD rejection ${String(event.reason)}`
+        }).catch(() => {})
+      })
+    </script>
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>

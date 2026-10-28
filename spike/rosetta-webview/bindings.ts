@@ -7,6 +7,48 @@ import { open } from '@tauri-apps/plugin-dialog'
 
 const HOST = 'local'
 
+const repoPathById = new Map<string, string>()
+
+type HydraWorktree = {
+  path: string
+  head_commit: string
+  branch: string
+  is_bare: boolean
+  created_at?: number | null
+  display_name?: string | null
+  is_main?: boolean | null
+  is_pinned?: boolean | null
+  is_unread?: boolean | null
+  status?: string | null
+}
+
+/** Hydra's scan row → Orca's Worktree (the shape the sidebar store reads). */
+function toOrcaWorktree(repoId: string, row: HydraWorktree) {
+  const id = `${repoId}::${row.path}`
+  return {
+    id,
+    repoId,
+    projectId: repoId,
+    displayName: row.display_name ?? row.branch ?? row.path,
+    comment: '',
+    linkedIssue: null,
+    linkedPR: null,
+    linkedLinearIssue: null,
+    isArchived: false,
+    isUnread: row.is_unread ?? false,
+    isPinned: row.is_pinned ?? false,
+    sortOrder: 0,
+    lastActivityAt: row.created_at ?? 0,
+    createdAt: row.created_at ?? undefined,
+    path: row.path,
+    head: row.head_commit,
+    branch: row.branch,
+    isBare: row.is_bare,
+    isMainWorktree: row.is_main ?? row.path === repoPathById.get(repoId),
+    workspaceStatus: row.status ?? undefined
+  }
+}
+
 type CatalogRepo = {
   id: string
   path: string
@@ -39,16 +81,19 @@ function toRepo(project: Record<string, unknown>) {
 export function createHydraBindings(): Record<string, (...args: any[]) => unknown> {
   return {
     'repos.list': async () =>
-      (await listCatalogRepos()).map((repo) => ({
-        id: repo.id,
-        path: repo.path,
-        displayName: repo.display_name,
-        badgeColor: '#64748b',
-        addedAt: repo.added_at,
-        projectGroupId: repo.project_group_id ?? null,
-        kind: repo.kind === 'folder' ? 'folder' : 'git',
-        executionHostId: HOST
-      })),
+      (await listCatalogRepos()).map((repo) => {
+        repoPathById.set(repo.id, repo.path)
+        return {
+          id: repo.id,
+          path: repo.path,
+          displayName: repo.display_name,
+          badgeColor: '#64748b',
+          addedAt: repo.added_at,
+          projectGroupId: repo.project_group_id ?? null,
+          kind: repo.kind === 'folder' ? 'folder' : 'git',
+          executionHostId: HOST
+        }
+      }),
     'repos.pickDirectory': () => open({ directory: true, multiple: false }),
     'repos.pickFolder': () => open({ directory: true, multiple: false }),
     'repos.pickFolders': async () => {
@@ -93,6 +138,11 @@ export function createHydraBindings(): Record<string, (...args: any[]) => unknow
     // values (not orphans) so the catalog merge can settle instead of rejecting.
     'projects.list': async () => [],
     'projects.listHostSetups': async () => [],
+    'worktrees.list': async (args: { repoId: string }) => {
+      const repoPath = repoPathById.get(args.repoId) ?? args.repoId
+      const rows = await invoke<HydraWorktree[]>('list_worktrees', { repoPath })
+      return rows.map((row) => toOrcaWorktree(args.repoId, row))
+    },
     'ssh.listTargets': () => invoke('ssh_list_targets'),
     'ssh.listRemovedTargetLabels': () => invoke('ssh_list_removed_target_labels'),
     // Synchronous in Orca's preload; the shim returns binding results unwrapped.

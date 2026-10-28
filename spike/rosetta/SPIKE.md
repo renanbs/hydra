@@ -119,3 +119,47 @@ um comando Hydra existente; os outros cinco exigem backend novo.
 Custo estimado para migrar a árvore inteira: implementar/estubar explicitamente os
 grupos de produto restantes e shipar a store (872 arquivos) + `listen` bridge. Ganho:
 cada correção do Orca entra por cópia; a auditoria deixa de cobrir componentes copiados.
+
+---
+
+# Fase 3 — dados de worktree (2026-10-27)
+
+Objetivo: sair de "No workspaces found" e pintar cards reais com o scan do Hydra.
+
+## O que foi ligado
+
+- `worktrees.list` → `list_worktrees` (scan local), mapeando a linha Hydra para o
+  `Worktree` do Orca (id `repoId::path`, displayName, branch, head, pin/unread).
+- Trigger de `fetchAllWorktrees` depois de `fetchReposForAllHosts`.
+- A store do Orca tem `worktrees.listDetected` no tipo; removendo o símbolo no shim,
+  ela cai no fallback legado `worktrees.list` — foi o que destravou o scan sem
+  implementar o protocolo novo de provider requests.
+
+## Medição
+
+| métrica | antes | agora |
+|---|---:|---:|
+| repos na store | 7 | **7** |
+| worktrees na store | 0 | **8** |
+| cards pintados (`[data-worktree-card-surface]`) | 0 | **8** |
+| grupos órfãos | 6 | **7** |
+
+Órfãos nesta fase: `preflight.check`, `linear.status`, `jira.status`,
+`mobile.listDevices`, `runtimeEnvironments.list`,
+`gh.reportVisiblePRRefreshCandidates`, `hostedReview.forBranch` (+6 chamadas).
+
+Desses, **2 mapeiam para comandos existentes** (`preflight.check` →
+`check_preflight_tools_cmd`; `hostedReview.forBranch` → `pr_status`). Restam **5
+grupos de produto sem backend**: linear, jira, mobile, runtimeEnvironments, gh.
+
+## Aprendizados novos
+
+1. **Overload de tipo no preload** (`listDetected` tem 2 assinaturas): o gerador
+   emite um método só; o caller então nunca cai no fallback. Remover o símbolo é o
+   caminho suportado para preloads antigos.
+2. **Callbacks não atravessam postMessage**: `ui.onFileDrop(cb)` estourava
+   `DataCloneError` dentro do efeito. O bridge de eventos precisa de um canal
+   próprio (próximo passo), não de RPC com argumentos-função.
+3. **Cache do otimizador**: um `zustand_shallow.js` 404 derrubava o import inteiro
+   com mensagem genérica ("Importing a module script failed"). Limpar
+   `node_modules/.vite` resolveu.
