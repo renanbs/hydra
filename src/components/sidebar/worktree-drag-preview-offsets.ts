@@ -1,5 +1,5 @@
-// Ported from Orca — Copyright (c) 2026 Lovecast Inc. (MIT)
-// Source: orca/src/renderer/src/components/sidebar/worktree-drag-preview-offsets.ts
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-drag-preview-offsets.ts
 import { moveWorktreeIdsWithinGroup } from './worktree-manual-order'
 
 export type WorktreeDragPreviewRect = {
@@ -166,9 +166,8 @@ export function buildWorktreeDragPreviewOffsets(args: {
   const firstGroupRect = groupRects[0]
   let baseTop = firstGroupRect?.top ?? 0
   if (firstGroupRect) {
-    // Why: leading rows can be absent from rects (collapsed or filtered mid-drag),
-    // so derive the full list origin from the first measured row before replaying
-    // its order.
+    // Why: virtualized leading rows are absent from rects, so derive the full
+    // list origin from the first mounted row before replaying its order.
     for (let index = 0; index < firstGroupRect.groupIndex; index++) {
       const id = args.groupIds[index]
       if (id) {

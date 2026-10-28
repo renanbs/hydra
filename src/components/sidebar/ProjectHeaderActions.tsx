@@ -1,6 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/ProjectHeaderActions.tsx
 import React from 'react'
-import { cn } from '../../lib/utils'
+import { cn } from '@/lib/utils'
 
 // Why: desktop hover actions should not permanently reserve project-title width;
 // touch devices keep them in normal flow because there is no hover reveal.
@@ -29,5 +30,3 @@ export function ProjectHeaderActions({
     />
   )
 }
-
-export default ProjectHeaderActions

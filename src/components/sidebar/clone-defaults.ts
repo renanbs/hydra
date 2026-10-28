@@ -1,6 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/clone-defaults.ts
-
 export function getDefaultCloneParent(workspaceDir: string): string {
   if (!workspaceDir) {
     return ''
