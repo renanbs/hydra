@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { SuppressExternalWorktreeInboxDialog } from "./SuppressExternalWorktreeInboxDialog";
+import SuppressExternalWorktreeInboxDialog from "./SuppressExternalWorktreeInboxDialog";
 
 function renderDialog(overrides: Partial<Parameters<typeof SuppressExternalWorktreeInboxDialog>[0]> = {}) {
   const onOpenChange = vi.fn();
@@ -43,6 +43,7 @@ describe("SuppressExternalWorktreeInboxDialog (Orca parity)", () => {
   it("locks both actions while the suppression is in flight", () => {
     renderDialog({ pending: true });
     expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Hiding…" })).toBeDisabled();
+    // Orca keeps the label and only disables the action while the request runs.
+    expect(screen.getByRole("button", { name: "Hide external worktrees" })).toBeDisabled();
   });
 });

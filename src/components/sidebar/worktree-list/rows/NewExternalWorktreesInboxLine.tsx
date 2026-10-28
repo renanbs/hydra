@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/NewExternalWorktreesInboxLine.tsx
 // Parity with Orca `components/sidebar/NewExternalWorktreesInboxLine.tsx` — the compact
 // discovered-worktree pill: `(N) hidden worktree(s)` + count badge + `›` chevron, with a
 // suppressing `×` hovering over the chevron slot. Clicking the row (not the `×`) opens the

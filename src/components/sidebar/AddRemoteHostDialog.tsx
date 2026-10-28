@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/AddRemoteHostDialog.tsx
 // Parity with Orca `components/sidebar/AddRemoteHostDialog.tsx`, reduced to the SSH mode:
 // `~/.ssh/config` picker + manual form, with the picker's search generation-guarded so a
 // slow response cannot overwrite a newer keystroke or a resolve the user backed out of.

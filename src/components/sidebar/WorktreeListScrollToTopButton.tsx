@@ -1,5 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-// Source: orca/src/renderer/src/components/sidebar/WorktreeListScrollToTopButton.tsx
+// Source: components/sidebar/WorktreeListScrollToTopButton.tsx
 import { ChevronsUp } from 'lucide-react'
 import React from 'react'
 import { Button } from '@/components/ui/button'
@@ -7,7 +7,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
 
-/** The jump-to-top affordance the viewport paints over its scroll container. */
 export function WorktreeListScrollToTopButton({
   onClick,
   className

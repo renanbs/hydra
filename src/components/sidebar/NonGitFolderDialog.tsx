@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/NonGitFolderDialog.tsx
 // Parity with Orca `components/sidebar/NonGitFolderDialog.tsx`: a folder that is not a
 // Git repository can still be opened as a project, but the user must know that editor,
 // terminal and search work while Git features stay unavailable.

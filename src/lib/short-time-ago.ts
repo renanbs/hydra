@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: lib/short-time-ago.ts
 // src/renderer/src/lib/short-time-ago.ts
 
 /** Compact "now / 5m / 3h / 2d" age label shared by agent rows and activity threads. */

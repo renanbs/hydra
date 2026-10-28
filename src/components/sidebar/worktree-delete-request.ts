@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-delete-request.ts
 // STA-4343: a workspace id is `repoId::path` with no host component, so a repo
 // registered on two execution hosts publishes the SAME id twice for two different
 // workspaces. A confirmed delete therefore travels as an identity — `id` plus

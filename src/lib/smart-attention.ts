@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/smart-attention.ts
 // Reference: src/renderer/src/components/sidebar/smart-attention.ts (resolveAttention).
 //
 // T8 hook-fed: the hook pipeline (Rust `hooks/pipeline.rs`) owns state AND decay — it

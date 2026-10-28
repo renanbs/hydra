@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/RemoveFolderDialog.tsx
 // Parity with Orca `components/sidebar/RemoveFolderDialog.tsx`: removing a project
 // from Hydra is not a disk deletion, and the copy has to say where the files stay
 // (local disk, SSH host, or the VM recipe's own policy) before the user confirms.

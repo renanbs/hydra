@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/WorktreeCardHelpers.tsx
 import React from 'react'
 
 export function branchDisplayName(branch: string): string {

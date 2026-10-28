@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/terminal-pane/RunningTerminalCloseDialog.tsx
 // RunningTerminalCloseDialog parity: tab-level close (tab-strip X, middle-click, tab
 // menu, keyboard) with a live child process asks before killing. Hydra styling follows
 // DeleteWorktreeDialog (no shadcn/ui primitives in this repo). Copy kind mirrors Orca's

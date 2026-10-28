@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/resource-usage-open-slices.ts
 // resource-usage-open-slices: Derives the list of open PTY sessions grouped by worktree.
 import { useAppStore } from '../../store'
 

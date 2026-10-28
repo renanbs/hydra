@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-visibility-host-target.ts
 // Parity with Orca `components/sidebar/worktree-visibility-host-target.ts`: resolves which
 // repo row (and which execution host) the visibility modal is mutating. Hydra's modal is
 // props-driven instead of `modalData`-driven, so the target host arrives as an optional

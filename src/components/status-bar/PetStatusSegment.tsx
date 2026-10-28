@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/PetStatusSegment.tsx
 // PetStatusSegment stub: Pet feature is experimental in Orca and disabled by default.
 import React from 'react'
 

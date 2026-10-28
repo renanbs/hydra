@@ -1,5 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-// Source: worktree-list/listing/pending-worktree-creation-keys.ts
+// Source: components/sidebar/worktree-list/listing/pending-worktree-creation-keys.ts
 //
 // The sidebar row model is mounted for the whole session and this list is empty almost
 // always, so it shares one frozen empty array. Non-empty key arrays are cached on the

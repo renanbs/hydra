@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: workspace-status-defaults.ts
 // Orca reference: src/shared/workspace-status-defaults.ts. The sidebar row pipeline
 // (grouping/worktree-grouping.ts) buckets the "Status" grouping mode by these ids,
 // so they must exist for that lane mode to render at all.

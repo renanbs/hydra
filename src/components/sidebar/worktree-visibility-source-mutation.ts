@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-visibility-source-mutation.ts
 // Parity with Orca `components/sidebar/worktree-visibility-source-mutation.ts`: every source
 // write carries an `isAccepted` predicate evaluated against the repo row the target host
 // returned. A host that silently drops the additive `worktreeVisibilitySourcePreferences`

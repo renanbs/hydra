@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/settings/SshPane.tsx
 // Parity with Orca `components/settings/SshPane.tsx`, restricted to what the Hydra registry
 // can actually do: list the targets, add one through the shared Add-host dialog, edit one
 // through the form, and remove one through the shared workspace-aware Remove dialog. The

@@ -1,5 +1,6 @@
 // browser-webview-cleanup: Shutdown / detach browser webviews when a worktree is removed.
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: store/slices/browser-webview-cleanup.ts
 import type { AppState } from './../index'
 import {
   webviewRegistry,

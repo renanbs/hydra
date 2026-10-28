@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/dashboard/DashboardAgentChildDisclosure.tsx
 import React, { useCallback } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "../../lib/utils";

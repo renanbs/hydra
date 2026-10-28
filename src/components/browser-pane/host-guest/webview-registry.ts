@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/browser-pane/host-guest/webview-registry.ts
 // webview-registry: Tracks webview elements by page ID for cleanup coordination.
 import { clearLiveBrowserUrl } from '../describe-page/live-browser-url-registry'
 

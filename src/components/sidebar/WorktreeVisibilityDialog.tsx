@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/WorktreeVisibilityDialog.tsx
 // Parity with Orca `components/sidebar/WorktreeVisibilityDialog.tsx`: the `Non-Hydra
 // worktrees` modal stacks Sources (built-in Claude Code/GSD, custom roots, `Other
 // locations`) with Show/Hide toggles + a per-source `Use global` link that drops a repo

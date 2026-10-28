@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: pi-state-title-marker.ts
 // Reference: src/shared/pi-state-title-marker.ts
 
 import type { AgentStatus } from './agent-title-core'

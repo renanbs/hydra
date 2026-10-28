@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/tab-bar/TabBarCreateEntryRow.tsx
 // Reference: src/renderer/src/components/tab-bar/TabBarCreateEntryRow.tsx
 
 import React from "react";

@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-list/rows/indentation.ts
 export const SIDEBAR_TREE_INDENT = 18
 // Why: keeps project-grouped cards reading as children after the surface inset is subtracted.
 const PROJECT_WORKTREE_CARD_EXTRA_INDENT = 2

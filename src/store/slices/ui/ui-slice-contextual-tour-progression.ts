@@ -1,4 +1,5 @@
 // Ported from Orca (src/renderer/src/store/slices/ui/ui-slice-contextual-tour-progression.ts).
+// Source: store/slices/ui/ui-slice-contextual-tour-progression.ts
 
 import type { AppState } from '../../types'
 import type { FeatureInteractionId } from '../../../shared/feature-interactions'
