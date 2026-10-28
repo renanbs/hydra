@@ -54,7 +54,7 @@ import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redire
 import { revealElementInScrollContainer } from "./worktree-sidebar-reveal";
 import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
 import { RemoveFolderDialog } from "./RemoveFolderDialog";
-import { SuppressExternalWorktreeInboxDialog } from "./SuppressExternalWorktreeInboxDialog";
+import SuppressExternalWorktreeInboxDialog from "./SuppressExternalWorktreeInboxDialog";
 import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
 export * from "./types";
