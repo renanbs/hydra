@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import type { Plugin } from 'vite'
 
 // Probe sink: the page reports its API ledger here, so the measurement does not
@@ -41,6 +42,9 @@ export default defineConfig({
       'react-dom/client': `${ORCA_MODULES}/react-dom/client.js`,
       'react/jsx-runtime': `${ORCA_MODULES}/react/jsx-runtime.js`,
       'react/jsx-dev-runtime': `${ORCA_MODULES}/react/jsx-dev-runtime.js`,
+      // CSS-only packages the Orca stylesheet imports; they live in Orca's tree.
+      'tw-animate-css': `${ORCA_MODULES}/tw-animate-css`,
+      katex: `${ORCA_MODULES}/katex`,
       // Orca pins lucide 0.577 (still ships brand icons); Hydra is on 1.x where
       // `Github` etc. were removed, so the Orca tree must keep its own copy.
       'lucide-react': `${ORCA_MODULES}/lucide-react`,
@@ -49,6 +53,9 @@ export default defineConfig({
     },
     dedupe: ['react', 'react-dom']
   },
+  // Separate optimizer cache: two Vite servers sharing node_modules/.vite
+  // clobber each other's dep hashes (zustand_shallow 404).
+  cacheDir: 'node_modules/.vite-rosetta',
   server: { port: 1421, strictPort: true, fs: { allow: ['.', '/home/renan/src/orca'] } },
-  plugins: [react(), rosettaReportPlugin()]
+  plugins: [react(), tailwindcss(), rosettaReportPlugin()]
 })

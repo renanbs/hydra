@@ -163,3 +163,58 @@ grupos de produto sem backend**: linear, jira, mobile, runtimeEnvironments, gh.
 3. **Cache do otimizador**: um `zustand_shallow.js` 404 derrubava o import inteiro
    com mensagem genérica ("Importing a module script failed"). Limpar
    `node_modules/.vite` resolveu.
+
+---
+
+# Fase 4 — CSS e canal de eventos (2026-10-27)
+
+## CSS
+
+O stylesheet real do Orca (`assets/main.css`, Tailwind 4 + fontes + variáveis de tema)
+agora entra no bundle do spike:
+
+- plugin `@tailwindcss/vite` no servidor do spike;
+- aliases para os pacotes CSS que só existem na árvore do Orca (`tw-animate-css`,
+  `katex`);
+- **cache do otimizador separado** (`cacheDir: node_modules/.vite-rosetta`): dois
+  servidores Vite no mesmo root clobavam `node_modules/.vite/deps` e derrubavam o
+  import inteiro com `zustand_shallow.js 404`.
+
+Resultado visual: sidebar com tipografia, cores, badges `primary`, ícones e rodapé do
+Orca — sem nenhuma folha de estilo própria do spike.
+
+## Canal de eventos
+
+Callbacks não atravessam `postMessage`, então assinaturas ganharam canal próprio:
+
+- filho: `window.api.onX(cb)` → registra no mapa local e manda `{kind:'subscribe', path}`;
+- host: mantém a fonte real e devolve `{kind:'event', payload}`;
+- `ui.onFileDrop` é a primeira assinatura ligada (Tauri drag-drop no host).
+
+Evidência: `HOST SUBSCRIBE ui.onFileDrop` no ledger, sem `DataCloneError`.
+Demais assinaturas do sidebar (agent status, tabs, worktrees) ficam nomeadas como
+`ORPHAN-SUB` até existir fonte no Hydra.
+
+## Medição consolidada
+
+| métrica | valor |
+|---|---|
+| repos / worktrees / cards | **7 / 8 / 8** |
+| estilo do Orca | **aplicado** |
+| assinatura de evento | **ativa** (`ui.onFileDrop`) |
+| caminhos órfãos | **6** |
+
+Órfãos restantes: `linear.status`, `jira.status`, `mobile.listDevices`,
+`runtimeEnvironments.list`, `gh.reportVisiblePRRefreshCandidates`,
+`hostedReview.forBranch`.
+
+Desses, **1 mapeia para comando existente** (`hostedReview.forBranch` → `pr_status`;
+`preflight.check` já foi ligado na fase 4). Restam **5 grupos de produto sem backend**:
+linear, jira, mobile, runtimeEnvironments, gh (refresh de PR).
+
+## Gate de decisão
+
+Critério proposto: migrar a árvore inteira se órfãos ≤3 grupos de produto.
+Resultado: **5 grupos de produto**. Pela regra, o veredito é **manter o port manual** e
+usar o shim Rosetta em folhas — a não ser que o produto aceite construir 5 backends
+(Linear, Jira, Mobile, runtimeEnvironments, cache de PR) como pré-requisito.

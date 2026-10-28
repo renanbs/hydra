@@ -2,6 +2,7 @@
 // `window.api` generated from Orca's preload types and three groups bound to
 // Hydra commands. Everything that falls through is logged as an orphan.
 import type React from 'react'
+import '@/assets/main.css'
 import { createRoot } from 'react-dom/client'
 import { invoke } from '@tauri-apps/api/core'
 import { useRef } from 'react'
@@ -13,9 +14,6 @@ import { LinkRoutingPreferenceDialogProvider } from '@/components/link-routing-p
 import { createRosettaApi, type RosettaCall } from '../rosetta/generated/window-api.generated'
 // Orca's preload exposes a few synchronous values; RPC is async, so those stay local.
 const localSyncBindings = {
-  // Event subscriptions carry callbacks, which cannot cross postMessage. The
-  // event bridge is the next spike step; for now subscribe to nothing.
-  'ui.onFileDrop': () => () => {},
   'platform.get': () => ({
     platform: 'linux' as NodeJS.Platform,
     osRelease: '',
@@ -26,17 +24,43 @@ const localSyncBindings = {
 }
 
 type RpcReply = { kind: 'rpc-result'; id: number; payload?: unknown; error?: string }
+type EventMessage = { kind: 'event'; path: string; payload: unknown }
+
+// Event subscriptions: callbacks stay in this frame; the host owns the source.
+const eventListeners = new Map<string, Set<(payload: unknown) => void>>()
+
+function subscribe(path: string, callback: (payload: unknown) => void): () => void {
+  const listeners = eventListeners.get(path) ?? new Set()
+  const first = listeners.size === 0
+  listeners.add(callback)
+  eventListeners.set(path, listeners)
+  if (first) window.parent.postMessage({ kind: 'subscribe', path }, '*')
+  return () => {
+    listeners.delete(callback)
+    if (listeners.size === 0) eventListeners.delete(path)
+  }
+}
 let nextRpcId = 1
 const pendingRpcs = new Map<number, (reply: RpcReply) => void>()
 
-window.addEventListener('message', (event: MessageEvent<RpcReply>) => {
+window.addEventListener('message', (event: MessageEvent<RpcReply | EventMessage>) => {
   const data = event.data
-  if (!data || data.kind !== 'rpc-result') return
+  if (!data) return
+  if (data.kind === 'event') {
+    eventListeners.get(data.path)?.forEach((listener) => listener(data.payload))
+    return
+  }
+  if (data.kind !== 'rpc-result') return
   pendingRpcs.get(data.id)?.(data)
   pendingRpcs.delete(data.id)
 })
 
-function rpc(path: string, args: unknown[]): Promise<unknown> {
+function rpc(path: string, args: unknown[]): unknown {
+  // A subscription is identified by its callback argument, which cannot be
+  // cloned; it gets the event channel instead of RPC.
+  if (typeof args[0] === 'function') {
+    return subscribe(path, args[0] as (payload: unknown) => void)
+  }
   const id = nextRpcId++
   return new Promise((resolve, reject) => {
     pendingRpcs.set(id, (reply) => {

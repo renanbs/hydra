@@ -146,6 +146,15 @@ export function createHydraBindings(): Record<string, (...args: any[]) => unknow
     'ssh.listTargets': () => invoke('ssh_list_targets'),
     'ssh.listRemovedTargetLabels': () => invoke('ssh_list_removed_target_labels'),
     // Synchronous in Orca's preload; the shim returns binding results unwrapped.
+    'preflight.check': async () => {
+      const status = await invoke<{ git_installed: boolean; gh_installed: boolean; gh_authenticated: boolean }>(
+        'check_preflight_tools_cmd'
+      )
+      return {
+        git: { installed: status.git_installed },
+        gh: { installed: status.gh_installed, authenticated: status.gh_authenticated }
+      }
+    },
     'platform.get': () => ({
       platform: 'linux' as NodeJS.Platform,
       osRelease: '',

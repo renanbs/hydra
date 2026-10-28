@@ -2,9 +2,33 @@
 // its own Vite origin (one React instance, '@' → Orca), while every `window.api`
 // call is proxied here, where Tauri IPC is allowed. Bindings live only in this
 // frame; anything unbound is logged as ORPHAN and resolves undefined.
+import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { createHydraBindings } from './bindings'
 
-type RpcRequest = { kind: 'rpc'; id: number; path: string; args: unknown[] }
+type RpcRequest =
+  | { kind: 'rpc'; id: number; path: string; args: unknown[] }
+  | { kind: 'subscribe'; path: string }
+
+const unsubscribers = new Map<string, () => void>()
+
+/** Only events Hydra actually emits get a source; the rest are reported by name. */
+async function subscribe(path: string): Promise<void> {
+  if (unsubscribers.has(path)) return
+  reportLine(`HOST SUBSCRIBE ${path}`)
+  if (path === 'ui.onFileDrop') {
+    const unlisten = await getCurrentWebview().onDragDropEvent((event) => {
+      iframe.contentWindow?.postMessage({ kind: 'event', path, payload: event.payload }, '*')
+    })
+    unsubscribers.set(path, unlisten)
+    return
+  }
+  void fetch('http://localhost:1421/__rosetta-report', {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'content-type': 'text/plain' },
+    body: `HOST ORPHAN-SUB ${path}`
+  }).catch(() => {})
+}
 
 const bindings = createHydraBindings()
 
@@ -46,7 +70,12 @@ window.setInterval(report, 800)
 
 window.addEventListener('message', (event: MessageEvent<RpcRequest>) => {
   const data = event.data
-  if (!data || data.kind !== 'rpc') return
+  if (!data) return
+  if (data.kind === 'subscribe') {
+    void subscribe(data.path)
+    return
+  }
+  if (data.kind !== 'rpc') return
   const binding = bindings[data.path]
   const reply = (payload: unknown, error?: string): void => {
     iframe.contentWindow?.postMessage({ kind: 'rpc-result', id: data.id, payload, error }, '*')
