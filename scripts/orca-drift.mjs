@@ -20,6 +20,14 @@ function walk(dir, out = []) {
 }
 
 const SOURCE_LINE = /^\/\/\s*Source:\s*(.+)$/m
+
+/** The attribution/parity comment block is Hydra's; upstream never has it. */
+function stripAttribution(text) {
+  const lines = text.split('\n')
+  let index = 0
+  while (index < lines.length && lines[index].startsWith('//')) index += 1
+  return lines.slice(index).join('\n')
+}
 const ATTRIBUTION = /Ported from Orca/i
 
 // Basename index for files that carry attribution but no machine-readable Source.
@@ -51,7 +59,7 @@ for (const file of walk(HYDRA_SRC)) {
       rows.push({
         file,
         rel: path.relative(ORCA_RENDERER, candidates[0]),
-        status: upstreamText === text ? 'identical' : 'drifted',
+        status: stripAttribution(upstreamText) === stripAttribution(text) ? 'identical' : 'drifted',
         inferred: true,
         upstreamLines: upstreamText.split('\n').length,
         hydraLines: text.split('\n').length
@@ -76,7 +84,7 @@ for (const file of walk(HYDRA_SRC)) {
   rows.push({
     file,
     rel,
-    status: upstreamText === text ? 'identical' : 'drifted',
+    status: stripAttribution(upstreamText) === stripAttribution(text) ? 'identical' : 'drifted',
     upstreamLines: upstreamText.split('\n').length,
     hydraLines: text.split('\n').length
   })
