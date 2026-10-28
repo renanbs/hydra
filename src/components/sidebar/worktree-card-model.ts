@@ -27,6 +27,8 @@ export interface WorktreeCardProps {
   selectedWorktrees?: readonly GitWorktreeInfo[]
   hideRepoBadge?: boolean
   hostContextLabel?: string
+  /** True when the card's runtime host last probed as disconnected (D04a-002). */
+  isRuntimeDisconnected?: boolean
   inPinnedSection?: boolean
   isPinned?: boolean
   isUnread?: boolean

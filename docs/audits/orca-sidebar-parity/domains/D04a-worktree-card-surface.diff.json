@@ -43,18 +43,17 @@
     "components/sidebar/worktree-card-surface.tsx:50"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-surface.tsx:62-80",
-     "src/components/sidebar/WorktreeList.tsx:1245-1279",
-     "src/components/sidebar/use-worktree-card-controller.ts:351"
+     "src/components/sidebar/runtime-host-disconnect.ts:1-24",
+     "src/components/sidebar/WorktreeList.tsx:1318-1324",
+     "src/components/sidebar/runtime-host-disconnect.parity.test.ts:11-27",
+     "src/components/sidebar/worktree-card-host-context.parity.test.tsx:35-44"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Opacidade de host runtime desconectado (isRuntimeDisconnected é hardcoded false)"
-    ],
-    "notes": "Multi-select, active surface, lineage drop, reveal, rename and deleting classes are reached from the list. Only the runtime-disconnected dim is unreachable.",
-    "note": "Multi-select, active surface, lineage drop, reveal, rename and deleting classes are reached from the list. Only the runtime-disconnected dim is unreachable."
+    "missing_behaviors": [],
+    "notes": "Card dims only when the runtime host probe reported disconnected; absent entries stay undecided.",
+    "note": "Card dims only when the runtime host probe reported disconnected; absent entries stay undecided."
    },
    "par": [
     "PAR-08"
@@ -1279,21 +1278,19 @@
     "components/sidebar/WorktreeStatusMenuItems.tsx:37"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-status-menu-items.tsx:16-46",
-     "src/App.tsx:3863-3874",
-     "src/components/sidebar/worktree-status-menu-items.parity.test.tsx:48-60"
+     "src/components/sidebar/worktree-status-menu-items.tsx:22-40",
+     "src/App.tsx:3870-3880",
+     "src/components/sidebar/worktree-status-menu-items.parity.test.tsx:48-70"
     ],
     "backend": [
      "invoke('set_worktree_status') -> src-tauri/src/lib.rs:523",
      "db.set_worktree_status -> src-tauri/src/db.rs:1206-1217"
     ],
-    "missing_behaviors": [
-     "rótulo plural da multi-seleção (o item é sempre \"Move to Status\")"
-    ],
-    "notes": "Submenu offers the user definitions, checks the current status and is disabled (trigger + children) while the workspace delete is running; only the plural label remains.",
-    "note": "Submenu offers the user definitions, checks the current status and is disabled (trigger + children) while the workspace delete is running; only the plural label remains."
+    "missing_behaviors": [],
+    "notes": "Trigger pluralizes for multi-selection and disables (trigger + children) during delete, matching Orca.",
+    "note": "Trigger pluralizes for multi-selection and disables (trigger + children) during delete, matching Orca."
    }
   },
   {
@@ -2552,20 +2549,17 @@
     "components/sidebar/WorktreeHostContextBadge.tsx:17"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeHostContextBadge.tsx:4-15",
-     "src/components/sidebar/worktree-card-meta-row.tsx:62-64",
-     "src/components/sidebar/worktree-card-presentation.tsx:81",
-     "src/components/sidebar/WorktreeList.tsx:1259-1331"
+     "src/components/sidebar/WorktreeList.tsx:820-835",
+     "src/components/sidebar/WorktreeList.tsx:1319",
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:134-146",
+     "src/components/sidebar/worktree-card-host-context.parity.test.tsx:29-34"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Produtor de hostContextLabel no card (a prop não é passada no mount)",
-     "Modelo de host por worktree (Local Mac / host SSH) alimentando o chip"
-    ],
-    "notes": "The chip renders when a label is passed. The worktree card mount never passes one.",
-    "note": "The chip renders when a label is passed. The worktree card mount never passes one."
+    "missing_behaviors": [],
+    "notes": "The mount resolves a host label for workspaces whose repo is visible on more than one host and passes it to the card chip.",
+    "note": "The mount resolves a host label for workspaces whose repo is visible on more than one host and passes it to the card chip."
    }
   },
   {

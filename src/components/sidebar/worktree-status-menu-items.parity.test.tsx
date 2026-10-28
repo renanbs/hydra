@@ -52,6 +52,22 @@ describe('buildWorktreeStatusMenuItems (Orca parity)', () => {
   })
 })
 
+describe("buildWorktreeStatusMenuItems — multi-context label (D04a-054)", () => {
+  it("pluralizes the trigger for a multi-selection, like Orca", () => {
+    const single = buildWorktreeStatusMenuItems({
+      workspaceStatuses: DEFAULT_WORKSPACE_STATUSES,
+      onAssignStatus: vi.fn(),
+    })
+    const multi = buildWorktreeStatusMenuItems({
+      workspaceStatuses: DEFAULT_WORKSPACE_STATUSES,
+      onAssignStatus: vi.fn(),
+      isMultiContext: true,
+    })
+    expect(single.label).toBe("Move to Status")
+    expect(multi.label).toBe("Move Statuses To")
+  })
+})
+
 describe("buildWorktreeStatusMenuItems — delete guard (D04a-054)", () => {
   it("disables the submenu and every child while the workspace is being deleted", () => {
     const item = buildWorktreeStatusMenuItems({

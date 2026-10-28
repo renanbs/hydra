@@ -3871,6 +3871,7 @@ export default function App() {
           workspaceStatuses,
           currentStatus: wt.status ?? null,
           onAssignStatus: handleAssignWorktreeStatus,
+          isMultiContext: (targetWorktreePaths?.length ?? 0) > 1,
           // The removal state is keyed by the row's identity; the bare id is the
           // legacy key the delete flow still writes for a local workspace.
           disabled: Boolean(

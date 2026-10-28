@@ -73,6 +73,10 @@ import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
 import { markSidebarWorktreeActiveImmediately } from "./worktree-list/rows/sidebar-worktree-active-dom";
+import { buildHostLabelById } from "../../shared/worktree/host-context-labels";
+import { getMixedWorktreeHostContextLabels } from "./worktree-list/grouping/host-labels";
+import { getSettingsFocusedExecutionHostId } from "../../shared/execution-host";
+import { isRuntimeExecutionHostDisconnected } from "./runtime-host-disconnect";
 import { resolveWorktreeMultiDragSelection } from "./worktree-multi-drag-selection";
 import type { WorktreeMultiDragCandidate } from "./worktree-multi-drag-selection";
 import { useWorktreeListSelection } from "./worktree-list/use-worktree-list-selection";
@@ -274,6 +278,8 @@ interface SidebarRowModel {
   pathByWorktreeId: Map<string, string>;
   /** Persisted lineage parent per child id (cycle check for nest drags). */
   lineageParentIdByChildId: Map<string, string>;
+  /** Host-qualified workspace identity → label, only for repos visible on >1 host. */
+  hostContextLabelByIdentity: Map<string, string>;
 }
 
 export interface WorktreeListProps {
@@ -633,6 +639,23 @@ export function WorktreeList({
   const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses);
   const storeWorktreesByRepo = useAppStore((s) => s.worktreesByRepo);
   const storeKeybindings = useAppStore((s) => s.keybindings);
+
+  // Host labels for the mixed-host card chip: SSH target names + persisted
+  // overrides, the same sources the host menu reads.
+  const hostLabelById = useMemo(() => {
+    const sshTargets = Object.entries(storeSshTargetLabels ?? {}).map(([id, label]) => ({
+      id: String(id),
+      label: String(label),
+    }));
+    return buildHostLabelById({
+      sshTargets,
+      hostSettingOverrides: storeSettings?.hostSettingOverrides,
+    });
+  }, [storeSshTargetLabels, storeSettings]);
+  const focusedHostId = useMemo(
+    () => getSettingsFocusedExecutionHostId(storeSettings),
+    [storeSettings]
+  );
   // Why (D04a G9): the sidebar keyboard path owns the inline-rename request for
   // `workspace.rename`; the card it names consumes and clears it.
   const [renameRequest, setRenameRequest] = useState<WorktreeRenameRequest | null>(null);
@@ -801,6 +824,16 @@ export function WorktreeList({
       hostedReviewCache: null,
     };
 
+    // Mixed-host labels: one repo visible on more than one host needs the card
+    // chip the same way its notice rows do (Orca `getMixedWorktreeHostContextLabels`).
+    const repoMap = new Map(pipelineRepos.map((repo) => [repo.id, repo]));
+    const hostContextLabelByIdentity = new Map<string, string>();
+    for (const rows of Object.values(worktreesByRepo)) {
+      const labels = getMixedWorktreeHostContextLabels(rows, repoMap, hostLabelById, focusedHostId);
+      if (!labels) continue;
+      for (const [identity, label] of labels) hostContextLabelByIdentity.set(identity, label);
+    }
+
     return {
       rows: computeSidebarRows(
         pipelineState,
@@ -812,6 +845,7 @@ export function WorktreeList({
         pendingCreationRefs
       ),
       pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(pipelineState.settings),
+      hostContextLabelByIdentity,
       propWorktreeByPath,
       propProjectById,
       pathByWorktreeId,
@@ -848,11 +882,13 @@ export function WorktreeList({
     storeRuntimeEnvironments,
     storeRuntimeStatusByEnvironmentId,
     storeWorkspaceStatuses,
+    hostLabelById,
+    focusedHostId,
     storeWorktreesByRepo,
     pendingCreationRefs,
   ]);
 
-  const { rows } = rowModel;
+  const { rows, hostContextLabelByIdentity } = rowModel;
   const pathByWorktreeId = rowModel.pathByWorktreeId;
   const groupBadgeColorById = useMemo(() => {
     const colors = new Map<string, string>();
@@ -1282,6 +1318,11 @@ export function WorktreeList({
             isPinned={pinnedSet.has(wt.path)}
             isUnread={unreadSet.has(wt.path)}
             isMultiSelected={isMultiSelected}
+            hostContextLabel={hostContextLabelByIdentity.get(identity)}
+            isRuntimeDisconnected={isRuntimeExecutionHostDisconnected(
+              storeRuntimeStatusByEnvironmentId as ReadonlyMap<string, never>,
+              hostIdByRepoId.get(proj.id)
+            )}
             compactCards={compactCards}
             ports={portsByWorktree?.get(wt.path) || []}
             sessions={wtSessions}
