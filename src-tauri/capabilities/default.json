@@ -2,10 +2,18 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main",
+    "rosetta"
+  ],
   "permissions": [
     "core:default",
     "opener:default",
     "dialog:default"
-  ]
+  ],
+  "remote": {
+    "urls": [
+      "http://localhost:1421/*"
+    ]
+  }
 }
