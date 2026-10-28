@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/DeleteWorktreeLineageNotice.tsx
 // Parity with Orca `components/sidebar/DeleteWorktreeLineageNotice.tsx`: the
 // confirmation names every descendant it will destroy, with the first four rows
 // expanded (name, path, dirty count) and a "+N more" tail.

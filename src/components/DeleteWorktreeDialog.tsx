@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/DeleteWorktreeDialog.tsx
 // DeleteWorktreeDialog parity: dedicated destructive-confirmation modal (NOT
 // window.confirm). Orca flow: sidebar funnel → openModal('delete-worktree') →
 // this dialog guards the step the user already chose, with target preview,

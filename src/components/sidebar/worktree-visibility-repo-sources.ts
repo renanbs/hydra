@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-visibility-repo-sources.ts
 // Parity with Orca `components/sidebar/worktree-visibility-repo-sources.ts`: repo-row lookups
 // scoped by host identity. The acceptance predicates read the latest row for the mutation
 // scope, so a write that landed on a stale/other host never reads as a success.

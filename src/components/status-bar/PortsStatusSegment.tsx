@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/PortsStatusSegment.tsx
 // PortsStatusSegment: Shows detected open network ports for the active worktree in the status bar.
 import React from 'react'
 import { Plug } from 'lucide-react'

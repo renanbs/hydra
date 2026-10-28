@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/settings/SshTargetCard.tsx
 // Parity with Orca `components/settings/SshTargetCard.tsx`, with the connection half made
 // optional: Hydra has no SSH connection subsystem yet, so `state` and the
 // connect/disconnect/test/terminate/reset callbacks may be absent. When they are, the

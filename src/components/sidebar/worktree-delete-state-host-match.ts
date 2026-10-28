@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-delete-state-host-match.ts
 // STA-4343: delete state is keyed by host-qualified identity, so an id-keyed entry
 // that names another host must never be read for this row — the entry belongs to
 // the sibling workspace that shares `repoId::path`.

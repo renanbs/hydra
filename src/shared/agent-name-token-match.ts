@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: agent-name-token-match.ts
 // Reference: src/shared/agent-name-token-match.ts
 
 /**

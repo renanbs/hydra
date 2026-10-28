@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/ProjectGroupDeleteDialog.tsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FolderGit2 } from "lucide-react";
 

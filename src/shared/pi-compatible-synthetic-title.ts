@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: pi-compatible-synthetic-title.ts
 // Reference: src/shared/pi-compatible-synthetic-title.ts
 
 import { getPiStateTitleStatus } from './pi-state-title-marker'

@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/AgentStateDot.tsx
 import React from "react";
 import { Activity, CircleCheck, CircleDashed, MessageCircleQuestion } from "lucide-react";
 import { cn } from "../lib/utils";

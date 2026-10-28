@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/settings/SshTargetForm.tsx
 // Parity with Orca `components/settings/SshTargetForm.tsx`, restricted to the one job the
 // Hydra pane gives it: editing a registered target (label, host, port, username, identity
 // file). Adding a host stays the shared Add-host dialog's job. Orca's `Advanced Connection`

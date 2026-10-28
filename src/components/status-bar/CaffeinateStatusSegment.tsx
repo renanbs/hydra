@@ -1,5 +1,6 @@
 // @ts-nocheck — Orca port buffer; typecheck when this subsystem is wired.
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/CaffeinateStatusSegment.tsx
 // CaffeinateStatusSegment: Shows awake mode and toggles keep-awake behavior via Tauri IPC.
 
 import React, { useEffect, useState } from 'react'

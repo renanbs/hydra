@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/CodexSwitcherMenu.tsx
 // CodexSwitcherMenu: Provider usage detail and switcher popup for OpenAI / Codex in the status bar.
 
 import React from 'react'

@@ -1,5 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-// Source: shared/repo-badge-color.ts
+// Source: repo-badge-color.ts
 import { DEFAULT_REPO_BADGE_COLOR, REPO_COLORS } from "./constants";
 
 const HEX_COLOR_PATTERN = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;

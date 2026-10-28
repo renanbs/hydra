@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/settings/ssh-target-draft.ts
 // Parity with Orca `components/settings/ssh-target-draft.ts`, reduced to the fields the
 // Add-host dialog exposes today: label, host, port, username, identity file. Orca's draft
 // also carries the GSSAPI/proxy/jump/relay-timeout knobs behind its `Advanced` section;

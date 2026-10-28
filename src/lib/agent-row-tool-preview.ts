@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: lib/agent-row-tool-preview.ts
 // src/renderer/src/lib/agent-row-tool-preview.ts
 import type { AgentStatusEntry } from '../shared/agent-status-types'
 import type { AgentRowState } from './agent-row-decay-state'

@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/WorktreeMetaDialog.tsx
 // Parity with Orca's worktree metadata editor: display name, linked issue/review and
 // free-form notes persisted in `worktree_metadata`. The dialog edits a draft and only
 // the Save handler writes, so Cancel never touches the store.

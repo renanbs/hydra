@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/workspace-delete-lineage.ts
 // Parity with Orca `components/sidebar/workspace-delete-lineage.ts`: resolves the
 // workspace's descendant tree so a confirmed delete can name every workspace it
 // will destroy and delete them child-first.

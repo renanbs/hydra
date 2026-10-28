@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/ImportedWorktreesVisibilityLine.tsx
 // Parity with Orca `components/sidebar/ImportedWorktreesVisibilityLine.tsx` — the
 // expandable discovered-worktree inbox: collapsible header (`Hiding N discovered
 // worktrees` + keep-hidden `×`), a body grouped by parent path with a per-group count

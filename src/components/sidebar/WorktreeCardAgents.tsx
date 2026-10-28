@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/WorktreeCardAgents.tsx
 // Inline agent list rendered inside WorktreeCard showing active tools and subagent trees.
 
 import React, { useMemo } from "react";
