@@ -1,0 +1,7 @@
+{
+ "group": "AV",
+ "generatedFrom": "2026-10-27 reveal increment: a reveal relaxes only the display filters blocking the target before scrolling",
+ "rows": [
+  {"id":"D03b-018","status":"partial","evidence":["src/components/sidebar/reveal-filter-relaxation.ts:1-55","src/components/sidebar/WorktreeSidebar.tsx:520-560","src/components/sidebar/reveal-filter-relaxation.parity.test.ts:24-49"],"missing_behaviors":["fila de requisição pendente no store (pendingRevealWorktree/pendingRevealSidebarRow + clear*)","reabertura de escopo de host e do filtro de sleeping antes de revelar"],"note":"Automation/CLI/detached/default-branch e filtro de projeto são relaxados antes do scroll; host scope e sleeping seguem pendentes."}
+ ]
+}
