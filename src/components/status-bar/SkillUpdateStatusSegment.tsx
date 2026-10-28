@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/SkillUpdateStatusSegment.tsx
 // SkillUpdateStatusSegment: Shows indicator when an agent skill has an update.
 import React from 'react'
 

@@ -1,4 +1,5 @@
 // Ported from Orca (src/renderer/src/store/slices/ui/ui-slice-activity-actions.ts).
+// Source: store/slices/ui/ui-slice-activity-actions.ts
 //
 // Divergence: Orca collects the affected OS-notification ids here and calls
 // `window.api.notifications.dismiss(ids)` after the state update. Hydra's store has no

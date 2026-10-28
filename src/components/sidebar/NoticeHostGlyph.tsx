@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/NoticeHostGlyph.tsx
 // Parity with Orca `components/sidebar/NoticeHostGlyph.tsx` — the host indicator every
 // discovery-notice row wears. Deliberately the one host glyph vocabulary the run-target
 // rows already use (a monitor for this computer, a server for anything remote), plus the

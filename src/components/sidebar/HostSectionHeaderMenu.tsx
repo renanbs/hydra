@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/HostSectionHeaderMenu.tsx
 // Parity with Orca `components/sidebar/HostSectionHeaderMenu.tsx`, restricted to the
 // entries Hydra has a backend for: Rename (`ssh_update_target`), Remove
 // (`ssh_remove_target`), the "Manage host…" deep link into Settings → SSH Hosts, plus the

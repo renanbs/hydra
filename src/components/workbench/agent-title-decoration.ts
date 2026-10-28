@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: agent-title-decoration.ts
 // Reference: src/renderer/src/shared/agent-title-decoration.ts
 
 const LEADING_AGENT_TITLE_DECORATION_RE =

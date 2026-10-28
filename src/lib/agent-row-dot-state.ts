@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: lib/agent-row-dot-state.ts
 // src/renderer/src/lib/agent-row-dot-state.ts
 import type { AgentDotState } from '../components/AgentStateDot'
 import type { AgentWorkingMode } from '../shared/agent-status-types'

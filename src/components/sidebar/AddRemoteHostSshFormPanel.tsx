@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/AddRemoteHostSshFormPanel.tsx
 // Parity with Orca `components/sidebar/AddRemoteHostSshFormPanel.tsx`: the SSH dialog's
 // header, the manual fields, and the footer whose link swaps to the `~/.ssh/config`
 // picker while Save runs the form's validation and submit.

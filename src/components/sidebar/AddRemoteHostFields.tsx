@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/AddRemoteHostFields.tsx
 // Parity with Orca `components/sidebar/AddRemoteHostFields.tsx` `SshHostFields`, reduced to
 // the fields this dialog persists: label, host, port, username, identity file. The Host
 // field keeps Orca's on-blur parse so a pasted `user@host:port` fills Username/Port

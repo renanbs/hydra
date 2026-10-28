@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/SshStatusSegment.tsx
 // SshStatusSegment: Shows connectivity indicator for remote SSH hosts in the status bar.
 import React from 'react'
 import { Server } from 'lucide-react'

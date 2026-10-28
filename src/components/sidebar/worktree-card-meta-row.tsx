@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-card-meta-row.tsx
 import React from 'react'
 import { GitMerge } from 'lucide-react'
 

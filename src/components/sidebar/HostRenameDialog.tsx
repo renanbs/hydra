@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/HostRenameDialog.tsx
 // Parity with Orca `components/sidebar/HostRenameDialog.tsx`, with one deliberate
 // difference: Orca stores the rename as a client-only display-label override, while Hydra
 // writes the registry label itself through `ssh_update_target`. So the field starts on the

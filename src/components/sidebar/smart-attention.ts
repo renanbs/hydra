@@ -1,5 +1,6 @@
 // smart-attention.ts: Derives which worktrees hold attention-worthy agent activity.
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/smart-attention.ts
 // Reference: src/renderer/src/components/sidebar/smart-attention.ts
 //
 // The exported surface keeps this module's pre-existing Hydra helpers

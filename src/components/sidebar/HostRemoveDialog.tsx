@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/HostRemoveDialog.tsx
 // Parity with Orca `components/sidebar/HostRemoveDialog.tsx`, reduced to the one removal
 // Hydra can execute: delete the SSH target from this computer's registry.
 //

@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/AddRemoteHostSshConfigPicker.tsx
 // Parity with Orca `components/sidebar/AddRemoteHostSshConfigPicker.tsx`: the picker
 // filters `~/.ssh/config` hosts through a 200ms-debounced field (the caller owns the
 // generation guard), keeps already-registered rows disabled with an `In Orca` badge while

@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-card-presentation.tsx
 import React from 'react'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 import { WorktreeCardPortsTrigger } from './WorktreeCardPortsTrigger'

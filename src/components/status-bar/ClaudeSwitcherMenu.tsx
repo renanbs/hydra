@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/ClaudeSwitcherMenu.tsx
 // ClaudeSwitcherMenu: Provider usage detail and switcher popup for Claude Code in the status bar.
 
 import React from 'react'

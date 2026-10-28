@@ -1,4 +1,5 @@
 // Ported from Orca (src/renderer/src/store/slices/ui/ui-slice-agent-notification-acknowledgement.ts).
+// Source: store/slices/ui/ui-slice-agent-notification-acknowledgement.ts
 //
 // Orca also exports `resolvePaneKeyWorktreeIdFromTabs` + `collectAcknowledgedAgentNotificationId`
 // here, but both exist only to feed the renderer notification dismissal

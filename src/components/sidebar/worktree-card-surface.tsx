@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-card-surface.tsx
 import React from 'react'
 import { LoaderCircle } from 'lucide-react'
 

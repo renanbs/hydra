@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/dashboard/DashboardAgentRow.tsx
 import React, { useState, useCallback } from "react";
 import { cn } from "../../lib/utils";
 import { AgentStateDot, type AgentDotState } from "../AgentStateDot";

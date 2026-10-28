@@ -1,4 +1,5 @@
 // Ported from Orca (`renderer/src/components/sidebar/CacheTimer.tsx`).
+// Source: components/sidebar/CacheTimer.tsx
 //
 // Per-worktree prompt-cache countdown shown in the sidebar worktree card. Prompt
 // caching (Anthropic API / Bedrock) has a TTL (default 5 min): when the cache

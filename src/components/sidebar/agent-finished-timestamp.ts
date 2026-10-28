@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/dashboard/agent-finished-timestamp.ts
 // src/renderer/src/components/dashboard/agent-finished-timestamp.ts
 import { agentEntryCompletionAt } from '../../shared/agent-completion-time'
 import type { AgentRow } from './worktree-card-agent-summary'

@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: agent-title-status.ts
 // Reference: src/shared/agent-title-status.ts
 
 import {

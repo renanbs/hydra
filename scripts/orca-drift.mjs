@@ -69,11 +69,18 @@ for (const file of walk(HYDRA_SRC)) {
     }
     continue
   }
-  const rel = match[1].trim().split(/\s+/)[0].replace(/^orca\//, '')
+  const rel = match[1]
+    .trim()
+    .split(/\s+/)[0]
+    .replace(/^orca\//, '')
+    .replace(/^src\/renderer\/src\//, '')
+    .replace(/^src\//, '')
   const candidates = [
     path.join(ORCA_RENDERER, rel),
     path.join(ORCA_RENDERER, 'components', rel),
-    path.join(ORCA, 'src', rel)
+    path.join(ORCA_RENDERER, 'components/sidebar', rel),
+    path.join(ORCA, 'src', rel),
+    path.join(ORCA, 'src/shared', rel)
   ]
   const upstream = candidates.find((candidate) => fs.existsSync(candidate))
   if (!upstream) {

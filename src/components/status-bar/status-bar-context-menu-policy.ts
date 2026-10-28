@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/status-bar/status-bar-context-menu-policy.ts
 export const STATUS_BAR_CONTEXT_MENU_EXEMPT_ATTR = 'data-status-bar-context-menu-exempt'
 export const STATUS_BAR_CONTEXT_MENU_EXEMPT_SELECTOR = `[${STATUS_BAR_CONTEXT_MENU_EXEMPT_ATTR}]`
 export const STATUS_BAR_CONTEXT_MENU_EXEMPT_PROPS = {

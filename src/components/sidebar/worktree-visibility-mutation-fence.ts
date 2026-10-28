@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-visibility-mutation-fence.ts
 // Parity with Orca `components/sidebar/worktree-visibility-mutation-fence.ts`: a module-level
 // singleton keyed by `'<host>\0<repoId>'`. The visibility modal unmounts on close, but its
 // persistence request survives dismissal — the fence lets a reopened modal rehydrate the

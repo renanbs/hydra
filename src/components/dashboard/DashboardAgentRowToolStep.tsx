@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/dashboard/DashboardAgentRowToolStep.tsx
 import React from "react";
 import { Wrench } from "lucide-react";
 import { cn } from "../../lib/utils";

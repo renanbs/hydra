@@ -1,4 +1,5 @@
 // Ported from Orca (`renderer/src/components/AgentQuestionIcon.tsx`).
+// Source: components/AgentQuestionIcon.tsx
 //
 // "The agent is asking you something" shows up in the sidebar, terminal tabs, the
 // dashboard and the board. One icon + one token (`--agent-question` →

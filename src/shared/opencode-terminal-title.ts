@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: opencode-terminal-title.ts
 // Reference: src/shared/opencode-terminal-title.ts
 
 // Why: wrappers may prepend an SSH/tmux label, and OpenCode may prepend one

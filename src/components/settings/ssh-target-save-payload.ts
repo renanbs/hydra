@@ -1,4 +1,5 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/settings/ssh-target-save-payload.ts
 // Parity with Orca `components/settings/ssh-target-save-payload.ts`, reduced to the fields
 // the Hydra registry persists today: label, host, port, username, identity file. Orca's
 // relay-timeout / GSSAPI / proxy / jump payload fields land with the Advanced PR.
