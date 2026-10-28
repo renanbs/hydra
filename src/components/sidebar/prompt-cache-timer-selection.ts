@@ -1,43 +1,40 @@
-// Ported from Orca (`renderer/src/components/sidebar/prompt-cache-timer-selection.ts`).
-//
-// Resolves which `cacheTimerByKey` entry a card/pane should count down: a card
-// shows its worktree's MOST URGENT (oldest) cache, a compact agent row shows its
-// own pane's cache.
-import type { TerminalTab } from "../../shared/terminal-tab-types";
-import { parsePaneKey } from "../../shared/stable-pane-id";
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/prompt-cache-timer-selection.ts
+import type { TerminalTab } from '@/shared/terminal-tab-types'
+import { parsePaneKey } from '@/shared/stable-pane-id'
 
 export type PromptCacheCountdownSelection = {
-  startedAt: number;
-  ttlMs: number;
-};
+  startedAt: number
+  ttlMs: number
+}
 
 function getCacheTimerTabId(key: string): string | null {
-  const separator = key.indexOf(":");
-  return separator > 0 ? key.slice(0, separator) : null;
+  const separator = key.indexOf(':')
+  return separator > 0 ? key.slice(0, separator) : null
 }
 
 export function getMostUrgentPromptCacheStartedAt(
-  tabs: readonly Pick<TerminalTab, "id">[] | undefined,
+  tabs: readonly Pick<TerminalTab, 'id'>[] | undefined,
   cacheTimerByKey: Record<string, number | null>
 ): number | null {
   if (!tabs || tabs.length === 0) {
-    return null;
+    return null
   }
-  const tabIds = new Set(tabs.map((tab) => tab.id));
-  let oldest: number | null = null;
+  const tabIds = new Set(tabs.map((tab) => tab.id))
+  let oldest: number | null = null
   for (const [key, startedAt] of Object.entries(cacheTimerByKey)) {
     if (startedAt == null) {
-      continue;
+      continue
     }
-    const tabId = getCacheTimerTabId(key);
+    const tabId = getCacheTimerTabId(key)
     if (!tabId || !tabIds.has(tabId)) {
-      continue;
+      continue
     }
     if (oldest === null || startedAt < oldest) {
-      oldest = startedAt;
+      oldest = startedAt
     }
   }
-  return oldest;
+  return oldest
 }
 
 export function getPromptCacheCountdownForPane(
@@ -46,8 +43,8 @@ export function getPromptCacheCountdownForPane(
   ttlMs: number
 ): PromptCacheCountdownSelection | null {
   if (ttlMs <= 0 || parsePaneKey(paneKey) === null) {
-    return null;
+    return null
   }
-  const startedAt = cacheTimerByKey[paneKey];
-  return startedAt == null ? null : { startedAt, ttlMs };
+  const startedAt = cacheTimerByKey[paneKey]
+  return startedAt == null ? null : { startedAt, ttlMs }
 }

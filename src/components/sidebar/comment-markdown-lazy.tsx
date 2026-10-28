@@ -1,33 +1,30 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/comment-markdown-lazy.tsx
-//
-// Boot-path split: react-markdown + remark/rehype + mermaid are ~400 KB of JS that
-// only the hover-card markdown needs. One lazy() identity for every consumer, so the
-// chunk is fetched once; the fallback mirrors the same wrapping classes so a paint
-// before the chunk lands cannot shift the card's layout.
-import React from "react";
-import { cn } from "@/lib/utils";
-import { lazyWithRetry } from "@/lib/lazy-with-retry";
-import type { CommentMarkdownProps } from "./comment-markdown";
+import React from 'react'
+import { cn } from '@/lib/utils'
+import { lazyWithRetry } from '@/lib/lazy-with-retry'
 
-const LazyCommentMarkdown = lazyWithRetry(
-  () => import("./comment-markdown").then((mod) => ({ default: mod.default })),
-  { reloadKey: "comment-markdown" }
-);
+// Boot-path split: react-markdown + remark/rehype/DOMPurify is ~356 KB of JS that
+// only the sidebar's two markdown surfaces pull onto the eager graph. One lazy()
+// identity for both, so they share a component type and a single chunk fetch.
+const LazyCommentMarkdown = lazyWithRetry(() => import('./comment-markdown'), {
+  reloadKey: 'comment-markdown'
+})
 
-/** Warms the chunk ahead of render (hover enter) so the fallback is never seen. */
+/** Warms the chunk ahead of render so the fallback is never actually shown. */
 export function preloadCommentMarkdown(): void {
-  void import("./comment-markdown");
+  void import('./comment-markdown')
 }
 
-type CommentMarkdownAsyncProps = CommentMarkdownProps & {
+type CommentMarkdownAsyncProps = React.ComponentProps<typeof LazyCommentMarkdown> & {
   /** Extra classes for the pre-load fallback only, e.g. to mirror remark-breaks. */
-  fallbackClassName?: string;
-};
+  fallbackClassName?: string
+}
 
 /**
- * Renders the markdown body, falling back to the raw source in an identically
- * classed box while the chunk loads.
+ * Renders the markdown body, falling back to the raw text in an identically
+ * classed box while the chunk loads — same width and wrapping constraints, so a
+ * paint before the chunk lands cannot shift layout.
  */
 export function CommentMarkdownAsync({
   fallbackClassName,
@@ -38,17 +35,17 @@ export function CommentMarkdownAsync({
       fallback={
         <div
           className={cn(
-            "min-w-0 max-w-full [overflow-wrap:anywhere]",
+            'min-w-0 max-w-full [overflow-wrap:anywhere]',
             props.className,
             fallbackClassName
           )}
           title={props.title}
         >
-          {props.content ?? props.text ?? ""}
+          {props.content}
         </div>
       }
     >
       <LazyCommentMarkdown {...props} />
     </React.Suspense>
-  );
+  )
 }

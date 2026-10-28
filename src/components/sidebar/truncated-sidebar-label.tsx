@@ -1,5 +1,8 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+// Source: components/sidebar/truncated-sidebar-label.tsx
+import React, { useCallback, useLayoutEffect, useState } from 'react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 export function isSidebarLabelTruncated(
   element: Pick<HTMLElement, 'clientWidth' | 'scrollWidth'>
@@ -7,7 +10,7 @@ export function isSidebarLabelTruncated(
   return element.scrollWidth > element.clientWidth
 }
 
-export interface TruncatedSidebarLabelProps {
+type TruncatedSidebarLabelProps = {
   text: string
   className?: string
   tooltipEnabled?: boolean
@@ -19,10 +22,12 @@ export function TruncatedSidebarLabel({
   text,
   className,
   tooltipEnabled = true,
+  tooltipSide = 'right',
+  tooltipSideOffset = 8
 }: TruncatedSidebarLabelProps): React.JSX.Element {
-  const nodeRef = useRef<HTMLSpanElement | null>(null)
-  const resizeObserverRef = useRef<ResizeObserver | null>(null)
-  const removeResizeListenerRef = useRef<(() => void) | null>(null)
+  const nodeRef = React.useRef<HTMLSpanElement | null>(null)
+  const resizeObserverRef = React.useRef<ResizeObserver | null>(null)
+  const removeResizeListenerRef = React.useRef<(() => void) | null>(null)
   const [truncated, setTruncated] = useState(false)
 
   const measureTruncated = useCallback((element: HTMLSpanElement | null) => {
@@ -59,17 +64,33 @@ export function TruncatedSidebarLabel({
     [measureTruncated]
   )
 
+  // Why: ResizeObserver does not fire when only the rendered text changes, but
+  // scrollWidth can. Remeasure in place rather than remounting the span, which
+  // would tear down and rebuild the observer on every title update.
   useLayoutEffect(() => {
     measureTruncated(nodeRef.current)
   }, [measureTruncated, text])
 
-  return (
-    <span
-      ref={handleRef}
-      className={`block min-w-0 truncate ${className ?? ''}`}
-      title={tooltipEnabled && truncated ? text : undefined}
-    >
+  const label = (
+    <span ref={handleRef} className={cn('block min-w-0 truncate', className)}>
       {text}
     </span>
+  )
+
+  if (!tooltipEnabled || !truncated) {
+    return label
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{label}</TooltipTrigger>
+      <TooltipContent
+        side={tooltipSide}
+        sideOffset={tooltipSideOffset}
+        className="max-w-80 whitespace-normal break-all text-left"
+      >
+        {text}
+      </TooltipContent>
+    </Tooltip>
   )
 }
