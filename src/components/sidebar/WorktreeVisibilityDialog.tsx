@@ -403,8 +403,14 @@ export function WorktreeVisibilityDialog({
   );
 
   const sourceCounts = useMemo(
-    () => countWorktreesByVisibilitySource(recoveredWorktrees, project?.path, customSources),
-    [customSources, recoveredWorktrees, project?.path]
+    () =>
+      countWorktreesByVisibilitySource(
+        recoveredWorktrees,
+        project?.path,
+        customSources,
+        project?.worktree_base_path ? [project.worktree_base_path] : []
+      ),
+    [customSources, recoveredWorktrees, project?.path, project?.worktree_base_path]
   );
 
   const filteredWorktrees = useMemo(() => {

@@ -1,0 +1,8 @@
+{
+ "group": "AY",
+ "generatedFrom": "2026-10-27 delete-state and source-count increment: closing the delete dialog releases settled per-target state, and a configured worktree base counts as 'other'",
+ "rows": [
+  {"id":"D10-017","status":"parity","evidence":["src/components/sidebar/worktree-delete-state-prune.ts:1-20","src/App.tsx:4562-4572","src/components/sidebar/worktree-delete-state-prune.parity.test.ts:13-30"],"missing_behaviors":[],"note":"Closing the dialog publishes null for the modal targets and prunes every other settled entry; in-flight/queued removals keep their busy state."},
+  {"id":"D10-057","status":"partial","evidence":["src/lib/worktree-visibility-sources.ts:406-435","src/components/sidebar/WorktreeVisibilityDialog.tsx:404-414","src/lib/worktree-visibility-sources.parity.test.ts:22-44"],"missing_behaviors":["pular checkouts selecionados e ownership orca-managed (as linhas de recuperação do Hydra não carregam esses campos)"],"note":"A base configurada do built-in agora conta como 'other'; o skip por ownership depende de dados que o scan não expõe."}
+ ]
+}

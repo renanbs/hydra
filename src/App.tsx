@@ -82,6 +82,7 @@ import { CustomContextMenu, type ContextMenuItem } from "./components/CustomCont
 import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
+import { pruneClosedDeleteStates } from "./components/sidebar/worktree-delete-state-prune";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
 import { WorktreeMetaDialog } from "./components/sidebar/WorktreeMetaDialog";
@@ -4565,6 +4566,9 @@ export default function App() {
           if (deleteWorktreeModal) {
             publishDeleteStateForTargets(deleteWorktreeModal.deleteTargets, null);
           }
+          // Orca releases every entry this dialog could have published, not only the
+          // modal's targets; in-flight removals keep their busy state.
+          setDeleteStateByWorktreeId((prev) => pruneClosedDeleteStates(prev));
           setDeleteWorktreeModal(null);
         }}
         onDeleted={(deletedPaths) => {

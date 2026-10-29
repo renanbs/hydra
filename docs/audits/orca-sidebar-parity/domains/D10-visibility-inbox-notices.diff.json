@@ -401,16 +401,16 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:219"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:70-77"
+     "src/components/sidebar/worktree-delete-state-prune.ts:1-20",
+     "src/App.tsx:4562-4572",
+     "src/components/sidebar/worktree-delete-state-prune.parity.test.ts:13-30"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "limpar deleteStateByWorktreeId por alvo que não está isDeleting ao fechar"
-    ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "note": "Closing the dialog publishes null for the modal targets and prunes every other settled entry; in-flight/queued removals keep their busy state.",
+    "notes": "Closing the dialog publishes null for the modal targets and prunes every other settled entry; in-flight/queued removals keep their busy state."
    },
    "par": [
     "PAR-56"
@@ -1262,16 +1262,16 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:525-529",
-     "src/lib/worktree-visibility-sources.ts:406"
+     "src/lib/worktree-visibility-sources.ts:406-435",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:404-414",
+     "src/lib/worktree-visibility-sources.parity.test.ts:22-44"
     ],
     "backend": [],
     "missing_behaviors": [
-     "pular selectedCheckout e ownership orca-managed",
-     "base configurada de built-in contada como 'other'"
+     "pular checkouts selecionados e ownership orca-managed (as linhas de recuperação do Hydra não carregam esses campos)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "A base configurada do built-in agora conta como 'other'; o skip por ownership depende de dados que o scan não expõe.",
+    "notes": "A base configurada do built-in agora conta como 'other'; o skip por ownership depende de dados que o scan não expõe."
    }
   },
   {
