@@ -384,17 +384,18 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/reveal-filter-relaxation.ts:1-55",
-     "src/components/sidebar/WorktreeSidebar.tsx:520-560",
-     "src/components/sidebar/reveal-filter-relaxation.parity.test.ts:24-49"
+     "src/components/sidebar/reveal-target-resolution.ts:1-25",
+     "src/components/sidebar/WorktreeSidebar.tsx:560-580",
+     "src/components/sidebar/reveal-target-resolution.parity.test.ts:14-28"
     ],
     "backend": [],
     "missing_behaviors": [
-     "fila de requisição pendente no store (pendingRevealWorktree/pendingRevealSidebarRow + clear*)",
-     "reabertura de escopo de host e do filtro de sleeping antes de revelar"
+     "reabertura de escopo de host e do filtro de sleeping antes de revelar",
+     "beginRename/highlight do pedido (hoje só rola e destaca)",
+     "fila por rowKey (pendingRevealSidebarRow)"
     ],
-    "notes": "Automation/CLI/detached/default-branch e filtro de projeto são relaxados antes do scroll; host scope e sleeping seguem pendentes.",
-    "note": "Automation/CLI/detached/default-branch e filtro de projeto são relaxados antes do scroll; host scope e sleeping seguem pendentes."
+    "notes": "A fila pendingRevealWorktree é consumida no sidebar: id é resolvido para path, filtros bloqueantes relaxados, rolagem+flash e clear. RowKey queue e host/sleeping seguem pendentes.",
+    "note": "A fila pendingRevealWorktree é consumida no sidebar: id é resolvido para path, filtros bloqueantes relaxados, rolagem+flash e clear. RowKey queue e host/sleeping seguem pendentes."
    }
   },
   {

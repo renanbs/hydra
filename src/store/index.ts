@@ -336,6 +336,15 @@ export interface AppState extends SshSlice {
   retainRuntimeTerminalQuickCommands: (...args: any[]) => any
   retainedAgentsByPaneKey: Record<string, any>
   revealWorktreeInSidebar: (...args: any[]) => any
+  /** Queued reveal request (the sidebar may be unmounted when it lands). */
+  pendingRevealWorktree: {
+    worktreeId: string
+    executionHostId?: string
+    behavior?: ScrollBehavior
+    highlight?: boolean
+    beginRename?: boolean
+  } | null
+  clearPendingRevealWorktreeId: () => void
   scheduleAgentStatusFreshness: (...args: any[]) => any
   unacknowledgeAgents: (...args: any[]) => any
   updateBrowserPageState: (...args: any[]) => any
