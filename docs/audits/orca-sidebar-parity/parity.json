@@ -16360,17 +16360,15 @@
    "components/sidebar/WorktreeVisibilityDialog.tsx:250"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeVisibilityDialog.tsx:229",
-    "src/lib/worktree-visibility-sources.ts:345"
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:473-495",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:322-345"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "rotear o próprio toggle para revert (Hydra só expõe o link 'Use global')"
-   ],
-   "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-   "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+   "missing_behaviors": [],
+   "note": "Picking the value Global Settings already holds drops the repo override (same mutation as Use global) instead of pinning a duplicate.",
+   "notes": "Picking the value Global Settings already holds drops the repo override (same mutation as Use global) instead of pinning a duplicate."
   },
   "domain": "D10-visibility-inbox-notices"
  },
@@ -16691,16 +16689,15 @@
    "components/sidebar/WorktreeVisibilitySourceList.tsx:337"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeVisibilityDialog.tsx:745-760"
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:473-500",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:345-370"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "ignorar re-seleção do mesmo segmento"
-   ],
-   "note": "The segment group is named with the full custom rootPath; re-selecting the active segment still writes a full replace.",
-   "notes": "The segment group is named with the full custom rootPath; re-selecting the active segment still writes a full replace."
+   "missing_behaviors": [],
+   "note": "Re-selecting the painted value is a no-op (no host write); the accessible name uses the custom root path or source label.",
+   "notes": "Re-selecting the painted value is a no-op (no host write); the accessible name uses the custom root path or source label."
   },
   "domain": "D10-visibility-inbox-notices"
  },

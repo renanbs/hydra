@@ -1,0 +1,7 @@
+{
+ "group": "AW",
+ "generatedFrom": "2026-10-27 visibility dialog increment: the toggle routes a re-pick of the global value through the revert path",
+ "rows": [
+  {"id":"D10-045","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:473-495","src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:322-345"],"missing_behaviors":[],"note":"Picking the value Global Settings already holds drops the repo override (same mutation as Use global) instead of pinning a duplicate."}
+ ]
+}
