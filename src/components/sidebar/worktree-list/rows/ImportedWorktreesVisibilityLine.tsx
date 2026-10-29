@@ -173,6 +173,12 @@ export function ImportedWorktreesVisibilityLine({
   const repoScopeLabel = hostContextLabel
     ? `${repoDisplayName} on ${hostContextLabel}`
     : repoDisplayName;
+  // Orca qualifies the pinned-fallback copy with the repo/host scope; the repo
+  // section already sits under its own header, so it stays unqualified there.
+  const lineText =
+    placement === "pinned-fallback"
+      ? `Hiding ${inboxCount} ${countLabel} in ${repoScopeLabel}`
+      : `Hiding ${inboxCount} ${countLabel}`;
   const expandAriaLabel = `${isExpanded ? "Collapse" : "Expand"} ${inboxCount} hidden worktrees for ${repoScopeLabel}`;
   const keepHiddenAriaLabel = `Keep ${inboxCount} ${countLabel} hidden for ${repoScopeLabel}; recover from the project menu`;
   const inboxPaths = inboxWorktrees.map((worktree) => worktree.path);
@@ -214,9 +220,7 @@ export function ImportedWorktreesVisibilityLine({
             aria-hidden="true"
           />
         </Button>
-        <span className="min-w-0 flex-1 truncate text-left">
-          Hiding {inboxCount} {countLabel}
-        </span>
+        <span className="min-w-0 flex-1 truncate text-left">{lineText}</span>
         {hostContextLabel && placement !== "pinned-fallback" ? (
           <span className="inline-flex min-w-0 shrink items-center gap-1">
             {hostContextHostId ? (

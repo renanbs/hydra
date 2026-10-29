@@ -50,6 +50,13 @@ function renderLine(
 }
 
 describe("ImportedWorktreesVisibilityLine (Orca parity)", () => {
+  it("qualifies the pinned-fallback copy with the repo/host scope", () => {
+    renderLine({ placement: "pinned-fallback", hostContextLabel: "Build server" });
+    expect(
+      screen.getByText("Hiding 3 discovered worktrees in repo on Build server")
+    ).toBeInTheDocument();
+  });
+
   it("states the discovered count, keeps the body collapsed, and offers the keep-hidden ×", () => {
     renderLine();
 
