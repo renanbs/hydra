@@ -2,23 +2,164 @@
  "group": "AH",
  "generatedFrom": "2026-10-22 D10 re-verification: the visibility dialog/delete preview already implement host-scoped targets, scan locking, acceptance predicates, virtualized recovery and the host-aware error copy",
  "rows": [
-  {"id":"D10-005","status":"parity","evidence":["src/components/DeleteWorktreeDialog.tsx:120-175","src/components/DeleteWorktreeDialog.tsx:200-225","src/components/DeleteWorktreeDialog.parity.test.tsx:90-170"],"note":"The confirmed row resolves by id+host, the dialog closes with the stale notice when nothing resolves, and App clears the target state on close."},
-  {"id":"D10-007","status":"parity","evidence":["src/components/DeleteWorktreeDialog.tsx:360-420","src/components/DeleteWorktreeDialog.parity.test.tsx:190-215"],"note":"Batch rows print the host label when a path collides; single vs batch previews use region/list semantics."},
-  {"id":"D10-038","status":"parity","evidence":["src/components/sidebar/WorktreeSidebar.tsx:1055-1070","src/components/sidebar/WorktreeSidebar.tsx:1446","src/components/sidebar/WorktreeVisibilityDialog.tsx:133-137"],"note":"The review action guards non-git projects and passes the repo's execution host; the dialog resolves the target by repo+host."},
-  {"id":"D10-040","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:212-260","src/components/sidebar/WorktreeVisibilityDialog.tsx:369","src/components/sidebar/WorktreeVisibilityDialog.tsx:320"],"note":"Open runs an authoritative scan with checking/ready/failed; an active mutation skips it; every source action locks while checking."},
-  {"id":"D10-042","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:570-595","src/components/sidebar/worktree-visibility-mutation-fence.ts:1-90"],"note":"Show-by-path is fenced by scope, clears the row locally and re-scans; success leaves listState ready."},
-  {"id":"D10-043","status":"parity","evidence":["src/components/sidebar/worktree-visibility-source-mutation.ts:1-70","src/components/sidebar/WorktreeVisibilityDialog.tsx:472-485"],"note":"Show/Hide ships the update with an isAccepted predicate evaluated against the latest repo row."},
-  {"id":"D10-044","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:489-525"],"note":"Use global only appears when the override matches the global value, and the commit carries an acceptance predicate."},
-  {"id":"D10-046","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:526-555"],"note":"Adding a custom root validates limit/absolute/duplicate and accepts only when the source and its 'hide' preference land in the latest row."},
-  {"id":"D10-047","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:557-585"],"note":"Removing a custom root accepts only when the source and its preference are gone, leaving the other preferences intact."},
-  {"id":"D10-048","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:60-130","src/components/sidebar/WorktreeVisibilityDialog.tsx:819-870"],"note":"Above ten rows the recovery list virtualizes with react-window; each action is named 'Show <branch> at <path>'."},
-  {"id":"D10-049","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:369","src/components/sidebar/WorktreeVisibilityDialog.tsx:425-450"],"note":"Actions disable for checking/busy/toggling, and Manage in Global Settings sits below the source list."},
-  {"id":"D10-060","status":"partial","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:745-760"],"missing_behaviors":["ignorar re-seleção do mesmo segmento"],"note":"The segment group is named with the full custom rootPath; re-selecting the active segment still writes a full replace."},
-  {"id":"D10-068","status":"parity","evidence":["src/components/sidebar/WorktreeSidebar.tsx:990-1010","src/components/sidebar/WorktreeList.tsx:1260-1280"],"note":"Keep-hidden failures publish 'Could not keep external worktrees hidden. Try again.' on the row's alert and clear on success."},
-  {"id":"D10-072","status":"parity","evidence":["src/components/sidebar/prompt-cache-countdown-clock.ts:1-110"],"note":"One shared 1s interval for every subscriber, with subscribe/unsubscribe, stopClock and an immediate currentNow publish."},
-  {"id":"D10-087","status":"parity","evidence":["src/components/sidebar/worktree-visibility-repo-sources.ts:15-40"],"note":"getLatestRepoForVisibilityScope resolves the current repo row for the host-qualified scope."},
-  {"id":"D10-088","status":"parity","evidence":["src/components/sidebar/worktree-visibility-source-mutation.ts:15-60"],"note":"Every source mutation carries its isAccepted predicate."},
-  {"id":"D10-089","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:438-448"],"note":"A dropped preference from the target host maps to the dedicated 'This host doesn't support source-specific worktree visibility' copy."},
-  {"id":"D10-090","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilityDialog.tsx:640-660","src/components/sidebar/WorktreeVisibilityDialog.tsx:489-525"],"note":"Picking the global value is detected inline (matchingOverride) and routed to the revert mutation with acceptance."}
+  {
+   "id": "D10-005",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:120-175",
+    "src/components/DeleteWorktreeDialog.tsx:200-225",
+    "src/components/DeleteWorktreeDialog.parity.test.tsx:90-170"
+   ],
+   "note": "The confirmed row resolves by id+host, the dialog closes with the stale notice when nothing resolves, and App clears the target state on close."
+  },
+  {
+   "id": "D10-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:360-420",
+    "src/components/DeleteWorktreeDialog.parity.test.tsx:190-215"
+   ],
+   "note": "Batch rows print the host label when a path collides; single vs batch previews use region/list semantics."
+  },
+  {
+   "id": "D10-038",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:1055-1070",
+    "src/components/sidebar/WorktreeSidebar.tsx:1446",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:133-137"
+   ],
+   "note": "The review action guards non-git projects and passes the repo's execution host; the dialog resolves the target by repo+host."
+  },
+  {
+   "id": "D10-040",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:212-260",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:369",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:320"
+   ],
+   "note": "Open runs an authoritative scan with checking/ready/failed; an active mutation skips it; every source action locks while checking."
+  },
+  {
+   "id": "D10-042",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:570-595",
+    "src/components/sidebar/worktree-visibility-mutation-fence.ts:1-90"
+   ],
+   "note": "Show-by-path is fenced by scope, clears the row locally and re-scans; success leaves listState ready."
+  },
+  {
+   "id": "D10-043",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-visibility-source-mutation.ts:1-70",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:472-485"
+   ],
+   "note": "Show/Hide ships the update with an isAccepted predicate evaluated against the latest repo row."
+  },
+  {
+   "id": "D10-044",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:489-525"
+   ],
+   "note": "Use global only appears when the override matches the global value, and the commit carries an acceptance predicate."
+  },
+  {
+   "id": "D10-046",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:526-555"
+   ],
+   "note": "Adding a custom root validates limit/absolute/duplicate and accepts only when the source and its 'hide' preference land in the latest row."
+  },
+  {
+   "id": "D10-047",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:557-585"
+   ],
+   "note": "Removing a custom root accepts only when the source and its preference are gone, leaving the other preferences intact."
+  },
+  {
+   "id": "D10-048",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:60-130",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:819-870"
+   ],
+   "note": "Above ten rows the recovery list virtualizes with react-window; each action is named 'Show <branch> at <path>'."
+  },
+  {
+   "id": "D10-049",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:369",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:425-450"
+   ],
+   "note": "Actions disable for checking/busy/toggling, and Manage in Global Settings sits below the source list."
+  },
+  {
+   "id": "D10-060",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:473-500",
+    "src/components/sidebar/WorktreeVisibilityDialog.parity.test.tsx:345-370"
+   ],
+   "missing_behaviors": [],
+   "note": "Re-selecting the painted value is a no-op (no host write); the accessible name uses the custom root path or source label."
+  },
+  {
+   "id": "D10-068",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:990-1010",
+    "src/components/sidebar/WorktreeList.tsx:1260-1280"
+   ],
+   "note": "Keep-hidden failures publish 'Could not keep external worktrees hidden. Try again.' on the row's alert and clear on success."
+  },
+  {
+   "id": "D10-072",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/prompt-cache-countdown-clock.ts:1-110"
+   ],
+   "note": "One shared 1s interval for every subscriber, with subscribe/unsubscribe, stopClock and an immediate currentNow publish."
+  },
+  {
+   "id": "D10-087",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-visibility-repo-sources.ts:15-40"
+   ],
+   "note": "getLatestRepoForVisibilityScope resolves the current repo row for the host-qualified scope."
+  },
+  {
+   "id": "D10-088",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-visibility-source-mutation.ts:15-60"
+   ],
+   "note": "Every source mutation carries its isAccepted predicate."
+  },
+  {
+   "id": "D10-089",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:438-448"
+   ],
+   "note": "A dropped preference from the target host maps to the dedicated 'This host doesn't support source-specific worktree visibility' copy."
+  },
+  {
+   "id": "D10-090",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:640-660",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:489-525"
+   ],
+   "note": "Picking the global value is detected inline (matchingOverride) and routed to the revert mutation with acceptance."
+  }
  ]
 }

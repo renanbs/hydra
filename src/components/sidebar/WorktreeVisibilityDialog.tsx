@@ -474,6 +474,23 @@ export function WorktreeVisibilityDialog({
     row: WorktreeVisibilitySourceRow,
     visibility: ExternalWorktreeVisibility
   ) => {
+    // Orca `handleUseDefault`: re-picking the value Global Settings already holds is a
+    // revert, not a new override — the toggle itself routes there.
+    const provenance = getWorktreeVisibilitySourceProvenance(
+      config,
+      row,
+      visibilityDefaults,
+      repoSourceIds
+    );
+    if (provenance?.kind === "project-override" && provenance.globalVisibility === visibility) {
+      await handleUseGlobal(row);
+      return;
+    }
+    // Orca ignores a re-selection of the value already painted: the toggle group is
+    // single-select, and writing the same override again would churn the host.
+    if (worktreeVisibilitySourceRowVisibility(config, row, visibilityDefaults) === visibility) {
+      return;
+    }
     // Orca `createWorktreeVisibilitySourceMutation`: the update and its acceptance
     // predicate ship together, so the row only moves once the host confirmed it.
     const mutation = createWorktreeVisibilitySourceMutation(

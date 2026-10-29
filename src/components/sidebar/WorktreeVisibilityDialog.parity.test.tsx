@@ -312,6 +312,63 @@ describe("WorktreeVisibilityDialog (Orca parity)", () => {
     });
   });
 
+  it("routes re-picking the global value through the revert path", async () => {
+    renderDialog({
+      project: {
+        ...PROJECT,
+        worktreeVisibilitySourcePreferences: { builtIn: { claude: "show" } },
+      },
+      visibilityDefaults: { external: "hide", sourcePreferences: { builtIn: { claude: "show" } } },
+    });
+    await settleScan();
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    const claude = within(sources).getByRole("group", { name: "Visibility for Claude Code" });
+    // The row already shows the global value; picking it again must drop the override.
+    fireEvent.click(within(claude).getByRole("button", { name: "Show" }));
+
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("catalog_set_worktree_visibility_sources", {
+        repoPath: PROJECT.path,
+        customSources: PROJECT.customWorktreeVisibilitySources,
+        sourcePreferences: {},
+        externalWorktreeVisibilityLegacy: false,
+        externalWorktreeVisibility: null,
+        agentWorktreeVisibility: null,
+        externalWorktreeDiscoverySuppressedAt: null,
+      })
+    );
+  });
+
+  it("ignores a re-selection of the value already painted", async () => {
+    renderDialog({
+      project: {
+        ...PROJECT,
+        worktreeVisibilitySourcePreferences: { builtIn: { claude: "show" } },
+      },
+      visibilityDefaults: { external: "hide", sourcePreferences: {} },
+    });
+    await settleScan();
+
+    const sources = screen.getByRole("region", { name: "Sources" });
+    const claude = within(sources).getByRole("group", { name: "Visibility for Claude Code" });
+    const writes = () =>
+      invokeMock.mock.calls.filter(
+        (call) => call[0] === "catalog_set_worktree_visibility_sources"
+      ).length;
+    const before = writes();
+    // Painted "Show" (project override) with the global value being "Hide": re-picking
+    // the painted value is a no-op, not a revert and not a new write.
+    expect(within(claude).getByRole("button", { name: "Show" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    fireEvent.click(within(claude).getByRole("button", { name: "Show" }));
+
+    // No host write for a no-op toggle.
+    expect(writes()).toBe(before);
+  });
+
   it("treats a repo-level agentWorktreeVisibility alone as a built-in override", async () => {
     renderDialog({
       project: { ...PROJECT, agentWorktreeVisibility: "show" },
