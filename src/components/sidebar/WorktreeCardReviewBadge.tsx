@@ -17,6 +17,7 @@ export function WorktreeCardReviewBadge({
   }
 
   const isMerged = review.state === "merged";
+  const isMergeRequest = review.provider === "gitlab";
   const isOpen = review.state === "open";
   const hasChecksFailed = review.has_failing_checks === true;
 
@@ -29,7 +30,8 @@ export function WorktreeCardReviewBadge({
     colorClasses = "text-emerald-300 border-emerald-500/40 bg-emerald-500/15";
   }
 
-  const tooltip = `PR #${review.pr_number ?? ""}${
+  const label = isMergeRequest ? "MR" : "PR";
+  const tooltip = `${label} #${review.pr_number ?? ""}${
     review.title ? `: ${review.title}` : ""
   }${review.state ? ` (${review.state})` : ""}`;
 
@@ -47,12 +49,12 @@ export function WorktreeCardReviewBadge({
       title={tooltip}
       aria-label={tooltip}
     >
-      {isMerged ? (
+      {isMerged || isMergeRequest ? (
         <GitMerge className="w-2.5 h-2.5 shrink-0" />
       ) : (
         <GitPullRequest className="w-2.5 h-2.5 shrink-0" />
       )}
-      {review.pr_number ? <span>#{review.pr_number}</span> : <span>PR</span>}
+      {review.pr_number ? <span>#{review.pr_number}</span> : <span>{label}</span>}
     </button>
   );
 }

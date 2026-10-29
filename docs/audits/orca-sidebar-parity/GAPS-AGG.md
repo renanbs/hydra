@@ -229,7 +229,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 297 capabilities
+## PARTIAL — 296 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -356,7 +356,7 @@
 - **D03b-047** — Renderização e indentação de linhas de workspace de pasta sob grupos de projetos de pastas | falta: aria-activedescendant apontando para a linha ativa de folder workspace (Hydra usa aria-current: FolderWorkspaceRow.tsx:35); indentação manual preservada fora de grupos escaneados e geometria 'new card' equivalente (a linha tem padding fixo pl-6/ml-1: FolderWorkspaceRow.tsx:43) | components/sidebar/worktree-list-card-markup-queries.ts:22-34
 - **D03b-049** — Consolidação de cabeçalhos de projeto multi-host, desambiguação de nomes de seção e etiquetagem de contexto de host | falta: exibição dos labels consolidados/multi-host no sidebar montado: hostContextLabel nunca é passado pela lista (WorktreeList.tsx:330-380), então WorktreeHostContextBadge não renderiza; desambiguação de nomes de seção por caminho no sidebar montado (withRepoSectionDisplayLabels só roda em buildRows do pipeline de atalhos); labels distintos para notices/pinned em multi-host na UI | components/sidebar/worktree-list-groups-test-fixtures.ts:6-89
 
-### D04a-worktree-card-surface (62)
+### D04a-worktree-card-surface (61)
 
 - **D04a-004** — Aninha o container de worktrees filhas (lineage) dentro do card no novo estilo | falta: lineageChildren nunca é fornecido — o container data-worktree-lineage-children nunca renderiza | components/sidebar/worktree-card-surface.tsx:102
 - **D04a-005** — Modo lista afiliada: mantém a aparência do card mas desliga interações mutantes da lista | falta: affiliateListMode nunca é produzido (default false no controller); Hover de detalhes não desliga edição de issue/nota quando o modo estiver ativo | components/sidebar/worktree-card-surface.tsx:113
@@ -414,7 +414,6 @@
 - **D04a-098** — Valida e envia o payload de metadados, qualificando o save pelo host quando necessário | falta: Qualificação do save pelo host (worktree_metadata é keyed por path; dois hosts com o mesmo path compartilham a linha) | components/sidebar/WorktreeMetaDialog.tsx:200
 - **D04a-100** — Resolve o título visível do card (título salvo, branch, títulos de issue/Linear/Jira/review e placeholders de loading) | falta: Fallback para títulos de issue, Linear, Jira e review quando o título salvo é igual-ish ao branch; Filtro de placeholders Loading ... / details unavailable; coerceWorktreeCardVisibleTitle | components/sidebar/worktree-card-title-display.ts:39
 - **D04a-101** — Resolve qual review (PR/MR) o card deve exibir, com supressão de PR do GitHub e fallbacks de loading | falta: Supressão de PR do GitHub por metadado, com exceção para link explícito; Fallbacks Loading PR/MR... e provedores gitlab, bitbucket, azure-devops e gitea; Validação de PR merged pelo head; Reconciliação de caches por chave | backend: invoke('pr_status') -> src-tauri/src/lib.rs:410 | components/sidebar/worktree-card-pr-display.ts:83
-- **D04a-103** — Renderiza o ícone de review com glifo e tom derivados de estado/checks/provedor | falta: Glifo por provedor (GitMerge para MR GitLab, variante generic); getReviewLabel / getProviderName com MR para GitLab; Pílula com ícone de provedor (WorktreeCardReviewBadge não recebe review do mount) | components/sidebar/worktree-review-helpers.tsx:65
 - **D04a-104** — Helpers puros e ícones do card (rótulos de check, operações de conflito, ícones SVG, arrays vazios estáveis) | falta: checksLabel (success/failure/pending/neutral) como helper; o texto só existe dentro de reviewStatusLabel; branchDisplayName, EMPTY_BROWSER_TABS, FilledBellIcon e PullRequestIcon sem consumidor fora do próprio arquivo | components/sidebar/WorktreeCardHelpers.tsx:8
 - **D04a-106** — Modelo de props/defaults do card e helpers de caminho/estilo | falta: HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidor; EMPTY_WORKSPACE_PORTS sem consumidor; isWebClient sem consumidor no card | components/sidebar/worktree-card-model.ts:14
 - **D04a-109** — Menu de exibição do card: layout do card, propriedades visíveis e layout de atividade de agentes | falta: Checkbox por propriedade do card (issue, linear, jira, pr, automation, comment, ports, inline-agents); Submenu Show properties com contagem e Agent activity layout; Radio Compact/Default chamando setWorktreeCardMode; onSelect com preventDefault para manter o menu aberto | components/sidebar/WorktreeCardDisplayMenuSection.tsx:29
