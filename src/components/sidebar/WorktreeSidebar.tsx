@@ -31,6 +31,7 @@ import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWo
 import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
+import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
 import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
@@ -537,6 +538,29 @@ export function WorktreeSidebar({
     const target = targetPath || revealTargetPath || activeWorktreePath;
     if (!target) return;
 
+    // Orca `revealWorkspaceFilters`: a reveal must not fail because a filter hides
+    // the target; relax only the blocking ones before scrolling.
+    for (const proj of projects) {
+      const targetWorktree = getWorktreesForProject(proj).find(
+        (worktree) => worktree.path === target
+      );
+      if (!targetWorktree) continue;
+      const branch = targetWorktree.branch ?? "";
+      const { displayOptions: nextOptions, changed } = relaxFiltersForReveal(displayOptions, {
+        path: target,
+        projectId: proj.id,
+        isMainWorktree: Boolean(targetWorktree.is_main || targetWorktree.isMainWorktree),
+        automationCreated: Boolean(targetWorktree.automationProvenanceKind),
+        cliCreated: Boolean(targetWorktree.cliProvenanceKind),
+        detachedHead: branch === "HEAD" || branch === "(detached)" || branch.startsWith("(HEAD detached"),
+      });
+      if (changed) {
+        setDisplayOptions(nextOptions);
+        notifyPrefs({ displayOptions: nextOptions });
+      }
+      break;
+    }
+
     for (const proj of projects) {
       const wts = getWorktreesForProject(proj);
       if (proj.path === target || wts.some((w) => w.path === target)) {
@@ -582,6 +606,8 @@ export function WorktreeSidebar({
     collapsedGroups,
     projectGroupMap,
     flashRevealedWorktree,
+    displayOptions,
+    notifyPrefs,
   ]);
 
   // Orca `useWorkspaceRevealBodyRedirect`: a reveal request that arrives while the

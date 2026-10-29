@@ -6444,16 +6444,17 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:400",
-    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:29"
+    "src/components/sidebar/reveal-filter-relaxation.ts:1-55",
+    "src/components/sidebar/WorktreeSidebar.tsx:520-560",
+    "src/components/sidebar/reveal-filter-relaxation.parity.test.ts:24-49"
    ],
    "backend": [],
    "missing_behaviors": [
-    "ajuste de filtros ativos para tornar a worktree visível",
-    "fila de requisição pendente no store (pendingRevealWorktree/pendingRevealSidebarRow + clear*)"
+    "fila de requisição pendente no store (pendingRevealWorktree/pendingRevealSidebarRow + clear*)",
+    "reabertura de escopo de host e do filtro de sleeping antes de revelar"
    ],
-   "notes": "Reveal rola via virtualizer + destaca; sem os ramos de revalidação/rename do Orca.",
-   "note": "Reveal rola via virtualizer + destaca; sem os ramos de revalidação/rename do Orca."
+   "notes": "Automation/CLI/detached/default-branch e filtro de projeto são relaxados antes do scroll; host scope e sleeping seguem pendentes.",
+   "note": "Automation/CLI/detached/default-branch e filtro de projeto são relaxados antes do scroll; host scope e sleeping seguem pendentes."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
