@@ -659,6 +659,7 @@ export function WorktreeList({
   // Why (D04a G9): the sidebar keyboard path owns the inline-rename request for
   // `workspace.rename`; the card it names consumes and clears it.
   const [renameRequest, setRenameRequest] = useState<WorktreeRenameRequest | null>(null);
+
   // Why normalize: the store seeds `visibleWorkspaceHostIds: []` before the UI
   // slice hydrates, and `[]` means "no host visible" — it would blank the list.
   const pipelineHostScope = normalizeExecutionHostScope(storeWorkspaceHostScope);
@@ -889,6 +890,22 @@ export function WorktreeList({
   ]);
 
   const { rows, hostContextLabelByIdentity } = rowModel;
+  // Orca reveal requests may ask to open the inline editor after scrolling
+  // (`beginRename`). The sidebar resolves the path; the list owns the row request.
+  useEffect(() => {
+    const handleBeginRename = (event: Event) => {
+      const detail = (event as CustomEvent<{ path?: string }>).detail;
+      if (!detail?.path) return;
+      const row = rows.find(
+        (candidate) => candidate.type === "item" && candidate.worktree.path === detail.path
+      );
+      if (row && row.type === "item") {
+        setRenameRequest({ worktreeId: row.worktree.id, rowKey: row.rowKey });
+      }
+    };
+    window.addEventListener("hydra:begin-rename-worktree", handleBeginRename);
+    return () => window.removeEventListener("hydra:begin-rename-worktree", handleBeginRename);
+  }, [rows]);
   const pathByWorktreeId = rowModel.pathByWorktreeId;
   const groupBadgeColorById = useMemo(() => {
     const colors = new Map<string, string>();
