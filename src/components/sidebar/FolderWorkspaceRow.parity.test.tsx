@@ -6,7 +6,7 @@
 // green after the terminal was closed: the exact divergence this file locks out.
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
 
@@ -24,6 +24,16 @@ function renderRow(props: Partial<Parameters<typeof FolderWorkspaceRow>[0]> = {}
 }
 
 describe("FolderWorkspaceRow (Orca parity)", () => {
+  it("offers a remove action that does not activate the row", () => {
+    const onDelete = vi.fn();
+    const onActivate = vi.fn();
+    renderRow({ onDelete, onActivate });
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove workspace MalhaClub Dev workspace" }));
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onActivate).not.toHaveBeenCalled();
+  });
+
   it("paints the status dot, the name and the path line", () => {
     const { container } = renderRow({ status: "active" });
 

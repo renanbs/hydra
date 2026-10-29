@@ -46,7 +46,10 @@ use project_manager::{
     list_local_projects, remove_added_project, set_project_worktree_base_path,
     suppress_discovery_for_project, HydraProject,
 };
-use catalog::{add_folder_to_catalog, read_catalog, write_catalog, CatalogEnvelope};
+use catalog::{
+    add_folder_to_catalog, read_catalog, remove_folder_workspace_from_catalog, write_catalog,
+    CatalogEnvelope,
+};
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
     clone_git_repository, create_git_worktree, create_new_project, list_git_worktrees,
@@ -273,6 +276,18 @@ async fn open_in_external_editor(path: String, command: String) -> Result<(), St
         c.spawn().map_err(|e| format!("Failed to launch '{}': {}", cmd, e))?;
         Ok(())
     }).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn catalog_remove_folder_workspace(folder_workspace_id: String) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        remove_folder_workspace_from_catalog(&folder_workspace_id, &mut envelope)?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -1588,6 +1603,7 @@ pub fn run() {
             catalog_get,
             is_git_repository,
             catalog_add_folder,
+            catalog_remove_folder_workspace,
             catalog_remove_repo,
             catalog_set_worktree_visibility,
             catalog_set_worktree_visibility_sources,

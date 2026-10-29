@@ -361,6 +361,22 @@ fn new_id() -> String {
 /// - Se tem `.git`: cria `Repo{kind:git}` direto, sem grupo.
 /// - Senão: cria 1 `ProjectGroup{createdFrom:folder-scan}` + 1 `FolderWorkspace`
 ///   + 1 `Repo` por subdir imediato com `.git` (máx 20, ordenado), com dedupe.
+/// Removes one folder workspace from the catalog by id. The folder on disk is
+/// untouched: only Hydra's workspace entry goes away.
+pub fn remove_folder_workspace_from_catalog(
+    folder_workspace_id: &str,
+    envelope: &mut CatalogEnvelope,
+) -> Result<(), String> {
+    let before = envelope.folder_workspaces.len();
+    envelope
+        .folder_workspaces
+        .retain(|workspace| workspace.id != folder_workspace_id);
+    if envelope.folder_workspaces.len() == before {
+        return Err(format!("Folder workspace not found: {folder_workspace_id}"));
+    }
+    Ok(())
+}
+
 pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Result<(), String> {
     use std::path::PathBuf as PB;
     let norm = normalize_catalog_path(path);
@@ -702,6 +718,38 @@ mod tests {
         let back: CatalogEnvelope = serde_json::from_str(&raw).unwrap();
         assert_eq!(back.project_groups[0].created_from, "folder-scan");
         assert_eq!(back.project_groups[0].parent_path.as_deref(), Some("/x/code"));
+    }
+
+    #[test]
+    fn remove_folder_workspace_drops_only_the_entry() {
+        let mut env = CatalogEnvelope::empty();
+        env.folder_workspaces.push(CatalogFolderWorkspace {
+            id: "fw1".to_string(),
+            project_group_id: "g1".to_string(),
+            name: "notes".to_string(),
+            folder_path: "/x/notes".to_string(),
+            connection_id: None,
+            execution_host_id: None,
+            sort_order: 0,
+            created_at: 1,
+            updated_at: 1,
+        });
+        env.folder_workspaces.push(CatalogFolderWorkspace {
+            id: "fw2".to_string(),
+            project_group_id: "g1".to_string(),
+            name: "keep".to_string(),
+            folder_path: "/x/keep".to_string(),
+            connection_id: None,
+            execution_host_id: None,
+            sort_order: 1,
+            created_at: 1,
+            updated_at: 1,
+        });
+
+        remove_folder_workspace_from_catalog("fw1", &mut env).unwrap();
+        assert_eq!(env.folder_workspaces.len(), 1);
+        assert_eq!(env.folder_workspaces[0].id, "fw2");
+        assert!(remove_folder_workspace_from_catalog("missing", &mut env).is_err());
     }
 
     #[test]

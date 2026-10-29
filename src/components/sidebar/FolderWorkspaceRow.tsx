@@ -5,7 +5,7 @@
 // A missing folder path is NOT a coloured dot in Orca: it is the FolderX badge from
 // `FolderPathStatusIndicator`, shown only when the path is gone.
 import React from "react";
-import { FolderX } from "lucide-react";
+import { FolderX, Trash2 } from "lucide-react";
 import { WorktreeStatusIndicator } from "./WorktreeStatusIndicator";
 import type { WorktreeStatus } from "../../lib/worktree-status";
 
@@ -17,6 +17,8 @@ export interface FolderWorkspaceRowProps {
   pathMissing?: boolean;
   isActive?: boolean;
   onActivate?: () => void;
+  /** Removes the workspace entry; the folder on disk is untouched (Orca copy). */
+  onDelete?: () => void;
 }
 
 export function FolderWorkspaceRow({
@@ -26,6 +28,7 @@ export function FolderWorkspaceRow({
   pathMissing = false,
   isActive = false,
   onActivate,
+  onDelete,
 }: FolderWorkspaceRowProps): React.JSX.Element {
   return (
     <div
@@ -47,6 +50,21 @@ export function FolderWorkspaceRow({
       <div className="flex min-w-0 items-center gap-2">
         <WorktreeStatusIndicator status={status} />
         <span className="min-w-0 truncate text-[13px] font-medium leading-5">{name}</span>
+        {onDelete && (
+          <button
+            type="button"
+            aria-label={`Remove workspace ${name}`}
+            title="Remove workspace"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete();
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
+            className="ml-auto inline-flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition hover:bg-worktree-sidebar-accent hover:text-foreground can-hover:group-hover:opacity-100 can-hover:group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
+          >
+            <Trash2 className="size-3" />
+          </button>
+        )}
         {pathMissing && (
           <span
             className="inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] text-destructive"

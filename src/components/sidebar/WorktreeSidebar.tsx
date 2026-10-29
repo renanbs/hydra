@@ -122,6 +122,7 @@ export function WorktreeSidebar({
   missingFolderPaths,
   prByPath,
   onActivateFolderWorkspace,
+  onDeleteFolderWorkspace,
   compactCards = false,
   onSelectNextSession,
   onSelectPrevSession,
@@ -1065,6 +1066,7 @@ export function WorktreeSidebar({
               missingFolderPaths={missingFolderPaths}
               prByPath={prByPath}
               onActivateFolderWorkspace={onActivateFolderWorkspace}
+              onDeleteFolderWorkspace={onDeleteFolderWorkspace}
               collapsedProjects={collapsedProjects}
               collapsedGroups={collapsedGroups}
               filter={filter}

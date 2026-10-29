@@ -367,3 +367,32 @@ describe("DeleteWorktreeDialog batch preview accessibility (D10-020/022)", () =>
     expect(items[0]).toHaveTextContent("feat/orca");
   });
 });
+
+
+describe("DeleteWorktreeDialog folder workspace mode (D10-006)", () => {
+  it("explains that the folder on disk is kept and removes only the entry", async () => {
+    const onDeleteFolderWorkspace = vi.fn().mockResolvedValue(true);
+    const onClose = vi.fn();
+    render(
+      <DeleteWorktreeDialog
+        open
+        worktrees={[]}
+        isMainWorktree={false}
+        deleteStateByWorktreeId={{}}
+        dirtyChangeCountsByWorktreeId={{}}
+        onPersistSkipConfirmPreference={vi.fn()}
+        onClose={onClose}
+        onDeleted={vi.fn()}
+        onForceDeleted={vi.fn()}
+        repoPath=""
+        folderWorkspace={{ id: "fw1", name: "notes", path: "/work/notes" }}
+        onDeleteFolderWorkspace={onDeleteFolderWorkspace}
+      />
+    );
+
+    expect(document.body.textContent).toContain("The folder on disk will not be deleted.");
+    fireEvent.click(screen.getByRole("button", { name: "Remove Workspace" }));
+    await vi.waitFor(() => expect(onDeleteFolderWorkspace).toHaveBeenCalledWith("fw1"));
+    expect(onClose).toHaveBeenCalled();
+  });
+});
