@@ -32,6 +32,7 @@ import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDispla
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
+import { resolveRevealWorktreePath } from "./reveal-target-resolution";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
 import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
@@ -281,6 +282,8 @@ export function WorktreeSidebar({
   const handleDroppedProjectAdded = useCallback(() => {
     window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
   }, []);
+  const pendingRevealWorktree = useAppStore((state) => state.pendingRevealWorktree);
+  const clearPendingRevealWorktreeId = useAppStore((state) => state.clearPendingRevealWorktreeId);
   const { isProjectDropActive } = useSidebarProjectDrop({
     enabled: true,
     sidebarRef: sidebarRootRef,
@@ -608,6 +611,28 @@ export function WorktreeSidebar({
     flashRevealedWorktree,
     displayOptions,
     notifyPrefs,
+  ]);
+
+  // Orca `useSidebarRevealRequests`: consume the store's queued worktree reveal
+  // (the list may be unmounted or filtered when the request arrives).
+  useEffect(() => {
+    if (!pendingRevealWorktree) return;
+    const targetPath = resolveRevealWorktreePath(
+      pendingRevealWorktree.worktreeId,
+      projects.map((project) => ({
+        projectId: project.id,
+        path: project.path,
+        worktrees: getWorktreesForProject(project),
+      }))
+    );
+    clearPendingRevealWorktreeId();
+    if (targetPath) handleRevealCurrent(targetPath);
+  }, [
+    pendingRevealWorktree,
+    clearPendingRevealWorktreeId,
+    projects,
+    getWorktreesForProject,
+    handleRevealCurrent,
   ]);
 
   // Orca `useWorkspaceRevealBodyRedirect`: a reveal request that arrives while the
