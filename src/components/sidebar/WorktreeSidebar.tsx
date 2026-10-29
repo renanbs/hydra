@@ -486,6 +486,9 @@ export function WorktreeSidebar({
   // that can empty the list, through the same writers the options menu uses — one
   // writer per preference, no parallel state.
   const setWorkspaceHostScope = useAppStore((s) => s.setWorkspaceHostScope);
+  const storeRepos = useAppStore((s) => s.repos);
+  const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
+  const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
   const handleClearSidebarFilters = useCallback(() => {
     const next: WorkspaceDisplayOptions = {
@@ -537,7 +540,8 @@ export function WorktreeSidebar({
     });
   }, []);
 
-  const handleRevealCurrent = useCallback((targetPath?: string | null) => {
+  const handleRevealCurrent = useCallback(
+    (targetPath?: string | null, options?: { highlight?: boolean; beginRename?: boolean }) => {
     const target = targetPath || revealTargetPath || activeWorktreePath;
     if (!target) return;
 
@@ -560,6 +564,33 @@ export function WorktreeSidebar({
       if (changed) {
         setDisplayOptions(nextOptions);
         notifyPrefs({ displayOptions: nextOptions });
+      }
+
+      // Host scope: a reveal for a host outside the visible set silently did nothing.
+      const targetRepo = storeRepos.find(
+        (repo) => repo.id === proj.id || repo.path === proj.path
+      );
+      const targetHostId = targetRepo ? getRepoExecutionHostId(targetRepo) : null;
+      const visibleHosts = storeVisibleWorkspaceHostIds;
+      if (targetHostId && visibleHosts && !visibleHosts.includes(targetHostId)) {
+        setVisibleWorkspaceHostIds([...visibleHosts, targetHostId]);
+      }
+      if (targetHostId && storeWorkspaceHostScope !== "all" && storeWorkspaceHostScope !== targetHostId) {
+        setWorkspaceHostScope(targetHostId);
+      }
+      // Sleeping hides every inactive workspace; the target of a reveal is not
+      // "sleeping" for the user's purposes.
+      if (displayOptions.hideSleeping) {
+        const hasActiveSession = sessions.some(
+          (session) =>
+            (session.project_path === target || session.project_path === proj.path) &&
+            (session.state === "working" || session.state === "blocked" || session.state === "waiting")
+        );
+        if (!hasActiveSession && target !== activeWorktreePath) {
+          const nextSleeping = { ...nextOptions, hideSleeping: false };
+          setDisplayOptions(nextSleeping);
+          notifyPrefs({ displayOptions: nextSleeping });
+        }
       }
       break;
     }
@@ -586,7 +617,12 @@ export function WorktreeSidebar({
       }
     }
 
-    flashRevealedWorktree(target);
+    if (options?.highlight !== false) flashRevealedWorktree(target);
+    if (options?.beginRename) {
+      window.dispatchEvent(
+        new CustomEvent("hydra:begin-rename-worktree", { detail: { path: target } })
+      );
+    }
 
     requestAnimationFrame(() => {
       const el = document.querySelector(`[data-worktree-path="${CSS.escape(target)}"]`);
@@ -611,6 +647,12 @@ export function WorktreeSidebar({
     flashRevealedWorktree,
     displayOptions,
     notifyPrefs,
+    storeRepos,
+    storeVisibleWorkspaceHostIds,
+    storeWorkspaceHostScope,
+    setVisibleWorkspaceHostIds,
+    setWorkspaceHostScope,
+    sessions,
   ]);
 
   // Orca `useSidebarRevealRequests`: consume the store's queued worktree reveal
@@ -626,7 +668,12 @@ export function WorktreeSidebar({
       }))
     );
     clearPendingRevealWorktreeId();
-    if (targetPath) handleRevealCurrent(targetPath);
+    if (targetPath) {
+      handleRevealCurrent(targetPath, {
+        highlight: pendingRevealWorktree.highlight,
+        beginRename: pendingRevealWorktree.beginRename,
+      });
+    }
   }, [
     pendingRevealWorktree,
     clearPendingRevealWorktreeId,
