@@ -8,7 +8,7 @@
 // override note, the scan-status/`Try again` line (Orca `WorktreeVisibilityScanStatus`),
 // and the `Hidden worktrees (N)` recovery list.
 import React, { useCallback, useEffect, useLayoutEffect, useState, useMemo, useRef } from "react";
-import { Search, FolderGit2, X, Eye, Plus, Trash2, Settings, CircleHelp } from "lucide-react";
+import { Search, FolderGit2, X, Eye, Trash2, Settings, CircleHelp } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { List } from "react-window";
 import { useAppStore } from "@/store";
@@ -29,6 +29,7 @@ import {
 } from "./worktree-visibility-mutation-fence";
 import { getRepoCustomWorktreeVisibilitySourceIds } from "./worktree-visibility-repo-sources";
 import { createWorktreeVisibilitySourceMutation } from "./worktree-visibility-source-mutation";
+import { WorktreeVisibilitySourceAddForm } from "./WorktreeVisibilitySourceAddForm";
 import {
   BUILT_IN_WORKTREE_VISIBILITY_SOURCES,
   OTHER_LOCATIONS_SOURCE_LABEL,
@@ -202,7 +203,7 @@ export function WorktreeVisibilityDialog({
   const [busyPath, setBusyPath] = useState<string | null>(null);
   const [isToggling, setIsToggling] = useState(false);
   const [sourceError, setSourceError] = useState<string | null>(null);
-  const [rootDraft, setRootDraft] = useState("");
+
   const [helpOpen, setHelpOpen] = useState(false);
   const helpRef = useRef<HTMLDivElement | null>(null);
   // Local mirror of the project's visibility config: the sidebar hands the dialog a
@@ -329,7 +330,6 @@ export function WorktreeVisibilityDialog({
     if (open) {
       setQuery("");
       setSourceError(null);
-      setRootDraft("");
       setDraftConfig(null);
     }
   }, [open]);
@@ -544,29 +544,28 @@ export function WorktreeVisibilityDialog({
     );
   };
 
-  const handleAddSource = async () => {
-    const rootPath = rootDraft.trim();
-    if (!rootPath || !project || isToggling) return;
+  const handleAddSource = async (
+    rawRootPath: string
+  ): Promise<"added" | "invalid-path" | "duplicate-path" | "limit" | "save-failed"> => {
+    const rootPath = rawRootPath.trim();
+    if (!rootPath || !project || isToggling) return "invalid-path";
     const id = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`).replaceAll("-", "");
     const added = addCustomWorktreeVisibilitySource(config, visibilityDefaults, id, rootPath);
     if (!added.ok) {
-      setSourceError(
-        added.reason === "duplicate-path"
-          ? "That folder is already a worktree root."
-          : added.reason === "limit"
-            ? "Too many custom worktree roots."
-            : "Enter an absolute folder path."
-      );
-      return;
+      return added.reason === "duplicate-path"
+        ? "duplicate-path"
+        : added.reason === "limit"
+          ? "limit"
+          : "invalid-path";
     }
-    setRootDraft("");
-    await commitSourceUpdate(
+    const committed = await commitSourceUpdate(
       { ...config, customWorktreeVisibilitySources: added.sources },
       (latestRepo) =>
         normalizeCustomWorktreeVisibilitySources(
           latestRepo.customWorktreeVisibilitySources
         )?.some((source) => source.rootPath === rootPath) === true
     );
+    return committed ? "added" : "save-failed";
   };
 
   const handleRemoveSource = async (source: CustomWorktreeVisibilitySource) => {
@@ -791,30 +790,10 @@ export function WorktreeVisibilityDialog({
             <h3 id="wv-root-heading" className="text-[13px] font-semibold text-neutral-100">
               Worktree root
             </h3>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={rootDraft}
-                onChange={(e) => setRootDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") void handleAddSource();
-                }}
-                placeholder="/path/to/worktrees"
-                className="flex-1 h-8 px-3 rounded-lg bg-neutral-950 border border-neutral-800 font-mono text-neutral-100 text-[11px] placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/30 transition"
-              />
-              <button
-                type="button"
-                disabled={isToggling || !rootDraft.trim()}
-                onClick={() => void handleAddSource()}
-                className="inline-flex shrink-0 items-center gap-1 px-3 h-8 rounded-lg border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 font-medium transition cursor-pointer disabled:opacity-50"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add
-              </button>
-            </div>
-            <p className="text-[11px] text-neutral-500">
-              Hydra will recognize worktrees beneath this folder.
-            </p>
+            <WorktreeVisibilitySourceAddForm
+              disabled={isToggling}
+              onAdd={handleAddSource}
+            />
           </section>
 
           {/* c) Global-settings override note */}

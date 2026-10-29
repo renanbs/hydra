@@ -573,16 +573,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:196",
-     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:155"
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:170-182",
+     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:53-59"
     ],
     "backend": [],
     "missing_behaviors": [
-     "copy por placement (pinned-fallback 'Hiding N … in <repo>')",
-     "repoScopeLabel '<repo> on <host>' (multi-host)"
+     "copy/layout da pílula compacta (NewExternalWorktreesInboxLine usa contador + 'hidden worktrees' em vez de 'Hiding N discovered worktrees')"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "A linha expandida qualifica o placement pinned-fallback com '<repo> on <host>'; a pílula compacta mantém o layout próprio do Hydra.",
+    "notes": "A linha expandida qualifica o placement pinned-fallback com '<repo> on <host>'; a pílula compacta mantém o layout próprio do Hydra."
    }
   },
   {
@@ -1203,19 +1202,16 @@
     "components/sidebar/WorktreeVisibilitySourceAddForm.tsx:83"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:467-488",
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:288-296"
+     "src/components/sidebar/WorktreeVisibilitySourceAddForm.tsx:1-105",
+     "src/components/sidebar/WorktreeVisibilityDialog.tsx:547-580",
+     "src/components/sidebar/WorktreeVisibilitySourceAddForm.parity.test.tsx:14-44"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "input#custom-worktree-root + aria-invalid/aria-describedby",
-     "erro inline role=alert no próprio form",
-     "distinção 'save-failed' silencioso"
-    ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "note": "The form owns the draft, flags aria-invalid on failure, describes the help text by id, announces the error with role=alert and resets only after a confirmed add.",
+    "notes": "The form owns the draft, flags aria-invalid on failure, describes the help text by id, announces the error with role=alert and resets only after a confirmed add."
    }
   },
   {
