@@ -22,9 +22,13 @@ export function buildWorktreeStatusMenuItems(args: {
    * status write would race the removal and resurrect a row that is going away.
    */
   disabled?: boolean
+  /** Orca pluralizes the trigger when the context menu targets a selection. */
+  isMultiContext?: boolean
 }): ContextMenuItem {
   return {
-    label: translate('auto.components.sidebar.WorktreeContextMenu.84cdbb7e30', 'Move to Status'),
+    label: args.isMultiContext
+      ? translate('auto.components.sidebar.WorktreeContextMenu.56cde9e8e6', 'Move Statuses To')
+      : translate('auto.components.sidebar.WorktreeContextMenu.84cdbb7e30', 'Move to Status'),
     icon: <Kanban className="w-3.5 h-3.5" />,
     disabled: args.disabled,
     children: args.workspaceStatuses.map((status) => {
