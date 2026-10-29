@@ -267,6 +267,9 @@ describe("DeleteWorktreeDialog lineage delete", () => {
     });
 
     expect(screen.getByText("Child workspaces will be deleted")).toBeInTheDocument();
+    expect(document.body.textContent).toContain(
+      "and 2 child workspaces from git and delete their workspace folders."
+    );
     expect(
       screen.getByText("Deleting this workspace also deletes 2 child workspaces.")
     ).toBeInTheDocument();
@@ -319,6 +322,26 @@ describe("DeleteWorktreeDialog lineage delete", () => {
 
 
 describe("DeleteWorktreeDialog batch preview accessibility (D10-020/022)", () => {
+  it("pluralizes the destructive sentence for a batch", () => {
+    renderDialog({
+      worktrees: [worktree(), { ...worktree(), path: "/work/orca-two", branch: "feat/two" }],
+      liveWorktrees: [
+        liveRow("local", "instance-local", PROJECT_PATH),
+        {
+          id: "repo-1::/work/orca-two",
+          instanceId: "instance-two",
+          hostId: "local",
+          isMainWorktree: false,
+          path: "/work/orca-two",
+          repoPath: PROJECT_PATH,
+        },
+      ],
+    });
+
+    expect(document.body.textContent).toContain("2 workspaces");
+    expect(document.body.textContent).toContain("from git and delete their workspace folders.");
+  });
+
   it("exposes the batch as a labelled list with one item per target", () => {
     renderDialog({
       worktrees: [worktree(), { ...worktree(), path: "/work/orca-two", branch: "feat/two" }],

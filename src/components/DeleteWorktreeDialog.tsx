@@ -392,10 +392,30 @@ export function DeleteWorktreeDialog({
         </h2>
         <p className="mt-1.5 text-[12px] leading-relaxed text-neutral-400">
           Remove{" "}
-          <span className="break-all font-medium text-foreground">
-            {isBatchDelete ? `${worktrees.length} workspaces` : (worktrees[0]?.branch || worktrees[0]?.path)}
+          <span
+            className={
+              isBatchDelete ? "font-medium text-foreground" : "break-all font-medium text-foreground"
+            }
+          >
+            {isBatchDelete
+              ? `${worktrees.length} workspaces`
+              : worktrees[0]?.display_name || worktrees[0]?.branch || worktrees[0]?.path}
           </span>{" "}
-          from git and delete its workspace folder.
+          {canDeleteAllLineage ? (
+            <>
+              and{" "}
+              <span className="font-medium text-foreground">
+                {childWorkspaceCount === 1
+                  ? "1 child workspace"
+                  : `${childWorkspaceCount} child workspaces`}
+              </span>{" "}
+              from git and delete their workspace folders.
+            </>
+          ) : isBatchDelete ? (
+            <>from git and delete their workspace folders.</>
+          ) : (
+            <>from git and delete its workspace folder.</>
+          )}
         </p>
 
         {/* Orca DeleteWorktreeTargetPreview parity: path + dirty-change count */}

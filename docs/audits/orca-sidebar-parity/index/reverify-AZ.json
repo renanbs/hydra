@@ -1,0 +1,8 @@
+{
+ "group": "AZ",
+ "generatedFrom": "2026-10-27 delete dialog copies: literal output region with a floating copy control, plural batch sentence and lineage child label",
+ "rows": [
+  {"id":"D10-004","status":"parity","evidence":["src/components/sidebar/AutoRenameFailedDialog.tsx:95-120","src/components/sidebar/AutoRenameFailedDialog.parity.test.tsx:10-36"],"missing_behaviors":[],"note":"Output wraps anywhere inside a height-capped scroll region that reserves the copy gutter; the copy control floats in the region with an accessible name."},
+  {"id":"D10-006","status":"partial","evidence":["src/components/DeleteWorktreeDialog.tsx:390-425","src/components/DeleteWorktreeDialog.parity.test.tsx:262-272","src/components/DeleteWorktreeDialog.parity.test.tsx:325-345"],"missing_behaviors":["copy não-destrutiva para folder workspace (o diálogo do Hydra só remove worktrees git; folder workspaces têm superfície própria)"],"note":"Batch pluralizes the sentence and lineage names the child count; the folder-workspace branch has no counterpart on this dialog."}
+ ]
+}

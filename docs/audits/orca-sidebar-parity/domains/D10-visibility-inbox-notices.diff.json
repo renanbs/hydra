@@ -80,16 +80,15 @@
     "components/sidebar/AutoRenameFailedDialog.tsx:122"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AutoRenameFailedDialog.tsx:92",
-     "src/components/sidebar/AutoRenameFailedDialog.tsx:116"
+     "src/components/sidebar/AutoRenameFailedDialog.tsx:95-120",
+     "src/components/sidebar/AutoRenameFailedDialog.parity.test.tsx:10-36"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "overflow-wrap:anywhere (Hydra usa `break-words`)",
-     "padding-right reservado para botão de cópia flutuante (Hydra coloca o botão no header, não flutuante)"
-    ]
+    "missing_behaviors": [],
+    "notes": "Output wraps anywhere inside a height-capped scroll region that reserves the copy gutter; the copy control floats in the region with an accessible name.",
+    "note": "Output wraps anywhere inside a height-capped scroll region that reserves the copy gutter; the copy control floats in the region with an accessible name."
    }
   },
   {
@@ -133,17 +132,16 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:140",
-     "src/components/DeleteWorktreeDialog.tsx:147"
+     "src/components/DeleteWorktreeDialog.tsx:390-425",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:262-272",
+     "src/components/DeleteWorktreeDialog.parity.test.tsx:325-345"
     ],
     "backend": [],
     "missing_behaviors": [
-     "copy de lineage (com filhos)",
-     "copy não-destrutiva para folder workspace",
-     "targetLabel destacado / childTargetLabel"
+     "copy não-destrutiva para folder workspace (o diálogo do Hydra só remove worktrees git; folder workspaces têm superfície própria)"
     ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "note": "Batch pluralizes the sentence and lineage names the child count; the folder-workspace branch has no counterpart on this dialog.",
+    "notes": "Batch pluralizes the sentence and lineage names the child count; the folder-workspace branch has no counterpart on this dialog."
    },
    "par": [
     "PAR-56"

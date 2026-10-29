@@ -229,7 +229,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 292 capabilities
+## PARTIAL — 291 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -527,11 +527,10 @@
 - **D09-027** — Detecção de status de agentes atribuídos e frescos para transição de cold-start | falta: cold start do caminho pintado a partir do sortOrder persistido | components/sidebar/smart-attention.ts:45
 - **D09-031** — Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido | falta: cold start: reordenar pelo sortOrder persistido até chegar o snapshot de agent status | components/sidebar/smart-sort.ts:167
 
-### D10-visibility-inbox-notices (14)
+### D10-visibility-inbox-notices (13)
 
 - **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: busca window.api.worktrees.getBranchRenameFailureOutput ao abrir (Hydra só renderiza a prop `error`; `worktreeId` é declarado e não usado — :11); resposta null mantém o excerto persistido; rejeição do IPC mantém o excerto; guard de staleness no cleanup | components/sidebar/AutoRenameFailedDialog.tsx:31
-- **D10-004** — Conter output multi-linha/token gigante sem quebrar o grid do dialog | falta: overflow-wrap:anywhere (Hydra usa `break-words`); padding-right reservado para botão de cópia flutuante (Hydra coloca o botão no header, não flutuante) | components/sidebar/AutoRenameFailedDialog.tsx:147
-- **D10-006** — Título e frase destrutiva do dialog (single, batch e lineage) | falta: copy de lineage (com filhos); copy não-destrutiva para folder workspace; targetLabel destacado / childTargetLabel | components/sidebar/DeleteWorktreeDialog.tsx:353
+- **D10-006** — Título e frase destrutiva do dialog (single, batch e lineage) | falta: copy não-destrutiva para folder workspace (o diálogo do Hydra só remove worktrees git; folder workspaces têm superfície própria) | components/sidebar/DeleteWorktreeDialog.tsx:353
 - **D10-013** — Confirmar delete: validar instâncias, disparar deletes paralelos e avisar caller | falta: validação de instanceId/hostId; toast 'Workspace list changed' + closeModal antes de deletar; closeModal imediato (Hydra mantém o dialog aberto até todos terminarem) | backend: {'be': ["invoke('delete_worktree') -> src-tauri/src/lib.rs:476"]} | components/sidebar/DeleteWorktreeDialog.tsx:258
 - **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: useDeleteWorktreeStatusHydration por host dono do alvo; AbortController / não reiniciar requests pendentes quando um alvo hidrata | components/sidebar/DeleteWorktreeDialog.tsx:188
 - **D10-018** — Compor a frase de descrição com alvo e alvo-filho | falta: childTargetLabel de lineage; classe de destaque do targetLabel | components/sidebar/DeleteWorktreeDialogDescription.tsx:19
