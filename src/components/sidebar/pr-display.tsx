@@ -33,6 +33,27 @@ export function getReviewStateTone(state: ReviewState): string {
   return "text-muted-foreground opacity-70";
 }
 
+/** Orca `getReviewLabel`: GitLab reviews are merge requests. */
+export function getReviewLabel(review: PrDisplay): "MR" | "PR" {
+  return review.provider === "gitlab" ? "MR" : "PR";
+}
+
+/** Orca `getProviderName`: used by tooltips to name the hosting provider. */
+export function getProviderName(review: PrDisplay): string {
+  switch (review.provider) {
+    case "gitlab":
+      return "GitLab";
+    case "bitbucket":
+      return "Bitbucket";
+    case "azure-devops":
+      return "Azure DevOps";
+    case "gitea":
+      return "Gitea";
+    default:
+      return "GitHub";
+  }
+}
+
 function getReviewStateIcon(state: ReviewState) {
   switch (state) {
     case "merged":
@@ -42,12 +63,13 @@ function getReviewStateIcon(state: ReviewState) {
     case "draft":
       return CircleDashed;
     default:
-      return GitPullRequest;
+      // An open review has no state-specific glyph; the provider decides it.
+      return null;
   }
 }
 
 export function reviewLabel(review: PrDisplay): string {
-  return `PR #${review.number ?? ""}`.trim();
+  return `${getReviewLabel(review)} #${review.number ?? ""}`.trim();
 }
 
 export function reviewStatusLabel(review: PrDisplay): string {
@@ -68,8 +90,12 @@ export function ReviewIcon({
   review: PrDisplay;
   className?: string;
 }): React.JSX.Element {
-  const Icon = getReviewStateIcon(review.state);
-  // A satisfied check keeps emerald; the icon still reads as a PR.
+  // Orca `ReviewIcon`: the state glyph wins; an open review falls back to the
+  // provider glyph (GitLab merge requests use GitMerge).
+  const StateIcon = getReviewStateIcon(review.state);
+  const Icon =
+    StateIcon ?? (review.provider === "gitlab" ? GitMerge : GitPullRequest);
+  // A satisfied check keeps emerald; the icon still reads as a review.
   const tone = getCheckTone(review) ?? getReviewStateTone(review.state);
   return <Icon className={cn(className, tone)} aria-hidden="true" />;
 }

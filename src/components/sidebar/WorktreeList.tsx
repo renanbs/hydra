@@ -64,6 +64,7 @@ import type { PrDisplay } from "./pr-display";
 import type {
   HydraProject,
   GitWorktreeInfo,
+  WorktreeReviewStatus,
   WorktreeSession,
   WorkspacePort,
   ProjectGroup,
@@ -1321,6 +1322,15 @@ export function WorktreeList({
               hasLiveTerminal: livePaths.has(wt.path),
             })}
             prDisplay={prByPath?.[wt.path] ?? null}
+            review={((): WorktreeReviewStatus | undefined => {
+              const display = prByPath?.[wt.path];
+              if (!display) return undefined;
+              return {
+                pr_number: display.number ?? null,
+                state: display.state,
+                provider: display.provider ?? null,
+              };
+            })()}
             project={proj}
             repo={proj}
             hideRepoBadge={isGrouped}

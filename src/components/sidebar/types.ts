@@ -146,6 +146,8 @@ export interface WorktreeReviewStatus {
   state?: "open" | "merged" | "closed" | "draft";
   url?: string | null;
   has_failing_checks?: boolean;
+  /** Hosting provider, when known (GitLab reviews are "MR"). */
+  provider?: "github" | "gitlab" | "bitbucket" | "azure-devops" | "gitea" | string | null;
 }
 
 export interface WorktreeSession {

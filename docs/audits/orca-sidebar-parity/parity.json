@@ -9647,19 +9647,18 @@
    "components/sidebar/worktree-review-helpers.tsx:12"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/pr-display.tsx:36-75",
-    "src/components/sidebar/WorktreeCardStatusLane.tsx:78"
+    "src/components/sidebar/pr-display.tsx:33-58",
+    "src/components/sidebar/WorktreeCardReviewBadge.tsx:20-60",
+    "src/components/sidebar/WorktreeList.tsx:1324-1336",
+    "src/components/sidebar/pr-display.parity.test.tsx:17-49",
+    "src/components/sidebar/WorktreeCardReviewBadge.parity.test.tsx:7-24"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Glifo por provedor (GitMerge para MR GitLab, variante generic)",
-    "getReviewLabel / getProviderName com MR para GitLab",
-    "Pílula com ícone de provedor (WorktreeCardReviewBadge não recebe review do mount)"
-   ],
-   "notes": "State icon and check tone paint the lane. Provider does not change the glyph or the word PR.",
-   "note": "State icon and check tone paint the lane. Provider does not change the glyph or the word PR."
+   "missing_behaviors": [],
+   "notes": "GitLab reviews render as MR with the merge glyph in both the lane icon and the card pill; provider names feed the tooltip. The mount now passes review to the pill.",
+   "note": "GitLab reviews render as MR with the merge glyph in both the lane icon and the card pill; provider names feed the tooltip. The mount now passes review to the pill."
   },
   "domain": "D04a-worktree-card-surface"
  },
