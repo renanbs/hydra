@@ -195,6 +195,7 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
       hideCliCreated: false,
       hideDetachedHead: false,
       alwaysShowDefaultBranch: false,
+      hideWorkspacesFromOtherDevices: false,
       filterProjectIds: [],
     });
 
@@ -277,5 +278,30 @@ describe("WorkspaceOptionsMenu project filter quick wins (D09)", () => {
   it("hides the Projects filter row when there is nothing to filter", () => {
     renderMenu({ projects: [PROJECTS[0]!] });
     expect(screen.queryByText("Projects")).toBeNull();
+  });
+});
+
+describe("WorkspaceOptionsMenu project order (Orca parity)", () => {
+  beforeEach(() => seedStore());
+  afterEach(() => {
+    useAppStore.setState({ visibleWorkspaceHostIds: null, workspaceHostScope: "all" });
+  });
+
+  it("offers Manual and Recent and persists the clicked choice", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({ options: { ...OPTIONS, groupBy: "repo" }, onOptionsChange });
+
+    fireEvent.click(screen.getByText("Project order"));
+    fireEvent.click(screen.getByText("Recent"));
+
+    expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, groupBy: "repo", projectsOrder: "recent" });
+  });
+
+  it("marks the current project order in the submenu label and hint", () => {
+    renderMenu({ options: { ...OPTIONS, groupBy: "repo", projectsOrder: "recent" } });
+
+    expect(screen.getByText("Recent")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Project order"));
+    expect(screen.getAllByText("Most recent workspace activity").length).toBeGreaterThan(0);
   });
 });

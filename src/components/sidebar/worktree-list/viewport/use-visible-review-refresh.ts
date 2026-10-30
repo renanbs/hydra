@@ -131,10 +131,33 @@ export function useVisiblePrRefreshReporting(args: {
       return
     }
     lastVisibleRefreshKeyRef.current = key
-    reportVisibleGitHubPRRefreshCandidates(
-      Array.from(new Set(visibleRows.map((row) => row.worktree.id))),
-      Date.now()
-    )
+    // Hydra resolves PRs through the `pr_status` host probe, not the Orca gh
+    // bridge, so the visible window drives a native refresh request (D03a-100).
+    const seen = new Set<string>()
+    const items = visibleRows
+      .map((row) => ({
+        path: row.worktree.path,
+        repoPath: row.repo?.path ?? "",
+        branch: row.worktree.branch ?? "",
+      }))
+      .filter((item) => {
+        if (!item.repoPath || !item.branch) return false
+        const dedupe = `${item.repoPath}::${item.branch}`
+        if (seen.has(dedupe)) return false
+        seen.add(dedupe)
+        return true
+      })
+    if (items.length > 0) {
+      window.dispatchEvent(
+        new CustomEvent("hydra:refresh-visible-prs", { detail: { items } })
+      )
+    }
+    if (typeof reportVisibleGitHubPRRefreshCandidates === "function") {
+      reportVisibleGitHubPRRefreshCandidates(
+        Array.from(new Set(visibleRows.map((row) => row.worktree.id))),
+        Date.now()
+      )
+    }
   }, [
     cardProps,
     documentVisibilityRevision,

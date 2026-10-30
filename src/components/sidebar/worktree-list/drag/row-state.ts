@@ -2,6 +2,7 @@
 // Source: orca/src/renderer/src/components/sidebar/worktree-list/drag/row-state.ts
 import type { WorktreeSidebarDragRect } from '../../worktree-sidebar-drag-autoscroll'
 import type { WorktreeSidebarDropPreview } from '../../worktree-sidebar-drop-preview'
+import type { ExecutionHostId } from '../../../../shared/execution-host'
 
 /**
  * The visual state a drag publishes to the rows: which card is floating, where the
@@ -42,6 +43,11 @@ export type WorktreePointerDrag = {
   reorderDraggedIds: readonly string[]
   reorderUnitDraggedIds: readonly string[]
   sourceGroupKey: string
+  /**
+   * The host the pressed card is painted for. Recovered from the row's host-qualified
+   * identity so a status/pin drop never writes another host's row (D03a-021).
+   */
+  executionHostId?: ExecutionHostId
   rects: readonly WorktreeSidebarDragRect[]
   active: boolean
   preview: HTMLElement | null

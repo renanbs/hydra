@@ -26,6 +26,7 @@ import {
   LEFT_SIDEBAR_MIN_WIDTH,
 } from "./components/sidebar/SidebarChrome";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
+import { useFolderWorkspacePathStatuses } from "./hooks/use-folder-workspace-path-statuses";
 import {
   createWorktreeFlagApplier,
   reconcileProjectFlagSet,
@@ -214,26 +215,33 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
   // resultado é um objeto fresco (nunca o blob mutado). filterProjectIds preenche
   // ausente/malformado com [] — mesma guarda do reader antigo do Shell.
   const src = value as Record<keyof WorkspaceDisplayOptions, unknown>;
-  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch } = src;
+  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch, projectsOrder, hideWorkspacesFromOtherDevices } = src;
   if (groupBy !== "none" && groupBy !== "workspace-status" && groupBy !== "repo") return undefined;
   if (sortBy !== "agent-activity" && sortBy !== "name" && sortBy !== "recent") return undefined;
   if (
     typeof hideSleeping !== "boolean" || typeof hideDefaultBranch !== "boolean" ||
     typeof hideAutomationCreated !== "boolean" || typeof hideCliCreated !== "boolean" ||
     typeof hideDetachedHead !== "boolean" ||
-    (alwaysShowDefaultBranch !== undefined && typeof alwaysShowDefaultBranch !== "boolean")
+    (alwaysShowDefaultBranch !== undefined && typeof alwaysShowDefaultBranch !== "boolean") ||
+    (hideWorkspacesFromOtherDevices !== undefined && typeof hideWorkspacesFromOtherDevices !== "boolean")
   ) {
+    return undefined;
+  }
+  // Malformed/absent project order degrades to Manual, the persisted default.
+  if (projectsOrder !== undefined && projectsOrder !== "manual" && projectsOrder !== "recent") {
     return undefined;
   }
   return {
     groupBy,
     sortBy,
+    projectsOrder: projectsOrder === "recent" ? "recent" : "manual",
     hideSleeping,
     hideDefaultBranch,
     hideAutomationCreated,
     hideCliCreated,
     hideDetachedHead,
     alwaysShowDefaultBranch: alwaysShowDefaultBranch === true,
+    hideWorkspacesFromOtherDevices: hideWorkspacesFromOtherDevices === true,
     filterProjectIds: asStringArrayPref(src.filterProjectIds) ?? [],
   };
 }
@@ -1343,8 +1351,10 @@ export default function App() {
       });
   };
 
+  const [scanFailuresByProject, setScanFailuresByProject] = useState<Record<string, string>>({});
   const refreshAllWorktrees = useCallback((projs: HydraProject[]): Promise<boolean> => {
     if (projs.length === 0) return Promise.resolve(true);
+    const failures: { repoPath: string; message: string }[] = [];
     // Why count fallbacks: a failed authoritative scan is what a caller must be able
     // to roll back against (D10-063); silently painting the legacy list hid it.
     let authoritativeFailures = 0;
@@ -1352,8 +1362,9 @@ export default function App() {
       projs.map((proj) =>
         invoke<{ visible: GitWorktreeInfo[]; hidden: GitWorktreeInfo[]; isSuppressed: boolean }>("scan_worktrees", { repoPath: proj.path })
           .then((scan) => ({ path: proj.path, wts: scan.visible, hidden: scan.hidden }))
-          .catch(() => {
+          .catch((error) => {
             authoritativeFailures += 1;
+            failures.push({ repoPath: proj.path, message: String(error) });
             return invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath: proj.path })
               .then((wts) => ({ path: proj.path, wts, hidden: [] as GitWorktreeInfo[] }))
               .catch(() => ({ path: proj.path, wts: [] as GitWorktreeInfo[], hidden: [] as GitWorktreeInfo[] }))
@@ -1368,6 +1379,9 @@ export default function App() {
       }
       setWorktreesByProject(map);
       setHiddenWorktreesByProject(hiddenMap);
+      setScanFailuresByProject(
+        Object.fromEntries(failures.map((failure) => [failure.repoPath, failure.message]))
+      );
       // D07 G7: hidrata pin/unread do banco a partir do MESMO payload do scan que
       // já trouxe display_name/status. O payload é keyed por path; a main worktree
       // (path === project.path) é o elo com os Sets por id de projeto.
@@ -2455,6 +2469,72 @@ export default function App() {
     [ensureWorkspaceTerminal]
   );
 
+  /** D03a-100: visible sidebar rows request a PR refresh; the host `pr_status`
+   * probe answers, so scrolling to a stale card refreshes exactly those branches. */
+  const prVisibleRefreshAtRef = useRef<Map<string, number>>(new Map());
+  useEffect(() => {
+    const handleVisiblePrRefresh = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        items: Array<{ path: string; repoPath: string; branch: string }>;
+      }>).detail;
+      if (!detail?.items?.length) return;
+      const now = Date.now();
+      const pending = detail.items.filter((item) => {
+        const key = `${item.repoPath}::${item.branch}`;
+        const last = prVisibleRefreshAtRef.current.get(key) ?? 0;
+        if (now - last < 20_000) return false;
+        prVisibleRefreshAtRef.current.set(key, now);
+        return true;
+      });
+      if (pending.length === 0) return;
+      void Promise.all(
+        pending.map((item) =>
+          invoke<{ number: number; state: string; checks?: string | null } | null>("pr_status", {
+            repoPath: item.repoPath,
+            branch: item.branch,
+          })
+            .then((status) => ({ item, status }))
+            .catch(() => ({ item, status: null }))
+        )
+      ).then((results) => {
+        setPrByPath((prev) => {
+          const next = { ...prev };
+          for (const { item, status } of results) {
+            if (status) {
+              next[item.path] = {
+                number: status.number,
+                state: status.state as PrDisplay["state"],
+                status: (status.checks ?? null) as PrDisplay["status"],
+                provider: "github",
+              };
+            } else {
+              delete next[item.path];
+            }
+          }
+          return next;
+        });
+      });
+    };
+    window.addEventListener("hydra:refresh-visible-prs", handleVisiblePrRefresh);
+    return () =>
+      window.removeEventListener("hydra:refresh-visible-prs", handleVisiblePrRefresh);
+  }, []);
+
+  /** Workspace key that owns diff review notes for the active surface. */
+  const activeNotesKey = useMemo(() => {
+    const path = activeWorktreePath || activeProject?.path || "";
+    if (!path) return undefined;
+    const folderWorkspace = folderWorkspaces.find(
+      (workspace) => workspace.folderPath === path
+    );
+    if (folderWorkspace) return `folder:${folderWorkspace.id}`;
+    for (const list of Object.values(worktreesByProject)) {
+      const match = list.find((worktree) => worktree.path === path);
+      if (match?.id) return match.id;
+    }
+    return undefined;
+  }, [activeWorktreePath, activeProject?.path, folderWorkspaces, worktreesByProject]);
+
   /** Review display per worktree: one `pr_status` probe per repo/branch, cached for
    * the session so a re-render never re-shells out to `gh`. */
   useEffect(() => {
@@ -2514,27 +2594,20 @@ export default function App() {
   );
 
   /** Folder workspaces whose directory is gone: Orca badges those with FolderX
-   * (`FolderPathStatusIndicator`); the host probe is `path_exists`. */
-  const [missingFolderPaths, setMissingFolderPaths] = useState<Set<string>>(new Set());
-  useEffect(() => {
-    if (folderWorkspaces.length === 0) return;
-    let cancelled = false;
-    Promise.all(
-      folderWorkspaces.map((w) =>
-        invoke<boolean>("path_exists", { path: w.folderPath })
-          .then((exists) => ({ path: w.folderPath, exists }))
-          .catch(() => ({ path: w.folderPath, exists: true }))
-      )
-    ).then((results) => {
-      if (cancelled) return;
-      setMissingFolderPaths(
-        new Set(results.filter((r) => !r.exists).map((r) => r.path))
-      );
+   * (`FolderPathStatusIndicator`). The probe is cached and revalidated on
+   * repo/ssh/runtime changes (D03a-057). */
+  const folderPathStatusEpoch = useAppStore((state) => {
+    const environments = state.runtimeEnvironments;
+    const environmentCount = Array.isArray(environments)
+      ? environments.length
+      : Object.keys(environments ?? {}).length;
+    return `${state.repos?.length ?? 0}:${environmentCount}:${state.sshConnectedGeneration ?? 0}`;
+  });
+  const { missingFolderPaths, statusByPath: folderPathStatusByPath } =
+    useFolderWorkspacePathStatuses({
+      folderWorkspaces,
+      epoch: folderPathStatusEpoch,
     });
-    return () => {
-      cancelled = true;
-    };
-  }, [folderWorkspaces]);
 
   const handleLaunchAgent = (agent: AvailableAgent) => {
     const currentWorkspacePath = activeWorktreePathRef.current || activeProject?.path || "";
@@ -4228,6 +4301,8 @@ export default function App() {
                 folderWorkspaces={folderWorkspaces}
                 liveWorkspacePaths={liveWorkspacePaths}
                 missingFolderPaths={missingFolderPaths}
+                folderPathStatusByPath={folderPathStatusByPath}
+                scanFailuresByProject={scanFailuresByProject}
                 onActivateFolderWorkspace={handleActivateFolderWorkspace}
                 prByPath={prByPath}
                 initialSidebarBody={initialSidebarPrefs?.sidebarBody}
@@ -4293,6 +4368,8 @@ export default function App() {
                       modified={c.modified} 
                       language={c.lang}
                       theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
+                      notesKey={activeNotesKey}
+                      filePath={currentTab.filePath ?? currentTab.title}
                     />
                   );
                 })() : currentTab?.type === "editor" ? (() => {

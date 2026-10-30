@@ -30,6 +30,10 @@ export type VirtualizedWorktreeViewportProps = {
   pinnedDisplayPolicy: PinnedWorktreeDisplayPolicy
   /** Workspace or folder path the list must bring into view; null when nothing is revealed. */
   revealPath: string | null
+  /** Pending reveal of an arbitrary sidebar row (headers included). */
+  revealRowKey?: string | null
+  /** Called once the row-key reveal issued a scroll (or exhausted its retries). */
+  onRevealRowIssued?: () => void
   renderRow: (row: HostSectionRow, slot: WorktreeVirtualRowSlot) => React.ReactNode
   /** Arrow-key navigation activated this row. */
   onActivateRow: (row: WorktreeRow) => void

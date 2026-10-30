@@ -210,10 +210,70 @@ async fn delete_path_cmd(path: String) -> Result<(), String> {
 /// Folder-workspace path health (`FolderPathStatusIndicator` needs it): Orca asks the
 /// host whether the folder still exists; Hydra had no probe at all.
 #[tauri::command]
+async fn load_diff_comments(worktree_key: String) -> Result<Vec<serde_json::Value>, String> {
+    tokio::task::spawn_blocking(move || {
+        let db_path = db::default_db_path()?;
+        db::load_diff_comments_at(&db_path, &worktree_key)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn save_diff_comments(
+    worktree_key: String,
+    comments: Vec<serde_json::Value>,
+) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || {
+        let db_path = db::default_db_path()?;
+        db::save_diff_comments_at(&db_path, &worktree_key, &comments)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn path_exists(path: String) -> bool {
     tokio::task::spawn_blocking(move || std::path::Path::new(&path).is_dir())
         .await
         .unwrap_or(false)
+}
+/// Why a dedicated status: the FolderX badge must not fire for an unreadable path.
+/// Orca distinguishes "missing" / "not-directory" (confirmed stale) from transient
+/// probe failures, which stay silent.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FolderPathStatus {
+    path: String,
+    exists: bool,
+    reason: Option<String>,
+}
+#[tauri::command]
+async fn folder_path_status(path: String) -> Result<FolderPathStatus, String> {
+    tokio::task::spawn_blocking(move || match std::fs::metadata(&path) {
+        Ok(metadata) if metadata.is_dir() => FolderPathStatus {
+            path: path.clone(),
+            exists: true,
+            reason: None,
+        },
+        Ok(_) => FolderPathStatus {
+            path: path.clone(),
+            exists: false,
+            reason: Some("not-directory".to_string()),
+        },
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => FolderPathStatus {
+            path: path.clone(),
+            exists: false,
+            reason: Some("missing".to_string()),
+        },
+        Err(_) => FolderPathStatus {
+            path: path.clone(),
+            exists: false,
+            reason: Some("unavailable".to_string()),
+        },
+    })
+    .await
+    .map_err(|e| e.to_string())
 }
 #[tauri::command]
 async fn get_branch_commits_cmd(repoPath: String, baseRef: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
@@ -435,13 +495,53 @@ async fn set_project_worktree_base(path: String, base_path: Option<String>) -> R
 async fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
     list_git_worktrees(&repo_path)
 }
+/// Structured failure payload for `scan_worktrees`.
+///
+/// The command's error channel is a `String` (the renderer stores it verbatim in
+/// `scanFailuresByProject`), so the failure is serialized as JSON in that string:
+/// the renderer can classify older raw messages and still read the structured
+/// `failureKind` / `fixCommand` from newer hosts. Mirrors
+/// `src/shared/worktree-scan-failure.ts`.
+fn worktree_scan_failure_payload(message: String) -> String {
+    let failure_kind = classify_worktree_scan_failure(&message);
+    serde_json::json!({
+        "failureKind": failure_kind,
+        "message": message,
+        "fixCommand": worktree_scan_fix_command(failure_kind),
+    })
+    .to_string()
+}
+
+fn classify_worktree_scan_failure(message: &str) -> &'static str {
+    let lower = message.to_ascii_lowercase();
+    if lower.contains("agreeing to the xcode/ios license requires admin privileges") {
+        "xcode-license"
+    } else if lower.contains("no developer tools were found") {
+        "developer-tools"
+    } else if lower.contains("unknown system error -86")
+        || lower.contains("ebadarch")
+        || lower.contains("bad cpu type in executable")
+    {
+        "architecture-mismatch"
+    } else {
+        "unknown"
+    }
+}
+
+fn worktree_scan_fix_command(failure_kind: &str) -> Option<&'static str> {
+    match failure_kind {
+        "xcode-license" => Some("sudo xcodebuild -license"),
+        "developer-tools" => Some("xcode-select --install"),
+        _ => None,
+    }
+}
+
 #[tauri::command]
 async fn scan_worktrees(repo_path: String) -> Result<ProjectWorktreeScanResult, String> {
-    tokio::task::spawn_blocking(move || {
-        scan_project_worktrees(&repo_path)
-    })
-    .await
-    .map_err(|e| e.to_string())?
+    tokio::task::spawn_blocking(move || scan_project_worktrees(&repo_path))
+        .await
+        .map_err(|e| worktree_scan_failure_payload(e.to_string()))?
+        .map_err(worktree_scan_failure_payload)
 }
 
 /// PR status for `branch` in `repo_path`, via the optional `gh` CLI.
@@ -1719,6 +1819,9 @@ pub fn run() {
             rename_path_cmd,
             delete_path_cmd,
             path_exists,
+            folder_path_status,
+            load_diff_comments,
+            save_diff_comments,
             get_branch_commits_cmd,
             git_push_cmd,
             git_pull_cmd,

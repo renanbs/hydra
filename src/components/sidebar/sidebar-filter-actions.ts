@@ -1,6 +1,8 @@
 import { ALL_EXECUTION_HOSTS_SCOPE } from '../../shared/execution-host'
 import { DEFAULT_SHOW_SLEEPING_WORKSPACES } from '../../shared/constants'
 import type { SidebarFilterState } from './visible-worktree-kinds'
+import type { WorkspaceDisplayOptions } from './WorkspaceOptionsMenu'
+import type { ExecutionHostId, ExecutionHostScope } from '../../shared/execution-host'
 
 /**
  * Whether the sidebar is currently filtered, and what "clear filters" should undo.
@@ -76,3 +78,50 @@ export function computeClearFilterActions(state: SidebarFilterState): ClearFilte
  * new filter added in one but not the other would silently break the mapping
  * between badge numbers and the Cmd+N shortcut target.
  */
+
+export type SidebarClearPlan = {
+  /** Display options after the selective reset (same object when nothing changed). */
+  displayOptions: WorkspaceDisplayOptions
+  resetHostScope: boolean
+  changed: boolean
+}
+
+/**
+ * Selective Clear Filters for the shell's options state: maps the option blob onto
+ * the filter state Orca's `computeClearFilterActions` reads, then patches only the
+ * flags that were actually narrowing the list. Persisting is the caller's job.
+ */
+export function planSidebarClearFilters(
+  displayOptions: WorkspaceDisplayOptions,
+  hostState: {
+    visibleWorkspaceHostIds: readonly ExecutionHostId[] | null
+    workspaceHostScope: ExecutionHostScope
+  }
+): SidebarClearPlan {
+  const actions = computeClearFilterActions({
+    showSleepingWorkspaces: !displayOptions.hideSleeping,
+    filterRepoIds: displayOptions.filterProjectIds ?? [],
+    hideDefaultBranchWorkspace: displayOptions.hideDefaultBranch,
+    hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
+    hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
+    hideDetachedHeadWorkspaces: displayOptions.hideDetachedHead,
+    hideWorkspacesFromOtherDevices: false,
+    alwaysShowDefaultBranchWorkspace: displayOptions.alwaysShowDefaultBranch,
+    visibleWorkspaceHostIds: hostState.visibleWorkspaceHostIds,
+    workspaceHostScope: hostState.workspaceHostScope,
+  })
+  const patches: Partial<WorkspaceDisplayOptions> = {}
+  if (actions.resetShowSleepingWorkspaces) patches.hideSleeping = false
+  if (actions.resetFilterRepoIds) patches.filterProjectIds = []
+  if (actions.resetHideDefaultBranchWorkspace) patches.hideDefaultBranch = false
+  if (actions.resetHideAutomationGeneratedWorkspaces) patches.hideAutomationCreated = false
+  if (actions.resetHideCliCreatedWorkspaces) patches.hideCliCreated = false
+  if (actions.resetHideDetachedHeadWorkspaces) patches.hideDetachedHead = false
+  if (actions.resetAlwaysShowDefaultBranchWorkspace) patches.alwaysShowDefaultBranch = true
+  const changed = Object.keys(patches).length > 0 || actions.resetVisibleWorkspaceHostIds
+  return {
+    displayOptions: Object.keys(patches).length > 0 ? { ...displayOptions, ...patches } : displayOptions,
+    resetHostScope: actions.resetVisibleWorkspaceHostIds,
+    changed,
+  }
+}

@@ -623,7 +623,7 @@ describe("WorktreeList row model (Orca parity)", () => {
     });
 
     it("wins when the filters hid every row kind", () => {
-      renderList({
+      const { container } = renderList({
         projects: [PROJECT_A],
         worktreesByProject: {
           [PROJECT_A.path]: [
@@ -635,6 +635,10 @@ describe("WorktreeList row model (Orca parity)", () => {
       });
 
       expect(screen.getByText("No workspaces found")).toBeInTheDocument();
+      // Orca tags the same surface as the tour anchor for the workspace list.
+      expect(
+        container.querySelector('[data-contextual-tour-target="workspace-list"]')
+      ).not.toBeNull();
       expect(screen.getByRole("button", { name: /clear filters/i })).toBeInTheDocument();
     });
 

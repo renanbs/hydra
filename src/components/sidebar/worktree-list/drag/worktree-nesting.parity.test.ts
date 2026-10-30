@@ -340,7 +340,12 @@ describe("list section drops (D03a-009 / D03a-010)", () => {
 
     commitWorktreePointerDrop({ drag: drag(), ctx });
 
-    expect(ctx.onAssignWorktreesStatus).toHaveBeenCalledWith(["child"], "in-progress");
+    // The source host is part of the write now (D03a-021); this drag has none.
+    expect(ctx.onAssignWorktreesStatus).toHaveBeenCalledWith(
+      ["child"],
+      "in-progress",
+      undefined
+    );
     expect(ctx.onReorderWorktrees).not.toHaveBeenCalled();
     expect(ctx.onNestWorktrees).not.toHaveBeenCalled();
     expect(ctx.clearWorktreeDrag).toHaveBeenCalledTimes(1);
@@ -353,7 +358,7 @@ describe("list section drops (D03a-009 / D03a-010)", () => {
 
     commitWorktreePointerDrop({ drag: drag(), ctx });
 
-    expect(ctx.onPinWorktrees).toHaveBeenCalledWith(["child"]);
+    expect(ctx.onPinWorktrees).toHaveBeenCalledWith(["child"], undefined);
     expect(ctx.onAssignWorktreesStatus).not.toHaveBeenCalled();
     expect(ctx.onReorderWorktrees).not.toHaveBeenCalled();
   });

@@ -7,6 +7,8 @@ import {
   setSidebarPointerDragDocumentStyles
 } from '../pointer-drag-dom'
 import { getWorktreeSidebarDragGrab } from '../../worktree-sidebar-drag-geometry'
+import { getExecutionHostIdFromWorktreeHostIdentity } from '../../../../shared/worktree/host-qualified-identity'
+import type { ExecutionHostId } from '../../../../shared/execution-host'
 import { getWorktreeSidebarDragRectsForGroup } from '../../worktree-sidebar-drag-autoscroll'
 import { hasWorkspaceBoardSidebarDropBoard } from '../../workspace-board/workspace-board-sidebar-drop'
 import type { WorktreeDropCommitContext } from './drop-commit-context'
@@ -19,6 +21,12 @@ import { EMPTY_WORKTREE_DRAG_PREVIEW_OFFSETS, type WorktreePointerDrag } from '.
 
 /** How long a click after a finished drag is swallowed, so a drop never selects a card. */
 const WORKTREE_CLICK_SUPPRESSION_MS = 500
+
+/** The row paints its host-qualified identity; the drag carries the host it names. */
+function getSourceRowExecutionHostId(sourceRow: HTMLElement): ExecutionHostId | undefined {
+  const identity = sourceRow.getAttribute('data-worktree-host-identity')
+  return identity ? getExecutionHostIdFromWorktreeHostIdentity(identity) : undefined
+}
 
 export type WorktreeRowPointerDragHandlers = {
   handleRowPointerDown: (
@@ -157,6 +165,7 @@ export function useWorktreePointerDrag(args: {
         reorderDraggedIds,
         reorderUnitDraggedIds,
         sourceGroupKey,
+        executionHostId: getSourceRowExecutionHostId(sourceRow),
         rects,
         active: false,
         preview: null,

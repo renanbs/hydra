@@ -6,10 +6,13 @@
 import { LoaderCircle } from "lucide-react";
 
 export function PendingWorktreeCreationRow({
+  creationId,
   branchName,
   agentName,
   repoName,
 }: {
+  /** Stable id of the in-flight create the optimistic row belongs to (Orca `PendingWorktreeRow`). */
+  creationId?: string;
   branchName?: string;
   agentName?: string;
   repoName?: string;
@@ -18,6 +21,7 @@ export function PendingWorktreeCreationRow({
     <div
       role="status"
       aria-live="polite"
+      data-pending-worktree-creation-id={creationId}
       className="mx-1 my-0.5 ml-3 flex min-h-8 min-w-0 items-center gap-2 rounded-md border border-worktree-sidebar-border px-2 py-1.5 text-[11px] leading-none text-muted-foreground"
     >
       <LoaderCircle className="size-3.5 shrink-0 animate-spin" aria-hidden="true" />

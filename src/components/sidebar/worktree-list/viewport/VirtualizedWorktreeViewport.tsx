@@ -44,6 +44,8 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
   groupBy,
   pinnedDisplayPolicy,
   revealPath,
+  revealRowKey,
+  onRevealRowIssued,
   renderRow,
   onActivateRow,
   onToggleRowCollapse,
@@ -102,8 +104,10 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
   useWorktreeListRevealScroll({
     rows,
     revealPath,
+    revealRowKey,
     virtualizer: virtualization.virtualizer,
-    markDirectScrollInput
+    markDirectScrollInput,
+    onRevealIssued: onRevealRowIssued
   })
 
   useVisiblePrRefreshReporting({ groupBy, rows, virtualItems, scrollRef: containerRef })
@@ -161,6 +165,7 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
         role="listbox"
         aria-label={translate('auto.components.sidebar.WorktreeList.bfbedc547b', 'Worktrees')}
         aria-orientation="vertical"
+        aria-multiselectable="true"
         aria-activedescendant={activeDescendantOptionId}
         onKeyDown={handleContainerKeyDown}
         onScroll={handleScroll}

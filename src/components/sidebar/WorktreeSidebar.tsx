@@ -12,11 +12,18 @@ import {
   Plus,
   FolderTree,
   FolderPlus,
+  ChevronRight,
+  Shapes,
 } from "lucide-react";
+import { toast } from "sonner";
 import { SidebarNav } from "./SidebarNav";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
 import { WorktreeList } from "./WorktreeList";
+import type { RepoHeaderCreateState } from "./SectionHeader";
+import { stopRepoHeaderMenuEvent } from "./ProjectHeaderActions";
+import { translate } from "../../i18n/i18n";
+import { effectiveExternalWorktreeVisibility } from "../../lib/worktree-visibility-sources";
 import { lazyWithRetry } from "../../lib/lazy-with-retry";
 
 // Why lazy: the Agents list pulls the whole activity pipeline (virtualizer, markdown
@@ -29,6 +36,26 @@ import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
 import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import { planSidebarClearFilters } from "./sidebar-filter-actions";
+import { isRevealTargetHiddenByFilters } from "./reveal-hidden-filters";
+import {
+  getFolderWorkspaceRevealGroupKeys,
+  getKnownSidebarWorktreeById,
+  getPinnedWorktreeRevealCollapsedGroupKeys,
+  getRevealCandidateWorktrees,
+  getRevealMountedOptionIds,
+  sidebarWorkspaceStillExists,
+  type SidebarRevealFolderWorkspace,
+} from "./sidebar-reveal-lookups";
+import { getWorktreeLineageGroupKey } from "./worktree-list/grouping/group-keys";
+import {
+  getGroupKeysForWorktree,
+  getRevealGroupKeysToExpand,
+} from "./worktree-list/grouping/worktree-group-keys";
+import { useSettledSortEpoch } from "./worktree-list/listing/use-sort-settle-epoch";
+import { getIndexedAllWorktrees } from "../../store/worktree-repo-index";
+import type { ProjectGroup } from "../../shared/project-group-types";
+import type { Worktree } from "../../shared/worktree/types";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
@@ -49,7 +76,7 @@ import type {
 } from "./types";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
-import { applyPersistedWorktreeOrder, sortSidebarWorktrees } from "./sidebar-worktree-sort";
+import { applyPersistedWorktreeOrder, resolveComparatorSortBy, sortSidebarWorktrees } from "./sidebar-worktree-sort";
 import { resolveWorktreeAttentionFromSessions } from "./sidebar-session-attention";
 import { useAppStore } from "../../store";
 import { getRepoExecutionHostId } from "../../shared/execution-host";
@@ -58,9 +85,47 @@ import { revealElementInScrollContainer } from "./worktree-sidebar-reveal";
 import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
 import { RemoveFolderDialog } from "./RemoveFolderDialog";
 import SuppressExternalWorktreeInboxDialog from "./SuppressExternalWorktreeInboxDialog";
+import { RevealHiddenWorkspaceDialog } from "./RevealHiddenWorkspaceDialog";
+import { AgentSendTargetPicker } from "./AgentSendTargetPicker";
 import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
 export * from "./types";
+
+/** Orca `MAX_REVEAL_RETRIES`: the row may mount a frame or two after the expand commit. */
+const MAX_REVEAL_RETRIES = 8;
+
+// Why module constants: the reveal callback lists these props as dependencies, and a
+// fresh `[]` default on every render would invalidate it (and replay a pending reveal).
+const EMPTY_PROJECT_GROUPS: NonNullable<WorktreeSidebarProps["projectGroups"]> = [];
+const EMPTY_FOLDER_WORKSPACES: NonNullable<WorktreeSidebarProps["folderWorkspaces"]> = [];
+const EMPTY_PROJECT_GROUP_MAP: NonNullable<WorktreeSidebarProps["projectGroupMap"]> = {};
+/** Store shape guard: the worktree slice is still an auto-stub on this branch (may be null). */
+const EMPTY_STORE_PROJECT_GROUPS: readonly ProjectGroup[] = [];
+
+/**
+ * Host stamp the row pipeline gives a workspace row: only repos owned by a non-local
+ * execution host get one (`buildHostIdByRepoId`). Option ids are built from the same stamp,
+ * so a reveal that always stamped `local` would never match a local row's option id.
+ */
+function getRowHostId(
+  repo: { connectionId?: string | null; executionHostId?: string | null } | undefined
+) {
+  return repo && (repo.connectionId || repo.executionHostId)
+    ? getRepoExecutionHostId(repo)
+    : undefined;
+}
+
+type SidebarRevealOptions = {
+  highlight?: boolean;
+  beginRename?: boolean;
+  /** Settles the caller's pending request once the row is mounted and scrolled. */
+  onRevealSettled?: () => void;
+  /**
+   * No mounted row after {@link MAX_REVEAL_RETRIES} frames. The caller decides whether
+   * the target still exists (keep the request pending) or vanished (clear it).
+   */
+  onRevealExhausted?: () => void;
+};
 
 const defaultDisplayOptions: WorkspaceDisplayOptions = {
   groupBy: "repo",
@@ -71,6 +136,8 @@ const defaultDisplayOptions: WorkspaceDisplayOptions = {
   hideCliCreated: false,
   hideDetachedHead: false,
   alwaysShowDefaultBranch: false,
+  projectsOrder: "manual",
+  hideWorkspacesFromOtherDevices: false,
 };
 
 export function WorktreeSidebar({
@@ -117,11 +184,13 @@ export function WorktreeSidebar({
   pinnedWorktrees,
   unreadWorktrees,
   hiddenWorktreesByProject,
-  projectGroupMap = {},
-  projectGroups = [],
-  folderWorkspaces = [],
+  projectGroupMap = EMPTY_PROJECT_GROUP_MAP,
+  projectGroups = EMPTY_PROJECT_GROUPS,
+  folderWorkspaces = EMPTY_FOLDER_WORKSPACES,
   liveWorkspacePaths,
   missingFolderPaths,
+  folderPathStatusByPath,
+  scanFailuresByProject = {},
   prByPath,
   onActivateFolderWorkspace,
   onDeleteFolderWorkspace,
@@ -172,10 +241,22 @@ export function WorktreeSidebar({
   const [portsByWorktree, setPortsByWorktree] = useState<Map<string, WorkspacePort[]>>(() => new Map());
   const [highlightedRevealPath, setHighlightedRevealPath] = useState<string | null>(null);
   const highlightTimerRef = useRef<number | null>(null);
+  // D03a-090: the reveal highlight timer must not fire into an unmounted panel.
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current !== null) {
+        window.clearTimeout(highlightTimerRef.current);
+        highlightTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // Context Menu state
   const [activeProjectMenu, setActiveProjectMenu] = useState<{ proj: HydraProject; x: number; y: number } | null>(null);
   const [activeGroupMenu, setActiveGroupMenu] = useState<{ group: { id: string; name: string }; x: number; y: number } | null>(null);
+  // Orca `RepoHeaderProjectActionsMenu`: "Move to group" is a submenu, not a flat
+  // list of rows; the current group stays visible and disabled.
+  const [projectMenuSubmenu, setProjectMenuSubmenu] = useState<"move-to-group" | null>(null);
   const [removeProjectTarget, setRemoveProjectTarget] = useState<HydraProject | null>(null);
   const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
   const [suppressInboxPending, setSuppressInboxPending] = useState(false);
@@ -220,6 +301,8 @@ export function WorktreeSidebar({
     description: string;
     initialName?: string;
     confirmLabel?: string;
+    /** Owner host of the group row, so rename targets the host that holds it. */
+    hostId?: string;
     onSubmit: (name: string) => Promise<void> | void;
   }>({
     open: false,
@@ -232,9 +315,12 @@ export function WorktreeSidebar({
   const [groupDeleteDialog, setGroupDeleteDialog] = useState<{
     open: boolean;
     group: { id: string; name: string } | null;
+    hostId?: string;
+    removeContainedProjects: boolean;
   }>({
     open: false,
     group: null,
+    removeContainedProjects: false,
   });
 
   const [visibilityDialog, setVisibilityDialog] = useState<{
@@ -286,6 +372,11 @@ export function WorktreeSidebar({
     window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
   }, []);
   const pendingRevealWorktree = useAppStore((state) => state.pendingRevealWorktree);
+  const pendingRevealSidebarRow = useAppStore((state) => state.pendingRevealSidebarRow);
+  const agentSendTargetMode = useAppStore((state) => state.agentSendPopoverTargetMode);
+  const clearPendingRevealSidebarRow = useAppStore(
+    (state) => state.clearPendingRevealSidebarRow
+  );
   const clearPendingRevealWorktreeId = useAppStore((state) => state.clearPendingRevealWorktreeId);
   const { isProjectDropActive } = useSidebarProjectDrop({
     enabled: true,
@@ -340,6 +431,35 @@ export function WorktreeSidebar({
     () => projects.flatMap((project) => getWorktreesForProject(project)),
     [projects, getWorktreesForProject]
   );
+
+  // D03a-050: the shell owns the real sort signal — one epoch bumped by manual reorders and
+  // by meaningful external changes (agent/terminal status, workspace status). The settle gate
+  // decides when it may reach the painted order, so background attention ticks cannot reorder
+  // rows mid-read. Membership changes bypass the gate through the worktree count.
+  const [sortEpoch, setSortEpoch] = useState(0);
+  const appliedSortEpoch = useSettledSortEpoch({
+    sortBy: resolveComparatorSortBy(displayOptions.sortBy),
+    sortEpoch,
+    worktreeCount: allWorktrees.length,
+  });
+  const lastSortSignalRef = useRef<string | null>(null);
+  useEffect(() => {
+    const signal = [
+      sessions
+        .map((session) => `${session.id}:${session.state}:${session.updated_at}`)
+        .join(","),
+      allWorktrees
+        .map((worktree) => `${worktree.path}:${worktree.status ?? ""}:${worktree.branch}`)
+        .join(","),
+    ].join("|");
+    if (lastSortSignalRef.current === null) {
+      lastSortSignalRef.current = signal;
+      return;
+    }
+    if (lastSortSignalRef.current === signal) return;
+    lastSortSignalRef.current = signal;
+    setSortEpoch((epoch) => epoch + 1);
+  }, [sessions, allWorktrees]);
 
   useEffect(() => {
     let cancelled = false;
@@ -490,25 +610,63 @@ export function WorktreeSidebar({
   // writer per preference, no parallel state.
   const setWorkspaceHostScope = useAppStore((s) => s.setWorkspaceHostScope);
   const storeRepos = useAppStore((s) => s.repos);
+  const storeSettings = useAppStore((s) => s.settings);
+  // Store shape guard: the auto-stubbed slice can publish null before hydration.
+  const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses) ?? undefined;
+  // Why the store rows: the shell passes the sidebar only `{id,name}` group labels, while
+  // reveal ancestry needs the full `ProjectGroup` (parentGroupId) of the row pipeline.
+  const storeProjectGroups =
+    useAppStore((s) => s.projectGroups) ?? EMPTY_STORE_PROJECT_GROUPS;
+
+  /** Repo labels for Project sort and reveal ancestry, projected once for the sidebar. */
+  const pipelineRepoMap = useMemo(
+    () =>
+      new Map(
+        projects.map((project) => [
+          project.id,
+          toPipelineRepo({
+            project,
+            projectGroupId: projectGroupMap?.[project.id] ?? null,
+            hostId: undefined,
+          }),
+        ])
+      ),
+    [projects, projectGroupMap]
+  );
+  // The sidebar model carries no connection fields, so host-scoped work reads the
+  // store's repo rows by path; a project without a store row has no host stamp.
+  const repoByPath = useMemo(
+    () => new Map(storeRepos.map((repo) => [repo.path, repo])),
+    [storeRepos]
+  );
   const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
+  const setWorkspaceHostOrder = useAppStore((s) => s.setWorkspaceHostOrder);
   const handleClearSidebarFilters = useCallback(() => {
-    const next: WorkspaceDisplayOptions = {
-      ...displayOptions,
-      hideSleeping: false,
-      hideDefaultBranch: false,
-      hideAutomationCreated: false,
-      hideCliCreated: false,
-      hideDetachedHead: false,
-      alwaysShowDefaultBranch: false,
-      filterProjectIds: [],
-    };
-    setDisplayOptions(next);
-    notifyPrefs({ displayOptions: next });
-    setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
-    setVisibleWorkspaceHostIds(null);
-  }, [displayOptions, notifyPrefs, setWorkspaceHostScope, setVisibleWorkspaceHostIds]);
+    // Orca `clearFilters`: reset only the filters that are actually set, so the
+    // button never churns unrelated display options or the debounced write-back.
+    const plan = planSidebarClearFilters(displayOptions, {
+      visibleWorkspaceHostIds: storeVisibleWorkspaceHostIds,
+      workspaceHostScope: storeWorkspaceHostScope,
+    });
+    if (!plan.changed) return;
+    if (plan.displayOptions !== displayOptions) {
+      setDisplayOptions(plan.displayOptions);
+      notifyPrefs({ displayOptions: plan.displayOptions });
+    }
+    if (plan.resetHostScope) {
+      setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
+      setVisibleWorkspaceHostIds(null);
+    }
+  }, [
+    displayOptions,
+    notifyPrefs,
+    setWorkspaceHostScope,
+    setVisibleWorkspaceHostIds,
+    storeVisibleWorkspaceHostIds,
+    storeWorkspaceHostScope,
+  ]);
 
   const handleAgentsGroupByChange = useCallback((groupBy: AgentsGroupBy) => {
     setAgentsGroupBy(groupBy);
@@ -543,8 +701,8 @@ export function WorktreeSidebar({
     });
   }, []);
 
-  const handleRevealCurrent = useCallback(
-    (targetPath?: string | null, options?: { highlight?: boolean; beginRename?: boolean }) => {
+  const revealWorkspaceNow = useCallback(
+    (targetPath?: string | null, options?: SidebarRevealOptions) => {
     const target = targetPath || revealTargetPath || activeWorktreePath;
     if (!target) return;
 
@@ -598,47 +756,184 @@ export function WorktreeSidebar({
       break;
     }
 
+    // Resolve what the reveal has to uncover before the row can paint: the natural group
+    // (D03a-040, `getRevealGroupKeysToExpand`), the lineage folds above the target
+    // (D03a-062) and the Pinned duplicate. All three are keyed exactly like the row
+    // pipeline keys its sections, so opening these keys is the whole expansion.
+    let targetRow: Worktree | null = null;
+    let targetFolderWorkspace: SidebarRevealFolderWorkspace | null = null;
+    let targetSectionKeys: string[] = [];
+    const collapsedKeysToExpand = new Set<string>();
     for (const proj of projects) {
       const wts = getWorktreesForProject(proj);
-      if (proj.path === target || wts.some((w) => w.path === target)) {
-        if (collapsedProjects.has(proj.id)) {
-          setCollapsedProjects((prev) => {
-            const next = new Set(prev);
-            next.delete(proj.id);
-            return next;
-          });
-        }
-        const groupId = projectGroupMap?.[proj.id];
-        if (groupId && collapsedGroups.has(groupId)) {
-          setCollapsedGroups((prev) => {
-            const next = new Set(prev);
-            next.delete(groupId);
-            return next;
-          });
-        }
-        break;
+      const worktree = wts.find((candidate) => candidate.path === target);
+      const folderWorkspace = folderWorkspaces.find(
+        (workspace) => workspace.folderPath === target
+      );
+      if (proj.path !== target && !worktree && !folderWorkspace) continue;
+
+      if (collapsedProjects.has(proj.id)) {
+        setCollapsedProjects((prev) => {
+          const next = new Set(prev);
+          next.delete(proj.id);
+          return next;
+        });
       }
+      const groupId = projectGroupMap?.[proj.id];
+      if (groupId && collapsedGroups.has(groupId)) {
+        setCollapsedGroups((prev) => {
+          const next = new Set(prev);
+          next.delete(groupId);
+          return next;
+        });
+      }
+
+      if (worktree) {
+        const targetRepo =
+          repoByPath.get(proj.path) ??
+          storeRepos.find((repo) => repo.id === proj.id);
+        targetRow = toWorktreeRow(worktree, {
+          repoId: proj.id,
+          hostId: getRowHostId(targetRepo),
+        });
+        const isPinnedSectionWorktree = pinnedWorktrees?.has(target) ?? false;
+        // `prCache` stays null: the capability only claims repo / project-group / Pinned
+        // ancestry here; PR-lane expansion belongs to the row pipeline's own reveal.
+        targetSectionKeys = getGroupKeysForWorktree(
+          displayOptions.groupBy,
+          targetRow,
+          pipelineRepoMap,
+          null,
+          storeWorkspaceStatuses,
+          storeSettings,
+          storeProjectGroups,
+          undefined,
+          isPinnedSectionWorktree
+        );
+        for (const key of getRevealGroupKeysToExpand({
+          groupBy: displayOptions.groupBy,
+          worktree: targetRow,
+          repoMap: pipelineRepoMap,
+          prCache: null,
+          collapsedGroups,
+          workspaceStatuses: storeWorkspaceStatuses,
+          settings: storeSettings,
+          projectGroups: storeProjectGroups,
+          isPinnedSectionWorktree,
+        })) {
+          collapsedKeysToExpand.add(key);
+        }
+
+        // Lineage: a child nested under a collapsed parent row cannot mount, so walk the
+        // path lineage upward and open every collapsed `lineage:` fold on the way.
+        let parentPath = lineageByPath?.[target];
+        const seenLineagePaths = new Set<string>([target]);
+        while (parentPath && !seenLineagePaths.has(parentPath)) {
+          seenLineagePaths.add(parentPath);
+          const parentProject = projects.find(
+            (candidate) =>
+              candidate.path === parentPath ||
+              getWorktreesForProject(candidate).some(
+                (candidateWorktree) => candidateWorktree.path === parentPath
+              )
+          );
+          const parentWorktree = parentProject
+            ? getWorktreesForProject(parentProject).find(
+                (candidate) => candidate.path === parentPath
+              )
+            : undefined;
+          if (!parentProject || !parentWorktree) break;
+          const parentRepo =
+            repoByPath.get(parentProject.path) ??
+            storeRepos.find((repo) => repo.id === parentProject.id);
+          const parentRow = toWorktreeRow(parentWorktree, {
+            repoId: parentProject.id,
+            hostId: getRowHostId(parentRepo),
+          });
+          const lineageGroupKey = getWorktreeLineageGroupKey(parentRow);
+          if (collapsedGroups.has(lineageGroupKey)) {
+            collapsedKeysToExpand.add(lineageGroupKey);
+          }
+          parentPath = lineageByPath?.[parentPath];
+        }
+      }
+
+      if (folderWorkspace) {
+        targetFolderWorkspace = folderWorkspace;
+        for (const key of getFolderWorkspaceRevealGroupKeys(folderWorkspace, storeProjectGroups)) {
+          if (collapsedGroups.has(key)) collapsedKeysToExpand.add(key);
+        }
+      }
+      // Why separately: a pinned worktree also paints inside the Pinned section under
+      // `single-location`, where the natural group keys alone would not reveal it.
+      if (pinnedWorktrees?.has(target)) {
+        for (const key of getPinnedWorktreeRevealCollapsedGroupKeys()) {
+          if (collapsedGroups.has(key)) collapsedKeysToExpand.add(key);
+        }
+      }
+      if (collapsedKeysToExpand.size > 0) {
+        setCollapsedGroups((prev) => {
+          const next = new Set(prev);
+          for (const key of collapsedKeysToExpand) next.delete(key);
+          return next;
+        });
+      }
+      break;
     }
 
     if (options?.highlight !== false) flashRevealedWorktree(target);
-    if (options?.beginRename) {
-      window.dispatchEvent(
-        new CustomEvent("hydra:begin-rename-worktree", { detail: { path: target } })
-      );
-    }
 
-    requestAnimationFrame(() => {
-      const el = document.querySelector(`[data-worktree-path="${CSS.escape(target)}"]`);
-      if (!el) return;
-      const container = worktreeScrollRef.current;
+    // The mounted row: the card's own path attribute first, then the listbox option id the
+    // row pipeline published (a folder row has no card path; a virtualizer window can paint
+    // the wrapper before the card's attributes are readable).
+    const container = worktreeScrollRef.current;
+    const optionIds = getRevealMountedOptionIds({
+      sectionKeys: targetSectionKeys,
+      worktree: targetRow,
+      folderWorkspace: targetFolderWorkspace,
+    });
+    let settled = false;
+    const settleReveal = (): void => {
+      if (settled) return;
+      settled = true;
+      options?.onRevealSettled?.();
+    };
+    let revealAttempts = 0;
+    const revealMountedRow = (): void => {
+      const element =
+        container?.querySelector(`[data-worktree-path="${CSS.escape(target)}"]`) ??
+        optionIds.map((id) => document.getElementById(id)).find((node) => node !== null) ??
+        null;
+      if (!element) {
+        revealAttempts += 1;
+        if (revealAttempts < MAX_REVEAL_RETRIES) {
+          requestAnimationFrame(revealMountedRow);
+          return;
+        }
+        // Still no row: the caller decides whether the target vanished (clear the pending
+        // reveal) or the expansion is still landing (keep it pending).
+        options?.onRevealExhausted?.();
+        return;
+      }
       // Why not `scrollIntoView({ block: "nearest" })`: a card above the viewport would
       // land flush under the sticky group header. The reveal math reserves that inset
       // (and honors reduced-motion); the fallback only runs when the row is outside the
-      // list's own scroll container.
-      if (!container || !revealElementInScrollContainer(container, el, "smooth")) {
-        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      // list's own scroll container. `settleReveal` is the scroll-anchor's issued-scroll
+      // signal, so a pending request clears on the actual scroll instead of a rAF guess.
+      const revealed = container
+        ? revealElementInScrollContainer(container, element, "smooth", settleReveal)
+        : false;
+      if (!container || !revealed) {
+        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
-    });
+      if (options?.beginRename) {
+        window.dispatchEvent(
+          new CustomEvent("hydra:begin-rename-worktree", { detail: { path: target } })
+        );
+      }
+      settleReveal();
+    };
+    requestAnimationFrame(revealMountedRow);
   }, [
     revealTargetPath,
     activeWorktreePath,
@@ -656,33 +951,246 @@ export function WorktreeSidebar({
     setVisibleWorkspaceHostIds,
     setWorkspaceHostScope,
     sessions,
+    folderWorkspaces,
+    pinnedWorktrees,
+    lineageByPath,
+    storeProjectGroups,
+    pipelineRepoMap,
+    repoByPath,
+    storeSettings,
+    storeWorkspaceStatuses,
   ]);
 
-  // Orca `useSidebarRevealRequests`: consume the store's queued worktree reveal
-  // (the list may be unmounted or filtered when the request arrives).
+  // Orca `useSidebarRevealRequests`: when filters hide the target, ask before
+  // adjusting them; otherwise reveal straight away.
+  const [revealConfirmation, setRevealConfirmation] = useState<{
+    targetPath: string;
+    options?: SidebarRevealOptions;
+  } | null>(null);
+
+  const handleRevealCurrent = useCallback(
+    (targetPath?: string | null, options?: SidebarRevealOptions) => {
+      const target = targetPath || revealTargetPath || activeWorktreePath;
+      if (!target) return;
+      const proj = projects.find(
+        (project) =>
+          project.path === target ||
+          getWorktreesForProject(project).some((worktree) => worktree.path === target)
+      );
+      if (!proj) {
+        revealWorkspaceNow(target, options);
+        return;
+      }
+      const worktree = getWorktreesForProject(proj).find((item) => item.path === target);
+      const branch = worktree?.branch ?? "";
+      const targetRepo = storeRepos.find(
+        (repo) => repo.id === proj.id || repo.path === proj.path
+      );
+      const targetHostId = targetRepo ? getRepoExecutionHostId(targetRepo) : null;
+      const hostVisible =
+        !targetHostId ||
+        ((!storeVisibleWorkspaceHostIds ||
+          storeVisibleWorkspaceHostIds.includes(targetHostId)) &&
+          (storeWorkspaceHostScope === "all" || storeWorkspaceHostScope === targetHostId));
+      const hasActiveSession = sessions.some(
+        (session) =>
+          (session.project_path === target || session.project_path === proj.path) &&
+          (session.state === "working" || session.state === "blocked" || session.state === "waiting")
+      );
+      const hidden = isRevealTargetHiddenByFilters(displayOptions, {
+        projectId: proj.id,
+        isMainWorktree: Boolean(worktree?.is_main || worktree?.isMainWorktree),
+        automationCreated: Boolean(worktree?.automationProvenanceKind),
+        cliCreated: Boolean(worktree?.cliProvenanceKind),
+        detachedHead:
+          branch === "HEAD" ||
+          branch === "(detached)" ||
+          branch.startsWith("(HEAD detached"),
+        hostVisible,
+        sleepingHidden:
+          displayOptions.hideSleeping && !hasActiveSession && target !== activeWorktreePath,
+      });
+      if (hidden) {
+        // The pending effect may replay the request while the dialog is open; keep the
+        // first options object (and its callbacks) instead of re-setting state per render.
+        setRevealConfirmation((current) =>
+          current?.targetPath === target ? current : { targetPath: target, options }
+        );
+        return;
+      }
+      revealWorkspaceNow(target, options);
+    },
+    [
+      revealTargetPath,
+      activeWorktreePath,
+      projects,
+      getWorktreesForProject,
+      storeRepos,
+      storeVisibleWorkspaceHostIds,
+      storeWorkspaceHostScope,
+      sessions,
+      displayOptions,
+      revealWorkspaceNow,
+    ]
+  );
+
+  // Orca `useSidebarRevealRequests`: consume the store's queued worktree reveal (the list
+  // may be unmounted or filtered when the request arrives). Resolution is identity-qualified
+  // (D03a-070): the store's host-qualified rows win over the scan path bridge, and a target
+  // that vanished before it could mount is dropped instead of staying queued forever.
   useEffect(() => {
     if (!pendingRevealWorktree) return;
-    const targetPath = resolveRevealWorktreePath(
-      pendingRevealWorktree.worktreeId,
-      projects.map((project) => ({
-        projectId: project.id,
-        path: project.path,
-        worktrees: getWorktreesForProject(project),
-      }))
+    const pendingHostId = pendingRevealWorktree.executionHostId;
+    const hostWorktrees = getRevealCandidateWorktrees(
+      getIndexedAllWorktrees(useAppStore.getState().worktreesByRepo),
+      pendingHostId
     );
-    clearPendingRevealWorktreeId();
-    if (targetPath) {
-      handleRevealCurrent(targetPath, {
-        highlight: pendingRevealWorktree.highlight,
-        beginRename: pendingRevealWorktree.beginRename,
-      });
+    const known = getKnownSidebarWorktreeById(
+      pendingRevealWorktree.worktreeId,
+      new Map(hostWorktrees.map((worktree) => [worktree.id, worktree])),
+      folderWorkspaces,
+      hostWorktrees
+    );
+    const targetPath = known
+      ? known.kind === "worktree"
+        ? known.worktree.path
+        : known.folderWorkspace.folderPath
+      : resolveRevealWorktreePath(
+          pendingRevealWorktree.worktreeId,
+          projects.map((project) => ({
+            projectId: project.id,
+            path: project.path,
+            worktrees: getWorktreesForProject(project),
+          }))
+        );
+    if (!targetPath) {
+      // The request names a workspace the tree no longer holds; nothing can paint it.
+      clearPendingRevealWorktreeId();
+      return;
     }
+    handleRevealCurrent(targetPath, {
+      highlight: pendingRevealWorktree.highlight,
+      beginRename: pendingRevealWorktree.beginRename,
+      onRevealSettled: clearPendingRevealWorktreeId,
+      onRevealExhausted: () => {
+        if (!known) return;
+        // D03a-062: an expansion can still be landing when the retry window closes; only
+        // give up once the workspace itself is gone from the tree. Read the store again:
+        // the frames between request and exhaustion can delete the row.
+        const latestHostWorktrees = getRevealCandidateWorktrees(
+          getIndexedAllWorktrees(useAppStore.getState().worktreesByRepo),
+          pendingHostId
+        );
+        if (sidebarWorkspaceStillExists(known, latestHostWorktrees, folderWorkspaces)) {
+          return;
+        }
+        clearPendingRevealWorktreeId();
+      },
+    });
   }, [
     pendingRevealWorktree,
     clearPendingRevealWorktreeId,
     projects,
     getWorktreesForProject,
     handleRevealCurrent,
+    folderWorkspaces,
+  ]);
+
+  // Orca `useCollapsedGroups` for the agent-send target (D03a-049): the picker's
+  // worktree must not sit inside a collapsed section when the picker opens.
+  useEffect(() => {
+    const targetId = agentSendTargetMode?.worktreeId;
+    if (!targetId) return;
+    for (const project of projects) {
+      const worktree = getWorktreesForProject(project).find((item) => item.id === targetId);
+      if (!worktree) continue;
+      if (collapsedProjects.has(project.id)) {
+        setCollapsedProjects((prev) => {
+          const next = new Set(prev);
+          next.delete(project.id);
+          return next;
+        });
+      }
+      const groupId = projectGroupMap?.[project.id];
+      if (groupId && collapsedGroups.has(groupId)) {
+        setCollapsedGroups((prev) => {
+          const next = new Set(prev);
+          next.delete(groupId);
+          return next;
+        });
+      }
+      break;
+    }
+  }, [
+    agentSendTargetMode?.worktreeId,
+    projects,
+    getWorktreesForProject,
+    collapsedProjects,
+    collapsedGroups,
+    projectGroupMap,
+  ]);
+
+  // Orca `useSidebarRevealRequests` (row-key leg): a reveal of a section header must
+  // switch to repo grouping and expand the sections that hide it before the viewport
+  // can scroll to the key. The viewport clears the request once it scrolls.
+  useEffect(() => {
+    if (!pendingRevealSidebarRow) return;
+    const key = pendingRevealSidebarRow.rowKey;
+    const isHeaderKey =
+      key.startsWith("repo:") ||
+      key.startsWith("project-group:") ||
+      key.startsWith("project:");
+    if (isHeaderKey && displayOptions.groupBy !== "repo") {
+      const next = { ...displayOptions, groupBy: "repo" as const };
+      setDisplayOptions(next);
+      notifyPrefs({ displayOptions: next });
+      return;
+    }
+    const rowExists =
+      key.startsWith("repo:") || key.startsWith("project:")
+        ? projects.some(
+            (project) =>
+              project.id === key.slice(key.indexOf(":") + 1) ||
+              project.path === key.slice(key.indexOf(":") + 1)
+          )
+        : key.startsWith("project-group:")
+          ? projectGroups.some((group) => group.id === key.slice("project-group:".length))
+          : true;
+    if (!rowExists) {
+      // Orca toasts rather than leaving a reveal queued forever when the target
+      // disappeared between the request and the paint.
+      toast.error("Target no longer exists");
+      clearPendingRevealSidebarRow();
+      return;
+    }
+    if (key.startsWith("repo:")) {
+      const repoId = key.slice("repo:".length);
+      if (collapsedProjects.has(repoId)) {
+        setCollapsedProjects((prev) => {
+          const next = new Set(prev);
+          next.delete(repoId);
+          return next;
+        });
+      }
+    } else if (key.startsWith("project-group:")) {
+      const groupId = key.slice("project-group:".length);
+      if (collapsedGroups.has(groupId)) {
+        setCollapsedGroups((prev) => {
+          const next = new Set(prev);
+          next.delete(groupId);
+          return next;
+        });
+      }
+    }
+  }, [
+    pendingRevealSidebarRow,
+    clearPendingRevealSidebarRow,
+    projects,
+    projectGroups,
+    displayOptions,
+    notifyPrefs,
+    collapsedProjects,
+    collapsedGroups,
   ]);
 
   // Orca `useWorkspaceRevealBodyRedirect`: a reveal request that arrives while the
@@ -700,6 +1208,9 @@ export function WorktreeSidebar({
    */
   const commitReorderedWorktrees = useCallback(
     (ordered: GitWorktreeInfo[], projectPath: string) => {
+      // D03a-050: a manual reorder is direct manipulation, so it bumps the same sort
+      // signal the settle gate watches; Manual mode applies it without the settle window.
+      setSortEpoch((epoch) => epoch + 1);
       onReorderWorktrees?.(ordered, projectPath);
     },
     [onReorderWorktrees]
@@ -831,33 +1342,197 @@ export function WorktreeSidebar({
     return list;
   }, [projects, displayOptions.filterProjectIds, pinnedProjects]);
 
-  /** Repo labels for Project sort, projected once for the whole sidebar. */
-  const pipelineRepoMap = useMemo(
-    () =>
-      new Map(
-        projects.map((project) => [
-          project.id,
-          toPipelineRepo({
-            project,
-            projectGroupId: projectGroupMap?.[project.id] ?? null,
-            hostId: undefined,
-          }),
-        ])
-      ),
-    [projects, projectGroupMap]
-  );
-
   /** Persisted rows carry the manual order and real activity timestamps. */
   const worktreesByRepo = useAppStore((state) => state.worktreesByRepo);
 
   const groupDeleteMembers = useMemo(() => {
     if (!groupDeleteDialog.group) return [];
-    return displayProjects.filter(
+    // Why: deletion targets every member, not only the rows the Show filter paints.
+    return projects.filter(
       (p) => projectGroupMap?.[p.id] === groupDeleteDialog.group?.id
     );
-  }, [displayProjects, projectGroupMap, groupDeleteDialog.group]);
+  }, [projects, projectGroupMap, groupDeleteDialog.group]);
+
+  // ─── Repo header create state (Orca `getRepoHeaderCreateState`) ──────────
+  // The sidebar model carries no connection fields, so the host gate reads the
+  // store's repo rows by path; a project without a store row stays creatable.
+  const sshConnectionStates = useAppStore((state) => state.sshConnectionStates);
+
+  const createStateByProjectId = useMemo(() => {
+    const states = new Map<string, RepoHeaderCreateState>();
+    for (const project of projects) {
+      const label = project.displayName || project.name;
+      const connectionId = repoByPath.get(project.path)?.connectionId ?? null;
+      const gated =
+        project.is_git &&
+        Boolean(connectionId) &&
+        !isRuntimeOwnedSshTargetId(connectionId) &&
+        sshConnectionStates.get(connectionId as string)?.status !== "connected";
+      states.set(
+        project.id,
+        gated
+          ? {
+              disabled: true,
+              tooltip: "Reconnect SSH target before creating workspaces",
+              ariaLabel: `Reconnect SSH target before creating workspaces for ${label}`,
+            }
+          : {
+              disabled: false,
+              tooltip: `Create workspace for ${label}`,
+              ariaLabel: `Create workspace for ${label}`,
+            }
+      );
+    }
+    return states;
+  }, [projects, repoByPath, sshConnectionStates]);
+
+  // ─── Project group host routing (Orca owner-host routing) ────────────────
+  const resolveProjectHostId = useCallback(
+    (project: HydraProject): string | undefined => {
+      const repo = repoByPath.get(project.path);
+      return repo ? getRepoExecutionHostId(repo) : undefined;
+    },
+    [repoByPath]
+  );
+
+  const resolveGroupOwnerHostId = useCallback(
+    (groupId: string): string | undefined => {
+      const member = projects.find((project) => projectGroupMap?.[project.id] === groupId);
+      return member ? resolveProjectHostId(member) : undefined;
+    },
+    [projects, projectGroupMap, resolveProjectHostId]
+  );
+
+  /**
+   * Orca group mutations return a result the caller can toast on. Hydra's menu
+   * dispatches a window event and App acknowledges it synchronously with
+   * `hydra:refresh-projects`; a missing acknowledgement means nothing applied.
+   */
+  const dispatchProjectGroupChange = useCallback(
+    (eventName: string, detail: Record<string, unknown>): boolean => {
+      let acknowledged = false;
+      const acknowledge = () => {
+        acknowledged = true;
+      };
+      window.addEventListener("hydra:refresh-projects", acknowledge);
+      try {
+        window.dispatchEvent(new CustomEvent(eventName, { detail }));
+      } finally {
+        window.removeEventListener("hydra:refresh-projects", acknowledge);
+      }
+      return acknowledged;
+    },
+    []
+  );
+
+  const reportGroupCreateFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupCreateFailed", "Failed to create group"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupCreateFailedDesc",
+          "Hydra could not create the group. Check the sidebar after reconnecting."
+        ),
+      }
+    );
+  }, []);
+
+  const reportGroupRenameFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupRenameFailed", "Failed to rename group"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupRenameFailedDesc",
+          "Hydra could not confirm the new name with the group's host. Recheck the group after reconnecting."
+        ),
+      }
+    );
+  }, []);
+
+  const reportGroupDeleteFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupDeleteFailed", "Failed to delete group"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupDeleteFailedDesc",
+          "Something went wrong while deleting the group. No projects were removed."
+        ),
+      }
+    );
+  }, []);
 
   const query = filter.trim().toLowerCase();
+
+  // Why settled only for attention-driven modes: Smart and Recent rank by time-decaying
+  // scores, so background activity must not reorder them mid-read. Name/Repo/Manual are
+  // deterministic or direct manipulation and always paint the fresh order.
+  const settledSortMode =
+    displayOptions.sortBy === "agent-activity" ||
+    displayOptions.sortBy === "smart" ||
+    displayOptions.sortBy === "recent";
+
+  const sortWorktreesForProject = useCallback(
+    (proj: HydraProject, wts: GitWorktreeInfo[]): GitWorktreeInfo[] => {
+      // Sort through the ported Orca comparator. The menu's legacy "Agent Activity" is
+      // the `smart` mode, and Project/Manual/Recent/Name all share the comparator the
+      // closed-sidebar path uses (see `smart-sort.ts`), so the two paths cannot drift.
+      const now = Date.now();
+      const projected = applyPersistedWorktreeOrder(
+        wts.map((worktree) => toWorktreeRow(worktree, { repoId: proj.id })),
+        worktreesByRepo[proj.id]
+      );
+      const smartMode =
+        displayOptions.sortBy === "agent-activity" || displayOptions.sortBy === "smart";
+      const attentionByWorktree = smartMode
+        ? new Map(
+            projected.map((row) => {
+              const worktree = wts.find((candidate) => candidate.path === row.path);
+              const rowSessions = sessions.filter(
+                (session) =>
+                  session.project_path === row.path ||
+                  ((worktree?.is_main || worktree?.isMainWorktree) &&
+                    session.project_path === proj.path)
+              );
+              return [row.id, resolveWorktreeAttentionFromSessions(rowSessions, now)] as const;
+            })
+          )
+        : undefined;
+      const ordered = sortSidebarWorktrees({
+        worktrees: projected,
+        mode: displayOptions.sortBy,
+        repoMap: pipelineRepoMap,
+        now,
+        attentionByWorktree,
+      });
+      const byPath = new Map(wts.map((worktree) => [worktree.path, worktree]));
+      return ordered
+        .map((row) => byPath.get(row.path))
+        .filter((worktree): worktree is GitWorktreeInfo => worktree !== undefined);
+    },
+    [displayOptions.sortBy, sessions, pipelineRepoMap, worktreesByRepo]
+  );
+
+  // Why a ref: only the settle gate may move an attention-driven order. Routing the
+  // compute callback through a ref keeps live status data out of the memo's dependency
+  // list, so a tick inside the settle window cannot recompute the order early (Orca reads
+  // the store inside its own memo for the same reason).
+  const computeSettledOrderRef = useRef<(project: HydraProject) => string[]>(() => []);
+  computeSettledOrderRef.current = (project) =>
+    sortWorktreesForProject(project, getWorktreesForProject(project)).map(
+      (worktree) => worktree.path
+    );
+  const projectsKey = useMemo(
+    () => projects.map((project) => project.path).join("\n"),
+    [projects]
+  );
+  const settledSortOrderByProject = useMemo(() => {
+    const orders = new Map<string, string[]>();
+    if (!settledSortMode) return orders;
+    for (const project of projects) {
+      orders.set(project.path, computeSettledOrderRef.current(project));
+    }
+    return orders;
+  }, [appliedSortEpoch, displayOptions.sortBy, pipelineRepoMap, projectsKey, allWorktrees.length]);
 
   const getFilteredAndSortedWorktrees = useCallback((proj: HydraProject): GitWorktreeInfo[] => {
     let wts = getWorktreesForProject(proj);
@@ -885,49 +1560,29 @@ export function WorktreeSidebar({
       });
     }
 
-    // Sort through the ported Orca comparator. The menu's legacy "Agent Activity" is
-    // the `smart` mode, and Project/Manual/Recent/Name all share the comparator the
-    // closed-sidebar path uses (see `smart-sort.ts`), so the two paths cannot drift.
-    const now = Date.now();
-    const projected = applyPersistedWorktreeOrder(
-      wts.map((worktree) => toWorktreeRow(worktree, { repoId: proj.id })),
-      worktreesByRepo[proj.id]
-    );
-    const smartMode =
-      displayOptions.sortBy === "agent-activity" || displayOptions.sortBy === "smart";
-    const attentionByWorktree = smartMode
-      ? new Map(
-          projected.map((row) => {
-            const worktree = wts.find((candidate) => candidate.path === row.path);
-            const rowSessions = sessions.filter(
-              (session) =>
-                session.project_path === row.path ||
-                ((worktree?.is_main || worktree?.isMainWorktree) &&
-                  session.project_path === proj.path)
-            );
-            return [row.id, resolveWorktreeAttentionFromSessions(rowSessions, now)] as const;
-          })
-        )
+    // Order from the epoch the settle gate last applied; a row that appeared inside the
+    // window has no rank yet and lands after the known rows until the gate applies.
+    const settledOrder = settledSortMode
+      ? settledSortOrderByProject.get(proj.path)
       : undefined;
-    const ordered = sortSidebarWorktrees({
-      worktrees: projected,
-      mode: displayOptions.sortBy,
-      repoMap: pipelineRepoMap,
-      now,
-      attentionByWorktree,
-    });
-    const byPath = new Map(wts.map((worktree) => [worktree.path, worktree]));
-    return ordered
-      .map((row) => byPath.get(row.path))
-      .filter((worktree): worktree is GitWorktreeInfo => worktree !== undefined);
+    if (settledOrder) {
+      const rankByPath = new Map(settledOrder.map((path, index) => [path, index]));
+      return [...wts].sort(
+        (a, b) =>
+          (rankByPath.get(a.path) ?? Number.MAX_SAFE_INTEGER) -
+          (rankByPath.get(b.path) ?? Number.MAX_SAFE_INTEGER)
+      );
+    }
+    return sortWorktreesForProject(proj, wts);
   }, [
     getWorktreesForProject,
     displayOptions,
     query,
     sessions,
     activeWorktreePath,
-    pipelineRepoMap,
-    worktreesByRepo,
+    sortWorktreesForProject,
+    settledSortMode,
+    settledSortOrderByProject,
   ]);
 
   // ─── Background Appearance Tint ──────────────────────────────────────────
@@ -1066,6 +1721,8 @@ export function WorktreeSidebar({
               folderWorkspaces={folderWorkspaces}
               liveWorkspacePaths={liveWorkspacePaths}
               missingFolderPaths={missingFolderPaths}
+              folderPathStatusByPath={folderPathStatusByPath}
+              scanFailuresByProject={scanFailuresByProject}
               prByPath={prByPath}
               onActivateFolderWorkspace={onActivateFolderWorkspace}
               onDeleteFolderWorkspace={onDeleteFolderWorkspace}
@@ -1084,6 +1741,7 @@ export function WorktreeSidebar({
               onRenameWorktreeTitle={onRenameWorktreeTitle}
               deleteStateByWorktreeId={deleteStateByWorktreeId}
               onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
+              createStateByProjectId={createStateByProjectId}
               onOpenAddRepoDialog={onOpenAddRepoDialog}
               onClearFilter={() => setFilter("")}
               onClearSidebarFilters={handleClearSidebarFilters}
@@ -1094,6 +1752,7 @@ export function WorktreeSidebar({
                   onProjectContextMenu(e, proj);
                 } else {
                   const rect = e.currentTarget.getBoundingClientRect();
+                  setProjectMenuSubmenu(null);
                   setActiveProjectMenu({ proj, x: rect.right, y: rect.bottom + 4 });
                 }
               }}
@@ -1244,6 +1903,7 @@ export function WorktreeSidebar({
               worktreeDropTarget={worktreeDropTarget}
               scrollRef={worktreeScrollRef}
               onReorderWorktreesInGroup={commitReorderedWorktrees}
+              onReorderHostSections={setWorkspaceHostOrder}
               lineageByPath={lineageByPath}
               worktreeMetadataByPath={worktreeMetadataByPath}
               pendingWorktreeCreations={pendingWorktreeCreations}
@@ -1300,6 +1960,8 @@ export function WorktreeSidebar({
         onAddProject={onOpenAddRepoDialog}
       />
 
+      <AgentSendTargetPicker />
+
       {/* 5. Footer */}
       <SidebarFooter
         appVersion={appVersion}
@@ -1341,23 +2003,33 @@ export function WorktreeSidebar({
         <>
           <div
             className="fixed inset-0 z-[99998]"
-            onClick={() => setActiveProjectMenu(null)}
+            onClick={() => {
+              setActiveProjectMenu(null);
+              setProjectMenuSubmenu(null);
+            }}
             onContextMenu={(e) => {
               e.preventDefault();
               setActiveProjectMenu(null);
+              setProjectMenuSubmenu(null);
             }}
           />
           <div
             style={{
               position: "fixed",
               top: Math.min(activeProjectMenu.y, window.innerHeight - 300),
-              left: Math.min(activeProjectMenu.x, window.innerWidth - 220),
+              left: Math.min(activeProjectMenu.x, window.innerWidth - 420),
               zIndex: 99999,
             }}
-            className="w-52 rounded-xl border border-worktree-sidebar-border bg-worktree-sidebar p-1.5 shadow-2xl text-xs backdrop-blur-md"
+            className="relative w-52 rounded-xl border border-worktree-sidebar-border bg-worktree-sidebar p-1.5 shadow-2xl text-xs backdrop-blur-md"
             onClick={(e) => e.stopPropagation()}
+            onPointerDown={stopRepoHeaderMenuEvent}
+            onMouseDown={stopRepoHeaderMenuEvent}
+            onPointerUp={stopRepoHeaderMenuEvent}
+            onMouseUp={stopRepoHeaderMenuEvent}
+            onKeyDown={stopRepoHeaderMenuEvent}
           >
             <button
+              type="button"
               onClick={() => {
                 setActiveProjectMenu(null);
                 onOpenSettings();
@@ -1369,6 +2041,49 @@ export function WorktreeSidebar({
             </button>
 
             <button
+              type="button"
+              onClick={() => {
+                // Why: Hydra has no repository-icon settings pane yet; the entry
+                // still opens the settings surface instead of becoming a dead row.
+                setActiveProjectMenu(null);
+                onOpenSettings();
+              }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
+            >
+              <Shapes className="size-3.5 text-worktree-sidebar-foreground/60" />
+              Change Project Icon
+            </button>
+
+            {activeProjectMenu.proj.is_git && (
+              <button
+                type="button"
+                onClick={() => {
+                  const proj = activeProjectMenu.proj;
+                  setActiveProjectMenu(null);
+                  setProjectMenuSubmenu(null);
+                  setVisibilityDialog({
+                    open: true,
+                    project: proj,
+                    hiddenWorktrees: hiddenWorktreesByProject?.[proj.path] ?? [],
+                    hostId: resolveProjectHostId(proj) ?? null,
+                  });
+                }}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
+              >
+                <Eye className="size-3.5 text-worktree-sidebar-foreground/60" />
+                {effectiveExternalWorktreeVisibility(
+                  activeProjectMenu.proj,
+                  settings?.worktree_visibility_defaults
+                ) === "show"
+                  ? "Hide non-Hydra worktrees"
+                  : "Show hidden worktrees"}
+              </button>
+            )}
+
+            <div className="h-px bg-worktree-sidebar-border my-1" />
+
+            <button
+              type="button"
               onClick={() => {
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
@@ -1414,23 +2129,7 @@ export function WorktreeSidebar({
             </button>
 
             <button
-              onClick={() => {
-                const proj = activeProjectMenu.proj;
-                setActiveProjectMenu(null);
-                const hidden = hiddenWorktreesByProject?.[proj.path] ?? [];
-                setVisibilityDialog({
-                  open: true,
-                  project: proj,
-                  hiddenWorktrees: hidden,
-                });
-              }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
-            >
-              <Eye className="size-3.5 text-worktree-sidebar-foreground/60" />
-              Manage Worktree Visibility...
-            </button>
-
-            <button
+              type="button"
               onClick={() => {
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
@@ -1444,75 +2143,119 @@ export function WorktreeSidebar({
 
             <div className="h-px bg-worktree-sidebar-border my-1" />
 
-            {/* Move to group options */}
             <button
+              type="button"
               onClick={() => {
                 const proj = activeProjectMenu.proj;
+                const hostId = resolveProjectHostId(proj);
                 setActiveProjectMenu(null);
+                setProjectMenuSubmenu(null);
                 setGroupNameDialog({
                   open: true,
                   title: "New Project Group",
-                  description: "Create a group to organize projects in your sidebar.",
-                  confirmLabel: "Create & Move",
+                  description: "Create a group and move this project into it.",
+                  initialName: `${proj.displayName || proj.name} group`,
+                  confirmLabel: "Create",
+                  hostId,
                   onSubmit: (name) => {
-                    window.dispatchEvent(
-                      new CustomEvent("hydra:create-project-group", {
-                        detail: { name, projectId: proj.id },
-                      })
+                    const created = dispatchProjectGroupChange(
+                      "hydra:create-project-group",
+                      { name, projectId: proj.id, hostId }
                     );
+                    if (!created) reportGroupCreateFailure();
                   },
                 });
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
             >
               <FolderTree className="size-3.5 text-indigo-400" />
-              Move to New Group...
+              New group from project
             </button>
 
-            {projectGroups.map((g) => {
-              if (projectGroupMap?.[activeProjectMenu.proj.id] === g.id) return null;
-              return (
+            {projectGroups.length > 0 && (
+              <div className="relative">
                 <button
-                  key={g.id}
-                  onClick={() => {
-                    const proj = activeProjectMenu.proj;
-                    setActiveProjectMenu(null);
-                    window.dispatchEvent(
-                      new CustomEvent("hydra:move-project-to-group", {
-                        detail: { projectId: proj.id, groupId: g.id },
-                      })
-                    );
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground/80 text-left transition cursor-pointer pl-6"
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={projectMenuSubmenu === "move-to-group"}
+                  onMouseEnter={() => setProjectMenuSubmenu("move-to-group")}
+                  onFocus={() => setProjectMenuSubmenu("move-to-group")}
+                  onClick={() =>
+                    setProjectMenuSubmenu((current) =>
+                      current === "move-to-group" ? null : "move-to-group"
+                    )
+                  }
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
                 >
-                  <span className="truncate">Move to {g.name}</span>
+                  <FolderInput className="size-3.5 text-worktree-sidebar-foreground/60" />
+                  Move to group
+                  <ChevronRight className="ml-auto size-3.5 text-worktree-sidebar-foreground/40" />
                 </button>
-              );
-            })}
+
+                {projectMenuSubmenu === "move-to-group" && (
+                  <div
+                    role="menu"
+                    aria-label="Move to group"
+                    className="absolute left-full top-0 ml-1 w-44 rounded-xl border border-worktree-sidebar-border bg-worktree-sidebar p-1.5 shadow-2xl backdrop-blur-md"
+                  >
+                    {projectGroups.map((group) => {
+                      const current =
+                        projectGroupMap?.[activeProjectMenu.proj.id] === group.id;
+                      return (
+                        <button
+                          key={group.id}
+                          type="button"
+                          role="menuitem"
+                          disabled={current}
+                          aria-disabled={current}
+                          onClick={() => {
+                            if (current) return;
+                            const proj = activeProjectMenu.proj;
+                            setActiveProjectMenu(null);
+                            setProjectMenuSubmenu(null);
+                            dispatchProjectGroupChange("hydra:move-project-to-group", {
+                              projectId: proj.id,
+                              groupId: group.id,
+                              hostId: resolveProjectHostId(proj),
+                            });
+                          }}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left transition cursor-pointer text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent disabled:pointer-events-none disabled:opacity-40"
+                        >
+                          <span className="truncate">{group.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {projectGroupMap?.[activeProjectMenu.proj.id] && (
               <button
+                type="button"
                 onClick={() => {
                   const proj = activeProjectMenu.proj;
                   setActiveProjectMenu(null);
-                  window.dispatchEvent(
-                    new CustomEvent("hydra:remove-project-from-group", {
-                      detail: { projectId: proj.id },
-                    })
-                  );
+                  setProjectMenuSubmenu(null);
+                  dispatchProjectGroupChange("hydra:remove-project-from-group", {
+                    projectId: proj.id,
+                    hostId: resolveProjectHostId(proj),
+                  });
                 }}
                 className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground/70 text-left transition cursor-pointer"
               >
-                Remove from Group
+                Remove from group
               </button>
             )}
 
-            <div className="h-px bg-worktree-sidebar-border my-1" />
+            <div role="separator" className="h-px bg-worktree-sidebar-border my-1" />
 
             <button
+              type="button"
               onClick={() => {
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
+                setProjectMenuSubmenu(null);
                 setRemoveProjectTarget(proj);
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
@@ -1543,23 +2286,31 @@ export function WorktreeSidebar({
             }}
             className="w-48 rounded-xl border border-worktree-sidebar-border bg-worktree-sidebar p-1.5 shadow-2xl text-xs backdrop-blur-md"
             onClick={(e) => e.stopPropagation()}
+            onPointerDown={stopRepoHeaderMenuEvent}
+            onMouseDown={stopRepoHeaderMenuEvent}
+            onPointerUp={stopRepoHeaderMenuEvent}
+            onMouseUp={stopRepoHeaderMenuEvent}
+            onKeyDown={stopRepoHeaderMenuEvent}
           >
             <button
+              type="button"
               onClick={() => {
                 const group = activeGroupMenu.group;
+                const hostId = resolveGroupOwnerHostId(group.id);
                 setActiveGroupMenu(null);
                 setGroupNameDialog({
                   open: true,
                   title: "Rename Project Group",
-                  description: "Enter a new name for this project group.",
+                  description: "Update the group name shown in the sidebar.",
                   initialName: group.name,
                   confirmLabel: "Rename",
+                  hostId,
                   onSubmit: (name) => {
-                    window.dispatchEvent(
-                      new CustomEvent("hydra:rename-project-group", {
-                        detail: { id: group.id, name },
-                      })
+                    const renamed = dispatchProjectGroupChange(
+                      "hydra:rename-project-group",
+                      { id: group.id, name, hostId }
                     );
+                    if (!renamed) reportGroupRenameFailure();
                   },
                 });
               }}
@@ -1569,12 +2320,15 @@ export function WorktreeSidebar({
             </button>
 
             <button
+              type="button"
               onClick={() => {
                 const group = activeGroupMenu.group;
                 setActiveGroupMenu(null);
                 setGroupDeleteDialog({
                   open: true,
                   group,
+                  hostId: resolveGroupOwnerHostId(group.id),
+                  removeContainedProjects: false,
                 });
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
@@ -1601,21 +2355,29 @@ export function WorktreeSidebar({
         open={groupDeleteDialog.open}
         groupName={groupDeleteDialog.group?.name ?? ""}
         projectCount={groupDeleteMembers.length}
-        projectNames={groupDeleteMembers.map((p) => p.name)}
-        onOpenChange={(open) => setGroupDeleteDialog((prev) => ({ ...prev, open }))}
-        onConfirm={(removeContained) => {
-          if (groupDeleteDialog.group) {
-            window.dispatchEvent(
-              new CustomEvent("hydra:delete-project-group", {
-                detail: {
-                  id: groupDeleteDialog.group.id,
-                  removeProjectPaths: removeContained
-                    ? groupDeleteMembers.map((project) => project.path)
-                    : [],
-                },
-              })
-            );
-          }
+        projectNames={groupDeleteMembers.map((p) => p.displayName || p.name)}
+        removeContainedProjects={groupDeleteDialog.removeContainedProjects}
+        onRemoveContainedProjectsChange={(removeContainedProjects) =>
+          setGroupDeleteDialog((prev) => ({ ...prev, removeContainedProjects }))
+        }
+        onOpenChange={(open) =>
+          setGroupDeleteDialog((prev) => ({
+            ...prev,
+            open,
+            ...(open ? {} : { removeContainedProjects: false }),
+          }))
+        }
+        onConfirm={() => {
+          const group = groupDeleteDialog.group;
+          if (!group) return;
+          const deleted = dispatchProjectGroupChange("hydra:delete-project-group", {
+            id: group.id,
+            removeProjectPaths: groupDeleteDialog.removeContainedProjects
+              ? groupDeleteMembers.map((project) => project.path)
+              : [],
+            hostId: groupDeleteDialog.hostId,
+          });
+          if (!deleted) reportGroupDeleteFailure();
         }}
       />
 
@@ -1643,6 +2405,22 @@ export function WorktreeSidebar({
           const target = removeProjectTarget;
           setRemoveProjectTarget(null);
           if (target) onRemoveProject(target);
+        }}
+      />
+
+      <RevealHiddenWorkspaceDialog
+        open={revealConfirmation != null}
+        onCancel={() => {
+          const pending = revealConfirmation;
+          setRevealConfirmation(null);
+          // A declined reveal is still a settled request; leaving it queued would
+          // re-open the dialog on the next sidebar render.
+          pending?.options?.onRevealSettled?.();
+        }}
+        onConfirm={() => {
+          const pending = revealConfirmation;
+          setRevealConfirmation(null);
+          if (pending) revealWorkspaceNow(pending.targetPath, pending.options);
         }}
       />
 

@@ -30,3 +30,27 @@ export function orderHostSectionOptions(
   }
   return ordered
 }
+
+/**
+ * Orca `handleReorderHostSections`: move `draggedHostId` to `targetHostId`'s slot
+ * and return the complete order. Missing ids leave the order untouched (the
+ * header may have collapsed between drag start and drop).
+ */
+export function moveHostSectionForDrop(
+  order: readonly ExecutionHostId[],
+  draggedHostId: ExecutionHostId,
+  targetHostId: ExecutionHostId
+): ExecutionHostId[] {
+  if (draggedHostId === targetHostId) {
+    return [...order]
+  }
+  const fromIndex = order.indexOf(draggedHostId)
+  const toIndex = order.indexOf(targetHostId)
+  if (fromIndex < 0 || toIndex < 0) {
+    return [...order]
+  }
+  const next = [...order]
+  next.splice(fromIndex, 1)
+  next.splice(toIndex, 0, draggedHostId)
+  return next
+}

@@ -1,0 +1,48 @@
+{
+ "group": "BH",
+ "generatedFrom": "2026-10-27 reveal confirmation dialog, scan-failure indicator and agent-send forced visibility",
+ "rows": [
+  {
+   "id": "D03a-065",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/reveal-hidden-filters.ts:1-60",
+    "src/components/sidebar/RevealHiddenWorkspaceDialog.tsx:1-55",
+    "src/components/sidebar/WorktreeSidebar.tsx:700-770"
+   ],
+   "missing_behaviors": [],
+   "note": "A reveal whose target is hidden by the project/kind/host/sleeping filters asks first; confirming adjusts only the blocking filters and reveals, canceling leaves them intact. Header reveals switch grouping in the row-key path."
+  },
+  {
+   "id": "D03a-048",
+   "status": "parity",
+   "evidence": [
+    "src/components/CodeDiffViewer.tsx:120-140",
+    "src/components/sidebar/AgentSendTargetPicker.tsx:1-90",
+    "src/components/sidebar/WorktreeList.tsx:750-845"
+   ],
+   "missing_behaviors": [],
+   "note": "The diff-notes Send button opens the target mode; the mode's worktree bypasses host/device/menu filters and its branch is forced visible through the same projection."
+  },
+  {
+   "id": "D03a-049",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:735-780"
+   ],
+   "missing_behaviors": [],
+   "note": "Opening the target mode expands the target project and its project group, so the picker and the forced row are never hidden by collapse."
+  },
+  {
+   "id": "D03a-075",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs:scan_worktrees",
+    "src/components/sidebar/RepoScanUnavailableIndicator.tsx:1-140",
+    "src/App.tsx:1355-1425"
+   ],
+   "missing_behaviors": [],
+   "note": "Failed scans reject with a JSON failureKind/message/fixCommand payload; the indicator classifies it, shows a per-kind tooltip, offers Copy command only when the payload carries one, plus retry and diagnostics."
+  }
+ ]
+}

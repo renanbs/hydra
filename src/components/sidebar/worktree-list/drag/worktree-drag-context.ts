@@ -1,9 +1,11 @@
 import { createContext } from 'react'
 import { WORKTREE_ROW_DRAG_INITIAL_STATE, type WorktreeRowDragState } from './row-state'
 import type { WorktreeRowPointerDragHandlers } from './use-pointer-drag'
+import type { WorktreeRowNativeDragHandlers } from './use-native-drag'
 
-/** Row identity inside its drag group plus the pointer handlers every row shares. */
-export type WorktreeDragRowHandlers = WorktreeRowPointerDragHandlers & {
+/** Row identity inside its drag group plus the pointer/native handlers every row shares. */
+export type WorktreeDragRowHandlers = WorktreeRowPointerDragHandlers &
+  WorktreeRowNativeDragHandlers & {
   groupKeyByRowKey: Map<string, string>
   groupIndexByRowKey: Map<string, number>
 }

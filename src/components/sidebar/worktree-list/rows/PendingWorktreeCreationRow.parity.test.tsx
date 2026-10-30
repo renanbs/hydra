@@ -17,4 +17,11 @@ describe("PendingWorktreeCreationRow (Orca parity)", () => {
     render(<PendingWorktreeCreationRow />);
     expect(screen.getByRole("status")).toHaveTextContent("Creating workspace…");
   });
+
+  it("addresses the optimistic row by creation id (D03a-072)", () => {
+    const { container } = render(<PendingWorktreeCreationRow creationId="creation-1" />);
+    expect(
+      container.querySelector('[data-pending-worktree-creation-id="creation-1"]')
+    ).not.toBeNull();
+  });
 });

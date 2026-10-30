@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { getShortcutPlatform } from '@/lib/shortcut-platform'
 import {
   areWorktreeSelectionsEqual,
@@ -22,8 +22,12 @@ import {
 export function useWorktreeListSelection(args: {
   /** Host-qualified identities of the rows the list currently paints, in painted order. */
   visibleIdentities: readonly string[]
+  /** The scroll root: a press outside it clears the multi-selection (Orca `use-selection`). */
+  containerRef?: React.RefObject<HTMLElement | null>
 }): {
   selectedWorktreeIdentities: ReadonlySet<string>
+  /** Right-click on a row: keep a selection that already owns it, else make it the selection. */
+  selectForContextMenu: (identity: string) => void
   /**
    * The list's own click gesture. Returns `true` when the click was a selection gesture and the
    * row must not activate — Orca's `onSelectionGesture` contract, shared with the board's cards.
@@ -47,6 +51,32 @@ export function useWorktreeListSelection(args: {
   if (selectionAnchorId !== pruned.anchorId) {
     setSelectionAnchorId(pruned.anchorId)
   }
+
+  const selectedRef = useRef(selectedWorktreeIdentities)
+  selectedRef.current = selectedWorktreeIdentities
+
+  const selectForContextMenu = useCallback((identity: string) => {
+    if (selectedRef.current.has(identity)) return
+    setSelectedWorktreeIdentities(new Set([identity]))
+    setSelectionAnchorId(identity)
+  }, [])
+
+  // A press outside the list's scroll root ends the multi-selection; inside it the
+  // rows own the gesture (replace/toggle/range).
+  useEffect(() => {
+    const container = args.containerRef?.current
+    const handlePointerDown = (event: PointerEvent) => {
+      if (selectedRef.current.size === 0) return
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (container?.contains(target)) return
+      setSelectedWorktreeIdentities(new Set<string>())
+      setSelectionAnchorId(null)
+    }
+    document.addEventListener('pointerdown', handlePointerDown, { capture: true })
+    return () =>
+      document.removeEventListener('pointerdown', handlePointerDown, { capture: true })
+  }, [args.containerRef])
 
   const handleSelectionGesture = useCallback(
     (event: React.MouseEvent<HTMLElement>, identity: string): boolean => {
@@ -78,5 +108,5 @@ export function useWorktreeListSelection(args: {
     [selectionAnchorId, selectedWorktreeIdentities, visibleIdentities]
   )
 
-  return { selectedWorktreeIdentities, handleSelectionGesture }
+  return { selectedWorktreeIdentities, selectForContextMenu, handleSelectionGesture }
 }

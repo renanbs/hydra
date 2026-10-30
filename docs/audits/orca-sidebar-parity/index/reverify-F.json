@@ -49,33 +49,26 @@
   },
   {
    "id": "D03a-017",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/use-pointer-window-events.ts:29-64",
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:36-52",
-    "src/components/sidebar/worktree-list/drag/use-runtime.ts:62-64"
+    "src/components/sidebar/worktree-list/drag/use-native-drag.ts",
+    "src/components/sidebar/worktree-list/drag/use-document-drop.ts",
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "visibilitychange abandonando o drag em andamento",
-    "listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo",
-    "commit de nest sem slot (nesting inexistente)"
-   ],
-   "note": "Pointer drag commita/abandona fora do sidebar via window capture (pointerup/pointercancel/Escape); falta o fallback document drop/dragend e visibilitychange."
+   "missing_behaviors": [],
+   "note": "Native drags open the shared session at dragstart and commit/abandon through capture-phase document drop/dragend plus visibilitychange; a nest is refused when the hovered card is no longer painted."
   },
   {
    "id": "D03a-044",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/lib/worktree-activation.ts:277-292",
-    "src/components/sidebar/project-filter-reveal.ts:7-12"
+    "src/components/sidebar/reveal-filter-relaxation.ts:1-70",
+    "src/components/sidebar/WorktreeSidebar.tsx:552-600"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "adicionar o host do alvo a visibleWorkspaceHostIds",
-    "ligar showSleepingWorkspaces quando o alvo está dormindo"
-   ],
-   "note": "revealRepoInProjectFilter agora está ligado no activateAndRevealWorktree junto com hideAutomation/hideCli/hideDetachedHead; host e sleeping não são reabertos."
+   "missing_behaviors": [],
+   "note": "Reveal relaxes only the blocking filters, adds the target host to the visible set and turns sleeping back on when the target is hidden by it."
   },
   {
    "id": "D03a-053",
@@ -103,32 +96,27 @@
   },
   {
    "id": "D03a-060",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:39-53",
-    "src/components/sidebar/WorktreeList.tsx:805-826",
-    "src/components/sidebar/worktree-list/drag/worktree-pointer-drag.parity.test.tsx:423-505"
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:30-90",
+    "src/components/sidebar/WorktreeList.tsx:1596-1610",
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.parity.test.tsx:1-60"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "limpar a seleção por clique fora do container da lista",
-    "selectForContextMenu preservando a seleção"
-   ],
-   "note": "Clique/Ctrl/Shift + prune por render + identidade host-qualified estão ligados e testados; falta limpeza por clique externo e seleção ao abrir menu de contexto."
+   "missing_behaviors": [],
+   "note": "Press outside the list clears the selection; right-clicking a row outside the selection makes it the selection, while a right-click inside an existing multi-selection keeps it for the context menu."
   },
   {
    "id": "D03a-063",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:31-50",
-    "src/components/sidebar/WorktreeSidebar.tsx:458-491"
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:1-110",
+    "src/components/sidebar/worktree-list/listing/reveal-row-lookup.ts:1-60",
+    "src/components/sidebar/WorktreeSidebar.tsx:700-760"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "reveal de headers (project-group:/project:/repo:)",
-    "toast 'Target no longer exists' e retry quando a row não existe"
-   ],
-   "note": "Reveal de item/folder agora passa pelo virtualizer e expande projeto/grupo; headers, toast de alvo ausente e retry não existem."
+   "missing_behaviors": [],
+   "note": "A queued row reveal now matches painted headers by key, switches to repo grouping, expands the section, retries for up to 8 frames and toasts when the target no longer exists."
   },
   {
    "id": "D03a-066",
@@ -145,46 +133,35 @@
   },
   {
    "id": "D03a-067",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/listing/render-row.ts:12-31",
-    "src/components/sidebar/worktree-sidebar-row-preference.ts:9-41"
+    "src/components/sidebar/worktree-list/listing/reveal-row-lookup.ts:1-110",
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:1-120"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "rowKeyMatchesRenderRow",
-    "renderRowContainsWorktree",
-    "findPreferredRenderRowIndexForWorktree"
-   ],
-   "note": "A lookup de key foi portada (getRenderRowKey) e a preferência de row existe para navegação, mas contenção e índice preferido por worktree não têm módulo equivalente."
+   "missing_behaviors": [],
+   "note": "Key/containment/preferred-index lookups are consumed by the reveal path: a natural item beats a Pinned duplicate or a containing header, and folder-path reveals stay exact."
   },
   {
    "id": "D03a-071",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:458-491"
+    "src/components/sidebar/sidebar-reveal-lookups.ts:70-95",
+    "src/components/sidebar/WorktreeSidebar.tsx:620-660"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "getPinnedWorktreeRevealCollapsedGroupKeys (expandir a seção Pinned colapsada)"
-   ],
-   "note": "O reveal expande projeto e project-group inline; a seção Pinned colapsada não é reaberta para o alvo."
+   "missing_behaviors": [],
+   "note": "Reveal expands the Pinned section and every project-group ancestor of a folder workspace before scrolling."
   },
   {
    "id": "D03a-074",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:428-467",
-    "src/components/sidebar/host-section-rows.ts:18-32",
-    "src/components/sidebar/HostSectionHeaderMenu.tsx:26-130"
+    "src/components/sidebar/WorktreeList.tsx:512-610"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "ícone Server/ServerOff e indicador de saúde do host",
-    "aria-label no badge de contagem",
-    "alça de drag data-host-header-drag-id"
-   ],
-   "note": "Header de host renderizado inline com detalhe, contagem, chevron e menu; health existe no row mas não é pintado e não há alça de drag."
+   "missing_behaviors": [],
+   "note": "Host header is an outlined card with Server/ServerOff, a health icon for connecting/blocked/error, an aria-labelled workspace count badge and the drag id."
   },
   {
    "id": "D03a-088",
@@ -200,30 +177,24 @@
   },
   {
    "id": "D03a-089",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:158-174",
-    "src/components/sidebar/worktree-list/viewport/use-virtualizer.ts:120-165"
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:161-175",
+    "src/components/sidebar/worktree-list/viewport/option-id.ts:1-50"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "aria-multiselectable=\"true\" no listbox"
-   ],
-   "note": "Viewport TanStack com role=listbox, aria-orientation e aria-activedescendant; falta o aria-multiselectable que o Orca publica."
+   "missing_behaviors": [],
+   "note": "The scroll root is a vertical multiselectable listbox with aria-activedescendant pointing only at mounted options."
   },
   {
    "id": "D03a-090",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/use-runtime.ts:62-64",
-    "src/components/sidebar/WorktreeSidebar.tsx:151-152",
-    "src/components/sidebar/worktree-list/viewport/use-row-measurement.ts:100-104"
+    "src/components/sidebar/WorktreeSidebar.tsx:182-193"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "cancelar o timeout do highlight de reveal no unmount (clearRevealHighlightTimeout)"
-   ],
-   "note": "Drag, RAFs de medição e timer do jump-to-top são limpos no unmount; highlightTimerRef do WorktreeSidebar não tem cleanup."
+   "missing_behaviors": [],
+   "note": "Unmount clears the reveal-highlight timeout, so it cannot fire into a torn-down panel."
   },
   {
    "id": "D03a-091",
@@ -317,17 +288,15 @@
   },
   {
    "id": "D03a-100",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:52-140",
-    "src/store/github/refresh-routing-actions.ts:57-69",
-    "src/store/github/worktree-refresh.ts:11"
+    "src/components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:1-160",
+    "src/App.tsx:2468-2530",
+    "src/components/sidebar/worktree-list/viewport/use-visible-review-refresh.parity.test.tsx:160-190"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "coordenador de refresh de PR/CI (findWorktreeById/buildPRRefreshCandidate são stubs null)"
-   ],
-   "note": "Reporter montado com janela start/end, dedupe por geração e visibilitychange; a ação do store degrada para no-op porque o slice do coordenador não está composto."
+   "missing_behaviors": [],
+   "note": "The visible window now asks the App for a native pr_status refresh (deduped by repo/branch with a 20s cooldown) and the fresh result lands in prByPath, so the PR lane/badges refresh for exactly the on-screen rows."
   },
   {
    "id": "D03a-101",

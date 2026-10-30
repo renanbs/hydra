@@ -248,7 +248,7 @@
   },
   {
    "id": "D03a-042",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-41": [
@@ -268,11 +268,11 @@
   },
   {
    "id": "D03a-044",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D03a-065",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-08": [
@@ -282,7 +282,7 @@
   },
   {
    "id": "D03a-060",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D04a-002",
@@ -408,7 +408,7 @@
  "PAR-35": [
   {
    "id": "D03a-030",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D11-003",
@@ -418,7 +418,7 @@
  "PAR-82": [
   {
    "id": "D03a-032",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D03a-093",
@@ -436,7 +436,7 @@
  "PAR-26": [
   {
    "id": "D03a-043",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D07-011",
@@ -446,7 +446,7 @@
  "PAR-22": [
   {
    "id": "D03a-058",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-52": [

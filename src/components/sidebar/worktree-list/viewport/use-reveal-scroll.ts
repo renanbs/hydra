@@ -7,26 +7,50 @@
 import { useEffect, useRef } from 'react'
 import type { Virtualizer } from '@tanstack/react-virtual'
 import type { HostSectionRow } from '../../host-section-rows'
+import { findRevealRowIndex, rowKeyMatchesRenderRow } from '../listing/reveal-row-lookup'
 
-/** Path a reveal names — a workspace path or a folder workspace path. */
-function rowMatchesRevealPath(row: HostSectionRow, revealPath: string): boolean {
-  if (row.type === 'item') {
-    return row.worktree.path === revealPath
+/** Orca `MAX_REVEAL_RETRIES`: a reveal may race the commit that expands a
+ *  collapsed section, so the row only exists a frame or two later. */
+const MAX_REVEAL_RETRIES = 8
+
+function scrollToIndexSoon(
+  resolveIndex: () => number,
+  virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>,
+  markDirectScrollInput: () => void,
+  onIssued?: () => void
+): () => void {
+  let retries = 0
+  let frame = 0
+  const attempt = () => {
+    const index = resolveIndex()
+    if (index >= 0) {
+      markDirectScrollInput()
+      virtualizer.scrollToIndex(index, { align: 'auto' })
+      onIssued?.()
+      return
+    }
+    if (retries >= MAX_REVEAL_RETRIES) {
+      onIssued?.()
+      return
+    }
+    retries += 1
+    frame = requestAnimationFrame(attempt)
   }
-  if (row.type === 'folder-workspace') {
-    return row.folderWorkspace.folderPath === revealPath
-  }
-  return false
+  frame = requestAnimationFrame(attempt)
+  return () => cancelAnimationFrame(frame)
 }
 
 export function useWorktreeListRevealScroll(args: {
   rows: readonly HostSectionRow[]
   revealPath: string | null
+  revealRowKey?: string | null
   virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>
   markDirectScrollInput: () => void
+  onRevealIssued?: () => void
 }): void {
-  const { rows, revealPath, virtualizer, markDirectScrollInput } = args
+  const { rows, revealPath, revealRowKey, virtualizer, markDirectScrollInput, onRevealIssued } = args
   const lastRevealedPathRef = useRef<string | null>(null)
+  const lastRevealedRowKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (revealPath === null) {
@@ -38,14 +62,36 @@ export function useWorktreeListRevealScroll(args: {
     if (lastRevealedPathRef.current === revealPath) {
       return
     }
-    lastRevealedPathRef.current = revealPath
-    const index = rows.findIndex((row) => rowMatchesRevealPath(row, revealPath))
-    if (index === -1) {
+    const cancel = scrollToIndexSoon(
+      () => findRevealRowIndex(rows, revealPath),
+      virtualizer,
+      markDirectScrollInput,
+      () => {
+        lastRevealedPathRef.current = revealPath
+      }
+    )
+    return cancel
+  }, [markDirectScrollInput, revealPath, rows, virtualizer])
+
+  // Reveal by row key (headers included): the same retry window, plus the caller's
+  // chance to clear the pending request once a scroll was issued.
+  useEffect(() => {
+    if (!revealRowKey) {
+      lastRevealedRowKeyRef.current = null
       return
     }
-    // The list is jumping somewhere the user did not scroll to, so the anchor must not
-    // restore over it.
-    markDirectScrollInput()
-    virtualizer.scrollToIndex(index, { align: 'auto' })
-  }, [markDirectScrollInput, revealPath, rows, virtualizer])
+    if (lastRevealedRowKeyRef.current === revealRowKey) {
+      return
+    }
+    const cancel = scrollToIndexSoon(
+      () => rows.findIndex((row) => rowKeyMatchesRenderRow(row, revealRowKey)),
+      virtualizer,
+      markDirectScrollInput,
+      () => {
+        lastRevealedRowKeyRef.current = revealRowKey
+        onRevealIssued?.()
+      }
+    )
+    return cancel
+  }, [markDirectScrollInput, onRevealIssued, revealRowKey, rows, virtualizer])
 }

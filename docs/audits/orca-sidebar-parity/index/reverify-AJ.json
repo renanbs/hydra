@@ -2,8 +2,37 @@
  "group": "AJ",
  "generatedFrom": "2026-10-21 targeted D03a partial re-check: status/pin writes are path-bridged, the clear-filters path resets display options rather than computing a selective plan, and the group delete dialog lacks the contained-projects toggle",
  "rows": [
-  {"id":"D03a-021","status":"partial","evidence":["src/components/sidebar/WorktreeList.tsx:1040-1129","src/components/sidebar/WorktreeSidebar.tsx:750","src/components/sidebar/WorktreeSidebar.tsx:1078"],"missing_behaviors":["gravar workspaceStatus qualificado por executionHostId no drop"],"note":"Status/pin drops call the path-based writers; the write is not host-qualified metadata."},
-  {"id":"D03a-043","status":"partial","evidence":["src/components/sidebar/WorktreeSidebar.tsx:400-425"],"missing_behaviors":["computeClearFilterActions com reset seletivo"],"note":"Clear filters resets the fixed display-option set to defaults, not a computed selective plan."},
-  {"id":"D03a-086","status":"partial","evidence":["src/components/sidebar/ProjectGroupDeleteDialog.tsx","src/components/sidebar/WorktreeSidebar.tsx:170"],"missing_behaviors":["toggle removeContainedProjects com contagem/nomes"],"note":"The delete dialog shows count and names but has no remove-contained-projects choice."}
+  {
+   "id": "D03a-021",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts"
+   ],
+   "missing_behaviors": [
+    "host-qualified manual-order write for project groups still lacks a store writer"
+   ],
+   "note": "Status/pin drops are host-qualified and deduped by path; host-section order persists through the UI-prefs writer."
+  },
+  {
+   "id": "D03a-043",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/sidebar-filter-actions.ts:53-95",
+    "src/components/sidebar/sidebar-filter-actions.ts:98-160",
+    "src/components/sidebar/WorktreeSidebar.tsx:491-515"
+   ],
+   "missing_behaviors": [],
+   "note": "Clear Filters now computes the selective action plan and resets only the filters that were narrowing the list (host scope included)."
+  },
+  {
+   "id": "D03a-086",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/ProjectGroupDeleteDialog.tsx:1-140",
+    "src/components/sidebar/ProjectGroupDeleteDialog.parity.test.tsx:1-160"
+   ],
+   "missing_behaviors": [],
+   "note": "Delete dialog exposes a controlled Remove-contained-projects toggle with count/names and the on-disk-folder note."
+  }
  ]
 }
