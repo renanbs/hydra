@@ -1491,6 +1491,34 @@ mod tests {
     use super::*;
 
     #[test]
+    fn diff_comments_roundtrip_and_overwrite() {
+        let path = std::env::temp_dir().join(format!(
+            "hydra-diff-comments-{}-{}.sqlite3",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        assert!(load_diff_comments_at(&path, "worktree:wt-1").expect("load empty").is_empty());
+
+        let first = vec![serde_json::json!({"id": "c1", "body": "one"})];
+        save_diff_comments_at(&path, "worktree:wt-1", &first).expect("save");
+        assert_eq!(load_diff_comments_at(&path, "worktree:wt-1").expect("load"), first);
+
+        let second = vec![
+            serde_json::json!({"id": "c1", "body": "one"}),
+            serde_json::json!({"id": "c2", "body": "two"}),
+        ];
+        save_diff_comments_at(&path, "worktree:wt-1", &second).expect("overwrite");
+        assert_eq!(load_diff_comments_at(&path, "worktree:wt-1").expect("reload"), second);
+        // Another workspace key stays isolated.
+        assert!(load_diff_comments_at(&path, "worktree:wt-2").expect("other key").is_empty());
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
     fn test_db_sessions_crud() {
         let db = DatabaseManager::new_in_memory().expect("in-memory db");
         let rec = DbSessionRecord {
@@ -1937,4 +1965,70 @@ fn chrono_now() -> i64 {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs() as i64
+}
+
+// ── Diff review notes ────────────────────────────────────────────────────────
+// Orca persists per-worktree diff notes with the worktree row. Hydra keys them by
+// the workspace key (`worktree:<id>` / `folder:<id>`) in their own table: notes are
+// high-churn, independent of the sidebar metadata schema.
+fn diff_comments_now_ms() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|duration| duration.as_millis() as i64)
+        .unwrap_or(0)
+}
+
+fn ensure_diff_comments_table(conn: &rusqlite::Connection) -> Result<(), String> {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS worktree_diff_comments (
+            worktree_key TEXT PRIMARY KEY,
+            comments_json TEXT NOT NULL,
+            updated_at INTEGER NOT NULL
+        )",
+        params![],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn load_diff_comments_at(db_path: &std::path::Path, worktree_key: &str) -> Result<Vec<serde_json::Value>, String> {
+    let conn = rusqlite::Connection::open(db_path).map_err(|e| e.to_string())?;
+    ensure_diff_comments_table(&conn)?;
+    let raw: Option<String> = conn
+        .query_row(
+            "SELECT comments_json FROM worktree_diff_comments WHERE worktree_key = ?1",
+            params![worktree_key],
+            |row| row.get(0),
+        )
+        .unwrap_or(None);
+    Ok(raw
+        .and_then(|json| serde_json::from_str::<Vec<serde_json::Value>>(&json).ok())
+        .unwrap_or_default())
+}
+
+pub fn save_diff_comments_at(
+    db_path: &std::path::Path,
+    worktree_key: &str,
+    comments: &[serde_json::Value],
+) -> Result<(), String> {
+    let conn = rusqlite::Connection::open(db_path).map_err(|e| e.to_string())?;
+    ensure_diff_comments_table(&conn)?;
+    let json = serde_json::to_string(comments).map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT INTO worktree_diff_comments (worktree_key, comments_json, updated_at)
+         VALUES (?1, ?2, ?3)
+         ON CONFLICT(worktree_key) DO UPDATE SET comments_json = excluded.comments_json, updated_at = excluded.updated_at",
+        params![worktree_key, json, diff_comments_now_ms()],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Session DB path used by the app (`~/.config/hydra/hydra_sessions.sqlite3`).
+pub fn default_db_path() -> Result<std::path::PathBuf, String> {
+    let home = std::env::var("HOME").map_err(|_| "HOME not set".to_string())?;
+    Ok(std::path::PathBuf::from(home)
+        .join(".config")
+        .join("hydra")
+        .join("hydra_sessions.sqlite3"))
 }

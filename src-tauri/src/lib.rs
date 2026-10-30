@@ -210,6 +210,29 @@ async fn delete_path_cmd(path: String) -> Result<(), String> {
 /// Folder-workspace path health (`FolderPathStatusIndicator` needs it): Orca asks the
 /// host whether the folder still exists; Hydra had no probe at all.
 #[tauri::command]
+async fn load_diff_comments(worktree_key: String) -> Result<Vec<serde_json::Value>, String> {
+    tokio::task::spawn_blocking(move || {
+        let db_path = db::default_db_path()?;
+        db::load_diff_comments_at(&db_path, &worktree_key)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn save_diff_comments(
+    worktree_key: String,
+    comments: Vec<serde_json::Value>,
+) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || {
+        let db_path = db::default_db_path()?;
+        db::save_diff_comments_at(&db_path, &worktree_key, &comments)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn path_exists(path: String) -> bool {
     tokio::task::spawn_blocking(move || std::path::Path::new(&path).is_dir())
         .await
@@ -1757,6 +1780,8 @@ pub fn run() {
             delete_path_cmd,
             path_exists,
             folder_path_status,
+            load_diff_comments,
+            save_diff_comments,
             get_branch_commits_cmd,
             git_push_cmd,
             git_pull_cmd,

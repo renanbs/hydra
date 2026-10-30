@@ -1,17 +1,19 @@
 import type { StateCreator } from 'zustand'
 import type { AppState } from '../types'
 import type { DiffComment } from '../../shared/diff-comment-types'
-import { findWorktreeById } from './worktree-helpers'
 import { createBrowserUuid } from '@/lib/browser-uuid'
-import { findFolderWorkspaceOwner } from '@/lib/folder-workspace-runtime-owner'
-import { parseWorkspaceKey } from '../../shared/workspace-scope'
 import {
+  ensureDiffCommentsLoaded,
   enqueueDiffCommentPersist,
   mutateDiffComments,
   normalizeDiffComment
 } from './diff-comment-persistence'
 
 export type DiffCommentsSlice = {
+  /** Notes keyed by workspace key (`worktree:<id>` / `folder:<id>`). */
+  diffCommentsByWorktree: Record<string, DiffComment[]>
+  /** Workspaces whose notes were hydrated from SQLite. */
+  diffCommentsLoadedKeys: Record<string, boolean>
   getDiffComments: (worktreeId: string | null | undefined) => DiffComment[]
   addDiffComment: (input: Omit<DiffComment, 'id' | 'createdAt'>) => Promise<DiffComment | null>
   updateDiffComment: (worktreeId: string, commentId: string, body: string) => Promise<boolean>
@@ -69,21 +71,17 @@ export const createDiffCommentsSlice: StateCreator<AppState, [], [], DiffComment
   set,
   get
 ) => ({
+  diffCommentsByWorktree: {},
+  diffCommentsLoadedKeys: {},
   getDiffComments: (worktreeId) => {
     // Why: return the stable sentinel for a missing worktree so optional-worktree callers don't allocate a fresh [] and trigger re-renders.
     if (!worktreeId) {
       return EMPTY_COMMENTS as DiffComment[]
     }
-    const scope = parseWorkspaceKey(worktreeId)
-    const worktree =
-      scope?.type === 'folder'
-        ? findFolderWorkspaceOwner(get(), scope.folderWorkspaceId)
-        : findWorktreeById(get().worktreesByRepo, worktreeId)
-    if (!worktree?.diffComments) {
-      // Why: cast the frozen sentinel to the mutable return type; runtime freeze makes accidental mutation throw.
-      return EMPTY_COMMENTS as DiffComment[]
-    }
-    return worktree.diffComments
+    // First read hydrates from SQLite; the read itself stays synchronous so
+    // render paths never suspend.
+    ensureDiffCommentsLoaded(set, get, worktreeId)
+    return (get().diffCommentsByWorktree[worktreeId] ?? EMPTY_COMMENTS) as DiffComment[]
   },
 
   addDiffComment: async (input) => {
