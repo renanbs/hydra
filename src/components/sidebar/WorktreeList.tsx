@@ -442,6 +442,8 @@ export interface WorktreeListProps {
   onReorderWorktreesInGroup?: (ordered: GitWorktreeInfo[], projectPath: string) => void;
   /** Orca `handleReorderHostSections`: persist the host-section order after a drag. */
   onReorderHostSections?: (orderedHostIds: ExecutionHostId[]) => void;
+  /** Project-group tier writer: the drop reports the group's new tab order. */
+  onUpdateProjectGroup?: (groupId: string, updates: { tabOrder: number }) => void;
   /**
    * The app's own workspace-status write (`set_worktree_status` + the local worktree
    * maps). A sidebar row dragged onto an open workspace board commits through it, so the
@@ -744,6 +746,7 @@ export function WorktreeList({
   scrollRef,
   onReorderWorktreesInGroup,
   onReorderHostSections,
+  onUpdateProjectGroup,
   onAssignWorktreeStatus,
   lineageByPath,
   worktreeMetadataByPath,
@@ -1895,6 +1898,7 @@ export function WorktreeList({
     scrollRef: viewportScrollRef,
     projectGroups,
     onReorderHostSections,
+    onUpdateProjectGroup,
     onProjectDragStart,
     onProjectDragOver,
     onProjectDrop,
