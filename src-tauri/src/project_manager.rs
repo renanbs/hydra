@@ -202,6 +202,65 @@ pub fn import_external_worktree_for_project(project_path: &str, worktree_path: &
     Err("Failed to open database".to_string())
 }
 
+fn open_projects_db() -> Result<rusqlite::Connection, String> {
+    let home = std::env::var("HOME").map_err(|_| "HOME not set".to_string())?;
+    let db_path = PathBuf::from(home).join(".config").join("hydra").join("hydra_sessions.sqlite3");
+    rusqlite::Connection::open(&db_path).map_err(|e| e.to_string())
+}
+
+/// The project's allowlist of imported external worktrees (Orca
+/// `importedExternalWorktreePaths`). Read returns an empty list for a project with
+/// no allowlist row yet.
+pub fn read_imported_worktrees(project_path: &str) -> Result<Vec<String>, String> {
+    let conn = open_projects_db()?;
+    let _ = conn.execute(
+        "ALTER TABLE added_projects ADD COLUMN imported_worktrees TEXT",
+        rusqlite::params![],
+    );
+    let raw: Option<String> = conn
+        .query_row(
+            "SELECT imported_worktrees FROM added_projects WHERE path = ?1",
+            rusqlite::params![project_path],
+            |row| row.get(0),
+        )
+        .unwrap_or(None);
+    Ok(raw.and_then(|value| serde_json::from_str(&value).ok()).unwrap_or_default())
+}
+
+/// Exact write (used for rollback): replaces the allowlist with `paths`.
+pub fn write_imported_worktrees(project_path: &str, paths: &[String]) -> Result<(), String> {
+    let conn = open_projects_db()?;
+    let _ = conn.execute(
+        "ALTER TABLE added_projects ADD COLUMN imported_worktrees TEXT",
+        rusqlite::params![],
+    );
+    let raw = serde_json::to_string(paths).map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE added_projects SET imported_worktrees = ?1 WHERE path = ?2",
+        rusqlite::params![raw, project_path],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Bulk allowlist import. All-or-nothing: a failure mid-way restores the list the
+/// project had before the batch, so the inbox never claims a partial import.
+pub fn import_external_worktrees_batch(
+    project_path: &str,
+    worktree_paths: &[String],
+) -> Result<usize, String> {
+    let previous = read_imported_worktrees(project_path)?;
+    let mut added = 0usize;
+    for path in worktree_paths {
+        if let Err(error) = import_external_worktree_for_project(project_path, path) {
+            let _ = write_imported_worktrees(project_path, &previous);
+            return Err(error);
+        }
+        added += 1;
+    }
+    Ok(added)
+}
+
 pub fn suppress_discovery_for_project(project_path: &str) -> Result<(), String> {
     if let Ok(home) = std::env::var("HOME") {
         let db_path = PathBuf::from(home).join(".config").join("hydra").join("hydra_sessions.sqlite3");

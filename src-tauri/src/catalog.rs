@@ -656,6 +656,35 @@ pub fn set_worktree_visibility_sources(
     agent_worktree_visibility: Option<String>,
     external_worktree_discovery_suppressed_at: Option<i64>,
 ) -> Result<(), String> {
+    set_worktree_visibility_sources_with_inbox(
+        envelope,
+        repo_path,
+        custom_sources,
+        source_preferences,
+        external_worktree_visibility,
+        external_worktree_visibility_legacy,
+        agent_worktree_visibility,
+        external_worktree_discovery_suppressed_at,
+        None,
+        None,
+    )
+}
+
+/// Orca writes the inbox baseline and the suppression stamp in one catalog write;
+/// `None` leaves both untouched.
+#[allow(clippy::too_many_arguments)]
+pub fn set_worktree_visibility_sources_with_inbox(
+    envelope: &mut CatalogEnvelope,
+    repo_path: &str,
+    custom_sources: Option<Vec<CustomWorktreeSource>>,
+    source_preferences: Option<SourcePreferences>,
+    external_worktree_visibility: Option<String>,
+    external_worktree_visibility_legacy: Option<bool>,
+    agent_worktree_visibility: Option<String>,
+    external_worktree_discovery_suppressed_at: Option<i64>,
+    inbox_baseline_paths: Option<Vec<String>>,
+    inbox_prompt_dismissed_at: Option<i64>,
+) -> Result<(), String> {
     let norm = normalize_catalog_path(repo_path);
     if norm.is_empty() {
         return Err("Empty path".to_string());
@@ -677,6 +706,12 @@ pub fn set_worktree_visibility_sources(
     // Orca un-suppresses discovery when the user chooses Show outside the listed
     // sources: `None` clears the stamp (writes `null`), `Some(ts)` writes it.
     repo.external_worktree_discovery_suppressed_at = external_worktree_discovery_suppressed_at;
+    if let Some(paths) = inbox_baseline_paths {
+        repo.external_worktree_inbox_baseline_paths = if paths.is_empty() { None } else { Some(paths) };
+    }
+    if inbox_prompt_dismissed_at.is_some() {
+        repo.external_worktree_visibility_prompt_dismissed_at = inbox_prompt_dismissed_at;
+    }
     Ok(())
 }
 
@@ -919,6 +954,32 @@ mod tests {
         // Frontend reads these exact keys, present even when `null`.
         assert!(raw.contains("\"externalWorktreeInboxBaselinePaths\""));
         assert!(raw.contains("\"externalWorktreeVisibilityPromptDismissedAt\""));
+    }
+
+    #[test]
+    fn visibility_sources_write_inbox_baseline_and_suppression_together() {
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(repo_at("/x/repo"));
+        set_worktree_visibility_sources_with_inbox(
+            &mut env,
+            "/x/repo",
+            None,
+            None,
+            Some("show".to_string()),
+            None,
+            None,
+            Some(1_700_000_000_000),
+            Some(vec!["/x/repo/keep".to_string()]),
+            Some(1_700_000_000_000),
+        )
+        .unwrap();
+        let repo = &env.repos[0];
+        assert_eq!(
+            repo.external_worktree_inbox_baseline_paths.as_deref(),
+            Some(["/x/repo/keep".to_string()].as_slice())
+        );
+        assert_eq!(repo.external_worktree_discovery_suppressed_at, Some(1_700_000_000_000));
+        assert_eq!(repo.external_worktree_visibility_prompt_dismissed_at, Some(1_700_000_000_000));
     }
 
     #[test]

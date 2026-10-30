@@ -1,0 +1,8 @@
+{
+ "group": "BE",
+ "generatedFrom": "2026-10-27 inbox persistence: bulk allowlist import (all-or-nothing) and a single catalog write that carries the baseline with the suppression stamp",
+ "rows": [
+  {"id":"D10-067","status":"parity","evidence":["src-tauri/src/project_manager.rs:207-270","src/components/sidebar/WorktreeSidebar.tsx:1130-1175","src-tauri/src/lib.rs:452-478"],"missing_behaviors":[],"note":"Show all imports every listed path into the allowlist in one batch (Rust restores the previous list on a mid-way failure) and the catch restores the previous allowlist when the authoritative refresh fails."},
+  {"id":"D10-069","status":"parity","evidence":["src-tauri/src/catalog.rs:649-705","src-tauri/src/catalog.rs:1130-1155","src/components/sidebar/WorktreeSidebar.tsx:1650-1715"],"missing_behaviors":[],"note":"Suppression merges the hidden paths into the inbox baseline and writes the stamp in the same catalog write as discovery-suppressed; a failed refresh rolls the catalog half back."}
+ ]
+}

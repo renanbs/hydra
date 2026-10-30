@@ -229,7 +229,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 285 capabilities
+## PARTIAL — 283 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -527,15 +527,13 @@
 - **D09-027** — Detecção de status de agentes atribuídos e frescos para transição de cold-start | falta: cold start do caminho pintado a partir do sortOrder persistido | components/sidebar/smart-attention.ts:45
 - **D09-031** — Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido | falta: cold start: reordenar pelo sortOrder persistido até chegar o snapshot de agent status | components/sidebar/smart-sort.ts:167
 
-### D10-visibility-inbox-notices (7)
+### D10-visibility-inbox-notices (5)
 
 - **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: output de CLI propriamente dito: o auto-rename do Hydra é determinístico (slug do prompt), então não existe stdout/stderr capturado; o comando devolve o excerto persistido | components/sidebar/AutoRenameFailedDialog.tsx:31
 - **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: pré-hidratação de git status no host remoto (só o dono local é sondado; alvos SSH/runtime ficam com contagem desconhecida) | components/sidebar/DeleteWorktreeDialog.tsx:188
 - **D10-018** — Compor a frase de descrição com alvo e alvo-filho | falta: childTargetLabel de lineage; classe de destaque do targetLabel | components/sidebar/DeleteWorktreeDialogDescription.tsx:19
 - **D10-050** — Abrir Global Settings na seção de visibilidade de worktrees | falta: navegar para a seção de visibilidade de worktrees (Hydra abre 'general'); closeModal + openSettingsTarget({pane:'general',repoId:null,sectionId}) | components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:22
 - **D10-057** — Contador 'N found' por source, ignorando checkouts selecionados e Orca-managed | falta: pular checkouts selecionados e ownership orca-managed (as linhas de recuperação do Hydra não carregam esses campos) | components/sidebar/WorktreeVisibilitySourceList.tsx:193
-- **D10-067** — Importar worktrees do inbox para a allowlist do sidebar (com rollback explícito) | falta: import em lote para a allowlist (importedExternalWorktreePaths); rollback explícito quando o refresh falha | backend: invoke('import_worktree') -> src-tauri/src/lib.rs:418 | components/sidebar/new-external-worktrees-inbox-actions.ts:56
-- **D10-069** — Suprimir permanentemente a descoberta de worktrees externos | falta: fundir a baseline no mesmo write; gravar externalWorktreeDiscoverySuppressedAt no config do repo (Hydra grava suppressed_discovery em SQLite); mensagem de erro | backend: invoke('suppress_worktree_inbox') -> src-tauri/src/lib.rs:423; src-tauri/src/project_manager.rs:205 | components/sidebar/new-external-worktrees-inbox-actions.ts:127
 
 ### D11-lineage-grouping-model (6)
 

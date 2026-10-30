@@ -1454,19 +1454,18 @@
     "components/sidebar/new-external-worktrees-inbox-actions.ts:104"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:749-780"
+     "src-tauri/src/project_manager.rs:207-270",
+     "src/components/sidebar/WorktreeSidebar.tsx:1130-1175",
+     "src-tauri/src/lib.rs:452-478"
     ],
     "backend": [
      "invoke('import_worktree') -> src-tauri/src/lib.rs:418"
     ],
-    "missing_behaviors": [
-     "import em lote para a allowlist (importedExternalWorktreePaths)",
-     "rollback explícito quando o refresh falha"
-    ],
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "missing_behaviors": [],
+    "note": "Show all imports every listed path into the allowlist in one batch (Rust restores the previous list on a mid-way failure) and the catch restores the previous allowlist when the authoritative refresh fails.",
+    "notes": "Show all imports every listed path into the allowlist in one batch (Rust restores the previous list on a mid-way failure) and the catch restores the previous allowlist when the authoritative refresh fails."
    }
   },
   {
@@ -1501,21 +1500,19 @@
     "components/sidebar/new-external-worktrees-inbox-actions.ts:131"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:785-803"
+     "src-tauri/src/catalog.rs:649-705",
+     "src-tauri/src/catalog.rs:1130-1155",
+     "src/components/sidebar/WorktreeSidebar.tsx:1650-1715"
     ],
     "backend": [
      "invoke('suppress_worktree_inbox') -> src-tauri/src/lib.rs:423",
      "src-tauri/src/project_manager.rs:205"
     ],
-    "missing_behaviors": [
-     "fundir a baseline no mesmo write",
-     "gravar externalWorktreeDiscoverySuppressedAt no config do repo (Hydra grava suppressed_discovery em SQLite)",
-     "mensagem de erro"
-    ],
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "missing_behaviors": [],
+    "note": "Suppression merges the hidden paths into the inbox baseline and writes the stamp in the same catalog write as discovery-suppressed; a failed refresh rolls the catalog half back.",
+    "notes": "Suppression merges the hidden paths into the inbox baseline and writes the stamp in the same catalog write as discovery-suppressed; a failed refresh rolls the catalog half back."
    }
   },
   {
