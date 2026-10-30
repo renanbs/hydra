@@ -1,9 +1,51 @@
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+
+const { invokeMock } = vi.hoisted(() => ({ invokeMock: vi.fn() }));
+vi.mock("@tauri-apps/api/core", () => ({ invoke: invokeMock }));
 import { AutoRenameFailedDialog } from "./AutoRenameFailedDialog";
 
 const LONG_ERROR = "fatal: " + "verylongtoken".repeat(30) + "\nsecond line";
+
+beforeEach(() => {
+  invokeMock.mockReset();
+  invokeMock.mockResolvedValue(null);
+});
+
+describe("AutoRenameFailedDialog full output (D10-001)", () => {
+  it("prefers the captured output when the host still has it", async () => {
+    invokeMock.mockResolvedValue("fatal: provider exited 401\nfull trace");
+    render(
+      <AutoRenameFailedDialog
+        open
+        onOpenChange={vi.fn()}
+        worktreeId="repo_a::/repo/feature"
+        worktreeName="feat/x"
+        error="excerpt"
+      />
+    );
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("get_branch_rename_failure_output", {
+        worktreeId: "repo_a::/repo/feature",
+      })
+    );
+    expect(await screen.findByText(/full trace/)).toBeInTheDocument();
+  });
+
+  it("falls back to the persisted excerpt when the host returns null", async () => {
+    render(
+      <AutoRenameFailedDialog
+        open
+        onOpenChange={vi.fn()}
+        worktreeId="repo_a::/repo/feature"
+        worktreeName="feat/x"
+        error="persisted excerpt"
+      />
+    );
+    expect(await screen.findByText(/persisted excerpt/)).toBeInTheDocument();
+  });
+});
 
 describe("AutoRenameFailedDialog output block (D10-004)", () => {
   it("wraps literal output in a gutter-reserving scroll region", () => {

@@ -15317,18 +15317,16 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/AutoRenameFailedDialog.tsx:116",
-    "src/components/sidebar/AutoRenameFailedDialog.tsx:87"
+    "src-tauri/src/lib.rs:596-624",
+    "src/components/sidebar/AutoRenameFailedDialog.tsx:20-70",
+    "src/components/sidebar/AutoRenameFailedDialog.parity.test.tsx:20-56"
    ],
    "backend": [],
    "missing_behaviors": [
-    "busca window.api.worktrees.getBranchRenameFailureOutput ao abrir (Hydra só renderiza a prop `error`; `worktreeId` é declarado e não usado — :11)",
-    "resposta null mantém o excerto persistido",
-    "rejeição do IPC mantém o excerto",
-    "guard de staleness no cleanup",
-    "refetch quando error/open/worktreeId mudam"
+    "output de CLI propriamente dito: o auto-rename do Hydra é determinístico (slug do prompt), então não existe stdout/stderr capturado; o comando devolve o excerto persistido"
    ],
-   "notes": "Sem comando Tauri equivalente chamado a partir do sidebar (hydra_sidebar_backend_map.json não lista getBranchRenameFailureOutput)."
+   "notes": "The fetch-and-fallback contract exists and is tested; the data source is the persisted excerpt because Hydra never runs a naming CLI.",
+   "note": "The fetch-and-fallback contract exists and is tested; the data source is the persisted excerpt because Hydra never runs a naming CLI."
   },
   "domain": "D10-visibility-inbox-notices"
  },

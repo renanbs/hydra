@@ -529,7 +529,7 @@
 
 ### D10-visibility-inbox-notices (10)
 
-- **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: busca window.api.worktrees.getBranchRenameFailureOutput ao abrir (Hydra só renderiza a prop `error`; `worktreeId` é declarado e não usado — :11); resposta null mantém o excerto persistido; rejeição do IPC mantém o excerto; guard de staleness no cleanup | components/sidebar/AutoRenameFailedDialog.tsx:31
+- **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: output de CLI propriamente dito: o auto-rename do Hydra é determinístico (slug do prompt), então não existe stdout/stderr capturado; o comando devolve o excerto persistido | components/sidebar/AutoRenameFailedDialog.tsx:31
 - **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: pré-hidratação de git status no host remoto (só o dono local é sondado; alvos SSH/runtime ficam com contagem desconhecida) | components/sidebar/DeleteWorktreeDialog.tsx:188
 - **D10-018** — Compor a frase de descrição com alvo e alvo-filho | falta: childTargetLabel de lineage; classe de destaque do targetLabel | components/sidebar/DeleteWorktreeDialogDescription.tsx:19
 - **D10-024** — Linha compacta 'Hiding N discovered worktrees' com copia por placement e host | falta: copy/layout da pílula compacta (NewExternalWorktreesInboxLine usa contador + 'hidden worktrees' em vez de 'Hiding N discovered worktrees') | components/sidebar/ImportedWorktreesVisibilityLine.tsx:108

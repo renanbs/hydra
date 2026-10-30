@@ -587,6 +587,31 @@ async fn delete_worktrees_batch(
     .map_err(|error| error.to_string())
 }
 
+/// Orca `worktrees.getBranchRenameFailureOutput`: the full text captured when the
+/// auto-rename failed. Hydra persists one excerpt field, so that is what it returns;
+/// an id of the form `repoId::path` resolves to the path the DB keys on.
+fn worktree_path_from_id(worktree_id: &str) -> String {
+    worktree_id
+        .rsplit_once("::")
+        .map(|(_, path)| path.to_string())
+        .unwrap_or_else(|| worktree_id.to_string())
+}
+
+#[tauri::command]
+async fn get_branch_rename_failure_output(
+    worktree_id: String,
+    state: State<'_, AppState>,
+) -> Result<Option<String>, String> {
+    let path = worktree_path_from_id(&worktree_id);
+    Ok(state
+        .db
+        .get_worktree_metadata(&path)
+        .ok()
+        .flatten()
+        .and_then(|metadata| metadata.first_agent_message_rename_error)
+        .filter(|text| !text.trim().is_empty()))
+}
+
 #[tauri::command]
 async fn delete_worktree(
     state: State<'_, AppState>,
@@ -1700,6 +1725,7 @@ pub fn run() {
             create_worktree,
             delete_worktree,
             delete_worktrees_batch,
+            get_branch_rename_failure_output,
             set_worktree_display_name,
             get_worktree_metadata,
             list_worktree_metadata,
@@ -1776,6 +1802,13 @@ pub fn run() {
 #[cfg(test)]
 mod batch_delete_tests {
     use super::path_is_inside_or_equal;
+    use super::worktree_path_from_id;
+
+    #[test]
+    fn rename_output_resolves_host_qualified_ids() {
+        assert_eq!(worktree_path_from_id("repo_a::/repo/feature"), "/repo/feature");
+        assert_eq!(worktree_path_from_id("/repo/feature"), "/repo/feature");
+    }
 
     #[test]
     fn containment_blocks_parent_after_failed_child() {
