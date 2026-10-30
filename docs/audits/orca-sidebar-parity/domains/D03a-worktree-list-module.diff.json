@@ -999,16 +999,15 @@
     "components/sidebar/worktree-list/listing/use-agent-send-target.ts:6-64"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:750-840",
-     "src/components/sidebar/WorktreeList.tsx:880-910"
+     "src/components/CodeDiffViewer.tsx:120-140",
+     "src/components/sidebar/AgentSendTargetPicker.tsx:1-90",
+     "src/components/sidebar/WorktreeList.tsx:750-845"
     ],
-    "missing_behaviors": [
-     "não existe superfície de UI que abra o modo de seleção de alvo (o store tem `openAgentSendPopoverTargetMode`, mas nenhum componente o chama)"
-    ],
-    "notes": "Forced visibility is wired: the mode's worktree bypasses host/device/menu filters. The picker that would set the mode is still absent, so the path is dormant.",
-    "note": "Forced visibility is wired: the mode's worktree bypasses host/device/menu filters. The picker that would set the mode is still absent, so the path is dormant."
+    "missing_behaviors": [],
+    "notes": "The diff-notes Send button opens the target mode; the mode's worktree bypasses host/device/menu filters and its branch is forced visible through the same projection.",
+    "note": "The diff-notes Send button opens the target mode; the mode's worktree bypasses host/device/menu filters and its branch is forced visible through the same projection."
    }
   },
   {
@@ -1018,15 +1017,13 @@
     "components/sidebar/worktree-list/listing/use-collapsed-groups.ts:17-121"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
      "src/components/sidebar/WorktreeSidebar.tsx:735-780"
     ],
-    "missing_behaviors": [
-     "depends on the same missing target-mode UI"
-    ],
-    "notes": "Opening the mode expands the target's project and project group; lineage-ancestor expansion still follows the reveal path.",
-    "note": "Opening the mode expands the target's project and project group; lineage-ancestor expansion still follows the reveal path."
+    "missing_behaviors": [],
+    "notes": "Opening the target mode expands the target project and its project group, so the picker and the forced row are never hidden by collapse.",
+    "note": "Opening the target mode expands the target project and its project group, so the picker and the forced row are never hidden by collapse."
    }
   },
   {

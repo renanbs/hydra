@@ -225,7 +225,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 262 capabilities
+## PARTIAL — 260 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -270,7 +270,7 @@
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5
 
-### D03a-worktree-list-module (36)
+### D03a-worktree-list-module (34)
 
 - **D03a-017** — Commit/abandono de drag fora do sidebar via listeners de documento em captura | falta: visibilitychange abandonando o drag em andamento; listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo; commit de nest sem slot (nesting inexistente) | components/sidebar/worktree-list/drag/use-document-drop.ts:18-115
 - **D03a-020** — Reordenar os três níveis de header do sidebar (host, grupo de projeto, projeto) | falta: reorder de host sections; gating canReorderRepoHeaders (groupBy=repo + projectOrderBy=manual); canReorderProjectGroupHeaders/ordem manual por host; supressão de correção de âncora | components/sidebar/worktree-list/drag/use-header-drag.ts:45-235
@@ -281,8 +281,6 @@
 - **D03a-040** — Reveal/grupo keys de um worktree para navegação e expand | falta: getGroupKeysForWorktree usado por reveal/expand; keys de project groups ancestrais | components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12-80
 - **D03a-046** — Restringir repos/grupos/folder workspaces ao escopo visível (host + dispositivo) | falta: visibleReposForRows/visibleProjectGroupsForRows/visibleFolderWorkspacesForRows no render; filterFolderWorkspacesFromOtherDevices | components/sidebar/worktree-list/listing/use-host-visible-scope.ts:17-72
 - **D03a-047** — Derivar a lista visível de worktrees a partir das ids ordenadas | falta: computeVisibleWorktrees alimentando o render pintado; snapshot de worktreeIdsWithLiveAgent por epoch; agentSendTargetWorktreeId como forcedVisible | components/sidebar/worktree-list/listing/use-visible-worktrees.ts:23-138
-- **D03a-048** — Forçar visível o alvo do seletor de envio de agente | falta: não existe superfície de UI que abra o modo de seleção de alvo (o store tem `openAgentSendPopoverTargetMode`, mas nenhum componente o chama) | components/sidebar/worktree-list/listing/use-agent-send-target.ts:6-64
-- **D03a-049** — Forçar expansão das seções que escondem o worktree alvo do seletor de agente | falta: depends on the same missing target-mode UI | components/sidebar/worktree-list/listing/use-collapsed-groups.ts:17-121
 - **D03a-050** — Ordenação estável da lista (sort modes) com Smart, Recent e Manual | falta: SORT_SETTLE_MS=3000 de debounce; persistência da ordem Smart por host; telemetria smart_sort_* | components/sidebar/worktree-list/listing/use-sort-order.ts:23-234
 - **D03a-052** — Montar o modelo completo de linhas do sidebar (grupos + seções de host) | falta: renderedSidebarRowKeys (conjunto de keys das rows renderizadas) não existe como contrato | components/sidebar/worktree-list/listing/use-section-rows.ts:24-255
 - **D03a-054** — Ações dos cards de worktrees externas (importar/mostrar, manter escondido, silenciar inbox) | falta: estado por repo pending/error/forceVisible; snapshot autoritativo com requireAuthoritative; confirmação de suppress por dialog | backend: invoke('import_worktree') -> src-tauri/src; invoke('catalog_set_worktree_visibility') -> src-tauri/src | components/sidebar/worktree-list/listing/use-external-worktree-cards.ts:21-206

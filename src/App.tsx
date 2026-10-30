@@ -2523,6 +2523,21 @@ export default function App() {
       window.removeEventListener("hydra:refresh-visible-prs", handleVisiblePrRefresh);
   }, []);
 
+  /** Workspace key that owns diff review notes for the active surface. */
+  const activeNotesKey = useMemo(() => {
+    const path = activeWorktreePath || activeProject?.path || "";
+    if (!path) return undefined;
+    const folderWorkspace = folderWorkspaces.find(
+      (workspace) => workspace.folderPath === path
+    );
+    if (folderWorkspace) return `folder:${folderWorkspace.id}`;
+    for (const list of Object.values(worktreesByProject)) {
+      const match = list.find((worktree) => worktree.path === path);
+      if (match?.id) return match.id;
+    }
+    return undefined;
+  }, [activeWorktreePath, activeProject?.path, folderWorkspaces, worktreesByProject]);
+
   /** Review display per worktree: one `pr_status` probe per repo/branch, cached for
    * the session so a re-render never re-shells out to `gh`. */
   useEffect(() => {
@@ -4370,6 +4385,8 @@ export default function App() {
                       modified={c.modified} 
                       language={c.lang}
                       theme={hydraSettings.theme === "light" ? "vs" : "vs-dark"}
+                      notesKey={activeNotesKey}
+                      filePath={currentTab.filePath ?? currentTab.title}
                     />
                   );
                 })() : currentTab?.type === "editor" ? (() => {

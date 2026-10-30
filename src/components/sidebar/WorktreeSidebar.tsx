@@ -66,6 +66,7 @@ import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
 import { RemoveFolderDialog } from "./RemoveFolderDialog";
 import SuppressExternalWorktreeInboxDialog from "./SuppressExternalWorktreeInboxDialog";
 import { RevealHiddenWorkspaceDialog } from "./RevealHiddenWorkspaceDialog";
+import { AgentSendTargetPicker } from "./AgentSendTargetPicker";
 import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
 export * from "./types";
@@ -1522,6 +1523,8 @@ export function WorktreeSidebar({
         onOptionsChange={handleDisplayOptionsChange}
         onAddProject={onOpenAddRepoDialog}
       />
+
+      <AgentSendTargetPicker />
 
       {/* 5. Footer */}
       <SidebarFooter

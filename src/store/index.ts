@@ -350,6 +350,9 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
     beginRename?: boolean
   } | null
   clearPendingRevealWorktreeId: () => void
+  openAgentSendPopoverTargetMode: (args: any) => void
+  closeAgentSendPopoverTargetMode: (id?: string, instanceId?: string) => void
+  sendPromptToSidebarAgentTarget: (paneKey: string) => Promise<boolean>
   /** Orca agent-send target picker state (worktree the prompt will go to). */
   agentSendPopoverTargetMode: {
     id: string
