@@ -103,6 +103,27 @@
     "renderedSidebarRowKeys (conjunto de keys das rows renderizadas) não existe como contrato"
    ],
    "note": "Host section tier drag reorder and pending-creation keys now exist; only the rendered-keys set is still absent."
+  },
+  {
+   "id": "D03a-042",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/listing/WorktreeListEmptyState.tsx:17-35",
+    "src/components/sidebar/WorktreeList.parity.test.tsx:625-640"
+   ],
+   "missing_behaviors": [],
+   "note": "Empty state carries the exact copy, CircleX Clear Filters, the sidebar container marker and the workspace-list tour anchor."
+  },
+  {
+   "id": "D03a-045",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:760-790",
+    "src/components/sidebar/WorktreeList.tsx:826-846",
+    "src/components/sidebar/worktree-list/listing/host-filtering.ts:14-24"
+   ],
+   "missing_behaviors": [],
+   "note": "The visible host set now narrows repos by execution host and each worktree by its own resolved host before grouping."
   }
  ]
 }

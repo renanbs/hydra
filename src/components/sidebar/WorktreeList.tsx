@@ -2,7 +2,7 @@
 // Source: components/sidebar/WorktreeList.tsx
 import React, { useMemo, useCallback, useLayoutEffect, useEffect, useRef, useState } from "react";
 import { useAppStore } from "@/store";
-import { ChevronDown, FolderPlus, Plus } from "lucide-react";
+import { AlertTriangle, ChevronDown, FolderPlus, Loader2, Plus, Server, ServerOff } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { getShortcutPlatform } from "../../lib/shortcut-platform";
 import { keybindingMatchesAction } from "../../shared/keybindings";
@@ -72,6 +72,8 @@ import type {
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
+import { getRepoExecutionHostId, getWorktreeExecutionHostId } from "../../shared/execution-host";
+import { getVisibleSidebarHostIdSet } from "./worktree-list/listing/host-filtering";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
 import { markSidebarWorktreeActiveImmediately } from "./worktree-list/rows/sidebar-worktree-active-dom";
 import { buildHostLabelById } from "../../shared/worktree/host-context-labels";
@@ -512,6 +514,35 @@ const LaneSectionHeader = React.memo(function LaneSectionHeader({
 });
 
 /** Host section header (Orca `rows/HostSectionHeader.tsx`): the multi-host grouping tier. */
+function HostSectionHealthIcon({
+  health,
+}: {
+  health: HostHeaderRow["health"];
+}): React.JSX.Element | null {
+  // Why: only surface states needing attention; healthy is the silent default.
+  if (health === "connecting") {
+    return <Loader2 className="size-3 shrink-0 animate-spin text-muted-foreground" aria-hidden />;
+  }
+  if (health === "blocked" || health === "error") {
+    return <AlertTriangle className="size-3 shrink-0 text-destructive" aria-hidden />;
+  }
+  return null;
+}
+
+function HostSectionMetricsBadge({ count }: { count: number }) {
+  const label = `${count} workspace${count === 1 ? "" : "s"}`;
+  return (
+    <span
+      className="inline-flex h-4 shrink-0 items-center justify-center rounded-full border border-worktree-sidebar-border bg-worktree-sidebar-accent px-1.5 text-[9px] font-medium leading-none text-muted-foreground/90"
+      aria-label={label}
+      title={label}
+      data-host-section-count={count}
+    >
+      {count}
+    </span>
+  );
+}
+
 const HostSectionHeader = React.memo(function HostSectionHeader({
   row,
   isCollapsed,
@@ -531,43 +562,76 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
   onDragEnd?: () => void;
   isDropTarget?: boolean;
 }): React.JSX.Element {
+  const isDisconnected =
+    row.health === "disconnected" || row.health === "error" || row.health === "blocked";
+  const isBlocked = row.health === "blocked";
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-expanded={!isCollapsed}
-      aria-label={row.label}
-      data-host-header-id={row.hostId}
-      draggable={Boolean(onDragStart)}
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
-      onDragEnd={onDragEnd}
-      className={cn(
-        "group/host-header relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
-        isDropTarget && "bg-worktree-sidebar-accent/60"
-      )}
-      style={{ paddingLeft: WORKTREE_SECTION_HEADER_PADDING_LEFT }}
-      onClick={onToggleCollapse}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onToggleCollapse();
-        }
-      }}
-    >
-      <div className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-none">
-        {row.label}
+    <div className="px-2 pt-1">
+      {/* Why: outlined card + server glyph marks hosts as machines, not mere groups. */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={!isCollapsed}
+        aria-label={row.label}
+        data-host-header-id={row.hostId}
+        data-host-header-drag-id={row.hostId}
+        draggable={Boolean(onDragStart)}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        onDragEnd={onDragEnd}
+        className={cn(
+          "group/host-header flex h-8 w-full items-center gap-2 rounded-md border px-2 text-left transition-all cursor-pointer select-none",
+          onDragStart && "cursor-grab active:cursor-grabbing",
+          isBlocked
+            ? "border-destructive/40 bg-destructive/10"
+            : isDisconnected
+              ? "border-worktree-sidebar-border/70 bg-worktree-sidebar-accent/35 text-muted-foreground"
+              : "border-worktree-sidebar-border bg-worktree-sidebar-accent/70",
+          isDropTarget && "ring-1 ring-primary/50"
+        )}
+        onClick={onToggleCollapse}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onToggleCollapse();
+          }
+        }}
+      >
+        {isDisconnected ? (
+          <ServerOff className="size-3.5 shrink-0 text-muted-foreground/80" aria-hidden />
+        ) : (
+          <Server className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        )}
+        <HostSectionHealthIcon health={row.health} />
+        <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span
+            className={cn(
+              "min-w-0 truncate text-[12px] font-semibold leading-none",
+              isDisconnected ? "text-muted-foreground" : "text-worktree-sidebar-foreground"
+            )}
+          >
+            {row.label}
+          </span>
+          <span
+            className={cn(
+              "shrink-0 truncate text-[10px] leading-none",
+              isBlocked ? "text-destructive" : "text-muted-foreground/70"
+            )}
+          >
+            {row.detail}
+          </span>
+          {row.count > 0 ? <HostSectionMetricsBadge count={row.count} /> : null}
+        </div>
+        <ChevronDown
+          className={cn(
+            "size-3.5 shrink-0 text-muted-foreground transition-transform",
+            isCollapsed && "-rotate-90"
+          )}
+          aria-hidden
+        />
+        <HostSectionHeaderMenu row={row} />
       </div>
-      <span className="min-w-0 truncate text-[10px] text-muted-foreground">{row.detail}</span>
-      {row.count > 0 ? (
-        <span className="text-[10px] tabular-nums text-muted-foreground">{row.count}</span>
-      ) : null}
-      <ChevronDown
-        className={cn("size-3.5 shrink-0 text-muted-foreground transition-transform", isCollapsed && "-rotate-90")}
-        aria-hidden
-      />
-      <HostSectionHeaderMenu row={row} />
     </div>
   );
 });
@@ -697,18 +761,39 @@ export function WorktreeList({
   // slice hydrates, and `[]` means "no host visible" — it would blank the list.
   const pipelineHostScope = normalizeExecutionHostScope(storeWorkspaceHostScope);
   const pipelineVisibleHostIds = normalizeVisibleExecutionHostIds(storeVisibleWorkspaceHostIds);
+  // Orca `useSidebarHostVisibleScope`: one host set narrows repos (and the worktrees
+  // whose own host is more precise than the repo's) before grouping.
+  const visibleHostIdSet = useMemo(
+    () => getVisibleSidebarHostIdSet(pipelineVisibleHostIds, pipelineHostScope),
+    [pipelineHostScope, pipelineVisibleHostIds]
+  );
 
   // Filter projects by search query (project identity or a matching workspace).
   const visibleProjects = useMemo(() => {
-    if (!query) return displayProjects;
-    return displayProjects.filter((proj) => {
-      if (proj.name.toLowerCase().includes(query)) return true;
-      if (proj.displayName?.toLowerCase().includes(query)) return true;
-      if (proj.path.toLowerCase().includes(query)) return true;
-      const wts = getFilteredAndSortedWorktrees(proj);
-      return wts.length > 0;
+    const searched = !query
+      ? displayProjects
+      : displayProjects.filter((proj) => {
+          if (proj.name.toLowerCase().includes(query)) return true;
+          if (proj.displayName?.toLowerCase().includes(query)) return true;
+          if (proj.path.toLowerCase().includes(query)) return true;
+          const wts = getFilteredAndSortedWorktrees(proj);
+          return wts.length > 0;
+        });
+    if (!visibleHostIdSet) return searched;
+    const repoByProject = new Map(
+      (storeRepos as Repo[]).flatMap((repo) => [
+        [repo.id, repo] as const,
+        [repo.path, repo] as const,
+      ])
+    );
+    return searched.filter((proj) => {
+      const repo = repoByProject.get(proj.id) ?? repoByProject.get(proj.path);
+      const hostId = repo
+        ? getRepoExecutionHostId(repo)
+        : focusedHostId;
+      return visibleHostIdSet.has(hostId);
     });
-  }, [displayProjects, query, getFilteredAndSortedWorktrees]);
+  }, [displayProjects, query, getFilteredAndSortedWorktrees, visibleHostIdSet, storeRepos, focusedHostId]);
 
   // Host ownership per repo, shared by the row pipeline and the delete-state
   // resolution below: a card's delete state is keyed by host-qualified identity.
@@ -727,6 +812,7 @@ export function WorktreeList({
   }, [pendingWorktreeCreations]);
 
   const rowModel = useMemo<SidebarRowModel>(() => {
+    const repoById = new Map((storeRepos as Repo[]).map((repo) => [repo.id, repo]));
     const pipelineRepos = visibleProjects.map((project) =>
       toPipelineRepo({
         project,
@@ -788,6 +874,14 @@ export function WorktreeList({
               : null;
           })(),
         });
+        if (
+          visibleHostIdSet &&
+          !visibleHostIdSet.has(
+            getWorktreeExecutionHostId(projected, repoById.get(project.id), focusedHostId)
+          )
+        ) {
+          continue;
+        }
         // Menu filters (Orca's ported predicates, never a re-derived rule). Shared
         // with the workspace board so both surfaces hide the same workspaces.
         if (

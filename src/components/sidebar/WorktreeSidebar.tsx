@@ -29,6 +29,7 @@ import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
 import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import { planSidebarClearFilters } from "./sidebar-filter-actions";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
@@ -496,21 +497,29 @@ export function WorktreeSidebar({
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
   const setWorkspaceHostOrder = useAppStore((s) => s.setWorkspaceHostOrder);
   const handleClearSidebarFilters = useCallback(() => {
-    const next: WorkspaceDisplayOptions = {
-      ...displayOptions,
-      hideSleeping: false,
-      hideDefaultBranch: false,
-      hideAutomationCreated: false,
-      hideCliCreated: false,
-      hideDetachedHead: false,
-      alwaysShowDefaultBranch: false,
-      filterProjectIds: [],
-    };
-    setDisplayOptions(next);
-    notifyPrefs({ displayOptions: next });
-    setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
-    setVisibleWorkspaceHostIds(null);
-  }, [displayOptions, notifyPrefs, setWorkspaceHostScope, setVisibleWorkspaceHostIds]);
+    // Orca `clearFilters`: reset only the filters that are actually set, so the
+    // button never churns unrelated display options or the debounced write-back.
+    const plan = planSidebarClearFilters(displayOptions, {
+      visibleWorkspaceHostIds: storeVisibleWorkspaceHostIds,
+      workspaceHostScope: storeWorkspaceHostScope,
+    });
+    if (!plan.changed) return;
+    if (plan.displayOptions !== displayOptions) {
+      setDisplayOptions(plan.displayOptions);
+      notifyPrefs({ displayOptions: plan.displayOptions });
+    }
+    if (plan.resetHostScope) {
+      setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
+      setVisibleWorkspaceHostIds(null);
+    }
+  }, [
+    displayOptions,
+    notifyPrefs,
+    setWorkspaceHostScope,
+    setVisibleWorkspaceHostIds,
+    storeVisibleWorkspaceHostIds,
+    storeWorkspaceHostScope,
+  ]);
 
   const handleAgentsGroupByChange = useCallback((groupBy: AgentsGroupBy) => {
     setAgentsGroupBy(groupBy);

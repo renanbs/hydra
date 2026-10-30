@@ -4,8 +4,8 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 310 | 40.5% |
-| partial | 272 | 35.6% |
+| parity | 315 | 41.2% |
+| partial | 267 | 34.9% |
 | missing | 174 | 22.7% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
@@ -20,7 +20,7 @@
 | D02a-repo-add-wizard | 42 | 2 | 14 | 19 | 6 | 1 |
 | D02b-hosts-ssh-remote | 30 | 2 | 11 | 17 | 0 | 0 |
 | D02c-project-groups-scripts | 26 | 5 | 2 | 19 | 0 | 0 |
-| D03a-worktree-list-module | 104 | 53 | 46 | 5 | 0 | 0 |
+| D03a-worktree-list-module | 104 | 58 | 41 | 5 | 0 | 0 |
 | D03b-sidebar-list-orchestration | 50 | 16 | 19 | 15 | 0 | 0 |
 | D04a-worktree-card-surface | 111 | 27 | 61 | 22 | 1 | 0 |
 | D04b-worktree-card-controllers | 23 | 1 | 11 | 11 | 0 | 0 |
