@@ -21,11 +21,15 @@ import {
 } from "../../shared/folder-workspace-path-status";
 import { WorktreeStatusIndicator } from "./WorktreeStatusIndicator";
 import type { WorktreeStatus } from "../../lib/worktree-status";
+import type { PrDisplay } from "./pr-display";
+import { ReviewIcon, reviewStatusLabel } from "./pr-display";
 
 export interface FolderWorkspaceRowProps {
   name: string;
   folderPath: string;
   status: WorktreeStatus;
+  /** Listbox option id, so `aria-activedescendant` can name this row's element. */
+  id?: string;
   /**
    * Compact `path_exists` probe result. It can only prove `missing`, so hosts
    * that route the check (SSH/runtime) pass `pathStatus` instead; that richer
@@ -35,6 +39,16 @@ export interface FolderWorkspaceRowProps {
   /** Host-routed probe result: stale paths vs an ambiguous connection. */
   pathStatus?: FolderWorkspacePathStatus | null;
   isActive?: boolean;
+  /**
+   * Geometry from `getFolderWorkspaceRowGeometry` (Orca `folder-row.tsx`). When
+   * present it replaces the fixed row padding, so folder-backed groups keep the
+   * compact anchor their headers use (D03a-079).
+   */
+  surfaceInset?: number;
+  /** Content indent inside the surface, mirroring the card's `contentIndent`. */
+  contentIndent?: number;
+  /** Synthetic review of the worktrees attached to this folder (D03a-077). */
+  prDisplay?: PrDisplay | null;
   onActivate?: () => void;
   /** Removes the workspace entry; the folder on disk is untouched (Orca copy). */
   onDelete?: () => void;
@@ -44,9 +58,13 @@ export function FolderWorkspaceRow({
   name,
   folderPath,
   status,
+  id,
   pathMissing = false,
   pathStatus,
   isActive = false,
+  surfaceInset,
+  contentIndent,
+  prDisplay = null,
   onActivate,
   onDelete,
 }: FolderWorkspaceRowProps): React.JSX.Element {
@@ -75,6 +93,7 @@ export function FolderWorkspaceRow({
 
   return (
     <div
+      id={id}
       role="option"
       tabIndex={0}
       aria-label={name}
@@ -94,10 +113,28 @@ export function FolderWorkspaceRow({
         isActive ? "bg-worktree-sidebar-accent/60" : "",
         pathBlocksActivation ? "cursor-default" : ""
       )}
+      style={
+        surfaceInset !== undefined && contentIndent !== undefined
+          ? // The 4px matches the row's `ml-1`, so the geometry starts at the same
+            // origin the class-based padding used.
+            { paddingLeft: `${4 + surfaceInset + contentIndent}px` }
+          : undefined
+      }
     >
       <div className="flex min-w-0 items-center gap-2">
         <WorktreeStatusIndicator status={status} />
         <span className="min-w-0 truncate text-[13px] font-medium leading-5">{name}</span>
+        {prDisplay ? (
+          <span
+            className="inline-flex shrink-0 items-center gap-0.5 text-[10px] leading-none text-muted-foreground"
+            title={reviewStatusLabel(prDisplay)}
+            aria-label={reviewStatusLabel(prDisplay)}
+            data-folder-workspace-pr-display=""
+          >
+            <ReviewIcon review={prDisplay} className="size-3" />
+            {prDisplay.number ? <span>#{prDisplay.number}</span> : null}
+          </span>
+        ) : null}
         {onDelete && (
           <button
             type="button"

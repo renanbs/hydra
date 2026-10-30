@@ -8,7 +8,11 @@ import { reuseArrayIfEqual } from "../../lib/reuse-array-if-equal";
 import { getShortcutPlatform } from "../../lib/shortcut-platform";
 import { keybindingMatchesAction } from "../../shared/keybindings";
 import type { KeybindingOverrides } from "../../shared/keybindings";
-import { SectionHeader, type RepoHeaderCreateState } from "./SectionHeader";
+import {
+  SectionHeader,
+  isFolderWorkspaceCreateDisabled,
+  type RepoHeaderCreateState,
+} from "./SectionHeader";
 import { WorktreeCard } from "./WorktreeCard";
 import { invoke } from "@tauri-apps/api/core";
 import type { WorktreeRenameRequest } from "./worktree-card-model";
@@ -48,8 +52,7 @@ import {
 } from "./worktree-list/grouping/row-types";
 import {
   WORKTREE_SECTION_HEADER_PADDING_LEFT,
-  getWorktreeCardContentIndent,
-  getWorktreeCardSurfaceInset,
+  getFolderWorkspaceRowGeometry,
 } from "./worktree-list/rows/indentation";
 import {
   buildExternalWorktreeNoticeCandidates,
@@ -58,6 +61,22 @@ import {
 } from "./rendered-sidebar-worktree-order";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import { ImportedWorktreesVisibilityLine } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
+import {
+  canKeepImportedWorktreesHidden,
+  EXTERNAL_WORKTREES_SUPPRESS_ERROR,
+  IMPORTED_WORKTREES_KEEP_HIDDEN_ERROR,
+  IMPORTED_WORKTREES_SHOW_ERROR,
+  runExternalWorktreeCardAction,
+  type ExternalWorktreeCardActionState,
+} from "./worktree-list/rows/external-worktree-card-actions";
+import { getFolderWorkspaceCardPrDisplay } from "./worktree-list/rows/folder-workspace-card-pr-display";
+import { getWorktreeItemRowGeometry } from "./worktree-list/rows/item-row-geometry";
+import {
+  collectRenderedSidebarRowKeys,
+  shouldRelaxFiltersForRevealRow,
+} from "./worktree-list/grouping/rendered-row-keys";
+import { getKnownSidebarWorktreeById } from "./sidebar-reveal-lookups";
+import { selectWorktreeListReviewCacheInputs } from "./worktree-list/listing/review-cache-inputs";
 import {
   setVisibleWorktreeIds,
   setVisibleWorktreeShortcutTargets,
@@ -113,9 +132,10 @@ import {
   WorktreeDragRow,
 } from "./worktree-list/drag/worktree-drag-surface";
 import type { WorktreeGroupReorderArgs } from "./worktree-list/drag/drop-commit-context";
+import { useWorktreeSidebarHeaderDrag } from "./worktree-list/drag/use-header-drag";
+import { WorktreeSidebarDropIndicator } from "./WorktreeSidebarDropIndicator";
 import { VirtualizedWorktreeViewport } from "./worktree-list/viewport/VirtualizedWorktreeViewport";
 import type { WorktreeVirtualRowSlot } from "./worktree-list/viewport/viewport-props";
-import { moveHostSectionForDrop } from "./host-section-order";
 import type { ExecutionHostId } from "../../shared/execution-host";
 
 // ─── Hydra props → Orca row-pipeline projection ──────────────────────────────
@@ -281,6 +301,18 @@ function buildPRCache(args: {
 
 interface SidebarRowModel {
   rows: HostSectionRow[];
+  /**
+   * Keys of the rows this model actually paints (Orca `renderedSidebarRowKeys`). A
+   * reveal request outside the set is blocked by a filter or grouping mode, so the
+   * reveal path relaxes before the viewport can scroll to it (D03a-052).
+   */
+  renderedSidebarRowKeys: ReadonlySet<string>;
+  /** Projected worktree universe the notice/reveal lookups resolve identities against. */
+  worktrees: Worktree[];
+  /** Projected worktree by bare id, for the folder card's attached-worktree walk. */
+  worktreeById: Map<string, Worktree>;
+  /** Folder workspaces the pipeline painted, in the shared shape reveal lookups read. */
+  pipelineFolderWorkspaces: readonly FolderWorkspace[];
   /**
    * Pinned-placement policy the row pipeline built these rows with. Read here, from the same
    * pipeline settings, so the keyboard cycle dedupes duplicated pinned rows exactly like the
@@ -754,7 +786,14 @@ export function WorktreeList({
   const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
   const storeWorktreeLineageById = useAppStore((s) => s.worktreeLineageById);
   const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses);
+  // The persisted host-section tier order feeds the row pipeline, so a host drag
+  // repaints the sections it just moved (D03a-020).
+  const storeWorkspaceHostOrder = useAppStore((s) => s.workspaceHostOrder);
   const storeWorktreesByRepo = useAppStore((s) => s.worktreesByRepo);
+  // Why: the live store's UI slice is still an auto-stub, so these keys are not in
+  // `AppState` yet; the review-cache selector gets Orca's defaults until they are.
+  const storeWorktreeCardProperties: never[] = [];
+  const storeHostedReviewCache = null;
   const pendingRevealSidebarRow = useAppStore((s) => s.pendingRevealSidebarRow);
   // Orca `use-agent-send-target`: the worktree the send picker targets is forced
   // visible even when a filter would otherwise hide it (D03a-048).
@@ -982,10 +1021,12 @@ export function WorktreeList({
       ...storeWorktreeLineageById,
     }
     const worktreeByPath = new Map<string, Worktree>()
+    const worktreeById = new Map<string, Worktree>()
     const pathByWorktreeId = new Map<string, string>()
     for (const list of Object.values(worktreesByRepo)) {
       for (const worktree of list) {
         worktreeByPath.set(worktree.path, worktree)
+        worktreeById.set(worktree.id, worktree)
         pathByWorktreeId.set(worktree.id, worktree.path)
       }
     }
@@ -1006,6 +1047,20 @@ export function WorktreeList({
       }
     }
 
+    // D03a-056: the row model reads the PR/hosted-review caches only when the painted
+    // cards actually need them (PR grouping or synthetic folder-card reviews) instead
+    // of scanning the whole cache on every render.
+    const reviewCaches = selectWorktreeListReviewCacheInputs(
+      {
+        folderWorkspaces: pipelineFolderWorkspaces,
+        hostedReviewCache: storeHostedReviewCache,
+        prCache: buildPRCache({ worktrees: candidates, repos: pipelineRepos, prByPath }),
+        settings: storeSettings,
+      },
+      displayOptions.groupBy,
+      storeWorktreeCardProperties
+    );
+
     const pipelineState: SidebarRowsState = {
       settings: storeSettings,
       visibleWorkspaceHostIds: pipelineVisibleHostIds,
@@ -1013,7 +1068,7 @@ export function WorktreeList({
       projectGroups: pipelineGroups,
       groupBy: displayOptions.groupBy,
       workspaceStatuses: storeWorkspaceStatuses,
-      worktreeCardProperties: [],
+      worktreeCardProperties: storeWorktreeCardProperties,
       repos: pipelineRepos,
       worktreesByRepo,
       collapsedGroups: pipelineCollapsedKeys(collapsedProjects, collapsedGroups),
@@ -1023,9 +1078,10 @@ export function WorktreeList({
       sshConnectionStates: storeSshConnectionStates,
       runtimeEnvironments: storeRuntimeEnvironments,
       runtimeStatusByEnvironmentId: storeRuntimeStatusByEnvironmentId,
-      prCache: buildPRCache({ worktrees: candidates, repos: pipelineRepos, prByPath }),
+      prCache: reviewCaches.prCache,
       projectOrderBy: displayOptions.projectsOrder ?? "manual",
-      hostedReviewCache: null,
+      workspaceHostOrder: storeWorkspaceHostOrder,
+      hostedReviewCache: reviewCaches.hostedReviewCache,
     };
 
     // Mixed-host labels: one repo visible on more than one host needs the card
@@ -1038,16 +1094,22 @@ export function WorktreeList({
       for (const [identity, label] of labels) hostContextLabelByIdentity.set(identity, label);
     }
 
+    const rows = computeSidebarRows(
+      pipelineState,
+      Object.values(worktreesByRepo).flat(),
+      buildExternalWorktreeNoticeCandidates({
+        repos: pipelineRepos,
+        hiddenWorktreesByProjectPath: hiddenWorktreesByProject ?? {},
+      }),
+      pendingCreationRefs
+    );
+
     return {
-      rows: computeSidebarRows(
-        pipelineState,
-        Object.values(worktreesByRepo).flat(),
-        buildExternalWorktreeNoticeCandidates({
-          repos: pipelineRepos,
-          hiddenWorktreesByProjectPath: hiddenWorktreesByProject ?? {},
-        }),
-        pendingCreationRefs
-      ),
+      rows,
+      renderedSidebarRowKeys: collectRenderedSidebarRowKeys(rows),
+      worktrees: Object.values(worktreesByRepo).flat(),
+      worktreeById,
+      pipelineFolderWorkspaces,
       pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(pipelineState.settings),
       hostContextLabelByIdentity,
       propWorktreeByPath,
@@ -1067,6 +1129,7 @@ export function WorktreeList({
     hiddenWorktreesByProject,
     displayOptions.groupBy,
     displayOptions.projectsOrder,
+    storeWorkspaceHostOrder,
     displayOptions.hideAutomationCreated,
     displayOptions.hideCliCreated,
     displayOptions.hideSleeping,
@@ -1095,6 +1158,79 @@ export function WorktreeList({
   ]);
 
   const { rows, hostContextLabelByIdentity } = rowModel;
+  // The menu filters (display options + host scope) reduce the row model before it is
+  // painted, so both the reveal path (D03a-052) and the empty-state gate (#15362) read
+  // the same "are filters active" answer.
+  const sidebarFilterState = useMemo<SidebarFilterState>(
+    () => ({
+      showSleepingWorkspaces: !displayOptions.hideSleeping,
+      filterRepoIds: displayOptions.filterProjectIds ?? [],
+      hideDefaultBranchWorkspace: displayOptions.hideDefaultBranch,
+      hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
+      hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
+      hideDetachedHeadWorkspaces: displayOptions.hideDetachedHead,
+      // Hydra's sidebar has no per-device filter; false mirrors Orca's default so the
+      // gate's contract is unchanged.
+      hideWorkspacesFromOtherDevices: false,
+      visibleWorkspaceHostIds: pipelineVisibleHostIds,
+      workspaceHostScope: pipelineHostScope,
+    }),
+    [
+      displayOptions.hideSleeping,
+      displayOptions.filterProjectIds,
+      displayOptions.hideDefaultBranch,
+      displayOptions.hideAutomationCreated,
+      displayOptions.hideCliCreated,
+      displayOptions.hideDetachedHead,
+      pipelineVisibleHostIds,
+      pipelineHostScope,
+    ]
+  );
+  const hasFilters = useMemo(
+    () => sidebarHasActiveFilters(sidebarFilterState),
+    [sidebarFilterState]
+  );
+
+  // Orca `useSidebarRevealRequests` (D03a-052): a queued row reveal can name a row the
+  // painted model does not contain because a sidebar filter hides it. Orca relaxes only
+  // the blocking filters; the display options live in the panel, so this list asks the
+  // panel to run the filter reset it owns before the viewport retries the key. A key
+  // whose target no longer exists is not a filter problem and is left to the request's
+  // own retry window.
+  useEffect(() => {
+    const rowKey = pendingRevealSidebarRow?.rowKey;
+    if (!rowKey || !onClearSidebarFilters) return;
+    const itemRow = rows.find((row) => row.type === "item" && row.rowKey === rowKey);
+    const targetResolved = itemRow
+      ? true
+      : getKnownSidebarWorktreeById(
+          rowKey,
+          rowModel.worktreeById,
+          rowModel.pipelineFolderWorkspaces,
+          rowModel.worktrees
+        ) !== null;
+    if (
+      !shouldRelaxFiltersForRevealRow({
+        rowKey,
+        renderedSidebarRowKeys: rowModel.renderedSidebarRowKeys,
+        hasFilters,
+        targetResolved,
+      })
+    ) {
+      return;
+    }
+    onClearSidebarFilters();
+  }, [
+    pendingRevealSidebarRow,
+    rowModel.renderedSidebarRowKeys,
+    rowModel.worktreeById,
+    rowModel.pipelineFolderWorkspaces,
+    rowModel.worktrees,
+    rows,
+    hasFilters,
+    onClearSidebarFilters,
+  ]);
+
   // Orca reveal requests may ask to open the inline editor after scrolling
   // (`beginRename`). The sidebar resolves the path; the list owns the row request.
   useEffect(() => {
@@ -1229,16 +1365,73 @@ export function WorktreeList({
   // The drag speaks Orca row ids; the writer speaks Hydra's project worktree list.
   // This is the ONE bridge between them, and it commits through the same
   // `onReorderWorktreesInGroup` the HTML5 drop handler uses — never a second write.
-  const dragWorktreeById = useMemo(() => {
-    const byId = new Map<string, { worktree: GitWorktreeInfo; project: HydraProject }>();
+  type DragWorktreeEntry = {
+    worktree: GitWorktreeInfo;
+    project: HydraProject;
+    executionHostId?: ExecutionHostId;
+  };
+  // Why a list per id: a repo mounted on two execution hosts publishes the same
+  // workspace id twice, so an id-only map would silently keep whichever row won.
+  const dragWorktreeEntriesById = useMemo(() => {
+    const byId = new Map<string, DragWorktreeEntry[]>();
     for (const row of rows) {
       if (row.type !== "item") continue;
       const worktree = rowModel.propWorktreeByPath.get(row.worktree.path);
       const project = rowModel.propProjectById.get(row.worktree.repoId);
-      if (worktree && project) byId.set(row.worktree.id, { worktree, project });
+      if (!worktree || !project) continue;
+      const entry: DragWorktreeEntry = {
+        worktree,
+        project,
+        executionHostId: row.worktree.hostId,
+      };
+      const entries = byId.get(row.worktree.id) ?? [];
+      if (
+        !entries.some(
+          (candidate) =>
+            candidate.worktree.path === entry.worktree.path &&
+            candidate.executionHostId === entry.executionHostId
+        )
+      ) {
+        entries.push(entry);
+        byId.set(row.worktree.id, entries);
+      }
     }
     return byId;
   }, [rowModel, rows]);
+
+  const dragWorktreeById = useMemo(() => {
+    const byId = new Map<string, DragWorktreeEntry>();
+    for (const [worktreeId, entries] of dragWorktreeEntriesById) {
+      const [first] = entries;
+      if (first) byId.set(worktreeId, first);
+    }
+    return byId;
+  }, [dragWorktreeEntriesById]);
+
+  /**
+   * The workspaces a drop may write, qualified by the host the gesture started on
+   * (D03a-021): a drop never writes the same id on another host, and a path is
+   * written once even when two hosts share it.
+   */
+  const resolveDragWorktreeEntries = useCallback(
+    (worktreeIds: readonly string[], executionHostId?: ExecutionHostId) => {
+      const entries: DragWorktreeEntry[] = [];
+      const seenPaths = new Set<string>();
+      for (const worktreeId of worktreeIds) {
+        const candidates = dragWorktreeEntriesById.get(worktreeId) ?? [];
+        for (const entry of candidates) {
+          if (executionHostId !== undefined && entry.executionHostId !== executionHostId) {
+            continue;
+          }
+          if (seenPaths.has(entry.worktree.path)) continue;
+          seenPaths.add(entry.worktree.path);
+          entries.push(entry);
+        }
+      }
+      return entries;
+    },
+    [dragWorktreeEntriesById]
+  );
 
   const dragWorktreeIds = useMemo(() => [...dragWorktreeById.keys()], [dragWorktreeById]);
 
@@ -1362,13 +1555,12 @@ export function WorktreeList({
   // ONE bridge for a card dropped on an open board, and it commits through the same
   // `onAssignWorktreeStatus` the context menu and the board's own card drop use.
   const handleAssignWorktreesStatus = useCallback(
-    (worktreeIds: readonly string[], status: string) => {
-      for (const worktreeId of worktreeIds) {
-        const entry = dragWorktreeById.get(worktreeId);
-        if (entry) void onAssignWorktreeStatus(entry.worktree.path, status);
+    (worktreeIds: readonly string[], status: string, executionHostId?: ExecutionHostId) => {
+      for (const entry of resolveDragWorktreeEntries(worktreeIds, executionHostId)) {
+        void onAssignWorktreeStatus(entry.worktree.path, status);
       }
     },
-    [dragWorktreeById, onAssignWorktreeStatus]
+    [onAssignWorktreeStatus, resolveDragWorktreeEntries]
   );
 
   // ─── Pointer-drag pin-strip drop → the panel's pin writer ──────────────────
@@ -1376,15 +1568,13 @@ export function WorktreeList({
   // The same id→path bridge, for the board's pin strip: the drag speaks row ids, the app's
   // pin writer speaks workspace paths. One writer for both the strip and the row menu.
   const handlePinWorktrees = useCallback(
-    (worktreeIds: readonly string[]) => {
-      const worktreePaths: string[] = [];
-      for (const worktreeId of worktreeIds) {
-        const entry = dragWorktreeById.get(worktreeId);
-        if (entry) worktreePaths.push(entry.worktree.path);
-      }
+    (worktreeIds: readonly string[], executionHostId?: ExecutionHostId) => {
+      const worktreePaths = resolveDragWorktreeEntries(worktreeIds, executionHostId).map(
+        (entry) => entry.worktree.path
+      );
       if (worktreePaths.length > 0) onPinWorktreePaths(worktreePaths);
     },
-    [dragWorktreeById, onPinWorktreePaths]
+    [onPinWorktreePaths, resolveDragWorktreeEntries]
   );
 
   // Same contract as Orca `use-selection`: publish before paint so Cmd+1–9 matches
@@ -1500,26 +1690,31 @@ export function WorktreeList({
       const isFocused = (activeWorktreePath ?? null) === wt.path;
       const isRevealed = highlightedRevealPath === wt.path;
       // Orca geometry (worktree-list/rows/item-row.tsx): the row applies the
-      // surface inset as padding and hands the card the content indent, both
-      // derived from the row's group depth.
-      const isGrouped = displayOptions.groupBy !== "none";
-      // Why row.groupDepth vs row.depth: the pipeline uses `depth` for the lineage
-      // level and `groupDepth` for the section level; feeding the lineage level as
-      // the group depth double-indented nested cards and flattened real children.
-      const surfaceInset = getWorktreeCardSurfaceInset({
-        isGrouped,
-        groupDepth: row.groupDepth,
-      });
-      const cardContentIndent = Math.max(
-        0,
-        getWorktreeCardContentIndent({
-          isGrouped,
-          groupDepth: row.groupDepth,
-          lineageDepth: row.depth,
-        }) - surfaceInset
+      // surface inset as padding and hands the card the content indent. The three
+      // cases — plain grouped row, lineage child, folder-backed repo child — live in
+      // one projection so the painted row and the drag preview cannot drift.
+      const folderBackedProjectGroupIds = new Set(
+        projectGroups
+          .filter(
+            (group) => (group as { createdFrom?: string }).createdFrom === "folder-scan"
+          )
+          .map((group) => group.id)
       );
+      const projectGroupId = row.repo?.projectGroupId ?? null;
+      const isFolderBackedRepoChild =
+        displayOptions.groupBy === "repo" &&
+        projectGroupId !== null &&
+        folderBackedProjectGroupIds.has(projectGroupId);
+      const { surfaceInset, cardContentIndent } = getWorktreeItemRowGeometry({
+        row,
+        groupBy: displayOptions.groupBy,
+        experimentalNewWorktreeCardStyle:
+          storeSettings?.experimentalNewWorktreeCardStyle === true,
+        isFolderBackedRepoChild,
+      });
       const identity = getWorktreeHostIdentity(row.worktree);
       const isMultiSelected = selectedWorktreeIdentities.has(identity);
+      const lineageGroupKey = row.lineageGroupKey;
 
       return (
         <WorktreeDragRow
@@ -1555,7 +1750,19 @@ export function WorktreeList({
             })()}
             project={proj}
             repo={proj}
-            hideRepoBadge={isGrouped}
+            // Orca `item-row.tsx`: only the repo grouping names the repo in its
+            // section header; mixed lanes (Pinned/status/PR) keep the card chip.
+            hideRepoBadge={displayOptions.groupBy === "repo"}
+            lineageChildCount={row.lineageChildCount}
+            lineageCollapsed={row.lineageCollapsed}
+            onLineageToggle={
+              lineageGroupKey
+                ? (event) => {
+                    event.stopPropagation();
+                    onToggleGroupCollapse(lineageGroupKey);
+                  }
+                : undefined
+            }
             contentIndent={cardContentIndent}
             flushSurface
             isActive={activeWorktreePath === wt.path}
@@ -1668,19 +1875,88 @@ export function WorktreeList({
       selectedWorktreeIdentities,
       handleSelectionGesture,
       resolveDraggedWorktreeIds,
+      projectGroups,
+      storeSettings,
+      onToggleGroupCollapse,
     ]
+  );
+
+  // ─── Header-tier drag reorder (D03a-020 / D03a-092) ───────────────────────
+  //
+  // Three header tiers reorder in place: host section cards, project groups and repo
+  // headers. The tier gates live in the drag module (`groupBy === "repo"` for the
+  // repo/group tiers, manual project order for repos), and each commit persists its
+  // own order — host order in the UI prefs, a group's tab order on its host, and the
+  // repo manual order host-split.
+  const headerDrag = useWorktreeSidebarHeaderDrag({
+    rows,
+    groupBy: displayOptions.groupBy,
+    projectOrderBy: displayOptions.projectsOrder ?? "manual",
+    scrollRef: viewportScrollRef,
+    projectGroups,
+    onReorderHostSections,
+    onProjectDragStart,
+    onProjectDragOver,
+    onProjectDrop,
+    onProjectDragEnd,
+    onGroupDragOver,
+    onGroupDragLeave,
+    onGroupDrop,
+  });
+
+  // A drop fires the header's click on its way out; swallow exactly that click so
+  // reordering a host section never collapses it.
+  const headerCommitClickGuardRef = useRef(false);
+  const headerHandlersFor = useCallback(
+    (tier: "host" | "repo" | "project-group", id: string) => {
+      const handlers =
+        tier === "host"
+          ? headerDrag.hostHandlers(id as ExecutionHostId)
+          : tier === "repo"
+            ? headerDrag.repoHandlers(id)
+            : headerDrag.groupHandlers(id);
+      if (!handlers) return undefined;
+      if (tier !== "host") return handlers;
+      // Why host-only: the guard exists for the host header's own collapse click; a
+      // repo/group drop must not swallow a later, unrelated host click.
+      return {
+        ...handlers,
+        onDrop: handlers.onDrop
+          ? (event: React.DragEvent) => {
+              headerCommitClickGuardRef.current = true;
+              handlers.onDrop?.(event);
+            }
+          : undefined,
+        onDragEnd: () => {
+          headerCommitClickGuardRef.current = true;
+          handlers.onDragEnd?.();
+        },
+      };
+    },
+    [headerDrag]
   );
 
   const renderRepoHeader = useCallback(
     (row: GroupHeaderRow, slot: WorktreeVirtualRowSlot): React.JSX.Element | null => {
       const proj = row.repo ? rowModel.propProjectById.get(row.repo.id) : undefined;
       if (!proj) return null;
-      const isDropTarget = projectDropTarget?.id === proj.id;
+      // The catalog row carries the fork identity and scan verdict; the sidebar's
+      // project props do not (Orca `RepoForkIndicator` / `RepoScanUnavailableIndicator`).
+      const storeRepo = storeRepos.find(
+        (repo) => repo.id === proj.id || repo.path === proj.path
+      );
+      // The drag module owns the tier gate (`groupBy === "repo"` + manual project
+      // order) and wraps the panel's order writer; without it the header is inert.
+      const dragHandlers = headerHandlersFor("repo", proj.id);
+      const isDropTarget =
+        headerDrag.isDropTarget("repo", proj.id) || projectDropTarget?.id === proj.id;
       return (
         <SectionHeader
           key={row.key}
           variant="repo"
           project={proj}
+          upstream={storeRepo?.upstream ?? null}
+          scanFailureMessage={scanFailuresByProject?.[proj.path] ?? null}
           isCollapsed={isCollapsedKey(row.key) || collapsedProjects.has(proj.id)}
           isActive={activeProject?.path === proj.path}
           count={row.count}
@@ -1694,10 +1970,10 @@ export function WorktreeList({
           sectionEnd={headerSectionBounds.repoSectionEndByRepoId.get(proj.id)}
           dropPosition={projectDropTarget?.position}
           isDragged={draggedProjectId === proj.id}
-          onDragStart={onProjectDragStart ? (e) => onProjectDragStart(e, proj.id) : undefined}
-          onDragOver={onProjectDragOver ? (e) => onProjectDragOver(e, proj.id) : undefined}
-          onDrop={onProjectDrop ? (e) => onProjectDrop(e, proj.id) : undefined}
-          onDragEnd={onProjectDragEnd}
+          onDragStart={dragHandlers?.onDragStart}
+          onDragOver={dragHandlers?.onDragOver}
+          onDrop={dragHandlers?.onDrop}
+          onDragEnd={dragHandlers?.onDragEnd}
         />
       );
     },
@@ -1716,6 +1992,10 @@ export function WorktreeList({
       onProjectDragOver,
       onProjectDrop,
       onProjectDragEnd,
+      storeRepos,
+      scanFailuresByProject,
+      headerDrag,
+      headerHandlersFor,
     ]
   );
 
@@ -1728,35 +2008,49 @@ export function WorktreeList({
       const groupFolderPath = folderWorkspaces.find(
         (workspace) => workspace.projectGroupId === group.id
       )?.folderPath;
+      const groupPathStatus = groupFolderPath
+        ? folderPathStatusByPath?.get(groupFolderPath)
+        : undefined;
       const createWorkspaceDisabledReason =
-        groupFolderPath && missingPaths.has(groupFolderPath)
+        groupFolderPath &&
+        (missingPaths.has(groupFolderPath) || isFolderWorkspaceCreateDisabled(groupPathStatus))
           ? `Folder not found: ${groupFolderPath}`
           : undefined;
+      const dragHandlers = headerHandlersFor("project-group", group.id);
       return (
-        <SectionHeader
+        // Why the wrapper: the shared header component is a drop target, not a drag
+        // source, so the group tier's draggable wrapper supplies the source.
+        <div
           key={row.key}
-          variant="group"
-          group={group}
-          sectionKey={row.key}
-          isCollapsed={isCollapsedKey(row.key)}
-          count={row.count}
-          depth={row.projectGroupDepth ?? 0}
-          onToggleCollapse={slot.toggleCollapse}
-          onContextMenu={
-            onGroupContextMenu
-              ? (e) => onGroupContextMenu(e, { id: group.id as string, name: group.name })
-              : undefined
-          }
-          isDropTarget={groupDropTargetId === group.id}
-          sectionEnd={headerSectionBounds.projectGroupSectionEndByGroupId.get(group.id as string)}
-          badgeColor={groupBadgeColorById.get(group.id as string)}
-          createWorkspaceDisabledReason={createWorkspaceDisabledReason}
-          onDragOver={onGroupDragOver ? (e) => onGroupDragOver(e, group.id as string) : undefined}
-          onDragLeave={
-            onGroupDragLeave ? (e) => onGroupDragLeave(e, group.id as string) : undefined
-          }
-          onDrop={onGroupDrop ? (e) => onGroupDrop(e, group.id as string) : undefined}
-        />
+          draggable={Boolean(dragHandlers?.onDragStart)}
+          onDragStart={dragHandlers?.onDragStart}
+          onDragEnd={dragHandlers?.onDragEnd}
+        >
+          <SectionHeader
+            variant="group"
+            group={group}
+            sectionKey={row.key}
+            isCollapsed={isCollapsedKey(row.key)}
+            count={row.count}
+            depth={row.projectGroupDepth ?? 0}
+            onToggleCollapse={slot.toggleCollapse}
+            onContextMenu={
+              onGroupContextMenu
+                ? (e) => onGroupContextMenu(e, { id: group.id as string, name: group.name })
+                : undefined
+            }
+            isDropTarget={
+              headerDrag.isDropTarget("project-group", group.id) || groupDropTargetId === group.id
+            }
+            sectionEnd={headerSectionBounds.projectGroupSectionEndByGroupId.get(group.id as string)}
+            badgeColor={groupBadgeColorById.get(group.id as string)}
+            createWorkspaceDisabledReason={createWorkspaceDisabledReason}
+            folderPathStatus={groupPathStatus ?? null}
+            onDragOver={dragHandlers?.onDragOver}
+            onDragLeave={dragHandlers?.onDragLeave}
+            onDrop={dragHandlers?.onDrop}
+          />
+        </div>
       );
     },
     [
@@ -1765,11 +2059,11 @@ export function WorktreeList({
       groupBadgeColorById,
       onGroupContextMenu,
       groupDropTargetId,
-      onGroupDragOver,
-      onGroupDragLeave,
-      onGroupDrop,
+      headerDrag,
+      headerHandlersFor,
       folderWorkspaces,
       missingPaths,
+      folderPathStatusByPath,
     ]
   );
 
@@ -1778,34 +2072,50 @@ export function WorktreeList({
       const folderPath = row.folderWorkspace.folderPath;
       const folderSessions = sessions.filter((s) => s.project_path === folderPath);
       const isActive = activeWorktreePath === folderPath;
+      const isGrouped = displayOptions.groupBy !== "none";
+      // Orca `folder-row.tsx`: a folder workspace inside a folder-scanned project
+      // group keeps that group's compact anchor, and a lineage depth advances it.
+      const { surfaceInset, cardContentIndent } = getFolderWorkspaceRowGeometry({
+        experimentalNewWorktreeCardStyle:
+          storeSettings?.experimentalNewWorktreeCardStyle === true,
+        isFolderBackedWorkspaceChild:
+          displayOptions.groupBy === "repo" && row.projectGroup.createdFrom === "folder-scan",
+        isGrouped,
+        groupDepth: row.groupDepth,
+        lineageDepth: row.depth,
+      });
+      const folderPrDisplay = getFolderWorkspaceCardPrDisplay({
+        folderWorkspaceId: row.folderWorkspace.id,
+        workspaceLineageByChildKey: null,
+        worktreeLineageById: storeWorktreeLineageById,
+        worktreeById: rowModel.worktreeById,
+        prByPath,
+      });
       return (
-        // Why the option wrapper: Hydra's folder row predates the listbox contract, and the
-        // viewport's `aria-activedescendant` has to name one element per focusable row.
-        <div
+        // The row itself is the listbox option (Orca `folder-row.tsx`): the viewport's
+        // `aria-activedescendant` names this element through `id`.
+        <FolderWorkspaceRow
           key={row.key}
           id={slot.optionId}
-          role="option"
-          aria-selected={isActive}
-          aria-current={isActive ? "page" : undefined}
-        >
-          <FolderWorkspaceRow
-            name={row.folderWorkspace.name}
-            folderPath={folderPath}
-            status={workspaceStatusFrom({
-              sessions: folderSessions,
-              hasLiveTerminal: livePaths.has(folderPath),
-            })}
-            pathMissing={missingPaths.has(folderPath)}
-            pathStatus={folderPathStatusByPath?.get(folderPath)}
-            isActive={isActive}
-            onActivate={() => onActivateFolderWorkspace?.(folderPath)}
-            onDelete={
-              onDeleteFolderWorkspace
-                ? () => onDeleteFolderWorkspace(row.folderWorkspace.id)
-                : undefined
-            }
-          />
-        </div>
+          name={row.folderWorkspace.name}
+          folderPath={folderPath}
+          status={workspaceStatusFrom({
+            sessions: folderSessions,
+            hasLiveTerminal: livePaths.has(folderPath),
+          })}
+          pathMissing={missingPaths.has(folderPath)}
+          pathStatus={folderPathStatusByPath?.get(folderPath)}
+          isActive={isActive}
+          surfaceInset={surfaceInset}
+          contentIndent={cardContentIndent}
+          prDisplay={folderPrDisplay}
+          onActivate={() => onActivateFolderWorkspace?.(folderPath)}
+          onDelete={
+            onDeleteFolderWorkspace
+              ? () => onDeleteFolderWorkspace(row.folderWorkspace.id)
+              : undefined
+          }
+        />
       );
     },
     [
@@ -1813,10 +2123,48 @@ export function WorktreeList({
       livePaths,
       missingPaths,
       activeWorktreePath,
+      displayOptions.groupBy,
+      storeSettings,
+      storeWorktreeLineageById,
+      rowModel.worktreeById,
+      prByPath,
+      folderPathStatusByPath,
       onActivateFolderWorkspace,
       onDeleteFolderWorkspace,
     ]
   );
+
+  // D03a-054: the notice rows' own pending/error/forceVisible state, keyed by repo
+  // path. The parent's handlers resolve only after their authoritative refresh, so a
+  // resolved action is the confirmation; a rejection paints the row error here even
+  // when the parent did not publish one.
+  const [externalWorktreeActionStateByRepoPath, setExternalWorktreeActionStateByRepoPath] =
+    useState<Map<string, ExternalWorktreeCardActionState>>(new Map());
+  const setExternalWorktreeActionState = useCallback(
+    (repoPath: string, state: ExternalWorktreeCardActionState | null) => {
+      setExternalWorktreeActionStateByRepoPath((previous) => {
+        const next = new Map(previous);
+        if (state === null) next.delete(repoPath);
+        else next.set(repoPath, state);
+        return next;
+      });
+    },
+    []
+  );
+  // Why: `forceVisible` only pins the row open until the authoritative scan drops the
+  // hidden worktrees; once the repo's live list is empty the state has done its job.
+  useEffect(() => {
+    setExternalWorktreeActionStateByRepoPath((previous) => {
+      let next: Map<string, ExternalWorktreeCardActionState> | null = null;
+      for (const project of visibleProjects) {
+        if ((hiddenWorktreesByProject?.[project.path] ?? []).length > 0) continue;
+        if (!previous.has(project.path)) continue;
+        next ??= new Map(previous);
+        next.delete(project.path);
+      }
+      return next ?? previous;
+    });
+  }, [hiddenWorktreesByProject, visibleProjects]);
 
   /** Notices read the live props; the row only decides placement in the stream. */
   const renderNoticeRow = useCallback(
@@ -1827,6 +2175,9 @@ export function WorktreeList({
       const proj = rowModel.propProjectById.get(row.repo.id);
       if (!proj) return null;
       const hiddenWorktrees = hiddenWorktreesByProject?.[proj.path] ?? [];
+      const actionState = externalWorktreeActionStateByRepoPath.get(proj.path);
+      const setStateForProj = (state: ExternalWorktreeCardActionState | null) =>
+        setExternalWorktreeActionState(proj.path, state);
       const noticeProps = {
         repoDisplayName: proj.name,
         hiddenWorktrees,
@@ -1837,7 +2188,8 @@ export function WorktreeList({
         // (`getNoticeHostContextLabels`); absent when the project spans one host.
         hostContextLabel: row.hostContextLabel,
         hostContextHostId: row.hostContextHostId,
-        error: hiddenWorktreeErrorsByProject?.[proj.path] ?? null,
+        pending: actionState?.pending ?? false,
+        error: actionState?.error ?? hiddenWorktreeErrorsByProject?.[proj.path] ?? null,
       };
       if (row.type === "imported-worktrees-card") {
         return (
@@ -1851,11 +2203,30 @@ export function WorktreeList({
                 : undefined
             }
             onShowAll={
-              onShowAllHiddenWorktrees ? () => onShowAllHiddenWorktrees(proj) : undefined
+              onShowAllHiddenWorktrees
+                ? () => {
+                    void runExternalWorktreeCardAction({
+                      setState: setStateForProj,
+                      action: async () => {
+                        await onShowAllHiddenWorktrees(proj);
+                      },
+                      errorMessage: IMPORTED_WORKTREES_SHOW_ERROR,
+                      keepForceVisible: true,
+                    });
+                  }
+                : undefined
             }
             onKeepHidden={
-              onKeepHiddenWorktrees
-                ? (worktreePaths) => onKeepHiddenWorktrees(proj, worktreePaths)
+              onKeepHiddenWorktrees && canKeepImportedWorktreesHidden(row, actionState)
+                ? (worktreePaths) => {
+                    void runExternalWorktreeCardAction({
+                      setState: setStateForProj,
+                      action: async () => {
+                        await onKeepHiddenWorktrees(proj, worktreePaths);
+                      },
+                      errorMessage: IMPORTED_WORKTREES_KEEP_HIDDEN_ERROR,
+                    });
+                  }
                 : undefined
             }
           />
@@ -1866,13 +2237,27 @@ export function WorktreeList({
           key={row.key}
           {...noticeProps}
           onReview={onReviewHiddenWorktrees ? () => onReviewHiddenWorktrees(proj) : undefined}
-          onSuppress={onSuppressHiddenWorktrees ? () => onSuppressHiddenWorktrees(proj) : undefined}
+          onSuppress={
+            onSuppressHiddenWorktrees
+              ? () => {
+                  void runExternalWorktreeCardAction({
+                    setState: setStateForProj,
+                    action: async () => {
+                      await onSuppressHiddenWorktrees(proj);
+                    },
+                    errorMessage: EXTERNAL_WORKTREES_SUPPRESS_ERROR,
+                  });
+                }
+              : undefined
+          }
         />
       );
     },
     [
       rowModel,
       hiddenWorktreesByProject,
+      externalWorktreeActionStateByRepoPath,
+      setExternalWorktreeActionState,
       onShowHiddenWorktree,
       onShowAllHiddenWorktrees,
       onKeepHiddenWorktrees,
@@ -1882,56 +2267,20 @@ export function WorktreeList({
     ]
   );
 
-  // ─── Host-section drag reorder (D03a-052) ──────────────────────────────────
+  // ─── Host-section drag reorder (D03a-020) ──────────────────────────────────
   //
-  // Orca lets a host header be dragged over another header to repersist the tier
-  // order. The drop speaks the painted order, so collapsed/hidden hosts never
-  // enter it, and the click that ends a drag never collapses the section.
-  const draggedHostIdRef = useRef<ExecutionHostId | null>(null);
-  const [dropTargetHostId, setDropTargetHostId] = useState<ExecutionHostId | null>(null);
-  const renderedHostIds = useMemo(
-    () => rows.filter((row) => row.type === "host-header").map((row) => row.hostId),
-    [rows]
+  // The drag module owns the host tier's order and persistence; the list keeps the
+  // ghost-click guard, because a drop fires the header's own click on its way out.
+  const toggleHostCollapse = useCallback(
+    (hostId: ExecutionHostId) => {
+      if (headerCommitClickGuardRef.current) {
+        headerCommitClickGuardRef.current = false;
+        return;
+      }
+      onToggleGroupCollapse(hostId);
+    },
+    [onToggleGroupCollapse]
   );
-
-  const handleHostDragStart = useCallback((hostId: ExecutionHostId) => (event: React.DragEvent) => {
-    draggedHostIdRef.current = hostId;
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("application/x-hydra-host-id", hostId);
-  }, []);
-
-  const handleHostDragOver = useCallback((hostId: ExecutionHostId) => (event: React.DragEvent) => {
-    if (!draggedHostIdRef.current || draggedHostIdRef.current === hostId) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-    setDropTargetHostId(hostId);
-  }, []);
-
-  const handleHostDrop = useCallback((hostId: ExecutionHostId) => (event: React.DragEvent) => {
-    event.preventDefault();
-    const draggedHostId = draggedHostIdRef.current;
-    draggedHostIdRef.current = null;
-    setDropTargetHostId(null);
-    if (!draggedHostId || !onReorderHostSections) return;
-    if (!renderedHostIds.includes(draggedHostId)) return;
-    onReorderHostSections(
-      moveHostSectionForDrop(renderedHostIds, draggedHostId, hostId)
-    );
-  }, [onReorderHostSections, renderedHostIds]);
-
-  const handleHostDragEnd = useCallback(() => {
-    draggedHostIdRef.current = null;
-    setDropTargetHostId(null);
-  }, []);
-
-  const toggleHostCollapse = useCallback((hostId: ExecutionHostId) => {
-    // A drop fires dragend after the click; never collapse on that ghost click.
-    if (draggedHostIdRef.current) {
-      draggedHostIdRef.current = null;
-      return;
-    }
-    onToggleGroupCollapse(hostId);
-  }, [onToggleGroupCollapse]);
 
   /**
    * Row content for one virtual slot. The viewport owns the slot (position, measurement,
@@ -1941,24 +2290,22 @@ export function WorktreeList({
   const renderRow = useCallback(
     (row: HostSectionRow, slot: WorktreeVirtualRowSlot): React.ReactNode => {
       switch (row.type) {
-        case "host-header":
+        case "host-header": {
+          const dragHandlers = headerHandlersFor("host", row.hostId);
           return (
             <HostSectionHeader
               key={row.key}
               row={row}
               isCollapsed={collapsedGroups.has(row.key)}
               onToggleCollapse={() => toggleHostCollapse(row.hostId)}
-              onDragStart={
-                onReorderHostSections ? handleHostDragStart(row.hostId) : undefined
-              }
-              onDragOver={
-                onReorderHostSections ? handleHostDragOver(row.hostId) : undefined
-              }
-              onDrop={onReorderHostSections ? handleHostDrop(row.hostId) : undefined}
-              onDragEnd={onReorderHostSections ? handleHostDragEnd : undefined}
-              isDropTarget={dropTargetHostId === row.hostId}
+              onDragStart={dragHandlers?.onDragStart}
+              onDragOver={dragHandlers?.onDragOver}
+              onDrop={dragHandlers?.onDrop}
+              onDragEnd={dragHandlers?.onDragEnd}
+              isDropTarget={headerDrag.isDropTarget("host", row.hostId)}
             />
           );
+        }
         case "header": {
           if (row.repo) {
             return renderRepoHeader(row, slot);
@@ -1988,6 +2335,7 @@ export function WorktreeList({
           return (
             <PendingWorktreeCreationRow
               key={row.key}
+              creationId={row.creationId}
               branchName={row.branchName}
               agentName={row.agentName}
               repoName={row.repo?.displayName}
@@ -1997,35 +2345,23 @@ export function WorktreeList({
     },
     [
       collapsedGroups,
+      headerDrag,
+      headerHandlersFor,
       isCollapsedKey,
       renderRepoHeader,
       renderGroupHeader,
       renderWorktreeRow,
       renderFolderRow,
       renderNoticeRow,
+      toggleHostCollapse,
     ]
   );
 
   // ─── Clear Filters empty-state gate (Orca `sidebar-empty-state-gate.ts`) ───
   //
-  // The menu filters (display options + host scope) reduce the row model before it is
-  // painted, so a folder-only account can end up with zero rows for a reason the empty
-  // state cannot explain. The gate keeps "No workspaces found" from winning unless those
-  // filters are actually what emptied the list (#15362).
-  const sidebarFilterState: SidebarFilterState = {
-    showSleepingWorkspaces: !displayOptions.hideSleeping,
-    filterRepoIds: displayOptions.filterProjectIds ?? [],
-    hideDefaultBranchWorkspace: displayOptions.hideDefaultBranch,
-    hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
-    hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
-    hideDetachedHeadWorkspaces: displayOptions.hideDetachedHead,
-    // Hydra's sidebar has no per-device filter; false mirrors Orca's default so the
-    // gate's contract is unchanged.
-    hideWorkspacesFromOtherDevices: false,
-    visibleWorkspaceHostIds: pipelineVisibleHostIds,
-    workspaceHostScope: pipelineHostScope,
-  };
-  const hasFilters = sidebarHasActiveFilters(sidebarFilterState);
+  // The gate keeps "No workspaces found" from winning unless the menu/host filters
+  // are actually what emptied the list (#15362); `hasFilters` is computed with the
+  // row model above so the reveal path shares it.
   const filtersHideAllRows = shouldFiltersHideAllRows({
     hasFilters,
     visibleWorktreeCount: rows.filter((row) => row.type === "item").length,
@@ -2118,7 +2454,23 @@ export function WorktreeList({
         renderRow={renderRow}
         onActivateRow={activateRow}
         onToggleRowCollapse={toggleRowCollapse}
-        dropIndicator={<WorktreeDragDropIndicator />}
+        dropIndicator={
+          <>
+            <WorktreeDragDropIndicator />
+            {headerDrag.indicator?.tier === "repo" ? (
+              <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+            ) : null}
+            {headerDrag.indicator?.tier === "project-group" ? (
+              <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+            ) : null}
+            {/* The host tier is the outer card; its line floats above the sticky stack. */}
+            {headerDrag.indicator?.tier === "host" ? (
+              <div className="pointer-events-none absolute inset-0 z-40">
+                <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+              </div>
+            ) : null}
+          </>
+        }
         scrollRef={viewportScrollRef}
         className={className}
       />

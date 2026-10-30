@@ -92,15 +92,13 @@
   },
   {
    "id": "D03a-050",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/smart-sort.ts:41-140",
-    "src/components/sidebar/smart-sort.parity.test.ts"
+    "src/components/sidebar/worktree-list/listing/use-sort-settle-epoch.ts",
+    "src/components/sidebar/smart-sort.ts:41-140"
    ],
-   "missing_behaviors": [
-    "no sortEpoch pipeline in the sidebar to route through the settle gate"
-   ],
-   "note": "SORT_SETTLE_MS=3000 and the settle gate exist and are tested; nothing calls them yet."
+   "missing_behaviors": [],
+   "note": "Sort epochs are routed through createSortSettleGate (3s); epoch bumps on manual reorders and meaningful status changes, structural changes bypass the window."
   },
   {
    "id": "D03b-011",

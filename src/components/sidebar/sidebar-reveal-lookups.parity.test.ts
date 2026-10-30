@@ -3,9 +3,12 @@ import {
   getFolderWorkspaceRevealGroupKeys,
   getKnownSidebarWorktreeById,
   getPinnedWorktreeRevealCollapsedGroupKeys,
+  getRevealCandidateWorktrees,
+  getRevealMountedOptionIds,
   sidebarWorkspaceStillExists,
 } from "./sidebar-reveal-lookups";
 import { getWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
+import { getWorktreeOptionId } from "./worktree-list/viewport/option-id";
 
 const worktree = {
   id: "wt-1",
@@ -68,5 +71,39 @@ describe("sidebar reveal lookups", () => {
 
   it("names the Pinned section as a collapsed key to expand", () => {
     expect(getPinnedWorktreeRevealCollapsedGroupKeys()).toEqual(["pinned"]);
+  });
+
+  it("narrows reveal candidates to the requested host and drops archived rows", () => {
+    const archived = { ...(worktree as object), id: "wt-archived", isArchived: true } as never;
+    const remote = { ...(worktree as object), id: "wt-remote", hostId: "ssh-1" } as never;
+    const hostless = { ...(worktree as object), id: "wt-hostless", hostId: undefined } as never;
+
+    expect(
+      getRevealCandidateWorktrees([worktree as never, archived, remote, hostless])
+    ).toEqual([worktree, remote, hostless]);
+    expect(
+      getRevealCandidateWorktrees([worktree as never, archived, remote, hostless], "ssh-1")
+    ).toEqual([remote, hostless]);
+  });
+
+  it("derives the mounted option ids for every section a row can paint under", () => {
+    const identity = getWorktreeHostIdentity(worktree);
+    expect(
+      getRevealMountedOptionIds({
+        sectionKeys: ["repo:repo-1", "pinned"],
+        worktree,
+      })
+    ).toEqual([
+      getWorktreeOptionId(`repo:repo-1:${identity}`),
+      getWorktreeOptionId(`pinned:${identity}`),
+    ]);
+
+    const folderId = getWorktreeOptionId("folder-workspace:fw-1");
+    expect(
+      getRevealMountedOptionIds({
+        sectionKeys: [],
+        folderWorkspace: folder,
+      })
+    ).toEqual([folderId]);
   });
 });

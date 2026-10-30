@@ -6,16 +6,26 @@ import { getWorktreeHostIdentity } from "../../shared/worktree/host-qualified-id
 import type { Worktree } from "../../shared/worktree/types";
 import { folderWorkspaceKey } from "../../shared/workspace-scope";
 import { PINNED_GROUP_KEY } from "./worktree-list/grouping/group-keys";
+import { getWorktreeOptionId } from "./worktree-list/viewport/option-id";
+
+/**
+ * What a reveal needs from a folder workspace: its id, its owning group and the folder
+ * path it paints. The sidebar prop carries exactly these beyond `name`.
+ */
+export type SidebarRevealFolderWorkspace = Pick<
+  FolderWorkspace,
+  "id" | "projectGroupId" | "folderPath"
+>;
 
 export type SidebarRevealTarget =
   | { kind: "worktree"; worktree: Worktree }
-  | { kind: "folder-workspace"; folderWorkspace: FolderWorkspace };
+  | { kind: "folder-workspace"; folderWorkspace: SidebarRevealFolderWorkspace };
 
 /** `getKnownSidebarWorktreeById`: identity first, then the folder-workspace key. */
 export function getKnownSidebarWorktreeById(
   id: string,
   worktreeMap: ReadonlyMap<string, Worktree>,
-  folderWorkspaces: readonly FolderWorkspace[],
+  folderWorkspaces: readonly SidebarRevealFolderWorkspace[],
   worktrees: readonly Worktree[]
 ): SidebarRevealTarget | null {
   const byId = worktreeMap.get(id);
@@ -34,7 +44,7 @@ export function getKnownSidebarWorktreeById(
 export function sidebarWorkspaceStillExists(
   target: SidebarRevealTarget,
   worktrees: readonly Worktree[],
-  folderWorkspaces: readonly FolderWorkspace[]
+  folderWorkspaces: readonly SidebarRevealFolderWorkspace[]
 ): boolean {
   if (target.kind === "worktree") {
     const identity = getWorktreeHostIdentity(target.worktree);
@@ -68,4 +78,47 @@ export function getFolderWorkspaceRevealGroupKeys(
 /** `getPinnedWorktreeRevealCollapsedGroupKeys`: expand the Pinned section. */
 export function getPinnedWorktreeRevealCollapsedGroupKeys(): string[] {
   return [PINNED_GROUP_KEY];
+}
+
+/**
+ * Workspaces a pending reveal may resolve against: non-archived rows, narrowed to the
+ * requested execution host when the request names one. A row without its own host stamp
+ * can still belong to that host (the scan row's repo carries it), so it stays a candidate.
+ */
+export function getRevealCandidateWorktrees(
+  worktrees: readonly Worktree[],
+  executionHostId?: string
+): Worktree[] {
+  return worktrees.filter(
+    (worktree) =>
+      !worktree.isArchived &&
+      (!executionHostId || !worktree.hostId || worktree.hostId === executionHostId)
+  );
+}
+
+/**
+ * Option ids the mounted viewport publishes for a reveal target (Orca
+ * `mounted-row-reveal.ts` reveal-by-id leg).
+ *
+ * A worktree row is keyed `${sectionKey}:${hostIdentity}` by the row pipeline, so the
+ * reveal has to try every section the row can paint under (natural group, project-group
+ * ancestry, Pinned duplicate). A folder-workspace row keeps its own key. The caller
+ * prefers these ids only when the card's `data-worktree-path` is not mounted.
+ */
+export function getRevealMountedOptionIds(args: {
+  sectionKeys: readonly string[];
+  worktree?: Pick<Worktree, "id" | "hostId"> | null;
+  folderWorkspace?: Pick<FolderWorkspace, "id"> | null;
+}): string[] {
+  const ids = new Set<string>();
+  if (args.worktree) {
+    const identity = getWorktreeHostIdentity(args.worktree);
+    for (const sectionKey of args.sectionKeys) {
+      ids.add(getWorktreeOptionId(`${sectionKey}:${identity}`));
+    }
+  }
+  if (args.folderWorkspace) {
+    ids.add(getWorktreeOptionId(`folder-workspace:${args.folderWorkspace.id}`));
+  }
+  return [...ids];
 }

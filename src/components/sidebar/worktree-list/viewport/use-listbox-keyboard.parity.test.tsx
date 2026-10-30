@@ -242,4 +242,42 @@ describe("workspaces listbox keyboard", () => {
 
     expect(document.activeElement).toBe(listbox);
   });
+
+  it("enters the terminal from the container with Enter", () => {
+    const helper = document.createElement("textarea");
+    helper.className = "xterm-helper-textarea";
+    document.body.appendChild(helper);
+    try {
+      const { listbox } = renderList();
+      listbox.focus();
+
+      const notPrevented = fireEvent.keyDown(listbox, { key: "Enter" });
+
+      expect(notPrevented).toBe(false);
+      expect(document.activeElement).toBe(helper);
+    } finally {
+      helper.remove();
+    }
+  });
+
+  it("leaves Enter to a focused row instead of stealing it for the terminal", () => {
+    const helper = document.createElement("textarea");
+    helper.className = "xterm-helper-textarea";
+    document.body.appendChild(helper);
+    try {
+      const { container } = renderList({
+        displayOptions: { ...DISPLAY_OPTIONS, groupBy: "none" },
+      });
+      const header = container.querySelector<HTMLElement>(
+        '[role="button"][data-section-header-id]'
+      )!;
+      header.focus();
+
+      fireEvent.keyDown(header, { key: "Enter" });
+
+      expect(document.activeElement).toBe(header);
+    } finally {
+      helper.remove();
+    }
+  });
 });

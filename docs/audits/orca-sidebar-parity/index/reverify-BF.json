@@ -93,16 +93,13 @@
   },
   {
    "id": "D03a-052",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/rendered-sidebar-worktree-order.ts:245-295",
-    "src/components/sidebar/host-section-order.ts:40-60",
-    "src/components/sidebar/WorktreeList.tsx:1696-1760"
+    "src/components/sidebar/worktree-list/grouping/rendered-row-keys.ts",
+    "src/components/sidebar/WorktreeList.tsx"
    ],
-   "missing_behaviors": [
-    "renderedSidebarRowKeys (conjunto de keys das rows renderizadas) não existe como contrato"
-   ],
-   "note": "Host section tier drag reorder and pending-creation keys now exist; only the rendered-keys set is still absent."
+   "missing_behaviors": [],
+   "note": "The row model publishes renderedSidebarRowKeys and the reveal path uses them to decide filter relaxation for an absent queued row."
   },
   {
    "id": "D03a-042",

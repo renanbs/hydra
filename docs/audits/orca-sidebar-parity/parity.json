@@ -4118,20 +4118,16 @@
    "components/sidebar/worktree-list/drag/use-document-drop.ts:18-115"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/use-pointer-window-events.ts:29-64",
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:36-52",
-    "src/components/sidebar/worktree-list/drag/use-runtime.ts:62-64"
+    "src/components/sidebar/worktree-list/drag/use-native-drag.ts",
+    "src/components/sidebar/worktree-list/drag/use-document-drop.ts",
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts"
    ],
-   "missing_behaviors": [
-    "visibilitychange abandonando o drag em andamento",
-    "listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo",
-    "commit de nest sem slot (nesting inexistente)"
-   ],
-   "notes": "Pointer drag commita/abandona fora do sidebar via window capture (pointerup/pointercancel/Escape); falta o fallback document drop/dragend e visibilitychange.",
+   "missing_behaviors": [],
+   "notes": "Native drags open the shared session at dragstart and commit/abandon through capture-phase document drop/dragend plus visibilitychange; a nest is refused when the hovered card is no longer painted.",
    "backend": [],
-   "note": "Pointer drag commita/abandona fora do sidebar via window capture (pointerup/pointercancel/Escape); falta o fallback document drop/dragend e visibilitychange."
+   "note": "Native drags open the shared session at dragstart and commit/abandon through capture-phase document drop/dragend plus visibilitychange; a nest is refused when the hovered card is no longer painted."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4187,17 +4183,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:1247",
-    "src/components/sidebar/WorktreeSidebar.tsx:838"
+    "src/components/sidebar/worktree-list/drag/use-header-drag.ts",
+    "src/components/sidebar/host-section-order.ts"
    ],
    "missing_behaviors": [
-    "reorder de host sections",
-    "gating canReorderRepoHeaders (groupBy=repo + projectOrderBy=manual)",
-    "canReorderProjectGroupHeaders/ordem manual por host",
-    "supressão de correção de âncora"
+    "project-group tier writer (ProjectGroup.tabOrder) is absent from the composed store"
    ],
-   "notes": "Segue sem reorder de headers de host/3 níveis; header de repo/grupo mantém o caminho nativo.",
-   "note": "Segue sem reorder de headers de host/3 níveis; header de repo/grupo mantém o caminho nativo."
+   "notes": "Host tier reorders/persists, repo tier is gated on repo+manual grouping, and anchor correction is suppressed across the commit frames.",
+   "note": "Host tier reorders/persists, repo tier is gated on repo+manual grouping, and anchor correction is suppressed across the commit frames."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4210,15 +4203,13 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:1040-1129",
-    "src/components/sidebar/WorktreeSidebar.tsx:750",
-    "src/components/sidebar/WorktreeSidebar.tsx:1078"
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts"
    ],
    "missing_behaviors": [
-    "gravar workspaceStatus qualificado por executionHostId no drop"
+    "host-qualified manual-order write for project groups still lacks a store writer"
    ],
-   "notes": "Status/pin drops call the path-based writers; the write is not host-qualified metadata.",
-   "note": "Status/pin drops call the path-based writers; the write is not host-qualified metadata."
+   "notes": "Status/pin drops are host-qualified and deduped by path; host-section order persists through the UI-prefs writer.",
+   "note": "Status/pin drops are host-qualified and deduped by path; host-section order persists through the UI-prefs writer."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4269,18 +4260,14 @@
    "components/sidebar/worktree-list/drag/drop-commit-context.ts:12-51"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/drop-commit-context.ts:14",
-    "src/components/sidebar/worktree-list/drag/use-session.ts:43"
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts",
+    "src/components/sidebar/worktree-list/drag/use-session.ts"
    ],
-   "missing_behaviors": [
-    "useWorktreeDropCommitContext",
-    "useWorktreeDragSession",
-    "computeWorktreeDrop/StatusDrop com âncoras"
-   ],
-   "notes": "Contexto/sessão de commit portados, mas servem só o caminho pointer; não há os três caminhos (native/document).",
-   "note": "Contexto/sessão de commit portados, mas servem só o caminho pointer; não há os três caminhos (native/document)."
+   "missing_behaviors": [],
+   "notes": "One commitWorktreeDropAtPoint resolves pointer, native and document releases (section/nest/board/reorder/abandon) with shared anchors.",
+   "note": "One commitWorktreeDropAtPoint resolves pointer, native and document releases (section/nest/board/reorder/abandon) with shared anchors."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4455,20 +4442,16 @@
    "components/sidebar/worktree-list/grouping/row-types.ts:49-63"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:287-303",
-    "src/components/sidebar/WorktreeSidebar.tsx:761-772"
+    "src/components/sidebar/worktree-list/grouping/external-worktree-notice-rows.parity.test.ts"
    ],
    "backend": [
     "invoke('import_worktree') -> src-tauri (comando alcançável do sidebar)"
    ],
-   "missing_behaviors": [
-    "placement pinned-fallback",
-    "hostContext quando o repo está em >1 host"
-   ],
-   "notes": "Linha de importadas existe; faltam estados/políticas completos do Orca.",
-   "note": "Linha de importadas existe; faltam estados/políticas completos do Orca."
+   "missing_behaviors": [],
+   "notes": "Imported cards emit pinned-fallback placement and ambiguous hostContext labels; covered by the parity test.",
+   "note": "Imported cards emit pinned-fallback placement and ambiguous hostContext labels; covered by the parity test."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4480,20 +4463,16 @@
    "components/sidebar/worktree-list/grouping/worktree-grouping.ts:169-186"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:304-325",
-    "src/components/sidebar/WorktreeSidebar.tsx:792-799"
+    "src/components/sidebar/worktree-list/grouping/external-worktree-notice-rows.parity.test.ts"
    ],
    "backend": [
     "invoke('suppress_worktree_inbox') -> src-tauri (comando alcançável do sidebar)"
    ],
-   "missing_behaviors": [
-    "garantir a seção do repo mesmo com política Pinned removendo itens naturais",
-    "hostContext ambíguo"
-   ],
-   "notes": "Inbox externa existe; suppress de inbox sem diálogo.",
-   "note": "Inbox externa existe; suppress de inbox sem diálogo."
+   "missing_behaviors": [],
+   "notes": "The inbox keeps its repo section even when Pinned single-location removes natural items; both policies are tested.",
+   "note": "The inbox keeps its repo section even when Pinned single-location removes natural items; both policies are tested."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4604,16 +4583,14 @@
    "components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12-80"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:40-160",
-    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.parity.test.ts"
+    "src/components/sidebar/WorktreeSidebar.tsx:revealWorkspaceNow",
+    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:40-160"
    ],
-   "missing_behaviors": [
-    "WorktreeSidebar reveal does not yet call getRevealGroupKeysToExpand"
-   ],
-   "notes": "Pinned key, project-group ancestry and the collapsed-key filter are implemented and tested.",
-   "note": "Pinned key, project-group ancestry and the collapsed-key filter are implemented and tested."
+   "missing_behaviors": [],
+   "notes": "Reveal expands collapsed repo/project-group/Pinned ancestors via getRevealGroupKeysToExpand before scrolling.",
+   "note": "Reveal expands collapsed repo/project-group/Pinned ancestors via getRevealGroupKeysToExpand before scrolling."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4805,16 +4782,14 @@
    "components/sidebar/worktree-list/listing/use-sort-order.ts:23-234"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/smart-sort.ts:41-140",
-    "src/components/sidebar/smart-sort.parity.test.ts"
+    "src/components/sidebar/worktree-list/listing/use-sort-settle-epoch.ts",
+    "src/components/sidebar/smart-sort.ts:41-140"
    ],
-   "missing_behaviors": [
-    "no sortEpoch pipeline in the sidebar to route through the settle gate"
-   ],
-   "notes": "SORT_SETTLE_MS=3000 and the settle gate exist and are tested; nothing calls them yet.",
-   "note": "SORT_SETTLE_MS=3000 and the settle gate exist and are tested; nothing calls them yet."
+   "missing_behaviors": [],
+   "notes": "Sort epochs are routed through createSortSettleGate (3s); epoch bumps on manual reorders and meaningful status changes, structural changes bypass the window.",
+   "note": "Sort epochs are routed through createSortSettleGate (3s); epoch bumps on manual reorders and meaningful status changes, structural changes bypass the window."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4843,17 +4818,14 @@
    "components/sidebar/worktree-list/listing/use-section-rows.ts:24-255"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/rendered-sidebar-worktree-order.ts:245-295",
-    "src/components/sidebar/host-section-order.ts:40-60",
-    "src/components/sidebar/WorktreeList.tsx:1696-1760"
+    "src/components/sidebar/worktree-list/grouping/rendered-row-keys.ts",
+    "src/components/sidebar/WorktreeList.tsx"
    ],
-   "missing_behaviors": [
-    "renderedSidebarRowKeys (conjunto de keys das rows renderizadas) não existe como contrato"
-   ],
-   "notes": "Host section tier drag reorder and pending-creation keys now exist; only the rendered-keys set is still absent.",
-   "note": "Host section tier drag reorder and pending-creation keys now exist; only the rendered-keys set is still absent."
+   "missing_behaviors": [],
+   "notes": "The row model publishes renderedSidebarRowKeys and the reveal path uses them to decide filter relaxation for an absent queued row.",
+   "note": "The row model publishes renderedSidebarRowKeys and the reveal path uses them to decide filter relaxation for an absent queued row."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4885,22 +4857,18 @@
    "components/sidebar/worktree-list/listing/use-external-worktree-cards.ts:21-206"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:761-799"
+    "src/components/sidebar/worktree-list/rows/external-worktree-card-actions.ts"
    ],
    "backend": [
     "invoke('import_worktree') -> src-tauri/src",
     "invoke('catalog_set_worktree_visibility') -> src-tauri/src",
     "invoke('suppress_worktree_inbox') -> src-tauri/src"
    ],
-   "missing_behaviors": [
-    "estado por repo pending/error/forceVisible",
-    "snapshot autoritativo com requireAuthoritative",
-    "confirmação de suppress por dialog"
-   ],
-   "notes": "Linhas de inbox/visibilidade parciais.",
-   "note": "Linhas de inbox/visibilidade parciais."
+   "missing_behaviors": [],
+   "notes": "Per-repo pending/error/forceVisible state; success claimed only after the authoritative refresh resolves, rejection paints the row error.",
+   "note": "Per-repo pending/error/forceVisible state; success claimed only after the authoritative refresh resolves, rejection paints the row error."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4935,16 +4903,14 @@
    "components/sidebar/worktree-list/listing/review-cache-inputs.ts:5-44"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/listing/review-cache-inputs.ts:15",
-    "src/components/sidebar/rendered-sidebar-worktree-order.ts:52"
+    "src/components/sidebar/worktree-list/grouping/review-cache-inputs.ts",
+    "src/components/sidebar/WorktreeList.tsx"
    ],
-   "missing_behaviors": [
-    "caches de PR/hosted review alimentando o render dos cards"
-   ],
-   "notes": "Seleção de caches de review portada, alimenta só o pipeline de atalhos.",
-   "note": "Seleção de caches de review portada, alimenta só o pipeline de atalhos."
+   "missing_behaviors": [],
+   "notes": "The painted row pipeline selects only the PR/hosted-review caches its grouping and card properties need.",
+   "note": "The painted row pipeline selects only the PR/hosted-review caches its grouping and card properties need."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4979,19 +4945,14 @@
    "components/sidebar/worktree-list/navigation/use-keyboard.ts:20-168"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:2633-2641",
-    "src/components/sidebar/worktree-list/viewport/use-listbox-keyboard.ts:104"
+    "src/components/sidebar/worktree-list/viewport/use-listbox-keyboard.ts",
+    "src/components/sidebar/worktree-list/viewport/use-listbox-keyboard.parity.test.tsx"
    ],
-   "missing_behaviors": [
-    "'sidebar.focusWorktreeList' focar o container de scroll",
-    "'worktree.navigateUp'/'worktree.navigateDown' keybindings",
-    "ignorar campos editáveis exceto .xterm-helper-textarea",
-    "no container: ArrowUp/Down/Enter/PageUp/Down/Home/End/espaço"
-   ],
-   "notes": "Navegação por teclado/foco do container agora existe no viewport; falta 'entrar no terminal' e ajustes de keybinding.",
-   "note": "Navegação por teclado/foco do container agora existe no viewport; falta 'entrar no terminal' e ajustes de keybinding."
+   "missing_behaviors": [],
+   "notes": "Focus-list, navigate up/down, editable-field guards (except .xterm-helper-textarea) and container key handling are covered.",
+   "note": "Focus-list, navigate up/down, editable-field guards (except .xterm-helper-textarea) and container key handling are covered."
   },
   "par": [
    "PAR-22"
@@ -5070,19 +5031,14 @@
    "components/sidebar/worktree-list/navigation/pending-reveal-inputs.ts:147-155"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:400",
-    "src/components/sidebar/WorktreeSidebar.tsx:385"
+    "src/components/sidebar/WorktreeSidebar.tsx:reveal",
+    "src/components/sidebar/WorktreeSidebar.reveal.parity.test.tsx"
    ],
-   "missing_behaviors": [
-    "MAX_REVEAL_RETRIES=8 com scrollToIndex virtual",
-    "iniciar rename (setRenamingWorktreeId)",
-    "resolver outcome keep-pending quando o alvo some",
-    "expandir grupos de linhagem ancestrais"
-   ],
-   "notes": "Reveal expande/rola/destaca, mas sem retries do Orca nem rename-on-reveal.",
-   "note": "Reveal expande/rola/destaca, mas sem retries do Orca nem rename-on-reveal."
+   "missing_behaviors": [],
+   "notes": "Reveal expands lineage ancestors, keeps the request pending while the target exists, clears when it vanishes, and starts inline rename after mount.",
+   "note": "Reveal expands lineage ancestors, keeps the request pending while the target exists, clears when it vanishes, and starts inline rename after mount."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5193,17 +5149,14 @@
    "components/sidebar/worktree-list/navigation/mounted-row-reveal.ts:4-35"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-sidebar-reveal.ts:64-88",
-    "src/components/sidebar/WorktreeSidebar.tsx:552-563"
+    "src/components/sidebar/WorktreeSidebar.tsx:reveal",
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts"
    ],
-   "missing_behaviors": [
-    "reveal por optionId do row montado (Hydra usa data-worktree-path)",
-    "consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado)"
-   ],
-   "notes": "Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet.",
-   "note": "Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet."
+   "missing_behaviors": [],
+   "notes": "Mounted reveal falls back from data-worktree-path to the published option ids and settles on the scroll-issued signal instead of rAF presence alone.",
+   "note": "Mounted reveal falls back from data-worktree-path to the published option ids and settles on the scroll-issued signal instead of rAF presence alone."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5237,14 +5190,14 @@
    "components/sidebar/worktree-list/navigation/folder-reveal.ts:12-108"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "missing_behaviors": [
-    "getKnownSidebarWorktreeById",
-    "sidebarWorkspaceStillExists",
-    "getFolderWorkspaceRevealGroupKeys"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/sidebar-reveal-lookups.ts",
+    "src/components/sidebar/WorktreeSidebar.tsx:reveal"
    ],
-   "notes": "Não localizado após busca por folder-reveal, getKnownSidebarWorktreeById, sidebarWorkspaceStillExists."
+   "missing_behaviors": [],
+   "notes": "Pending reveals resolve by host-qualified identity and use sidebarWorkspaceStillExists to choose keep-pending vs clear.",
+   "note": "Pending reveals resolve by host-qualified identity and use sidebarWorkspaceStillExists to choose keep-pending vs clear."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5274,17 +5227,14 @@
    "components/sidebar/worktree-list/rows/notice-rows.tsx:11-126"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:287-325"
+    "src/components/sidebar/worktree-list/rows/PendingWorktreeCreationRow.tsx",
+    "src/components/sidebar/WorktreeList.tsx"
    ],
-   "missing_behaviors": [
-    "PendingWorktreeRow(creationId)",
-    "canKeepImportedWorktreesHidden (placement repo-group e sem forceVisible)",
-    "frame virtual absoluto data-worktree-virtual-row*"
-   ],
-   "notes": "Linhas de aviso parciais; pending-creation não pinta.",
-   "note": "Linhas de aviso parciais; pending-creation não pinta."
+   "missing_behaviors": [],
+   "notes": "Pending rows carry creationId, Keep-hidden is gated to repo-group placement, and virtual rows expose absolute frame attrs.",
+   "note": "Pending rows carry creationId, Keep-hidden is gated to repo-group placement, and virtual rows expose absolute frame attrs."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5357,21 +5307,14 @@
    "components/sidebar/worktree-list/rows/SectionHeader.tsx:46-403"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SectionHeader.tsx:68-203",
-    "src/components/sidebar/WorktreeList.tsx:250-285"
+    "src/components/sidebar/SectionHeader.tsx:repo/group headers",
+    "src/components/sidebar/WorktreeList.tsx:renderRepoHeader/renderGroupHeader"
    ],
-   "missing_behaviors": [
-    "sticky (z-20/z-30) nos headers",
-    "variantes status/Pinned",
-    "data-workspace-status-drop-target / data-workspace-pin-drop-target",
-    "RepoIconGlyph com cor do projeto / RepoForkIndicator",
-    "FolderPathStatusIndicator/RepoScanUnavailableIndicator",
-    "shouldIgnoreRepoHeaderToggle"
-   ],
-   "notes": "Header genérico parcial.",
-   "note": "Header genérico parcial."
+   "missing_behaviors": [],
+   "notes": "Headers carry sticky tiers, status/Pinned variants, drop-target attrs, repo icon/fork and path/scan indicators, and ignore nested toggle events.",
+   "note": "Headers carry sticky tiers, status/Pinned variants, drop-target attrs, repo icon/fork and path/scan indicators, and ignore nested toggle events."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5384,17 +5327,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/FolderWorkspaceRow.tsx:20-70",
-    "src/components/sidebar/WorktreeList.tsx:511-534"
+    "src/components/sidebar/FolderWorkspaceRow.tsx",
+    "src/components/sidebar/worktree-list/rows/folder-workspace-card-pr-display.ts"
    ],
    "missing_behaviors": [
-    "role=option com aria-selected/aria-current",
-    "PR display sintético (getFolderWorkspaceCardPrDisplay)",
-    "geometria por groupDepth/lineageDepth",
-    "desabilitar ativação quando path stale/ambiguous"
+    "synthetic PR display needs workspaceLineageByChildKey, absent from the composed AppState"
    ],
-   "notes": "Linha de folder parcial.",
-   "note": "Linha de folder parcial."
+   "notes": "Option role/aria, geometry and stale/ambiguous activation gating are wired; the synthetic PR walk is passed null lineage.",
+   "note": "Option role/aria, geometry and stale/ambiguous activation gating are wired; the synthetic PR walk is passed null lineage."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5423,19 +5363,14 @@
    "components/sidebar/worktree-list/rows/indentation.ts:1-243"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/rows/indentation.ts:1",
-    "src/components/sidebar/WorktreeList.tsx:334-341"
+    "src/components/sidebar/worktree-list/rows/indentation.ts",
+    "src/components/sidebar/worktree-list/rows/item-row-geometry.ts"
    ],
-   "missing_behaviors": [
-    "LINEAGE_IMMEDIATE_PARENT_STEP / LINEAGE_CHILDREN_INLINE_OFFSET",
-    "NEW_CARD_STYLE_STATUS_LANE_EXTRA_PULLBACK / FLUSH_CARD_MIN_CONTENT_INSET",
-    "MAX_PROJECT_GROUP_HEADER_DEPTH=6",
-    "surface inset para folder-backed repo"
-   ],
-   "notes": "Indentação parcial.",
-   "note": "Indentação parcial."
+   "missing_behaviors": [],
+   "notes": "Folder-backed repo surface/indent uses the ported indentation constants for both worktree and folder rows.",
+   "note": "Folder-backed repo surface/indent uses the ported indentation constants for both worktree and folder rows."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5448,18 +5383,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:347-410",
-    "src/components/sidebar/worktree-card-surface.tsx:62-105"
+    "src/components/sidebar/worktree-list/drag/worktree-drag-surface.tsx",
+    "src/components/sidebar/WorktreeList.tsx"
    ],
    "missing_behaviors": [
-    "linhagem inline (renderWorktreeLineageDescendants)",
-    "data-worktree-drag-id/group-key/group-index",
-    "data-scroll-reveal-highlight",
-    "onLineageToggle/hideRepoBadge (este último passa a true)",
-    "geometria de filho de linhagem/folder-backed"
+    "true inline descendant painting needs the viewport/listing row fold"
    ],
-   "notes": "Superfície do card parcial.",
-   "note": "Superfície do card parcial."
+   "notes": "Lineage geometry, hideRepoBadge, drag/group attrs, reveal highlight and lineage toggles are wired; children still paint as sibling rows.",
+   "note": "Lineage geometry, hideRepoBadge, drag/group attrs, reveal highlight and lineage toggles are wired; children still paint as sibling rows."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5682,16 +5613,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/worktree-card-surface.tsx:95-105",
-    "src/components/sidebar/SectionHeader.tsx:254-263"
+    "src/components/sidebar/worktree-list/drag/use-header-drag.ts",
+    "src/components/sidebar/WorktreeList.tsx"
    ],
    "missing_behaviors": [
-    "linhas de indicador para reorder de repo header (dragIndicatorY)",
-    "linha para project group header",
-    "linha para host section (z-40)"
+    "group-header insertion line unreachable until the project-group writer exists"
    ],
-   "notes": "Indicadores de drop de header parciais.",
-   "note": "Indicadores de drop de header parciais."
+   "notes": "Repo-header and host-section insertion lines are live; the group header line is wired but gated by the missing writer.",
+   "note": "Repo-header and host-section insertion lines are live; the group header line is wired but gated by the missing writer."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5923,18 +5852,13 @@
    "components/sidebar/worktree-list/grouping/group-keys.ts:108-167"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:351-353",
-    "src/components/sidebar/pr-display.tsx:1"
+    "src/components/sidebar/worktree-list/grouping/group-keys.ts:110-160"
    ],
-   "missing_behaviors": [
-    "precedência repo-scoped sobre chaves legadas",
-    "respeitar isGitHubPRSuppressed",
-    "entradas escopadas por connectionId SSH"
-   ],
-   "notes": "Refresh de PR/CI por rows visíveis ainda parcial (refresh global).",
-   "note": "Refresh de PR/CI por rows visíveis ainda parcial (refresh global)."
+   "missing_behaviors": [],
+   "notes": "The lane resolver reads the repo-scoped cache key first, falls back to legacy repo/path keys only for local repos without connection/host, and drops a suppressed GitHub PR before picking the lane.",
+   "note": "The lane resolver reads the repo-scoped cache key first, falls back to legacy repo/path keys only for local repos without connection/host, and drops a suppressed GitHub PR before picking the lane."
   },
   "domain": "D03a-worktree-list-module"
  },

@@ -5,6 +5,7 @@ import { setSidebarPointerDragDocumentStyles } from '../pointer-drag-dom'
 import { clearWorkspaceBoardSidebarDropTargetVisual } from '../../workspace-board/workspace-board-sidebar-drop'
 import { clearWorktreeLineageDropTargetVisual } from './nesting'
 import { clearSidebarSectionDropVisual } from './section-drop'
+import type { ExecutionHostId } from '../../../../shared/execution-host'
 import {
   WORKTREE_ROW_DRAG_INITIAL_STATE,
   type WorktreePointerDrag,
@@ -16,6 +17,14 @@ export type WorktreeDragRuntime = {
   worktreeDragState: WorktreeRowDragState
   setWorktreeDragState: React.Dispatch<React.SetStateAction<WorktreeRowDragState>>
   worktreePointerDragRef: React.RefObject<WorktreePointerDrag | null>
+  /**
+   * The card's own HTML5 drag is a second gesture on the same session. The document
+   * fallback and the native handlers read this flag so a pointer gesture's teardown
+   * is never mistaken for a native one, and vice versa.
+   */
+  nativeDragActiveRef: React.RefObject<boolean>
+  /** The execution host the in-flight drag started on (D03a-021). */
+  dragExecutionHostIdRef: React.RefObject<ExecutionHostId | undefined>
   pointerAutoscrollFrameIdRef: React.RefObject<number | null>
   pointerAutoscrollLastFrameTimeRef: React.RefObject<number | null>
   suppressWorktreeClickUntilRef: React.RefObject<number>
@@ -33,6 +42,8 @@ export function useWorktreeDragRuntime(): WorktreeDragRuntime {
     WORKTREE_ROW_DRAG_INITIAL_STATE
   )
   const worktreePointerDragRef = useRef<WorktreePointerDrag | null>(null)
+  const nativeDragActiveRef = useRef(false)
+  const dragExecutionHostIdRef = useRef<ExecutionHostId | undefined>(undefined)
   const pointerAutoscrollFrameIdRef = useRef<number | null>(null)
   const pointerAutoscrollLastFrameTimeRef = useRef<number | null>(null)
   const suppressWorktreeClickUntilRef = useRef(0)
@@ -53,6 +64,8 @@ export function useWorktreeDragRuntime(): WorktreeDragRuntime {
     clearWorkspaceBoardSidebarDropTargetVisual()
     clearWorktreeLineageDropTargetVisual()
     clearSidebarSectionDropVisual()
+    nativeDragActiveRef.current = false
+    dragExecutionHostIdRef.current = undefined
     if (drag) {
       if (drag.frameId !== null) {
         window.cancelAnimationFrame(drag.frameId)
@@ -76,12 +89,20 @@ export function useWorktreeDragRuntime(): WorktreeDragRuntime {
       worktreeDragState,
       setWorktreeDragState,
       worktreePointerDragRef,
+      nativeDragActiveRef,
+      dragExecutionHostIdRef,
       pointerAutoscrollFrameIdRef,
       pointerAutoscrollLastFrameTimeRef,
       suppressWorktreeClickUntilRef,
       cancelWorktreePointerAutoscroll,
       clearWorktreeDrag
     }),
-    [cancelWorktreePointerAutoscroll, clearWorktreeDrag, worktreeDragState]
+    [
+      cancelWorktreePointerAutoscroll,
+      clearWorktreeDrag,
+      dragExecutionHostIdRef,
+      nativeDragActiveRef,
+      worktreeDragState
+    ]
   )
 }

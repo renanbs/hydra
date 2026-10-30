@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 170 capabilities
+## MISSING — 169 capabilities
 
 
 ### D01-shell-chrome (24)
@@ -94,10 +94,6 @@
 - **D02c-024** — Telemetria de exposição do card de setup script com deduplicação por chave composta | falta: Constrói payload de telemetria com buildSetupScriptPromptTelemetry contendo modo, provedor e contagem de arquivos/campos; Deduplica emissões por chave composta (repoHostIdentity, mode, provider, file_count_bucket, unsupported_field_count_bucket, has_shared_hooks); Dispara evento 'setup_script_prompt_shown' apenas na primeira ocorrência de cada chave | components/sidebar/setup-script-prompt-exposure-telemetry.ts:5
 - **D02c-025** — Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup | falta: findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay; markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório; getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface | components/sidebar/setup-script-prompt-render-state.ts:15
 - **D02c-026** — Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime | falta: Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco; Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes; Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota; Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar | components/sidebar/useSetupScriptPromptRevalidation.ts:14
-
-### D03a-worktree-list-module (1)
-
-- **D03a-070** — Resolver worktree/folder workspace conhecido e sua existência | falta: getKnownSidebarWorktreeById; sidebarWorkspaceStillExists; getFolderWorkspaceRevealGroupKeys | components/sidebar/worktree-list/navigation/folder-reveal.ts:12-108
 
 ### D03b-sidebar-list-orchestration (15)
 
@@ -225,7 +221,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 254 capabilities
+## PARTIAL — 238 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -270,36 +266,20 @@
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5
 
-### D03a-worktree-list-module (28)
+### D03a-worktree-list-module (12)
 
-- **D03a-017** — Commit/abandono de drag fora do sidebar via listeners de documento em captura | falta: visibilitychange abandonando o drag em andamento; listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo; commit de nest sem slot (nesting inexistente) | components/sidebar/worktree-list/drag/use-document-drop.ts:18-115
-- **D03a-020** — Reordenar os três níveis de header do sidebar (host, grupo de projeto, projeto) | falta: reorder de host sections; gating canReorderRepoHeaders (groupBy=repo + projectOrderBy=manual); canReorderProjectGroupHeaders/ordem manual por host; supressão de correção de âncora | components/sidebar/worktree-list/drag/use-header-drag.ts:45-235
-- **D03a-021** — Persistir ordem manual e status resultantes de um drop | falta: gravar workspaceStatus qualificado por executionHostId no drop | components/sidebar/worktree-list/drag/use-status-mutations.ts:35-199
-- **D03a-024** — Empacotar contexto e sessão de commit do drop para os três caminhos de drag | falta: useWorktreeDropCommitContext; useWorktreeDragSession; computeWorktreeDrop/StatusDrop com âncoras | components/sidebar/worktree-list/drag/use-drop-commit-context.ts:8-63
-- **D03a-033** — Card de imported worktrees (worktrees detectadas escondidas) | falta: placement pinned-fallback; hostContext quando o repo está em >1 host | backend: invoke('import_worktree') -> src-tauri (comando alcançável do sidebar) | components/sidebar/worktree-list/grouping/row-builders.ts:34-49
-- **D03a-034** — Inbox de worktrees externas novas (New external worktrees) | falta: garantir a seção do repo mesmo com política Pinned removendo itens naturais; hostContext ambíguo | backend: invoke('suppress_worktree_inbox') -> src-tauri (comando alcançável do sidebar) | components/sidebar/worktree-list/grouping/row-builders.ts:51-64
-- **D03a-040** — Reveal/grupo keys de um worktree para navegação e expand | falta: WorktreeSidebar reveal does not yet call getRevealGroupKeysToExpand | components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12-80
+- **D03a-020** — Reordenar os três níveis de header do sidebar (host, grupo de projeto, projeto) | falta: project-group tier writer (ProjectGroup.tabOrder) is absent from the composed store | components/sidebar/worktree-list/drag/use-header-drag.ts:45-235
+- **D03a-021** — Persistir ordem manual e status resultantes de um drop | falta: host-qualified manual-order write for project groups still lacks a store writer | components/sidebar/worktree-list/drag/use-status-mutations.ts:35-199
 - **D03a-046** — Restringir repos/grupos/folder workspaces ao escopo visível (host + dispositivo) | falta: visibleReposForRows/visibleProjectGroupsForRows/visibleFolderWorkspacesForRows no render; filterFolderWorkspacesFromOtherDevices | components/sidebar/worktree-list/listing/use-host-visible-scope.ts:17-72
 - **D03a-047** — Derivar a lista visível de worktrees a partir das ids ordenadas | falta: computeVisibleWorktrees alimentando o render pintado; snapshot de worktreeIdsWithLiveAgent por epoch; agentSendTargetWorktreeId como forcedVisible | components/sidebar/worktree-list/listing/use-visible-worktrees.ts:23-138
-- **D03a-050** — Ordenação estável da lista (sort modes) com Smart, Recent e Manual | falta: no sortEpoch pipeline in the sidebar to route through the settle gate | components/sidebar/worktree-list/listing/use-sort-order.ts:23-234
-- **D03a-052** — Montar o modelo completo de linhas do sidebar (grupos + seções de host) | falta: renderedSidebarRowKeys (conjunto de keys das rows renderizadas) não existe como contrato | components/sidebar/worktree-list/listing/use-section-rows.ts:24-255
-- **D03a-054** — Ações dos cards de worktrees externas (importar/mostrar, manter escondido, silenciar inbox) | falta: estado por repo pending/error/forceVisible; snapshot autoritativo com requireAuthoritative; confirmação de suppress por dialog | backend: invoke('import_worktree') -> src-tauri/src; invoke('catalog_set_worktree_visibility') -> src-tauri/src | components/sidebar/worktree-list/listing/use-external-worktree-cards.ts:21-206
-- **D03a-056** — Seleção dos caches de review necessários à lista | falta: caches de PR/hosted review alimentando o render dos cards | components/sidebar/worktree-list/listing/review-cache-inputs.ts:5-44
 - **D03a-057** — Manter fresco o status de caminho de folder workspaces/project groups | falta: cache key ignores the runtime/SSH environment (probe is local-only); getFreshFolderWorkspacePathStatus selector not exposed | backend: invoke('path_exists') -> src-tauri/src | components/sidebar/worktree-list/listing/use-folder-path-statuses.ts:13-128
-- **D03a-058** — Atalhos de teclado da lista: focar, navegar para cima/baixo, entrar no terminal | falta: 'sidebar.focusWorktreeList' focar o container de scroll; 'worktree.navigateUp'/'worktree.navigateDown' keybindings; ignorar campos editáveis exceto .xterm-helper-textarea; no container: ArrowUp/Down/Enter/PageUp/Down/Home/End/espaço | components/sidebar/worktree-list/navigation/use-keyboard.ts:20-168
-- **D03a-062** — Reveal de worktree: expandir ancestrais, rolar, destacar e iniciar rename | falta: MAX_REVEAL_RETRIES=8 com scrollToIndex virtual; iniciar rename (setRenamingWorktreeId); resolver outcome keep-pending quando o alvo some; expandir grupos de linhagem ancestrais | components/sidebar/worktree-list/navigation/use-pending-reveal.ts:22-188
-- **D03a-068** — Rolar um elemento já montado até a área visível do container | falta: reveal por optionId do row montado (Hydra usa data-worktree-path); consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado) | components/sidebar/worktree-list/navigation/mounted-row-reveal.ts:4-35
-- **D03a-072** — Linhas de aviso: criação em andamento, worktrees importadas escondidas, inbox de worktrees externas | falta: PendingWorktreeRow(creationId); canKeepImportedWorktreesHidden (placement repo-group e sem forceVisible); frame virtual absoluto data-worktree-virtual-row* | components/sidebar/worktree-list/rows/notice-rows.tsx:11-126
-- **D03a-076** — Header de seção (repo, project group, status, Pinned) com colapso, drag e ações | falta: sticky (z-20/z-30) nos headers; variantes status/Pinned; data-workspace-status-drop-target / data-workspace-pin-drop-target; RepoIconGlyph com cor do projeto / RepoForkIndicator | components/sidebar/worktree-list/rows/SectionHeader.tsx:46-403
-- **D03a-077** — Card de folder workspace como linha virtual | falta: role=option com aria-selected/aria-current; PR display sintético (getFolderWorkspaceCardPrDisplay); geometria por groupDepth/lineageDepth; desabilitar ativação quando path stale/ambiguous | components/sidebar/worktree-list/rows/folder-row.tsx:23-132
-- **D03a-079** — Geometria de indentação e superfícies da árvore do sidebar | falta: LINEAGE_IMMEDIATE_PARENT_STEP / LINEAGE_CHILDREN_INLINE_OFFSET; NEW_CARD_STYLE_STATUS_LANE_EXTRA_PULLBACK / FLUSH_CARD_MIN_CONTENT_INSET; MAX_PROJECT_GROUP_HEADER_DEPTH=6; surface inset para folder-backed repo | components/sidebar/worktree-list/rows/indentation.ts:1-243
-- **D03a-080** — Linha de card de worktree com linhagem inline e estados visuais | falta: linhagem inline (renderWorktreeLineageDescendants); data-worktree-drag-id/group-key/group-index; data-scroll-reveal-highlight; onLineageToggle/hideRepoBadge (este último passa a true) | components/sidebar/worktree-list/rows/item-row.tsx:28-262
+- **D03a-077** — Card de folder workspace como linha virtual | falta: synthetic PR display needs workspaceLineageByChildKey, absent from the composed AppState | components/sidebar/worktree-list/rows/folder-row.tsx:23-132
+- **D03a-080** — Linha de card de worktree com linhagem inline e estados visuais | falta: true inline descendant painting needs the viewport/listing row fold | components/sidebar/worktree-list/rows/item-row.tsx:28-262
 - **D03a-082** — Menu de ações do project group (renomear/excluir) | falta: App.tsx group handlers still ignore the forwarded hostId (sidebar-prefs pipeline has no per-host group mutation) | components/sidebar/worktree-list/rows/project-group-header-actions.tsx:24-80
 - **D03a-083** — Botão de criar workspace em project group folder-backed | falta: aria-disabled/disabled quando o path do grupo é confirmed-stale ou ambiguous-connection; tooltip com a descrição do path status | components/sidebar/worktree-list/rows/project-group-header-actions.tsx:82-136
 - **D03a-084** — Menu de ações de projeto no header de repo | falta: Change Project Icon opens Settings but Hydra has no repository-icon write path | components/sidebar/worktree-list/rows/repo-header-project-actions.tsx:48-176
 - **D03a-087** — Fluxos de criação/renomeação/exclusão de project groups | falta: group mutations remain App-local sidebar_prefs state; hostId is ignored and contained-project removal failures cannot be reported individually | components/sidebar/worktree-list/rows/use-project-group-dialogs.ts:10-206
-- **D03a-092** — Indicadores de drop flutuantes (linha de inserção) | falta: linhas de indicador para reorder de repo header (dragIndicatorY); linha para project group header; linha para host section (z-40) | components/sidebar/worktree-list/viewport/drop-indicators.tsx:5-36
-- **D03a-104** — Resolver a PR de um worktree para o lane de PR (escopo repo/repo-legado/path-legado/SSH/runtime) | falta: precedência repo-scoped sobre chaves legadas; respeitar isGitHubPRSuppressed; entradas escopadas por connectionId SSH | components/sidebar/worktree-list/grouping/group-keys.ts:108-167
+- **D03a-092** — Indicadores de drop flutuantes (linha de inserção) | falta: group-header insertion line unreachable until the project-group writer exists | components/sidebar/worktree-list/viewport/drop-indicators.tsx:5-36
 
 ### D03b-sidebar-list-orchestration (19)
 

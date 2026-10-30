@@ -2,10 +2,13 @@
 // Source: components/sidebar/worktree-list/rows/SectionHeader.tsx
 import React, { useCallback } from "react";
 import {
+  AlertTriangle,
   ChevronDown,
   FolderGit2,
   Folder,
   FolderTree,
+  FolderX,
+  GitFork,
   MoreHorizontal,
   Plus,
 } from "lucide-react";
@@ -27,6 +30,95 @@ import {
   getProjectGroupHeaderPaddingLeft,
   WORKTREE_SECTION_HEADER_PADDING_LEFT,
 } from "./indentation";
+import {
+  getFolderWorkspacePathStatusDescription,
+  getFolderWorkspacePathStatusTitle,
+} from "../../lib/folder-workspace-path-status";
+import {
+  isConfirmedStaleFolderPathStatus,
+  type FolderWorkspacePathStatus,
+} from "../../shared/folder-workspace-path-status";
+import type { GitHubRepositoryIdentity } from "../../shared/github/pull-request-types";
+
+/**
+ * Header-level path status (Orca `FolderPathStatusIndicator`): a folder-backed
+ * project group whose path cannot be used stays visible and explains itself, and
+ * its create button is disabled for the same reason (D03a-076).
+ */
+function HeaderPathStatusGlyph({
+  status,
+}: {
+  status: FolderWorkspacePathStatus | null | undefined;
+}): React.JSX.Element | null {
+  const title = getFolderWorkspacePathStatusTitle(status ?? null);
+  if (!title) return null;
+  const description = getFolderWorkspacePathStatusDescription(status ?? null);
+  const destructive = isConfirmedStaleFolderPathStatus(status ?? null);
+  return (
+    <span
+      className={cn(
+        "inline-flex size-4 shrink-0 items-center justify-center rounded-[4px]",
+        destructive ? "text-destructive" : "text-muted-foreground"
+      )}
+      aria-label={title}
+      title={description ?? title}
+      data-folder-path-status={
+        destructive ? "confirmed-stale" : status?.reason
+      }
+    >
+      <FolderX className="size-3.5" />
+    </span>
+  );
+}
+
+/** Orca `RepoForkIndicator`: a fork names its upstream through the tooltip only. */
+function RepoForkIndicator({
+  upstream,
+}: {
+  upstream: GitHubRepositoryIdentity | null | undefined;
+}): React.JSX.Element | null {
+  if (!upstream) return null;
+  const label = `Fork of ${upstream.owner}/${upstream.repo}`;
+  return (
+    <span
+      className="inline-flex shrink-0 items-center text-muted-foreground"
+      aria-label={label}
+      title={label}
+      data-repo-fork-indicator=""
+    >
+      <GitFork className="size-3" aria-hidden="true" />
+    </span>
+  );
+}
+
+/** Orca `RepoScanUnavailableIndicator` on a header: a failed scan is never silent. */
+function RepoScanFailureGlyph({
+  message,
+}: {
+  message: string | null | undefined;
+}): React.JSX.Element | null {
+  if (!message) return null;
+  return (
+    <span
+      className="inline-flex shrink-0 items-center text-destructive"
+      aria-label={`Worktree scan failed: ${message}`}
+      title={message}
+      data-repo-scan-unavailable=""
+    >
+      <AlertTriangle className="size-3.5" aria-hidden="true" />
+    </span>
+  );
+}
+
+/** True when the group's folder cannot host a new workspace. */
+export function isFolderWorkspaceCreateDisabled(
+  status: FolderWorkspacePathStatus | null | undefined
+): boolean {
+  return (
+    status?.exists === false &&
+    (isConfirmedStaleFolderPathStatus(status) || status.reason === "ambiguous-connection")
+  );
+}
 
 export interface GroupSectionHeaderProps {
   variant: "group";
@@ -49,6 +141,8 @@ export interface GroupSectionHeaderProps {
   badgeColor?: string;
   /** Disables the create button for a folder-backed group whose path is confirmed stale. */
   createWorkspaceDisabledReason?: string;
+  /** Host-routed path probe for a folder-backed group (Orca `FolderPathStatusIndicator`). */
+  folderPathStatus?: FolderWorkspacePathStatus | null;
   /** Estimated section bottom in virtual-row pixels (drag preview bounds). */
   sectionEnd?: number;
   className?: string;
@@ -67,6 +161,10 @@ export interface RepoHeaderCreateState {
 export interface RepoSectionHeaderProps {
   variant: "repo" | "project";
   project: HydraProject;
+  /** Resolved upstream identity when the repo is a fork (Orca `RepoForkIndicator`). */
+  upstream?: GitHubRepositoryIdentity | null;
+  /** Failed authoritative scan for this repo (Orca `RepoScanUnavailableIndicator`). */
+  scanFailureMessage?: string | null;
   /** Omitted = the action is always enabled (Orca renders a plain `+`). */
   createState?: RepoHeaderCreateState | null;
   isCollapsed: boolean;
@@ -114,6 +212,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
   sectionEnd,
   className = "",
   createWorkspaceDisabledReason,
+  folderPathStatus,
 }: Omit<GroupSectionHeaderProps, "variant">): React.JSX.Element {
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -174,6 +273,8 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
             <div className="min-w-0 truncate text-[13px] font-semibold leading-none">
               {group.name}
             </div>
+
+            <HeaderPathStatusGlyph status={folderPathStatus} />
 
             {hasUnread && (
               <span
@@ -252,6 +353,8 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
  */
 export const RepoSectionHeader = React.memo(function RepoSectionHeader({
   project,
+  upstream,
+  scanFailureMessage,
   createState,
   isCollapsed,
   isActive: _isActive = false,
@@ -360,7 +463,7 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
             )}
             style={{ color: resolveRepoHeaderColor(project.color) }}
           >
-            {ACTIVE_SHELL_FACE === "hydra" ? (
+            {ACTIVE_SHELL_FACE === "hydra" && !project.repo_icon ? (
               project.is_git ? (
                 <FolderGit2 data-hydra-repo-icon="git" className="size-3.5 shrink-0" />
               ) : (
@@ -369,6 +472,7 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
             ) : (
               <RepoIconGlyph
                 repoIcon={project.repo_icon}
+                color={resolveRepoHeaderColor(project.color)}
                 className="size-4"
                 iconClassName="size-3.5"
               />
@@ -380,6 +484,9 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
               <div className="min-w-0 truncate text-[13px] font-semibold leading-none">
                 {project.displayName || project.name}
               </div>
+
+              <RepoForkIndicator upstream={upstream} />
+              <RepoScanFailureGlyph message={scanFailureMessage} />
 
               {/* No count badge on repo headers either — Orca parity. */}
             </div>

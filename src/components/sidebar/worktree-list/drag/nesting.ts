@@ -88,6 +88,24 @@ export function findWorktreeNestingTarget(args: {
 
 let activeHoverCard: Element | null = null;
 
+/**
+ * A nest is committed only against a card that is still painted. Between the frame
+ * that promised the ring and the release, a collapse, a filter or a removal can take
+ * the card away; the write must not outlive the target.
+ */
+export function isWorktreeNestingCardPainted(targetId: string): boolean {
+  if (!targetId || typeof document === "undefined") {
+    return false;
+  }
+  const cards = document.querySelectorAll(`[${WORKTREE_NESTING_ATTRIBUTE}]`);
+  for (const card of cards) {
+    if (card.getAttribute(WORKTREE_NESTING_ATTRIBUTE) === targetId) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function updateWorktreeLineageDropTargetVisual(targetId: string | null): void {
   if (typeof document === "undefined") {
     return;

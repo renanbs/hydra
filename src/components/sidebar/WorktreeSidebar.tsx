@@ -40,8 +40,22 @@ import { planSidebarClearFilters } from "./sidebar-filter-actions";
 import { isRevealTargetHiddenByFilters } from "./reveal-hidden-filters";
 import {
   getFolderWorkspaceRevealGroupKeys,
+  getKnownSidebarWorktreeById,
   getPinnedWorktreeRevealCollapsedGroupKeys,
+  getRevealCandidateWorktrees,
+  getRevealMountedOptionIds,
+  sidebarWorkspaceStillExists,
+  type SidebarRevealFolderWorkspace,
 } from "./sidebar-reveal-lookups";
+import { getWorktreeLineageGroupKey } from "./worktree-list/grouping/group-keys";
+import {
+  getGroupKeysForWorktree,
+  getRevealGroupKeysToExpand,
+} from "./worktree-list/grouping/worktree-group-keys";
+import { useSettledSortEpoch } from "./worktree-list/listing/use-sort-settle-epoch";
+import { getIndexedAllWorktrees } from "../../store/worktree-repo-index";
+import type { ProjectGroup } from "../../shared/project-group-types";
+import type { Worktree } from "../../shared/worktree/types";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
@@ -62,7 +76,7 @@ import type {
 } from "./types";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
-import { applyPersistedWorktreeOrder, sortSidebarWorktrees } from "./sidebar-worktree-sort";
+import { applyPersistedWorktreeOrder, resolveComparatorSortBy, sortSidebarWorktrees } from "./sidebar-worktree-sort";
 import { resolveWorktreeAttentionFromSessions } from "./sidebar-session-attention";
 import { useAppStore } from "../../store";
 import { getRepoExecutionHostId } from "../../shared/execution-host";
@@ -76,6 +90,42 @@ import { AgentSendTargetPicker } from "./AgentSendTargetPicker";
 import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
 export * from "./types";
+
+/** Orca `MAX_REVEAL_RETRIES`: the row may mount a frame or two after the expand commit. */
+const MAX_REVEAL_RETRIES = 8;
+
+// Why module constants: the reveal callback lists these props as dependencies, and a
+// fresh `[]` default on every render would invalidate it (and replay a pending reveal).
+const EMPTY_PROJECT_GROUPS: NonNullable<WorktreeSidebarProps["projectGroups"]> = [];
+const EMPTY_FOLDER_WORKSPACES: NonNullable<WorktreeSidebarProps["folderWorkspaces"]> = [];
+const EMPTY_PROJECT_GROUP_MAP: NonNullable<WorktreeSidebarProps["projectGroupMap"]> = {};
+/** Store shape guard: the worktree slice is still an auto-stub on this branch (may be null). */
+const EMPTY_STORE_PROJECT_GROUPS: readonly ProjectGroup[] = [];
+
+/**
+ * Host stamp the row pipeline gives a workspace row: only repos owned by a non-local
+ * execution host get one (`buildHostIdByRepoId`). Option ids are built from the same stamp,
+ * so a reveal that always stamped `local` would never match a local row's option id.
+ */
+function getRowHostId(
+  repo: { connectionId?: string | null; executionHostId?: string | null } | undefined
+) {
+  return repo && (repo.connectionId || repo.executionHostId)
+    ? getRepoExecutionHostId(repo)
+    : undefined;
+}
+
+type SidebarRevealOptions = {
+  highlight?: boolean;
+  beginRename?: boolean;
+  /** Settles the caller's pending request once the row is mounted and scrolled. */
+  onRevealSettled?: () => void;
+  /**
+   * No mounted row after {@link MAX_REVEAL_RETRIES} frames. The caller decides whether
+   * the target still exists (keep the request pending) or vanished (clear it).
+   */
+  onRevealExhausted?: () => void;
+};
 
 const defaultDisplayOptions: WorkspaceDisplayOptions = {
   groupBy: "repo",
@@ -134,9 +184,9 @@ export function WorktreeSidebar({
   pinnedWorktrees,
   unreadWorktrees,
   hiddenWorktreesByProject,
-  projectGroupMap = {},
-  projectGroups = [],
-  folderWorkspaces = [],
+  projectGroupMap = EMPTY_PROJECT_GROUP_MAP,
+  projectGroups = EMPTY_PROJECT_GROUPS,
+  folderWorkspaces = EMPTY_FOLDER_WORKSPACES,
   liveWorkspacePaths,
   missingFolderPaths,
   folderPathStatusByPath,
@@ -382,6 +432,35 @@ export function WorktreeSidebar({
     [projects, getWorktreesForProject]
   );
 
+  // D03a-050: the shell owns the real sort signal — one epoch bumped by manual reorders and
+  // by meaningful external changes (agent/terminal status, workspace status). The settle gate
+  // decides when it may reach the painted order, so background attention ticks cannot reorder
+  // rows mid-read. Membership changes bypass the gate through the worktree count.
+  const [sortEpoch, setSortEpoch] = useState(0);
+  const appliedSortEpoch = useSettledSortEpoch({
+    sortBy: resolveComparatorSortBy(displayOptions.sortBy),
+    sortEpoch,
+    worktreeCount: allWorktrees.length,
+  });
+  const lastSortSignalRef = useRef<string | null>(null);
+  useEffect(() => {
+    const signal = [
+      sessions
+        .map((session) => `${session.id}:${session.state}:${session.updated_at}`)
+        .join(","),
+      allWorktrees
+        .map((worktree) => `${worktree.path}:${worktree.status ?? ""}:${worktree.branch}`)
+        .join(","),
+    ].join("|");
+    if (lastSortSignalRef.current === null) {
+      lastSortSignalRef.current = signal;
+      return;
+    }
+    if (lastSortSignalRef.current === signal) return;
+    lastSortSignalRef.current = signal;
+    setSortEpoch((epoch) => epoch + 1);
+  }, [sessions, allWorktrees]);
+
   useEffect(() => {
     let cancelled = false;
     const scanPorts = async () => {
@@ -531,6 +610,35 @@ export function WorktreeSidebar({
   // writer per preference, no parallel state.
   const setWorkspaceHostScope = useAppStore((s) => s.setWorkspaceHostScope);
   const storeRepos = useAppStore((s) => s.repos);
+  const storeSettings = useAppStore((s) => s.settings);
+  // Store shape guard: the auto-stubbed slice can publish null before hydration.
+  const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses) ?? undefined;
+  // Why the store rows: the shell passes the sidebar only `{id,name}` group labels, while
+  // reveal ancestry needs the full `ProjectGroup` (parentGroupId) of the row pipeline.
+  const storeProjectGroups =
+    useAppStore((s) => s.projectGroups) ?? EMPTY_STORE_PROJECT_GROUPS;
+
+  /** Repo labels for Project sort and reveal ancestry, projected once for the sidebar. */
+  const pipelineRepoMap = useMemo(
+    () =>
+      new Map(
+        projects.map((project) => [
+          project.id,
+          toPipelineRepo({
+            project,
+            projectGroupId: projectGroupMap?.[project.id] ?? null,
+            hostId: undefined,
+          }),
+        ])
+      ),
+    [projects, projectGroupMap]
+  );
+  // The sidebar model carries no connection fields, so host-scoped work reads the
+  // store's repo rows by path; a project without a store row has no host stamp.
+  const repoByPath = useMemo(
+    () => new Map(storeRepos.map((repo) => [repo.path, repo])),
+    [storeRepos]
+  );
   const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
@@ -594,7 +702,7 @@ export function WorktreeSidebar({
   }, []);
 
   const revealWorkspaceNow = useCallback(
-    (targetPath?: string | null, options?: { highlight?: boolean; beginRename?: boolean }) => {
+    (targetPath?: string | null, options?: SidebarRevealOptions) => {
     const target = targetPath || revealTargetPath || activeWorktreePath;
     if (!target) return;
 
@@ -648,74 +756,182 @@ export function WorktreeSidebar({
       break;
     }
 
+    // Resolve what the reveal has to uncover before the row can paint: the natural group
+    // (D03a-040, `getRevealGroupKeysToExpand`), the lineage folds above the target
+    // (D03a-062) and the Pinned duplicate. All three are keyed exactly like the row
+    // pipeline keys its sections, so opening these keys is the whole expansion.
+    let targetRow: Worktree | null = null;
+    let targetFolderWorkspace: SidebarRevealFolderWorkspace | null = null;
+    let targetSectionKeys: string[] = [];
+    const collapsedKeysToExpand = new Set<string>();
     for (const proj of projects) {
       const wts = getWorktreesForProject(proj);
-      if (proj.path === target || wts.some((w) => w.path === target)) {
-        if (collapsedProjects.has(proj.id)) {
-          setCollapsedProjects((prev) => {
-            const next = new Set(prev);
-            next.delete(proj.id);
-            return next;
-          });
-        }
-        const groupId = projectGroupMap?.[proj.id];
-        if (groupId && collapsedGroups.has(groupId)) {
-          setCollapsedGroups((prev) => {
-            const next = new Set(prev);
-            next.delete(groupId);
-            return next;
-          });
-        }
-        // Orca `getPinnedWorktreeRevealCollapsedGroupKeys` / folder ancestry: a
-        // collapsed Pinned section or a parent project group would keep the row
-        // unmounted forever.
-        const folderWorkspace = folderWorkspaces.find(
-          (workspace) => workspace.folderPath === target
-        );
-        const revealKeys = [
-          ...(pinnedWorktrees?.has(target)
-            ? getPinnedWorktreeRevealCollapsedGroupKeys()
-            : []),
-          ...(folderWorkspace
-            ? getFolderWorkspaceRevealGroupKeys(folderWorkspace, projectGroups)
-            : []),
-        ].filter((key) => collapsedGroups.has(key));
-        if (revealKeys.length > 0) {
-          setCollapsedGroups((prev) => {
-            const next = new Set(prev);
-            for (const key of revealKeys) next.delete(key);
-            return next;
-          });
-        }
-        break;
+      const worktree = wts.find((candidate) => candidate.path === target);
+      const folderWorkspace = folderWorkspaces.find(
+        (workspace) => workspace.folderPath === target
+      );
+      if (proj.path !== target && !worktree && !folderWorkspace) continue;
+
+      if (collapsedProjects.has(proj.id)) {
+        setCollapsedProjects((prev) => {
+          const next = new Set(prev);
+          next.delete(proj.id);
+          return next;
+        });
       }
+      const groupId = projectGroupMap?.[proj.id];
+      if (groupId && collapsedGroups.has(groupId)) {
+        setCollapsedGroups((prev) => {
+          const next = new Set(prev);
+          next.delete(groupId);
+          return next;
+        });
+      }
+
+      if (worktree) {
+        const targetRepo =
+          repoByPath.get(proj.path) ??
+          storeRepos.find((repo) => repo.id === proj.id);
+        targetRow = toWorktreeRow(worktree, {
+          repoId: proj.id,
+          hostId: getRowHostId(targetRepo),
+        });
+        const isPinnedSectionWorktree = pinnedWorktrees?.has(target) ?? false;
+        // `prCache` stays null: the capability only claims repo / project-group / Pinned
+        // ancestry here; PR-lane expansion belongs to the row pipeline's own reveal.
+        targetSectionKeys = getGroupKeysForWorktree(
+          displayOptions.groupBy,
+          targetRow,
+          pipelineRepoMap,
+          null,
+          storeWorkspaceStatuses,
+          storeSettings,
+          storeProjectGroups,
+          undefined,
+          isPinnedSectionWorktree
+        );
+        for (const key of getRevealGroupKeysToExpand({
+          groupBy: displayOptions.groupBy,
+          worktree: targetRow,
+          repoMap: pipelineRepoMap,
+          prCache: null,
+          collapsedGroups,
+          workspaceStatuses: storeWorkspaceStatuses,
+          settings: storeSettings,
+          projectGroups: storeProjectGroups,
+          isPinnedSectionWorktree,
+        })) {
+          collapsedKeysToExpand.add(key);
+        }
+
+        // Lineage: a child nested under a collapsed parent row cannot mount, so walk the
+        // path lineage upward and open every collapsed `lineage:` fold on the way.
+        let parentPath = lineageByPath?.[target];
+        const seenLineagePaths = new Set<string>([target]);
+        while (parentPath && !seenLineagePaths.has(parentPath)) {
+          seenLineagePaths.add(parentPath);
+          const parentProject = projects.find(
+            (candidate) =>
+              candidate.path === parentPath ||
+              getWorktreesForProject(candidate).some(
+                (candidateWorktree) => candidateWorktree.path === parentPath
+              )
+          );
+          const parentWorktree = parentProject
+            ? getWorktreesForProject(parentProject).find(
+                (candidate) => candidate.path === parentPath
+              )
+            : undefined;
+          if (!parentProject || !parentWorktree) break;
+          const parentRepo =
+            repoByPath.get(parentProject.path) ??
+            storeRepos.find((repo) => repo.id === parentProject.id);
+          const parentRow = toWorktreeRow(parentWorktree, {
+            repoId: parentProject.id,
+            hostId: getRowHostId(parentRepo),
+          });
+          const lineageGroupKey = getWorktreeLineageGroupKey(parentRow);
+          if (collapsedGroups.has(lineageGroupKey)) {
+            collapsedKeysToExpand.add(lineageGroupKey);
+          }
+          parentPath = lineageByPath?.[parentPath];
+        }
+      }
+
+      if (folderWorkspace) {
+        targetFolderWorkspace = folderWorkspace;
+        for (const key of getFolderWorkspaceRevealGroupKeys(folderWorkspace, storeProjectGroups)) {
+          if (collapsedGroups.has(key)) collapsedKeysToExpand.add(key);
+        }
+      }
+      // Why separately: a pinned worktree also paints inside the Pinned section under
+      // `single-location`, where the natural group keys alone would not reveal it.
+      if (pinnedWorktrees?.has(target)) {
+        for (const key of getPinnedWorktreeRevealCollapsedGroupKeys()) {
+          if (collapsedGroups.has(key)) collapsedKeysToExpand.add(key);
+        }
+      }
+      if (collapsedKeysToExpand.size > 0) {
+        setCollapsedGroups((prev) => {
+          const next = new Set(prev);
+          for (const key of collapsedKeysToExpand) next.delete(key);
+          return next;
+        });
+      }
+      break;
     }
 
     if (options?.highlight !== false) flashRevealedWorktree(target);
-    if (options?.beginRename) {
-      window.dispatchEvent(
-        new CustomEvent("hydra:begin-rename-worktree", { detail: { path: target } })
-      );
-    }
 
-    // The row may mount a frame or two after the reveal (collapse expansion, the
-    // virtualizer window). Poll briefly instead of giving up on the first paint.
+    // The mounted row: the card's own path attribute first, then the listbox option id the
+    // row pipeline published (a folder row has no card path; a virtualizer window can paint
+    // the wrapper before the card's attributes are readable).
+    const container = worktreeScrollRef.current;
+    const optionIds = getRevealMountedOptionIds({
+      sectionKeys: targetSectionKeys,
+      worktree: targetRow,
+      folderWorkspace: targetFolderWorkspace,
+    });
+    let settled = false;
+    const settleReveal = (): void => {
+      if (settled) return;
+      settled = true;
+      options?.onRevealSettled?.();
+    };
     let revealAttempts = 0;
     const revealMountedRow = (): void => {
-      const el = document.querySelector(`[data-worktree-path="${CSS.escape(target)}"]`);
-      if (!el) {
+      const element =
+        container?.querySelector(`[data-worktree-path="${CSS.escape(target)}"]`) ??
+        optionIds.map((id) => document.getElementById(id)).find((node) => node !== null) ??
+        null;
+      if (!element) {
         revealAttempts += 1;
-        if (revealAttempts < 8) requestAnimationFrame(revealMountedRow);
+        if (revealAttempts < MAX_REVEAL_RETRIES) {
+          requestAnimationFrame(revealMountedRow);
+          return;
+        }
+        // Still no row: the caller decides whether the target vanished (clear the pending
+        // reveal) or the expansion is still landing (keep it pending).
+        options?.onRevealExhausted?.();
         return;
       }
-      const container = worktreeScrollRef.current;
       // Why not `scrollIntoView({ block: "nearest" })`: a card above the viewport would
       // land flush under the sticky group header. The reveal math reserves that inset
       // (and honors reduced-motion); the fallback only runs when the row is outside the
-      // list's own scroll container.
-      if (!container || !revealElementInScrollContainer(container, el, "smooth")) {
-        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      // list's own scroll container. `settleReveal` is the scroll-anchor's issued-scroll
+      // signal, so a pending request clears on the actual scroll instead of a rAF guess.
+      const revealed = container
+        ? revealElementInScrollContainer(container, element, "smooth", settleReveal)
+        : false;
+      if (!container || !revealed) {
+        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
+      if (options?.beginRename) {
+        window.dispatchEvent(
+          new CustomEvent("hydra:begin-rename-worktree", { detail: { path: target } })
+        );
+      }
+      settleReveal();
     };
     requestAnimationFrame(revealMountedRow);
   }, [
@@ -735,17 +951,25 @@ export function WorktreeSidebar({
     setVisibleWorkspaceHostIds,
     setWorkspaceHostScope,
     sessions,
+    folderWorkspaces,
+    pinnedWorktrees,
+    lineageByPath,
+    storeProjectGroups,
+    pipelineRepoMap,
+    repoByPath,
+    storeSettings,
+    storeWorkspaceStatuses,
   ]);
 
   // Orca `useSidebarRevealRequests`: when filters hide the target, ask before
   // adjusting them; otherwise reveal straight away.
   const [revealConfirmation, setRevealConfirmation] = useState<{
     targetPath: string;
-    options?: { highlight?: boolean; beginRename?: boolean };
+    options?: SidebarRevealOptions;
   } | null>(null);
 
   const handleRevealCurrent = useCallback(
-    (targetPath?: string | null, options?: { highlight?: boolean; beginRename?: boolean }) => {
+    (targetPath?: string | null, options?: SidebarRevealOptions) => {
       const target = targetPath || revealTargetPath || activeWorktreePath;
       if (!target) return;
       const proj = projects.find(
@@ -787,7 +1011,11 @@ export function WorktreeSidebar({
           displayOptions.hideSleeping && !hasActiveSession && target !== activeWorktreePath,
       });
       if (hidden) {
-        setRevealConfirmation({ targetPath: target, options });
+        // The pending effect may replay the request while the dialog is open; keep the
+        // first options object (and its callbacks) instead of re-setting state per render.
+        setRevealConfirmation((current) =>
+          current?.targetPath === target ? current : { targetPath: target, options }
+        );
         return;
       }
       revealWorkspaceNow(target, options);
@@ -806,31 +1034,66 @@ export function WorktreeSidebar({
     ]
   );
 
-  // Orca `useSidebarRevealRequests`: consume the store's queued worktree reveal
-  // (the list may be unmounted or filtered when the request arrives).
+  // Orca `useSidebarRevealRequests`: consume the store's queued worktree reveal (the list
+  // may be unmounted or filtered when the request arrives). Resolution is identity-qualified
+  // (D03a-070): the store's host-qualified rows win over the scan path bridge, and a target
+  // that vanished before it could mount is dropped instead of staying queued forever.
   useEffect(() => {
     if (!pendingRevealWorktree) return;
-    const targetPath = resolveRevealWorktreePath(
-      pendingRevealWorktree.worktreeId,
-      projects.map((project) => ({
-        projectId: project.id,
-        path: project.path,
-        worktrees: getWorktreesForProject(project),
-      }))
+    const pendingHostId = pendingRevealWorktree.executionHostId;
+    const hostWorktrees = getRevealCandidateWorktrees(
+      getIndexedAllWorktrees(useAppStore.getState().worktreesByRepo),
+      pendingHostId
     );
-    clearPendingRevealWorktreeId();
-    if (targetPath) {
-      handleRevealCurrent(targetPath, {
-        highlight: pendingRevealWorktree.highlight,
-        beginRename: pendingRevealWorktree.beginRename,
-      });
+    const known = getKnownSidebarWorktreeById(
+      pendingRevealWorktree.worktreeId,
+      new Map(hostWorktrees.map((worktree) => [worktree.id, worktree])),
+      folderWorkspaces,
+      hostWorktrees
+    );
+    const targetPath = known
+      ? known.kind === "worktree"
+        ? known.worktree.path
+        : known.folderWorkspace.folderPath
+      : resolveRevealWorktreePath(
+          pendingRevealWorktree.worktreeId,
+          projects.map((project) => ({
+            projectId: project.id,
+            path: project.path,
+            worktrees: getWorktreesForProject(project),
+          }))
+        );
+    if (!targetPath) {
+      // The request names a workspace the tree no longer holds; nothing can paint it.
+      clearPendingRevealWorktreeId();
+      return;
     }
+    handleRevealCurrent(targetPath, {
+      highlight: pendingRevealWorktree.highlight,
+      beginRename: pendingRevealWorktree.beginRename,
+      onRevealSettled: clearPendingRevealWorktreeId,
+      onRevealExhausted: () => {
+        if (!known) return;
+        // D03a-062: an expansion can still be landing when the retry window closes; only
+        // give up once the workspace itself is gone from the tree. Read the store again:
+        // the frames between request and exhaustion can delete the row.
+        const latestHostWorktrees = getRevealCandidateWorktrees(
+          getIndexedAllWorktrees(useAppStore.getState().worktreesByRepo),
+          pendingHostId
+        );
+        if (sidebarWorkspaceStillExists(known, latestHostWorktrees, folderWorkspaces)) {
+          return;
+        }
+        clearPendingRevealWorktreeId();
+      },
+    });
   }, [
     pendingRevealWorktree,
     clearPendingRevealWorktreeId,
     projects,
     getWorktreesForProject,
     handleRevealCurrent,
+    folderWorkspaces,
   ]);
 
   // Orca `useCollapsedGroups` for the agent-send target (D03a-049): the picker's
@@ -945,6 +1208,9 @@ export function WorktreeSidebar({
    */
   const commitReorderedWorktrees = useCallback(
     (ordered: GitWorktreeInfo[], projectPath: string) => {
+      // D03a-050: a manual reorder is direct manipulation, so it bumps the same sort
+      // signal the settle gate watches; Manual mode applies it without the settle window.
+      setSortEpoch((epoch) => epoch + 1);
       onReorderWorktrees?.(ordered, projectPath);
     },
     [onReorderWorktrees]
@@ -1076,22 +1342,6 @@ export function WorktreeSidebar({
     return list;
   }, [projects, displayOptions.filterProjectIds, pinnedProjects]);
 
-  /** Repo labels for Project sort, projected once for the whole sidebar. */
-  const pipelineRepoMap = useMemo(
-    () =>
-      new Map(
-        projects.map((project) => [
-          project.id,
-          toPipelineRepo({
-            project,
-            projectGroupId: projectGroupMap?.[project.id] ?? null,
-            hostId: undefined,
-          }),
-        ])
-      ),
-    [projects, projectGroupMap]
-  );
-
   /** Persisted rows carry the manual order and real activity timestamps. */
   const worktreesByRepo = useAppStore((state) => state.worktreesByRepo);
 
@@ -1107,10 +1357,6 @@ export function WorktreeSidebar({
   // The sidebar model carries no connection fields, so the host gate reads the
   // store's repo rows by path; a project without a store row stays creatable.
   const sshConnectionStates = useAppStore((state) => state.sshConnectionStates);
-  const repoByPath = useMemo(
-    () => new Map(storeRepos.map((repo) => [repo.path, repo])),
-    [storeRepos]
-  );
 
   const createStateByProjectId = useMemo(() => {
     const states = new Map<string, RepoHeaderCreateState>();
@@ -1217,6 +1463,77 @@ export function WorktreeSidebar({
 
   const query = filter.trim().toLowerCase();
 
+  // Why settled only for attention-driven modes: Smart and Recent rank by time-decaying
+  // scores, so background activity must not reorder them mid-read. Name/Repo/Manual are
+  // deterministic or direct manipulation and always paint the fresh order.
+  const settledSortMode =
+    displayOptions.sortBy === "agent-activity" ||
+    displayOptions.sortBy === "smart" ||
+    displayOptions.sortBy === "recent";
+
+  const sortWorktreesForProject = useCallback(
+    (proj: HydraProject, wts: GitWorktreeInfo[]): GitWorktreeInfo[] => {
+      // Sort through the ported Orca comparator. The menu's legacy "Agent Activity" is
+      // the `smart` mode, and Project/Manual/Recent/Name all share the comparator the
+      // closed-sidebar path uses (see `smart-sort.ts`), so the two paths cannot drift.
+      const now = Date.now();
+      const projected = applyPersistedWorktreeOrder(
+        wts.map((worktree) => toWorktreeRow(worktree, { repoId: proj.id })),
+        worktreesByRepo[proj.id]
+      );
+      const smartMode =
+        displayOptions.sortBy === "agent-activity" || displayOptions.sortBy === "smart";
+      const attentionByWorktree = smartMode
+        ? new Map(
+            projected.map((row) => {
+              const worktree = wts.find((candidate) => candidate.path === row.path);
+              const rowSessions = sessions.filter(
+                (session) =>
+                  session.project_path === row.path ||
+                  ((worktree?.is_main || worktree?.isMainWorktree) &&
+                    session.project_path === proj.path)
+              );
+              return [row.id, resolveWorktreeAttentionFromSessions(rowSessions, now)] as const;
+            })
+          )
+        : undefined;
+      const ordered = sortSidebarWorktrees({
+        worktrees: projected,
+        mode: displayOptions.sortBy,
+        repoMap: pipelineRepoMap,
+        now,
+        attentionByWorktree,
+      });
+      const byPath = new Map(wts.map((worktree) => [worktree.path, worktree]));
+      return ordered
+        .map((row) => byPath.get(row.path))
+        .filter((worktree): worktree is GitWorktreeInfo => worktree !== undefined);
+    },
+    [displayOptions.sortBy, sessions, pipelineRepoMap, worktreesByRepo]
+  );
+
+  // Why a ref: only the settle gate may move an attention-driven order. Routing the
+  // compute callback through a ref keeps live status data out of the memo's dependency
+  // list, so a tick inside the settle window cannot recompute the order early (Orca reads
+  // the store inside its own memo for the same reason).
+  const computeSettledOrderRef = useRef<(project: HydraProject) => string[]>(() => []);
+  computeSettledOrderRef.current = (project) =>
+    sortWorktreesForProject(project, getWorktreesForProject(project)).map(
+      (worktree) => worktree.path
+    );
+  const projectsKey = useMemo(
+    () => projects.map((project) => project.path).join("\n"),
+    [projects]
+  );
+  const settledSortOrderByProject = useMemo(() => {
+    const orders = new Map<string, string[]>();
+    if (!settledSortMode) return orders;
+    for (const project of projects) {
+      orders.set(project.path, computeSettledOrderRef.current(project));
+    }
+    return orders;
+  }, [appliedSortEpoch, displayOptions.sortBy, pipelineRepoMap, projectsKey, allWorktrees.length]);
+
   const getFilteredAndSortedWorktrees = useCallback((proj: HydraProject): GitWorktreeInfo[] => {
     let wts = getWorktreesForProject(proj);
 
@@ -1243,49 +1560,29 @@ export function WorktreeSidebar({
       });
     }
 
-    // Sort through the ported Orca comparator. The menu's legacy "Agent Activity" is
-    // the `smart` mode, and Project/Manual/Recent/Name all share the comparator the
-    // closed-sidebar path uses (see `smart-sort.ts`), so the two paths cannot drift.
-    const now = Date.now();
-    const projected = applyPersistedWorktreeOrder(
-      wts.map((worktree) => toWorktreeRow(worktree, { repoId: proj.id })),
-      worktreesByRepo[proj.id]
-    );
-    const smartMode =
-      displayOptions.sortBy === "agent-activity" || displayOptions.sortBy === "smart";
-    const attentionByWorktree = smartMode
-      ? new Map(
-          projected.map((row) => {
-            const worktree = wts.find((candidate) => candidate.path === row.path);
-            const rowSessions = sessions.filter(
-              (session) =>
-                session.project_path === row.path ||
-                ((worktree?.is_main || worktree?.isMainWorktree) &&
-                  session.project_path === proj.path)
-            );
-            return [row.id, resolveWorktreeAttentionFromSessions(rowSessions, now)] as const;
-          })
-        )
+    // Order from the epoch the settle gate last applied; a row that appeared inside the
+    // window has no rank yet and lands after the known rows until the gate applies.
+    const settledOrder = settledSortMode
+      ? settledSortOrderByProject.get(proj.path)
       : undefined;
-    const ordered = sortSidebarWorktrees({
-      worktrees: projected,
-      mode: displayOptions.sortBy,
-      repoMap: pipelineRepoMap,
-      now,
-      attentionByWorktree,
-    });
-    const byPath = new Map(wts.map((worktree) => [worktree.path, worktree]));
-    return ordered
-      .map((row) => byPath.get(row.path))
-      .filter((worktree): worktree is GitWorktreeInfo => worktree !== undefined);
+    if (settledOrder) {
+      const rankByPath = new Map(settledOrder.map((path, index) => [path, index]));
+      return [...wts].sort(
+        (a, b) =>
+          (rankByPath.get(a.path) ?? Number.MAX_SAFE_INTEGER) -
+          (rankByPath.get(b.path) ?? Number.MAX_SAFE_INTEGER)
+      );
+    }
+    return sortWorktreesForProject(proj, wts);
   }, [
     getWorktreesForProject,
     displayOptions,
     query,
     sessions,
     activeWorktreePath,
-    pipelineRepoMap,
-    worktreesByRepo,
+    sortWorktreesForProject,
+    settledSortMode,
+    settledSortOrderByProject,
   ]);
 
   // ─── Background Appearance Tint ──────────────────────────────────────────
@@ -2113,7 +2410,13 @@ export function WorktreeSidebar({
 
       <RevealHiddenWorkspaceDialog
         open={revealConfirmation != null}
-        onCancel={() => setRevealConfirmation(null)}
+        onCancel={() => {
+          const pending = revealConfirmation;
+          setRevealConfirmation(null);
+          // A declined reveal is still a settled request; leaving it queued would
+          // re-open the dialog on the next sidebar render.
+          pending?.options?.onRevealSettled?.();
+        }}
         onConfirm={() => {
           const pending = revealConfirmation;
           setRevealConfirmation(null);

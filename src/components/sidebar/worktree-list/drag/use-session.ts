@@ -7,10 +7,12 @@ import { getWorktreeDragUnitGroups, type WorktreeDragUnitGroup } from '../../wor
 import {
   getWorktreeSidebarDragRectsForGroup,
   refreshWorktreeSidebarDragSession,
+  type WorktreeSidebarDragRect,
   type WorktreeSidebarDragSession
 } from '../../worktree-sidebar-drag-autoscroll'
 import {
   shouldReevaluateWorktreeSidebarDropAnchor,
+  type WorktreeSidebarDragGrab,
   type WorktreeSidebarDropAnchor
 } from '../../worktree-sidebar-drag-geometry'
 import {
@@ -19,11 +21,19 @@ import {
 } from '../../worktree-sidebar-drop-preview'
 import type { WorktreeDragGroup } from '../../worktree-manual-order'
 import { PINNED_GROUP_KEY } from '../grouping/group-keys'
+import { getWorkspaceStatusGroupKey } from '../../workspace-status'
 import { getNaturalWorktreeIds } from '../../natural-worktree-ids'
 import { getWorktreeDragGroups, getWorktreeDragIndexes } from './groups'
 
 /** The `space-y-1` gap between painted rows, replayed as the layout gap while dragging. */
 const WORKTREE_LIST_ROW_GAP_PX = 4
+
+/** A status lane the pointer hovers: where the card would land inside that lane. */
+export type WorktreeStatusDropRequest = {
+  pointerY: number
+  status: string
+  draggedIds: readonly string[]
+}
 
 /** Geometry and identity a drag needs: groups, drag units, row indexes and drop math. */
 export type WorktreeDragSession = {
@@ -39,6 +49,9 @@ export type WorktreeDragSession = {
   ) => readonly string[]
   refreshWorktreeDragSession: () => boolean
   computeWorktreeDrop: (pointerY: number) => WorktreeSidebarDropPreview | null
+  computeWorktreeStatusDrop: (
+    request: WorktreeStatusDropRequest
+  ) => WorktreeSidebarDropPreview | null
 }
 
 /**
@@ -51,6 +64,10 @@ export function useWorktreeDragSession(args: {
 }): WorktreeDragSession {
   const { rows, scrollRef } = args
   const worktreeDragSessionRef = useRef<WorktreeSidebarDragSession | null>(null)
+  // Why: cross-group hovers hit-test a group the session never captured, so hold
+  // that group's drop decision separately or a card expanding in the target group
+  // moves the insertion line under a still pointer.
+  const statusDropAnchorsRef = useRef<Map<string, WorktreeSidebarDropAnchor>>(new Map())
 
   const worktreeDragGroups = useMemo(() => getWorktreeDragGroups(rows), [rows])
   const worktreeDragUnitGroups = useMemo(() => getWorktreeDragUnitGroups(rows), [rows])
@@ -103,17 +120,46 @@ export function useWorktreeDragSession(args: {
     worktreeDragSessionRef.current = refreshedSession
     return refreshedSession !== null
   }, [scrollRef, worktreeDragGroups, worktreeDragUnitGroups])
+  const computeWorktreeDropForGroup = useCallback(
+    (dropArgs: {
+      pointerY: number
+      groupKey: string
+      rects: readonly WorktreeSidebarDragRect[]
+      draggedIds: readonly string[]
+      draggingWorktreeId?: string | null
+      grab?: WorktreeSidebarDragGrab | null
+      anchor?: WorktreeSidebarDropAnchor | null
+    }): WorktreeSidebarDropPreview | null => {
+      const container = scrollRef.current
+      if (!container) {
+        return null
+      }
+      const group = worktreeDragUnitGroups.find(
+        (candidate) => candidate.key === dropArgs.groupKey
+      )
+      if (!group) {
+        return null
+      }
+      return computeWorktreeSidebarDropPreview({
+        pointerY: dropArgs.pointerY,
+        containerTop: container.getBoundingClientRect().top,
+        scrollTop: container.scrollTop,
+        rects: dropArgs.rects,
+        groupIds: group.worktreeIds,
+        draggedIds: dropArgs.draggedIds,
+        draggingWorktreeId: dropArgs.draggingWorktreeId,
+        fallbackGap: WORKTREE_LIST_ROW_GAP_PX,
+        grab: dropArgs.grab,
+        anchor: dropArgs.anchor
+      })
+    },
+    [scrollRef, worktreeDragUnitGroups]
+  )
   const computeWorktreeDrop = useCallback(
     (pointerY: number): WorktreeSidebarDropPreview | null => {
       const session = worktreeDragSessionRef.current
       const container = scrollRef.current
       if (!session || !container) {
-        return null
-      }
-      const group = worktreeDragUnitGroups.find(
-        (candidate) => candidate.key === session.sourceGroupKey
-      )
-      if (!group) {
         return null
       }
       const scrollTop = container.scrollTop
@@ -126,15 +172,12 @@ export function useWorktreeDragSession(args: {
       })
         ? null
         : session.anchor
-      const preview = computeWorktreeSidebarDropPreview({
+      const preview = computeWorktreeDropForGroup({
         pointerY,
-        containerTop: container.getBoundingClientRect().top,
-        scrollTop,
+        groupKey: session.sourceGroupKey,
         rects: session.rects,
-        groupIds: group.worktreeIds,
         draggedIds: session.reorderUnitDraggedIds,
         draggingWorktreeId: session.draggingWorktreeId,
-        fallbackGap: WORKTREE_LIST_ROW_GAP_PX,
         grab: session.grab,
         anchor
       })
@@ -146,7 +189,48 @@ export function useWorktreeDragSession(args: {
       }
       return preview
     },
-    [scrollRef, worktreeDragUnitGroups]
+    [computeWorktreeDropForGroup, scrollRef]
+  )
+  // Why the held anchor: a cross-status hover targets a group the session never
+  // captured, so its slot needs the same anti-jitter memory as the source group's.
+  const computeWorktreeStatusDrop = useCallback(
+    (request: WorktreeStatusDropRequest): WorktreeSidebarDropPreview | null => {
+      const container = scrollRef.current
+      if (!container) {
+        return null
+      }
+      const groupKey = getWorkspaceStatusGroupKey(request.status)
+      const session = worktreeDragSessionRef.current
+      const scrollTop = container.scrollTop
+      const heldAnchor = statusDropAnchorsRef.current.get(groupKey) ?? null
+      const anchor = shouldReevaluateWorktreeSidebarDropAnchor({
+        anchor: heldAnchor,
+        pointerY: request.pointerY,
+        scrollTop
+      })
+        ? null
+        : heldAnchor
+      const preview = computeWorktreeDropForGroup({
+        pointerY: request.pointerY,
+        groupKey,
+        rects: getWorktreeSidebarDragRectsForGroup(container, groupKey),
+        draggedIds: request.draggedIds,
+        draggingWorktreeId: session?.draggingWorktreeId ?? null,
+        grab: session?.grab ?? null,
+        anchor
+      })
+      if (preview) {
+        statusDropAnchorsRef.current.set(groupKey, {
+          beforeWorktreeId: preview.dropAnchorId,
+          pointerY: request.pointerY,
+          scrollTop
+        })
+      } else {
+        statusDropAnchorsRef.current.delete(groupKey)
+      }
+      return preview
+    },
+    [computeWorktreeDropForGroup, scrollRef]
   )
 
   // Why: consumers pass session-derived callbacks into memoised rows; a fresh object
@@ -154,6 +238,7 @@ export function useWorktreeDragSession(args: {
   return useMemo(
     () => ({
       worktreeDragSessionRef,
+      statusDropAnchorsRef,
       worktreeDragGroups,
       worktreeDragUnitGroups,
       groupKeyByRowKey,
@@ -161,10 +246,12 @@ export function useWorktreeDragSession(args: {
       getReorderDraggedIds,
       getReorderUnitDraggedIds,
       refreshWorktreeDragSession,
-      computeWorktreeDrop
+      computeWorktreeDrop,
+      computeWorktreeStatusDrop
     }),
     [
       computeWorktreeDrop,
+      computeWorktreeStatusDrop,
       getReorderDraggedIds,
       getReorderUnitDraggedIds,
       groupIndexByRowKey,

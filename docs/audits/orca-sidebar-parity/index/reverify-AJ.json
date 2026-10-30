@@ -6,14 +6,12 @@
    "id": "D03a-021",
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:1040-1129",
-    "src/components/sidebar/WorktreeSidebar.tsx:750",
-    "src/components/sidebar/WorktreeSidebar.tsx:1078"
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts"
    ],
    "missing_behaviors": [
-    "gravar workspaceStatus qualificado por executionHostId no drop"
+    "host-qualified manual-order write for project groups still lacks a store writer"
    ],
-   "note": "Status/pin drops call the path-based writers; the write is not host-qualified metadata."
+   "note": "Status/pin drops are host-qualified and deduped by path; host-section order persists through the UI-prefs writer."
   },
   {
    "id": "D03a-043",

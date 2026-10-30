@@ -9,8 +9,10 @@
 //    which is vocabulary-agnostic; the painted rows are `HostSectionRow`s, so the focus keys are
 //    built from item rows here instead of from the legacy `SidebarRow` projection;
 //  - activating a row routes through Hydra's `onSelectGitWorktree` (the panel records history);
-//  - Orca's Enter branch refocuses the terminal's helper textarea, which is not part of this
-//    list's contract in Hydra — the container leaves Enter to the focused row.
+//  - Enter on the container enters the terminal, exactly as Orca's `use-keyboard.ts` does: the
+//    listbox keeps focus (roving via `aria-activedescendant`), so the hidden xterm textarea is
+//    the only place the keystroke can go. Rows and headers own their own Enter handlers, so the
+//    container never steals the key from them.
 import { useCallback, useEffect, useMemo } from 'react'
 import type React from 'react'
 import type { Virtualizer } from '@tanstack/react-virtual'
@@ -151,6 +153,19 @@ export function useWorktreeListKeyboardNavigation(args: {
         }
         markDirectScrollInput()
         navigateRow(event.key === 'ArrowUp' ? 'up' : 'down')
+        event.preventDefault()
+        return
+      }
+      if (event.key === 'Enter') {
+        // Why the target guard: the row and header inside the listbox own Enter
+        // (activation, collapse); only the container itself means "enter the terminal".
+        if (event.target !== event.currentTarget) {
+          return
+        }
+        const helper = document.querySelector<HTMLTextAreaElement>('.xterm-helper-textarea')
+        if (helper) {
+          helper.focus()
+        }
         event.preventDefault()
         return
       }

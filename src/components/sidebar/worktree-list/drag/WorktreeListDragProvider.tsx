@@ -2,10 +2,13 @@
 // Source: orca/src/renderer/src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx (drag provider)
 import React, { useCallback, useMemo, useRef } from 'react'
 import type { HostSectionRow } from '../../host-section-rows'
+import type { ExecutionHostId } from '../../../../shared/execution-host'
 import type { WorktreeGroupReorderArgs, WorktreeDropCommitContext } from './drop-commit-context'
 import { useWorktreeDragRuntime } from './use-runtime'
 import { useWorktreeDragSession } from './use-session'
 import { useWorktreePointerDrag } from './use-pointer-drag'
+import { useWorktreeNativeDrag } from './use-native-drag'
+import { useWorktreeDocumentDrop } from './use-document-drop'
 import {
   WorktreeDragRowHandlersContext,
   WorktreeRowDragStateContext
@@ -36,9 +39,13 @@ export function WorktreeListDragProvider({
   scrollRef?: React.RefObject<HTMLDivElement | null>
   onReorderWorktrees: (args: WorktreeGroupReorderArgs) => void
   /** The workspace board's lane drop: a status write, never an order write. */
-  onAssignWorktreesStatus: (worktreeIds: readonly string[], status: string) => void
+  onAssignWorktreesStatus: (
+    worktreeIds: readonly string[],
+    status: string,
+    executionHostId?: ExecutionHostId
+  ) => void
   /** The workspace board's pin strip drop: a pin write, never a status write (D08-028). */
-  onPinWorktrees: (worktreeIds: readonly string[]) => void
+  onPinWorktrees: (worktreeIds: readonly string[], executionHostId?: ExecutionHostId) => void
   /** Persisted lineage parent per child id, used to reject cycles during a nest drag. */
   lineageParentIdByChildId: ReadonlyMap<string, string>
   /** Commits a nest drag over the hovered parent card. */
@@ -82,6 +89,7 @@ export function WorktreeListDragProvider({
       worktreeDragGroups: session.worktreeDragGroups,
       worktreeDragUnitGroups: session.worktreeDragUnitGroups,
       computeWorktreeDrop: session.computeWorktreeDrop,
+      computeWorktreeStatusDrop: session.computeWorktreeStatusDrop,
       refreshWorktreeDragSession: session.refreshWorktreeDragSession,
       clearWorktreeDrag,
       resolveDraggedWorktreeIds,
@@ -112,13 +120,18 @@ export function WorktreeListDragProvider({
     ]
   )
   const pointerDrag = useWorktreePointerDrag({ ctx, session, runtime })
+  // The other two paths read the same context and session; none of them owns a
+  // commit of its own.
+  const nativeDrag = useWorktreeNativeDrag({ ctx, session, runtime })
+  useWorktreeDocumentDrop({ ctx, session, runtime })
   const handlers = useMemo(
     () => ({
       groupKeyByRowKey: session.groupKeyByRowKey,
       groupIndexByRowKey: session.groupIndexByRowKey,
-      ...pointerDrag
+      ...pointerDrag,
+      ...nativeDrag
     }),
-    [pointerDrag, session.groupIndexByRowKey, session.groupKeyByRowKey]
+    [nativeDrag, pointerDrag, session.groupIndexByRowKey, session.groupKeyByRowKey]
   )
 
   return (

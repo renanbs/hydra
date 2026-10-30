@@ -37,16 +37,13 @@
   },
   {
    "id": "D03a-068",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-sidebar-reveal.ts:64-88",
-    "src/components/sidebar/WorktreeSidebar.tsx:552-563"
+    "src/components/sidebar/WorktreeSidebar.tsx:reveal",
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts"
    ],
-   "missing_behaviors": [
-    "reveal por optionId do row montado (Hydra usa data-worktree-path)",
-    "consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado)"
-   ],
-   "note": "Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet."
+   "missing_behaviors": [],
+   "note": "Mounted reveal falls back from data-worktree-path to the published option ids and settles on the scroll-issued signal instead of rAF presence alone."
   }
  ]
 }

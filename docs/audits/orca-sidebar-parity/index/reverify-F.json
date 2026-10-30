@@ -49,19 +49,15 @@
   },
   {
    "id": "D03a-017",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/use-pointer-window-events.ts:29-64",
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:36-52",
-    "src/components/sidebar/worktree-list/drag/use-runtime.ts:62-64"
+    "src/components/sidebar/worktree-list/drag/use-native-drag.ts",
+    "src/components/sidebar/worktree-list/drag/use-document-drop.ts",
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "visibilitychange abandonando o drag em andamento",
-    "listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo",
-    "commit de nest sem slot (nesting inexistente)"
-   ],
-   "note": "Pointer drag commita/abandona fora do sidebar via window capture (pointerup/pointercancel/Escape); falta o fallback document drop/dragend e visibilitychange."
+   "missing_behaviors": [],
+   "note": "Native drags open the shared session at dragstart and commit/abandon through capture-phase document drop/dragend plus visibilitychange; a nest is refused when the hovered card is no longer painted."
   },
   {
    "id": "D03a-044",

@@ -3,6 +3,8 @@
 import type { WorktreeDragGroup } from '../../worktree-manual-order'
 import type { WorktreeDragUnitGroup } from '../../worktree-drag-units'
 import type { WorktreeSidebarDropPreview } from '../../worktree-sidebar-drop-preview'
+import type { ExecutionHostId } from '../../../../shared/execution-host'
+import type { WorktreeStatusDropRequest } from './use-session'
 
 /** A within-group reorder a drop resolved to, in drag-unit indexes. */
 export type WorktreeGroupReorderArgs = {
@@ -18,6 +20,10 @@ export type WorktreeDropCommitContext = {
   worktreeDragGroups: readonly WorktreeDragGroup[]
   worktreeDragUnitGroups: readonly WorktreeDragUnitGroup[]
   computeWorktreeDrop: (pointerY: number) => WorktreeSidebarDropPreview | null
+  /** Where a card would land inside a status lane the hovered header names. */
+  computeWorktreeStatusDrop: (
+    request: WorktreeStatusDropRequest
+  ) => WorktreeSidebarDropPreview | null
   refreshWorktreeDragSession: () => boolean
   clearWorktreeDrag: () => void
   /**
@@ -31,14 +37,20 @@ export type WorktreeDropCommitContext = {
    * Writes a persisted workspace status for the dragged workspaces. The workspace board's
    * lane drop is its only caller: the list's own drops reorder, they do not recolour the
    * status column, and the panel bridges the ids onto the app's single status writer.
+   * The source host qualifies the write: a workspace id repeats across execution hosts,
+   * so a drop must never write another host's row (D03a-021).
    */
-  onAssignWorktreesStatus: (worktreeIds: readonly string[], status: string) => void
+  onAssignWorktreesStatus: (
+    worktreeIds: readonly string[],
+    status: string,
+    executionHostId?: ExecutionHostId
+  ) => void
   /**
    * Pins the dragged workspaces without touching their status. The board's pin strip drop
    * (D08-028) is its only caller, and the panel bridges the ids onto the app's single pin
-   * writer — the same one the row menu uses.
+   * writer — the same one the row menu uses. Host-qualified for the same reason.
    */
-  onPinWorktrees: (worktreeIds: readonly string[]) => void
+  onPinWorktrees: (worktreeIds: readonly string[], executionHostId?: ExecutionHostId) => void
   /** Persisted lineage parent per child id, the cycle check for a nest drop. */
   lineageParentIdByChildId: ReadonlyMap<string, string>
   /** Nests the dragged workspace(s) under the hovered card (Orca `assignWorktreeParent`). */

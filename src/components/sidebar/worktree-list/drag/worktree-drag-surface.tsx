@@ -68,6 +68,13 @@ export function WorktreeDragRow({
       onDragStartCapture={
         handlers && groupKey ? handlers.handleRowDragStartCapture : undefined
       }
+      onDragStart={
+        handlers && groupKey
+          ? (event) => handlers.handleRowDragStart(event, rowKey, worktreeId)
+          : undefined
+      }
+      onDragOver={handlers && groupKey ? handlers.handleRowDragOver : undefined}
+      onDragEnd={handlers && groupKey ? handlers.handleRowDragEnd : undefined}
       onPointerDown={
         handlers && groupKey
           ? (event) => handlers.handleRowPointerDown(event, rowKey, worktreeId)
