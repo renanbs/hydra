@@ -348,6 +348,14 @@ export interface AppState extends SshSlice {
     beginRename?: boolean
   } | null
   clearPendingRevealWorktreeId: () => void
+  /** Orca agent-send target picker state (worktree the prompt will go to). */
+  agentSendPopoverTargetMode: {
+    id: string
+    instanceId: string
+    worktreeId: string
+    status: string
+    [key: string]: unknown
+  } | null
   /** Queued reveal of an arbitrary sidebar row (headers included). */
   revealSidebarRow: (rowKey: string, options?: { behavior?: ScrollBehavior; highlight?: boolean }) => void
   pendingRevealSidebarRow: {

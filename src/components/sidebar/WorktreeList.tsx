@@ -37,6 +37,7 @@ import type { Worktree } from "../../shared/worktree/types";
 import type { WorktreeLineage } from "../../shared/worktree/lineage-types";
 import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
 import { HostSectionHeaderMenu } from "./HostSectionHeaderMenu";
+import { RepoScanUnavailableIndicator } from "./RepoScanUnavailableIndicator";
 import {
   getPinnedWorktreeDisplayPolicy,
   type FolderWorkspaceRow as FolderWorkspaceRowModel,
@@ -149,6 +150,7 @@ export function pipelineCollapsedKeys(
 /** Stable empty map: the store seeds no delete state, and a fresh `{}` would thrash memos. */
 /** No paired devices: the other-device sweep is off. */
 const EMPTY_OTHER_DEVICE_IDS: ReadonlyMap<string, string> = new Map();
+const EMPTY_SCAN_FAILURES: Record<string, string> = {};
 
 const EMPTY_DELETE_STATE: Record<string, WorktreeDeleteState | undefined> = {};
 
@@ -314,6 +316,8 @@ export interface WorktreeListProps {
   folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
   liveWorkspacePaths?: ReadonlySet<string>;
   missingFolderPaths?: ReadonlySet<string>;
+  /** Failed authoritative scans, keyed by repo path (`RepoScanUnavailableIndicator`). */
+  scanFailuresByProject?: Record<string, string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
   /** Removes a folder workspace entry (folder on disk stays). */
   onDeleteFolderWorkspace?: (folderWorkspaceId: string) => void;
@@ -659,6 +663,7 @@ export function WorktreeList({
   folderWorkspaces = [],
   liveWorkspacePaths,
   missingFolderPaths,
+  scanFailuresByProject = EMPTY_SCAN_FAILURES,
   onActivateFolderWorkspace,
   onDeleteFolderWorkspace,
   prByPath,
@@ -744,6 +749,11 @@ export function WorktreeList({
   const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses);
   const storeWorktreesByRepo = useAppStore((s) => s.worktreesByRepo);
   const pendingRevealSidebarRow = useAppStore((s) => s.pendingRevealSidebarRow);
+  // Orca `use-agent-send-target`: the worktree the send picker targets is forced
+  // visible even when a filter would otherwise hide it (D03a-048).
+  const agentSendTargetWorktreeId = useAppStore(
+    (s) => s.agentSendPopoverTargetMode?.worktreeId ?? null
+  );
   const clearPendingRevealSidebarRow = useAppStore((s) => s.clearPendingRevealSidebarRow);
   const storeKeybindings = useAppStore((s) => s.keybindings);
 
@@ -815,6 +825,14 @@ export function WorktreeList({
         ])
       );
       filtered = searched.filter((proj) => {
+        if (
+          agentSendTargetWorktreeId &&
+          getFilteredAndSortedWorktrees(proj).some(
+            (worktree) => worktree.id === agentSendTargetWorktreeId
+          )
+        ) {
+          return true;
+        }
         const repo = repoByProject.get(proj.id) ?? repoByProject.get(proj.path);
         const hostId = repo ? getRepoExecutionHostId(repo) : focusedHostId;
         return visibleHostIdSet.has(hostId);
@@ -825,7 +843,15 @@ export function WorktreeList({
     const stable = reuseArrayIfEqual(visibleProjectsRef.current, filtered);
     visibleProjectsRef.current = stable;
     return stable;
-  }, [displayProjects, query, getFilteredAndSortedWorktrees, visibleHostIdSet, storeRepos, focusedHostId]);
+  }, [
+    displayProjects,
+    query,
+    getFilteredAndSortedWorktrees,
+    visibleHostIdSet,
+    storeRepos,
+    focusedHostId,
+    agentSendTargetWorktreeId,
+  ]);
 
   // Host ownership per repo, shared by the row pipeline and the delete-state
   // resolution below: a card's delete state is keyed by host-qualified identity.
@@ -883,6 +909,7 @@ export function WorktreeList({
       const hostId = hostIdByRepoId.get(project.id);
       const projectedForRepo: Worktree[] = [];
       for (const worktree of getFilteredAndSortedWorktrees(project)) {
+        const forcedVisible = worktree.id === agentSendTargetWorktreeId;
         const status =
           persistedStatusByPath.get(worktree.path) ??
           (worktree.id ? persistedStatusById.get(worktree.id) : undefined) ??
@@ -907,12 +934,14 @@ export function WorktreeList({
           })(),
         });
         if (
+          !forcedVisible &&
           pairedDeviceIdsByEnvironment.size > 0 &&
           isWorkspaceFromOtherDevice(projected, pairedDeviceIdsByEnvironment)
         ) {
           continue;
         }
         if (
+          !forcedVisible &&
           visibleHostIdSet &&
           !visibleHostIdSet.has(
             getWorktreeExecutionHostId(projected, repoById.get(project.id), focusedHostId)
@@ -923,6 +952,7 @@ export function WorktreeList({
         // Menu filters (Orca's ported predicates, never a re-derived rule). Shared
         // with the workspace board so both surfaces hide the same workspaces.
         if (
+          !forcedVisible &&
           !isVisibleUnderSidebarMenuFilters({
             worktree: projected,
             displayOptions,
@@ -2038,6 +2068,17 @@ export function WorktreeList({
       onUnnestWorktrees={handleUnnestWorktrees}
       resolveDraggedWorktreeIds={resolveDraggedWorktreeIds}
     >
+      <RepoScanUnavailableIndicator
+        failures={useMemo(
+          () =>
+            Object.entries(scanFailuresByProject).map(([repoPath, message]) => ({
+              repoPath,
+              message,
+            })),
+          [scanFailuresByProject]
+        )}
+        onRetry={() => window.dispatchEvent(new CustomEvent("hydra:refresh-projects"))}
+      />
       <VirtualizedWorktreeViewport
         rows={rows}
         activeRowKey={activeRowKey}

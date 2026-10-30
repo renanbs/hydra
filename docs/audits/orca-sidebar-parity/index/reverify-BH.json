@@ -1,0 +1,10 @@
+{
+ "group": "BH",
+ "generatedFrom": "2026-10-27 reveal confirmation dialog, scan-failure indicator and agent-send forced visibility",
+ "rows": [
+  {"id":"D03a-065","status":"parity","evidence":["src/components/sidebar/reveal-hidden-filters.ts:1-60","src/components/sidebar/RevealHiddenWorkspaceDialog.tsx:1-55","src/components/sidebar/WorktreeSidebar.tsx:700-770"],"missing_behaviors":[],"note":"A reveal whose target is hidden by the project/kind/host/sleeping filters asks first; confirming adjusts only the blocking filters and reveals, canceling leaves them intact. Header reveals switch grouping in the row-key path."},
+  {"id":"D03a-048","status":"partial","evidence":["src/components/sidebar/WorktreeList.tsx:750-840","src/components/sidebar/WorktreeList.tsx:880-910"],"missing_behaviors":["não existe superfície de UI que abra o modo de seleção de alvo (o store tem `openAgentSendPopoverTargetMode`, mas nenhum componente o chama)"],"note":"Forced visibility is wired: the mode's worktree bypasses host/device/menu filters. The picker that would set the mode is still absent, so the path is dormant."},
+  {"id":"D03a-049","status":"partial","evidence":["src/components/sidebar/WorktreeSidebar.tsx:735-780"],"missing_behaviors":["depends on the same missing target-mode UI"],"note":"Opening the mode expands the target's project and project group; lineage-ancestor expansion still follows the reveal path."},
+  {"id":"D03a-075","status":"partial","evidence":["src/components/sidebar/RepoScanUnavailableIndicator.tsx:1-70","src/App.tsx:1355-1420"],"missing_behaviors":["tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch) — o backend devolve só a mensagem crua","Copy command (só Copy diagnostics existe)"],"note":"Failed scans are captured per repo, painted as a retryable status row and the diagnostics copy to the clipboard."}
+ ]
+}

@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 173 capabilities
+## MISSING — 170 capabilities
 
 
 ### D01-shell-chrome (24)
@@ -95,12 +95,9 @@
 - **D02c-025** — Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup | falta: findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay; markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório; getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface | components/sidebar/setup-script-prompt-render-state.ts:15
 - **D02c-026** — Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime | falta: Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco; Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes; Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota; Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar | components/sidebar/useSetupScriptPromptRevalidation.ts:14
 
-### D03a-worktree-list-module (4)
+### D03a-worktree-list-module (1)
 
-- **D03a-048** — Forçar visível o alvo do seletor de envio de agente | falta: use-agent-send-target; agentSendPopoverTargetMode; forcedVisibleWorktreeIds do alvo | components/sidebar/worktree-list/listing/use-agent-send-target.ts:6-64
-- **D03a-049** — Forçar expansão das seções que escondem o worktree alvo do seletor de agente | falta: use-collapsed-groups removendo group keys do alvo; getFolderWorkspaceRevealGroupKeys; panel pinned single-location | components/sidebar/worktree-list/listing/use-collapsed-groups.ts:17-121
 - **D03a-070** — Resolver worktree/folder workspace conhecido e sua existência | falta: getKnownSidebarWorktreeById; sidebarWorkspaceStillExists; getFolderWorkspaceRevealGroupKeys | components/sidebar/worktree-list/navigation/folder-reveal.ts:12-108
-- **D03a-075** — Indicador de falha de scan de worktrees com retry e cópia de diagnóstico | falta: RepoScanUnavailableIndicator com retry de fetchWorktrees; tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch); Copy command / Copy diagnostics | backend: window.api.ui.writeClipboardText (Orca; equivalente Tauri: clipboard do webview) | components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx:18-153
 
 ### D03b-sidebar-list-orchestration (15)
 
@@ -228,7 +225,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 261 capabilities
+## PARTIAL — 263 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -273,7 +270,7 @@
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5
 
-### D03a-worktree-list-module (35)
+### D03a-worktree-list-module (37)
 
 - **D03a-017** — Commit/abandono de drag fora do sidebar via listeners de documento em captura | falta: visibilitychange abandonando o drag em andamento; listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo; commit de nest sem slot (nesting inexistente) | components/sidebar/worktree-list/drag/use-document-drop.ts:18-115
 - **D03a-020** — Reordenar os três níveis de header do sidebar (host, grupo de projeto, projeto) | falta: reorder de host sections; gating canReorderRepoHeaders (groupBy=repo + projectOrderBy=manual); canReorderProjectGroupHeaders/ordem manual por host; supressão de correção de âncora | components/sidebar/worktree-list/drag/use-header-drag.ts:45-235
@@ -284,6 +281,8 @@
 - **D03a-040** — Reveal/grupo keys de um worktree para navegação e expand | falta: getGroupKeysForWorktree usado por reveal/expand; keys de project groups ancestrais | components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12-80
 - **D03a-046** — Restringir repos/grupos/folder workspaces ao escopo visível (host + dispositivo) | falta: visibleReposForRows/visibleProjectGroupsForRows/visibleFolderWorkspacesForRows no render; filterFolderWorkspacesFromOtherDevices | components/sidebar/worktree-list/listing/use-host-visible-scope.ts:17-72
 - **D03a-047** — Derivar a lista visível de worktrees a partir das ids ordenadas | falta: computeVisibleWorktrees alimentando o render pintado; snapshot de worktreeIdsWithLiveAgent por epoch; agentSendTargetWorktreeId como forcedVisible | components/sidebar/worktree-list/listing/use-visible-worktrees.ts:23-138
+- **D03a-048** — Forçar visível o alvo do seletor de envio de agente | falta: não existe superfície de UI que abra o modo de seleção de alvo (o store tem `openAgentSendPopoverTargetMode`, mas nenhum componente o chama) | components/sidebar/worktree-list/listing/use-agent-send-target.ts:6-64
+- **D03a-049** — Forçar expansão das seções que escondem o worktree alvo do seletor de agente | falta: depends on the same missing target-mode UI | components/sidebar/worktree-list/listing/use-collapsed-groups.ts:17-121
 - **D03a-050** — Ordenação estável da lista (sort modes) com Smart, Recent e Manual | falta: SORT_SETTLE_MS=3000 de debounce; persistência da ordem Smart por host; telemetria smart_sort_* | components/sidebar/worktree-list/listing/use-sort-order.ts:23-234
 - **D03a-052** — Montar o modelo completo de linhas do sidebar (grupos + seções de host) | falta: renderedSidebarRowKeys (conjunto de keys das rows renderizadas) não existe como contrato | components/sidebar/worktree-list/listing/use-section-rows.ts:24-255
 - **D03a-054** — Ações dos cards de worktrees externas (importar/mostrar, manter escondido, silenciar inbox) | falta: estado por repo pending/error/forceVisible; snapshot autoritativo com requireAuthoritative; confirmação de suppress por dialog | backend: invoke('import_worktree') -> src-tauri/src; invoke('catalog_set_worktree_visibility') -> src-tauri/src | components/sidebar/worktree-list/listing/use-external-worktree-cards.ts:21-206
@@ -292,11 +291,11 @@
 - **D03a-058** — Atalhos de teclado da lista: focar, navegar para cima/baixo, entrar no terminal | falta: 'sidebar.focusWorktreeList' focar o container de scroll; 'worktree.navigateUp'/'worktree.navigateDown' keybindings; ignorar campos editáveis exceto .xterm-helper-textarea; no container: ArrowUp/Down/Enter/PageUp/Down/Home/End/espaço | components/sidebar/worktree-list/navigation/use-keyboard.ts:20-168
 - **D03a-060** — Seleção múltipla de worktrees (clique, Cmd/Ctrl, Shift, prune e limpeza) | falta: limpar a seleção por clique fora do container da lista; selectForContextMenu preservando a seleção | components/sidebar/worktree-list/navigation/use-selection.ts:17-156
 - **D03a-062** — Reveal de worktree: expandir ancestrais, rolar, destacar e iniciar rename | falta: MAX_REVEAL_RETRIES=8 com scrollToIndex virtual; iniciar rename (setRenamingWorktreeId); resolver outcome keep-pending quando o alvo some; expandir grupos de linhagem ancestrais | components/sidebar/worktree-list/navigation/use-pending-reveal.ts:22-188
-- **D03a-065** — Pedido de "revelar workspace atual" e diálogo de confirmação de filtros | falta: diálogo de confirmação 'Reveal hidden workspace?' quando filtros escondem o alvo; alternar groupBy para 'repo' quando a row é header; getKnownSidebarWorktreeById / reveal checks por identidade host-qualified; revalidação do alvo após await | components/sidebar/worktree-list/navigation/use-reveal-requests.ts:30-218
 - **D03a-067** — Lookups de render rows (key, contenção, índice preferido) | falta: rowKeyMatchesRenderRow; renderRowContainsWorktree; findPreferredRenderRowIndexForWorktree | components/sidebar/worktree-list/navigation/render-row-lookup.ts:10-135
 - **D03a-068** — Rolar um elemento já montado até a área visível do container | falta: reveal por optionId do row montado (Hydra usa data-worktree-path); consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado) | components/sidebar/worktree-list/navigation/mounted-row-reveal.ts:4-35
 - **D03a-072** — Linhas de aviso: criação em andamento, worktrees importadas escondidas, inbox de worktrees externas | falta: PendingWorktreeRow(creationId); canKeepImportedWorktreesHidden (placement repo-group e sem forceVisible); frame virtual absoluto data-worktree-virtual-row* | components/sidebar/worktree-list/rows/notice-rows.tsx:11-126
 - **D03a-073** — Indicador de path inexistente de folder workspace/project group | falta: isConfirmedStaleFolderPathStatus (cor destructive); tooltip com título + descrição detalhada; rota por host/SSH/runtime do status | backend: invoke('path_exists') -> src-tauri/src | components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx:14-47
+- **D03a-075** — Indicador de falha de scan de worktrees com retry e cópia de diagnóstico | falta: tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch) — o backend devolve só a mensagem crua; Copy command (só Copy diagnostics existe) | backend: window.api.ui.writeClipboardText (Orca; equivalente Tauri: clipboard do webview) | components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx:18-153
 - **D03a-076** — Header de seção (repo, project group, status, Pinned) com colapso, drag e ações | falta: sticky (z-20/z-30) nos headers; variantes status/Pinned; data-workspace-status-drop-target / data-workspace-pin-drop-target; RepoIconGlyph com cor do projeto / RepoForkIndicator | components/sidebar/worktree-list/rows/SectionHeader.tsx:46-403
 - **D03a-077** — Card de folder workspace como linha virtual | falta: role=option com aria-selected/aria-current; PR display sintético (getFolderWorkspaceCardPrDisplay); geometria por groupDepth/lineageDepth; desabilitar ativação quando path stale/ambiguous | components/sidebar/worktree-list/rows/folder-row.tsx:23-132
 - **D03a-079** — Geometria de indentação e superfícies da árvore do sidebar | falta: LINEAGE_IMMEDIATE_PARENT_STEP / LINEAGE_CHILDREN_INLINE_OFFSET; NEW_CARD_STYLE_STATUS_LANE_EXTRA_PULLBACK / FLUSH_CARD_MIN_CONTENT_INSET; MAX_PROJECT_GROUP_HEADER_DEPTH=6; surface inset para folder-backed repo | components/sidebar/worktree-list/rows/indentation.ts:1-243

@@ -31,6 +31,7 @@ import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWo
 import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toast } from "sonner";
 import { planSidebarClearFilters } from "./sidebar-filter-actions";
+import { isRevealTargetHiddenByFilters } from "./reveal-hidden-filters";
 import {
   getFolderWorkspaceRevealGroupKeys,
   getPinnedWorktreeRevealCollapsedGroupKeys,
@@ -64,6 +65,7 @@ import { revealElementInScrollContainer } from "./worktree-sidebar-reveal";
 import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
 import { RemoveFolderDialog } from "./RemoveFolderDialog";
 import SuppressExternalWorktreeInboxDialog from "./SuppressExternalWorktreeInboxDialog";
+import { RevealHiddenWorkspaceDialog } from "./RevealHiddenWorkspaceDialog";
 import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
 export * from "./types";
@@ -130,6 +132,7 @@ export function WorktreeSidebar({
   folderWorkspaces = [],
   liveWorkspacePaths,
   missingFolderPaths,
+  scanFailuresByProject = {},
   prByPath,
   onActivateFolderWorkspace,
   onDeleteFolderWorkspace,
@@ -304,6 +307,7 @@ export function WorktreeSidebar({
   }, []);
   const pendingRevealWorktree = useAppStore((state) => state.pendingRevealWorktree);
   const pendingRevealSidebarRow = useAppStore((state) => state.pendingRevealSidebarRow);
+  const agentSendTargetMode = useAppStore((state) => state.agentSendPopoverTargetMode);
   const clearPendingRevealSidebarRow = useAppStore(
     (state) => state.clearPendingRevealSidebarRow
   );
@@ -573,7 +577,7 @@ export function WorktreeSidebar({
     });
   }, []);
 
-  const handleRevealCurrent = useCallback(
+  const revealWorkspaceNow = useCallback(
     (targetPath?: string | null, options?: { highlight?: boolean; beginRename?: boolean }) => {
     const target = targetPath || revealTargetPath || activeWorktreePath;
     if (!target) return;
@@ -709,6 +713,75 @@ export function WorktreeSidebar({
     sessions,
   ]);
 
+  // Orca `useSidebarRevealRequests`: when filters hide the target, ask before
+  // adjusting them; otherwise reveal straight away.
+  const [revealConfirmation, setRevealConfirmation] = useState<{
+    targetPath: string;
+    options?: { highlight?: boolean; beginRename?: boolean };
+  } | null>(null);
+
+  const handleRevealCurrent = useCallback(
+    (targetPath?: string | null, options?: { highlight?: boolean; beginRename?: boolean }) => {
+      const target = targetPath || revealTargetPath || activeWorktreePath;
+      if (!target) return;
+      const proj = projects.find(
+        (project) =>
+          project.path === target ||
+          getWorktreesForProject(project).some((worktree) => worktree.path === target)
+      );
+      if (!proj) {
+        revealWorkspaceNow(target, options);
+        return;
+      }
+      const worktree = getWorktreesForProject(proj).find((item) => item.path === target);
+      const branch = worktree?.branch ?? "";
+      const targetRepo = storeRepos.find(
+        (repo) => repo.id === proj.id || repo.path === proj.path
+      );
+      const targetHostId = targetRepo ? getRepoExecutionHostId(targetRepo) : null;
+      const hostVisible =
+        !targetHostId ||
+        ((!storeVisibleWorkspaceHostIds ||
+          storeVisibleWorkspaceHostIds.includes(targetHostId)) &&
+          (storeWorkspaceHostScope === "all" || storeWorkspaceHostScope === targetHostId));
+      const hasActiveSession = sessions.some(
+        (session) =>
+          (session.project_path === target || session.project_path === proj.path) &&
+          (session.state === "working" || session.state === "blocked" || session.state === "waiting")
+      );
+      const hidden = isRevealTargetHiddenByFilters(displayOptions, {
+        projectId: proj.id,
+        isMainWorktree: Boolean(worktree?.is_main || worktree?.isMainWorktree),
+        automationCreated: Boolean(worktree?.automationProvenanceKind),
+        cliCreated: Boolean(worktree?.cliProvenanceKind),
+        detachedHead:
+          branch === "HEAD" ||
+          branch === "(detached)" ||
+          branch.startsWith("(HEAD detached"),
+        hostVisible,
+        sleepingHidden:
+          displayOptions.hideSleeping && !hasActiveSession && target !== activeWorktreePath,
+      });
+      if (hidden) {
+        setRevealConfirmation({ targetPath: target, options });
+        return;
+      }
+      revealWorkspaceNow(target, options);
+    },
+    [
+      revealTargetPath,
+      activeWorktreePath,
+      projects,
+      getWorktreesForProject,
+      storeRepos,
+      storeVisibleWorkspaceHostIds,
+      storeWorkspaceHostScope,
+      sessions,
+      displayOptions,
+      revealWorkspaceNow,
+    ]
+  );
+
   // Orca `useSidebarRevealRequests`: consume the store's queued worktree reveal
   // (the list may be unmounted or filtered when the request arrives).
   useEffect(() => {
@@ -734,6 +807,40 @@ export function WorktreeSidebar({
     projects,
     getWorktreesForProject,
     handleRevealCurrent,
+  ]);
+
+  // Orca `useCollapsedGroups` for the agent-send target (D03a-049): the picker's
+  // worktree must not sit inside a collapsed section when the picker opens.
+  useEffect(() => {
+    const targetId = agentSendTargetMode?.worktreeId;
+    if (!targetId) return;
+    for (const project of projects) {
+      const worktree = getWorktreesForProject(project).find((item) => item.id === targetId);
+      if (!worktree) continue;
+      if (collapsedProjects.has(project.id)) {
+        setCollapsedProjects((prev) => {
+          const next = new Set(prev);
+          next.delete(project.id);
+          return next;
+        });
+      }
+      const groupId = projectGroupMap?.[project.id];
+      if (groupId && collapsedGroups.has(groupId)) {
+        setCollapsedGroups((prev) => {
+          const next = new Set(prev);
+          next.delete(groupId);
+          return next;
+        });
+      }
+      break;
+    }
+  }, [
+    agentSendTargetMode?.worktreeId,
+    projects,
+    getWorktreesForProject,
+    collapsedProjects,
+    collapsedGroups,
+    projectGroupMap,
   ]);
 
   // Orca `useSidebarRevealRequests` (row-key leg): a reveal of a section header must
@@ -1180,6 +1287,7 @@ export function WorktreeSidebar({
               folderWorkspaces={folderWorkspaces}
               liveWorkspacePaths={liveWorkspacePaths}
               missingFolderPaths={missingFolderPaths}
+              scanFailuresByProject={scanFailuresByProject}
               prByPath={prByPath}
               onActivateFolderWorkspace={onActivateFolderWorkspace}
               onDeleteFolderWorkspace={onDeleteFolderWorkspace}
@@ -1758,6 +1866,16 @@ export function WorktreeSidebar({
           const target = removeProjectTarget;
           setRemoveProjectTarget(null);
           if (target) onRemoveProject(target);
+        }}
+      />
+
+      <RevealHiddenWorkspaceDialog
+        open={revealConfirmation != null}
+        onCancel={() => setRevealConfirmation(null)}
+        onConfirm={() => {
+          const pending = revealConfirmation;
+          setRevealConfirmation(null);
+          if (pending) revealWorkspaceNow(pending.targetPath, pending.options);
         }}
       />
 

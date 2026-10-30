@@ -287,6 +287,8 @@ export interface WorktreeSidebarProps {
   liveWorkspacePaths?: ReadonlySet<string>;
   /** Folder paths the host reports as gone; Orca badges them with FolderX. */
   missingFolderPaths?: ReadonlySet<string>;
+  /** Failed authoritative scans, keyed by repo path (scan-failure indicator). */
+  scanFailuresByProject?: Record<string, string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
   /** Removes a folder workspace entry; the folder on disk stays. */
   onDeleteFolderWorkspace?: (folderWorkspaceId: string) => void;

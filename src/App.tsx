@@ -1354,8 +1354,10 @@ export default function App() {
       });
   };
 
+  const [scanFailuresByProject, setScanFailuresByProject] = useState<Record<string, string>>({});
   const refreshAllWorktrees = useCallback((projs: HydraProject[]): Promise<boolean> => {
     if (projs.length === 0) return Promise.resolve(true);
+    const failures: { repoPath: string; message: string }[] = [];
     // Why count fallbacks: a failed authoritative scan is what a caller must be able
     // to roll back against (D10-063); silently painting the legacy list hid it.
     let authoritativeFailures = 0;
@@ -1363,8 +1365,9 @@ export default function App() {
       projs.map((proj) =>
         invoke<{ visible: GitWorktreeInfo[]; hidden: GitWorktreeInfo[]; isSuppressed: boolean }>("scan_worktrees", { repoPath: proj.path })
           .then((scan) => ({ path: proj.path, wts: scan.visible, hidden: scan.hidden }))
-          .catch(() => {
+          .catch((error) => {
             authoritativeFailures += 1;
+            failures.push({ repoPath: proj.path, message: String(error) });
             return invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath: proj.path })
               .then((wts) => ({ path: proj.path, wts, hidden: [] as GitWorktreeInfo[] }))
               .catch(() => ({ path: proj.path, wts: [] as GitWorktreeInfo[], hidden: [] as GitWorktreeInfo[] }))
@@ -1379,6 +1382,9 @@ export default function App() {
       }
       setWorktreesByProject(map);
       setHiddenWorktreesByProject(hiddenMap);
+      setScanFailuresByProject(
+        Object.fromEntries(failures.map((failure) => [failure.repoPath, failure.message]))
+      );
       // D07 G7: hidrata pin/unread do banco a partir do MESMO payload do scan que
       // já trouxe display_name/status. O payload é keyed por path; a main worktree
       // (path === project.path) é o elo com os Sets por id de projeto.
@@ -4247,6 +4253,7 @@ export default function App() {
                 folderWorkspaces={folderWorkspaces}
                 liveWorkspacePaths={liveWorkspacePaths}
                 missingFolderPaths={missingFolderPaths}
+                scanFailuresByProject={scanFailuresByProject}
                 onActivateFolderWorkspace={handleActivateFolderWorkspace}
                 prByPath={prByPath}
                 initialSidebarBody={initialSidebarPrefs?.sidebarBody}

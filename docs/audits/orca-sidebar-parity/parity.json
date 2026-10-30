@@ -4770,14 +4770,16 @@
    "components/sidebar/worktree-list/listing/use-agent-send-target.ts:6-64"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "missing_behaviors": [
-    "use-agent-send-target",
-    "agentSendPopoverTargetMode",
-    "forcedVisibleWorktreeIds do alvo"
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:750-840",
+    "src/components/sidebar/WorktreeList.tsx:880-910"
    ],
-   "notes": "Não localizado após busca por use-agent-send-target, agentSendTargetWorktreeId, agentSendPopoverTargetMode."
+   "missing_behaviors": [
+    "não existe superfície de UI que abra o modo de seleção de alvo (o store tem `openAgentSendPopoverTargetMode`, mas nenhum componente o chama)"
+   ],
+   "notes": "Forced visibility is wired: the mode's worktree bypasses host/device/menu filters. The picker that would set the mode is still absent, so the path is dormant.",
+   "note": "Forced visibility is wired: the mode's worktree bypasses host/device/menu filters. The picker that would set the mode is still absent, so the path is dormant."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4788,14 +4790,15 @@
    "components/sidebar/worktree-list/listing/use-collapsed-groups.ts:17-121"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "missing_behaviors": [
-    "use-collapsed-groups removendo group keys do alvo",
-    "getFolderWorkspaceRevealGroupKeys",
-    "panel pinned single-location"
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:735-780"
    ],
-   "notes": "Não localizado após busca por use-collapsed-groups, getFolderWorkspaceRevealGroupKeys."
+   "missing_behaviors": [
+    "depends on the same missing target-mode UI"
+   ],
+   "notes": "Opening the mode expands the target's project and project group; lineage-ancestor expansion still follows the reveal path.",
+   "note": "Opening the mode expands the target's project and project group; lineage-ancestor expansion still follows the reveal path."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5139,19 +5142,15 @@
    "components/sidebar/worktree-list/navigation/use-reveal-requests.ts:30-218"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarFooter.tsx:40-51",
-    "src/components/sidebar/WorktreeSidebar.tsx:400"
+    "src/components/sidebar/reveal-hidden-filters.ts:1-60",
+    "src/components/sidebar/RevealHiddenWorkspaceDialog.tsx:1-55",
+    "src/components/sidebar/WorktreeSidebar.tsx:700-770"
    ],
-   "missing_behaviors": [
-    "diálogo de confirmação 'Reveal hidden workspace?' quando filtros escondem o alvo",
-    "alternar groupBy para 'repo' quando a row é header",
-    "getKnownSidebarWorktreeById / reveal checks por identidade host-qualified",
-    "revalidação do alvo após await"
-   ],
-   "notes": "Botão de reveal existe; sem diálogo de confirmação de filtros/revalidação de alvo.",
-   "note": "Botão de reveal existe; sem diálogo de confirmação de filtros/revalidação de alvo."
+   "missing_behaviors": [],
+   "notes": "A reveal whose target is hidden by the project/kind/host/sleeping filters asks first; confirming adjusts only the blocking filters and reveals, canceling leaves them intact. Header reveals switch grouping in the row-key path.",
+   "note": "A reveal whose target is hidden by the project/kind/host/sleeping filters asks first; confirming adjusts only the blocking filters and reveals, canceling leaves them intact. Header reveals switch grouping in the row-key path."
   },
   "par": [
    "PAR-44"
@@ -5355,17 +5354,20 @@
    "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx:18-153"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/RepoScanUnavailableIndicator.tsx:1-70",
+    "src/App.tsx:1355-1420"
+   ],
    "backend": [
     "window.api.ui.writeClipboardText (Orca; equivalente Tauri: clipboard do webview)"
    ],
    "missing_behaviors": [
-    "RepoScanUnavailableIndicator com retry de fetchWorktrees",
-    "tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch)",
-    "Copy command / Copy diagnostics"
+    "tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch) — o backend devolve só a mensagem crua",
+    "Copy command (só Copy diagnostics existe)"
    ],
-   "notes": "Não localizado após busca por RepoScanUnavailable, failureKind, xcode-license, 'Existing worktrees are kept until a scan succeeds'."
+   "notes": "Failed scans are captured per repo, painted as a retryable status row and the diagnostics copy to the clipboard.",
+   "note": "Failed scans are captured per repo, painted as a retryable status row and the diagnostics copy to the clipboard."
   },
   "domain": "D03a-worktree-list-module"
  },
