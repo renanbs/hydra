@@ -1904,6 +1904,14 @@ export function WorktreeSidebar({
               scrollRef={worktreeScrollRef}
               onReorderWorktreesInGroup={commitReorderedWorktrees}
               onReorderHostSections={setWorkspaceHostOrder}
+              onUpdateProjectGroup={(groupId, updates) => {
+                // App owns group state; the drop only reports the new tab order.
+                window.dispatchEvent(
+                  new CustomEvent("hydra:update-project-group", {
+                    detail: { id: groupId, tabOrder: updates.tabOrder },
+                  })
+                );
+              }}
               lineageByPath={lineageByPath}
               worktreeMetadataByPath={worktreeMetadataByPath}
               pendingWorktreeCreations={pendingWorktreeCreations}

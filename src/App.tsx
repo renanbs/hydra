@@ -637,7 +637,9 @@ export default function App() {
   const [unreadProjects, setUnreadProjects] = useState<Set<string>>(new Set());
   const [pinnedWorktrees, setPinnedWorktrees] = useState<Set<string>>(new Set());
   const [unreadWorktrees, setUnreadWorktrees] = useState<Set<string>>(new Set());
-  const [projectGroups, setProjectGroups] = useState<Array<{ id: string; name: string }>>([]);
+  const [projectGroups, setProjectGroups] = useState<
+    Array<{ id: string; name: string; tabOrder?: number }>
+  >([]);
   const [projectGroupMap, setProjectGroupMap] = useState<Record<string, string>>({});
   const [folderWorkspaces, setFolderWorkspaces] = useState<Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>>([]);
   const [worktreeLineage, setWorktreeLineage] = useState<Record<string, string>>(() => {
@@ -1486,7 +1488,7 @@ export default function App() {
       const detail = (e as CustomEvent<{ name: string; projectId?: string }>).detail;
       if (!detail?.name || typeof detail.name !== "string" || !detail.name.trim()) return;
       const id = `grp_${Date.now()}`;
-      const newGroup = { id, name: detail.name.trim() };
+      const newGroup = { id, name: detail.name.trim(), tabOrder: Date.now() };
       setProjectGroups((prev) => [...prev, newGroup]);
       if (detail.projectId) {
         setProjectGroupMap((prev) => ({ ...prev, [detail.projectId!]: id }));
@@ -1515,6 +1517,18 @@ export default function App() {
       setProjectGroups((prev) => prev.map((g) => (g.id === detail.id ? { ...g, name: detail.name.trim() } : g)));
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
     };
+    const handleUpdateProjectGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ id: string; tabOrder?: number }>).detail;
+      if (!detail?.id || typeof detail.tabOrder !== "number") return;
+      setProjectGroups((prev) =>
+        prev
+          .map((group) =>
+            group.id === detail.id ? { ...group, tabOrder: detail.tabOrder } : group
+          )
+          .sort((left, right) => (left.tabOrder ?? 0) - (right.tabOrder ?? 0))
+      );
+      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    };
     const handleDeleteProjectGroup = (e: Event) => {
       const detail = (e as CustomEvent<{ id: string; removeProjectPaths?: string[] }>).detail;
       if (!detail?.id) return;
@@ -1538,6 +1552,7 @@ export default function App() {
     window.addEventListener("hydra:move-project-to-group", handleMoveProjectToGroup);
     window.addEventListener("hydra:remove-project-from-group", handleRemoveProjectFromGroup);
     window.addEventListener("hydra:rename-project-group", handleRenameProjectGroup);
+    window.addEventListener("hydra:update-project-group", handleUpdateProjectGroup);
     window.addEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
     const handleOpenJumpPalette = () => setIsJumpPaletteOpen(true);
     window.addEventListener("hydra:open-jump-palette", handleOpenJumpPalette);
@@ -1600,6 +1615,7 @@ export default function App() {
       window.removeEventListener("hydra:move-project-to-group", handleMoveProjectToGroup);
       window.removeEventListener("hydra:remove-project-from-group", handleRemoveProjectFromGroup);
       window.removeEventListener("hydra:rename-project-group", handleRenameProjectGroup);
+      window.removeEventListener("hydra:update-project-group", handleUpdateProjectGroup);
       window.removeEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
       window.removeEventListener("hydra:open-settings", handleOpenSettingsPane);
       mql.removeEventListener("change", onSystemChange);
