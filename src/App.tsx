@@ -83,6 +83,7 @@ import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
 import { pruneClosedDeleteStates } from "./components/sidebar/worktree-delete-state-prune";
+import { canHydrateDeleteTargetLocally } from "./components/sidebar/worktree-delete-dispatch";
 import { installOrcaApiShim } from "./lib/orca-api-shim";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
@@ -2173,19 +2174,35 @@ export default function App() {
   // for the dialog targets when it opens.
   useEffect(() => {
     if (!deleteWorktreeModal) return;
-    for (const wt of deleteWorktreeModal.worktrees) {
+    // Why cancelled: a new modal (or dismissal) must not let a stale probe write a
+    // count onto the next dialog's targets.
+    let cancelled = false;
+    const targets = deleteWorktreeModal.deleteTargets ?? [];
+    deleteWorktreeModal.worktrees.forEach((wt, index) => {
+      const hostId = targets[index]?.hostId;
+      // Only the local owner can be probed from this process; a remote target shows
+      // an unknown count instead of a wrong local one.
+      if (!canHydrateDeleteTargetLocally(hostId)) {
+        setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [wt.path]: null }));
+        return;
+      }
       invoke<{ unstaged_count: number; untracked_count: number; staged_count: number }>(
         "get_detailed_git_status_cmd",
         { repoPath: wt.path }
       )
         .then((res) => {
+          if (cancelled) return;
           const dirty = (res?.unstaged_count ?? 0) + (res?.untracked_count ?? 0) + (res?.staged_count ?? 0);
           setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [wt.path]: dirty }));
         })
         .catch(() => {
+          if (cancelled) return;
           setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [wt.path]: null }));
         });
-    }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [deleteWorktreeModal]);
 
 

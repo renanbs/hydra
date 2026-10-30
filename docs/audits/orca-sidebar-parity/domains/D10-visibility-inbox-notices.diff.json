@@ -293,23 +293,21 @@
     "components/sidebar/DeleteWorktreeDialog.tsx:265"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:96",
-     "invoke('delete_worktree') em loop paralelo em src/components/DeleteWorktreeDialog.tsx:106"
+     "src/components/DeleteWorktreeDialog.tsx:250-290",
+     "src/components/DeleteWorktreeDialog.tsx:300-350",
+     "src/components/sidebar/worktree-delete-dispatch.ts:1-40",
+     "src/App.tsx:545-560"
     ],
     "backend": {
      "be": [
       "invoke('delete_worktree') -> src-tauri/src/lib.rs:476"
      ]
     },
-    "missing_behaviors": [
-     "validação de instanceId/hostId",
-     "toast 'Workspace list changed' + closeModal antes de deletar",
-     "closeModal imediato (Hydra mantém o dialog aberto até todos terminarem)"
-    ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "note": "Confirmed identities are validated against instance/host before dispatch, stale confirmations abort with the 'Workspace list changed' toast, and removals run concurrently per repo/host while staying post-order inside one repo.",
+    "notes": "Confirmed identities are validated against instance/host before dispatch, stale confirmations abort with the 'Workspace list changed' toast, and removals run concurrently per repo/host while staying post-order inside one repo."
    },
    "par": [
     "PAR-56"
@@ -377,16 +375,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:153",
-     "src/App.tsx:408"
+     "src/App.tsx:2175-2210",
+     "src/components/sidebar/worktree-delete-dispatch.ts:10-16"
     ],
     "backend": [],
     "missing_behaviors": [
-     "useDeleteWorktreeStatusHydration por host dono do alvo",
-     "AbortController / não reiniciar requests pendentes quando um alvo hidrata"
+     "pré-hidratação de git status no host remoto (só o dono local é sondado; alvos SSH/runtime ficam com contagem desconhecida)"
     ],
-    "note": "Sem mudanca de comportamento; veredito mantido.",
-    "notes": "Sem mudanca de comportamento; veredito mantido."
+    "note": "Local targets hydrate with a staleness guard; remote targets deliberately report unknown instead of a local count.",
+    "notes": "Local targets hydrate with a staleness guard; remote targets deliberately report unknown instead of a local count."
    },
    "par": [
     "PAR-56"
