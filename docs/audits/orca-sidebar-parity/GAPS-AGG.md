@@ -229,7 +229,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 290 capabilities
+## PARTIAL — 289 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -527,11 +527,10 @@
 - **D09-027** — Detecção de status de agentes atribuídos e frescos para transição de cold-start | falta: cold start do caminho pintado a partir do sortOrder persistido | components/sidebar/smart-attention.ts:45
 - **D09-031** — Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido | falta: cold start: reordenar pelo sortOrder persistido até chegar o snapshot de agent status | components/sidebar/smart-sort.ts:167
 
-### D10-visibility-inbox-notices (12)
+### D10-visibility-inbox-notices (11)
 
 - **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: busca window.api.worktrees.getBranchRenameFailureOutput ao abrir (Hydra só renderiza a prop `error`; `worktreeId` é declarado e não usado — :11); resposta null mantém o excerto persistido; rejeição do IPC mantém o excerto; guard de staleness no cleanup | components/sidebar/AutoRenameFailedDialog.tsx:31
-- **D10-013** — Confirmar delete: validar instâncias, disparar deletes paralelos e avisar caller | falta: validação de instanceId/hostId; toast 'Workspace list changed' + closeModal antes de deletar; closeModal imediato (Hydra mantém o dialog aberto até todos terminarem) | backend: {'be': ["invoke('delete_worktree') -> src-tauri/src/lib.rs:476"]} | components/sidebar/DeleteWorktreeDialog.tsx:258
-- **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: useDeleteWorktreeStatusHydration por host dono do alvo; AbortController / não reiniciar requests pendentes quando um alvo hidrata | components/sidebar/DeleteWorktreeDialog.tsx:188
+- **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: pré-hidratação de git status no host remoto (só o dono local é sondado; alvos SSH/runtime ficam com contagem desconhecida) | components/sidebar/DeleteWorktreeDialog.tsx:188
 - **D10-018** — Compor a frase de descrição com alvo e alvo-filho | falta: childTargetLabel de lineage; classe de destaque do targetLabel | components/sidebar/DeleteWorktreeDialogDescription.tsx:19
 - **D10-024** — Linha compacta 'Hiding N discovered worktrees' com copia por placement e host | falta: copy/layout da pílula compacta (NewExternalWorktreesInboxLine usa contador + 'hidden worktrees' em vez de 'Hiding N discovered worktrees') | components/sidebar/ImportedWorktreesVisibilityLine.tsx:108
 - **D10-050** — Abrir Global Settings na seção de visibilidade de worktrees | falta: navegar para a seção de visibilidade de worktrees (Hydra abre 'general'); closeModal + openSettingsTarget({pane:'general',repoId:null,sectionId}) | components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:22

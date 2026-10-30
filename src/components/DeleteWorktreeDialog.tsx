@@ -32,6 +32,7 @@ import {
 } from "./sidebar/worktree-delete-request";
 import { DeleteWorktreeLineageNotice } from "./DeleteWorktreeLineageNotice";
 import { describeWorktreeDeleteFailure } from "./sidebar/worktree-delete-failure";
+import { groupDeleteTargetsForDispatch } from "./sidebar/worktree-delete-dispatch";
 
 export type DeleteWorktreeDialogState = Record<string, WorktreeDeleteState | undefined>;
 
@@ -305,11 +306,12 @@ export function DeleteWorktreeDialog({
     // Orca `markWorktreesDeleting`: the sidebar card owns the in-progress feedback,
     // so publish before the first invoke leaves the renderer.
     onDeleteStart?.(requestedIdentities);
-    // Why sequential: Git worktree removal shares repo locks, and the payload order
-    // is post-order (child before parent). Dispatching in parallel could let the
-    // parent's force-delete swallow a child that still lives inside its directory.
+    // Why grouped-and-parallel: removals that share a repo (and its git locks) must
+    // stay in post-order so a parent's force-delete cannot swallow a live child;
+    // independent repos/hosts proceed concurrently (Orca `runWorktreeDeletesInParallel`).
     const runDeletes = async (): Promise<void> => {
-      for (const payload of payloads) {
+      const runGroup = async (group: typeof payloads): Promise<void> => {
+      for (const payload of group) {
         if (
           failures.some(
             (failure) =>
@@ -335,6 +337,8 @@ export function DeleteWorktreeDialog({
           failures.push({ path: payload.path, error: String(err) });
         }
       }
+      };
+      await Promise.all(groupDeleteTargetsForDispatch(payloads).map(runGroup));
       setIsDeletingLocal(false);
       // Release the card in the same settle that stops the dialog spinner: a
       // refused removal must leave the row clickable again.
