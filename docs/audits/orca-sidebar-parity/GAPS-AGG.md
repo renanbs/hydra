@@ -221,7 +221,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 236 capabilities
+## PARTIAL — 235 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -266,7 +266,7 @@
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5
 
-### D03a-worktree-list-module (10)
+### D03a-worktree-list-module (9)
 
 - **D03a-021** — Persistir ordem manual e status resultantes de um drop | falta: host-qualified manual-order write for project groups still lacks a store writer | components/sidebar/worktree-list/drag/use-status-mutations.ts:35-199
 - **D03a-046** — Restringir repos/grupos/folder workspaces ao escopo visível (host + dispositivo) | falta: visibleReposForRows/visibleProjectGroupsForRows/visibleFolderWorkspacesForRows no render; filterFolderWorkspacesFromOtherDevices | components/sidebar/worktree-list/listing/use-host-visible-scope.ts:17-72
@@ -275,7 +275,6 @@
 - **D03a-077** — Card de folder workspace como linha virtual | falta: synthetic PR display needs workspaceLineageByChildKey, absent from the composed AppState | components/sidebar/worktree-list/rows/folder-row.tsx:23-132
 - **D03a-080** — Linha de card de worktree com linhagem inline e estados visuais | falta: true inline descendant painting needs the viewport/listing row fold | components/sidebar/worktree-list/rows/item-row.tsx:28-262
 - **D03a-082** — Menu de ações do project group (renomear/excluir) | falta: App.tsx group handlers still ignore the forwarded hostId (sidebar-prefs pipeline has no per-host group mutation) | components/sidebar/worktree-list/rows/project-group-header-actions.tsx:24-80
-- **D03a-083** — Botão de criar workspace em project group folder-backed | falta: aria-disabled/disabled quando o path do grupo é confirmed-stale ou ambiguous-connection; tooltip com a descrição do path status | components/sidebar/worktree-list/rows/project-group-header-actions.tsx:82-136
 - **D03a-084** — Menu de ações de projeto no header de repo | falta: Change Project Icon opens Settings but Hydra has no repository-icon write path | components/sidebar/worktree-list/rows/repo-header-project-actions.tsx:48-176
 - **D03a-087** — Fluxos de criação/renomeação/exclusão de project groups | falta: group mutations remain App-local sidebar_prefs state; hostId is ignored and contained-project removal failures cannot be reported individually | components/sidebar/worktree-list/rows/use-project-group-dialogs.ts:10-206
 

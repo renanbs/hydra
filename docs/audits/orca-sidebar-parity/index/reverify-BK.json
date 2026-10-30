@@ -153,6 +153,16 @@
    ],
    "missing_behaviors": [],
    "note": "Floating insertion lines exist for repo headers, project-group headers and the host section tier (z-40); the group line is reachable now that the group writer exists."
+  },
+  {
+   "id": "D03a-083",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SectionHeader.tsx:isFolderWorkspaceCreateDisabled",
+    "src/lib/folder-workspace-path-status.ts:getFolderWorkspaceCreateDisabledReason"
+   ],
+   "missing_behaviors": [],
+   "note": "The group + disables for confirmed-stale and ambiguous-connection paths with reason-specific tooltip copy."
   }
  ]
 }

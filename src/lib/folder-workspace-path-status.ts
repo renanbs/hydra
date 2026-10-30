@@ -166,3 +166,17 @@ export function folderWorkspaceActivationBlocked(
 ): boolean {
   return blocksFolderWorkspaceActivation(status)
 }
+
+/**
+ * Tooltip copy for a folder-backed project-group "+" that cannot create a
+ * workspace. The reason decides the wording: a stale folder says it is gone; an
+ * ambiguous connection says which host could not be resolved.
+ */
+export function getFolderWorkspaceCreateDisabledReason(
+  status: FolderWorkspacePathStatus | null | undefined
+): string | null {
+  if (!status || status.exists) return null
+  const description = getFolderWorkspacePathStatusDescription(status)
+  if (description) return description
+  return getFolderWorkspacePathStatusTitle(status)
+}

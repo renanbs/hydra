@@ -43,6 +43,7 @@ import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
 import { HostSectionHeaderMenu } from "./HostSectionHeaderMenu";
 import { RepoScanUnavailableIndicator } from "./RepoScanUnavailableIndicator";
 import type { FolderWorkspacePathStatus } from "../../shared/folder-workspace-path-status";
+import { getFolderWorkspaceCreateDisabledReason } from "../../lib/folder-workspace-path-status";
 import {
   getPinnedWorktreeDisplayPolicy,
   type FolderWorkspaceRow as FolderWorkspaceRowModel,
@@ -2018,7 +2019,8 @@ export function WorktreeList({
       const createWorkspaceDisabledReason =
         groupFolderPath &&
         (missingPaths.has(groupFolderPath) || isFolderWorkspaceCreateDisabled(groupPathStatus))
-          ? `Folder not found: ${groupFolderPath}`
+          ? (getFolderWorkspaceCreateDisabledReason(groupPathStatus) ??
+            `Folder not found: ${groupFolderPath}`)
           : undefined;
       const dragHandlers = headerHandlersFor("project-group", group.id);
       return (

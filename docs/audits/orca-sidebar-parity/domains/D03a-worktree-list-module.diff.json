@@ -1632,17 +1632,14 @@
     "components/sidebar/worktree-list/rows/project-group-header-actions.tsx:82-136"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/SectionHeader.tsx:185-198",
-     "src/components/sidebar/WorktreeList.tsx:495-511"
+     "src/components/sidebar/SectionHeader.tsx:isFolderWorkspaceCreateDisabled",
+     "src/lib/folder-workspace-path-status.ts:getFolderWorkspaceCreateDisabledReason"
     ],
-    "missing_behaviors": [
-     "aria-disabled/disabled quando o path do grupo é confirmed-stale ou ambiguous-connection",
-     "tooltip com a descrição do path status"
-    ],
-    "notes": "Botão + de grupo existe sem gate por path status.",
-    "note": "Botão + de grupo existe sem gate por path status."
+    "missing_behaviors": [],
+    "notes": "The group + disables for confirmed-stale and ambiguous-connection paths with reason-specific tooltip copy.",
+    "note": "The group + disables for confirmed-stale and ambiguous-connection paths with reason-specific tooltip copy."
    }
   },
   {
